@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675Ab0BSRL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:11:29 -0500
-Received: from kroah.org ([198.145.64.141]:57596 "EHLO coco.kroah.org"
+	id S1754821Ab0BSRLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:11:50 -0500
+Received: from kroah.org ([198.145.64.141]:57583 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754803Ab0BSRAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:42 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:43 2010
-Message-Id: <20100219163243.243496923@kvm.kroah.org>
+	id S1754775Ab0BSRAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:40 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:42 2010
+Message-Id: <20100219163242.731197807@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:38 -0800
+Date: Fri, 19 Feb 2010 08:29:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: [45/93] amd64_edac: Do not falsely trigger kerneloops
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [43/93] KVM: PIT: control word is write-only
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,70 +25,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Borislav Petkov <borislav.petkov@amd.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-commit cab4d27764d5a8654212b3e96eb0ae793aec5b94 upstream.
+commit ee73f656a604d5aa9df86a97102e4e462dd79924 upstream.
 
-An unfortunate "WARNING" in the message amd64_edac dumps when the system
-doesn't support DRAM ECC or ECC checking is not enabled in the BIOS
-used to trigger kerneloops which qualified the message as an OOPS thus
-misleading the users. See, e.g.
+PIT control word (address 0x43) is write-only, reads are undefined.
 
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/422536
-http://bugzilla.kernel.org/show_bug.cgi?id=15238
-
-Downgrade the message level to KERN_NOTICE and fix the formulation.
-
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-Acked-by: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/edac/amd64_edac.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ arch/x86/kvm/i8254.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2801,10 +2801,11 @@ static void amd64_restore_ecc_error_repo
-  * the memory system completely. A command line option allows to force-enable
-  * hardware ECC later in amd64_enable_ecc_error_reporting().
-  */
--static const char *ecc_warning =
--	"WARNING: ECC is disabled by BIOS. Module will NOT be loaded.\n"
--	" Either Enable ECC in the BIOS, or set 'ecc_enable_override'.\n"
--	" Also, use of the override can cause unknown side effects.\n";
-+static const char *ecc_msg =
-+	"ECC disabled in the BIOS or no ECC capability, module will not load.\n"
-+	" Either enable ECC checking or force module loading by setting "
-+	"'ecc_enable_override'.\n"
-+	" (Note that use of the override may cause unknown side effects.)\n";
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -465,6 +465,9 @@ static int pit_ioport_read(struct kvm_io
+ 		return -EOPNOTSUPP;
  
- static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
- {
-@@ -2819,7 +2820,7 @@ static int amd64_check_ecc_enabled(struc
+ 	addr &= KVM_PIT_CHANNEL_MASK;
++	if (addr == 3)
++		return 0;
++
+ 	s = &pit_state->channels[addr];
  
- 	ecc_enabled = !!(value & K8_NBCFG_ECC_ENABLE);
- 	if (!ecc_enabled)
--		amd64_printk(KERN_WARNING, "This node reports that Memory ECC "
-+		amd64_printk(KERN_NOTICE, "This node reports that Memory ECC "
- 			     "is currently disabled, set F3x%x[22] (%s).\n",
- 			     K8_NBCFG, pci_name(pvt->misc_f3_ctl));
- 	else
-@@ -2827,13 +2828,13 @@ static int amd64_check_ecc_enabled(struc
- 
- 	nb_mce_en = amd64_nb_mce_bank_enabled_on_node(pvt->mc_node_id);
- 	if (!nb_mce_en)
--		amd64_printk(KERN_WARNING, "NB MCE bank disabled, set MSR "
-+		amd64_printk(KERN_NOTICE, "NB MCE bank disabled, set MSR "
- 			     "0x%08x[4] on node %d to enable.\n",
- 			     MSR_IA32_MCG_CTL, pvt->mc_node_id);
- 
- 	if (!ecc_enabled || !nb_mce_en) {
- 		if (!ecc_enable_override) {
--			amd64_printk(KERN_WARNING, "%s", ecc_warning);
-+			amd64_printk(KERN_NOTICE, "%s", ecc_msg);
- 			return -ENODEV;
- 		}
- 		ecc_enable_override = 0;
+ 	mutex_lock(&pit_state->lock);
 
 
