@@ -1,74 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644Ab0BSVoy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:44:54 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:35078 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754807Ab0BSVow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:44:52 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: Mike Fedyk <mfedyk@mikefedyk.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net
-Subject: Re: [Regression] Filesystem I/O is CPU-bound in rc7 and rc8
-In-Reply-To: <93cdabd21002191322g7ea13d8bk52f1545df913f07@mail.gmail.com>
-	(Mike Fedyk's message of "Fri, 19 Feb 2010 13:22:45 -0800")
-References: <m3pr48bjfg.fsf@lugabout.jhcloos.org>
-	<93cdabd21002191322g7ea13d8bk52f1545df913f07@mail.gmail.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Fri, 19 Feb 2010 16:44:08 -0500
-Message-ID: <m3r5ognbnj.fsf@lugabout.jhcloos.org>
+	id S1755689Ab0BSVqI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:46:08 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:52844 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753925Ab0BSVqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:46:07 -0500
+Date: Fri, 19 Feb 2010 21:45:50 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: [git pull] drm regression final fixes
+Message-ID: <alpine.DEB.2.00.1002192143130.22461@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Mike" == Mike Fedyk <mfedyk@mikefedyk.com> writes:
 
-Mike> On Sat, Feb 13, 2010 at 7:11 PM, James Cloos <cloos@jhcloos.com> wrote:
->> Sometime between rc6 and rc7 all filesystem I/O started using 100% CPU,
->> usually on the order of 60% sys, 40% user.
->> 
->> I've tried this with each of ext4, jfs and btrfs filesystems.  All show
->> the same issue.
->> 
+Hi Linus
 
-Mike> Are you sure you're not running with any of the debugging options
-Mike> enabled?  I see the same, but I have debugging enabled (rawhide
-Mike> kernel).
+hope you get this before release, if not stable life, the main fix is a 
+major regression on AGP/no-pat systems where pages ended up in uncached,
 
-There are some:
+a further fix to the vgaarb fix, and a fix to make rv740 gpus just work 
+for now (they have some tile/backend quirk that AMD haven't tracked down 
+yet, so we'll do the proper fix in .34, this is a minimal workaround for 
+now).
 
-CONFIG_HAVE_DMA_API_DEBUG=y
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_CFG80211_DEBUGFS=y
-CONFIG_MAC80211_DEBUGFS=y
-CONFIG_PNP_DEBUG_MESSAGES=y
-CONFIG_FIREWIRE_OHCI_DEBUG=y
-CONFIG_USB_SERIAL_DEBUG=m
-CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
+Dave.
 
-I forgot about /proc/sched_debug, but am back at -rc6 right now; I'll
-post an example of /proc/sched_debug output during the issue when I'm
-next in rc8 or later.
+The following changes since commit 6b15835282f9c6a023e2625455bfdb822bb9cc64:
+  Dave Airlie (1):
+        Merge branch 'for-airlied' of git://git.freedesktop.org/git/nouveau/linux-2.6 into drm-linus
 
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+
+Alex Deucher (3):
+      drm/radeon/kms/rs600: add connector quirk
+      drm/radeon/kms: fix shared ddc detection
+      drm/radeon/rv740: fix backend setup
+
+Francisco Jerez (1):
+      drm/ttm: fix caching problem on non-PAT systems.
+
+Jerome Glisse (1):
+      drm/radeon/kms: free fence IB if it wasn't emited at IB free time
+
+Kyle McMartin (1):
+      vgaarb: fix "target=default" passing
+
+ drivers/gpu/drm/radeon/r600_cp.c           |    9 ++++++---
+ drivers/gpu/drm/radeon/radeon_atombios.c   |    9 +++++++++
+ drivers/gpu/drm/radeon/radeon_connectors.c |    5 ++---
+ drivers/gpu/drm/radeon/radeon_ring.c       |    2 ++
+ drivers/gpu/drm/radeon/rv770.c             |    9 ++++++---
+ drivers/gpu/drm/ttm/ttm_tt.c               |   18 +++++++++++-------
+ drivers/gpu/vga/vgaarb.c                   |    2 +-
+ 7 files changed, 37 insertions(+), 17 deletions(-)
