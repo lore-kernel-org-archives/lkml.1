@@ -1,77 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433Ab0BSTTX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:19:23 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:51773 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754631Ab0BSTTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:19:20 -0500
-Subject: Re: NFSv4
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "J.A." =?ISO-8859-1?Q?Magall=F3n?= <jamagallon@ono.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <20100219012322.3d323794@werewolf.home>
-References: <20100219012322.3d323794@werewolf.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Feb 2010 11:19:14 -0800
-Message-ID: <1266607154.3526.30.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 8bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 3 sum msgs/h 1 total rcpts 2464 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-4.5, required=5.0, autolearn=disabled, TVD_RCVD_IP=0.502,UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: F631D399D5D03E98DFE991AFABED1AB4AA42CCAF
-X-UiO-SPAM-Test: remote_host: 207.47.13.154 spam_score: -44 maxlevel 80 minaction 2 bait 0 blacklist 0 greylist 0 ratelimit 0
+	id S1755595Ab0BST0u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:26:50 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:34142 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754989Ab0BST0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 14:26:48 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/7] Add basic ARM device tree support
+To: linux@arm.linux.org.uk, catalin.marinas@arm.com, jeremy.kerr@canonical.com,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: tim.bird@am.sony.com
+Date: Fri, 19 Feb 2010 12:26:40 -0700
+Message-ID: <20100219185953.15318.4850.stgit@angua>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 01:23 +0100, J.A. Magallón wrote: 
-> Hi all...
-> 
-> First of all, kudos for new nfs-utils. Now, nfs4 works automagically and
-> like a charm.
-> 
-> And now the hard part, some questions:
-> 
-> - I have read that nfs4 includes in the server the locking protocol, no
->   need for separate lockd. But in my servers, it seems it is still running:
-> 
-> root      2198     2  0 Feb18 ?        00:00:00 [nfsiod]
-> root     23501     2  0 01:01 ?        00:00:00 [nfsd4]
-> root     23502     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23503     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23504     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23505     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23506     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23507     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23508     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23509     2  0 01:01 ?        00:00:00 [nfsd]
-> root     23500     2  0 01:01 ?        00:00:00 [lockd]
-> 
->   Is there any problem with it ? I suppose (correct me if I'm wrong)
->   that this kernel lockd will only serve for v2 or v3 mounts,
->   that locking for client nfs4 mounts will go through nfsd4.
->   Is that right ?
+Hi everyone.  It's been a long time coming, but I thing Jeremy and I have
+things to a point where the basic patches needs to add flattened device
+tree support to ARM are pretty stable.  This series doesn't really do
+much other than making CONFIG_OF selectable, allowing a device tree to
+be passed in at boot via an ATAG, and unpacking the tree into the
+struct device_node* tree used by drivers/of/*.  No platforms actually
+use any of the data yet, but the tree can be browsed in /proc/device-tree
 
-No. The client NFSv4 traffic goes through the ordinary 'nfsd' daemons.
-There is no special locking manager for NFSv4, since POSIX locks are
-part of the ordinary protocol.
+Patches 1-5 are the important ones.  As you can see, the impact is
+pretty low.  Biggest change is some refactoring of
+arch/arm/mm/init.c so that the memory region occupied by the
+device tree blob (dtb) gets reserved in the same way as for an initrd.
 
-I don't think that the NFS server will switch off lockd even if you do
-specify that you only want to serve NFSv4.
+Patches 6 is RFC only, and it doesn't fully work yet because it isn't
+able to handle relocating the .dtb if it overlaps the final kernel
+location.  I'm still working on it, but I'm not even convinced that it
+is the best approach yet.  I include it here so that people can build
+a kernel image that embeds the dtb and so give the device tree code a
+spin without having to modify firmware.  Patch 7 is a complete hack to
+work around the problem in patch 6.
 
-> - Why is there only 1 instance of v4 daemon ?
+These patches depend on the merge of PowerPC and Microblaze device tree
+code.  The merge work is in linux-next and I'll be asking Linus to pull
+it when he opens the window.  It also depends on the earlier patch
+posted by Jeremy Kerr to use generic infrastructure for early_params.
+These patches are available in the test-devicetree branch of my
+linux-2.6 git tree:
 
-The 'nfsd4' thread above is actually a workqueue that is used for
-garbage-cleaning expired NFSv4 state. It isn't a server thread.
+git://git.secretlab.ca/git/linux-2.6 test-devicetree
 
-> - Is there any page describing the advantages of v4 ? I will have to
->   convince the department admin to activate v4 in his solaris boxen...;)
+>From here, there are 2 things being worked on.  Jeremy is working on
+the early init code to make device tree data available earlier in the
+boot process so that device tree data can be used for machine probing
+and memory setup.  I'm focusing on parsing the device tree data for
+registering platform, i2c and spi devices.  Each of those tasks are
+mostly independent and can be posted/reviewed when they are working.
 
-One place to start is the NFSv4 design considerations. See
-          http://tools.ietf.org/html/rfc2624
+Thanks
+g.
 
-Cheers
-  Trond
+---
 
+Grant Likely (3):
+      arm/boot/hack: set uImage load address to 0x81000000
+      arm/devicetree: Allow .dtb to be carried in the zImage payload
+      arm/devicetree: Reserve memory used by dtb blob
+
+Jeremy Kerr (4):
+      arm-dt: unflatten device tree
+      arm-dt: add devictree node reference to dev_archdata
+      arm-dt: Allow CONFIG_OF on ARM
+      arm-dt: Add ATAG_DEVTREE tag
+
+
+ arch/arm/Kconfig                        |   27 ++++++++
+ arch/arm/boot/Makefile                  |    2 -
+ arch/arm/boot/compressed/Makefile       |   23 ++++++-
+ arch/arm/boot/compressed/head.S         |   10 +++
+ arch/arm/boot/compressed/misc.c         |   30 +++++++++
+ arch/arm/boot/compressed/piggy.dtb.S    |    6 ++
+ arch/arm/boot/compressed/vmlinux.lds.in |    2 +
+ arch/arm/include/asm/device.h           |    3 +
+ arch/arm/include/asm/prom.h             |   19 ++++++
+ arch/arm/include/asm/setup.h            |    9 +++
+ arch/arm/kernel/Makefile                |    1 
+ arch/arm/kernel/devtree.c               |   34 ++++++++++
+ arch/arm/kernel/setup.c                 |    3 +
+ arch/arm/mm/init.c                      |  102 +++++++++++++++++++++++++------
+ 14 files changed, 248 insertions(+), 23 deletions(-)
+ create mode 100644 arch/arm/boot/compressed/piggy.dtb.S
+ create mode 100644 arch/arm/include/asm/prom.h
+ create mode 100644 arch/arm/kernel/devtree.c
+
+-- 
+Signature
