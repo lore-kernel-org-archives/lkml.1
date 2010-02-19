@@ -1,78 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460Ab0BSAA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:00:58 -0500
-Received: from mail-yx0-f180.google.com ([209.85.210.180]:62358 "EHLO
-	mail-yx0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950Ab0BSAA4 (ORCPT
+	id S1752230Ab0BSAHl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:07:41 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36897 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237Ab0BSAHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:00:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kuEs6eexBkLA5mWYtHwFiCFKgI089Yvti2Y/cCR8nwfoHppNYyP54VQDS2UBxZYDer
-         6ciApedhfjPWXe5b2KSoVU8Vzy5RiIQNGSeWgOWRTPpkuZ6FImQ7Jz1gRoPgo58BMKwx
-         F3r/ZcrZszwFfoGa1FIf4JgJADc1ekggWYyjg=
-Message-ID: <4B7DD4B5.7000108@garzik.org>
-Date: Thu, 18 Feb 2010 19:00:53 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] libata: pass host flags into __ata_pci_sff_init_one()
- helper
-References: <20100218185914.16594.61415.sendpatchset@localhost> <20100218185922.16594.98925.sendpatchset@localhost> <20100218214448.692552fd@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100218214448.692552fd@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 18 Feb 2010 19:07:40 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 19 Feb 2010 09:04:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 05/12] Memory compaction core
+Message-Id: <20100219090406.d3903e05.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002181335270.7351@router.home>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
+	<1265976059-7459-6-git-send-email-mel@csn.ul.ie>
+	<20100216170014.7309.A69D9226@jp.fujitsu.com>
+	<20100216084800.GC26086@csn.ul.ie>
+	<alpine.DEB.2.00.1002160849460.18275@router.home>
+	<20100216145943.GA997@csn.ul.ie>
+	<alpine.DEB.2.00.1002181335270.7351@router.home>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2010 04:44 PM, Alan Cox wrote:
-> On Thu, 18 Feb 2010 19:59:22 +0100
-> Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>  wrote:
->
->> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
->> Subject: [PATCH] libata: pass host flags into __ata_pci_sff_init_one() helper
->>
->> This was orginally proposed by Alan Cox but as a change
->> for ata_pci_sff_init_one() helper function instead of
->> __ata_pci_sff_init_one() one which casues needless churn
->> to all host drivers and accidentally breakes few host
->> drivers which are still on their way upstream.
->>
->> Allows parallel scan and the like to be set without
->> having to stop using the existing full helper functions.
->
-> NAK - __ is for internal symbol names.
->
-> I was split 50/50 on adding ata_pci_sff_init_one_flags() or similar but
-> the churn, given its a one off and we can then add all sorts of other
-> future flags without pain, seemed worth it.
->
-> I'm ambivalent about whether its best to go with a new function name as
-> you have or take the hit now (which seems sensible to me). Either way the
-> __ naming is wrong for an external interface.
+On Thu, 18 Feb 2010 13:37:35 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Your proposed patch from yesterday adding flags to each is fine. 
-All-driver patches are just fine, as long as the need is demonstrated 
-[and it is, in this case].
+> On Tue, 16 Feb 2010, Mel Gorman wrote:
+> 
+> > > Oh there are numerous ZONE_DMA pressure issues if you have ancient /
+> > > screwed up hardware that can only operate on DMA or DMA32 memory.
+> > >
+> >
+> > I've never ran into the issue. I was under the impression that the only
+> > device that might care these days are floopy disks.
+> 
+> Kame-san had an issue a year or so ago.
+> 
+Yes. But my customer doesn't use the newest things...
+In server area, recent hardware(64bit) and drivers tend not to cause the issue.
+I'm not sure there are some driver which still set their DMA mask wrong and
+require bounce buffer. But I guess that I'll have to see DMA-zone issue in
+customer support still in (early) RHEL6.
 
+Considering other area, I hear OOM-issue from notebook/desktop users, they don't
+equip swap. I think some of devices are still 32bit if 64bit isn't required for them.
+I wonder problems on lower-zone still exists for 32bit devices users.
+In the view point as kernels for x86-32 still support ZONE_DMA
+for ISA bus...we shouldn't assume there are no legacy. 
 
-> Anyway I'd *hope* we can get>  50% of interfaces parallel scanning at
-> which point it ceases to be more noise anyway !
->
-> Jeff ?
-
-Most hardware should support parallel scanning, sans caveats like 
-chipsets that snoop SET FEATURES - XFER MODE (that command, and only 
-that command, needs synchronization)
-
-	Jeff
+But yes, it may not be very important to implement inter-zone moving. It's not
+for compaction, but just for memory-reclaim. And it has some complication.
 
 
+Thanks,
+-Kame
 
