@@ -1,82 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149Ab0BSGNs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 01:13:48 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45566 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948Ab0BSGNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 01:13:46 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 19 Feb 2010 15:10:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Michael Bohan <mbohan@codeaurora.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: Kernel panic due to page migration accessing memory holes
-Message-Id: <20100219151012.d430b7ea.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4B7E2635.8010700@codeaurora.org>
-References: <4B7C8DC2.3060004@codeaurora.org>
-	<20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>
-	<4B7CF8C0.4050105@codeaurora.org>
-	<20100218183604.95ee8c77.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100218100432.GA32626@csn.ul.ie>
-	<4B7DEDB0.8030802@codeaurora.org>
-	<20100219110003.dfe58df8.kamezawa.hiroyu@jp.fujitsu.com>
-	<4B7E2635.8010700@codeaurora.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753210Ab0BSGWB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 01:22:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51604 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841Ab0BSGV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 01:21:59 -0500
+Date: Fri, 19 Feb 2010 06:21:37 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+In-Reply-To: <tip-*@git.kernel.org>
+References: <tip-*@git.kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/setup] x86-64, setup: Inhibit decompressor output if video info is invalid
+Message-ID: <tip-eb572a5c7951288e265b3e8f9a5d37b6abb2e996@git.kernel.org>
+Git-Commit-ID: eb572a5c7951288e265b3e8f9a5d37b6abb2e996
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 19 Feb 2010 06:21:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Feb 2010 21:48:37 -0800
-Michael Bohan <mbohan@codeaurora.org> wrote:
+Commit-ID:  eb572a5c7951288e265b3e8f9a5d37b6abb2e996
+Gitweb:     http://git.kernel.org/tip/eb572a5c7951288e265b3e8f9a5d37b6abb2e996
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Thu, 18 Feb 2010 22:15:04 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Thu, 18 Feb 2010 22:15:04 -0800
 
-> On 2/18/2010 6:00 PM, KAMEZAWA Hiroyuki wrote:
-> > memmap for memory holes should be marked as PG_reserved and never be freed
-> > by free_bootmem(). Then, memmap for memory holes will not be in buddy allocator.
-> >
-> > Again, pfn_valid() just show "there is memmap", not for "there is a valid page"
-> >    
-> 
-> ARM seems to have been freeing the memmap holes for a long time.
-Ouch.
+x86-64, setup: Inhibit decompressor output if video info is invalid
 
-> I'm pretty sure there would be a lot of pushback if we tried to change 
-> that.  For example, in my memory map running FLATMEM, I would be 
-> consuming an extra ~7 MB of memory if these structures were not freed.
-> 
-> As a compromise, perhaps we could free everything except the first 
-> 'pageblock_nr_pages' in a hole?  This would guarantee that 
-> move_freepages() doesn't deference any memory that doesn't belong to the 
-> memmap -- but still only waste a relatively small amount of memory.  For 
-> a 4 MB page block, it should only consume an extra 32 KB per hole in the 
-> memory map.
-> 
-No. You have to implement pfn_valid() to return correct value as
-"pfn_valid() returnes true if there is memmap." even if you do that.
-Otherwise, many things will go bad.
+Inhibit output from the kernel decompressor if the video information
+is invalid.  This was already the case for 32 bits, make 64 bits
+match.
 
-You have 2 or 3 ways.
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <tip-*@git.kernel.org>
+---
+ arch/x86/boot/compressed/misc.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-1. re-implement pfn_valid() which returns correct value.
-   maybe not difficult. but please take care of defining CONFIG_HOLES_IN_....
-   etc.
-
-2. use DISCONTIGMEM and treat each bank and NUMA node.
-   There will be no waste for memmap. But other complication of CONFIG_NUMA.
-   
-3. use SPARSEMEM.
-   You have even 2 choisce here. 
-   a - Set your MAX_ORDER and SECTION_SIZE to be proper value.
-   b - waste some amount of memory for memmap on the edge of section.
-       (and don't free memmap for the edge.)
-      
-Thanks,
--Kame
-
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 3b22fe8..3487e86 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -185,11 +185,9 @@ static void __putstr(int error, const char *s)
+ 		return;
+ #endif
+ 
+-#ifdef CONFIG_X86_32
+ 	if (real_mode->screen_info.orig_video_mode == 0 &&
+ 	    lines == 0 && cols == 0)
+ 		return;
+-#endif
+ 
+ 	x = real_mode->screen_info.orig_x;
+ 	y = real_mode->screen_info.orig_y;
