@@ -1,118 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351Ab0BSTRw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:17:52 -0500
-Received: from mga09.intel.com ([134.134.136.24]:60266 "EHLO mga09.intel.com"
+	id S1755433Ab0BSTTX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:19:23 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:51773 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754662Ab0BSTRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:17:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,504,1262592000"; 
-   d="scan'208";a="597448375"
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>
-In-Reply-To: <20100219130318.GA20884@dirshya.in.ibm.com>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-	 <1266057388.557.59599.camel@twins>
-	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
-	 <20100219130318.GA20884@dirshya.in.ibm.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 19 Feb 2010 11:15:48 -0800
-Message-Id: <1266606948.2814.62.camel@sbs-t61.sc.intel.com>
+	id S1754631Ab0BSTTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 14:19:20 -0500
+Subject: Re: NFSv4
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "J.A." =?ISO-8859-1?Q?Magall=F3n?= <jamagallon@ono.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <20100219012322.3d323794@werewolf.home>
+References: <20100219012322.3d323794@werewolf.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Feb 2010 11:19:14 -0800
+Message-ID: <1266607154.3526.30.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 8bit
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 3 sum msgs/h 1 total rcpts 2464 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-4.5, required=5.0, autolearn=disabled, TVD_RCVD_IP=0.502,UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: F631D399D5D03E98DFE991AFABED1AB4AA42CCAF
+X-UiO-SPAM-Test: remote_host: 207.47.13.154 spam_score: -44 maxlevel 80 minaction 2 bait 0 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 05:03 -0800, Vaidyanathan Srinivasan wrote:
-> > -	/* Don't want to pull so many tasks that a group would go idle */
-> > -	max_pull = min(sds->max_load - sds->avg_load,
-> > -			sds->max_load - sds->busiest_load_per_task);
-> > +	if (!sds->group_imb) {
-> > +		/*
-> > + 	 	 * Don't want to pull so many tasks that a group would go idle.
-> > +	 	 */
-> > +		load_above_capacity = (sds->busiest_nr_running - 
-> > +						sds->busiest_group_capacity);
-> > +
-> > +		load_above_capacity *= (SCHED_LOAD_SCALE * SCHED_LOAD_SCALE);
-> > +	
-> > +		load_above_capacity /= sds->busiest->cpu_power;
-> > +	}
+On Fri, 2010-02-19 at 01:23 +0100, J.A. Magallón wrote: 
+> Hi all...
 > 
-> This seems tricky.  max_load - avg_load will be less than
-> load_above_capacity most of the time.  How does this expression
-> increase the max_pull from previous expression?
-
-I am not trying to increase/decrease from the previous expression. Just
-trying to do the right thing (to ultimately address smt/mc
-power-savings), as the "max_load - busiest_load_per_task" no longer
-represents the load above capacity.
-
+> First of all, kudos for new nfs-utils. Now, nfs4 works automagically and
+> like a charm.
 > 
-> > +	/*
-> > +	 * We're trying to get all the cpus to the average_load, so we don't
-> > +	 * want to push ourselves above the average load, nor do we wish to
-> > +	 * reduce the max loaded cpu below the average load, as either of these
-> > +	 * actions would just result in more rebalancing later, and ping-pong
-> > +	 * tasks around. Thus we look for the minimum possible imbalance.
-> > +	 * Negative imbalances (*we* are more loaded than anyone else) will
-> > +	 * be counted as no imbalance for these purposes -- we can't fix that
-> > +	 * by pulling tasks to us. Be careful of negative numbers as they'll
-> > +	 * appear as very large values with unsigned longs.
-> > +	 */
-> > +	max_pull = min(sds->max_load - sds->avg_load, load_above_capacity);
+> And now the hard part, some questions:
 > 
-> Does this increase or decrease the value of max_pull from previous
-> expression?
-
-Does the above help answer your question, Vaidy?
-
->  
-> >  	/* How much load to actually move to equalise the imbalance */
-> >  	*imbalance = min(max_pull * sds->busiest->cpu_power,
-> > @@ -4069,19 +4097,6 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
-> >  		sds.busiest_load_per_task =
-> >  			min(sds.busiest_load_per_task, sds.avg_load);
-> > 
-> > -	/*
-> > -	 * We're trying to get all the cpus to the average_load, so we don't
-> > -	 * want to push ourselves above the average load, nor do we wish to
-> > -	 * reduce the max loaded cpu below the average load, as either of these
-> > -	 * actions would just result in more rebalancing later, and ping-pong
-> > -	 * tasks around. Thus we look for the minimum possible imbalance.
-> > -	 * Negative imbalances (*we* are more loaded than anyone else) will
-> > -	 * be counted as no imbalance for these purposes -- we can't fix that
-> > -	 * by pulling tasks to us. Be careful of negative numbers as they'll
-> > -	 * appear as very large values with unsigned longs.
-> > -	 */
-> > -	if (sds.max_load <= sds.busiest_load_per_task)
-> > -		goto out_balanced;
+> - I have read that nfs4 includes in the server the locking protocol, no
+>   need for separate lockd. But in my servers, it seems it is still running:
 > 
-> This is right.  This condition was treating most cases as balanced and
-> exit right here. However if this check is removed, we will have to
-> execute more code to detect/ascertain balanced case.
+> root      2198     2  0 Feb18 ?        00:00:00 [nfsiod]
+> root     23501     2  0 01:01 ?        00:00:00 [nfsd4]
+> root     23502     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23503     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23504     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23505     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23506     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23507     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23508     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23509     2  0 01:01 ?        00:00:00 [nfsd]
+> root     23500     2  0 01:01 ?        00:00:00 [lockd]
+> 
+>   Is there any problem with it ? I suppose (correct me if I'm wrong)
+>   that this kernel lockd will only serve for v2 or v3 mounts,
+>   that locking for client nfs4 mounts will go through nfsd4.
+>   Is that right ?
 
-To add, in update_sd_lb_stats() we are already doing this:
+No. The client NFSv4 traffic goes through the ordinary 'nfsd' daemons.
+There is no special locking manager for NFSv4, since POSIX locks are
+part of the ordinary protocol.
 
-               } else if (sgs.avg_load > sds->max_load &&
-                           (sgs.sum_nr_running > sgs.group_capacity ||
-                                sgs.group_imb)) {
+I don't think that the NFS server will switch off lockd even if you do
+specify that you only want to serve NFSv4.
 
-So we are already checking sum_nr_running > group_capacity to select the
-busiest group. So we are doing the equivalent of this balanced check
-much before.
+> - Why is there only 1 instance of v4 daemon ?
 
-thanks,
-suresh
+The 'nfsd4' thread above is actually a workqueue that is used for
+garbage-cleaning expired NFSv4 state. It isn't a server thread.
+
+> - Is there any page describing the advantages of v4 ? I will have to
+>   convince the department admin to activate v4 in his solaris boxen...;)
+
+One place to start is the NFSv4 design considerations. See
+          http://tools.ietf.org/html/rfc2624
+
+Cheers
+  Trond
 
