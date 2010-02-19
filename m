@@ -1,90 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412Ab0BSVyJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:54:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:60190 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754841Ab0BSVyG convert rfc822-to-8bit (ORCPT
+	id S1755631Ab0BSVyv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:54:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56013 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755326Ab0BSVyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:54:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,505,1262592000"; 
-   d="scan'208";a="493962678"
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-To: Matthew Garrett <mjg@redhat.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 19 Feb 2010 13:53:04 -0800
-Subject: RE: [E1000-devel] [PATCH v3 2/2] e1000e: Don't disable jumbo frames
- on	82573L due to eeprom contents
-Thread-Topic: [E1000-devel] [PATCH v3 2/2] e1000e: Don't disable jumbo
- frames on	82573L due to eeprom contents
-Thread-Index: AcqrRja7UXUHXLziTMelmodrzi5ttQGZqs2w
-Message-ID: <8DD2590731AB5D4C9DBF71A877482A9061394283@orsmsx509.amr.corp.intel.com>
-References: <1265912094-4705-1-git-send-email-mjg@redhat.com>
- <1265912094-4705-2-git-send-email-mjg@redhat.com>
-In-Reply-To: <1265912094-4705-2-git-send-email-mjg@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 19 Feb 2010 16:54:50 -0500
+Date: Fri, 19 Feb 2010 13:53:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rodolfo Giometti <giometti@linux.it>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Subject: Re: [PATCH 6/8] pps: serial clients support.
+Message-Id: <20100219135359.a5c195ea.akpm@linux-foundation.org>
+In-Reply-To: <1266313885-1195-7-git-send-email-giometti@linux.it>
+References: <1266313885-1195-1-git-send-email-giometti@linux.it>
+	<1266313885-1195-2-git-send-email-giometti@linux.it>
+	<1266313885-1195-3-git-send-email-giometti@linux.it>
+	<1266313885-1195-4-git-send-email-giometti@linux.it>
+	<1266313885-1195-5-git-send-email-giometti@linux.it>
+	<1266313885-1195-6-git-send-email-giometti@linux.it>
+	<1266313885-1195-7-git-send-email-giometti@linux.it>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 11, 2010 10:15 AM, Matthew Garrett wrote:
-> According to the 82573L errata, jumbo frames will work correctly if
-> ASPM 
-> is disabled. Since we disable ASPM on these devices, leave jumbo
-> frames 
-> enabled.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> ---
-> Updated to provide the right chip name
-> 
->  drivers/net/e1000e/82571.c |   11 ++---------
->  1 files changed, 2 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-> index 02d67d0..f26edf7 100644
-> --- a/drivers/net/e1000e/82571.c
-> +++ b/drivers/net/e1000e/82571.c
-> @@ -330,7 +330,6 @@ static s32 e1000_get_variants_82571(struct
->  	e1000_adapter *adapter) struct e1000_hw *hw = &adapter->hw;
->  	static int global_quad_port_a; /* global port a indication */
->  	struct pci_dev *pdev = adapter->pdev;
-> -	u16 eeprom_data = 0;
->  	int is_port_b = er32(STATUS) & E1000_STATUS_FUNC_1;
->  	s32 rc;
-> 
-> @@ -381,16 +380,10 @@ static s32 e1000_get_variants_82571(struct
->  		e1000_adapter *adapter) if (pdev->device ==
->  			E1000_DEV_ID_82571EB_SERDES_QUAD) adapter->flags &= ~FLAG_HAS_WOL;
->  		break;
-> -
->  	case e1000_82573:
->  		if (pdev->device == E1000_DEV_ID_82573L) {
-> -			if (e1000_read_nvm(&adapter->hw, NVM_INIT_3GIO_3, 1,
-> -				       &eeprom_data) < 0)
-> -				break;
-> -			if (!(eeprom_data & NVM_WORD1A_ASPM_MASK)) {
-> -				adapter->flags |= FLAG_HAS_JUMBO_FRAMES;
-> -				adapter->max_hw_frame_size = DEFAULT_JUMBO;
-> -			}
-> +			adapter->flags |= FLAG_HAS_JUMBO_FRAMES;
-> +			adapter->max_hw_frame_size = DEFAULT_JUMBO;
->  		}
->  		break;
->  	default:
+On Tue, 16 Feb 2010 10:51:23 +0100
+Rodolfo Giometti <giometti@linux.it> wrote:
 
-Actually, the driver only disables L1 ASPM, it does not disable L0s ASPM.  The erratum is unclear whether jumbo frames are not supported in L0s, L1 or both modes (the code suggests both modes must be disabled).  I will look into this further.
+> Adds support, by using the PPS line discipline, for the PPS sources
+> connected with the CD (Carrier Detect) pin of a serial port.
+> 
+> ...
+>
+> +static int (*n_tty_open)(struct tty_struct *tty);
+> +
+> +static int pps_tty_open(struct tty_struct *tty)
+> +{
+> +	struct pps_source_info info;
+> +	struct tty_driver *drv = tty->driver;
+> +	int index = tty->index + drv->name_base;
+> +	int ret;
+> +
+> +	info.owner = THIS_MODULE;
+> +	info.dev = NULL;
+> +	snprintf(info.name, PPS_MAX_NAME_LEN, "%s%d", drv->driver_name, index);
+> +	snprintf(info.path, PPS_MAX_NAME_LEN, "/dev/%s%d", drv->name, index);
+> +	info.mode = PPS_CAPTUREBOTH | \
+> +			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
+> +			PPS_CANWAIT | PPS_TSFMT_TSPEC;
+> +
+> +	ret = pps_register_source(&info, PPS_CAPTUREBOTH | \
+> +				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
+> +	if (ret < 0) {
+> +		pr_err("cannot register PPS source \"%s\"\n", info.path);
+> +		return ret;
+> +	}
+> +	tty->disc_data = (void *) ret;
+> +
+> +	/* Should open N_TTY ldisc too */
+> +	ret = n_tty_open(tty);
+> +	if (ret < 0)
+> +		pps_unregister_source((int) tty->disc_data);
+> +
+> +	pr_info("PPS source #%d \"%s\" added\n", ret, info.path);
+> +
+> +	return 0;
+> +}
 
-Thanks,
-Bruce.
+hm.  The n_tty_open/close layering is a bit grubby but I guess we don't
+have a need to create anything more comprehensive at this stage.
+
+A small stylistic thing: the code's a bit confusing at present because
+the names n_tty_open/n_tty_close are identical to the global functions
+over in n_tty.c.  A user of ctags will be tricked.  Also, the _way_ in
+which these function pointers are called:
+
+	ret = n_tty_open(tty);
+
+make it look like the code is calling
+drivers/char/n_tty.c:n_tty_open().  Except it isn't.
+
+So I think it's better to do it with
+
+	ret = (*n_tty_open)(tty);
+
+to avoid misleading the reader.
+
+And perhaps to rename these variables to avoid the duplication with the
+global functions.
+
+
