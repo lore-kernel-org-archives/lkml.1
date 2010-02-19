@@ -1,51 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517Ab0BSMC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 07:02:29 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:43104 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238Ab0BSMC2 convert rfc822-to-8bit (ORCPT
+	id S1752789Ab0BSMGF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 07:06:05 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43130 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751018Ab0BSMGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 07:02:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mPLYgvyOmg0hK5dGgXAQXytWtRBlbf8gv9w97dePeSXKFHsL8XRWvXJxPgv/7iWgZM
-         fEHnSNSxZZFZ3ygZ4dEWN1e5OVy7QdaFMlA4ZnboJEjoeSAhWwITO0URMt7wJs2DLKlH
-         eIneuNm6Ohc0GAhdZ9kju4yOUiU613/WVfkVw=
-MIME-Version: 1.0
-In-Reply-To: <628d1651002190357q1b17cf76o6585ce957d610ed8@mail.gmail.com>
-References: <628d1651002070324w424012eanda9392db26331905@mail.gmail.com>
-	 <b6fcc0a1002190344s75ecfcf6y625591a0fa8e9869@mail.gmail.com>
-	 <628d1651002190357q1b17cf76o6585ce957d610ed8@mail.gmail.com>
-Date: Fri, 19 Feb 2010 14:02:27 +0200
-Message-ID: <b6fcc0a1002190402y7aeef6bana21ad7d54a32777a@mail.gmail.com>
-Subject: Re: [PATCH] LSM: add static to security_ops variable
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: wzt wzt <wzt.wzt@gmail.com>
-Cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
-       eparis@parisplace.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 19 Feb 2010 07:06:01 -0500
+Date: Fri, 19 Feb 2010 12:07:30 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ari G. Entlich" <atrigent@ccs.neu.edu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add a new VT mode which is like VT_PROCESS but doesn't
+ require a VT_RELDISP ioctl call
+Message-ID: <20100219120730.4793ce0d@lxorguk.ukuu.org.uk>
+In-Reply-To: <28568671.141471266580824918.JavaMail.root@zimbra>
+References: <7662526.141431266580674036.JavaMail.root@zimbra>
+	<28568671.141471266580824918.JavaMail.root@zimbra>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 1:57 PM, wzt wzt <wzt.wzt@gmail.com> wrote:
-> Maybe, but The attackers will use a complicated way to find the
-> security_ops address, it's a barrier to attackers.
+> 1. VT_AUTO doesn't send signals to anything when a VT switch happens, precisely
+>    because VT_AUTO is supposed to be used in the case where there's nothing to
+>    send signals TO (i.e. the VT is managed by the kernel). The X server still
+>    needs to know about VT switches to turn input devices off and such.
 
-It's not a barrier, it's garbage. Once you know the adress security_ops
-ended up at, you simply write to it.
+Ok..
 
-> LSM is security framework,  we don't want the attackers can easily
-> to break it.
+> VT_ACKACQ, it wouldn't really make sense for there to be a new VT_ACKACQ value,
+> because VT_ACKACQ is something which gets passed to a VT_RELDISP, and VT_RELDISP
+> isn't needed at all in this new mode.
 
-LSM doesn't protect kernel from kernel.
+I don't want to change the existing values as they are somewhat visible
+to user space.
 
-> Just like the sys_call_table variable in kernel 2.4.x(global and
-> writeable), evil drivers can extern the variable,  then replace the
-> Sys_X functions.
+> I hope that clarifies things.
 
-Not that easily, but they still can.
+Yes. You could use the VT_EVENT facility for the switch monitoring but
+the asynchronous nature of the reporting probably isn't what is needed
+for input device switching etc.
+
+Looks fine to me - just bump the value and resubmit
