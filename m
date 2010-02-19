@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759Ab0BSRMz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:12:55 -0500
-Received: from kroah.org ([198.145.64.141]:57518 "EHLO coco.kroah.org"
+	id S1754689Ab0BSRAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:00:33 -0500
+Received: from kroah.org ([198.145.64.141]:57433 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754704Ab0BSRAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:34 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:40 2010
-Message-Id: <20100219163240.623130905@kvm.kroah.org>
+	id S1754544Ab0BSRAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:23 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:37 2010
+Message-Id: <20100219163236.975085483@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:29 -0800
+Date: Fri, 19 Feb 2010 08:29:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [36/93] NFS: Fix a umount race
+       Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>
+Subject: [24/93] CPUFREQ: Fix use after free of struct powernow_k8_data
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,71 +25,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Thomas Renninger <trenn@suse.de>
 
-commit 387c149b54b4321cbc790dadbd4f8eedb5a90468 upstream.
+commit 557a701c16553b0b691dbb64ef30361115a80f64 upstream.
 
-Ensure that we unregister the bdi before kill_anon_super() calls
-ida_remove() on our device name.
+Easy fix for a regression introduced in 2.6.31.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+On managed CPUs the cpufreq.c core will call driver->exit(cpu) on the
+managed cpus and powernow_k8 will free the core's data.
+
+Later driver->get(cpu) function might get called trying to read out the
+current freq of a managed cpu and the NULL pointer check does not work on
+the freed object -> better set it to NULL.
+
+->get() is unsigned and must return 0 as invalid frequency.
+
+Reference:
+http://bugzilla.kernel.org/show_bug.cgi?id=14391
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Tested-by: Michal Schmidt <mschmidt@redhat.com>
+Signed-off-by: Dave Jones <davej@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/super.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -241,6 +241,7 @@ static int  nfs_show_stats(struct seq_fi
- static int nfs_get_sb(struct file_system_type *, int, const char *, void *, struct vfsmount *);
- static int nfs_xdev_get_sb(struct file_system_type *fs_type,
- 		int flags, const char *dev_name, void *raw_data, struct vfsmount *mnt);
-+static void nfs_put_super(struct super_block *);
- static void nfs_kill_super(struct super_block *);
- static int nfs_remount(struct super_block *sb, int *flags, char *raw_data);
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1351,6 +1351,7 @@ static int __devexit powernowk8_cpu_exit
  
-@@ -264,6 +265,7 @@ static const struct super_operations nfs
- 	.alloc_inode	= nfs_alloc_inode,
- 	.destroy_inode	= nfs_destroy_inode,
- 	.write_inode	= nfs_write_inode,
-+	.put_super	= nfs_put_super,
- 	.statfs		= nfs_statfs,
- 	.clear_inode	= nfs_clear_inode,
- 	.umount_begin	= nfs_umount_begin,
-@@ -333,6 +335,7 @@ static const struct super_operations nfs
- 	.alloc_inode	= nfs_alloc_inode,
- 	.destroy_inode	= nfs_destroy_inode,
- 	.write_inode	= nfs_write_inode,
-+	.put_super	= nfs_put_super,
- 	.statfs		= nfs_statfs,
- 	.clear_inode	= nfs4_clear_inode,
- 	.umount_begin	= nfs_umount_begin,
-@@ -2196,6 +2199,17 @@ error_splat_super:
+ 	kfree(data->powernow_table);
+ 	kfree(data);
++	per_cpu(powernow_data, pol->cpu) = NULL;
+ 
+ 	return 0;
  }
+@@ -1370,7 +1371,7 @@ static unsigned int powernowk8_get(unsig
+ 	int err;
  
- /*
-+ * Ensure that we unregister the bdi before kill_anon_super
-+ * releases the device name
-+ */
-+static void nfs_put_super(struct super_block *s)
-+{
-+	struct nfs_server *server = NFS_SB(s);
-+
-+	bdi_unregister(&server->backing_dev_info);
-+}
-+
-+/*
-  * Destroy an NFS2/3 superblock
-  */
- static void nfs_kill_super(struct super_block *s)
-@@ -2203,7 +2217,6 @@ static void nfs_kill_super(struct super_
- 	struct nfs_server *server = NFS_SB(s);
+ 	if (!data)
+-		return -EINVAL;
++		return 0;
  
- 	kill_anon_super(s);
--	bdi_unregister(&server->backing_dev_info);
- 	nfs_fscache_release_super_cookie(s);
- 	nfs_free_server(server);
- }
+ 	smp_call_function_single(cpu, query_values_on_cpu, &err, true);
+ 	if (err)
 
 
