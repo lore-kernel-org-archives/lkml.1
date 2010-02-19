@@ -1,186 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740Ab0BSAQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:16:19 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37233 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537Ab0BSAQR (ORCPT
+	id S1752750Ab0BSARh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:17:37 -0500
+Received: from mga05.intel.com ([192.55.52.89]:4440 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751609Ab0BSARg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:16:17 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 19 Feb 2010 09:12:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
+	Thu, 18 Feb 2010 19:17:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,500,1262592000"; 
+   d="scan'208,223";a="541935456"
+Message-ID: <4B7DD89F.4050003@linux.intel.com>
+Date: Thu, 18 Feb 2010 16:17:35 -0800
+From: "H. Peter Anvin" <hpa@linux.intel.com>
+Organization: Intel Open Source Technology Center
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@linux.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 01/12] mm,migration: Take a reference to the anon_vma
- before migrating
-Message-Id: <20100219091244.2116db73.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1266516162-14154-2-git-send-email-mel@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
-	<1266516162-14154-2-git-send-email-mel@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Christoph Lameter <cl@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] mm: Make copy_from_user() in migrate.c statically predictable
+References: <1266533033-24457-1-git-send-email-hpa@linux.intel.com> <alpine.LFD.2.00.1002181447080.4141@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002181447080.4141@localhost.localdomain>
+Content-Type: multipart/mixed;
+ boundary="------------050706080602000605020904"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Feb 2010 18:02:31 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+This is a multi-part message in MIME format.
+--------------050706080602000605020904
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> rmap_walk_anon() does not use page_lock_anon_vma() for looking up and
-> locking an anon_vma and it does not appear to have sufficient locking to
-> ensure the anon_vma does not disappear from under it.
+On 02/18/2010 03:02 PM, Linus Torvalds wrote:
 > 
-> This patch copies an approach used by KSM to take a reference on the
-> anon_vma while pages are being migrated. This should prevent rmap_walk()
-> running into nasty surprises later because anon_vma has been freed.
+> Hmm. When making simplifications like this, I would really suggest you 
+> also move the declaration of the variable itself into the block where it 
+> is now used, rather than leaving it be function-wide.
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
-I have no objection to this direction. But after this patch, you can remove
-rcu_read_lock()/unlock() in unmap_and_move().
-ruc_read_lock() is for guarding against anon_vma replacement.
-
-Thanks,
--Kame
-
-
-
-> ---
->  include/linux/rmap.h |   23 +++++++++++++++++++++++
->  mm/migrate.c         |   12 ++++++++++++
->  mm/rmap.c            |   10 +++++-----
->  3 files changed, 40 insertions(+), 5 deletions(-)
+> Yes, it's used in the final condition of the for-loop, but that whole loop 
+> is just screwy. The 'err' handling is insane. Sometimes 'err' is a return 
+> value form copy_to/from_user, and sometimes it's a errno. The two are 
+> _not_ the same thing, they don't even have the same type!
 > 
-> diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> index b019ae6..6b5a1a9 100644
-> --- a/include/linux/rmap.h
-> +++ b/include/linux/rmap.h
-> @@ -29,6 +29,9 @@ struct anon_vma {
->  #ifdef CONFIG_KSM
->  	atomic_t ksm_refcount;
->  #endif
-> +#ifdef CONFIG_MIGRATION
-> +	atomic_t migrate_refcount;
-> +#endif
->  	/*
->  	 * NOTE: the LSB of the head.next is set by
->  	 * mm_take_all_locks() _after_ taking the above lock. So the
-> @@ -61,6 +64,26 @@ static inline int ksm_refcount(struct anon_vma *anon_vma)
->  	return 0;
->  }
->  #endif /* CONFIG_KSM */
-> +#ifdef CONFIG_MIGRATION
-> +static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> +{
-> +	atomic_set(&anon_vma->migrate_refcount, 0);
-> +}
-> +
-> +static inline int migrate_refcount(struct anon_vma *anon_vma)
-> +{
-> +	return atomic_read(&anon_vma->migrate_refcount);
-> +}
-> +#else
-> +static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> +{
-> +}
-> +
-> +static inline int migrate_refcount(struct anon_vma *anon_vma)
-> +{
-> +	return 0;
-> +}
-> +#endif /* CONFIG_MIGRATE */
->  
->  static inline struct anon_vma *page_anon_vma(struct page *page)
->  {
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index 9a0db5b..63addfa 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -551,6 +551,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
->  	int rcu_locked = 0;
->  	int charge = 0;
->  	struct mem_cgroup *mem = NULL;
-> +	struct anon_vma *anon_vma = NULL;
->  
->  	if (!newpage)
->  		return -ENOMEM;
-> @@ -607,6 +608,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
->  	if (PageAnon(page)) {
->  		rcu_read_lock();
->  		rcu_locked = 1;
-> +		anon_vma = page_anon_vma(page);
-> +		atomic_inc(&anon_vma->migrate_refcount);
->  	}
->  
->  	/*
-> @@ -646,6 +649,15 @@ skip_unmap:
->  	if (rc)
->  		remove_migration_ptes(page, page);
->  rcu_unlock:
-> +
-> +	/* Drop an anon_vma reference if we took one */
-> +	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-> +		int empty = list_empty(&anon_vma->head);
-> +		spin_unlock(&anon_vma->lock);
-> +		if (empty)
-> +			anon_vma_free(anon_vma);
-> +	}
-> +
->  	if (rcu_locked)
->  		rcu_read_unlock();
->  uncharge:
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index 278cd27..11ba74a 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -172,7 +172,8 @@ void anon_vma_unlink(struct vm_area_struct *vma)
->  	list_del(&vma->anon_vma_node);
->  
->  	/* We must garbage collect the anon_vma if it's empty */
-> -	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma);
-> +	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
-> +					!migrate_refcount(anon_vma);
->  	spin_unlock(&anon_vma->lock);
->  
->  	if (empty)
-> @@ -185,6 +186,7 @@ static void anon_vma_ctor(void *data)
->  
->  	spin_lock_init(&anon_vma->lock);
->  	ksm_refcount_init(anon_vma);
-> +	migrate_refcount_init(anon_vma);
->  	INIT_LIST_HEAD(&anon_vma->head);
->  }
->  
-> @@ -1228,10 +1230,8 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
->  	/*
->  	 * Note: remove_migration_ptes() cannot use page_lock_anon_vma()
->  	 * because that depends on page_mapped(); but not all its usages
-> -	 * are holding mmap_sem, which also gave the necessary guarantee
-> -	 * (that this anon_vma's slab has not already been destroyed).
-> -	 * This needs to be reviewed later: avoiding page_lock_anon_vma()
-> -	 * is risky, and currently limits the usefulness of rmap_walk().
-> +	 * are holding mmap_sem. Users without mmap_sem are required to
-> +	 * take a reference count to prevent the anon_vma disappearing
->  	 */
->  	anon_vma = page_anon_vma(page);
->  	if (!anon_vma)
-> -- 
-> 1.6.5
+> And 'i' is totally useless too.
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> So that whole loop should be rewritten.
 > 
 
+OK, I was trying to make the minimal set of changes given the late -rc
+status.
+
+> I don't even have page migration enabled, so I haven't even compile-tested 
+> this, but wouldn't something like this work? It's smaller, gets rid of two 
+> pointless variables, and looks simpler to me. Hmm?
+
+The code definitely looks cleaner, and it's a much more standard
+"chunked data loop" form.  Weirdly enough, though, gcc 4.4.2 can't
+figure out the copy_from_user() that way... despite having the same
+min() structure as my code.
+
+However, if I change it to:
+
+		chunk_nr = nr_pages;
+		if (chunk_nr > DO_PAGES_STAT_CHUNK_NR)
+			chunk_nr = DO_PAGES_STAT_CHUNK_NR;
+
+... then it works!
+
+Overall, it looks like gcc is rather fragile with regards to its ability
+to constant-propagate.  It's probably no coincidence that chunked loops
+is the place where we really have problems with this kind of stuff.
+
+Updated patch, which compile-tests for me, attached.
+
+	-hpa
+
+--------------050706080602000605020904
+Content-Type: text/x-patch;
+ name="0001-mm-Make-copy_from_user-in-migrate.c-statically-predi.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+ filename*0="0001-mm-Make-copy_from_user-in-migrate.c-statically-predi.pa";
+ filename*1="tch"
+
+>From 90585838c29ef62fd80e776d0985c40bbffd852a Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Thu, 18 Feb 2010 16:13:40 -0800
+Subject: [PATCH] mm: Make copy_from_user() in migrate.c statically predictable
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+x86-32 has had a static test for copy_on_user() overflow for a while.
+This test currently fails in mm/migrate.c resulting in an
+allyesconfig/allmodconfig build failure on x86-32:
+
+In function ‘copy_from_user’,
+    inlined from ‘do_pages_stat’ at
+    /home/hpa/kernel/git/mm/migrate.c:1012:
+/home/hpa/kernel/git/arch/x86/include/asm/uaccess_32.h:212: error:
+    call to ‘copy_from_user_overflow’ declared
+
+Make the logic more explicit and therefore easier for gcc to
+understand.
+
+v2: rewrite the loop entirely using a more normal structure for a
+    chunked-data loop (Linus Torvalds)
+
+Reported-by: Len Brown <lenb@kernel.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Arjan van de Ven <arjan@linux.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Rik van Riel <riel@redhat.com>
+---
+ mm/migrate.c |   36 +++++++++++++++---------------------
+ 1 files changed, 15 insertions(+), 21 deletions(-)
+
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 9a0db5b..880bd59 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1002,33 +1002,27 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
+ #define DO_PAGES_STAT_CHUNK_NR 16
+ 	const void __user *chunk_pages[DO_PAGES_STAT_CHUNK_NR];
+ 	int chunk_status[DO_PAGES_STAT_CHUNK_NR];
+-	unsigned long i, chunk_nr = DO_PAGES_STAT_CHUNK_NR;
+-	int err;
+ 
+-	for (i = 0; i < nr_pages; i += chunk_nr) {
+-		if (chunk_nr > nr_pages - i)
+-			chunk_nr = nr_pages - i;
++	while (nr_pages) {
++		unsigned long chunk_nr;
+ 
+-		err = copy_from_user(chunk_pages, &pages[i],
+-				     chunk_nr * sizeof(*chunk_pages));
+-		if (err) {
+-			err = -EFAULT;
+-			goto out;
+-		}
++		chunk_nr = nr_pages;
++		if (chunk_nr > DO_PAGES_STAT_CHUNK_NR)
++			chunk_nr = DO_PAGES_STAT_CHUNK_NR;
++
++		if (copy_from_user(chunk_pages, pages, chunk_nr * sizeof(*chunk_pages)))
++			break;
+ 
+ 		do_pages_stat_array(mm, chunk_nr, chunk_pages, chunk_status);
+ 
+-		err = copy_to_user(&status[i], chunk_status,
+-				   chunk_nr * sizeof(*chunk_status));
+-		if (err) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-	}
+-	err = 0;
++		if (copy_to_user(status, chunk_status, chunk_nr * sizeof(*status)))
++			break;
+ 
+-out:
+-	return err;
++		pages += chunk_nr;
++		status += chunk_nr;
++		nr_pages -= chunk_nr;
++	}
++	return nr_pages ? -EFAULT : 0;
+ }
+ 
+ /*
+-- 
+1.6.5.2
+
+
+--------------050706080602000605020904--
