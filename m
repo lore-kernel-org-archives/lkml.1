@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322Ab0BSRFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:05:30 -0500
-Received: from kroah.org ([198.145.64.141]:57805 "EHLO coco.kroah.org"
+	id S1755428Ab0BSRGB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:06:01 -0500
+Received: from kroah.org ([198.145.64.141]:57774 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755057Ab0BSRBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:01:11 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:53 2010
-Message-Id: <20100219163253.292095747@kvm.kroah.org>
+	id S1755019Ab0BSRBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:01:08 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:52 2010
+Message-Id: <20100219163252.087068581@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:30:14 -0800
+Date: Fri, 19 Feb 2010 08:30:10 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [81/93] rtl8187: Add new device ID
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [77/93] sysfs: sysfs_sd_setattr set iattrs unconditionally
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,29 +25,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jelle Martijn Kok <jmkok@solutionsradio.com>
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-commit 174b24963eaf96dc5e093502ee09639aed13eb2f upstream.
+commit 7c0ff870d1ed287504a61ed865f3d728c757436b upstream.
 
-Add new RTL8187B device.
+There is currently a bug in sysfs_sd_setattr inherited from
+sysfs_setattr in 2.6.32 where the first time we set the attributes
+on a sysfs file we allocate backing store but do not set the
+backing store attributes.  Resulting in overly restrictive
+permissions on sysfs files.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+The fix is to simply modify the code so that it always executes
+when we update the sysfs attributes, as we did in 2.6.31 and earlier.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Tested-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl818x/rtl8187_dev.c |    1 +
- 1 file changed, 1 insertion(+)
+ fs/sysfs/inode.c |   43 +++++++++++++++++++++----------------------
+ 1 file changed, 21 insertions(+), 22 deletions(-)
 
---- a/drivers/net/wireless/rtl818x/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl818x/rtl8187_dev.c
-@@ -65,6 +65,7 @@ static struct usb_device_id rtl8187_tabl
- 	/* Sitecom */
- 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
- 	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
-+	{USB_DEVICE(0x0df6, 0x0029), .driver_info = DEVICE_RTL8187B},
- 	/* Sphairon Access Systems GmbH */
- 	{USB_DEVICE(0x114B, 0x0150), .driver_info = DEVICE_RTL8187},
- 	/* Dick Smith Electronics */
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -94,30 +94,29 @@ int sysfs_setattr(struct dentry * dentry
+ 		if (!sd_attrs)
+ 			return -ENOMEM;
+ 		sd->s_iattr = sd_attrs;
+-	} else {
+-		/* attributes were changed at least once in past */
+-		iattrs = &sd_attrs->ia_iattr;
++	}
++	/* attributes were changed at least once in past */
++	iattrs = &sd_attrs->ia_iattr;
+ 
+-		if (ia_valid & ATTR_UID)
+-			iattrs->ia_uid = iattr->ia_uid;
+-		if (ia_valid & ATTR_GID)
+-			iattrs->ia_gid = iattr->ia_gid;
+-		if (ia_valid & ATTR_ATIME)
+-			iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
+-					inode->i_sb->s_time_gran);
+-		if (ia_valid & ATTR_MTIME)
+-			iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
+-					inode->i_sb->s_time_gran);
+-		if (ia_valid & ATTR_CTIME)
+-			iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
+-					inode->i_sb->s_time_gran);
+-		if (ia_valid & ATTR_MODE) {
+-			umode_t mode = iattr->ia_mode;
++	if (ia_valid & ATTR_UID)
++		iattrs->ia_uid = iattr->ia_uid;
++	if (ia_valid & ATTR_GID)
++		iattrs->ia_gid = iattr->ia_gid;
++	if (ia_valid & ATTR_ATIME)
++		iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
++			inode->i_sb->s_time_gran);
++	if (ia_valid & ATTR_MTIME)
++		iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
++			inode->i_sb->s_time_gran);
++	if (ia_valid & ATTR_CTIME)
++		iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
++			inode->i_sb->s_time_gran);
++	if (ia_valid & ATTR_MODE) {
++		umode_t mode = iattr->ia_mode;
+ 
+-			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+-				mode &= ~S_ISGID;
+-			iattrs->ia_mode = sd->s_mode = mode;
+-		}
++		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
++			mode &= ~S_ISGID;
++		iattrs->ia_mode = sd->s_mode = mode;
+ 	}
+ 	return error;
+ }
 
 
