@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667Ab0BSRJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:09:58 -0500
-Received: from kroah.org ([198.145.64.141]:57629 "EHLO coco.kroah.org"
+	id S1754862Ab0BSRAs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:00:48 -0500
+Received: from kroah.org ([198.145.64.141]:57550 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754848Ab0BSRAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:46 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:44 2010
-Message-Id: <20100219163244.780161271@kvm.kroah.org>
+	id S1754741Ab0BSRAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:38 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:42 2010
+Message-Id: <20100219163241.855102408@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:43 -0800
+Date: Fri, 19 Feb 2010 08:29:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [50/93] netfilter: nf_conntrack: fix hash resizing with namespaces
+       Francesco Lavra <francescolavra@interfree.it>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [40/93] V4L/DVB: dvb-core: fix initialization of feeds list in demux filter
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,424 +26,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Francesco Lavra <francescolavra@interfree.it>
 
-commit d696c7bdaa55e2208e56c6f98e6bc1599f34286d upstream.
+commit 691c9ae099b9bcb5c27125af00a4a90120977458 upstream.
 
-As noticed by Jon Masters <jonathan@jonmasters.org>, the conntrack hash
-size is global and not per namespace, but modifiable at runtime through
-/sys/module/nf_conntrack/hashsize. Changing the hash size will only
-resize the hash in the current namespace however, so other namespaces
-will use an invalid hash size. This can cause crashes when enlarging
-the hashsize, or false negative lookups when shrinking it.
+A DVB demultiplexer device can be used to set up either a PES filter or
+a section filter. In the former case, the ts field of the feed union of
+struct dmxdev_filter is used, in the latter case the sec field of the
+same union is used.
+The ts field is a struct list_head, and is currently initialized in the
+open() method of the demux device. When for a given demuxer a section
+filter is set up, the sec field is played with, thus if a PES filter
+needs to be set up after that the ts field will be corrupted, causing a
+kernel oops.
+This fix moves the list head initialization to
+dvb_dmxdev_pes_filter_set(), so that the ts field is properly
+initialized every time a PES filter is set up.
 
-Move the hash size into the per-namespace data and only use the global
-hash size to initialize the per-namespace value when instanciating a
-new namespace. Additionally restrict hash resizing to init_net for
-now as other namespaces are not handled currently.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Francesco Lavra <francescolavra@interfree.it>
+Reviewed-by: Andy Walls <awalls@radix.net>
+Tested-by: hermann pitton <hermann-pitton@arcor.de>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/netns/conntrack.h                         |    1 
- include/net/netns/ipv4.h                              |    1 
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c        |    2 
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |    4 -
- net/ipv4/netfilter/nf_nat_core.c                      |   22 +++----
- net/netfilter/nf_conntrack_core.c                     |   54 +++++++++---------
- net/netfilter/nf_conntrack_expect.c                   |    2 
- net/netfilter/nf_conntrack_helper.c                   |    2 
- net/netfilter/nf_conntrack_netlink.c                  |    2 
- net/netfilter/nf_conntrack_standalone.c               |    7 +-
- 10 files changed, 50 insertions(+), 47 deletions(-)
+ drivers/media/dvb/dvb-core/dmxdev.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/net/netns/conntrack.h
-+++ b/include/net/netns/conntrack.h
-@@ -11,6 +11,7 @@ struct nf_conntrack_ecache;
- struct netns_ct {
- 	atomic_t		count;
- 	unsigned int		expect_count;
-+	unsigned int		htable_size;
- 	struct kmem_cache	*nf_conntrack_cachep;
- 	struct hlist_nulls_head	*hash;
- 	struct hlist_head	*expect_hash;
---- a/include/net/netns/ipv4.h
-+++ b/include/net/netns/ipv4.h
-@@ -40,6 +40,7 @@ struct netns_ipv4 {
- 	struct xt_table		*iptable_security;
- 	struct xt_table		*nat_table;
- 	struct hlist_head	*nat_bysource;
-+	unsigned int		nat_htable_size;
- 	int			nat_vmalloced;
- #endif
+--- a/drivers/media/dvb/dvb-core/dmxdev.c
++++ b/drivers/media/dvb/dvb-core/dmxdev.c
+@@ -761,7 +761,6 @@ static int dvb_demux_open(struct inode *
+ 	dvb_ringbuffer_init(&dmxdevfilter->buffer, NULL, 8192);
+ 	dmxdevfilter->type = DMXDEV_TYPE_NONE;
+ 	dvb_dmxdev_filter_state_set(dmxdevfilter, DMXDEV_STATE_ALLOCATED);
+-	INIT_LIST_HEAD(&dmxdevfilter->feed.ts);
+ 	init_timer(&dmxdevfilter->timer);
  
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -213,7 +213,7 @@ static ctl_table ip_ct_sysctl_table[] =
- 	{
- 		.ctl_name	= NET_IPV4_NF_CONNTRACK_BUCKETS,
- 		.procname	= "ip_conntrack_buckets",
--		.data		= &nf_conntrack_htable_size,
-+		.data		= &init_net.ct.htable_size,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0444,
- 		.proc_handler	= proc_dointvec,
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c
-@@ -32,7 +32,7 @@ static struct hlist_nulls_node *ct_get_f
- 	struct hlist_nulls_node *n;
+ 	dvbdev->users++;
+@@ -887,6 +886,7 @@ static int dvb_dmxdev_pes_filter_set(str
+ 	dmxdevfilter->type = DMXDEV_TYPE_PES;
+ 	memcpy(&dmxdevfilter->params, params,
+ 	       sizeof(struct dmx_pes_filter_params));
++	INIT_LIST_HEAD(&dmxdevfilter->feed.ts);
  
- 	for (st->bucket = 0;
--	     st->bucket < nf_conntrack_htable_size;
-+	     st->bucket < net->ct.htable_size;
- 	     st->bucket++) {
- 		n = rcu_dereference(net->ct.hash[st->bucket].first);
- 		if (!is_a_nulls(n))
-@@ -50,7 +50,7 @@ static struct hlist_nulls_node *ct_get_n
- 	head = rcu_dereference(head->next);
- 	while (is_a_nulls(head)) {
- 		if (likely(get_nulls_value(head) == st->bucket)) {
--			if (++st->bucket >= nf_conntrack_htable_size)
-+			if (++st->bucket >= net->ct.htable_size)
- 				return NULL;
- 		}
- 		head = rcu_dereference(net->ct.hash[st->bucket].first);
---- a/net/ipv4/netfilter/nf_nat_core.c
-+++ b/net/ipv4/netfilter/nf_nat_core.c
-@@ -35,9 +35,6 @@ static DEFINE_SPINLOCK(nf_nat_lock);
- 
- static struct nf_conntrack_l3proto *l3proto __read_mostly;
- 
--/* Calculated at init based on memory size */
--static unsigned int nf_nat_htable_size __read_mostly;
--
- #define MAX_IP_NAT_PROTO 256
- static const struct nf_nat_protocol *nf_nat_protos[MAX_IP_NAT_PROTO]
- 						__read_mostly;
-@@ -72,7 +69,7 @@ EXPORT_SYMBOL_GPL(nf_nat_proto_put);
- 
- /* We keep an extra hash for each conntrack, for fast searching. */
- static inline unsigned int
--hash_by_src(const struct nf_conntrack_tuple *tuple)
-+hash_by_src(const struct net *net, const struct nf_conntrack_tuple *tuple)
- {
- 	unsigned int hash;
- 
-@@ -80,7 +77,7 @@ hash_by_src(const struct nf_conntrack_tu
- 	hash = jhash_3words((__force u32)tuple->src.u3.ip,
- 			    (__force u32)tuple->src.u.all,
- 			    tuple->dst.protonum, 0);
--	return ((u64)hash * nf_nat_htable_size) >> 32;
-+	return ((u64)hash * net->ipv4.nat_htable_size) >> 32;
- }
- 
- /* Is this tuple already taken? (not by us) */
-@@ -147,7 +144,7 @@ find_appropriate_src(struct net *net,
- 		     struct nf_conntrack_tuple *result,
- 		     const struct nf_nat_range *range)
- {
--	unsigned int h = hash_by_src(tuple);
-+	unsigned int h = hash_by_src(net, tuple);
- 	const struct nf_conn_nat *nat;
- 	const struct nf_conn *ct;
- 	const struct hlist_node *n;
-@@ -330,7 +327,7 @@ nf_nat_setup_info(struct nf_conn *ct,
- 	if (have_to_hash) {
- 		unsigned int srchash;
- 
--		srchash = hash_by_src(&ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
-+		srchash = hash_by_src(net, &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
- 		spin_lock_bh(&nf_nat_lock);
- 		/* nf_conntrack_alter_reply might re-allocate exntension aera */
- 		nat = nfct_nat(ct);
-@@ -679,8 +676,10 @@ nfnetlink_parse_nat_setup(struct nf_conn
- 
- static int __net_init nf_nat_net_init(struct net *net)
- {
--	net->ipv4.nat_bysource = nf_ct_alloc_hashtable(&nf_nat_htable_size,
--						      &net->ipv4.nat_vmalloced, 0);
-+	/* Leave them the same for the moment. */
-+	net->ipv4.nat_htable_size = net->ct.htable_size;
-+	net->ipv4.nat_bysource = nf_ct_alloc_hashtable(&net->ipv4.nat_htable_size,
-+						       &net->ipv4.nat_vmalloced, 0);
- 	if (!net->ipv4.nat_bysource)
- 		return -ENOMEM;
- 	return 0;
-@@ -703,7 +702,7 @@ static void __net_exit nf_nat_net_exit(s
- 	nf_ct_iterate_cleanup(net, &clean_nat, NULL);
- 	synchronize_rcu();
- 	nf_ct_free_hashtable(net->ipv4.nat_bysource, net->ipv4.nat_vmalloced,
--			     nf_nat_htable_size);
-+			     net->ipv4.nat_htable_size);
- }
- 
- static struct pernet_operations nf_nat_net_ops = {
-@@ -724,9 +723,6 @@ static int __init nf_nat_init(void)
- 		return ret;
- 	}
- 
--	/* Leave them the same for the moment. */
--	nf_nat_htable_size = nf_conntrack_htable_size;
--
- 	ret = register_pernet_subsys(&nf_nat_net_ops);
- 	if (ret < 0)
- 		goto cleanup_extend;
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -30,6 +30,7 @@
- #include <linux/netdevice.h>
- #include <linux/socket.h>
- #include <linux/mm.h>
-+#include <linux/nsproxy.h>
- #include <linux/rculist_nulls.h>
- 
- #include <net/netfilter/nf_conntrack.h>
-@@ -84,9 +85,10 @@ static u_int32_t __hash_conntrack(const
- 	return ((u64)h * size) >> 32;
- }
- 
--static inline u_int32_t hash_conntrack(const struct nf_conntrack_tuple *tuple)
-+static inline u_int32_t hash_conntrack(const struct net *net,
-+				       const struct nf_conntrack_tuple *tuple)
- {
--	return __hash_conntrack(tuple, nf_conntrack_htable_size,
-+	return __hash_conntrack(tuple, net->ct.htable_size,
- 				nf_conntrack_hash_rnd);
- }
- 
-@@ -294,7 +296,7 @@ __nf_conntrack_find(struct net *net, con
- {
- 	struct nf_conntrack_tuple_hash *h;
- 	struct hlist_nulls_node *n;
--	unsigned int hash = hash_conntrack(tuple);
-+	unsigned int hash = hash_conntrack(net, tuple);
- 
- 	/* Disable BHs the entire time since we normally need to disable them
- 	 * at least once for the stats anyway.
-@@ -364,10 +366,11 @@ static void __nf_conntrack_hash_insert(s
- 
- void nf_conntrack_hash_insert(struct nf_conn *ct)
- {
-+	struct net *net = nf_ct_net(ct);
- 	unsigned int hash, repl_hash;
- 
--	hash = hash_conntrack(&ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
--	repl_hash = hash_conntrack(&ct->tuplehash[IP_CT_DIR_REPLY].tuple);
-+	hash = hash_conntrack(net, &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
-+	repl_hash = hash_conntrack(net, &ct->tuplehash[IP_CT_DIR_REPLY].tuple);
- 
- 	__nf_conntrack_hash_insert(ct, hash, repl_hash);
- }
-@@ -395,8 +398,8 @@ __nf_conntrack_confirm(struct sk_buff *s
- 	if (CTINFO2DIR(ctinfo) != IP_CT_DIR_ORIGINAL)
- 		return NF_ACCEPT;
- 
--	hash = hash_conntrack(&ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
--	repl_hash = hash_conntrack(&ct->tuplehash[IP_CT_DIR_REPLY].tuple);
-+	hash = hash_conntrack(net, &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
-+	repl_hash = hash_conntrack(net, &ct->tuplehash[IP_CT_DIR_REPLY].tuple);
- 
- 	/* We're not in hash table, and we refuse to set up related
- 	   connections for unconfirmed conns.  But packet copies and
-@@ -466,7 +469,7 @@ nf_conntrack_tuple_taken(const struct nf
- 	struct net *net = nf_ct_net(ignored_conntrack);
- 	struct nf_conntrack_tuple_hash *h;
- 	struct hlist_nulls_node *n;
--	unsigned int hash = hash_conntrack(tuple);
-+	unsigned int hash = hash_conntrack(net, tuple);
- 
- 	/* Disable BHs the entire time since we need to disable them at
- 	 * least once for the stats anyway.
-@@ -501,7 +504,7 @@ static noinline int early_drop(struct ne
- 	int dropped = 0;
- 
- 	rcu_read_lock();
--	for (i = 0; i < nf_conntrack_htable_size; i++) {
-+	for (i = 0; i < net->ct.htable_size; i++) {
- 		hlist_nulls_for_each_entry_rcu(h, n, &net->ct.hash[hash],
- 					 hnnode) {
- 			tmp = nf_ct_tuplehash_to_ctrack(h);
-@@ -515,7 +518,8 @@ static noinline int early_drop(struct ne
- 			ct = NULL;
- 		if (ct || cnt >= NF_CT_EVICTION_RANGE)
- 			break;
--		hash = (hash + 1) % nf_conntrack_htable_size;
-+
-+		hash = (hash + 1) % net->ct.htable_size;
- 	}
- 	rcu_read_unlock();
- 
-@@ -549,7 +553,7 @@ struct nf_conn *nf_conntrack_alloc(struc
- 
- 	if (nf_conntrack_max &&
- 	    unlikely(atomic_read(&net->ct.count) > nf_conntrack_max)) {
--		unsigned int hash = hash_conntrack(orig);
-+		unsigned int hash = hash_conntrack(net, orig);
- 		if (!early_drop(net, hash)) {
- 			atomic_dec(&net->ct.count);
- 			if (net_ratelimit())
-@@ -1006,7 +1010,7 @@ get_next_corpse(struct net *net, int (*i
- 	struct hlist_nulls_node *n;
- 
- 	spin_lock_bh(&nf_conntrack_lock);
--	for (; *bucket < nf_conntrack_htable_size; (*bucket)++) {
-+	for (; *bucket < net->ct.htable_size; (*bucket)++) {
- 		hlist_nulls_for_each_entry(h, n, &net->ct.hash[*bucket], hnnode) {
- 			ct = nf_ct_tuplehash_to_ctrack(h);
- 			if (iter(ct, data))
-@@ -1124,7 +1128,7 @@ static void nf_conntrack_cleanup_net(str
- 	}
- 
- 	nf_ct_free_hashtable(net->ct.hash, net->ct.hash_vmalloc,
--			     nf_conntrack_htable_size);
-+			     net->ct.htable_size);
- 	nf_conntrack_ecache_fini(net);
- 	nf_conntrack_acct_fini(net);
- 	nf_conntrack_expect_fini(net);
-@@ -1184,10 +1188,12 @@ int nf_conntrack_set_hashsize(const char
- {
- 	int i, bucket, vmalloced, old_vmalloced;
- 	unsigned int hashsize, old_size;
--	int rnd;
- 	struct hlist_nulls_head *hash, *old_hash;
- 	struct nf_conntrack_tuple_hash *h;
- 
-+	if (current->nsproxy->net_ns != &init_net)
-+		return -EOPNOTSUPP;
-+
- 	/* On boot, we can set this without any fancy locking. */
- 	if (!nf_conntrack_htable_size)
- 		return param_set_uint(val, kp);
-@@ -1200,33 +1206,29 @@ int nf_conntrack_set_hashsize(const char
- 	if (!hash)
- 		return -ENOMEM;
- 
--	/* We have to rehahs for the new table anyway, so we also can
--	 * use a newrandom seed */
--	get_random_bytes(&rnd, sizeof(rnd));
--
- 	/* Lookups in the old hash might happen in parallel, which means we
- 	 * might get false negatives during connection lookup. New connections
- 	 * created because of a false negative won't make it into the hash
- 	 * though since that required taking the lock.
- 	 */
- 	spin_lock_bh(&nf_conntrack_lock);
--	for (i = 0; i < nf_conntrack_htable_size; i++) {
-+	for (i = 0; i < init_net.ct.htable_size; i++) {
- 		while (!hlist_nulls_empty(&init_net.ct.hash[i])) {
- 			h = hlist_nulls_entry(init_net.ct.hash[i].first,
- 					struct nf_conntrack_tuple_hash, hnnode);
- 			hlist_nulls_del_rcu(&h->hnnode);
--			bucket = __hash_conntrack(&h->tuple, hashsize, rnd);
-+			bucket = __hash_conntrack(&h->tuple, hashsize,
-+						  nf_conntrack_hash_rnd);
- 			hlist_nulls_add_head_rcu(&h->hnnode, &hash[bucket]);
- 		}
- 	}
--	old_size = nf_conntrack_htable_size;
-+	old_size = init_net.ct.htable_size;
- 	old_vmalloced = init_net.ct.hash_vmalloc;
- 	old_hash = init_net.ct.hash;
- 
--	nf_conntrack_htable_size = hashsize;
-+	init_net.ct.htable_size = nf_conntrack_htable_size = hashsize;
- 	init_net.ct.hash_vmalloc = vmalloced;
- 	init_net.ct.hash = hash;
--	nf_conntrack_hash_rnd = rnd;
- 	spin_unlock_bh(&nf_conntrack_lock);
- 
- 	nf_ct_free_hashtable(old_hash, old_vmalloced, old_size);
-@@ -1322,7 +1324,9 @@ static int nf_conntrack_init_net(struct
- 		ret = -ENOMEM;
- 		goto err_cache;
- 	}
--	net->ct.hash = nf_ct_alloc_hashtable(&nf_conntrack_htable_size,
-+
-+	net->ct.htable_size = nf_conntrack_htable_size;
-+	net->ct.hash = nf_ct_alloc_hashtable(&net->ct.htable_size,
- 					     &net->ct.hash_vmalloc, 1);
- 	if (!net->ct.hash) {
- 		ret = -ENOMEM;
-@@ -1347,7 +1351,7 @@ err_acct:
- 	nf_conntrack_expect_fini(net);
- err_expect:
- 	nf_ct_free_hashtable(net->ct.hash, net->ct.hash_vmalloc,
--			     nf_conntrack_htable_size);
-+			     net->ct.htable_size);
- err_hash:
- 	kmem_cache_destroy(net->ct.nf_conntrack_cachep);
- err_cache:
---- a/net/netfilter/nf_conntrack_expect.c
-+++ b/net/netfilter/nf_conntrack_expect.c
-@@ -577,7 +577,7 @@ int nf_conntrack_expect_init(struct net
- 
- 	if (net_eq(net, &init_net)) {
- 		if (!nf_ct_expect_hsize) {
--			nf_ct_expect_hsize = nf_conntrack_htable_size / 256;
-+			nf_ct_expect_hsize = net->ct.htable_size / 256;
- 			if (!nf_ct_expect_hsize)
- 				nf_ct_expect_hsize = 1;
- 		}
---- a/net/netfilter/nf_conntrack_helper.c
-+++ b/net/netfilter/nf_conntrack_helper.c
-@@ -192,7 +192,7 @@ static void __nf_conntrack_helper_unregi
- 	/* Get rid of expecteds, set helpers to NULL. */
- 	hlist_nulls_for_each_entry(h, nn, &net->ct.unconfirmed, hnnode)
- 		unhelp(h, me);
--	for (i = 0; i < nf_conntrack_htable_size; i++) {
-+	for (i = 0; i < net->ct.htable_size; i++) {
- 		hlist_nulls_for_each_entry(h, nn, &net->ct.hash[i], hnnode)
- 			unhelp(h, me);
- 	}
---- a/net/netfilter/nf_conntrack_netlink.c
-+++ b/net/netfilter/nf_conntrack_netlink.c
-@@ -594,7 +594,7 @@ ctnetlink_dump_table(struct sk_buff *skb
- 
- 	rcu_read_lock();
- 	last = (struct nf_conn *)cb->args[1];
--	for (; cb->args[0] < nf_conntrack_htable_size; cb->args[0]++) {
-+	for (; cb->args[0] < init_net.ct.htable_size; cb->args[0]++) {
- restart:
- 		hlist_nulls_for_each_entry_rcu(h, n, &init_net.ct.hash[cb->args[0]],
- 					 hnnode) {
---- a/net/netfilter/nf_conntrack_standalone.c
-+++ b/net/netfilter/nf_conntrack_standalone.c
-@@ -51,7 +51,7 @@ static struct hlist_nulls_node *ct_get_f
- 	struct hlist_nulls_node *n;
- 
- 	for (st->bucket = 0;
--	     st->bucket < nf_conntrack_htable_size;
-+	     st->bucket < net->ct.htable_size;
- 	     st->bucket++) {
- 		n = rcu_dereference(net->ct.hash[st->bucket].first);
- 		if (!is_a_nulls(n))
-@@ -69,7 +69,7 @@ static struct hlist_nulls_node *ct_get_n
- 	head = rcu_dereference(head->next);
- 	while (is_a_nulls(head)) {
- 		if (likely(get_nulls_value(head) == st->bucket)) {
--			if (++st->bucket >= nf_conntrack_htable_size)
-+			if (++st->bucket >= net->ct.htable_size)
- 				return NULL;
- 		}
- 		head = rcu_dereference(net->ct.hash[st->bucket].first);
-@@ -358,7 +358,7 @@ static ctl_table nf_ct_sysctl_table[] =
- 	{
- 		.ctl_name       = NET_NF_CONNTRACK_BUCKETS,
- 		.procname       = "nf_conntrack_buckets",
--		.data           = &nf_conntrack_htable_size,
-+		.data           = &init_net.ct.htable_size,
- 		.maxlen         = sizeof(unsigned int),
- 		.mode           = 0444,
- 		.proc_handler   = proc_dointvec,
-@@ -429,6 +429,7 @@ static int nf_conntrack_standalone_init_
- 		goto out_kmemdup;
- 
- 	table[1].data = &net->ct.count;
-+	table[2].data = &net->ct.htable_size;
- 	table[3].data = &net->ct.sysctl_checksum;
- 	table[4].data = &net->ct.sysctl_log_invalid;
+ 	dvb_dmxdev_filter_state_set(dmxdevfilter, DMXDEV_STATE_SET);
  
 
 
