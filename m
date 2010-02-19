@@ -1,80 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132Ab0BSUpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:45:52 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57533 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751775Ab0BSUpl (ORCPT
+	id S1756114Ab0BSUxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 15:53:42 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:49112 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775Ab0BSUxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:45:41 -0500
-Date: Fri, 19 Feb 2010 15:30:39 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Dan Carpenter <error27@gmail.com>, "Zhu, Yi" <yi.zhu@intel.com>,
-       Intel Linux Wireless <ilw@linux.intel.com>,
-       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>,
-       "Kolekar, Abhijeet" <abhijeet.kolekar@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [patch] iwlwifi: testing the wrong variable
-Message-ID: <20100219203039.GN4950@tuxdriver.com>
-References: <20100218094529.GA1298@bicker> <1266516282.2551.2604.camel@rchatre-DESK>
+	Fri, 19 Feb 2010 15:53:40 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: USB mass storage and ARM cache coherency
+Date: Fri, 19 Feb 2010 21:53:22 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+References: <1266445892.16346.306.camel@pasglop> <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com> <1266601011.32546.48.camel@e102109-lin.cambridge.arm.com>
+In-Reply-To: <1266601011.32546.48.camel@e102109-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266516282.2551.2604.camel@rchatre-DESK>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002192153.22159.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 10:04:42AM -0800, reinette chatre wrote:
-> On Thu, 2010-02-18 at 01:45 -0800, Dan Carpenter wrote:
-> > The first one fixes a smatch false positive and the second one fixes
-> > a potential bug.
-> > 
-> > drivers/net/wireless/iwlwifi/iwl-5000.c +786 iwl5000_txq_update_byte_cnt_tbl(37) error: buffer overflow 
-> > '(scd_bc_tbl+txq_id)->tfd_offset' 320 <= 512
-> > drivers/net/wireless/iwlwifi/iwl-5000.c +808 iwl5000_txq_inval_byte_cnt_tbl(19) error: buffer overflow 
-> > '(scd_bc_tbl+txq_id)->tfd_offset' 320 <= 512
-> > 
-> > Signed-off-by: Dan Carpenter <error27@gmail.com>
-> > Cc: stable@kernel.org
-> > ---
-> 
-> This has already been fixed by patch below (taken from
-> wireless-next-2.6). John and Greg, could you please pick this one up for
-> 2.6.33 and stable instead?
-> 
-> commit 8ce1ef4a914aef8b9b90a2a2c670494168a2cca9
-> Author: Wey-Yi Guy <wey-yi.w.guy@intel.com>
-> Date:   Fri Jan 8 10:04:44 2010 -0800
-> 
->     iwlwifi: fix bug in tx byte count table
->     
->     When setting invalid byte count in txq byte count table, read
-> pointer
->     should be used instead of write pointer.
->     
->     Reported-by: Guo, Chaohong <chaohong.guo@intel.com>
->     Signed-off-by: Wey-Yi Guy <wey-yi.w.guy@intel.com>
->     Signed-off-by: Zhu Yi <yi.zhu@intel.com>
->     Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
->     Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Am Freitag, 19. Februar 2010 18:36:51 schrieb Catalin Marinas:
+> If a page is already mapped in user space, flush_dcache_page() on ARM
+> does the flushing rather than deferring it to update_mmu_cache(). The
+> PIO HCD drivers, however, don't call flush_dcache_page(). Is it possible
+> that the HCD could transfer data into a page cache page already mapped
+> in user space? My understanding is that the scenario above is possible.
 
-So for the record, that patch is basically identical to Dan's patch
-but with some whitespace fixups in some nearby lines as well.
+Yes, video drivers do that.
 
-How important is this patch?  Is there an actual bug report?  Is it
-a regression?
-
-It is very late in the 2.6.33 cycle and it isn't obvious to me that
-this is worth pushing for 2.6.33 at this point...?
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+	Regards
+		Oliver
