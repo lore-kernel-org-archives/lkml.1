@@ -1,22 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232Ab0BSRBb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:01:31 -0500
-Received: from kroah.org ([198.145.64.141]:57747 "EHLO coco.kroah.org"
+	id S1755132Ab0BSRBV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:01:21 -0500
+Received: from kroah.org ([198.145.64.141]:57681 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978Ab0BSRBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:01:02 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:50 2010
-Message-Id: <20100219163250.123525413@kvm.kroah.org>
+	id S1754892Ab0BSRAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:52 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:46 2010
+Message-Id: <20100219163246.841129359@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:30:03 -0800
+Date: Fri, 19 Feb 2010 08:29:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [70/93] pktgen: Fix freezing problem
+       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Avi Kivity <avi@qumranet.com>, Chuck Ebbert <cebbert@redhat.com>
+Subject: [58/93] /dev/mem: introduce size_inside_page()
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,33 +29,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 1b3f720bf033fde1fbb6231f9b156b918c5f68d8 upstream.
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-Add missing try_to_freeze() to one of the pktgen_thread_worker() code
-paths so that it doesn't block suspend/hibernation.
+commit f222318e9c3a315723e3524fb9d6566b2430db44 upstream
 
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=15006
+/dev/mem: introduce size_inside_page()
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-and-tested-by: Ciprian Dorin Craciun <ciprian.craciun@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+[ cebbert@redhat.com : backport to 2.6.32 ]
+[ subset of original patch, for just /dev/kmem ]
+
+Introduce size_inside_page() to replace duplicate /dev/mem code.
+
+Also apply it to /dev/kmem, whose alignment logic was buggy.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Avi Kivity <avi@qumranet.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/pktgen.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/char/mem.c |   40 +++++++++++++++++-----------------------
+ 1 file changed, 17 insertions(+), 23 deletions(-)
 
---- a/net/core/pktgen.c
-+++ b/net/core/pktgen.c
-@@ -3516,6 +3516,7 @@ static int pktgen_thread_worker(void *ar
- 			wait_event_interruptible_timeout(t->queue,
- 							 t->control != 0,
- 							 HZ/10);
-+			try_to_freeze();
- 			continue;
- 		}
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -35,6 +35,19 @@
+ # include <linux/efi.h>
+ #endif
  
++static inline unsigned long size_inside_page(unsigned long start,
++					     unsigned long size)
++{
++	unsigned long sz;
++
++	if (-start & (PAGE_SIZE - 1))
++		sz = -start & (PAGE_SIZE - 1);
++	else
++		sz = PAGE_SIZE;
++
++	return min_t(unsigned long, sz, size);
++}
++
+ /*
+  * Architectures vary in how they handle caching for addresses
+  * outside of main memory.
+@@ -430,15 +443,7 @@ static ssize_t read_kmem(struct file *fi
+ 		}
+ #endif
+ 		while (low_count > 0) {
+-			/*
+-			 * Handle first page in case it's not aligned
+-			 */
+-			if (-p & (PAGE_SIZE - 1))
+-				sz = -p & (PAGE_SIZE - 1);
+-			else
+-				sz = PAGE_SIZE;
+-
+-			sz = min_t(unsigned long, sz, low_count);
++			sz = size_inside_page(p, low_count);
+ 
+ 			/*
+ 			 * On ia64 if a page has been mapped somewhere as
+@@ -462,10 +467,8 @@ static ssize_t read_kmem(struct file *fi
+ 		if (!kbuf)
+ 			return -ENOMEM;
+ 		while (count > 0) {
+-			int len = count;
++			int len = size_inside_page(p, count);
+ 
+-			if (len > PAGE_SIZE)
+-				len = PAGE_SIZE;
+ 			len = vread(kbuf, (char *)p, len);
+ 			if (!len)
+ 				break;
+@@ -510,15 +513,8 @@ do_write_kmem(void *p, unsigned long rea
+ 
+ 	while (count > 0) {
+ 		char *ptr;
+-		/*
+-		 * Handle first page in case it's not aligned
+-		 */
+-		if (-realp & (PAGE_SIZE - 1))
+-			sz = -realp & (PAGE_SIZE - 1);
+-		else
+-			sz = PAGE_SIZE;
+ 
+-		sz = min_t(unsigned long, sz, count);
++		sz = size_inside_page(realp, count);
+ 
+ 		/*
+ 		 * On ia64 if a page has been mapped somewhere as
+@@ -578,10 +574,8 @@ static ssize_t write_kmem(struct file *
+ 		if (!kbuf)
+ 			return wrote ? wrote : -ENOMEM;
+ 		while (count > 0) {
+-			int len = count;
++			int len = size_inside_page(p, count);
+ 
+-			if (len > PAGE_SIZE)
+-				len = PAGE_SIZE;
+ 			if (len) {
+ 				written = copy_from_user(kbuf, buf, len);
+ 				if (written) {
 
 
