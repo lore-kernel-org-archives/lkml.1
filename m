@@ -1,104 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631Ab0BSVyv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:54:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56013 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755326Ab0BSVyu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:54:50 -0500
-Date: Fri, 19 Feb 2010 13:53:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Subject: Re: [PATCH 6/8] pps: serial clients support.
-Message-Id: <20100219135359.a5c195ea.akpm@linux-foundation.org>
-In-Reply-To: <1266313885-1195-7-git-send-email-giometti@linux.it>
-References: <1266313885-1195-1-git-send-email-giometti@linux.it>
-	<1266313885-1195-2-git-send-email-giometti@linux.it>
-	<1266313885-1195-3-git-send-email-giometti@linux.it>
-	<1266313885-1195-4-git-send-email-giometti@linux.it>
-	<1266313885-1195-5-git-send-email-giometti@linux.it>
-	<1266313885-1195-6-git-send-email-giometti@linux.it>
-	<1266313885-1195-7-git-send-email-giometti@linux.it>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754469Ab0BSV6n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:58:43 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:33313 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752017Ab0BSV6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:58:42 -0500
+Date: Fri, 19 Feb 2010 21:58:26 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM
+	and page migration
+Message-ID: <20100219215826.GF1445@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-4-git-send-email-mel@csn.ul.ie> <4B7F05BA.4080903@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B7F05BA.4080903@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 10:51:23 +0100
-Rodolfo Giometti <giometti@linux.it> wrote:
-
-> Adds support, by using the PPS line discipline, for the PPS sources
-> connected with the CD (Carrier Detect) pin of a serial port.
-> 
-> ...
+On Fri, Feb 19, 2010 at 04:42:18PM -0500, Rik van Riel wrote:
+> On 02/18/2010 01:02 PM, Mel Gorman wrote:
 >
-> +static int (*n_tty_open)(struct tty_struct *tty);
-> +
-> +static int pps_tty_open(struct tty_struct *tty)
-> +{
-> +	struct pps_source_info info;
-> +	struct tty_driver *drv = tty->driver;
-> +	int index = tty->index + drv->name_base;
-> +	int ret;
-> +
-> +	info.owner = THIS_MODULE;
-> +	info.dev = NULL;
-> +	snprintf(info.name, PPS_MAX_NAME_LEN, "%s%d", drv->driver_name, index);
-> +	snprintf(info.path, PPS_MAX_NAME_LEN, "/dev/%s%d", drv->name, index);
-> +	info.mode = PPS_CAPTUREBOTH | \
-> +			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
-> +			PPS_CANWAIT | PPS_TSFMT_TSPEC;
-> +
-> +	ret = pps_register_source(&info, PPS_CAPTUREBOTH | \
-> +				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
-> +	if (ret < 0) {
-> +		pr_err("cannot register PPS source \"%s\"\n", info.path);
-> +		return ret;
-> +	}
-> +	tty->disc_data = (void *) ret;
-> +
-> +	/* Should open N_TTY ldisc too */
-> +	ret = n_tty_open(tty);
-> +	if (ret < 0)
-> +		pps_unregister_source((int) tty->disc_data);
-> +
-> +	pr_info("PPS source #%d \"%s\" added\n", ret, info.path);
-> +
-> +	return 0;
-> +}
+>>   struct anon_vma {
+>>   	spinlock_t lock;	/* Serialize access to vma list */
+>> -#ifdef CONFIG_KSM
+>> -	atomic_t ksm_refcount;
+>> -#endif
+>> -#ifdef CONFIG_MIGRATION
+>> -	atomic_t migrate_refcount;
+>> +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
+>> +
+>> +	/*
+>> +	 * The refcount is taken by either KSM or page migration
+>> +	 * to take a reference to an anon_vma when there is no
+>> +	 * guarantee that the vma of page tables will exist for
+>> +	 * the duration of the operation. A caller that takes
+>> +	 * the reference is responsible for clearing up the
+>> +	 * anon_vma if they are the last user on release
+>> +	 */
+>> +	atomic_t refcount;
+>
+> Calling it just refcount is probably confusing, since
+> the anon_vma is also referenced by being on the chain
+> with others.
+>
+> Maybe "other_refcount" because it is refcounts taken
+> by things other than VMAs?  I am sure there is a better
+> name possible...
+>
 
-hm.  The n_tty_open/close layering is a bit grubby but I guess we don't
-have a need to create anything more comprehensive at this stage.
+external_refcount is about as good as I can think of to explain what's
+going on :/
 
-A small stylistic thing: the code's a bit confusing at present because
-the names n_tty_open/n_tty_close are identical to the global functions
-over in n_tty.c.  A user of ctags will be tricked.  Also, the _way_ in
-which these function pointers are called:
-
-	ret = n_tty_open(tty);
-
-make it look like the code is calling
-drivers/char/n_tty.c:n_tty_open().  Except it isn't.
-
-So I think it's better to do it with
-
-	ret = (*n_tty_open)(tty);
-
-to avoid misleading the reader.
-
-And perhaps to rename these variables to avoid the duplication with the
-global functions.
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
