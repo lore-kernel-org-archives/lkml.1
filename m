@@ -1,118 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479Ab0BSECQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 23:02:16 -0500
-Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:47953 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754372Ab0BSECP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 23:02:15 -0500
-Date: Fri, 19 Feb 2010 15:02:06 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Jan Kara <jack@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Hung task - sync - 2.6.33-rc7  w/md6 multicore rebuild in
-	process
-Message-ID: <20100219040206.GE28392@discord.disaster>
-References: <4B76D87E.3050107@majjas.com> <4B76EC83.5050401@majjas.com> <20100218023934.GC8897@atrey.karlin.mff.cuni.cz> <4B7D74BE.6030906@majjas.com> <20100219014349.GD28392@discord.disaster> <4B7DF80D.6090309@majjas.com>
+	id S1754567Ab0BSEIv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 23:08:51 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49038 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754452Ab0BSEIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 23:08:50 -0500
+Message-ID: <4B7E0ECA.4000008@us.ibm.com>
+Date: Thu, 18 Feb 2010 20:08:42 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B7DF80D.6090309@majjas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Valdis.Kletnieks@vt.edu
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Stupid futex question - 2.6.33-rc7-mmotm0210
+References: <10057.1266501862@localhost>
+In-Reply-To: <10057.1266501862@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 09:31:41PM -0500, Michael Breuer wrote:
-> On 2/18/2010 8:43 PM, Dave Chinner wrote:
->> On Thu, Feb 18, 2010 at 12:11:26PM -0500, Michael Breuer wrote:
->>> On 02/17/2010 09:39 PM, Jan Kara wrote:
->>>>     Hmm, it is a bug in writeback code. But as Linus pointed out, it's not really
->>>> clear why it's *so* slow. So when it happens again, could you please sample for
->>>> a while (like every second for 30 seconds) stacks of blocked tasks via
->>>> Alt-Sysrq-W? I'd like to see where flusher threads are hanging... Thanks.
->>>>
->>>>        
->>> Ok - got it. Sync is still spinning, btw... attaching log extract as
->>> well as dmesg output.
->>>      
->> Looks like barriers are playing a part in this.
->>    
->>>   [<ffffffff8104aac6>] ? try_to_wake_up+0x2d6/0x410
->>>   [<ffffffff81078920>] ? prepare_to_wait+0x60/0x90
->>>   [<ffffffff81200fbd>] jbd2_log_wait_commit+0xbd/0x130
->>>   [<ffffffff81078610>] ? autoremove_wake_function+0x0/0x40
->>>   [<ffffffff811fa7bb>] jbd2_journal_stop+0x24b/0x2b0
->>>   [<ffffffff811f9915>] ? jbd2_journal_start+0xb5/0x100
->>>   [<ffffffff811fa847>] jbd2_journal_force_commit+0x27/0x30
->>>   [<ffffffff811d0587>] ext4_force_commit+0x27/0x40
->>>   [<ffffffff811c3a55>] ext4_write_inode+0x75/0x100
->>>   [<ffffffff81155104>] writeback_single_inode+0x294/0x3b0
->>>   [<ffffffff8115567a>] writeback_inodes_wb+0x31a/0x4c0
->>>   [<ffffffff8115593a>] wb_writeback+0x11a/0x1e0
->>>   [<ffffffff815379f6>] ? schedule_timeout+0x196/0x2f0
->>>   [<ffffffff81155c1f>] wb_do_writeback+0x12f/0x1a0
->>>   [<ffffffff81155ce3>] bdi_writeback_task+0x53/0xe0
->>>   [<ffffffff810fe9a0>] ? bdi_start_fn+0x0/0xe0
->>>   [<ffffffff810fea11>] bdi_start_fn+0x71/0xe0
->>>   [<ffffffff810fe9a0>] ? bdi_start_fn+0x0/0xe0
->>>   [<ffffffff81078106>] kthread+0x96/0xa0
->>>   [<ffffffff8100bf24>] kernel_thread_helper+0x4/0x10
->>>   [<ffffffff81539f3d>] ? restore_args+0x0/0x30
->>>   [<ffffffff81078070>] ? kthread+0x0/0xa0
->>>   [<ffffffff8100bf20>] ? kernel_thread_helper+0x0/0x10
->>>      
->> This is probably where the barrier IOs are coming from.  With a RAID
->> resync going on (so all IO is going to be slow to begin with) and
->> writeback is causing barriers to be issued (which are really slow on
->> software RAID5/6), having sync take so long is not out of the
->> question if you have lots of dirty inodes to write back. A kernel
->> compile will generate lots of dirty inodes.
->>
->> Even taking the barrier IOs out of the question, I've seen reports
->> of sync or unmount taking over 10 hours to complete on software
->> RAID5 because there were hundreds of thousands of dirty inodes to
->> write back and each inode being written back caused a synchronous
->> RAID5 RMW cycle to occur. Hence writeback could only clean 50
->> inodes/sec because as soon as RMW cycles RAID5/6 devices start
->> they go slower than single spindle devices.  This sounds very
->> similar to what you are seeing here,
->>
->> i.e. The reports don't indicate to me that there is a bug in the
->> writeback code, just your disk subsystem has very, very low
->> throughput in these conditions....
->
-> Probably true... and the system does recover. The only thing I'd point  
-> out is that the subsystem isn't (or perhaps shouldn't) be this sluggish.  
-> I hypothesize that the low throughput under these condition is a result 
-> of:
-> 1) multicore raid support (pushing the resync at higher rates)
+Valdis.Kletnieks@vt.edu wrote:
+> Kernel: x86_64 2.6.33-rc7-mmotm0210
+> 
+> I'm debugging a problem where pulseaudio is getting killed with a SIGKILL
+> out of the blue.  It appears to be a problem where pulseaudio sets
+> RLIMIT_RTTIME and the bound gets exceeded.  Analysis with 'top' shows
+> a short spike of 96% system time, and the tail end of strace shows this:
+> 
+> [pid 25065] 01:50:20.371484 ioctl(28, USBDEVFS_CONTROL, 0x7fd3d76f630c) = 0 <0.000015>
+> [pid 25065] 01:50:20.371548 ioctl(28, 0x40045532, 0x7fd3d76f636c) = 0 <0.000016>
+> [pid 25065] 01:50:20.371611 open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_CLOEXEC <unfinished ...>
+> [pid 25064] 01:50:20.371678 <... write resumed> ) = 8 <0.002104>
+> [pid 25064] 01:50:20.371718 futex(0xc2ec00, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
 
-Possibly, though barrier support for RAID5/6 is shiny new as well.
+So it received the signal and the task waiting in 
+sys_futex(FUTEX_WAIT_PRIVATE...) wakes up to handle the signal and 
+return right? What do you see here that suggests the task is spinning 
+inside the futex syscall?
 
-> 2) time spent in fs cache reclaim. The sync slowdown only occurs when fs  
-> cache is in heavy (10Gb) use.
+This is a non-rt kernel right? So spinning could occur on the hash 
+bucket lock if something else is really horked. That seems unlikely.
 
-Not surprising ;)
+> [pid 25066] 01:50:21.408392 +++ killed by SIGKILL +++
+> PANIC: handle_group_exit: 25066 leader 25064
+> [pid 25065] 01:50:21.408442 +++ killed by SIGKILL +++
+> PANIC: handle_group_exit: 25065 leader 25064
+> 01:50:21.420354 +++ killed by SIGKILL +++
+> 
+> thread 25064 apparently gets gunned down due to RTTIME because it spent a whole
+> second in a futex() call - is it reasonable for futex() to not return for that
+> long?
 
-> I actually could not recreate the issue until I did a grep -R foo /usr/  
-> >/dev/null to force high fs cache utilization. For what it's worth, two  
-> kernel rebuilds (many dirty inodes) and then a sync with about 12Mb  
-> dirty (/proc/meminfo) didn't cause an issue. The issue only happens when  
-> fs cache is heavily used. I also never saw this before enabling  
-> multicore raid.
+Certainly if a corresponding FUTEX_WAKE op was not sent.
 
-"grep -R foo /usr/" will dirty every inode that touchs (atime) and
-they have to be written back out. That's almost certainly creating
-more dirty inodes than a kernel build - there are about 400,000
-inodes under /usr on my system. That would be enough to trigger very
-long sync times if inode writeback is slow.
+--
+Darrem
 
-Cheers,
+> In other words - kernel bug because futex() should return, or pulseaudio bug
+> for not understanding futex() can snooze a while?
 
-Dave.
+> If a kernel bug, anybody got a better idea than nuking the RLIMIT_RTTIME call,
+> waiting for it to repeat (takes between 1 minute and 1 hour or so), and
+> whomping it a few times with sysrq-T?
+> 
+
+
 -- 
-Dave Chinner
-david@fromorbit.com
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
