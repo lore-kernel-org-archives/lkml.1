@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998Ab0BSRR2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:17:28 -0500
-Received: from kroah.org ([198.145.64.141]:57403 "EHLO coco.kroah.org"
+	id S1756051Ab0BSRTK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:19:10 -0500
+Received: from kroah.org ([198.145.64.141]:57369 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430Ab0BSRAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:16 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:35 2010
-Message-Id: <20100219163234.824107576@kvm.kroah.org>
+	id S1754266Ab0BSRAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:10 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:32 2010
+Message-Id: <20100219163232.379550796@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:11 -0800
+Date: Fri, 19 Feb 2010 08:29:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Till Harbaum <till@harbaum.org>
-Subject: [18/93] i2c-tiny-usb: Fix on big-endian systems
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [10/93] drm/i915: disable hotplug detect before Ironlake CRT detect
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,78 +25,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit 1c010ff8912cbc08d80e865aab9c32b6b00c527d upstream.
+commit eceb784cec4dc0fcc2993d9ee4a7c0d111ada80a upstream.
 
-The functionality bit vector is always returned as a little-endian
-32-bit number by the device, so it must be byte-swapped to the host
-endianness.
+This tries to fix CRT detect loop hang seen on some Ironlake form
+factor, to clear up hotplug detect state before taking CRT detect
+to make sure next hotplug detect cycle is consistent.
 
-On the other hand, the delay value is handled by the USB stack, so no
-byte swapping is needed on our side.
-
-This fixes bug #15105:
-http://bugzilla.kernel.org/show_bug.cgi?id=15105
-
-Reported-by: Jens Richter <jens@richter-stutensee.de>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Tested-by: Jens Richter <jens@richter-stutensee.de>
-Cc: Till Harbaum <till@harbaum.org>
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/busses/i2c-tiny-usb.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/i915/intel_crt.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/i2c/busses/i2c-tiny-usb.c
-+++ b/drivers/i2c/busses/i2c-tiny-usb.c
-@@ -13,6 +13,7 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/module.h>
-+#include <linux/types.h>
+--- a/drivers/gpu/drm/i915/intel_crt.c
++++ b/drivers/gpu/drm/i915/intel_crt.c
+@@ -185,6 +185,9 @@ static bool intel_igdng_crt_detect_hotpl
+ 	adpa = I915_READ(PCH_ADPA);
  
- /* include interfaces to usb layer */
- #include <linux/usb.h>
-@@ -31,8 +32,8 @@
- #define CMD_I2C_IO_END		(1<<1)
+ 	adpa &= ~ADPA_CRT_HOTPLUG_MASK;
++	/* disable HPD first */
++	I915_WRITE(PCH_ADPA, adpa);
++	(void)I915_READ(PCH_ADPA);
  
- /* i2c bit delay, default is 10us -> 100kHz */
--static int delay = 10;
--module_param(delay, int, 0);
-+static unsigned short delay = 10;
-+module_param(delay, ushort, 0);
- MODULE_PARM_DESC(delay, "bit delay in microseconds, "
- 		 "e.g. 10 for 100kHz (default is 100kHz)");
- 
-@@ -109,7 +110,7 @@ static int usb_xfer(struct i2c_adapter *
- 
- static u32 usb_func(struct i2c_adapter *adapter)
- {
--	u32 func;
-+	__le32 func;
- 
- 	/* get functionality from adapter */
- 	if (usb_read(adapter, CMD_GET_FUNC, 0, 0, &func, sizeof(func)) !=
-@@ -118,7 +119,7 @@ static u32 usb_func(struct i2c_adapter *
- 		return 0;
- 	}
- 
--	return func;
-+	return le32_to_cpu(func);
- }
- 
- /* This is the actual algorithm we define */
-@@ -216,8 +217,7 @@ static int i2c_tiny_usb_probe(struct usb
- 		 "i2c-tiny-usb at bus %03d device %03d",
- 		 dev->usb_dev->bus->busnum, dev->usb_dev->devnum);
- 
--	if (usb_write(&dev->adapter, CMD_SET_DELAY,
--		      cpu_to_le16(delay), 0, NULL, 0) != 0) {
-+	if (usb_write(&dev->adapter, CMD_SET_DELAY, delay, 0, NULL, 0) != 0) {
- 		dev_err(&dev->adapter.dev,
- 			"failure setting delay to %dus\n", delay);
- 		retval = -EIO;
+ 	adpa |= (ADPA_CRT_HOTPLUG_PERIOD_128 |
+ 			ADPA_CRT_HOTPLUG_WARMUP_10MS |
 
 
