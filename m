@@ -1,70 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881Ab0BSQPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 11:15:53 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54659 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752090Ab0BSQPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 11:15:51 -0500
-Message-ID: <4B7EB8FF.1090409@zytor.com>
-Date: Fri, 19 Feb 2010 08:14:55 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752489Ab0BSQfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 11:35:40 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:24196 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913Ab0BSQfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 11:35:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=j9NY1EJO12fyfOYBSNOVbgdvdWeNpLb6KGYOxvjchJTrhso4EgMytHiT2f2jIUW7ql
+         6495CLNmFdONhERf6sWUAnIlgBrOmHiRCnl+uRaOSbABs8aFRnhsdYXf0bnU3TbwtIKJ
+         8gpsnJA7fwLSojSXDbTmflYizGjM1wNMtNP0k=
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 34/35] x86: use num_processors for possible cpus
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org> <1265793639-15071-35-git-send-email-yinghai@kernel.org> <4B7C98B9.1090903@zytor.com> <4B7CA825.9090309@kernel.org> <4B7D782F.20102@zytor.com> <alpine.DEB.2.00.1002181340380.7486@router.home> <4B7D9ABB.7020806@zytor.com> <alpine.DEB.2.00.1002190912550.25964@router.home>
-In-Reply-To: <alpine.DEB.2.00.1002190912550.25964@router.home>
+In-Reply-To: <20100219121752.GA21682@gondor.apana.org.au>
+References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com>
+	 <m1d402t2qp.fsf@fess.ebiederm.org>
+	 <2d460de71002190210qb9d5685n2fca0e7eff011b04@mail.gmail.com>
+	 <20100219121752.GA21682@gondor.apana.org.au>
+Date: Fri, 19 Feb 2010 17:35:35 +0100
+Message-ID: <2d460de71002190835t29c6bd6bjbee8e2f787d9ab49@mail.gmail.com>
+Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-crypto@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/19/2010 07:14 AM, Christoph Lameter wrote:
-> On Thu, 18 Feb 2010, H. Peter Anvin wrote:
-> 
->>> As I have also repeatedly stated: Dynamic percpu data allocation when
->>> onlining / offlining processors will complicate locking (cannot rely on
->>> percpu be present anymore) and introduce numerous additional
->>> hotplug notifiers into subsystems.
->>
->> I did state explicitly "on first up".  Trying to free it would be
->> insane.  There are a couple of subsystems which are percpu memory
->> pigs... so far it's not clear any of them actually matters in a
->> production kernel.  60K * 16 phantom processors is still ~ 1 MB, which
->> probably isn't enough to worry about but isn't great.
-> 
-> The first up still means the addition of notifiers for subsystems that
-> have to initialilze their per cpu data and dealing with potential races
-> that would be caused by adding those.
-> 
+On Fri, Feb 19, 2010 at 13:17, Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-Yes... it's ugly no matter which way we go (wasted memory vs. code
-complexity.)  Wasted memory can be alleviated by minimizing the use of
-percpu memory; callbacks can be minimized by keeping a pattern buffer to
-which new allocations are initialized, and encouraging users to set
-things up so that that state is at least initially sufficient.
+> FWIW I don't like this change so I'm dropping it.
 
-We're probably okay for now (the only really heavy users of percpu are
-debugging at this point), and the other thing that might be worthwhile
-is if we can actually determine what platforms a "disabled CPU" could
-actually come to life.  Hopefully disabled CPUs that aren't really
-available aren't *all* that common (it's not too common that people even
-turn off SMT, and if they know to do that they might be willing to add a
-kernel option if they care about the memory, too.)
+Dropping the change or the whole patch? I.e. should I resubmit
+without that part?
 
-However, if percpu memory usage increases, it might be messy.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Richard
