@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380Ab0BSREA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:04:00 -0500
-Received: from kroah.org ([198.145.64.141]:57843 "EHLO coco.kroah.org"
+	id S1755370Ab0BSRFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:05:34 -0500
+Received: from kroah.org ([198.145.64.141]:57794 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755091Ab0BSRBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:01:16 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:55 2010
-Message-Id: <20100219163255.123550590@kvm.kroah.org>
+	id S1755035Ab0BSRBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:01:09 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:52 2010
+Message-Id: <20100219163252.635581600@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:30:20 -0800
+Date: Fri, 19 Feb 2010 08:30:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [87/93] b43: Fix throughput regression
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [79/93] USB: usbfs: only copy the actual data received
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,69 +25,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Greg KH <greg@kroah.com>
 
-commit b6c3f5be7c6ac3375f44de4545c1ffe216b34022 upstream.
+commit d4a4683ca054ed9917dfc9e3ff0f7ecf74ad90d6 upstream.
 
-Commit c7ab5ef9bcd281135c21b4732c9be779585181be entitled "b43: implement
-short slot and basic rate handling" reduced the transmit throughput for
-my BCM4311 device from 18 Mb/s to 0.7 Mb/s. The basic rate handling
-portion is OK, the problem is in the short slot handling.
+We need to only copy the data received by the device to userspace, not
+the whole kernel buffer, which can contain "stale" data.
 
-Prior to this change, the short slot enable/disable routines were never
-called. Experimentation showed that the critical part was changing the
-value at offset 0x0010 in the shared memory. This is supposed to contain
-the 802.11 Slot Time in usec, but if it is changed from its initial value
-of zero, performance is destroyed. On the other hand, changing the value
-in the MMIO register corresponding to the Interframe Slot Time increased
-performance from 18 to 22 Mb/s. A BCM4306/3 also shows dramatic
-improvement of the transmit rate from 5.3 to 19.0 Mb/s.
+Thanks to Marcus Meissner for pointing this out and testing the fix.
 
-Other changes in the patch include removal of the magic number for the
-MMIO register, and allowing the slot time to be set for any PHY operating
-in the 2.4 GHz band. Previously, the routine was executed only for G PHYs.
-
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Reported-by: Marcus Meissner <meissner@suse.de>
+Tested-by: Marcus Meissner <meissner@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/b43/b43.h  |    1 +
- drivers/net/wireless/b43/main.c |   13 ++++++++++---
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/usb/core/devio.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/b43/b43.h
-+++ b/drivers/net/wireless/b43/b43.h
-@@ -117,6 +117,7 @@
- #define B43_MMIO_TSF_2			0x636	/* core rev < 3 only */
- #define B43_MMIO_TSF_3			0x638	/* core rev < 3 only */
- #define B43_MMIO_RNG			0x65A
-+#define B43_MMIO_IFSSLOT		0x684	/* Interframe slot time */
- #define B43_MMIO_IFSCTL			0x688 /* Interframe space control */
- #define  B43_MMIO_IFSCTL_USE_EDCF	0x0004
- #define B43_MMIO_POWERUP_DELAY		0x6A8
---- a/drivers/net/wireless/b43/main.c
-+++ b/drivers/net/wireless/b43/main.c
-@@ -628,10 +628,17 @@ static void b43_upload_card_macaddress(s
- static void b43_set_slot_time(struct b43_wldev *dev, u16 slot_time)
- {
- 	/* slot_time is in usec. */
--	if (dev->phy.type != B43_PHYTYPE_G)
-+	/* This test used to exit for all but a G PHY. */
-+	if (b43_current_band(dev->wl) == IEEE80211_BAND_5GHZ)
- 		return;
--	b43_write16(dev, 0x684, 510 + slot_time);
--	b43_shm_write16(dev, B43_SHM_SHARED, 0x0010, slot_time);
-+	b43_write16(dev, B43_MMIO_IFSSLOT, 510 + slot_time);
-+	/* Shared memory location 0x0010 is the slot time and should be
-+	 * set to slot_time; however, this register is initially 0 and changing
-+	 * the value adversely affects the transmit rate for BCM4311
-+	 * devices. Until this behavior is unterstood, delete this step
-+	 *
-+	 * b43_shm_write16(dev, B43_SHM_SHARED, 0x0010, slot_time);
-+	 */
- }
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -1312,9 +1312,9 @@ static int processcompl(struct async *as
+ 	void __user *addr = as->userurb;
+ 	unsigned int i;
  
- static void b43_short_slot_timing_enable(struct b43_wldev *dev)
+-	if (as->userbuffer)
++	if (as->userbuffer && urb->actual_length)
+ 		if (copy_to_user(as->userbuffer, urb->transfer_buffer,
+-				 urb->transfer_buffer_length))
++				 urb->actual_length))
+ 			goto err_out;
+ 	if (put_user(as->status, &userurb->status))
+ 		goto err_out;
+@@ -1435,9 +1435,9 @@ static int processcompl_compat(struct as
+ 	void __user *addr = as->userurb;
+ 	unsigned int i;
+ 
+-	if (as->userbuffer)
++	if (as->userbuffer && urb->actual_length)
+ 		if (copy_to_user(as->userbuffer, urb->transfer_buffer,
+-				 urb->transfer_buffer_length))
++				 urb->actual_length))
+ 			return -EFAULT;
+ 	if (put_user(as->status, &userurb->status))
+ 		return -EFAULT;
 
 
