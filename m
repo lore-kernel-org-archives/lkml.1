@@ -1,343 +1,671 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037Ab0BSAY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:24:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36045 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753795Ab0BSAYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:24:47 -0500
-Date: Fri, 19 Feb 2010 00:22:05 GMT
-From: "tip-bot for venkatesh.pallipadi@intel.com" 
-	<venkatesh.pallipadi@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de
-In-Reply-To: <20100210195909.792781000@intel.com>
-References: <20100210195909.792781000@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/pat] x86, pat: Preparatory changes in pat.c for bigger rbtree change
-Message-ID: <tip-be5a0c126ad1dea2128dc5aef12c87083518d1ab@git.kernel.org>
-Git-Commit-ID: be5a0c126ad1dea2128dc5aef12c87083518d1ab
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 19 Feb 2010 00:22:05 +0000 (UTC)
+	id S1753995Ab0BSAZp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:25:45 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:63509 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446Ab0BSAW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 19:22:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=wYJBYFoXTgCH8zBJRAeYygAZC5bRIlyx2JRmqsuVHPgVGsS5hc5pzD+DOAdgifD8DL
+         lqSWpzC/13pRMxPYOIBDpkRH+mMuVJq8wW82TEoUGX2uxHbhQvTMeVIWwN6LH/TitVh1
+         auFtXMLlIRSCuEVkItbzyoz/t+N2YV8/ef19U=
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: linux-crypto@vger.kernel.org
+Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 09/19] crypto: serpent - Fix checkpatch errors
+Date: Fri, 19 Feb 2010 01:22:26 +0100
+Message-Id: <1266538947-3377-1-git-send-email-richih.mailinglist@gmail.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  be5a0c126ad1dea2128dc5aef12c87083518d1ab
-Gitweb:     http://git.kernel.org/tip/be5a0c126ad1dea2128dc5aef12c87083518d1ab
-Author:     venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-AuthorDate: Wed, 10 Feb 2010 11:57:06 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 18 Feb 2010 15:41:21 -0800
+Thank $deity for diff -w; else I would not have dared to submit
+this.
 
-x86, pat: Preparatory changes in pat.c for bigger rbtree change
-
-Minor changes in pat.c to cleanup code and make it smoother to introduce
-bigger rbtree only change in the following patch. The changes are cleaup
-only and should not have any functional impact.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-LKML-Reference: <20100210195909.792781000@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
 ---
- arch/x86/mm/pat.c          |  170 +++++++++++++++++++++++---------------------
- arch/x86/mm/pat_internal.h |   28 +++++++
- 2 files changed, 116 insertions(+), 82 deletions(-)
+ crypto/serpent.c |  430 +++++++++++++++++++++++++++---------------------------
+ 1 files changed, 215 insertions(+), 215 deletions(-)
 
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index ae9648e..628e507 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -30,6 +30,8 @@
- #include <asm/pat.h>
- #include <asm/io.h>
- 
-+#include "pat_internal.h"
-+
- #ifdef CONFIG_X86_PAT
- int __read_mostly pat_enabled = 1;
- 
-@@ -53,19 +55,15 @@ static inline void pat_disable(const char *reason)
- #endif
- 
- 
--static int debug_enable;
-+int pat_debug_enable;
- 
- static int __init pat_debug_setup(char *str)
- {
--	debug_enable = 1;
-+	pat_debug_enable = 1;
- 	return 0;
- }
- __setup("debugpat", pat_debug_setup);
- 
--#define dprintk(fmt, arg...) \
--	do { if (debug_enable) printk(KERN_INFO fmt, ##arg); } while (0)
--
--
- static u64 __read_mostly boot_pat_state;
- 
- enum {
-@@ -132,17 +130,6 @@ void pat_init(void)
- 
- #undef PAT
- 
--static char *cattr_name(unsigned long flags)
--{
--	switch (flags & _PAGE_CACHE_MASK) {
--	case _PAGE_CACHE_UC:		return "uncached";
--	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
--	case _PAGE_CACHE_WB:		return "write-back";
--	case _PAGE_CACHE_WC:		return "write-combining";
--	default:			return "broken";
--	}
--}
--
- /*
-  * The global memtype list keeps track of memory type for specific
-  * physical memory areas. Conflicting memory types in different
-@@ -159,14 +146,6 @@ static char *cattr_name(unsigned long flags)
-  * memtype_lock protects both the linear list and rbtree.
+diff --git a/crypto/serpent.c b/crypto/serpent.c
+index b651a55..03a75c1 100644
+--- a/crypto/serpent.c
++++ b/crypto/serpent.c
+@@ -26,27 +26,27 @@
+  * Any key length <= 256 bits (32 bytes) is allowed by the algorithm.
   */
  
--struct memtype {
--	u64			start;
--	u64			end;
--	unsigned long		type;
--	struct list_head	nd;
--	struct rb_node		rb;
--};
+-#define SERPENT_MIN_KEY_SIZE		  0
+-#define SERPENT_MAX_KEY_SIZE		 32
+-#define SERPENT_EXPKEY_WORDS		132
+-#define SERPENT_BLOCK_SIZE		 16
++#define SERPENT_MIN_KEY_SIZE   0
++#define SERPENT_MAX_KEY_SIZE  32
++#define SERPENT_EXPKEY_WORDS 132
++#define SERPENT_BLOCK_SIZE    16
+ 
+ #define PHI 0x9e3779b9UL
+ 
+-#define keyiter(a,b,c,d,i,j) \
+-        b ^= d; b ^= c; b ^= a; b ^= PHI ^ i; b = rol32(b,11); k[j] = b;
++#define keyiter(a, b, c, d, i, j) \
++	b ^= d; b ^= c; b ^= a; b ^= PHI ^ i; b = rol32(b, 11); k[j] = b;
+ 
+-#define loadkeys(x0,x1,x2,x3,i) \
+-	x0=k[i]; x1=k[i+1]; x2=k[i+2]; x3=k[i+3];
++#define loadkeys(x0, x1, x2, x3, i) \
++	x0 = k[i]; x1 = k[i+1]; x2 = k[i+2]; x3 = k[i+3];
+ 
+-#define storekeys(x0,x1,x2,x3,i) \
+-	k[i]=x0; k[i+1]=x1; k[i+2]=x2; k[i+3]=x3;
++#define storekeys(x0, x1, x2, x3, i) \
++	k[i] = x0; k[i+1] = x1; k[i+2] = x2; k[i+3] = x3;
+ 
+-#define K(x0,x1,x2,x3,i)				\
++#define K(x0, x1, x2, x3, i)				\
+ 	x3 ^= k[4*(i)+3];        x2 ^= k[4*(i)+2];	\
+ 	x1 ^= k[4*(i)+1];        x0 ^= k[4*(i)+0];
+ 
+-#define LK(x0,x1,x2,x3,x4,i)				\
++#define LK(x0, x1, x2, x3, x4, i)			\
+ 					x0=rol32(x0,13);\
+ 	x2=rol32(x2,3);	x1 ^= x0;	x4  = x0 << 3;	\
+ 	x3 ^= x2;	x1 ^= x2;			\
+@@ -54,19 +54,19 @@
+ 	x3=rol32(x3,7);	x4  = x1;			\
+ 	x0 ^= x1;	x4 <<= 7;	x2 ^= x3;	\
+ 	x0 ^= x3;	x2 ^= x4;	x3 ^= k[4*i+3];	\
+-	x1 ^= k[4*i+1];	x0=rol32(x0,5);	x2=rol32(x2,22);\
++	x1 ^= k[4*i+1];	x0=rol32(x0, 5);x2=rol32(x2,22);\
+ 	x0 ^= k[4*i+0];	x2 ^= k[4*i+2];
+ 
+-#define KL(x0,x1,x2,x3,x4,i)				\
++#define KL(x0, x1, x2, x3, x4, i)			\
+ 	x0 ^= k[4*i+0];	x1 ^= k[4*i+1];	x2 ^= k[4*i+2];	\
+-	x3 ^= k[4*i+3];	x0=ror32(x0,5);	x2=ror32(x2,22);\
++	x3 ^= k[4*i+3];	x0=ror32(x0, 5);x2=ror32(x2,22);\
+ 	x4 =  x1;	x2 ^= x3;	x0 ^= x3;	\
+ 	x4 <<= 7;	x0 ^= x1;	x1=ror32(x1,1);	\
+-	x2 ^= x4;	x3=ror32(x3,7);	x4 = x0 << 3;	\
++	x2 ^= x4;	x3=ror32(x3, 7);x4 = x0 << 3;	\
+ 	x1 ^= x0;	x3 ^= x4;	x0=ror32(x0,13);\
+ 	x1 ^= x2;	x3 ^= x2;	x2=ror32(x2,3);
+ 
+-#define S0(x0,x1,x2,x3,x4)				\
++#define S0(x0, x1, x2, x3, x4)				\
+ 					x4  = x3;	\
+ 	x3 |= x0;	x0 ^= x4;	x4 ^= x2;	\
+ 	x4 =~ x4;	x3 ^= x1;	x1 &= x0;	\
+@@ -75,7 +75,7 @@
+ 	x3 ^= x2;	x1 =~ x1;	x2 ^= x4;	\
+ 	x1 ^= x2;
+ 
+-#define S1(x0,x1,x2,x3,x4)				\
++#define S1(x0, x1, x2, x3, x4)				\
+ 					x4  = x1;	\
+ 	x1 ^= x0;	x0 ^= x3;	x3 =~ x3;	\
+ 	x4 &= x1;	x0 |= x1;	x3 ^= x2;	\
+@@ -84,7 +84,7 @@
+ 	x2 ^= x1;	x1 |= x0;	x0 =~ x0;	\
+ 	x0 ^= x2;	x4 ^= x1;
+ 
+-#define S2(x0,x1,x2,x3,x4)				\
++#define S2(x0, x1, x2, x3, x4)				\
+ 					x3 =~ x3;	\
+ 	x1 ^= x0;	x4  = x0;	x0 &= x2;	\
+ 	x0 ^= x3;	x3 |= x4;	x2 ^= x1;	\
+@@ -93,7 +93,7 @@
+ 	x3 ^= x0;	x4 ^= x0;	x0 ^= x2;	\
+ 	x1 |= x2;
+ 
+-#define S3(x0,x1,x2,x3,x4)				\
++#define S3(x0, x1, x2, x3, x4)				\
+ 					x4  = x1;	\
+ 	x1 ^= x3;	x3 |= x0;	x4 &= x0;	\
+ 	x0 ^= x2;	x2 ^= x1;	x1 &= x3;	\
+@@ -102,7 +102,7 @@
+ 	x3 ^= x2;	x4 |= x1;	x2 &= x1;	\
+ 	x4 ^= x3;	x0 ^= x3;	x3 ^= x2;
+ 
+-#define S4(x0,x1,x2,x3,x4)				\
++#define S4(x0, x1, x2, x3, x4)				\
+ 					x4  = x3;	\
+ 	x3 &= x0;	x0 ^= x4;			\
+ 	x3 ^= x2;	x2 |= x4;	x0 ^= x1;	\
+@@ -112,7 +112,7 @@
+ 	x4 ^= x0;	x3 |= x1;	x1 =~ x1;	\
+ 	x3 ^= x0;
+ 
+-#define S5(x0,x1,x2,x3,x4)				\
++#define S5(x0, x1, x2, x3, x4)				\
+ 	x4  = x1;	x1 |= x0;			\
+ 	x2 ^= x1;	x3 =~ x3;	x4 ^= x0;	\
+ 	x0 ^= x2;	x1 &= x4;	x4 |= x3;	\
+@@ -121,7 +121,7 @@
+ 	x1 ^= x2;	x2 &= x0;			\
+ 	x3 ^= x2;
+ 
+-#define S6(x0,x1,x2,x3,x4)				\
++#define S6(x0, x1, x2, x3, x4)				\
+ 					x4  = x1;	\
+ 	x3 ^= x0;	x1 ^= x2;	x2 ^= x0;	\
+ 	x0 &= x3;	x1 |= x3;	x4 =~ x4;	\
+@@ -130,7 +130,7 @@
+ 	x4 ^= x1;	x2 ^= x3;	x3 &= x1;	\
+ 	x3 ^= x0;	x1 ^= x2;
+ 
+-#define S7(x0,x1,x2,x3,x4)				\
++#define S7(x0, x1, x2, x3, x4)				\
+ 					x1 =~ x1;	\
+ 	x4  = x1;	x0 =~ x0;	x1 &= x2;	\
+ 	x1 ^= x3;	x3 |= x4;	x4 ^= x2;	\
+@@ -140,7 +140,7 @@
+ 	x2 ^= x4;	x3 ^= x1;	x4 |= x0;	\
+ 	x4 ^= x1;
+ 
+-#define SI0(x0,x1,x2,x3,x4)				\
++#define SI0(x0, x1, x2, x3, x4)				\
+ 			x4  = x3;	x1 ^= x0;	\
+ 	x3 |= x1;	x4 ^= x1;	x0 =~ x0;	\
+ 	x2 ^= x3;	x3 ^= x0;	x0 &= x1;	\
+@@ -148,7 +148,7 @@
+ 	x2 ^= x3;	x1 ^= x3;	x3 &= x0;	\
+ 	x1 ^= x0;	x0 ^= x2;	x4 ^= x3;
+ 
+-#define SI1(x0,x1,x2,x3,x4)				\
++#define SI1(x0, x1, x2, x3, x4)				\
+ 	x1 ^= x3;	x4  = x0;			\
+ 	x0 ^= x2;	x2 =~ x2;	x4 |= x1;	\
+ 	x4 ^= x3;	x3 &= x1;	x1 ^= x2;	\
+@@ -157,7 +157,7 @@
+ 	x2 ^= x4;	x1 ^= x0;			\
+ 	x4 ^= x1;
+ 
+-#define SI2(x0,x1,x2,x3,x4)				\
++#define SI2(x0, x1, x2, x3, x4)				\
+ 	x2 ^= x1;	x4  = x3;	x3 =~ x3;	\
+ 	x3 |= x2;	x2 ^= x4;	x4 ^= x0;	\
+ 	x3 ^= x1;	x1 |= x2;	x2 ^= x0;	\
+@@ -165,7 +165,7 @@
+ 	x4 ^= x2;	x2 &= x1;			\
+ 	x2 ^= x3;	x3 ^= x4;	x4 ^= x0;
+ 
+-#define SI3(x0,x1,x2,x3,x4)				\
++#define SI3(x0, x1, x2, x3, x4)				\
+ 					x2 ^= x1;	\
+ 	x4  = x1;	x1 &= x2;			\
+ 	x1 ^= x0;	x0 |= x4;	x4 ^= x3;	\
+@@ -174,7 +174,7 @@
+ 	x3 &= x1;	x1 ^= x0;	x0 &= x2;	\
+ 	x4 ^= x3;	x3 ^= x0;	x0 ^= x1;
+ 
+-#define SI4(x0,x1,x2,x3,x4)				\
++#define SI4(x0, x1, x2, x3, x4)				\
+ 	x2 ^= x3;	x4  = x0;	x0 &= x1;	\
+ 	x0 ^= x2;	x2 |= x3;	x4 =~ x4;	\
+ 	x1 ^= x0;	x0 ^= x2;	x2 &= x4;	\
+@@ -183,7 +183,7 @@
+ 	x4 ^= x3;	x3 ^= x1;	x1 &= x0;	\
+ 	x4 ^= x1;	x0 ^= x3;
+ 
+-#define SI5(x0,x1,x2,x3,x4)				\
++#define SI5(x0, x1, x2, x3, x4)				\
+ 			x4  = x1;	x1 |= x2;	\
+ 	x2 ^= x4;	x1 ^= x3;	x3 &= x4;	\
+ 	x2 ^= x3;	x3 |= x0;	x0 =~ x0;	\
+@@ -192,7 +192,7 @@
+ 	x1 ^= x3;	x0 &= x2;	x2 ^= x3;	\
+ 	x0 ^= x2;	x2 ^= x4;	x4 ^= x3;
+ 
+-#define SI6(x0,x1,x2,x3,x4)				\
++#define SI6(x0, x1, x2, x3, x4)				\
+ 			x0 ^= x2;			\
+ 	x4  = x0;	x0 &= x3;	x2 ^= x3;	\
+ 	x0 ^= x2;	x3 ^= x1;	x2 |= x4;	\
+@@ -201,7 +201,7 @@
+ 	x3 ^= x4;	x4 ^= x2;	x0 ^= x1;	\
+ 	x2 ^= x0;
+ 
+-#define SI7(x0,x1,x2,x3,x4)				\
++#define SI7(x0, x1, x2, x3, x4)				\
+ 	x4  = x3;	x3 &= x0;	x0 ^= x2;	\
+ 	x2 |= x4;	x4 ^= x1;	x0 =~ x0;	\
+ 	x1 |= x3;	x4 ^= x0;	x0 &= x2;	\
+@@ -221,7 +221,7 @@ static int serpent_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 	struct serpent_ctx *ctx = crypto_tfm_ctx(tfm);
+ 	u32 *k = ctx->expkey;
+ 	u8  *k8 = (u8 *)k;
+-	u32 r0,r1,r2,r3,r4;
++	u32 r0, r1, r2, r3, r4;
+ 	int i;
+ 
+ 	/* Copy key, add padding */
+@@ -241,121 +241,121 @@ static int serpent_setkey(struct crypto_tfm *tfm, const u8 *key,
+ 	r3 = le32_to_cpu(k[6]);
+ 	r4 = le32_to_cpu(k[7]);
+ 
+-	keyiter(le32_to_cpu(k[0]),r0,r4,r2,0,0);
+-	keyiter(le32_to_cpu(k[1]),r1,r0,r3,1,1);
+-	keyiter(le32_to_cpu(k[2]),r2,r1,r4,2,2);
+-	keyiter(le32_to_cpu(k[3]),r3,r2,r0,3,3);
+-	keyiter(le32_to_cpu(k[4]),r4,r3,r1,4,4);
+-	keyiter(le32_to_cpu(k[5]),r0,r4,r2,5,5);
+-	keyiter(le32_to_cpu(k[6]),r1,r0,r3,6,6);
+-	keyiter(le32_to_cpu(k[7]),r2,r1,r4,7,7);
 -
- static struct rb_root memtype_rbroot = RB_ROOT;
- static LIST_HEAD(memtype_list);
- static DEFINE_SPINLOCK(memtype_lock);	/* protects memtype list */
-@@ -349,6 +328,64 @@ static int free_ram_pages_type(u64 start, u64 end)
+-	keyiter(k[  0],r3,r2,r0,  8,  8); keyiter(k[  1],r4,r3,r1,  9,  9);
+-	keyiter(k[  2],r0,r4,r2, 10, 10); keyiter(k[  3],r1,r0,r3, 11, 11);
+-	keyiter(k[  4],r2,r1,r4, 12, 12); keyiter(k[  5],r3,r2,r0, 13, 13);
+-	keyiter(k[  6],r4,r3,r1, 14, 14); keyiter(k[  7],r0,r4,r2, 15, 15);
+-	keyiter(k[  8],r1,r0,r3, 16, 16); keyiter(k[  9],r2,r1,r4, 17, 17);
+-	keyiter(k[ 10],r3,r2,r0, 18, 18); keyiter(k[ 11],r4,r3,r1, 19, 19);
+-	keyiter(k[ 12],r0,r4,r2, 20, 20); keyiter(k[ 13],r1,r0,r3, 21, 21);
+-	keyiter(k[ 14],r2,r1,r4, 22, 22); keyiter(k[ 15],r3,r2,r0, 23, 23);
+-	keyiter(k[ 16],r4,r3,r1, 24, 24); keyiter(k[ 17],r0,r4,r2, 25, 25);
+-	keyiter(k[ 18],r1,r0,r3, 26, 26); keyiter(k[ 19],r2,r1,r4, 27, 27);
+-	keyiter(k[ 20],r3,r2,r0, 28, 28); keyiter(k[ 21],r4,r3,r1, 29, 29);
+-	keyiter(k[ 22],r0,r4,r2, 30, 30); keyiter(k[ 23],r1,r0,r3, 31, 31);
++	keyiter(le32_to_cpu(k[0]), r0, r4, r2, 0, 0);
++	keyiter(le32_to_cpu(k[1]), r1, r0, r3, 1, 1);
++	keyiter(le32_to_cpu(k[2]), r2, r1, r4, 2, 2);
++	keyiter(le32_to_cpu(k[3]), r3, r2, r0, 3, 3);
++	keyiter(le32_to_cpu(k[4]), r4, r3, r1, 4, 4);
++	keyiter(le32_to_cpu(k[5]), r0, r4, r2, 5, 5);
++	keyiter(le32_to_cpu(k[6]), r1, r0, r3, 6, 6);
++	keyiter(le32_to_cpu(k[7]), r2, r1, r4, 7, 7);
++
++	keyiter(k[  0], r3, r2, r0,  8,  8); keyiter(k[  1], r4, r3, r1,  9,  9);
++	keyiter(k[  2], r0, r4, r2, 10, 10); keyiter(k[  3], r1, r0, r3, 11, 11);
++	keyiter(k[  4], r2, r1, r4, 12, 12); keyiter(k[  5], r3, r2, r0, 13, 13);
++	keyiter(k[  6], r4, r3, r1, 14, 14); keyiter(k[  7], r0, r4, r2, 15, 15);
++	keyiter(k[  8], r1, r0, r3, 16, 16); keyiter(k[  9], r2, r1, r4, 17, 17);
++	keyiter(k[ 10], r3, r2, r0, 18, 18); keyiter(k[ 11], r4, r3, r1, 19, 19);
++	keyiter(k[ 12], r0, r4, r2, 20, 20); keyiter(k[ 13], r1, r0, r3, 21, 21);
++	keyiter(k[ 14], r2, r1, r4, 22, 22); keyiter(k[ 15], r3, r2, r0, 23, 23);
++	keyiter(k[ 16], r4, r3, r1, 24, 24); keyiter(k[ 17], r0, r4, r2, 25, 25);
++	keyiter(k[ 18], r1, r0, r3, 26, 26); keyiter(k[ 19], r2, r1, r4, 27, 27);
++	keyiter(k[ 20], r3, r2, r0, 28, 28); keyiter(k[ 21], r4, r3, r1, 29, 29);
++	keyiter(k[ 22], r0, r4, r2, 30, 30); keyiter(k[ 23], r1, r0, r3, 31, 31);
+ 
+ 	k += 50;
+ 
+-	keyiter(k[-26],r2,r1,r4, 32,-18); keyiter(k[-25],r3,r2,r0, 33,-17);
+-	keyiter(k[-24],r4,r3,r1, 34,-16); keyiter(k[-23],r0,r4,r2, 35,-15);
+-	keyiter(k[-22],r1,r0,r3, 36,-14); keyiter(k[-21],r2,r1,r4, 37,-13);
+-	keyiter(k[-20],r3,r2,r0, 38,-12); keyiter(k[-19],r4,r3,r1, 39,-11);
+-	keyiter(k[-18],r0,r4,r2, 40,-10); keyiter(k[-17],r1,r0,r3, 41, -9);
+-	keyiter(k[-16],r2,r1,r4, 42, -8); keyiter(k[-15],r3,r2,r0, 43, -7);
+-	keyiter(k[-14],r4,r3,r1, 44, -6); keyiter(k[-13],r0,r4,r2, 45, -5);
+-	keyiter(k[-12],r1,r0,r3, 46, -4); keyiter(k[-11],r2,r1,r4, 47, -3);
+-	keyiter(k[-10],r3,r2,r0, 48, -2); keyiter(k[ -9],r4,r3,r1, 49, -1);
+-	keyiter(k[ -8],r0,r4,r2, 50,  0); keyiter(k[ -7],r1,r0,r3, 51,  1);
+-	keyiter(k[ -6],r2,r1,r4, 52,  2); keyiter(k[ -5],r3,r2,r0, 53,  3);
+-	keyiter(k[ -4],r4,r3,r1, 54,  4); keyiter(k[ -3],r0,r4,r2, 55,  5);
+-	keyiter(k[ -2],r1,r0,r3, 56,  6); keyiter(k[ -1],r2,r1,r4, 57,  7);
+-	keyiter(k[  0],r3,r2,r0, 58,  8); keyiter(k[  1],r4,r3,r1, 59,  9);
+-	keyiter(k[  2],r0,r4,r2, 60, 10); keyiter(k[  3],r1,r0,r3, 61, 11);
+-	keyiter(k[  4],r2,r1,r4, 62, 12); keyiter(k[  5],r3,r2,r0, 63, 13);
+-	keyiter(k[  6],r4,r3,r1, 64, 14); keyiter(k[  7],r0,r4,r2, 65, 15);
+-	keyiter(k[  8],r1,r0,r3, 66, 16); keyiter(k[  9],r2,r1,r4, 67, 17);
+-	keyiter(k[ 10],r3,r2,r0, 68, 18); keyiter(k[ 11],r4,r3,r1, 69, 19);
+-	keyiter(k[ 12],r0,r4,r2, 70, 20); keyiter(k[ 13],r1,r0,r3, 71, 21);
+-	keyiter(k[ 14],r2,r1,r4, 72, 22); keyiter(k[ 15],r3,r2,r0, 73, 23);
+-	keyiter(k[ 16],r4,r3,r1, 74, 24); keyiter(k[ 17],r0,r4,r2, 75, 25);
+-	keyiter(k[ 18],r1,r0,r3, 76, 26); keyiter(k[ 19],r2,r1,r4, 77, 27);
+-	keyiter(k[ 20],r3,r2,r0, 78, 28); keyiter(k[ 21],r4,r3,r1, 79, 29);
+-	keyiter(k[ 22],r0,r4,r2, 80, 30); keyiter(k[ 23],r1,r0,r3, 81, 31);
++	keyiter(k[-26], r2, r1, r4, 32,-18); keyiter(k[-25], r3, r2, r0, 33,-17);
++	keyiter(k[-24], r4, r3, r1, 34,-16); keyiter(k[-23], r0, r4, r2, 35,-15);
++	keyiter(k[-22], r1, r0, r3, 36,-14); keyiter(k[-21], r2, r1, r4, 37,-13);
++	keyiter(k[-20], r3, r2, r0, 38,-12); keyiter(k[-19], r4, r3, r1, 39,-11);
++	keyiter(k[-18], r0, r4, r2, 40,-10); keyiter(k[-17], r1, r0, r3, 41, -9);
++	keyiter(k[-16], r2, r1, r4, 42, -8); keyiter(k[-15], r3, r2, r0, 43, -7);
++	keyiter(k[-14], r4, r3, r1, 44, -6); keyiter(k[-13], r0, r4, r2, 45, -5);
++	keyiter(k[-12], r1, r0, r3, 46, -4); keyiter(k[-11], r2, r1, r4, 47, -3);
++	keyiter(k[-10], r3, r2, r0, 48, -2); keyiter(k[ -9], r4, r3, r1, 49, -1);
++	keyiter(k[ -8], r0, r4, r2, 50,  0); keyiter(k[ -7], r1, r0, r3, 51,  1);
++	keyiter(k[ -6], r2, r1, r4, 52,  2); keyiter(k[ -5], r3, r2, r0, 53,  3);
++	keyiter(k[ -4], r4, r3, r1, 54,  4); keyiter(k[ -3], r0, r4, r2, 55,  5);
++	keyiter(k[ -2], r1, r0, r3, 56,  6); keyiter(k[ -1], r2, r1, r4, 57,  7);
++	keyiter(k[  0], r3, r2, r0, 58,  8); keyiter(k[  1], r4, r3, r1, 59,  9);
++	keyiter(k[  2], r0, r4, r2, 60, 10); keyiter(k[  3], r1, r0, r3, 61, 11);
++	keyiter(k[  4], r2, r1, r4, 62, 12); keyiter(k[  5], r3, r2, r0, 63, 13);
++	keyiter(k[  6], r4, r3, r1, 64, 14); keyiter(k[  7], r0, r4, r2, 65, 15);
++	keyiter(k[  8], r1, r0, r3, 66, 16); keyiter(k[  9], r2, r1, r4, 67, 17);
++	keyiter(k[ 10], r3, r2, r0, 68, 18); keyiter(k[ 11], r4, r3, r1, 69, 19);
++	keyiter(k[ 12], r0, r4, r2, 70, 20); keyiter(k[ 13], r1, r0, r3, 71, 21);
++	keyiter(k[ 14], r2, r1, r4, 72, 22); keyiter(k[ 15], r3, r2, r0, 73, 23);
++	keyiter(k[ 16], r4, r3, r1, 74, 24); keyiter(k[ 17], r0, r4, r2, 75, 25);
++	keyiter(k[ 18], r1, r0, r3, 76, 26); keyiter(k[ 19], r2, r1, r4, 77, 27);
++	keyiter(k[ 20], r3, r2, r0, 78, 28); keyiter(k[ 21], r4, r3, r1, 79, 29);
++	keyiter(k[ 22], r0, r4, r2, 80, 30); keyiter(k[ 23], r1, r0, r3, 81, 31);
+ 
+ 	k += 50;
+ 
+-	keyiter(k[-26],r2,r1,r4, 82,-18); keyiter(k[-25],r3,r2,r0, 83,-17);
+-	keyiter(k[-24],r4,r3,r1, 84,-16); keyiter(k[-23],r0,r4,r2, 85,-15);
+-	keyiter(k[-22],r1,r0,r3, 86,-14); keyiter(k[-21],r2,r1,r4, 87,-13);
+-	keyiter(k[-20],r3,r2,r0, 88,-12); keyiter(k[-19],r4,r3,r1, 89,-11);
+-	keyiter(k[-18],r0,r4,r2, 90,-10); keyiter(k[-17],r1,r0,r3, 91, -9);
+-	keyiter(k[-16],r2,r1,r4, 92, -8); keyiter(k[-15],r3,r2,r0, 93, -7);
+-	keyiter(k[-14],r4,r3,r1, 94, -6); keyiter(k[-13],r0,r4,r2, 95, -5);
+-	keyiter(k[-12],r1,r0,r3, 96, -4); keyiter(k[-11],r2,r1,r4, 97, -3);
+-	keyiter(k[-10],r3,r2,r0, 98, -2); keyiter(k[ -9],r4,r3,r1, 99, -1);
+-	keyiter(k[ -8],r0,r4,r2,100,  0); keyiter(k[ -7],r1,r0,r3,101,  1);
+-	keyiter(k[ -6],r2,r1,r4,102,  2); keyiter(k[ -5],r3,r2,r0,103,  3);
+-	keyiter(k[ -4],r4,r3,r1,104,  4); keyiter(k[ -3],r0,r4,r2,105,  5);
+-	keyiter(k[ -2],r1,r0,r3,106,  6); keyiter(k[ -1],r2,r1,r4,107,  7);
+-	keyiter(k[  0],r3,r2,r0,108,  8); keyiter(k[  1],r4,r3,r1,109,  9);
+-	keyiter(k[  2],r0,r4,r2,110, 10); keyiter(k[  3],r1,r0,r3,111, 11);
+-	keyiter(k[  4],r2,r1,r4,112, 12); keyiter(k[  5],r3,r2,r0,113, 13);
+-	keyiter(k[  6],r4,r3,r1,114, 14); keyiter(k[  7],r0,r4,r2,115, 15);
+-	keyiter(k[  8],r1,r0,r3,116, 16); keyiter(k[  9],r2,r1,r4,117, 17);
+-	keyiter(k[ 10],r3,r2,r0,118, 18); keyiter(k[ 11],r4,r3,r1,119, 19);
+-	keyiter(k[ 12],r0,r4,r2,120, 20); keyiter(k[ 13],r1,r0,r3,121, 21);
+-	keyiter(k[ 14],r2,r1,r4,122, 22); keyiter(k[ 15],r3,r2,r0,123, 23);
+-	keyiter(k[ 16],r4,r3,r1,124, 24); keyiter(k[ 17],r0,r4,r2,125, 25);
+-	keyiter(k[ 18],r1,r0,r3,126, 26); keyiter(k[ 19],r2,r1,r4,127, 27);
+-	keyiter(k[ 20],r3,r2,r0,128, 28); keyiter(k[ 21],r4,r3,r1,129, 29);
+-	keyiter(k[ 22],r0,r4,r2,130, 30); keyiter(k[ 23],r1,r0,r3,131, 31);
++	keyiter(k[-26], r2, r1, r4, 82,-18); keyiter(k[-25], r3, r2, r0, 83,-17);
++	keyiter(k[-24], r4, r3, r1, 84,-16); keyiter(k[-23], r0, r4, r2, 85,-15);
++	keyiter(k[-22], r1, r0, r3, 86,-14); keyiter(k[-21], r2, r1, r4, 87,-13);
++	keyiter(k[-20], r3, r2, r0, 88,-12); keyiter(k[-19], r4, r3, r1, 89,-11);
++	keyiter(k[-18], r0, r4, r2, 90,-10); keyiter(k[-17], r1, r0, r3, 91, -9);
++	keyiter(k[-16], r2, r1, r4, 92, -8); keyiter(k[-15], r3, r2, r0, 93, -7);
++	keyiter(k[-14], r4, r3, r1, 94, -6); keyiter(k[-13], r0, r4, r2, 95, -5);
++	keyiter(k[-12], r1, r0, r3, 96, -4); keyiter(k[-11], r2, r1, r4, 97, -3);
++	keyiter(k[-10], r3, r2, r0, 98, -2); keyiter(k[ -9], r4, r3, r1, 99, -1);
++	keyiter(k[ -8], r0, r4, r2,100,  0); keyiter(k[ -7], r1, r0, r3,101,  1);
++	keyiter(k[ -6], r2, r1, r4,102,  2); keyiter(k[ -5], r3, r2, r0,103,  3);
++	keyiter(k[ -4], r4, r3, r1,104,  4); keyiter(k[ -3], r0, r4, r2,105,  5);
++	keyiter(k[ -2], r1, r0, r3,106,  6); keyiter(k[ -1], r2, r1, r4,107,  7);
++	keyiter(k[  0], r3, r2, r0,108,  8); keyiter(k[  1], r4, r3, r1,109,  9);
++	keyiter(k[  2], r0, r4, r2,110, 10); keyiter(k[  3], r1, r0, r3,111, 11);
++	keyiter(k[  4], r2, r1, r4,112, 12); keyiter(k[  5], r3, r2, r0,113, 13);
++	keyiter(k[  6], r4, r3, r1,114, 14); keyiter(k[  7], r0, r4, r2,115, 15);
++	keyiter(k[  8], r1, r0, r3,116, 16); keyiter(k[  9], r2, r1, r4,117, 17);
++	keyiter(k[ 10], r3, r2, r0,118, 18); keyiter(k[ 11], r4, r3, r1,119, 19);
++	keyiter(k[ 12], r0, r4, r2,120, 20); keyiter(k[ 13], r1, r0, r3,121, 21);
++	keyiter(k[ 14], r2, r1, r4,122, 22); keyiter(k[ 15], r3, r2, r0,123, 23);
++	keyiter(k[ 16], r4, r3, r1,124, 24); keyiter(k[ 17], r0, r4, r2,125, 25);
++	keyiter(k[ 18], r1, r0, r3,126, 26); keyiter(k[ 19], r2, r1, r4,127, 27);
++	keyiter(k[ 20], r3, r2, r0,128, 28); keyiter(k[ 21], r4, r3, r1,129, 29);
++	keyiter(k[ 22], r0, r4, r2,130, 30); keyiter(k[ 23], r1, r0, r3,131, 31);
+ 
+ 	/* Apply S-boxes */
+ 
+-	S3(r3,r4,r0,r1,r2); storekeys(r1,r2,r4,r3, 28); loadkeys(r1,r2,r4,r3, 24);
+-	S4(r1,r2,r4,r3,r0); storekeys(r2,r4,r3,r0, 24); loadkeys(r2,r4,r3,r0, 20);
+-	S5(r2,r4,r3,r0,r1); storekeys(r1,r2,r4,r0, 20); loadkeys(r1,r2,r4,r0, 16);
+-	S6(r1,r2,r4,r0,r3); storekeys(r4,r3,r2,r0, 16); loadkeys(r4,r3,r2,r0, 12);
+-	S7(r4,r3,r2,r0,r1); storekeys(r1,r2,r0,r4, 12); loadkeys(r1,r2,r0,r4,  8);
+-	S0(r1,r2,r0,r4,r3); storekeys(r0,r2,r4,r1,  8); loadkeys(r0,r2,r4,r1,  4);
+-	S1(r0,r2,r4,r1,r3); storekeys(r3,r4,r1,r0,  4); loadkeys(r3,r4,r1,r0,  0);
+-	S2(r3,r4,r1,r0,r2); storekeys(r2,r4,r3,r0,  0); loadkeys(r2,r4,r3,r0, -4);
+-	S3(r2,r4,r3,r0,r1); storekeys(r0,r1,r4,r2, -4); loadkeys(r0,r1,r4,r2, -8);
+-	S4(r0,r1,r4,r2,r3); storekeys(r1,r4,r2,r3, -8); loadkeys(r1,r4,r2,r3,-12);
+-	S5(r1,r4,r2,r3,r0); storekeys(r0,r1,r4,r3,-12); loadkeys(r0,r1,r4,r3,-16);
+-	S6(r0,r1,r4,r3,r2); storekeys(r4,r2,r1,r3,-16); loadkeys(r4,r2,r1,r3,-20);
+-	S7(r4,r2,r1,r3,r0); storekeys(r0,r1,r3,r4,-20); loadkeys(r0,r1,r3,r4,-24);
+-	S0(r0,r1,r3,r4,r2); storekeys(r3,r1,r4,r0,-24); loadkeys(r3,r1,r4,r0,-28);
++	S3(r3, r4, r0, r1, r2); storekeys(r1, r2, r4, r3, 28); loadkeys(r1, r2, r4, r3, 24);
++	S4(r1, r2, r4, r3, r0); storekeys(r2, r4, r3, r0, 24); loadkeys(r2, r4, r3, r0, 20);
++	S5(r2, r4, r3, r0, r1); storekeys(r1, r2, r4, r0, 20); loadkeys(r1, r2, r4, r0, 16);
++	S6(r1, r2, r4, r0, r3); storekeys(r4, r3, r2, r0, 16); loadkeys(r4, r3, r2, r0, 12);
++	S7(r4, r3, r2, r0, r1); storekeys(r1, r2, r0, r4, 12); loadkeys(r1, r2, r0, r4,  8);
++	S0(r1, r2, r0, r4, r3); storekeys(r0, r2, r4, r1,  8); loadkeys(r0, r2, r4, r1,  4);
++	S1(r0, r2, r4, r1, r3); storekeys(r3, r4, r1, r0,  4); loadkeys(r3, r4, r1, r0,  0);
++	S2(r3, r4, r1, r0, r2); storekeys(r2, r4, r3, r0,  0); loadkeys(r2, r4, r3, r0, -4);
++	S3(r2, r4, r3, r0, r1); storekeys(r0, r1, r4, r2, -4); loadkeys(r0, r1, r4, r2, -8);
++	S4(r0, r1, r4, r2, r3); storekeys(r1, r4, r2, r3, -8); loadkeys(r1, r4, r2, r3,-12);
++	S5(r1, r4, r2, r3, r0); storekeys(r0, r1, r4, r3,-12); loadkeys(r0, r1, r4, r3,-16);
++	S6(r0, r1, r4, r3, r2); storekeys(r4, r2, r1, r3,-16); loadkeys(r4, r2, r1, r3,-20);
++	S7(r4, r2, r1, r3, r0); storekeys(r0, r1, r3, r4,-20); loadkeys(r0, r1, r3, r4,-24);
++	S0(r0, r1, r3, r4, r2); storekeys(r3, r1, r4, r0,-24); loadkeys(r3, r1, r4, r0,-28);
+ 	k -= 50;
+-	S1(r3,r1,r4,r0,r2); storekeys(r2,r4,r0,r3, 22); loadkeys(r2,r4,r0,r3, 18);
+-	S2(r2,r4,r0,r3,r1); storekeys(r1,r4,r2,r3, 18); loadkeys(r1,r4,r2,r3, 14);
+-	S3(r1,r4,r2,r3,r0); storekeys(r3,r0,r4,r1, 14); loadkeys(r3,r0,r4,r1, 10);
+-	S4(r3,r0,r4,r1,r2); storekeys(r0,r4,r1,r2, 10); loadkeys(r0,r4,r1,r2,  6);
+-	S5(r0,r4,r1,r2,r3); storekeys(r3,r0,r4,r2,  6); loadkeys(r3,r0,r4,r2,  2);
+-	S6(r3,r0,r4,r2,r1); storekeys(r4,r1,r0,r2,  2); loadkeys(r4,r1,r0,r2, -2);
+-	S7(r4,r1,r0,r2,r3); storekeys(r3,r0,r2,r4, -2); loadkeys(r3,r0,r2,r4, -6);
+-	S0(r3,r0,r2,r4,r1); storekeys(r2,r0,r4,r3, -6); loadkeys(r2,r0,r4,r3,-10);
+-	S1(r2,r0,r4,r3,r1); storekeys(r1,r4,r3,r2,-10); loadkeys(r1,r4,r3,r2,-14);
+-	S2(r1,r4,r3,r2,r0); storekeys(r0,r4,r1,r2,-14); loadkeys(r0,r4,r1,r2,-18);
+-	S3(r0,r4,r1,r2,r3); storekeys(r2,r3,r4,r0,-18); loadkeys(r2,r3,r4,r0,-22);
++	S1(r3, r1, r4, r0, r2); storekeys(r2, r4, r0, r3, 22); loadkeys(r2, r4, r0, r3, 18);
++	S2(r2, r4, r0, r3, r1); storekeys(r1, r4, r2, r3, 18); loadkeys(r1, r4, r2, r3, 14);
++	S3(r1, r4, r2, r3, r0); storekeys(r3, r0, r4, r1, 14); loadkeys(r3, r0, r4, r1, 10);
++	S4(r3, r0, r4, r1, r2); storekeys(r0, r4, r1, r2, 10); loadkeys(r0, r4, r1, r2,  6);
++	S5(r0, r4, r1, r2, r3); storekeys(r3, r0, r4, r2,  6); loadkeys(r3, r0, r4, r2,  2);
++	S6(r3, r0, r4, r2, r1); storekeys(r4, r1, r0, r2,  2); loadkeys(r4, r1, r0, r2, -2);
++	S7(r4, r1, r0, r2, r3); storekeys(r3, r0, r2, r4, -2); loadkeys(r3, r0, r2, r4, -6);
++	S0(r3, r0, r2, r4, r1); storekeys(r2, r0, r4, r3, -6); loadkeys(r2, r0, r4, r3,-10);
++	S1(r2, r0, r4, r3, r1); storekeys(r1, r4, r3, r2,-10); loadkeys(r1, r4, r3, r2,-14);
++	S2(r1, r4, r3, r2, r0); storekeys(r0, r4, r1, r2,-14); loadkeys(r0, r4, r1, r2,-18);
++	S3(r0, r4, r1, r2, r3); storekeys(r2, r3, r4, r0,-18); loadkeys(r2, r3, r4, r0,-22);
+ 	k -= 50;
+-	S4(r2,r3,r4,r0,r1); storekeys(r3,r4,r0,r1, 28); loadkeys(r3,r4,r0,r1, 24);
+-	S5(r3,r4,r0,r1,r2); storekeys(r2,r3,r4,r1, 24); loadkeys(r2,r3,r4,r1, 20);
+-	S6(r2,r3,r4,r1,r0); storekeys(r4,r0,r3,r1, 20); loadkeys(r4,r0,r3,r1, 16);
+-	S7(r4,r0,r3,r1,r2); storekeys(r2,r3,r1,r4, 16); loadkeys(r2,r3,r1,r4, 12);
+-	S0(r2,r3,r1,r4,r0); storekeys(r1,r3,r4,r2, 12); loadkeys(r1,r3,r4,r2,  8);
+-	S1(r1,r3,r4,r2,r0); storekeys(r0,r4,r2,r1,  8); loadkeys(r0,r4,r2,r1,  4);
+-	S2(r0,r4,r2,r1,r3); storekeys(r3,r4,r0,r1,  4); loadkeys(r3,r4,r0,r1,  0);
+-	S3(r3,r4,r0,r1,r2); storekeys(r1,r2,r4,r3,  0);
++	S4(r2, r3, r4, r0, r1); storekeys(r3, r4, r0, r1, 28); loadkeys(r3, r4, r0, r1, 24);
++	S5(r3, r4, r0, r1, r2); storekeys(r2, r3, r4, r1, 24); loadkeys(r2, r3, r4, r1, 20);
++	S6(r2, r3, r4, r1, r0); storekeys(r4, r0, r3, r1, 20); loadkeys(r4, r0, r3, r1, 16);
++	S7(r4, r0, r3, r1, r2); storekeys(r2, r3, r1, r4, 16); loadkeys(r2, r3, r1, r4, 12);
++	S0(r2, r3, r1, r4, r0); storekeys(r1, r3, r4, r2, 12); loadkeys(r1, r3, r4, r2,  8);
++	S1(r1, r3, r4, r2, r0); storekeys(r0, r4, r2, r1,  8); loadkeys(r0, r4, r2, r1,  4);
++	S2(r0, r4, r2, r1, r3); storekeys(r3, r4, r0, r1,  4); loadkeys(r3, r4, r0, r1,  0);
++	S3(r3, r4, r0, r1, r2); storekeys(r1, r2, r4, r3,  0);
+ 
  	return 0;
  }
+@@ -379,39 +379,39 @@ static void serpent_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+ 	r2 = le32_to_cpu(s[2]);
+ 	r3 = le32_to_cpu(s[3]);
  
-+static int memtype_check_insert(struct memtype *new, unsigned long *new_type)
-+{
-+	struct memtype *entry;
-+	u64 start, end;
-+	unsigned long actual_type;
-+	struct list_head *where;
-+	int err = 0;
-+
-+	start = new->start;
-+	end = new->end;
-+	actual_type = new->type;
-+
-+	/* Search for existing mapping that overlaps the current range */
-+	where = NULL;
-+	list_for_each_entry(entry, &memtype_list, nd) {
-+		if (end <= entry->start) {
-+			where = entry->nd.prev;
-+			break;
-+		} else if (start <= entry->start) { /* end > entry->start */
-+			err = chk_conflict(new, entry, new_type);
-+			if (!err) {
-+				dprintk("Overlap at 0x%Lx-0x%Lx\n",
-+					entry->start, entry->end);
-+				where = entry->nd.prev;
-+			}
-+			break;
-+		} else if (start < entry->end) { /* start > entry->start */
-+			err = chk_conflict(new, entry, new_type);
-+			if (!err) {
-+				dprintk("Overlap at 0x%Lx-0x%Lx\n",
-+					entry->start, entry->end);
-+
-+				/*
-+				 * Move to right position in the linked
-+				 * list to add this new entry
-+				 */
-+				list_for_each_entry_continue(entry,
-+							&memtype_list, nd) {
-+					if (start <= entry->start) {
-+						where = entry->nd.prev;
-+						break;
-+					}
-+				}
-+			}
-+			break;
-+		}
-+	}
-+	if (!err) {
-+		if (where)
-+			list_add(&new->nd, where);
-+		else
-+			list_add_tail(&new->nd, &memtype_list);
-+
-+		memtype_rb_insert(&memtype_rbroot, new);
-+	}
-+	return err;
-+}
-+
- /*
-  * req_type typically has one of the:
-  * - _PAGE_CACHE_WB
-@@ -364,9 +401,8 @@ static int free_ram_pages_type(u64 start, u64 end)
- int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		    unsigned long *new_type)
+-				 K(r0,r1,r2,r3,0);
+-	S0(r0,r1,r2,r3,r4);	LK(r2,r1,r3,r0,r4,1);
+-	S1(r2,r1,r3,r0,r4);	LK(r4,r3,r0,r2,r1,2);
+-	S2(r4,r3,r0,r2,r1);	LK(r1,r3,r4,r2,r0,3);
+-	S3(r1,r3,r4,r2,r0);	LK(r2,r0,r3,r1,r4,4);
+-	S4(r2,r0,r3,r1,r4);	LK(r0,r3,r1,r4,r2,5);
+-	S5(r0,r3,r1,r4,r2);	LK(r2,r0,r3,r4,r1,6);
+-	S6(r2,r0,r3,r4,r1);	LK(r3,r1,r0,r4,r2,7);
+-	S7(r3,r1,r0,r4,r2);	LK(r2,r0,r4,r3,r1,8);
+-	S0(r2,r0,r4,r3,r1);	LK(r4,r0,r3,r2,r1,9);
+-	S1(r4,r0,r3,r2,r1);	LK(r1,r3,r2,r4,r0,10);
+-	S2(r1,r3,r2,r4,r0);	LK(r0,r3,r1,r4,r2,11);
+-	S3(r0,r3,r1,r4,r2);	LK(r4,r2,r3,r0,r1,12);
+-	S4(r4,r2,r3,r0,r1);	LK(r2,r3,r0,r1,r4,13);
+-	S5(r2,r3,r0,r1,r4);	LK(r4,r2,r3,r1,r0,14);
+-	S6(r4,r2,r3,r1,r0);	LK(r3,r0,r2,r1,r4,15);
+-	S7(r3,r0,r2,r1,r4);	LK(r4,r2,r1,r3,r0,16);
+-	S0(r4,r2,r1,r3,r0);	LK(r1,r2,r3,r4,r0,17);
+-	S1(r1,r2,r3,r4,r0);	LK(r0,r3,r4,r1,r2,18);
+-	S2(r0,r3,r4,r1,r2);	LK(r2,r3,r0,r1,r4,19);
+-	S3(r2,r3,r0,r1,r4);	LK(r1,r4,r3,r2,r0,20);
+-	S4(r1,r4,r3,r2,r0);	LK(r4,r3,r2,r0,r1,21);
+-	S5(r4,r3,r2,r0,r1);	LK(r1,r4,r3,r0,r2,22);
+-	S6(r1,r4,r3,r0,r2);	LK(r3,r2,r4,r0,r1,23);
+-	S7(r3,r2,r4,r0,r1);	LK(r1,r4,r0,r3,r2,24);
+-	S0(r1,r4,r0,r3,r2);	LK(r0,r4,r3,r1,r2,25);
+-	S1(r0,r4,r3,r1,r2);	LK(r2,r3,r1,r0,r4,26);
+-	S2(r2,r3,r1,r0,r4);	LK(r4,r3,r2,r0,r1,27);
+-	S3(r4,r3,r2,r0,r1);	LK(r0,r1,r3,r4,r2,28);
+-	S4(r0,r1,r3,r4,r2);	LK(r1,r3,r4,r2,r0,29);
+-	S5(r1,r3,r4,r2,r0);	LK(r0,r1,r3,r2,r4,30);
+-	S6(r0,r1,r3,r2,r4);	LK(r3,r4,r1,r2,r0,31);
+-	S7(r3,r4,r1,r2,r0);	 K(r0,r1,r2,r3,32);
++				 K(r0, r1, r2, r3, 0);
++	S0(r0, r1, r2, r3, r4); LK(r2, r1, r3, r0, r4, 1);
++	S1(r2, r1, r3, r0, r4); LK(r4, r3, r0, r2, r1, 2);
++	S2(r4, r3, r0, r2, r1); LK(r1, r3, r4, r2, r0, 3);
++	S3(r1, r3, r4, r2, r0); LK(r2, r0, r3, r1, r4, 4);
++	S4(r2, r0, r3, r1, r4); LK(r0, r3, r1, r4, r2, 5);
++	S5(r0, r3, r1, r4, r2); LK(r2, r0, r3, r4, r1, 6);
++	S6(r2, r0, r3, r4, r1); LK(r3, r1, r0, r4, r2, 7);
++	S7(r3, r1, r0, r4, r2); LK(r2, r0, r4, r3, r1, 8);
++	S0(r2, r0, r4, r3, r1); LK(r4, r0, r3, r2, r1, 9);
++	S1(r4, r0, r3, r2, r1); LK(r1, r3, r2, r4, r0, 10);
++	S2(r1, r3, r2, r4, r0); LK(r0, r3, r1, r4, r2, 11);
++	S3(r0, r3, r1, r4, r2); LK(r4, r2, r3, r0, r1, 12);
++	S4(r4, r2, r3, r0, r1); LK(r2, r3, r0, r1, r4, 13);
++	S5(r2, r3, r0, r1, r4); LK(r4, r2, r3, r1, r0, 14);
++	S6(r4, r2, r3, r1, r0); LK(r3, r0, r2, r1, r4, 15);
++	S7(r3, r0, r2, r1, r4); LK(r4, r2, r1, r3, r0, 16);
++	S0(r4, r2, r1, r3, r0); LK(r1, r2, r3, r4, r0, 17);
++	S1(r1, r2, r3, r4, r0); LK(r0, r3, r4, r1, r2, 18);
++	S2(r0, r3, r4, r1, r2); LK(r2, r3, r0, r1, r4, 19);
++	S3(r2, r3, r0, r1, r4); LK(r1, r4, r3, r2, r0, 20);
++	S4(r1, r4, r3, r2, r0); LK(r4, r3, r2, r0, r1, 21);
++	S5(r4, r3, r2, r0, r1); LK(r1, r4, r3, r0, r2, 22);
++	S6(r1, r4, r3, r0, r2); LK(r3, r2, r4, r0, r1, 23);
++	S7(r3, r2, r4, r0, r1); LK(r1, r4, r0, r3, r2, 24);
++	S0(r1, r4, r0, r3, r2); LK(r0, r4, r3, r1, r2, 25);
++	S1(r0, r4, r3, r1, r2); LK(r2, r3, r1, r0, r4, 26);
++	S2(r2, r3, r1, r0, r4); LK(r4, r3, r2, r0, r1, 27);
++	S3(r4, r3, r2, r0, r1); LK(r0, r1, r3, r4, r2, 28);
++	S4(r0, r1, r3, r4, r2); LK(r1, r3, r4, r2, r0, 29);
++	S5(r1, r3, r4, r2, r0); LK(r0, r1, r3, r2, r4, 30);
++	S6(r0, r1, r3, r2, r4); LK(r3, r4, r1, r2, r0, 31);
++	S7(r3, r4, r1, r2, r0);  K(r0, r1, r2, r3, 32);
+ 
+ 	d[0] = cpu_to_le32(r0);
+ 	d[1] = cpu_to_le32(r1);
+@@ -433,39 +433,39 @@ static void serpent_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+ 	r2 = le32_to_cpu(s[2]);
+ 	r3 = le32_to_cpu(s[3]);
+ 
+-				K(r0,r1,r2,r3,32);
+-	SI7(r0,r1,r2,r3,r4);	KL(r1,r3,r0,r4,r2,31);
+-	SI6(r1,r3,r0,r4,r2);	KL(r0,r2,r4,r1,r3,30);
+-	SI5(r0,r2,r4,r1,r3);	KL(r2,r3,r0,r4,r1,29);
+-	SI4(r2,r3,r0,r4,r1);	KL(r2,r0,r1,r4,r3,28);
+-	SI3(r2,r0,r1,r4,r3);	KL(r1,r2,r3,r4,r0,27);
+-	SI2(r1,r2,r3,r4,r0);	KL(r2,r0,r4,r3,r1,26);
+-	SI1(r2,r0,r4,r3,r1);	KL(r1,r0,r4,r3,r2,25);
+-	SI0(r1,r0,r4,r3,r2);	KL(r4,r2,r0,r1,r3,24);
+-	SI7(r4,r2,r0,r1,r3);	KL(r2,r1,r4,r3,r0,23);
+-	SI6(r2,r1,r4,r3,r0);	KL(r4,r0,r3,r2,r1,22);
+-	SI5(r4,r0,r3,r2,r1);	KL(r0,r1,r4,r3,r2,21);
+-	SI4(r0,r1,r4,r3,r2);	KL(r0,r4,r2,r3,r1,20);
+-	SI3(r0,r4,r2,r3,r1);	KL(r2,r0,r1,r3,r4,19);
+-	SI2(r2,r0,r1,r3,r4);	KL(r0,r4,r3,r1,r2,18);
+-	SI1(r0,r4,r3,r1,r2);	KL(r2,r4,r3,r1,r0,17);
+-	SI0(r2,r4,r3,r1,r0);	KL(r3,r0,r4,r2,r1,16);
+-	SI7(r3,r0,r4,r2,r1);	KL(r0,r2,r3,r1,r4,15);
+-	SI6(r0,r2,r3,r1,r4);	KL(r3,r4,r1,r0,r2,14);
+-	SI5(r3,r4,r1,r0,r2);	KL(r4,r2,r3,r1,r0,13);
+-	SI4(r4,r2,r3,r1,r0);	KL(r4,r3,r0,r1,r2,12);
+-	SI3(r4,r3,r0,r1,r2);	KL(r0,r4,r2,r1,r3,11);
+-	SI2(r0,r4,r2,r1,r3);	KL(r4,r3,r1,r2,r0,10);
+-	SI1(r4,r3,r1,r2,r0);	KL(r0,r3,r1,r2,r4,9);
+-	SI0(r0,r3,r1,r2,r4);	KL(r1,r4,r3,r0,r2,8);
+-	SI7(r1,r4,r3,r0,r2);	KL(r4,r0,r1,r2,r3,7);
+-	SI6(r4,r0,r1,r2,r3);	KL(r1,r3,r2,r4,r0,6);
+-	SI5(r1,r3,r2,r4,r0);	KL(r3,r0,r1,r2,r4,5);
+-	SI4(r3,r0,r1,r2,r4);	KL(r3,r1,r4,r2,r0,4);
+-	SI3(r3,r1,r4,r2,r0);	KL(r4,r3,r0,r2,r1,3);
+-	SI2(r4,r3,r0,r2,r1);	KL(r3,r1,r2,r0,r4,2);
+-	SI1(r3,r1,r2,r0,r4);	KL(r4,r1,r2,r0,r3,1);
+-	SI0(r4,r1,r2,r0,r3);	K(r2,r3,r1,r4,0);
++				 K (r0, r1, r2, r3, 32);
++	SI7(r0, r1, r2, r3, r4); KL(r1, r3, r0, r4, r2, 31);
++	SI6(r1, r3, r0, r4, r2); KL(r0, r2, r4, r1, r3, 30);
++	SI5(r0, r2, r4, r1, r3); KL(r2, r3, r0, r4, r1, 29);
++	SI4(r2, r3, r0, r4, r1); KL(r2, r0, r1, r4, r3, 28);
++	SI3(r2, r0, r1, r4, r3); KL(r1, r2, r3, r4, r0, 27);
++	SI2(r1, r2, r3, r4, r0); KL(r2, r0, r4, r3, r1, 26);
++	SI1(r2, r0, r4, r3, r1); KL(r1, r0, r4, r3, r2, 25);
++	SI0(r1, r0, r4, r3, r2); KL(r4, r2, r0, r1, r3, 24);
++	SI7(r4, r2, r0, r1, r3); KL(r2, r1, r4, r3, r0, 23);
++	SI6(r2, r1, r4, r3, r0); KL(r4, r0, r3, r2, r1, 22);
++	SI5(r4, r0, r3, r2, r1); KL(r0, r1, r4, r3, r2, 21);
++	SI4(r0, r1, r4, r3, r2); KL(r0, r4, r2, r3, r1, 20);
++	SI3(r0, r4, r2, r3, r1); KL(r2, r0, r1, r3, r4, 19);
++	SI2(r2, r0, r1, r3, r4); KL(r0, r4, r3, r1, r2, 18);
++	SI1(r0, r4, r3, r1, r2); KL(r2, r4, r3, r1, r0, 17);
++	SI0(r2, r4, r3, r1, r0); KL(r3, r0, r4, r2, r1, 16);
++	SI7(r3, r0, r4, r2, r1); KL(r0, r2, r3, r1, r4, 15);
++	SI6(r0, r2, r3, r1, r4); KL(r3, r4, r1, r0, r2, 14);
++	SI5(r3, r4, r1, r0, r2); KL(r4, r2, r3, r1, r0, 13);
++	SI4(r4, r2, r3, r1, r0); KL(r4, r3, r0, r1, r2, 12);
++	SI3(r4, r3, r0, r1, r2); KL(r0, r4, r2, r1, r3, 11);
++	SI2(r0, r4, r2, r1, r3); KL(r4, r3, r1, r2, r0, 10);
++	SI1(r4, r3, r1, r2, r0); KL(r0, r3, r1, r2, r4, 9);
++	SI0(r0, r3, r1, r2, r4); KL(r1, r4, r3, r0, r2, 8);
++	SI7(r1, r4, r3, r0, r2); KL(r4, r0, r1, r2, r3, 7);
++	SI6(r4, r0, r1, r2, r3); KL(r1, r3, r2, r4, r0, 6);
++	SI5(r1, r3, r2, r4, r0); KL(r3, r0, r1, r2, r4, 5);
++	SI4(r3, r0, r1, r2, r4); KL(r3, r1, r4, r2, r0, 4);
++	SI3(r3, r1, r4, r2, r0); KL(r4, r3, r0, r2, r1, 3);
++	SI2(r4, r3, r0, r2, r1); KL(r3, r1, r2, r0, r4, 2);
++	SI1(r3, r1, r2, r0, r4); KL(r4, r1, r2, r0, r3, 1);
++	SI0(r4, r1, r2, r0, r3); K (r2, r3, r1, r4, 0);
+ 
+ 	d[0] = cpu_to_le32(r2);
+ 	d[1] = cpu_to_le32(r3);
+@@ -482,22 +482,22 @@ static struct crypto_alg serpent_alg = {
+ 	.cra_module		=	THIS_MODULE,
+ 	.cra_list		=	LIST_HEAD_INIT(serpent_alg.cra_list),
+ 	.cra_u			=	{ .cipher = {
+-	.cia_min_keysize	=	SERPENT_MIN_KEY_SIZE,
+-	.cia_max_keysize	=	SERPENT_MAX_KEY_SIZE,
+-	.cia_setkey   		= 	serpent_setkey,
+-	.cia_encrypt 		=	serpent_encrypt,
+-	.cia_decrypt  		=	serpent_decrypt } }
++		.cia_min_keysize	=	SERPENT_MIN_KEY_SIZE,
++		.cia_max_keysize	=	SERPENT_MAX_KEY_SIZE,
++		.cia_setkey		=	serpent_setkey,
++		.cia_encrypt		=	serpent_encrypt,
++		.cia_decrypt		=	serpent_decrypt } }
+ };
+ 
+ static int tnepres_setkey(struct crypto_tfm *tfm, const u8 *key,
+-			  unsigned int keylen)
++                          unsigned int keylen)
  {
--	struct memtype *new, *entry;
-+	struct memtype *new;
- 	unsigned long actual_type;
--	struct list_head *where;
- 	int is_range_ram;
- 	int err = 0;
+ 	u8 rev_key[SERPENT_MAX_KEY_SIZE];
+ 	int i;
  
-@@ -423,42 +459,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 
- 	spin_lock(&memtype_lock);
- 
--	/* Search for existing mapping that overlaps the current range */
--	where = NULL;
--	list_for_each_entry(entry, &memtype_list, nd) {
--		if (end <= entry->start) {
--			where = entry->nd.prev;
--			break;
--		} else if (start <= entry->start) { /* end > entry->start */
--			err = chk_conflict(new, entry, new_type);
--			if (!err) {
--				dprintk("Overlap at 0x%Lx-0x%Lx\n",
--					entry->start, entry->end);
--				where = entry->nd.prev;
--			}
--			break;
--		} else if (start < entry->end) { /* start > entry->start */
--			err = chk_conflict(new, entry, new_type);
--			if (!err) {
--				dprintk("Overlap at 0x%Lx-0x%Lx\n",
--					entry->start, entry->end);
--
--				/*
--				 * Move to right position in the linked
--				 * list to add this new entry
--				 */
--				list_for_each_entry_continue(entry,
--							&memtype_list, nd) {
--					if (start <= entry->start) {
--						where = entry->nd.prev;
--						break;
--					}
--				}
--			}
--			break;
--		}
--	}
--
-+	err = memtype_check_insert(new, new_type);
- 	if (err) {
- 		printk(KERN_INFO "reserve_memtype failed 0x%Lx-0x%Lx, "
- 		       "track %s, req %s\n",
-@@ -469,13 +470,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		return err;
- 	}
- 
--	if (where)
--		list_add(&new->nd, where);
--	else
--		list_add_tail(&new->nd, &memtype_list);
--
--	memtype_rb_insert(&memtype_rbroot, new);
--
- 	spin_unlock(&memtype_lock);
- 
- 	dprintk("reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s, ret %s\n",
-@@ -937,28 +931,40 @@ EXPORT_SYMBOL_GPL(pgprot_writecombine);
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
- 
- /* get Nth element of the linked list */
--static struct memtype *memtype_get_idx(loff_t pos)
-+static int copy_memtype_nth_element(struct memtype *out, loff_t pos)
- {
--	struct memtype *list_node, *print_entry;
-+	struct memtype *list_node;
- 	int i = 1;
- 
--	print_entry  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
--	if (!print_entry)
--		return NULL;
--
--	spin_lock(&memtype_lock);
- 	list_for_each_entry(list_node, &memtype_list, nd) {
- 		if (pos == i) {
--			*print_entry = *list_node;
--			spin_unlock(&memtype_lock);
--			return print_entry;
-+			*out = *list_node;
-+			return 0;
- 		}
- 		++i;
- 	}
-+	return 1;
-+}
+ 	for (i = 0; i < keylen; ++i)
+ 		rev_key[keylen - i - 1] = key[i];
+- 
 +
-+static struct memtype *memtype_get_idx(loff_t pos)
-+{
-+	struct memtype *print_entry;
-+	int ret;
-+
-+	print_entry  = kzalloc(sizeof(struct memtype), GFP_KERNEL);
-+	if (!print_entry)
-+		return NULL;
-+
-+	spin_lock(&memtype_lock);
-+	ret = copy_memtype_nth_element(print_entry, pos);
- 	spin_unlock(&memtype_lock);
--	kfree(print_entry);
- 
--	return NULL;
-+	if (!ret) {
-+		return print_entry;
-+	} else {
-+		kfree(print_entry);
-+		return NULL;
-+	}
+ 	return serpent_setkey(tfm, rev_key, keylen);
  }
  
- static void *memtype_seq_start(struct seq_file *seq, loff_t *pos)
-diff --git a/arch/x86/mm/pat_internal.h b/arch/x86/mm/pat_internal.h
-new file mode 100644
-index 0000000..6c98780
---- /dev/null
-+++ b/arch/x86/mm/pat_internal.h
-@@ -0,0 +1,28 @@
-+#ifndef __PAT_INTERNAL_H_
-+#define __PAT_INTERNAL_H_
-+
-+extern int pat_debug_enable;
-+
-+#define dprintk(fmt, arg...) \
-+	do { if (pat_debug_enable) printk(KERN_INFO fmt, ##arg); } while (0)
-+
-+struct memtype {
-+	u64			start;
-+	u64			end;
-+	unsigned long		type;
-+	struct list_head	nd;
-+	struct rb_node		rb;
-+};
-+
-+static inline char *cattr_name(unsigned long flags)
-+{
-+	switch (flags & _PAGE_CACHE_MASK) {
-+	case _PAGE_CACHE_UC:		return "uncached";
-+	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
-+	case _PAGE_CACHE_WB:		return "write-back";
-+	case _PAGE_CACHE_WC:		return "write-combining";
-+	default:			return "broken";
-+	}
-+}
-+
-+#endif /* __PAT_INTERNAL_H_ */
+@@ -550,11 +550,11 @@ static struct crypto_alg tnepres_alg = {
+ 	.cra_module		=	THIS_MODULE,
+ 	.cra_list		=	LIST_HEAD_INIT(serpent_alg.cra_list),
+ 	.cra_u			=	{ .cipher = {
+-	.cia_min_keysize	=	SERPENT_MIN_KEY_SIZE,
+-	.cia_max_keysize	=	SERPENT_MAX_KEY_SIZE,
+-	.cia_setkey   		= 	tnepres_setkey,
+-	.cia_encrypt 		=	tnepres_encrypt,
+-	.cia_decrypt  		=	tnepres_decrypt } }
++		.cia_min_keysize	=	SERPENT_MIN_KEY_SIZE,
++		.cia_max_keysize	=	SERPENT_MAX_KEY_SIZE,
++		.cia_setkey		=	tnepres_setkey,
++		.cia_encrypt		=	tnepres_encrypt,
++		.cia_decrypt		=	tnepres_decrypt } }
+ };
+ 
+ static int __init serpent_mod_init(void)
+-- 
+1.6.6.1
+
