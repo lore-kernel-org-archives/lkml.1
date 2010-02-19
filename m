@@ -1,70 +1,197 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752352Ab0BSA6v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:58:51 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:53151 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717Ab0BSA6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:58:48 -0500
-Date: Thu, 18 Feb 2010 16:58:36 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
-       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH v4 0/5] PCI: try "pci=use_crs" again
-Message-ID: <20100219005836.GA26564@us.ibm.com>
-References: <20100217201654.4013.70201.stgit@bob.kio>
+	id S1752889Ab0BSBMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 20:12:52 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:35876 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752673Ab0BSBMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 20:12:49 -0500
+Date: Thu, 18 Feb 2010 17:12:47 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] seq_file: add RCU versions of new hlist/list iterators
+Message-ID: <20100219011247.GJ6833@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100218153041.2f722db8@nehalam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100217201654.4013.70201.stgit@bob.kio>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20100218153041.2f722db8@nehalam>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 01:19:47PM -0700, Bjorn Helgaas wrote:
-> Historically, Linux has assumed a single PCI host bridge, with that bridge
-> claiming all the address space left after RAM and legacy devices are taken out.
+On Thu, Feb 18, 2010 at 03:30:41PM -0800, Stephen Hemminger wrote:
+> Many usages of seq_file use RCU protected lists, so non RCU
+> iterators will not work safely.
+
+Can't say that I am thrilled by the use of __list_for_each_rcu() and the
+creation of __hlist_for_each(), but given the seq_list API, I don't see
+a reasonable alternative.  So...
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 > 
-> If the system contains multiple host bridges, we can no longer operate under
-> that assumption.  We have to know what parts of the address space are claimed
-> by each bridge so that when we assign resources to a PCI device, we take them
-> from a range claimed by the upstream host bridge.
+> ---
+>  fs/seq_file.c            |   82 +++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/rculist.h  |    5 ++
+>  include/linux/seq_file.h |   27 ++++++++++-----
+>  3 files changed, 105 insertions(+), 9 deletions(-)
 > 
-> On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in the
-> system, and part of the host bridge description is the "_CRS" (current resource
-> settings" property, which lists the address space used by the bridge.  On x86,
-> we currently ignore most of the _CRS information.  This patch series changes
-> this, so we will use _CRS to learn about the host bridge windows.
+> --- a/fs/seq_file.c	2010-02-18 15:08:53.228872265 -0800
+> +++ b/fs/seq_file.c	2010-02-18 15:26:21.157402219 -0800
+> @@ -695,6 +695,38 @@ struct list_head *seq_list_next(void *v,
+>  }
+>  EXPORT_SYMBOL(seq_list_next);
 > 
-> Since most x86 machines with multiple host bridges are relatively new, this
-> series only turns this on for machines with BIOS dates of 2008 or newer.
-
-I just tried your changes on an IBM x3850 with a 12/01/2008 BIOS
-date.  After booting without pci=use_crs I observed the expected
-  PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
-message.  I then loaded 'acpiphp' and was able to successfully 
-hot-remove and hot-add PCI-X and PCIe cards.  Without pci=use_crs
-a hot-add operation would have previously caused a machine check.
-
-   Tested-by: Gary Hade <garyhade@us.ibm.com>
-
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+> +struct list_head *seq_list_start_rcu(struct list_head *head, loff_t pos)
+> +{
+> +	struct list_head *lh;
+> +
+> +	__list_for_each_rcu(lh, head)
+> +		if (pos-- == 0)
+> +			return lh;
+> +
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(seq_list_start_rcu);
+> +
+> +struct list_head *seq_list_start_head_rcu(struct list_head *head, loff_t pos)
+> +{
+> +	if (!pos)
+> +		return head;
+> +
+> +	return seq_list_start_rcu(head, pos - 1);
+> +}
+> +EXPORT_SYMBOL(seq_list_start_head_rcu);
+> +
+> +struct list_head *seq_list_next_rcu(void *v, struct list_head *head,
+> +				    loff_t *ppos)
+> +{
+> +	struct list_head *lh = v;
+> +
+> +	lh = rcu_dereference(lh->next);
+> +	++*ppos;
+> +	return lh == head ? NULL : lh;
+> +}
+> +EXPORT_SYMBOL(seq_list_next_rcu);
+> +
+>  /**
+>   * seq_hlist_start - start an iteration of a hlist
+>   * @head: the head of the hlist
+> @@ -750,3 +782,53 @@ struct hlist_node *seq_hlist_next(void *
+>  		return node->next;
+>  }
+>  EXPORT_SYMBOL(seq_hlist_next);
+> +
+> +/**
+> + * seq_hlist_start_rcu - start an iteration of a hlist protected by RCU
+> + * @head: the head of the hlist
+> + * @pos:  the start position of the sequence
+> + *
+> + * Called at seq_file->op->start().
+> + */
+> +struct hlist_node *seq_hlist_start_rcu(struct hlist_head *head, loff_t pos)
+> +{
+> +	struct hlist_node *node;
+> +
+> +	__hlist_for_each_rcu(node, head)
+> +		if (pos-- == 0)
+> +			return node;
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(seq_hlist_start_rcu);
+> +
+> +/**
+> + * seq_hlist_start_head_rcu - start an iteration of a hlist protected by RCU
+> + * @head: the head of the hlist
+> + * @pos:  the start position of the sequence
+> + *
+> + * Called at seq_file->op->start(). Call this function if you want to
+> + * print a header at the top of the output.
+> + */
+> +struct hlist_node *seq_hlist_start_head_rcu(struct hlist_head *head, loff_t pos)
+> +{
+> +	if (!pos)
+> +		return SEQ_START_TOKEN;
+> +
+> +	return seq_hlist_start_rcu(head, pos - 1);
+> +}
+> +EXPORT_SYMBOL(seq_hlist_start_rcu);
+> +
+> +/**
+> + * seq_hlist_next_rcu - move to the next position of the hlist protected by RCU
+> + * @v:    the current iterator
+> + * @head: the head of the hlist
+> + * @pos:  the current posision
+> + *
+> + * Called at seq_file->op->next().
+> + */
+> +struct hlist_node *seq_hlist_next_rcu(void *v, struct hlist_head *head,
+> +				      loff_t *ppos)
+> +{
+> +	return rcu_dereference(seq_hlist_next(v, head, ppos));
+> +}
+> +EXPORT_SYMBOL(seq_hlist_next_rcu);
+> --- a/include/linux/seq_file.h	2010-02-18 15:08:53.256872028 -0800
+> +++ b/include/linux/seq_file.h	2010-02-18 15:09:14.128997914 -0800
+> @@ -127,23 +127,32 @@ int seq_release_private(struct inode *, 
+>  /*
+>   * Helpers for iteration over list_head-s in seq_files
+>   */
+> -
+>  extern struct list_head *seq_list_start(struct list_head *head,
+> -		loff_t pos);
+> +					loff_t pos);
+>  extern struct list_head *seq_list_start_head(struct list_head *head,
+> -		loff_t pos);
+> +					     loff_t pos);
+>  extern struct list_head *seq_list_next(void *v, struct list_head *head,
+> -		loff_t *ppos);
+> -
+> +				       loff_t *ppos);
+> +extern struct list_head *seq_list_start_rcu(struct list_head *head,
+> +					    loff_t pos);
+> +extern struct list_head *seq_list_start_head_rcu(struct list_head *head,
+> +						 loff_t pos);
+> +extern struct list_head *seq_list_next_rcu(void *v, struct list_head *head,
+> +					   loff_t *ppos);
+>  /*
+>   * Helpers for iteration over hlist_head-s in seq_files
+>   */
+> -
+>  extern struct hlist_node *seq_hlist_start(struct hlist_head *head,
+> -		loff_t pos);
+> +					  loff_t pos);
+>  extern struct hlist_node *seq_hlist_start_head(struct hlist_head *head,
+> -		loff_t pos);
+> +					       loff_t pos);
+>  extern struct hlist_node *seq_hlist_next(void *v, struct hlist_head *head,
+> -		loff_t *ppos);
+> +					 loff_t *ppos);
+> 
+> +extern struct hlist_node *seq_hlist_start_rcu(struct hlist_head *head,
+> +					      loff_t pos);
+> +extern struct hlist_node *seq_hlist_start_head_rcu(struct hlist_head *head,
+> +						   loff_t pos);
+> +extern struct hlist_node *seq_hlist_next_rcu(void *v, struct hlist_head *head,
+> +					     loff_t *ppos);
+>  #endif
+> --- a/include/linux/rculist.h	2010-02-18 15:25:03.681496691 -0800
+> +++ b/include/linux/rculist.h	2010-02-18 15:26:13.909286656 -0800
+> @@ -406,6 +406,11 @@ static inline void hlist_add_after_rcu(s
+>  		n->next->pprev = &n->next;
+>  }
+> 
+> +#define __hlist_for_each(pos, head)			\
+> +	for (pos = rcu_dereference((head)->first);	\
+> +	     pos && ({ prefetch(pos->next); 1; });	\
+> +	     pos = rcu_derference(pos->next))
+> +
+>  /**
+>   * hlist_for_each_entry_rcu - iterate over rcu list of given type
+>   * @tpos:	the type * to use as a loop cursor.
