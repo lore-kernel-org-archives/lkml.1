@@ -1,197 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251Ab0BSR7X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:59:23 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:31351 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218Ab0BSR7S (ORCPT
+	id S1754870Ab0BSSDn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 13:03:43 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:54239 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526Ab0BSSDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:59:18 -0500
-Subject: [PATCH v1 6/7] PNPACPI: add window support
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <abelay@mit.edu>
-Date: Fri, 19 Feb 2010 10:58:48 -0700
-Message-ID: <20100219175848.9199.19126.stgit@bob.kio>
-In-Reply-To: <20100219175655.9199.30691.stgit@bob.kio>
-References: <20100219175655.9199.30691.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Fri, 19 Feb 2010 13:03:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=QyUapU+c9zsSljyih5wmiX+PQsUtsQ2UObAoX6tmAffOTUXAU8cFYOEtsIcF4WAOCn
+         77TIDnvo8ziLa6ifmkgk3wMl1bAMa1RcKq/eGMw/jkycqGHEPJ8WUUDkjr6eBhDb1rgC
+         WT3rIV5GtDOPj/HGlnmhKT6fwPTqRQHGr/wZY=
+Date: Fri, 19 Feb 2010 19:03:34 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Michael Stefaniuc <mstefani@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 2/2] hw-breakpoint: Keep track of dr7 local enable bits
+Message-ID: <20100219180332.GE4921@nowhere>
+References: <4B7881AC.5070209@redhat.com> <1266516001-7753-3-git-send-regression-fweisbec@gmail.com> <20100219084523.GA3525@in.ibm.com> <c62985531002190734j5da1e4bfw54ed4283f4d724e0@mail.gmail.com> <20100219175859.GA4736@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100219175859.GA4736@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 19, 2010 at 11:28:59PM +0530, K.Prasad wrote:
+> On Fri, Feb 19, 2010 at 04:34:03PM +0100, Frederic Weisbecker wrote:
+> > 2010/2/19 K.Prasad <prasad@linux.vnet.ibm.com>:
+> > > So, the thread's copy of DR7 (in thread->ptrace_dr7) stores the
+> > > requested data even if the 'write' onto DR7 i.e. ptrace_write_dr7()
+> > > failed. This can be the other way round i.e. populate the thread's copy
+> > > of DR7 only if the write was successful.
+> > 
+> > 
+> > 
+> > No. We store the new dr7 value only if ptrace_set_dr7() didn't fail.
+> > 
+> > 
+> > 
+> > > I think it will be in consonance with the v2.6.32 behaviour as well. For
+> > > instance, in the code snippet from ptrace_set_debugreg() in v2.6.32
+> > > below:
+> > >                for (i = 0; i < 4; i++)
+> > >                        if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+> > >                                return -EIO;
+> > >                child->thread.debugreg7 = data;
+> > >
+> > > The thread's copy of DR7 is populated only if the incoming data is
+> > > found to be valid.
+> > 
+> > 
+> > This is also what does this patch. thread->ptrace_dr7 is only
+> > changed if ptrace_set_dr7() succeeded.
+> > 
+> > Thanks.
+> 
+> hmmh...I see...looks like I experienced single-bit ECC as I read
+> the patch :-) Yes, let debugreg7 store values only when a valid bkpt
+> request comes in.
 
-Add support for resource windows.  This is for bridge resources, i.e.,
-regions where a bridge forwards transactions from the primary to the
-secondary side.  This does not add support for *setting* windows via
-the /proc interface.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
-
- drivers/pnp/interface.c        |    6 ++++--
- drivers/pnp/pnpacpi/rsparser.c |   35 ++++++++++++++++++++---------------
- 2 files changed, 24 insertions(+), 17 deletions(-)
 
 
-diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index 68b0c04..ba437b7 100644
---- a/drivers/pnp/interface.c
-+++ b/drivers/pnp/interface.c
-@@ -278,9 +278,11 @@ static ssize_t pnp_show_current_resources(struct device *dmdev,
- 		switch (pnp_resource_type(res)) {
- 		case IORESOURCE_IO:
- 		case IORESOURCE_MEM:
--			pnp_printf(buffer, " %#llx-%#llx\n",
-+			pnp_printf(buffer, " %#llx-%#llx%s\n",
- 				   (unsigned long long) res->start,
--				   (unsigned long long) res->end);
-+				   (unsigned long long) res->end,
-+				   res->flags & IORESOURCE_WINDOW ?
-+					" window" : "");
- 			break;
- 		case IORESOURCE_IRQ:
- 		case IORESOURCE_DMA:
-diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index 5702b2c..0d7d61d 100644
---- a/drivers/pnp/pnpacpi/rsparser.c
-+++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -177,7 +177,8 @@ static int dma_flags(struct pnp_dev *dev, int type, int bus_master,
- }
- 
- static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev, u64 start,
--					       u64 len, int io_decode)
-+					       u64 len, int io_decode,
-+					       int window)
- {
- 	int flags = 0;
- 	u64 end = start + len - 1;
-@@ -186,6 +187,8 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev, u64 start,
- 		flags |= IORESOURCE_IO_16BIT_ADDR;
- 	if (len == 0 || end >= 0x10003)
- 		flags |= IORESOURCE_DISABLED;
-+	if (window)
-+		flags |= IORESOURCE_WINDOW;
- 
- 	pnp_add_io_resource(dev, start, end, flags);
- }
-@@ -247,7 +250,7 @@ static void pnpacpi_parse_allocated_vendor(struct pnp_dev *dev,
- 
- static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
- 						u64 start, u64 len,
--						int write_protect)
-+						int write_protect, int window)
- {
- 	int flags = 0;
- 	u64 end = start + len - 1;
-@@ -256,6 +259,8 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
- 		flags |= IORESOURCE_DISABLED;
- 	if (write_protect == ACPI_READ_WRITE_MEMORY)
- 		flags |= IORESOURCE_MEM_WRITEABLE;
-+	if (window)
-+		flags |= IORESOURCE_WINDOW;
- 
- 	pnp_add_mem_resource(dev, start, end, flags);
- }
-@@ -265,6 +270,7 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
- {
- 	struct acpi_resource_address64 addr, *p = &addr;
- 	acpi_status status;
-+	int window;
- 
- 	status = acpi_resource_to_address64(res, p);
- 	if (!ACPI_SUCCESS(status)) {
-@@ -273,37 +279,36 @@ static void pnpacpi_parse_allocated_address_space(struct pnp_dev *dev,
- 		return;
- 	}
- 
--	if (p->producer_consumer == ACPI_PRODUCER)
--		return;
-+	window = (p->producer_consumer == ACPI_PRODUCER) ? 1 : 0;
- 
- 	if (p->resource_type == ACPI_MEMORY_RANGE)
- 		pnpacpi_parse_allocated_memresource(dev,
- 			p->minimum, p->address_length,
--			p->info.mem.write_protect);
-+			p->info.mem.write_protect, window);
- 	else if (p->resource_type == ACPI_IO_RANGE)
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			p->minimum, p->address_length,
- 			p->granularity == 0xfff ? ACPI_DECODE_10 :
--				ACPI_DECODE_16);
-+				ACPI_DECODE_16, window);
- }
- 
- static void pnpacpi_parse_allocated_ext_address_space(struct pnp_dev *dev,
- 						      struct acpi_resource *res)
- {
- 	struct acpi_resource_extended_address64 *p = &res->data.ext_address64;
-+	int window;
- 
--	if (p->producer_consumer == ACPI_PRODUCER)
--		return;
-+	window = (p->producer_consumer == ACPI_PRODUCER) ? 1 : 0;
- 
- 	if (p->resource_type == ACPI_MEMORY_RANGE)
- 		pnpacpi_parse_allocated_memresource(dev,
- 			p->minimum, p->address_length,
--			p->info.mem.write_protect);
-+			p->info.mem.write_protect, window);
- 	else if (p->resource_type == ACPI_IO_RANGE)
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			p->minimum, p->address_length,
- 			p->granularity == 0xfff ? ACPI_DECODE_10 :
--				ACPI_DECODE_16);
-+				ACPI_DECODE_16, window);
- }
- 
- static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
-@@ -368,7 +373,7 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			io->minimum,
- 			io->address_length,
--			io->io_decode);
-+			io->io_decode, 0);
- 		break;
- 
- 	case ACPI_RESOURCE_TYPE_START_DEPENDENT:
-@@ -380,7 +385,7 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_ioresource(dev,
- 			fixed_io->address,
- 			fixed_io->address_length,
--			ACPI_DECODE_10);
-+			ACPI_DECODE_10, 0);
- 		break;
- 
- 	case ACPI_RESOURCE_TYPE_VENDOR:
-@@ -396,21 +401,21 @@ static acpi_status pnpacpi_allocated_resource(struct acpi_resource *res,
- 		pnpacpi_parse_allocated_memresource(dev,
- 			memory24->minimum,
- 			memory24->address_length,
--			memory24->write_protect);
-+			memory24->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_MEMORY32:
- 		memory32 = &res->data.memory32;
- 		pnpacpi_parse_allocated_memresource(dev,
- 			memory32->minimum,
- 			memory32->address_length,
--			memory32->write_protect);
-+			memory32->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_FIXED_MEMORY32:
- 		fixed_memory32 = &res->data.fixed_memory32;
- 		pnpacpi_parse_allocated_memresource(dev,
- 			fixed_memory32->address,
- 			fixed_memory32->address_length,
--			fixed_memory32->write_protect);
-+			fixed_memory32->write_protect, 0);
- 		break;
- 	case ACPI_RESOURCE_TYPE_ADDRESS16:
- 	case ACPI_RESOURCE_TYPE_ADDRESS32:
+Great :) I was feeling uncomfortable to push that out without
+your ack. May I add it?
+
+Thanks.
 
