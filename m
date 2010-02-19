@@ -1,27 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494Ab0BSOro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 09:47:44 -0500
-Received: from toroondcbmts06-srv.bellnexxia.net ([207.236.237.40]:42951 "EHLO
-	toroondcbmts06-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751344Ab0BSOrn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 09:47:43 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArN7AJ8wfkvP7O0g/2dsb2JhbAAMAoJ3jCGLBwSBSpddgTmUMY9mgTGCUmQEgxU
-Message-ID: <20100219094728.97Y7U.46365.root@toroondcbfep03>
-Date: Fri, 19 Feb 2010 8:47:28 -0600
-From: Mrs Claire page <rcrrhq@bellnet.ca>
-Reply-To: barrister.landonwatson@gala.net
-Subject: 
+	id S1753768Ab0BSO5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 09:57:49 -0500
+Received: from kroah.org ([198.145.64.141]:43073 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694Ab0BSO5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 09:57:48 -0500
+Date: Fri, 19 Feb 2010 06:53:00 -0800
+From: Greg KH <greg@kroah.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: Re: [PATCH 03/12] staging: remove unused methods
+Message-ID: <20100219145300.GA24790@kroah.com>
+References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com>
+ <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com>
+ <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
+ <1266519351-3218-4-git-send-email-andy.shevchenko@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266519351-3218-4-git-send-email-andy.shevchenko@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am Mrs Claire page i am sick in the hospital.Please contact my lawyer Email(barrister.landonwatson@gala.net)
+On Thu, Feb 18, 2010 at 08:55:42PM +0200, Andy Shevchenko wrote:
+> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+> 
+> There are two methods to convert hex value to binary format. This certain
+> methods aren't used anywhere in kernel.
+> 
+> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
