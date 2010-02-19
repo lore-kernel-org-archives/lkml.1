@@ -1,239 +1,208 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892Ab0BST2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:28:19 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:45577 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755699Ab0BST2O (ORCPT
+	id S1755773Ab0BST3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:29:12 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:45459 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755563Ab0BST3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:28:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eQmicA178tbuyfDSI5BgzzNIF57E5s6Nft1t+9jZE0fwM0xBLbJlhx4nlaXCoHyOXU
-         6qarQyDG/7gkFUEinwB2SvmyW88FoIQS7sX8H8NahN7hS7hMFrmob7/tA6GnWVhryVii
-         9pXGQeUFn9EOrjnfPI6LUjR5AWO4nqwozrzEY=
-Message-ID: <4B7EE81C.4020701@gmail.com>
-Date: Fri, 19 Feb 2010 20:35:56 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Fri, 19 Feb 2010 14:29:08 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [RFC/PATCH 6/7] arm/devicetree: Allow .dtb to be carried in the
+	zImage payload
+To: linux@arm.linux.org.uk, catalin.marinas@arm.com, jeremy.kerr@canonical.com,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: tim.bird@am.sony.com
+Date: Fri, 19 Feb 2010 12:29:00 -0700
+Message-ID: <20100219192805.15318.23437.stgit@angua>
+In-Reply-To: <20100219185953.15318.4850.stgit@angua>
+References: <20100219185953.15318.4850.stgit@angua>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: "Karicheri, Muralidharan" <m-karicheri2@ti.com>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] video_device: don't free_irq() an element past array
- vpif_obj.dev[] and fix test
-References: <4B714E15.4020909@gmail.com> <A69FA2915331DC488A831521EAE36FE40169C5C9B5@dlee06.ent.ti.com> <25e057c01002181202v346f488bk571d099f679fea83@mail.gmail.com> <A69FA2915331DC488A831521EAE36FE40169C5CBD8@dlee06.ent.ti.com>
-In-Reply-To: <A69FA2915331DC488A831521EAE36FE40169C5CBD8@dlee06.ent.ti.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch allows a device tree blob to be linked into the zImage
+executable to be passed into the kernel via an ATAG.  The kernel
+can either use the linked in .dtb, or override it with a .dtb
+passed in by firmware.
 
-> Ok. You are right! The ch_params[] is a table for keeping the information
-> about different standards supported. For a given stdid in std_info, the function matches the stdid with that in the table and get the corresponding entry.
+This patch doesn't handle relocation correctly yet.  Not ready to be merged
+---
 
->>>> +      if (k == VPIF_DISPLAY_MAX_DEVICES)
->>>> +              k = VPIF_DISPLAY_MAX_DEVICES - 1;
->>
->> actually I think this is still not right. shouldn't it be be
->>
->> k = VPIF_DISPLAY_MAX_DEVICES - 1;
-> 
-> What you mean here? What you suggest here is same as in your patch, right?
+ arch/arm/Kconfig                        |   13 +++++++++++++
+ arch/arm/boot/compressed/Makefile       |   23 ++++++++++++++++++++---
+ arch/arm/boot/compressed/head.S         |   10 ++++++++++
+ arch/arm/boot/compressed/misc.c         |   30 ++++++++++++++++++++++++++++++
+ arch/arm/boot/compressed/piggy.dtb.S    |    6 ++++++
+ arch/arm/boot/compressed/vmlinux.lds.in |    2 ++
+ 6 files changed, 81 insertions(+), 3 deletions(-)
+ create mode 100644 arch/arm/boot/compressed/piggy.dtb.S
 
-I think there were many more issues:
-
-The first loop ends when platform_get_resource() returns NULL. Can it occur
-that no platform_get_resource() succeeded? I think we should error return if
-that happens. Could k grow larger than VPIF_DISPLAY_MAX_DEVICES there?
-Should we err out in that case?
-
-In the loop `for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++)' if
-video_device_alloc() fails I think we correctly release the devices,
-but we have to do more before we reach label vpif_int_err.
-
-As mentioned, we left the first loop with a res of NULL, which is
-dereferenced at label vpif_int_err. So we have to get the resource again,
-however, k was incremented at the end of that loop as well. Also i used
-as index in the second loop as well should point to res->end before going
-to label vpif_int_err, to free all requested irqs. All this needs to be
-done for later error labels as well, so a new label should be added.
-
-Variable k can't be reused, it is needed to get the resource in case a
-error and cleanup is required.
-
-Also in label probe_out a loop with k as index is used, but k is already
-an index that is required to get the resource later.
-
-If we reach label vpif_int_err, res shouldn't be NULL, since we
-dereference it. Previously we had:
-
-        for (; k >= 0; k--) {
-                for (m = i; m >= res->start; m--)
-                        free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
-                res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
-                m = res->end;
-        }
-
-In the last iteration k equals 0, so we call platform_get_resource() with
--1 as a third argument. Since platform_get_resource() uses an unsigned it
-is converted to 0xffffffff. platform_get_resource() fails for every index
-and returns NULL. A test is lacking and we dereference NULL.
-
-This all occurs at the new label alloc_vid_fail.
-
-The error "VPIF IRQ request failed" should only be displayed when 
-request_irq() failed, not in the case of other errors.
-
-Also I changed some indexes, so a few could be removed.
-
-I must admit I did not test this, except with checkpatch.pl, but I think
-the issues are real and should be fixed. Do you have comments?
-
- drivers/media/video/davinci/vpif_display.c |   61 +++++++++++++++++++---------
- 1 files changed, 41 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
-index dfddef7..ae8ca94 100644
---- a/drivers/media/video/davinci/vpif_display.c
-+++ b/drivers/media/video/davinci/vpif_display.c
-@@ -383,7 +383,7 @@ static int vpif_get_std_info(struct channel_obj *ch)
- 	int index;
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 50eea35..fa957c8 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1272,6 +1272,19 @@ config PROC_DEVICETREE
+ 	  an image of the device tree that the kernel copies from Open
+ 	  Firmware or other boot firmware. If unsure, say Y here.
  
- 	std_info->stdid = vid_ch->stdid;
--	if (!std_info)
-+	if (!std_info->stdid)
- 		return -1;
++config FDT_LINKED_INTO_ZIMAGE
++	bool "Link a flattened device tree blob into the kernel image"
++	select DTC
++	depends on OF_FLATTREE
++
++config FDT_SOURCE
++	string "Flattened Device Tree source filename"
++	depends on FDT_LINKED_INTO_ZIMAGE
++	default "board.dts"
++
++config DTC
++	bool
++
+ # Compressed boot loader in ROM.  Yes, we really want to ask about
+ # TEXT and BSS so we preserve their values in the config files.
+ config ZBOOT_ROM_TEXT
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index 2d4d88b..558b31f 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -66,8 +66,13 @@ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
+ suffix_$(CONFIG_KERNEL_GZIP) = gzip
+ suffix_$(CONFIG_KERNEL_LZO)  = lzo
  
- 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
-@@ -1423,7 +1423,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- {
- 	struct vpif_subdev_info *subdevdata;
- 	struct vpif_display_config *config;
--	int i, j = 0, k, q, m, err = 0;
-+	int i, j, k, err;
- 	struct i2c_adapter *i2c_adap;
- 	struct common_obj *common;
- 	struct channel_obj *ch;
-@@ -1452,12 +1452,18 @@ static __init int vpif_probe(struct platform_device *pdev)
- 			if (request_irq(i, vpif_channel_isr, IRQF_DISABLED,
- 					"DM646x_Display",
- 				(void *)(&vpif_obj.dev[k]->channel_id))) {
-+				i--;
- 				err = -EBUSY;
-+				vpif_err("VPIF IRQ request failed\n");
- 				goto vpif_int_err;
- 			}
- 		}
- 		k++;
-+		if (k >= VPIF_DISPLAY_MAX_DEVICES)
-+			break;
- 	}
-+	if (k == 0)
-+		return -ENODEV;
+-targets       := vmlinux vmlinux.lds \
+-		 piggy.$(suffix_y) piggy.$(suffix_y).o \
++# Payload objects
++OBJS	+= piggy.$(suffix_y).o
++ifeq ($(CONFIG_FDT_LINKED_INTO_ZIMAGE),y)
++OBJS	+= piggy.dtb.o
++endif
++
++targets       := vmlinux vmlinux.lds piggy.$(suffix_y) \
+ 		 font.o font.c head.o misc.o $(OBJS)
  
- 	for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++) {
+ ifeq ($(CONFIG_FUNCTION_TRACER),y)
+@@ -110,7 +115,7 @@ $(obj)/lib1funcs.S: $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.S FORCE
+ # would otherwise mess up our GOT table
+ CFLAGS_misc.o := -Dstatic=
  
-@@ -1472,7 +1478,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- 				video_device_release(ch->video_dev);
- 			}
- 			err = -ENOMEM;
--			goto vpif_int_err;
-+			goto alloc_vid_fail;
- 		}
+-$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.$(suffix_y).o \
++$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) \
+ 	 	$(addprefix $(obj)/, $(OBJS)) $(lib1funcs) FORCE
+ 	$(call if_changed,ld)
+ 	@:
+@@ -127,3 +132,15 @@ $(obj)/font.c: $(FONTC)
  
- 		/* Initialize field of video device */
-@@ -1489,13 +1495,13 @@ static __init int vpif_probe(struct platform_device *pdev)
- 		ch->video_dev = vfd;
- 	}
+ $(obj)/vmlinux.lds: $(obj)/vmlinux.lds.in arch/arm/boot/Makefile .config
+ 	@sed "$(SEDFLAGS)" < $< > $@
++
++# Rule to build device tree blobs
++
++DTC = $(objtree)/scripts/dtc/dtc
++
++$(obj)/piggy.dts: $(obj)/../$(subst ",,$(CONFIG_FDT_SOURCE))
++	cp $< $@
++
++$(obj)/piggy.dtb.o: $(obj)/piggy.dtb
++
++$(obj)/%.dtb: $(obj)/%.dts
++	$(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(obj)/$*.dts
+diff --git a/arch/arm/boot/compressed/head.S b/arch/arm/boot/compressed/head.S
+index 4fddc50..820e0e1 100644
+--- a/arch/arm/boot/compressed/head.S
++++ b/arch/arm/boot/compressed/head.S
+@@ -240,6 +240,16 @@ not_relocated:	mov	r0, #0
+ 		 */
+ 		bl	cache_on
  
--	for (j = 0; j < VPIF_DISPLAY_MAX_DEVICES; j++) {
--		ch = vpif_obj.dev[j];
-+	for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++) {
-+		ch = vpif_obj.dev[i];
- 		/* Initialize field of the channel objects */
- 		atomic_set(&ch->usrs, 0);
--		for (k = 0; k < VPIF_NUMOBJECTS; k++) {
--			ch->common[k].numbuffers = 0;
--			common = &ch->common[k];
-+		for (j = 0; j < VPIF_NUMOBJECTS; j++) {
-+			ch->common[j].numbuffers = 0;
-+			common = &ch->common[j];
- 			common->io_usrs = 0;
- 			common->started = 0;
- 			spin_lock_init(&common->irqlock);
-@@ -1506,12 +1512,12 @@ static __init int vpif_probe(struct platform_device *pdev)
- 			common->ctop_off = common->cbtm_off = 0;
- 			common->cur_frm = common->next_frm = NULL;
- 			memset(&common->fmt, 0, sizeof(common->fmt));
--			common->numbuffers = config_params.numbuffers[k];
-+			common->numbuffers = config_params.numbuffers[j];
++#if defined(CONFIG_FDT_LINKED_INTO_ZIMAGE)
++/*
++ * Graft device tree pointer onto the end of the ATAGs list
++ * r0    = atags pointer
++ * r1-r3 = unused
++ */
++		mov	r0, r8			@ Pass atags pointer
++		bl	graft_devicetree_atag
++#endif
++
+ 		mov	r1, sp			@ malloc space above stack
+ 		add	r2, sp, #0x10000	@ 64k max
  
- 		}
- 		ch->initialized = 0;
--		ch->channel_id = j;
--		if (j < 2)
-+		ch->channel_id = i;
-+		if (i < 2)
- 			ch->common[VPIF_VIDEO_INDEX].numbuffers =
- 			    config_params.numbuffers[ch->channel_id];
- 		else
-@@ -1529,7 +1535,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- 				(int)ch, (int)&ch->video_dev);
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index 56a0d11..694a541 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -27,6 +27,7 @@ unsigned int __machine_arch_type;
+ #include <linux/linkage.h>
  
- 		err = video_register_device(ch->video_dev,
--					  VFL_TYPE_GRABBER, (j ? 3 : 2));
-+					  VFL_TYPE_GRABBER, (i ? 3 : 2));
- 		if (err < 0)
- 			goto probe_out;
+ #include <asm/unaligned.h>
++#include <asm/setup.h>
  
-@@ -1567,20 +1573,35 @@ static __init int vpif_probe(struct platform_device *pdev)
- probe_subdev_out:
- 	kfree(vpif_obj.sd);
- probe_out:
--	for (k = 0; k < j; k++) {
--		ch = vpif_obj.dev[k];
-+	for (j = 0; j < i; j++) {
-+		ch = vpif_obj.dev[j];
- 		video_unregister_device(ch->video_dev);
- 		video_device_release(ch->video_dev);
- 		ch->video_dev = NULL;
- 	}
-+alloc_vid_fail:
-+	while (k--) {
-+		res = platform_get_resource(pdev, IORESOURCE_IRQ, k);
-+		if (res != NULL)
-+			break;
-+		vpif_err("Couldn't get resource %d, irqs not freed.\n", k);
-+	}
-+	if (res == NULL) {
-+		vpif_err("Couldn't get any resource.\n");
-+		return err;
+ #ifdef STANDALONE_DEBUG
+ #define putstr printf
+@@ -272,6 +273,35 @@ asmlinkage void __div0(void)
+ 	error("Attempting division by 0!");
+ }
+ 
++#if defined(CONFIG_FDT_LINKED_INTO_ZIMAGE)
++extern char dtb_data[];
++extern char dtb_data_end[];
++
++void graft_devicetree_atag(unsigned long atag_list)
++{
++	struct tag *tag;
++
++	/* Loop over ATAG list and find the end.  If a devicetree tag
++	 * already exists, then just bail */
++	for_each_tag(tag, (void *)atag_list) {
++		if (tag->hdr.tag == ATAG_DEVTREE)
++			return;
 +	}
 +
-+	i = res->end;
- vpif_int_err:
- 	v4l2_device_unregister(&vpif_obj.v4l2_dev);
--	vpif_err("VPIF IRQ request failed\n");
--	for (q = k; k >= 0; k--) {
--		for (m = i; m >= res->start; m--)
--			free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
--		res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
--		m = res->end;
++	/* Replace the end of the list with an ATAG_DEVTREE */
++	putstr("Appending device tree tag\n");
++	tag->hdr.size = tag_size(tag_devtree);
++	tag->hdr.tag = ATAG_DEVTREE;
++	tag->u.devtree.start = (__u32)dtb_data;
++	tag->u.devtree.size = (__u32)dtb_data_end - (__u32)dtb_data;
 +
-+	for (j = i; j >= res->start; j--)
-+		free_irq(j, (void *)(&vpif_obj.dev[k]->channel_id));
++	/* And create a new ATAG_NONE tag after it */
++	tag = tag_next(tag);
++	tag->hdr.size = 0;
++	tag->hdr.tag = ATAG_NONE;
++}
++#endif
 +
-+	while (k--) {
-+		res = platform_get_resource(pdev, IORESOURCE_IRQ, k);
-+		for (j =  res->end; j >= res->start; j--)
-+			free_irq(j, (void *)(&vpif_obj.dev[k]->channel_id));
- 	}
+ #ifndef STANDALONE_DEBUG
  
- 	return err;
+ unsigned long
+diff --git a/arch/arm/boot/compressed/piggy.dtb.S b/arch/arm/boot/compressed/piggy.dtb.S
+new file mode 100644
+index 0000000..822337f
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.dtb.S
+@@ -0,0 +1,6 @@
++	.section .piggydtb,#alloc
++	.globl	dtb_data
++dtb_data:
++	.incbin	"arch/arm/boot/compressed/piggy.dtb"
++	.globl	dtb_data_end
++dtb_data_end:
+diff --git a/arch/arm/boot/compressed/vmlinux.lds.in b/arch/arm/boot/compressed/vmlinux.lds.in
+index a5924b9..7f50b64 100644
+--- a/arch/arm/boot/compressed/vmlinux.lds.in
++++ b/arch/arm/boot/compressed/vmlinux.lds.in
+@@ -30,6 +30,8 @@ SECTIONS
+     *(.rodata.*)
+     *(.glue_7)
+     *(.glue_7t)
++    . = ALIGN(4096); /* Page aligned DTBs can be directly used by the kernel */
++    *(.piggydtb)
+     *(.piggydata)
+     . = ALIGN(4);
+   }
+
