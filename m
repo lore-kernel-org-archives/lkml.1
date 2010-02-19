@@ -1,358 +1,313 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007Ab0BSOUP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 09:20:15 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:56801 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521Ab0BSOUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 09:20:12 -0500
-Date: Fri, 19 Feb 2010 14:19:56 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 11/12] Direct compact when a high-order allocation fails
-Message-ID: <20100219141956.GK30258@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-12-git-send-email-mel@csn.ul.ie> <20100219095132.96baea7d.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1753185Ab0BSOWH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 09:22:07 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:42549 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592Ab0BSOWE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 09:22:04 -0500
+Date: Fri, 19 Feb 2010 15:22:05 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Michal Marek <mmarek@suse.cz>, Borislav Petkov <bp@amd64.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: [PATCH] x86: Add optimized popcnt variants
+Message-ID: <20100219142205.GA32533@aftab>
+References: <4B743F7D.3090605@zytor.com>
+ <20100212170649.GC3114@aftab>
+ <4B758FC0.1020600@zytor.com>
+ <20100212174751.GD3114@aftab>
+ <4B75A66A.70005@zytor.com>
+ <4B7BF5D6.3030701@suse.cz>
+ <20100217172040.GC13429@aftab>
+ <4B7C27D8.9050408@suse.cz>
+ <4B7C29C1.10906@suse.cz>
+ <20100218061923.GA1594@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100219095132.96baea7d.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20100218061923.GA1594@liondog.tnic>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 09:51:32AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 18 Feb 2010 18:02:41 +0000
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > Ordinarily when a high-order allocation fails, direct reclaim is entered to
-> > free pages to satisfy the allocation.  With this patch, it is determined if
-> > an allocation failed due to external fragmentation instead of low memory
-> > and if so, the calling process will compact until a suitable page is
-> > freed. Compaction by moving pages in memory is considerably cheaper than
-> > paging out to disk and works where there are locked pages or no swap. If
-> > compaction fails to free a page of a suitable size, then reclaim will
-> > still occur.
-> > 
-> > Direct compaction returns as soon as possible. As each block is compacted,
-> > it is checked if a suitable page has been freed and if so, it returns.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Acked-by: Rik van Riel <riel@redhat.com>
-> > ---
-> >  include/linux/compaction.h |   16 +++++-
-> >  include/linux/vmstat.h     |    1 +
-> >  mm/compaction.c            |  118 ++++++++++++++++++++++++++++++++++++++++++++
-> >  mm/page_alloc.c            |   26 ++++++++++
-> >  mm/vmstat.c                |   15 +++++-
-> >  5 files changed, 172 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/include/linux/compaction.h b/include/linux/compaction.h
-> > index 6a2eefd..1cf95e2 100644
-> > --- a/include/linux/compaction.h
-> > +++ b/include/linux/compaction.h
-> > @@ -1,13 +1,25 @@
-> >  #ifndef _LINUX_COMPACTION_H
-> >  #define _LINUX_COMPACTION_H
-> >  
-> > -/* Return values for compact_zone() */
-> > +/* Return values for compact_zone() and try_to_compact_pages() */
-> >  #define COMPACT_INCOMPLETE	0
-> > -#define COMPACT_COMPLETE	1
-> > +#define COMPACT_PARTIAL		1
-> > +#define COMPACT_COMPLETE	2
-> >  
-> >  #ifdef CONFIG_COMPACTION
-> >  extern int sysctl_compaction_handler(struct ctl_table *table, int write,
-> >  			void __user *buffer, size_t *length, loff_t *ppos);
-> > +
-> > +extern int fragmentation_index(struct zone *zone, unsigned int order);
-> > +extern unsigned long try_to_compact_pages(struct zonelist *zonelist,
-> > +			int order, gfp_t gfp_mask, nodemask_t *mask);
-> > +#else
-> > +static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
-> > +			int order, gfp_t gfp_mask, nodemask_t *nodemask)
-> > +{
-> > +	return COMPACT_INCOMPLETE;
-> > +}
-> > +
-> >  #endif /* CONFIG_COMPACTION */
-> >  
-> >  #if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
-> > diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-> > index d7f7236..0ea7a38 100644
-> > --- a/include/linux/vmstat.h
-> > +++ b/include/linux/vmstat.h
-> > @@ -44,6 +44,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
-> >  		KSWAPD_SKIP_CONGESTION_WAIT,
-> >  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> >  		COMPACTBLOCKS, COMPACTPAGES, COMPACTPAGEFAILED,
-> > +		COMPACTSTALL, COMPACTFAIL, COMPACTSUCCESS,
-> >  #ifdef CONFIG_HUGETLB_PAGE
-> >  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
-> >  #endif
-> > diff --git a/mm/compaction.c b/mm/compaction.c
-> > index 02579c2..c7c73bb 100644
-> > --- a/mm/compaction.c
-> > +++ b/mm/compaction.c
-> > @@ -34,6 +34,8 @@ struct compact_control {
-> >  	unsigned long nr_anon;
-> >  	unsigned long nr_file;
-> >  
-> > +	unsigned int order;		/* order a direct compactor needs */
-> > +	int migratetype;		/* MOVABLE, RECLAIMABLE etc */
-> >  	struct zone *zone;
-> >  };
-> >  
-> > @@ -298,10 +300,31 @@ static void update_nr_listpages(struct compact_control *cc)
-> >  static inline int compact_finished(struct zone *zone,
-> >  						struct compact_control *cc)
-> >  {
-> > +	unsigned int order;
-> > +	unsigned long watermark = low_wmark_pages(zone) + (1 << cc->order);
-> > +
-> >  	/* Compaction run completes if the migrate and free scanner meet */
-> >  	if (cc->free_pfn <= cc->migrate_pfn)
-> >  		return COMPACT_COMPLETE;
-> >  
-> > +	/* Compaction run is not finished if the watermark is not met */
-> > +	if (!zone_watermark_ok(zone, cc->order, watermark, 0, 0))
-> > +		return COMPACT_INCOMPLETE;
-> > +
-> > +	if (cc->order == -1)
-> > +		return COMPACT_INCOMPLETE;
-> > +
-> > +	/* Direct compactor: Is a suitable page free? */
-> > +	for (order = cc->order; order < MAX_ORDER; order++) {
-> > +		/* Job done if page is free of the right migratetype */
-> > +		if (!list_empty(&zone->free_area[order].free_list[cc->migratetype]))
-> > +			return COMPACT_PARTIAL;
-> > +
-> > +		/* Job done if allocation would set block type */
-> > +		if (order >= pageblock_order && zone->free_area[order].nr_free)
-> > +			return COMPACT_PARTIAL;
-> > +	}
-> > +
-> >  	return COMPACT_INCOMPLETE;
-> >  }
-> >  
-> > @@ -347,6 +370,101 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
-> >  	return ret;
-> >  }
-> >  
-> > +static inline unsigned long compact_zone_order(struct zone *zone,
-> > +						int order, gfp_t gfp_mask)
-> > +{
-> > +	struct compact_control cc = {
-> > +		.nr_freepages = 0,
-> > +		.nr_migratepages = 0,
-> > +		.order = order,
-> > +		.migratetype = allocflags_to_migratetype(gfp_mask),
-> > +		.zone = zone,
-> > +	};
-> > +	INIT_LIST_HEAD(&cc.freepages);
-> > +	INIT_LIST_HEAD(&cc.migratepages);
-> > +
-> > +	return compact_zone(zone, &cc);
-> > +}
-> > +
-> > +/**
-> > + * try_to_compact_pages - Direct compact to satisfy a high-order allocation
-> > + * @zonelist: The zonelist used for the current allocation
-> > + * @order: The order of the current allocation
-> > + * @gfp_mask: The GFP mask of the current allocation
-> > + * @nodemask: The allowed nodes to allocate from
-> > + *
-> > + * This is the main entry point for direct page compaction.
-> > + */
-> > +unsigned long try_to_compact_pages(struct zonelist *zonelist,
-> > +			int order, gfp_t gfp_mask, nodemask_t *nodemask)
-> > +{
-> > +	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-> > +	int may_enter_fs = gfp_mask & __GFP_FS;
-> > +	int may_perform_io = gfp_mask & __GFP_IO;
-> > +	unsigned long watermark;
-> > +	struct zoneref *z;
-> > +	struct zone *zone;
-> > +	int rc = COMPACT_INCOMPLETE;
-> > +
-> > +	/* Check whether it is worth even starting compaction */
-> > +	if (order == 0 || !may_enter_fs || !may_perform_io)
-> > +		return rc;
-> > +
-> > +	/*
-> > +	 * We will not stall if the necessary conditions are not met for
-> > +	 * migration but direct reclaim seems to account stalls similarly
-> > +	 */
-> > +	count_vm_event(COMPACTSTALL);
-> > +
-> > +	/* Compact each zone in the list */
-> > +	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
-> > +								nodemask) {
-> > +		int fragindex;
-> > +		int status;
-> > +
-> > +		/*
-> > +		 * Watermarks for order-0 must be met for compaction. Note
-> > +		 * the 2UL. This is because during migration, copies of
-> > +		 * pages need to be allocated and for a short time, the
-> > +		 * footprint is higher
-> > +		 */
-> > +		watermark = low_wmark_pages(zone) + (2UL << order);
-> > +		if (!zone_watermark_ok(zone, 0, watermark, 0, 0))
-> > +			continue;
-> > +
-> > +		/*
-> > +		 * fragmentation index determines if allocation failures are
-> > +		 * due to low memory or external fragmentation
-> > +		 *
-> > +		 * index of -1 implies allocations might succeed depending
-> > +		 * 	on watermarks
-> > +		 * index < 500 implies alloc failure is due to lack of memory
-> > +		 *
-> > +		 * XXX: The choice of 500 is arbitrary. Reinvestigate
-> > +		 *      appropriately to determine a sensible default.
-> > +		 *      and what it means when watermarks are also taken
-> > +		 *      into account. Consider making it a sysctl
-> > +		 */
-> > +		fragindex = fragmentation_index(zone, order);
-> > +		if (fragindex >= 0 && fragindex <= 500)
-> > +			continue;
-> > +
-> > +		if (fragindex == -1 && zone_watermark_ok(zone, order, watermark, 0, 0)) {
-> > +			rc = COMPACT_PARTIAL;
-> > +			break;
-> > +		}
-> > +
-> > +		status = compact_zone_order(zone, order, gfp_mask);
-> > +		rc = max(status, rc);
-> > +
-> > +		if (zone_watermark_ok(zone, order, watermark, 0, 0))
-> > +			break;
-> > +	}
-> > +
-> > +	return rc;
-> > +}
-> > +
-> > +
-> >  /* Compact all zones within a node */
-> >  static int compact_node(int nid)
-> >  {
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 6d57154..1910b8b 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -49,6 +49,7 @@
-> >  #include <linux/debugobjects.h>
-> >  #include <linux/kmemleak.h>
-> >  #include <linux/memory.h>
-> > +#include <linux/compaction.h>
-> >  #include <trace/events/kmem.h>
-> >  
-> >  #include <asm/tlbflush.h>
-> > @@ -1728,6 +1729,31 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
-> >  
-> >  	cond_resched();
-> >  
-> 
-> Isn't kswapd waken up before we reach here ? Is it intentional ?
-> 
+From: Borislav Petkov <borislav.petkov@amd.com>
 
-For the moment, yes.
+Add support for the hardware version of the Hamming weight function,
+popcnt, present in CPUs which advertize it under CPUID, Function
+0x0000_0001_ECX[23]. On CPUs which don't support it, we fallback to the
+default lib/hweight.c sw versions.
 
-The watermarks were not met so kswapd should start doing work. Even if
-compaction is partially successful, there is no guarantees the
-watermarks are still met after a page is allocated so kswapd should do
-some work.
+A synthetic benchmark comparing popcnt with __sw_hweight64 showed almost
+a 3x speedup on a F10h machine.
 
-Potentially in the far future, kswapd could be avoided and compaction
-used far earlier - potentially even in the !wait paths but it's not
-there yet.
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ arch/x86/Kconfig                          |    5 ++
+ arch/x86/include/asm/bitops.h             |    7 +++-
+ arch/x86/lib/Makefile                     |    2 +-
+ arch/x86/lib/hweight.c                    |   62 +++++++++++++++++++++++++++++
+ include/asm-generic/bitops/arch_hweight.h |   22 ++++++++--
+ lib/Makefile                              |    3 +
+ lib/hweight.c                             |   20 +++++-----
+ scripts/Makefile.lib                      |    4 ++
+ 8 files changed, 109 insertions(+), 16 deletions(-)
+ create mode 100644 arch/x86/lib/hweight.c
 
-> > +	/* Try memory compaction for high-order allocations before reclaim */
-> > +	if (order) {
-> > +		*did_some_progress = try_to_compact_pages(zonelist,
-> > +						order, gfp_mask, nodemask);
-> > +		if (*did_some_progress != COMPACT_INCOMPLETE) {
-> > +			page = get_page_from_freelist(gfp_mask, nodemask,
-> > +					order, zonelist, high_zoneidx,
-> > +					alloc_flags, preferred_zone,
-> > +					migratetype);
-> > +			if (page) {
-> > +				__count_vm_event(COMPACTSUCCESS);
-> > +				return page;
-> > +			}
-> > +
-> > +			/*
-> > +			 * It's bad if compaction run occurs and fails.
-> > +			 * The most likely reason is that pages exist,
-> > +			 * but not enough to satisfy watermarks.
-> > +			 */
-> > +			count_vm_event(COMPACTFAIL);
-> > +
-> > +			cond_resched();
-> > +		}
-> > +	}
-> > +
-> >  	/* We now go into synchronous reclaim */
-> >  	cpuset_memory_pressure_bump();
-> >  	p->flags |= PF_MEMALLOC;
-> > diff --git a/mm/vmstat.c b/mm/vmstat.c
-> > index 0a14d22..189a379 100644
-> > --- a/mm/vmstat.c
-> > +++ b/mm/vmstat.c
-> > @@ -558,7 +558,7 @@ static int unusable_show(struct seq_file *m, void *arg)
-> >   * The value can be used to determine if page reclaim or compaction
-> >   * should be used
-> >   */
-> > -int fragmentation_index(unsigned int order, struct contig_page_info *info)
-> > +int __fragmentation_index(unsigned int order, struct contig_page_info *info)
-> >  {
-> >  	unsigned long requested = 1UL << order;
-> >  
-> > @@ -578,6 +578,14 @@ int fragmentation_index(unsigned int order, struct contig_page_info *info)
-> >  	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
-> >  }
-> >  
-> > +/* Same as __fragmentation index but allocs contig_page_info on stack */
-> > +int fragmentation_index(struct zone *zone, unsigned int order)
-> > +{
-> > +	struct contig_page_info info;
-> > +
-> > +	fill_contig_page_info(zone, order, &info);
-> > +	return __fragmentation_index(order, &info);
-> > +}
-> >  
-> >  static void extfrag_show_print(struct seq_file *m,
-> >  					pg_data_t *pgdat, struct zone *zone)
-> > @@ -593,7 +601,7 @@ static void extfrag_show_print(struct seq_file *m,
-> >  				zone->name);
-> >  	for (order = 0; order < MAX_ORDER; ++order) {
-> >  		fill_contig_page_info(zone, order, &info);
-> > -		index = fragmentation_index(order, &info);
-> > +		index = __fragmentation_index(order, &info);
-> >  		seq_printf(m, "%d.%03d ", index / 1000, index % 1000);
-> >  	}
-> >  
-> > @@ -893,6 +901,9 @@ static const char * const vmstat_text[] = {
-> >  	"compact_blocks_moved",
-> >  	"compact_pages_moved",
-> >  	"compact_pagemigrate_failed",
-> > +	"compact_stall",
-> > +	"compact_fail",
-> > +	"compact_success",
-> >  
-> >  #ifdef CONFIG_HUGETLB_PAGE
-> >  	"htlb_buddy_alloc_success",
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index eb40925..176950e 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -230,6 +230,11 @@ config X86_32_LAZY_GS
+ 	def_bool y
+ 	depends on X86_32 && !CC_STACKPROTECTOR
+ 
++config ARCH_HWEIGHT_CFLAGS
++	string
++	default "-fcall-saved-ecx -fcall-saved-edx" if X86_32
++	default "-fcall-saved-rsi -fcall-saved-rdx -fcall-saved-rcx -fcall-saved-r8 -fcall-saved-r9 -fcall-saved-r10 -fcall-saved-r11" if X86_64
++
+ config KTIME_SCALAR
+ 	def_bool X86_32
+ source "init/Kconfig"
+diff --git a/arch/x86/include/asm/bitops.h b/arch/x86/include/asm/bitops.h
+index 02b47a6..5ec3bd8 100644
+--- a/arch/x86/include/asm/bitops.h
++++ b/arch/x86/include/asm/bitops.h
+@@ -444,7 +444,12 @@ static inline int fls(int x)
+ 
+ #define ARCH_HAS_FAST_MULTIPLIER 1
+ 
+-#include <asm-generic/bitops/hweight.h>
++extern unsigned int __arch_hweight32(unsigned int w);
++extern unsigned int __arch_hweight16(unsigned int w);
++extern unsigned int __arch_hweight8(unsigned int w);
++extern unsigned long __arch_hweight64(__u64 w);
++
++#include <asm-generic/bitops/const_hweight.h>
+ 
+ #endif /* __KERNEL__ */
+ 
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index cffd754..e811bbd 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -22,7 +22,7 @@ lib-y += usercopy_$(BITS).o getuser.o putuser.o
+ lib-y += memcpy_$(BITS).o
+ lib-$(CONFIG_KPROBES) += insn.o inat.o
+ 
+-obj-y += msr.o msr-reg.o msr-reg-export.o
++obj-y += msr.o msr-reg.o msr-reg-export.o hweight.o
+ 
+ ifeq ($(CONFIG_X86_32),y)
+         obj-y += atomic64_32.o
+diff --git a/arch/x86/lib/hweight.c b/arch/x86/lib/hweight.c
+new file mode 100644
+index 0000000..54d3cb0
+--- /dev/null
++++ b/arch/x86/lib/hweight.c
+@@ -0,0 +1,62 @@
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/bitops.h>
++
++#ifdef CONFIG_64BIT
++/* popcnt %rdi, %rax */
++#define POPCNT ".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t.byte 0xb8\n\t.byte 0xc7"
++#define REG_IN "D"
++#define REG_OUT "a"
++#else
++/* popcnt %eax, %eax */
++#define POPCNT ".byte 0xf3\n\t.byte 0x0f\n\t.byte 0xb8\n\t.byte 0xc0"
++#define REG_IN "a"
++#define REG_OUT "a"
++#endif
++
++/*
++ * __sw_hweightXX are called from within the alternatives below
++ * and callee-clobbered registers need to be taken care of. See
++ * ARCH_HWEIGHT_CFLAGS in <arch/x86/Kconfig> for the respective
++ * compiler switches.
++ */
++unsigned int __arch_hweight32(unsigned int w)
++{
++	unsigned int res = 0;
++
++	asm (ALTERNATIVE("call __sw_hweight32", POPCNT, X86_FEATURE_POPCNT)
++		     : "="REG_OUT (res)
++		     : REG_IN (w));
++
++	return res;
++}
++EXPORT_SYMBOL(__arch_hweight32);
++
++unsigned int __arch_hweight16(unsigned int w)
++{
++	return __arch_hweight32(w & 0xffff);
++}
++EXPORT_SYMBOL(__arch_hweight16);
++
++unsigned int __arch_hweight8(unsigned int w)
++{
++	return __arch_hweight32(w & 0xff);
++}
++EXPORT_SYMBOL(__arch_hweight8);
++
++unsigned long __arch_hweight64(__u64 w)
++{
++	unsigned long res = 0;
++
++#ifdef CONFIG_X86_32
++	return  __arch_hweight32((u32)w) +
++		__arch_hweight32((u32)(w >> 32));
++#else
++	asm (ALTERNATIVE("call __sw_hweight64", POPCNT, X86_FEATURE_POPCNT)
++		     : "="REG_OUT (res)
++		     : REG_IN (w));
++#endif /* CONFIG_X86_32 */
++
++	return res;
++}
++EXPORT_SYMBOL(__arch_hweight64);
+diff --git a/include/asm-generic/bitops/arch_hweight.h b/include/asm-generic/bitops/arch_hweight.h
+index 3a7be84..1c82306 100644
+--- a/include/asm-generic/bitops/arch_hweight.h
++++ b/include/asm-generic/bitops/arch_hweight.h
+@@ -3,9 +3,23 @@
+ 
+ #include <asm/types.h>
+ 
+-extern unsigned int __arch_hweight32(unsigned int w);
+-extern unsigned int __arch_hweight16(unsigned int w);
+-extern unsigned int __arch_hweight8(unsigned int w);
+-extern unsigned long __arch_hweight64(__u64 w);
++unsigned int __arch_hweight32(unsigned int w)
++{
++	return __sw_hweight32(w);
++}
+ 
++unsigned int __arch_hweight16(unsigned int w)
++{
++	return __sw_hweight16(w);
++}
++
++unsigned int __arch_hweight8(unsigned int w)
++{
++	return __sw_hweight8(w);
++}
++
++unsigned long __arch_hweight64(__u64 w)
++{
++	return __sw_hweight64(w);
++}
+ #endif /* _ASM_GENERIC_BITOPS_HWEIGHT_H_ */
+diff --git a/lib/Makefile b/lib/Makefile
+index 3b0b4a6..e2ad17c 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -39,7 +39,10 @@ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
+ lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
+ lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+ obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
++
++CFLAGS_hweight.o = $(subst $(quote),,$(CONFIG_ARCH_HWEIGHT_CFLAGS))
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
++
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+ obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+diff --git a/lib/hweight.c b/lib/hweight.c
+index 9ff86df..f9ce440 100644
+--- a/lib/hweight.c
++++ b/lib/hweight.c
+@@ -9,7 +9,7 @@
+  * The Hamming Weight of a number is the total number of bits set in it.
+  */
+ 
+-unsigned int __arch_hweight32(unsigned int w)
++unsigned int __sw_hweight32(unsigned int w)
+ {
+ 	unsigned int res = w - ((w >> 1) & 0x55555555);
+ 	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
+@@ -17,30 +17,30 @@ unsigned int __arch_hweight32(unsigned int w)
+ 	res = res + (res >> 8);
+ 	return (res + (res >> 16)) & 0x000000FF;
+ }
+-EXPORT_SYMBOL(__arch_hweight32);
++EXPORT_SYMBOL(__sw_hweight32);
+ 
+-unsigned int __arch_hweight16(unsigned int w)
++unsigned int __sw_hweight16(unsigned int w)
+ {
+ 	unsigned int res = w - ((w >> 1) & 0x5555);
+ 	res = (res & 0x3333) + ((res >> 2) & 0x3333);
+ 	res = (res + (res >> 4)) & 0x0F0F;
+ 	return (res + (res >> 8)) & 0x00FF;
+ }
+-EXPORT_SYMBOL(__arch_hweight16);
++EXPORT_SYMBOL(__sw_hweight16);
+ 
+-unsigned int __arch_hweight8(unsigned int w)
++unsigned int __sw_hweight8(unsigned int w)
+ {
+ 	unsigned int res = w - ((w >> 1) & 0x55);
+ 	res = (res & 0x33) + ((res >> 2) & 0x33);
+ 	return (res + (res >> 4)) & 0x0F;
+ }
+-EXPORT_SYMBOL(__arch_hweight8);
++EXPORT_SYMBOL(__sw_hweight8);
+ 
+-unsigned long __arch_hweight64(__u64 w)
++unsigned long __sw_hweight64(__u64 w)
+ {
+ #if BITS_PER_LONG == 32
+-	return __arch_hweight32((unsigned int)(w >> 32)) +
+-	       __arch_hweight32((unsigned int)w);
++	return __sw_hweight32((unsigned int)(w >> 32)) +
++	       __sw_hweight32((unsigned int)w);
+ #elif BITS_PER_LONG == 64
+ #ifdef ARCH_HAS_FAST_MULTIPLIER
+ 	w -= (w >> 1) & 0x5555555555555555ul;
+@@ -57,4 +57,4 @@ unsigned long __arch_hweight64(__u64 w)
+ #endif
+ #endif
+ }
+-EXPORT_SYMBOL(__arch_hweight64);
++EXPORT_SYMBOL(__sw_hweight64);
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index f9bdf26..cbcd654 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -245,3 +245,7 @@ quiet_cmd_lzo = LZO    $@
+ cmd_lzo = (cat $(filter-out FORCE,$^) | \
+ 	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+ 	(rm -f $@ ; false)
++
++# misc stuff
++# ---------------------------------------------------------------------------
++quote:="
+-- 
+1.6.5.4
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
