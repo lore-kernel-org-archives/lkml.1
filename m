@@ -1,148 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740Ab0BSOiH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 09:38:07 -0500
-Received: from zimbra.ccs.neu.edu ([129.10.116.59]:48727 "EHLO
-	zimbra.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941Ab0BSOiE (ORCPT
+	id S1753137Ab0BSOmX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 09:42:23 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:42563 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344Ab0BSOmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 09:38:04 -0500
-Date: Fri, 19 Feb 2010 09:37:55 -0500 (EST)
-From: Ari Entlich <atrigent@ccs.neu.edu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-ID: <5702371.144261266590275669.JavaMail.root@zimbra>
-In-Reply-To: <33024815.144191266590249679.JavaMail.root@zimbra>
-Subject: [PATCH v2] Add a new VT mode which is like VT_PROCESS but doesn't
- require a VT_RELDISP ioctl call
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [129.10.223.88]
-X-Mailer: Zimbra 5.0.22_GA_3210.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.22_GA_3210.UBUNTU6)
+	Fri, 19 Feb 2010 09:42:21 -0500
+From: Luotao Fu <l.fu@pengutronix.de>
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jean Delvare <khali@linux-fr.org>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Luotao Fu <l.fu@pengutronix.de>
+Subject: [PATCH] USB: fix I2C API usage in ohci-pnx4008.
+Date: Fri, 19 Feb 2010 15:42:00 +0100
+Message-Id: <1266590520-8607-1-git-send-email-l.fu@pengutronix.de>
+X-Mailer: git-send-email 1.6.6.2
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This new VT mode (VT_PROCESS_AUTO) does everything that VT_PROCESS does
-except that it doesn't wait for a VT_RELDISP ioctl before switching
-away from a VT with that mode.
+i2c_board_info doesn't contain a member called name. i2c_register_client call
+does not exist.
 
-If the X server eventually uses this new mode, debugging and crash
-recovery should become easier. This is because even when currently in
-the VT of a frozen X server it would still be possible to switch out
-by doing SysRq-r and then CTRL-<number of a text vt>, sshing in and
-doing chvt <number of a text vt>, or any other method of VT switching.
-The general concensus on #xorg-devel seems to be that it should be
-safe to use this with X now that we have KMS.
-
-This also moves the VT_ACKACQ define to a more appropriate place,
-for clarity's sake.
-
-Signed-off-by: Ari Entlich <atrigent@ccs.neu.edu>
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
 ---
- drivers/char/vt_ioctl.c |   39 ++++++++++++++++++++-------------------
- include/linux/vt.h      |    3 ++-
- 2 files changed, 22 insertions(+), 20 deletions(-)
+ drivers/usb/host/ohci-pnx4008.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 6aa1028..87778dc 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -888,7 +888,7 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
- 			ret = -EFAULT;
- 			goto out;
- 		}
--		if (tmp.mode != VT_AUTO && tmp.mode != VT_PROCESS) {
-+		if (tmp.mode != VT_AUTO && tmp.mode != VT_PROCESS && tmp.mode != VT_PROCESS_AUTO) {
- 			ret = -EINVAL;
- 			goto out;
- 		}
-@@ -1622,7 +1622,7 @@ static void complete_change_console(struct vc_data *vc)
- 	 * telling it that it has acquired. Also check if it has died and
- 	 * clean up (similar to logic employed in change_console())
- 	 */
--	if (vc->vt_mode.mode == VT_PROCESS) {
-+	if (vc->vt_mode.mode == VT_PROCESS || vc->vt_mode.mode == VT_PROCESS_AUTO) {
- 		/*
- 		 * Send the signal as privileged - kill_pid() will
- 		 * tell us if the process has gone or something else
-@@ -1682,7 +1682,7 @@ void change_console(struct vc_data *new_vc)
- 	 * vt to auto control.
- 	 */
- 	vc = vc_cons[fg_console].d;
--	if (vc->vt_mode.mode == VT_PROCESS) {
-+	if (vc->vt_mode.mode == VT_PROCESS || vc->vt_mode.mode == VT_PROCESS_AUTO) {
- 		/*
- 		 * Send the signal as privileged - kill_pid() will
- 		 * tell us if the process has gone or something else
-@@ -1693,27 +1693,28 @@ void change_console(struct vc_data *new_vc)
- 		 */
- 		vc->vt_newvt = new_vc->vc_num;
- 		if (kill_pid(vc->vt_pid, vc->vt_mode.relsig, 1) == 0) {
-+			if(vc->vt_mode.mode == VT_PROCESS)
-+				/*
-+				 * It worked. Mark the vt to switch to and
-+				 * return. The process needs to send us a
-+				 * VT_RELDISP ioctl to complete the switch.
-+				 */
-+				return;
-+		} else {
- 			/*
--			 * It worked. Mark the vt to switch to and
--			 * return. The process needs to send us a
--			 * VT_RELDISP ioctl to complete the switch.
-+			 * The controlling process has died, so we revert back to
-+			 * normal operation. In this case, we'll also change back
-+			 * to KD_TEXT mode. I'm not sure if this is strictly correct
-+			 * but it saves the agony when the X server dies and the screen
-+			 * remains blanked due to KD_GRAPHICS! It would be nice to do
-+			 * this outside of VT_PROCESS but there is no single process
-+			 * to account for and tracking tty count may be undesirable.
- 			 */
--			return;
-+			reset_vc(vc);
- 		}
- 
- 		/*
--		 * The controlling process has died, so we revert back to
--		 * normal operation. In this case, we'll also change back
--		 * to KD_TEXT mode. I'm not sure if this is strictly correct
--		 * but it saves the agony when the X server dies and the screen
--		 * remains blanked due to KD_GRAPHICS! It would be nice to do
--		 * this outside of VT_PROCESS but there is no single process
--		 * to account for and tracking tty count may be undesirable.
--		 */
--		reset_vc(vc);
--
--		/*
--		 * Fall through to normal (VT_AUTO) handling of the switch...
-+		 * Fall through to normal (VT_AUTO and VT_PROCESS_AUTO) handling of the switch...
- 		 */
+diff --git a/drivers/usb/host/ohci-pnx4008.c b/drivers/usb/host/ohci-pnx4008.c
+index 2769326..cd74bbd 100644
+--- a/drivers/usb/host/ohci-pnx4008.c
++++ b/drivers/usb/host/ohci-pnx4008.c
+@@ -327,7 +327,7 @@ static int __devinit usb_hcd_pnx4008_probe(struct platform_device *pdev)
  	}
+ 	i2c_adap = i2c_get_adapter(2);
+ 	memset(&i2c_info, 0, sizeof(struct i2c_board_info));
+-	strlcpy(i2c_info.name, "isp1301_pnx", I2C_NAME_SIZE);
++	strlcpy(i2c_info.type, "isp1301_pnx", I2C_NAME_SIZE);
+ 	isp1301_i2c_client = i2c_new_probed_device(i2c_adap, &i2c_info,
+ 						   normal_i2c);
+ 	i2c_put_adapter(i2c_adap);
+@@ -411,7 +411,7 @@ out3:
+ out2:
+ 	clk_put(usb_clk);
+ out1:
+-	i2c_unregister_client(isp1301_i2c_client);
++	i2c_unregister_device(isp1301_i2c_client);
+ 	isp1301_i2c_client = NULL;
+ out_i2c_driver:
+ 	i2c_del_driver(&isp1301_driver);
+@@ -430,7 +430,7 @@ static int usb_hcd_pnx4008_remove(struct platform_device *pdev)
+ 	pnx4008_unset_usb_bits();
+ 	clk_disable(usb_clk);
+ 	clk_put(usb_clk);
+-	i2c_unregister_client(isp1301_i2c_client);
++	i2c_unregister_device(isp1301_i2c_client);
+ 	isp1301_i2c_client = NULL;
+ 	i2c_del_driver(&isp1301_driver);
  
-diff --git a/include/linux/vt.h b/include/linux/vt.h
-index d5dd0bc..778b7b2 100644
---- a/include/linux/vt.h
-+++ b/include/linux/vt.h
-@@ -27,7 +27,7 @@ struct vt_mode {
- #define VT_SETMODE	0x5602	/* set mode of active vt */
- #define		VT_AUTO		0x00	/* auto vt switching */
- #define		VT_PROCESS	0x01	/* process controls switching */
--#define		VT_ACKACQ	0x02	/* acknowledge switch */
-+#define		VT_PROCESS_AUTO 0x02	/* process is notified of switching */
- 
- struct vt_stat {
- 	unsigned short v_active;	/* active vt */
-@@ -38,6 +38,7 @@ struct vt_stat {
- #define VT_SENDSIG	0x5604	/* signal to send to bitmask of vts */
- 
- #define VT_RELDISP	0x5605	/* release display */
-+#define		VT_ACKACQ	0x02	/* acknowledge switch */
- 
- #define VT_ACTIVATE	0x5606	/* make vt active */
- #define VT_WAITACTIVE	0x5607	/* wait for vt active */
 -- 
-1.6.4.4
+1.6.6.2
+
