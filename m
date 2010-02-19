@@ -1,28 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244Ab0BSAW1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:22:27 -0500
+	id S1753658Ab0BSAXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:23:16 -0500
 Received: from mail-bw0-f209.google.com ([209.85.218.209]:44202 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753169Ab0BSAWX (ORCPT
+	with ESMTP id S1753324Ab0BSAXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:22:23 -0500
+	Thu, 18 Feb 2010 19:23:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=oSOYSwRPM7R5MgUJy5Ik8gru//k8e6pnTx3OKrgqQ1VVznViQ31OtAQqj0JKG/jfbq
-         CCCU5s5vKwbTZfaA+G8t9hHK16SAygmpJXOgx8YwbSesKkBNBpWu4sp8bexnD6l7JOAm
-         R4+3DKlmY/Ax/L9ZvESvTz4rrqEQgmZCHP0uQ=
+        b=x8P1yoCKLa/fOdq1YGmbYxM7/yVzC57LSVkWwQ0RHeSIGRTb/x/V7lqJWzFDssyEzA
+         qaZqIETDW11t6Nuyo6Mi9oaDGtkNUS30anM9KeV3/iFAsYcAjLBgjtMqn9FBG8gu+nhy
+         /kkPLauakpPYpfgRqBMtfWgTgLyeCsPTC9bzQ=
 From: Richard Hartmann <richih.mailinglist@gmail.com>
 To: linux-crypto@vger.kernel.org
 Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
        Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/19] crypto: proc - Fix checkpatch errors
-Date: Fri, 19 Feb 2010 01:22:03 +0100
-Message-Id: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com>
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 12/19] crypto: sha512_generic - Fix checkpatch errors
+Date: Fri, 19 Feb 2010 01:22:48 +0100
+Message-Id: <1266538969-3476-1-git-send-email-richih.mailinglist@gmail.com>
 X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,59 +29,220 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
 ---
- crypto/proc.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ crypto/sha512_generic.c |  139 +++++++++++++++++++++++------------------------
+ 1 files changed, 69 insertions(+), 70 deletions(-)
 
-diff --git a/crypto/proc.c b/crypto/proc.c
-index 58fef67..56a3c64 100644
---- a/crypto/proc.c
-+++ b/crypto/proc.c
-@@ -8,7 +8,7 @@
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-- * Software Foundation; either version 2 of the License, or (at your option) 
-+ * Software Foundation; either version 2 of the License, or (at your option)
-  * any later version.
-  *
-  */
-@@ -79,15 +79,15 @@ static void c_stop(struct seq_file *m, void *p)
- static int c_show(struct seq_file *m, void *p)
- {
- 	struct crypto_alg *alg = list_entry(p, struct crypto_alg, cra_list);
--	
-+
- 	seq_printf(m, "name         : %s\n", alg->cra_name);
- 	seq_printf(m, "driver       : %s\n", alg->cra_driver_name);
- 	seq_printf(m, "module       : %s\n", module_name(alg->cra_module));
- 	seq_printf(m, "priority     : %d\n", alg->cra_priority);
- 	seq_printf(m, "refcnt       : %d\n", atomic_read(&alg->cra_refcnt));
- 	seq_printf(m, "selftest     : %s\n",
--		   (alg->cra_flags & CRYPTO_ALG_TESTED) ?
--		   "passed" : "unknown");
-+	           (alg->cra_flags & CRYPTO_ALG_TESTED) ?
-+	           "passed" : "unknown");
+diff --git a/crypto/sha512_generic.c b/crypto/sha512_generic.c
+index 9ed9f60..750bdc9 100644
+--- a/crypto/sha512_generic.c
++++ b/crypto/sha512_generic.c
+@@ -25,57 +25,57 @@ static DEFINE_PER_CPU(u64[80], msg_schedule);
  
- 	if (alg->cra_flags & CRYPTO_ALG_LARVAL) {
- 		seq_printf(m, "type         : larval\n");
-@@ -99,7 +99,7 @@ static int c_show(struct seq_file *m, void *p)
- 		alg->cra_type->show(m, alg);
- 		goto out;
- 	}
--	
-+
- 	switch (alg->cra_flags & (CRYPTO_ALG_TYPE_MASK | CRYPTO_ALG_LARVAL)) {
- 	case CRYPTO_ALG_TYPE_CIPHER:
- 		seq_printf(m, "type         : cipher\n");
-@@ -133,7 +133,7 @@ static int crypto_info_open(struct inode *inode, struct file *file)
+ static inline u64 Ch(u64 x, u64 y, u64 z)
  {
- 	return seq_open(file, &crypto_seq_ops);
+-        return z ^ (x & (y ^ z));
++	return z ^ (x & (y ^ z));
  }
--        
-+
- static const struct file_operations proc_crypto_ops = {
- 	.open		= crypto_info_open,
- 	.read		= seq_read,
+ 
+ static inline u64 Maj(u64 x, u64 y, u64 z)
+ {
+-        return (x & y) | (z & (x | y));
++	return (x & y) | (z & (x | y));
+ }
+ 
+ static inline u64 RORu64(u64 x, u64 y)
+ {
+-        return (x >> y) | (x << (64 - y));
++	return (x >> y) | (x << (64 - y));
+ }
+ 
+ static const u64 sha512_K[80] = {
+-        0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL,
+-        0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL,
+-        0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL,
+-        0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL,
+-        0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL,
+-        0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL,
+-        0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL,
+-        0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL,
+-        0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL,
+-        0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL,
+-        0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL,
+-        0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL,
+-        0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL,
+-        0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL,
+-        0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL,
+-        0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL,
+-        0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL,
+-        0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL,
+-        0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL,
+-        0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL,
+-        0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL,
+-        0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL,
+-        0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL,
+-        0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL,
+-        0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL,
+-        0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL,
+-        0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL,
++	0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL,
++	0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL,
++	0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL,
++	0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL,
++	0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL,
++	0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL,
++	0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL,
++	0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL,
++	0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL,
++	0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL,
++	0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL,
++	0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL,
++	0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL,
++	0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL,
++	0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL,
++	0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL,
++	0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL,
++	0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL,
++	0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL,
++	0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL,
++	0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL,
++	0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL,
++	0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL,
++	0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL,
++	0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL,
++	0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL,
++	0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL,
+ };
+ 
+-#define e0(x)       (RORu64(x,28) ^ RORu64(x,34) ^ RORu64(x,39))
+-#define e1(x)       (RORu64(x,14) ^ RORu64(x,18) ^ RORu64(x,41))
+-#define s0(x)       (RORu64(x, 1) ^ RORu64(x, 8) ^ (x >> 7))
+-#define s1(x)       (RORu64(x,19) ^ RORu64(x,61) ^ (x >> 6))
++#define e0(x)       (RORu64(x, 28) ^ RORu64(x, 34) ^ RORu64(x, 39))
++#define e1(x)       (RORu64(x, 14) ^ RORu64(x, 18) ^ RORu64(x, 41))
++#define s0(x)       (RORu64(x,  1) ^ RORu64(x,  8) ^ (x >> 7))
++#define s1(x)       (RORu64(x, 19) ^ RORu64(x, 61) ^ (x >> 6))
+ 
+ static inline void LOAD_OP(int I, u64 *W, const u8 *input)
+ {
+-	W[I] = __be64_to_cpu( ((__be64*)(input))[I] );
++	W[I] = __be64_to_cpu(((__be64 *)(input))[I]);
+ }
+ 
+ static inline void BLEND_OP(int I, u64 *W)
+@@ -92,35 +92,34 @@ sha512_transform(u64 *state, const u8 *input)
+ 	u64 *W = get_cpu_var(msg_schedule);
+ 
+ 	/* load the input */
+-        for (i = 0; i < 16; i++)
+-                LOAD_OP(i, W, input);
++	for (i = 0; i < 16; i++)
++		LOAD_OP(i, W, input);
+ 
+-        for (i = 16; i < 80; i++) {
+-                BLEND_OP(i, W);
+-        }
++	for (i = 16; i < 80; i++)
++		BLEND_OP(i, W);
+ 
+ 	/* load the state into our registers */
+-	a=state[0];   b=state[1];   c=state[2];   d=state[3];
+-	e=state[4];   f=state[5];   g=state[6];   h=state[7];
++	a = state[0];   b = state[1];   c = state[2];   d = state[3];
++	e = state[4];   f = state[5];   g = state[6];   h = state[7];
+ 
+ 	/* now iterate */
+-	for (i=0; i<80; i+=8) {
+-		t1 = h + e1(e) + Ch(e,f,g) + sha512_K[i  ] + W[i  ];
+-		t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-		t1 = g + e1(d) + Ch(d,e,f) + sha512_K[i+1] + W[i+1];
+-		t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-		t1 = f + e1(c) + Ch(c,d,e) + sha512_K[i+2] + W[i+2];
+-		t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-		t1 = e + e1(b) + Ch(b,c,d) + sha512_K[i+3] + W[i+3];
+-		t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-		t1 = d + e1(a) + Ch(a,b,c) + sha512_K[i+4] + W[i+4];
+-		t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-		t1 = c + e1(h) + Ch(h,a,b) + sha512_K[i+5] + W[i+5];
+-		t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-		t1 = b + e1(g) + Ch(g,h,a) + sha512_K[i+6] + W[i+6];
+-		t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-		t1 = a + e1(f) + Ch(f,g,h) + sha512_K[i+7] + W[i+7];
+-		t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
++	for (i = 0; i < 80; i += 8) {
++		t1 = h + e1(e) + Ch(e, f, g) + sha512_K[i]   + W[i];
++		t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++		t1 = g + e1(d) + Ch(d, e, f) + sha512_K[i+1] + W[i+1];
++		t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++		t1 = f + e1(c) + Ch(c, d, e) + sha512_K[i+2] + W[i+2];
++		t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++		t1 = e + e1(b) + Ch(b, c, d) + sha512_K[i+3] + W[i+3];
++		t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++		t1 = d + e1(a) + Ch(a, b, c) + sha512_K[i+4] + W[i+4];
++		t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++		t1 = c + e1(h) + Ch(h, a, b) + sha512_K[i+5] + W[i+5];
++		t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++		t1 = b + e1(g) + Ch(g, h, a) + sha512_K[i+6] + W[i+6];
++		t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++		t1 = a + e1(f) + Ch(f, g, h) + sha512_K[i+7] + W[i+7];
++		t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
+ 	}
+ 
+ 	state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+@@ -180,14 +179,14 @@ sha512_update(struct shash_desc *desc, const u8 *data, unsigned int len)
+ 	if (!(sctx->count[0] += len))
+ 		sctx->count[1]++;
+ 
+-        part_len = 128 - index;
++	part_len = 128 - index;
+ 
+ 	/* Transform as many times as possible. */
+ 	if (len >= part_len) {
+ 		memcpy(&sctx->buf[index], data, part_len);
+ 		sha512_transform(sctx->state, sctx->buf);
+ 
+-		for (i = part_len; i + 127 < len; i+=128)
++		for (i = part_len; i + 127 < len; i += 128)
+ 			sha512_transform(sctx->state, &data[i]);
+ 
+ 		index = 0;
+@@ -205,7 +204,7 @@ static int
+ sha512_final(struct shash_desc *desc, u8 *hash)
+ {
+ 	struct sha512_state *sctx = shash_desc_ctx(desc);
+-        static u8 padding[128] = { 0x80, };
++	static u8 padding[128] = { 0x80, };
+ 	__be64 *dst = (__be64 *)hash;
+ 	__be64 bits[2];
+ 	unsigned int index, pad_len;
+@@ -275,20 +274,20 @@ static struct shash_alg sha384 = {
+ 
+ static int __init sha512_generic_mod_init(void)
+ {
+-        int ret = 0;
++	int ret = 0;
+ 
+-        if ((ret = crypto_register_shash(&sha384)) < 0)
+-                goto out;
+-        if ((ret = crypto_register_shash(&sha512)) < 0)
+-                crypto_unregister_shash(&sha384);
++	if ((ret = crypto_register_shash(&sha384)) < 0)
++		goto out;
++	if ((ret = crypto_register_shash(&sha512)) < 0)
++		crypto_unregister_shash(&sha384);
+ out:
+-        return ret;
++	return ret;
+ }
+ 
+ static void __exit sha512_generic_mod_fini(void)
+ {
+-        crypto_unregister_shash(&sha384);
+-        crypto_unregister_shash(&sha512);
++	crypto_unregister_shash(&sha384);
++	crypto_unregister_shash(&sha512);
+ }
+ 
+ module_init(sha512_generic_mod_init);
 -- 
 1.6.6.1
 
