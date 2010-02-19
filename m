@@ -1,89 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031Ab0BSRTH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:19:07 -0500
-Received: from kroah.org ([198.145.64.141]:57374 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754242Ab0BSRAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:10 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:32 2010
-Message-Id: <20100219163232.671340280@kvm.kroah.org>
-User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:04 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>
-Subject: [11/93] drm/i915: enable self-refresh on 965
-In-Reply-To: <20100219165717.GA15002@kroah.com>
+	id S1755309Ab0BSRT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:19:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:42020 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754288Ab0BSRTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:19:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=JzPH7lSzZq8fqbFBT7G3OjDT7HLMyXVmx9LhCrgPAcOpCFE2Wn6qfNO8kzNgNC4yMN
+         sNpLYe60JUEHYl6yShTew7TB/N8bi5YNIbPL0zrYKPUtI+8ntFhGqxZpJgOmD0ut4bCs
+         j+YYsPwSaqA2qO9X9LamkHPBD9ZRXauawT63M=
+Date: Fri, 19 Feb 2010 18:19:16 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexandre Julliard <julliard@winehq.org>
+Cc: Michael Stefaniuc <mstefani@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "K . Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1, fixes
+Message-ID: <20100219171913.GB4921@nowhere>
+References: <4B7881AC.5070209@redhat.com> <1266516001-7753-1-git-send-regression-fweisbec@gmail.com> <4B7D94AD.4050504@redhat.com> <87wryanxgv.fsf@wine.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87wryanxgv.fsf@wine.dyndns.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+On Thu, Feb 18, 2010 at 08:41:04PM +0100, Alexandre Julliard wrote:
+> Michael Stefaniuc <mstefani@redhat.com> writes:
+> 
+> > On 02/18/2010 06:59 PM, Frederic Weisbecker wrote:
+> >> I still can't build the wine tree (even with the wine faq)
+> >> because of the following error:
+> >>
+> >> LD_LIBRARY_PATH="../../libs/wine:$LD_LIBRARY_PATH" ../../tools/wrc/wrc --nostdinc -I. -I. -I../../include -I../../include  -D__WINESRC__ -D_KERNEL32_  -folocale_rc.res locale_rc.rc
+> >> Source: �Q�� a4 51 a4 eb
+> >> Unicode:  5341 6708
+> >> Back: �̤� a2 cc a4 eb
+> >> nls/cht.nls:84:16: Error: String �Q�� does not convert identically to Unicode and back in codepage 950. Try using a Unicode string instead
+> >> make[1]: *** [locale_rc.res] Erreur 1
+> > Wow, what Wine version are you trying to build? That was a known
+> > regression but it was fixed 1-2 days later.
+> 
+> This is usually because that you have an old libwine.so lying around
+> somewhere.
 
-------------------
 
-From: Jesse Barnes <jbarnes@jbarnes-x200.(none)>
-
-commit 1dc7546d1a73664e5d117715b214bea9cae5951c upstream.
-
-Need to calculate the SR watermark and enable it.
-
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Eric Anholt <eric@anholt.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/gpu/drm/i915/intel_display.c |   32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)
-
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -2556,15 +2556,39 @@ static void g4x_update_wm(struct drm_dev
- 		   (cursor_sr << DSPFW_CURSOR_SR_SHIFT));
- }
- 
--static void i965_update_wm(struct drm_device *dev, int unused, int unused2,
--			   int unused3, int unused4)
-+static void i965_update_wm(struct drm_device *dev, int planea_clock,
-+			   int planeb_clock, int sr_hdisplay, int pixel_size)
- {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
-+	unsigned long line_time_us;
-+	int sr_clock, sr_entries, srwm = 1;
- 
--	DRM_DEBUG("Setting FIFO watermarks - A: 8, B: 8, C: 8, SR 8\n");
-+	/* Calc sr entries for one plane configs */
-+	if (sr_hdisplay && (!planea_clock || !planeb_clock)) {
-+		/* self-refresh has much higher latency */
-+		const static int sr_latency_ns = 12000;
-+
-+		sr_clock = planea_clock ? planea_clock : planeb_clock;
-+		line_time_us = ((sr_hdisplay * 1000) / sr_clock);
-+
-+		/* Use ns/us then divide to preserve precision */
-+		sr_entries = (((sr_latency_ns / line_time_us) + 1) *
-+			      pixel_size * sr_hdisplay) / 1000;
-+		sr_entries = roundup(sr_entries / I915_FIFO_LINE_SIZE, 1);
-+		DRM_DEBUG("self-refresh entries: %d\n", sr_entries);
-+		srwm = I945_FIFO_SIZE - sr_entries;
-+		if (srwm < 0)
-+			srwm = 1;
-+		srwm &= 0x3f;
-+		I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
-+	}
-+
-+	DRM_DEBUG_KMS("Setting FIFO watermarks - A: 8, B: 8, C: 8, SR %d\n",
-+		      srwm);
- 
- 	/* 965 has limitations... */
--	I915_WRITE(DSPFW1, (8 << 16) | (8 << 8) | (8 << 0));
-+	I915_WRITE(DSPFW1, (srwm << DSPFW_SR_SHIFT) | (8 << 16) | (8 << 8) |
-+		   (8 << 0));
- 	I915_WRITE(DSPFW2, (8 << 8) | (8 << 0));
- }
- 
-
+Ah probably. I should have removed my previous wine setup before doing
+this.
 
