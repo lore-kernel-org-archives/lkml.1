@@ -1,102 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917Ab0BSRQF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:16:05 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:62519 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754591Ab0BSRP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:15:59 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Oliver Neukum <oliver@neukum.org>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Ming Lei <tom.leiming@gmail.com>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <1266445892.16346.306.camel@pasglop>
-References: <1266445892.16346.306.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Fri, 19 Feb 2010 17:15:55 +0000
-Message-ID: <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Feb 2010 17:15:56.0182 (UTC) FILETIME=[32A47360:01CAB187]
+	id S1755990Ab0BSRRB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:17:01 -0500
+Received: from kroah.org ([198.145.64.141]:57408 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754082Ab0BSRAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:17 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:35 2010
+Message-Id: <20100219163235.192149478@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 19 Feb 2010 08:29:12 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>
+Subject: [19/93] drm/i915: handle FBC and self-refresh better
+In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-17 at 22:31 +0000, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-02-17 at 20:44 +0000, Russell King - ARM Linux wrote:
-> > No, because that'd probably bugger up the Sparc64 method of delaying
-> > flush_dcache_page.
-> >
-> > This method works as follows:
-> >
-> > - a page cache page is allocated - this has PG_arch_1 clear.
-> >
-> > - IO happens on it and it's placed into the page cache.  PG_arch_1 is
-> >   still clear.
-> >
-> > - someone calls read()/write() which accesses the page.  The generic
-> >   file IO layers call flush_dcache_page() in response to
-> > read()/write()
-> >   fs calls.  flush_dcache_page() spots that the page is not yet mapped
-> >   into userspace, and sets PG_arch_1 to mark the fact that the kernel
-> >   mapping is dirty.
-> >
-> > - when someone maps the page, we check PG_arch_1 in update_mmu_cache.
-> >   If PG_arch_1 is set, we flush the kernel mapping.
-> >
-> > Clearly, if we go around having drivers clearing PG_arch_1, this is
-> > going to break horribly.
-> 
-> Ok, you do things very differently than us on ppc then. We clear
-> PG_arch_1 in flush_dcache_page(), and we set it when the page has been
-> cache cleaned for execution.
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-For this perspective it's not that different, just that we use the
-negated PG_arch_1.
+------------------
 
-> We assume that anybody that dirties a page in the kernel will call
-> flush_dcache_page() which removes our PG_arch_1 bit thus marking the
-> page "dirty".
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-This assumption is not valid with some drivers like USB HCD doing PIO.
-But, yes, that's how it should be done.
+commit ee25df2bc379728c45d81e04cf87984db1425edf upstream.
 
-> Note that from experience, doing the check & flushes in
-> update_mmu_cache() is racy on SMP. At least for I$/D$, we have the case
-> where processor one does set_pte followed by update_mmu_cache(). The
-> later isn't done yet but processor 2 sees the PTE now and starts using
-> it, cache hasn't been fully flushed yet. You may avoid that race in some
-> ways, but on ppc, I've stopped using that.
+On 945, we need to avoid entering self-refresh if the compressor is
+busy, or we may cause display FIFO underruns leading to ugly flicker.
 
-I think that's possible on ARM too. Having two threads on different
-CPUs, one thread triggers a prefetch abort (instruction page fault) on
-CPU0 but the second thread on CPU1 may branch into this page after
-set_pte() (hence not fault) but before update_mmu_cache() doing the
-flush.
+Fixes fdo bug #24314, kernel bug #15043.
 
-On ARM11MPCore we flush the caches in flush_dcache_page() because the
-cache maintenance operations weren't visible to the other CPUs.
-Cortex-A9 broadcasts the cache operations in hardware so we can use lazy
-flushing but with the race you pointed out.
+Tested-by: Alexander Lam <lambchop468@gmail.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Tested-by: Julien Cristau <jcristau@debian.org> (fd.o #25371)
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Using set_pte_at() for delayed flushing may be a better option for ARM
-as well (and maybe Documentation/cachetlb.txt updated).
+---
+ drivers/gpu/drm/i915/i915_reg.h      |    1 +
+ drivers/gpu/drm/i915/intel_display.c |    2 ++
+ 2 files changed, 3 insertions(+)
 
-Thanks.
+--- a/drivers/gpu/drm/i915/i915_reg.h
++++ b/drivers/gpu/drm/i915/i915_reg.h
+@@ -329,6 +329,7 @@
+ #define   FBC_CTL_PERIODIC	(1<<30)
+ #define   FBC_CTL_INTERVAL_SHIFT (16)
+ #define   FBC_CTL_UNCOMPRESSIBLE (1<<14)
++#define   FBC_C3_IDLE		(1<<13)
+ #define   FBC_CTL_STRIDE_SHIFT	(5)
+ #define   FBC_CTL_FENCENO	(1<<0)
+ #define FBC_COMMAND		0x0320c
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -988,6 +988,8 @@ static void i8xx_enable_fbc(struct drm_c
+ 
+ 	/* enable it... */
+ 	fbc_ctl = FBC_CTL_EN | FBC_CTL_PERIODIC;
++	if (IS_I945GM(dev))
++		fbc_ctl |= FBC_C3_IDLE; /* 945 needs special SR handling */
+ 	fbc_ctl |= (dev_priv->cfb_pitch & 0xff) << FBC_CTL_STRIDE_SHIFT;
+ 	fbc_ctl |= (interval & 0x2fff) << FBC_CTL_INTERVAL_SHIFT;
+ 	if (obj_priv->tiling_mode != I915_TILING_NONE)
 
--- 
-Catalin
 
