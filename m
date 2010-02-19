@@ -1,60 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218Ab0BSFba (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 00:31:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40373 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854Ab0BSFb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 00:31:28 -0500
-Message-ID: <4B7E2219.2030606@redhat.com>
-Date: Fri, 19 Feb 2010 03:31:05 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1752512Ab0BSFsk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 00:48:40 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:37361 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902Ab0BSFsi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 00:48:38 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5896"; a="34490181"
+Message-ID: <4B7E2635.8010700@codeaurora.org>
+Date: Thu, 18 Feb 2010 21:48:37 -0800
+From: Michael Bohan <mbohan@codeaurora.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: linus torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>
-Subject: [GIT PULL for 2.6.33-rc8] Some bug and regression fixes for V4L/DVB
-Content-Type: text/plain; charset=ISO-8859-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: Kernel panic due to page migration accessing memory holes
+References: <4B7C8DC2.3060004@codeaurora.org>	<20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>	<4B7CF8C0.4050105@codeaurora.org>	<20100218183604.95ee8c77.kamezawa.hiroyu@jp.fujitsu.com>	<20100218100432.GA32626@csn.ul.ie>	<4B7DEDB0.8030802@codeaurora.org> <20100219110003.dfe58df8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100219110003.dfe58df8.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit f8b55f251012e104093e105483c45c5d85ad3040:
-  Christine Caulfield (1):
-        Orphan DECnet
+On 2/18/2010 6:00 PM, KAMEZAWA Hiroyuki wrote:
+> memmap for memory holes should be marked as PG_reserved and never be freed
+> by free_bootmem(). Then, memmap for memory holes will not be in buddy allocator.
+>
+> Again, pfn_valid() just show "there is memmap", not for "there is a valid page"
+>    
 
-are available in the git repository at:
+ARM seems to have been freeing the memmap holes for a long time.  I'm 
+pretty sure there would be a lot of pushback if we tried to change 
+that.  For example, in my memory map running FLATMEM, I would be 
+consuming an extra ~7 MB of memory if these structures were not freed.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git v4l_for_linus
+As a compromise, perhaps we could free everything except the first 
+'pageblock_nr_pages' in a hole?  This would guarantee that 
+move_freepages() doesn't deference any memory that doesn't belong to the 
+memmap -- but still only waste a relatively small amount of memory.  For 
+a 4 MB page block, it should only consume an extra 32 KB per hole in the 
+memory map.
 
-Ben Hutchings (1):
-      V4L/DVB: cxusb: Select all required frontend and tuner modules
-
-Jean Delvare (1):
-      V4L/DVB: bttv: Move I2C IR initialization
-
-Kuninori Morimoto (1):
-      soc-camera: mt9t112: modify exiting conditions from standby mode
-
-Martin Fuzzey (1):
-      V4L/DVB: Video : pwc : Fix regression in pwc_set_shutter_speed caused by bad 	constant => sizeof conversion.
-
-Richard Guenther (1):
-      V4L/DVB: dvb: l64781.ko broken with gcc 4.5
-
- drivers/media/dvb/dvb-usb/Kconfig       |    4 +++-
- drivers/media/dvb/frontends/l64781.c    |    4 ++--
- drivers/media/video/bt8xx/bttv-driver.c |    1 +
- drivers/media/video/bt8xx/bttv-i2c.c    |    8 ++++++--
- drivers/media/video/bt8xx/bttvp.h       |    1 +
- drivers/media/video/mt9t112.c           |    2 +-
- drivers/media/video/pwc/pwc-ctrl.c      |    2 +-
- 7 files changed, 15 insertions(+), 7 deletions(-)
-
--- 
-
-Cheers,
-Mauro
+Thanks,
+Michael
