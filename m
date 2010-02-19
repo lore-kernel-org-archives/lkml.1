@@ -1,58 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492Ab0BSIqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 03:46:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53227 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752056Ab0BSIqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 03:46:17 -0500
-Date: Fri, 19 Feb 2010 19:46:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: linux-next: build failure after final merge (arm tree)
-Message-Id: <20100219194611.61977ed9.sfr@canb.auug.org.au>
-In-Reply-To: <20100219082217.GA7392@flint.arm.linux.org.uk>
-References: <20100219173929.01b9e85f.sfr@canb.auug.org.au>
-	<20100219082217.GA7392@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__19_Feb_2010_19_46_11_+1100_6hh=qLOj7q=At.1p"
+	id S1752413Ab0BSIv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 03:51:57 -0500
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:56526 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751560Ab0BSIvz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 03:51:55 -0500
+Date: Fri, 19 Feb 2010 14:21:50 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Michael Stefaniuc <mstefani@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 1/2] hw-breakpoints: Accept breakpoints on NULL address
+Message-ID: <20100219085150.GB3525@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <4B7881AC.5070209@redhat.com> <1266516001-7753-2-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266516001-7753-2-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__19_Feb_2010_19_46_11_+1100_6hh=qLOj7q=At.1p
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Feb 18, 2010 at 07:00:00PM +0100, Frederic Weisbecker wrote:
+> Before we had a generic breakpoint API, ptrace was accepting
+> breakpoints on NULL address in x86. The new API refuse them,
+> without given strong reasons. We need to follow the previous
+> behaviour as some userspace apps like Wine need such NULL
+> breakpoints to ensure old emulated software protections
+> are still working.
+> 
+> This fixes a 2.6.32 - 2.6.33-x ptrace regression.
+> 
+> Reported-by: Michael Stefaniuc <mstefani@redhat.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 
-Hi Russell,
+Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
 
-On Fri, 19 Feb 2010 08:22:17 +0000 Russell King <rmk+lkml@arm.linux.org.uk>=
- wrote:
->
-> It looks correct to me - I'll merge it into the original commit tonight
-> unless David provides me with an alternative patch.
-
-Thanks
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__19_Feb_2010_19_46_11_+1100_6hh=qLOj7q=At.1p
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt+T9MACgkQjjKRsyhoI8z7yQCgkxCUHEu/ch1WFUbCH72htY6g
-CycAn3lWEzRd/ftsL8By9vGCJ6fSj+os
-=stib
------END PGP SIGNATURE-----
-
---Signature=_Fri__19_Feb_2010_19_46_11_+1100_6hh=qLOj7q=At.1p--
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Maneesh Soni <maneesh@linux.vnet.ibm.com>
+> Cc: Alexandre Julliard <julliard@winehq.org>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Maciej Rutecki <maciej.rutecki@gmail.com>
+> ---
+>  arch/x86/kernel/hw_breakpoint.c |   30 +++++++-----------------------
+>  1 files changed, 7 insertions(+), 23 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+> index 05d5fec..bb6006e 100644
+> --- a/arch/x86/kernel/hw_breakpoint.c
+> +++ b/arch/x86/kernel/hw_breakpoint.c
+> @@ -212,25 +212,6 @@ static int arch_check_va_in_kernelspace(unsigned long va, u8 hbp_len)
+>  	return (va >= TASK_SIZE) && ((va + len - 1) >= TASK_SIZE);
+>  }
+> 
+> -/*
+> - * Store a breakpoint's encoded address, length, and type.
+> - */
+> -static int arch_store_info(struct perf_event *bp)
+> -{
+> -	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
+> -	/*
+> -	 * For kernel-addresses, either the address or symbol name can be
+> -	 * specified.
+> -	 */
+> -	if (info->name)
+> -		info->address = (unsigned long)
+> -				kallsyms_lookup_name(info->name);
+> -	if (info->address)
+> -		return 0;
+> -
+> -	return -EINVAL;
+> -}
+> -
+>  int arch_bp_generic_fields(int x86_len, int x86_type,
+>  			   int *gen_len, int *gen_type)
+>  {
+> @@ -362,10 +343,13 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp,
+>  		return ret;
+>  	}
+> 
+> -	ret = arch_store_info(bp);
+> -
+> -	if (ret < 0)
+> -		return ret;
+> +	/*
+> +	 * For kernel-addresses, either the address or symbol name can be
+> +	 * specified.
+> +	 */
+> +	if (info->name)
+> +		info->address = (unsigned long)
+> +				kallsyms_lookup_name(info->name);
+>  	/*
+>  	 * Check that the low-order bits of the address are appropriate
+>  	 * for the alignment implied by len.
+> -- 
+> 1.6.2.3
+> 
