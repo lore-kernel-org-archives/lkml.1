@@ -1,45 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828Ab0BRX75 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:59:57 -0500
-Received: from borg.medozas.de ([188.40.89.202]:59251 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950Ab0BRX74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:59:56 -0500
-Date: Fri, 19 Feb 2010 00:59:54 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [kernel.org users] XZ Migration discussion
-In-Reply-To: <20100214095607.GB21783@one.firstfloor.org>
-Message-ID: <alpine.LSU.2.01.1002190057090.1233@obet.zrqbmnf.qr>
-References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare> <4B773B31.1020802@lougher.demon.co.uk> <20100214095607.GB21783@one.firstfloor.org>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	id S1752460Ab0BSAA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:00:58 -0500
+Received: from mail-yx0-f180.google.com ([209.85.210.180]:62358 "EHLO
+	mail-yx0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750950Ab0BSAA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 19:00:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kuEs6eexBkLA5mWYtHwFiCFKgI089Yvti2Y/cCR8nwfoHppNYyP54VQDS2UBxZYDer
+         6ciApedhfjPWXe5b2KSoVU8Vzy5RiIQNGSeWgOWRTPpkuZ6FImQ7Jz1gRoPgo58BMKwx
+         F3r/ZcrZszwFfoGa1FIf4JgJADc1ekggWYyjg=
+Message-ID: <4B7DD4B5.7000108@garzik.org>
+Date: Thu, 18 Feb 2010 19:00:53 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] libata: pass host flags into __ata_pci_sff_init_one()
+ helper
+References: <20100218185914.16594.61415.sendpatchset@localhost> <20100218185922.16594.98925.sendpatchset@localhost> <20100218214448.692552fd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100218214448.692552fd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 2010-02-14 10:56, Andi Kleen wrote:
-
->> With xz you have just one C/C++ implementation with a single library with
->> an undocumented API for C/C++ programmers.
+On 02/18/2010 04:44 PM, Alan Cox wrote:
+> On Thu, 18 Feb 2010 19:59:22 +0100
+> Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>  wrote:
 >
->... which is not even widely deployed. I did a quick survey and none of 
->my systems (none of which terrible old and not particularly embedded) 
->have it installed and for most them there's only "lzma-utils" in the 
->distribution package repositories which I understand is not compatible.
+>> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+>> Subject: [PATCH] libata: pass host flags into __ata_pci_sff_init_one() helper
+>>
+>> This was orginally proposed by Alan Cox but as a change
+>> for ata_pci_sff_init_one() helper function instead of
+>> __ata_pci_sff_init_one() one which casues needless churn
+>> to all host drivers and accidentally breakes few host
+>> drivers which are still on their way upstream.
+>>
+>> Allows parallel scan and the like to be set without
+>> having to stop using the existing full helper functions.
 >
->I would basically need to download the source by hand and install
->it like back in the bad old "unix with all useful commands missing"
->HP-UX/Solaris/etc. days.
+> NAK - __ is for internal symbol names.
+>
+> I was split 50/50 on adding ata_pci_sff_init_one_flags() or similar but
+> the churn, given its a one off and we can then add all sorts of other
+> future flags without pain, seemed worth it.
+>
+> I'm ambivalent about whether its best to go with a new function name as
+> you have or take the hit now (which seems sensible to me). Either way the
+> __ naming is wrong for an external interface.
 
-When was the last time you compiled a Linux kernel on HP-UX or Solaris?
-I think others did that first (me being along the party), and quite
-frankly, the plain Solaris without CSW has quickly-reachable limits
-even for non-kernels.
+Your proposed patch from yesterday adding flags to each is fine. 
+All-driver patches are just fine, as long as the need is demonstrated 
+[and it is, in this case].
+
+
+> Anyway I'd *hope* we can get>  50% of interfaces parallel scanning at
+> which point it ceases to be more noise anyway !
+>
+> Jeff ?
+
+Most hardware should support parallel scanning, sans caveats like 
+chipsets that snoop SET FEATURES - XFER MODE (that command, and only 
+that command, needs synchronization)
+
+	Jeff
+
+
+
