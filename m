@@ -1,77 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017Ab0BSMpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 07:45:45 -0500
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:15132 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804Ab0BSMpn (ORCPT
+	id S1754173Ab0BSM5O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 07:57:14 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:62989 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753804Ab0BSM5L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 07:45:43 -0500
-X-SpamScore: -1
-X-BigFish: VPS-1(zz1432R1453M98dNzz1202hzz3198u327alz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KY3A3Y-02-33U-02
-X-M-MSG: 
-Date: Fri, 19 Feb 2010 13:45:40 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
- on PCI
-Message-ID: <20100219124540.GC30243@aftab>
-References: <20100123113359.GA29555@one.firstfloor.org>
- <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org>
- <20100216204732.GA2301@elte.hu>
- <4B7B1C40.8070208@linux.intel.com>
- <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain>
- <20100219121734.GA8300@basil.fritz.box>
+	Fri, 19 Feb 2010 07:57:11 -0500
+Message-ID: <4B7E8AA4.40307@corscience.de>
+Date: Fri, 19 Feb 2010 13:57:08 +0100
+From: Thomas Weber <weber@corscience.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20100217)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20100219121734.GA8300@basil.fritz.box>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 19 Feb 2010 12:45:35.0698 (UTC) FILETIME=[6E7B0320:01CAB161]
-X-Reverse-DNS: unknown
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+CC: ext Jaya Kumar <jayakumar.lkml@gmail.com>, Thomas Weber <swirl@gmx.li>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
+ DEVKIT8000
+References: <1265917278-22011-1-git-send-email-swirl@gmx.li>	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com> <1265988343.2433.312.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1265988343.2433.312.camel@tubuntu.research.nokia.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1+58R8uhdHInaOw4PewoccLvOo4bBRYNZcSGhd
+ x8LNnooueC4foVzjx+RoZLPjjGQGObCuSEIJvtwvgTLHnqQMrp
+ OIBST9qY+PTHdLzgRwHeA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 01:17:34PM +0100, Andi Kleen wrote:
+Tomi Valkeinen wrote:
+> On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
+>   
+>> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
+>>     
+>
+> [snip]
+>
+>   
+>>> +
+>>> +static struct omap_video_timings innolux_at_timings = {
+>>> +       .x_res          = 800,
+>>> +       .y_res          = 480,
+>>> +
+>>> +       .pixel_clock    = 40000,
+>>> +
+>>> +       .hsw            = 48,
+>>> +       .hfp            = 1,
+>>> +       .hbp            = 1,
+>>> +
+>>> +       .vsw            = 3,
+>>> +       .vfp            = 12,
+>>> +       .vbp            = 25,
+>>> +};
+>>> +
+>>> +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
+>>> +{
+>>> +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+>>> +               OMAP_DSS_LCD_IHS;
+>>> +       dssdev->panel.acb = 0x28;
+>>> +       dssdev->panel.timings = innolux_at_timings;
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>>       
+>> Hi Thomas, Tomi,
+>>
+>> Just curious, does this patch imply that code like this needs to be
+>> written for every single LCD type and resolution that can be connected
+>> to omap2? Maybe there is a better way, like a common table of timings
+>> and values that can be selected with a module option or even
+>> autodetected.
+>>     
+>
+> Yes, it is true that currently you need to write these for every LCD. I
+> have been thinking this issue, and I think we can make a common driver. 
+>
+> However, it's not just selecting timings, as LCDs can have also other
+> characteristics than just the video timings. For example, some may have
+> power on/off line, some reset enable/disable, some need 50ms after
+> reset, some 80ms after reset etc.
+>
+> But if we manage to get a sane set of those settings into the table, we
+> could perhaps cover most of the "dummy" LCDs with it.
+>
+> This change doesn't probably need any changes to the DSS core, only for
+> the panel driver. Any takers for this task? =) 
+>
+>  Tomi
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>   
+Hello,
 
-<snip all the perf analysis>
+sorry but I am not able to take the task.
+Make it sense to rework this patch or do you want first the changes to
+the panel driver?
 
-I think you're missing the point - it doesn't have to be
-perf. It could just as well be some other tool which _shares_
-functionality with perf. See this last mail from Ingo:
-http://marc.info/?l=linux-kernel&m=126635420607236 on which you were
-also CCed, by the way, where he suggests that we could have a tool
-called 'hw' which reuses functionality with perf but concentrates on
-error handling and all that RAS functionality in modern CPUs. It should
-also have a daemon component etc...
+Thomas
 
-> > year. You are refusing to work with other people on a well designed
-
-Sorry, but from our last discussion on attempting to work towards such
-an infrastructure solution I got the same impression as Thomas and Ingo
-that you're simply not willing to work together on getting a real thing
-done. That's why I stopped bothering - it simply made no sense to me to
-waste time in fruitless discussions.
-
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
 
