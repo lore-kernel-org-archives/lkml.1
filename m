@@ -1,96 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242Ab0BSPw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:52:29 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:41027 "EHLO gir.skynet.ie"
+	id S1754339Ab0BSPxu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:53:50 -0500
+Received: from kroah.org ([198.145.64.141]:48586 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169Ab0BSPw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:52:28 -0500
-Date: Fri, 19 Feb 2010 15:52:13 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Greg KH <greg@kroah.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 10/12] Add /sys trigger for per-node memory compaction
-Message-ID: <20100219155213.GD1445@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-11-git-send-email-mel@csn.ul.ie> <20100219145358.GB24790@kroah.com> <20100219152830.GB1445@csn.ul.ie> <20100219153142.GA26557@kroah.com> <20100219155117.GC1445@csn.ul.ie>
+	id S1752881Ab0BSPxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 10:53:48 -0500
+Date: Fri, 19 Feb 2010 07:53:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: import of usb series failed
+Message-ID: <20100219155343.GA3946@kroah.com>
+References: <20100218105500.898ece5e.sfr@canb.auug.org.au>
+ <20100218002144.GA17850@kroah.com>
+ <20100218132221.b15d151f.sfr@canb.auug.org.au>
+ <20100219175218.10025a7a.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100219155117.GC1445@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20100219175218.10025a7a.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 03:51:17PM +0000, Mel Gorman wrote:
-> On Fri, Feb 19, 2010 at 07:31:42AM -0800, Greg KH wrote:
-> > On Fri, Feb 19, 2010 at 03:28:30PM +0000, Mel Gorman wrote:
-> > > On Fri, Feb 19, 2010 at 06:53:59AM -0800, Greg KH wrote:
-> > > > On Thu, Feb 18, 2010 at 06:02:40PM +0000, Mel Gorman wrote:
-> > > > > This patch adds a per-node sysfs file called compact. When the file is
-> > > > > written to, each zone in that node is compacted. The intention that this
-> > > > > would be used by something like a job scheduler in a batch system before
-> > > > > a job starts so that the job can allocate the maximum number of
-> > > > > hugepages without significant start-up cost.
-> > > > 
-> > > > As you are adding sysfs files, can you please also add documentation for
-> > > > the file in Documentation/ABI/ ?
-> > > > 
-> > > 
-> > > I looked at this before and hit a wall and then forgot about it. I couldn't
-> > > find *where* I should document it at the time. There isn't a sysfs-devices-node
-> > > file to add to and much (all?) of what is in that branch appears undocumented.
+On Fri, Feb 19, 2010 at 05:52:18PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Thu, 18 Feb 2010 13:22:21 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > On Wed, 17 Feb 2010 16:21:44 -0800 Greg KH <greg@kroah.com> wrote:
+> > >
+> > > Very wierd, you must have gotten this just as I updated my tree.  It
 > > 
-> > Well, you can always just document what you add, or you can document the
-> > existing stuff as well.  It's your choice :)
+> > Yeah, that is possible.
 > > 
+> > > should all be fine tomorrow, if not, please let me know.
+> > 
+> > Great, thanks.
 > 
-> Fair point!
-> 
-> I've taken note to document what's in there over time. For the moment,
-> is this a reasonable start? I'll split it into two patches but the end
-> result will be the same.
-> 
+> I got the same today.  Is this a case of Git being a bit more picky about
+> applying patches that quilt?
 
-Bah, as I hit send, I recognised my folly. The first entry should be in
-stable/ and the second should be in testing/.
+Very wierd.  I just ran 'git quiltimport' on my whole tree onto Linus's
+latest git tree and it worked just fine.
 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-node b/Documentation/ABI/testing/sysfs-devices-node
-> new file mode 100644
-> index 0000000..1ee348b
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-devices-node
-> @@ -0,0 +1,15 @@
-> +What:		/sys/devices/system/node/nodeX
-> +Date:		October 2002
-> +Contact:	Linux Memory Management list <linux-mm@kvack.org>
-> +Description:
-> +		When CONFIG_NUMA is enabled, this is a directory containing
-> +		information on node X such as what CPUs are local to the
-> +		node.
-> +
-> +What:		/sys/devices/system/node/nodeX/compact
-> +Date:		February 2010
-> +Contact:	Mel Gorman <mel@csn.ul.ie>
-> +Description:
-> +		When this file is written to, all memory within that node
-> +		will be compacted. When it completes, memory will be free
-> +		in as contiguous blocks as possible.
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+What is the command you are using here to do this?  Perhaps there is
+some other tree modifying this file causing a problem?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+odd,
+
+greg k-h
