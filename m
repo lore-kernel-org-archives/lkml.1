@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899Ab0BSRAx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:00:53 -0500
-Received: from kroah.org ([198.145.64.141]:57645 "EHLO coco.kroah.org"
+	id S1755170Ab0BSRB1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:01:27 -0500
+Received: from kroah.org ([198.145.64.141]:57707 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754865Ab0BSRAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:48 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:45 2010
-Message-Id: <20100219163245.439502654@kvm.kroah.org>
+	id S1754936Ab0BSRA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:58 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:48 2010
+Message-Id: <20100219163248.481541935@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:46 -0800
+Date: Fri, 19 Feb 2010 08:29:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
-Subject: [53/93] drm/i915: Dont wait interruptible for possible plane buffer flush
+       Alex Murray <murray.alex@gmail.com>, Takashi Iwai <tiwai@suse.de>
+Subject: [65/93] ALSA: hda - Improved MacBook (Pro) 5,1 / 5,2 support
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,114 +25,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
+From: Alex Murray <murray.alex@gmail.com>
 
-commit b9241ea31fae4887104e5d1b3b18f4009c25a0c4 upstream.
+commit a76221d47ef2b73ff16c0fef00a784026308ea02 upstream.
 
-When we setup buffer for display plane, we'll check any pending
-required GPU flush and possible make interruptible wait for flush
-complete. But that wait would be most possibly to fail in case of
-signals received for X process, which will then fail modeset process
-and put display engine in unconsistent state. The result could be
-blank screen or CPU hang, and DDX driver would always turn on outputs
-DPMS after whatever modeset fails or not.
+This patch adds support for automatically muting the speakers when headphones
+are inserted, as well as relabelling the headphone widgets from the
+non-standard "HP" to the standard "Headphone" for the mb5 model.
 
-So this one creates new helper for setup display plane buffer, and
-when needing flush using uninterruptible wait for that.
-
-This one should fix bug like https://bugs.freedesktop.org/show_bug.cgi?id=24009.
-Also fixing mode switch stress test on Ironlake.
-
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Alex Murray <murray.alex@gmail.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_drv.h      |    1 
- drivers/gpu/drm/i915/i915_gem.c      |   51 +++++++++++++++++++++++++++++++++++
- drivers/gpu/drm/i915/intel_display.c |    2 -
- 3 files changed, 53 insertions(+), 1 deletion(-)
+ sound/pci/hda/patch_realtek.c |   28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -829,6 +829,7 @@ int i915_lp_ring_sync(struct drm_device
- int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
- int i915_gem_object_set_to_gtt_domain(struct drm_gem_object *obj,
- 				      int write);
-+int i915_gem_object_set_to_display_plane(struct drm_gem_object *obj);
- int i915_gem_attach_phys_object(struct drm_device *dev,
- 				struct drm_gem_object *obj, int id);
- void i915_gem_detach_phys_object(struct drm_device *dev,
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -2825,6 +2825,57 @@ i915_gem_object_set_to_gtt_domain(struct
- 	return 0;
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -7042,8 +7042,8 @@ static struct snd_kcontrol_new alc885_mb
+ 	HDA_BIND_MUTE   ("Surround Playback Switch", 0x0d, 0x02, HDA_INPUT),
+ 	HDA_CODEC_VOLUME("LFE Playback Volume", 0x0e, 0x00, HDA_OUTPUT),
+ 	HDA_BIND_MUTE   ("LFE Playback Switch", 0x0e, 0x02, HDA_INPUT),
+-	HDA_CODEC_VOLUME("HP Playback Volume", 0x0f, 0x00, HDA_OUTPUT),
+-	HDA_BIND_MUTE   ("HP Playback Switch", 0x0f, 0x02, HDA_INPUT),
++	HDA_CODEC_VOLUME("Headphone Playback Volume", 0x0f, 0x00, HDA_OUTPUT),
++	HDA_BIND_MUTE   ("Headphone Playback Switch", 0x0f, 0x02, HDA_INPUT),
+ 	HDA_CODEC_VOLUME("Line Playback Volume", 0x0b, 0x02, HDA_INPUT),
+ 	HDA_CODEC_MUTE  ("Line Playback Switch", 0x0b, 0x02, HDA_INPUT),
+ 	HDA_CODEC_VOLUME("Mic Playback Volume", 0x0b, 0x01, HDA_INPUT),
+@@ -7430,6 +7430,7 @@ static struct hda_verb alc885_mb5_init_v
+ 	{0x14, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
+ 	{0x14, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
+ 	{0x14, AC_VERB_SET_CONNECT_SEL, 0x03},
++	{0x14, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
+ 	/* Front Mic pin: input vref at 80% */
+ 	{0x19, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_VREF80},
+ 	{0x19, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_MUTE},
+@@ -7554,6 +7555,27 @@ static void alc885_mbp3_setup(struct hda
+ 	spec->autocfg.speaker_pins[0] = 0x14;
  }
  
-+/*
-+ * Prepare buffer for display plane. Use uninterruptible for possible flush
-+ * wait, as in modesetting process we're not supposed to be interrupted.
-+ */
-+int
-+i915_gem_object_set_to_display_plane(struct drm_gem_object *obj)
++static void alc885_mb5_automute(struct hda_codec *codec)
 +{
-+	struct drm_device *dev = obj->dev;
-+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-+	uint32_t old_write_domain, old_read_domains;
-+	int ret;
++	unsigned int present;
 +
-+	/* Not valid to be called on unbound objects. */
-+	if (obj_priv->gtt_space == NULL)
-+		return -EINVAL;
++	present = snd_hda_codec_read(codec, 0x14, 0,
++				     AC_VERB_GET_PIN_SENSE, 0) & 0x80000000;
++	snd_hda_codec_amp_stereo(codec, 0x18, HDA_OUTPUT, 0,
++				 HDA_AMP_MUTE, present ? HDA_AMP_MUTE : 0);
++	snd_hda_codec_amp_stereo(codec, 0x1a, HDA_OUTPUT, 0,
++				 HDA_AMP_MUTE, present ? HDA_AMP_MUTE : 0);
 +
-+	i915_gem_object_flush_gpu_write_domain(obj);
-+
-+	/* Wait on any GPU rendering and flushing to occur. */
-+	if (obj_priv->active) {
-+#if WATCH_BUF
-+		DRM_INFO("%s: object %p wait for seqno %08x\n",
-+			  __func__, obj, obj_priv->last_rendering_seqno);
-+#endif
-+		ret = i915_do_wait_request(dev, obj_priv->last_rendering_seqno, 0);
-+		if (ret != 0)
-+			return ret;
-+	}
-+
-+	old_write_domain = obj->write_domain;
-+	old_read_domains = obj->read_domains;
-+
-+	obj->read_domains &= I915_GEM_DOMAIN_GTT;
-+
-+	i915_gem_object_flush_cpu_write_domain(obj);
-+
-+	/* It should now be out of any other write domains, and we can update
-+	 * the domain values for our changes.
-+	 */
-+	BUG_ON((obj->write_domain & ~I915_GEM_DOMAIN_GTT) != 0);
-+	obj->read_domains |= I915_GEM_DOMAIN_GTT;
-+	obj->write_domain = I915_GEM_DOMAIN_GTT;
-+	obj_priv->dirty = 1;
-+
-+	trace_i915_gem_object_change_domain(obj,
-+					    old_read_domains,
-+					    old_write_domain);
-+
-+	return 0;
 +}
 +
- /**
-  * Moves a single object to the CPU read, and possibly write domain.
-  *
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1253,7 +1253,7 @@ intel_pipe_set_base(struct drm_crtc *crt
- 		return ret;
- 	}
++static void alc885_mb5_unsol_event(struct hda_codec *codec,
++				    unsigned int res)
++{
++	/* Headphone insertion or removal. */
++	if ((res >> 26) == ALC880_HP_EVENT)
++		alc885_mb5_automute(codec);
++}
++
  
--	ret = i915_gem_object_set_to_gtt_domain(obj, 1);
-+	ret = i915_gem_object_set_to_display_plane(obj);
- 	if (ret != 0) {
- 		i915_gem_object_unpin(obj);
- 		mutex_unlock(&dev->struct_mutex);
+ static struct hda_verb alc882_targa_verbs[] = {
+ 	{0x0c, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
+@@ -8996,6 +9018,8 @@ static struct alc_config_preset alc882_p
+ 		.input_mux = &mb5_capture_source,
+ 		.dig_out_nid = ALC882_DIGOUT_NID,
+ 		.dig_in_nid = ALC882_DIGIN_NID,
++		.unsol_event = alc885_mb5_unsol_event,
++		.init_hook = alc885_mb5_automute,
+ 	},
+ 	[ALC885_MACPRO] = {
+ 		.mixers = { alc882_macpro_mixer },
 
 
