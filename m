@@ -1,57 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164Ab0BSU56 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:57:58 -0500
-Received: from mga11.intel.com ([192.55.52.93]:14997 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756094Ab0BSU5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:57:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,505,1262592000"; 
-   d="scan'208";a="774263265"
-Subject: Re: [patch] iwlwifi: testing the wrong variable
-From: reinette chatre <reinette.chatre@intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Dan Carpenter <error27@gmail.com>, "Zhu, Yi" <yi.zhu@intel.com>,
-       Intel Linux Wireless <ilw@linux.intel.com>,
-       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>,
-       "Kolekar, Abhijeet" <abhijeet.kolekar@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-In-Reply-To: <20100219203039.GN4950@tuxdriver.com>
-References: <20100218094529.GA1298@bicker>
-	 <1266516282.2551.2604.camel@rchatre-DESK>
-	 <20100219203039.GN4950@tuxdriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Feb 2010 12:57:54 -0800
-Message-ID: <1266613074.2551.2807.camel@rchatre-DESK>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1756180Ab0BSVC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:02:26 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:37814 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756101Ab0BSVCY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:02:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=oQZKn3nanm2FtExcQ6eQxrtAjdSQ/d5wKdihOSPFSx4jjItN/as3Lfj0Oja40dbhr/
+         LSTXbO1QnXYrNuAcN2ewPxIv6xjjuXUkicTqtIzCf3PrKcAe4Em/FMuRrB0Udnxk10XH
+         gZKvQfRinS1Xp511qcs9REEa9K3/eGlLr0tfE=
+MIME-Version: 1.0
+In-Reply-To: <m3d403632g.fsf@lugabout.jhcloos.org>
+References: <m3pr48bjfg.fsf@lugabout.jhcloos.org>
+	 <20100215154516.GB11057@think> <m3d403632g.fsf@lugabout.jhcloos.org>
+Date: Sat, 20 Feb 2010 07:02:23 +1000
+Message-ID: <21d7e9971002191302s76111f6fyd986c51b66e214ae@mail.gmail.com>
+Subject: Re: [Regression] Filesystem I/O is CPU-bound in rc7 and rc8
+From: Dave Airlie <airlied@gmail.com>
+To: James Cloos <cloos@jhcloos.com>
+Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, jfs-discussion@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 12:30 -0800, John W. Linville wrote:
-> So for the record, that patch is basically identical to Dan's patch
-> but with some whitespace fixups in some nearby lines as well.
-> 
-> How important is this patch?  Is there an actual bug report?  Is it
-> a regression?
-> 
-> It is very late in the 2.6.33 cycle and it isn't obvious to me that
-> this is worth pushing for 2.6.33 at this point...?
+On Thu, Feb 18, 2010 at 6:04 AM, James Cloos <cloos@jhcloos.com> wrote:
+> While getting re-aquainted with perf, and after upgrading to the current
+> version, I see that do_page_fault, unmap_vmas, get_page_from_freelist,
+> handle_mm_fault, __do_fault and T.1339 tend to get the most time when the
+> kernel is spinning.
 
-This is exactly the reason why we did not post the patch to 2.6.33 or
-stable when we submitted it upstream since there was no regression or
-bug tied to it at that time. It surely is a problem that needs fixing,
-which we did in the current release. I just highlighted that if there is
-a request for this to be fixed in stable then we already have the patch
-available. I'm ok with this one only going into 2.6.34.
+dmesg? lspci -vv?
 
-Reinette
+We have an AGP related issue with WC/UC paging that might be related,
+but I'd need more info.
 
-
+Dave.
