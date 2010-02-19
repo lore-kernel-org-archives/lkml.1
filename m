@@ -1,66 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207Ab0BSVEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:04:15 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:61383 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754242Ab0BSVEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:04:10 -0500
+	id S1755554Ab0BSVED (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:04:03 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:10943 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147Ab0BSVEA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:04:00 -0500
+Message-ID: <4B7EFCA6.7050709@hp.com>
+Date: Fri, 19 Feb 2010 16:03:34 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Benjamin Li <benli@broadcom.com>
+CC: =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>,
+       NetDEV <netdev@vger.kernel.org>, Michael Chan <mchan@broadcom.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
+References: <20091229084929.54912c0c@pluto.restena.lu> <1262077540.12520.4.camel@localhost> <20091229145403.39f82773@pluto.restena.lu> <1262149691.2788.63.camel@localhost> <20100219091034.5fbb0165@pluto.restena.lu> <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
+In-Reply-To: <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19326.64703.561400.379749@pilspetsen.it.uu.se>
-Date: Fri, 19 Feb 2010 22:03:59 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Axel Uhl <axel.uhl@gmx.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Tejun Heo <tj@kernel.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in ATA or SMART area
-In-Reply-To: <4B7EDE2F.8030107@gmx.de>
-References: <4B72941A.7060704@gmx.de>
-	<4B74BDCF.1010805@kernel.org>
-	<4B74F263.1060709@gmx.de>
-	<4B7505CA.60409@kernel.org>
-	<4B75154B.8030507@gmx.de>
-	<4B7B548B.4040606@kernel.org>
-	<4B7C5696.7030609@gmx.de>
-	<19325.7006.892019.748974@pilspetsen.it.uu.se>
-	<4B7EDE2F.8030107@gmx.de>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Axel Uhl writes:
- > I now enabled IO/APIC in my kernel. See attached .config. I also enabled 
- >   pata_via but was unsure which IDE driver to disable.
+Hi Ben,
 
-That would be VIA82CXXX. But all your PATA/SATA controllers are now driven
-by libata, so you can disable IDE, i.e. set CONFIG_IDE=n.
+Benjamin Li wrote:
+> Hi Bruno,
+> 
+> No problems.  Thanks for following up with this problem, I really
+> appreciate all your help.
+> 
+>>From your logs it looks like the device came up using MSI, but in the
+> MSI-X poll routine was being called:
+> 
+> [    9.836673] bnx2: eth0: using MSI
+> ...
+> 
+> [  134.643459]  [<ffffffffa004019e>] bnx2_poll_msix+0x3e/0xd0 [bnx2]
+> [  134.643465]  [<ffffffff8135bcd1>] netpoll_poll+0xe1/0x3c0
+> 
+> which is incorrect.  If we are in MSI mode, the bnx2_poll() routine
+> should be used.
+> 
+> I think what is going on here is that during the bnx2x driver
+> initialization the current bnx2 driver adds all possible NAPI structures
+> that map to all the hardware vectors (BNX2_MAX_MSIX_VEC=9) to the NAPI
+> list in the net_device structure regardless if they are used or not
+> (Seen in drivers/net/bnx2.c:bnx2_init_napi()).  This can cause
+> uninitialized NAPI structures to be placed on the napi_list.  Because
+> this device is in MSI mode, only 1 vector is initialized.   Now, the
+> problem is triggered when net/core/netpoll.c:poll_napi() is called.
+> This is because this routine will run through the entire napi_list
+> calling all the poll routines.  In your particular case, it is calling
+> the poll routine on an uninitialized vector causing the kernel panic.
+...
+> @@ -8201,7 +8204,7 @@ bnx2_init_napi(struct bnx2 *bp)
+>  {
+>  	int i;
+>  
+> -	for (i = 0; i < BNX2_MAX_MSIX_VEC; i++) {
+> +	for (i = 0; i < bp->irq_nvecs; i++) {
+>  		struct bnx2_napi *bnapi = &bp->bnx2_napi[i];
+>  		int (*poll)(struct napi_struct *, int);
 
- > The kernel 
- > rebooted fine. The following appeared in my syslog when the smartctl 
- > command spinned up the disk:
- > 
- > Feb 19 18:57:09 homemp3 kernel: ata5.00: exception Emask 0x0 SAct 0x0 
- > SErr 0x0 action 0x6 frozen
- > Feb 19 18:57:09 homemp3 kernel: ata5.00: failed command: SMART
- > Feb 19 18:57:09 homemp3 kernel: ata5.00: cmd 
- > b0/da:00:00:4f:c2/00:00:00:00:00/00 tag 0
- > Feb 19 18:57:09 homemp3 kernel:          res 
- > 40/00:01:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
- > Feb 19 18:57:09 homemp3 kernel: ata5.00: status: { DRDY }
- > Feb 19 18:57:09 homemp3 kernel: ata5: soft resetting link
- > Feb 19 18:57:09 homemp3 kernel: ata5.00: configured for UDMA/133
- > Feb 19 18:57:09 homemp3 kernel: ata5: EH complete
- > 
- > 
- > At least it seems that the kernel recovered better from this exception 
- > than before. In particular, IRQ10 didn't get disabled and so I/O 
- > continued to work fine. Thanks for the hint.
- > 
- > Would you consider the exception above a serious problem that should be 
- > taken care of somehow?
+Would this same change need to be made in other places, like bnx2_init_chip()
+or bnx2_clear_ring_states() ?
 
-Apparently this disk likes to complain when issued a SMART command while spun
-down, but as libata EH recovers nicely there's no real reason to worry.
+-Brian
