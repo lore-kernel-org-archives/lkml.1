@@ -1,23 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992Ab0BSRT5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:19:57 -0500
-Received: from kroah.org ([198.145.64.141]:57354 "EHLO coco.kroah.org"
+	id S1756048Ab0BSRUO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:20:14 -0500
+Received: from kroah.org ([198.145.64.141]:57351 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200Ab0BSRAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:08 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:32 2010
-Message-Id: <20100219163231.855878717@kvm.kroah.org>
+	id S1754188Ab0BSRAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:07 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:31 2010
+Message-Id: <20100219163231.529539812@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:01 -0800
+Date: Fri, 19 Feb 2010 08:29:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ray Copeland <ray.copeland@aprius.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
        Jean Delvare <khali@linux-fr.org>
-Subject: [08/93] hwmon: (adt7462) Wrong ADT7462_VOLT_COUNT
+Subject: [07/93] hwmon: (lm78) Request I/O ports individually for probing
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,36 +25,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ray Copeland <ray.copeland@aprius.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 85f8d3e5faea8bd36c3e5196f8334f7db45e19b2 upstream.
+commit 197027e6ef830d60e10f76efc8d12bf3b6c35db5 upstream.
 
-The #define ADT7462_VOLT_COUNT is wrong, it should be 13 not 12. All the
-for loops that use this as a limit count are of the typical form, "for
-(n = 0; n < ADT7462_VOLT_COUNT; n++)", so to loop through all voltages
-w/o missing the last one it is necessary for the count to be one greater
-than it is.  (Specifically, you will miss the +1.5V 3GPIO input with count
-= 12 vs. 13.)
+Different motherboards have different PNP declarations for LM78/LM79
+chips. Some declare the whole range of I/O ports (8 ports), some
+declare only the useful ports (2 ports at offset 5) and some declare
+fancy ranges, for example 4 ports at offset 4. To properly handle all
+cases, request all ports individually for probing. After we have
+determined that we really have an LM78 or LM79 chip, the useful port
+range will be requested again, as a single block.
 
-Signed-off-by: Ray Copeland <ray.copeland@aprius.com>
-Acked-by: "Darrick J. Wong" <djwong@us.ibm.com>
+This fixes the driver on the Olivetti M3000 DT 540, at least.
+
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/adt7462.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/hwmon/lm78.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
---- a/drivers/hwmon/adt7462.c
-+++ b/drivers/hwmon/adt7462.c
-@@ -182,7 +182,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
-  *
-  * Some, but not all, of these voltages have low/high limits.
-  */
--#define ADT7462_VOLT_COUNT	12
-+#define ADT7462_VOLT_COUNT	13
+--- a/drivers/hwmon/lm78.c
++++ b/drivers/hwmon/lm78.c
+@@ -870,17 +870,16 @@ static struct lm78_data *lm78_update_dev
+ static int __init lm78_isa_found(unsigned short address)
+ {
+ 	int val, save, found = 0;
++	int port;
  
- #define ADT7462_VENDOR		0x41
- #define ADT7462_DEVICE		0x62
+-	/* We have to request the region in two parts because some
+-	   boards declare base+4 to base+7 as a PNP device */
+-	if (!request_region(address, 4, "lm78")) {
+-		pr_debug("lm78: Failed to request low part of region\n");
+-		return 0;
+-	}
+-	if (!request_region(address + 4, 4, "lm78")) {
+-		pr_debug("lm78: Failed to request high part of region\n");
+-		release_region(address, 4);
+-		return 0;
++	/* Some boards declare base+0 to base+7 as a PNP device, some base+4
++	 * to base+7 and some base+5 to base+6. So we better request each port
++	 * individually for the probing phase. */
++	for (port = address; port < address + LM78_EXTENT; port++) {
++		if (!request_region(port, 1, "lm78")) {
++			pr_debug("lm78: Failed to request port 0x%x\n", port);
++			goto release;
++		}
+ 	}
+ 
+ #define REALLY_SLOW_IO
+@@ -944,8 +943,8 @@ static int __init lm78_isa_found(unsigne
+ 			val & 0x80 ? "LM79" : "LM78", (int)address);
+ 
+  release:
+-	release_region(address + 4, 4);
+-	release_region(address, 4);
++	for (port--; port >= address; port--)
++		release_region(port, 1);
+ 	return found;
+ }
+ 
 
 
