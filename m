@@ -1,83 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518Ab0BSDqq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 22:46:46 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:60670 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754336Ab0BSDq3 convert rfc822-to-8bit (ORCPT
+	id S1754479Ab0BSECQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 23:02:16 -0500
+Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:47953 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754372Ab0BSECP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 22:46:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lVJo0ZWnnV+9rgu7zqUb/9eIlkSo8wl0y5kiGYPnsi1xQ5HVag6DU/X9zP1+PEKBKj
-         ljB2rjSWdn8+krCyksrGcYL8pcPSdKM8Wx8cEsLGWxr8C6VTqI01I5S0FcMeOFjN4qH6
-         wOnErqkgWIyyVMgIHOLKEI1BPOC6SAYnVvCCk=
+	Thu, 18 Feb 2010 23:02:15 -0500
+Date: Fri, 19 Feb 2010 15:02:06 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Jan Kara <jack@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Hung task - sync - 2.6.33-rc7  w/md6 multicore rebuild in
+	process
+Message-ID: <20100219040206.GE28392@discord.disaster>
+References: <4B76D87E.3050107@majjas.com> <4B76EC83.5050401@majjas.com> <20100218023934.GC8897@atrey.karlin.mff.cuni.cz> <4B7D74BE.6030906@majjas.com> <20100219014349.GD28392@discord.disaster> <4B7DF80D.6090309@majjas.com>
 MIME-Version: 1.0
-In-Reply-To: <20100219004719.GA15965@kroah.com>
-References: <4B7CAF95.6020306@gmail.com> <20100218042626.GB11649@kroah.com>
-	 <51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>
-	 <20100218052223.GA13254@kroah.com>
-	 <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
-	 <20100219004719.GA15965@kroah.com>
-Date: Thu, 18 Feb 2010 21:46:29 -0600
-Message-ID: <51f3faa71002181946l69a9a307q930d6159e8e5ac77@mail.gmail.com>
-Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-usb <linux-usb@vger.kernel.org>, dbrownell@users.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7DF80D.6090309@majjas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 6:47 PM, Greg KH <greg@kroah.com> wrote:
->> > So you did not measure it?
->> >
->> > Hm, I guess this change must not be necessary :)
+On Thu, Feb 18, 2010 at 09:31:41PM -0500, Michael Breuer wrote:
+> On 2/18/2010 8:43 PM, Dave Chinner wrote:
+>> On Thu, Feb 18, 2010 at 12:11:26PM -0500, Michael Breuer wrote:
+>>> On 02/17/2010 09:39 PM, Jan Kara wrote:
+>>>>     Hmm, it is a bug in writeback code. But as Linus pointed out, it's not really
+>>>> clear why it's *so* slow. So when it happens again, could you please sample for
+>>>> a while (like every second for 30 seconds) stacks of blocked tasks via
+>>>> Alt-Sysrq-W? I'd like to see where flusher threads are hanging... Thanks.
+>>>>
+>>>>        
+>>> Ok - got it. Sync is still spinning, btw... attaching log extract as
+>>> well as dmesg output.
+>>>      
+>> Looks like barriers are playing a part in this.
+>>    
+>>>   [<ffffffff8104aac6>] ? try_to_wake_up+0x2d6/0x410
+>>>   [<ffffffff81078920>] ? prepare_to_wait+0x60/0x90
+>>>   [<ffffffff81200fbd>] jbd2_log_wait_commit+0xbd/0x130
+>>>   [<ffffffff81078610>] ? autoremove_wake_function+0x0/0x40
+>>>   [<ffffffff811fa7bb>] jbd2_journal_stop+0x24b/0x2b0
+>>>   [<ffffffff811f9915>] ? jbd2_journal_start+0xb5/0x100
+>>>   [<ffffffff811fa847>] jbd2_journal_force_commit+0x27/0x30
+>>>   [<ffffffff811d0587>] ext4_force_commit+0x27/0x40
+>>>   [<ffffffff811c3a55>] ext4_write_inode+0x75/0x100
+>>>   [<ffffffff81155104>] writeback_single_inode+0x294/0x3b0
+>>>   [<ffffffff8115567a>] writeback_inodes_wb+0x31a/0x4c0
+>>>   [<ffffffff8115593a>] wb_writeback+0x11a/0x1e0
+>>>   [<ffffffff815379f6>] ? schedule_timeout+0x196/0x2f0
+>>>   [<ffffffff81155c1f>] wb_do_writeback+0x12f/0x1a0
+>>>   [<ffffffff81155ce3>] bdi_writeback_task+0x53/0xe0
+>>>   [<ffffffff810fe9a0>] ? bdi_start_fn+0x0/0xe0
+>>>   [<ffffffff810fea11>] bdi_start_fn+0x71/0xe0
+>>>   [<ffffffff810fe9a0>] ? bdi_start_fn+0x0/0xe0
+>>>   [<ffffffff81078106>] kthread+0x96/0xa0
+>>>   [<ffffffff8100bf24>] kernel_thread_helper+0x4/0x10
+>>>   [<ffffffff81539f3d>] ? restore_args+0x0/0x30
+>>>   [<ffffffff81078070>] ? kthread+0x0/0xa0
+>>>   [<ffffffff8100bf20>] ? kernel_thread_helper+0x0/0x10
+>>>      
+>> This is probably where the barrier IOs are coming from.  With a RAID
+>> resync going on (so all IO is going to be slow to begin with) and
+>> writeback is causing barriers to be issued (which are really slow on
+>> software RAID5/6), having sync take so long is not out of the
+>> question if you have lots of dirty inodes to write back. A kernel
+>> compile will generate lots of dirty inodes.
 >>
->> I'll try and run some tests and see what I can quantify. However, I
->> only have 4GB of RAM on my machine (with a 1GB memory hole) and so a
->> random memory allocation only has a 25% chance of ending up in the
->> area where it would make a difference, so it may take a bit of doing.
+>> Even taking the barrier IOs out of the question, I've seen reports
+>> of sync or unmount taking over 10 hours to complete on software
+>> RAID5 because there were hundreds of thousands of dirty inodes to
+>> write back and each inode being written back caused a synchronous
+>> RAID5 RMW cycle to occur. Hence writeback could only clean 50
+>> inodes/sec because as soon as RMW cycles RAID5/6 devices start
+>> they go slower than single spindle devices.  This sounds very
+>> similar to what you are seeing here,
+>>
+>> i.e. The reports don't indicate to me that there is a bug in the
+>> writeback code, just your disk subsystem has very, very low
+>> throughput in these conditions....
 >
-> Without any good justification, including real tests being run, I can't
-> take this patch, the risk is just too high.
+> Probably true... and the system does recover. The only thing I'd point  
+> out is that the subsystem isn't (or perhaps shouldn't) be this sluggish.  
+> I hypothesize that the low throughput under these condition is a result 
+> of:
+> 1) multicore raid support (pushing the resync at higher rates)
 
-Again, this particular patch has essentially zero risk for anyone that
-doesn't choose to experiment with the option. One can hardly say it
-presents much of a long-term maintenance burden either..
+Possibly, though barrier support for RAID5/6 is shiny new as well.
 
->
-> And really, for USB 2.0 speeds, I doubt you are going to even notice
-> this kind of overhead, it's in the noise.  Especially given that almost
-> always the limiting factor is the device itself, not the host.
+> 2) time spent in fs cache reclaim. The sync slowdown only occurs when fs  
+> cache is in heavy (10Gb) use.
 
-Well, I do have some results. This is from running this "dd
-if=/dev/sdg of=/dev/null bs=3800M iflag=direct" against an OCZ Rally2
-USB flash drive, which gets about 30 MB/sec on read, with CPU-burning
-tasks on all cores in the background. (The huge block size and
-iflag=direct is to try to force more of the IO to happen to memory
-above the 4GB mark.) With that workload, swiotlb_bounce shows up as
-between 1.5 to 4% of the CPU time spent in the kernel according to
-oprofile. Obviously with the 64-bit DMA enabled, that disappears. Of
-course, the overall kernel time is only around 2% of the total time,
-so that's a pretty small overall percentage.
+Not surprising ;)
 
-I'll try some tests later with a faster SATA-to-IDE device that should
-stress things a bit more, but a huge difference doesn't seem likely.
-One thing that's uncertain is just how much of the IO is needing to be
-bounced - an even distribution of the buffer across all of physical
-RAM would suggest 25% in this case, but I don't know an easy way to
-verify that.
+> I actually could not recreate the issue until I did a grep -R foo /usr/  
+> >/dev/null to force high fs cache utilization. For what it's worth, two  
+> kernel rebuilds (many dirty inodes) and then a sync with about 12Mb  
+> dirty (/proc/meminfo) didn't cause an issue. The issue only happens when  
+> fs cache is heavily used. I also never saw this before enabling  
+> multicore raid.
 
-Aside from speed considerations though, I should point out another
-factor: IOMMU/SWIOTLB space is in many cases a limited resource for
-all IO in flight at a particular time (SWIOTLB is typically 64MB). The
-number of hits when Googling for "Out of IOMMU space" indicates it is
-a problem that people do hit from time to time. From that perspective,
-anything that prevents unnecessary use of bounce buffers is a good
-thing.
+"grep -R foo /usr/" will dirty every inode that touchs (atime) and
+they have to be written back out. That's almost certainly creating
+more dirty inodes than a kernel build - there are about 400,000
+inodes under /usr on my system. That would be enough to trigger very
+long sync times if inode writeback is slow.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
