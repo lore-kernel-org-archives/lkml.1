@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946Ab0BSRQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:16:48 -0500
-Received: from kroah.org ([198.145.64.141]:57403 "EHLO coco.kroah.org"
+	id S1754431Ab0BSRAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:00:16 -0500
+Received: from kroah.org ([198.145.64.141]:57339 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754147Ab0BSRAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:18 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:35 2010
-Message-Id: <20100219163235.535839906@kvm.kroah.org>
+	id S1754147Ab0BSRAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:05 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:30 2010
+Message-Id: <20100219163230.716142245@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:13 -0800
+Date: Fri, 19 Feb 2010 08:28:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chris Wilson <chris@chris-wilson.co.uk>, Eric Anholt <eric@anholt.net>
-Subject: [20/93] drm/i915: Increase fb alignment to 64k
+       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [04/93] futex: Handle futex value corruption gracefully
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,39 +26,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chris Wilson <chris@chris-wilson.co.uk>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit fd2e8ea597222b8f38ae8948776a61ea7958232e upstream.
+commit 59647b6ac3050dd964bc556fe6ef22f4db5b935c upstream.
 
-An untiled framebuffer must be aligned to 64k. This is normally handled
-by intel_pin_and_fence_fb_obj(), but the intelfb_create() likes to be
-different and do the pinning itself. However, it aligns the buffer
-object incorrectly for pre-i965 chipsets causing a PGTBL_ERR when it is
-installed onto the output.
+The WARN_ON in lookup_pi_state which complains about a mismatch
+between pi_state->owner->pid and the pid which we retrieved from the
+user space futex is completely bogus.
 
-Fixes:
-  KMS error message while initializing modesetting -
-  render error detected: EIR: 0x10 [i915]
-  http://bugs.freedesktop.org/show_bug.cgi?id=22936
+The code just emits the warning and then continues despite the fact
+that it detected an inconsistent state of the futex. A conveniant way
+for user space to spam the syslog.
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Replace the WARN_ON by a consistency check. If the values do not match
+return -EINVAL and let user space deal with the mess it created.
+
+This also fixes the missing task_pid_vnr() when we compare the
+pi_state->owner pid with the futex value.
+
+Reported-by: Jermome Marchand <jmarchan@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Darren Hart <dvhltc@us.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/intel_fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/futex.c |   21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -148,7 +148,7 @@ static int intelfb_create(struct drm_dev
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -530,8 +530,25 @@ lookup_pi_state(u32 uval, struct futex_h
+ 				return -EINVAL;
  
- 	mutex_lock(&dev->struct_mutex);
+ 			WARN_ON(!atomic_read(&pi_state->refcount));
+-			WARN_ON(pid && pi_state->owner &&
+-				pi_state->owner->pid != pid);
++
++			/*
++			 * When pi_state->owner is NULL then the owner died
++			 * and another waiter is on the fly. pi_state->owner
++			 * is fixed up by the task which acquires
++			 * pi_state->rt_mutex.
++			 *
++			 * We do not check for pid == 0 which can happen when
++			 * the owner died and robust_list_exit() cleared the
++			 * TID.
++			 */
++			if (pid && pi_state->owner) {
++				/*
++				 * Bail out if user space manipulated the
++				 * futex value.
++				 */
++				if (pid != task_pid_vnr(pi_state->owner))
++					return -EINVAL;
++			}
  
--	ret = i915_gem_object_pin(fbo, PAGE_SIZE);
-+	ret = i915_gem_object_pin(fbo, 64*1024);
- 	if (ret) {
- 		DRM_ERROR("failed to pin fb: %d\n", ret);
- 		goto out_unref;
+ 			atomic_inc(&pi_state->refcount);
+ 			*ps = pi_state;
 
 
