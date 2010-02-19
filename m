@@ -1,102 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662Ab0BSPX6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:23:58 -0500
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:30807
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754509Ab0BSPXg (ORCPT
+	id S1754684Ab0BSPYJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:24:09 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:49066 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754339Ab0BSPYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:23:36 -0500
-X-SpamScore: -2
-X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i6bh87h43j61h)
+	Fri, 19 Feb 2010 10:24:03 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh87h61h)
 X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY3HEX-02-7NN-02
+X-WSS-ID: 0KY3HET-02-7NI-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 10/11] KVM: SVM: Remove newlines from nested trace points
-Date: Fri, 19 Feb 2010 16:23:09 +0100
-Message-ID: <1266592990-8911-11-git-send-email-joerg.roedel@amd.com>
+       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
+Subject: [PATCH 07/11] KVM: SVM: Don't sync nested cr8 to lapic and back
+Date: Fri, 19 Feb 2010 16:23:06 +0100
+Message-ID: <1266592990-8911-8-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
 References: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 19 Feb 2010 15:23:12.0918 (UTC) FILETIME=[736C4360:01CAB177]
+X-OriginalArrivalTime: 19 Feb 2010 15:23:12.0886 (UTC) FILETIME=[73676160:01CAB177]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: unknown
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tracing infrastructure adds its own newlines. Remove
-them from the trace point printk format strings.
+This patch makes syncing of the guest tpr to the lapic
+conditional on !nested. Otherwise a nested guest using the
+TPR could freeze the guest.
+Another important change this patch introduces is that the
+cr8 intercept bits are no longer ORed at vmrun emulation if
+the guest sets VINTR_MASKING in its VMCB. The reason is that
+nested cr8 accesses need alway be handled by the nested
+hypervisor because they change the shadow version of the
+tpr.
 
+Cc: stable@kernel.org
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/trace.h |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kvm/svm.c |   46 +++++++++++++++++++++++++++++++---------------
+ 1 files changed, 31 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
-index 6ad30a2..12f8d2d 100644
---- a/arch/x86/kvm/trace.h
-+++ b/arch/x86/kvm/trace.h
-@@ -413,7 +413,7 @@ TRACE_EVENT(kvm_nested_vmrun,
- 	),
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index f22ced1..d7b75fb 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1827,21 +1827,6 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
+ 	svm->vmcb->save.dr6 = nested_vmcb->save.dr6;
+ 	svm->vmcb->save.cpl = nested_vmcb->save.cpl;
  
- 	TP_printk("rip: 0x%016llx vmcb: 0x%016llx nrip: 0x%016llx int_ctl: 0x%08x "
--		  "event_inj: 0x%08x npt: %s\n",
-+		  "event_inj: 0x%08x npt: %s",
- 		__entry->rip, __entry->vmcb, __entry->nested_rip,
- 		__entry->int_ctl, __entry->event_inj,
- 		__entry->npt ? "on" : "off")
-@@ -447,7 +447,7 @@ TRACE_EVENT(kvm_nested_vmexit,
- 		__entry->exit_int_info_err	= exit_int_info_err;
- 	),
- 	TP_printk("rip: 0x%016llx reason: %s ext_inf1: 0x%016llx "
--		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x\n",
-+		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
- 		  __entry->rip,
- 		  ftrace_print_symbols_seq(p, __entry->exit_code,
- 					   kvm_x86_ops->exit_reasons_str),
-@@ -482,7 +482,7 @@ TRACE_EVENT(kvm_nested_vmexit_inject,
- 	),
+-	/* We don't want a nested guest to be more powerful than the guest,
+-	   so all intercepts are ORed */
+-	svm->vmcb->control.intercept_cr_read |=
+-		nested_vmcb->control.intercept_cr_read;
+-	svm->vmcb->control.intercept_cr_write |=
+-		nested_vmcb->control.intercept_cr_write;
+-	svm->vmcb->control.intercept_dr_read |=
+-		nested_vmcb->control.intercept_dr_read;
+-	svm->vmcb->control.intercept_dr_write |=
+-		nested_vmcb->control.intercept_dr_write;
+-	svm->vmcb->control.intercept_exceptions |=
+-		nested_vmcb->control.intercept_exceptions;
+-
+-	svm->vmcb->control.intercept |= nested_vmcb->control.intercept;
+-
+ 	svm->nested.vmcb_msrpm = nested_vmcb->control.msrpm_base_pa;
  
- 	TP_printk("reason: %s ext_inf1: 0x%016llx "
--		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x\n",
-+		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
- 		  ftrace_print_symbols_seq(p, __entry->exit_code,
- 					   kvm_x86_ops->exit_reasons_str),
- 		__entry->exit_info1, __entry->exit_info2,
-@@ -504,7 +504,7 @@ TRACE_EVENT(kvm_nested_intr_vmexit,
- 		__entry->rip	=	rip
- 	),
+ 	/* cache intercepts */
+@@ -1859,6 +1844,28 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
+ 	else
+ 		svm->vcpu.arch.hflags &= ~HF_VINTR_MASK;
  
--	TP_printk("rip: 0x%016llx\n", __entry->rip)
-+	TP_printk("rip: 0x%016llx", __entry->rip)
- );
++	if (svm->vcpu.arch.hflags & HF_VINTR_MASK) {
++		/* We only want the cr8 intercept bits of the guest */
++		svm->vmcb->control.intercept_cr_read &= ~INTERCEPT_CR8_MASK;
++		svm->vmcb->control.intercept_cr_write &= ~INTERCEPT_CR8_MASK;
++	}
++
++	/* We don't want a nested guest to be more powerful than the guest,
++	   so all intercepts are ORed */
++	svm->vmcb->control.intercept_cr_read |=
++		nested_vmcb->control.intercept_cr_read;
++	svm->vmcb->control.intercept_cr_write |=
++		nested_vmcb->control.intercept_cr_write;
++	svm->vmcb->control.intercept_dr_read |=
++		nested_vmcb->control.intercept_dr_read;
++	svm->vmcb->control.intercept_dr_write |=
++		nested_vmcb->control.intercept_dr_write;
++	svm->vmcb->control.intercept_exceptions |=
++		nested_vmcb->control.intercept_exceptions;
++
++	svm->vmcb->control.intercept |= nested_vmcb->control.intercept;
++
++	svm->vmcb->control.lbr_ctl = nested_vmcb->control.lbr_ctl;
+ 	svm->vmcb->control.int_vector = nested_vmcb->control.int_vector;
+ 	svm->vmcb->control.int_state = nested_vmcb->control.int_state;
+ 	svm->vmcb->control.tsc_offset += nested_vmcb->control.tsc_offset;
+@@ -2521,6 +2528,9 @@ static void update_cr8_intercept(struct kvm_vcpu *vcpu, int tpr, int irr)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
  
- /*
-@@ -526,7 +526,7 @@ TRACE_EVENT(kvm_invlpga,
- 		__entry->address	=	address;
- 	),
++	if (is_nested(svm) && (vcpu->arch.hflags & HF_VINTR_MASK))
++		return;
++
+ 	if (irr == -1)
+ 		return;
  
--	TP_printk("rip: 0x%016llx asid: %d address: 0x%016llx\n",
-+	TP_printk("rip: 0x%016llx asid: %d address: 0x%016llx",
- 		  __entry->rip, __entry->asid, __entry->address)
- );
+@@ -2622,6 +2632,9 @@ static inline void sync_cr8_to_lapic(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
  
-@@ -547,7 +547,7 @@ TRACE_EVENT(kvm_skinit,
- 		__entry->slb		=	slb;
- 	),
++	if (is_nested(svm) && (vcpu->arch.hflags & HF_VINTR_MASK))
++		return;
++
+ 	if (!(svm->vmcb->control.intercept_cr_write & INTERCEPT_CR8_MASK)) {
+ 		int cr8 = svm->vmcb->control.int_ctl & V_TPR_MASK;
+ 		kvm_set_cr8(vcpu, cr8);
+@@ -2633,6 +2646,9 @@ static inline void sync_lapic_to_cr8(struct kvm_vcpu *vcpu)
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 	u64 cr8;
  
--	TP_printk("rip: 0x%016llx slb: 0x%08x\n",
-+	TP_printk("rip: 0x%016llx slb: 0x%08x",
- 		  __entry->rip, __entry->slb)
- );
- 
++	if (is_nested(svm) && (vcpu->arch.hflags & HF_VINTR_MASK))
++		return;
++
+ 	cr8 = kvm_get_cr8(vcpu);
+ 	svm->vmcb->control.int_ctl &= ~V_TPR_MASK;
+ 	svm->vmcb->control.int_ctl |= cr8 & V_TPR_MASK;
 -- 
 1.6.6
 
