@@ -1,28 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984Ab0BSAYg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:24:36 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:52179 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753732Ab0BSAYV (ORCPT
+	id S1753576Ab0BSAXN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:23:13 -0500
+Received: from mail-qy0-f202.google.com ([209.85.221.202]:47858 "EHLO
+	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753514Ab0BSAXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:24:21 -0500
+	Thu, 18 Feb 2010 19:23:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=LkJZy69FwfE+kdsSdP6Ijl5ueUjSpItiJRBBowwU1vnb11hMIijYqxNbLID1TocK2X
-         71Te/Qgalzw5m+fgTPAww+1uMz4csMi3hKJlAyyYdmEtd1LI3z8/u8//VdJBjh6GoZsS
-         ZbpfIE6+cT7zvJushe5sZYB2s/7bEuv0CS2lA=
+        b=pGgYBR5EFVNEbYI9N7YCIAWdM5U5/RajLzeQSzCyHvDcLPHX04qOjfQGmsYiyDBoor
+         Zn83Mgdq9VJU/XFXRcCPHDJ9jq5qK1DFacdWetxyqpVckkqYJRFFyOyjE8dihbioY0BA
+         SJI1cU4GguMYiT+6CT313/NICi8GstOdjJxaI=
 From: Richard Hartmann <richih.mailinglist@gmail.com>
 To: linux-crypto@vger.kernel.org
 Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
        Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>,
-       Steffen Klassert <steffen.klassert@secunet.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 19/19] crypto: xcbc - Fix checkpatch errors
-Date: Fri, 19 Feb 2010 01:24:03 +0100
-Message-Id: <1266539044-3716-1-git-send-email-richih.mailinglist@gmail.com>
+       Adrian-Ken Rueegsegger <ken@codelabs.ch>, linux-kernel@vger.kernel.org
+Subject: [PATCH 11/19] crypto: sha256_generic - Fix checkpatch errors
+Date: Fri, 19 Feb 2010 01:22:39 +0100
+Message-Id: <1266538961-3443-1-git-send-email-richih.mailinglist@gmail.com>
 X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,42 +30,359 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
 ---
- crypto/xcbc.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ crypto/sha256_generic.c |  306 +++++++++++++++++++++++-----------------------
+ 1 files changed, 153 insertions(+), 153 deletions(-)
 
-diff --git a/crypto/xcbc.c b/crypto/xcbc.c
-index bb7b67f..63e9181 100644
---- a/crypto/xcbc.c
-+++ b/crypto/xcbc.c
-@@ -24,8 +24,8 @@
- #include <linux/kernel.h>
+diff --git a/crypto/sha256_generic.c b/crypto/sha256_generic.c
+index c48459e..c724886 100644
+--- a/crypto/sha256_generic.c
++++ b/crypto/sha256_generic.c
+@@ -13,7 +13,7 @@
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the Free
+- * Software Foundation; either version 2 of the License, or (at your option) 
++ * Software Foundation; either version 2 of the License, or (at your option)
+  * any later version.
+  *
+  */
+@@ -35,14 +35,14 @@ static inline u32 Maj(u32 x, u32 y, u32 z)
+ 	return (x & y) | (z & (x | y));
+ }
  
- static u_int32_t ks[12] = {0x01010101, 0x01010101, 0x01010101, 0x01010101,
--			   0x02020202, 0x02020202, 0x02020202, 0x02020202,
--			   0x03030303, 0x03030303, 0x03030303, 0x03030303};
-+                           0x02020202, 0x02020202, 0x02020202, 0x02020202,
-+                           0x03030303, 0x03030303, 0x03030303, 0x03030303};
+-#define e0(x)       (ror32(x, 2) ^ ror32(x,13) ^ ror32(x,22))
+-#define e1(x)       (ror32(x, 6) ^ ror32(x,11) ^ ror32(x,25))
+-#define s0(x)       (ror32(x, 7) ^ ror32(x,18) ^ (x >> 3))
+-#define s1(x)       (ror32(x,17) ^ ror32(x,19) ^ (x >> 10))
++#define e0(x)       (ror32(x,  2) ^ ror32(x, 13) ^ ror32(x, 22))
++#define e1(x)       (ror32(x,  6) ^ ror32(x, 11) ^ ror32(x, 25))
++#define s0(x)       (ror32(x,  7) ^ ror32(x, 18) ^ (x >> 3))
++#define s1(x)       (ror32(x, 17) ^ ror32(x, 19) ^ (x >> 10))
  
- /*
-  * +------------------------
-@@ -158,7 +158,7 @@ static int crypto_xcbc_digest_final(struct shash_desc *pdesc, u8 *out)
- 		*p = 0x80;
- 		p++;
+ static inline void LOAD_OP(int I, u32 *W, const u8 *input)
+ {
+-	W[I] = __be32_to_cpu( ((__be32*)(input))[I] );
++	W[I] = __be32_to_cpu(((__be32 *)(input))[I]);
+ }
  
--		rlen = bs - ctx->len -1;
-+		rlen = bs - ctx->len - 1;
- 		if (rlen)
- 			memset(p, 0, rlen);
+ static inline void BLEND_OP(int I, u32 *W)
+@@ -65,145 +65,145 @@ static void sha256_transform(u32 *state, const u8 *input)
+ 		BLEND_OP(i, W);
  
-@@ -211,7 +211,7 @@ static int xcbc_create(struct crypto_template *tmpl, struct rtattr **tb)
- 	if (IS_ERR(alg))
- 		return PTR_ERR(alg);
+ 	/* load the state into our registers */
+-	a=state[0];  b=state[1];  c=state[2];  d=state[3];
+-	e=state[4];  f=state[5];  g=state[6];  h=state[7];
++	a = state[0];  b = state[1];  c = state[2];  d = state[3];
++	e = state[4];  f = state[5];  g = state[6];  h = state[7];
  
--	switch(alg->cra_blocksize) {
-+	switch (alg->cra_blocksize) {
- 	case 16:
- 		break;
- 	default:
+ 	/* now iterate */
+-	t1 = h + e1(e) + Ch(e,f,g) + 0x428a2f98 + W[ 0];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0x71374491 + W[ 1];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0xb5c0fbcf + W[ 2];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0xe9b5dba5 + W[ 3];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x3956c25b + W[ 4];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0x59f111f1 + W[ 5];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x923f82a4 + W[ 6];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0xab1c5ed5 + W[ 7];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0xd807aa98 + W[ 8];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0x12835b01 + W[ 9];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0x243185be + W[10];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0x550c7dc3 + W[11];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x72be5d74 + W[12];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0x80deb1fe + W[13];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x9bdc06a7 + W[14];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0xc19bf174 + W[15];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0xe49b69c1 + W[16];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0xefbe4786 + W[17];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0x0fc19dc6 + W[18];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0x240ca1cc + W[19];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x2de92c6f + W[20];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0x4a7484aa + W[21];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x5cb0a9dc + W[22];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0x76f988da + W[23];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0x983e5152 + W[24];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0xa831c66d + W[25];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0xb00327c8 + W[26];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0xbf597fc7 + W[27];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0xc6e00bf3 + W[28];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0xd5a79147 + W[29];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x06ca6351 + W[30];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0x14292967 + W[31];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0x27b70a85 + W[32];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0x2e1b2138 + W[33];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0x4d2c6dfc + W[34];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0x53380d13 + W[35];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x650a7354 + W[36];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0x766a0abb + W[37];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x81c2c92e + W[38];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0x92722c85 + W[39];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0xa2bfe8a1 + W[40];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0xa81a664b + W[41];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0xc24b8b70 + W[42];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0xc76c51a3 + W[43];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0xd192e819 + W[44];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0xd6990624 + W[45];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0xf40e3585 + W[46];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0x106aa070 + W[47];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0x19a4c116 + W[48];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0x1e376c08 + W[49];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0x2748774c + W[50];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0x34b0bcb5 + W[51];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x391c0cb3 + W[52];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0x4ed8aa4a + W[53];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0x5b9cca4f + W[54];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0x682e6ff3 + W[55];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
+-
+-	t1 = h + e1(e) + Ch(e,f,g) + 0x748f82ee + W[56];
+-	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
+-	t1 = g + e1(d) + Ch(d,e,f) + 0x78a5636f + W[57];
+-	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
+-	t1 = f + e1(c) + Ch(c,d,e) + 0x84c87814 + W[58];
+-	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
+-	t1 = e + e1(b) + Ch(b,c,d) + 0x8cc70208 + W[59];
+-	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
+-	t1 = d + e1(a) + Ch(a,b,c) + 0x90befffa + W[60];
+-	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
+-	t1 = c + e1(h) + Ch(h,a,b) + 0xa4506ceb + W[61];
+-	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
+-	t1 = b + e1(g) + Ch(g,h,a) + 0xbef9a3f7 + W[62];
+-	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
+-	t1 = a + e1(f) + Ch(f,g,h) + 0xc67178f2 + W[63];
+-	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
++	t1 = h + e1(e) + Ch(e, f, g) + 0x428a2f98 + W[ 0];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0x71374491 + W[ 1];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0xb5c0fbcf + W[ 2];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0xe9b5dba5 + W[ 3];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x3956c25b + W[ 4];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0x59f111f1 + W[ 5];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x923f82a4 + W[ 6];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0xab1c5ed5 + W[ 7];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0xd807aa98 + W[ 8];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0x12835b01 + W[ 9];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0x243185be + W[10];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0x550c7dc3 + W[11];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x72be5d74 + W[12];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0x80deb1fe + W[13];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x9bdc06a7 + W[14];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0xc19bf174 + W[15];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0xe49b69c1 + W[16];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0xefbe4786 + W[17];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0x0fc19dc6 + W[18];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0x240ca1cc + W[19];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x2de92c6f + W[20];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0x4a7484aa + W[21];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x5cb0a9dc + W[22];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0x76f988da + W[23];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0x983e5152 + W[24];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0xa831c66d + W[25];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0xb00327c8 + W[26];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0xbf597fc7 + W[27];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0xc6e00bf3 + W[28];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0xd5a79147 + W[29];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x06ca6351 + W[30];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0x14292967 + W[31];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0x27b70a85 + W[32];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0x2e1b2138 + W[33];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0x4d2c6dfc + W[34];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0x53380d13 + W[35];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x650a7354 + W[36];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0x766a0abb + W[37];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x81c2c92e + W[38];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0x92722c85 + W[39];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0xa2bfe8a1 + W[40];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0xa81a664b + W[41];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0xc24b8b70 + W[42];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0xc76c51a3 + W[43];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0xd192e819 + W[44];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0xd6990624 + W[45];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0xf40e3585 + W[46];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0x106aa070 + W[47];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0x19a4c116 + W[48];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0x1e376c08 + W[49];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0x2748774c + W[50];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0x34b0bcb5 + W[51];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x391c0cb3 + W[52];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0x4ed8aa4a + W[53];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0x5b9cca4f + W[54];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0x682e6ff3 + W[55];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
++
++	t1 = h + e1(e) + Ch(e, f, g) + 0x748f82ee + W[56];
++	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
++	t1 = g + e1(d) + Ch(d, e, f) + 0x78a5636f + W[57];
++	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
++	t1 = f + e1(c) + Ch(c, d, e) + 0x84c87814 + W[58];
++	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
++	t1 = e + e1(b) + Ch(b, c, d) + 0x8cc70208 + W[59];
++	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
++	t1 = d + e1(a) + Ch(a, b, c) + 0x90befffa + W[60];
++	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
++	t1 = c + e1(h) + Ch(h, a, b) + 0xa4506ceb + W[61];
++	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
++	t1 = b + e1(g) + Ch(g, h, a) + 0xbef9a3f7 + W[62];
++	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
++	t1 = a + e1(f) + Ch(f, g, h) + 0xc67178f2 + W[63];
++	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
+ 
+ 	state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+ 	state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+@@ -346,11 +346,11 @@ static struct shash_alg sha256 = {
+ 	.descsize	=	sizeof(struct sha256_state),
+ 	.statesize	=	sizeof(struct sha256_state),
+ 	.base		=	{
+-		.cra_name	=	"sha256",
+-		.cra_driver_name=	"sha256-generic",
+-		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
+-		.cra_blocksize	=	SHA256_BLOCK_SIZE,
+-		.cra_module	=	THIS_MODULE,
++		.cra_name		=	"sha256",
++		.cra_driver_name	=	"sha256-generic",
++		.cra_flags		=	CRYPTO_ALG_TYPE_SHASH,
++		.cra_blocksize		=	SHA256_BLOCK_SIZE,
++		.cra_module		=	THIS_MODULE,
+ 	}
+ };
+ 
+@@ -361,11 +361,11 @@ static struct shash_alg sha224 = {
+ 	.final		=	sha224_final,
+ 	.descsize	=	sizeof(struct sha256_state),
+ 	.base		=	{
+-		.cra_name	=	"sha224",
+-		.cra_driver_name=	"sha224-generic",
+-		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
+-		.cra_blocksize	=	SHA224_BLOCK_SIZE,
+-		.cra_module	=	THIS_MODULE,
++		.cra_name		=	"sha224",
++		.cra_driver_name	=	"sha224-generic",
++		.cra_flags		=	CRYPTO_ALG_TYPE_SHASH,
++		.cra_blocksize		=	SHA224_BLOCK_SIZE,
++		.cra_module		=	THIS_MODULE,
+ 	}
+ };
+ 
 -- 
 1.6.6.1
 
