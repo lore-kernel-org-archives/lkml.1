@@ -1,120 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751255Ab0BSLs0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 06:48:26 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:51918 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753Ab0BSLsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 06:48:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vJicqm/PNadhnENRQ96E0syU71KX9eCsJYGwY8QUB13QJY/3AXXOE/Sx0kSFGZ9sYn
-         0t/tQIoahYpPp52/HBh47CThR8QWC8HB7jQLffRZv7o0PhkXUHSH601ZNlJnDJx+UF0I
-         WRvuOKUjidjH8Hs56qvmg0SRK2Bg/zXoBiWH8=
-MIME-Version: 1.0
-In-Reply-To: <201002182104.49631.rjw@sisk.pl>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	 <201002172058.04043.rjw@sisk.pl>
-	 <9b2b86521002180453l176a83dand809dc239c220c08@mail.gmail.com>
-	 <201002182104.49631.rjw@sisk.pl>
-Date: Fri, 19 Feb 2010 11:48:15 +0000
-Message-ID: <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com>
-Subject: Re: s2disk hang update
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751312Ab0BSLtJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 06:49:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28940 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753Ab0BSLtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 06:49:07 -0500
+Subject: Re: [PATCH 2/2] dlm: Remove obsolete lockspace lookup
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: David Teigland <teigland@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20100218210407.GB13276@redhat.com>
+References: <1266399695-29885-1-git-send-email-swhiteho@redhat.com>
+	 <1266399695-29885-2-git-send-email-swhiteho@redhat.com>
+	 <1266399695-29885-3-git-send-email-swhiteho@redhat.com>
+	 <20100217201243.GA29576@redhat.com> <1266484563.2297.6.camel@localhost>
+	 <20100218210407.GB13276@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Fri, 19 Feb 2010 11:52:24 +0000
+Message-ID: <1266580344.2758.47.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday 18 February 2010, Alan Jenkins wrote:
->> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Wednesday 17 February 2010, Alan Jenkins wrote:
->> >> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> > On Tuesday 16 February 2010, Alan Jenkins wrote:
->> >> >> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
->> >> >> > On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> >> >> On Tuesday 09 February 2010, Alan Jenkins wrote:
->> >> >> >>> Perhaps I spoke too soon.  I see the same hang if I run too many
->> >> >> >>> applications.  The first hibernation fails with "not enough
->> >> >> >>> swap"
->> >> >> >>> as
->> >> >> >>> expected, but the second or third attempt hangs (with the same
->> >> >> >>> backtrace
->> >> >> >>> as before).
->> >> >> >>>
->> >> >> >>> The patch definitely helps though.  Without the patch, I see a
->> >> >> >>> hang
->> >> >> >>> the
->> >> >> >>> first time I try to hibernate with too many applications
->> >> >> >>> running.
->> >> >> >>
->> >> >> >> Well, I have an idea.
->> >> >> >>
->> >> >> >> Can you try to apply the appended patch in addition and see if
->> >> >> >> that
->> >> >> >> helps?
->> >> >> >>
->> >> >> >> Rafael
->> >> >> >
->> >> >> > It doesn't seem to help.
->> >> >>
->> >> >> To be clear: It doesn't stop the hang when I hibernate with too many
->> >> >> applications.
->> >> >>
->> >> >> It does stop the same hang in a different case though.
->> >> >>
->> >> >> 1. boot with init=/bin/bash
->> >> >> 2. run s2disk
->> >> >> 3. cancel the s2disk
->> >> >> 4. repeat steps 2&3
->> >> >>
->> >> >> With the patch, I can run 10s of iterations, with no hang.
->> >> >> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
->> >> >> always).
->> >> >>
->> >> >> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
->> >> >> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
->> >> >> allocation
->> >> >> failure after a couple of iterations ("kthreadd: page allocation
->> >> >> failure. order:1, mode:0xd0").  It looks like it might be the same
->> >> >> stop_machine thread allocation failure that causes the hang.
->> >> >
->> >> > Have you tested it alone or on top of the previous one?  If you've
->> >> > tested it
->> >> > alone, please apply the appended one in addition to it and retest.
->> >> >
->> >> > Rafael
->> >>
->> >> I did test with both patches applied together -
->> >>
->> >> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
->> >> resume
->> >> 2. "reducing the number of pages that we're going to keep preallocated
->> >> by
->> >> 20%"
->> >
->> > In that case you can try to reduce the number of preallocated pages even
->> > more,
->> > ie. change "/ 5" to "/ 2" (for example) in the second patch.
->>
->> It still hangs if I try to hibernate a couple of times with too many
->> applications.
->
-> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
-> how much RAM is there in the box?
->
-> Rafael
+Hi,
 
-EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
+On Thu, 2010-02-18 at 16:04 -0500, David Teigland wrote:
+> On Thu, Feb 18, 2010 at 09:16:03AM +0000, Steven Whitehouse wrote:
+> > I'm not sure what more I can say here.... this is a sysfs file store
+> > function and one of the reasons for using it is that sysfs looks after
+> > the ref counting for you.
+> > 
+> > Even aside from that, if you don't have a reference to the lockspace,
+> > then the dereference that is done to discover the lockspace name would
+> > be invalid, since the structure might have already been freed before the
+> > reference is obtained.
+> > 
+> > You could also compare with with the other store and show functions in
+> > that same file and notice that none of them try to grab a reference to
+> > the lockspace in that way. So if this is required, then it must be
+> > required for those functions too.
+> > 
+> > Either way there is something not quite right here and having studied
+> > the code in some detail, I'm pretty sure this is the correct fix,
+> 
+> I guess you didn't see this oops in your tests.  Can you show that the
+> situation in this commit is no longer possible?
+> 
+No, I didn't hit it. I'm not sure how to reproduce whatever situation
+led to this in the first place.
 
-Alan
+There was a clue though in the patch prior to the one you pointed out in
+the git tree, the comment in this patch doesn't make a lot of sense
+until without the context from that patch. I noticed that where the
+sysfs function does this:
+
+> +	ls = dlm_find_lockspace_local(ls->ls_local_handle);
+> +	if (!ls)
+> +		return -EINVAL;
+> +
+
+it isn't primarily a ref count operation. Yes, it does get a ref count
+on the object if it is successful, but the main purpose is testing to
+see if the shutdown process has started (i.e. is the lockspace still on
+the ls_list). If the list removal used a list_del_init rather than a
+list del, the dlm_find_lockspace_local() call could be replaced with:
+
+	spin_lock(&lslist_lock);
+	ret = list_empty(&ls->ls_list);
+	if (!ret)
+		ls->ls_count++;
+	spin_unlock(&lslist_lock);
+	if (ret)
+		return -EINVAL;
+
+which might be a bit less confusing, and also saves traversing the list
+of lockspaces. This is basically a "hold" operation, rather than a
+find/get type operation.
+
+My confusion has arisen from the fact that there are three ref counters
+for the lockspace object. One is ls_count, one is ls_create_count and
+the other the is kobject ref count.
+
+ls_create_count seems to deal with user references, ls_count seems to be
+used for internal references and the kobject ref count only seems to be
+incremented/decremented on initial object creation/removal.
+
+Probably the correct long term solution is to at least merge the
+ls_count into kobject ref count system, and maybe the ls_create_count
+too. I'll have to do some more investigation before I can see whether
+there are any reasons why that isn't possible.
+
+Either way, we are getting away from what was originally a small and
+simple patch, so I'll suggest to ignore this one for now, and just apply
+the first one of the two which I sent. I'll have another look at this in
+the mean time,
+
+Steve.
+
+
+
