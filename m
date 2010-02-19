@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580Ab0BSRJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:09:20 -0500
-Received: from kroah.org ([198.145.64.141]:57648 "EHLO coco.kroah.org"
+	id S1755486Ab0BSRHK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:07:10 -0500
+Received: from kroah.org ([198.145.64.141]:57763 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754741Ab0BSRAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:49 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:45 2010
-Message-Id: <20100219163245.712184199@kvm.kroah.org>
+	id S1754990Ab0BSRBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:01:04 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:51 2010
+Message-Id: <20100219163251.071809208@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:47 -0800
+Date: Fri, 19 Feb 2010 08:30:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Haberland <stefan.haberland@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [54/93] [S390] dasd: remove strings from s390dbf
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [73/93] x86: Re-get cfg_new in case reuse/move irq_desc
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,215 +25,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Haberland <stefan.haberland@de.ibm.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit b8ed5dd54895647c2690575aad6f07748c2c618a upstream.
+commit 37ef2a3029fde884808ff1b369677abc7dd9a79a upstream.
 
-Remove strings from s390 debugfeature entries that could lead to a
-crash when the data is read from dbf because the strings do not exist
-any more.
+When irq_desc is moved, we need to make sure to use the right cfg_new.
 
-Signed-off-by: Stefan Haberland <stefan.haberland@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <4B07A739.3030104@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/s390/block/dasd.c      |   22 ++++++++++----------
- drivers/s390/block/dasd_eckd.c |   44 +++++++++++++++++------------------------
- drivers/s390/block/dasd_fba.c  |   10 +++------
- drivers/s390/block/dasd_int.h  |   10 +++++++++
- 4 files changed, 44 insertions(+), 42 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -994,10 +994,9 @@ static void dasd_handle_killed_request(s
- 		return;
- 	cqr = (struct dasd_ccw_req *) intparm;
- 	if (cqr->status != DASD_CQR_IN_IO) {
--		DBF_EVENT(DBF_DEBUG,
--			"invalid status in handle_killed_request: "
--			"bus_id %s, status %02x",
--			dev_name(&cdev->dev), cqr->status);
-+		DBF_EVENT_DEVID(DBF_DEBUG, cdev,
-+				"invalid status in handle_killed_request: "
-+				"%02x", cqr->status);
- 		return;
- 	}
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3157,6 +3157,7 @@ unsigned int create_irq_nr(unsigned int
+ 			continue;
  
-@@ -1045,12 +1044,13 @@ void dasd_int_handler(struct ccw_device
- 		case -EIO:
- 			break;
- 		case -ETIMEDOUT:
--			DBF_EVENT(DBF_WARNING, "%s(%s): request timed out\n",
--			       __func__, dev_name(&cdev->dev));
-+			DBF_EVENT_DEVID(DBF_WARNING, cdev, "%s: "
-+					"request timed out\n", __func__);
- 			break;
- 		default:
--			DBF_EVENT(DBF_WARNING, "%s(%s): unknown error %ld\n",
--			       __func__, dev_name(&cdev->dev), PTR_ERR(irb));
-+			DBF_EVENT_DEVID(DBF_WARNING, cdev, "%s: "
-+					"unknown error %ld\n", __func__,
-+					PTR_ERR(irb));
- 		}
- 		dasd_handle_killed_request(cdev, intparm);
- 		return;
-@@ -2217,9 +2217,9 @@ int dasd_generic_probe(struct ccw_device
- 	}
- 	ret = dasd_add_sysfs_files(cdev);
- 	if (ret) {
--		DBF_EVENT(DBF_WARNING,
--		       "dasd_generic_probe: could not add sysfs entries "
--		       "for %s\n", dev_name(&cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, cdev, "%s",
-+				"dasd_generic_probe: could not add "
-+				"sysfs entries");
- 		return ret;
- 	}
- 	cdev->handler = &dasd_int_handler;
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -88,9 +88,9 @@ dasd_eckd_probe (struct ccw_device *cdev
- 	/* set ECKD specific ccw-device options */
- 	ret = ccw_device_set_options(cdev, CCWDEV_ALLOW_FORCE);
- 	if (ret) {
--		DBF_EVENT(DBF_WARNING,
--		       "dasd_eckd_probe: could not set ccw-device options "
--		       "for %s\n", dev_name(&cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, cdev, "%s",
-+				"dasd_eckd_probe: could not set "
-+				"ccw-device options");
- 		return ret;
- 	}
- 	ret = dasd_generic_probe(cdev, &dasd_eckd_discipline);
-@@ -885,16 +885,15 @@ static int dasd_eckd_read_conf(struct da
- 			rc = dasd_eckd_read_conf_lpm(device, &conf_data,
- 						     &conf_len, lpm);
- 			if (rc && rc != -EOPNOTSUPP) {	/* -EOPNOTSUPP is ok */
--				DBF_EVENT(DBF_WARNING,
-+				DBF_EVENT_DEVID(DBF_WARNING, device->cdev,
- 					  "Read configuration data returned "
--					  "error %d for device: %s", rc,
--					  dev_name(&device->cdev->dev));
-+					  "error %d", rc);
- 				return rc;
- 			}
- 			if (conf_data == NULL) {
--				DBF_EVENT(DBF_WARNING, "No configuration "
--					  "data retrieved for device: %s",
--					  dev_name(&device->cdev->dev));
-+				DBF_EVENT_DEVID(DBF_WARNING, device->cdev, "%s",
-+						"No configuration data "
-+						"retrieved");
- 				continue;	/* no error */
- 			}
- 			/* save first valid configuration data */
-@@ -941,9 +940,8 @@ static int dasd_eckd_read_features(struc
- 				    sizeof(struct dasd_rssd_features)),
- 				   device);
- 	if (IS_ERR(cqr)) {
--		DBF_EVENT(DBF_WARNING, "Could not allocate initialization "
--			  "request for device: %s",
--			  dev_name(&device->cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, device->cdev, "%s", "Could not "
-+				"allocate initialization request");
- 		return PTR_ERR(cqr);
- 	}
- 	cqr->startdev = device;
-@@ -1071,10 +1069,8 @@ static int dasd_eckd_validate_server(str
- 	/* may be requested feature is not available on server,
- 	 * therefore just report error and go ahead */
- 	private = (struct dasd_eckd_private *) device->private;
--	DBF_EVENT(DBF_WARNING, "PSF-SSC on storage subsystem %s.%s.%04x "
--		  "returned rc=%d for device: %s",
--		  private->uid.vendor, private->uid.serial,
--		  private->uid.ssid, rc, dev_name(&device->cdev->dev));
-+	DBF_EVENT_DEVID(DBF_WARNING, device->cdev, "PSF-SSC for SSID %04x "
-+			"returned rc=%d", private->uid.ssid, rc);
- 	/* RE-Read Configuration Data */
- 	return dasd_eckd_read_conf(device);
- }
-@@ -1123,9 +1119,9 @@ dasd_eckd_check_characteristics(struct d
- 	if (private->uid.type == UA_BASE_DEVICE) {
- 		block = dasd_alloc_block();
- 		if (IS_ERR(block)) {
--			DBF_EVENT(DBF_WARNING, "could not allocate dasd "
--				  "block structure for device: %s",
--				  dev_name(&device->cdev->dev));
-+			DBF_EVENT_DEVID(DBF_WARNING, device->cdev, "%s",
-+					"could not allocate dasd "
-+					"block structure");
- 			rc = PTR_ERR(block);
- 			goto out_err1;
- 		}
-@@ -1153,9 +1149,8 @@ dasd_eckd_check_characteristics(struct d
- 	rc = dasd_generic_read_dev_chars(device, DASD_ECKD_MAGIC,
- 					 &private->rdc_data, 64);
- 	if (rc) {
--		DBF_EVENT(DBF_WARNING,
--			  "Read device characteristics failed, rc=%d for "
--			  "device: %s", rc, dev_name(&device->cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, device->cdev,
-+				"Read device characteristic failed, rc=%d", rc);
- 		goto out_err3;
- 	}
- 	/* find the vaild cylinder size */
-@@ -3253,9 +3248,8 @@ int dasd_eckd_restore_device(struct dasd
- 	rc = dasd_generic_read_dev_chars(device, DASD_ECKD_MAGIC,
- 					 &temp_rdc_data, 64);
- 	if (rc) {
--		DBF_EVENT(DBF_WARNING,
--			  "Read device characteristics failed, rc=%d for "
--			  "device: %s", rc, dev_name(&device->cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, device->cdev,
-+				"Read device characteristic failed, rc=%d", rc);
- 		goto out_err;
- 	}
- 	spin_lock_irqsave(get_ccwdev_lock(device->cdev), flags);
---- a/drivers/s390/block/dasd_fba.c
-+++ b/drivers/s390/block/dasd_fba.c
-@@ -141,9 +141,8 @@ dasd_fba_check_characteristics(struct da
- 	}
- 	block = dasd_alloc_block();
- 	if (IS_ERR(block)) {
--		DBF_EVENT(DBF_WARNING, "could not allocate dasd block "
--			  "structure for device: %s",
--			  dev_name(&device->cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, cdev, "%s", "could not allocate "
-+				"dasd block structure");
- 		device->private = NULL;
- 		kfree(private);
- 		return PTR_ERR(block);
-@@ -155,9 +154,8 @@ dasd_fba_check_characteristics(struct da
- 	rc = dasd_generic_read_dev_chars(device, DASD_FBA_MAGIC,
- 					 &private->rdc_data, 32);
- 	if (rc) {
--		DBF_EVENT(DBF_WARNING, "Read device characteristics returned "
--			  "error %d for device: %s",
--			  rc, dev_name(&device->cdev->dev));
-+		DBF_EVENT_DEVID(DBF_WARNING, cdev, "Read device "
-+				"characteristics returned error %d", rc);
- 		device->block = NULL;
- 		dasd_free_block(block);
- 		device->private = NULL;
---- a/drivers/s390/block/dasd_int.h
-+++ b/drivers/s390/block/dasd_int.h
-@@ -108,6 +108,16 @@ do { \
- 			    d_data); \
- } while(0)
+ 		desc_new = move_irq_desc(desc_new, node);
++		cfg_new = desc_new->chip_data;
  
-+#define DBF_EVENT_DEVID(d_level, d_cdev, d_str, d_data...)	\
-+do { \
-+	struct ccw_dev_id __dev_id;			\
-+	ccw_device_get_id(d_cdev, &__dev_id);		\
-+	debug_sprintf_event(dasd_debug_area,		\
-+			    d_level,					\
-+			    "0.%x.%04x " d_str "\n",			\
-+			    __dev_id.ssid, __dev_id.devno, d_data);	\
-+} while (0)
-+
- #define DBF_EXC(d_level, d_str, d_data...)\
- do { \
- 	debug_sprintf_exception(dasd_debug_area, \
+ 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
 
 
