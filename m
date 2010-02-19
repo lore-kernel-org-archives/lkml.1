@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0BSRQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:16:37 -0500
-Received: from kroah.org ([198.145.64.141]:57414 "EHLO coco.kroah.org"
+	id S1755946Ab0BSRQs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:16:48 -0500
+Received: from kroah.org ([198.145.64.141]:57403 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754442Ab0BSRAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:19 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:36 2010
-Message-Id: <20100219163235.855623621@kvm.kroah.org>
+	id S1754147Ab0BSRAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:18 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:35 2010
+Message-Id: <20100219163235.535839906@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:14 -0800
+Date: Fri, 19 Feb 2010 08:29:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Vetter <daniel.vetter@ffwll.ch>,
        Chris Wilson <chris@chris-wilson.co.uk>, Eric Anholt <eric@anholt.net>
-Subject: [21/93] drm/i915: Update write_domains on active list after flush.
+Subject: [20/93] drm/i915: Increase fb alignment to 64k
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,173 +25,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
+From: Chris Wilson <chris@chris-wilson.co.uk>
 
-commit 99fcb766a3a50466fe31d743260a3400c1aee855 upstream.
+commit fd2e8ea597222b8f38ae8948776a61ea7958232e upstream.
 
-Before changing the status of a buffer with a pending write we will await
-upon a new flush for that buffer. So we can take advantage of any flushes
-posted whilst the buffer is active and pending processing by the GPU, by
-clearing its write_domain and updating its last_rendering_seqno -- thus
-saving a potential flush in deep queues and improves flushing behaviour
-upon eviction for both GTT space and fences.
+An untiled framebuffer must be aligned to 64k. This is normally handled
+by intel_pin_and_fence_fb_obj(), but the intelfb_create() likes to be
+different and do the pinning itself. However, it aligns the buffer
+object incorrectly for pre-i965 chipsets causing a PGTBL_ERR when it is
+installed onto the output.
 
-In order to reduce the time spent searching the active list for matching
-write_domains, we move those to a separate list whose elements are
-the buffers belong to the active/flushing list with pending writes.
+Fixes:
+  KMS error message while initializing modesetting -
+  render error detected: EIR: 0x10 [i915]
+  http://bugs.freedesktop.org/show_bug.cgi?id=22936
 
-Orignal patch by Chris Wilson <chris@chris-wilson.co.uk>, forward-ported
-by me.
-
-In addition to better performance, this also fixes a real bug. Before
-this changes, i915_gem_evict_everything didn't work as advertised. When
-the gpu was actually busy and processing request, the flush and subsequent
-wait would not move active and dirty buffers to the inactive list, but
-just to the flushing list. Which triggered the BUG_ON at the end of this
-function. With the more tight dirty buffer tracking, all currently busy and
-dirty buffers get moved to the inactive list by one i915_gem_flush operation.
-
-I've left the BUG_ON I've used to prove this in there.
-
-  Bug 26101 - [i915] xf86-video-intel 2.10.0 (and git) triggers kernel oops
-              within seconds after login
-  http://bugs.freedesktop.org/show_bug.cgi?id=26101
-
-Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-Tested-by: Adam Lantos <hege@playma.org>
 Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_drv.h |   11 +++++++++++
- drivers/gpu/drm/i915/i915_gem.c |   23 +++++++++++++++++++----
- 2 files changed, 30 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/i915/intel_fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -467,6 +467,15 @@ typedef struct drm_i915_private {
- 		struct list_head flushing_list;
+--- a/drivers/gpu/drm/i915/intel_fb.c
++++ b/drivers/gpu/drm/i915/intel_fb.c
+@@ -148,7 +148,7 @@ static int intelfb_create(struct drm_dev
  
- 		/**
-+		 * List of objects currently pending a GPU write flush.
-+		 *
-+		 * All elements on this list will belong to either the
-+		 * active_list or flushing_list, last_rendering_seqno can
-+		 * be used to differentiate between the two elements.
-+		 */
-+		struct list_head gpu_write_list;
-+
-+		/**
- 		 * LRU list of objects which are not in the ringbuffer and
- 		 * are ready to unbind, but are still in the GTT.
- 		 *
-@@ -558,6 +567,8 @@ struct drm_i915_gem_object {
+ 	mutex_lock(&dev->struct_mutex);
  
- 	/** This object's place on the active/flushing/inactive lists */
- 	struct list_head list;
-+	/** This object's place on GPU write list */
-+	struct list_head gpu_write_list;
- 
- 	/** This object's place on the fenced object LRU */
- 	struct list_head fence_list;
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1552,6 +1552,8 @@ i915_gem_object_move_to_inactive(struct
- 	else
- 		list_move_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
- 
-+	BUG_ON(!list_empty(&obj_priv->gpu_write_list));
-+
- 	obj_priv->last_rendering_seqno = 0;
- 	if (obj_priv->active) {
- 		obj_priv->active = 0;
-@@ -1622,7 +1624,8 @@ i915_add_request(struct drm_device *dev,
- 		struct drm_i915_gem_object *obj_priv, *next;
- 
- 		list_for_each_entry_safe(obj_priv, next,
--					 &dev_priv->mm.flushing_list, list) {
-+					 &dev_priv->mm.gpu_write_list,
-+					 gpu_write_list) {
- 			struct drm_gem_object *obj = obj_priv->obj;
- 
- 			if ((obj->write_domain & flush_domains) ==
-@@ -1630,6 +1633,7 @@ i915_add_request(struct drm_device *dev,
- 				uint32_t old_write_domain = obj->write_domain;
- 
- 				obj->write_domain = 0;
-+				list_del_init(&obj_priv->gpu_write_list);
- 				i915_gem_object_move_to_active(obj, seqno);
- 
- 				trace_i915_gem_object_change_domain(obj,
-@@ -2073,8 +2077,8 @@ static int
- i915_gem_evict_everything(struct drm_device *dev)
- {
- 	drm_i915_private_t *dev_priv = dev->dev_private;
--	uint32_t seqno;
- 	int ret;
-+	uint32_t seqno;
- 	bool lists_empty;
- 
- 	spin_lock(&dev_priv->mm.active_list_lock);
-@@ -2096,6 +2100,8 @@ i915_gem_evict_everything(struct drm_dev
- 	if (ret)
- 		return ret;
- 
-+	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
-+
- 	ret = i915_gem_evict_from_inactive_list(dev);
- 	if (ret)
- 		return ret;
-@@ -2690,7 +2696,7 @@ i915_gem_object_flush_gpu_write_domain(s
- 	old_write_domain = obj->write_domain;
- 	i915_gem_flush(dev, 0, obj->write_domain);
- 	seqno = i915_add_request(dev, NULL, obj->write_domain);
--	obj->write_domain = 0;
-+	BUG_ON(obj->write_domain);
- 	i915_gem_object_move_to_active(obj, seqno);
- 
- 	trace_i915_gem_object_change_domain(obj,
-@@ -3710,16 +3716,23 @@ i915_gem_execbuffer(struct drm_device *d
- 		i915_gem_flush(dev,
- 			       dev->invalidate_domains,
- 			       dev->flush_domains);
--		if (dev->flush_domains)
-+		if (dev->flush_domains & I915_GEM_GPU_DOMAINS)
- 			(void)i915_add_request(dev, file_priv,
- 					       dev->flush_domains);
- 	}
- 
- 	for (i = 0; i < args->buffer_count; i++) {
- 		struct drm_gem_object *obj = object_list[i];
-+		struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 		uint32_t old_write_domain = obj->write_domain;
- 
- 		obj->write_domain = obj->pending_write_domain;
-+		if (obj->write_domain)
-+			list_move_tail(&obj_priv->gpu_write_list,
-+				       &dev_priv->mm.gpu_write_list);
-+		else
-+			list_del_init(&obj_priv->gpu_write_list);
-+
- 		trace_i915_gem_object_change_domain(obj,
- 						    obj->read_domains,
- 						    old_write_domain);
-@@ -4112,6 +4125,7 @@ int i915_gem_init_object(struct drm_gem_
- 	obj_priv->obj = obj;
- 	obj_priv->fence_reg = I915_FENCE_REG_NONE;
- 	INIT_LIST_HEAD(&obj_priv->list);
-+	INIT_LIST_HEAD(&obj_priv->gpu_write_list);
- 	INIT_LIST_HEAD(&obj_priv->fence_list);
- 	obj_priv->madv = I915_MADV_WILLNEED;
- 
-@@ -4563,6 +4577,7 @@ i915_gem_load(struct drm_device *dev)
- 	spin_lock_init(&dev_priv->mm.active_list_lock);
- 	INIT_LIST_HEAD(&dev_priv->mm.active_list);
- 	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
-+	INIT_LIST_HEAD(&dev_priv->mm.gpu_write_list);
- 	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
- 	INIT_LIST_HEAD(&dev_priv->mm.request_list);
- 	INIT_LIST_HEAD(&dev_priv->mm.fence_list);
+-	ret = i915_gem_object_pin(fbo, PAGE_SIZE);
++	ret = i915_gem_object_pin(fbo, 64*1024);
+ 	if (ret) {
+ 		DRM_ERROR("failed to pin fb: %d\n", ret);
+ 		goto out_unref;
 
 
