@@ -1,47 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702Ab0BSUEj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:04:39 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:43691 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753183Ab0BSUEh (ORCPT
+	id S1755554Ab0BSUGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 15:06:20 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48938 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244Ab0BSUGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:04:37 -0500
-X-Greylist: delayed 1693 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Feb 2010 15:04:37 EST
-Date: Thu, 18 Feb 2010 23:57:11 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
-       linuxppc-dev@ozlabs.org, kernel list <linux-kernel@vger.kernel.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>, bergner@vnet.ibm.com
-Subject: Re: register long sp asm("r1") incorrect
-Message-ID: <20100218225711.GA1386@ucw.cz>
-References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz> <1265866273.16346.34.camel@pasglop> <20100215073405.GB20456@atrey.karlin.mff.cuni.cz> <1266263992.16346.125.camel@pasglop> <20100215202854.GA21601@elf.ucw.cz> <1266267898.16346.135.camel@pasglop> <4B79C775.1050903@zytor.com>
+	Fri, 19 Feb 2010 15:06:19 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 19 Feb 2010 21:06:07 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: cdev: increment ABI version number
+To: linux1394-devel@lists.sourceforge.net, Pieter Palmers <pieterp@joow.be>
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.9650095fffa41adc@s5r6.in-berlin.de>
+Message-ID: <tkrat.f3725b33bc1bfdaa@s5r6.in-berlin.de>
+References: <tkrat.9650095fffa41adc@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B79C775.1050903@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2010-02-15 14:15:17, H. Peter Anvin wrote:
-> On 02/15/2010 01:04 PM, Benjamin Herrenschmidt wrote:
-> > 
-> > It's true that most other use of it we have are global scope (local_paca
-> > in r13, glibc use of r2/r13, etc...) afaik, but since r1 itself is the
-> > stack pointer always, I think they pretty much guarantee it works.
-> > 
-> 
-> It should work, because r1, being the stack pointer, is already marked a
-> reserved register in gcc.
-> 
-> The reference Pavel is citing bascially states that gcc won't globally
-> reserve the register, which is true, but it is already reserved anyway.
+so that clients can detect whether the FW_CDEV_IOC_GET_CYCLE_TIMER ioctl
+is reliable (on all tested controllers, especially the widely used VIA
+controllers, also NEC controllers, see commits b677532b and 1c1517ef).
+Also add a comment on the 2.6.32 iso xmit enhancement.
 
-Ok, thanks for clarification.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ include/linux/firewire-cdev.h |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: b/include/linux/firewire-cdev.h
+===================================================================
+--- a/include/linux/firewire-cdev.h
++++ b/include/linux/firewire-cdev.h
+@@ -256,8 +256,10 @@ union fw_cdev_event {
+  *  1  (2.6.22)  - initial version
+  *  2  (2.6.30)  - changed &fw_cdev_event_iso_interrupt.header if
+  *                 &fw_cdev_create_iso_context.header_size is 8 or more
++ *     (2.6.32)  - added time stamp to xmit &fw_cdev_event_iso_interrupt
++ *  3  (2.6.34)  - made &fw_cdev_get_cycle_timer reliable
+  */
+-#define FW_CDEV_VERSION 2
++#define FW_CDEV_VERSION 3
+ 
+ /**
+  * struct fw_cdev_get_info - General purpose information ioctl
+@@ -556,6 +558,9 @@ struct fw_cdev_stop_iso {
+  * @cycle_timer consists of 7 bits cycleSeconds, 13 bits cycleCount, and
+  * 12 bits cycleOffset, in host byte order.  Cf. the Cycle Time register
+  * per IEEE 1394 or Isochronous Cycle Timer register per OHCI-1394.
++ *
++ * In version 1 and 2 of the ABI, this ioctl returned unreliable (non-
++ * monotonic) @cycle_timer values on certain controllers.
+  */
+ struct fw_cdev_get_cycle_timer {
+ 	__u64 local_time;
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Stefan Richter
+-=====-==-=- --=- =--==
+http://arcgraph.de/sr/
+
