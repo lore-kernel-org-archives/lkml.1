@@ -1,237 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946Ab0BSTm3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:42:29 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:56705 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755705Ab0BSTm0 (ORCPT
+	id S1752222Ab0BSTri (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:47:38 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:49065 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890Ab0BSTrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:42:26 -0500
+	Fri, 19 Feb 2010 14:47:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=MbnQoBv6rUGDlgiJA5MIZuEtNp/7b9i1McJmK93yrZH04vssnRfCAlIl7zegL0wyzy
-         023DAC289Kcw0ZM3FRnmMQMFsjAYsTr59J6OeQgZt/mOWKsNsQnfW/DIqy3nUKOtDb0D
-         li4/90lS6MJc49i5nw/V/EX9lMwNtT0H1ayRM=
-Message-ID: <4B7EEB6B.5070400@gmail.com>
-Date: Fri, 19 Feb 2010 20:50:03 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: "Karicheri, Muralidharan" <m-karicheri2@ti.com>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] video_device: don't free_irq() an element past array
- vpif_obj.dev[] and fix test
-References: <4B714E15.4020909@gmail.com> <A69FA2915331DC488A831521EAE36FE40169C5C9B5@dlee06.ent.ti.com> <25e057c01002181202v346f488bk571d099f679fea83@mail.gmail.com> <A69FA2915331DC488A831521EAE36FE40169C5CBD8@dlee06.ent.ti.com>
-In-Reply-To: <A69FA2915331DC488A831521EAE36FE40169C5CBD8@dlee06.ent.ti.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=coFTaAFRlmj55z+4pqe3jU8dAKv9Pr9f5H+XJxBDuGxGkjYDhWaxM29m7a8ymm+f7r
+         fOye/IWZLJqkMUl+UCTHCtqBMzXGTS6UNI1vpZ1ovNbHczb7HHypRjCvaa882XUu6+FE
+         OdvWZl9Byt7ASdOXJHkOWhzIry5mLydlpia/o=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: [PATCH 0/7] vfs: notify_changes() error handling
+Date: Fri, 19 Feb 2010 22:47:18 +0300
+Message-Id: <1266608845-13212-1-git-send-email-dmonakhov@openvz.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first loop ends when platform_get_resource() returns NULL. Can it occur
-that no platform_get_resource() succeeded? I think we should error return if
-that happens. Could k grow larger than VPIF_DISPLAY_MAX_DEVICES there?
-Should we err out in that case?
+Current inode attr setting path looks like follows
 
-In the loop `for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++)' if
-video_device_alloc() fails I think we correctly release the devices,
-but we have to do more before we reach label vpif_int_err.
+ ret = inode_change_ok()
+ if(ret)
+     goto out;
+ /*
+  perform private-fs specific logic here
+  */
+ if(ia_valid & ATTR_UID || ...)
+    ret = vfs_dq_transfer()
 
-As mentioned, we left the first loop with a res of NULL, which is
-dereferenced at label vpif_int_err. So we have to get the resource again,
-however, k was incremented at the end of that loop as well. Also i used
-as index in the second loop as well should point to res->end before going
-to label vpif_int_err, to free all requested irqs. All this needs to be
-done for later error labels as well, so a new label is added where this
-occurs, alloc_vid_fail.
+ /*
+   more private-fs specific logic
+   for example update on_disk data structures.
+   */
 
-Variable k can't be reused in the third for-loop and at label probe_out.
-As mentioned k is needed to get the resource in case a error and clean-up
-is required.
+  ret = inode_setattr()
 
-If we reach label vpif_int_err, res shouldn't be NULL, since we
-dereference it. Previously we had:
+In fact inode_setattr() call vmtruncate() which may fail in number
+of reasons IS_SWAPFILE, RLIMIT_FSIZE. After this many filesystem is
+unable to rollback changes. And just live inode in inconsistent
+state. We may check IS_SWAPFILE at the very beginning(currently it
+is not checked), but RLIMIT_FSIZE may changed under our feet.
+In order make things straight. Let's divide vmtruncate() in to
+two parts which perform all checks, and second which can not fail.
+After this notify_change() perform all necessary checks inside
+inode_change_ok() and simply call nofail version of vmtruncate().
 
-        for (; k >= 0; k--) {
-                for (m = i; m >= res->start; m--)
-                        free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
-                res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
-                m = res->end;
-        }
-
-In the last iteration k equals 0, so we call platform_get_resource() with
--1 as a third argument. Since platform_get_resource() uses an unsigned it
-is converted to 0xffffffff. platform_get_resource() fails for every index
-and returns NULL. A test is lacking and we dereference NULL.
-
-The error "VPIF IRQ request failed" should only be displayed when 
-request_irq() failed, not in the case of other errors.
-
-Also I changed some indexes, so a few could be removed.
-
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-There were some errors in the changelog and a signoff was missing.
-
-> Ok. You are right! The ch_params[] is a table for keeping the information
-> about different standards supported. For a given stdid in std_info, the function matches the stdid with that in the table and get the corresponding entry.
-
->>>> +      if (k == VPIF_DISPLAY_MAX_DEVICES)
->>>> +              k = VPIF_DISPLAY_MAX_DEVICES - 1;
->>
->> actually I think this is still not right. shouldn't it be be
->>
->> k = VPIF_DISPLAY_MAX_DEVICES - 1;
-> 
-> What you mean here? What you suggest here is same as in your patch, right?
-
-I must admit I did not test this, except with checkpatch.pl, but I think
-the issues are real and should be fixed. Do you have comments?
-
- drivers/media/video/davinci/vpif_display.c |   61 +++++++++++++++++++---------
- 1 files changed, 41 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
-index dfddef7..ae8ca94 100644
---- a/drivers/media/video/davinci/vpif_display.c
-+++ b/drivers/media/video/davinci/vpif_display.c
-@@ -383,7 +383,7 @@ static int vpif_get_std_info(struct channel_obj *ch)
- 	int index;
- 
- 	std_info->stdid = vid_ch->stdid;
--	if (!std_info)
-+	if (!std_info->stdid)
- 		return -1;
- 
- 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
-@@ -1423,7 +1423,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- {
- 	struct vpif_subdev_info *subdevdata;
- 	struct vpif_display_config *config;
--	int i, j = 0, k, q, m, err = 0;
-+	int i, j, k, err;
- 	struct i2c_adapter *i2c_adap;
- 	struct common_obj *common;
- 	struct channel_obj *ch;
-@@ -1452,12 +1452,18 @@ static __init int vpif_probe(struct platform_device *pdev)
- 			if (request_irq(i, vpif_channel_isr, IRQF_DISABLED,
- 					"DM646x_Display",
- 				(void *)(&vpif_obj.dev[k]->channel_id))) {
-+				i--;
- 				err = -EBUSY;
-+				vpif_err("VPIF IRQ request failed\n");
- 				goto vpif_int_err;
- 			}
- 		}
- 		k++;
-+		if (k >= VPIF_DISPLAY_MAX_DEVICES)
-+			break;
- 	}
-+	if (k == 0)
-+		return -ENODEV;
- 
- 	for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++) {
- 
-@@ -1472,7 +1478,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- 				video_device_release(ch->video_dev);
- 			}
- 			err = -ENOMEM;
--			goto vpif_int_err;
-+			goto alloc_vid_fail;
- 		}
- 
- 		/* Initialize field of video device */
-@@ -1489,13 +1495,13 @@ static __init int vpif_probe(struct platform_device *pdev)
- 		ch->video_dev = vfd;
- 	}
- 
--	for (j = 0; j < VPIF_DISPLAY_MAX_DEVICES; j++) {
--		ch = vpif_obj.dev[j];
-+	for (i = 0; i < VPIF_DISPLAY_MAX_DEVICES; i++) {
-+		ch = vpif_obj.dev[i];
- 		/* Initialize field of the channel objects */
- 		atomic_set(&ch->usrs, 0);
--		for (k = 0; k < VPIF_NUMOBJECTS; k++) {
--			ch->common[k].numbuffers = 0;
--			common = &ch->common[k];
-+		for (j = 0; j < VPIF_NUMOBJECTS; j++) {
-+			ch->common[j].numbuffers = 0;
-+			common = &ch->common[j];
- 			common->io_usrs = 0;
- 			common->started = 0;
- 			spin_lock_init(&common->irqlock);
-@@ -1506,12 +1512,12 @@ static __init int vpif_probe(struct platform_device *pdev)
- 			common->ctop_off = common->cbtm_off = 0;
- 			common->cur_frm = common->next_frm = NULL;
- 			memset(&common->fmt, 0, sizeof(common->fmt));
--			common->numbuffers = config_params.numbuffers[k];
-+			common->numbuffers = config_params.numbuffers[j];
- 
- 		}
- 		ch->initialized = 0;
--		ch->channel_id = j;
--		if (j < 2)
-+		ch->channel_id = i;
-+		if (i < 2)
- 			ch->common[VPIF_VIDEO_INDEX].numbuffers =
- 			    config_params.numbuffers[ch->channel_id];
- 		else
-@@ -1529,7 +1535,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- 				(int)ch, (int)&ch->video_dev);
- 
- 		err = video_register_device(ch->video_dev,
--					  VFL_TYPE_GRABBER, (j ? 3 : 2));
-+					  VFL_TYPE_GRABBER, (i ? 3 : 2));
- 		if (err < 0)
- 			goto probe_out;
- 
-@@ -1567,20 +1573,35 @@ static __init int vpif_probe(struct platform_device *pdev)
- probe_subdev_out:
- 	kfree(vpif_obj.sd);
- probe_out:
--	for (k = 0; k < j; k++) {
--		ch = vpif_obj.dev[k];
-+	for (j = 0; j < i; j++) {
-+		ch = vpif_obj.dev[j];
- 		video_unregister_device(ch->video_dev);
- 		video_device_release(ch->video_dev);
- 		ch->video_dev = NULL;
- 	}
-+alloc_vid_fail:
-+	while (k--) {
-+		res = platform_get_resource(pdev, IORESOURCE_IRQ, k);
-+		if (res != NULL)
-+			break;
-+		vpif_err("Couldn't get resource %d, irqs not freed.\n", k);
-+	}
-+	if (res == NULL) {
-+		vpif_err("Couldn't get any resource.\n");
-+		return err;
-+	}
-+
-+	i = res->end;
- vpif_int_err:
- 	v4l2_device_unregister(&vpif_obj.v4l2_dev);
--	vpif_err("VPIF IRQ request failed\n");
--	for (q = k; k >= 0; k--) {
--		for (m = i; m >= res->start; m--)
--			free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
--		res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
--		m = res->end;
-+
-+	for (j = i; j >= res->start; j--)
-+		free_irq(j, (void *)(&vpif_obj.dev[k]->channel_id));
-+
-+	while (k--) {
-+		res = platform_get_resource(pdev, IORESOURCE_IRQ, k);
-+		for (j =  res->end; j >= res->start; j--)
-+			free_irq(j, (void *)(&vpif_obj.dev[k]->channel_id));
- 	}
- 
- 	return err;
+##TEST_CASE_BEGIN:
+# dd if=/dev/zero of=/mnt/file bs=1M count=10
+# mkswap /mnt/file
+# swapon /mnt/file
+# ./truncate /mnt/file 0
+# sync
+# echo "stat file" | debugfs /dev/sda9
+debugfs 1.41.9 (22-Aug-2009)
+Inode: 2746   Type: regular    Mode:  0644   Flags: 0x80000
+Generation: 571328532    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 0
+##### ON_DISK_SIZE IS ZERO ^^^^^^^^^^^^
+File ACL: 0    Directory ACL: 0
+Links: 1   Blockcount: 20480
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x4b7ee6cc:d4bbee04 -- Fri Feb 19 22:30:20 2010
+ atime: 0x4b7ee6d3:91fb9b9c -- Fri Feb 19 22:30:27 2010
+ mtime: 0x4b7ee6cc:d4bbee04 -- Fri Feb 19 22:30:20 2010
+crtime: 0x4b7eb3c4:01f8d494 -- Fri Feb 19 18:52:36 2010
+dtime: 0x00000aba -- Thu Jan  1 03:45:46 1970
+Size of extra inode fields: 28
+EXTENTS:
+(0-2559): 112640-115199
+##TEST_CASE_END
