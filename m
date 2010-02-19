@@ -1,98 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918Ab0BSOY5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 09:24:57 -0500
-Received: from kroah.org ([198.145.64.141]:49246 "EHLO coco.kroah.org"
+	id S1753900Ab0BSOZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 09:25:39 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48753 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772Ab0BSOYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 09:24:53 -0500
-Date: Thu, 18 Feb 2010 19:54:16 -0800
-From: Greg KH <greg@kroah.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-usb <linux-usb@vger.kernel.org>, dbrownell@users.sourceforge.net
-Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA
- support
-Message-ID: <20100219035416.GA25645@kroah.com>
-References: <4B7CAF95.6020306@gmail.com>
- <20100218042626.GB11649@kroah.com>
- <51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>
- <20100218052223.GA13254@kroah.com>
- <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
- <20100219004719.GA15965@kroah.com>
- <51f3faa71002181946l69a9a307q930d6159e8e5ac77@mail.gmail.com>
+	id S1751392Ab0BSOZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 09:25:37 -0500
+Date: Fri, 19 Feb 2010 14:25:22 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 11/12] Direct compact when a high-order allocation fails
+Message-ID: <20100219142522.GL30258@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-12-git-send-email-mel@csn.ul.ie> <28c262361002181841i5d1dae43vcca460eae6ec0ce@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <51f3faa71002181946l69a9a307q930d6159e8e5ac77@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <28c262361002181841i5d1dae43vcca460eae6ec0ce@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 09:46:29PM -0600, Robert Hancock wrote:
-> On Thu, Feb 18, 2010 at 6:47 PM, Greg KH <greg@kroah.com> wrote:
-> >> > So you did not measure it?
-> >> >
-> >> > Hm, I guess this change must not be necessary :)
-> >>
-> >> I'll try and run some tests and see what I can quantify. However, I
-> >> only have 4GB of RAM on my machine (with a 1GB memory hole) and so a
-> >> random memory allocation only has a 25% chance of ending up in the
-> >> area where it would make a difference, so it may take a bit of doing.
+On Fri, Feb 19, 2010 at 11:41:56AM +0900, Minchan Kim wrote:
+> On Fri, Feb 19, 2010 at 3:02 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > Ordinarily when a high-order allocation fails, direct reclaim is entered to
+> > free pages to satisfy the allocation.  With this patch, it is determined if
+> > an allocation failed due to external fragmentation instead of low memory
+> > and if so, the calling process will compact until a suitable page is
+> > freed. Compaction by moving pages in memory is considerably cheaper than
+> > paging out to disk and works where there are locked pages or no swap. If
+> > compaction fails to free a page of a suitable size, then reclaim will
+> > still occur.
 > >
-> > Without any good justification, including real tests being run, I can't
-> > take this patch, the risk is just too high.
+> > Direct compaction returns as soon as possible. As each block is compacted,
+> > it is checked if a suitable page has been freed and if so, it returns.
+> >
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Acked-by: Rik van Riel <riel@redhat.com>
+> > ---
+> >  include/linux/compaction.h |   16 +++++-
+> >  include/linux/vmstat.h     |    1 +
+> >  mm/compaction.c            |  118 ++++++++++++++++++++++++++++++++++++++++++++
+> >  mm/page_alloc.c            |   26 ++++++++++
+> >  mm/vmstat.c                |   15 +++++-
+> >  5 files changed, 172 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+> > index 6a2eefd..1cf95e2 100644
+> > --- a/include/linux/compaction.h
+> > +++ b/include/linux/compaction.h
+> > @@ -1,13 +1,25 @@
+> >  #ifndef _LINUX_COMPACTION_H
+> >  #define _LINUX_COMPACTION_H
+> >
+> > -/* Return values for compact_zone() */
+> > +/* Return values for compact_zone() and try_to_compact_pages() */
+> >  #define COMPACT_INCOMPLETE     0
+> > -#define COMPACT_COMPLETE       1
+> > +#define COMPACT_PARTIAL                1
+> > +#define COMPACT_COMPLETE       2
+> >
+> >  #ifdef CONFIG_COMPACTION
+> >  extern int sysctl_compaction_handler(struct ctl_table *table, int write,
+> >                        void __user *buffer, size_t *length, loff_t *ppos);
+> > +
+> > +extern int fragmentation_index(struct zone *zone, unsigned int order);
+> > +extern unsigned long try_to_compact_pages(struct zonelist *zonelist,
+> > +                       int order, gfp_t gfp_mask, nodemask_t *mask);
+> > +#else
+> > +static inline unsigned long try_to_compact_pages(struct zonelist *zonelist,
+> > +                       int order, gfp_t gfp_mask, nodemask_t *nodemask)
+> > +{
+> > +       return COMPACT_INCOMPLETE;
+> > +}
+> > +
+> >  #endif /* CONFIG_COMPACTION */
+> >
+> >  #if defined(CONFIG_COMPACTION) && defined(CONFIG_SYSFS) && defined(CONFIG_NUMA)
+> > diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+> > index d7f7236..0ea7a38 100644
+> > --- a/include/linux/vmstat.h
+> > +++ b/include/linux/vmstat.h
+> > @@ -44,6 +44,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+> >                KSWAPD_SKIP_CONGESTION_WAIT,
+> >                PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+> >                COMPACTBLOCKS, COMPACTPAGES, COMPACTPAGEFAILED,
+> > +               COMPACTSTALL, COMPACTFAIL, COMPACTSUCCESS,
+> >  #ifdef CONFIG_HUGETLB_PAGE
+> >                HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+> >  #endif
+> > diff --git a/mm/compaction.c b/mm/compaction.c
+> > index 02579c2..c7c73bb 100644
+> > --- a/mm/compaction.c
+> > +++ b/mm/compaction.c
+> > @@ -34,6 +34,8 @@ struct compact_control {
+> >        unsigned long nr_anon;
+> >        unsigned long nr_file;
+> >
+> > +       unsigned int order;             /* order a direct compactor needs */
+> > +       int migratetype;                /* MOVABLE, RECLAIMABLE etc */
+> >        struct zone *zone;
+> >  };
+> >
+> > @@ -298,10 +300,31 @@ static void update_nr_listpages(struct compact_control *cc)
+> >  static inline int compact_finished(struct zone *zone,
+> >                                                struct compact_control *cc)
+> >  {
+> > +       unsigned int order;
+> > +       unsigned long watermark = low_wmark_pages(zone) + (1 << cc->order);
+> > +
+> >        /* Compaction run completes if the migrate and free scanner meet */
+> >        if (cc->free_pfn <= cc->migrate_pfn)
+> >                return COMPACT_COMPLETE;
+> >
+> > +       /* Compaction run is not finished if the watermark is not met */
+> > +       if (!zone_watermark_ok(zone, cc->order, watermark, 0, 0))
+> > +               return COMPACT_INCOMPLETE;
+> > +
+> > +       if (cc->order == -1)
+> > +               return COMPACT_INCOMPLETE;
 > 
-> Again, this particular patch has essentially zero risk for anyone that
-> doesn't choose to experiment with the option. One can hardly say it
-> presents much of a long-term maintenance burden either..
-
-Then don't give them the option, as it doesn't seem needed :)
-
-Again, it is tough to remove options once you add them, so not adding
-them at all is the best thing to do.
-
-> > And really, for USB 2.0 speeds, I doubt you are going to even notice
-> > this kind of overhead, it's in the noise.  Especially given that almost
-> > always the limiting factor is the device itself, not the host.
+> Where do we set cc->order = -1?
+> Sorry but I can't find it.
 > 
-> Well, I do have some results. This is from running this "dd
-> if=/dev/sdg of=/dev/null bs=3800M iflag=direct" against an OCZ Rally2
-> USB flash drive, which gets about 30 MB/sec on read, with CPU-burning
-> tasks on all cores in the background. (The huge block size and
-> iflag=direct is to try to force more of the IO to happen to memory
-> above the 4GB mark.) With that workload, swiotlb_bounce shows up as
-> between 1.5 to 4% of the CPU time spent in the kernel according to
-> oprofile. Obviously with the 64-bit DMA enabled, that disappears. Of
-> course, the overall kernel time is only around 2% of the total time,
-> so that's a pretty small overall percentage.
 
-2% is noise, right?  So overall you have not really shown any
-improvement.
+Good spot, it should have been set in compact_node() to force a full
+compaction.
 
-> I'll try some tests later with a faster SATA-to-IDE device that should
-> stress things a bit more, but a huge difference doesn't seem likely.
-> One thing that's uncertain is just how much of the IO is needing to be
-> bounced - an even distribution of the buffer across all of physical
-> RAM would suggest 25% in this case, but I don't know an easy way to
-> verify that.
-> 
-> Aside from speed considerations though, I should point out another
-> factor: IOMMU/SWIOTLB space is in many cases a limited resource for
-> all IO in flight at a particular time (SWIOTLB is typically 64MB). The
-> number of hits when Googling for "Out of IOMMU space" indicates it is
-> a problem that people do hit from time to time. From that perspective,
-> anything that prevents unnecessary use of bounce buffers is a good
-> thing.
-
-Sure, but again, for USB 2.0 stuff, we don't have many I/O in flight, as
-they are pretty slow devices.
-
-USB 3.0 is different, and that's a different driver, and hopefully that
-is all addressed already :)
-
-thanks,
-
-greg k-h
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
