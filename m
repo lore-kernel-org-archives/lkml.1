@@ -1,87 +1,163 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709Ab0BSNry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 08:47:54 -0500
-Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:36518 "EHLO
-	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136Ab0BSNrw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 08:47:52 -0500
-Subject: Re: [PATCH] LSM: add static to security_ops variable
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: wzt wzt <wzt.wzt@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, eparis@parisplace.org,
-       lsm <linux-security-module@vger.kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <628d1651002190340o59305986h738aec31ec5e6a84@mail.gmail.com>
-References: <628d1651002070324w424012eanda9392db26331905@mail.gmail.com>
-	 <1266332237.5252.48.camel@moss-pluto.epoch.ncsc.mil>
-	 <628d1651002190340o59305986h738aec31ec5e6a84@mail.gmail.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 19 Feb 2010 08:47:46 -0500
-Message-Id: <1266587266.32011.6.camel@moss-pluto.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1752766Ab0BSNsu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 08:48:50 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:46799 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440Ab0BSNst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 08:48:49 -0500
+Date: Fri, 19 Feb 2010 13:48:33 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Michael Bohan <mbohan@codeaurora.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: Kernel panic due to page migration accessing memory holes
+Message-ID: <20100219134833.GE30258@csn.ul.ie>
+References: <4B7C8DC2.3060004@codeaurora.org> <20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com> <4B7CF8C0.4050105@codeaurora.org> <20100218183604.95ee8c77.kamezawa.hiroyu@jp.fujitsu.com> <20100218100432.GA32626@csn.ul.ie> <4B7DEDB0.8030802@codeaurora.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B7DEDB0.8030802@codeaurora.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 19:40 +0800, wzt wzt wrote:
-> I rewrite the patch, thx.
+On Thu, Feb 18, 2010 at 05:47:28PM -0800, Michael Bohan wrote:
+> On 2/18/2010 2:04 AM, Mel Gorman wrote:
+>> On Thu, Feb 18, 2010 at 06:36:04PM +0900, KAMEZAWA Hiroyuki wrote:
+>>    
+>>>   [Fact]
+>>>   - There are 2 banks of memory and a memory hole on your machine.
+>>>     As
+>>>           0x00200000 - 0x07D00000
+>>>           0x40000000 - 0x43000000
+>>>
+>>>   - Each bancks are in the same zone.
+>>>   - You use FLATMEM.
+>>>   - You see panic in move_freepages().
+>>>   - Your host's MAX_ORDER=11....buddy allocator's alignment is 0x400000
+>>>     Then, it seems 1st bank is not algined.
+>>>      
+>> It's not and assumptions are made about it being aligned.
+>>    
+>
+> Would it be prudent to have the ARM mm init code detect unaligned,  
+> discontiguous banks and print a warning message if  
+> CONFIG_ARCH_HAS_HOLES_MEMORYMODEL is not configured?  Should we take it  
+> a step further and even BUG()?
+>
 
-Patch description needs to be descriptive, e.g.:
-"Enhance the security framework to support resetting the active security
-module.  This eliminates the need for direct use of the security_ops
-variable outside of security.c, so make security_ops static."
+I guess it wouldn't hurt. I wouldn't get too side-tracked though as it's
+not the most important issue here.
 
-Subject line could be more descriptive too, and likely just use
-security: as the prefix.
+>> ARM frees unused portions of memmap to save memory. It's why memmap_valid_within()
+>> exists when CONFIG_ARCH_HAS_HOLES_MEMORYMODEL although previously only
+>> reading /proc/pagetypeinfo cared.
+>>
+>> In that case, the FLATMEM memory map had unexpected holes which "never"
+>> happens and that was the workaround. The problem here is that there are
+>> unaligned zones but no pfn_valid() implementation that can identify
+>> them as you'd have with SPARSEMEM. My expectation is that you are using
+>> the pfn_valid() implementation from asm-generic
+>>
+>> #define pfn_valid(pfn)          ((pfn)<  max_mapnr)
+>>
+>> which is insufficient in your case.
+>>    
+>
+> I am actually using the pfn_valid implementation FLATMEM in  
+> arch/arm/include/asm/memory.h.  This one is very similar to the  
+> asm-generic, and has no knowledge of the holes.
+>
 
-You also need a Signed-off-by line, with a real name.
+Same problem applies so.
 
-Also, see the comments below.
+>> I think it's more likely the at the memmap he is accessing has been
+>> freed and is effectively random data.
+>>
+>>    
+>
+> I also think this is the case.
+>
+>> SPARSEMEM would give you an implementation of pfn_valid() that you could
+>> use here. The choices that spring to mind are;
+>>
+>> 1. reduce MAX_ORDER so they are aligned (easiest)
+>>    
+>
+> Is it safe to assume that reducing MAX_ORDER will hurt performance?
+>
 
-> ---
->  include/linux/security.h |    2 ++
->  security/security.c      |    7 ++++++-
->  security/selinux/hooks.c |   14 ++------------
->  3 files changed, 10 insertions(+), 13 deletions(-)
-> 
+No, it does not necessarily reduce performance. In some circumstances it
+might even help although I wouldn't chase after it.
 
-> diff --git a/security/security.c b/security/security.c
-> index 122b748..3e4c4bc 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -26,7 +26,7 @@ static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1] =
->  extern struct security_operations default_security_ops;
->  extern void security_fixup_ops(struct security_operations *ops);
-> 
-> -struct security_operations *security_ops;      /* Initialized to NULL */
-> +static struct security_operations *security_ops;       /* Initialized
-> to NULL */
+Downside one is that some hash tables might be getting hurt if you have a
+very large amount of memory (look for "hash table entries:" in dmesg after
+booting to see what order is being used).
 
-You can drop the /* Initialized to NULL */ comment since it is now
-static.
+Downside two is that if some drivers require large contiguous memory
+early in boot, they might be hurt by MAX_ORDER being lower. If you
+require CONFIG_HUGETLB_PAGE, it might not be possible to reduce
+MAX_ORDER depending on the size of the huge page.
 
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 9a2ee84..e9599fd 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -93,6 +93,7 @@
-> 
->  extern int selinux_nlmsg_lookup(u16 sclass, u16 nlmsg_type, u32 *perm);
->  extern struct security_operations *security_ops;
-> +extern struct security_operations default_security_ops;
+>> 2. use SPARSEMEM (easy, but not necessary what you want to do, might
+>> 	waste memory unless you drop MAX_ORDER as well)
+>>    
+>
+> We intend to use SPARSEMEM, but we'd also like to maintain FLATMEM  
+> compatibility for some configurations.  My guess is that there are other  
+> ARM users that may want this support as well.
+>
+>> 3. implement a pfn_valid() that can handle the holes and set
+>> 	CONFIG_HOLES_IN_ZONE so it's called in move_freepages() to
+>> 	deal with the holes (should pass this by someone more familiar
+>> 	with ARM than I)
+>>    
+>
+> This option seems the best to me.  We should be able to implement an ARM  
+> specific pfn_valid() that walks the ARM meminfo struct to ensure the pfn  
+> is not within a hole.
+>
 
-We don't need this extern declaration.
+Be sure to check your performance before and after. pfn_valid_within()
+is used in a fair few places and you are likely enabling it.
 
-The next obvious cleanup would be to make default_security_ops static.
-That will require some code reorganization though - it is presently
-defined in capability.c and manipulated by security.c.
+> My only concern with this is a comment in __rmqueue_fallback() after  
+> calling move_freepages_block()  that states "Claim the whole block if  
+> over half of it is free".  Suppose only 1 MB is beyond the bank limit.   
+> That means that over half of the pages of the 4 MB block will be  
+> reported by move_freepages() as free -- but 1 MB of those pages are  
+> invalid.  Won't this cause problems if these pages are assumed to be  
+> part of an active block?
+>
+
+The only operation taking place there is updating a bitmap so I doubt
+you'll hit snags there.
+
+> It seems like we should have an additional check in  
+> move_freepages_block() with pfn_valid_within() to check the last page in  
+> the block (eg. end_pfn) before calling move_freepages_block().  If the  
+> last page is not valid, then we shouldn't we return 0 as in the zone  
+> span check? This will also skip the extra burden of checking each  
+> individual page, when we already know the proposed range is invalid.
+>
+
+You don't know where the holes are going to be so it is paranod rather
+than making assumptions about where architectures put holes.
+
+> Assuming we did return 0 in this case, would that sub-block of pages  
+> ever be usable for anything else, or would it be effectively wasted? 
+
+They're still usable.
+
+> If  
+> this memory were wasted, then adjusting MAX_ORDER would have an  
+> advantage in this sense -- ignoring any performance implications.
+>
 
 -- 
-Stephen Smalley
-National Security Agency
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
