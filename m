@@ -1,62 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218Ab0BSJJP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 04:09:15 -0500
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:58910 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726Ab0BSJJM (ORCPT
+	id S1752653Ab0BSJgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 04:36:41 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:43531 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029Ab0BSJgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 04:09:12 -0500
-X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Feb 2010 04:09:12 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=u6YQqz/371mwKpiMxPApJDVtGInv9qRw4z0C91iS2HbCtHO4aWxBRHgTSuGcnTzxQ6
-         35/8daFe0otKK2k5hCVakactEtKdzU/20WEePj8e4ZVCz3gwtCtMjxtaaPL9fsnsGf8Z
-         LD+aM0ys8/CS+XkD3L1CjA5xlTNLsOaZiSPGc=
-MIME-Version: 1.0
-In-Reply-To: <20100218141230.GA26473@emergent.ellipticsemi.com>
-References: <201002141940.35716.volkerarmin@googlemail.com>
-	 <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
-	 <20100217130103.3ca65ef3@notabene.brown>
-	 <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
-	 <4B7BB927.5000305@grumpydevil.homelinux.org>
-	 <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
-	 <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
-	 <20100217181016.GA14983@emergent.ellipticsemi.com>
-	 <87sk8z9q0h.fsf@frosties.localdomain>
-	 <20100218141230.GA26473@emergent.ellipticsemi.com>
-Date: Fri, 19 Feb 2010 01:04:02 -0800
-Message-ID: <4877c76c1002190104x3c801023x3ba2e3c7a11fcdf7@mail.gmail.com>
-Subject: Re: Linux mdadm superblock question.
-From: Michael Evans <mjevans1983@gmail.com>
-To: Goswin von Brederlow <goswin-v-b@web.de>, david@lang.hm,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 19 Feb 2010 04:36:37 -0500
+From: john.johansen@canonical.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org
+Subject: [AppArmor #4 0/12] AppArmor security module
+Date: Fri, 19 Feb 2010 01:36:16 -0800
+Message-Id: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I actually much prefer building my own kernel for servers and
-higher-end workstations.  I like having all the core drivers needed to
-'get running' in there; even if the more delicate but static logic of
-how to track down and assemble/unlock the drives is in the initramfs
-image.
+This is the foruth general posting of the newest version of the
+AppArmor security module it has been rewritten to use the security_path
+hooks instead of the previous vfs approach.  The current implementation
+is aimed at being as semantically close to previous versions of AppArmor
+as possible while using the existing LSM infrastructure.
 
-The only really annoying issue I've had with my custom initramfs
-creator is getting it 'chained' by various distros auto-initramfs
-update triggers so that it can grab the version of modules that match
-a given kernel.  I have several ways in mind to work around that issue
-at various steps, but no known userbase to support besides my self and
-thus less motivation to work on that task.
+The rewrite is functional and roughly equivalent to previous versions
+of AppArmor based off of vfs patching.  Development is on going and
+improvements to file, capability, network, resource usage and ipc mediation
+are planned.
 
-Everything else of course works exactly the same as long as the
-configuration hasn't changed on the host system.
+_Issues NOT currently addressed and will be address in the next post_
+* The full conversion of AppArmor audit framework has not yet been updated
+ as suggested by
+  Eric Paris in
+  http://marc.info/?l=linux-security-module&m=125778105017307&w=2
+* The user space interface CONFIG_APPARMOR_COMPAT_24 has not been removed,
+  as the replacement interface isn't ready yet.  It will become a separate
+  patch that distros can carry to provide backwards compatibility.
+
+
+_Issues Addressed Since Last Time AppArmor was Posted_
+* The majority of issues raised from the previous posting have been
+  addressed.  Those that weren't are waiting on the completion of the
+  two major items addressed above.
+* The dfa code was fully separated from the rest of the AppArmor code
+  generalizing it so that it could be used by other projects.
+* mixed use of NULL of null and unconfined profiles to mean unconfined
+  has been removed.  This lead to some significant cleanups that
+  makes the code smaller and easier to read.
+* the task_context has been cleaned up and the context_group has been
+  removed.  This lead to several cleanups in the code.  The functionality
+  of the context_group will be reintroduced later with a newer more
+  generic implementation.
+* Provide full basic implementation of hierarchial Profile namespaces.
+  The profile namespace code existed before but it was in a half finished
+  experimental state.  It wasn't hierarchical and had other issues.
+  Move to root namespace instead of default namespace and get rid of the
+  ns_list_lock.
+
+  This necessitated an updating of the locking, which remains course
+  at the profile namespace level.  The unused lock from the profile was
+  removed and a couple locking bugs were discovered in the process and
+  fixed.  The auto removal of unused null learning profiles has been
+  removed until the profile lists have been converted over to RCU lists.
+* CAP_MAC_ADMIN is now used to control all policy manipulations
+* The upack interface had several minor tweeks and comments cleanups
+  The dfa permission checking was moved into it and made more rigourous.
+* chmod and chown path mediation were reintroduced.
+* d_namespace path was updated to make it more flexible providing better
+  control of how pathnames are generated.
+* merged interface_add_profile and interface_replace_profile as they
+  were slight variation of each other
+* Reworked domain code to not use error pointers
+* removed incomplete set capability functionality.  It provided similar
+  abilities as fscaps and pam_cap, which cover the majority of uses
+  it was intended for.
+* get_procattr code cleaned up and generalized
+* full implementation of the change_hat interface added allowing specifying
+  more than one potential targets reducing user space probing
+* updated change_hat error codes, to match documentation
+* update and rename policy_common struct to policy
+* fixed a couple of oops in profile unpacking and verification
+* update PROFILE_xxx macros to better reflect what they do
+* Updated and expanded commenting on several functions
+
+
+  A Detailed list of all changes and patches are available from the AppArmor
+  git repository
+
+
+The AppArmor project is has recently transitioned away from Novell forge.
+Code and Documentation can be found at the following locations
+* Documentation (early wip) - http://apparmor.wiki.kernel.org/
+* User space tools -  https://launchpad.net/apparmor
+* Kernel module -
+  git://git.kernel.org/pub/scm/linux/kernel/git/jj/linux-apparmor.git
+
+The location of the new mailing lists have not been finalized.
+
