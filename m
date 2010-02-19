@@ -1,94 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145Ab0BSFbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 00:31:11 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:55038 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648Ab0BSFbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 00:31:09 -0500
-Date: Fri, 19 Feb 2010 00:31:13 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hung task - sync - 2.6.33-rc7  w/md6 multicore rebuild in	process
-In-reply-to: <20100219040206.GE28392@discord.disaster>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Jan Kara <jack@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <4B7E2221.4020009@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B76D87E.3050107@majjas.com> <4B76EC83.5050401@majjas.com>
- <20100218023934.GC8897@atrey.karlin.mff.cuni.cz> <4B7D74BE.6030906@majjas.com>
- <20100219014349.GD28392@discord.disaster> <4B7DF80D.6090309@majjas.com>
- <20100219040206.GE28392@discord.disaster>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1752218Ab0BSFba (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 00:31:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40373 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751854Ab0BSFb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 00:31:28 -0500
+Message-ID: <4B7E2219.2030606@redhat.com>
+Date: Fri, 19 Feb 2010 03:31:05 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: linus torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
+Subject: [GIT PULL for 2.6.33-rc8] Some bug and regression fixes for V4L/DVB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/2010 11:02 PM, Dave Chinner wrote:
-> On Thu, Feb 18, 2010 at 09:31:41PM -0500, Michael Breuer wrote:
->    
->> On 2/18/2010 8:43 PM, Dave Chinner wrote:
->>      
->>>
->>> This is probably where the barrier IOs are coming from.  With a RAID
->>> resync going on (so all IO is going to be slow to begin with) and
->>> writeback is causing barriers to be issued (which are really slow on
->>> software RAID5/6), having sync take so long is not out of the
->>> question if you have lots of dirty inodes to write back. A kernel
->>> compile will generate lots of dirty inodes.
->>>
->>> Even taking the barrier IOs out of the question, I've seen reports
->>> of sync or unmount taking over 10 hours to complete on software
->>> RAID5 because there were hundreds of thousands of dirty inodes to
->>> write back and each inode being written back caused a synchronous
->>> RAID5 RMW cycle to occur. Hence writeback could only clean 50
->>> inodes/sec because as soon as RMW cycles RAID5/6 devices start
->>> they go slower than single spindle devices.  This sounds very
->>> similar to what you are seeing here,
->>>
->>> i.e. The reports don't indicate to me that there is a bug in the
->>> writeback code, just your disk subsystem has very, very low
->>> throughput in these conditions....
->>>        
->> Probably true... and the system does recover. The only thing I'd point
->> out is that the subsystem isn't (or perhaps shouldn't) be this sluggish.
->> I hypothesize that the low throughput under these condition is a result
->> of:
->> 1) multicore raid support (pushing the resync at higher rates)
->>      
-> Possibly, though barrier support for RAID5/6 is shiny new as well.
->
->    
->> 2) time spent in fs cache reclaim. The sync slowdown only occurs when fs
->> cache is in heavy (10Gb) use.
->>      
-> Not surprising ;)
->
->    
->> I actually could not recreate the issue until I did a grep -R foo /usr/
->>      
->>> /dev/null to force high fs cache utilization. For what it's worth, two
->>>        
->> kernel rebuilds (many dirty inodes) and then a sync with about 12Mb
->> dirty (/proc/meminfo) didn't cause an issue. The issue only happens when
->> fs cache is heavily used. I also never saw this before enabling
->> multicore raid.
->>      
-> "grep -R foo /usr/" will dirty every inode that touchs (atime) and
-> they have to be written back out. That's almost certainly creating
-> more dirty inodes than a kernel build - there are about 400,000
-> inodes under /usr on my system. That would be enough to trigger very
-> long sync times if inode writeback is slow.
->
-> Cheers,
->
-> Dave.
->    
+The following changes since commit f8b55f251012e104093e105483c45c5d85ad3040:
+  Christine Caulfield (1):
+        Orphan DECnet
 
-My filesystems are mounted relatime. Just confirmed that dirty pages 
-doesn't climb all that much with the grep -R foo /usr > /dev/null. The 
-only apparant impact is to fs cache.
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git v4l_for_linus
+
+Ben Hutchings (1):
+      V4L/DVB: cxusb: Select all required frontend and tuner modules
+
+Jean Delvare (1):
+      V4L/DVB: bttv: Move I2C IR initialization
+
+Kuninori Morimoto (1):
+      soc-camera: mt9t112: modify exiting conditions from standby mode
+
+Martin Fuzzey (1):
+      V4L/DVB: Video : pwc : Fix regression in pwc_set_shutter_speed caused by bad 	constant => sizeof conversion.
+
+Richard Guenther (1):
+      V4L/DVB: dvb: l64781.ko broken with gcc 4.5
+
+ drivers/media/dvb/dvb-usb/Kconfig       |    4 +++-
+ drivers/media/dvb/frontends/l64781.c    |    4 ++--
+ drivers/media/video/bt8xx/bttv-driver.c |    1 +
+ drivers/media/video/bt8xx/bttv-i2c.c    |    8 ++++++--
+ drivers/media/video/bt8xx/bttvp.h       |    1 +
+ drivers/media/video/mt9t112.c           |    2 +-
+ drivers/media/video/pwc/pwc-ctrl.c      |    2 +-
+ 7 files changed, 15 insertions(+), 7 deletions(-)
+
+-- 
+
+Cheers,
+Mauro
