@@ -1,84 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108Ab0BSF2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 00:28:11 -0500
-Received: from vms173011pub.verizon.net ([206.46.173.11]:58733 "EHLO
-	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648Ab0BSF2I (ORCPT
+	id S1752145Ab0BSFbL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 00:31:11 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:55038 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648Ab0BSFbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 00:28:08 -0500
-Date: Fri, 19 Feb 2010 00:27:46 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Darren Jenkins <darrenrjenkins@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Renninger <trenn@suse.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>,
-       linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Janitors <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH] drivers: acpi: fan.c move a dereference below the NULL test
-In-reply-to: <1265882202.27789.0.camel@ICE-BOX>
-Message-id: <alpine.LFD.2.00.1002190026070.17638@localhost.localdomain>
-References: <1265882202.27789.0.camel@ICE-BOX>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 19 Feb 2010 00:31:09 -0500
+Date: Fri, 19 Feb 2010 00:31:13 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Hung task - sync - 2.6.33-rc7  w/md6 multicore rebuild in	process
+In-reply-to: <20100219040206.GE28392@discord.disaster>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Jan Kara <jack@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4B7E2221.4020009@majjas.com>
 MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B76D87E.3050107@majjas.com> <4B76EC83.5050401@majjas.com>
+ <20100218023934.GC8897@atrey.karlin.mff.cuni.cz> <4B7D74BE.6030906@majjas.com>
+ <20100219014349.GD28392@discord.disaster> <4B7DF80D.6090309@majjas.com>
+ <20100219040206.GE28392@discord.disaster>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think think this is a run-time check for a programming error,
-and the current fashion is to delete the check and take a fault
-if this happens so the caller can be fixed.
+On 2/18/2010 11:02 PM, Dave Chinner wrote:
+> On Thu, Feb 18, 2010 at 09:31:41PM -0500, Michael Breuer wrote:
+>    
+>> On 2/18/2010 8:43 PM, Dave Chinner wrote:
+>>      
+>>>
+>>> This is probably where the barrier IOs are coming from.  With a RAID
+>>> resync going on (so all IO is going to be slow to begin with) and
+>>> writeback is causing barriers to be issued (which are really slow on
+>>> software RAID5/6), having sync take so long is not out of the
+>>> question if you have lots of dirty inodes to write back. A kernel
+>>> compile will generate lots of dirty inodes.
+>>>
+>>> Even taking the barrier IOs out of the question, I've seen reports
+>>> of sync or unmount taking over 10 hours to complete on software
+>>> RAID5 because there were hundreds of thousands of dirty inodes to
+>>> write back and each inode being written back caused a synchronous
+>>> RAID5 RMW cycle to occur. Hence writeback could only clean 50
+>>> inodes/sec because as soon as RMW cycles RAID5/6 devices start
+>>> they go slower than single spindle devices.  This sounds very
+>>> similar to what you are seeing here,
+>>>
+>>> i.e. The reports don't indicate to me that there is a bug in the
+>>> writeback code, just your disk subsystem has very, very low
+>>> throughput in these conditions....
+>>>        
+>> Probably true... and the system does recover. The only thing I'd point
+>> out is that the subsystem isn't (or perhaps shouldn't) be this sluggish.
+>> I hypothesize that the low throughput under these condition is a result
+>> of:
+>> 1) multicore raid support (pushing the resync at higher rates)
+>>      
+> Possibly, though barrier support for RAID5/6 is shiny new as well.
+>
+>    
+>> 2) time spent in fs cache reclaim. The sync slowdown only occurs when fs
+>> cache is in heavy (10Gb) use.
+>>      
+> Not surprising ;)
+>
+>    
+>> I actually could not recreate the issue until I did a grep -R foo /usr/
+>>      
+>>> /dev/null to force high fs cache utilization. For what it's worth, two
+>>>        
+>> kernel rebuilds (many dirty inodes) and then a sync with about 12Mb
+>> dirty (/proc/meminfo) didn't cause an issue. The issue only happens when
+>> fs cache is heavily used. I also never saw this before enabling
+>> multicore raid.
+>>      
+> "grep -R foo /usr/" will dirty every inode that touchs (atime) and
+> they have to be written back out. That's almost certainly creating
+> more dirty inodes than a kernel build - there are about 400,000
+> inodes under /usr on my system. That would be enough to trigger very
+> long sync times if inode writeback is slow.
+>
+> Cheers,
+>
+> Dave.
+>    
 
-There are a couple of checks like this in fan.c --
-perhaps Rui can clean them up when he comes back next week.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-On Thu, 11 Feb 2010, Darren Jenkins wrote:
-
-> In acpi_fan_remove() device is being dereferenced before the NULL test.
-> This reorders the code to ensure it is checked for NULL first.
-> 
-> Coverity CID: 2758
-> 
-> Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-> ---
->  drivers/acpi/fan.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
-> index acf2ab2..dc39640 100644
-> --- a/drivers/acpi/fan.c
-> +++ b/drivers/acpi/fan.c
-> @@ -298,9 +298,14 @@ static int acpi_fan_add(struct acpi_device *device)
->  
->  static int acpi_fan_remove(struct acpi_device *device, int type)
->  {
-> -	struct thermal_cooling_device *cdev = acpi_driver_data(device);
-> +	struct thermal_cooling_device *cdev;
-> +
-> +	if (!device)
-> +		return -EINVAL;
-> +
-> +	cdev = acpi_driver_data(device);
->  
-> -	if (!device || !cdev)
-> +	if (!cdev)
->  		return -EINVAL;
->  
->  	acpi_fan_remove_fs(device);
-> -- 
-> 1.6.3.3
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+My filesystems are mounted relatime. Just confirmed that dirty pages 
+doesn't climb all that much with the grep -R foo /usr > /dev/null. The 
+only apparant impact is to fs cache.
