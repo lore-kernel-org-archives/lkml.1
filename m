@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192Ab0BSJih (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 04:38:37 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:43953 "EHLO
+	id S1752889Ab0BSJgw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 04:36:52 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:43613 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624Ab0BSJhN (ORCPT
+	with ESMTP id S1752029Ab0BSJgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 04:37:13 -0500
+	Fri, 19 Feb 2010 04:36:45 -0500
 From: john.johansen@canonical.com
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org,
        John Johansen <john.johansen@canonical.com>
-Subject: [PATCH 09/12] AppArmor ipc, rlimit, network and capability routines
-Date: Fri, 19 Feb 2010 01:36:25 -0800
-Message-Id: <1266572188-26529-10-git-send-email-john.johansen@canonical.com>
+Subject: [PATCH 01/12] Miscellaneous functions and defines needed by AppArmor, including the base path resolution routines.
+Date: Fri, 19 Feb 2010 01:36:17 -0800
+Message-Id: <1266572188-26529-2-git-send-email-john.johansen@canonical.com>
 X-Mailer: git-send-email 1.6.6.1
 In-Reply-To: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>
 References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>
@@ -23,60 +23,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: John Johansen <john.johansen@canonical.com>
 
-ipc:
-AppArmor ipc is currently limited to mediation done by file mediation
-and basic ptrace tests.  Improved mediation is a wip.
-
-rlimits:
-AppArmor provides basic abilities to set and control rlimits at
-a per profile level.  Only resources specified in a profile are controled
-or set.  AppArmor rules set the hard limit to a value <= to the current
-hard limit (ie. they can not currently raise hard limits), and if
-necessary will lower the soft limit to the new hard limit value.
-
-AppArmor does not track resource limits to reset them when a profile
-is left so that children processes inherit the limits set by the
-parent even if they are not confined by the same profile.
-
-net:
-AppArmor net mediation is currently a per profile basic net toggle, at
-the protocol level, ie. tcp, udp, raw.
-
-More advanced network rules are a wip.
-
-Capabilities:  AppArmor provides a per profile mask of capabilities,
-that will further restrict.
-
 Signed-off-by: John Johansen <john.johansen@canonical.com>
 ---
- security/apparmor/capability.c         |  122 +++++++++++++++++++++++++++
- security/apparmor/include/capability.h |   45 ++++++++++
- security/apparmor/include/ipc.h        |   28 ++++++
- security/apparmor/include/net.h        |   40 +++++++++
- security/apparmor/include/resource.h   |   45 ++++++++++
- security/apparmor/ipc.c                |  101 ++++++++++++++++++++++
- security/apparmor/net.c                |  145 ++++++++++++++++++++++++++++++++
- security/apparmor/resource.c           |  104 +++++++++++++++++++++++
- 8 files changed, 630 insertions(+), 0 deletions(-)
- create mode 100644 security/apparmor/capability.c
- create mode 100644 security/apparmor/include/capability.h
- create mode 100644 security/apparmor/include/ipc.h
- create mode 100644 security/apparmor/include/net.h
- create mode 100644 security/apparmor/include/resource.h
- create mode 100644 security/apparmor/ipc.c
- create mode 100644 security/apparmor/net.c
- create mode 100644 security/apparmor/resource.c
+ security/apparmor/include/apparmor.h |   82 +++++++++++++
+ security/apparmor/include/path.h     |   31 +++++
+ security/apparmor/lib.c              |   85 +++++++++++++
+ security/apparmor/path.c             |  215 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 413 insertions(+), 0 deletions(-)
+ create mode 100644 security/apparmor/include/apparmor.h
+ create mode 100644 security/apparmor/include/path.h
+ create mode 100644 security/apparmor/lib.c
+ create mode 100644 security/apparmor/path.c
 
-diff --git a/security/apparmor/capability.c b/security/apparmor/capability.c
+diff --git a/security/apparmor/include/apparmor.h b/security/apparmor/include/apparmor.h
 new file mode 100644
-index 0000000..f45b891
+index 0000000..25c1647
 --- /dev/null
-+++ b/security/apparmor/capability.c
-@@ -0,0 +1,122 @@
++++ b/security/apparmor/include/apparmor.h
+@@ -0,0 +1,82 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor capability mediation functions
++ * This file contains AppArmor basic global and lib definitions
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009-2010 Canonical Ltd.
@@ -87,124 +55,212 @@ index 0000000..f45b891
 + * License.
 + */
 +
-+#include <linux/capability.h>
-+#include <linux/errno.h>
-+#include <linux/gfp.h>
++#ifndef __APPARMOR_H
++#define __APPARMOR_H
 +
-+#include "include/apparmor.h"
-+#include "include/capability.h"
-+#include "include/context.h"
-+#include "include/policy.h"
-+#include "include/audit.h"
++#include <linux/fs.h>
++
++#include "match.h"
++
++/* Control parameters settable thru module/boot flags or
++ * via /sys/kernel/security/apparmor/control */
++extern enum audit_mode aa_g_audit;
++extern int aa_g_audit_header;
++extern int aa_g_debug;
++extern int aa_g_lock_policy;
++extern int aa_g_logsyscall;
++extern int aa_g_paranoid_load;
++extern unsigned int aa_g_path_max;
 +
 +/*
-+ * Table of capability names: we generate it from capabilities.h.
++ * DEBUG remains global (no per profile flag) since it is mostly used in sysctl
++ * which is not related to profile accesses.
 + */
-+#include "capability_names.h"
 +
-+struct audit_cache {
-+	struct task_struct *task;
-+	kernel_cap_t caps;
-+};
++#define AA_DEBUG(fmt, args...)						\
++	do {								\
++		if (aa_g_debug && printk_ratelimit())			\
++			printk(KERN_DEBUG "AppArmor: " fmt, ##args);	\
++	} while (0)
 +
-+static DEFINE_PER_CPU(struct audit_cache, audit_cache);
++#define AA_ERROR(fmt, args...)						\
++	do {								\
++		if (printk_ratelimit())					\
++			printk(KERN_ERR "AppArmor: " fmt, ##args);	\
++	} while (0)
 +
-+struct aa_audit_caps {
-+	struct aa_audit base;
++/* Flag indicating whether initialization completed */
++extern int apparmor_initialized;
++void apparmor_disable(void);
 +
-+	int cap;
-+};
++/* fn's in lib */
++char *aa_split_fqname(char *args, char **ns_name);
++bool aa_strneq(const char *str, const char *sub, int len);
++void aa_info_message(const char *str);
 +
-+static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
++/**
++ * aa_dfa_null_transition - step to next state after null character
++ * @dfa: the dfa to match against
++ * @start: the state of the dfa to start matching in
++ * @old: true if using // as the null transition
++ *
++ * aa_dfa_null_transition transitions to the next state after a null
++ * character which is not used in standard matching and is only
++ * used to seperate pairs.
++ */
++static inline unsigned int aa_dfa_null_transition(struct aa_dfa *dfa,
++						  unsigned int start, bool old)
 +{
-+	struct aa_audit_caps *sa = container_of(va, struct aa_audit_caps, base);
-+
-+	audit_log_format(ab, " name=");
-+	audit_log_untrustedstring(ab, capability_names[sa->cap]);
++	if (unlikely(old))
++		return aa_dfa_match_len(dfa, start, "//", 2);
++	else
++		return aa_dfa_match_len(dfa, start, "\0", 1);
 +}
 +
-+static int aa_audit_caps(struct aa_profile *profile, struct aa_audit_caps *sa)
++static inline bool mediated_filesystem(struct inode *inode)
 +{
-+	struct audit_cache *ent;
-+	int type = AUDIT_APPARMOR_AUTO;
-+
-+	if (likely(!sa->base.error)) {
-+		/* test if auditing is being forced */
-+		if (likely((AUDIT_MODE(profile) != AUDIT_ALL) &&
-+			   !cap_raised(profile->caps.audit, sa->cap)))
-+			return 0;
-+		type = AUDIT_APPARMOR_AUDIT;
-+	} else if (DO_KILL(profile) ||
-+		   cap_raised(profile->caps.kill, sa->cap)) {
-+		type = AUDIT_APPARMOR_KILL;
-+	} else if (cap_raised(profile->caps.quiet, sa->cap) &&
-+		   AUDIT_MODE(profile) != AUDIT_NOQUIET &&
-+		   AUDIT_MODE(profile) != AUDIT_ALL) {
-+		/* quiet auditing */
-+		return sa->base.error;
-+	}
-+
-+	/* Do simple duplicate message elimination */
-+	ent = &get_cpu_var(audit_cache);
-+	if (sa->base.task == ent->task && cap_raised(ent->caps, sa->cap)) {
-+		put_cpu_var(audit_cache);
-+		if (COMPLAIN_MODE(profile))
-+			return 0;
-+		return sa->base.error;
-+	} else {
-+		ent->task = sa->base.task;
-+		cap_raise(ent->caps, sa->cap);
-+	}
-+	put_cpu_var(audit_cache);
-+
-+	return aa_audit(type, profile, &sa->base, audit_cb);
++	return !(inode->i_sb->s_flags & MS_NOUSER);
 +}
 +
-+static int aa_profile_capable(struct aa_profile *profile, int cap)
++#endif /* __APPARMOR_H */
+diff --git a/security/apparmor/include/path.h b/security/apparmor/include/path.h
+new file mode 100644
+index 0000000..6933d64
+--- /dev/null
++++ b/security/apparmor/include/path.h
+@@ -0,0 +1,31 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor basic path manipulation function definitions.
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009-2010 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#ifndef __AA_PATH_H
++#define __AA_PATH_H
++
++
++enum path_flags {
++	PATH_IS_DIR = 0x1,		/* path is a directory */
++	PATH_CONNECT_PATH = 0x4,	/* connect disconnected paths to / */
++	PATH_CHROOT_REL = 0x8,		/* do path lookup relative to chroot */
++	PATH_CHROOT_NSCONNECT = 0x10,	/* connect paths that are at ns root */
++
++	PATH_MEDIATE_DELETED = 0x10000,	/* mediate deleted paths */
++};
++
++int aa_get_name(struct path *path, int flags, char **buffer, char **name);
++char *sysctl_pathname(struct ctl_table *table, char *buffer, int buflen);
++
++#endif /* __AA_PATH_H */
+diff --git a/security/apparmor/lib.c b/security/apparmor/lib.c
+new file mode 100644
+index 0000000..896f8d2
+--- /dev/null
++++ b/security/apparmor/lib.c
+@@ -0,0 +1,85 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains basic common functions used in AppArmor
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009-2010 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#include <linux/slab.h>
++#include <linux/string.h>
++
++#include "include/audit.h"
++
++
++/**
++ * aa_split_fqname - split a fqname into a profile and namespace name
++ * @fqname: a full qualified name in namespace profile format
++ * @ns_name: pointer to portion of the string containing the ns name
++ *
++ * Returns: profile name or NULL if one is not specified
++ *
++ * Split a namespace name from a profile name (see policy.c for naming
++ * description).  If a portion of the name is missing it returns NULL for
++ * that portion.
++ *
++ * NOTE: may modifiy the @fqname string.  The pointers returned point
++ *       into the @fqname string.
++ */
++char *aa_split_fqname(char *fqname, char **ns_name)
 +{
-+	return cap_raised(profile->caps.allowed, cap) ? 0 : -EPERM;
++	char *name = strstrip(fqname);
++
++	*ns_name = NULL;
++	if (fqname[0] == ':') {
++		char *split = strchr(&fqname[1], ':');
++		if (split) {
++			/* overwrite ':' with \0 */
++			*split = 0;
++			name = strstrip(split + 1);
++		} else
++			/* a ns name without a following profile is allowed */
++			name = NULL;
++		*ns_name = &fqname[1];
++	}
++	if (name && *name == 0)
++		name = NULL;
++
++	return name;
 +}
 +
 +/**
-+ * aa_capable - test permission to use capability
-+ * @task: task doing capability test against
-+ * @profile: profile confining @task
-+ * @cap: capability to be tested
-+ * @audit: whether an audit record should be generated
++ * aa_strneq - compare null terminated @str to a non null terminated substring
++ * @str: a null terminated string
++ * @sub: a substring, not necessarily null terminated
++ * @len: length of @sub to compare
 + *
-+ * Look up capability in profile capability set.
-+ * Returns 0 on success, or else an error code.
++ * The @str string must be full consumed for this to be considered a match
 + */
-+int aa_capable(struct task_struct *task, struct aa_profile *profile, int cap,
-+	       int audit)
++bool aa_strneq(const char *str, const char *sub, int len)
 +{
-+	int error = aa_profile_capable(profile, cap);
-+	struct aa_audit_caps sa = {
-+		.base.operation = "capable",
-+		.base.task = task,
-+		.base.gfp_mask = GFP_ATOMIC,
-+		.base.error = error,
-+		.cap = cap,
++	int res = strncmp(str, sub, len);
++	if (res)
++		return 0;
++	if (str[len] == 0)
++		return 1;
++	return 0;
++}
++
++void aa_info_message(const char *str)
++{
++	struct aa_audit sa = {
++		.gfp_mask = GFP_KERNEL,
++		.info = str,
 +	};
-+
-+	if (!audit) {
-+		if (COMPLAIN_MODE(profile))
-+			return 0;
-+		return error;
-+	}
-+
-+	return aa_audit_caps(profile, &sa);
++	printk(KERN_INFO "AppArmor: %s\n", str);
++	if (audit_enabled)
++		aa_audit(AUDIT_APPARMOR_STATUS, NULL, &sa, NULL);
 +}
-diff --git a/security/apparmor/include/capability.h b/security/apparmor/include/capability.h
++
+diff --git a/security/apparmor/path.c b/security/apparmor/path.c
 new file mode 100644
-index 0000000..8287e9d
+index 0000000..a589d9d
 --- /dev/null
-+++ b/security/apparmor/include/capability.h
-@@ -0,0 +1,45 @@
++++ b/security/apparmor/path.c
+@@ -0,0 +1,215 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor capability mediation definitions.
++ * This file contains AppArmor function for pathnames
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009-2010 Canonical Ltd.
@@ -215,535 +271,206 @@ index 0000000..8287e9d
 + * License.
 + */
 +
-+#ifndef __AA_CAPABILITY_H
-+#define __AA_CAPABILITY_H
-+
++#include <linux/mnt_namespace.h>
++#include <linux/mount.h>
++#include <linux/namei.h>
++#include <linux/path.h>
 +#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/fs_struct.h>
 +
-+struct aa_profile;
-+
-+/* aa_caps - confinement data for capabilities
-+ * @allowed: capabilities mask
-+ * @audit: caps that are to be audited
-+ * @quiet: caps that should not be audited
-+ * @kill: caps that when requested will result in the task being killed
-+ * @extended: caps that are subject finer grained mediation
-+ */
-+struct aa_caps {
-+	kernel_cap_t allowed;
-+	kernel_cap_t audit;
-+	kernel_cap_t quiet;
-+	kernel_cap_t kill;
-+	kernel_cap_t extended;
-+};
-+
-+int aa_capable(struct task_struct *task, struct aa_profile *profile, int cap,
-+	       int audit);
-+
-+static inline void aa_free_cap_rules(struct aa_caps *caps)
-+{
-+	/* NOP */
-+}
-+
-+#endif /* __AA_CAPBILITY_H */
-diff --git a/security/apparmor/include/ipc.h b/security/apparmor/include/ipc.h
-new file mode 100644
-index 0000000..aeda0fb
---- /dev/null
-+++ b/security/apparmor/include/ipc.h
-@@ -0,0 +1,28 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor ipc mediation function definitions.
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#ifndef __AA_IPC_H
-+#define __AA_IPC_H
-+
-+#include <linux/sched.h>
-+
-+struct aa_profile;
-+
-+int aa_may_ptrace(struct task_struct *tracer_task, struct aa_profile *tracer,
-+		  struct aa_profile *tracee, unsigned int mode);
-+
-+int aa_ptrace(struct task_struct *tracer, struct task_struct *tracee,
-+	      unsigned int mode);
-+
-+#endif /* __AA_IPC_H */
-diff --git a/security/apparmor/include/net.h b/security/apparmor/include/net.h
-new file mode 100644
-index 0000000..7d6ddeb
---- /dev/null
-+++ b/security/apparmor/include/net.h
-@@ -0,0 +1,40 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor network mediation definitions.
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#ifndef __AA_NET_H
-+#define __AA_NET_H
-+
-+#include <net/sock.h>
-+
-+/* struct aa_net - network confinement data
-+ * @allowed: basic network families permissions
-+ * @audit_network: which network permissions to force audit
-+ * @quiet_network: which network permissions to quiet rejects
-+ */
-+struct aa_net {
-+	u16 allowed[AF_MAX];
-+	u16 audit[AF_MAX];
-+	u16 quiet[AF_MAX];
-+};
-+
-+extern int aa_net_perm(struct aa_profile *profile, char *operation,
-+		       int family, int type, int protocol);
-+extern int aa_revalidate_sk(struct sock *sk, char *operation);
-+
-+static inline void aa_free_net_rules(struct aa_net *new)
-+{
-+	/* NOP */
-+}
-+
-+#endif /* __AA_NET_H */
-diff --git a/security/apparmor/include/resource.h b/security/apparmor/include/resource.h
-new file mode 100644
-index 0000000..e8fc079
---- /dev/null
-+++ b/security/apparmor/include/resource.h
-@@ -0,0 +1,45 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor resource limits function defintions.
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#ifndef __AA_RESOURCE_H
-+#define __AA_RESOURCE_H
-+
-+#include <linux/resource.h>
-+#include <linux/sched.h>
-+
-+struct aa_profile;
-+
-+/* struct aa_rlimit - rlimits settings for the profile
-+ * @mask: which hard limits to set
-+ * @limits: rlimit values that override task limits
-+ *
-+ * AppArmor rlimits are used to set confined task rlimits.  Only the
-+ * limits specified in @mask will be controlled by apparmor.
-+ */
-+struct aa_rlimit {
-+	unsigned int mask;
-+	struct rlimit limits[RLIM_NLIMITS];
-+};
-+
-+int aa_task_setrlimit(struct aa_profile *profile, unsigned int resource,
-+		      struct rlimit *new_rlim);
-+
-+void __aa_transition_rlimits(struct aa_profile *old, struct aa_profile *new);
-+
-+static inline void aa_free_rlimit_rules(struct aa_rlimit *rlims)
-+{
-+	/* NOP */
-+}
-+
-+#endif /* __AA_RESOURCE_H */
-diff --git a/security/apparmor/ipc.c b/security/apparmor/ipc.c
-new file mode 100644
-index 0000000..e82c869
---- /dev/null
-+++ b/security/apparmor/ipc.c
-@@ -0,0 +1,101 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor ipc mediation
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#include <linux/gfp.h>
-+#include <linux/ptrace.h>
-+
-+#include "include/audit.h"
-+#include "include/capability.h"
-+#include "include/context.h"
++#include "include/apparmor.h"
++#include "include/path.h"
 +#include "include/policy.h"
 +
-+struct aa_audit_ptrace {
-+	struct aa_audit base;
-+
-+	pid_t tracer, tracee;
-+};
-+
-+/* call back to audit ptrace fields */
-+static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
++/**
++ * d_namespace_path - lookup a name associated with a given path
++ * @path: path to lookup
++ * @buf:  buffer to store path to
++ * @buflen: length of @buf
++ * @name: returns pointer for start of path name with in @buf
++ * @flags: flags controling path lookup
++ *
++ */
++static int d_namespace_path(struct path *path, char *buf, int buflen,
++			    char **name, int flags)
 +{
-+	struct aa_audit_ptrace *sa = container_of(va, struct aa_audit_ptrace,
-+						  base);
-+	audit_log_format(ab, " tracer=%d tracee=%d", sa->tracer, sa->tracee);
-+}
-+
-+static int aa_audit_ptrace(struct aa_profile *profile,
-+			   struct aa_audit_ptrace *sa)
-+{
-+	return aa_audit(AUDIT_APPARMOR_AUTO, profile, &sa->base, audit_cb);
-+}
-+
-+/* Returns error on failure */
-+int aa_may_ptrace(struct task_struct *tracer_task, struct aa_profile *tracer,
-+		  struct aa_profile *tracee, unsigned int mode)
-+{
-+	/* TODO: currently only based on capability, not extended ptrace
-+	 *       rules,
-+	 *       Test mode for PTRACE_MODE_READ || PTRACE_MODE_ATTACH
-+	 */
-+
-+	if (!tracer || tracer == tracee)
-+		return 0;
-+	/* log this capability request */
-+	return aa_capable(tracer_task, tracer, CAP_SYS_PTRACE, 1);
-+}
-+
-+int aa_ptrace(struct task_struct *tracer, struct task_struct *tracee,
-+	      unsigned int mode)
-+{
-+	/*
-+	 * tracer can ptrace tracee when
-+	 * - tracer is unconfined ||
-+	 * - tracer & tracee are in the same namespace &&
-+	 *   - tracer is in complain mode
-+	 *   - tracer has rules allowing it to trace tracee currently this is:
-+	 *       - confined by the same profile ||
-+	 *       - tracer profile has CAP_SYS_PTRACE
-+	 */
-+
-+	struct aa_profile *tracer_p;
-+	/* cred released below */
-+	const struct cred *cred = get_task_cred(tracer);
++	struct path root, tmp, ns_root = { };
++	char *res;
++	int deleted, connected;
 +	int error = 0;
-+	tracer_p = aa_cred_profile(cred);
 +
-+	if (!unconfined(tracer_p)) {
-+		struct aa_audit_ptrace sa = {
-+			.base.operation = "ptrace",
-+			.base.gfp_mask = GFP_ATOMIC,
-+			.tracer = tracer->pid,
-+			.tracee = tracee->pid,
-+		};
-+		/* FIXME: different namespace restriction can be lifted
-+		 * if, namespace are matched to AppArmor namespaces
++	read_lock(&current->fs->lock);
++	root = current->fs->root;
++	/* released below */
++	path_get(&root);
++	read_unlock(&current->fs->lock);
++
++	spin_lock(&vfsmount_lock);
++	if (root.mnt && root.mnt->mnt_ns)
++		/* released below */
++		ns_root.mnt = mntget(root.mnt->mnt_ns->root);
++	if (ns_root.mnt)
++		/* released below */
++		ns_root.dentry = dget(ns_root.mnt->mnt_root);
++	spin_unlock(&vfsmount_lock);
++
++	spin_lock(&dcache_lock);
++	/* There is a race window between path lookup here and the
++	 * need to strip the " (deleted) string that __d_path applies
++	 * Detect the race and relookup the path
++	 *
++	 * The stripping of (deleted) is a hack that could be removed
++	 * with an updated __d_path
++	 */
++	do {
++		if (flags & PATH_CHROOT_REL)
++			tmp = root;
++		else
++			tmp = ns_root;
++		deleted = d_unlinked(path->dentry);
++		res = __d_path(path, &tmp, buf, buflen);
++
++	} while (deleted != d_unlinked(path->dentry));
++	spin_unlock(&dcache_lock);
++
++	*name = res;
++	/* handle error conditions - and still allow a partial path to
++	 * be returned.
++	 */
++	if (IS_ERR(res)) {
++		error = PTR_ERR(res);
++		*name = buf;
++		goto out;
++	}
++	if (deleted) {
++		/* On some filesystems, newly allocated dentries appear to the
++		 * security_path hooks as a deleted dentry except without an
++		 * inode allocated.
++		 *
++		 * Remove the appended deleted text and return as string for
++		 * normal mediation, or auditing.  The (deleted) string is
++		 * guarenteed to be added in this case, so just strip it.
 +		 */
-+		struct aa_profile *tracee_p;
-+		/* lcred released below */
-+		struct cred *lcred = get_task_cred(tracee);
-+		tracee_p = aa_cred_profile(lcred);
++		buf[buflen - 11] = 0;	/* - (len(" (deleted)") +\0) */
 +
-+		sa.base.error = aa_may_ptrace(tracer, tracer_p, tracee_p, mode);
-+		sa.base.error = aa_audit_ptrace(tracer_p, &sa);
-+
-+		put_cred(lcred);
-+		error = sa.base.error;
++		if (path->dentry->d_inode && !(flags & PATH_MEDIATE_DELETED)) {
++			error = -ENOENT;
++			goto out;
++		}
 +	}
-+	put_cred(cred);
++
++	if (flags & PATH_CHROOT_REL)
++		connected = tmp.dentry == root.dentry && tmp.mnt == root.mnt;
++	else
++		connected = tmp.dentry == ns_root.dentry &&
++			tmp.mnt == ns_root.mnt;
++
++	if (!connected && 
++	    !(flags & PATH_CONNECT_PATH) &&
++	    !((flags & PATH_CHROOT_REL) && (flags & PATH_CHROOT_NSCONNECT) &&
++	      (tmp.dentry == ns_root.dentry && tmp.mnt == ns_root.mnt))) {
++		/* disconnected path, don't return pathname starting with '/' */
++		error = -ESTALE;
++		if (*res == '/')
++			*name = res + 1;
++	}
++
++out:
++	path_put(&root);
++	path_put(&ns_root);
 +
 +	return error;
 +}
-diff --git a/security/apparmor/net.c b/security/apparmor/net.c
-new file mode 100644
-index 0000000..b6123c4
---- /dev/null
-+++ b/security/apparmor/net.c
-@@ -0,0 +1,145 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor network mediation
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
 +
-+#include "include/apparmor.h"
-+#include "include/audit.h"
-+#include "include/context.h"
-+#include "include/net.h"
-+#include "include/policy.h"
-+
-+#include "af_names.h"
-+
-+static const char *sock_type_names[] = {
-+	"unknown(0)",
-+	"stream",
-+	"dgram",
-+	"raw",
-+	"rdm",
-+	"seqpacket",
-+	"dccp",
-+	"unknown(7)",
-+	"unknown(8)",
-+	"unknown(9)",
-+	"packet",
-+};
-+
-+struct aa_audit_net {
-+	struct aa_audit base;
-+
-+	int family, type, protocol;
-+
-+};
-+
-+static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
++static int get_name_to_buffer(struct path *path, int flags, char *buffer,
++			      int size, char **name)
 +{
-+	struct aa_audit_net *sa = container_of(va, struct aa_audit_net, base);
++	int adjust = (flags & PATH_IS_DIR) ? 1 : 0;
++	int error = d_namespace_path(path, buffer, size - adjust, name, flags);
 +
-+	if (sa->family || sa->type) {
-+		if (address_family_names[sa->family]) {
-+			audit_log_format(ab, " family=");
-+			audit_log_string(ab, address_family_names[sa->family]);
-+		} else {
-+			audit_log_format(ab, " family=\"unknown(%d)\"",
-+					 sa->family);
-+		}
-+		if (sock_type_names[sa->type]) {
-+			audit_log_format(ab, " sock_type=");
-+			audit_log_string(ab, sock_type_names[sa->type]);
-+		} else {
-+			audit_log_format(ab, " sock_type=\"unknown(%d)\"",
-+					 sa->type);
-+		}
-+		audit_log_format(ab, " protocol=%d", sa->protocol);
-+	}
-+
-+}
-+
-+/* Returns: error on failure */
-+static int aa_audit_net(struct aa_profile *profile, struct aa_audit_net *sa)
-+{
-+	int type = AUDIT_APPARMOR_AUTO;
-+
-+	if (likely(!sa->base.error)) {
-+		u16 audit_mask = profile->net.audit[sa->family];
-+		if (likely((AUDIT_MODE(profile) != AUDIT_ALL) &&
-+			   !(1 << sa->type & audit_mask)))
-+			return 0;
-+		type = AUDIT_APPARMOR_AUDIT;
-+	} else {
-+		u16 quiet_mask = profile->net.quiet[sa->family];
-+		u16 kill_mask = 0;
-+		u16 denied = (1 << sa->type) & ~quiet_mask;
-+
-+		if (denied & kill_mask)
-+			type = AUDIT_APPARMOR_KILL;
-+
-+		if ((denied & quiet_mask) &&
-+		    AUDIT_MODE(profile) != AUDIT_NOQUIET &&
-+		    AUDIT_MODE(profile) != AUDIT_ALL)
-+			return COMPLAIN_MODE(profile) ? 0 : sa->base.error;
-+	}
-+
-+	return aa_audit(type, profile, &sa->base, audit_cb);
-+}
-+
-+/* Returns: error on failure */
-+int aa_net_perm(struct aa_profile *profile, char *operation,
-+		int family, int type, int protocol)
-+{
-+	u16 family_mask;
-+	struct aa_audit_net sa = {
-+		.base.operation = operation,
-+		.base.gfp_mask = GFP_KERNEL,
-+		.family = family,
-+		.type = type,
-+		.protocol = protocol,
-+	};
-+
-+	if ((family < 0) || (family >= AF_MAX))
-+		return -EINVAL;
-+
-+	if ((type < 0) || (type >= SOCK_MAX))
-+		return -EINVAL;
-+
-+	/* unix domain and netlink sockets are handled by ipc */
-+	if (family == AF_UNIX || family == AF_NETLINK)
-+		return 0;
-+
-+	family_mask = profile->net.allowed[family];
-+
-+	sa.base.error = (family_mask & (1 << type)) ? 0 : -EACCES;
-+
-+	return aa_audit_net(profile, &sa);
-+}
-+
-+/* Returns: error on failure */
-+int aa_revalidate_sk(struct sock *sk, char *operation)
-+{
-+	struct aa_profile *profile;
-+	int error = 0;
-+
-+	/* aa_revalidate_sk should not be called from interrupt context
-+	 * don't mediate these calls as they are not task related
-+	 */
-+	if (in_interrupt())
-+		return 0;
-+
-+	profile = __aa_current_profile();
-+	if (!unconfined(profile))
-+		error = aa_net_perm(profile, operation,
-+				    sk->sk_family, sk->sk_type,
-+				    sk->sk_protocol);
++	if (!error && (flags & PATH_IS_DIR) && (*name)[1] != '\0')
++		/*
++		 * Append "/" to the pathname.  The root directory is a special
++		 * case; it already ends in slash.
++		 */
++		strcpy(&buffer[size - 2], "/");
 +
 +	return error;
-+}
-diff --git a/security/apparmor/resource.c b/security/apparmor/resource.c
-new file mode 100644
-index 0000000..0b6e350
---- /dev/null
-+++ b/security/apparmor/resource.c
-@@ -0,0 +1,104 @@
-+/*
-+ * AppArmor security module
-+ *
-+ * This file contains AppArmor resource mediation and attachment
-+ *
-+ * Copyright (C) 1998-2008 Novell/SUSE
-+ * Copyright 2009-2010 Canonical Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ */
-+
-+#include <linux/audit.h>
-+
-+#include "include/audit.h"
-+#include "include/resource.h"
-+#include "include/policy.h"
-+
-+struct aa_audit_resource {
-+	struct aa_audit base;
-+
-+	int rlimit;
-+};
-+
-+static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
-+{
-+	struct aa_audit_resource *sa = container_of(va,
-+						    struct aa_audit_resource,
-+						    base);
-+
-+	if (sa->rlimit)
-+		audit_log_format(ab, " rlimit=%d", sa->rlimit - 1);
-+}
-+
-+static int aa_audit_resource(struct aa_profile *profile,
-+			     struct aa_audit_resource *sa)
-+{
-+	return aa_audit(AUDIT_APPARMOR_AUTO, profile, &sa->base, audit_cb);
 +}
 +
 +/**
-+ * aa_task_setrlimit - test permission to set an rlimit
-+ * @profile - profile confining the task
-+ * @resource - the resource being set
-+ * @new_rlim - the new resource limit
++ * aa_get_name - compute the pathname of a file
++ * @path: path the file
++ * @flags: flags controling path name generation
++ * @buffer: buffer that aa_get_name() allocated
++ * @name: the generated path name if there is an error
 + *
-+ * Control raising the processes hard limit.
++ * Returns an error code if the there was a failure in obtaining the
++ * name.
++ *
++ * @name is a pointer to the beginning of the pathname (which usually differs
++ * from the beginning of the buffer), or NULL.  If there is an error @name
++ * may contain a partial or invalid name (in the case of a deleted file), that
++ * can be used for audit purposes, but it can not be used for mediation.
++ *
++ * We need PATH_IS_DIR to indicate whether the file is a directory or not
++ * because the file may not yet exist, and so we cannot check the inode's
++ * file type.
 + */
-+int aa_task_setrlimit(struct aa_profile *profile, unsigned int resource,
-+		      struct rlimit *new_rlim)
++int aa_get_name(struct path *path, int flags, char **buffer, char **name)
 +{
-+	struct aa_audit_resource sa = {
-+		.base.operation = "setrlimit",
-+		.base.gfp_mask = GFP_KERNEL,
-+		.rlimit = resource + 1,
-+	};
-+	int error = 0;
++	char *buf, *str = NULL;
++	int size = 256;
++	int error;
 +
-+	if (profile->rlimits.mask & (1 << resource) &&
-+	    new_rlim->rlim_max > profile->rlimits.limits[resource].rlim_max) {
-+		sa.base.error = -EACCES;
++	*name = NULL;
++	*buffer = NULL;
++	for (;;) {
++		/* freed by caller */
++		buf = kmalloc(size, GFP_KERNEL);
++		if (!buf)
++			return -ENOMEM;
 +
-+		error = aa_audit_resource(profile, &sa);
++		error = get_name_to_buffer(path, flags, buf, size, &str);
++		if (!error || (error == -ENOENT) || (error == -ESTALE))
++			break;
++
++		kfree(buf);
++		size <<= 1;
++		if (size > aa_g_path_max)
++			return -ENAMETOOLONG;
 +	}
++	*buffer = buf;
++	*name = str;
 +
 +	return error;
 +}
 +
-+void __aa_transition_rlimits(struct aa_profile *old, struct aa_profile *new)
++char *sysctl_pathname(struct ctl_table *table, char *buffer, int buflen)
 +{
-+	unsigned int mask = 0;
-+	struct rlimit *rlim, *initrlim;
-+	int i;
++	if (buflen < 1)
++		return NULL;
++	buffer += --buflen;
++	*buffer = '\0';
 +
-+	/* for any rlimits the profile controlled reset the soft limit
-+	 * to the less of the tasks hard limit and the init tasks soft limit
-+	 */
-+	if (old && old->rlimits.mask) {
-+		for (i = 0, mask = 1; i < RLIM_NLIMITS; i++, mask <<= 1) {
-+			if (old->rlimits.mask & mask) {
-+				rlim = current->signal->rlim + i;
-+				initrlim = init_task.signal->rlim + i;
-+				rlim->rlim_cur = min(rlim->rlim_max,
-+						     initrlim->rlim_cur);
-+			}
-+		}
++	while (table) {
++		int namelen = strlen(table->procname);
++
++		if (buflen < namelen + 1)
++			return NULL;
++		buflen -= namelen + 1;
++		buffer -= namelen;
++		memcpy(buffer, table->procname, namelen);
++		*--buffer = '/';
++		table = table->parent;
 +	}
++	if (buflen < 4)
++		return NULL;
++	buffer -= 4;
++	memcpy(buffer, "/sys", 4);
 +
-+	/* set any new hard limits as dictated by the new profile */
-+	if (!(new && new->rlimits.mask))
-+		return;
-+	for (i = 0, mask = 1; i < RLIM_NLIMITS; i++, mask <<= 1) {
-+		if (!(new->rlimits.mask & mask))
-+			continue;
-+
-+		rlim = current->signal->rlim + i;
-+		rlim->rlim_max = min(rlim->rlim_max,
-+				     new->rlimits.limits[i].rlim_max);
-+		/* soft limit should not exceed hard limit */
-+		rlim->rlim_cur = min(rlim->rlim_cur, rlim->rlim_max);
-+	}
++	return buffer;
 +}
 -- 
 1.6.6.1
