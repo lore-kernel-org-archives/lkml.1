@@ -1,70 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139Ab0BSTxl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:53:41 -0500
-Received: from mga09.intel.com ([134.134.136.24]:54311 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614Ab0BSTxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:53:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,505,1262592000"; 
-   d="scan'208";a="597456083"
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
-In-Reply-To: <1266608875.1529.749.camel@laptop>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-	 <1266057388.557.59599.camel@twins>
-	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
-	 <1266588316.1529.370.camel@laptop>
-	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
-	 <1266608875.1529.749.camel@laptop>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 19 Feb 2010 11:50:29 -0800
-Message-Id: <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1754790Ab0BST4E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:56:04 -0500
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:37059 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402Ab0BST4A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 14:56:00 -0500
+Message-ID: <4B7EECB2.9090406@csr.com>
+Date: Fri, 19 Feb 2010 19:55:30 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       =?UTF-8?B?UmljaGFyZCBSw7Zq?= =?UTF-8?B?Zm9ycw==?= 
+	<richard.rojfors.ext@mocean-labs.com>,
+       Pierre Ossman <pierre@ossman.eu>, Ben Dooks <ben@simtec.co.uk>,
+       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sdhci: Implement CAP_CLOCK_BASE_BROKEN quirk
+References: <20100219194827.GA16636@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100219194827.GA16636@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Feb 2010 19:55:31.0147 (UTC) FILETIME=[7DC429B0:01CAB19D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 11:47 -0800, Peter Zijlstra wrote:
-> On Fri, 2010-02-19 at 10:36 -0800, Suresh Siddha wrote:
-> > exec/fork balance is not broken. i.e., during exec/fork we balance the
-> > load equally among sockets/cores etc. What is broken is:
-> > 
-> > a) In SMT case, once we end up in a situation where both the threads of
-> > the core are busy , with another core completely idle, load balance is
-> > not moving one of the threads to the idle core. This unbalanced
-> > situation can happen because of a previous wake-up decision and/or
-> > threads on other core went to sleep/died etc. Once we end up in this
-> > unbalanced situation, we continue in that state with out fixing it.
-> > 
-> > b) Similar to "a", this is MC case where we end up four cores busy in
-> > one socket with other 4 cores in another socket completely idle. And
-> > this is the situation which we are trying to solve in this patch.
-> > 
-> > In your above example, we test mostly fork/exec balance but not the
-> > above sleep/wakeup scenarios. 
-> 
-> Ah, indeed. Let me extend my script to cover that.
-> 
-> The below script does indeed show a change, but the result still isn't
-> perfect, when I do ./show-loop 8, it starts 8 loops nicely spread over 2
-> sockets, the difference is that all 4 remaining would stay on socket 0,
-> the patched kernel gets 1 over to socket 1.
+Anton Vorontsov wrote:
+> Some hosts (e.g. as found in CNS3xxx SOCs) report wrong value in
+> CLOCK_BASE capability field, and currently there is no way to
+> force the SDHCI core to use the platform-provided base clock value.
 
-Peter, Have you applied both my smt patch and mc patch?
+I don't think this needs a new quirk. Change the sdhci driver to check
+if the platform provides a value before reading the standard register.
 
-thanks,
-suresh
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
 
+
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
