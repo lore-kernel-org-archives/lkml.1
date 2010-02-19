@@ -1,156 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754Ab0BSTsg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:48:36 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:59854 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752792Ab0BSTsb (ORCPT
+	id S1752986Ab0BSTrs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:47:48 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:49065 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775Ab0BSTrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:48:31 -0500
-Date: Fri, 19 Feb 2010 22:48:29 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard =?utf-8?Q?R=C3=B6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>,
-       Pierre Ossman <pierre@ossman.eu>, Ben Dooks <ben@simtec.co.uk>,
-       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] sdhci-pltfm: Implement platform data passing
-Message-ID: <20100219194829.GB16636@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 19 Feb 2010 14:47:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=ljZ9re5bbJIJgv7BkSSCveYcIrn0YAlVDInSjQG57OQJLQGsigTKXtlwdyI/8HapJj
+         mw633iqunnfqqHl6Bgm/6i7sJd3NqG6sTKWjXu6Wx9IHn4Yc6sPIRMQIcrC+CXc2gvUe
+         oHlaVjCavQhWHfXBIveXz4M4qBkrY+o1DEfBs=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: [PATCH 2/7] vfs: inode_change_ok have to perform all necessery checks
+Date: Fri, 19 Feb 2010 22:47:20 +0300
+Message-Id: <1266608845-13212-3-git-send-email-dmonakhov@openvz.org>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1266608845-13212-2-git-send-email-dmonakhov@openvz.org>
+References: <1266608845-13212-1-git-send-email-dmonakhov@openvz.org>
+ <1266608845-13212-2-git-send-email-dmonakhov@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This includes platform ops, quirks and (de)initialization callbacks.
+Usually this is the only function which called before inode
+attributes manipulation. In fact inode_change_ok() performs only
+posix checks. But it new_size check is also important. Otherwise
+we mail fail in very late stage.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/mmc/host/sdhci-pltfm.c |   24 ++++++++++++++++++++----
- drivers/mmc/host/sdhci-pltfm.h |   27 +++++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 4 deletions(-)
- create mode 100644 drivers/mmc/host/sdhci-pltfm.h
+ fs/attr.c          |   19 +++++++++++++++++--
+ include/linux/fs.h |    3 ++-
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index 297f40a..d0a52cb 100644
---- a/drivers/mmc/host/sdhci-pltfm.c
-+++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -31,6 +31,7 @@
- #include <linux/io.h>
+diff --git a/fs/attr.c b/fs/attr.c
+index b1cc391..cc2a801 100644
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -18,7 +18,7 @@
+ /* Taken over from the old code... */
  
- #include "sdhci.h"
-+#include "sdhci-pltfm.h"
- 
- /*****************************************************************************\
-  *                                                                           *
-@@ -49,12 +50,11 @@ static struct sdhci_ops sdhci_pltfm_ops = {
- 
- static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
+ /* POSIX UID/GID verification for setting inode attributes. */
+-int inode_change_ok(const struct inode *inode, struct iattr *attr)
++int inode_change_posix_ok(const struct inode *inode, struct iattr *attr)
  {
-+	struct sdhci_pltfm_data *pdata = pdev->dev.platform_data;
- 	struct sdhci_host *host;
- 	struct resource *iomem;
- 	int ret;
+ 	int retval = -EPERM;
+ 	unsigned int ia_valid = attr->ia_valid;
+@@ -60,7 +60,7 @@ fine:
+ error:
+ 	return retval;
+ }
+-EXPORT_SYMBOL(inode_change_ok);
++EXPORT_SYMBOL(inode_change_posix_ok);
  
--	BUG_ON(pdev == NULL);
--
- 	iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!iomem) {
- 		ret = -ENOMEM;
-@@ -76,7 +76,12 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
- 	}
+ /**
+  * inode_newsize_ok - may this inode be truncated to a given size
+@@ -105,6 +105,21 @@ out_big:
+ }
+ EXPORT_SYMBOL(inode_newsize_ok);
  
- 	host->hw_name = "platform";
--	host->ops = &sdhci_pltfm_ops;
-+	if (pdata && pdata->ops)
-+		host->ops = pdata->ops;
-+	else
-+		host->ops = &sdhci_pltfm_ops;
-+	if (pdata)
-+		host->quirks = pdata->quirks;
- 	host->irq = platform_get_irq(pdev, 0);
- 
- 	if (!request_mem_region(iomem->start, resource_size(iomem),
-@@ -93,6 +98,12 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
- 		goto err_remap;
- 	}
- 
-+	if (pdata && pdata->init) {
-+		ret = pdata->init(host);
-+		if (ret)
-+			goto err_plat_init;
-+	}
-+
- 	ret = sdhci_add_host(host);
- 	if (ret)
- 		goto err_add_host;
-@@ -102,6 +113,9 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_add_host:
-+	if (pdata && pdata->exit)
-+		pdata->exit(host);
-+err_plat_init:
- 	iounmap(host->ioaddr);
- err_remap:
- 	release_mem_region(iomem->start, resource_size(iomem));
-@@ -114,6 +128,7 @@ err:
- 
- static int __devexit sdhci_pltfm_remove(struct platform_device *pdev)
- {
-+	struct sdhci_pltfm_data *pdata = pdev->dev.platform_data;
- 	struct sdhci_host *host = platform_get_drvdata(pdev);
- 	struct resource *iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	int dead;
-@@ -125,6 +140,8 @@ static int __devexit sdhci_pltfm_remove(struct platform_device *pdev)
- 		dead = 1;
- 
- 	sdhci_remove_host(host, dead);
-+	if (pdata && pdata->exit)
-+		pdata->exit(host);
- 	iounmap(host->ioaddr);
- 	release_mem_region(iomem->start, resource_size(iomem));
- 	sdhci_free_host(host);
-@@ -165,4 +182,3 @@ MODULE_DESCRIPTION("Secure Digital Host Controller Interface platform driver");
- MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
- MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:sdhci");
--
-diff --git a/drivers/mmc/host/sdhci-pltfm.h b/drivers/mmc/host/sdhci-pltfm.h
-new file mode 100644
-index 0000000..0aaa334
---- /dev/null
-+++ b/drivers/mmc/host/sdhci-pltfm.h
-@@ -0,0 +1,27 @@
 +/*
-+ * Platform data declarations for the sdhci-pltfm driver.
-+ *
-+ * Copyright (c) 2010 MontaVista Software, LLC.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or (at
-+ * your option) any later version.
++ * General verification for setting inode attributes.
 + */
++int inode_change_ok(const struct inode *inode, struct iattr *attr)
++{
++	int ret;
++	ret = inode_change_posix_ok(inode, attr);
++	if (ret)
++		return ret;
++	if (attr->ia_valid & ATTR_SIZE)
++		ret = inode_newsize_ok(inode, attr->ia_size);
++	return ret;
++}
++EXPORT_SYMBOL(inode_change_ok);
 +
-+#ifndef _SDHCI_PLTFM_H
-+#define _SDHCI_PLTFM_H
-+
-+struct sdhci_ops;
-+struct sdhci_host;
-+
-+struct sdhci_pltfm_data {
-+	struct sdhci_ops *ops;
-+	unsigned int quirks;
-+	int (*init)(struct sdhci_host *host);
-+	void (*exit)(struct sdhci_host *host);
-+};
-+
-+#endif /* _SDHCI_PLTFM_H */
+ void __inode_setattr(struct inode * inode, struct iattr * attr)
+ {
+ 	unsigned int ia_valid = attr->ia_valid;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 18b7be8..eee26ea 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2371,8 +2371,9 @@ extern int buffer_migrate_page(struct address_space *,
+ #define buffer_migrate_page NULL
+ #endif
+ 
+-extern int inode_change_ok(const struct inode *, struct iattr *);
++extern int inode_change_posix_ok(const struct inode *, struct iattr *);
+ extern int inode_newsize_ok(const struct inode *, loff_t offset);
++extern int inode_change_ok(const struct inode *, struct iattr *);
+ extern void __inode_setattr(struct inode *, struct iattr *);
+ extern int __must_check inode_setattr(struct inode *, struct iattr *);
+ 
 -- 
-1.7.0
+1.6.6
 
