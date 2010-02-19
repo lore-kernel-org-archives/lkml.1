@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061Ab0BSTss (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:48:48 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:59860 "HELO
+	id S1754754Ab0BSTsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:48:36 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:59854 "HELO
 	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753371Ab0BSTsd (ORCPT
+	with SMTP id S1752792Ab0BSTsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:48:33 -0500
-Date: Fri, 19 Feb 2010 22:48:31 +0300
+	Fri, 19 Feb 2010 14:48:31 -0500
+Date: Fri, 19 Feb 2010 22:48:29 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard =?utf-8?Q?R=C3=B6jfors?= 
 	<richard.rojfors.ext@mocean-labs.com>,
        Pierre Ossman <pierre@ossman.eu>, Ben Dooks <ben@simtec.co.uk>,
        linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] sdhci-pltfm: Do not print errors in case of an
- extended iomem size
-Message-ID: <20100219194831.GC16636@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] sdhci-pltfm: Implement platform data passing
+Message-ID: <20100219194829.GB16636@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,26 +24,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some hosts have an extended SDHCI iomem size, so the driver should
-only print errors if the iomem size is less than 0x100.
+This includes platform ops, quirks and (de)initialization callbacks.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci-pltfm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/mmc/host/sdhci-pltfm.c |   24 ++++++++++++++++++++----
+ drivers/mmc/host/sdhci-pltfm.h |   27 +++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/mmc/host/sdhci-pltfm.h
 
 diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index d0a52cb..3e65221 100644
+index 297f40a..d0a52cb 100644
 --- a/drivers/mmc/host/sdhci-pltfm.c
 +++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -61,7 +61,7 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
- 		goto err;
+@@ -31,6 +31,7 @@
+ #include <linux/io.h>
+ 
+ #include "sdhci.h"
++#include "sdhci-pltfm.h"
+ 
+ /*****************************************************************************\
+  *                                                                           *
+@@ -49,12 +50,11 @@ static struct sdhci_ops sdhci_pltfm_ops = {
+ 
+ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
+ {
++	struct sdhci_pltfm_data *pdata = pdev->dev.platform_data;
+ 	struct sdhci_host *host;
+ 	struct resource *iomem;
+ 	int ret;
+ 
+-	BUG_ON(pdev == NULL);
+-
+ 	iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!iomem) {
+ 		ret = -ENOMEM;
+@@ -76,7 +76,12 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
  	}
  
--	if (resource_size(iomem) != 0x100)
-+	if (resource_size(iomem) < 0x100)
- 		dev_err(&pdev->dev, "Invalid iomem size. You may "
- 			"experience problems.\n");
+ 	host->hw_name = "platform";
+-	host->ops = &sdhci_pltfm_ops;
++	if (pdata && pdata->ops)
++		host->ops = pdata->ops;
++	else
++		host->ops = &sdhci_pltfm_ops;
++	if (pdata)
++		host->quirks = pdata->quirks;
+ 	host->irq = platform_get_irq(pdev, 0);
  
+ 	if (!request_mem_region(iomem->start, resource_size(iomem),
+@@ -93,6 +98,12 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
+ 		goto err_remap;
+ 	}
+ 
++	if (pdata && pdata->init) {
++		ret = pdata->init(host);
++		if (ret)
++			goto err_plat_init;
++	}
++
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+ 		goto err_add_host;
+@@ -102,6 +113,9 @@ static int __devinit sdhci_pltfm_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_add_host:
++	if (pdata && pdata->exit)
++		pdata->exit(host);
++err_plat_init:
+ 	iounmap(host->ioaddr);
+ err_remap:
+ 	release_mem_region(iomem->start, resource_size(iomem));
+@@ -114,6 +128,7 @@ err:
+ 
+ static int __devexit sdhci_pltfm_remove(struct platform_device *pdev)
+ {
++	struct sdhci_pltfm_data *pdata = pdev->dev.platform_data;
+ 	struct sdhci_host *host = platform_get_drvdata(pdev);
+ 	struct resource *iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	int dead;
+@@ -125,6 +140,8 @@ static int __devexit sdhci_pltfm_remove(struct platform_device *pdev)
+ 		dead = 1;
+ 
+ 	sdhci_remove_host(host, dead);
++	if (pdata && pdata->exit)
++		pdata->exit(host);
+ 	iounmap(host->ioaddr);
+ 	release_mem_region(iomem->start, resource_size(iomem));
+ 	sdhci_free_host(host);
+@@ -165,4 +182,3 @@ MODULE_DESCRIPTION("Secure Digital Host Controller Interface platform driver");
+ MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:sdhci");
+-
+diff --git a/drivers/mmc/host/sdhci-pltfm.h b/drivers/mmc/host/sdhci-pltfm.h
+new file mode 100644
+index 0000000..0aaa334
+--- /dev/null
++++ b/drivers/mmc/host/sdhci-pltfm.h
+@@ -0,0 +1,27 @@
++/*
++ * Platform data declarations for the sdhci-pltfm driver.
++ *
++ * Copyright (c) 2010 MontaVista Software, LLC.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or (at
++ * your option) any later version.
++ */
++
++#ifndef _SDHCI_PLTFM_H
++#define _SDHCI_PLTFM_H
++
++struct sdhci_ops;
++struct sdhci_host;
++
++struct sdhci_pltfm_data {
++	struct sdhci_ops *ops;
++	unsigned int quirks;
++	int (*init)(struct sdhci_host *host);
++	void (*exit)(struct sdhci_host *host);
++};
++
++#endif /* _SDHCI_PLTFM_H */
 -- 
 1.7.0
+
