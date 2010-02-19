@@ -1,56 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200Ab0BSPbr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:31:47 -0500
-Received: from kroah.org ([198.145.64.141]:55443 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346Ab0BSPbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:31:45 -0500
-Date: Fri, 19 Feb 2010 07:31:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 10/12] Add /sys trigger for per-node memory compaction
-Message-ID: <20100219153142.GA26557@kroah.com>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
- <1266516162-14154-11-git-send-email-mel@csn.ul.ie>
- <20100219145358.GB24790@kroah.com>
- <20100219152830.GB1445@csn.ul.ie>
+	id S1754090Ab0BSPeK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:34:10 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:55129 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592Ab0BSPeH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 10:34:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qGO3b5nvy63JASyUl0YsW0VnB7bTkwkev5Uo6qD8G++VRl8QRrn/fF2ZNWJusy52lv
+         mhP+CTqREydVlr+I2dLBDdAMD1S58vKCj/FVUWLihKvO7sAAv642tAorQ6/4AE4TTbBN
+         txgYrLgtHX8jGdbwqICzIoQ5g2qqtjVuKbIok=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100219152830.GB1445@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100219084523.GA3525@in.ibm.com>
+References: <4B7881AC.5070209@redhat.com>
+	 <1266516001-7753-3-git-send-regression-fweisbec@gmail.com>
+	 <20100219084523.GA3525@in.ibm.com>
+Date: Fri, 19 Feb 2010 16:34:03 +0100
+Message-ID: <c62985531002190734j5da1e4bfw54ed4283f4d724e0@mail.gmail.com>
+Subject: Re: [PATCH 2/2] hw-breakpoint: Keep track of dr7 local enable bits
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: prasad@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Michael Stefaniuc <mstefani@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 03:28:30PM +0000, Mel Gorman wrote:
-> On Fri, Feb 19, 2010 at 06:53:59AM -0800, Greg KH wrote:
-> > On Thu, Feb 18, 2010 at 06:02:40PM +0000, Mel Gorman wrote:
-> > > This patch adds a per-node sysfs file called compact. When the file is
-> > > written to, each zone in that node is compacted. The intention that this
-> > > would be used by something like a job scheduler in a batch system before
-> > > a job starts so that the job can allocate the maximum number of
-> > > hugepages without significant start-up cost.
-> > 
-> > As you are adding sysfs files, can you please also add documentation for
-> > the file in Documentation/ABI/ ?
-> > 
-> 
-> I looked at this before and hit a wall and then forgot about it. I couldn't
-> find *where* I should document it at the time. There isn't a sysfs-devices-node
-> file to add to and much (all?) of what is in that branch appears undocumented.
+2010/2/19 K.Prasad <prasad@linux.vnet.ibm.com>:
+> So, the thread's copy of DR7 (in thread->ptrace_dr7) stores the
+> requested data even if the 'write' onto DR7 i.e. ptrace_write_dr7()
+> failed. This can be the other way round i.e. populate the thread's copy
+> of DR7 only if the write was successful.
 
-Well, you can always just document what you add, or you can document the
-existing stuff as well.  It's your choice :)
 
-thanks,
 
-greg k-h
+No. We store the new dr7 value only if ptrace_set_dr7() didn't fail.
+
+
+
+> I think it will be in consonance with the v2.6.32 behaviour as well. For
+> instance, in the code snippet from ptrace_set_debugreg() in v2.6.32
+> below:
+>                for (i = 0; i < 4; i++)
+>                        if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+>                                return -EIO;
+>                child->thread.debugreg7 = data;
+>
+> The thread's copy of DR7 is populated only if the incoming data is
+> found to be valid.
+
+
+This is also what does this patch. thread->ptrace_dr7 is only
+changed if ptrace_set_dr7() succeeded.
+
+Thanks.
