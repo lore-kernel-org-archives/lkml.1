@@ -1,388 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576Ab0BSAXN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:23:13 -0500
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:47858 "EHLO
-	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753514Ab0BSAXG (ORCPT
+	id S1753996Ab0BSAYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:24:50 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50265 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409Ab0BSAYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:23:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=pGgYBR5EFVNEbYI9N7YCIAWdM5U5/RajLzeQSzCyHvDcLPHX04qOjfQGmsYiyDBoor
-         Zn83Mgdq9VJU/XFXRcCPHDJ9jq5qK1DFacdWetxyqpVckkqYJRFFyOyjE8dihbioY0BA
-         SJI1cU4GguMYiT+6CT313/NICi8GstOdjJxaI=
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: linux-crypto@vger.kernel.org
-Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Adrian-Ken Rueegsegger <ken@codelabs.ch>, linux-kernel@vger.kernel.org
-Subject: [PATCH 11/19] crypto: sha256_generic - Fix checkpatch errors
-Date: Fri, 19 Feb 2010 01:22:39 +0100
-Message-Id: <1266538961-3443-1-git-send-email-richih.mailinglist@gmail.com>
-X-Mailer: git-send-email 1.6.6.1
+	Thu, 18 Feb 2010 19:24:43 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 19 Feb 2010 09:21:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 05/12] Allow CONFIG_MIGRATION to be set without
+ CONFIG_NUMA or memory hot-remove
+Message-Id: <20100219092111.ee280622.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1266516162-14154-6-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+	<1266516162-14154-6-git-send-email-mel@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Feb 2010 18:02:35 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
----
- crypto/sha256_generic.c |  306 +++++++++++++++++++++++-----------------------
- 1 files changed, 153 insertions(+), 153 deletions(-)
+> CONFIG_MIGRATION currently depends on CONFIG_NUMA or on the architecture
+> being able to hot-remove memory. The main users of page migration such as
+> sys_move_pages(), sys_migrate_pages() and cpuset process migration are
+> only beneficial on NUMA so it makes sense.
+> 
+> As memory compaction will operate within a zone and is useful on both NUMA
+> and non-NUMA systems, this patch allows CONFIG_MIGRATION to be set if the
+> user selects CONFIG_COMPACTION as an option.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
 
-diff --git a/crypto/sha256_generic.c b/crypto/sha256_generic.c
-index c48459e..c724886 100644
---- a/crypto/sha256_generic.c
-+++ b/crypto/sha256_generic.c
-@@ -13,7 +13,7 @@
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-- * Software Foundation; either version 2 of the License, or (at your option) 
-+ * Software Foundation; either version 2 of the License, or (at your option)
-  * any later version.
-  *
-  */
-@@ -35,14 +35,14 @@ static inline u32 Maj(u32 x, u32 y, u32 z)
- 	return (x & y) | (z & (x | y));
- }
- 
--#define e0(x)       (ror32(x, 2) ^ ror32(x,13) ^ ror32(x,22))
--#define e1(x)       (ror32(x, 6) ^ ror32(x,11) ^ ror32(x,25))
--#define s0(x)       (ror32(x, 7) ^ ror32(x,18) ^ (x >> 3))
--#define s1(x)       (ror32(x,17) ^ ror32(x,19) ^ (x >> 10))
-+#define e0(x)       (ror32(x,  2) ^ ror32(x, 13) ^ ror32(x, 22))
-+#define e1(x)       (ror32(x,  6) ^ ror32(x, 11) ^ ror32(x, 25))
-+#define s0(x)       (ror32(x,  7) ^ ror32(x, 18) ^ (x >> 3))
-+#define s1(x)       (ror32(x, 17) ^ ror32(x, 19) ^ (x >> 10))
- 
- static inline void LOAD_OP(int I, u32 *W, const u8 *input)
- {
--	W[I] = __be32_to_cpu( ((__be32*)(input))[I] );
-+	W[I] = __be32_to_cpu(((__be32 *)(input))[I]);
- }
- 
- static inline void BLEND_OP(int I, u32 *W)
-@@ -65,145 +65,145 @@ static void sha256_transform(u32 *state, const u8 *input)
- 		BLEND_OP(i, W);
- 
- 	/* load the state into our registers */
--	a=state[0];  b=state[1];  c=state[2];  d=state[3];
--	e=state[4];  f=state[5];  g=state[6];  h=state[7];
-+	a = state[0];  b = state[1];  c = state[2];  d = state[3];
-+	e = state[4];  f = state[5];  g = state[6];  h = state[7];
- 
- 	/* now iterate */
--	t1 = h + e1(e) + Ch(e,f,g) + 0x428a2f98 + W[ 0];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0x71374491 + W[ 1];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0xb5c0fbcf + W[ 2];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0xe9b5dba5 + W[ 3];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x3956c25b + W[ 4];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0x59f111f1 + W[ 5];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x923f82a4 + W[ 6];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0xab1c5ed5 + W[ 7];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0xd807aa98 + W[ 8];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0x12835b01 + W[ 9];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0x243185be + W[10];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0x550c7dc3 + W[11];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x72be5d74 + W[12];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0x80deb1fe + W[13];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x9bdc06a7 + W[14];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0xc19bf174 + W[15];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0xe49b69c1 + W[16];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0xefbe4786 + W[17];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0x0fc19dc6 + W[18];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0x240ca1cc + W[19];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x2de92c6f + W[20];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0x4a7484aa + W[21];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x5cb0a9dc + W[22];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0x76f988da + W[23];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0x983e5152 + W[24];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0xa831c66d + W[25];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0xb00327c8 + W[26];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0xbf597fc7 + W[27];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0xc6e00bf3 + W[28];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0xd5a79147 + W[29];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x06ca6351 + W[30];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0x14292967 + W[31];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0x27b70a85 + W[32];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0x2e1b2138 + W[33];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0x4d2c6dfc + W[34];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0x53380d13 + W[35];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x650a7354 + W[36];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0x766a0abb + W[37];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x81c2c92e + W[38];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0x92722c85 + W[39];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0xa2bfe8a1 + W[40];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0xa81a664b + W[41];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0xc24b8b70 + W[42];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0xc76c51a3 + W[43];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0xd192e819 + W[44];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0xd6990624 + W[45];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0xf40e3585 + W[46];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0x106aa070 + W[47];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0x19a4c116 + W[48];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0x1e376c08 + W[49];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0x2748774c + W[50];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0x34b0bcb5 + W[51];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x391c0cb3 + W[52];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0x4ed8aa4a + W[53];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0x5b9cca4f + W[54];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0x682e6ff3 + W[55];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
--
--	t1 = h + e1(e) + Ch(e,f,g) + 0x748f82ee + W[56];
--	t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
--	t1 = g + e1(d) + Ch(d,e,f) + 0x78a5636f + W[57];
--	t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
--	t1 = f + e1(c) + Ch(c,d,e) + 0x84c87814 + W[58];
--	t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
--	t1 = e + e1(b) + Ch(b,c,d) + 0x8cc70208 + W[59];
--	t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
--	t1 = d + e1(a) + Ch(a,b,c) + 0x90befffa + W[60];
--	t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
--	t1 = c + e1(h) + Ch(h,a,b) + 0xa4506ceb + W[61];
--	t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
--	t1 = b + e1(g) + Ch(g,h,a) + 0xbef9a3f7 + W[62];
--	t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
--	t1 = a + e1(f) + Ch(f,g,h) + 0xc67178f2 + W[63];
--	t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
-+	t1 = h + e1(e) + Ch(e, f, g) + 0x428a2f98 + W[ 0];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0x71374491 + W[ 1];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0xb5c0fbcf + W[ 2];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0xe9b5dba5 + W[ 3];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x3956c25b + W[ 4];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0x59f111f1 + W[ 5];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x923f82a4 + W[ 6];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0xab1c5ed5 + W[ 7];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0xd807aa98 + W[ 8];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0x12835b01 + W[ 9];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0x243185be + W[10];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0x550c7dc3 + W[11];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x72be5d74 + W[12];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0x80deb1fe + W[13];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x9bdc06a7 + W[14];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0xc19bf174 + W[15];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0xe49b69c1 + W[16];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0xefbe4786 + W[17];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0x0fc19dc6 + W[18];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0x240ca1cc + W[19];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x2de92c6f + W[20];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0x4a7484aa + W[21];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x5cb0a9dc + W[22];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0x76f988da + W[23];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0x983e5152 + W[24];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0xa831c66d + W[25];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0xb00327c8 + W[26];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0xbf597fc7 + W[27];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0xc6e00bf3 + W[28];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0xd5a79147 + W[29];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x06ca6351 + W[30];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0x14292967 + W[31];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0x27b70a85 + W[32];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0x2e1b2138 + W[33];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0x4d2c6dfc + W[34];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0x53380d13 + W[35];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x650a7354 + W[36];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0x766a0abb + W[37];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x81c2c92e + W[38];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0x92722c85 + W[39];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0xa2bfe8a1 + W[40];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0xa81a664b + W[41];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0xc24b8b70 + W[42];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0xc76c51a3 + W[43];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0xd192e819 + W[44];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0xd6990624 + W[45];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0xf40e3585 + W[46];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0x106aa070 + W[47];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0x19a4c116 + W[48];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0x1e376c08 + W[49];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0x2748774c + W[50];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0x34b0bcb5 + W[51];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x391c0cb3 + W[52];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0x4ed8aa4a + W[53];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0x5b9cca4f + W[54];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0x682e6ff3 + W[55];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
-+
-+	t1 = h + e1(e) + Ch(e, f, g) + 0x748f82ee + W[56];
-+	t2 = e0(a) + Maj(a, b, c);    d += t1;    h = t1+t2;
-+	t1 = g + e1(d) + Ch(d, e, f) + 0x78a5636f + W[57];
-+	t2 = e0(h) + Maj(h, a, b);    c += t1;    g = t1+t2;
-+	t1 = f + e1(c) + Ch(c, d, e) + 0x84c87814 + W[58];
-+	t2 = e0(g) + Maj(g, h, a);    b += t1;    f = t1+t2;
-+	t1 = e + e1(b) + Ch(b, c, d) + 0x8cc70208 + W[59];
-+	t2 = e0(f) + Maj(f, g, h);    a += t1;    e = t1+t2;
-+	t1 = d + e1(a) + Ch(a, b, c) + 0x90befffa + W[60];
-+	t2 = e0(e) + Maj(e, f, g);    h += t1;    d = t1+t2;
-+	t1 = c + e1(h) + Ch(h, a, b) + 0xa4506ceb + W[61];
-+	t2 = e0(d) + Maj(d, e, f);    g += t1;    c = t1+t2;
-+	t1 = b + e1(g) + Ch(g, h, a) + 0xbef9a3f7 + W[62];
-+	t2 = e0(c) + Maj(c, d, e);    f += t1;    b = t1+t2;
-+	t1 = a + e1(f) + Ch(f, g, h) + 0xc67178f2 + W[63];
-+	t2 = e0(b) + Maj(b, c, d);    e += t1;    a = t1+t2;
- 
- 	state[0] += a; state[1] += b; state[2] += c; state[3] += d;
- 	state[4] += e; state[5] += f; state[6] += g; state[7] += h;
-@@ -346,11 +346,11 @@ static struct shash_alg sha256 = {
- 	.descsize	=	sizeof(struct sha256_state),
- 	.statesize	=	sizeof(struct sha256_state),
- 	.base		=	{
--		.cra_name	=	"sha256",
--		.cra_driver_name=	"sha256-generic",
--		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
--		.cra_blocksize	=	SHA256_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
-+		.cra_name		=	"sha256",
-+		.cra_driver_name	=	"sha256-generic",
-+		.cra_flags		=	CRYPTO_ALG_TYPE_SHASH,
-+		.cra_blocksize		=	SHA256_BLOCK_SIZE,
-+		.cra_module		=	THIS_MODULE,
- 	}
- };
- 
-@@ -361,11 +361,11 @@ static struct shash_alg sha224 = {
- 	.final		=	sha224_final,
- 	.descsize	=	sizeof(struct sha256_state),
- 	.base		=	{
--		.cra_name	=	"sha224",
--		.cra_driver_name=	"sha224-generic",
--		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
--		.cra_blocksize	=	SHA224_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
-+		.cra_name		=	"sha224",
-+		.cra_driver_name	=	"sha224-generic",
-+		.cra_flags		=	CRYPTO_ALG_TYPE_SHASH,
-+		.cra_blocksize		=	SHA224_BLOCK_SIZE,
-+		.cra_module		=	THIS_MODULE,
- 	}
- };
- 
--- 
-1.6.6.1
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+But see below.
+
+> ---
+>  mm/Kconfig |   20 ++++++++++++++++----
+>  1 files changed, 16 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index 17b8947..b1c2781 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -168,17 +168,29 @@ config SPLIT_PTLOCK_CPUS
+>  	default "4"
+>  
+>  #
+> +# support for memory compaction
+> +config COMPACTION
+> +	bool "Allow for memory compaction"
+> +	def_bool y
+> +	select MIGRATION
+> +	depends on EXPERIMENTAL && HUGETLBFS
+> +	help
+> +	  Allows the compaction of memory for the allocation of huge pages.
+> +
+
+I think 
+  + depends on MMU
+
+Thanks,
+-Kame
+
+> +#
+>  # support for page migration
+>  #
+>  config MIGRATION
+>  	bool "Page migration"
+>  	def_bool y
+> -	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
+> +	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE || COMPACTION
+>  	help
+>  	  Allows the migration of the physical location of pages of processes
+> -	  while the virtual addresses are not changed. This is useful for
+> -	  example on NUMA systems to put pages nearer to the processors accessing
+> -	  the page.
+> +	  while the virtual addresses are not changed. This is useful in
+> +	  two situations. The first is on NUMA systems to put pages nearer
+> +	  to the processors accessing. The second is when allocating huge
+> +	  pages as migration can relocate pages to satisfy a huge page
+> +	  allocation instead of reclaiming.
+>  
+>  config PHYS_ADDR_T_64BIT
+>  	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
+> -- 
+> 1.6.5
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
