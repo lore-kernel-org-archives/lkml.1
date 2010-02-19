@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517Ab0BSRIX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:08:23 -0500
-Received: from kroah.org ([198.145.64.141]:57731 "EHLO coco.kroah.org"
+	id S1755218Ab0BSRGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:06:52 -0500
+Received: from kroah.org ([198.145.64.141]:57768 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956Ab0BSRBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:01:00 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:49 2010
-Message-Id: <20100219163249.094055491@kvm.kroah.org>
+	id S1754995Ab0BSRBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:01:05 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:51 2010
+Message-Id: <20100219163251.412657313@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:30:00 -0800
+Date: Fri, 19 Feb 2010 08:30:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sergey Matyukevich <geomatsi@gmail.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Sergey Lapin <slapin@ossfans.org>
-Subject: [67/93] rtc-fm3130: add missing braces
+       George Kadianakis <desnacked@gmail.com>,
+       maximilian attems <max@stro.at>
+Subject: [74/93] Staging: fix rtl8187se compilation errors with mac80211
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,45 +26,204 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sergey Matyukevich <geomatsi@gmail.com>
+From: George Kadianakis <desnacked@gmail.com>
 
-commit f4b5162820de60204afa5c8639335f4931b7fb0c upstream.
+commit df574b8ecfb3a84af96229f336a6be88ca4a7055 upstream.
 
-Add missing braces for multiline 'if' statements in fm3130_probe.
+This patch fixes compilation problems that were caused by function
+naming conflicts between the rtl8187se driver and the mac80211 stack.
 
-Signed-off-by: Sergey Matyukevich <geomatsi@gmail.com>
-Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
-Cc: Sergey Lapin <slapin@ossfans.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: George Kadianakis <desnacked@gmail.com>
+Cc: maximilian attems <max@stro.at>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/drivers/rtc/rtc-fm3130.c
-+++ b/drivers/rtc/rtc-fm3130.c
-@@ -376,20 +376,22 @@ static int __devinit fm3130_probe(struct i2c_client *client,
+---
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h         |   10 +++++-----
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c      |    2 +-
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |   14 +++++++-------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c      |    2 +-
+ drivers/staging/rtl8187se/r8180_core.c                  |   10 +++++-----
+ drivers/staging/rtl8187se/r8180_wx.c                    |    2 +-
+ 6 files changed, 20 insertions(+), 20 deletions(-)
+
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+@@ -1318,13 +1318,13 @@ extern int ieee80211_encrypt_fragment(
+ 	struct sk_buff *frag,
+ 	int hdr_len);
+ 
+-extern int ieee80211_xmit(struct sk_buff *skb,
++extern int ieee80211_rtl_xmit(struct sk_buff *skb,
+ 			  struct net_device *dev);
+ extern void ieee80211_txb_free(struct ieee80211_txb *);
+ 
+ 
+ /* ieee80211_rx.c */
+-extern int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
++extern int ieee80211_rtl_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
+ 			struct ieee80211_rx_stats *rx_stats);
+ extern void ieee80211_rx_mgt(struct ieee80211_device *ieee,
+ 			     struct ieee80211_hdr_4addr *header,
+@@ -1376,8 +1376,8 @@ extern void ieee80211_stop_protocol(stru
+ extern void ieee80211_softmac_start_protocol(struct ieee80211_device *ieee);
+ extern void ieee80211_softmac_stop_protocol(struct ieee80211_device *ieee);
+ extern void ieee80211_reset_queue(struct ieee80211_device *ieee);
+-extern void ieee80211_wake_queue(struct ieee80211_device *ieee);
+-extern void ieee80211_stop_queue(struct ieee80211_device *ieee);
++extern void ieee80211_rtl_wake_queue(struct ieee80211_device *ieee);
++extern void ieee80211_rtl_stop_queue(struct ieee80211_device *ieee);
+ extern struct sk_buff *ieee80211_get_beacon(struct ieee80211_device *ieee);
+ extern void ieee80211_start_send_beacons(struct ieee80211_device *ieee);
+ extern void ieee80211_stop_send_beacons(struct ieee80211_device *ieee);
+@@ -1385,7 +1385,7 @@ extern int ieee80211_wpa_supplicant_ioct
+ extern void notify_wx_assoc_event(struct ieee80211_device *ieee);
+ extern void ieee80211_ps_tx_ack(struct ieee80211_device *ieee, short success);
+ extern void SendDisassociation(struct ieee80211_device *ieee,u8* asSta,u8 asRsn);
+-extern void ieee80211_start_scan(struct ieee80211_device *ieee);
++extern void ieee80211_rtl_start_scan(struct ieee80211_device *ieee);
+ 
+ //Add for RF power on power off by lizhaoming 080512
+ extern void SendDisassociation(struct ieee80211_device *ieee,
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -470,7 +470,7 @@ drop:
+ /* All received frames are sent to this function. @skb contains the frame in
+  * IEEE 802.11 format, i.e., in the format it was sent over air.
+  * This function is called only as a tasklet (software IRQ). */
+-int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
++int ieee80211_rtl_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
+ 		 struct ieee80211_rx_stats *rx_stats)
+ {
+ 	struct net_device *dev = ieee->dev;
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+@@ -689,7 +689,7 @@ void ieee80211_stop_scan(struct ieee8021
+ }
+ 
+ /* called with ieee->lock held */
+-void ieee80211_start_scan(struct ieee80211_device *ieee)
++void ieee80211_rtl_start_scan(struct ieee80211_device *ieee)
+ {
+ 	if(IS_DOT11D_ENABLE(ieee) )
+ 	{
+@@ -1196,7 +1196,7 @@ void ieee80211_associate_step1(struct ie
  	}
+ }
  
- 	/* Disabling calibration mode */
--	if (fm3130->regs[FM3130_RTC_CONTROL] & FM3130_RTC_CONTROL_BIT_CAL)
-+	if (fm3130->regs[FM3130_RTC_CONTROL] & FM3130_RTC_CONTROL_BIT_CAL) {
- 		i2c_smbus_write_byte_data(client, FM3130_RTC_CONTROL,
- 			fm3130->regs[FM3130_RTC_CONTROL] &
- 				~(FM3130_RTC_CONTROL_BIT_CAL));
- 		dev_warn(&client->dev, "Disabling calibration mode!\n");
-+	}
+-void ieee80211_auth_challenge(struct ieee80211_device *ieee, u8 *challenge, int chlen)
++void ieee80211_rtl_auth_challenge(struct ieee80211_device *ieee, u8 *challenge, int chlen)
+ {
+ 	u8 *c;
+ 	struct sk_buff *skb;
+@@ -1898,7 +1898,7 @@ associate_complete:
  
- 	/* Disabling read and write modes */
- 	if (fm3130->regs[FM3130_RTC_CONTROL] & FM3130_RTC_CONTROL_BIT_WRITE ||
--	    fm3130->regs[FM3130_RTC_CONTROL] & FM3130_RTC_CONTROL_BIT_READ)
-+	    fm3130->regs[FM3130_RTC_CONTROL] & FM3130_RTC_CONTROL_BIT_READ) {
- 		i2c_smbus_write_byte_data(client, FM3130_RTC_CONTROL,
- 			fm3130->regs[FM3130_RTC_CONTROL] &
- 				~(FM3130_RTC_CONTROL_BIT_READ |
- 					FM3130_RTC_CONTROL_BIT_WRITE));
- 		dev_warn(&client->dev, "Disabling READ or WRITE mode!\n");
-+	}
+ 								ieee80211_associate_step2(ieee);
+ 							}else{
+-								ieee80211_auth_challenge(ieee, challenge, chlen);
++								ieee80211_rtl_auth_challenge(ieee, challenge, chlen);
+ 							}
+ 						}else{
+ 							ieee->softmac_stats.rx_auth_rs_err++;
+@@ -2047,7 +2047,7 @@ void ieee80211_reset_queue(struct ieee80
  
- 	/* oscillator off?  turn it on, so clock can tick. */
- 	if (fm3130->regs[FM3130_CAL_CONTROL] & FM3130_CAL_CONTROL_BIT_nOSCEN)
+ }
+ 
+-void ieee80211_wake_queue(struct ieee80211_device *ieee)
++void ieee80211_rtl_wake_queue(struct ieee80211_device *ieee)
+ {
+ 
+ 	unsigned long flags;
+@@ -2089,7 +2089,7 @@ exit :
+ }
+ 
+ 
+-void ieee80211_stop_queue(struct ieee80211_device *ieee)
++void ieee80211_rtl_stop_queue(struct ieee80211_device *ieee)
+ {
+ 	//unsigned long flags;
+ 	//spin_lock_irqsave(&ieee->lock,flags);
+@@ -2301,7 +2301,7 @@ void ieee80211_start_bss(struct ieee8021
+ //#else
+ 	if (ieee->state == IEEE80211_NOLINK){
+ 		ieee->actscanning = true;
+-		ieee80211_start_scan(ieee);
++		ieee80211_rtl_start_scan(ieee);
+ 	}
+ //#endif
+ 	spin_unlock_irqrestore(&ieee->lock, flags);
+@@ -2357,7 +2357,7 @@ void ieee80211_associate_retry_wq(struct
+ 	if(ieee->state == IEEE80211_NOLINK){
+ 		ieee->beinretry = false;
+ 		ieee->actscanning = true;
+-		ieee80211_start_scan(ieee);
++		ieee80211_rtl_start_scan(ieee);
+ 	}
+ 	//YJ,add,080828, notify os here
+ 	if(ieee->state == IEEE80211_NOLINK)
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
+@@ -305,7 +305,7 @@ ieee80211_classify(struct sk_buff *skb,
+ }
+ 
+ /* SKBs are added to the ieee->tx_queue. */
+-int ieee80211_xmit(struct sk_buff *skb,
++int ieee80211_rtl_xmit(struct sk_buff *skb,
+ 		   struct net_device *dev)
+ {
+ 	struct ieee80211_device *ieee = netdev_priv(dev);
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -1830,7 +1830,7 @@ void rtl8180_rx(struct net_device *dev)
+ 			if(priv->rx_skb->len > 4)
+ 				skb_trim(priv->rx_skb,priv->rx_skb->len-4);
+ #ifndef RX_DONT_PASS_UL
+-			if(!ieee80211_rx(priv->ieee80211,
++			if(!ieee80211_rtl_rx(priv->ieee80211,
+ 					 priv->rx_skb, &stats)){
+ #endif // RX_DONT_PASS_UL
+ 
+@@ -1936,11 +1936,11 @@ rate)
+ 	if (!check_nic_enought_desc(dev, priority)){
+ 		DMESGW("Error: no descriptor left by previous TX (avail %d) ",
+ 			get_curr_tx_free_desc(dev, priority));
+-		ieee80211_stop_queue(priv->ieee80211);
++		ieee80211_rtl_stop_queue(priv->ieee80211);
+ 	}
+ 	rtl8180_tx(dev, skb->data, skb->len, priority, morefrag,0,rate);
+ 	if (!check_nic_enought_desc(dev, priority))
+-		ieee80211_stop_queue(priv->ieee80211);
++		ieee80211_rtl_stop_queue(priv->ieee80211);
+ 
+ 	spin_unlock_irqrestore(&priv->tx_lock,flags);
+ }
+@@ -3846,7 +3846,7 @@ static const struct net_device_ops rtl81
+ 	.ndo_set_mac_address	= r8180_set_mac_adr,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ 	.ndo_change_mtu		= eth_change_mtu,
+-	.ndo_start_xmit		= ieee80211_xmit,
++	.ndo_start_xmit		= ieee80211_rtl_xmit,
+ };
+ 
+ static int __devinit rtl8180_pci_probe(struct pci_dev *pdev,
+@@ -4066,7 +4066,7 @@ void rtl8180_try_wake_queue(struct net_d
+ 	spin_unlock_irqrestore(&priv->tx_lock,flags);
+ 
+ 	if(enough_desc)
+-		ieee80211_wake_queue(priv->ieee80211);
++		ieee80211_rtl_wake_queue(priv->ieee80211);
+ }
+ 
+ void rtl8180_tx_isr(struct net_device *dev, int pri,short error)
+--- a/drivers/staging/rtl8187se/r8180_wx.c
++++ b/drivers/staging/rtl8187se/r8180_wx.c
+@@ -377,7 +377,7 @@ static int r8180_wx_set_scan(struct net_
+ 	//	queue_work(priv->ieee80211->wq, &priv->ieee80211->wx_sync_scan_wq);
+ 		//printk("start scan============================>\n");
+ 		ieee80211_softmac_ips_scan_syncro(priv->ieee80211);
+-//ieee80211_start_scan(priv->ieee80211);
++//ieee80211_rtl_start_scan(priv->ieee80211);
+ 		/* intentionally forget to up sem */
+ //			up(&priv->ieee80211->wx_sem);
+ 			ret = 0;
 
 
