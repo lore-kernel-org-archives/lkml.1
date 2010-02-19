@@ -1,127 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862Ab0BSR6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:58:36 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:37473 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719Ab0BSR6e (ORCPT
+	id S1755100Ab0BSR7N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:59:13 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48554 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754684Ab0BSR7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:58:34 -0500
-Subject: [PATCH v1 3/7] vsprintf: move %pR resource printf_specs off the stack
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <abelay@mit.edu>
-Date: Fri, 19 Feb 2010 10:58:33 -0700
-Message-ID: <20100219175833.9199.24884.stgit@bob.kio>
-In-Reply-To: <20100219175655.9199.30691.stgit@bob.kio>
-References: <20100219175655.9199.30691.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Fri, 19 Feb 2010 12:59:09 -0500
+Date: Fri, 19 Feb 2010 23:28:59 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Michael Stefaniuc <mstefani@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 2/2] hw-breakpoint: Keep track of dr7 local enable bits
+Message-ID: <20100219175859.GA4736@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <4B7881AC.5070209@redhat.com> <1266516001-7753-3-git-send-regression-fweisbec@gmail.com> <20100219084523.GA3525@in.ibm.com> <c62985531002190734j5da1e4bfw54ed4283f4d724e0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985531002190734j5da1e4bfw54ed4283f4d724e0@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 19, 2010 at 04:34:03PM +0100, Frederic Weisbecker wrote:
+> 2010/2/19 K.Prasad <prasad@linux.vnet.ibm.com>:
+> > So, the thread's copy of DR7 (in thread->ptrace_dr7) stores the
+> > requested data even if the 'write' onto DR7 i.e. ptrace_write_dr7()
+> > failed. This can be the other way round i.e. populate the thread's copy
+> > of DR7 only if the write was successful.
+> 
+> 
+> 
+> No. We store the new dr7 value only if ptrace_set_dr7() didn't fail.
+> 
+> 
+> 
+> > I think it will be in consonance with the v2.6.32 behaviour as well. For
+> > instance, in the code snippet from ptrace_set_debugreg() in v2.6.32
+> > below:
+> >                for (i = 0; i < 4; i++)
+> >                        if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+> >                                return -EIO;
+> >                child->thread.debugreg7 = data;
+> >
+> > The thread's copy of DR7 is populated only if the incoming data is
+> > found to be valid.
+> 
+> 
+> This is also what does this patch. thread->ptrace_dr7 is only
+> changed if ptrace_set_dr7() succeeded.
+> 
+> Thanks.
 
-This adds separate I/O and memory specs, so we don't have to change the
-field width in a shared spec, which then lets us make all the specs const
-and static, since they never change.
+hmmh...I see...looks like I experienced single-bit ECC as I read
+the patch :-) Yes, let debugreg7 store values only when a valid bkpt
+request comes in.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
-
- lib/vsprintf.c |   45 ++++++++++++++++++++++++---------------------
- 1 files changed, 24 insertions(+), 21 deletions(-)
-
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 212d047..9ed3976 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -597,22 +597,29 @@ static char *resource_string(char *buf, char *end, struct resource *res,
- #ifndef MEM_RSRC_PRINTK_SIZE
- #define MEM_RSRC_PRINTK_SIZE	10
- #endif
--	struct printf_spec hex_spec = {
-+	static const struct printf_spec io_spec = {
- 		.base = 16,
-+		.field_width = IO_RSRC_PRINTK_SIZE,
- 		.precision = -1,
- 		.flags = SPECIAL | SMALL | ZEROPAD,
- 	};
--	struct printf_spec dec_spec = {
-+	static const struct printf_spec mem_spec = {
-+		.base = 16,
-+		.field_width = MEM_RSRC_PRINTK_SIZE,
-+		.precision = -1,
-+		.flags = SPECIAL | SMALL | ZEROPAD,
-+	};
-+	static const struct printf_spec dec_spec = {
- 		.base = 10,
- 		.precision = -1,
- 		.flags = 0,
- 	};
--	struct printf_spec str_spec = {
-+	static const struct printf_spec str_spec = {
- 		.field_width = -1,
- 		.precision = 10,
- 		.flags = LEFT,
- 	};
--	struct printf_spec flag_spec = {
-+	static const struct printf_spec flag_spec = {
- 		.base = 16,
- 		.precision = -1,
- 		.flags = SPECIAL | SMALL,
-@@ -628,35 +635,31 @@ static char *resource_string(char *buf, char *end, struct resource *res,
- 		     2*RSRC_BUF_SIZE + FLAG_BUF_SIZE + RAW_BUF_SIZE)];
- 
- 	char *p = sym, *pend = sym + sizeof(sym);
--	int size = -1, addr = 0;
- 	int decode = (fmt[0] == 'R') ? 1 : 0;
--
--	if (res->flags & IORESOURCE_IO) {
--		size = IO_RSRC_PRINTK_SIZE;
--		addr = 1;
--	} else if (res->flags & IORESOURCE_MEM) {
--		size = MEM_RSRC_PRINTK_SIZE;
--		addr = 1;
--	}
-+	const struct printf_spec *specp;
- 
- 	*p++ = '[';
--	if (res->flags & IORESOURCE_IO)
-+	if (res->flags & IORESOURCE_IO) {
- 		p = string(p, pend, "io  ", str_spec);
--	else if (res->flags & IORESOURCE_MEM)
-+		specp = &io_spec;
-+	} else if (res->flags & IORESOURCE_MEM) {
- 		p = string(p, pend, "mem ", str_spec);
--	else if (res->flags & IORESOURCE_IRQ)
-+		specp = &mem_spec;
-+	} else if (res->flags & IORESOURCE_IRQ) {
- 		p = string(p, pend, "irq ", str_spec);
--	else if (res->flags & IORESOURCE_DMA)
-+		specp = &dec_spec;
-+	} else if (res->flags & IORESOURCE_DMA) {
- 		p = string(p, pend, "dma ", str_spec);
--	else {
-+		specp = &dec_spec;
-+	} else {
- 		p = string(p, pend, "??? ", str_spec);
-+		specp = &mem_spec;
- 		decode = 0;
- 	}
--	hex_spec.field_width = size;
--	p = number(p, pend, res->start, addr ? hex_spec : dec_spec);
-+	p = number(p, pend, res->start, *specp);
- 	if (res->start != res->end) {
- 		*p++ = '-';
--		p = number(p, pend, res->end, addr ? hex_spec : dec_spec);
-+		p = number(p, pend, res->end, *specp);
- 	}
- 	if (decode) {
- 		if (res->flags & IORESOURCE_MEM_64)
+Thanks,
+K.Prasad
 
