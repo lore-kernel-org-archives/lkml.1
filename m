@@ -1,65 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996Ab0BSTt5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 14:49:57 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:49065 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403Ab0BSTro (ORCPT
+	id S1752807Ab0BSTwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 14:52:22 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46984 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614Ab0BSTwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 14:47:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=r+zFWs8pHbyh4f103Gl0FamCSt5tM6YkOm0JVsMShI1/lbIDajlLbCNs6GPykLVoK1
-         WFuamM+nKI4XofD6ZNHGxIhOgmhBrxZeknzkC8PA75XNv5E9zBlOP8p/PvnR6FtGGkEb
-         /aOV9Rybtu+123CTeyD8WwJ4+JFWHUTovDQyQ=
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, Dmitry Monakhov <dmonakhov@openvz.org>
-Subject: [PATCH 5/7] ext3: use nofail variant of inode_setattr()
-Date: Fri, 19 Feb 2010 22:47:23 +0300
-Message-Id: <1266608845-13212-6-git-send-email-dmonakhov@openvz.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1266608845-13212-5-git-send-email-dmonakhov@openvz.org>
-References: <1266608845-13212-1-git-send-email-dmonakhov@openvz.org>
- <1266608845-13212-2-git-send-email-dmonakhov@openvz.org>
- <1266608845-13212-3-git-send-email-dmonakhov@openvz.org>
- <1266608845-13212-4-git-send-email-dmonakhov@openvz.org>
- <1266608845-13212-5-git-send-email-dmonakhov@openvz.org>
+	Fri, 19 Feb 2010 14:52:21 -0500
+Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
+From: Peter Zijlstra <peterz@infradead.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+	 <1266057388.557.59599.camel@twins>
+	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
+	 <1266588316.1529.370.camel@laptop>
+	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Feb 2010 20:52:12 +0100
+Message-ID: <1266609132.1529.756.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After we updated i_disk_size and stop the journal it is
-too late for error handling from inode_setattr().
-Since inode_change_ok() is now responsible for all
-necessery checks we may call __inode_setattr() which can
-not fail.
+On Fri, 2010-02-19 at 10:36 -0800, Suresh Siddha wrote:
+> > About the ping-pong for the statically infeasible scenario, the problem
+> > with that is that we actually want to ping-pong a little [*], so we
+> > might want to look at maybe doing a sd->next_pingpong jiffy measure to
+> > allow some of that.
+> > 
+> > [*] I've seen people pretty upset about the fact that when they start 6
+> > similar loads on a quad cpu the tasks will not finish in roughly similar
+> > times.
+> 
+> I thought we were doing this (ping-ping a little) already. Unless
+> something broke here also. I thought fix_small_imbalance() takes care of
+> this too. 
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- fs/ext3/inode.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+I'm not sure we do, when I test on the patched kernel I see two distinct
+groups of runtime appear (haven't checked the unpatched one, but I doubt
+it'll be better).
 
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 455e6e6..196aee3 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -3184,8 +3184,11 @@ int ext3_setattr(struct dentry *dentry, struct iattr *attr)
- 			error = rc;
- 		ext3_journal_stop(handle);
- 	}
--
--	rc = inode_setattr(inode, attr);
-+	/*
-+	 * All necessery check already done in inode_check_ok(),
-+	 * it is safe to use nofail version here.
-+	 */
-+	__inode_setattr(inode, attr);
- 
- 	if (!rc && (ia_valid & ATTR_MODE))
- 		rc = ext3_acl_chmod(inode);
--- 
-1.6.6
+
 
