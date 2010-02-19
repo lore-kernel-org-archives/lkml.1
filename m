@@ -1,78 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752383Ab0BSPsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:48:54 -0500
-Received: from www.tglx.de ([62.245.132.106]:40527 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169Ab0BSPsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:48:53 -0500
-Date: Fri, 19 Feb 2010 16:46:49 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-tip-commits@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
- on PCI
-In-Reply-To: <20100219121734.GA8300@basil.fritz.box>
-Message-ID: <alpine.LFD.2.00.1002191423480.2811@localhost.localdomain>
-References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu> <4B7B1C40.8070208@linux.intel.com> <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain>
- <20100219121734.GA8300@basil.fritz.box>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753474Ab0BSPt5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:49:57 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:35140 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913Ab0BSPtz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 10:49:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QqFgvfF7KlHrSqJidgG/IRkRvDzd4mnq3Tvn9SCyVueMdQQfi+wpUa8Gtm3WUtwObh
+         nBp8IgIoZuO0KfjBtnfQ+BmWBz1qhtvL4BJOWeRa/arJBef4jPdcw1LFZD/IlukIWMYB
+         MTxu6WlRL5NWoA3PtlN6ZQxviMBIXMNvIGoE0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20100219085831.GA10837@in.ibm.com>
+References: <4B7881AC.5070209@redhat.com>
+	 <1266516001-7753-3-git-send-regression-fweisbec@gmail.com>
+	 <20100219085831.GA10837@in.ibm.com>
+Date: Fri, 19 Feb 2010 16:49:53 +0100
+Message-ID: <c62985531002190749o250f7598gde0ab14cff4cce9a@mail.gmail.com>
+Subject: Re: [PATCH 2/2] hw-breakpoint: Keep track of dr7 local enable bits
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: prasad@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Michael Stefaniuc <mstefani@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+2010/2/19 K.Prasad <prasad@linux.vnet.ibm.com>:
+> On Thu, Feb 18, 2010 at 07:00:01PM +0100, Frederic Weisbecker wrote:
+>
+>> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+>> index 017d937..0c1033d 100644
+>> --- a/arch/x86/kernel/ptrace.c
+>> +++ b/arch/x86/kernel/ptrace.c
+>> @@ -702,7 +702,7 @@ static unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
+>>       } else if (n == 6) {
+>>               val = thread->debugreg6;
+>>        } else if (n == 7) {
+>> -             val = ptrace_get_dr7(thread->ptrace_bps);
+>> +             val = thread->ptrace_dr7;
+>
+> Some more comments that I missed out in the previous mail...
+>
+> Shouldn't ptrace_get_dr7() function be entirely removed now, given that
+> its only caller no longer invokes it?
 
-On Fri, 19 Feb 2010, Andi Kleen wrote:
-> > and integrate it
-> > into perf as the suitable event logging mechanism.
-> 
-> The main reason I didn't react to that proposal is
-> I don't see a clear path to make perf a good error mechanism.
 
-Thanks for confirming the main problem here:
+Not in this set. This is an urgent fix, we shouldn't take corner risks
+so late in the process.
 
-  _You_ do not react, because _you_ do not see a clear path.
- 
-So _you_ ignore any request for a major cleanup of that whole MCE mess
-and just keep on tinkering with the existing crap.
+Also, this thread->ptrace_dr7 is a temporary thing, a hack to fix a
+regression without
+taking too much risk. But we need something more proper in the longer term, like
+storing this information in the arch_hw_breakpoint (we shouldn't bloat
+the thread
+structure with such mostly unused field).
 
-And you really expect us to tolerate your ignorance forever and just
-apply happily more crap to something which should have never been
-merged in the first place.
+I have some ideas to get the arch_hw_breakpoint more "arch", to
+register breakpoints
+using arch informations only, so that we don't depend on a generic
+breakpoint attribute
+conversion for ptrace, which may be too limited for tricky arch
+breakpoint implementations,
+and an unecessary midlayer there.
+I'll tell you more while answering to your ppc breakpoint implementation.
 
-<snip>
 
-> The patch above was simply intended to solve a specific problem on a specific 
-> chip.  I don't claim the interface is the best I ever did (definitely not), 
-> but at least it solves an existing problem in a relatively straight forward
-> way and I claim there's no clear better solution with today's infrastructure.
 
-The patch does not solve a specific problem. It merily adds extra info
-retrieved from this specific chip. This is simply a new feature which
-you hacked into the existing mce code.
+>>       }
+>>       return val;
+>>  }
+>> @@ -778,8 +778,11 @@ int ptrace_set_debugreg(struct task_struct *tsk, int n, unsigned long val)
+>>                       return rc;
+>>       }
+>>       /* All that's left is DR7 */
+>> -     if (n == 7)
+>> +     if (n == 7) {
+>>               rc = ptrace_write_dr7(tsk, val);
+>
+> And ptrace_write_dr7() should be made to populate thread->ptrace_dr7 if
+> it is going to return a success.
 
-There will always be a next generation chip with a specific new
-feature and it does _NOT_ matter at all whether support for such a new
-feature is straight forward in your opinion or not. Straight forward
-crap is still crap.
 
-The whole point is that we are not longer accepting whacky addons to
-MCE w/o seing any collaborative reaction from your side on our
-technical requests to fix up the whole thing for real.
+Yeah we can do that from ptrace_write_dr7(). Either way.
+It's just more quick to do that here. I did not think much
+about it as I don't think about ptrace_dr7 as a long term field.
 
-You can point me to as many PDFs as you want. I'm not interested in
-stuff you are breeding on your own w/o talking to EDAC folks and
-trying to address the concerns which were raised by Ingo, myself and
-others.
+Thanks.
 
-Thanks,
 
-	tglx
+>> +             if (!rc)
+>> +                     thread->ptrace_dr7 = val;
+>> +     }
+>>
+>>  ret_path:
+>>       return rc;
