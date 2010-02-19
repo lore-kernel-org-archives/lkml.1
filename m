@@ -1,68 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469Ab0BSV6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:58:43 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33313 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752017Ab0BSV6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:58:42 -0500
-Date: Fri, 19 Feb 2010 21:58:26 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM
-	and page migration
-Message-ID: <20100219215826.GF1445@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-4-git-send-email-mel@csn.ul.ie> <4B7F05BA.4080903@redhat.com>
+	id S1755351Ab0BSWDM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 17:03:12 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:47969 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042Ab0BSWDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 17:03:10 -0500
+Date: Fri, 19 Feb 2010 22:03:06 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Allan, Bruce W" <bruce.w.allan@intel.com>
+Cc: "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [E1000-devel] [PATCH v3 1/2] e1000e: Only disable ASPM on
+	82573L devices
+Message-ID: <20100219220306.GA6795@srcf.ucam.org>
+References: <1265912094-4705-1-git-send-email-mjg@redhat.com> <8DD2590731AB5D4C9DBF71A877482A9061394282@orsmsx509.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B7F05BA.4080903@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <8DD2590731AB5D4C9DBF71A877482A9061394282@orsmsx509.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 04:42:18PM -0500, Rik van Riel wrote:
-> On 02/18/2010 01:02 PM, Mel Gorman wrote:
->
->>   struct anon_vma {
->>   	spinlock_t lock;	/* Serialize access to vma list */
->> -#ifdef CONFIG_KSM
->> -	atomic_t ksm_refcount;
->> -#endif
->> -#ifdef CONFIG_MIGRATION
->> -	atomic_t migrate_refcount;
->> +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
->> +
->> +	/*
->> +	 * The refcount is taken by either KSM or page migration
->> +	 * to take a reference to an anon_vma when there is no
->> +	 * guarantee that the vma of page tables will exist for
->> +	 * the duration of the operation. A caller that takes
->> +	 * the reference is responsible for clearing up the
->> +	 * anon_vma if they are the last user on release
->> +	 */
->> +	atomic_t refcount;
->
-> Calling it just refcount is probably confusing, since
-> the anon_vma is also referenced by being on the chain
-> with others.
->
-> Maybe "other_refcount" because it is refcounts taken
-> by things other than VMAs?  I am sure there is a better
-> name possible...
->
+On Fri, Feb 19, 2010 at 01:53:01PM -0800, Allan, Bruce W wrote:
 
-external_refcount is about as good as I can think of to explain what's
-going on :/
+> Exactly which erratum are you referring to?  Erratum 17 in the 82573 
+> Specification Update?  If that is the case, I see the possibility of 
+> another interpretation of the erratum which suggests the possibility 
+> of the same issue on other variants of the 82573 when using standard 
+> frame sizes and ASPM enabled.  Not to mention, I believe there may be 
+> other parts (82574 perhaps) that will have issues with L1 ASPM 
+> enabled.  I will follow-up with the folks who did the investigation 
+> that resulted in the erratum in order to get a clearer picture of all 
+> this, and take a look into other parts that may likewise be affected.
+
+Ah, yes - I see that it could be interpreted that way. The description 
+seems to suggest that it's only relevant if ERT is enabled, which is 
+required for jumbo frames. I'm not entirely clear on whether ERT is 
+enabled in other circumstances? If not, we ought to be able to limit 
+this to the L device - if not, it should be done on E and V as well.
+
+The 82574 specification update doesn't mention any ASPM errata, but if 
+you're able to check then that would be great. My main aim here is to 
+try to get it turned back on on hardware where this works, since it's a 
+measurable power saving.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Matthew Garrett | mjg59@srcf.ucam.org
