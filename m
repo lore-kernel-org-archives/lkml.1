@@ -1,49 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751941Ab0BSLo3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 06:44:29 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:54792 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886Ab0BSLo1 (ORCPT
+	id S1751255Ab0BSLs0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 06:48:26 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:51918 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753Ab0BSLsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 06:44:27 -0500
-From: Thomas Weber <weber@corscience.de>
-To: trivial@kernel.org
-Cc: Thomas Weber <weber@corscience.de>, Roman Zippel <zippel@linux-m68k.org>,
-       Markus Heidelberg <markus.heidelberg@web.de>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Trivial: Scripts: kconfig: util: Fix typo in comment
-Date: Fri, 19 Feb 2010 12:43:44 +0100
-Message-Id: <1266579824-14706-1-git-send-email-weber@corscience.de>
-X-Mailer: git-send-email 1.6.4.4
-X-Provags-ID: V01U2FsdGVkX18NE9GitKCCcpHQ7c9rr4QKizsUlyF1xi6j4Oa
- nWP2pnEHAQX4jpm1LrWWeqA9IRWXtx9Tt1IDr8KYzmmuL0bmci
- Ptbijjl7lw3rsecC3iosg==
+	Fri, 19 Feb 2010 06:48:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vJicqm/PNadhnENRQ96E0syU71KX9eCsJYGwY8QUB13QJY/3AXXOE/Sx0kSFGZ9sYn
+         0t/tQIoahYpPp52/HBh47CThR8QWC8HB7jQLffRZv7o0PhkXUHSH601ZNlJnDJx+UF0I
+         WRvuOKUjidjH8Hs56qvmg0SRK2Bg/zXoBiWH8=
+MIME-Version: 1.0
+In-Reply-To: <201002182104.49631.rjw@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	 <201002172058.04043.rjw@sisk.pl>
+	 <9b2b86521002180453l176a83dand809dc239c220c08@mail.gmail.com>
+	 <201002182104.49631.rjw@sisk.pl>
+Date: Fri, 19 Feb 2010 11:48:15 +0000
+Message-ID: <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com>
+Subject: Re: s2disk hang update
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sting replaced with string
+On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday 18 February 2010, Alan Jenkins wrote:
+>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Wednesday 17 February 2010, Alan Jenkins wrote:
+>> >> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> > On Tuesday 16 February 2010, Alan Jenkins wrote:
+>> >> >> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+>> >> >> > On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >> >> On Tuesday 09 February 2010, Alan Jenkins wrote:
+>> >> >> >>> Perhaps I spoke too soon.  I see the same hang if I run too many
+>> >> >> >>> applications.  The first hibernation fails with "not enough
+>> >> >> >>> swap"
+>> >> >> >>> as
+>> >> >> >>> expected, but the second or third attempt hangs (with the same
+>> >> >> >>> backtrace
+>> >> >> >>> as before).
+>> >> >> >>>
+>> >> >> >>> The patch definitely helps though.  Without the patch, I see a
+>> >> >> >>> hang
+>> >> >> >>> the
+>> >> >> >>> first time I try to hibernate with too many applications
+>> >> >> >>> running.
+>> >> >> >>
+>> >> >> >> Well, I have an idea.
+>> >> >> >>
+>> >> >> >> Can you try to apply the appended patch in addition and see if
+>> >> >> >> that
+>> >> >> >> helps?
+>> >> >> >>
+>> >> >> >> Rafael
+>> >> >> >
+>> >> >> > It doesn't seem to help.
+>> >> >>
+>> >> >> To be clear: It doesn't stop the hang when I hibernate with too many
+>> >> >> applications.
+>> >> >>
+>> >> >> It does stop the same hang in a different case though.
+>> >> >>
+>> >> >> 1. boot with init=/bin/bash
+>> >> >> 2. run s2disk
+>> >> >> 3. cancel the s2disk
+>> >> >> 4. repeat steps 2&3
+>> >> >>
+>> >> >> With the patch, I can run 10s of iterations, with no hang.
+>> >> >> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+>> >> >> always).
+>> >> >>
+>> >> >> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+>> >> >> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+>> >> >> allocation
+>> >> >> failure after a couple of iterations ("kthreadd: page allocation
+>> >> >> failure. order:1, mode:0xd0").  It looks like it might be the same
+>> >> >> stop_machine thread allocation failure that causes the hang.
+>> >> >
+>> >> > Have you tested it alone or on top of the previous one?  If you've
+>> >> > tested it
+>> >> > alone, please apply the appended one in addition to it and retest.
+>> >> >
+>> >> > Rafael
+>> >>
+>> >> I did test with both patches applied together -
+>> >>
+>> >> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+>> >> resume
+>> >> 2. "reducing the number of pages that we're going to keep preallocated
+>> >> by
+>> >> 20%"
+>> >
+>> > In that case you can try to reduce the number of preallocated pages even
+>> > more,
+>> > ie. change "/ 5" to "/ 2" (for example) in the second patch.
+>>
+>> It still hangs if I try to hibernate a couple of times with too many
+>> applications.
+>
+> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
+> how much RAM is there in the box?
+>
+> Rafael
 
-Signed-off-by: Thomas Weber <weber@corscience.de>
----
- scripts/kconfig/util.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
 
-diff --git a/scripts/kconfig/util.c b/scripts/kconfig/util.c
-index b6b2a46..25d1ec4 100644
---- a/scripts/kconfig/util.c
-+++ b/scripts/kconfig/util.c
-@@ -72,7 +72,7 @@ int file_write_dep(const char *name)
- }
- 
- 
--/* Allocate initial growable sting */
-+/* Allocate initial growable string */
- struct gstr str_new(void)
- {
- 	struct gstr gs;
--- 
-1.6.4.4
-
+Alan
