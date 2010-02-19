@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486Ab0BSRHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:07:10 -0500
-Received: from kroah.org ([198.145.64.141]:57763 "EHLO coco.kroah.org"
+	id S1755569Ab0BSRKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:10:34 -0500
+Received: from kroah.org ([198.145.64.141]:57621 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754990Ab0BSRBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:01:04 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:51 2010
-Message-Id: <20100219163251.071809208@kvm.kroah.org>
+	id S1754729Ab0BSRAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:45 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:44 2010
+Message-Id: <20100219163244.471577875@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:30:06 -0800
+Date: Fri, 19 Feb 2010 08:29:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [73/93] x86: Re-get cfg_new in case reuse/move irq_desc
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [49/93] netfilter: xtables: compat out of scope fix
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,30 +26,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-commit 37ef2a3029fde884808ff1b369677abc7dd9a79a upstream.
+commit 14c7dbe043d01a83a30633ab6b109ba2ac61d9f7 upstream.
 
-When irq_desc is moved, we need to make sure to use the right cfg_new.
+As per C99 6.2.4(2) when temporary table data goes out of scope,
+the behaviour is undefined:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <4B07A739.3030104@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+	if (compat) {
+		struct foo tmp;
+		...
+		private = &tmp;
+	}
+	[dereference private]
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/apic/io_apic.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/ipv4/netfilter/arp_tables.c |    4 ++--
+ net/ipv4/netfilter/ip_tables.c  |    4 ++--
+ net/ipv6/netfilter/ip6_tables.c |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3157,6 +3157,7 @@ unsigned int create_irq_nr(unsigned int
- 			continue;
- 
- 		desc_new = move_irq_desc(desc_new, node);
-+		cfg_new = desc_new->chip_data;
- 
- 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
- 			irq = new;
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -925,10 +925,10 @@ static int get_info(struct net *net, voi
+ 	if (t && !IS_ERR(t)) {
+ 		struct arpt_getinfo info;
+ 		const struct xt_table_info *private = t->private;
+-
+ #ifdef CONFIG_COMPAT
++		struct xt_table_info tmp;
++
+ 		if (compat) {
+-			struct xt_table_info tmp;
+ 			ret = compat_table_info(private, &tmp);
+ 			xt_compat_flush_offsets(NFPROTO_ARP);
+ 			private = &tmp;
+--- a/net/ipv4/netfilter/ip_tables.c
++++ b/net/ipv4/netfilter/ip_tables.c
+@@ -1132,10 +1132,10 @@ static int get_info(struct net *net, voi
+ 	if (t && !IS_ERR(t)) {
+ 		struct ipt_getinfo info;
+ 		const struct xt_table_info *private = t->private;
+-
+ #ifdef CONFIG_COMPAT
++		struct xt_table_info tmp;
++
+ 		if (compat) {
+-			struct xt_table_info tmp;
+ 			ret = compat_table_info(private, &tmp);
+ 			xt_compat_flush_offsets(AF_INET);
+ 			private = &tmp;
+--- a/net/ipv6/netfilter/ip6_tables.c
++++ b/net/ipv6/netfilter/ip6_tables.c
+@@ -1164,10 +1164,10 @@ static int get_info(struct net *net, voi
+ 	if (t && !IS_ERR(t)) {
+ 		struct ip6t_getinfo info;
+ 		const struct xt_table_info *private = t->private;
+-
+ #ifdef CONFIG_COMPAT
++		struct xt_table_info tmp;
++
+ 		if (compat) {
+-			struct xt_table_info tmp;
+ 			ret = compat_table_info(private, &tmp);
+ 			xt_compat_flush_offsets(AF_INET6);
+ 			private = &tmp;
 
 
