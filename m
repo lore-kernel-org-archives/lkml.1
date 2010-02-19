@@ -1,220 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642Ab0BSOd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 09:33:27 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44328 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833Ab0BSOd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 09:33:26 -0500
-Date: Fri, 19 Feb 2010 14:33:10 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 05/12] Memory compaction core
-Message-ID: <20100219143310.GM30258@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-6-git-send-email-mel@csn.ul.ie> <1266512324.1709.295.camel@barrios-desktop> <20100218173437.GA30258@csn.ul.ie> <28c262361002181721k2c40854ah638eaaf2254e92a@mail.gmail.com>
+	id S1752740Ab0BSOiH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 09:38:07 -0500
+Received: from zimbra.ccs.neu.edu ([129.10.116.59]:48727 "EHLO
+	zimbra.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941Ab0BSOiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 09:38:04 -0500
+Date: Fri, 19 Feb 2010 09:37:55 -0500 (EST)
+From: Ari Entlich <atrigent@ccs.neu.edu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-ID: <5702371.144261266590275669.JavaMail.root@zimbra>
+In-Reply-To: <33024815.144191266590249679.JavaMail.root@zimbra>
+Subject: [PATCH v2] Add a new VT mode which is like VT_PROCESS but doesn't
+ require a VT_RELDISP ioctl call
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262361002181721k2c40854ah638eaaf2254e92a@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [129.10.223.88]
+X-Mailer: Zimbra 5.0.22_GA_3210.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.22_GA_3210.UBUNTU6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 10:21:10AM +0900, Minchan Kim wrote:
-> On Fri, Feb 19, 2010 at 2:34 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > On Fri, Feb 19, 2010 at 01:58:44AM +0900, Minchan Kim wrote:
-> >> On Fri, 2010-02-12 at 12:00 +0000, Mel Gorman wrote:
-> >> > +/* Isolate free pages onto a private freelist. Must hold zone->lock */
-> >> > +static int isolate_freepages_block(struct zone *zone,
-> >>
-> >> return type 'int'?
-> >> I think we can't return signed value.
-> >>
-> >
-> > I don't understand your query. What's wrong with returning int?
-> 
-> It's just nitpick. I mean this functions doesn't return minus value.
-> Never mind.
-> 
-> >
-> >> > +                           unsigned long blockpfn,
-> >> > +                           struct list_head *freelist)
-> >> > +{
-> >> > +   unsigned long zone_end_pfn, end_pfn;
-> >> > +   int total_isolated = 0;
-> >> > +
-> >> > +   /* Get the last PFN we should scan for free pages at */
-> >> > +   zone_end_pfn = zone->zone_start_pfn + zone->spanned_pages;
-> >> > +   end_pfn = blockpfn + pageblock_nr_pages;
-> >> > +   if (end_pfn > zone_end_pfn)
-> >> > +           end_pfn = zone_end_pfn;
-> >> > +
-> >> > +   /* Isolate free pages. This assumes the block is valid */
-> >> > +   for (; blockpfn < end_pfn; blockpfn++) {
-> >> > +           struct page *page;
-> >> > +           int isolated, i;
-> >> > +
-> >> > +           if (!pfn_valid_within(blockpfn))
-> >> > +                   continue;
-> >> > +
-> >> > +           page = pfn_to_page(blockpfn);
-> >> > +           if (!PageBuddy(page))
-> >> > +                   continue;
-> >> > +
-> >> > +           /* Found a free page, break it into order-0 pages */
-> >> > +           isolated = split_free_page(page);
-> >> > +           total_isolated += isolated;
-> >> > +           for (i = 0; i < isolated; i++) {
-> >> > +                   list_add(&page->lru, freelist);
-> >> > +                   page++;
-> >> > +           }
-> >> > +           blockpfn += isolated - 1;
-> >
-> > Incidentally, this line is wrong but will be fixed in line 3. If
-> > split_free_page() fails, it causes an infinite loop.
-> >
-> >> > +   }
-> >> > +
-> >> > +   return total_isolated;
-> >> > +}
-> >> > +
-> >> > +/* Returns 1 if the page is within a block suitable for migration to */
-> >> > +static int suitable_migration_target(struct page *page)
-> >> > +{
-> >> > +   /* If the page is a large free page, then allow migration */
-> >> > +   if (PageBuddy(page) && page_order(page) >= pageblock_order)
-> >> > +           return 1;
-> >> > +
-> >> > +   /* If the block is MIGRATE_MOVABLE, allow migration */
-> >> > +   if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE)
-> >> > +           return 1;
-> >> > +
-> >> > +   /* Otherwise skip the block */
-> >> > +   return 0;
-> >> > +}
-> >> > +
-> >> > +/*
-> >> > + * Based on information in the current compact_control, find blocks
-> >> > + * suitable for isolating free pages from
-> >> > + */
-> >> > +static void isolate_freepages(struct zone *zone,
-> >> > +                           struct compact_control *cc)
-> >> > +{
-> >> > +   struct page *page;
-> >> > +   unsigned long high_pfn, low_pfn, pfn;
-> >> > +   unsigned long flags;
-> >> > +   int nr_freepages = cc->nr_freepages;
-> >> > +   struct list_head *freelist = &cc->freepages;
-> >> > +
-> >> > +   pfn = cc->free_pfn;
-> >> > +   low_pfn = cc->migrate_pfn + pageblock_nr_pages;
-> >> > +   high_pfn = low_pfn;
-> >> > +
-> >> > +   /*
-> >> > +    * Isolate free pages until enough are available to migrate the
-> >> > +    * pages on cc->migratepages. We stop searching if the migrate
-> >> > +    * and free page scanners meet or enough free pages are isolated.
-> >> > +    */
-> >> > +   spin_lock_irqsave(&zone->lock, flags);
-> >> > +   for (; pfn > low_pfn && cc->nr_migratepages > nr_freepages;
-> >> > +                                   pfn -= pageblock_nr_pages) {
-> >> > +           int isolated;
-> >> > +
-> >> > +           if (!pfn_valid(pfn))
-> >> > +                   continue;
-> >> > +
-> >> > +           /* Check for overlapping nodes/zones */
-> >> > +           page = pfn_to_page(pfn);
-> >> > +           if (page_zone(page) != zone)
-> >> > +                   continue;
-> >>
-> >> We are progressing backward by physical page order in a zone.
-> >> If we meet crossover between zone, Why are we going backward
-> >> continuously? Before it happens, migration and free scanner would meet.
-> >> Am I miss something?
-> >>
-> >
-> > I was considering a situation like the following
-> >
-> >
-> > Node-0     Node-1       Node-0
-> > DMA        DMA          DMA
-> > 0-1023     1024-2047    2048-4096
-> >
-> > In that case, a PFN scanner can enter a new node and zone but the migrate
-> > and free scanners have not necessarily met. This configuration is *extremely*
-> > rare but it happens on messed-up LPAR configurations on POWER.
-> 
-> I don't know such architecture until now.
-> Thanks for telling me.
-> How about adding the comment about that?
-> 
+This new VT mode (VT_PROCESS_AUTO) does everything that VT_PROCESS does
+except that it doesn't wait for a VT_RELDISP ioctl before switching
+away from a VT with that mode.
 
-Sure
+If the X server eventually uses this new mode, debugging and crash
+recovery should become easier. This is because even when currently in
+the VT of a frozen X server it would still be possible to switch out
+by doing SysRq-r and then CTRL-<number of a text vt>, sshing in and
+doing chvt <number of a text vt>, or any other method of VT switching.
+The general concensus on #xorg-devel seems to be that it should be
+safe to use this with X now that we have KMS.
 
-> >
-> >> > +
-> >> > +           /* Check the block is suitable for migration */
-> >> > +           if (!suitable_migration_target(page))
-> >> > +                   continue;
-> >>
-> >> Dumb question.
-> >> suitable_migration_target considers three type's pages
-> >>
-> >> 1. free page and page's order >= pageblock_order
-> >> 2. free pages and pages's order < pageblock_order with movable page
-> >> 3. used page with movable
-> >>
-> >> I can understand 1 and 2 but can't 3. This function is for gathering
-> >> free page. How do you handle used page as free one?
-> >>
-> >> In addition, as I looked into isolate_freepages_block, it doesn't
-> >> consider 3 by PageBuddy check.
-> >>
-> >> I am confusing. Pz, correct me.
-> >>
-> >
-> > I'm afraid I don't understand your question. At the point
-> > suitable_migration_target() is called, the only concern is finding a pageblock
-> > of pages that should be scanned for free pages by isolate_freepages_block().
-> > What do you mean by "used page with movable" ?
-> 
-> After I looked into code, I understand it.
-> Thanks.
-> 
-> <snip>
-> >>> +/* Similar to split_page except the page is already free */
-> >> Sometime, this function changes pages's type to MIGRATE_MOVABLE.
-> >> I hope adding comment about that.
-> >>
-> >
-> > There is a comment within the function about it. Do you want it moved to
-> > here?
-> 
-> If you don't mind, I hope so. :)
-> 
+This also moves the VT_ACKACQ define to a more appropriate place,
+for clarity's sake.
 
-Done.
+Signed-off-by: Ari Entlich <atrigent@ccs.neu.edu>
+---
+ drivers/char/vt_ioctl.c |   39 ++++++++++++++++++++-------------------
+ include/linux/vt.h      |    3 ++-
+ 2 files changed, 22 insertions(+), 20 deletions(-)
 
-> That's because you wrote down only "except the page is already free" in
-> function description. So I thought it's only difference with split_page at first
-> glance. I think information that setting MIGRATE_MOVABLE is important.
-> 
-> Pz, thinks it as just nitpick.
-
-No, it's a fair point. I can see how it could trip someone up.
-
-Thanks
-
+diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+index 6aa1028..87778dc 100644
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -888,7 +888,7 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
+ 			ret = -EFAULT;
+ 			goto out;
+ 		}
+-		if (tmp.mode != VT_AUTO && tmp.mode != VT_PROCESS) {
++		if (tmp.mode != VT_AUTO && tmp.mode != VT_PROCESS && tmp.mode != VT_PROCESS_AUTO) {
+ 			ret = -EINVAL;
+ 			goto out;
+ 		}
+@@ -1622,7 +1622,7 @@ static void complete_change_console(struct vc_data *vc)
+ 	 * telling it that it has acquired. Also check if it has died and
+ 	 * clean up (similar to logic employed in change_console())
+ 	 */
+-	if (vc->vt_mode.mode == VT_PROCESS) {
++	if (vc->vt_mode.mode == VT_PROCESS || vc->vt_mode.mode == VT_PROCESS_AUTO) {
+ 		/*
+ 		 * Send the signal as privileged - kill_pid() will
+ 		 * tell us if the process has gone or something else
+@@ -1682,7 +1682,7 @@ void change_console(struct vc_data *new_vc)
+ 	 * vt to auto control.
+ 	 */
+ 	vc = vc_cons[fg_console].d;
+-	if (vc->vt_mode.mode == VT_PROCESS) {
++	if (vc->vt_mode.mode == VT_PROCESS || vc->vt_mode.mode == VT_PROCESS_AUTO) {
+ 		/*
+ 		 * Send the signal as privileged - kill_pid() will
+ 		 * tell us if the process has gone or something else
+@@ -1693,27 +1693,28 @@ void change_console(struct vc_data *new_vc)
+ 		 */
+ 		vc->vt_newvt = new_vc->vc_num;
+ 		if (kill_pid(vc->vt_pid, vc->vt_mode.relsig, 1) == 0) {
++			if(vc->vt_mode.mode == VT_PROCESS)
++				/*
++				 * It worked. Mark the vt to switch to and
++				 * return. The process needs to send us a
++				 * VT_RELDISP ioctl to complete the switch.
++				 */
++				return;
++		} else {
+ 			/*
+-			 * It worked. Mark the vt to switch to and
+-			 * return. The process needs to send us a
+-			 * VT_RELDISP ioctl to complete the switch.
++			 * The controlling process has died, so we revert back to
++			 * normal operation. In this case, we'll also change back
++			 * to KD_TEXT mode. I'm not sure if this is strictly correct
++			 * but it saves the agony when the X server dies and the screen
++			 * remains blanked due to KD_GRAPHICS! It would be nice to do
++			 * this outside of VT_PROCESS but there is no single process
++			 * to account for and tracking tty count may be undesirable.
+ 			 */
+-			return;
++			reset_vc(vc);
+ 		}
+ 
+ 		/*
+-		 * The controlling process has died, so we revert back to
+-		 * normal operation. In this case, we'll also change back
+-		 * to KD_TEXT mode. I'm not sure if this is strictly correct
+-		 * but it saves the agony when the X server dies and the screen
+-		 * remains blanked due to KD_GRAPHICS! It would be nice to do
+-		 * this outside of VT_PROCESS but there is no single process
+-		 * to account for and tracking tty count may be undesirable.
+-		 */
+-		reset_vc(vc);
+-
+-		/*
+-		 * Fall through to normal (VT_AUTO) handling of the switch...
++		 * Fall through to normal (VT_AUTO and VT_PROCESS_AUTO) handling of the switch...
+ 		 */
+ 	}
+ 
+diff --git a/include/linux/vt.h b/include/linux/vt.h
+index d5dd0bc..778b7b2 100644
+--- a/include/linux/vt.h
++++ b/include/linux/vt.h
+@@ -27,7 +27,7 @@ struct vt_mode {
+ #define VT_SETMODE	0x5602	/* set mode of active vt */
+ #define		VT_AUTO		0x00	/* auto vt switching */
+ #define		VT_PROCESS	0x01	/* process controls switching */
+-#define		VT_ACKACQ	0x02	/* acknowledge switch */
++#define		VT_PROCESS_AUTO 0x02	/* process is notified of switching */
+ 
+ struct vt_stat {
+ 	unsigned short v_active;	/* active vt */
+@@ -38,6 +38,7 @@ struct vt_stat {
+ #define VT_SENDSIG	0x5604	/* signal to send to bitmask of vts */
+ 
+ #define VT_RELDISP	0x5605	/* release display */
++#define		VT_ACKACQ	0x02	/* acknowledge switch */
+ 
+ #define VT_ACTIVATE	0x5606	/* make vt active */
+ #define VT_WAITACTIVE	0x5607	/* wait for vt active */
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.4.4
