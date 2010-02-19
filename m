@@ -1,119 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467Ab0BSKBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 05:01:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54160 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333Ab0BSKBr (ORCPT
+	id S1753131Ab0BSKGx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 05:06:53 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:26390 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752115Ab0BSKGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 05:01:47 -0500
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for
- Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       ego@in.ibm.com
-In-Reply-To: <14639.1266559532@neuling.org>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-	 <1265403478.6089.41.camel@jschopp-laptop>
-	 <1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
-	 <1266499023.26719.597.camel@laptop>  <14639.1266559532@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Feb 2010 11:01:12 +0100
-Message-ID: <1266573672.1806.70.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Feb 2010 05:06:52 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Z/h1O43mIfRfbu+hUcNB4LNRVmTpjkV2Og+rPxLxfYswrFNypc+ElRj80z64iOln7
+	aVVV+JGAoxJrYhzKD2R2A==
+Date: Fri, 19 Feb 2010 02:06:45 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Miao Xie <miaox@cn.fujitsu.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time
+ (58568d2)
+In-Reply-To: <20100219033126.GI9738@laptop>
+Message-ID: <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com>
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 17:05 +1100, Michael Neuling wrote:
+On Fri, 19 Feb 2010, Nick Piggin wrote:
 
-> >  include/linux/sched.h |    2 +-
-> >  kernel/sched_fair.c   |   61 +++++++++++++++++++++++++++++++++++++++++++++--
-> -
-> >  2 files changed, 58 insertions(+), 5 deletions(-)
+> > guarantee_online_cpus() truly does require callback_mutex, the 
+> > cgroup_scan_tasks() iterator locking can protect changes in the cgroup 
+> > hierarchy but it doesn't protect a store to cs->cpus_allowed or for 
+> > hotplug.
+> 
+> Right, but the callback_mutex was being removed by this patch.
+> 
+
+I was making the case for it to be readded :)
+
+> > top_cpuset.cpus_allowed will always need to track cpu_active_map since 
+> > those are the schedulable cpus, it looks like that's initialized for SMP 
+> > and the cpu hotplug notifier does that correctly.
 > > 
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index 0eef87b..42fa5c6 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -849,7 +849,7 @@ enum cpu_idle_type {
-> >  #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
-> >  #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg
->  resources */
-> >  #define SD_SERIALIZE		0x0400	/* Only a single load balancing instanc
-> e */
-> > -
-> > +#define SD_ASYM_PACKING		0x0800
+> > I'm not sure what the logic is doing in cpuset_attach() where cs is the 
+> > cpuset to attach to:
+> > 
+> > 	if (cs == &top_cpuset) {
+> > 		cpumask_copy(cpus_attach, cpu_possible_mask);
+> > 		to = node_possible_map;
+> > 	}
+> > 
+> > cpus_attach is properly protected by cgroup_lock, but using 
+> > node_possible_map here will set task->mems_allowed to node_possible_map 
+> > when the cpuset does not have memory_migrate enabled.  This is the source 
+> > of your oops, I think.
 > 
-> Would we eventually add this to SD_SIBLING_INIT in a arch specific hook,
-> or is this ok to add it generically?
-
-I'd think we'd want to keep that limited to architectures that actually
-need it.
-
->  
-> > +static int update_sd_pick_busiest(struct sched_domain *sd,
-> > +	       			  struct sd_lb_stats *sds,
-> > +				  struct sched_group *sg,
-> > +			  	  struct sg_lb_stats *sgs)
-> > +{
-> > +	if (sgs->sum_nr_running > sgs->group_capacity)
-> > +		return 1;
-> > +
-> > +	if (sgs->group_imb)
-> > +		return 1;
-> > +
-> > +	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
-> > +		if (!sds->busiest)
-> > +			return 1;
-> > +
-> > +		if (group_first_cpu(sds->busiest) < group_first_cpu(group))
+> Could be, yes.
 > 
-> "group" => "sg" here? (I get a compile error otherwise)
 
-Oh, quite ;-)
+I'd be interested to see if you still get the same oops with the patch at 
+the end of this email that fixes this logic.
 
-> > +static int check_asym_packing(struct sched_domain *sd,
-> > +				    struct sd_lb_stats *sds, 
-> > +				    int cpu, unsigned long *imbalance)
-> > +{
-> > +	int i, cpu, busiest_cpu;
+> But it doesn't matter if stores are done under lock, if the loads are
+> not. masks can be multiple words, so there isn't any ordering between
+> reading half and old mask and half a new one that results in an invalid
+> state. AFAIKS.
 > 
-> Redefining cpu here.  Looks like the cpu parameter is not really needed?
 
-Seems that way indeed, I went back and forth a few times on the actual
-implementation of this function (which started out live as a copy of
-check_power_save_busiest_group), its amazing there were only these two
-compile glitches ;-)
+It doesn't matter for MAX_NUMNODES > BITS_PER_LONG because 
+task->mems_alllowed only gets updated via cpuset_change_task_nodemask() 
+where the added nodes are set and then the removed nodes are cleared.  The 
+side effect of this lockless access to task->mems_allowed means we may 
+have a small race between
 
-> > +
-> > +	if (!(sd->flags & SD_ASYM_PACKING))
-> > +		return 0;
-> > +
-> > +	if (!sds->busiest)
-> > +		return 0;
-> > +
-> > +	i = 0;
-> > +	busiest_cpu = group_first_cpu(sds->busiest);
-> > +	for_each_cpu(cpu, sched_domain_span(sd)) {
-> > +		i++;
-> > +		if (cpu == busiest_cpu)
-> > +			break;
-> > +	}
-> > +
-> > +	if (sds->total_nr_running > i)
-> > +		return 0;
-> > +
-> > +	*imbalance = sds->max_load;
-> > +	return 1;
-> > +}
+	nodes_or(tsk->mems_allowed, tsk->mems_allowed, *newmems);
 
+		and
 
+	tsk->mems_allowed = *newmems;
+
+but the penalty is that we get an allocation on a removed node, which 
+isn't a big deal, especially since it was previously allowed.
+
+> Well it is exported as cpuset_lock(). And the scheduler has it covered
+> in all cases by the looks except for select_task_rq, which is called
+> by wakeup code. We should stick WARN_ONs through the cpuset code for
+> mutexes not held when they should be.
+> 
+
+A lot of the reliance on callback_mutex was removed because the strict 
+hierarchy walking and task membership is now guarded by cgroup_mutex 
+instead.  Some of the comments in kernel/cpuset.c weren't updated so they 
+still say callback_mutex when in reality they mean cgroup_mutex.
+---
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1319,7 +1319,7 @@ static int fmeter_getrate(struct fmeter *fmp)
+ 	return val;
+ }
+ 
+-/* Protected by cgroup_lock */
++/* Protected by cgroup_mutex held on cpuset_attach() */
+ static cpumask_var_t cpus_attach;
+ 
+ /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
+@@ -1390,8 +1390,12 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+ 	struct cpuset *oldcs = cgroup_cs(oldcont);
+ 
+ 	if (cs == &top_cpuset) {
+-		cpumask_copy(cpus_attach, cpu_possible_mask);
+-		to = node_possible_map;
++		/*
++		 * top_cpuset.cpus_allowed and top_cpuset.mems_allowed are
++		 * protected by cgroup_lock which is already held here.
++		 */
++		cpumask_copy(cpus_attach, top_cpuset.cpus_allowed);
++		to = top_cpuset.mems_allowed;
+ 	} else {
+ 		guarantee_online_cpus(cs, cpus_attach);
+ 		guarantee_online_mems(cs, &to);
