@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689Ab0BSRAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:00:33 -0500
-Received: from kroah.org ([198.145.64.141]:57433 "EHLO coco.kroah.org"
+	id S1755774Ab0BSRNN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:13:13 -0500
+Received: from kroah.org ([198.145.64.141]:57514 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544Ab0BSRAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:23 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:37 2010
-Message-Id: <20100219163236.975085483@kvm.kroah.org>
+	id S1754544Ab0BSRAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:33 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:40 2010
+Message-Id: <20100219163240.351599545@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:17 -0800
+Date: Fri, 19 Feb 2010 08:29:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>
-Subject: [24/93] CPUFREQ: Fix use after free of struct powernow_k8_data
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [35/93] NFS: Fix an Oops when truncating a file
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,51 +25,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Renninger <trenn@suse.de>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 557a701c16553b0b691dbb64ef30361115a80f64 upstream.
+commit 9f557cd8073104b39528794d44e129331ded649f upstream.
 
-Easy fix for a regression introduced in 2.6.31.
+The VM/VFS does not allow mapping->a_ops->invalidatepage() to fail.
+Unfortunately, nfs_wb_page_cancel() may fail if a fatal signal occurs.
+Since the NFS code assumes that the page stays mapped for as long as the
+writeback is active, we can end up Oopsing (among other things).
 
-On managed CPUs the cpufreq.c core will call driver->exit(cpu) on the
-managed cpus and powernow_k8 will free the core's data.
+The only safe fix here is to convert nfs_wait_on_request(), so as to make
+it uninterruptible (as is already the case with wait_on_page_writeback()).
 
-Later driver->get(cpu) function might get called trying to read out the
-current freq of a managed cpu and the NULL pointer check does not work on
-the freed object -> better set it to NULL.
 
-->get() is unsigned and must return 0 as invalid frequency.
-
-Reference:
-http://bugzilla.kernel.org/show_bug.cgi?id=14391
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Tested-by: Michal Schmidt <mschmidt@redhat.com>
-Signed-off-by: Dave Jones <davej@redhat.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -1351,6 +1351,7 @@ static int __devexit powernowk8_cpu_exit
- 
- 	kfree(data->powernow_table);
- 	kfree(data);
-+	per_cpu(powernow_data, pol->cpu) = NULL;
- 
- 	return 0;
+--- a/fs/nfs/pagelist.c
++++ b/fs/nfs/pagelist.c
+@@ -176,6 +176,12 @@ void nfs_release_request(struct nfs_page *req)
+ 	kref_put(&req->wb_kref, nfs_free_request);
  }
-@@ -1370,7 +1371,7 @@ static unsigned int powernowk8_get(unsig
- 	int err;
  
- 	if (!data)
--		return -EINVAL;
-+		return 0;
++static int nfs_wait_bit_uninterruptible(void *word)
++{
++	io_schedule();
++	return 0;
++}
++
+ /**
+  * nfs_wait_on_request - Wait for a request to complete.
+  * @req: request to wait upon.
+@@ -186,14 +192,9 @@ void nfs_release_request(struct nfs_page *req)
+ int
+ nfs_wait_on_request(struct nfs_page *req)
+ {
+-	int ret = 0;
+-
+-	if (!test_bit(PG_BUSY, &req->wb_flags))
+-		goto out;
+-	ret = out_of_line_wait_on_bit(&req->wb_flags, PG_BUSY,
+-			nfs_wait_bit_killable, TASK_KILLABLE);
+-out:
+-	return ret;
++	return wait_on_bit(&req->wb_flags, PG_BUSY,
++			nfs_wait_bit_uninterruptible,
++			TASK_UNINTERRUPTIBLE);
+ }
  
- 	smp_call_function_single(cpu, query_values_on_cpu, &err, true);
- 	if (err)
+ /**
 
 
