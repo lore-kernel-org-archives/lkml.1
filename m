@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807Ab0BSRNP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:13:15 -0500
-Received: from kroah.org ([198.145.64.141]:57509 "EHLO coco.kroah.org"
+	id S1755759Ab0BSRMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:12:55 -0500
+Received: from kroah.org ([198.145.64.141]:57518 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687Ab0BSRAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:33 -0500
+	id S1754704Ab0BSRAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:34 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:40 2010
-Message-Id: <20100219163240.173542201@kvm.kroah.org>
+Message-Id: <20100219163240.623130905@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:27 -0800
+Date: Fri, 19 Feb 2010 08:29:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [34/93] NFSv4: Ensure that the NFSv4 locking can recover from stateid errors
+Subject: [36/93] NFS: Fix a umount race
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,53 +27,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 2bee72a6aa1e6d0a4f5da56217f0d0bbbdd0d9a3 upstream.
+commit 387c149b54b4321cbc790dadbd4f8eedb5a90468 upstream.
 
-In most cases, we just want to mark the lock_stateid sequence id as being
-uninitialised.
+Ensure that we unregister the bdi before kill_anon_super() calls
+ida_remove() on our device name.
 
 Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Reviewed-by: Chuck Lever <chuck.lever@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/nfs4proc.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ fs/nfs/super.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -3978,6 +3978,22 @@ static const struct rpc_call_ops nfs4_lo
- 	.rpc_release = nfs4_lock_release,
- };
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -241,6 +241,7 @@ static int  nfs_show_stats(struct seq_fi
+ static int nfs_get_sb(struct file_system_type *, int, const char *, void *, struct vfsmount *);
+ static int nfs_xdev_get_sb(struct file_system_type *fs_type,
+ 		int flags, const char *dev_name, void *raw_data, struct vfsmount *mnt);
++static void nfs_put_super(struct super_block *);
+ static void nfs_kill_super(struct super_block *);
+ static int nfs_remount(struct super_block *sb, int *flags, char *raw_data);
  
-+static void nfs4_handle_setlk_error(struct nfs_server *server, struct nfs4_lock_state *lsp, int new_lock_owner, int error)
+@@ -264,6 +265,7 @@ static const struct super_operations nfs
+ 	.alloc_inode	= nfs_alloc_inode,
+ 	.destroy_inode	= nfs_destroy_inode,
+ 	.write_inode	= nfs_write_inode,
++	.put_super	= nfs_put_super,
+ 	.statfs		= nfs_statfs,
+ 	.clear_inode	= nfs_clear_inode,
+ 	.umount_begin	= nfs_umount_begin,
+@@ -333,6 +335,7 @@ static const struct super_operations nfs
+ 	.alloc_inode	= nfs_alloc_inode,
+ 	.destroy_inode	= nfs_destroy_inode,
+ 	.write_inode	= nfs_write_inode,
++	.put_super	= nfs_put_super,
+ 	.statfs		= nfs_statfs,
+ 	.clear_inode	= nfs4_clear_inode,
+ 	.umount_begin	= nfs_umount_begin,
+@@ -2196,6 +2199,17 @@ error_splat_super:
+ }
+ 
+ /*
++ * Ensure that we unregister the bdi before kill_anon_super
++ * releases the device name
++ */
++static void nfs_put_super(struct super_block *s)
 +{
-+	struct nfs_client *clp = server->nfs_client;
-+	struct nfs4_state *state = lsp->ls_state;
++	struct nfs_server *server = NFS_SB(s);
 +
-+	switch (error) {
-+	case -NFS4ERR_ADMIN_REVOKED:
-+	case -NFS4ERR_BAD_STATEID:
-+	case -NFS4ERR_EXPIRED:
-+		if (new_lock_owner != 0 ||
-+		   (lsp->ls_flags & NFS_LOCK_INITIALIZED) != 0)
-+			nfs4_state_mark_reclaim_nograce(clp, state);
-+		lsp->ls_seqid.flags &= ~NFS_SEQID_CONFIRMED;
-+	};
++	bdi_unregister(&server->backing_dev_info);
 +}
 +
- static int _nfs4_do_setlk(struct nfs4_state *state, int cmd, struct file_lock *fl, int reclaim)
- {
- 	struct nfs4_lockdata *data;
-@@ -4013,6 +4029,9 @@ static int _nfs4_do_setlk(struct nfs4_st
- 	ret = nfs4_wait_for_completion_rpc_task(task);
- 	if (ret == 0) {
- 		ret = data->rpc_status;
-+		if (ret)
-+			nfs4_handle_setlk_error(data->server, data->lsp,
-+					data->arg.new_lock_owner, ret);
- 	} else
- 		data->cancelled = 1;
- 	rpc_put_task(task);
++/*
+  * Destroy an NFS2/3 superblock
+  */
+ static void nfs_kill_super(struct super_block *s)
+@@ -2203,7 +2217,6 @@ static void nfs_kill_super(struct super_
+ 	struct nfs_server *server = NFS_SB(s);
+ 
+ 	kill_anon_super(s);
+-	bdi_unregister(&server->backing_dev_info);
+ 	nfs_fscache_release_super_cookie(s);
+ 	nfs_free_server(server);
+ }
 
 
