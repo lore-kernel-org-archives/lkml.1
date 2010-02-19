@@ -1,76 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671Ab0BSP0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:26:08 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46195 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754469Ab0BSP0E (ORCPT
+	id S1754469Ab0BSP1f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:27:35 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:19581
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751864Ab0BSP1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:26:04 -0500
-Date: Fri, 19 Feb 2010 15:29:07 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "masa-korg" <masa-korg@dsn.okisemi.com>
-Cc: <linux-kernel@vger.kernel.org>, <andrew.chih.howe.khor@intel.com>,
-       <joel.clark@intel.com>
-Subject: Re: [PATCH]Add new device drivers for Topcliff
-Message-ID: <20100219152907.75065c83@lxorguk.ukuu.org.uk>
-In-Reply-To: <000a01cab118$8bbc8600$66f8800a@maildom.okisemi.com>
-References: <000a01cab118$8bbc8600$66f8800a@maildom.okisemi.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Feb 2010 10:27:32 -0500
+X-SpamScore: -3
+X-BigFish: VPS-3(zz4015Lzz1202hzzz32i87h6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KY3HEO-01-M8M-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/11] Nested SVM fixes v2
+Date: Fri, 19 Feb 2010 16:22:59 +0100
+Message-ID: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.6
+X-OriginalArrivalTime: 19 Feb 2010 15:23:12.0652 (UTC) FILETIME=[7343ACC0:01CAB177]
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Following drivers are available now.
-> 
-> [Device name} [File name]
-> Common patch common_patch.tar.bz2
-> CAN  can.tar.bz2
-> DMA  dma.tar.bz2
-> GbE  gbe.tar.bz2
-> GPIO  gpio.tar.bz2
-> I2C  i2c.tar.bz2
-> IEEE1588 ieee1588.tar.bz2
-> Packet HUB pcieqos.tar.bz2
-> SPI  spi.tar.bz2
-> UART  uart.tar.bz2
-> USB Device usbdev.tar.bz2
+Hi,
 
-I downloaded a few of these to look at.
+this is the second version of the KVM fixes queued up while testing
+nested svm with Windows 7 64 bit. Changes to the previous version:
 
-You need to generate them with "diff -u" - that will make them
-more readable and mean they can be applied reliably to file versions that
-may have changed. They also contain unrelated/debugging changes you have
-made and which you probably want to remove from the submission
+	* Fixed kunmap bug
+	* Introduced nested_svm_intercept insteat of
+	  nested_svm_exit_handled_atomic()
+	* Added missing patch description
+	* Added wbinvd/invd skip functions because the instruction
+	  emulator fails on these instructions (found during Windows 7
+	  XP mode bringup)
 
-eg:
+Please review and comment (or apply ;-) these patches.
+
+Thanks,
+
+	Joerg
+
+Shortlog:
+
+Joerg Roedel (11):
+      KVM: SVM: Don't use kmap_atomic in nested_svm_map
+      KVM: SVM: Fix wrong interrupt injection in enable_irq_windows
+      KVM: SVM: Fix schedule-while-atomic on nested exception handling
+      KVM: SVM: Sync all control registers on nested vmexit
+      KVM: SVM: Annotate nested_svm_map with might_sleep()
+      KVM: SVM: Fix nested msr intercept handling
+      KVM: SVM: Don't sync nested cr8 to lapic and back
+      KVM: SVM: Activate nested state only when guest state is complete
+      KVM: SVM: Make lazy FPU switching work with nested svm
+      KVM: SVM: Remove newlines from nested trace points
+      KVM: SVM: Don't call instruction emulator for invd and wbinvd
+
+Diffstat:
+
+ arch/x86/kvm/emulate.c |    4 +
+ arch/x86/kvm/svm.c     |  218 ++++++++++++++++++++++++++++++++---------------
+ arch/x86/kvm/trace.h   |   12 ++--
+ 3 files changed, 158 insertions(+), 76 deletions(-)
 
 
-! 			kunmap(miter->page);
-  
-  		miter->page = NULL;
-  		miter->addr = NULL;
---- 402,409 ----
-  			WARN_ON(!irqs_disabled());
-  			kunmap_atomic(miter->addr, KM_BIO_SRC_IRQ);
-  		} else
-! //			kunmap(miter->page);
-!  			kunmap(miter->page);
-
-
-The code looks quite reasonable although not in the kernel style. We have
-the staging directory so we can take submissions that still need clean up
-so that is not an immediate concern.
-
-I am unsure about the serial driver. The 8250 driver is already very
-complicated. It might be better to make a copy of 8250, remove all the
-other special cases and create a new driver for the IOH DMA serial port.
-We can discuss that.
-
-If you can create a set in diff -u format, I will go through them in more
-detail and send further suggestions.
-
-Alan
