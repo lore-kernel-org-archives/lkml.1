@@ -1,61 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976Ab0BSRd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:33:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:42351 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754919Ab0BSRdy (ORCPT
+	id S1754469Ab0BSRg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:36:56 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:64299 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753772Ab0BSRgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:33:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=OX0/defUzUV2C7RdulNrOj3ZhqxTlc0YUTcWzL1qUB7MLyp11htEh49yxvxFgdDBHH
-         Qd8AMr9R1lnvuIAU5IcHplvLd+jkM9k0ttmKcTIl7NSdFb9LQO5TBWkxXxUlbTBM+Ni8
-         n2Tw9tQAtO5jXPDJerVRcOu9nJGX9UXBbWHRs=
-From: Luca Barbieri <luca@luca-barbieri.com>
-To: mingo@elte.hu
-Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
-Date: Fri, 19 Feb 2010 18:26:39 +0100
-Message-Id: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
-X-Mailer: git-send-email 1.6.6.1.476.g01ddb
+	Fri, 19 Feb 2010 12:36:54 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com>
+References: <1266445892.16346.306.camel@pasglop>
+	 <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Fri, 19 Feb 2010 17:36:51 +0000
+Message-ID: <1266601011.32546.48.camel@e102109-lin.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Feb 2010 17:36:52.0697 (UTC) FILETIME=[1F956C90:01CAB18A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes in v2:
-- 386/486 is supported with a custom assembly implementation, the generic
-  implementation is no longer used/modified
-- dropped SSE code
-- changed CALL alternative code to use a custom alternative type:
-  insn parser no longer used
-- several implementation improvements
-- several formatting/style improvements
-- merged 386 support into main patch
+On Fri, 2010-02-19 at 17:15 +0000, Catalin Marinas wrote:
+> On Wed, 2010-02-17 at 22:31 +0000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2010-02-17 at 20:44 +0000, Russell King - ARM Linux wrote:
+> > > No, because that'd probably bugger up the Sparc64 method of delaying
+> > > flush_dcache_page.
+> > >
+> > > This method works as follows:
+> > >
+> > > - a page cache page is allocated - this has PG_arch_1 clear.
+> > >
+> > > - IO happens on it and it's placed into the page cache.  PG_arch_1 is
+> > >   still clear.
+> > >
+> > > - someone calls read()/write() which accesses the page.  The generic
+> > >   file IO layers call flush_dcache_page() in response to
+> > > read()/write()
+> > >   fs calls.  flush_dcache_page() spots that the page is not yet mapped
+> > >   into userspace, and sets PG_arch_1 to mark the fact that the kernel
+> > >   mapping is dirty.
+> > >
+> > > - when someone maps the page, we check PG_arch_1 in update_mmu_cache.
+> > >   If PG_arch_1 is set, we flush the kernel mapping.
+> > >
+> > > Clearly, if we go around having drivers clearing PG_arch_1, this is
+> > > going to break horribly.
+> >
+> > Ok, you do things very differently than us on ppc then. We clear
+> > PG_arch_1 in flush_dcache_page(), and we set it when the page has been
+> > cache cleaned for execution.
+> 
+> For this perspective it's not that different, just that we use the
+> negated PG_arch_1.
 
-This patchset improves the atomic64_t functions on x86-32.
-It also includes a testsuite that has been used to test this functionality
-and can test any atomic64_t implementation.
+I got your point now (after reading the replies on linux-arch :)).
 
-It offers the following improvements:
-1. Better code due to hand-written assembly (e.g. use of the ZF flag)
-2. All atomic64 functions implemented
-3. Support for 386/486 due to the ability to alternatively use either
-   the cmpxchg8b assembly implementation or the 386 cli/popf assembly one
+So PPC assumes that if PG_arch_1 is clear (the default), the page wasn't
+cleaned. If there is no call to flush_dcache_page() but the page gets
+mapped to user space, update_mmu_cache() (or set_pte_at()) would simply
+assume that the page was dirtied, flush the caches and set this bit.
 
-The first patches add functionality to the alternatives system to support
-the new atomic64_t code.
-A patch that improves cmpxchg64() using that functionality is also included.
+We could easily do this on ARM as well and assume that the page is dirty
+if !PG_arch_1. But it only partially solves the problem (only for
+faulted-in pages).
 
-To test this code, enable CONFIG_ATOMIC64_SELFTEST, compile for 386 and
-boot normally and with "clearcpuid=8".
+If a page is already mapped in user space, flush_dcache_page() on ARM
+does the flushing rather than deferring it to update_mmu_cache(). The
+PIO HCD drivers, however, don't call flush_dcache_page(). Is it possible
+that the HCD could transfer data into a page cache page already mapped
+in user space? My understanding is that the scenario above is possible.
 
-You should receive a message stating that the atomic64 test passed,
-along with the selected configuration.
+-- 
+Catalin
 
-386/486 SMP is not supported, following existing practice, but the code
-is structured to allow to very easily add such support.
-
-Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
