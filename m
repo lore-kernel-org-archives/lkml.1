@@ -1,29 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613Ab0BSPXk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:23:40 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:3158 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753748Ab0BSPXh (ORCPT
+	id S1754662Ab0BSPX6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:23:58 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:30807
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754509Ab0BSPXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:23:37 -0500
+	Fri, 19 Feb 2010 10:23:36 -0500
 X-SpamScore: -2
-X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i87h6bh43j62h)
-X-Spam-TCS-SCL: 1:0
+X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i6bh87h43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY3HEV-01-M8S-02
+X-WSS-ID: 0KY3HEX-02-7NN-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 05/11] KVM: SVM: Annotate nested_svm_map with might_sleep()
-Date: Fri, 19 Feb 2010 16:23:04 +0100
-Message-ID: <1266592990-8911-6-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 10/11] KVM: SVM: Remove newlines from nested trace points
+Date: Fri, 19 Feb 2010 16:23:09 +0100
+Message-ID: <1266592990-8911-11-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
 References: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 19 Feb 2010 15:23:12.0871 (UTC) FILETIME=[73651770:01CAB177]
+X-OriginalArrivalTime: 19 Feb 2010 15:23:12.0918 (UTC) FILETIME=[736C4360:01CAB177]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -31,27 +31,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The nested_svm_map() function can sleep and must not be
-called from atomic context. So annotate that function.
+The tracing infrastructure adds its own newlines. Remove
+them from the trace point printk format strings.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/x86/kvm/trace.h |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index c9d359a..4becefd 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1429,6 +1429,8 @@ static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa, struct page **_page)
- {
- 	struct page *page;
+diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+index 6ad30a2..12f8d2d 100644
+--- a/arch/x86/kvm/trace.h
++++ b/arch/x86/kvm/trace.h
+@@ -413,7 +413,7 @@ TRACE_EVENT(kvm_nested_vmrun,
+ 	),
  
-+	might_sleep();
-+
- 	page = gfn_to_page(svm->vcpu.kvm, gpa >> PAGE_SHIFT);
- 	if (is_error_page(page))
- 		goto error;
+ 	TP_printk("rip: 0x%016llx vmcb: 0x%016llx nrip: 0x%016llx int_ctl: 0x%08x "
+-		  "event_inj: 0x%08x npt: %s\n",
++		  "event_inj: 0x%08x npt: %s",
+ 		__entry->rip, __entry->vmcb, __entry->nested_rip,
+ 		__entry->int_ctl, __entry->event_inj,
+ 		__entry->npt ? "on" : "off")
+@@ -447,7 +447,7 @@ TRACE_EVENT(kvm_nested_vmexit,
+ 		__entry->exit_int_info_err	= exit_int_info_err;
+ 	),
+ 	TP_printk("rip: 0x%016llx reason: %s ext_inf1: 0x%016llx "
+-		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x\n",
++		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
+ 		  __entry->rip,
+ 		  ftrace_print_symbols_seq(p, __entry->exit_code,
+ 					   kvm_x86_ops->exit_reasons_str),
+@@ -482,7 +482,7 @@ TRACE_EVENT(kvm_nested_vmexit_inject,
+ 	),
+ 
+ 	TP_printk("reason: %s ext_inf1: 0x%016llx "
+-		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x\n",
++		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
+ 		  ftrace_print_symbols_seq(p, __entry->exit_code,
+ 					   kvm_x86_ops->exit_reasons_str),
+ 		__entry->exit_info1, __entry->exit_info2,
+@@ -504,7 +504,7 @@ TRACE_EVENT(kvm_nested_intr_vmexit,
+ 		__entry->rip	=	rip
+ 	),
+ 
+-	TP_printk("rip: 0x%016llx\n", __entry->rip)
++	TP_printk("rip: 0x%016llx", __entry->rip)
+ );
+ 
+ /*
+@@ -526,7 +526,7 @@ TRACE_EVENT(kvm_invlpga,
+ 		__entry->address	=	address;
+ 	),
+ 
+-	TP_printk("rip: 0x%016llx asid: %d address: 0x%016llx\n",
++	TP_printk("rip: 0x%016llx asid: %d address: 0x%016llx",
+ 		  __entry->rip, __entry->asid, __entry->address)
+ );
+ 
+@@ -547,7 +547,7 @@ TRACE_EVENT(kvm_skinit,
+ 		__entry->slb		=	slb;
+ 	),
+ 
+-	TP_printk("rip: 0x%016llx slb: 0x%08x\n",
++	TP_printk("rip: 0x%016llx slb: 0x%08x",
+ 		  __entry->rip, __entry->slb)
+ );
+ 
 -- 
 1.6.6
 
