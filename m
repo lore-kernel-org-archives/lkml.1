@@ -1,86 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307Ab0BSVlg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:41:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59613 "EHLO hera.kernel.org"
+	id S1755331Ab0BSVnM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:43:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29202 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754807Ab0BSVle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:41:34 -0500
-Date: Fri, 19 Feb 2010 21:41:10 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-In-Reply-To: <tip-*@git.kernel.org>
-References: <tip-*@git.kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/setup] x86, setup: Don't skip mode setting for the standard VGA modes
-Message-ID: <tip-8e92dc767abb58357e696a48fc3d8ce615a9c01a@git.kernel.org>
-Git-Commit-ID: 8e92dc767abb58357e696a48fc3d8ce615a9c01a
-X-Mailer: tip-git-log-daemon
+	id S1754807Ab0BSVnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:43:09 -0500
+Message-ID: <4B7F05BA.4080903@redhat.com>
+Date: Fri, 19 Feb 2010 16:42:18 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 19 Feb 2010 21:41:11 +0000 (UTC)
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM and
+ page migration
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-4-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1266516162-14154-4-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8e92dc767abb58357e696a48fc3d8ce615a9c01a
-Gitweb:     http://git.kernel.org/tip/8e92dc767abb58357e696a48fc3d8ce615a9c01a
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Fri, 19 Feb 2010 13:21:38 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 19 Feb 2010 13:21:38 -0800
+On 02/18/2010 01:02 PM, Mel Gorman wrote:
 
-x86, setup: Don't skip mode setting for the standard VGA modes
+>   struct anon_vma {
+>   	spinlock_t lock;	/* Serialize access to vma list */
+> -#ifdef CONFIG_KSM
+> -	atomic_t ksm_refcount;
+> -#endif
+> -#ifdef CONFIG_MIGRATION
+> -	atomic_t migrate_refcount;
+> +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
+> +
+> +	/*
+> +	 * The refcount is taken by either KSM or page migration
+> +	 * to take a reference to an anon_vma when there is no
+> +	 * guarantee that the vma of page tables will exist for
+> +	 * the duration of the operation. A caller that takes
+> +	 * the reference is responsible for clearing up the
+> +	 * anon_vma if they are the last user on release
+> +	 */
+> +	atomic_t refcount;
 
-The code for setting standard VGA modes probes for the current mode,
-and skips the mode setting if the mode is 3 (color text 80x25) or 7
-(mono text 80x25).  Unfortunately, there are BIOSes, including the
-VMware BIOS, which report the previous mode if function 0F is queried
-while the screen is in a VESA mode, and of course, nothing can help a
-mode poked directly into the hardware.
+Calling it just refcount is probably confusing, since
+the anon_vma is also referenced by being on the chain
+with others.
 
-As such, the safe option is to set the mode anyway, and only query to
-see if we should be using mode 7 rather than mode 3.  People who don't
-want any mode setting at all should probably use vga=0x0f04
-(VIDEO_CURRENT_MODE).  It's possible that should be the kernel
-default.
+Maybe "other_refcount" because it is refcounts taken
+by things other than VMAs?  I am sure there is a better
+name possible...
 
-Reported-by Rene Arends <R.R.Arends@hro.nl>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <tip-*@git.kernel.org>
----
- arch/x86/boot/video-vga.c |    9 +--------
- 1 files changed, 1 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/boot/video-vga.c b/arch/x86/boot/video-vga.c
-index 819caa1..ed7aeff 100644
---- a/arch/x86/boot/video-vga.c
-+++ b/arch/x86/boot/video-vga.c
-@@ -42,22 +42,15 @@ static u8 vga_set_basic_mode(void)
- {
- 	struct biosregs ireg, oreg;
- 	u16 ax;
--	u8 rows;
- 	u8 mode;
- 
- 	initregs(&ireg);
- 
-+	/* Query current mode */
- 	ax = 0x0f00;
- 	intcall(0x10, &ireg, &oreg);
- 	mode = oreg.al;
- 
--	set_fs(0);
--	rows = rdfs8(0x484);	/* rows minus one */
--
--	if ((oreg.ax == 0x5003 || oreg.ax == 0x5007) &&
--	    (rows == 0 || rows == 24))
--		return mode;
--
- 	if (mode != 3 && mode != 7)
- 		mode = 3;
- 
+-- 
+All rights reversed.
