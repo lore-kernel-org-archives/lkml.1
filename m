@@ -1,98 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242Ab0BSPQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:16:33 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:36684 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894Ab0BSPQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:16:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=deGqyXtK1Bv59JFW6pDzlDPHM/ulDn5tvbGCmSs43u336TsYuzlu1OE9dM9mOWrwKr
-         I7WVShx+PxfYUrgUgx32qcTrLgCYaANz+asWFnXuY812d/T9COrRqchd7cvr0ABEEq55
-         T+ibNE2hdaraWQgv45803ZknZvxR5+Afuy2Bs=
-Subject: Re: [PATCH 2/2] packet: convert socket list to RCU
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: "David S. Miller" <davem@davemloft.net>, Li Zefan <lizf@cn.fujitsu.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100219054201.501571315@vyatta.com>
-References: <20100219054145.959067404@vyatta.com>
-	 <20100219054201.501571315@vyatta.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Feb 2010 16:16:24 +0100
-Message-ID: <1266592584.3136.41.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	id S1754133Ab0BSPSs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:18:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5623 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750879Ab0BSPSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 10:18:46 -0500
+Message-ID: <4B7EAB9E.2010509@redhat.com>
+Date: Fri, 19 Feb 2010 13:17:50 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Andi Kleen <ak@linux.intel.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
+ on PCI
+References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu> <4B7B1C40.8070208@linux.intel.com> <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain> <20100219121734.GA8300@basil.fritz.box> <20100219124540.GC30243@aftab> <4B7E906D.8050501@linux.intel.com>
+In-Reply-To: <4B7E906D.8050501@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le jeudi 18 février 2010 à 21:41 -0800, Stephen Hemminger a écrit :
+Andi, 
 
-> Convert AF_PACKET to use RCU, eliminating one more reader/writer lock.
+Andi Kleen wrote:
+> Borislav,
+>>>> year. You are refusing to work with other people on a well designed
+>>
+>> Sorry, but from our last discussion on attempting to work towards such
+>> an infrastructure solution I got the same impression as Thomas and Ingo
+>> that you're simply not willing to work together on getting a real thing
+>> done. That's why I stopped bothering - it simply made no sense to me to
+>> waste time in fruitless discussions.
 > 
-> I needed to create some minor additional socket list RCU infrastructure
-> to make this work. Note: there is no need for a real sk_del_node_init_rcu(), 
-> because sk_del_node_init is doing the equivalent thing to 
-> hlst_del_init_rcu already; but added some comments to try and make that obvious.
+> Well I keep ignoring suggestions to put more stuff into EDAC,
+> mostly because I think the EDAC design needs to be thrown out
+> instead of extended. Are you referring to that?
 > 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> My impression was that you  got to the same conclusion (at least
+> for parts of current EDAC like the events) based on your earlier emails.
 > 
+> The current issue is less in enumeration/topology anyways but more
+> in event handling I would say. In the end topology/enumeration is
+> the easier part, and most of it is already working quite well.
+> 
+> I'm trying to do things step by step, including for short term
+> problems extending current interfaces if possible and then longer
+> term moving to new better interfaces.
 
-Stephen, I am a bit worried by the interaction between packet_release()
-and packet_notifier()
+Ingo and Thomas are right: we need to work together to improve the
+error report, and this means that we shouldn't ignore putting more stuff
+in EDAC.
 
-With your version, packet_notifier() can run and let another cpu run
-packet_release() un-contented. Both cpus could manipulate same po (and
-particularly po->running)
+EDAC is generic enough to work with different type of memory and memory
+controllers, and to provide a consistent interface to describe it on a way
+that userspace doesn't need to know what are the error registers at
+the hardware, nor how to decode a "magic" error number into something
+that has a meaning.
 
-Before your patch, the read_lock() done in packet_notifier() was
-preventing packet_release() runnning at the same time.
+As Boris properly pointed, EDAC has space for improvements, and part of
+the perf logic can be used as a start point to give some flash new ideas.
 
-Maybe packet_release() should lock po->bind_lock before manipulating
-po->running, avoiding a refcount error.
+The main issue I see with MCE is at the interface level. I think if we
+all cope together, we can converge into a proper interface that will
+be accepted upstream.
 
-Something like this preliminary patch :
+-- 
 
-[PATCH] packet: fix a race in packet_release
-
-packet_release() has a potential race with packet_notifier(NETDEV_DOWN),
-leading to a double __sock_put(). (dev_remove_pack() is safe)
-
-Fix is to always use po->bind_lock before accessing po->running
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
----
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 10f7295..b706031 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -1271,15 +1271,15 @@ static int packet_release(struct socket *sock)
- 	 *	Unhook packet receive handler.
- 	 */
- 
-+	spin_lock(&po->bind_lock);
- 	if (po->running) {
--		/*
--		 *	Remove the protocol hook
--		 */
--		dev_remove_pack(&po->prot_hook);
-+		__sock_put(sk);
- 		po->running = 0;
- 		po->num = 0;
--		__sock_put(sk);
--	}
-+		spin_unlock(&po->bind_lock);
-+		dev_remove_pack(&po->prot_hook);
-+	} else
-+		spin_unlock(&po->bind_lock);
- 
- 	packet_flush_mclist(sk);
- 
-
-
+Cheers,
+Mauro
