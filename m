@@ -1,76 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847Ab0BSGjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 01:39:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48828 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470Ab0BSGjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 01:39:31 -0500
-Date: Fri, 19 Feb 2010 17:39:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: linux-next: build failure after final merge (arm tree)
-Message-Id: <20100219173929.01b9e85f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754002Ab0BSGjj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 01:39:39 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:57218 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753902Ab0BSGjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 01:39:36 -0500
+Date: Fri, 19 Feb 2010 07:39:29 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pedro Ribeiro <pedrib@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] i915 / PM: Fix hibernate regression caused by
+ suspend/resume splitting
+Message-ID: <20100219063929.GA2851@x61.home>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Pedro Ribeiro <pedrib@gmail.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+	pm list <linux-pm@lists.linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
+ <201002172320.57491.rjw@sisk.pl>
+ <74fd948d1002171629v7e86371cna4441e8feb27c326@mail.gmail.com>
+ <201002182306.28052.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002182306.28052.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+On Thu, Feb 18, 2010 at 23:06:27 +0100, Rafael J. Wysocki wrote:
 
-After merging the scsi-post-merge tree, today's linux-next build (sparc32
-defconfig) failed like this:
+[...]
 
-arch/sparc/mm/sun4c.c: In function 'sun4c_update_mmu_cache':
-arch/sparc/mm/sun4c.c:1943: error: 'pte' undeclared (first use
- in this function)
+> Jesse, Eric, the appended patch fixes a very recent hibernate regression in
+> i915, please push it to Linus ASAP.
 
-Caused by commit 2dca0ca96ac340fbf4f9e0741dcf58ff3677e994 ("MM: Pass a
-PTE pointer to update_mmu_cache() rather than the PTE itself").
+FYI: I got no resume failure during normal usage after 9 suspend to RAM
+and 8 suspend to disk cycles (using both suspend types alternately)
+with the patch applied.
 
-I applied the following patch for today. It may not be correct.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 19 Feb 2010 17:33:16 +1100
-Subject: [PATCH] sparc: fix fallout from update_mmu_cache API change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/sparc/mm/sun4c.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/sparc/mm/sun4c.c b/arch/sparc/mm/sun4c.c
-index 171f823..1865253 100644
---- a/arch/sparc/mm/sun4c.c
-+++ b/arch/sparc/mm/sun4c.c
-@@ -1929,7 +1929,7 @@ void sun4c_update_mmu_cache(struct vm_area_struct *vma, unsigned long address, p
- 			start += PAGE_SIZE;
- 		}
- #ifndef SUN4C_PRELOAD_PSEG
--		sun4c_put_pte(address, pte_val(pte));
-+		sun4c_put_pte(address, pte_val(*ptep));
- #endif
- 		local_irq_restore(flags);
- 		return;
-@@ -1940,7 +1940,7 @@ void sun4c_update_mmu_cache(struct vm_area_struct *vma, unsigned long address, p
- 		add_lru(entry);
- 	}
- 
--	sun4c_put_pte(address, pte_val(pte));
-+	sun4c_put_pte(address, pte_val(*ptep));
- 	local_irq_restore(flags);
- }
- 
--- 
-1.6.6.2
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
+Regards,
+Tino
