@@ -1,47 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164Ab0BSB1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 20:27:08 -0500
-Received: from mga06.intel.com ([134.134.136.21]:34162 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752994Ab0BSB1G (ORCPT
+	id S1753189Ab0BSBfl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 20:35:41 -0500
+Received: from mail-px0-f191.google.com ([209.85.216.191]:50796 "EHLO
+	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005Ab0BSBfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 20:27:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,500,1262592000"; 
-   d="scan'208";a="597195620"
-Message-ID: <4B7DE8E7.3090305@linux.intel.com>
-Date: Thu, 18 Feb 2010 17:27:03 -0800
-From: "H. Peter Anvin" <hpa@linux.intel.com>
-Organization: Intel Open Source Technology Center
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Thu, 18 Feb 2010 20:35:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=iI7Ah0Tx5+9gpRZX5P/SJqAmKYReEl7cdRiC00uD5uVzVUXReYERbCSahpIRRNMIWE
+         DV0Winb2J2lbmSugja80rRI46fAo1l0eMaCDrwNUeTRWU1pTQbSKWeYYjktO0Wyp0BZL
+         af7BLYlhjdT0THtBBvbozued0dI/tlDY79TLs=
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@linux.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+In-Reply-To: <1266516162-14154-7-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+	 <1266516162-14154-7-git-send-email-mel@csn.ul.ie>
+Date: Fri, 19 Feb 2010 10:35:38 +0900
+Message-ID: <28c262361002181735w56ea868fmf778d3421bbecb31@mail.gmail.com>
+Subject: Re: [PATCH 06/12] Export unusable free space index via 
+	/proc/pagetypeinfo
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
        Christoph Lameter <cl@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] mm: Make copy_from_user() in migrate.c statically predictable
-References: <alpine.LFD.2.00.1002181447080.4141@localhost.localdomain> <4B7DD89F.4050003@linux.intel.com> <20100219102247.B939.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20100219102247.B939.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2010 05:25 PM, KOSAKI Motohiro wrote:
->>
->> Updated patch, which compile-tests for me, attached.
-> 
-> hehe, I'm ESPer. I think you hope I do runtime-test, plz wait 12 hour :-)
-> 
+On Fri, Feb 19, 2010 at 3:02 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> Unusuable free space index is a measure of external fragmentation that
+> takes the allocation size into account. For the most part, the huge page
+> size will be the size of interest but not necessarily so it is exported
+> on a per-order and per-zone basis via /proc/unusable_index.
+>
+> The index is a value between 0 and 1. It can be expressed as a
+> percentage by multiplying by 100 as documented in
+> Documentation/filesystems/proc.txt.
+>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-That would be most appreciated ;)
-
-	-hpa
-
+-- 
+Kind regards,
+Minchan Kim
