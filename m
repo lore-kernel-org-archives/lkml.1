@@ -1,125 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369Ab0BSBrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 20:47:31 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:48034 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753053Ab0BSBr3 (ORCPT
+	id S1753432Ab0BSBsY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 20:48:24 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:41507 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053Ab0BSBsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 20:47:29 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5896"; a="34447158"
-Message-ID: <4B7DEDB0.8030802@codeaurora.org>
-Date: Thu, 18 Feb 2010 17:47:28 -0800
-From: Michael Bohan <mbohan@codeaurora.org>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Thu, 18 Feb 2010 20:48:22 -0500
+To: Richard Hartmann <richih.mailinglist@gmail.com>
+Cc: linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
+References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 18 Feb 2010 17:48:14 -0800
+In-Reply-To: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com> (Richard Hartmann's message of "Fri\, 19 Feb 2010 01\:22\:03 +0100")
+Message-ID: <m1d402t2qp.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: Kernel panic due to page migration accessing memory holes
-References: <4B7C8DC2.3060004@codeaurora.org> <20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com> <4B7CF8C0.4050105@codeaurora.org> <20100218183604.95ee8c77.kamezawa.hiroyu@jp.fujitsu.com> <20100218100432.GA32626@csn.ul.ie>
-In-Reply-To: <20100218100432.GA32626@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Richard Hartmann <richih.mailinglist@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/2010 2:04 AM, Mel Gorman wrote:
-> On Thu, Feb 18, 2010 at 06:36:04PM +0900, KAMEZAWA Hiroyuki wrote:
->    
->>   [Fact]
->>   - There are 2 banks of memory and a memory hole on your machine.
->>     As
->>           0x00200000 - 0x07D00000
->>           0x40000000 - 0x43000000
->>
->>   - Each bancks are in the same zone.
->>   - You use FLATMEM.
->>   - You see panic in move_freepages().
->>   - Your host's MAX_ORDER=11....buddy allocator's alignment is 0x400000
->>     Then, it seems 1st bank is not algined.
->>      
-> It's not and assumptions are made about it being aligned.
->    
+Richard Hartmann <richih.mailinglist@gmail.com> writes:
 
-Would it be prudent to have the ARM mm init code detect unaligned, 
-discontiguous banks and print a warning message if 
-CONFIG_ARCH_HAS_HOLES_MEMORYMODEL is not configured?  Should we take it 
-a step further and even BUG()?
+>  	seq_printf(m, "name         : %s\n", alg->cra_name);
+>  	seq_printf(m, "driver       : %s\n", alg->cra_driver_name);
+>  	seq_printf(m, "module       : %s\n", module_name(alg->cra_module));
+>  	seq_printf(m, "priority     : %d\n", alg->cra_priority);
+>  	seq_printf(m, "refcnt       : %d\n", atomic_read(&alg->cra_refcnt));
+>  	seq_printf(m, "selftest     : %s\n",
+> -		   (alg->cra_flags & CRYPTO_ALG_TESTED) ?
+> -		   "passed" : "unknown");
+> +	           (alg->cra_flags & CRYPTO_ALG_TESTED) ?
+> +	           "passed" : "unknown");
 
-> ARM frees unused portions of memmap to save memory. It's why memmap_valid_within()
-> exists when CONFIG_ARCH_HAS_HOLES_MEMORYMODEL although previously only
-> reading /proc/pagetypeinfo cared.
->
-> In that case, the FLATMEM memory map had unexpected holes which "never"
-> happens and that was the workaround. The problem here is that there are
-> unaligned zones but no pfn_valid() implementation that can identify
-> them as you'd have with SPARSEMEM. My expectation is that you are using
-> the pfn_valid() implementation from asm-generic
->
-> #define pfn_valid(pfn)          ((pfn)<  max_mapnr)
->
-> which is insufficient in your case.
->    
+Why did you replaced a tab with spaces here??
 
-I am actually using the pfn_valid implementation FLATMEM in 
-arch/arm/include/asm/memory.h.  This one is very similar to the 
-asm-generic, and has no knowledge of the holes.
 
-> I think it's more likely the at the memmap he is accessing has been
-> freed and is effectively random data.
->
->    
-
-I also think this is the case.
-
-> SPARSEMEM would give you an implementation of pfn_valid() that you could
-> use here. The choices that spring to mind are;
->
-> 1. reduce MAX_ORDER so they are aligned (easiest)
->    
-
-Is it safe to assume that reducing MAX_ORDER will hurt performance?
-
-> 2. use SPARSEMEM (easy, but not necessary what you want to do, might
-> 	waste memory unless you drop MAX_ORDER as well)
->    
-
-We intend to use SPARSEMEM, but we'd also like to maintain FLATMEM 
-compatibility for some configurations.  My guess is that there are other 
-ARM users that may want this support as well.
-
-> 3. implement a pfn_valid() that can handle the holes and set
-> 	CONFIG_HOLES_IN_ZONE so it's called in move_freepages() to
-> 	deal with the holes (should pass this by someone more familiar
-> 	with ARM than I)
->    
-
-This option seems the best to me.  We should be able to implement an ARM 
-specific pfn_valid() that walks the ARM meminfo struct to ensure the pfn 
-is not within a hole.
-
-My only concern with this is a comment in __rmqueue_fallback() after 
-calling move_freepages_block()  that states "Claim the whole block if 
-over half of it is free".  Suppose only 1 MB is beyond the bank limit.  
-That means that over half of the pages of the 4 MB block will be 
-reported by move_freepages() as free -- but 1 MB of those pages are 
-invalid.  Won't this cause problems if these pages are assumed to be 
-part of an active block?
-
-It seems like we should have an additional check in 
-move_freepages_block() with pfn_valid_within() to check the last page in 
-the block (eg. end_pfn) before calling move_freepages_block().  If the 
-last page is not valid, then we shouldn't we return 0 as in the zone 
-span check?  This will also skip the extra burden of checking each 
-individual page, when we already know the proposed range is invalid.
-
-Assuming we did return 0 in this case, would that sub-block of pages 
-ever be usable for anything else, or would it be effectively wasted?  If 
-this memory were wasted, then adjusting MAX_ORDER would have an 
-advantage in this sense -- ignoring any performance implications.
-
-Thanks,
-Michael
+Eric
