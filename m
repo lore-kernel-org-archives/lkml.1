@@ -1,105 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751312Ab0BSLtJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 06:49:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28940 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753Ab0BSLtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 06:49:07 -0500
-Subject: Re: [PATCH 2/2] dlm: Remove obsolete lockspace lookup
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: David Teigland <teigland@redhat.com>
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20100218210407.GB13276@redhat.com>
-References: <1266399695-29885-1-git-send-email-swhiteho@redhat.com>
-	 <1266399695-29885-2-git-send-email-swhiteho@redhat.com>
-	 <1266399695-29885-3-git-send-email-swhiteho@redhat.com>
-	 <20100217201243.GA29576@redhat.com> <1266484563.2297.6.camel@localhost>
-	 <20100218210407.GB13276@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Red Hat UK Ltd
-Date: Fri, 19 Feb 2010 11:52:24 +0000
-Message-ID: <1266580344.2758.47.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751566Ab0BSLvF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 06:51:05 -0500
+Received: from mga07.intel.com ([143.182.124.22]:9957 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750902Ab0BSLvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 06:51:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,502,1262592000"; 
+   d="scan'208";a="245802459"
+Date: Fri, 19 Feb 2010 12:52:16 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] gpiolib: Actually set output state in
+ wm831x_gpio_direction_output()
+Message-ID: <20100219115215.GF10255@sortiz.org>
+References: <1266429875-4046-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266429875-4046-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Mark,
 
-On Thu, 2010-02-18 at 16:04 -0500, David Teigland wrote:
-> On Thu, Feb 18, 2010 at 09:16:03AM +0000, Steven Whitehouse wrote:
-> > I'm not sure what more I can say here.... this is a sysfs file store
-> > function and one of the reasons for using it is that sysfs looks after
-> > the ref counting for you.
-> > 
-> > Even aside from that, if you don't have a reference to the lockspace,
-> > then the dereference that is done to discover the lockspace name would
-> > be invalid, since the structure might have already been freed before the
-> > reference is obtained.
-> > 
-> > You could also compare with with the other store and show functions in
-> > that same file and notice that none of them try to grab a reference to
-> > the lockspace in that way. So if this is required, then it must be
-> > required for those functions too.
-> > 
-> > Either way there is something not quite right here and having studied
-> > the code in some detail, I'm pretty sure this is the correct fix,
+On Wed, Feb 17, 2010 at 06:04:35PM +0000, Mark Brown wrote:
+> wm831x_gpio_direction_output() ignored the state passed into it.
 > 
-> I guess you didn't see this oops in your tests.  Can you show that the
-> situation in this commit is no longer possible?
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: stable@kernel.org
+> ---
 > 
-No, I didn't hit it. I'm not sure how to reproduce whatever situation
-led to this in the first place.
+> Ideally this could make it into 2.6.33, though it's not super critical
+> and it's probably reasonable to handle it via the stable releases.
+Agreed. I'll push it upstream through my for-next branch, thanks.
 
-There was a clue though in the patch prior to the one you pointed out in
-the git tree, the comment in this patch doesn't make a lot of sense
-until without the context from that patch. I noticed that where the
-sysfs function does this:
+Cheers,
+Samuel.
 
-> +	ls = dlm_find_lockspace_local(ls->ls_local_handle);
-> +	if (!ls)
-> +		return -EINVAL;
+>  drivers/gpio/wm831x-gpio.c |   22 +++++++++++++++-------
+>  1 files changed, 15 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
+> index b4468b6..c5a00f7 100644
+> --- a/drivers/gpio/wm831x-gpio.c
+> +++ b/drivers/gpio/wm831x-gpio.c
+> @@ -60,23 +60,31 @@ static int wm831x_gpio_get(struct gpio_chip *chip, unsigned offset)
+>  		return 0;
+>  }
+>  
+> -static int wm831x_gpio_direction_out(struct gpio_chip *chip,
+> -				     unsigned offset, int value)
+> +static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+>  {
+>  	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+>  	struct wm831x *wm831x = wm831x_gpio->wm831x;
+>  
+> -	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+> -			       WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
+> +	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
+> +			value << offset);
+>  }
+>  
+> -static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+> +static int wm831x_gpio_direction_out(struct gpio_chip *chip,
+> +				     unsigned offset, int value)
+>  {
+>  	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+>  	struct wm831x *wm831x = wm831x_gpio->wm831x;
+> +	int ret;
+>  
+> -	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
+> -			value << offset);
+> +	ret = wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+> +			      WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
+> +	if (ret < 0)
+> +		return ret;
 > +
+> +	/* Can only set GPIO state once it's in output mode */
+> +	wm831x_gpio_set(chip, offset, value);
+> +
+> +	return 0;
+>  }
+>  
+>  static int wm831x_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
+> -- 
+> 1.6.6.1
+> 
 
-it isn't primarily a ref count operation. Yes, it does get a ref count
-on the object if it is successful, but the main purpose is testing to
-see if the shutdown process has started (i.e. is the lockspace still on
-the ls_list). If the list removal used a list_del_init rather than a
-list del, the dlm_find_lockspace_local() call could be replaced with:
-
-	spin_lock(&lslist_lock);
-	ret = list_empty(&ls->ls_list);
-	if (!ret)
-		ls->ls_count++;
-	spin_unlock(&lslist_lock);
-	if (ret)
-		return -EINVAL;
-
-which might be a bit less confusing, and also saves traversing the list
-of lockspaces. This is basically a "hold" operation, rather than a
-find/get type operation.
-
-My confusion has arisen from the fact that there are three ref counters
-for the lockspace object. One is ls_count, one is ls_create_count and
-the other the is kobject ref count.
-
-ls_create_count seems to deal with user references, ls_count seems to be
-used for internal references and the kobject ref count only seems to be
-incremented/decremented on initial object creation/removal.
-
-Probably the correct long term solution is to at least merge the
-ls_count into kobject ref count system, and maybe the ls_create_count
-too. I'll have to do some more investigation before I can see whether
-there are any reasons why that isn't possible.
-
-Either way, we are getting away from what was originally a small and
-simple patch, so I'll suggest to ignore this one for now, and just apply
-the first one of the two which I sent. I'll have another look at this in
-the mean time,
-
-Steve.
-
-
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
