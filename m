@@ -1,77 +1,185 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133Ab0BSPSs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 10:18:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5623 "EHLO mx1.redhat.com"
+	id S1754324Ab0BSPTv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 10:19:51 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57987 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879Ab0BSPSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 10:18:46 -0500
-Message-ID: <4B7EAB9E.2010509@redhat.com>
-Date: Fri, 19 Feb 2010 13:17:50 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1750973Ab0BSPTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 10:19:49 -0500
+Date: Fri, 19 Feb 2010 15:19:34 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+	due to "e084b - page-allocator: preserve PFN ordering when
+	__GFP_COLD is set"
+Message-ID: <20100219151934.GA1445@csn.ul.ie>
+References: <20100209175707.GB5098@csn.ul.ie> <4B742C2C.5080305@linux.vnet.ibm.com> <20100212100519.GA29085@laptop> <4B796C6D.80800@linux.vnet.ibm.com> <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com> <20100218114310.GC32626@csn.ul.ie> <4B7D664C.20507@linux.vnet.ibm.com> <4B7E73BF.5030901@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: Borislav Petkov <borislav.petkov@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
- on PCI
-References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu> <4B7B1C40.8070208@linux.intel.com> <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain> <20100219121734.GA8300@basil.fritz.box> <20100219124540.GC30243@aftab> <4B7E906D.8050501@linux.intel.com>
-In-Reply-To: <4B7E906D.8050501@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B7E73BF.5030901@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, 
-
-Andi Kleen wrote:
-> Borislav,
->>>> year. You are refusing to work with other people on a well designed
->>
->> Sorry, but from our last discussion on attempting to work towards such
->> an infrastructure solution I got the same impression as Thomas and Ingo
->> that you're simply not willing to work together on getting a real thing
->> done. That's why I stopped bothering - it simply made no sense to me to
->> waste time in fruitless discussions.
+On Fri, Feb 19, 2010 at 12:19:27PM +0100, Christian Ehrhardt wrote:
+> >>>>
+> >>>> PAGES-FREED  fast path   slow path
+> >>>> GOOD CASE      ~62       ~1.46
+> >>>> BAD CASE       ~62       ~37
+> >>> 5f8dcc21 introduced per migrate type pcp lists, is it possible that 
+> >>> we  run in a scenario where try_to_free frees a lot of pages via, but 
+> >>> of the  wrong migrate type?
+> >>
+> >> It's possible but the window is small. When a threshold is reached on the
+> >> PCP lists, they get drained to the buddy lists and later picked up again
+> >> by __rmqueue_fallback(). I had considered the possibility of pages of the
+> >> wrong type being on the PCP lists which led to the patch "page-allocator:
+> >> Fallback to other per-cpu lists when the target list is empty and 
+> >> memory is
+> >> low" but you reported it made no difference even when fallback was 
+> >> allowed
+> >> with high watermarks.
+> >> [...]
+> > 
+> > Today I created rather huge debug logs - I'll spare everyone with too 
+> > much detail.
+> > Eventually it comes down to some kind of cat /proc/zoneinfo like output 
+> > extended to list all things per migrate type too.
+> > 
+> >  From that I still think there should be plenty of pages to get the 
+> > allocation through, as it was suggested by the high amount of pages 
+> > freed by try_to_free.
+> > > 
+> [...]
 > 
-> Well I keep ignoring suggestions to put more stuff into EDAC,
-> mostly because I think the EDAC design needs to be thrown out
-> instead of extended. Are you referring to that?
+> > More about that tomorrow,
 > 
-> My impression was that you  got to the same conclusion (at least
-> for parts of current EDAC like the events) based on your earlier emails.
+> Well tomorrow is now, and I think I got some important new insights.
 > 
-> The current issue is less in enumeration/topology anyways but more
-> in event handling I would say. In the end topology/enumeration is
-> the easier part, and most of it is already working quite well.
+> As mentioned before I realized that a second call still fails most of the
+> time (>99%). Therefore I added a "debugme" parameter to get_page_from_freelist
+> and buffered_rmqueue to see where the allocations exactly fails (patch
+> attached).
 > 
-> I'm trying to do things step by step, including for short term
-> problems extending current interfaces if possible and then longer
-> term moving to new better interfaces.
+> Now with debugme active in a second call after it had progress&&!page in direct_reclaim I saw the following repeating pattern in most of the cases:
+>    get_page_from_freelist - zone loop - current zone 'DMA'
+>    get_page_from_freelist - watermark check due to !(alloc_flags & ALLOC_NO_WATERMARKS)
+>    get_page_from_freelist - goto zone_full due to zone_reclaim_mode==0
+>    get_page_from_freelist - return page '(null)'
+> 
+> Ok - now we at least exactly know why it gets no page.
+> Remember there are plenty of pages like it was in my zoneinfo like report in the last mail.
+> I didn't expect that, but actually watermarks are what stops the allocations here.
 
-Ingo and Thomas are right: we need to work together to improve the
-error report, and this means that we shouldn't ignore putting more stuff
-in EDAC.
+That is somewhat expected. We also don't want to go underneath them
+beause that can lead to system deadlock.
 
-EDAC is generic enough to work with different type of memory and memory
-controllers, and to provide a consistent interface to describe it on a way
-that userspace doesn't need to know what are the error registers at
-the hardware, nor how to decode a "magic" error number into something
-that has a meaning.
+> The zone_watermark_ok check reports that there are not enough pages for the current watermark and
+> finally it ends with zone_reclaim_mode which is always zero on s390 as we are not CONFIG_NUMA.
+> 
+> Ok remember my scenario - several parallel iozone sequential read processes
+> - theres not much allocation going on except for the page cache read ahead
+> related to that read workload.
+> The allocations for page cache seem to have no special watermarks selected
+> via their GFP flags and therefore get stalled by congestion_wait - which in
+> consequence of no available writes in flight consumes its full timeout.
+>
 
-As Boris properly pointed, EDAC has space for improvements, and part of
-the perf logic can be used as a start point to give some flash new ideas.
+Which I'd expect to some extent, but it still stuns me that e084b makes
+a difference to any of this. The one-list-per-migratetype patch would
+make some sense except restoring something similar to the old behaviour
+didn't help either.
 
-The main issue I see with MCE is at the interface level. I think if we
-all cope together, we can converge into a proper interface that will
-be accepted upstream.
+> As I see significant impacts to the iozone throughput and not only
+> e.g. bad counters in direct_reclaim the congestion_wait stalling seems to
+> be so often/long to stall the application I/O itself.
+>
+> That means from the time VFS starting a read ahead it seems to stall that
+> page allocation long enough that the data is not ready when the application
+> tries to read it, while it would be if the allocation would be fast enough.
+>
+> A simple test for this theory was to allow those failing allocations a
+> second chance without watermark restrictions before putting them to sleep
+> for such a long time.
+
+> 
+> Index: linux-2.6-git/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6-git.orig/mm/page_alloc.c  2010-02-19 09:53:14.000000000 +0100
+> +++ linux-2.6-git/mm/page_alloc.c       2010-02-19 09:56:26.000000000 +0100
+> @@ -1954,7 +1954,22 @@
+> 
+>         if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
+>                 /* Wait for some write requests to complete then retry */
+> -               congestion_wait(BLK_RW_ASYNC, HZ/50);
+> +               /*
+> +                * If it gets here try it without watermarks before going
+> +                * to sleep.
+> +                *
+> +                * This will end up in alloc_high_priority and if that fails
+> +                * once more direct_reclaim but this time without watermark
+> +                * checks.
+> +                *
+> +                * FIXME: that is just for verification - a real fix needs to
+> +                * ensure e.g. page cache allocations don't drain all pages
+> +                * under watermark
+> +                */
+> +               if (!(alloc_flags & ALLOC_NO_WATERMARKS))
+> +                       alloc_flags &= ALLOC_NO_WATERMARKS;
+> +               else
+> +                       congestion_wait(BLK_RW_ASYNC, HZ/50);
+>                 goto rebalance;
+>         }
+> 
+> This fixes all issues I have, but as stated in the FIXME it is unfortunately
+> no fix for the real world.
+
+It's possible to deadlock a system with this patch. It's also not acting
+as you intended. I think you meant either |= or = there but anyway.
+
+> Unfortunately even now knowing the place of the issue so well I don't see
+> the connection to the commits e084b+5f8dcc21
+
+Still a mystery.
+
+>  - I couldn't find something but
+> did they change the accounting somewhere or e.g. changed the timing/order
+> of watermark updates and allocations?
+>
+
+Not that I can think of.
+
+> Eventually it might come down to a discussion of allocation priorities and
+> we might even keep them as is and accept this issue - I still would prefer
+> a good second chance implementation, other page cache allocation flags or
+> something else that explicitly solves this issue.
+>
+
+In that line, the patch that replaced congestion_wait() with a waitqueue
+makes some sense.
+
+> Mel's patch that replaces congestion_wait with a wait for the zone watermarks
+> becoming available again is definitely a step in the right direction and
+> should go into upstream and the long term support branches.
+
+I'll need to do a number of tests before I can move that upstream but I
+don't think it's a merge candidate. Unfortunately, I'll be offline for a
+week starting tomorrow so I won't be able to do the testing.
+
+When I get back, I'll revisit those patches with the view to pushing
+them upstream. I hate to treat symptoms here without knowing the
+underlying problem but this has been spinning in circles for ages with
+little forward progress :(
 
 -- 
-
-Cheers,
-Mauro
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
