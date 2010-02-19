@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892Ab0BSRO5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:14:57 -0500
-Received: from kroah.org ([198.145.64.141]:57443 "EHLO coco.kroah.org"
+	id S1755921Ab0BSRO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:14:59 -0500
+Received: from kroah.org ([198.145.64.141]:57436 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753987Ab0BSRAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:25 -0500
+	id S1754561Ab0BSRAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:24 -0500
 X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:37 2010
-Message-Id: <20100219163237.583272962@kvm.kroah.org>
+Message-Id: <20100219163237.355115816@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:19 -0800
+Date: Fri, 19 Feb 2010 08:29:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [26/93] cciss: Make cciss_seq_show handle holes in the h->drv[] array
+       Junichi Nomura <j-nomura@ce.jp.nec.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [25/93] freeze_bdev: dont deactivate successfully frozen MS_RDONLY sb
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,40 +26,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+From: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 
-commit 531c2dc70d339c5dfa8c3eb628c3459dc6f3a075 upstream.
+commit 4b06e5b9ad8abb20105b2b25e42c509ebe9b2d76 upstream.
 
-It is possible (and expected) for there to be holes in the h->drv[]
-array, that is, some elements may be NULL pointers.  cciss_seq_show
-needs to be made aware of this possibility to avoid an Oops.
+Thanks Thomas and Christoph for testing and review.
+I removed 'smp_wmb()' before up_write from the previous patch,
+since up_write() should have necessary ordering constraints.
+(I.e. the change of s_frozen is visible to others after up_write)
+I'm quite sure the change is harmless but if you are uncomfortable
+with Tested-by/Reviewed-by on the modified patch, please remove them.
 
-To reproduce the Oops which this fixes:
+If MS_RDONLY, freeze_bdev should just up_write(s_umount) instead of
+deactivate_locked_super().
+Also, keep sb->s_frozen consistent so that remount can check the frozen state.
 
-1) Create two "arrays" in the Array Configuratino Utility and
-   several logical drives on each array.
-2) cat /proc/driver/cciss/cciss* in an infinite loop
-3) delete some of the logical drives in the first "array."
+Otherwise a crash reported here can happen:
+http://lkml.org/lkml/2010/1/16/37
+http://lkml.org/lkml/2010/1/28/53
 
-Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+This patch should be applied for 2.6.32 stable series, too.
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Tested-by: Thomas Backlund <tmb@mandriva.org>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/block/cciss.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -339,6 +339,9 @@ static int cciss_seq_show(struct seq_fil
- 	if (*pos > h->highest_lun)
- 		return 0;
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -246,7 +246,8 @@ struct super_block *freeze_bdev(struct block_device *bdev)
+ 	if (!sb)
+ 		goto out;
+ 	if (sb->s_flags & MS_RDONLY) {
+-		deactivate_locked_super(sb);
++		sb->s_frozen = SB_FREEZE_TRANS;
++		up_write(&sb->s_umount);
+ 		mutex_unlock(&bdev->bd_fsfreeze_mutex);
+ 		return sb;
+ 	}
+@@ -307,7 +308,7 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+ 	BUG_ON(sb->s_bdev != bdev);
+ 	down_write(&sb->s_umount);
+ 	if (sb->s_flags & MS_RDONLY)
+-		goto out_deactivate;
++		goto out_unfrozen;
  
-+	if (drv == NULL) /* it's possible for h->drv[] to have holes. */
-+		return 0;
-+
- 	if (drv->heads == 0)
- 		return 0;
+ 	if (sb->s_op->unfreeze_fs) {
+ 		error = sb->s_op->unfreeze_fs(sb);
+@@ -321,11 +322,11 @@ int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+ 		}
+ 	}
  
++out_unfrozen:
+ 	sb->s_frozen = SB_UNFROZEN;
+ 	smp_wmb();
+ 	wake_up(&sb->s_wait_unfrozen);
+ 
+-out_deactivate:
+ 	if (sb)
+ 		deactivate_locked_super(sb);
+ out_unlock:
 
 
