@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982Ab0BSJgy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 04:36:54 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:43659 "EHLO
+	id S1753256Ab0BSJhX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 04:37:23 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:43873 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494Ab0BSJgs (ORCPT
+	with ESMTP id S1753090Ab0BSJhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 04:36:48 -0500
+	Fri, 19 Feb 2010 04:37:08 -0500
 From: john.johansen@canonical.com
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org,
        John Johansen <john.johansen@canonical.com>
-Subject: [PATCH 02/12] Update kenel audit range comments to show AppArmor's registered range of 1500-1599.  This range used to be reserved for LSPP but LSPP uses the SELinux range and the range was given to AppArmor. Patch is not in mainline -- pending AppArmor code submission to lkml
-Date: Fri, 19 Feb 2010 01:36:18 -0800
-Message-Id: <1266572188-26529-3-git-send-email-john.johansen@canonical.com>
+Subject: [PATCH 07/12] AppArmor /proc/<pid>/attr/* and apparmorfs interfaces to userspace.
+Date: Fri, 19 Feb 2010 01:36:23 -0800
+Message-Id: <1266572188-26529-8-git-send-email-john.johansen@canonical.com>
 X-Mailer: git-send-email 1.6.6.1
 In-Reply-To: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>
 References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>
@@ -23,55 +23,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: John Johansen <john.johansen@canonical.com>
 
-Add the core routine for AppArmor auditing.
+The /proc/<pid>/attr/* interface is used for process introspection and
+commands.  While the apparmorfs interface is used for global introspection
+and loading and removing policy.
+
+The current apparmorfs interface is compatible with previous versions
+of AppArmor.  The plans are to deprecate it (hence the config option
+APPARMOR_COMPAT_24) and replace it with a more sysfs style single
+entry per file interface.
 
 Signed-off-by: John Johansen <john.johansen@canonical.com>
 ---
- include/linux/audit.h             |   10 ++-
- security/apparmor/audit.c         |  149 +++++++++++++++++++++++++++++++++++++
- security/apparmor/include/audit.h |   54 +++++++++++++
- 3 files changed, 212 insertions(+), 1 deletions(-)
- create mode 100644 security/apparmor/audit.c
- create mode 100644 security/apparmor/include/audit.h
+ security/apparmor/apparmorfs-24.c      |   61 ++++
+ security/apparmor/apparmorfs.c         |  506 ++++++++++++++++++++++++++++++++
+ security/apparmor/include/apparmorfs.h |   28 ++
+ security/apparmor/include/procattr.h   |   26 ++
+ security/apparmor/procattr.c           |  124 ++++++++
+ 5 files changed, 745 insertions(+), 0 deletions(-)
+ create mode 100644 security/apparmor/apparmorfs-24.c
+ create mode 100644 security/apparmor/apparmorfs.c
+ create mode 100644 security/apparmor/include/apparmorfs.h
+ create mode 100644 security/apparmor/include/procattr.h
+ create mode 100644 security/apparmor/procattr.c
 
-diff --git a/include/linux/audit.h b/include/linux/audit.h
-index 3c7a358..a1db25b 100644
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -33,7 +33,7 @@
-  * 1200 - 1299 messages internal to the audit daemon
-  * 1300 - 1399 audit event messages
-  * 1400 - 1499 SE Linux use
-- * 1500 - 1599 kernel LSPP events
-+ * 1500 - 1599 AppArmor use
-  * 1600 - 1699 kernel crypto events
-  * 1700 - 1799 kernel anomaly records
-  * 1800 - 1899 kernel integrity events
-@@ -122,6 +122,14 @@
- #define AUDIT_MAC_UNLBL_STCADD	1416	/* NetLabel: add a static label */
- #define AUDIT_MAC_UNLBL_STCDEL	1417	/* NetLabel: del a static label */
- 
-+#define AUDIT_APPARMOR_AUDIT	1501	/* AppArmor audited grants */
-+#define AUDIT_APPARMOR_ALLOWED	1502	/* Allowed Access for learning */
-+#define AUDIT_APPARMOR_DENIED	1503
-+#define AUDIT_APPARMOR_HINT	1504	/* Process Tracking information */
-+#define AUDIT_APPARMOR_STATUS	1505	/* Changes in config */
-+#define AUDIT_APPARMOR_ERROR	1506	/* Internal AppArmor Errors */
-+#define AUDIT_APPARMOR_KILL	1507	/* AppArmor killing processes */
-+
- #define AUDIT_FIRST_KERN_ANOM_MSG   1700
- #define AUDIT_LAST_KERN_ANOM_MSG    1799
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
-diff --git a/security/apparmor/audit.c b/security/apparmor/audit.c
+diff --git a/security/apparmor/apparmorfs-24.c b/security/apparmor/apparmorfs-24.c
 new file mode 100644
-index 0000000..67a8113
+index 0000000..f64aae8
 --- /dev/null
-+++ b/security/apparmor/audit.c
-@@ -0,0 +1,149 @@
++++ b/security/apparmor/apparmorfs-24.c
+@@ -0,0 +1,61 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor auditing functions
++ * This file contains AppArmor /sys/kernel/secrutiy/apparmor interface functions
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009-2010 Canonical Ltd.
@@ -80,153 +64,65 @@ index 0000000..67a8113
 + * modify it under the terms of the GNU General Public License as
 + * published by the Free Software Foundation, version 2 of the
 + * License.
++ *
++ *
++ * This file contain functions providing an interface for <= AppArmor 2.4
++ * compatibility.  It is dependent on CONFIG_SECURITY_APPARMOR_COMPAT_24
++ * being set (see Makefile).
 + */
 +
-+#include <linux/audit.h>
-+#include <linux/socket.h>
++#include <linux/security.h>
++#include <linux/vmalloc.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/uaccess.h>
++#include <linux/namei.h>
 +
 +#include "include/apparmor.h"
 +#include "include/audit.h"
++#include "include/context.h"
 +#include "include/policy.h"
 +
-+const char *audit_mode_names[] = {
-+	"normal",
-+	"quiet_denied",
-+	"quiet",
-+	"noquiet",
-+	"all"
-+};
 +
-+static char *aa_audit_type[] = {
-+	"APPARMOR_AUDIT",
-+	"APPARMOR_ALLOWED",
-+	"APPARMOR_DENIED",
-+	"APPARMOR_HINT",
-+	"APPARMOR_STATUS",
-+	"APPARMOR_ERROR",
-+	"APPARMOR_KILLED"
-+};
-+
-+/*
-+ * Currently AppArmor auditing is fed straight into the audit framework.
-+ *
-+ * TODO:
-+ * netlink interface for complain mode
-+ * user auditing, - send user auditing to netlink interface
-+ * system control of whether user audit messages go to system log
-+ */
-+
-+/**
-+ *
-+ * NOTE: profile can be NULL if audit is a none profile based message
-+ */
-+static int aa_audit_base(int type, struct aa_profile *profile,
-+			 struct aa_audit *sa, struct audit_context *audit_cxt,
-+			 void (*cb) (struct audit_buffer *, struct aa_audit *))
++/* apparmor/matching */
++static ssize_t aa_matching_read(struct file *file, char __user *buf,
++				size_t size, loff_t *ppos)
 +{
-+	struct audit_buffer *ab = NULL;
-+	struct task_struct *task = sa->task ? sa->task : current;
++	const char matching[] = "pattern=aadfa audit perms=crwxamlk/ "
++	    "user::other";
 +
-+	if (profile && DO_KILL(profile) && type == AUDIT_APPARMOR_DENIED)
-+		type = AUDIT_APPARMOR_KILL;
-+
-+	/* ab freed below in audit_log_end */
-+	ab = audit_log_start(audit_cxt, sa->gfp_mask, type);
-+
-+	if (!ab) {
-+		AA_ERROR("(%d) Unable to log event of type (%d)\n",
-+			 -ENOMEM, type);
-+		sa->error = -ENOMEM;
-+		goto out;
-+	}
-+
-+	if (aa_g_audit_header) {
-+		audit_log_format(ab, " type=");
-+		audit_log_string(ab, aa_audit_type[type - AUDIT_APPARMOR_AUDIT]);
-+	}
-+
-+	if (sa->operation) {
-+		audit_log_format(ab, " operation=");
-+		audit_log_string(ab, sa->operation);
-+	}
-+
-+	if (sa->info) {
-+		audit_log_format(ab, " info=");
-+		audit_log_string(ab, sa->info);
-+		if (sa->error)
-+			audit_log_format(ab, " error=%d", sa->error);
-+	}
-+
-+	audit_log_format(ab, " pid=%d", task->pid);
-+
-+	if (profile && !unconfined(profile)) {
-+		pid_t pid = task->real_parent->pid;
-+		audit_log_format(ab, " parent=%d", pid);
-+		audit_log_format(ab, " profile=");
-+		audit_log_untrustedstring(ab, profile->base.hname);
-+
-+		if (profile->ns != root_ns) {
-+			audit_log_format(ab, " namespace=");
-+			audit_log_untrustedstring(ab, profile->ns->base.hname);
-+		}
-+	}
-+
-+	if (cb)
-+		cb(ab, sa);
-+
-+	audit_log_end(ab);
-+
-+out:
-+	if (type == AUDIT_APPARMOR_KILL)
-+		(void)send_sig_info(SIGKILL, NULL, task);
-+
-+	return type == AUDIT_APPARMOR_ALLOWED ? 0 : sa->error;
++	return simple_read_from_buffer(buf, size, ppos, matching,
++				       sizeof(matching) - 1);
 +}
 +
-+/**
-+ * aa_audit - Log an audit event to the audit subsystem
-+ * @type: audit type for the message
-+ * @profile: profile to check against
-+ * @sa: audit event
-+ * @cb: optional callback fn for type specific fields
-+ *
-+ * Handle default message switching based off of audit mode flags
-+ *
-+ * Returns: error on failure
-+ */
-+int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
-+	     void (*cb) (struct audit_buffer *, struct aa_audit *))
++const struct file_operations aa_fs_matching_fops = {
++	.read = aa_matching_read,
++};
++
++/* apparmor/features */
++static ssize_t aa_features_read(struct file *file, char __user *buf,
++				size_t size, loff_t *ppos)
 +{
-+	struct audit_context *audit_cxt;
-+	audit_cxt = aa_g_logsyscall ? current->audit_context : NULL;
++	const char features[] = "file=3.1 capability=2.0 network=1.0 "
++	    "change_hat=1.5 change_profile=1.1 " "aanamespaces=1.1 rlimit=1.1";
 +
-+	if (type == AUDIT_APPARMOR_AUTO) {
-+		if (likely(!sa->error)) {
-+			if (AUDIT_MODE(profile) != AUDIT_ALL)
-+				return 0;
-+			type = AUDIT_APPARMOR_AUDIT;
-+		} else if (COMPLAIN_MODE(profile))
-+			type = AUDIT_APPARMOR_ALLOWED;
-+		else
-+			type = AUDIT_APPARMOR_DENIED;
-+	}
-+	if (AUDIT_MODE(profile) == AUDIT_QUIET ||
-+	    (type == AUDIT_APPARMOR_DENIED &&
-+	     AUDIT_MODE(profile) == AUDIT_QUIET))
-+		return sa->error;
-+
-+	return aa_audit_base(type, profile, sa, audit_cxt, cb);
++	return simple_read_from_buffer(buf, size, ppos, features,
++				       sizeof(features) - 1);
 +}
-diff --git a/security/apparmor/include/audit.h b/security/apparmor/include/audit.h
++
++const struct file_operations aa_fs_features_fops = {
++	.read = aa_features_read,
++};
+diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
 new file mode 100644
-index 0000000..d86cfee
+index 0000000..6f0b280
 --- /dev/null
-+++ b/security/apparmor/include/audit.h
-@@ -0,0 +1,54 @@
++++ b/security/apparmor/apparmorfs.c
+@@ -0,0 +1,506 @@
 +/*
 + * AppArmor security module
 + *
-+ * This file contains AppArmor auditing function definitions.
++ * This file contains AppArmor /sys/kernel/security/apparmor interface functions
 + *
 + * Copyright (C) 1998-2008 Novell/SUSE
 + * Copyright 2009-2010 Canonical Ltd.
@@ -237,46 +133,694 @@ index 0000000..d86cfee
 + * License.
 + */
 +
-+#ifndef __AA_AUDIT_H
-+#define __AA_AUDIT_H
++#include <linux/security.h>
++#include <linux/vmalloc.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <linux/uaccess.h>
++#include <linux/namei.h>
 +
-+#include <linux/audit.h>
-+#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
++#include "include/apparmor.h"
++#include "include/apparmorfs.h"
++#include "include/audit.h"
++#include "include/context.h"
++#include "include/policy.h"
 +
-+struct aa_profile;
++static void *kvmalloc(size_t size)
++{
++	void *buffer = kmalloc(size, GFP_KERNEL);
++	if (!buffer)
++		buffer = vmalloc(size);
++	return buffer;
++}
 +
-+extern const char *audit_mode_names[];
-+#define AUDIT_MAX_INDEX 5
++static void kvfree(void *buffer)
++{
++	if (is_vmalloc_addr(buffer))
++		vfree(buffer);
++	else
++		kfree(buffer);
++}
 +
-+#define AUDIT_APPARMOR_AUTO 0	/* auto choose audit message type */
++static char *aa_simple_write_to_buffer(const char __user *userbuf,
++				       size_t alloc_size, size_t copy_size,
++				       loff_t *pos, const char *operation)
++{
++	char *data;
 +
-+enum audit_mode {
-+	AUDIT_NORMAL,		/* follow normal auditing of accesses */
-+	AUDIT_QUIET_DENIED,	/* quiet all denied access messages */
-+	AUDIT_QUIET,		/* quiet all messages */
-+	AUDIT_NOQUIET,		/* do not quiet audit messages */
-+	AUDIT_ALL		/* audit all accesses */
++	if (*pos != 0) {
++		/* only writes from pos 0, that is complete writes */
++		data = ERR_PTR(-ESPIPE);
++		goto out;
++	}
++
++	/*
++	 * Don't allow profile load/replace/remove from profiles that don't
++	 * have CAP_MAC_ADMIN
++	 */
++	if (!capable(CAP_MAC_ADMIN)) {
++		struct aa_profile *profile = NULL;
++		struct aa_audit sa = {
++			.operation = operation,
++			.gfp_mask = GFP_KERNEL,
++			.error = -EACCES,
++		};
++		profile = aa_current_profile();
++		data = ERR_PTR(aa_audit(AUDIT_APPARMOR_DENIED, profile, &sa,
++					NULL));
++		goto out;
++	}
++	/* freed by caller to aa_simple_write_to_buffer */
++	data = kvmalloc(alloc_size);
++	if (data == NULL) {
++		data = ERR_PTR(-ENOMEM);
++		goto out;
++	}
++
++	if (copy_from_user(data, userbuf, copy_size)) {
++		kvfree(data);
++		data = ERR_PTR(-EFAULT);
++		goto out;
++	}
++
++out:
++	return data;
++}
++
++/* apparmor/.load */
++static ssize_t aa_profile_load(struct file *f, const char __user *buf,
++			       size_t size, loff_t *pos)
++{
++	char *data;
++	ssize_t error;
++
++	data = aa_simple_write_to_buffer(buf, size, size, pos, "profile_load");
++
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		error = aa_interface_replace_profiles(data, size, 1);
++		kvfree(data);
++	}
++
++	return error;
++}
++
++static const struct file_operations aa_fs_profile_load = {
++	.write = aa_profile_load
 +};
 +
-+/*
-+ * aa_audit - AppArmor auditing structure
-+ * Structure is populated by access control code and passed to aa_audit which
-+ * provides for a single point of logging.
++/* apparmor/.replace */
++static ssize_t aa_profile_replace(struct file *f, const char __user *buf,
++				  size_t size, loff_t *pos)
++{
++	char *data;
++	ssize_t error;
++
++	data = aa_simple_write_to_buffer(buf, size, size, pos,
++					 "profile_replace");
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		error = aa_interface_replace_profiles(data, size, 0);
++		kvfree(data);
++	}
++
++	return error;
++}
++
++static const struct file_operations aa_fs_profile_replace = {
++	.write = aa_profile_replace
++};
++
++/* apparmor/.remove */
++static ssize_t aa_profile_remove(struct file *f, const char __user *buf,
++				 size_t size, loff_t *pos)
++{
++	char *data;
++	ssize_t error;
++
++	/*
++	 * aa_remove_profile needs a null terminated string so 1 extra
++	 * byte is allocated and the copied data is null terminated.
++	 */
++	data = aa_simple_write_to_buffer(buf, size + 1, size, pos,
++					 "profile_remove");
++
++	error = PTR_ERR(data);
++	if (!IS_ERR(data)) {
++		data[size] = 0;
++		error = aa_interface_remove_profiles(data, size);
++		kvfree(data);
++	}
++
++	return error;
++}
++
++static const struct file_operations aa_fs_profile_remove = {
++	.write = aa_profile_remove
++};
++
++
++/**
++ * __next_namespace - find the next namespace to list
++ * @root: root namespace to stop search at
++ * @ns: current ns position
++ *
++ * Find the next namespace and to list and handle all locking needed
++ * while switching current namespace.
++ *
++ * NOTE: will not unlock root->lock
 + */
-+struct aa_audit {
-+	struct task_struct *task;
-+	gfp_t gfp_mask;
-+	int error;
-+	const char *operation;
-+	const char *info;
++static struct aa_namespace *__next_namespace(struct aa_namespace *root,
++					     struct aa_namespace *ns)
++{
++	struct aa_namespace *parent;
++
++	/* is next namespace a child */
++	if (!list_empty(&ns->sub_ns)) {
++		struct aa_namespace *next;
++		next = list_first_entry(&ns->sub_ns, typeof(*ns), base.list);
++		read_lock(&next->lock);
++		return next;
++	}
++
++	parent = ns->parent;
++	while (parent) {
++		read_unlock(&ns->lock);
++		list_for_each_entry_continue(ns, &parent->sub_ns, base.list) {
++			read_lock(&ns->lock);
++			return ns;
++		}
++		if (parent == root)
++			return NULL;
++		ns = parent;
++		parent = parent->parent;
++	}
++
++	return NULL;
++}
++
++/**
++ * __first_profile - find the first profile in a namespace
++ * @root: namespace that is root of profiles being displayed
++ * @ns: namespace to start in
++ */
++	static struct aa_profile *__first_profile(struct aa_namespace *root,
++						  struct aa_namespace *ns)
++{
++	for ( ; ns; ns = __next_namespace(root, ns)) {
++		if (!list_empty(&ns->base.profiles))
++			return list_first_entry(&ns->base.profiles,
++						struct aa_profile, base.list);
++	}
++	return NULL;
++}
++
++/**
++ * __next_profile - step to the next profile in a profile tree
++ * @profile: current profile in tree
++ *
++ * Perform a depth first taversal on the profile tree in a namespace
++ *
++ * Returns: next profile or NULL if done
++ * Requires: profile->ns.lock to be held
++ */
++static struct aa_profile *__next_profile(struct aa_profile *p)
++{
++	struct aa_profile *parent;
++	struct aa_namespace *ns = p->ns;
++
++	/* is next profile a child */
++	if (!list_empty(&p->base.profiles))
++		return list_first_entry(&p->base.profiles, typeof(*p),
++					base.list);
++
++	/* is next profile a sibling, parent sibling, gp, subling, .. */
++	parent = p->parent;
++	while (parent) {
++		list_for_each_entry_continue(p, &parent->base.profiles,
++					     base.list)
++				return p;
++		p = parent;
++		parent = parent->parent;
++	}
++
++	/* is next another profile in the namespace */
++	list_for_each_entry_continue(p, &ns->base.profiles, base.list)
++		return p;
++
++	return NULL;
++}
++
++/**
++ * next_profile - step to the next profile in where ever it may be
++ * @root: root namespace
++ * @profile: current profile
++ *
++ * Returns: next profile or NULL if there isn't one
++ */
++static struct aa_profile *next_profile(struct aa_namespace *root,
++				       struct aa_profile *profile)
++{
++	struct aa_profile *next = __next_profile(profile);
++	if (next)
++		return next;
++
++	/* finished all profiles in namespace move to next namespace */
++	return __first_profile(root, __next_namespace(root, profile->ns));
++}
++
++/**
++ * p_start - start a depth first traversal of profile tree
++ * @f: seq_file to fill
++ * @pos: current position
++ *
++ * acquires first ns->lock
++ */
++static void *p_start(struct seq_file *f, loff_t *pos)
++	__acquires(root->lock)
++{
++	struct aa_profile *profile = NULL;
++	struct aa_namespace *root = aa_current_profile()->ns;
++	loff_t l = *pos;
++	f->private = aa_get_namespace(root);
++
++
++	/* find the first profile */
++	read_lock(&root->lock);
++	profile = __first_profile(root, root);
++
++	/* skip to position */
++	for (; profile && l > 0; l--)
++		profile = next_profile(root, profile);
++
++	return profile;
++}
++
++static void *p_next(struct seq_file *f, void *p, loff_t *pos)
++{
++	struct aa_profile *profile = p;
++	struct aa_namespace *root = f->private;
++	(*pos)++;
++
++	return next_profile(root, profile);
++}
++
++/**
++ * p_stop - stop depth first traversal
++ * @f: seq_file we are filling
++ * @p: the last profile writen
++ *
++ * if we haven't completely traversed the profile tree will release the
++ * locking.
++ */
++static void p_stop(struct seq_file *f, void *p)
++	__releases(root->lock)
++{
++	struct aa_profile *profile = p;
++	struct aa_namespace *root = f->private, *ns;
++
++	if (profile) {
++		for (ns = profile->ns; ns && ns != root; ns = ns->parent)
++			read_unlock(&ns->lock);
++	}
++	read_unlock(&root->lock);
++	aa_put_namespace(root);
++}
++
++/**
++ * print_ns_name - print a namespace name back to @root
++ * @root: root namespace to stop at
++ * @ns: namespace to gen name for
++ *
++ * Returns: true if it printed a name
++ */
++static bool print_ns_name(struct seq_file *f, struct aa_namespace *root,
++			  struct aa_namespace *ns)
++{
++	if (!ns || ns == root)
++		return 0;
++
++	if (ns->parent && print_ns_name(f, root, ns->parent))
++		seq_printf(f, "//");
++
++	seq_printf(f, "%s", ns->base.name);
++	return 1;
++}
++
++/* Returns: error on failure */
++static int seq_show_profile(struct seq_file *f, void *p)
++{
++	struct aa_profile *profile = (struct aa_profile *)p;
++	struct aa_namespace *root = f->private;
++
++	if (profile->ns != root)
++		seq_printf(f, ":");
++	if (print_ns_name(f, root, profile->ns))
++		seq_printf(f, "://");
++	seq_printf(f, "%s (%s)\n", profile->base.hname,
++		   COMPLAIN_MODE(profile) ? "complain" : "enforce");
++
++	return 0;
++}
++
++static const struct seq_operations aa_fs_profiles_op = {
++	.start = p_start,
++	.next = p_next,
++	.stop = p_stop,
++	.show = seq_show_profile,
 +};
 +
-+int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
-+	     void (*cb) (struct audit_buffer *, struct aa_audit *));
++static int aa_profiles_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &aa_fs_profiles_op);
++}
 +
-+#endif /* __AA_AUDIT_H */
++static int aa_profiles_release(struct inode *inode, struct file *file)
++{
++	return seq_release(inode, file);
++}
++
++static const struct file_operations aa_fs_profiles_fops = {
++	.open = aa_profiles_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = aa_profiles_release,
++};
++
++
++/** Base file system setup **/
++
++static struct dentry *aa_fs_dentry;
++struct dentry *aa_fs_null;
++struct vfsmount *aa_fs_mnt;
++
++static void aafs_remove(const char *name)
++{
++	struct dentry *dentry;
++
++	dentry = lookup_one_len(name, aa_fs_dentry, strlen(name));
++	if (!IS_ERR(dentry)) {
++		securityfs_remove(dentry);
++		dput(dentry);
++	}
++}
++
++/**
++ * aafs_create - create an entry in the apparmor filesystem
++ * @name: name of the entry
++ * @mask: file permission mask of the file
++ * @fops: file operations for the file
++ *
++ * Used aafs_remove to remove entries created with this fn.
++ */
++static int aafs_create(const char *name, int mask,
++		       const struct file_operations *fops)
++{
++	struct dentry *dentry;
++
++	dentry = securityfs_create_file(name, S_IFREG | mask, aa_fs_dentry,
++					NULL, fops);
++
++	return IS_ERR(dentry) ? PTR_ERR(dentry) : 0;
++}
++
++/**
++ * aa_destroy_aafs - cleanup and free aafs
++ *
++ * releases dentries allocated by aa_create_aafs
++ */
++void aa_destroy_aafs(void)
++{
++	if (aa_fs_dentry) {
++		aafs_remove(".remove");
++		aafs_remove(".replace");
++		aafs_remove(".load");
++		aafs_remove("profiles");
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++		aafs_remove("matching");
++		aafs_remove("features");
++#endif
++		securityfs_remove(aa_fs_dentry);
++		aa_fs_dentry = NULL;
++	}
++}
++
++/**
++ * aa_create_aafs - create the apparmor security filesystem
++ *
++ * dentries created here are released by aa_destroy_aafs
++ *
++ * Returns: error on failure
++ */
++int aa_create_aafs(void)
++{
++	int error;
++
++	if (!apparmor_initialized)
++		return 0;
++
++	if (aa_fs_dentry) {
++		AA_ERROR("%s: AppArmor securityfs already exists\n", __func__);
++		return -EEXIST;
++	}
++
++	aa_fs_dentry = securityfs_create_dir("apparmor", NULL);
++	if (IS_ERR(aa_fs_dentry)) {
++		error = PTR_ERR(aa_fs_dentry);
++		aa_fs_dentry = NULL;
++		goto error;
++	}
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++	error = aafs_create("matching", 0444, &aa_fs_matching_fops);
++	if (error)
++		goto error;
++	error = aafs_create("features", 0444, &aa_fs_features_fops);
++	if (error)
++		goto error;
++#endif
++	error = aafs_create("profiles", 0440, &aa_fs_profiles_fops);
++	if (error)
++		goto error;
++	error = aafs_create(".load", 0640, &aa_fs_profile_load);
++	if (error)
++		goto error;
++	error = aafs_create(".replace", 0640, &aa_fs_profile_replace);
++	if (error)
++		goto error;
++	error = aafs_create(".remove", 0640, &aa_fs_profile_remove);
++	if (error)
++		goto error;
++
++	/* TODO: add support for apparmorfs_null and apparmorfs_mnt */
++
++	/* Report that AppArmor fs is enabled */
++	aa_info_message("AppArmor Filesystem Enabled");
++	return 0;
++
++error:
++	aa_destroy_aafs();
++	AA_ERROR("Error creating AppArmor securityfs\n");
++	apparmor_disable();
++	return error;
++}
++
++fs_initcall(aa_create_aafs);
+diff --git a/security/apparmor/include/apparmorfs.h b/security/apparmor/include/apparmorfs.h
+new file mode 100644
+index 0000000..d071bf1
+--- /dev/null
++++ b/security/apparmor/include/apparmorfs.h
+@@ -0,0 +1,28 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor filesystem definitions.
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009-2010 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#ifndef __AA_APPARMORFS_H
++#define __AA_APPARMORFS_H
++
++extern struct dentry *aa_fs_null;
++extern struct vfsmount *aa_fs_mnt;
++
++extern void aa_destroy_aafs(void);
++
++#ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
++extern const struct file_operations aa_fs_matching_fops;
++extern const struct file_operations aa_fs_features_fops;
++#endif
++
++#endif /* __AA_APPARMORFS_H */
+diff --git a/security/apparmor/include/procattr.h b/security/apparmor/include/procattr.h
+new file mode 100644
+index 0000000..6c6f271
+--- /dev/null
++++ b/security/apparmor/include/procattr.h
+@@ -0,0 +1,26 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor /proc/<pid>/attr/ interface function defintions.
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009-2010 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#ifndef __AA_PROCATTR_H
++#define __AA_PROCATTR_H
++
++#define AA_DO_TEST 1
++#define AA_ONEXEC  1
++
++int aa_getprocattr(struct aa_profile *profile, char **string);
++int aa_setprocattr_changehat(char *args, size_t size, int test);
++int aa_setprocattr_changeprofile(char *fqname, int onexec, int test);
++int aa_setprocattr_permipc(char *fqname);
++
++#endif /* __AA_PROCATTR_H */
+diff --git a/security/apparmor/procattr.c b/security/apparmor/procattr.c
+new file mode 100644
+index 0000000..f599c84
+--- /dev/null
++++ b/security/apparmor/procattr.c
+@@ -0,0 +1,124 @@
++/*
++ * AppArmor security module
++ *
++ * This file contains AppArmor /proc/<pid>/attr/ interface functions
++ *
++ * Copyright (C) 1998-2008 Novell/SUSE
++ * Copyright 2009-2010 Canonical Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation, version 2 of the
++ * License.
++ */
++
++#include "include/apparmor.h"
++#include "include/policy.h"
++#include "include/domain.h"
++
++/**
++ * aa_getprocattr - Return the profile information for @profile
++ * @profile: the profile to print profile info about
++ * @string: the string that will contain the profile and namespace info
++ *
++ * Returns: length of @string on success else error on failure
++ *
++ * Requires: profile != NULL
++ *
++ * Creates a string containing the namespace_name://profile_name for
++ * @profile.
++ */
++int aa_getprocattr(struct aa_profile *profile, char **string)
++{
++	char *str;
++	int len = 0, mode_len, name_len, ns_len = 0;
++	const char *mode_str = profile_mode_names[profile->mode];
++	struct aa_namespace *ns = profile->ns;
++	char *s;
++
++	mode_len = strlen(mode_str) + 3;	/* + 3 for _() */
++	name_len = strlen(profile->base.hname);
++	if (ns != root_ns)
++		ns_len = strlen(ns->base.name) + 3; /*+ 3 for :// */
++	len = mode_len + ns_len + name_len + 1;	    /*+ 1 for \n */
++	s = str = kmalloc(len + 1, GFP_ATOMIC);	    /* + 1 \0 */
++	if (!str)
++		return -ENOMEM;
++
++	if (ns_len) {
++		sprintf(s, "%s://", ns->base.name);
++		s += ns_len;
++	}
++	if (profile->flags & PFLAG_UNCONFINED)
++		sprintf(s, "%s\n", profile->base.hname);
++	else
++		sprintf(s, "%s (%s)\n", profile->base.hname, mode_str);
++	*string = str;
++
++	/* NOTE: len does not include \0 of string, not saved as part of file */
++	return len;
++}
++
++static char *split_token_from_name(const char *op, char *args, u64 * token)
++{
++	char *name;
++
++	*token = simple_strtoull(args, &name, 16);
++	if ((name == args) || *name != '^') {
++		AA_ERROR("%s: Invalid input '%s'", op, args);
++		return ERR_PTR(-EINVAL);
++	}
++
++	name++;			/* skip ^ */
++	if (!*name)
++		name = NULL;
++	return name;
++}
++
++int aa_setprocattr_changehat(char *args, size_t size, int test)
++{
++	char *hat;
++	u64 token;
++	const char *hats[16];		/* current hard limit on # of names */
++	int count = 0;
++
++	hat = split_token_from_name("change_hat", args, &token);
++	if (IS_ERR(hat))
++		return PTR_ERR(hat);
++
++	if (!hat && !token) {
++		AA_ERROR("change_hat: Invalid input, NULL hat and NULL magic");
++		return -EINVAL;
++	}
++
++	if (hat) {
++		/* set up hat name vector, args guarenteed null terminated
++		 * at args[size]
++		 */
++		char *end = args + size;
++		for (count = 0; (hat < end) && count < 16; ++count) {
++			char *next = hat + strlen(hat) + 1;
++			hats[count] = hat;
++			hat = next;
++		}
++	}
++
++	AA_DEBUG("%s: Magic 0x%llx Hat '%s'\n",
++		 __func__, token, hat ? hat : NULL);
++
++	return aa_change_hat(hats, count, token, test);
++}
++
++int aa_setprocattr_changeprofile(char *fqname, int onexec, int test)
++{
++	char *name, *ns_name;
++
++	name = aa_split_fqname(fqname, &ns_name);
++	return aa_change_profile(ns_name, name, onexec, test);
++}
++
++int aa_setprocattr_permipc(char *fqname)
++{
++	/* TODO: add ipc permission querying */
++	return -ENOTSUPP;
++}
 -- 
 1.6.6.1
 
