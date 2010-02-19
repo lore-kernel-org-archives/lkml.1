@@ -1,138 +1,607 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240Ab0BSAdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:33:46 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:43807 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335Ab0BSAdo convert rfc822-to-8bit (ORCPT
+	id S1751938Ab0BSAli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:41:38 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38199 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090Ab0BSAlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:33:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jeazQJeX+6/oAvW/oXuRR/XiNV0BuynZvjOI/TxG5UqPsyhmfryPcP5u2E/leGpznb
-         FMSrP60Cnfai26yDkFNV+90A5E7hEnyIQqozp7PpPDAOMmkVHEw5eaXheZtgzB4hMKvu
-         SJFkcTNwi0piIn7tOBl92KjLwfV26bzFHUeOE=
-MIME-Version: 1.0
-In-Reply-To: <20100218052223.GA13254@kroah.com>
-References: <4B7CAF95.6020306@gmail.com> <20100218042626.GB11649@kroah.com>
-	 <51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>
-	 <20100218052223.GA13254@kroah.com>
-Date: Thu, 18 Feb 2010 18:33:42 -0600
-Message-ID: <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
-Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-usb <linux-usb@vger.kernel.org>, dbrownell@users.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 18 Feb 2010 19:41:36 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 19 Feb 2010 09:37:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 08/12] Memory compaction core
+Message-Id: <20100219093758.7a44a0ed.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1266516162-14154-9-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+	<1266516162-14154-9-git-send-email-mel@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 11:22 PM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Feb 17, 2010 at 11:13:05PM -0600, Robert Hancock wrote:
->> On Wed, Feb 17, 2010 at 10:26 PM, Greg KH <greg@kroah.com> wrote:
->> > On Wed, Feb 17, 2010 at 09:10:13PM -0600, Robert Hancock wrote:
->> >> Add a module parameter to allow the user to enable 64-bit DMA support in EHCI,
->> >> which has been forcibly disabled since 2003 - see:
->> >>
->> >> http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg17230.html
->> >>
->> >> At that time the comment was "it'd only matter on a few big Intel boxes anyway",
->> >> however the situation is much different today when many new machines have 4GB
->> >> or more of RAM and IOMMU/SWIOTLB are thus needlessly required for USB transfers.
->> >> For now, the support remains disabled by default and is controlled by an
->> >> allow_64bit module parameter.
->> >>
->> >> Note that some USB device drivers may require updates to pass the DMA
->> >> capabilities up to their higher layers to avoid unnecessary IOMMU or bounce-
->> >> buffer use (i.e. networking layer NETIF_F_HIGHDMA). Some of these checks were
->> >> disabled by the patch listed above, and more may be required again today.
->> >> However, those previous checks were done incorrectly using dma_supported,
->> >> which checks to see whether a device's DMA mask can be validly set to a given
->> >> mask, not whether its previously set mask will accomodate the mask passed in.
->> >>
->> >> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
->> >
->> > What is the "advantage" that setting this option would allow people to
->> > do that the code currently does not? ?Is such an advantage measurable at
->> > the slow rates that the EHCI driver controls?
->>
->> I expect it would likely be quite system-dependent. However,
->> particularly with devices like high-speed USB storage on systems with
->> lots of RAM, especially 8GB or more (where more of the memory can't be
->> addressed with 32-bit than can), I suspect it would likely be
->> measurable in terms of CPU usage, throughput or both, especially if
->> there's no hardware IOMMU and software bounce-buffering is required.
->
-> So you did not measure it?
->
-> Hm, I guess this change must not be necessary :)
+On Thu, 18 Feb 2010 18:02:38 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-I'll try and run some tests and see what I can quantify. However, I
-only have 4GB of RAM on my machine (with a 1GB memory hole) and so a
-random memory allocation only has a 25% chance of ending up in the
-area where it would make a difference, so it may take a bit of doing.
+> This patch is the core of a mechanism which compacts memory in a zone by
+> relocating movable pages towards the end of the zone.
+> 
+> A single compaction run involves a migration scanner and a free scanner.
+> Both scanners operate on pageblock-sized areas in the zone. The migration
+> scanner starts at the bottom of the zone and searches for all movable pages
+> within each area, isolating them onto a private list called migratelist.
+> The free scanner starts at the top of the zone and searches for suitable
+> areas and consumes the free pages within making them available for the
+> migration scanner. The pages isolated for migration are then migrated to
+> the newly isolated free pages.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Rik van Riel <riel@redhat.com>
+> ---
+>  include/linux/compaction.h |    8 +
+>  include/linux/mm.h         |    1 +
+>  include/linux/swap.h       |    6 +
+>  include/linux/vmstat.h     |    1 +
+>  mm/Makefile                |    1 +
+>  mm/compaction.c            |  347 ++++++++++++++++++++++++++++++++++++++++++++
+>  mm/page_alloc.c            |   37 +++++
+>  mm/vmscan.c                |    5 -
+>  mm/vmstat.c                |    5 +
+>  9 files changed, 406 insertions(+), 5 deletions(-)
+>  create mode 100644 include/linux/compaction.h
+>  create mode 100644 mm/compaction.c
+> 
+> diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+> new file mode 100644
+> index 0000000..6201371
+> --- /dev/null
+> +++ b/include/linux/compaction.h
+> @@ -0,0 +1,8 @@
+> +#ifndef _LINUX_COMPACTION_H
+> +#define _LINUX_COMPACTION_H
+> +
+> +/* Return values for compact_zone() */
+> +#define COMPACT_INCOMPLETE	0
+> +#define COMPACT_COMPLETE	1
+> +
+> +#endif /* _LINUX_COMPACTION_H */
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 60c467b..c2a2ede 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -332,6 +332,7 @@ void put_page(struct page *page);
+>  void put_pages_list(struct list_head *pages);
+>  
+>  void split_page(struct page *page, unsigned int order);
+> +int split_free_page(struct page *page);
+>  
+>  /*
+>   * Compound pages have a destructor function.  Provide a
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index a2602a8..12566ed 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -151,6 +151,7 @@ enum {
+>  };
+>  
+>  #define SWAP_CLUSTER_MAX 32
+> +#define COMPACT_CLUSTER_MAX SWAP_CLUSTER_MAX
+>  
+>  #define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
+>  #define SWAP_MAP_BAD	0x3f	/* Note pageblock is bad, in first swap_map */
+> @@ -238,6 +239,11 @@ static inline void lru_cache_add_active_file(struct page *page)
+>  	__lru_cache_add(page, LRU_ACTIVE_FILE);
+>  }
+>  
+> +/* LRU Isolation modes. */
+> +#define ISOLATE_INACTIVE 0	/* Isolate inactive pages. */
+> +#define ISOLATE_ACTIVE 1	/* Isolate active pages. */
+> +#define ISOLATE_BOTH 2		/* Isolate both active and inactive pages. */
+> +
+>  /* linux/mm/vmscan.c */
+>  extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+>  					gfp_t gfp_mask, nodemask_t *mask);
+> diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+> index ee03bba..d7f7236 100644
+> --- a/include/linux/vmstat.h
+> +++ b/include/linux/vmstat.h
+> @@ -43,6 +43,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+>  		KSWAPD_LOW_WMARK_HIT_QUICKLY, KSWAPD_HIGH_WMARK_HIT_QUICKLY,
+>  		KSWAPD_SKIP_CONGESTION_WAIT,
+>  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+> +		COMPACTBLOCKS, COMPACTPAGES, COMPACTPAGEFAILED,
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+>  #endif
+> diff --git a/mm/Makefile b/mm/Makefile
+> index 7a68d2a..ccb1f72 100644
+> --- a/mm/Makefile
+> +++ b/mm/Makefile
+> @@ -33,6 +33,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
+>  obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
+>  obj-$(CONFIG_FS_XIP) += filemap_xip.o
+>  obj-$(CONFIG_MIGRATION) += migrate.o
+> +obj-$(CONFIG_COMPACTION) += compaction.o
+>  obj-$(CONFIG_SMP) += percpu.o
+>  obj-$(CONFIG_QUICKLIST) += quicklist.o
+>  obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
+> diff --git a/mm/compaction.c b/mm/compaction.c
+> new file mode 100644
+> index 0000000..14ba0ac
+> --- /dev/null
+> +++ b/mm/compaction.c
+> @@ -0,0 +1,347 @@
+> +/*
+> + * linux/mm/compaction.c
+> + *
+> + * Memory compaction for the reduction of external fragmentation. Note that
+> + * this heavily depends upon page migration to do all the real heavy
+> + * lifting
+> + *
+> + * Copyright IBM Corp. 2007-2010 Mel Gorman <mel@csn.ul.ie>
+> + */
+> +#include <linux/swap.h>
+> +#include <linux/migrate.h>
+> +#include <linux/compaction.h>
+> +#include <linux/mm_inline.h>
+> +#include "internal.h"
+> +
+> +/*
+> + * compact_control is used to track pages being migrated and the free pages
+> + * they are being migrated to during memory compaction. The free_pfn starts
+> + * at the end of a zone and migrate_pfn begins at the start. Movable pages
+> + * are moved to the end of a zone during a compaction run and the run
+> + * completes when free_pfn <= migrate_pfn
+> + */
+> +struct compact_control {
+> +	struct list_head freepages;	/* List of free pages to migrate to */
+> +	struct list_head migratepages;	/* List of pages being migrated */
+> +	unsigned long nr_freepages;	/* Number of isolated free pages */
+> +	unsigned long nr_migratepages;	/* Number of pages to migrate */
+> +	unsigned long free_pfn;		/* isolate_freepages search base */
+> +	unsigned long migrate_pfn;	/* isolate_migratepages search base */
+> +
+> +	/* Account for isolated anon and file pages */
+> +	unsigned long nr_anon;
+> +	unsigned long nr_file;
+> +
+> +	struct zone *zone;
+> +};
+> +
+> +static int release_freepages(struct list_head *freelist)
+> +{
+> +	struct page *page, *next;
+> +	int count = 0;
+> +
+> +	list_for_each_entry_safe(page, next, freelist, lru) {
+> +		list_del(&page->lru);
+> +		__free_page(page);
+> +		count++;
+> +	}
+> +
+> +	return count;
+> +}
+> +
+> +/* Isolate free pages onto a private freelist. Must hold zone->lock */
+> +static int isolate_freepages_block(struct zone *zone,
+> +				unsigned long blockpfn,
+> +				struct list_head *freelist)
+> +{
+> +	unsigned long zone_end_pfn, end_pfn;
+> +	int total_isolated = 0;
+> +
+> +	/* Get the last PFN we should scan for free pages at */
+> +	zone_end_pfn = zone->zone_start_pfn + zone->spanned_pages;
+> +	end_pfn = blockpfn + pageblock_nr_pages;
+> +	if (end_pfn > zone_end_pfn)
+> +		end_pfn = zone_end_pfn;
+> +
+> +	/* Isolate free pages. This assumes the block is valid */
+> +	for (; blockpfn < end_pfn; blockpfn++) {
+> +		struct page *page;
+> +		int isolated, i;
+> +
+> +		if (!pfn_valid_within(blockpfn))
+> +			continue;
 
->
->> > Is there any way to dynamically figure out if we can enable this or not?
->> > Adding module paramaters sucks, as they are hard to configure for most
->> > users, and they tend to be ignored.
->>
->> Well, the option only has an effect if the controller indicates the
->> 64-bit addressing feature flag in the first place. The only issue
->> would be with potential controllers that report the feature flag but
->> it doesn't work. Based on the libata experience with AHCI which has a
->> similar 64-bit feature flag, there are some controllers that didn't do
->> it properly, but not many (only ATI SB600 it appears, and only on
->> certain boards, as it seems it was a BIOS configuration issue).
->>
->> Having the ability to turn it on manually for testing would likely be
->> the first step towards turning it on for all controllers that indicate
->> support, not the end goal in itself.
->
-> But we disabled it on purpose, because of problems, do we want those
-> problems again?
+Doen't this mean failure of compaction ?
+If there are memory hole, compaction of this area never be archieved.
+If so, we should stop compaction of this area.
 
-AFAICS, it was disabled because of problems with kernel code, not with
-hardware (and it appears the issue was with the code that detected the
-expanded DMA mask in the USB device driver code, not the HCD driver).
-CCing David Brownell who may know more.
 
->
->> > And are you really ok with enabling this on a system-wide level, and not
->> > on a per-controller level? ?Does that work properly on all systems?
->>
->> As above, the only issue is if the controller reports the capability
->> but it doesn't function properly. If a user runs into the case where
->> one of their controllers doesn't work with it enabled, that likely
->> means that we need to add blacklisting for that device ID, etc. (or
->> blacklist 64-bit DMA for their platform in general).
->
-> blacklists are hard to keep up to date, you are always handling bug
-> reports after-the-fact.  That's not something you should add lightly.
+> +
+> +		page = pfn_to_page(blockpfn);
+> +		if (!PageBuddy(page))
+> +			continue;
+> +
+> +		/* Found a free page, break it into order-0 pages */
+> +		isolated = split_free_page(page);
+> +		total_isolated += isolated;
+> +		for (i = 0; i < isolated; i++) {
+> +			list_add(&page->lru, freelist);
+> +			page++;
+> +		}
+> +
+> +		/* If a page was split, advance to the end of it */
+> +		if (isolated)
+> +			blockpfn += isolated - 1;
+> +	}
+> +
+> +	return total_isolated;
+> +}
 
-I'm not a fan of blacklists in general (we do have too many of them),
-but I don't expect a lot of entries in here. Having a device that
-explicitly indicates it does something it can't do seems unlikely
-(especially when the capability flag is most likely implemented in
-silicon and not by the BIOS writer..)
+Hmm, I wonder ...how about setting migrate type of page block to be ISOLATED
+at the end of this function ?
+Then, no new page allocation occurs in this pageblock. And you don't have to
+keep the list of free pages. free_page() does isolation.
 
->
->> > And if the system does not support it, and a user enables it, who is
->> > going to support their broken system? ?:)
->>
->> That would be me/us :-) We need those reports though, to know how to
->> proceed, and better to be from those who opted into testing for now..
->
-> But we need a _reason_ to enable it.
->
-> What user needs this?
->
-> And if there is no speed benifit, why take the risk?
+I'm sorry I miss something.
 
-I expect there will be a speed benefit on some configurations. The
-only question is how much..
+
+
+> +
+> +/* Returns 1 if the page is within a block suitable for migration to */
+> +static int suitable_migration_target(struct page *page)
+> +{
+> +	/* If the page is a large free page, then allow migration */
+> +	if (PageBuddy(page) && page_order(page) >= pageblock_order)
+> +		return 1;
+> +
+> +	/* If the block is MIGRATE_MOVABLE, allow migration */
+> +	if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE)
+> +		return 1;
+> +
+> +	/* Otherwise skip the block */
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Based on information in the current compact_control, find blocks
+> + * suitable for isolating free pages from
+> + */
+> +static void isolate_freepages(struct zone *zone,
+> +				struct compact_control *cc)
+> +{
+> +	struct page *page;
+> +	unsigned long high_pfn, low_pfn, pfn;
+> +	unsigned long flags;
+> +	int nr_freepages = cc->nr_freepages;
+> +	struct list_head *freelist = &cc->freepages;
+> +
+> +	pfn = cc->free_pfn;
+> +	low_pfn = cc->migrate_pfn + pageblock_nr_pages;
+> +	high_pfn = low_pfn;
+> +
+> +	/*
+> +	 * Isolate free pages until enough are available to migrate the
+> +	 * pages on cc->migratepages. We stop searching if the migrate
+> +	 * and free page scanners meet or enough free pages are isolated.
+> +	 */
+> +	spin_lock_irqsave(&zone->lock, flags);
+> +	for (; pfn > low_pfn && cc->nr_migratepages > nr_freepages;
+> +					pfn -= pageblock_nr_pages) {
+> +		int isolated;
+> +
+> +		if (!pfn_valid(pfn))
+> +			continue;
+> +
+> +		/* Check for overlapping nodes/zones */
+> +		page = pfn_to_page(pfn);
+> +		if (page_zone(page) != zone)
+> +			continue;
+> +
+> +		/* Check the block is suitable for migration */
+> +		if (!suitable_migration_target(page))
+> +			continue;
+> +
+> +		/* Found a block suitable for isolating free pages from */
+> +		isolated = isolate_freepages_block(zone, pfn, freelist);
+> +		nr_freepages += isolated;
+> +
+> +		/*
+> +		 * Record the highest PFN we isolated pages from. When next
+> +		 * looking for free pages, the search will restart here as
+> +		 * page migration may have returned some pages to the allocator
+> +		 */
+> +		if (isolated)
+> +			high_pfn = max(high_pfn, pfn);
+> +	}
+> +	spin_unlock_irqrestore(&zone->lock, flags);
+> +
+> +	cc->free_pfn = high_pfn;
+> +	cc->nr_freepages = nr_freepages;
+> +}
+> +
+> +/* Update the number of anon and file isolated pages in the zone) */
+> +void update_zone_isolated(struct zone *zone, struct compact_control *cc)
+> +{
+> +	struct page *page;
+> +	unsigned int count[NR_LRU_LISTS] = { 0, };
+> +
+> +	list_for_each_entry(page, &cc->migratepages, lru) {
+> +		int lru = page_lru_base_type(page);
+> +		count[lru]++;
+> +	}
+> +
+> +	cc->nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
+> +	cc->nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
+> +	__mod_zone_page_state(zone, NR_ISOLATED_ANON, cc->nr_anon);
+> +	__mod_zone_page_state(zone, NR_ISOLATED_FILE, cc->nr_file);
+> +}
+> +
+> +/*
+> + * Isolate all pages that can be migrated from the block pointed to by
+> + * the migrate scanner within compact_control.
+> + */
+> +static unsigned long isolate_migratepages(struct zone *zone,
+> +					struct compact_control *cc)
+> +{
+> +	unsigned long low_pfn, end_pfn;
+> +	struct list_head *migratelist;
+> +
+> +	low_pfn = cc->migrate_pfn;
+> +	migratelist = &cc->migratepages;
+> +
+> +	/* Do not scan outside zone boundaries */
+> +	if (low_pfn < zone->zone_start_pfn)
+> +		low_pfn = zone->zone_start_pfn;
+> +
+> +	/* Setup to scan one block but not past where we are migrating to */
+> +	end_pfn = ALIGN(low_pfn + pageblock_nr_pages, pageblock_nr_pages);
+> +
+> +	/* Do not cross the free scanner or scan within a memory hole */
+> +	if (end_pfn > cc->free_pfn || !pfn_valid(low_pfn)) {
+> +		cc->migrate_pfn = end_pfn;
+> +		return 0;
+> +	}
+> +
+> +	migrate_prep();
+> +
+> +	/* Time to isolate some pages for migration */
+> +	spin_lock_irq(&zone->lru_lock);
+> +	for (; low_pfn < end_pfn; low_pfn++) {
+> +		struct page *page;
+> +		if (!pfn_valid_within(low_pfn))
+> +			continue;
+ break ?
+
+> +
+> +		/* Get the page and skip if free */
+> +		page = pfn_to_page(low_pfn);
+> +		if (PageBuddy(page)) {
+> +			low_pfn += (1 << page_order(page)) - 1;
+> +			continue;
+> +		}
+> +
+> +		if (!PageLRU(page) || PageUnevictable(page))
+> +	
+ break ? (compaction will not succeed if !PG_lru). I'm not sure
+ best-effort which can't readh goal is good or not. But conservative
+ approach will be better as the 1st version..
+
+Thanks,
+-Kame
+		continue;
+> +
+> +		/* Try isolate the page */
+> +		if (__isolate_lru_page(page, ISOLATE_BOTH, 0) == 0) {
+> +			del_page_from_lru_list(zone, page, page_lru(page));
+> +			list_add(&page->lru, migratelist);
+> +			mem_cgroup_del_lru(page);
+> +			cc->nr_migratepages++;
+> +		}
+> +
+> +		/* Avoid isolating too much */
+> +		if (cc->nr_migratepages == COMPACT_CLUSTER_MAX)
+> +			break;
+> +	}
+> +
+> +	update_zone_isolated(zone, cc);
+> +
+> +	spin_unlock_irq(&zone->lru_lock);
+> +	cc->migrate_pfn = low_pfn;
+> +
+> +	return cc->nr_migratepages;
+> +}
+> +
+> +/*
+> + * This is a migrate-callback that "allocates" freepages by taking pages
+> + * from the isolated freelists in the block we are migrating to.
+> + */
+> +static struct page *compaction_alloc(struct page *migratepage,
+> +					unsigned long data,
+> +					int **result)
+> +{
+> +	struct compact_control *cc = (struct compact_control *)data;
+> +	struct page *freepage;
+> +
+> +	VM_BUG_ON(cc == NULL);
+> +
+> +	/* Isolate free pages if necessary */
+> +	if (list_empty(&cc->freepages)) {
+> +		isolate_freepages(cc->zone, cc);
+> +
+> +		if (list_empty(&cc->freepages))
+> +			return NULL;
+> +	}
+> +
+> +	freepage = list_entry(cc->freepages.next, struct page, lru);
+> +	list_del(&freepage->lru);
+> +	cc->nr_freepages--;
+> +
+> +	return freepage;
+> +}
+> +
+> +/*
+> + * We cannot control nr_migratepages and nr_freepages fully when migration is
+> + * running as migrate_pages() has no knowledge of compact_control. When
+> + * migration is complete, we count the number of pages on the lists by hand.
+> + */
+> +static void update_nr_listpages(struct compact_control *cc)
+> +{
+> +	int nr_migratepages = 0;
+> +	int nr_freepages = 0;
+> +	struct page *page;
+> +	list_for_each_entry(page, &cc->migratepages, lru)
+> +		nr_migratepages++;
+> +	list_for_each_entry(page, &cc->freepages, lru)
+> +		nr_freepages++;
+> +
+> +	cc->nr_migratepages = nr_migratepages;
+> +	cc->nr_freepages = nr_freepages;
+> +}
+> +
+> +static inline int compact_finished(struct zone *zone,
+> +						struct compact_control *cc)
+> +{
+> +	/* Compaction run completes if the migrate and free scanner meet */
+> +	if (cc->free_pfn <= cc->migrate_pfn)
+> +		return COMPACT_COMPLETE;
+> +
+> +	return COMPACT_INCOMPLETE;
+> +}
+> +
+> +static int compact_zone(struct zone *zone, struct compact_control *cc)
+> +{
+> +	int ret = COMPACT_INCOMPLETE;
+> +
+> +	/* Setup to move all movable pages to the end of the zone */
+> +	cc->migrate_pfn = zone->zone_start_pfn;
+> +	cc->free_pfn = cc->migrate_pfn + zone->spanned_pages;
+> +	cc->free_pfn &= ~(pageblock_nr_pages-1);
+> +
+> +	for (; ret == COMPACT_INCOMPLETE; ret = compact_finished(zone, cc)) {
+> +		unsigned long nr_migrate, nr_remaining;
+> +		if (!isolate_migratepages(zone, cc))
+> +			continue;
+> +
+> +		nr_migrate = cc->nr_migratepages;
+> +		migrate_pages(&cc->migratepages, compaction_alloc,
+> +						(unsigned long)cc, 0);
+> +		update_nr_listpages(cc);
+> +		nr_remaining = cc->nr_migratepages;
+> +
+> +		count_vm_event(COMPACTBLOCKS);
+> +		count_vm_events(COMPACTPAGES, nr_migrate - nr_remaining);
+> +		if (nr_remaining)
+> +			count_vm_events(COMPACTPAGEFAILED, nr_remaining);
+> +
+> +		/* Release LRU pages not migrated */
+> +		if (!list_empty(&cc->migratepages)) {
+> +			putback_lru_pages(&cc->migratepages);
+> +			cc->nr_migratepages = 0;
+> +		}
+> +
+> +		mod_zone_page_state(zone, NR_ISOLATED_ANON, -cc->nr_anon);
+> +		mod_zone_page_state(zone, NR_ISOLATED_FILE, -cc->nr_file);
+> +	}
+> +
+> +	/* Release free pages and check accounting */
+> +	cc->nr_freepages -= release_freepages(&cc->freepages);
+> +	VM_BUG_ON(cc->nr_freepages != 0);
+> +
+> +	return ret;
+> +}
+> +
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 8deb9d0..6d57154 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1168,6 +1168,43 @@ void split_page(struct page *page, unsigned int order)
+>  		set_page_refcounted(page + i);
+>  }
+>  
+> +/* Similar to split_page except the page is already free */
+> +int split_free_page(struct page *page)
+> +{
+> +	unsigned int order;
+> +	unsigned long watermark;
+> +	struct zone *zone;
+> +
+> +	BUG_ON(!PageBuddy(page));
+> +
+> +	zone = page_zone(page);
+> +	order = page_order(page);
+> +
+> +	/* Obey watermarks or the system could deadlock */
+> +	watermark = low_wmark_pages(zone) + (1 << order);
+> +	if (!zone_watermark_ok(zone, 0, watermark, 0, 0))
+> +		return 0;
+> +
+> +	/* Remove page from free list */
+> +	list_del(&page->lru);
+> +	zone->free_area[order].nr_free--;
+> +	rmv_page_order(page);
+> +	__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order));
+> +
+> +	/* Split into individual pages */
+> +	set_page_refcounted(page);
+> +	split_page(page, order);
+> +
+> +	/* Set the migratetype on the assumption it's for migration */
+> +	if (order >= pageblock_order - 1) {
+> +		struct page *endpage = page + (1 << order) - 1;
+> +		for (; page < endpage; page += pageblock_nr_pages)
+> +			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
+> +	}
+> +
+> +	return 1 << order;
+> +}
+> +
+>  /*
+>   * Really, prep_compound_page() should be called from __rmqueue_bulk().  But
+>   * we cheat by calling it from here, in the order > 0 path.  Saves a branch
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index c26986c..47de19b 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -803,11 +803,6 @@ keep:
+>  	return nr_reclaimed;
+>  }
+>  
+> -/* LRU Isolation modes. */
+> -#define ISOLATE_INACTIVE 0	/* Isolate inactive pages. */
+> -#define ISOLATE_ACTIVE 1	/* Isolate active pages. */
+> -#define ISOLATE_BOTH 2		/* Isolate both active and inactive pages. */
+> -
+>  /*
+>   * Attempt to remove the specified page from its LRU.  Only take this page
+>   * if it is of the appropriate PageActive status.  Pages which are being
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index fa5975c..0a14d22 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -889,6 +889,11 @@ static const char * const vmstat_text[] = {
+>  	"allocstall",
+>  
+>  	"pgrotated",
+> +
+> +	"compact_blocks_moved",
+> +	"compact_pages_moved",
+> +	"compact_pagemigrate_failed",
+> +
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  	"htlb_buddy_alloc_success",
+>  	"htlb_buddy_alloc_fail",
+> -- 
+> 1.6.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
