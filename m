@@ -1,61 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0BSVHq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 16:07:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54128 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689Ab0BSVHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 16:07:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Subject: Re: [PATCH 4/8] ACPI: Use GPE reference counting to support shared GPEs
-Date: Fri, 19 Feb 2010 22:08:24 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
-References: <201002172335.47703.rjw@sisk.pl> <201002182101.44171.rjw@sisk.pl> <4B7E3CC5.9040901@np.css.fujitsu.com>
-In-Reply-To: <4B7E3CC5.9040901@np.css.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-2022-jp"
+	id S1754383Ab0BSVRG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 16:17:06 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35615
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751346Ab0BSVRC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 16:17:02 -0500
+Date: Fri, 19 Feb 2010 13:17:18 -0800 (PST)
+Message-Id: <20100219.131718.115496278.davem@davemloft.net>
+To: hancockrwd@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, romieu@fr.zoreil.com
+Subject: Re: [PATCH 2.6.34] r8169: enable 64-bit DMA by default for PCI
+ Express devices
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B7CAEC1.6090408@gmail.com>
+References: <4B7CAEC1.6090408@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002192208.24378.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 February 2010, Jin Dongming wrote:
-> Hi, Rafael J. Wysocki
-> 
-> Rafael J. Wysocki wrote:
-> > On Thursday 18 February 2010, Jin Dongming wrote:
-> >> Hi, Rafael J. Wysocki
-> >>> -	/* Update enable mask, but don't enable the HW GPE as of yet */
-> >>> -
-> >>> -	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
-> > 
-> > You could preserve some more context.
-> > 
-> >> I think the above line code should be remained. If it is deleted, the exception 
-> >> event will be raised on some machine.
-> > 
-> > Why would it?  The GPE is still disabled at the hardware level at this point.
-> > 
-> > Rafael
-> > 
-> > 
-> I am very sorry for my wrong comment. The GPE is still disabled as you wrote.
-> 
-> The error message what I got was not caused by GPE event, it was caused by the "status"
-> variable which had not been deleted on x86-next tree. And it is also deleted at this
-> file. So I don't there is problem here.
+From: Robert Hancock <hancockrwd@gmail.com>
+Date: Wed, 17 Feb 2010 21:06:41 -0600
 
-Great, thanks for the review.
+> Currently use of 64-bit DMA is disabled in r8169 unless the user passes the
+> use_dac module option. This is reasonable for conventional PCI devices where
+> broken chipsets may not handle dual-address-cycle transfers properly for
+> 32-bit slots and so this may not be safe. However, PCI Express should not have
+> this problem and not using 64-bit DMA results in DMA transfers needlessly using
+> the IOMMU or SWIOTLB. Set the use_dac module parameter to a new default value of
+> -1 which results in 64-bit DMA being enabled by default for PCI Express devices
+> only.
+> 
+> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
 
-Rafael
+This patch is fine, but it doesn't apply cleanly to net-next-2.6
+
+Please fix this up and resubmit, thanks!
