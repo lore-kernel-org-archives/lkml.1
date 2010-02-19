@@ -1,144 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256Ab0BSUAq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:00:46 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48918 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367Ab0BSUAo (ORCPT
+	id S1754269Ab0BSUCa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 15:02:30 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52124 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750Ab0BSUC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:00:44 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 19 Feb 2010 21:00:31 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: core: rename an internal function
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.6a1e3df293205a1b@s5r6.in-berlin.de>
-Message-ID: <tkrat.02617c95036e2918@s5r6.in-berlin.de>
-References: <tkrat.206fe651745e1dd7@s5r6.in-berlin.de>
- <tkrat.040d1f77b4f1ddb4@s5r6.in-berlin.de>
- <tkrat.41cd283579a10140@s5r6.in-berlin.de>
- <tkrat.6a1e3df293205a1b@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Fri, 19 Feb 2010 15:02:28 -0500
+Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
+From: Peter Zijlstra <peterz@infradead.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+	 <1266057388.557.59599.camel@twins>
+	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
+	 <1266588316.1529.370.camel@laptop>
+	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
+	 <1266608875.1529.749.camel@laptop>
+	 <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Feb 2010 21:02:14 +0100
+Message-ID: <1266609734.1529.772.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-according to what it really does.
+On Fri, 2010-02-19 at 11:50 -0800, Suresh Siddha wrote:
+> On Fri, 2010-02-19 at 11:47 -0800, Peter Zijlstra wrote:
+> > On Fri, 2010-02-19 at 10:36 -0800, Suresh Siddha wrote:
+> > > exec/fork balance is not broken. i.e., during exec/fork we balance the
+> > > load equally among sockets/cores etc. What is broken is:
+> > > 
+> > > a) In SMT case, once we end up in a situation where both the threads of
+> > > the core are busy , with another core completely idle, load balance is
+> > > not moving one of the threads to the idle core. This unbalanced
+> > > situation can happen because of a previous wake-up decision and/or
+> > > threads on other core went to sleep/died etc. Once we end up in this
+> > > unbalanced situation, we continue in that state with out fixing it.
+> > > 
+> > > b) Similar to "a", this is MC case where we end up four cores busy in
+> > > one socket with other 4 cores in another socket completely idle. And
+> > > this is the situation which we are trying to solve in this patch.
+> > > 
+> > > In your above example, we test mostly fork/exec balance but not the
+> > > above sleep/wakeup scenarios. 
+> > 
+> > Ah, indeed. Let me extend my script to cover that.
+> > 
+> > The below script does indeed show a change, but the result still isn't
+> > perfect, when I do ./show-loop 8, it starts 8 loops nicely spread over 2
+> > sockets, the difference is that all 4 remaining would stay on socket 0,
+> > the patched kernel gets 1 over to socket 1.
+> 
+> Peter, Have you applied both my smt patch and mc patch?
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/core-device.c |   28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
-
-Index: b/drivers/firewire/core-device.c
-===================================================================
---- a/drivers/firewire/core-device.c
-+++ b/drivers/firewire/core-device.c
-@@ -492,29 +492,29 @@ static int read_rom(struct fw_device *de
- 	return rcode;
- }
- 
--#define READ_BIB_ROM_SIZE	256
-+#define MAX_CONFIG_ROM_SIZE 256
- 
- /*
-  * Read the bus info block, perform a speed probe, and read all of the rest of
-  * the config ROM.  We do all this with a cached bus generation.  If the bus
-- * generation changes under us, read_bus_info_block will fail and get retried.
-+ * generation changes under us, read_config_rom will fail and get retried.
-  * It's better to start all over in this case because the node from which we
-  * are reading the ROM may have changed the ROM during the reset.
-  */
--static int read_bus_info_block(struct fw_device *device, int generation)
-+static int read_config_rom(struct fw_device *device, int generation)
- {
- 	const u32 *old_rom, *new_rom;
- 	u32 *rom, *stack;
- 	u32 sp, key;
- 	int i, end, length, ret = -1;
- 
--	rom = kmalloc(sizeof(*rom) * READ_BIB_ROM_SIZE +
--		      sizeof(*stack) * READ_BIB_ROM_SIZE, GFP_KERNEL);
-+	rom = kmalloc(sizeof(*rom) * MAX_CONFIG_ROM_SIZE +
-+		      sizeof(*stack) * MAX_CONFIG_ROM_SIZE, GFP_KERNEL);
- 	if (rom == NULL)
- 		return -ENOMEM;
- 
--	stack = &rom[READ_BIB_ROM_SIZE];
--	memset(rom, 0, sizeof(*rom) * READ_BIB_ROM_SIZE);
-+	stack = &rom[MAX_CONFIG_ROM_SIZE];
-+	memset(rom, 0, sizeof(*rom) * MAX_CONFIG_ROM_SIZE);
- 
- 	device->max_speed = SCODE_100;
- 
-@@ -581,14 +581,14 @@ static int read_bus_info_block(struct fw
- 		 */
- 		key = stack[--sp];
- 		i = key & 0xffffff;
--		if (WARN_ON(i >= READ_BIB_ROM_SIZE))
-+		if (WARN_ON(i >= MAX_CONFIG_ROM_SIZE))
- 			goto out;
- 
- 		/* Read header quadlet for the block to get the length. */
- 		if (read_rom(device, generation, i, &rom[i]) != RCODE_COMPLETE)
- 			goto out;
- 		end = i + (rom[i] >> 16) + 1;
--		if (end > READ_BIB_ROM_SIZE) {
-+		if (end > MAX_CONFIG_ROM_SIZE) {
- 			/*
- 			 * This block extends outside the config ROM which is
- 			 * a firmware bug.  Ignore this whole block, i.e.
-@@ -621,7 +621,7 @@ static int read_bus_info_block(struct fw
- 			 * fake immediate entry so that later iterators over
- 			 * the ROM don't have to check offsets all the time.
- 			 */
--			if (i + (rom[i] & 0xffffff) >= READ_BIB_ROM_SIZE) {
-+			if (i + (rom[i] & 0xffffff) >= MAX_CONFIG_ROM_SIZE) {
- 				fw_error("skipped unsupported ROM entry %x at %llx\n",
- 					 rom[i],
- 					 i * 4 | CSR_REGISTER_BASE | CSR_CONFIG_ROM);
-@@ -971,7 +971,7 @@ static void fw_device_init(struct work_s
- 	 * device.
- 	 */
- 
--	if (read_bus_info_block(device, device->generation) < 0) {
-+	if (read_config_rom(device, device->generation) < 0) {
- 		if (device->config_rom_retries < MAX_RETRIES &&
- 		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
- 			device->config_rom_retries++;
-@@ -1088,7 +1088,7 @@ enum {
- };
- 
- /* Reread and compare bus info block and header of root directory */
--static int reread_bus_info_block(struct fw_device *device, int generation)
-+static int reread_config_rom(struct fw_device *device, int generation)
- {
- 	u32 q;
- 	int i;
-@@ -1114,7 +1114,7 @@ static void fw_device_refresh(struct wor
- 	struct fw_card *card = device->card;
- 	int node_id = device->node_id;
- 
--	switch (reread_bus_info_block(device, device->generation)) {
-+	switch (reread_config_rom(device, device->generation)) {
- 	case REREAD_BIB_ERROR:
- 		if (device->config_rom_retries < MAX_RETRIES / 2 &&
- 		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
-@@ -1148,7 +1148,7 @@ static void fw_device_refresh(struct wor
- 	 */
- 	device_for_each_child(&device->device, NULL, shutdown_unit);
- 
--	if (read_bus_info_block(device, device->generation) < 0) {
-+	if (read_config_rom(device, device->generation) < 0) {
- 		if (device->config_rom_retries < MAX_RETRIES &&
- 		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
- 			device->config_rom_retries++;
-
--- 
-Stefan Richter
--=====-==-=- --=- =--==
-http://arcgraph.de/sr/
+Yes, find_busiest_queue() has the wl fixup in (as per tip/master).
 
