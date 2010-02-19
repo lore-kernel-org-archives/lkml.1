@@ -1,74 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567Ab0BSEIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 23:08:51 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49038 "EHLO e4.ny.us.ibm.com"
+	id S1754509Ab0BSEON (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 23:14:13 -0500
+Received: from sh.osrg.net ([192.16.179.4]:57890 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754452Ab0BSEIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 23:08:50 -0500
-Message-ID: <4B7E0ECA.4000008@us.ibm.com>
-Date: Thu, 18 Feb 2010 20:08:42 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Stupid futex question - 2.6.33-rc7-mmotm0210
-References: <10057.1266501862@localhost>
-In-Reply-To: <10057.1266501862@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753517Ab0BSEOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 23:14:12 -0500
+Date: Fri, 19 Feb 2010 13:13:45 +0900
+To: dhowells@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] frv: remove the obsolete and unnecessary DMA API
+ comments
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <28355.1266401022@redhat.com>
+References: <20100212145830I.fujita.tomonori@lab.ntt.co.jp>
+	<28355.1266401022@redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100219131335E.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 19 Feb 2010 13:13:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> Kernel: x86_64 2.6.33-rc7-mmotm0210
+On Wed, 17 Feb 2010 10:03:42 +0000
+David Howells <dhowells@redhat.com> wrote:
+
+> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> I'm debugging a problem where pulseaudio is getting killed with a SIGKILL
-> out of the blue.  It appears to be a problem where pulseaudio sets
-> RLIMIT_RTTIME and the bound gets exceeded.  Analysis with 'top' shows
-> a short spike of 96% system time, and the tail end of strace shows this:
+> > pci_dma_sync_single was obsoleted long ago.
+> > 
+> > All the comments are generic, not architecture specific, simply
+> > describes some of the DMA-API (and frv has the same comments in three
+> > files). Documentation/DMA-API.txt have more detailed descriptions.
+> > 
+> > This removes the above obsolete and unnecessary DMA API
+> > comments. Let's describe the DMA API in only
+> > Documentation/DMA-API.txt.
 > 
-> [pid 25065] 01:50:20.371484 ioctl(28, USBDEVFS_CONTROL, 0x7fd3d76f630c) = 0 <0.000015>
-> [pid 25065] 01:50:20.371548 ioctl(28, 0x40045532, 0x7fd3d76f636c) = 0 <0.000016>
-> [pid 25065] 01:50:20.371611 open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_CLOEXEC <unfinished ...>
-> [pid 25064] 01:50:20.371678 <... write resumed> ) = 8 <0.002104>
-> [pid 25064] 01:50:20.371718 futex(0xc2ec00, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+> I'm okay with this, _provided_ you put a pointer in a banner comment at the
+> top of the file to Documentation/DMA-API.txt.
 
-So it received the signal and the task waiting in 
-sys_futex(FUTEX_WAIT_PRIVATE...) wakes up to handle the signal and 
-return right? What do you see here that suggests the task is spinning 
-inside the futex syscall?
+How about this?
 
-This is a non-rt kernel right? So spinning could occur on the hash 
-bucket lock if something else is really horked. That seems unlikely.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] frv: add a pointer to Documentation/DMA-API.txt
 
-> [pid 25066] 01:50:21.408392 +++ killed by SIGKILL +++
-> PANIC: handle_group_exit: 25066 leader 25064
-> [pid 25065] 01:50:21.408442 +++ killed by SIGKILL +++
-> PANIC: handle_group_exit: 25065 leader 25064
-> 01:50:21.420354 +++ killed by SIGKILL +++
-> 
-> thread 25064 apparently gets gunned down due to RTTIME because it spent a whole
-> second in a futex() call - is it reasonable for futex() to not return for that
-> long?
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/frv/include/asm/dma-mapping.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Certainly if a corresponding FUTEX_WAKE op was not sent.
-
---
-Darrem
-
-> In other words - kernel bug because futex() should return, or pulseaudio bug
-> for not understanding futex() can snooze a while?
-
-> If a kernel bug, anybody got a better idea than nuking the RLIMIT_RTTIME call,
-> waiting for it to repeat (takes between 1 minute and 1 hour or so), and
-> whomping it a few times with sysrq-T?
-> 
-
-
+diff --git a/arch/frv/include/asm/dma-mapping.h b/arch/frv/include/asm/dma-mapping.h
+index 20cca40..6af5d83 100644
+--- a/arch/frv/include/asm/dma-mapping.h
++++ b/arch/frv/include/asm/dma-mapping.h
+@@ -7,6 +7,11 @@
+ #include <asm/scatterlist.h>
+ #include <asm/io.h>
+ 
++/*
++ * See Documentation/DMA-API.txt for the description of how the
++ * following DMA API should work.
++ */
++
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+ #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ 
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+1.6.5
+
