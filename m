@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541Ab0BSRIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:08:35 -0500
-Received: from kroah.org ([198.145.64.141]:57715 "EHLO coco.kroah.org"
+	id S1755595Ab0BSRJo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:09:44 -0500
+Received: from kroah.org ([198.145.64.141]:57639 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754919Ab0BSRA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:56 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:48 2010
-Message-Id: <20100219163247.984850788@kvm.kroah.org>
+	id S1754861Ab0BSRAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:48 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:45 2010
+Message-Id: <20100219163245.163013253@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:56 -0800
+Date: Fri, 19 Feb 2010 08:29:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [63/93] ALSA: hda - use WARN_ON_ONCE() for zero-division detection
+       Daniel Vetter <daniel.vetter@ffwll.ch>, Eric Anholt <eric@anholt.net>
+Subject: [52/93] drm/i915: add i915_lp_ring_sync helper
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,38 +25,127 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-commit d6d8bf549393484e906913f02fa3c9518a2819b6 upstream.
+commit 48764bf43f746113fc77877d7e80f2df23ca4cbb upstream.
 
-Replace the zero-division warning message with WARN_ON_ONCE() per the
-advice by Linus.  This shouldn't happen, but if it happens, it's
-possible that the bug happens often due to buggy IRQs.
+This just waits until the hw passed the current ring position with
+cmd execution. This slightly changes the existing i915_wait_request
+function to make uninterruptible waiting possible - no point in
+returning to userspace while mucking around with the overlay, that
+piece of hw is just too fragile.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Also replace a magic 0 with the symbolic constant (and kill the then
+superflous comment) while I was looking at the code.
+
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/i915/i915_drv.h |    1 
+ drivers/gpu/drm/i915/i915_gem.c |   49 +++++++++++++++++++++++++++++++---------
+ include/drm/drm_os_linux.h      |    2 -
+ 3 files changed, 41 insertions(+), 11 deletions(-)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -1858,12 +1858,9 @@ static int azx_position_ok(struct azx *c
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -825,6 +825,7 @@ void i915_gem_cleanup_ringbuffer(struct
+ int i915_gem_do_init(struct drm_device *dev, unsigned long start,
+ 		     unsigned long end);
+ int i915_gem_idle(struct drm_device *dev);
++int i915_lp_ring_sync(struct drm_device *dev);
+ int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
+ int i915_gem_object_set_to_gtt_domain(struct drm_gem_object *obj,
+ 				      int write);
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -1809,12 +1809,8 @@ i915_gem_retire_work_handler(struct work
+ 	mutex_unlock(&dev->struct_mutex);
+ }
  
- 	if (!bdl_pos_adj[chip->dev_index])
- 		return 1; /* no delayed ack */
--	if (azx_dev->period_bytes == 0) {
--		printk(KERN_WARNING
--		       "hda-intel: Divide by zero was avoided "
--		       "in azx_dev->period_bytes.\n");
--		return 0;
--	}
-+	if (WARN_ONCE(!azx_dev->period_bytes,
-+		      "hda-intel: zero azx_dev->period_bytes"))
-+		return 0; /* this shouldn't happen! */
- 	if (pos % azx_dev->period_bytes > azx_dev->period_bytes / 2)
- 		return 0; /* NG - it's below the period boundary */
- 	return 1; /* OK, it's fine */
+-/**
+- * Waits for a sequence number to be signaled, and cleans up the
+- * request and object lists appropriately for that event.
+- */
+ static int
+-i915_wait_request(struct drm_device *dev, uint32_t seqno)
++i915_do_wait_request(struct drm_device *dev, uint32_t seqno, int interruptible)
+ {
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	u32 ier;
+@@ -1841,10 +1837,15 @@ i915_wait_request(struct drm_device *dev
+ 
+ 		dev_priv->mm.waiting_gem_seqno = seqno;
+ 		i915_user_irq_get(dev);
+-		ret = wait_event_interruptible(dev_priv->irq_queue,
+-					       i915_seqno_passed(i915_get_gem_seqno(dev),
+-								 seqno) ||
+-					       atomic_read(&dev_priv->mm.wedged));
++		if (interruptible)
++			ret = wait_event_interruptible(dev_priv->irq_queue,
++				i915_seqno_passed(i915_get_gem_seqno(dev), seqno) ||
++				atomic_read(&dev_priv->mm.wedged));
++		else
++			wait_event(dev_priv->irq_queue,
++				i915_seqno_passed(i915_get_gem_seqno(dev), seqno) ||
++				atomic_read(&dev_priv->mm.wedged));
++
+ 		i915_user_irq_put(dev);
+ 		dev_priv->mm.waiting_gem_seqno = 0;
+ 
+@@ -1868,6 +1869,34 @@ i915_wait_request(struct drm_device *dev
+ 	return ret;
+ }
+ 
++/**
++ * Waits for a sequence number to be signaled, and cleans up the
++ * request and object lists appropriately for that event.
++ */
++static int
++i915_wait_request(struct drm_device *dev, uint32_t seqno)
++{
++	return i915_do_wait_request(dev, seqno, 1);
++}
++
++/**
++ * Waits for the ring to finish up to the latest request. Usefull for waiting
++ * for flip events, e.g for the overlay support. */
++int i915_lp_ring_sync(struct drm_device *dev)
++{
++	uint32_t seqno;
++	int ret;
++
++	seqno = i915_add_request(dev, NULL, 0);
++
++	if (seqno == 0)
++		return -ENOMEM;
++
++	ret = i915_do_wait_request(dev, seqno, 0);
++	BUG_ON(ret == -ERESTARTSYS);
++	return ret;
++}
++
+ static void
+ i915_gem_flush(struct drm_device *dev,
+ 	       uint32_t invalidate_domains,
+@@ -1936,7 +1965,7 @@ i915_gem_flush(struct drm_device *dev,
+ #endif
+ 		BEGIN_LP_RING(2);
+ 		OUT_RING(cmd);
+-		OUT_RING(0); /* noop */
++		OUT_RING(MI_NOOP);
+ 		ADVANCE_LP_RING();
+ 	}
+ }
+--- a/include/drm/drm_os_linux.h
++++ b/include/drm/drm_os_linux.h
+@@ -123,5 +123,5 @@ do {								\
+ 	remove_wait_queue(&(queue), &entry);			\
+ } while (0)
+ 
+-#define DRM_WAKEUP( queue ) wake_up_interruptible( queue )
++#define DRM_WAKEUP( queue ) wake_up( queue )
+ #define DRM_INIT_WAITQUEUE( queue ) init_waitqueue_head( queue )
 
 
