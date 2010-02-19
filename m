@@ -1,60 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783Ab0BSAX2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 19:23:28 -0500
-Received: from smtp13.ono.com ([62.42.230.16]:53961 "EHLO resmaa13.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753723Ab0BSAXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 19:23:25 -0500
-Date: Fri, 19 Feb 2010 01:23:22 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: NFSv4
-Message-ID: <20100219012322.3d323794@werewolf.home>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.19.5; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753913Ab0BSAXq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 19:23:46 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:44202 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753723Ab0BSAXd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 19:23:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=MjERF8KHcBb5nxB9xb+ly+YFw90qEpeZ85114JtFpMtJTBqV7Jx0bPDHSwJQGcMCcj
+         +vL915yW+m4HFAKGAf3NFMthmYT0LW/xLE3raIG+v86yVIrPb1ZOvH37UPwaAxo4MT3H
+         iK9h924PvGfH29HpDG+LWOzV4GmmiEF9/I/u4=
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: linux-crypto@vger.kernel.org
+Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 16/19] crypto: tgr192 - Fix checkpatch errors
+Date: Fri, 19 Feb 2010 01:23:15 +0100
+Message-Id: <1266538996-3608-1-git-send-email-richih.mailinglist@gmail.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
 
-First of all, kudos for new nfs-utils. Now, nfs4 works automagically and
-like a charm.
+Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
+---
+ crypto/tgr192.c |   44 ++++++++++++++++----------------------------
+ 1 files changed, 16 insertions(+), 28 deletions(-)
 
-And now the hard part, some questions:
-
-- I have read that nfs4 includes in the server the locking protocol, no
-  need for separate lockd. But in my servers, it seems it is still running:
-
-root      2198     2  0 Feb18 ?        00:00:00 [nfsiod]
-root     23501     2  0 01:01 ?        00:00:00 [nfsd4]
-root     23502     2  0 01:01 ?        00:00:00 [nfsd]
-root     23503     2  0 01:01 ?        00:00:00 [nfsd]
-root     23504     2  0 01:01 ?        00:00:00 [nfsd]
-root     23505     2  0 01:01 ?        00:00:00 [nfsd]
-root     23506     2  0 01:01 ?        00:00:00 [nfsd]
-root     23507     2  0 01:01 ?        00:00:00 [nfsd]
-root     23508     2  0 01:01 ?        00:00:00 [nfsd]
-root     23509     2  0 01:01 ?        00:00:00 [nfsd]
-root     23500     2  0 01:01 ?        00:00:00 [lockd]
-
-  Is there any problem with it ? I suppose (correct me if I'm wrong)
-  that this kernel lockd will only serve for v2 or v3 mounts,
-  that locking for client nfs4 mounts will go through nfsd4.
-  Is that right ?
-
-- Why is there only 1 instance of v4 daemon ?
-
-- Is there any page describing the advantages of v4 ? I will have to
-  convince the department admin to activate v4 in his solaris boxen...;)
-
-TIA
-
-Notes: kernel is 2.6.33-rc8, nfs-utils are 1.2.2.
-
+diff --git a/crypto/tgr192.c b/crypto/tgr192.c
+index cbca4f2..67dd5e7 100644
+--- a/crypto/tgr192.c
++++ b/crypto/tgr192.c
+@@ -12,7 +12,7 @@
+  * This version is derived from the GnuPG implementation and the
+  * Tiger-Perl interface written by Rafael Sevilla
+  *
+- * Adapted for Linux Kernel Crypto  by Aaron Grothe 
++ * Adapted for Linux Kernel Crypto  by Aaron Grothe
+  * ajgrothe@yahoo.com, February 22, 2005
+  *
+  * This program is free software; you can redistribute it and/or modify
+@@ -398,7 +398,7 @@ static const u64 sbox4[256] = {
+ };
+ 
+ 
+-static void tgr192_round(u64 * ra, u64 * rb, u64 * rc, u64 x, int mul)
++static void tgr192_round(u64 *ra, u64 *rb, u64 *rc, u64 x, int mul)
+ {
+ 	u64 a = *ra;
+ 	u64 b = *rb;
+@@ -417,7 +417,7 @@ static void tgr192_round(u64 * ra, u64 * rb, u64 * rc, u64 x, int mul)
+ }
+ 
+ 
+-static void tgr192_pass(u64 * ra, u64 * rb, u64 * rc, u64 * x, int mul)
++static void tgr192_pass(u64 *ra, u64 *rb, u64 *rc, u64 *x, int mul)
+ {
+ 	u64 a = *ra;
+ 	u64 b = *rb;
+@@ -438,7 +438,7 @@ static void tgr192_pass(u64 * ra, u64 * rb, u64 * rc, u64 * x, int mul)
+ }
+ 
+ 
+-static void tgr192_key_schedule(u64 * x)
++static void tgr192_key_schedule(u64 *x)
+ {
+ 	x[0] -= x[7] ^ 0xa5a5a5a5a5a5a5a5ULL;
+ 	x[1] ^= x[0];
+@@ -512,7 +512,7 @@ static int tgr192_init(struct shash_desc *desc)
+ /* Update the message digest with the contents
+  * of INBUF with length INLEN. */
+ static int tgr192_update(struct shash_desc *desc, const u8 *inbuf,
+-			  unsigned int len)
++			 unsigned int len)
+ {
+ 	struct tgr192_ctx *tctx = shash_desc_ctx(desc);
+ 
+@@ -521,18 +521,14 @@ static int tgr192_update(struct shash_desc *desc, const u8 *inbuf,
+ 		tctx->count = 0;
+ 		tctx->nblocks++;
+ 	}
+-	if (!inbuf) {
++	if (!inbuf)
+ 		return 0;
+-	}
+ 	if (tctx->count) {
+-		for (; len && tctx->count < 64; len--) {
++		for (; len && tctx->count < 64; len--)
+ 			tctx->hash[tctx->count++] = *inbuf++;
+-		}
+ 		tgr192_update(desc, NULL, 0);
+-		if (!len) {
++		if (!len)
+ 			return 0;
+-		}
+-
+ 	}
+ 
+ 	while (len >= 64) {
+@@ -542,15 +538,13 @@ static int tgr192_update(struct shash_desc *desc, const u8 *inbuf,
+ 		len -= 64;
+ 		inbuf += 64;
+ 	}
+-	for (; len && tctx->count < 64; len--) {
++	for (; len && tctx->count < 64; len--)
+ 		tctx->hash[tctx->count++] = *inbuf++;
+-	}
+ 
+ 	return 0;
+ }
+ 
+ 
+-
+ /* The routine terminates the computation */
+ static int tgr192_final(struct shash_desc *desc, u8 * out)
+ {
+@@ -564,30 +558,25 @@ static int tgr192_final(struct shash_desc *desc, u8 * out)
+ 
+ 	msb = 0;
+ 	t = tctx->nblocks;
+-	if ((lsb = t << 6) < t) { /* multiply by 64 to make a byte count */
++	if ((lsb = t << 6) < t) /* multiply by 64 to make a byte count */
+ 		msb++;
+-	}
+ 	msb += t >> 26;
+ 	t = lsb;
+-	if ((lsb = t + tctx->count) < t) {	/* add the count */
++	if ((lsb = t + tctx->count) < t) /* add the count */
+ 		msb++;
+-	}
+ 	t = lsb;
+-	if ((lsb = t << 3) < t)	{ /* multiply by 8 to make a bit count */
++	if ((lsb = t << 3) < t) /* multiply by 8 to make a bit count */
+ 		msb++;
+-	}
+ 	msb += t >> 29;
+ 
+ 	if (tctx->count < 56) {	/* enough room */
+ 		tctx->hash[tctx->count++] = 0x01;	/* pad */
+-		while (tctx->count < 56) {
++		while (tctx->count < 56)
+ 			tctx->hash[tctx->count++] = 0;	/* pad */
+-		}
+ 	} else {		/* need one extra block */
+ 		tctx->hash[tctx->count++] = 0x01;	/* pad character */
+-		while (tctx->count < 64) {
++		while (tctx->count < 64)
+ 			tctx->hash[tctx->count++] = 0;
+-		}
+ 		tgr192_update(desc, NULL, 0); /* flush */ ;
+ 		memset(tctx->hash, 0, 56);    /* fill next block with zeroes */
+ 	}
+@@ -676,9 +665,8 @@ static int __init tgr192_mod_init(void)
+ 
+ 	ret = crypto_register_shash(&tgr192);
+ 
+-	if (ret < 0) {
++	if (ret < 0)
+ 		goto out;
+-	}
+ 
+ 	ret = crypto_register_shash(&tgr160);
+ 	if (ret < 0) {
+@@ -691,7 +679,7 @@ static int __init tgr192_mod_init(void)
+ 		crypto_unregister_shash(&tgr192);
+ 		crypto_unregister_shash(&tgr160);
+ 	}
+-      out:
++out:
+ 	return ret;
+ }
+ 
 -- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
+1.6.6.1
+
