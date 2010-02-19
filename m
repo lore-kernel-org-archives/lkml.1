@@ -1,63 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729Ab0BSULG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:11:06 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51763 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751774Ab0BSULE (ORCPT
+	id S1756076Ab0BSUjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 15:39:18 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46693
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754034Ab0BSUjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:11:04 -0500
-Date: Fri, 19 Feb 2010 23:11:00 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Richard =?utf-8?Q?R=C3=B6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>,
-       Pierre Ossman <pierre@ossman.eu>, Ben Dooks <ben@simtec.co.uk>,
-       linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] sdhci: Implement CAP_CLOCK_BASE_BROKEN quirk
-Message-ID: <20100219201100.GA17881@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20100219194827.GA16636@oksana.dev.rtsoft.ru>
- <4B7EECB2.9090406@csr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4B7EECB2.9090406@csr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 19 Feb 2010 15:39:17 -0500
+Date: Fri, 19 Feb 2010 12:39:31 -0800 (PST)
+Message-Id: <20100219.123931.229106308.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: netdev@vger.kernel.org, rolandd@cisco.com, eli@mellanox.co.il,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mlx4: replace the dma_sync_single_range_for_cpu/device
+ API
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100219164408H.fujita.tomonori@lab.ntt.co.jp>
+References: <20100204.210939.133998827.davem@davemloft.net>
+	<adavde35rr9.fsf@roland-alpha.cisco.com>
+	<20100219164408H.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 07:55:30PM +0000, David Vrabel wrote:
-> Anton Vorontsov wrote:
-> > Some hosts (e.g. as found in CNS3xxx SOCs) report wrong value in
-> > CLOCK_BASE capability field, and currently there is no way to
-> > force the SDHCI core to use the platform-provided base clock value.
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 19 Feb 2010 16:44:29 +0900
+
+> On Thu, 11 Feb 2010 14:31:22 -0800
+> Roland Dreier <rdreier@cisco.com> wrote:
 > 
-> I don't think this needs a new quirk. Change the sdhci driver to check
-> if the platform provides a value before reading the standard register.
+>>  > > There are only two users of the dma_sync_single_range_for_cpu/device
+>>  > > API in mainline (mlx4 and ssb). The
+>>  > > dma_sync_single_range_for_cpu/device API has never been documented and
+>>  > > the dma_sync_single_for_cpu/device API also support a partial sync.
+>>  > > 
+>>  > > This converts mlx4 to use the dma_sync_single_for_cpu/device API
+>>  > > (preparations for the removal of the dma_sync_single_range_for_cpu/device API).
+>>  > > 
+>>  > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>>  > 
+>>  > Acked-by: David S. Miller <davem@davemloft.net>
+>> 
+>> Dave, please go ahead and merge this -- this affects the mlx4 ethernet
+>> driver, so it's your area anyway.
+> 
+> Seems that net-next still doesn't have this. Can you please merge
+> this?
 
-Well, Pierre once said that by default we should conform to the
-SDHCI spec, and any diviations from the spec should be handled by
-the quirks:
-
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-02/msg03385.html
-
-Spec clearly states that base clock == 0 is the case when we should
-fall back to the platform-provided clocks.
-
-So, for controllers that conform to the spec, following might be
-true:
-
-- Platform provides its own (alternate) clock, but
-- SDHCI block choose not to use it, and doesn't clear bits in the
-  capability register
-- Then the driver should not use the platform provided clock.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I'll take care of this later today.
