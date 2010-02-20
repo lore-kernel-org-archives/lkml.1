@@ -1,46 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335Ab0BTNMY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 08:12:24 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:46768 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754857Ab0BTNMW (ORCPT
+	id S1755389Ab0BTNU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 08:20:59 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:47143 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755206Ab0BTNU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 08:12:22 -0500
-Date: Sat, 20 Feb 2010 21:12:05 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-crypto@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
-Message-ID: <20100220131205.GA4948@gondor.apana.org.au>
-References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com> <m1d402t2qp.fsf@fess.ebiederm.org> <2d460de71002190210qb9d5685n2fca0e7eff011b04@mail.gmail.com> <20100219121752.GA21682@gondor.apana.org.au> <2d460de71002190835t29c6bd6bjbee8e2f787d9ab49@mail.gmail.com> <20100220004615.GB30844@gondor.apana.org.au> <2d460de71002191759w5241431an92f48de21c9af7af@mail.gmail.com> <20100220024814.GA32053@gondor.apana.org.au> <2d460de71002200226w5fa27d85maa3fa75e1dca8fdd@mail.gmail.com>
+	Sat, 20 Feb 2010 08:20:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=xux6PBAaVJ9EPsgaMXiURPLucAFCZpqz/m+D2ULbiEB6ljY1RsHfqEHmpsHWjvUNRG
+         pnhG6Cd/N0tN5R2/i7MRTTCSmGb0NUnbAN+FxBzEnbwcOm0zcJGsSPM4+Kf8KQwFlvq3
+         KhR1mbi1kgtGB8TdVCjW6zHBDeXYA7dOjTMjA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d460de71002200226w5fa27d85maa3fa75e1dca8fdd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sat, 20 Feb 2010 22:20:50 +0900
+Message-ID: <6ea9ef0f1002200520w7ad62618hc680380142f5f0d@mail.gmail.com>
+Subject: [PATCH] USB: serial: ftdi: add CONTEC vendor and product id
+From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Andreas Mohr <andi@lisas.de>,
+       Radek Liboska <liboska@uochb.cas.cz>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 11:26:46AM +0100, Richard Hartmann wrote:
-> 
-> Another workflow question:
-> Does LKML as a whole prefer rebased patches, patches on top of the
-> old one or does not one care as long as it's clear what to apply in what
-> order?
-> Or does everyone have a different opionion, in which case: What is
-> yours?
+This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
+identifiers for CONTEC USB serial converter. I tested it
+with the device COM-1(USB)H
 
-It depends on what you're working on.  For this case in particular,
-sending the missing bits instead of the whole thing is my preferred
-solution.
+Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+---
+ drivers/usb/serial/ftdi_sio.c     |    1 +
+ drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-Cheers,
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 7638828..35d4336 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -657,6 +657,7 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ USB_DEVICE(EVOLUTION_VID, EVOLUTION_ER1_PID) },
+ 	{ USB_DEVICE(EVOLUTION_VID, EVO_HYBRID_PID) },
+ 	{ USB_DEVICE(EVOLUTION_VID, EVO_RCM4_PID) },
++	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ARTEMIS_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ATIK_ATK16_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_ATIK_ATK16C_PID) },
+diff --git a/drivers/usb/serial/ftdi_sio_ids.h
+b/drivers/usb/serial/ftdi_sio_ids.h
+index c8951ae..545db7f 100644
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -1002,3 +1002,10 @@
+ #define EVO_8U232AM_PID	0x02FF	/* Evolution robotics RCM2 (FT232AM)*/
+ #define EVO_HYBRID_PID		0x0302	/* Evolution robotics RCM4 PID (FT232BM)*/
+ #define EVO_RCM4_PID		0x0303	/* Evolution robotics RCM4 PID */
++
++/*
++ * Contec products (http://www.contec.com)
++ * Submitted by Daniel Sangorrin
++ */
++#define CONTEC_VID		0x06CE	/* Vendor ID */
++#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.6.0.4
