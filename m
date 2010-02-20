@@ -1,76 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363Ab0BTEqv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 23:46:51 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:43750 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347Ab0BTEqu convert rfc822-to-8bit (ORCPT
+	id S1751917Ab0BTFju (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 00:39:50 -0500
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:29921 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751168Ab0BTFjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 23:46:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=U663dwe6YvsIoJEbLLcI7ZeEq8z58yHN/zXS3uE0PM/9q9sV1lRjfeBRY5JLaAWp3Q
-         ekN0yqm2fLVIYmWn9DgS/LDfMZjDWMPCu7y61PW5Zszt+3/2FSeW5D2wm+aOmbHr0qQK
-         /DxScuFPjzBAaBUBOykMkwEiDAe2bj4FTd9jM=
+	Sat, 20 Feb 2010 00:39:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BuVGzI7RVDMZfKn76/bF/fq1YeRnSVX8BLWqDR4x42F4bCCNac+f1CJQ0C1d9WjtbkhQ6f1f2bCVob1e6ujeX+LrnImtDJQfkzi7PWUPm13bJL/A02Su7TBsM/XV/qbKT1fja3S76O6/WZtDpx9VRvklUWVEA3QqsI9hp1a6yKY=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: 2Q7b6E0VM1lFUTM6wdzHFUe.gIdYOH5sf_usX882JpPFHgj3BBvlImtoDzs1rRLqTOV7Sxi2PgDmQIu9M6DCs1enol_rBDZN5Fm1G03ZxTvhA_mQhlauQm9q3.pQMSz1VLPG1AbPtlE7lTi8GFMXAE3YUnUo4exkPhJjmozgF1Qy2Xkj2dIdv5wr5crbgoberjH1OhUwO9f.ELHak4lLsa04RKCW9CSSj_VKm31LHHhy05f4ScCU6hWBWb4Te5bAdM1F2_pVDYw-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+Date: Fri, 19 Feb 2010 21:39:45 -0800
+User-Agent: KMail/1.9.10
+Cc: Greg KH <greg@kroah.com>, "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Linux-usb" <linux-usb@vger.kernel.org>
+References: <4B7CAF95.6020306@gmail.com> <20100218052223.GA13254@kroah.com> <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
+In-Reply-To: <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
-	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-Date: Sat, 20 Feb 2010 12:46:48 +0800
-Message-ID: <2375c9f91002192046u5105db8j4b8a63647d9220ce@mail.gmail.com>
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002192139.46189.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 12:31 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Thu, 18 Feb 2010, Johannes Berg wrote:
->> >
->> > Basically, the machine deadlocks right after printing the following
->> > when doing a shutdown:
->> >
->> > halt/4071 is trying to acquire lock:
->> >  (s_active){++++.+}, at: [<c0000000001ef868>]
->> > .sysfs_addrm_finish+0x58/0xc0
->> >
->> > but task is already holding lock:
->> >  (&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at: [<c0000000004cd6ac>]
->> > .lock_policy_rwsem_write+0x84/0xf4
->> >
->> > which lock already depends on the new lock.
->
-> You don't have a full backtrace for these things?
->
-> We've had lots of trouble with the cpu governors, and I suspect the
-> problem isn't new, but the lockdep warning is likely new (see commit
-> 846f99749ab68bbc7f75c74fec305de675b1a1bf: "sysfs: Add lockdep annotations
-> for the sysfs active reference").
->
-> So it is likely to be an old issue that (a) now gets warned about and (b)
-> might have had timing changes enough to trigger it.
->
+On Thursday 18 February 2010, Robert Hancock wrote:
+> >
+> > But we disabled it on purpose, because of problems, do we want those
+> > problems again?
+> 
+> AFAICS, it was disabled because of problems with kernel code, not with
+> hardware (and it appears the issue was with the code that detected the
+> expanded DMA mask in the USB device driver code, not the HCD driver).
+> CCing David Brownell who may know more.
 
-Right.
+That's a good summary of the high points.  Testing was potentially an
+issue, but it never quite got that far.  So I have no idea if there are
+systems where EHCI advertises 64-bit DMA support but that support is
+broken (e.g. "Yet Another Hardware Mechanism MS-Windows Ignores", so that
+only Linux would ever trip over the relevant BIOS breakage).
 
-This is a real deadlock case found by lockdep added to s_active.
+I won't attempt to go into details, but I recall a few basic issues:
 
-The problem is that we did kobject_put(&data->kobj) while holding policy_rwsem
-which is used to protect 'data'. It is not so easy to fix this,
-probably we need to
-do more work on cpufreq code.
+ * Not all clients or implementors of the "dma mask" mechanism agreed
+   on what it was supposed to achieve.  Few, for example, really used
+   it as a mask ... and it rarely affects allocation of buffers that
+   will later get used for DMA.
 
-Thanks.
+ * Confusing semantics for the various types of DMA restriction which
+   hardware may impose, and upper layers in driver stacks would thus
+   need (in some cases) to cope with.
+
+ * How to pass such restrictions up the driver stack ... as for example
+   that NETIF_* flag.  ISTR there was some block layer issue too, but
+   at this remove I can't remember any details at all.  (If networking
+   and the block layer can use 64-bit DMA, I can't imagine many other
+   subsystems would deliver wins as big.)  For example, how would one
+   pass up the knowledge that a driver for a particular USB peripheral
+   across a few hubs) can do DMA to/from address 0x1234567890abcdef, but
+   the same driver can't do that for an otherwise identical peripheral
+   connected through a different HCD?
+
+ * There were probably a few PCI-specific issues too.  I don't think
+   at that time there were many users of 64-bit DMA which weren't
+   specific to PCI.  Wanting to use the generic DMA calls for such
+   stuff wasn't really done back then.  But ... the USB stack uses
+   the generic calls, and drivers sitting on top of usbcore (and its
+   tightly coupled HCDs) will never issue PCI-specific calls, since
+   they need to work on systems that don't even have PCI.
+
+I basically think that if the controller can do 64-bit DMA, it should
+be enabling it by default ... assuming the software stack can handle
+that.  (What would be the benefit of adding needless restrictions,
+and making systems needlessly apply bounce buffering.)  So while I'd
+like to see the 64-bit DMA working, it should IMO be done without any
+options to cause trouble/confusion.
+
+But at that time it wasn't straightforward to manage 64-bit DMA except
+in the very lowest level PCI drivers.  That is, EHCI could do it ...
+but driver layers on top of it had no good way to do their part.  For
+example, when they manage DMA mappings themselves.)
+
+- Dave
+
