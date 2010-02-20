@@ -1,52 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884Ab0BTB7s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 20:59:48 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:43977 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467Ab0BTB7q convert rfc822-to-8bit (ORCPT
+	id S1755196Ab0BTCQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 21:16:47 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:58241 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567Ab0BTCQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 20:59:46 -0500
+	Fri, 19 Feb 2010 21:16:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Rp19RtSdWKfSKHG69coa3f6sHk3RV9CBM/r5Lczx6982m4cTDhP7vSibFyZGYstv5E
-         BbG1NpRz/Cmo6fhg1GwTSh372bWTygUe0R1zdHNrPht5OJoeYdLEfI06+nY3HLv6s1xh
-         0dQnH3EKWsSek+59gPDaRFyv8xAKs1cD9PI5w=
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Cef3owm0opUGQ+E46JlnGEzxVwdRuQxCLEbHoBD/1bAWKuEW1vRV82ixlk2bjpN2+l
+         oOyTA2zQMrpRvRx7dL7hlxrEUhDZT7ikRMNPmNiWKbT27S3C9Oikh8wuNr1gi+AFsxCl
+         3mDAkF3sT/bCRzi43G98NhBZT2oE39T1mpqZY=
 MIME-Version: 1.0
-In-Reply-To: <20100220004615.GB30844@gondor.apana.org.au>
-References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com>
-	 <m1d402t2qp.fsf@fess.ebiederm.org>
-	 <2d460de71002190210qb9d5685n2fca0e7eff011b04@mail.gmail.com>
-	 <20100219121752.GA21682@gondor.apana.org.au>
-	 <2d460de71002190835t29c6bd6bjbee8e2f787d9ab49@mail.gmail.com>
-	 <20100220004615.GB30844@gondor.apana.org.au>
-Date: Sat, 20 Feb 2010 02:59:44 +0100
-Message-ID: <2d460de71002191759w5241431an92f48de21c9af7af@mail.gmail.com>
-Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-crypto@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4B7BEA41.6080303@suse.cz>
+References: <4B5E5D4F.50803@windriver.com> <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com> 
+	<4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> 
+	<4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz> <4B666982.1020007@windriver.com> 
+	<4B6C8FF0.3090106@suse.cz> <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com> 
+	<4B7BEA41.6080303@suse.cz>
+From: Hui Zhu <teawater@gmail.com>
+Date: Sat, 20 Feb 2010 10:16:26 +0800
+Message-ID: <daef60381002191816w4bc261cfq14b55aa7879b3f6e@mail.gmail.com>
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
+	environments
+To: Michal Marek <mmarek@suse.cz>
+Cc: Hui Zhu <hui.zhu@windriver.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 01:46, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On Wed, Feb 17, 2010 at 21:08, Michal Marek <mmarek@suse.cz> wrote:
+>
+> On 8.2.2010 03:55, Hui Zhu wrote:
+> > Hi Michael,
+> >
+> > Looks you miss this one:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ef2b9b054580ef835078d8aa411bd06542cd5c1c
+>
+>
+> That one is already in Linus' tree, so this is OK. BTW please don't
+> top-post.
+>
 
-> I'm just dropping this particular change.  If there are any
-> other ones where you've done a similar thing, then please either
-> revise or drop those.
+Got it.  Thanks Michael.
 
-In this case, please hold seed, tcrypt, wp512 & xcbc. I will
-refactor them.
-
-The last batch of patches did not have any of these changes.
-
-
-Thanks,
-Richard
+Hui
