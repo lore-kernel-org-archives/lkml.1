@@ -1,79 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541Ab0BTINM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 03:13:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42734 "EHLO hera.kernel.org"
+	id S1754174Ab0BTINX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 03:13:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5975 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358Ab0BTINJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 03:13:09 -0500
-Date: Sat, 20 Feb 2010 08:12:37 GMT
-From: tip-bot for Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, dzickus@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, dzickus@redhat.com, mingo@elte.hu
-In-Reply-To: <1266548212-24243-1-git-send-email-dzickus@redhat.com>
-References: <1266548212-24243-1-git-send-email-dzickus@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/nmi] nmi_watchdog: Fix undefined 'apic' build bug
-Message-ID: <tip-2cc4452bc31fc1cde6f0b64a4eb13269f982787d@git.kernel.org>
-Git-Commit-ID: 2cc4452bc31fc1cde6f0b64a4eb13269f982787d
-X-Mailer: tip-git-log-daemon
+	id S1754020Ab0BTINU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 03:13:20 -0500
+Message-ID: <4B7F993C.9000007@redhat.com>
+Date: Sat, 20 Feb 2010 16:11:40 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 20 Feb 2010 08:12:37 +0000 (UTC)
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 0/3] net: reserve ports for applications using
+ fixed port numbers
+References: <1266532210-11536-1-git-send-email-opurdila@ixiacom.com>
+In-Reply-To: <1266532210-11536-1-git-send-email-opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2cc4452bc31fc1cde6f0b64a4eb13269f982787d
-Gitweb:     http://git.kernel.org/tip/2cc4452bc31fc1cde6f0b64a4eb13269f982787d
-Author:     Don Zickus <dzickus@redhat.com>
-AuthorDate: Thu, 18 Feb 2010 21:56:52 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 19 Feb 2010 23:04:13 +0100
+Octavian Purdila wrote:
+> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports which
+> allows users to reserve ports for third-party applications.
+> 
+> The reserved ports will not be used by automatic port assignments
+> (e.g. when calling connect() or bind() with port number 0). Explicit
+> port allocation behavior is unchanged.
+> 
+> Changes from the previous version:
+> - switch the /proc entry format to coma separated list of range ports
+> - treat -EFAULT just like any other error and acknowledge written values
+> - use isdigit() in proc_get_ulong
+> 
+> Octavian Purdila (3):
+>   sysctl: refactor integer handling proc code
+>   sysctl: add proc_do_large_bitmap
+>   net: reserve ports for applications using fixed port numbers
 
-nmi_watchdog: Fix undefined 'apic' build bug
+Hi,
 
-Ingo provided me a config that fails to compile with:
+This version looks fine for me, but I need to give them a test, and
+I will put feedbacks asap. Thanks for your work!
 
-  arch/x86/built-in.o: In function
-  `arch_trigger_all_cpu_backtrace': (.text+0x17e78): undefined
-  reference to `apic' make: *** [.tmp_vmlinux1] Error 1
+Still two things:
 
-I realized I changed the compile behaviour of the nmi code by
-not wrapping it with CONFIG_LOCAL_APIC.  To fix this I add a
-compile check for ARCH_HAS_NMI_WATCHDOG around
-arch_trigger_all_cpu_backtrace.
+1) bitops are always atomic on every arch, right? If yes, then ok.
+2) I hope you could add some documentation to show the relations
+    between ip_local_port_range and ip_local_reserved_ports.
 
-Signed-off-by: Don Zickus <dzickus@redhat.com>
-Cc: a.p.zijlstra@chello.nl
-Cc: gorcunov@gmail.com
-Cc: aris@redhat.com
-LKML-Reference: <1266548212-24243-1-git-send-email-dzickus@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/apic/hw_nmi.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Thanks!
 
-diff --git a/arch/x86/kernel/apic/hw_nmi.c b/arch/x86/kernel/apic/hw_nmi.c
-index 312d772..0b4d205 100644
---- a/arch/x86/kernel/apic/hw_nmi.c
-+++ b/arch/x86/kernel/apic/hw_nmi.c
-@@ -92,6 +92,7 @@ u64 hw_nmi_get_sample_period(void)
-         return cpu_khz * 1000;
- }
- 
-+#ifdef ARCH_HAS_NMI_WATCHDOG
- void arch_trigger_all_cpu_backtrace(void)
- {
- 	int i;
-@@ -108,6 +109,7 @@ void arch_trigger_all_cpu_backtrace(void)
- 		mdelay(1);
- 	}
- }
-+#endif
- 
- /* STUB calls to mimic old nmi_watchdog behaviour */
- #if defined(CONFIG_X86_LOCAL_APIC)
