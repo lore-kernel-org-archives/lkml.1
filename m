@@ -1,34 +1,30 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092Ab0BTOSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:18:22 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:34670 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755952Ab0BTOSU (ORCPT
+	id S1756140Ab0BTOTN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:19:13 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:51465 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755974Ab0BTOTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:18:20 -0500
+	Sat, 20 Feb 2010 09:19:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=IPfYTic7m/HNtXhY+9mEcy0Hct0l5mYXoPqCyQ8kO8IQPfdaEveQYgBupqLlVHCTKv
-         epM2v3AlI6lhLFW2PJ5o2+GquBlX2PJgzQxH/3PpHYoYFakvrq+4fda4zTjc2XiiZT9o
-         TtCR/MzsR5xipekJT7CGHCI1U7C4/Vl44bxTc=
-Date: Sat, 20 Feb 2010 22:18:09 +0800
+        b=erQuiW3vDoumWswMdNmyaAzP9iGwyMkfrmQ74z2SVpUo4ffnB6tW68fdUmownrsaYP
+         wrqcPiIkxnpfB2Mr9yGE7/B2ILEEHqI8bHZ3Fx463yjUHTZOLCsYc78LmYppS4UFQzeX
+         8AShP70eOsQLSUSmjB+XS0LX8+qilMK7u0R7w=
+Date: Sat, 20 Feb 2010 22:19:03 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>, Patrick McHardy <kaber@trash.net>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Doug Gilbert <dgilbert@interlog.com>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 12/18] sysctl extern cleanup - module
-Message-ID: <20100220141809.GK3195@darkstar>
+Subject: [PATCH 13/18] sysctl extern cleanup - sg
+Message-ID: <20100220141903.GL3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -40,53 +36,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-Move modprobe_path extern declaration to linux/kmod.h
-Move modules_disabled extern declaration to linux/module.h
+Move sg_big_buff extern declaration to scsi/sg.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/kmod.h   |    3 +++
- include/linux/module.h |    6 ++++++
- kernel/sysctl.c        |    4 ----
- 3 files changed, 9 insertions(+), 4 deletions(-)
+ include/scsi/sg.h |    5 +++++
+ kernel/sysctl.c   |    5 +----
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
---- linux-2.6.32.orig/include/linux/module.h	2010-02-20 14:02:19.704925558 +0800
-+++ linux-2.6.32/include/linux/module.h	2010-02-20 14:29:59.621428095 +0800
-@@ -34,6 +34,12 @@
+--- linux-2.6.32.orig/include/scsi/sg.h	2010-02-20 14:02:18.708258892 +0800
++++ linux-2.6.32/include/scsi/sg.h	2010-02-20 14:39:48.631369361 +0800
+@@ -70,6 +70,11 @@ Major new features in SG 3.x driver (cf 
+  (for the lk 2.2 series).
+ */
  
- #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
- 
-+#ifdef CONFIG_SYSCTL
-+#ifdef CONFIG_MODULES
-+extern int modules_disabled;
++#ifdef __KERNEL__
++#if defined(CONFIG_SYSCTL) && defined(CONFIG_CHR_DEV_SG)
++extern int sg_big_buff;
 +#endif
 +#endif
-+
- struct kernel_symbol
- {
- 	unsigned long value;
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:27:44.608107474 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:27:50.691439411 +0800
-@@ -100,10 +100,6 @@ static int min_percpu_pagelist_fract = 8
+ 
+ /* New interface introduced in the 3.x SG drivers follows */
+ 
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:27:50.691439411 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:38:51.008872869 +0800
+@@ -62,6 +62,7 @@
+ #include <linux/latencytop.h>
+ #include <linux/file.h>
+ #include <linux/blk-iopoll.h>
++#include <scsi/sg.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -100,10 +101,6 @@ static int min_percpu_pagelist_fract = 8
  
  static int ngroups_max = NGROUPS_MAX;
  
--#ifdef CONFIG_MODULES
--extern char *modprobe_path;
--extern int modules_disabled;
+-#ifdef CONFIG_CHR_DEV_SG
+-extern int sg_big_buff;
 -#endif
- #ifdef CONFIG_CHR_DEV_SG
- extern int sg_big_buff;
+-
+ #ifdef CONFIG_SPARC
+ #include <asm/system.h>
  #endif
---- linux-2.6.32.orig/include/linux/kmod.h	2010-02-20 14:02:19.694925349 +0800
-+++ linux-2.6.32/include/linux/kmod.h	2010-02-20 14:30:48.918089456 +0800
-@@ -28,6 +28,9 @@
- #define KMOD_PATH_LEN 256
- 
- #ifdef CONFIG_MODULES
-+#ifdef CONFIG_SYSCTL
-+extern char *modprobe_path;
-+#endif
- /* modprobe exit status on success, -ve on error.  Return value
-  * usually useless though. */
- extern int __request_module(bool wait, const char *name, ...) \
