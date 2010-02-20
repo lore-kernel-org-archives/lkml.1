@@ -1,62 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403Ab0BTOpb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:45:31 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:47160 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756164Ab0BTOp3 (ORCPT
+	id S1756444Ab0BTOwR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:52:17 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:62123 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756363Ab0BTOwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:45:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=l9GNZDhOAuCbN2VP3Y4s1NwAoUL/Qqz/GON1J6dBKvCvj7OoeO/0iSZbLsLtdwik20
-         teu/cVYzuDXktRJtSJOSQBClCC7+WV4NRIthBHsss0+/dpymAWDJfFp4Eo2bZ5PCiykZ
-         +lwlNibEwTjOjORsoPHlEM9gkUwd7af87iXhQ=
-Date: Sat, 20 Feb 2010 22:48:10 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Jouni Malinen <j@w1.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Neuling <mikey@neuling.org>
-Subject: Re: [Bug #15308] 2.6.33-rc8 breaks UML with Restrict initial stack
-	space expansion to rlimit
-Message-ID: <20100220144810.GF3000@hack>
-References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera> <4un6Gst5rKB.A.u_F.UiIeLB@chimera>
+	Sat, 20 Feb 2010 09:52:15 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH 07/18] sysctl extern cleanup - compat
+Date: Sat, 20 Feb 2010 15:51:56 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31-19-generic; KDE/4.4.0; x86_64; ; )
+Cc: "David S. Miller" <davem@davemloft.net>, Gerd Hoffmann <kraxel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
+References: <20100220141328.GF3195@darkstar>
+In-Reply-To: <20100220141328.GF3195@darkstar>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4un6Gst5rKB.A.u_F.UiIeLB@chimera>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002201551.56851.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX188NlGgAQhAvugbEw9p7t4dAh/sgBHcbydXtKg
+ DvP9fvNmvSpr3SeVnd2CHVC01McoaJZvhNuO0XFdfYu32dxDBY
+ 6SMBxo4xe0OiFlVxuuNzg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 12:38:37AM +0100, Rafael J. Wysocki wrote:
->This message has been generated automatically as a part of a summary report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.32.  Please verify if it still should be listed and let the tracking team
->know (either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15308
->Subject		: 2.6.33-rc8 breaks UML with Restrict initial stack space expansion to rlimit
->Submitter	: Jouni Malinen <j@w1.fi>
->Date		: 2010-02-14 16:40 (1 days old)
->First-Bad-Commit: http://git.kernel.org/git/linus/803bf5ec259941936262d10ecc84511b76a20921
->Message-ID	: <20100214164023.GA2726@jm.kir.nu>
->References	: http://marc.info/?l=linux-kernel&m=126616751807902&w=4
->Handled-By	: Michael Neuling <mikey@neuling.org>
->
+On Saturday 20 February 2010 15:13:28 Dave Young wrote:
+> Extern declarations in sysctl.c should be move to their own head file,
+> and then include them in relavant .c files.
+> 
+> Move compat_log extern declaration to linux/compat.h
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-It should be fixed by this patch:
+Good idea in principle, but please don't enclose the extern
+declaration in #ifdef:
 
-http://lkml.org/lkml/2010/2/15/61
+> --- linux-2.6.32.orig/include/linux/compat.h	2010-02-20 14:02:24.334925488 +0800
+> +++ linux-2.6.32/include/linux/compat.h	2010-02-20 14:24:30.405627048 +0800
+> @@ -17,6 +17,9 @@
+>  #include <asm/siginfo.h>
+>  #include <asm/signal.h>
+>  
+> +#ifdef CONFIG_SYSCTL
+> +extern int compat_log;
+> +#endif
+>  #define compat_jiffies_to_clock_t(x)	\
+>  		(((unsigned long)(x) * COMPAT_USER_HZ) / HZ)
 
+This will force a rebuild of everything that #includes linux/compat.h when CONFIG_SYSCTL
+changes, while nothing really changes.
+
+Obviously, the same goes for the entire series.
+
+	Arnd
