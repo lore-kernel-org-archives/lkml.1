@@ -1,63 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444Ab0BTOwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:52:17 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:62123 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756363Ab0BTOwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:52:15 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH 07/18] sysctl extern cleanup - compat
-Date: Sat, 20 Feb 2010 15:51:56 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31-19-generic; KDE/4.4.0; x86_64; ; )
-Cc: "David S. Miller" <davem@davemloft.net>, Gerd Hoffmann <kraxel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
-References: <20100220141328.GF3195@darkstar>
-In-Reply-To: <20100220141328.GF3195@darkstar>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1754131Ab0BTOyz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:54:55 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:55215 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752281Ab0BTOyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 09:54:54 -0500
+Date: Sat, 20 Feb 2010 15:54:50 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Luotao Fu <l.fu@pengutronix.de>
+Cc: Vitaly Wool <vitalywool@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Luotao Fu <l.fu@pengutronix.de>
+Subject: Re: [PATCH] USB: fix I2C API usage in ohci-pnx4008.
+Message-ID: <20100220155450.32f6c97e@hyperion.delvare>
+In-Reply-To: <1266590520-8607-1-git-send-email-l.fu@pengutronix.de>
+References: <1266590520-8607-1-git-send-email-l.fu@pengutronix.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002201551.56851.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX188NlGgAQhAvugbEw9p7t4dAh/sgBHcbydXtKg
- DvP9fvNmvSpr3SeVnd2CHVC01McoaJZvhNuO0XFdfYu32dxDBY
- 6SMBxo4xe0OiFlVxuuNzg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 February 2010 15:13:28 Dave Young wrote:
-> Extern declarations in sysctl.c should be move to their own head file,
-> and then include them in relavant .c files.
+On Fri, 19 Feb 2010 15:42:00 +0100, Luotao Fu wrote:
+> i2c_board_info doesn't contain a member called name. i2c_register_client call
+> does not exist.
 > 
-> Move compat_log extern declaration to linux/compat.h
+> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+
+Indeed... my bad. That's what I get for touching code I can't build, I
+guess.
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+Note: this patch should also be applied to 2.6.32-stable.
+
+> ---
+>  drivers/usb/host/ohci-pnx4008.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-
-Good idea in principle, but please don't enclose the extern
-declaration in #ifdef:
-
-> --- linux-2.6.32.orig/include/linux/compat.h	2010-02-20 14:02:24.334925488 +0800
-> +++ linux-2.6.32/include/linux/compat.h	2010-02-20 14:24:30.405627048 +0800
-> @@ -17,6 +17,9 @@
->  #include <asm/siginfo.h>
->  #include <asm/signal.h>
+> diff --git a/drivers/usb/host/ohci-pnx4008.c b/drivers/usb/host/ohci-pnx4008.c
+> index 2769326..cd74bbd 100644
+> --- a/drivers/usb/host/ohci-pnx4008.c
+> +++ b/drivers/usb/host/ohci-pnx4008.c
+> @@ -327,7 +327,7 @@ static int __devinit usb_hcd_pnx4008_probe(struct platform_device *pdev)
+>  	}
+>  	i2c_adap = i2c_get_adapter(2);
+>  	memset(&i2c_info, 0, sizeof(struct i2c_board_info));
+> -	strlcpy(i2c_info.name, "isp1301_pnx", I2C_NAME_SIZE);
+> +	strlcpy(i2c_info.type, "isp1301_pnx", I2C_NAME_SIZE);
+>  	isp1301_i2c_client = i2c_new_probed_device(i2c_adap, &i2c_info,
+>  						   normal_i2c);
+>  	i2c_put_adapter(i2c_adap);
+> @@ -411,7 +411,7 @@ out3:
+>  out2:
+>  	clk_put(usb_clk);
+>  out1:
+> -	i2c_unregister_client(isp1301_i2c_client);
+> +	i2c_unregister_device(isp1301_i2c_client);
+>  	isp1301_i2c_client = NULL;
+>  out_i2c_driver:
+>  	i2c_del_driver(&isp1301_driver);
+> @@ -430,7 +430,7 @@ static int usb_hcd_pnx4008_remove(struct platform_device *pdev)
+>  	pnx4008_unset_usb_bits();
+>  	clk_disable(usb_clk);
+>  	clk_put(usb_clk);
+> -	i2c_unregister_client(isp1301_i2c_client);
+> +	i2c_unregister_device(isp1301_i2c_client);
+>  	isp1301_i2c_client = NULL;
+>  	i2c_del_driver(&isp1301_driver);
 >  
-> +#ifdef CONFIG_SYSCTL
-> +extern int compat_log;
-> +#endif
->  #define compat_jiffies_to_clock_t(x)	\
->  		(((unsigned long)(x) * COMPAT_USER_HZ) / HZ)
 
-This will force a rebuild of everything that #includes linux/compat.h when CONFIG_SYSCTL
-changes, while nothing really changes.
 
-Obviously, the same goes for the entire series.
-
-	Arnd
+-- 
+Jean Delvare
