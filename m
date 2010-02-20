@@ -1,47 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239Ab0BTAOm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 19:14:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30771 "EHLO mx1.redhat.com"
+	id S1755783Ab0BTAQt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 19:16:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22762 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751353Ab0BTAOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 19:14:41 -0500
-Message-ID: <4B7F2959.4080301@redhat.com>
-Date: Fri, 19 Feb 2010 22:14:17 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1751417Ab0BTAQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 19:16:48 -0500
+Message-ID: <4B7F29CD.1050703@redhat.com>
+Date: Fri, 19 Feb 2010 19:16:13 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: Borislav Petkov <borislav.petkov@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
- on PCI
-References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu> <4B7B1C40.8070208@linux.intel.com> <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain> <20100219121734.GA8300@basil.fritz.box> <20100219124540.GC30243@aftab> <4B7E906D.8050501@linux.intel.com> <4B7EAB9E.2010509@redhat.com> <4B7EB04E.8050601@linux.intel.com>
-In-Reply-To: <4B7EB04E.8050601@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM	and
+ page migration
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-4-git-send-email-mel@csn.ul.ie> <4B7F05BA.4080903@redhat.com> <20100219215826.GF1445@csn.ul.ie>
+In-Reply-To: <20100219215826.GF1445@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was thinking on a way where we could work with the EDAC/MCE issues, and
-a way for us to move ahead. My proposal is to organize an EDAC/MCE BoF session
-or a mini-summit during the Collaboration Summit, in San Francisco, with 
-the interested parties. I suspect that some of us will be there already. 
+On 02/19/2010 04:58 PM, Mel Gorman wrote:
 
-It shouldn't be hard to find some place there for us to take a look at the
-EDAC architecture and come with some proposal.
+> external_refcount is about as good as I can think of to explain what's
+> going on :/
 
-As today is the last day for CFP, I've also submitted there a proposal for a
-panel. If approved, we can use it to collect data from hardware error users
-(sysops and other users that require high availability on their services),
-for us to discuss some strategies to address the issue or to summarize what
-will be discussed on the event.
+Sounds "good" to me.  Much better than giving the wrong
+impression that this is the only refcount for the anon_vma.
 
-Comments?
-
-Cheers,
-Mauro
+-- 
+All rights reversed.
