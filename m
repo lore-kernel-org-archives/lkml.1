@@ -1,66 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102Ab0BTLcV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 06:32:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40186 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525Ab0BTLcT (ORCPT
+	id S1754365Ab0BTLpY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 06:45:24 -0500
+Received: from polaris.joshh.co.uk ([212.13.195.18]:52263 "EHLO
+	polaris.joshh.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059Ab0BTLpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 06:32:19 -0500
-Subject: Re: Firmware versioning best practices II
-From: David Woodhouse <dwmw2@infradead.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Vipin Mehta <Vipin.Mehta@atheros.com>
-In-Reply-To: <1266664247.11514.0.camel@jlt3.sipsolutions.net>
-References: <43e72e891002191823h3245bc0cn7a8745ae77409aa8@mail.gmail.com>
-	 <1266662106.1820.4034.camel@macbook.infradead.org>
-	 <1266663639.10357.1.camel@jlt3.sipsolutions.net>
-	 <1266664166.1820.4165.camel@macbook.infradead.org>
-	 <1266664247.11514.0.camel@jlt3.sipsolutions.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 20 Feb 2010 11:32:15 +0000
-Message-ID: <1266665535.1820.4238.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 20 Feb 2010 06:45:23 -0500
+X-Greylist: delayed 553 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Feb 2010 06:45:23 EST
+Date: Sat, 20 Feb 2010 11:36:07 +0000
+From: Josh Holland <jrh@joshh.co.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
+       =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
+       devel@driverdevv.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Staging: rar: More style changes to rar_driver.c
+Message-ID: <20100220113607.GP24380@polaris.joshh.co.uk>
+References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk> <1265407106-19937-1-git-send-email-jrh@joshh.co.uk> <20100217224046.GB31557@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100217224046.GB31557@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 12:10 +0100, Johannes Berg wrote:
-> On Sat, 2010-02-20 at 11:09 +0000, David Woodhouse wrote:
-> > On Sat, 2010-02-20 at 12:00 +0100, Johannes Berg wrote:
-> > > That doesn't make much sense anyway. If the firmware filename is
-> > > foo-$APIVER-$CODEVER every code change would need a corresponding
-> > driver
-> > > change. If it is just foo-$APIVER then the $CODEVER can be embedded
-> > in
-> > > the firmware file and printed so you know which code you're using,
-> > but
-> > > if it doesn't influence the API I don't see why it should be part of
-> > the
-> > > filename? 
-> > 
-> > The idea is that just like with shared libraries, you have a symlink
-> > from the 'soname' foo-3.fw to the actual file foo-3-1.4.1.fw.
+On Wed, Feb 17, 2010 at 02:40:46PM -0800, Greg KH wrote:
+> On Fri, Feb 05, 2010 at 09:58:26PM +0000, Josh Holland wrote:
+> > Following advice from Krzysztof Halasa, I made a few changes to the
+> > style bits in rar_driver.c
 > 
-> Ah ok. I indeed do that manually with iwlwifi firmware :)
-> 
-> > For shared libraries, it's easy to create those symlinks automatically
-> > using ldconfig. For firmware that doesn't really work though -- since
-> > the soname isn't encoded in the file like it is in ELF libraries.
-> 
-> Right. Though I guess we could come up with a unified firmware wrapper
-> format that the firmware loader can unwrap.
+> Can you respin both of these patches in 2 days, against the linux-next
+> tree, as the rar driver author has sent in a bunch of "rename these
+> files" type patches, which caused these to not apply anymore.
+How do I do that? I can't see a linux-next branch in my local repo, and
+I'd rather not download a whole new one...
 
-I suppose we could, but this seems like overkill to me.
+$ git remote show origin
+* remote origin
+  URL:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+  HEAD branch: master
+  Remote branch:
+    master tracked
+  Local branch configured for 'git pull':
+    master merges with remote master
+  Local ref configured for 'git push':
+    master pushes to master (up to date)
+
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Josh "dutchie" Holland <jrh@joshh.co.uk>
+http://www.joshh.co.uk/
+http://twitter.com/jshholland
+http://identi.ca/jshholland
