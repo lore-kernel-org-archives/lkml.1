@@ -1,57 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365Ab0BTLpY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 06:45:24 -0500
-Received: from polaris.joshh.co.uk ([212.13.195.18]:52263 "EHLO
-	polaris.joshh.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059Ab0BTLpX (ORCPT
+	id S1755133Ab0BTLxL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 06:53:11 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:50686 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986Ab0BTLxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 06:45:23 -0500
-X-Greylist: delayed 553 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Feb 2010 06:45:23 EST
-Date: Sat, 20 Feb 2010 11:36:07 +0000
-From: Josh Holland <jrh@joshh.co.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
-       =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-       devel@driverdevv.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Staging: rar: More style changes to rar_driver.c
-Message-ID: <20100220113607.GP24380@polaris.joshh.co.uk>
-References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk> <1265407106-19937-1-git-send-email-jrh@joshh.co.uk> <20100217224046.GB31557@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100217224046.GB31557@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 20 Feb 2010 06:53:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=PyKiKBtdSiGBD+GfmB+uLEZPV4r+pDEhfWt8PQCAlkCdOnVET9rwVYA/YvLoPiXf89
+         n24meLgUbGiBTLUUka6wlI82mqIllTsHUVo3lduOtmxWdOfqimGn8HQaMK9yGuLQLt2C
+         Z9gR8c1DJkedCh0v9o8tuyI/jdUjRj2tB3+MA=
+From: Graham M Howe <gman.1352@googlemail.com>
+To: gregkh@suse.de, wfp5p@virginia.edu
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Graham M Howe <gman.1352@googlemail.com>
+Subject: [PATCH 5/5] Staging: comedi: fix bracing and kfree issue in ni_670x.c This is a patch to the ni_670x.c file that fixes up brace and kfree issue found by checkpatch.pl tool Signed-off-by: Graham M Howe<gman.1352@googlemail.com>
+Date: Sat, 20 Feb 2010 11:53:01 +0000
+Message-Id: <1266666781-2178-1-git-send-email-gman.1352@googlemail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 02:40:46PM -0800, Greg KH wrote:
-> On Fri, Feb 05, 2010 at 09:58:26PM +0000, Josh Holland wrote:
-> > Following advice from Krzysztof Halasa, I made a few changes to the
-> > style bits in rar_driver.c
-> 
-> Can you respin both of these patches in 2 days, against the linux-next
-> tree, as the rar driver author has sent in a bunch of "rename these
-> files" type patches, which caused these to not apply anymore.
-How do I do that? I can't see a linux-next branch in my local repo, and
-I'd rather not download a whole new one...
+---
+ drivers/staging/comedi/drivers/ni_670x.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-$ git remote show origin
-* remote origin
-  URL:
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-  HEAD branch: master
-  Remote branch:
-    master tracked
-  Local branch configured for 'git pull':
-    master merges with remote master
-  Local ref configured for 'git push':
-    master pushes to master (up to date)
+diff --git a/drivers/staging/comedi/drivers/ni_670x.c b/drivers/staging/comedi/drivers/ni_670x.c
+index fc5f90f..352b917 100644
+--- a/drivers/staging/comedi/drivers/ni_670x.c
++++ b/drivers/staging/comedi/drivers/ni_670x.c
+@@ -221,8 +221,6 @@ static int ni_670x_detach(struct comedi_device *dev)
+ {
+ 	printk("comedi%d: ni_670x: remove\n", dev->minor);
 
+-	if (dev->subdevices[0].range_table_list)
+-		kfree(dev->subdevices[0].range_table_list);
 
--- 
-Josh "dutchie" Holland <jrh@joshh.co.uk>
-http://www.joshh.co.uk/
-http://twitter.com/jshholland
-http://identi.ca/jshholland
+ 	if (dev->private && devpriv->mite)
+ 		mite_unsetup(devpriv->mite);
+--
+1.6.3.3
+
