@@ -1,33 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997Ab0BTOQb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:16:31 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:45193 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755866Ab0BTOQa (ORCPT
+	id S1756033Ab0BTORc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:17:32 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:47071 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755917Ab0BTORb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:16:30 -0500
+	Sat, 20 Feb 2010 09:17:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=f0mUZ2rLGY2JFMgHhzvz67csOzcJQGXx+Xm20i+0eHEB0nfR9HQB3yV7NUtifTAly/
-         nGqB9aMQttH2ijX9xc5w5CZVIALV1vYJyFr3LvWY1SVWCXKYrsnWiHPIunDdaFC3GURm
-         pvKpP4rhpyPhr1x4pJuawbi4udbfveIrZXMRQ=
-Date: Sat, 20 Feb 2010 22:16:20 +0800
+        b=Eee6R74X6ncvVbRl4q+d9V+u8X2URPGRlpyFRHQwKz082sCerjgl0gu8xHxLfrDl86
+         TSM9kD10G9qCTQEIAiOWbtlpfToru0uJjuwpUj/lKezr3Rx1O1c9+TolR5nlRjdLn3Uj
+         zGPKHOMQkke616ioTlYuJXOsiCF1FfZmKfr2A=
+Date: Sat, 20 Feb 2010 22:17:20 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Dipankar Sarma <dipankar@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Josh Triplett <josh@joshtriplett.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 10/18] sysctl extern cleanup - rcu
-Message-ID: <20100220141620.GI3195@darkstar>
+Subject: [PATCH 11/18] sysctl extern cleanup - block iopoll
+Message-ID: <20100220141720.GJ3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -39,38 +34,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-Move rcutorture_runnable extern declaration to linux/rcupdate.h
+blk_iopoll_enabled declared in linux/blk-iopoll.h, remove the declaration in
+sysctl.c, include the head file instead.
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/rcupdate.h |    6 ++++++
- kernel/sysctl.c          |    3 ---
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ kernel/sysctl.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- linux-2.6.32.orig/include/linux/rcupdate.h	2010-02-20 14:02:21.664925977 +0800
-+++ linux-2.6.32/include/linux/rcupdate.h	2010-02-20 14:21:31.394811788 +0800
-@@ -41,6 +41,12 @@
- #include <linux/lockdep.h>
- #include <linux/completion.h>
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-12 13:43:17.754981908 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-12 13:44:25.191642639 +0800
+@@ -61,6 +61,7 @@
+ #include <linux/compat.h>
+ #include <linux/latencytop.h>
+ #include <linux/file.h>
++#include <linux/blk-iopoll.h>
  
-+#ifdef CONFIG_SYSCTL
-+#ifdef CONFIG_RCU_TORTURE_TEST
-+extern int rcutorture_runnable;
-+#endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
-+#endif
-+
- /**
-  * struct rcu_head - callback structure for use with RCU
-  * @next: next update requests in a list
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:18:05.088997885 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:20:08.432318998 +0800
-@@ -75,9 +75,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -74,11 +75,6 @@
+ 
  #if defined(CONFIG_SYSCTL)
  
- /* External variables not in a header file. */
--#ifdef CONFIG_RCU_TORTURE_TEST
--extern int rcutorture_runnable;
--#endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
- #ifdef CONFIG_BLOCK
- extern int blk_iopoll_enabled;
- #endif
+-/* External variables not in a header file. */
+-#ifdef CONFIG_BLOCK
+-extern int blk_iopoll_enabled;
+-#endif
+-
+ /* Constants used for minimum and  maximum */
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ static int sixty = 60;
