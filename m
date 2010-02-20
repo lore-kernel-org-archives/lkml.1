@@ -1,42 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113Ab0BTDaS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 22:30:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15075 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894Ab0BTDaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 22:30:16 -0500
-Message-ID: <4B7F57F2.6000602@redhat.com>
-Date: Sat, 20 Feb 2010 11:33:06 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1754385Ab0BTDcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 22:32:52 -0500
+Received: from smtpgate4.pacific.net.sg ([203.120.68.34]:49286 "HELO
+	smtpgate4.pacific.net.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751993Ab0BTDcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 22:32:51 -0500
+Message-ID: <20100220113246.msxs1duuck0ko8s0@wm3.web.pacific.net.sg>
+Date: Sat, 20 Feb 2010 11:32:46 +0800
+From: "Mr.Yan" <info@live.cn>
+Reply-to: ynyol@live.cn
+To: undisclosed-recipients:;
+Subject: 
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       Hui Zhu <teawater@gmail.com>,
-       =?ISO-8859-1?Q?Ozan_=C3aglayan?= <ozan@pardus.org.tr>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Hong <lihong.hi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
-       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/10] headerdep: perlcritic warning
-References: <20100219175217.385580142@vyatta.com> <20100219175430.246644080@vyatta.com>
-In-Reply-To: <20100219175430.246644080@vyatta.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Friend,
 
-Acked-by: WANG Cong <amwang@redhat.com>
+I have a very important issue to discus with you. I wrote to
+know if this is your valid email. Please, let me know if this email
+is valid.
 
-Thanks.
+My valid Email is: ynyol@live.cn
+
+Mr. Yan
+
+
+
 
