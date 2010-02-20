@@ -1,53 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028Ab0BTMK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 07:10:57 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:57124 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753697Ab0BTMKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 07:10:55 -0500
+	id S1755028Ab0BTMSA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 07:18:00 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:46588 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754365Ab0BTMR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 07:17:57 -0500
+Message-ID: <4B7FD2F0.6090602@canonical.com>
+Date: Sat, 20 Feb 2010 04:17:52 -0800
+From: John Johansen <john.johansen@canonical.com>
+Organization: Canonical
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 01/12] Miscellaneous functions and defines needed by AppArmor,
+ including the base path resolution routines.
+References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com> <1266572188-26529-2-git-send-email-john.johansen@canonical.com> <20100219110320.GL30031@ZenIV.linux.org.uk>
+In-Reply-To: <20100219110320.GL30031@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19327.53577.55472.205452@pilspetsen.it.uu.se>
-Date: Sat, 20 Feb 2010 13:10:49 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Axel Uhl <axel.uhl@gmx.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Tejun Heo <tj@kernel.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in ATA or SMART area
-In-Reply-To: <4B7FA14B.2090809@gmx.de>
-References: <4B72941A.7060704@gmx.de>
-	<4B74BDCF.1010805@kernel.org>
-	<4B74F263.1060709@gmx.de>
-	<4B7505CA.60409@kernel.org>
-	<4B75154B.8030507@gmx.de>
-	<4B7B548B.4040606@kernel.org>
-	<4B7C5696.7030609@gmx.de>
-	<19325.7006.892019.748974@pilspetsen.it.uu.se>
-	<4B7EDE2F.8030107@gmx.de>
-	<19326.64703.561400.379749@pilspetsen.it.uu.se>
-	<4B7FA14B.2090809@gmx.de>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please don't top-post on Linux mailing lists.)
+Al Viro wrote:
+> On Fri, Feb 19, 2010 at 01:36:17AM -0800, john.johansen@canonical.com wrote:
+> 
+>> +static int d_namespace_path(struct path *path, char *buf, int buflen,
+>> +			    char **name, int flags)
+>> +{
+>> +	struct path root, tmp, ns_root = { };
+>> +	char *res;
+>> +	int deleted, connected;
+>> +	int error = 0;
+>> +
+>> +	read_lock(&current->fs->lock);
+>> +	root = current->fs->root;
+>> +	/* released below */
+>> +	path_get(&root);
+>> +	read_unlock(&current->fs->lock);
+>> +
+>> +	spin_lock(&vfsmount_lock);
+>> +	if (root.mnt && root.mnt->mnt_ns)
+>> +		/* released below */
+>> +		ns_root.mnt = mntget(root.mnt->mnt_ns->root);
+>> +	if (ns_root.mnt)
+>> +		/* released below */
+>> +		ns_root.dentry = dget(ns_root.mnt->mnt_root);
+>> +	spin_unlock(&vfsmount_lock);
+> 
+> Junk.  You might as well leave ns_root {NULL, NULL} instead of that crap.
+> 
+Right, though the ns_root.mnt and ns_root.dentry are needed below to detect
+disconnected paths.
 
-Axel Uhl writes:
- > Hi Mikael,
- > 
- > BTW, how do you know that all my PATA controllers are driven by libata? 
+<< snip >>
 
-Because you wrote:
+> 
+>> +	if (flags & PATH_CHROOT_REL)
+>> +		connected = tmp.dentry == root.dentry && tmp.mnt == root.mnt;
+>> +	else
+>> +		connected = tmp.dentry == ns_root.dentry &&
+>> +			tmp.mnt == ns_root.mnt;
+>> +
+>> +	if (!connected && 
+>> +	    !(flags & PATH_CONNECT_PATH) &&
+>> +	    !((flags & PATH_CHROOT_REL) && (flags & PATH_CHROOT_NSCONNECT) &&
+>> +	      (tmp.dentry == ns_root.dentry && tmp.mnt == ns_root.mnt))) {
+>> +		/* disconnected path, don't return pathname starting with '/' */
+>> +		error = -ESTALE;
+>> +		if (*res == '/')
+>> +			*name = res + 1;
+> 
+> Explanations, please.
 
- > >  > I also enabled 
- > >  >   pata_via but was unsure which IDE driver to disable.
+Right this needs to have a very good comment attached.
 
-and pata_via is libata's replacement for IDE's via82cxx.
+Basically AppArmor wants to know if the path is connected to the expected root
+(either the chroot, or the namespace depending on how the profile is created).
 
-Since you kept both drivers enabled, it seems that IDE's via82cxx won the
-race to claim the hardware. Bummer.
+When the file object isn't actually connected, and the profile is setup to use
+file delegation instead of artificially connecting it to /, we stip the leading /
+returned by __d_path disconnecting the path.
 
-Just disable CONFIG_IDE.
+Objects disconnected from the root in this way can not be matched via regular path
+matching rules but need to be delegated.
+
+Previously we were doing this by patching __d_path to return disconnected paths
+and then reattaching them in d_path, and getcwd.  In many ways that was cleaner
+as then we wouldn't need to grab to the ns_root to find if the path was connected
+or not.
+
+But for this submission I split any proposed changes to __d_path from AppArmor
+so that they can be discussed separately.
+
