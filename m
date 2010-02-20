@@ -1,78 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829Ab0BTWO5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 17:14:57 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:59909 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756061Ab0BTWO4 (ORCPT
+	id S1756972Ab0BTWTZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 17:19:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:7230 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756937Ab0BTWTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 17:14:56 -0500
-Subject: Re: [PATCH 2/2] enhance /sys/class/rfkill/<rfkill>/state interface
-From: Johannes Berg <johannes@sipsolutions.net>
-To: florian@mickler.org
-Cc: linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <1266702045-6062-3-git-send-email-florian@mickler.org>
-References: <1266702045-6062-1-git-send-email-florian@mickler.org>
-	 <1266702045-6062-3-git-send-email-florian@mickler.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-EScdXXVwg85L8KwLg7NV"
-Date: Sat, 20 Feb 2010 23:14:48 +0100
-Message-ID: <1266704090.10980.0.camel@jlt3.sipsolutions.net>
+	Sat, 20 Feb 2010 17:19:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=j26uZbRLsrs7zWMzu54TDuhdStiZDVXNIl4aAJ8BActAjt4OPkcqSRsYiEoK9WLXME
+         AwJrqiqkMmkNQJsuKIPEotAU+w+fy6e4BNPx5nUFsIY8GPFlPcoMnMMPOzTkiqhVh51+
+         gb8i65HX7O1IU2f3bPoheFcRUiHjfjJlahN7k=
+Subject: Re: [PATCH 0/14 V9] Work to enable SmartMedia/xD support in mtd
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: dedekind1@gmail.com
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "stanley.miao" <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1266698701.3178.0.camel@localhost.localdomain>
+References: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
+	 <1266697630.4152.0.camel@maxim-laptop>
+	 <1266698701.3178.0.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 21 Feb 2010 00:19:18 +0200
+Message-ID: <1266704358.3748.4.camel@maxim-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2010-02-20 at 22:45 +0200, Artem Bityutskiy wrote: 
+> On Sat, 2010-02-20 at 22:27 +0200, Maxim Levitsky wrote:
+> > On Wed, 2010-02-17 at 23:49 +0200, Maxim Levitsky wrote: 
+> > > This is slightly updated version of my patchset.
+> > > Now I can tell you for sure that hotplug works.
+> > > It was used/abused for long time.
+> > > I did some changes in richoh card reader driver, to work better after resume
+> > > and renamed it to r852.
+> > > 
+> > > I kindly ask you to merge this patchset to 2.6.34.
+> > > If I/users find other bugs they can be addressed by follow up patches.
+> > > 
+> > > Best regards,
+> > > 	Maxim Levitsky
+> > > 
+> > > 
+> > > 
+> > Should I expect at least some response on that?
+> > Or not?
+> 
+> Since you put me to CC, I answer: not from me, I have no time at all to
+> look at this closely.
 
---=-EScdXXVwg85L8KwLg7NV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I know that all you are busy.
+But I did put a lot of effort in this work (more that a month).
 
-On Sat, 2010-02-20 at 22:40 +0100, florian@mickler.org wrote:
-> Introduce a new state-value RFKILL_STATE_SOFT_AND_HARD_BLOCKED
-> which is returned only through the sysfs state file.
-> The other interfaces are designed so that they don't need this extra
-> state.
->=20
-> This allows the sysfs to represent all possible states an rfkill
-> driver can
-> have.
->=20
-> Signed-off-by: Florian Mickler <florian@mickler.org>
-> ---
->=20
-> After stumbling over this arbitrary limitation of
-> sys/class/rfkill/*/state I
-> wondered what would hinder this patch?
+I am going to be very busy (busier that you are) very soon.
+I hoped that a month is enough to review and merge my work to mtd tree.
+Now all that is left in one week, so I guess all the work I did was for
+nothing.
 
-This is not backward compatible, so can't be done.
+I am really frustrated.
 
-johannes
 
---=-EScdXXVwg85L8KwLg7NV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLgF7PAAoJEODzc/N7+QmaG58P/2i1mGDhDvKiQAVsXkx3ra1s
-TXwu55/TWAmDMgbRBAaH46UiT4Yw25dsjGFYsNaOtaSdp5B11lW7Noy//Fym12nc
-GepEyy/DPhqX40OJPztnb8ZReP/7qKtmOmbLWv46MuB/0nWCwGBT0Lepr2IV2FJo
-Qov64gXx28rjha65XefTCCsJHLAMV4YopNqBv9hYS+70HUU7D/YGWSh9+H+TOyt6
-Ia1iGPDM1ikWZbC4pcVH5+Cpp3dAkH9d5mcqlpecpPyeJdGYmXjIdX99REdkBo1f
-HzGa/j8lAkCrfPm6R+/mi8Pu5BMeyMl1PC0Zd/iSMiPbpygfdiXKtfp5aeLR6aBb
-kNiDRMbpSDuze/Exjk9glY/gkeAM7yPQgCofcBBgRxqot4MvYZckFQ3wYKehBfUd
-trg9dnYlf3BB0u08DMezQ+Z6R+ScfGBj31PkWuLn1QkeHbomRVGn/YHbGV83YsGh
-Fo6hQfJYqtjfogh8iu+RGGGAwyCrdnTbKwa75xZW7llsdS/441OTuElHaEC3rFsy
-6jBrFWKiWVvpXSsyLqfFatafskYX3tUADDnoh+nOA5P8r3xiDeh1DOZ2nKDEgt8s
-zMRv8QfeRxIzByDKRhvlDVsmE//HGhy7SZlVEjWhzH/ukqz77ditDq4A1U46fNhx
-nDEXNfdmU8cPqRuF8pxa
-=gRiD
------END PGP SIGNATURE-----
-
---=-EScdXXVwg85L8KwLg7NV--
+Best regards,
+Maxim Levitsky
 
