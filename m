@@ -1,57 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956Ab0BTJGo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 04:06:44 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:61346 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657Ab0BTJGl convert rfc822-to-8bit (ORCPT
+	id S1754697Ab0BTJW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 04:22:57 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39302 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027Ab0BTJWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 04:06:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sZuPAFllq+I3aaY8z8/S8c2CdVQUNjYDcGPoEVs2EfDuNTmbaU40eYEtMguc7phEki
-         FYCzlQiT/uFin+Nh/+GQZoy92vyGPa9x0lTiDw3KSB/HYqkW9NXmdkSdEC2uxNAeQiuF
-         d3f+kK1o5sg6ifC5SVmQNtuKgbPLZxF0RkWdU=
+	Sat, 20 Feb 2010 04:22:55 -0500
+Date: Sat, 20 Feb 2010 10:22:53 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       Bjorn Wesen <bjornw@axis.com>, Tim Bird <tim.bird@am.sony.com>,
+       Tim Abbott <tabbott@ksplice.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Waseem Daher <wdaher@ksplice.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 00/24] Rename kernel's magic sections for compatibility
+	with -ffunction-sections -fdata-sections
+Message-ID: <20100220092253.GC11287@basil.fritz.box>
+References: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <1266656213.5347.0.camel@jlt3.sipsolutions.net>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
-	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-	 <1266518735.3829.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-	 <1266656213.5347.0.camel@jlt3.sipsolutions.net>
-Date: Sat, 20 Feb 2010 17:06:39 +0800
-Message-ID: <2375c9f91002200106j56b0298ds1a425fde8983d988@mail.gmail.com>
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 4:56 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Sat, 2010-02-20 at 15:13 +0800, Américo Wang wrote:
->
->> Does my following untested patch help?
->
-> Sorry, no. I'll hook up a screen to the box after I return from the
-> fresh market.
->
+On Sat, Feb 20, 2010 at 01:03:33AM +0100, Denys Vlasenko wrote:
+> Hi Michal, Sam, folks,
+> 
+> Here is a new version of the -ffunction-sections -fdata-sections patch
+> series based on current Linus tree.
 
-Are you sure there is no difference? :-/
+Denys,
 
-Also, could you please also apply the 4 patches from Eric?
+Not read all your patches. But I had recently the problem
+that I need a generic way to check for a symbol being
+inside the kernel image (text or data). There wasn't
+a common symbol that worked for both XIP ARM and normal
+architectures. Is this something addressed by your patchkit?
 
-You can get them here:
-http://lkml.org/lkml/2010/2/11/334
+It essentially needs common symbol(s) that can be used
+to check for the kernel image itself.
 
-Thanks much for your testing!
+-Andi
