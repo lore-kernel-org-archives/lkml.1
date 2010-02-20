@@ -1,61 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332Ab0BTOmt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:42:49 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:47472 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229Ab0BTOmr (ORCPT
+	id S1756385Ab0BTOnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:43:17 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:39864 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756083Ab0BTOnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:42:47 -0500
+	Sat, 20 Feb 2010 09:43:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=pS48DWlekP4X9IPflKJJXsWGUJhW6MAmDR52k/BrT1MBCO9Lpp6yfdohemEdwBMuWw
-         ZPvz1oDX0X4n133H/8AlXCzsxTnC1dZdN9CraEMheqhsjlL+Jj0fBB2E8/G4lYShHP/V
-         vDYjtK6FLvjK+ZGJTx4RBtklI58zvd8KiXjq8=
-Date: Sat, 20 Feb 2010 22:45:29 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Adam Nielsen <a.nielsen@shikadi.net>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: UML error - apps killed 50% of the time
-Message-ID: <20100220144529.GE3000@hack>
-References: <4B78EF9C.6040801@shikadi.net> <20100215090053.GG12076@hack.private> <4B79122A.9070102@shikadi.net> <20100215122732.GM12076@hack.private> <4B79BC66.9090408@shikadi.net>
+        b=rcNBahDudJAlvHkXN+p3hTKuaROd3F9x5CP237sYbHBPGshtp9aDVRMgbNKvKUqoVY
+         fva363CRSapifvwVcPGfPJRCDvsrXakICmD/poQYNuTmFtfwee/F5P6zh4wTdgoRXg/A
+         eXtKZOWE3/V7D1V1b0LLtmOVcoZJPzDYyixv0=
+Date: Sat, 20 Feb 2010 15:43:04 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
+	function_graph tracer
+Message-ID: <20100220144302.GB5354@nowhere>
+References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B79BC66.9090408@shikadi.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B7338BF.1070505@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 07:28:06AM +1000, Adam Nielsen wrote:
->> So what are the errors now? Could you please provide your boot log?
->
-> Just more random tasks being killed:
->
->  * Calculating module dependencies .../sbin/modules-update: line 73:   
-> 967 Broken pipe             sed -ne 1p "${x}"
->        968 Killed                  | egrep -q "^${HEADER}"
->  * Mounting local filesystems ... [ ok ]
-> /etc/init.d/localmount: line 9:   982 Killed                  modprobe 
-> usbcore >&/dev/null
->  * Cleaning /tmp directory ... [ ok ]
-> /sbin/depscan.sh: line 21:  1055 Killed                  mkdir -p -m 0755 
-> "${svcdir}/${x}" 2>/dev/null
->  *  Could not create needed directory '/var/lib/init.d/snapshot'!
-> INIT: Entering runlevel: 3
-> /lib/rcscripts/sh/rc-services.sh: line 35:  1096 Killed /sbin/depscan.sh 
-> -u
->
->  * Error running '/sbin/depscan.sh'!
->  * Please correct any problems above.
-> /sbin/functions.sh: line 184:  1098 Killed                  
-> /usr/bin/logger -p "${pri}" -t "${tag}" -- "$*"
->
+On Wed, Feb 10, 2010 at 02:52:47PM -0800, Tim Bird wrote:
+>  int trace_graph_entry(struct ftrace_graph_ent *trace)
+>  {
+>  	struct trace_array *tr = graph_array;
+> @@ -221,6 +226,10 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
+>  	if (!ftrace_graph_addr(trace->func))
+>  		return 0;
+>  
+> +	/* if tracing duration, only save function exits (omit function entries in log) */
+> +	if (tracing_thresh)
+> +		return 1;
+> +
 
-I tested it, it is fixed by the updated patch:
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2010-02/msg05620.html
+Instead of having yet another check here, may be should we
+have a dedicated stub trace_graph_entry?
+
+
+
+> @@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
+>  	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
+>  		return;
+>  
+> +	if (tracing_thresh &&
+> +		(trace->rettime - trace->calltime < tracing_thresh))
+> +		return;
+> +
+
+
+
+And perhaps we can do the same for the return handler?
+We could have a trace_graph_return_threshold that
+performs the above check and then relies on trace_graph_return.
+
+Thanks.
+
