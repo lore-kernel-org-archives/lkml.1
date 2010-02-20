@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542Ab0BTAFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 19:05:47 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:51255 "EHLO
+	id S1756492Ab0BTAFN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 19:05:13 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50004 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756239Ab0BTAFF (ORCPT
+	with ESMTP id S1756493Ab0BTAFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 19:05:05 -0500
+	Fri, 19 Feb 2010 19:05:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=g0M40SIQZVSJZx4arQv/ox6daVG7RZffoArmB+ZlMpze8DUIMx4nxFGINg5SniAVB4
-         Y/ff3npkJH74MktHpF05tkjG4Kw7S6CKoUXuo/3lR7K0O8q9kByYcuFSSHd+3vDs34DU
-         yqUDJ7irRDuHvDYFtRa+VyzefZTRGKyJdRbS0=
+        b=tmElzInZgCESW2j4II+qfuRdnxfWb+TdzZ0u5e+pQQCfGK/J0eGFPuYj8FW7bPDVUx
+         SpGWeEav2vxj9ceS8p45LfPX2FF2gHKm4Za/4pF6N3wJ58O68bmXxm4/dQiUaGzWWJ+T
+         Mjc1e2l5/rsYsX7W5ef3L+DgWJ98GqWaoeIlM=
 From: Denys Vlasenko <vda.linux@googlemail.com>
 To: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
        Haavard Skinnemoen <hskinnemoen@atmel.com>,
@@ -24,9 +24,9 @@ Cc: linux-kernel@vger.kernel.org, Bjorn Wesen <bjornw@axis.com>,
        Stephen Rothwell <sfr@canb.auug.org.au>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [PATCH 24/24] Rename .text.start to .text..start.
-Date: Sat, 20 Feb 2010 01:03:57 +0100
-Message-Id: <1266624237-22372-25-git-send-email-vda.linux@googlemail.com>
+Subject: [PATCH 22/24] Rename .data.lock_aligned to .data..lock_aligned.
+Date: Sat, 20 Feb 2010 01:03:55 +0100
+Message-Id: <1266624237-22372-23-git-send-email-vda.linux@googlemail.com>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
 References: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
@@ -36,36 +36,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 ---
- arch/mips/lasat/image/head.S           |    2 +-
- arch/mips/lasat/image/romscript.normal |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/parisc/include/asm/system.h |    2 +-
+ arch/parisc/kernel/vmlinux.lds.S |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mips/lasat/image/head.S b/arch/mips/lasat/image/head.S
-index efb95f2..e0ecda9 100644
---- a/arch/mips/lasat/image/head.S
-+++ b/arch/mips/lasat/image/head.S
-@@ -1,7 +1,7 @@
- #include <asm/lasat/head.h>
+diff --git a/arch/parisc/include/asm/system.h b/arch/parisc/include/asm/system.h
+index d91357b..4bbb673 100644
+--- a/arch/parisc/include/asm/system.h
++++ b/arch/parisc/include/asm/system.h
+@@ -174,7 +174,7 @@ static inline void set_eiem(unsigned long val)
+ })
  
- 	.text
--	.section .text.start, "ax"
-+	.section .text..start, "ax"
- 	.set noreorder
- 	.set mips3
+ #ifdef CONFIG_SMP
+-# define __lock_aligned __attribute__((__section__(".data.lock_aligned")))
++# define __lock_aligned __attribute__((__section__(".data..lock_aligned")))
+ #endif
  
-diff --git a/arch/mips/lasat/image/romscript.normal b/arch/mips/lasat/image/romscript.normal
-index 988f8ad..0864c96 100644
---- a/arch/mips/lasat/image/romscript.normal
-+++ b/arch/mips/lasat/image/romscript.normal
-@@ -4,7 +4,7 @@ SECTIONS
- {
-   .text :
-   {
--    *(.text.start)
-+    *(.text..start)
-   }
+ #define arch_align_stack(x) (x)
+diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+index 33ec31d..d64a6bb 100644
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -94,8 +94,8 @@ SECTIONS
  
-   /* Data in ROM */
+ 	/* PA-RISC locks requires 16-byte alignment */
+ 	. = ALIGN(16);
+-	.data.lock_aligned : {
+-		*(.data.lock_aligned)
++	.data..lock_aligned : {
++		*(.data..lock_aligned)
+ 	}
+ 
+ 	/* End of data section */
 -- 
 1.6.2.4
 
