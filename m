@@ -1,254 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651Ab0BTDwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 22:52:25 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39175 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755309Ab0BTDwX (ORCPT
+	id S1755769Ab0BTDw0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 22:52:26 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:58558 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755285Ab0BTDwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 22:52:23 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Sat, 20 Feb 2010 12:48:47 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM and
- page migration
-Message-Id: <20100220124847.0b441e76.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100219140500.GG30258@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
-	<1266516162-14154-4-git-send-email-mel@csn.ul.ie>
-	<20100219091859.195d922c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100219140500.GG30258@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Feb 2010 22:52:24 -0500
+X-Greylist: delayed 52671 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Feb 2010 22:52:23 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=u2rBA8ErJHfOGcRtvrRTdGuOHoacXy3/N2rT9Uca+eQpurXg1jeB8ByAfIJfIBgFED
+         YytFFXgPg5UPTVgWt4niORPSp0dbMU3WzA60JEPmojWJkwVYn4eo3LLK2rvazsfKu4gi
+         yj7ebTcLpIMfUo2OiLoOmvTDo9dbIuwXHEFRc=
+MIME-Version: 1.0
+Date: Sat, 20 Feb 2010 11:52:22 +0800
+Message-ID: <628d1651002191952l625e555asf70aed5557355344@mail.gmail.com>
+Subject: [PATCH] Security: add static to security_ops and default_security_ops 
+	variable
+From: wzt wzt <wzt.wzt@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: lsm <linux-security-module@vger.kernel.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Feb 2010 14:05:00 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+Enhance the security framework to support resetting the active security
+module. This eliminates the need for direct use of the security_ops and
+default_security_ops variables outside of security.c, so make security_ops
+and default_security_ops static. Also remove the secondary_ops variable as
+a cleanup since there is no use for that. secondary_ops was originally used by
+SELinux to call the "secondary" security module (capability or dummy),
+but that was replaced by direct calls to capability and the only
+remaining use is to save and restore the original security ops pointer
+value if SELinux is disabled by early userspace based on /etc/selinux/config.
+Further, if we support this directly in the security framework, then we can
+just use &default_security_ops for this purpose since that is now available.
 
-> On Fri, Feb 19, 2010 at 09:18:59AM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 18 Feb 2010 18:02:33 +0000
-> > Mel Gorman <mel@csn.ul.ie> wrote:
-> > 
-> > > For clarity of review, KSM and page migration have separate refcounts on
-> > > the anon_vma. While clear, this is a waste of memory. This patch gets
-> > > KSM and page migration to share their toys in a spirit of harmony.
-> > > 
-> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > 
-> > Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > Nitpick:
-> > I think this refcnt has something different characteristics than other
-> > usual refcnts. Even when refcnt goes down to 0, anon_vma will not be freed.
-> > So, I think some kind of name as temporal_reference_count is better than
-> > simple "refcnt". Then, it will be clearer what this refcnt is for.
-> > 
-> 
-> When I read this in a few years, I'll have no idea what "temporal" is
-> referring to. The holder of this account is by a process that does not
-> necessarily own the page or its mappings but "remote" has special
-> meaning as well. "external_count" ?
-> 
-"external" seems good. My selection of word is tend to be bad ;)
+Signed-off-by: Zhitong Wang <zhitong.wangzt@alibaba-inc.com>
+---
+ include/linux/security.h |    2 ++
+ security/capability.c    |    4 ----
+ security/security.c      |   11 +++++++++--
+ security/selinux/hooks.c |   13 +------------
+ 4 files changed, 12 insertions(+), 18 deletions(-)
 
-Off topic:
-But as Christoph says, make this as real reference counter as
-"if coutner goes down to 0, it's freed." may be good.
-I'm not fully aware of how anon_vma is copiled after Rik's anon_vma split(?)
-work. So, it may be complicated than I'm thinking.
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 2c627d3..8cbc714 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -95,6 +95,8 @@ struct seq_file;
+ extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
+ extern int cap_netlink_recv(struct sk_buff *skb, int cap);
 
-Thanks,
--Kame
++void reset_security_ops(void);
++
+ #ifdef CONFIG_MMU
+ extern unsigned long mmap_min_addr;
+ extern unsigned long dac_mmap_min_addr;
+diff --git a/security/capability.c b/security/capability.c
+index 5c700e1..4875142 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -906,10 +906,6 @@ static void cap_audit_rule_free(void *lsmrule)
+ }
+ #endif /* CONFIG_AUDIT */
 
+-struct security_operations default_security_ops = {
+-       .name   = "default",
+-};
+-
+ #define set_to_cap_if_null(ops, function)                              \
+        do {                                                            \
+                if (!ops->function) {                                   \
+diff --git a/security/security.c b/security/security.c
+index 122b748..663b630 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -23,10 +23,12 @@ static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1] =
+        CONFIG_DEFAULT_SECURITY;
 
-> > 
-> > > ---
-> > >  include/linux/rmap.h |   50 ++++++++++++++++++--------------------------------
-> > >  mm/ksm.c             |    4 ++--
-> > >  mm/migrate.c         |    4 ++--
-> > >  mm/rmap.c            |    6 ++----
-> > >  4 files changed, 24 insertions(+), 40 deletions(-)
-> > > 
-> > > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> > > index 6b5a1a9..55c0e9e 100644
-> > > --- a/include/linux/rmap.h
-> > > +++ b/include/linux/rmap.h
-> > > @@ -26,11 +26,17 @@
-> > >   */
-> > >  struct anon_vma {
-> > >  	spinlock_t lock;	/* Serialize access to vma list */
-> > > -#ifdef CONFIG_KSM
-> > > -	atomic_t ksm_refcount;
-> > > -#endif
-> > > -#ifdef CONFIG_MIGRATION
-> > > -	atomic_t migrate_refcount;
-> > > +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
-> > > +
-> > > +	/*
-> > > +	 * The refcount is taken by either KSM or page migration
-> > > +	 * to take a reference to an anon_vma when there is no
-> > > +	 * guarantee that the vma of page tables will exist for
-> > > +	 * the duration of the operation. A caller that takes
-> > > +	 * the reference is responsible for clearing up the
-> > > +	 * anon_vma if they are the last user on release
-> > > +	 */
-> > > +	atomic_t refcount;
-> > >  #endif
-> > >  	/*
-> > >  	 * NOTE: the LSB of the head.next is set by
-> > > @@ -44,46 +50,26 @@ struct anon_vma {
-> > >  };
-> > >  
-> > >  #ifdef CONFIG_MMU
-> > > -#ifdef CONFIG_KSM
-> > > -static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-> > > +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
-> > > +static inline void anonvma_refcount_init(struct anon_vma *anon_vma)
-> > >  {
-> > > -	atomic_set(&anon_vma->ksm_refcount, 0);
-> > > +	atomic_set(&anon_vma->refcount, 0);
-> > >  }
-> > >  
-> > > -static inline int ksm_refcount(struct anon_vma *anon_vma)
-> > > +static inline int anonvma_refcount(struct anon_vma *anon_vma)
-> > >  {
-> > > -	return atomic_read(&anon_vma->ksm_refcount);
-> > > +	return atomic_read(&anon_vma->refcount);
-> > >  }
-> > >  #else
-> > > -static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-> > > +static inline void anonvma_refcount_init(struct anon_vma *anon_vma)
-> > >  {
-> > >  }
-> > >  
-> > > -static inline int ksm_refcount(struct anon_vma *anon_vma)
-> > > +static inline int anonvma_refcount(struct anon_vma *anon_vma)
-> > >  {
-> > >  	return 0;
-> > >  }
-> > >  #endif /* CONFIG_KSM */
-> > > -#ifdef CONFIG_MIGRATION
-> > > -static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> > > -{
-> > > -	atomic_set(&anon_vma->migrate_refcount, 0);
-> > > -}
-> > > -
-> > > -static inline int migrate_refcount(struct anon_vma *anon_vma)
-> > > -{
-> > > -	return atomic_read(&anon_vma->migrate_refcount);
-> > > -}
-> > > -#else
-> > > -static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> > > -{
-> > > -}
-> > > -
-> > > -static inline int migrate_refcount(struct anon_vma *anon_vma)
-> > > -{
-> > > -	return 0;
-> > > -}
-> > > -#endif /* CONFIG_MIGRATE */
-> > >  
-> > >  static inline struct anon_vma *page_anon_vma(struct page *page)
-> > >  {
-> > > diff --git a/mm/ksm.c b/mm/ksm.c
-> > > index 56a0da1..7decf73 100644
-> > > --- a/mm/ksm.c
-> > > +++ b/mm/ksm.c
-> > > @@ -318,14 +318,14 @@ static void hold_anon_vma(struct rmap_item *rmap_item,
-> > >  			  struct anon_vma *anon_vma)
-> > >  {
-> > >  	rmap_item->anon_vma = anon_vma;
-> > > -	atomic_inc(&anon_vma->ksm_refcount);
-> > > +	atomic_inc(&anon_vma->refcount);
-> > >  }
-> > >  
-> > >  static void drop_anon_vma(struct rmap_item *rmap_item)
-> > >  {
-> > >  	struct anon_vma *anon_vma = rmap_item->anon_vma;
-> > >  
-> > > -	if (atomic_dec_and_lock(&anon_vma->ksm_refcount, &anon_vma->lock)) {
-> > > +	if (atomic_dec_and_lock(&anon_vma->refcount, &anon_vma->lock)) {
-> > >  		int empty = list_empty(&anon_vma->head);
-> > >  		spin_unlock(&anon_vma->lock);
-> > >  		if (empty)
-> > > diff --git a/mm/migrate.c b/mm/migrate.c
-> > > index 1ce6a2f..00777b0 100644
-> > > --- a/mm/migrate.c
-> > > +++ b/mm/migrate.c
-> > > @@ -619,7 +619,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
-> > >  		rcu_read_lock();
-> > >  		rcu_locked = 1;
-> > >  		anon_vma = page_anon_vma(page);
-> > > -		atomic_inc(&anon_vma->migrate_refcount);
-> > > +		atomic_inc(&anon_vma->refcount);
-> > >  	}
-> > >  
-> > >  	/*
-> > > @@ -661,7 +661,7 @@ skip_unmap:
-> > >  rcu_unlock:
-> > >  
-> > >  	/* Drop an anon_vma reference if we took one */
-> > > -	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-> > > +	if (anon_vma && atomic_dec_and_lock(&anon_vma->refcount, &anon_vma->lock)) {
-> > >  		int empty = list_empty(&anon_vma->head);
-> > >  		spin_unlock(&anon_vma->lock);
-> > >  		if (empty)
-> > > diff --git a/mm/rmap.c b/mm/rmap.c
-> > > index 11ba74a..96b5905 100644
-> > > --- a/mm/rmap.c
-> > > +++ b/mm/rmap.c
-> > > @@ -172,8 +172,7 @@ void anon_vma_unlink(struct vm_area_struct *vma)
-> > >  	list_del(&vma->anon_vma_node);
-> > >  
-> > >  	/* We must garbage collect the anon_vma if it's empty */
-> > > -	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
-> > > -					!migrate_refcount(anon_vma);
-> > > +	empty = list_empty(&anon_vma->head) && !anonvma_refcount(anon_vma);
-> > >  	spin_unlock(&anon_vma->lock);
-> > >  
-> > >  	if (empty)
-> > > @@ -185,8 +184,7 @@ static void anon_vma_ctor(void *data)
-> > >  	struct anon_vma *anon_vma = data;
-> > >  
-> > >  	spin_lock_init(&anon_vma->lock);
-> > > -	ksm_refcount_init(anon_vma);
-> > > -	migrate_refcount_init(anon_vma);
-> > > +	anonvma_refcount_init(anon_vma);
-> > >  	INIT_LIST_HEAD(&anon_vma->head);
-> > >  }
-> > >  
-> > > -- 
-> > > 1.6.5
-> > > 
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > 
-> > 
-> 
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+ /* things that live in capability.c */
+-extern struct security_operations default_security_ops;
+ extern void security_fixup_ops(struct security_operations *ops);
 
+-struct security_operations *security_ops;      /* Initialized to NULL */
++static struct security_operations *security_ops;
++static struct security_operations default_security_ops = {
++       .name   = "default",
++};
+
+ static inline int verify(struct security_operations *ops)
+ {
+@@ -63,6 +65,11 @@ int __init security_init(void)
+        return 0;
+ }
+
++void reset_security_ops(void)
++{
++       security_ops = &default_security_ops;
++}
++
+ /* Save user chosen LSM */
+ static int __init choose_lsm(char *str)
+ {
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 9a2ee84..1cbf18f 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -125,13 +125,6 @@ __setup("selinux=", selinux_enabled_setup);
+ int selinux_enabled = 1;
+ #endif
+
+-
+-/*
+- * Minimal support for a secondary security module,
+- * just to allow the use of the capability module.
+- */
+-static struct security_operations *secondary_ops;
+-
+ /* Lists of inode and superblock security structures initialized
+    before the policy was loaded. */
+ static LIST_HEAD(superblock_security_head);
+@@ -5672,9 +5665,6 @@ static __init int selinux_init(void)
+                                            0, SLAB_PANIC, NULL);
+        avc_init();
+
+-       secondary_ops = security_ops;
+-       if (!secondary_ops)
+-               panic("SELinux: No initial security operations\n");
+        if (register_security(&selinux_ops))
+                panic("SELinux: Unable to register with kernel.\n");
+
+@@ -5835,8 +5825,7 @@ int selinux_disable(void)
+        selinux_disabled = 1;
+        selinux_enabled = 0;
+
+-       /* Reset security_ops to the secondary module, dummy or capability. */
+-       security_ops = secondary_ops;
++       reset_security_ops();
+
+        /* Try to destroy the avc node cache */
+        avc_disable();
+--
+1.6.5.3
