@@ -1,71 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265Ab0BTKfN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 05:35:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39924 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030Ab0BTKfL (ORCPT
+	id S1754385Ab0BTKwr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 05:52:47 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:42721 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632Ab0BTKwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 05:35:11 -0500
-Subject: Re: Firmware versioning best practices II
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Vipin Mehta <Vipin.Mehta@atheros.com>
-In-Reply-To: <43e72e891002191823h3245bc0cn7a8745ae77409aa8@mail.gmail.com>
-References: <43e72e891002191823h3245bc0cn7a8745ae77409aa8@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 20 Feb 2010 10:35:06 +0000
-Message-ID: <1266662106.1820.4034.camel@macbook.infradead.org>
+	Sat, 20 Feb 2010 05:52:46 -0500
+Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <2375c9f91002200130v1af400a3qe6045b484a25299@mail.gmail.com>
+References: <1264740107.20211.53.camel@pasglop>
+	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
+	 <2375c9f91002200130v1af400a3qe6045b484a25299@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jTn8uQFRgnWXTVPGWZOl"
+Date: Sat, 20 Feb 2010 11:52:36 +0100
+Message-ID: <1266663156.5347.1.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.29.3.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 18:23 -0800, Luis R. Rodriguez wrote:
-> Last year, with the help of the community we at Atheros opened up the
-> first (to my knowledge) firmware for a device driver used on the Linux
-> kernel. The community has been advancing the firmware and making
-> changes and even an alternative driver with more features is being
-> baked. We hadn't dealt with open firmware before and this itself
-> raises a few management questions about the firmware APIs, code
-> revision and general best practices which are likely not documented
-> anywhere. We reviewed this on linux-wireless last year [1] and Pavel
-> Roskin made a good suggestion for model to follow. I still have a few
-> more questions though and wanted a wider review on this.
-> 
-> I've documented a summary of what we have discussed and suggested so far here:
-> 
-> http://wireless.kernel.org/en/developers/Documentation/firmware-versioning
-> 
-> We should still address how drivers should deprecate firmware. Can we
-> deprecate old firmware APIs from drivers on each kernel release? Any
-> other comments or feedback?
-> 
-> [1] http://wireless.kernel.org/en/developers/Documentation/firmware-versioning
-> 
->   Luis
 
-So far it looks like you've just rewritten a subset of the rules for
-handling shared library sonames.
+--=-jTn8uQFRgnWXTVPGWZOl
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I wouldn't suggest that including the API version as a _separate_ field
-from the code version is best practice. Why not just bump the major # of
-the code version when you change the API, just as we do with shared
-libraries?
+On Sat, 2010-02-20 at 17:30 +0800, Am=C3=A9rico Wang wrote:
 
-That doesn't prevent some people from using foo-$APIVER-$CODEVER if they
-really have to, of course -- if they have firmware which can be
-conditionally compiled for both old and new APIs, for example. But I
-don't think it should be recommended.
+> Hey, johannes
+>=20
+> Not sure if you made some mistake here, the one you report here [1]
+> is _not_ the same with this one reported by Benjamin.
+>=20
+> Please make sure what you are talking about here is the same one.
+>=20
+> Thanks.
+>=20
+> 1. http://lkml.org/lkml/2010/2/18/33
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+I'm talking about the problem Ben reported -- that one is completely
+different. Was your patch supposed to address _that_ one?
+
+johannes
+
+
+--=-jTn8uQFRgnWXTVPGWZOl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLf77wAAoJEODzc/N7+QmaC7oP/2Wjdhn7IG8MNdPJ74x9twED
+awKufyak0U9rXj/lLIE3SsxQSYGlnR5u3MswhXkT7O4y9Ui0/dDqxKI2sQma6DmK
+QUe2doFZ+qvsj0otW4mFmSVNrga5rCV/VfMHD1x0PFqbJwSGbllEVtvZBEc0TBYO
+yc5qrMTST/fVYIQVY+LGBTCmn1ZXiBnYbQ1tVbZz1aG16kZ8y4YA2Mluic4IWpkH
+HwhtG0gVJXaZI+XZneTHxdNxiEFX3+5hgGA2bx9CVCHCg5o39sKHvZL6brfNcohE
+5q0tL1oyXFmLfZaQhU3tJ4DONoF/pkI2boEfauLJuWQScH16OBPJT6tRLKAw+sdP
+b3BIUmeUOejL67mbaFScEJ7AyLjTiFO2rccupGkrZf2/DVLozR59qF1NmhOm3BxB
+4udRl8DSKo0QJKBXB9x+C4NFkhx2+AURvx8ne2YesDJwJouOwfdOmL41CnPBQ1rH
+kj62qr1H/UdJ1jyaQd/D59T73AcgakDHGPgYRbKYY/S4g12YfWFko6dN4rxUt66U
+7MPDvzFzn+nhTQDj8B+1ElEC1SlXW8IJgQGUhwE7LvG8gjHGtwB0++Sm4vePjEvT
+Ipq91yORfGxhctUO0+RxkyZyAJzOURNtzjoDxFJC1wG+/oavvCR+TNgPMqIPav9k
+Tl+2RHaSqvcCWx1r0/UI
+=0Xu9
+-----END PGP SIGNATURE-----
+
+--=-jTn8uQFRgnWXTVPGWZOl--
 
