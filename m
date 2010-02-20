@@ -1,86 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314Ab0BTM16 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 07:27:58 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:46962 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754857Ab0BTM14 (ORCPT
+	id S1755335Ab0BTNMY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 08:12:24 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46768 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754857Ab0BTNMW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 07:27:56 -0500
-From: john.johansen@canonical.com
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, John Johansen <john.johansen@canonical.com>
-Subject: [PATCH] Fix __d_path for lazy unmounts
-Date: Sat, 20 Feb 2010 04:27:38 -0800
-Message-Id: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
-X-Mailer: git-send-email 1.6.6.1
+	Sat, 20 Feb 2010 08:12:22 -0500
+Date: Sat, 20 Feb 2010 21:12:05 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Richard Hartmann <richih.mailinglist@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-crypto@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
+Message-ID: <20100220131205.GA4948@gondor.apana.org.au>
+References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com> <m1d402t2qp.fsf@fess.ebiederm.org> <2d460de71002190210qb9d5685n2fca0e7eff011b04@mail.gmail.com> <20100219121752.GA21682@gondor.apana.org.au> <2d460de71002190835t29c6bd6bjbee8e2f787d9ab49@mail.gmail.com> <20100220004615.GB30844@gondor.apana.org.au> <2d460de71002191759w5241431an92f48de21c9af7af@mail.gmail.com> <20100220024814.GA32053@gondor.apana.org.au> <2d460de71002200226w5fa27d85maa3fa75e1dca8fdd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2d460de71002200226w5fa27d85maa3fa75e1dca8fdd@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Johansen <john.johansen@canonical.com>
+On Sat, Feb 20, 2010 at 11:26:46AM +0100, Richard Hartmann wrote:
+> 
+> Another workflow question:
+> Does LKML as a whole prefer rebased patches, patches on top of the
+> old one or does not one care as long as it's clear what to apply in what
+> order?
+> Or does everyone have a different opionion, in which case: What is
+> yours?
 
-When __d_path() hits a lazily unmounted mount point, it tries to prepend
-the name of the lazily unmounted dentry to the path name.  It gets this wrong,
-and also overwrites the slash that separates the name from the following
-pathname component. This patch fixes that; if a process was in directory
-/foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
-missing slash), while the new result with this patch is ``/foo/bar''.
+It depends on what you're working on.  For this case in particular,
+sending the missing bits instead of the whole thing is my preferred
+solution.
 
-Signed-off-by: John Johansen <john.johansen@canonical.com>
----
- fs/dcache.c |   27 +++++++++++++++++++++++----
- 1 files changed, 23 insertions(+), 4 deletions(-)
-
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 953173a..df49666 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
- 	retval = end-1;
- 	*retval = '/';
- 
--	for (;;) {
-+	while(dentry != root->dentry || vfsmnt != root->mnt) {
- 		struct dentry * parent;
- 
--		if (dentry == root->dentry && vfsmnt == root->mnt)
--			break;
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
- 			/* Global root? */
- 			if (vfsmnt->mnt_parent == vfsmnt) {
-@@ -1950,9 +1948,30 @@ out:
- 	return retval;
- 
- global_root:
--	retval += 1;	/* hit the slash */
-+	/*
-+	 * We went past the (vfsmount, dentry) we were looking for and have
-+	 * either hit a root dentry, a lazily unmounted dentry, an
-+	 * unconnected dentry, or the file is on a pseudo filesystem.
-+	 */
-+	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
-+	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
-+		/*
-+		 * Historically, we also glue together the root dentry and
-+		 * remaining name for pseudo filesystems like pipefs, which
-+		 * have the MS_NOUSER flag set. This results in pathnames
-+		 * like "pipe:[439336]".
-+		 */
-+		retval += 1;	/* overwrite the slash */
-+		buflen++;
-+	}
- 	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
- 		goto Elong;
-+
-+	/* connect lazily unmounted mount point */
-+	if (*retval != '/' && !(dentry->d_sb->s_flags & MS_NOUSER) &&
-+	    prepend(&retval, &buflen, "/", 1) != 0)
-+		goto Elong;
-+
- 	root->mnt = vfsmnt;
- 	root->dentry = dentry;
- 	goto out;
+Cheers,
 -- 
-1.6.6.1
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
