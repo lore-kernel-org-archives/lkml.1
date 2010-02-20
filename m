@@ -1,181 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906Ab0BTBGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 20:06:45 -0500
-Received: from mga11.intel.com ([192.55.52.93]:4896 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417Ab0BTBGo convert rfc822-to-8bit (ORCPT
+	id S1753247Ab0BTBHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 20:07:35 -0500
+Received: from mail-yw0-f197.google.com ([209.85.211.197]:49246 "EHLO
+	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774Ab0BTBHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 20:06:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,506,1262592000"; 
-   d="scan'208";a="542270713"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       "Du, Alek" <alek.du@intel.com>, "Tang, Feng" <feng.tang@intel.com>,
-       "H. Peter Anvin" <hpa@linux.intel.com>,
-       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-Date: Fri, 19 Feb 2010 17:06:41 -0800
-Subject: RE: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
-Thread-Topic: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
-Thread-Index: AcqsTYkMZbB4yndrSeePEB93tdCxqQFejElQ
-Message-ID: <43F901BD926A4E43B106BF17856F0755A30A7660@orsmsx508.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 19 Feb 2010 20:07:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gePP9v9lfdXuGtVfbOwwyQrDDoS4JaGRLtmNQ3tH0pwlIIvpZg8bp82fa8OyFvqklq
+         +OZ/+B5tH1PmYlFFnuHRSy9zGcTcJ4hogJCcc+iNTznKJwW/QyRD84PZxQGJVEDkPbIJ
+         uHnKJAJPVUbV/80U0MGRAte1UXxS2brnrAjR8=
+Message-ID: <4B7F343E.4040409@gmail.com>
+Date: Fri, 19 Feb 2010 19:00:46 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, romieu@fr.zoreil.com
+Subject: [PATCH 2.6.34] r8169: enable 64-bit DMA by default for PCI Express
+ devices (v2)
+References: <4B7CAEC1.6090408@gmail.com> <20100219.131718.115496278.davem@davemloft.net>
+In-Reply-To: <20100219.131718.115496278.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of corrections to this patch.
-1. added missing commit message
-2. removed change that exports static variable nr_irqs_gsi
+Currently use of 64-bit DMA is disabled in r8169 unless the user passes the
+use_dac module option. This is reasonable for conventional PCI devices where
+broken chipsets may not handle dual-address-cycle transfers properly for
+32-bit slots and so this may not be safe. However, PCI Express should not have
+this problem and not using 64-bit DMA results in DMA transfers needlessly using
+the IOMMU or SWIOTLB. Set the use_dac module parameter to a new default value of
+-1 which results in 64-bit DMA being enabled by default for PCI Express devices
+only.
 
-new patch:
+Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
 
->From 66f107d47224e70a4755969a4b01e8fa3815a606 Mon Sep 17 00:00:00 2001
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Fri, 5 Feb 2010 04:06:56 -0800
-Subject: [PATCH] x86/apic: remove ioapic_disable_legacy
-
-ioapic_disable_legacy call is no longer needed for platforms do not have
-legacy pic. the legacy pic abstraction has taken care it automatically.
-
-this patch also initialize irq related static variables based on
-information obtained from legacy_pic.
-
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
----
- arch/x86/include/asm/io_apic.h |    2 --
- arch/x86/kernel/apic/io_apic.c |   10 +++++-----
- 2 files changed, 5 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c7c16c..84fdd51 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -143,8 +143,6 @@ extern int noioapicreroute;
- /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
- extern int timer_through_8259;
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 616ae5a..83965ee 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -187,7 +187,7 @@ static DEFINE_PCI_DEVICE_TABLE(rtl8169_pci_tbl) = {
+ MODULE_DEVICE_TABLE(pci, rtl8169_pci_tbl);
  
--extern void io_apic_disable_legacy(void);
--
- /*
-  * If we use the IO-APIC for IRQ routing, disable automatic
-  * assignment of PCI IRQ's.
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 1704cd8..3592a72 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -143,11 +143,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS_LEGACY];
- static struct irq_cfg irq_cfgx[NR_IRQS];
- #endif
+ static int rx_copybreak = 200;
+-static int use_dac;
++static int use_dac = -1;
+ static struct {
+ 	u32 msg_enable;
+ } debug = { -1 };
+@@ -511,7 +511,8 @@ MODULE_DESCRIPTION("RealTek RTL-8169 Gigabit Ethernet driver");
+ module_param(rx_copybreak, int, 0);
+ MODULE_PARM_DESC(rx_copybreak, "Copy breakpoint for copy-only-tiny-frames");
+ module_param(use_dac, int, 0);
+-MODULE_PARM_DESC(use_dac, "Enable PCI DAC. Unsafe on 32 bit PCI slot.");
++MODULE_PARM_DESC(use_dac, "Enable PCI DAC. -1 defaults on for PCI Express only."
++" Unsafe on 32 bit PCI slot.");
+ module_param_named(debug, debug.msg_enable, int, 0);
+ MODULE_PARM_DESC(debug, "Debug verbosity level (0=none, ..., 16=all)");
+ MODULE_LICENSE("GPL");
+@@ -2973,6 +2974,7 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	void __iomem *ioaddr;
+ 	unsigned int i;
+ 	int rc;
++	int this_use_dac = use_dac;
  
--void __init io_apic_disable_legacy(void)
--{
--	nr_irqs_gsi = 0;
--}
--
- int __init arch_early_irq_init(void)
- {
- 	struct irq_cfg *cfg;
-@@ -156,6 +151,11 @@ int __init arch_early_irq_init(void)
- 	int node;
- 	int i;
+ 	if (netif_msg_drv(&debug)) {
+ 		printk(KERN_INFO "%s Gigabit Ethernet driver %s loaded\n",
+@@ -3038,8 +3040,17 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
  
-+	if (!legacy_pic->nr_legacy_irqs) {
-+		nr_irqs_gsi = 0;
-+		io_apic_irqs = ~0UL;
-+	}
+ 	tp->cp_cmd = PCIMulRW | RxChkSum;
+ 
++	tp->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
++	if (!tp->pcie_cap)
++		netif_info(tp, probe, dev, "no PCI Express capability\n");
 +
- 	cfg = irq_cfgx;
- 	count = ARRAY_SIZE(irq_cfgx);
- 	node= cpu_to_node(boot_cpu_id);
--- 
-1.5.6.5
-
-
-
-
-
->-----Original Message-----
->From: Pan, Jacob jun
->Sent: Friday, February 12, 2010 5:41 PM
->To: linux-kernel@vger.kernel.org
->Cc: Ingo Molnar; 'Thomas Gleixner'; Arjan van de Ven; Barnes, Jesse; Du, Alek;
->Tang, Feng; H. Peter Anvin
->Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
->
->From e25ea443d81dc037e6a1da33e23bc04b976b70da Mon Sep 17 00:00:00 2001
->From: Jacob Pan <jacob.jun.pan@intel.com>
->Date: Fri, 5 Feb 2010 04:06:56 -0800
->Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
->
->Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
->---
-> arch/x86/include/asm/io_apic.h |    2 --
-> arch/x86/kernel/apic/io_apic.c |   12 ++++++------
-> 2 files changed, 6 insertions(+), 8 deletions(-)
->
->diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
->index 7c7c16c..84fdd51 100644
->--- a/arch/x86/include/asm/io_apic.h
->+++ b/arch/x86/include/asm/io_apic.h
->@@ -143,8 +143,6 @@ extern int noioapicreroute;
-> /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
-> extern int timer_through_8259;
->
->-extern void io_apic_disable_legacy(void);
->-
-> /*
->  * If we use the IO-APIC for IRQ routing, disable automatic
->  * assignment of PCI IRQ's.
->diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
->index 1704cd8..5a7aab2 100644
->--- a/arch/x86/kernel/apic/io_apic.c
->+++ b/arch/x86/kernel/apic/io_apic.c
->@@ -95,7 +95,7 @@ struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
-> int mp_irq_entries;
->
-> /* GSI interrupts */
->-static int nr_irqs_gsi = NR_IRQS_LEGACY;
->+int nr_irqs_gsi = NR_IRQS_LEGACY;
->
-> #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
-> int mp_bus_id_to_type[MAX_MP_BUSSES];
->@@ -143,11 +143,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS_LEGACY];
-> static struct irq_cfg irq_cfgx[NR_IRQS];
-> #endif
->
->-void __init io_apic_disable_legacy(void)
->-{
->-	nr_irqs_gsi = 0;
->-}
->-
-> int __init arch_early_irq_init(void)
-> {
-> 	struct irq_cfg *cfg;
->@@ -156,6 +151,11 @@ int __init arch_early_irq_init(void)
-> 	int node;
-> 	int i;
->
->+	if (!legacy_pic->nr_legacy_irqs) {
->+		nr_irqs_gsi = 0;
->+		io_apic_irqs = ~0UL;
->+	}
->+
-> 	cfg = irq_cfgx;
-> 	count = ARRAY_SIZE(irq_cfgx);
-> 	node= cpu_to_node(boot_cpu_id);
->--
->1.6.5.3
-
++	if (this_use_dac < 0)
++		this_use_dac = tp->pcie_cap != 0;
++
+ 	if ((sizeof(dma_addr_t) > 4) &&
+-	    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) && use_dac) {
++	    this_use_dac &&
++	    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) {
++		netif_info(tp, probe, dev, "using 64-bit DMA\n");
+ 		tp->cp_cmd |= PCIDAC;
+ 		dev->features |= NETIF_F_HIGHDMA;
+ 	} else {
+@@ -3058,10 +3069,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_out_free_res_4;
+ 	}
+ 
+-	tp->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+-	if (!tp->pcie_cap)
+-		netif_info(tp, probe, dev, "no PCI Express capability\n");
+-
+ 	RTL_W16(IntrMask, 0x0000);
+ 
+ 	/* Soft reset the chip. */
