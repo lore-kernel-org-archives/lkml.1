@@ -1,310 +1,247 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0BTBLg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 20:11:36 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:18988 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751417Ab0BTBLf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 20:11:35 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] backlight: Kconfig cleanup
-Date: Fri, 19 Feb 2010 18:11:40 -0700
-Cc: rpurdie@rpsys.net
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1753571Ab0BTBOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 20:14:47 -0500
+Received: from mga11.intel.com ([192.55.52.93]:53315 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326Ab0BTBOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 20:14:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,506,1262592000"; 
+   d="scan'208";a="542272194"
+Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266609734.1529.772.camel@laptop>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+	 <1266057388.557.59599.camel@twins>
+	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
+	 <1266588316.1529.370.camel@laptop>
+	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
+	 <1266608875.1529.749.camel@laptop>
+	 <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
+	 <1266609734.1529.772.camel@laptop>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 19 Feb 2010 17:13:44 -0800
+Message-Id: <1266628424.4729.23.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002191811.40731.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup the "depends on" logic by wrapping the affected config options in
-appropriate if/endif blocks.  
+On Fri, 2010-02-19 at 12:02 -0800, Peter Zijlstra wrote:
+> On Fri, 2010-02-19 at 11:50 -0800, Suresh Siddha wrote:
+> > On Fri, 2010-02-19 at 11:47 -0800, Peter Zijlstra wrote:
+> > > On Fri, 2010-02-19 at 10:36 -0800, Suresh Siddha wrote:
+> > > > exec/fork balance is not broken. i.e., during exec/fork we balance the
+> > > > load equally among sockets/cores etc. What is broken is:
+> > > > 
+> > > > a) In SMT case, once we end up in a situation where both the threads of
+> > > > the core are busy , with another core completely idle, load balance is
+> > > > not moving one of the threads to the idle core. This unbalanced
+> > > > situation can happen because of a previous wake-up decision and/or
+> > > > threads on other core went to sleep/died etc. Once we end up in this
+> > > > unbalanced situation, we continue in that state with out fixing it.
+> > > > 
+> > > > b) Similar to "a", this is MC case where we end up four cores busy in
+> > > > one socket with other 4 cores in another socket completely idle. And
+> > > > this is the situation which we are trying to solve in this patch.
+> > > > 
+> > > > In your above example, we test mostly fork/exec balance but not the
+> > > > above sleep/wakeup scenarios. 
+> > > 
+> > > Ah, indeed. Let me extend my script to cover that.
+> > > 
+> > > The below script does indeed show a change, but the result still isn't
+> > > perfect, when I do ./show-loop 8, it starts 8 loops nicely spread over 2
+> > > sockets, the difference is that all 4 remaining would stay on socket 0,
+> > > the patched kernel gets 1 over to socket 1.
+> > 
+> > Peter, Have you applied both my smt patch and mc patch?
+> 
+> Yes, find_busiest_queue() has the wl fixup in (as per tip/master).
 
-Remove all the "default n" since that is the default default.
+Ok Peter. There is another place that is scaling load_per_task with
+cpu_power but later comparing with the difference of max and min of the
+actual cpu load. :(
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
+        avg_load_per_task = (sum_avg_load_per_task * SCHED_LOAD_SCALE) /
+                group->cpu_power;
 
+        if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
+                sgs->group_imb = 1;
+
+Fixing this seems to have fixed the problem you mentioned. Can you
+please checkout the appended patch? If everything seems ok, then I will
+send the patch (against -tip tree) on monday morning with the detailed
+changelog.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 09bfa96..904e284 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -8,12 +8,13 @@ menuconfig BACKLIGHT_LCD_SUPPORT
- 	  Enable this to be able to choose the drivers for controlling the
- 	  backlight and the LCD panel on some platforms, for example on PDAs.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3a8fb30..213b445 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3423,6 +3423,7 @@ struct sd_lb_stats {
+ 	unsigned long max_load;
+ 	unsigned long busiest_load_per_task;
+ 	unsigned long busiest_nr_running;
++	unsigned long busiest_group_capacity;
  
-+if BACKLIGHT_LCD_SUPPORT
+ 	int group_imb; /* Is there imbalance in this sd */
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+@@ -3742,8 +3743,7 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 	unsigned long load, max_cpu_load, min_cpu_load;
+ 	int i;
+ 	unsigned int balance_cpu = -1, first_idle_cpu = 0;
+-	unsigned long sum_avg_load_per_task;
+-	unsigned long avg_load_per_task;
++	unsigned long avg_load_per_task = 0;
+ 
+ 	if (local_group) {
+ 		balance_cpu = group_first_cpu(group);
+@@ -3752,7 +3752,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 	}
+ 
+ 	/* Tally up the load of all CPUs in the group */
+-	sum_avg_load_per_task = avg_load_per_task = 0;
+ 	max_cpu_load = 0;
+ 	min_cpu_load = ~0UL;
+ 
+@@ -3782,7 +3781,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 		sgs->sum_nr_running += rq->nr_running;
+ 		sgs->sum_weighted_load += weighted_cpuload(i);
+ 
+-		sum_avg_load_per_task += cpu_avg_load_per_task(i);
+ 	}
+ 
+ 	/*
+@@ -3801,6 +3799,9 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 	sgs->avg_load = (sgs->group_load * SCHED_LOAD_SCALE) / group->cpu_power;
+ 
+ 
++	if (sgs->sum_nr_running)
++		avg_load_per_task =
++				sgs->sum_weighted_load / sgs->sum_nr_running;
+ 	/*
+ 	 * Consider the group unbalanced when the imbalance is larger
+ 	 * than the average weight of two tasks.
+@@ -3810,9 +3811,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
+ 	 *      normalized nr_running number somewhere that negates
+ 	 *      the hierarchy?
+ 	 */
+-	avg_load_per_task = (sum_avg_load_per_task * SCHED_LOAD_SCALE) /
+-		group->cpu_power;
+-
+ 	if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
+ 		sgs->group_imb = 1;
+ 
+@@ -3880,6 +3878,7 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
+ 			sds->max_load = sgs.avg_load;
+ 			sds->busiest = group;
+ 			sds->busiest_nr_running = sgs.sum_nr_running;
++			sds->busiest_group_capacity = sgs.group_capacity;
+ 			sds->busiest_load_per_task = sgs.sum_weighted_load;
+ 			sds->group_imb = sgs.group_imb;
+ 		}
+@@ -3902,6 +3901,7 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
+ {
+ 	unsigned long tmp, pwr_now = 0, pwr_move = 0;
+ 	unsigned int imbn = 2;
++	unsigned long scaled_busy_load_per_task;
+ 
+ 	if (sds->this_nr_running) {
+ 		sds->this_load_per_task /= sds->this_nr_running;
+@@ -3912,8 +3912,12 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
+ 		sds->this_load_per_task =
+ 			cpu_avg_load_per_task(this_cpu);
+ 
+-	if (sds->max_load - sds->this_load + sds->busiest_load_per_task >=
+-			sds->busiest_load_per_task * imbn) {
++	scaled_busy_load_per_task = sds->busiest_load_per_task
++						 * SCHED_LOAD_SCALE;
++	scaled_busy_load_per_task /= sds->busiest->cpu_power;
 +
- #
- # LCD
- #
- config LCD_CLASS_DEVICE
-         tristate "Lowlevel LCD controls"
--	depends on BACKLIGHT_LCD_SUPPORT
- 	default m
- 	help
- 	  This framework adds support for low-level control of LCD.
-@@ -24,24 +25,25 @@ config LCD_CLASS_DEVICE
- 	  To have support for your specific LCD panel you will have to
- 	  select the proper drivers which depend on this option.
++	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
++			(scaled_busy_load_per_task * imbn)) {
+ 		*imbalance = sds->busiest_load_per_task;
+ 		return;
+ 	}
+@@ -3964,7 +3968,7 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
+ static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
+ 		unsigned long *imbalance)
+ {
+-	unsigned long max_pull;
++	unsigned long max_pull, load_above_capacity = ~0UL;
+ 	/*
+ 	 * In the presence of smp nice balancing, certain scenarios can have
+ 	 * max load less than avg load(as we skip the groups at or below
+@@ -3975,9 +3979,30 @@ static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
+ 		return fix_small_imbalance(sds, this_cpu, imbalance);
+ 	}
  
-+if LCD_CLASS_DEVICE
+-	/* Don't want to pull so many tasks that a group would go idle */
+-	max_pull = min(sds->max_load - sds->avg_load,
+-			sds->max_load - sds->busiest_load_per_task);
++	if (!sds->group_imb) {
++		/*
++ 	 	 * Don't want to pull so many tasks that a group would go idle.
++	 	 */
++		load_above_capacity = (sds->busiest_nr_running - 
++						sds->busiest_group_capacity);
 +
- config LCD_CORGI
- 	tristate "LCD Panel support for SHARP corgi/spitz model"
--	depends on LCD_CLASS_DEVICE && SPI_MASTER && PXA_SHARPSL
-+	depends on SPI_MASTER && PXA_SHARPSL
- 	help
- 	  Say y here to support the LCD panels usually found on SHARP
- 	  corgi (C7x0) and spitz (Cxx00) models.
- 
- config LCD_LMS283GF05
- 	tristate "Samsung LMS283GF05 LCD"
--	depends on LCD_CLASS_DEVICE && SPI_MASTER && GENERIC_GPIO
-+	depends on SPI_MASTER && GENERIC_GPIO
- 	help
- 	  SPI driver for Samsung LMS283GF05. This provides basic support
- 	  for powering the LCD up/down through a sysfs interface.
- 
- config LCD_LTV350QV
- 	tristate "Samsung LTV350QV LCD Panel"
--	depends on LCD_CLASS_DEVICE && SPI_MASTER
--	default n
-+	depends on SPI_MASTER
- 	help
- 	  If you have a Samsung LTV350QV LCD panel, say y to include a
- 	  power control driver for it.  The panel starts up in power
-@@ -52,60 +54,54 @@ config LCD_LTV350QV
- 
- config LCD_ILI9320
- 	tristate
--	depends on LCD_CLASS_DEVICE && BACKLIGHT_LCD_SUPPORT
--	default n
- 	help
- 	  If you have a panel based on the ILI9320 controller chip
- 	  then say y to include a power driver for it.
- 
- config LCD_TDO24M
- 	tristate "Toppoly TDO24M  and TDO35S LCD Panels support"
--	depends on LCD_CLASS_DEVICE && SPI_MASTER
--	default n
-+	depends on SPI_MASTER
- 	help
- 	  If you have a Toppoly TDO24M/TDO35S series LCD panel, say y here to
- 	  include the support for it.
- 
- config LCD_VGG2432A4
- 	tristate "VGG2432A4 LCM device support"
--	depends on BACKLIGHT_LCD_SUPPORT && LCD_CLASS_DEVICE && SPI_MASTER
-+	depends on SPI_MASTER
- 	select LCD_ILI9320
--	default n
- 	help
- 	  If you have a VGG2432A4 panel based on the ILI9320 controller chip
- 	  then say y to include a power driver for it.
- 
- config LCD_PLATFORM
- 	tristate "Platform LCD controls"
--	depends on LCD_CLASS_DEVICE
- 	help
- 	  This driver provides a platform-device registered LCD power
- 	  control interface.
- 
- config LCD_TOSA
- 	tristate "Sharp SL-6000 LCD Driver"
--	depends on LCD_CLASS_DEVICE && SPI
-+	depends on SPI
- 	depends on MACH_TOSA
--	default n
- 	help
- 	  If you have an Sharp SL-6000 Zaurus say Y to enable a driver
- 	  for its LCD.
- 
- config LCD_HP700
- 	tristate "HP Jornada 700 series LCD Driver"
--	depends on LCD_CLASS_DEVICE
- 	depends on SA1100_JORNADA720_SSP && !PREEMPT
- 	default y
- 	help
- 	  If you have an HP Jornada 700 series handheld (710/720/728)
- 	  say Y to enable LCD control driver.
- 
-+endif # LCD_CLASS_DEVICE
++		load_above_capacity *= (SCHED_LOAD_SCALE * SCHED_LOAD_SCALE);
++	
++		load_above_capacity /= sds->busiest->cpu_power;
++	}
 +
- #
- # Backlight
- #
- config BACKLIGHT_CLASS_DEVICE
-         tristate "Lowlevel Backlight controls"
--	depends on BACKLIGHT_LCD_SUPPORT
- 	default m
- 	help
- 	  This framework adds support for low-level control of the LCD
-@@ -114,9 +110,11 @@ config BACKLIGHT_CLASS_DEVICE
- 	  To have support for your specific LCD panel you will have to
- 	  select the proper drivers which depend on this option.
++	/*
++	 * We're trying to get all the cpus to the average_load, so we don't
++	 * want to push ourselves above the average load, nor do we wish to
++	 * reduce the max loaded cpu below the average load, as either of these
++	 * actions would just result in more rebalancing later, and ping-pong
++	 * tasks around. Thus we look for the minimum possible imbalance.
++	 * Negative imbalances (*we* are more loaded than anyone else) will
++	 * be counted as no imbalance for these purposes -- we can't fix that
++	 * by pulling tasks to us. Be careful of negative numbers as they'll
++	 * appear as very large values with unsigned longs.
++	 */
++	max_pull = min(sds->max_load - sds->avg_load, load_above_capacity);
  
-+if BACKLIGHT_CLASS_DEVICE
-+
- config BACKLIGHT_ATMEL_LCDC
- 	bool "Atmel LCDC Contrast-as-Backlight control"
--	depends on BACKLIGHT_CLASS_DEVICE && FB_ATMEL
-+	depends on FB_ATMEL
- 	default y if MACH_SAM9261EK || MACH_SAM9G10EK || MACH_SAM9263EK
- 	help
- 	  This provides a backlight control internal to the Atmel LCDC
-@@ -129,8 +127,7 @@ config BACKLIGHT_ATMEL_LCDC
+ 	/* How much load to actually move to equalise the imbalance */
+ 	*imbalance = min(max_pull * sds->busiest->cpu_power,
+@@ -4069,19 +4094,6 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		sds.busiest_load_per_task =
+ 			min(sds.busiest_load_per_task, sds.avg_load);
  
- config BACKLIGHT_ATMEL_PWM
- 	tristate "Atmel PWM backlight control"
--	depends on BACKLIGHT_CLASS_DEVICE && ATMEL_PWM
--	default n
-+	depends on ATMEL_PWM
- 	help
- 	  Say Y here if you want to use the PWM peripheral in Atmel AT91 and
- 	  AVR32 devices. This driver will need additional platform data to know
-@@ -141,7 +138,6 @@ config BACKLIGHT_ATMEL_PWM
+-	/*
+-	 * We're trying to get all the cpus to the average_load, so we don't
+-	 * want to push ourselves above the average load, nor do we wish to
+-	 * reduce the max loaded cpu below the average load, as either of these
+-	 * actions would just result in more rebalancing later, and ping-pong
+-	 * tasks around. Thus we look for the minimum possible imbalance.
+-	 * Negative imbalances (*we* are more loaded than anyone else) will
+-	 * be counted as no imbalance for these purposes -- we can't fix that
+-	 * by pulling tasks to us. Be careful of negative numbers as they'll
+-	 * appear as very large values with unsigned longs.
+-	 */
+-	if (sds.max_load <= sds.busiest_load_per_task)
+-		goto out_balanced;
  
- config BACKLIGHT_GENERIC
- 	tristate "Generic (aka Sharp Corgi) Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE
- 	default y
- 	help
- 	  Say y to enable the generic platform backlight driver previously
-@@ -150,7 +146,7 @@ config BACKLIGHT_GENERIC
+ 	/* Looks like there is an imbalance. Compute it */
+ 	calculate_imbalance(&sds, this_cpu, imbalance);
+
  
- config BACKLIGHT_LOCOMO
- 	tristate "Sharp LOCOMO LCD/Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && SHARP_LOCOMO
-+	depends on SHARP_LOCOMO
- 	default y
- 	help
- 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
-@@ -158,7 +154,7 @@ config BACKLIGHT_LOCOMO
- 
- config BACKLIGHT_OMAP1
- 	tristate "OMAP1 PWL-based LCD Backlight"
--	depends on BACKLIGHT_CLASS_DEVICE && ARCH_OMAP1
-+	depends on ARCH_OMAP1
- 	default y
- 	help
- 	  This driver controls the LCD backlight level and power for
-@@ -167,7 +163,7 @@ config BACKLIGHT_OMAP1
- 
- config BACKLIGHT_HP680
- 	tristate "HP Jornada 680 Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && SH_HP6XX
-+	depends on SH_HP6XX
- 	default y
- 	help
- 	  If you have a HP Jornada 680, say y to enable the
-@@ -175,7 +171,6 @@ config BACKLIGHT_HP680
- 
- config BACKLIGHT_HP700
- 	tristate "HP Jornada 700 series Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE
- 	depends on SA1100_JORNADA720_SSP && !PREEMPT
- 	default y
- 	help
-@@ -184,69 +179,64 @@ config BACKLIGHT_HP700
- 
- config BACKLIGHT_PROGEAR
- 	tristate "Frontpath ProGear Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && PCI && X86
--	default n
-+	depends on PCI && X86
- 	help
- 	  If you have a Frontpath ProGear say Y to enable the
- 	  backlight driver.
- 
- config BACKLIGHT_CARILLO_RANCH
- 	tristate "Intel Carillo Ranch Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && LCD_CLASS_DEVICE && PCI && X86 && FB_LE80578
--	default n
-+	depends on LCD_CLASS_DEVICE && PCI && X86 && FB_LE80578
- 	help
- 	  If you have a Intel LE80578 (Carillo Ranch) say Y to enable the
- 	  backlight driver.
- 
- config BACKLIGHT_PWM
- 	tristate "Generic PWM based Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && HAVE_PWM
-+	depends on HAVE_PWM
- 	help
- 	  If you have a LCD backlight adjustable by PWM, say Y to enable
- 	  this driver.
- 
- config BACKLIGHT_DA903X
- 	tristate "Backlight Driver for DA9030/DA9034 using WLED"
--	depends on BACKLIGHT_CLASS_DEVICE && PMIC_DA903X
-+	depends on PMIC_DA903X
- 	help
- 	  If you have a LCD backlight connected to the WLED output of DA9030
- 	  or DA9034 WLED output, say Y here to enable this driver.
- 
- config BACKLIGHT_MBP_NVIDIA
-        tristate "MacBook Pro Nvidia Backlight Driver"
--       depends on BACKLIGHT_CLASS_DEVICE && X86
--       default n
-+       depends on X86
-        help
-          If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
- 	 to enable a driver for its backlight
- 
- config BACKLIGHT_TOSA
- 	tristate "Sharp SL-6000 Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && I2C
-+	depends on I2C
- 	depends on MACH_TOSA && LCD_TOSA
--	default n
- 	help
- 	  If you have an Sharp SL-6000 Zaurus say Y to enable a driver
- 	  for its backlight
- 
- config BACKLIGHT_SAHARA
- 	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && X86
--	default n
-+	depends on X86
- 	help
- 	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
- 	  backlight driver.
- 
- config BACKLIGHT_WM831X
- 	tristate "WM831x PMIC Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && MFD_WM831X
-+	depends on MFD_WM831X
- 	help
- 	  If you have a backlight driven by the ISINK and DCDC of a
- 	  WM831x PMIC say y to enable the backlight driver for it.
- 
- config BACKLIGHT_ADX
- 	tristate "Avionic Design Xanthos Backlight Driver"
--	depends on BACKLIGHT_CLASS_DEVICE && ARCH_PXA_ADX
-+	depends on ARCH_PXA_ADX
- 	default y
- 	help
- 	  Say Y to enable the backlight driver on Avionic Design Xanthos-based
-@@ -254,7 +244,7 @@ config BACKLIGHT_ADX
- 
- config BACKLIGHT_ADP5520
- 	tristate "Backlight Driver for ADP5520/ADP5501 using WLED"
--	depends on BACKLIGHT_CLASS_DEVICE && PMIC_ADP5520
-+	depends on PMIC_ADP5520
- 	help
- 	  If you have a LCD backlight connected to the BST/BL_SNK output of
- 	  ADP5520 or ADP5501, say Y here to enable this driver.
-@@ -262,3 +252,6 @@ config BACKLIGHT_ADP5520
- 	  To compile this driver as a module, choose M here: the module will
- 	  be called adp5520_bl.
- 
-+endif # BACKLIGHT_CLASS_DEVICE
-+
-+endif # BACKLIGHT_LCD_SUPPORT
+
+
