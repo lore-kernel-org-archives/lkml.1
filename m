@@ -1,28 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198Ab0BTOTz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:19:55 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:36842 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755952Ab0BTOTx (ORCPT
+	id S1756223Ab0BTOUs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:20:48 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:59725 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755952Ab0BTOUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:19:53 -0500
+	Sat, 20 Feb 2010 09:20:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=mL0cwoPNyKzKY3t4ZQmiC0NDK2m0CvoCPPKQmiwAjh8W6iKc6HMVQQMUfL3DAYpPzr
-         c6Quu/GH6mZ4MQdMp/L7XIofVc2qCQ7mIHRk6ZoKtJ6QAxwdWzP5zkDDB6rLYqDnrEjH
-         7EKXrjh+zq1VUJsDajtxvxWebdpHhLiCM4bOA=
-Date: Sat, 20 Feb 2010 22:19:46 +0800
+        b=X69uHmMayNwHVN45/IThRxdttQxg7qeJlfQ9MGaJgkjbhozgZwtUqrd0JahNTfIrxO
+         9X2V8ke439SXTQgmG+MWlzIJDr/CK5azxGMtLRcGlvXTwLcanFW6ZN5/176d1cFVyF9x
+         BBqAyznEltl5x/OdHeVWTCj2Je+fRkMoceVk0=
+Date: Sat, 20 Feb 2010 22:20:34 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+To: Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 14/18] sysctl extern cleanup - acct
-Message-ID: <20100220141946.GM3195@darkstar>
+Subject: [PATCH 15/18] sysctl extern cleanup - rtmutex
+Message-ID: <20100220142034.GN3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,47 +35,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-Move acct_parm extern declaration to linux/acct.h
+Move max_lock_depth extern declaration to linux/rtmutex.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/acct.h |    6 ++++++
- kernel/sysctl.c      |    5 +----
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ include/linux/rtmutex.h |    4 ++++
+ kernel/sysctl.c         |    5 +----
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
---- linux-2.6.32.orig/include/linux/acct.h	2010-02-20 14:33:09.802240564 +0800
-+++ linux-2.6.32/include/linux/acct.h	2010-02-20 14:38:16.134711703 +0800
-@@ -20,6 +20,12 @@
- #include <asm/param.h>
- #include <asm/byteorder.h>
+--- linux-2.6.32.orig/include/linux/rtmutex.h	2010-02-20 14:02:17.074926676 +0800
++++ linux-2.6.32/include/linux/rtmutex.h	2010-02-20 14:41:34.618025132 +0800
+@@ -16,6 +16,10 @@
+ #include <linux/plist.h>
+ #include <linux/spinlock_types.h>
  
-+#ifdef __KERNEL__
-+#if defined(CONFIG_BSD_PROCESS_ACCT) && defined(CONFIG_SYSCTL)
-+extern int acct_parm[];
-+#endif
++#if defined(CONFIG_SYSCTL) && defined(CONFIG_RT_MUTEXES)
++extern int max_lock_depth;
 +#endif
 +
- /* 
-  *  comp_t is a 16-bit "floating" point number with a 3-bit base 8
-  *  exponent and a 13-bit fraction.
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:33:09.788907860 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:35:31.031394432 +0800
-@@ -62,6 +62,7 @@
- #include <linux/latencytop.h>
+ /**
+  * The rt_mutex structure
+  *
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:40:22.392198031 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:40:24.232197892 +0800
+@@ -63,6 +63,7 @@
  #include <linux/file.h>
  #include <linux/blk-iopoll.h>
-+#include <linux/acct.h>
+ #include <linux/acct.h>
++#include <linux/rtmutex.h>
  #include <scsi/sg.h>
  
  #include <asm/uaccess.h>
-@@ -122,10 +123,6 @@ extern int sysctl_userprocess_debug;
- extern int spin_retry;
- #endif
+@@ -130,10 +131,6 @@ extern int unaligned_dump_stack;
  
--#ifdef CONFIG_BSD_PROCESS_ACCT
--extern int acct_parm[];
+ extern struct ratelimit_state printk_ratelimit_state;
+ 
+-#ifdef CONFIG_RT_MUTEXES
+-extern int max_lock_depth;
 -#endif
 -
- #ifdef CONFIG_IA64
- extern int no_unaligned_warning;
- extern int unaligned_dump_stack;
+ #ifdef CONFIG_PROC_SYSCTL
+ static int proc_do_cad_pid(struct ctl_table *table, int write,
+ 		  void __user *buffer, size_t *lenp, loff_t *ppos);
