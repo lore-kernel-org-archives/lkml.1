@@ -1,62 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752217Ab0BTHSR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 02:18:17 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:36798 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261Ab0BTHSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 02:18:16 -0500
-Date: Sat, 20 Feb 2010 09:18:05 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Jon D. Mason" <jdmason@kudzu.us>,
-       discuss@x86-64.org, Corinna Schultz <coschult@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] calgary: Increase the maximum PHB bus number
-Message-ID: <20100220071805.GJ9746@il.ibm.com>
-References: <20091209005901.GX10295@tux1.beaverton.ibm.com>
- <20091209090346.GN2452@tyrion.haifa.ibm.com>
- <20100218183750.GL29604@tux1.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100218183750.GL29604@tux1.beaverton.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752642Ab0BTHWc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 02:22:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37725 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751169Ab0BTHWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 02:22:30 -0500
+Date: Sat, 20 Feb 2010 00:21:48 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Gadiyar, Anand" <gadiyar@ti.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100220002148.6676a8f6@redhat.com>
+In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB03215B07FF@dbde02.ent.ti.com>
+References: <20100208065519.GE1290@ucw.cz>
+	<1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+	<20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+	<1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+	<EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
+	<20100216084442.GA3212@n2100.arm.linux.org.uk>
+	<5A47E75E594F054BAF48C5E4FC4B92AB03215B07FF@dbde02.ent.ti.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 10:37:50AM -0800, Darrick J. Wong wrote:
-> On Wed, Dec 09, 2009 at 11:03:46AM +0200, Muli Ben-Yehuda wrote:
-> > On Tue, Dec 08, 2009 at 04:59:01PM -0800, Darrick J. Wong wrote:
+On Tue, 16 Feb 2010 14:21:48 +0530
+"Gadiyar, Anand" <gadiyar@ti.com> wrote:
+
+> >         hcd->self.uses_dma = (dev->dma_mask != NULL);
 > > 
-> > > -#define MAX_NUM_OF_PHBS		8 /* how many PHBs in total? */
-> > > -#define MAX_NUM_CHASSIS		8 /* max number of chassis */
-> > > -/* MAX_PHB_BUS_NUM is the maximal possible dev->bus->number */
-> > > -#define MAX_PHB_BUS_NUM		(MAX_NUM_OF_PHBS * MAX_NUM_CHASSIS * 2)
-> > > +/*
-> > > +   The maximum PHB bus number.
-> > > +   x3950M2 (rare): 8 chassis, 48 PHBs per chassis = 384
-> > > +   x3950M2: 4 chassis, 48 PHBs per chassis        = 192
-> > > +   x3950 (PCIE): 8 chassis, 32 PHBs per chassis   = 256
-> > > +   x3950 (PCIX): 8 chassis, 16 PHBs per chassis   = 128
-> > > +*/
-> > > +#define MAX_PHB_BUS_NUM		384
-> > > +
-> > >  #define PHBS_PER_CALGARY	4
-> > 
-> > We'll end up wasting a few bytes on small systems, but I don't think
-> > it's enough to matter on these fairly large systems. As far as I'm
-> > concerned, patch is fine.
-> > 
-> > Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+> > Is it easier to make sure that PIO devices don't have dev->dma_mask set?
 > 
-> Hmm... has this patch been queued up by anyone for the .34 merge
-> window?
+> Not really. For instance, in the case of the DMA engine in the MUSB
+> controller in OMAP3, we can only use DMA with endpoints other than
+> EP0, and EP0 is what is used for control transfers.
+> 
+> It's not PIO for all the endpoints or DMA for all of them.
 
-I don't maintain a separate Calgary patchset anymore, hopefully Ingo
-or one of the other x86 maintainers have picked it up?
+The HC driver does not have to be 100% truthful here. If the system
+is not HIGHMEM, HCD can easily set uses_dma to false yet use DMA
+by mapping buffers itself, without relying on the quoted code.
 
-Cheers,
-Muli
+On a HIGHMEM system, block layer will bounce-buffer data in such case.
+Hopefuly not a problem for ARM?
+
+All network stack drivers work that way, BTW.
+
+-- Pete
