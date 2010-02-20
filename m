@@ -1,75 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756278Ab0BTOVM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:21:12 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:39928 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077Ab0BTOVJ (ORCPT
+	id S1756149Ab0BTOVe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:21:34 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:33091 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755921Ab0BTOVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:21:09 -0500
+	Sat, 20 Feb 2010 09:21:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=r47Jg4R1dDoL31Tt6bp+B4eGZmFAbCFNuFQblK7v7BRA8TBfFV3kGXlK0kNILDCgzJ
-         HqQN8iPHXv8ho/htOKDqR9BgElfsgoRRUB+HIZDKZ6STFLgei1qo1pEN8xWeMd49pXM/
-         BuVtcmD6RxqJyhDoc3Xs4AfBDVWEzz0aKl6bo=
-Date: Sat, 20 Feb 2010 15:21:04 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
-	function_graph tracer
-Message-ID: <20100220142054.GA5354@nowhere>
-References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com> <1265929831.2737.340.camel@localhost.localdomain> <4B749A42.2080703@am.sony.com> <1265934415.2737.344.camel@localhost.localdomain>
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=H09c+WOfHUjaEMp5nHGJHr8mlAeKs/KSvuAVwnI45duusTPrkrWcQBjGwqbX8PYMmc
+         6RzKWv8wTI7O1MCLrkd2Rr6B/8Xugy43jhsp74aOtJ+6W0u/dZE5fHl3snQHv+E1Q2o9
+         3kRgiq9dqX+nKn0qK/BQ9IFiN29ymhBjbVOZk=
+Date: Sat, 20 Feb 2010 22:21:23 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joel Becker <joel.becker@oracle.com>, James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 16/18] sysctl extern cleanup - lockdep
+Message-ID: <20100220142123.GO3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1265934415.2737.344.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 07:26:55PM -0500, Steven Rostedt wrote:
-> On Thu, 2010-02-11 at 16:01 -0800, Tim Bird wrote:
-> > On 02/11/2010 03:10 PM, Steven Rostedt wrote:
-> > > On Wed, 2010-02-10 at 14:52 -0800, Tim Bird wrote:
-> > >>  static struct tracer_opt trace_opts[] = {
-> > >>  	/* Display overruns? (for self-debug purpose) */
-> > >> @@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
-> > >>  	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
-> > >>  	/* Display absolute time of an entry */
-> > >>  	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
-> > >> +	/* Display function name on exit, instead of just closing brace */
-> > >> +	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
-> > >>  	{ } /* Empty entry */
-> > > 
-> > > I wonder if this should be enabled on start up of the function graph
-> > > tracer if the threshold is set?
-> > > 
-> > > Otherwise people will wonder WTF?
-> > 
-> > Indeed.  I'm not sure exactly how to do this.
-> > 
-> > Would it be better to set the option when current_tracer
-> > is set with 'function_graph', and tracing_thresh is non-zero?
-> 
-> The above is the only one I would do. If tracing_thresh is non-zero when
-> the function_graph tracer is set, on the start up code in the function
-> tracer (graph_trace_init).
-> 
-> Just enable the option if trace_thresh is set. If you enable function
-> graph tracer and have the trace_thresh set, then this type of tracing
-> starts immediately. It also keeps the code nicely in the
-> trace_function_graph.c file, and does not need to touch the setting of
-> tracing_thresh.
+Extern declarations in sysctl.c should be move to their own head file,
+and then include them in relavant .c files.
 
+Move lockdep extern declarations to linux/lockdep.h
 
-Actually why do we encumber with both tracing_thresh and the funcgraph-exit
-option?
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+ include/linux/lockdep.h |    5 +++++
+ kernel/sysctl.c         |    4 +---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-We could just have the output and the record check tracing_thresh instead
-of the funcgraph-exit option.
-
+--- linux-2.6.32.orig/include/linux/lockdep.h	2010-02-20 14:02:16.481592295 +0800
++++ linux-2.6.32/include/linux/lockdep.h	2010-02-20 14:42:48.091351691 +0800
+@@ -11,6 +11,11 @@
+ 
+ struct task_struct;
+ struct lockdep_map;
++#ifdef CONFIG_SYSCTL
++extern int prove_locking;
++extern int lock_stat;
++#endif
++
+ 
+ #ifdef CONFIG_LOCKDEP
+ 
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:40:24.232197892 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:41:41.625522844 +0800
+@@ -64,6 +64,7 @@
+ #include <linux/blk-iopoll.h>
+ #include <linux/acct.h>
+ #include <linux/rtmutex.h>
++#include <linux/lockdep.h>
+ #include <scsi/sg.h>
+ 
+ #include <asm/uaccess.h>
+@@ -165,9 +166,6 @@ extern struct ctl_table inotify_table[];
+ extern struct ctl_table epoll_table[];
+ #endif
+ 
+-extern int prove_locking;
+-extern int lock_stat;
+-
+ /* The default sysctl tables: */
+ 
+ static struct ctl_table root_table[] = {
