@@ -1,167 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147Ab0BTIRg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 03:17:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40236 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135Ab0BTIRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 03:17:34 -0500
-Message-ID: <4B7F9B65.1060309@redhat.com>
-Date: Sat, 20 Feb 2010 16:20:53 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1753344Ab0BTIdi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 03:33:38 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:43639 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885Ab0BTIdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 03:33:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=nWPatHnE90fzW09qrPjIe/yvwMRNB19SiXjn7IyuuJOgr9npe7Og3HPfPHiHm9y6gZ
+         5GM8DVQQS0KFBOnclwg/Xf0kfh/3svKxjak01K1oBuyTi7Ein0wmXtU62bzMY5irCM8C
+         o+kqANmZc4USXiey3m+BQhIuFyAPAXXyrKqmw=
 MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v5 3/3] net: reserve ports for applications using
- fixed port numbers
-References: <1266532210-11536-1-git-send-email-opurdila@ixiacom.com> <1266532210-11536-3-git-send-email-opurdila@ixiacom.com>
-In-Reply-To: <1266532210-11536-3-git-send-email-opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100219175429.826376846@vyatta.com>
+References: <20100219175217.385580142@vyatta.com> <20100219175429.826376846@vyatta.com>
+From: Hui Zhu <teawater@gmail.com>
+Date: Sat, 20 Feb 2010 16:26:24 +0800
+Message-ID: <daef60381002200026g64b09344m51b798315707179d@mail.gmail.com>
+Subject: Re: [PATCH 04/10] namespace: perlcritic warnings
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       =?UTF-8?B?VXdlIEtsZWluZS1LxILFm25pZw==?= 
+	<u.kleine-koenig@pengutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       WANG Cong <amwang@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       =?UTF-8?Q?Ozan_=C4=82aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Hong <lihong.hi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
+       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o1K8YRmE028097
 
-Octavian Purdila wrote:
-> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports which
-> allows users to reserve ports for third-party applications.
-> 
-> The reserved ports will not be used by automatic port assignments
-> (e.g. when calling connect() or bind() with port number 0). Explicit
-> port allocation behavior is unchanged.
-> 
-> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Neil Horman <nhorman@tuxdriver.com>
-> Cc: Eric Dumazet <eric.dumazet@gmail.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  Documentation/networking/ip-sysctl.txt |   14 ++++++++++++++
->  drivers/infiniband/core/cma.c          |    7 ++++++-
->  include/net/ip.h                       |    6 ++++++
->  net/ipv4/af_inet.c                     |    8 +++++++-
->  net/ipv4/inet_connection_sock.c        |    6 ++++++
->  net/ipv4/inet_hashtables.c             |    2 ++
->  net/ipv4/sysctl_net_ipv4.c             |   17 +++++++++++++++++
->  net/ipv4/udp.c                         |    3 ++-
->  net/sctp/socket.c                      |    2 ++
->  9 files changed, 62 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/networking/ip-sysctl.txt b/Documentation/networking/ip-sysctl.txt
-> index 2dc7a1d..6534ee7 100644
-> --- a/Documentation/networking/ip-sysctl.txt
-> +++ b/Documentation/networking/ip-sysctl.txt
-> @@ -564,6 +564,20 @@ ip_local_port_range - 2 INTEGERS
->  	(i.e. by default) range 1024-4999 is enough to issue up to
->  	2000 connections per second to systems supporting timestamps.
->  
-> +ip_local_reserved_ports - list of comma separated ranges
-> +	Specify the ports which are reserved for known third-party
-> +	applications. These ports will not be used by automatic port
-> +	assignments (e.g. when calling connect() or bind() with port
-> +	number 0). Explicit port allocation behavior is unchanged.
-> +
-> +	The format used for both input and output is a comma separated
-> +	list of ranges (e.g. "1,2-4,10-10" for ports 1, 2, 3, 4 and
-> +	10). Writing to the file will clear all previously reserved
-> +	ports and update the current list with the one given in the
-> +	input.
-> +
-> +	Default: Empty
-> +
->  ip_nonlocal_bind - BOOLEAN
->  	If set, allows processes to bind() to non-local IP addresses,
->  	which can be quite useful - but may break some applications.
-> diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
-> index 875e34e..06c9fa5 100644
-> --- a/drivers/infiniband/core/cma.c
-> +++ b/drivers/infiniband/core/cma.c
-> @@ -1979,6 +1979,8 @@ retry:
->  	/* FIXME: add proper port randomization per like inet_csk_get_port */
->  	do {
->  		ret = idr_get_new_above(ps, bind_list, next_port, &port);
-> +		if (inet_is_reserved_local_port(port))
-> +			ret = -EAGAIN;
->  	} while ((ret == -EAGAIN) && idr_pre_get(ps, GFP_KERNEL));
->  
->  	if (ret)
-> @@ -2995,10 +2997,13 @@ static int __init cma_init(void)
->  {
->  	int ret, low, high, remaining;
->  
-> -	get_random_bytes(&next_port, sizeof next_port);
->  	inet_get_local_port_range(&low, &high);
-> +again:
-> +	get_random_bytes(&next_port, sizeof next_port);
->  	remaining = (high - low) + 1;
->  	next_port = ((unsigned int) next_port % remaining) + low;
-> +	if (inet_is_reserved_local_port(next_port))
-> +		goto again;
->  
->  	cma_wq = create_singlethread_workqueue("rdma_cm");
->  	if (!cma_wq)
-> diff --git a/include/net/ip.h b/include/net/ip.h
-> index 503994a..3da9004 100644
-> --- a/include/net/ip.h
-> +++ b/include/net/ip.h
-> @@ -184,6 +184,12 @@ extern struct local_ports {
->  } sysctl_local_ports;
->  extern void inet_get_local_port_range(int *low, int *high);
->  
-> +extern unsigned long *sysctl_local_reserved_ports;
-> +static inline int inet_is_reserved_local_port(int port)
-> +{
-> +	return test_bit(port, sysctl_local_reserved_ports);
-> +}
-> +
->  extern int sysctl_ip_default_ttl;
->  extern int sysctl_ip_nonlocal_bind;
->  
-> diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
-> index 33b7dff..e283fbe 100644
-> --- a/net/ipv4/af_inet.c
-> +++ b/net/ipv4/af_inet.c
-> @@ -1546,9 +1546,13 @@ static int __init inet_init(void)
->  
->  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
->  
-> +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
-> +	if (!sysctl_local_reserved_ports)
-> +		goto out;
-> +
->  	rc = proto_register(&tcp_prot, 1);
->  	if (rc)
-> -		goto out;
-> +		goto out_free_reserved_ports;
->  
->  	rc = proto_register(&udp_prot, 1);
->  	if (rc)
-> @@ -1647,6 +1651,8 @@ out_unregister_udp_proto:
->  	proto_unregister(&udp_prot);
->  out_unregister_tcp_proto:
->  	proto_unregister(&tcp_prot);
-> +out_free_reserved_ports:
-> +	kfree(sysctl_local_reserved_ports);
->  	goto out;
->  }
->  
-> diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_sock.c
-> index 8da6429..1acb462 100644
-> --- a/net/ipv4/inet_connection_sock.c
-> +++ b/net/ipv4/inet_connection_sock.c
-> @@ -37,6 +37,9 @@ struct local_ports sysctl_local_ports __read_mostly = {
->  	.range = { 32768, 61000 },
->  };
->  
-> +unsigned long *sysctl_local_reserved_ports;
-> +EXPORT_SYMBOL(sysctl_local_reserved_ports);
-> +
-
-Sorry, this looks somewhat weird, why not just export
-inet_is_reserved_local_port()?
+On Sat, Feb 20, 2010 at 01:52, Stephen Hemminger <shemminger@vyatta.com> wrote:> Use local file handle not global.> Make loop and other variables local in scope.>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>>>> --- a/scripts/namespace.pl      2010-02-19 08:59:00.432184740 -0800> +++ b/scripts/namespace.pl      2010-02-19 09:05:52.672644797 -0800> @@ -175,12 +175,11 @@ sub do_nm>        }>        if (! -e "$source.c" && ! -e "$source.S") {>                # No obvious source, exclude the object if it is conglomerate> -               if (! open(OBJDUMPDATA, "$objdump $basename|")) {> -                       printf STDERR "$objdump $fullname failed $!\n";> -                       return;> -               }> +               open(my $objdumpdata, "$objdump $basename|")> +                   or die "$objdump $fullname failed $!\n";
+Looks it just want return, are you sure have to change it to die?
+> +>                my $comment;> -               while (<OBJDUMPDATA>) {> +               while (<$objdumpdata>) {>                        chomp();>                        if (/^In archive/) {>                                # Archives are always conglomerate> @@ -190,18 +189,18 @@ sub do_nm>                        next if (! /^[ 0-9a-f]{5,} /);>                        $comment .= substr($_, 43);>                }> -               close(OBJDUMPDATA);> +               close($objdumpdata);> +>                if (!defined($comment) || $comment !~ /GCC\:.*GCC\:/m) {>                        printf STDERR "No source file found for $fullname\n";>                }>                return;>        }> -       if (! open(NMDATA, "$nm $basename|")) {> -               printf STDERR "$nm $fullname failed $!\n";> -               return;> -       }> +       open (my $nmdata, "$nm $basename|")> +           or die "$nm $fullname failed $!\n";> +>        my @nmdata;> -       while (<NMDATA>) {> +       while (<$nmdata>) {>                chop;>                ($type, $name) = (split(/ +/, $_, 3))[1..2];>                # Expected types> @@ -268,7 +267,8 @@ sub do_nm>                        }>                }>        }> -       close(NMDATA);> +       close($nmdata);> +>        if ($#nmdata < 0) {>                if (>                        $fullname ne "lib/brlock.o"> @@ -316,8 +316,7 @@ sub drop_def>>  sub list_multiply_defined>  {> -       my ($name, $module);> -       foreach $name (keys(%def)) {> +       foreach my $name (keys(%def)) {>                if ($#{$def{$name}} > 0) {>                        # Special case for cond_syscall>                        if ($#{$def{$name}} == 1 && $name =~ /^sys_/ &&> @@ -333,8 +332,9 @@ sub list_multiply_defined>                                &drop_def("arch/x86/kernel/vsyscall-sysenter_32.o", $name);>                                next;>                        }> +>                        printf "$name is multiply defined in :-\n";> -                       foreach $module (@{$def{$name}}) {> +                       foreach my $module (@{$def{$name}}) {>                                printf "\t$module\n";>                        }>                }> @@ -343,12 +343,13 @@ sub list_multiply_defined>>  sub resolve_external_references>  {> -       my ($object, $type, $name, $i, $j, $kstrtab, $ksymtab, $export);> +       my ($kstrtab, $ksymtab, $export);> +>        printf "\n";> -       foreach $object (keys(%nmdata)) {> +       foreach my $object (keys(%nmdata)) {>                my $nmdata = $nmdata{$object};> -               for ($i = 0; $i <= $#{$nmdata}; ++$i) {> -                       ($type, $name) = split(' ', $nmdata->[$i], 2);> +               for (my $i = 0; $i <= $#{$nmdata}; ++$i) {> +                       my ($type, $name) = split(' ', $nmdata->[$i], 2);>                        if ($type eq "U" || $type eq "w") {>                                if (exists($def{$name}) || exists($ksymtab{$name})) {>                                        # add the owning object to the nmdata> @@ -357,7 +358,7 @@ sub resolve_external_references>                                        $kstrtab = "R __kstrtab_$name";>                                        $ksymtab = "R __ksymtab_$name";>                                        $export = 0;> -                                       for ($j = 0; $j <= $#{$nmdata}; ++$j) {> +                                       for (my $j = 0; $j <= $#{$nmdata}; ++$j) {>                                                if ($nmdata->[$j] eq $kstrtab ||>                                                    $nmdata->[$j] eq $ksymtab) {>                                                        $export = 1;> @@ -424,11 +425,11 @@ sub resolve_external_references>  sub list_extra_externals>  {>        my %noref = ();> -       my ($name, @module, $module, $export);> -       foreach $name (keys(%def)) {> +> +       foreach my $name (keys(%def)) {>                if (! exists($ref{$name})) {> -                       @module = @{$def{$name}};> -                       foreach $module (@module) {> +                       my @module = @{$def{$name}};> +                       foreach my $module (@module) {>                                if (! exists($noref{$module})) {>                                        $noref{$module} = [];>                                }> @@ -438,16 +439,16 @@ sub list_extra_externals>        }>        if (%noref) {>                printf "\nExternally defined symbols with no external references\n";> -               foreach $module (sort(keys(%noref))) {> +               foreach my $module (sort(keys(%noref))) {>                        printf "  $module\n";>                        foreach (sort(@{$noref{$module}})) {> -                               if (exists($export{$_})) {> -                                       $export = " (export only)";> -                               }> -                               else {> -                                       $export = "";> -                               }> -                               printf "    $_$export\n";> +                           my $export;> +                           if (exists($export{$_})) {> +                               $export = " (export only)";> +                           } else {> +                               $export = "";> +                           }> +                           printf "    $_$export\n";>                        }>                }>        }>> -->>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
