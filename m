@@ -1,49 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127Ab0BTUg0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 15:36:26 -0500
-Received: from 87-194-149-168.bethere.co.uk ([87.194.149.168]:64929 "EHLO
-	svr2.cnick.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753268Ab0BTUgZ (ORCPT
+	id S1756318Ab0BTUpK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 15:45:10 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:55661 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055Ab0BTUpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 15:36:25 -0500
-From: chris.nicholson@cnick.org.uk
-To: gregkh@suse.de, wfp5p@virginia.edu
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Staging: hv: fix brace coding style issue in Channel.c
-Date: Sat, 20 Feb 2010 20:36:23 +0000
-Message-Id: <1266698183-26781-1-git-send-email-chris.nicholson@cnick.org.uk>
-X-Mailer: git-send-email 1.6.6
-X-OriginalArrivalTime: 20 Feb 2010 20:35:27.0365 (UTC) FILETIME=[3C6FC350:01CAB26C]
+	Sat, 20 Feb 2010 15:45:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=d9i5hzmE6Fg4I8XPDSASon/p17uurvAo0RWE20Uck6TeDvfCEwyczqj9vLkP+Sy3kt
+         A1zH9a2GHlshquNNdMXunA+Smn8midJGdXrsDg+8oyP2Ub1QweDcYkAjTDE5hufxg+Qe
+         FLwo+tCr+U2ezUeeBRTRCr0dQ2f5lVyOTAois=
+Subject: Re: [PATCH 0/14 V9] Work to enable SmartMedia/xD support in mtd
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "stanley.miao" <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>
+In-Reply-To: <1266697630.4152.0.camel@maxim-laptop>
+References: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
+	 <1266697630.4152.0.camel@maxim-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 20 Feb 2010 22:45:01 +0200
+Message-Id: <1266698701.3178.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Nicholson <chris.nicholson@cnick.org.uk>
+On Sat, 2010-02-20 at 22:27 +0200, Maxim Levitsky wrote:
+> On Wed, 2010-02-17 at 23:49 +0200, Maxim Levitsky wrote: 
+> > This is slightly updated version of my patchset.
+> > Now I can tell you for sure that hotplug works.
+> > It was used/abused for long time.
+> > I did some changes in richoh card reader driver, to work better after resume
+> > and renamed it to r852.
+> > 
+> > I kindly ask you to merge this patchset to 2.6.34.
+> > If I/users find other bugs they can be addressed by follow up patches.
+> > 
+> > Best regards,
+> > 	Maxim Levitsky
+> > 
+> > 
+> > 
+> Should I expect at least some response on that?
+> Or not?
 
-This is a patch to the Channel.c file that fixes up a brace
-warning found by checkpatch.pl
+Since you put me to CC, I answer: not from me, I have no time at all to
+look at this closely.
 
-Signed-off-by: Chris Nicholson <chris.nicholson@cnick.org.uk>
----
- drivers/staging/hv/Channel.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/staging/hv/Channel.c b/drivers/staging/hv/Channel.c
-index 746370e..d46eb14 100644
---- a/drivers/staging/hv/Channel.c
-+++ b/drivers/staging/hv/Channel.c
-@@ -991,9 +991,8 @@ void VmbusChannelOnTimer(unsigned long data)
- {
- 	struct vmbus_channel *channel = (struct vmbus_channel *)data;
- 
--	if (channel->OnChannelCallback) {
-+	if (channel->OnChannelCallback)
- 		channel->OnChannelCallback(channel->ChannelCallbackContext);
--	}
- }
- 
- /**
 -- 
-1.6.6
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
