@@ -1,29 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149Ab0BTOVe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:21:34 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:33091 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755921Ab0BTOVd (ORCPT
+	id S1756230Ab0BTOWf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:22:35 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:64012 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755921Ab0BTOWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:21:33 -0500
+	Sat, 20 Feb 2010 09:22:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=H09c+WOfHUjaEMp5nHGJHr8mlAeKs/KSvuAVwnI45duusTPrkrWcQBjGwqbX8PYMmc
-         6RzKWv8wTI7O1MCLrkd2Rr6B/8Xugy43jhsp74aOtJ+6W0u/dZE5fHl3snQHv+E1Q2o9
-         3kRgiq9dqX+nKn0qK/BQ9IFiN29ymhBjbVOZk=
-Date: Sat, 20 Feb 2010 22:21:23 +0800
+        b=G4cV1Gw62HZUk7At7/MpumWpe9hj7DvDh5dBv8cH2vTH0RvNs76K79byk7S6ZbRBwp
+         Oq1+xREK0vKuYz8UZmDYqUDi6fvo8LU2udR6qz3b/3cB575eC9qMFIn4qLusf3GFTicb
+         VRkmmwzXtQkaoWqxDqSjCZMplkXiOZ4beJVAw=
+Date: Sat, 20 Feb 2010 22:22:24 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joel Becker <joel.becker@oracle.com>, James Morris <jmorris@namei.org>,
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Andi Kleen <ak@linux.intel.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 16/18] sysctl extern cleanup - lockdep
-Message-ID: <20100220142123.GO3195@darkstar>
+Subject: [PATCH 17/18] sysctl extern cleanup - poll
+Message-ID: <20100220142224.GP3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,45 +37,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-Move lockdep extern declarations to linux/lockdep.h
+Move epoll_table extern declaration to linux/poll.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/lockdep.h |    5 +++++
- kernel/sysctl.c         |    4 +---
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ include/linux/poll.h |    3 +++
+ kernel/sysctl.c      |    4 +---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
---- linux-2.6.32.orig/include/linux/lockdep.h	2010-02-20 14:02:16.481592295 +0800
-+++ linux-2.6.32/include/linux/lockdep.h	2010-02-20 14:42:48.091351691 +0800
-@@ -11,6 +11,11 @@
+--- linux-2.6.32.orig/include/linux/poll.h	2010-02-20 14:02:15.871592994 +0800
++++ linux-2.6.32/include/linux/poll.h	2010-02-20 14:44:14.138009487 +0800
+@@ -12,6 +12,9 @@
+ #include <linux/fs.h>
+ #include <asm/uaccess.h>
  
- struct task_struct;
- struct lockdep_map;
-+#ifdef CONFIG_SYSCTL
-+extern int prove_locking;
-+extern int lock_stat;
++#if defined(CONFIG_EPOLL) && defined (CONFIG_SYSCTL)
++extern struct ctl_table epoll_table[];
 +#endif
-+
- 
- #ifdef CONFIG_LOCKDEP
- 
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:40:24.232197892 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:41:41.625522844 +0800
-@@ -64,6 +64,7 @@
- #include <linux/blk-iopoll.h>
+ /* ~832 bytes of stack space used max in sys_select/sys_poll before allocating
+    additional memory. */
+ #define MAX_STACK_ALLOC 832
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:41:41.625522844 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:43:20.458847237 +0800
+@@ -65,6 +65,7 @@
  #include <linux/acct.h>
  #include <linux/rtmutex.h>
-+#include <linux/lockdep.h>
+ #include <linux/lockdep.h>
++#include <linux/poll.h>
  #include <scsi/sg.h>
  
  #include <asm/uaccess.h>
-@@ -165,9 +166,6 @@ extern struct ctl_table inotify_table[];
- extern struct ctl_table epoll_table[];
+@@ -162,9 +163,6 @@ extern struct ctl_table random_table[];
+ #ifdef CONFIG_INOTIFY_USER
+ extern struct ctl_table inotify_table[];
  #endif
+-#ifdef CONFIG_EPOLL
+-extern struct ctl_table epoll_table[];
+-#endif
  
--extern int prove_locking;
--extern int lock_stat;
--
  /* The default sysctl tables: */
  
- static struct ctl_table root_table[] = {
