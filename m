@@ -1,53 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553Ab0BTU5m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 15:57:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52192
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756081Ab0BTU5l (ORCPT
+	id S1756294Ab0BTVZA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 16:25:00 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54258 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754833Ab0BTVY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 15:57:41 -0500
-Date: Sat, 20 Feb 2010 12:57:58 -0800 (PST)
-Message-Id: <20100220.125758.174837163.davem@davemloft.net>
-To: weigelt@metux.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dynamic linking in the kernel
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B802870.5030201@metux.de>
-References: <4B802870.5030201@metux.de>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Feb 2010 16:24:58 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 20 Feb 2010 22:24:43 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: <linux/wait.h> requires <linux/sched.h> (was Re: [PATCH 3/4]
+ firewire: get_cycle_timer optimization and cleanup)
+To: linux-kernel@vger.kernel.org
+cc: linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.f36b636501d78192@s5r6.in-berlin.de>
+Message-ID: <tkrat.5fa896f03c3d0c16@s5r6.in-berlin.de>
+References: <tkrat.a3f2efe539e59c19@s5r6.in-berlin.de>
+ <tkrat.f36b636501d78192@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Enrico Weigelt <weigelt@metux.de>
-Date: Sat, 20 Feb 2010 19:22:40 +0100
+On 14 Feb, Stefan Richter wrote:
+> --- linux-2.6.33-rc8.orig/drivers/firewire/core-cdev.c
+> +++ linux-2.6.33-rc8/drivers/firewire/core-cdev.c
+[...]
+> @@ -32,8 +33,6 @@
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/poll.h>
+> -#include <linux/preempt.h>
+> -#include <linux/sched.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/string.h>
+>  #include <linux/time.h>
+[...]
 
-> Starting up an dynamically linked executable tends to need a lot
-> of syscalls. A kernel-based dynamic linker could cache a lot of
-> relocation data (eg. when the same binary is called many times),
-> share pages even w/o mmap(), and the ldstub wouldnt be needed
-> anymore.
+This doesn't compile on some configurations.  core-cdev.c requires (and
+includes) linux/wait.h which in turn requires (but does not include)
+linux/sched.h.
 
-This is not practical.
+However, adding #include <linux/sched.h> in wait.h isn't going to be
+possible very easily; there are a whole lot of missing definitions in
+other headers that are pulled in by sched.h then.
 
-In order to implement this the kernel would have to also save a copy
-of all pieces of the processes's environment and compare all of the
-environment variable settings on every execution.  This would be
-needed to handle things like LD_PRELOAD, LD_LIBRARY_PATH, and LD_DEBUG
-as just three examples.
+Hence I will simply readd sched.h to firewire/core-cdev.c.
+-- 
+Stefan Richter
+-=====-==-=- --=- =-=--
+http://arcgraph.de/sr/
 
-What's more, any filesystem change involved in the shared libraries,
-the executable, or the dynamic linker would have to be monitored as
-well.
-
-Really, this is not a good idea, and the cost is only ~3 system calls
-per shared library and considering the amount of flexibility we get in
-return it's not that bad at all.
-
-Actually, the more expensive part of shared libraries are the page
-faults from filling in the relocations and we already have a mechanism
-to save that cost, it's called 'prelink'.
