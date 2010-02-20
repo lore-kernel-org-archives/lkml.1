@@ -1,96 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083Ab0BTBCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 20:02:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35005 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729Ab0BTBC2 (ORCPT
+	id S1752906Ab0BTBGp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 20:06:45 -0500
+Received: from mga11.intel.com ([192.55.52.93]:4896 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751417Ab0BTBGo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 20:02:28 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf tools: Don't use parent comm if not set at fork time
-Date: Fri, 19 Feb 2010 23:02:07 -0200
-Message-Id: <1266627727-19715-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Fri, 19 Feb 2010 20:06:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,506,1262592000"; 
+   d="scan'208";a="542270713"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       "Du, Alek" <alek.du@intel.com>, "Tang, Feng" <feng.tang@intel.com>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+Date: Fri, 19 Feb 2010 17:06:41 -0800
+Subject: RE: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
+Thread-Topic: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
+Thread-Index: AcqsTYkMZbB4yndrSeePEB93tdCxqQFejElQ
+Message-ID: <43F901BD926A4E43B106BF17856F0755A30A7660@orsmsx508.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+A couple of corrections to this patch.
+1. added missing commit message
+2. removed change that exports static variable nr_irqs_gsi
 
-As the parent comm then is worthless, confusing users about the thread where
-the sample really happened, leading to think that the sample happened in the
-parent, not where it really happened, in the children of a thread for which a
-PERF_RECORD_COMM event was not received.
+new patch:
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+>From 66f107d47224e70a4755969a4b01e8fa3815a606 Mon Sep 17 00:00:00 2001
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Date: Fri, 5 Feb 2010 04:06:56 -0800
+Subject: [PATCH] x86/apic: remove ioapic_disable_legacy
+
+ioapic_disable_legacy call is no longer needed for platforms do not have
+legacy pic. the legacy pic abstraction has taken care it automatically.
+
+this patch also initialize irq related static variables based on
+information obtained from legacy_pic.
+
+Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- tools/perf/util/thread.c |   18 ++++++++++++------
- tools/perf/util/thread.h |    1 +
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/io_apic.h |    2 --
+ arch/x86/kernel/apic/io_apic.c |   10 +++++-----
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index 634b7f7..9e8995e 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -36,7 +36,10 @@ int thread__set_comm(struct thread *self, const char *comm)
- 	if (self->comm)
- 		free(self->comm);
- 	self->comm = strdup(comm);
--	return self->comm ? 0 : -ENOMEM;
-+	if (self->comm == NULL)
-+		return -ENOMEM;
-+	self->comm_set = true;
-+	return 0;
- }
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 7c7c16c..84fdd51 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -143,8 +143,6 @@ extern int noioapicreroute;
+ /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
+ extern int timer_through_8259;
  
- int thread__comm_len(struct thread *self)
-@@ -255,11 +258,14 @@ int thread__fork(struct thread *self, struct thread *parent)
+-extern void io_apic_disable_legacy(void);
+-
+ /*
+  * If we use the IO-APIC for IRQ routing, disable automatic
+  * assignment of PCI IRQ's.
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 1704cd8..3592a72 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -143,11 +143,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS_LEGACY];
+ static struct irq_cfg irq_cfgx[NR_IRQS];
+ #endif
+ 
+-void __init io_apic_disable_legacy(void)
+-{
+-	nr_irqs_gsi = 0;
+-}
+-
+ int __init arch_early_irq_init(void)
  {
+ 	struct irq_cfg *cfg;
+@@ -156,6 +151,11 @@ int __init arch_early_irq_init(void)
+ 	int node;
  	int i;
  
--	if (self->comm)
--		free(self->comm);
--	self->comm = strdup(parent->comm);
--	if (!self->comm)
--		return -ENOMEM;
-+	if (parent->comm_set) {
-+		if (self->comm)
-+			free(self->comm);
-+		self->comm = strdup(parent->comm);
-+		if (!self->comm)
-+			return -ENOMEM;
-+		self->comm_set = true;
++	if (!legacy_pic->nr_legacy_irqs) {
++		nr_irqs_gsi = 0;
++		io_apic_irqs = ~0UL;
 +	}
- 
- 	for (i = 0; i < MAP__NR_TYPES; ++i)
- 		if (map_groups__clone(&self->mg, &parent->mg, i) < 0)
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 56f317b..0a28f39 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -15,6 +15,7 @@ struct thread {
- 	struct map_groups	mg;
- 	pid_t			pid;
- 	char			shortname[3];
-+	bool			comm_set;
- 	char			*comm;
- 	int			comm_len;
- };
++
+ 	cfg = irq_cfgx;
+ 	count = ARRAY_SIZE(irq_cfgx);
+ 	node= cpu_to_node(boot_cpu_id);
 -- 
-1.5.5.1
+1.5.6.5
+
+
+
+
+
+>-----Original Message-----
+>From: Pan, Jacob jun
+>Sent: Friday, February 12, 2010 5:41 PM
+>To: linux-kernel@vger.kernel.org
+>Cc: Ingo Molnar; 'Thomas Gleixner'; Arjan van de Ven; Barnes, Jesse; Du, Alek;
+>Tang, Feng; H. Peter Anvin
+>Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
+>
+>From e25ea443d81dc037e6a1da33e23bc04b976b70da Mon Sep 17 00:00:00 2001
+>From: Jacob Pan <jacob.jun.pan@intel.com>
+>Date: Fri, 5 Feb 2010 04:06:56 -0800
+>Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
+>
+>Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+>---
+> arch/x86/include/asm/io_apic.h |    2 --
+> arch/x86/kernel/apic/io_apic.c |   12 ++++++------
+> 2 files changed, 6 insertions(+), 8 deletions(-)
+>
+>diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+>index 7c7c16c..84fdd51 100644
+>--- a/arch/x86/include/asm/io_apic.h
+>+++ b/arch/x86/include/asm/io_apic.h
+>@@ -143,8 +143,6 @@ extern int noioapicreroute;
+> /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
+> extern int timer_through_8259;
+>
+>-extern void io_apic_disable_legacy(void);
+>-
+> /*
+>  * If we use the IO-APIC for IRQ routing, disable automatic
+>  * assignment of PCI IRQ's.
+>diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+>index 1704cd8..5a7aab2 100644
+>--- a/arch/x86/kernel/apic/io_apic.c
+>+++ b/arch/x86/kernel/apic/io_apic.c
+>@@ -95,7 +95,7 @@ struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
+> int mp_irq_entries;
+>
+> /* GSI interrupts */
+>-static int nr_irqs_gsi = NR_IRQS_LEGACY;
+>+int nr_irqs_gsi = NR_IRQS_LEGACY;
+>
+> #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
+> int mp_bus_id_to_type[MAX_MP_BUSSES];
+>@@ -143,11 +143,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS_LEGACY];
+> static struct irq_cfg irq_cfgx[NR_IRQS];
+> #endif
+>
+>-void __init io_apic_disable_legacy(void)
+>-{
+>-	nr_irqs_gsi = 0;
+>-}
+>-
+> int __init arch_early_irq_init(void)
+> {
+> 	struct irq_cfg *cfg;
+>@@ -156,6 +151,11 @@ int __init arch_early_irq_init(void)
+> 	int node;
+> 	int i;
+>
+>+	if (!legacy_pic->nr_legacy_irqs) {
+>+		nr_irqs_gsi = 0;
+>+		io_apic_irqs = ~0UL;
+>+	}
+>+
+> 	cfg = irq_cfgx;
+> 	count = ARRAY_SIZE(irq_cfgx);
+> 	node= cpu_to_node(boot_cpu_id);
+>--
+>1.6.5.3
 
