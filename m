@@ -1,64 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642Ab0BTHWc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 02:22:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37725 "EHLO mx1.redhat.com"
+	id S1752773Ab0BTH2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 02:28:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27244 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169Ab0BTHWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 02:22:30 -0500
-Date: Sat, 20 Feb 2010 00:21:48 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "Gadiyar, Anand" <gadiyar@ti.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100220002148.6676a8f6@redhat.com>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB03215B07FF@dbde02.ent.ti.com>
-References: <20100208065519.GE1290@ucw.cz>
-	<1265622676.4020.19.camel@pc1117.cambridge.arm.com>
-	<20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
-	<1265628483.4020.63.camel@pc1117.cambridge.arm.com>
-	<EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
-	<20100216084442.GA3212@n2100.arm.linux.org.uk>
-	<5A47E75E594F054BAF48C5E4FC4B92AB03215B07FF@dbde02.ent.ti.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751621Ab0BTH2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 02:28:24 -0500
+Message-ID: <4B7F8F9E.5050903@redhat.com>
+Date: Sat, 20 Feb 2010 15:30:38 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       =?ISO-8859-1?Q?Uwe_Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       Hui Zhu <teawater@gmail.com>,
+       =?ISO-8859-1?Q?Ozan_=C3aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Hong <lihong.hi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
+       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] checkincludes: fix perlcritic warnings
+References: <20100219175217.385580142@vyatta.com>	<20100219175429.683903905@vyatta.com>	<4B7F515C.9090501@redhat.com> <20100219220522.4a987ffb@nehalam>
+In-Reply-To: <20100219220522.4a987ffb@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 14:21:48 +0530
-"Gadiyar, Anand" <gadiyar@ti.com> wrote:
-
-> >         hcd->self.uses_dma = (dev->dma_mask != NULL);
-> > 
-> > Is it easier to make sure that PIO devices don't have dev->dma_mask set?
+Stephen Hemminger wrote:
+> On Sat, 20 Feb 2010 11:05:00 +0800
+> Cong Wang <amwang@redhat.com> wrote:
 > 
-> Not really. For instance, in the case of the DMA engine in the MUSB
-> controller in OMAP3, we can only use DMA with endpoints other than
-> EP0, and EP0 is what is used for control transfers.
+>> This looks fine, but your $subject needs to be fixed.
+>>
 > 
-> It's not PIO for all the endpoints or DMA for all of them.
+> Sorry, I use netdev standard subject name format.  (Inherited from Jeff Garzik)
 
-The HC driver does not have to be 100% truthful here. If the system
-is not HIGHMEM, HCD can easily set uses_dma to false yet use DMA
-by mapping buffers itself, without relying on the quoted code.
+Oh, sorry, I misunderstood it. Then it is fine.
 
-On a HIGHMEM system, block layer will bounce-buffer data in such case.
-Hopefuly not a problem for ARM?
-
-All network stack drivers work that way, BTW.
-
--- Pete
