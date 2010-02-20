@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576Ab0BTAh2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 19:37:28 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:51052 "EHLO
+	id S1751353Ab0BTAhn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 19:37:43 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50952 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751854Ab0BTAhV (ORCPT
+	with ESMTP id S1750990Ab0BTAhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 19:37:21 -0500
+	Fri, 19 Feb 2010 19:37:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=LgDNOpHQCtcNhcDuzpBuPy8DARJMAgk/1FXm07BlIYoCVtqG0/6EhrX4CwBNu3N/HK
-         RsLTYVIOGy5cpgxiHkoDPPYBMn4GKcMBmPEVwwdrP9wq07aC0eNIY0jSWr+2tkT2HhYf
-         DVYSCzKG6HbSY49tqw13HCS2n5IvYF0jwOQrw=
+        b=K5heZcqLld8ukPlpPu0pXWbs3Dx6ynKaz15sWZAUvxSynr09x8r2SCCF9cHCDOCDio
+         JuYLrdSfCuz5ZW87iNPgU0+frtKDiKSqA7+nHbrQFvrnT9hNP5CyselLFVUntPhR/Nqa
+         zfh1Mz0cH4ZvoRD5JkObWWH5KZH5xs2lAec5c=
 From: Denys Vlasenko <vda.linux@googlemail.com>
 To: Denys Vlasenko <vda.linux@googlemail.com>
 Cc: linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [PATCH 12/24] Rename .data.vmpages and .data.vm0.xxx to .data..vmpages and .data..vm0.xxx.
-Date: Sat, 20 Feb 2010 01:37:13 +0100
-Message-Id: <1266626233-25658-3-git-send-email-vda.linux@googlemail.com>
+Subject: [PATCH 10/24] Rename .data[.percpu][.xxx] to .data[..percpu][..xxx].
+Date: Sat, 20 Feb 2010 01:37:12 +0100
+Message-Id: <1266626233-25658-2-git-send-email-vda.linux@googlemail.com>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
 References: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
@@ -28,48 +28,142 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 ---
- arch/parisc/kernel/init_task.c   |    6 +++---
- arch/parisc/kernel/vmlinux.lds.S |    8 ++++----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ arch/ia64/include/asm/percpu.h    |    2 +-
+ include/asm-generic/percpu.h      |   10 +++++-----
+ include/asm-generic/vmlinux.lds.h |   24 ++++++++++++------------
+ include/linux/percpu-defs.h       |    4 ++--
+ kernel/module.c                   |    2 +-
+ 5 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/parisc/kernel/init_task.c b/arch/parisc/kernel/init_task.c
-index d020eae..4a91e43 100644
---- a/arch/parisc/kernel/init_task.c
-+++ b/arch/parisc/kernel/init_task.c
-@@ -53,11 +53,11 @@ union thread_union init_thread_union __init_task_data
-  * guarantee that global objects will be laid out in memory in the same order 
-  * as the order of declaration, so put these in different sections and use
-  * the linker script to order them. */
--pmd_t pmd0[PTRS_PER_PMD] __attribute__ ((__section__ (".data.vm0.pmd"), aligned(PAGE_SIZE)));
-+pmd_t pmd0[PTRS_PER_PMD] __attribute__ ((__section__ (".data..vm0.pmd"), aligned(PAGE_SIZE)));
- #endif
+diff --git a/arch/ia64/include/asm/percpu.h b/arch/ia64/include/asm/percpu.h
+index 30cf465..35d9aeb 100644
+--- a/arch/ia64/include/asm/percpu.h
++++ b/arch/ia64/include/asm/percpu.h
+@@ -31,7 +31,7 @@ extern void *per_cpu_init(void);
  
--pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__ ((__section__ (".data.vm0.pgd"), aligned(PAGE_SIZE)));
--pte_t pg0[PT_INITIAL * PTRS_PER_PTE] __attribute__ ((__section__ (".data.vm0.pte"), aligned(PAGE_SIZE)));
-+pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__ ((__section__ (".data..vm0.pgd"), aligned(PAGE_SIZE)));
-+pte_t pg0[PT_INITIAL * PTRS_PER_PTE] __attribute__ ((__section__ (".data..vm0.pte"), aligned(PAGE_SIZE)));
+ #endif	/* SMP */
+ 
+-#define PER_CPU_BASE_SECTION ".data.percpu"
++#define PER_CPU_BASE_SECTION ".data..percpu"
  
  /*
-  * Initial task structure.
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index 9dab4a4..33ec31d 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -105,10 +105,10 @@ SECTIONS
- 	__bss_start = .;
- 	/* page table entries need to be PAGE_SIZE aligned */
- 	. = ALIGN(PAGE_SIZE);
--	.data.vmpages : {
--		*(.data.vm0.pmd)
--		*(.data.vm0.pgd)
--		*(.data.vm0.pte)
-+	.data..vmpages : {
-+		*(.data..vm0.pmd)
-+		*(.data..vm0.pgd)
-+		*(.data..vm0.pte)
+  * Be extremely careful when taking the address of this variable!  Due to virtual
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index 8087b90..1202a15 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -76,7 +76,7 @@ extern void setup_per_cpu_areas(void);
+ 
+ #ifndef PER_CPU_BASE_SECTION
+ #ifdef CONFIG_SMP
+-#define PER_CPU_BASE_SECTION ".data.percpu"
++#define PER_CPU_BASE_SECTION ".data..percpu"
+ #else
+ #define PER_CPU_BASE_SECTION ".data"
+ #endif
+@@ -88,15 +88,15 @@ extern void setup_per_cpu_areas(void);
+ #define PER_CPU_SHARED_ALIGNED_SECTION ""
+ #define PER_CPU_ALIGNED_SECTION ""
+ #else
+-#define PER_CPU_SHARED_ALIGNED_SECTION ".shared_aligned"
+-#define PER_CPU_ALIGNED_SECTION ".shared_aligned"
++#define PER_CPU_SHARED_ALIGNED_SECTION "..shared_aligned"
++#define PER_CPU_ALIGNED_SECTION "..shared_aligned"
+ #endif
+-#define PER_CPU_FIRST_SECTION ".first"
++#define PER_CPU_FIRST_SECTION "..first"
+ 
+ #else
+ 
+ #define PER_CPU_SHARED_ALIGNED_SECTION ""
+-#define PER_CPU_ALIGNED_SECTION ".shared_aligned"
++#define PER_CPU_ALIGNED_SECTION "..shared_aligned"
+ #define PER_CPU_FIRST_SECTION ""
+ 
+ #endif
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 32cddc1..e304fcd 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -666,16 +666,16 @@
+  */
+ #define PERCPU_VADDR(vaddr, phdr)					\
+ 	VMLINUX_SYMBOL(__per_cpu_load) = .;				\
+-	.data.percpu vaddr : AT(VMLINUX_SYMBOL(__per_cpu_load)		\
++	.data..percpu vaddr : AT(VMLINUX_SYMBOL(__per_cpu_load)		\
+ 				- LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__per_cpu_start) = .;			\
+-		*(.data.percpu.first)					\
+-		*(.data.percpu.page_aligned)				\
+-		*(.data.percpu)						\
+-		*(.data.percpu.shared_aligned)				\
++		*(.data..percpu..first)					\
++		*(.data..percpu..page_aligned)				\
++		*(.data..percpu)					\
++		*(.data..percpu..shared_aligned)			\
+ 		VMLINUX_SYMBOL(__per_cpu_end) = .;			\
+ 	} phdr								\
+-	. = VMLINUX_SYMBOL(__per_cpu_load) + SIZEOF(.data.percpu);
++	. = VMLINUX_SYMBOL(__per_cpu_load) + SIZEOF(.data..percpu);
+ 
+ /**
+  * PERCPU - define output section for percpu area, simple version
+@@ -687,18 +687,18 @@
+  *
+  * This macro is equivalent to ALIGN(align); PERCPU_VADDR( , ) except
+  * that __per_cpu_load is defined as a relative symbol against
+- * .data.percpu which is required for relocatable x86_32
++ * .data..percpu which is required for relocatable x86_32
+  * configuration.
+  */
+ #define PERCPU(align)							\
+ 	. = ALIGN(align);						\
+-	.data.percpu	: AT(ADDR(.data.percpu) - LOAD_OFFSET) {	\
++	.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__per_cpu_load) = .;			\
+ 		VMLINUX_SYMBOL(__per_cpu_start) = .;			\
+-		*(.data.percpu.first)					\
+-		*(.data.percpu.page_aligned)				\
+-		*(.data.percpu)						\
+-		*(.data.percpu.shared_aligned)				\
++		*(.data..percpu..first)					\
++		*(.data..percpu..page_aligned)				\
++		*(.data..percpu)					\
++		*(.data..percpu..shared_aligned)			\
+ 		VMLINUX_SYMBOL(__per_cpu_end) = .;			\
  	}
- 	.bss : {
- 		*(.bss)
+ 
+diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
+index 5a5d6ce..2351191 100644
+--- a/include/linux/percpu-defs.h
++++ b/include/linux/percpu-defs.h
+@@ -127,11 +127,11 @@
+  * Declaration/definition used for per-CPU variables that must be page aligned.
+  */
+ #define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)			\
+-	DECLARE_PER_CPU_SECTION(type, name, ".page_aligned")		\
++	DECLARE_PER_CPU_SECTION(type, name, "..page_aligned")		\
+ 	__aligned(PAGE_SIZE)
+ 
+ #define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
+-	DEFINE_PER_CPU_SECTION(type, name, ".page_aligned")		\
++	DEFINE_PER_CPU_SECTION(type, name, "..page_aligned")		\
+ 	__aligned(PAGE_SIZE)
+ 
+ /*
+diff --git a/kernel/module.c b/kernel/module.c
+index f82386b..5daf0ab 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -397,7 +397,7 @@ static unsigned int find_pcpusec(Elf_Ehdr *hdr,
+ 				 Elf_Shdr *sechdrs,
+ 				 const char *secstrings)
+ {
+-	return find_sec(hdr, sechdrs, secstrings, ".data.percpu");
++	return find_sec(hdr, sechdrs, secstrings, ".data..percpu");
+ }
+ 
+ static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
 -- 
 1.6.2.4
 
