@@ -1,41 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101Ab0BTPIT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 10:08:19 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:60075 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412Ab0BTPIS (ORCPT
+	id S1755252Ab0BTPJk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 10:09:40 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57792 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701Ab0BTPJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 10:08:18 -0500
-Subject: Re: sysfs lockdep complaint
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20100220150327.GG3000@hack>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
-	 <1266664814.11514.5.camel@jlt3.sipsolutions.net>
-	 <20100220135122.GB3000@hack>
-	 <1266674493.18465.9.camel@jlt3.sipsolutions.net>
-	 <20100220150327.GG3000@hack>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 20 Feb 2010 16:08:16 +0100
-Message-ID: <1266678496.32309.1.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
-Content-Transfer-Encoding: 8bit
+	Sat, 20 Feb 2010 10:09:39 -0500
+Date: Sat, 20 Feb 2010 15:09:36 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Dike <jdike@addtoit.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] um: tell git to ignore generated files
+Message-ID: <20100220150936.GP30031@ZenIV.linux.org.uk>
+References: <20100220143359.GD3000@hack>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100220143359.GD3000@hack>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 23:03 +0800, Américo Wang wrote:
+On Sat, Feb 20, 2010 at 10:33:59PM +0800, Am??rico Wang wrote:
+> 
+> git should ignore these files, since they are generated.
 
->  	fct->fan_type = pwm_fan;
->  	fct->ctrl.type = pwm_fan ? WF_CONTROL_PWM_FAN : WF_CONTROL_RPM_FAN;
-> +	sysfs_attr_init(&fct->ctrl.attr);
+> +include/shared/kern_constants.h
+> +include/shared/user_constants.h
 
-ah, needs to be "ctrl.attr.attr".
-
-johannes
-
+I have patches taking that to include/generated, actually
