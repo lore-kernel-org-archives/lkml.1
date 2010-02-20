@@ -1,85 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758Ab0BTLKw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 06:10:52 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:47668 "EHLO
+	id S1754811Ab0BTLNv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 06:13:51 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:54574 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827Ab0BTLKu (ORCPT
+	with ESMTP id S1753697Ab0BTLNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 06:10:50 -0500
-Subject: Re: Firmware versioning best practices II
+	Sat, 20 Feb 2010 06:13:50 -0500
+Subject: Re: sysfs lockdep complaint
 From: Johannes Berg <johannes@sipsolutions.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Vipin Mehta <Vipin.Mehta@atheros.com>
-In-Reply-To: <1266664166.1820.4165.camel@macbook.infradead.org>
-References: <43e72e891002191823h3245bc0cn7a8745ae77409aa8@mail.gmail.com>
-	 <1266662106.1820.4034.camel@macbook.infradead.org>
-	 <1266663639.10357.1.camel@jlt3.sipsolutions.net>
-	 <1266664166.1820.4165.camel@macbook.infradead.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-E7U4luxEQwnml8iEygd4"
-Date: Sat, 20 Feb 2010 12:10:47 +0100
-Message-ID: <1266664247.11514.0.camel@jlt3.sipsolutions.net>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
+References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
+	 <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 20 Feb 2010 12:13:49 +0100
+Message-ID: <1266664429.11514.3.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.29.3.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2010-02-20 at 17:26 +0800, Américo Wang wrote:
 
---=-E7U4luxEQwnml8iEygd4
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> This should be fixed by the patchset from Eric:
+> 
+> http://lkml.org/lkml/2010/2/11/334
 
-On Sat, 2010-02-20 at 11:09 +0000, David Woodhouse wrote:
-> On Sat, 2010-02-20 at 12:00 +0100, Johannes Berg wrote:
-> > That doesn't make much sense anyway. If the firmware filename is
-> > foo-$APIVER-$CODEVER every code change would need a corresponding
-> driver
-> > change. If it is just foo-$APIVER then the $CODEVER can be embedded
-> in
-> > the firmware file and printed so you know which code you're using,
-> but
-> > if it doesn't influence the API I don't see why it should be part of
-> the
-> > filename?=20
->=20
-> The idea is that just like with shared libraries, you have a symlink
-> from the 'soname' foo-3.fw to the actual file foo-3-1.4.1.fw.
-
-Ah ok. I indeed do that manually with iwlwifi firmware :)
-
-> For shared libraries, it's easy to create those symlinks automatically
-> using ldconfig. For firmware that doesn't really work though -- since
-> the soname isn't encoded in the file like it is in ELF libraries.
-
-Right. Though I guess we could come up with a unified firmware wrapper
-format that the firmware loader can unwrap.
+That patchset doesn't even compile.
 
 johannes
 
---=-E7U4luxEQwnml8iEygd4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+---
+ drivers/pci/pci-sysfs.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
------BEGIN PGP SIGNATURE-----
+--- wireless-testing.orig/drivers/pci/pci-sysfs.c	2010-02-20 12:12:28.207979616 +0100
++++ wireless-testing/drivers/pci/pci-sysfs.c	2010-02-20 12:12:54.588603464 +0100
+@@ -642,7 +642,7 @@ void pci_create_legacy_files(struct pci_
+ 	if (!b->legacy_io)
+ 		goto kzalloc_err;
+ 
+-	sysfs_bin_attr_init(&b->legacy_io);
++	sysfs_bin_attr_init(b->legacy_io);
+ 	b->legacy_io->attr.name = "legacy_io";
+ 	b->legacy_io->size = 0xffff;
+ 	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+@@ -655,8 +655,8 @@ void pci_create_legacy_files(struct pci_
+ 		goto legacy_io_err;
+ 
+ 	/* Allocated above after the legacy_io struct */
+-	sysfs_bin_attr_init(&b->legacy_mem);
+ 	b->legacy_mem = b->legacy_io + 1;
++	sysfs_bin_attr_init(b->legacy_mem);
+ 	b->legacy_mem->attr.name = "legacy_mem";
+ 	b->legacy_mem->size = 1024*1024;
+ 	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
 
-iQIcBAABAgAGBQJLf8M0AAoJEODzc/N7+QmauLoP/0L6lG8kspUFiWaem3HdJWPw
-3phXdhD1qPV84bKf+5StMUlKqPmUYc2LRCbSzSkEJVsUpSI5TF84RLO3CYOwYAPE
-HZmoVFWqrKwkjTatrya9eUDsSQHpjiEOj0pSLVhkEplHytuM38AwStHdjXYVpoZp
-JCboYcmfWL+ac1Xgs0fMdfLnoguuN0q/Vql7qHIslv7qz40S+MuEZe6yhrs2fj0G
-yYU7alalgEE319A0QJR++Rzs/7hq89/CcvNE0E00S+IgIZT5zKjWqLR/+P1Wcg9v
-Cc1rwDXZAJk0GtNkbkZ4m7lAOMyuuq6/SbIeNWLtrzOsgOx2ER6kB+YEBwDUxj3u
-jqTeWbDatsbAUtUDzkzR1R9F0WjbQuNrt85XXgEQ0CvrIdTiCvuBZpOUWW1y1DCW
-ea/X/1deo5UzK3NAsh4Pvi/p/spVUChxZQTEX1M/h6kOcjf6uiLj4ZWI5U8YqsIQ
-t+Kwnl28vPNLsd88bQ7IG02YifcxMF1gILMbhWqTcGJCiuX4IaVjTWi+1n7yEoR/
-eIgUlvcpDIgelxtn5QOVcrchm7pDmR6lPi9TkRn1G3CrwBDvixkmlhcWpFT9kacc
-uOfyun3HwnHit2VI1Xyat91BmSeDj/JvlKyRAtWlP2Wl+oI0VQVw5gz9gWq0Cr/U
-3n1WvTjG0QVvQfZBsRtp
-=/wBl
------END PGP SIGNATURE-----
-
---=-E7U4luxEQwnml8iEygd4--
 
