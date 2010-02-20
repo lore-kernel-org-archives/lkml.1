@@ -1,149 +1,248 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769Ab0BTDw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 22:52:26 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:58558 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285Ab0BTDwY (ORCPT
+	id S1755719Ab0BTD5Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 22:57:16 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44586 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755309Ab0BTD5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 22:52:24 -0500
-X-Greylist: delayed 52671 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Feb 2010 22:52:23 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=u2rBA8ErJHfOGcRtvrRTdGuOHoacXy3/N2rT9Uca+eQpurXg1jeB8ByAfIJfIBgFED
-         YytFFXgPg5UPTVgWt4niORPSp0dbMU3WzA60JEPmojWJkwVYn4eo3LLK2rvazsfKu4gi
-         yj7ebTcLpIMfUo2OiLoOmvTDo9dbIuwXHEFRc=
-MIME-Version: 1.0
-Date: Sat, 20 Feb 2010 11:52:22 +0800
-Message-ID: <628d1651002191952l625e555asf70aed5557355344@mail.gmail.com>
-Subject: [PATCH] Security: add static to security_ops and default_security_ops 
-	variable
-From: wzt wzt <wzt.wzt@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: lsm <linux-security-module@vger.kernel.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 19 Feb 2010 22:57:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Sat, 20 Feb 2010 12:53:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 09/12] Add /proc trigger for memory compaction
+Message-Id: <20100220125339.1b9874b2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100219141641.GJ30258@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+	<1266516162-14154-10-git-send-email-mel@csn.ul.ie>
+	<20100219094326.e725f8e8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100219141641.GJ30258@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enhance the security framework to support resetting the active security
-module. This eliminates the need for direct use of the security_ops and
-default_security_ops variables outside of security.c, so make security_ops
-and default_security_ops static. Also remove the secondary_ops variable as
-a cleanup since there is no use for that. secondary_ops was originally used by
-SELinux to call the "secondary" security module (capability or dummy),
-but that was replaced by direct calls to capability and the only
-remaining use is to save and restore the original security ops pointer
-value if SELinux is disabled by early userspace based on /etc/selinux/config.
-Further, if we support this directly in the security framework, then we can
-just use &default_security_ops for this purpose since that is now available.
+On Fri, 19 Feb 2010 14:16:41 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Signed-off-by: Zhitong Wang <zhitong.wangzt@alibaba-inc.com>
----
- include/linux/security.h |    2 ++
- security/capability.c    |    4 ----
- security/security.c      |   11 +++++++++--
- security/selinux/hooks.c |   13 +------------
- 4 files changed, 12 insertions(+), 18 deletions(-)
+> On Fri, Feb 19, 2010 at 09:43:26AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Thu, 18 Feb 2010 18:02:39 +0000
+> > Mel Gorman <mel@csn.ul.ie> wrote:
+> > 
+> > > This patch adds a proc file /proc/sys/vm/compact_memory. When an arbitrary
+> > > value is written to the file, all zones are compacted. The expected user
+> > > of such a trigger is a job scheduler that prepares the system before the
+> > > target application runs.
+> > > 
+> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > > Acked-by: Rik van Riel <riel@redhat.com>
+> > 
+> > Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Nitpick:
+> > Hmm.. Is this necessary if we have per-node trigger in sysfs ?
+> > 
+> 
+> What does !NUMA do?
+> 
+.... I missed that. please ignore my comment.
+(And I missed that we already have famous trigger as drop_caches in sysctl..)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 2c627d3..8cbc714 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -95,6 +95,8 @@ struct seq_file;
- extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
- extern int cap_netlink_recv(struct sk_buff *skb, int cap);
+Thanks,
+-Kame
 
-+void reset_security_ops(void);
-+
- #ifdef CONFIG_MMU
- extern unsigned long mmap_min_addr;
- extern unsigned long dac_mmap_min_addr;
-diff --git a/security/capability.c b/security/capability.c
-index 5c700e1..4875142 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -906,10 +906,6 @@ static void cap_audit_rule_free(void *lsmrule)
- }
- #endif /* CONFIG_AUDIT */
 
--struct security_operations default_security_ops = {
--       .name   = "default",
--};
--
- #define set_to_cap_if_null(ops, function)                              \
-        do {                                                            \
-                if (!ops->function) {                                   \
-diff --git a/security/security.c b/security/security.c
-index 122b748..663b630 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -23,10 +23,12 @@ static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1] =
-        CONFIG_DEFAULT_SECURITY;
+> > Thanks,
+> > -Kame
+> > 
+> > 
+> > > ---
+> > >  Documentation/sysctl/vm.txt |   11 ++++++++
+> > >  include/linux/compaction.h  |    5 +++
+> > >  kernel/sysctl.c             |   11 ++++++++
+> > >  mm/compaction.c             |   60 +++++++++++++++++++++++++++++++++++++++++++
+> > >  4 files changed, 87 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+> > > index fc5790d..92b5b00 100644
+> > > --- a/Documentation/sysctl/vm.txt
+> > > +++ b/Documentation/sysctl/vm.txt
+> > > @@ -19,6 +19,7 @@ files can be found in mm/swap.c.
+> > >  Currently, these files are in /proc/sys/vm:
+> > >  
+> > >  - block_dump
+> > > +- compact_memory
+> > >  - dirty_background_bytes
+> > >  - dirty_background_ratio
+> > >  - dirty_bytes
+> > > @@ -64,6 +65,16 @@ information on block I/O debugging is in Documentation/laptops/laptop-mode.txt.
+> > >  
+> > >  ==============================================================
+> > >  
+> > > +compact_memory
+> > > +
+> > > +Available only when CONFIG_COMPACTION is set. When an arbitrary value
+> > > +is written to the file, all zones are compacted such that free memory
+> > > +is available in contiguous blocks where possible. This can be important
+> > > +for example in the allocation of huge pages although processes will also
+> > > +directly compact memory as required.
+> > > +
+> > > +==============================================================
+> > > +
+> > >  dirty_background_bytes
+> > >  
+> > >  Contains the amount of dirty memory at which the pdflush background writeback
+> > > diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+> > > index 6201371..facaa3d 100644
+> > > --- a/include/linux/compaction.h
+> > > +++ b/include/linux/compaction.h
+> > > @@ -5,4 +5,9 @@
+> > >  #define COMPACT_INCOMPLETE	0
+> > >  #define COMPACT_COMPLETE	1
+> > >  
+> > > +#ifdef CONFIG_COMPACTION
+> > > +extern int sysctl_compaction_handler(struct ctl_table *table, int write,
+> > > +			void __user *buffer, size_t *length, loff_t *ppos);
+> > > +#endif /* CONFIG_COMPACTION */
+> > > +
+> > >  #endif /* _LINUX_COMPACTION_H */
+> > > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> > > index 8a68b24..a02c816 100644
+> > > --- a/kernel/sysctl.c
+> > > +++ b/kernel/sysctl.c
+> > > @@ -50,6 +50,7 @@
+> > >  #include <linux/ftrace.h>
+> > >  #include <linux/slow-work.h>
+> > >  #include <linux/perf_event.h>
+> > > +#include <linux/compaction.h>
+> > >  
+> > >  #include <asm/uaccess.h>
+> > >  #include <asm/processor.h>
+> > > @@ -80,6 +81,7 @@ extern int pid_max;
+> > >  extern int min_free_kbytes;
+> > >  extern int pid_max_min, pid_max_max;
+> > >  extern int sysctl_drop_caches;
+> > > +extern int sysctl_compact_memory;
+> > >  extern int percpu_pagelist_fraction;
+> > >  extern int compat_log;
+> > >  extern int latencytop_enabled;
+> > > @@ -1109,6 +1111,15 @@ static struct ctl_table vm_table[] = {
+> > >  		.mode		= 0644,
+> > >  		.proc_handler	= drop_caches_sysctl_handler,
+> > >  	},
+> > > +#ifdef CONFIG_COMPACTION
+> > > +	{
+> > > +		.procname	= "compact_memory",
+> > > +		.data		= &sysctl_compact_memory,
+> > > +		.maxlen		= sizeof(int),
+> > > +		.mode		= 0200,
+> > > +		.proc_handler	= sysctl_compaction_handler,
+> > > +	},
+> > > +#endif /* CONFIG_COMPACTION */
+> > >  	{
+> > >  		.procname	= "min_free_kbytes",
+> > >  		.data		= &min_free_kbytes,
+> > > diff --git a/mm/compaction.c b/mm/compaction.c
+> > > index 14ba0ac..22f223f 100644
+> > > --- a/mm/compaction.c
+> > > +++ b/mm/compaction.c
+> > > @@ -11,6 +11,7 @@
+> > >  #include <linux/migrate.h>
+> > >  #include <linux/compaction.h>
+> > >  #include <linux/mm_inline.h>
+> > > +#include <linux/sysctl.h>
+> > >  #include "internal.h"
+> > >  
+> > >  /*
+> > > @@ -345,3 +346,62 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
+> > >  	return ret;
+> > >  }
+> > >  
+> > > +/* Compact all zones within a node */
+> > > +static int compact_node(int nid)
+> > > +{
+> > > +	int zoneid;
+> > > +	pg_data_t *pgdat;
+> > > +	struct zone *zone;
+> > > +
+> > > +	if (nid < 0 || nid > nr_node_ids || !node_online(nid))
+> > > +		return -EINVAL;
+> > > +	pgdat = NODE_DATA(nid);
+> > > +
+> > > +	/* Flush pending updates to the LRU lists */
+> > > +	lru_add_drain_all();
+> > > +
+> > > +	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
+> > > +		struct compact_control cc;
+> > > +
+> > > +		zone = &pgdat->node_zones[zoneid];
+> > > +		if (!populated_zone(zone))
+> > > +			continue;
+> > > +
+> > > +		cc.nr_freepages = 0;
+> > > +		cc.nr_migratepages = 0;
+> > > +		cc.zone = zone;
+> > > +		INIT_LIST_HEAD(&cc.freepages);
+> > > +		INIT_LIST_HEAD(&cc.migratepages);
+> > > +
+> > > +		compact_zone(zone, &cc);
+> > > +
+> > > +		VM_BUG_ON(!list_empty(&cc.freepages));
+> > > +		VM_BUG_ON(!list_empty(&cc.migratepages));
+> > > +	}
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +/* Compact all nodes in the system */
+> > > +static int compact_nodes(void)
+> > > +{
+> > > +	int nid;
+> > > +
+> > > +	for_each_online_node(nid)
+> > > +		compact_node(nid);
+> > > +
+> > > +	return COMPACT_COMPLETE;
+> > > +}
+> > > +
+> > > +/* The written value is actually unused, all memory is compacted */
+> > > +int sysctl_compact_memory;
+> > > +
+> > > +/* This is the entry point for compacting all nodes via /proc/sys/vm */
+> > > +int sysctl_compaction_handler(struct ctl_table *table, int write,
+> > > +			void __user *buffer, size_t *length, loff_t *ppos)
+> > > +{
+> > > +	if (write)
+> > > +		return compact_nodes();
+> > > +
+> > > +	return 0;
+> > > +}
+> > > -- 
+> > > 1.6.5
+> > > 
+> > > --
+> > > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > > see: http://www.linux-mm.org/ .
+> > > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> > > 
+> > 
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+> 
 
- /* things that live in capability.c */
--extern struct security_operations default_security_ops;
- extern void security_fixup_ops(struct security_operations *ops);
-
--struct security_operations *security_ops;      /* Initialized to NULL */
-+static struct security_operations *security_ops;
-+static struct security_operations default_security_ops = {
-+       .name   = "default",
-+};
-
- static inline int verify(struct security_operations *ops)
- {
-@@ -63,6 +65,11 @@ int __init security_init(void)
-        return 0;
- }
-
-+void reset_security_ops(void)
-+{
-+       security_ops = &default_security_ops;
-+}
-+
- /* Save user chosen LSM */
- static int __init choose_lsm(char *str)
- {
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 9a2ee84..1cbf18f 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -125,13 +125,6 @@ __setup("selinux=", selinux_enabled_setup);
- int selinux_enabled = 1;
- #endif
-
--
--/*
-- * Minimal support for a secondary security module,
-- * just to allow the use of the capability module.
-- */
--static struct security_operations *secondary_ops;
--
- /* Lists of inode and superblock security structures initialized
-    before the policy was loaded. */
- static LIST_HEAD(superblock_security_head);
-@@ -5672,9 +5665,6 @@ static __init int selinux_init(void)
-                                            0, SLAB_PANIC, NULL);
-        avc_init();
-
--       secondary_ops = security_ops;
--       if (!secondary_ops)
--               panic("SELinux: No initial security operations\n");
-        if (register_security(&selinux_ops))
-                panic("SELinux: Unable to register with kernel.\n");
-
-@@ -5835,8 +5825,7 @@ int selinux_disable(void)
-        selinux_disabled = 1;
-        selinux_enabled = 0;
-
--       /* Reset security_ops to the secondary module, dummy or capability. */
--       security_ops = secondary_ops;
-+       reset_security_ops();
-
-        /* Try to destroy the avc node cache */
-        avc_disable();
---
-1.6.5.3
