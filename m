@@ -1,118 +1,123 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191Ab0BTHNx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 02:13:53 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:56204 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773Ab0BTHNv (ORCPT
+	id S1751639Ab0BTHPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 02:15:39 -0500
+Received: from mail-iw0-f177.google.com ([209.85.223.177]:46126 "EHLO
+	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970Ab0BTHPh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 02:13:51 -0500
+	Sat, 20 Feb 2010 02:15:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=aVTJRmA2bfRkU9b3bFd1qDV3geL30oe2/K8NdldgM5RaYpgAx+VzYNfFdp9UO+fdwA
-         bi7tIGGxMeHFdpW4JKZEkljps4dJYdBq4GZXRk67THKaeTrlpbnuAkvMimek5M8l/Cpb
-         ckQrO+UvPVhvr4/pKztPV5CaNOCrwQqrs2HlI=
+         :cc:content-type:content-transfer-encoding;
+        b=bDHOpFAt7Cpl/ezBG6JRuosxRJSS/Kqupmlg6GNsFvbJ4z1qdRY9ot6PahlZULkjcA
+         DNkDooJGji90LN0bnNhvlFqoRRyJvBOcpWNJSslJuEEBy+8v9qIfRqWHvFzBlSmWh+4d
+         SZ3BSz0zsrQ4MybuE9RRJcLA6ovkEOCSOL3Hk=
 MIME-Version: 1.0
-In-Reply-To: <1266518735.3829.4.camel@jlt3.sipsolutions.net>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
-	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-	 <1266518735.3829.4.camel@jlt3.sipsolutions.net>
-Date: Sat, 20 Feb 2010 15:13:50 +0800
-Message-ID: <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: multipart/mixed; boundary=0016367f99f625a32e048002f1ea
+In-Reply-To: <201002192139.46189.david-b@pacbell.net>
+References: <4B7CAF95.6020306@gmail.com> <20100218052223.GA13254@kroah.com>
+	 <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
+	 <201002192139.46189.david-b@pacbell.net>
+Date: Sat, 20 Feb 2010 01:15:36 -0600
+Message-ID: <51f3faa71002192315ia84786eo1138bf9ab3417f2d@mail.gmail.com>
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+From: Robert Hancock <hancockrwd@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux-usb <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016367f99f625a32e048002f1ea
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Feb 19, 2010 at 2:45 AM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Thu, 2010-02-18 at 08:31 -0800, Linus Torvalds wrote:
->
->> > > halt/4071 is trying to acquire lock:
->> > > =C2=A0(s_active){++++.+}, at: [<c0000000001ef868>]
->> > > .sysfs_addrm_finish+0x58/0xc0
->> > >
->> > > but task is already holding lock:
->> > > =C2=A0(&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at:
->> [<c0000000004cd6ac>]
->> > > .lock_policy_rwsem_write+0x84/0xf4
->> > >
->> > > which lock already depends on the new lock.
+On Fri, Feb 19, 2010 at 11:39 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Thursday 18 February 2010, Robert Hancock wrote:
+>> >
+>> > But we disabled it on purpose, because of problems, do we want those
+>> > problems again?
 >>
->> You don't have a full backtrace for these things?
+>> AFAICS, it was disabled because of problems with kernel code, not with
+>> hardware (and it appears the issue was with the code that detected the
+>> expanded DMA mask in the USB device driver code, not the HCD driver).
+>> CCing David Brownell who may know more.
 >
-> No, it deadlocks right there, unfortunately.
->
->> We've had lots of trouble with the cpu governors, and I suspect the
->> problem isn't new, but the lockdep warning is likely new (see commit
->> 846f99749ab68bbc7f75c74fec305de675b1a1bf: "sysfs: Add lockdep
->> annotations
->> for the sysfs active reference").
->>
->> So it is likely to be an old issue that (a) now gets warned about and
->> (b) might have had timing changes enough to trigger it.
->
-> Well, it used to not deadlock and actually shut down the machine :) So
-> in that sense it's definitely new. It might have printed a lockdep
-> warning before, which you wouldn't normally see since the machine turns
-> off right after this.
->
->> I suspect it is G5-specific (or specific to whatever CPU frequency
->> code
->> that gets used there), since I think we'd have had lots of reports if
->> this
->> happened on x86.
->
-> Yeah, that's puzzling me as well.
->
+> That's a good summary of the high points.  Testing was potentially an
+> issue, but it never quite got that far.  So I have no idea if there are
+> systems where EHCI advertises 64-bit DMA support but that support is
+> broken (e.g. "Yet Another Hardware Mechanism MS-Windows Ignores", so that
+> only Linux would ever trip over the relevant BIOS breakage).
 
-Does my following untested patch help?
+According to one Microsoft page I saw, Windows XP did not implement
+the 64-bit addressing feature in EHCI. I haven't found any information
+on whether any newer Windows versions do or not.
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
+> I won't attempt to go into details, but I recall a few basic issues:
+>
+>  * Not all clients or implementors of the "dma mask" mechanism agreed
+>   on what it was supposed to achieve.  Few, for example, really used
+>   it as a mask ... and it rarely affects allocation of buffers that
+>   will later get used for DMA.
+>
+>  * Confusing semantics for the various types of DMA restriction which
+>   hardware may impose, and upper layers in driver stacks would thus
+>   need (in some cases) to cope with.
 
----------
+I think this is pretty well nailed down at this point. I suspect the
+confusion partly comes from the expectation that driver code should be
+able to use dma_supported to test a particular mask against what a
+device had been configured for. This function is really meant for use
+in arch code, not for drivers. It's supposed to indicate if it's legal
+to set a device's mask to the given value, not whether a given DMA
+mask is compatible with the previously set mask. Calling this on a
+device that arch code doesn't know about (like a USB device) will
+quite likely give a non-useful result or possibly even blow up. If a
+driver needs to check a device's mask, it can just check against it
+directly.
 
---0016367f99f625a32e048002f1ea
-Content-Type: text/plain; charset=US-ASCII; name="drivers-cpufreq-fix-deadlock.diff"
-Content-Disposition: attachment; 
-	filename="drivers-cpufreq-fix-deadlock.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g5w2u9l11
+>
+>  * How to pass such restrictions up the driver stack ... as for example
+>   that NETIF_* flag.  ISTR there was some block layer issue too, but
+>   at this remove I can't remember any details at all.  (If networking
+>   and the block layer can use 64-bit DMA, I can't imagine many other
+>   subsystems would deliver wins as big.)  For example, how would one
+>   pass up the knowledge that a driver for a particular USB peripheral
+>   across a few hubs) can do DMA to/from address 0x1234567890abcdef, but
+>   the same driver can't do that for an otherwise identical peripheral
+>   connected through a different HCD?
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEv
-Y3B1ZnJlcS5jCmluZGV4IDY3YmMyZWMuLjg0MzhmMDMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1
-ZnJlcS9jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpAQCAtMTExMyw2
-ICsxMTEzLDggQEAgc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2RldihzdHJ1Y3Qgc3lzX2Rl
-dmljZSAqc3lzX2RldikKIAl1bnNpZ25lZCBpbnQgY3B1ID0gc3lzX2Rldi0+aWQ7CiAJdW5zaWdu
-ZWQgbG9uZyBmbGFnczsKIAlzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKmRhdGE7CisJc3RydWN0IGtv
-YmplY3QgKmtvYmo7CisJc3RydWN0IGNvbXBsZXRpb24gKmNtcDsKICNpZmRlZiBDT05GSUdfU01Q
-CiAJc3RydWN0IHN5c19kZXZpY2UgKmNwdV9zeXNfZGV2OwogCXVuc2lnbmVkIGludCBqOwpAQCAt
-MTE5MiwxOSArMTE5NCwyMiBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9yZW1vdmVfZGV2KHN0cnVj
-dCBzeXNfZGV2aWNlICpzeXNfZGV2KQogCWlmIChjcHVmcmVxX2RyaXZlci0+dGFyZ2V0KQogCQlf
-X2NwdWZyZXFfZ292ZXJub3IoZGF0YSwgQ1BVRlJFUV9HT1ZfU1RPUCk7CiAKLQlrb2JqZWN0X3B1
-dCgmZGF0YS0+a29iaik7CisJa29iaiA9ICZkYXRhLT5rb2JqOworCWNtcCA9ICZkYXRhLT5rb2Jq
-X3VucmVnaXN0ZXI7CisJdW5sb2NrX3BvbGljeV9yd3NlbV93cml0ZShjcHUpOworCWtvYmplY3Rf
-cHV0KGtvYmopOwogCiAJLyogd2UgbmVlZCB0byBtYWtlIHN1cmUgdGhhdCB0aGUgdW5kZXJseWlu
-ZyBrb2JqIGlzIGFjdHVhbGx5CiAJICogbm90IHJlZmVyZW5jZWQgYW55bW9yZSBieSBhbnlib2R5
-IGJlZm9yZSB3ZSBwcm9jZWVkIHdpdGgKIAkgKiB1bmxvYWRpbmcuCiAJICovCiAJZHByaW50aygi
-d2FpdGluZyBmb3IgZHJvcHBpbmcgb2YgcmVmY291bnRcbiIpOwotCXdhaXRfZm9yX2NvbXBsZXRp
-b24oJmRhdGEtPmtvYmpfdW5yZWdpc3Rlcik7CisJd2FpdF9mb3JfY29tcGxldGlvbihjbXApOwog
-CWRwcmludGsoIndhaXQgY29tcGxldGVcbiIpOwogCisJbG9ja19wb2xpY3lfcndzZW1fd3JpdGUo
-Y3B1KTsKIAlpZiAoY3B1ZnJlcV9kcml2ZXItPmV4aXQpCiAJCWNwdWZyZXFfZHJpdmVyLT5leGl0
-KGRhdGEpOwotCiAJdW5sb2NrX3BvbGljeV9yd3NlbV93cml0ZShjcHUpOwogCiAJZnJlZV9jcHVt
-YXNrX3ZhcihkYXRhLT5yZWxhdGVkX2NwdXMpOwo=
---0016367f99f625a32e048002f1ea--
+I think this logic is also in place, for the most part. The DMA mask
+from the HCD appears to be propagated into the USB device, and then
+into the interface objects. For usb-storage, the SCSI layer
+automatically sets the bounce limit based on the device passed into
+it, so the right thing gets done. The networking layer seems like it
+would need explicit handling in the drivers - I think basically a
+check if the device interface's DMA mask was set to DMA_BIT_MASK(64)
+and if so, set the HIGHDMA flag.
+
+>
+>  * There were probably a few PCI-specific issues too.  I don't think
+>   at that time there were many users of 64-bit DMA which weren't
+>   specific to PCI.  Wanting to use the generic DMA calls for such
+>   stuff wasn't really done back then.  But ... the USB stack uses
+>   the generic calls, and drivers sitting on top of usbcore (and its
+>   tightly coupled HCDs) will never issue PCI-specific calls, since
+>   they need to work on systems that don't even have PCI.
+>
+> I basically think that if the controller can do 64-bit DMA, it should
+> be enabling it by default ... assuming the software stack can handle
+> that.  (What would be the benefit of adding needless restrictions,
+> and making systems needlessly apply bounce buffering.)  So while I'd
+> like to see the 64-bit DMA working, it should IMO be done without any
+> options to cause trouble/confusion.
+>
+> But at that time it wasn't straightforward to manage 64-bit DMA except
+> in the very lowest level PCI drivers.  That is, EHCI could do it ...
+> but driver layers on top of it had no good way to do their part.  For
+> example, when they manage DMA mappings themselves.)
+>
+> - Dave
+>
+>
