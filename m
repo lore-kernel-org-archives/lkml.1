@@ -1,78 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972Ab0BTWTZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 17:19:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:7230 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756937Ab0BTWTY (ORCPT
+	id S1757020Ab0BTWUw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 17:20:52 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:36815 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756835Ab0BTWUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 17:19:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=j26uZbRLsrs7zWMzu54TDuhdStiZDVXNIl4aAJ8BActAjt4OPkcqSRsYiEoK9WLXME
-         AwJrqiqkMmkNQJsuKIPEotAU+w+fy6e4BNPx5nUFsIY8GPFlPcoMnMMPOzTkiqhVh51+
-         gb8i65HX7O1IU2f3bPoheFcRUiHjfjJlahN7k=
-Subject: Re: [PATCH 0/14 V9] Work to enable SmartMedia/xD support in mtd
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: dedekind1@gmail.com
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "stanley.miao" <stanley.miao@windriver.com>,
-       Vitaly Wool <vitalywool@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1266698701.3178.0.camel@localhost.localdomain>
-References: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
-	 <1266697630.4152.0.camel@maxim-laptop>
-	 <1266698701.3178.0.camel@localhost.localdomain>
+	Sat, 20 Feb 2010 17:20:50 -0500
+Subject: Re: [PATCH 1/2] Document the rfkill sysfs ABI
+From: Johannes Berg <johannes@sipsolutions.net>
+To: florian@mickler.org
+Cc: linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <1266702045-6062-2-git-send-email-florian@mickler.org>
+References: <1266702045-6062-1-git-send-email-florian@mickler.org>
+	 <1266702045-6062-2-git-send-email-florian@mickler.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 21 Feb 2010 00:19:18 +0200
-Message-ID: <1266704358.3748.4.camel@maxim-laptop>
+Date: Sat, 20 Feb 2010 23:19:05 +0100
+Message-ID: <1266704345.32739.0.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.29.3.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 22:45 +0200, Artem Bityutskiy wrote: 
-> On Sat, 2010-02-20 at 22:27 +0200, Maxim Levitsky wrote:
-> > On Wed, 2010-02-17 at 23:49 +0200, Maxim Levitsky wrote: 
-> > > This is slightly updated version of my patchset.
-> > > Now I can tell you for sure that hotplug works.
-> > > It was used/abused for long time.
-> > > I did some changes in richoh card reader driver, to work better after resume
-> > > and renamed it to r852.
-> > > 
-> > > I kindly ask you to merge this patchset to 2.6.34.
-> > > If I/users find other bugs they can be addressed by follow up patches.
-> > > 
-> > > Best regards,
-> > > 	Maxim Levitsky
-> > > 
-> > > 
-> > > 
-> > Should I expect at least some response on that?
-> > Or not?
+On Sat, 2010-02-20 at 22:40 +0100, florian@mickler.org wrote:
+> This moves sysfs ABI info from Documentation/rfkill.txt to the
+> ABI subfolder and reformats it.
 > 
-> Since you put me to CC, I answer: not from me, I have no time at all to
-> look at this closely.
+> Signed-off-by: Florian Mickler <florian@mickler.org>
 
-I know that all you are busy.
-But I did put a lot of effort in this work (more that a month).
+This is fine with me.
 
-I am going to be very busy (busier that you are) very soon.
-I hoped that a month is enough to review and merge my work to mtd tree.
-Now all that is left in one week, so I guess all the work I did was for
-nothing.
-
-I am really frustrated.
-
-
-Best regards,
-Maxim Levitsky
+johannes
 
