@@ -1,255 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396Ab0BTJdL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 04:33:11 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:42491 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754615Ab0BTJdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 04:33:08 -0500
-Date: Sat, 20 Feb 2010 09:32:51 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 03/12] mm: Share the anon_vma ref counts between KSM
-	and page migration
-Message-ID: <20100220093251.GI1445@csn.ul.ie>
-References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie> <1266516162-14154-4-git-send-email-mel@csn.ul.ie> <20100219091859.195d922c.kamezawa.hiroyu@jp.fujitsu.com> <20100219140500.GG30258@csn.ul.ie> <20100220124847.0b441e76.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1755570Ab0BTJiM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 04:38:12 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:6355 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754679Ab0BTJiK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 04:38:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MW4wKbBF2LaisIJIiza1IVF3cy4T6tfwaFuG+My/OpWQZQUhdd25aZNT7Ypweub3ir
+         PzN2rBVbDVgaAu70mCP6WLT7b7l5xiz3CSSlTv3s+MnGTTYxC7m8DMcboIgoAyImDg63
+         ILgAZ5SXepV+9Jonuv3hbJQ/NneB4D6Ukgt+U=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100220124847.0b441e76.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4B79BC66.9090408@shikadi.net>
+References: <4B78EF9C.6040801@shikadi.net>
+	 <20100215090053.GG12076@hack.private> <4B79122A.9070102@shikadi.net>
+	 <20100215122732.GM12076@hack.private> <4B79BC66.9090408@shikadi.net>
+Date: Sat, 20 Feb 2010 17:38:08 +0800
+Message-ID: <2375c9f91002200138u6aee8412q6bc23f1664691be7@mail.gmail.com>
+Subject: Re: UML error - apps killed 50% of the time
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Adam Nielsen <a.nielsen@shikadi.net>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 12:48:47PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 19 Feb 2010 14:05:00 +0000
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > On Fri, Feb 19, 2010 at 09:18:59AM +0900, KAMEZAWA Hiroyuki wrote:
-> > > On Thu, 18 Feb 2010 18:02:33 +0000
-> > > Mel Gorman <mel@csn.ul.ie> wrote:
-> > > 
-> > > > For clarity of review, KSM and page migration have separate refcounts on
-> > > > the anon_vma. While clear, this is a waste of memory. This patch gets
-> > > > KSM and page migration to share their toys in a spirit of harmony.
-> > > > 
-> > > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > 
-> > > Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > 
-> > > Nitpick:
-> > > I think this refcnt has something different characteristics than other
-> > > usual refcnts. Even when refcnt goes down to 0, anon_vma will not be freed.
-> > > So, I think some kind of name as temporal_reference_count is better than
-> > > simple "refcnt". Then, it will be clearer what this refcnt is for.
-> > > 
-> > 
-> > When I read this in a few years, I'll have no idea what "temporal" is
-> > referring to. The holder of this account is by a process that does not
-> > necessarily own the page or its mappings but "remote" has special
-> > meaning as well. "external_count" ?
-> > 
-> "external" seems good. My selection of word is tend to be bad ;)
-> 
+On Tue, Feb 16, 2010 at 5:28 AM, Adam Nielsen <a.nielsen@shikadi.net> wrote:
+>> So what are the errors now? Could you please provide your boot log?
+>
+> Just more random tasks being killed:
+>
+>  * Calculating module dependencies .../sbin/modules-update: line 73:   967
+> Broken pipe             sed -ne 1p "${x}"
+>       968 Killed                  | egrep -q "^${HEADER}"
+>  * Mounting local filesystems ... [ ok ]
+> /etc/init.d/localmount: line 9:   982 Killed                  modprobe
+> usbcore >&/dev/null
+>  * Cleaning /tmp directory ... [ ok ]
+> /sbin/depscan.sh: line 21:  1055 Killed                  mkdir -p -m 0755
+> "${svcdir}/${x}" 2>/dev/null
+>  *  Could not create needed directory '/var/lib/init.d/snapshot'!
+> INIT: Entering runlevel: 3
+> /lib/rcscripts/sh/rc-services.sh: line 35:  1096 Killed /sbin/depscan.sh -u
+>
+>  * Error running '/sbin/depscan.sh'!
+>  * Please correct any problems above.
+> /sbin/functions.sh: line 184:  1098 Killed                  /usr/bin/logger
+> -p "${pri}" -t "${tag}" -- "$*"
+>
 
-Trust me, it's not my strong point either.
+Oh, probably caused by the same commit....
 
-> Off topic:
-> But as Christoph says, make this as real reference counter as
-> "if coutner goes down to 0, it's freed." may be good.
-> I'm not fully aware of how anon_vma is copiled after Rik's anon_vma split(?)
-> work. So, it may be complicated than I'm thinking.
-> 
+I will check it tonight.
 
-The complexity is one factor. Rik's patches make it different for sure
-because it's less clear what needs to be done with the chains. Even if
-that is worked around, I'd have concerns about the refcount becoming a
-highly contended cache line in some circumstances. I have taken note to
-research it as a separate patch.
-
-> > > >  mm/rmap.c            |    6 ++----
-> > > >  4 files changed, 24 insertions(+), 40 deletions(-)
-> > > > 
-> > > > diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-> > > > index 6b5a1a9..55c0e9e 100644
-> > > > --- a/include/linux/rmap.h
-> > > > +++ b/include/linux/rmap.h
-> > > > @@ -26,11 +26,17 @@
-> > > >   */
-> > > >  struct anon_vma {
-> > > >  	spinlock_t lock;	/* Serialize access to vma list */
-> > > > -#ifdef CONFIG_KSM
-> > > > -	atomic_t ksm_refcount;
-> > > > -#endif
-> > > > -#ifdef CONFIG_MIGRATION
-> > > > -	atomic_t migrate_refcount;
-> > > > +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
-> > > > +
-> > > > +	/*
-> > > > +	 * The refcount is taken by either KSM or page migration
-> > > > +	 * to take a reference to an anon_vma when there is no
-> > > > +	 * guarantee that the vma of page tables will exist for
-> > > > +	 * the duration of the operation. A caller that takes
-> > > > +	 * the reference is responsible for clearing up the
-> > > > +	 * anon_vma if they are the last user on release
-> > > > +	 */
-> > > > +	atomic_t refcount;
-> > > >  #endif
-> > > >  	/*
-> > > >  	 * NOTE: the LSB of the head.next is set by
-> > > > @@ -44,46 +50,26 @@ struct anon_vma {
-> > > >  };
-> > > >  
-> > > >  #ifdef CONFIG_MMU
-> > > > -#ifdef CONFIG_KSM
-> > > > -static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-> > > > +#if defined(CONFIG_KSM) || defined(CONFIG_MIGRATION)
-> > > > +static inline void anonvma_refcount_init(struct anon_vma *anon_vma)
-> > > >  {
-> > > > -	atomic_set(&anon_vma->ksm_refcount, 0);
-> > > > +	atomic_set(&anon_vma->refcount, 0);
-> > > >  }
-> > > >  
-> > > > -static inline int ksm_refcount(struct anon_vma *anon_vma)
-> > > > +static inline int anonvma_refcount(struct anon_vma *anon_vma)
-> > > >  {
-> > > > -	return atomic_read(&anon_vma->ksm_refcount);
-> > > > +	return atomic_read(&anon_vma->refcount);
-> > > >  }
-> > > >  #else
-> > > > -static inline void ksm_refcount_init(struct anon_vma *anon_vma)
-> > > > +static inline void anonvma_refcount_init(struct anon_vma *anon_vma)
-> > > >  {
-> > > >  }
-> > > >  
-> > > > -static inline int ksm_refcount(struct anon_vma *anon_vma)
-> > > > +static inline int anonvma_refcount(struct anon_vma *anon_vma)
-> > > >  {
-> > > >  	return 0;
-> > > >  }
-> > > >  #endif /* CONFIG_KSM */
-> > > > -#ifdef CONFIG_MIGRATION
-> > > > -static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> > > > -{
-> > > > -	atomic_set(&anon_vma->migrate_refcount, 0);
-> > > > -}
-> > > > -
-> > > > -static inline int migrate_refcount(struct anon_vma *anon_vma)
-> > > > -{
-> > > > -	return atomic_read(&anon_vma->migrate_refcount);
-> > > > -}
-> > > > -#else
-> > > > -static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-> > > > -{
-> > > > -}
-> > > > -
-> > > > -static inline int migrate_refcount(struct anon_vma *anon_vma)
-> > > > -{
-> > > > -	return 0;
-> > > > -}
-> > > > -#endif /* CONFIG_MIGRATE */
-> > > >  
-> > > >  static inline struct anon_vma *page_anon_vma(struct page *page)
-> > > >  {
-> > > > diff --git a/mm/ksm.c b/mm/ksm.c
-> > > > index 56a0da1..7decf73 100644
-> > > > --- a/mm/ksm.c
-> > > > +++ b/mm/ksm.c
-> > > > @@ -318,14 +318,14 @@ static void hold_anon_vma(struct rmap_item *rmap_item,
-> > > >  			  struct anon_vma *anon_vma)
-> > > >  {
-> > > >  	rmap_item->anon_vma = anon_vma;
-> > > > -	atomic_inc(&anon_vma->ksm_refcount);
-> > > > +	atomic_inc(&anon_vma->refcount);
-> > > >  }
-> > > >  
-> > > >  static void drop_anon_vma(struct rmap_item *rmap_item)
-> > > >  {
-> > > >  	struct anon_vma *anon_vma = rmap_item->anon_vma;
-> > > >  
-> > > > -	if (atomic_dec_and_lock(&anon_vma->ksm_refcount, &anon_vma->lock)) {
-> > > > +	if (atomic_dec_and_lock(&anon_vma->refcount, &anon_vma->lock)) {
-> > > >  		int empty = list_empty(&anon_vma->head);
-> > > >  		spin_unlock(&anon_vma->lock);
-> > > >  		if (empty)
-> > > > diff --git a/mm/migrate.c b/mm/migrate.c
-> > > > index 1ce6a2f..00777b0 100644
-> > > > --- a/mm/migrate.c
-> > > > +++ b/mm/migrate.c
-> > > > @@ -619,7 +619,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
-> > > >  		rcu_read_lock();
-> > > >  		rcu_locked = 1;
-> > > >  		anon_vma = page_anon_vma(page);
-> > > > -		atomic_inc(&anon_vma->migrate_refcount);
-> > > > +		atomic_inc(&anon_vma->refcount);
-> > > >  	}
-> > > >  
-> > > >  	/*
-> > > > @@ -661,7 +661,7 @@ skip_unmap:
-> > > >  rcu_unlock:
-> > > >  
-> > > >  	/* Drop an anon_vma reference if we took one */
-> > > > -	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-> > > > +	if (anon_vma && atomic_dec_and_lock(&anon_vma->refcount, &anon_vma->lock)) {
-> > > >  		int empty = list_empty(&anon_vma->head);
-> > > >  		spin_unlock(&anon_vma->lock);
-> > > >  		if (empty)
-> > > > diff --git a/mm/rmap.c b/mm/rmap.c
-> > > > index 11ba74a..96b5905 100644
-> > > > --- a/mm/rmap.c
-> > > > +++ b/mm/rmap.c
-> > > > @@ -172,8 +172,7 @@ void anon_vma_unlink(struct vm_area_struct *vma)
-> > > >  	list_del(&vma->anon_vma_node);
-> > > >  
-> > > >  	/* We must garbage collect the anon_vma if it's empty */
-> > > > -	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
-> > > > -					!migrate_refcount(anon_vma);
-> > > > +	empty = list_empty(&anon_vma->head) && !anonvma_refcount(anon_vma);
-> > > >  	spin_unlock(&anon_vma->lock);
-> > > >  
-> > > >  	if (empty)
-> > > > @@ -185,8 +184,7 @@ static void anon_vma_ctor(void *data)
-> > > >  	struct anon_vma *anon_vma = data;
-> > > >  
-> > > >  	spin_lock_init(&anon_vma->lock);
-> > > > -	ksm_refcount_init(anon_vma);
-> > > > -	migrate_refcount_init(anon_vma);
-> > > > +	anonvma_refcount_init(anon_vma);
-> > > >  	INIT_LIST_HEAD(&anon_vma->head);
-> > > >  }
-> > > >  
-> > > > -- 
-> > > > 1.6.5
-> > > > 
-> > > > --
-> > > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > > 
-> > > 
-> > 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thank you.
