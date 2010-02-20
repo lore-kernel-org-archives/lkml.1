@@ -1,86 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496Ab0BTBeV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 20:34:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33645 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754519Ab0BTBeU (ORCPT
+	id S1754884Ab0BTB7s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 20:59:48 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:43977 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753467Ab0BTB7q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 20:34:20 -0500
-X-Authority-Analysis: v=1.0 c=1 a=7U3hwN5JcxgA:10 a=Xjkw-1Tqs455y-exlzIA:9 a=6CWm8o_R27Xwtm1ApL2L_Eng4lIA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: ftrace faulted on writing
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jack Steiner <steiner@sgi.com>
-Cc: fweisbec@gmail.com, mingo@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20100219223642.GA24993@sgi.com>
-References: <20100219223642.GA24993@sgi.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 19 Feb 2010 20:34:17 -0500
-Message-ID: <1266629657.24271.719.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Feb 2010 20:59:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Rp19RtSdWKfSKHG69coa3f6sHk3RV9CBM/r5Lczx6982m4cTDhP7vSibFyZGYstv5E
+         BbG1NpRz/Cmo6fhg1GwTSh372bWTygUe0R1zdHNrPht5OJoeYdLEfI06+nY3HLv6s1xh
+         0dQnH3EKWsSek+59gPDaRFyv8xAKs1cD9PI5w=
+MIME-Version: 1.0
+In-Reply-To: <20100220004615.GB30844@gondor.apana.org.au>
+References: <1266538925-3245-1-git-send-email-richih.mailinglist@gmail.com>
+	 <m1d402t2qp.fsf@fess.ebiederm.org>
+	 <2d460de71002190210qb9d5685n2fca0e7eff011b04@mail.gmail.com>
+	 <20100219121752.GA21682@gondor.apana.org.au>
+	 <2d460de71002190835t29c6bd6bjbee8e2f787d9ab49@mail.gmail.com>
+	 <20100220004615.GB30844@gondor.apana.org.au>
+Date: Sat, 20 Feb 2010 02:59:44 +0100
+Message-ID: <2d460de71002191759w5241431an92f48de21c9af7af@mail.gmail.com>
+Subject: Re: [PATCH 05/19] crypto: proc - Fix checkpatch errors
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-crypto@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Gilbert <bgilbert@cs.cmu.edu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 16:36 -0600, Jack Steiner wrote:
-> Is this a known problem???
+On Sat, Feb 20, 2010 at 01:46, Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-No it's not known, but the cause is because some kernel stayed as write
-only. There have been issues with this in the past. What kernel is this
-exactly? a 32 distro beta doesn't help. Is it 32 with kernel patches?
-perhaps one of the patches caused this.
+> I'm just dropping this particular change.  If there are any
+> other ones where you've done a similar thing, then please either
+> revise or drop those.
 
+In this case, please hold seed, tcrypt, wp512 & xcbc. I will
+refactor them.
 
-> 
-> This is from a 2.6.32 distro beta kernel running on a nehalem processor (SGI UV system):
-> 
-> 
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477841] WARNING: at kernel/trace/ftrace.c:1007 ftrace_bug+0x264/0x2a0()
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477844] Hardware name: Stoutland Platform
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477846] Modules linked in: autofs4 binfmt_misc microcode fuse dm_mod
->    						   pcspkr iTCO_wdt sg ioatdma iTCO_vendor_support button i2c_i801 dca
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477861] Pid: 12438, comm: kstop/0 Not tainted 2.6.32.7-jfs-static-sles11-sp1 #11
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477866] Call Trace:
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477874]  [<ffffffff810bed94>] ? ftrace_bug+0x264/0x2a0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477885]  [<ffffffff81055410>] warn_slowpath_common+0x80/0xd0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477904]  [<ffffffff810001a4>] ? _stext+0xc/0x18
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477908]  [<ffffffff81055474>] warn_slowpath_null+0x14/0x20
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477912]  [<ffffffff810bed94>] ftrace_bug+0x264/0x2a0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477917]  [<ffffffff810bef10>] ftrace_replace_code+0x140/0x1b0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477929]  [<ffffffff810a48b0>] ? stop_cpu+0x0/0x100
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477933]  [<ffffffff810bf00a>] __ftrace_modify_code+0x8a/0x90
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477938]  [<ffffffff810a4959>] stop_cpu+0xa9/0x100
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477950]  [<ffffffff8106ef43>] worker_thread+0x183/0x260
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477958]  [<ffffffff81073900>] ? autoremove_wake_function+0x0/0x40
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477963]  [<ffffffff8106edc0>] ? worker_thread+0x0/0x260
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477967]  [<ffffffff81073546>] kthread+0x96/0xb0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477973]  [<ffffffff8100407a>] child_rip+0xa/0x20
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477977]  [<ffffffff810734b0>] ? kthread+0x0/0xb0
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477981]  [<ffffffff81004070>] ? child_rip+0x0/0x20
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477985] ---[ end trace 3058770ec83b6e0e ]---
->    Feb 19 10:30:49 uv17-sys kernel: [  157.477988] ftrace faulted on writing [<ffffffff810001a4>] _stext+0xc/0x18
+The last batch of patches did not have any of these changes.
 
-Can you disassemble that to see what funcion this is?
-
-  objdump -dr --start-addr 0xffffffff81000000
 
 Thanks,
-
--- Steve
-
-> 
-> It occurs right after:
-> 	# export DB="/sys/kernel/debug/tracing"
-> 	# echo 1 >/proc/sys/kernel/ftrace_enabled
-> 	# echo function > $DB/current_tracer
-> 
-> 
-> --- jack
-
-
+Richard
