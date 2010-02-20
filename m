@@ -1,28 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033Ab0BTORc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:17:32 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:47071 "EHLO
+	id S1756092Ab0BTOSW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:18:22 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:34670 "EHLO
 	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755917Ab0BTORb (ORCPT
+	with ESMTP id S1755952Ab0BTOSU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:17:31 -0500
+	Sat, 20 Feb 2010 09:18:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=Eee6R74X6ncvVbRl4q+d9V+u8X2URPGRlpyFRHQwKz082sCerjgl0gu8xHxLfrDl86
-         TSM9kD10G9qCTQEIAiOWbtlpfToru0uJjuwpUj/lKezr3Rx1O1c9+TolR5nlRjdLn3Uj
-         zGPKHOMQkke616ioTlYuJXOsiCF1FfZmKfr2A=
-Date: Sat, 20 Feb 2010 22:17:20 +0800
+        b=IPfYTic7m/HNtXhY+9mEcy0Hct0l5mYXoPqCyQ8kO8IQPfdaEveQYgBupqLlVHCTKv
+         epM2v3AlI6lhLFW2PJ5o2+GquBlX2PJgzQxH/3PpHYoYFakvrq+4fda4zTjc2XiiZT9o
+         TtCR/MzsR5xipekJT7CGHCI1U7C4/Vl44bxTc=
+Date: Sat, 20 Feb 2010 22:18:09 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+To: Rusty Russell <rusty@rustcorp.com.au>, Patrick McHardy <kaber@trash.net>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 11/18] sysctl extern cleanup - block iopoll
-Message-ID: <20100220141720.GJ3195@darkstar>
+Subject: [PATCH 12/18] sysctl extern cleanup - module
+Message-ID: <20100220141809.GK3195@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,33 +40,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-blk_iopoll_enabled declared in linux/blk-iopoll.h, remove the declaration in
-sysctl.c, include the head file instead.
+Move modprobe_path extern declaration to linux/kmod.h
+Move modules_disabled extern declaration to linux/module.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- kernel/sysctl.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ include/linux/kmod.h   |    3 +++
+ include/linux/module.h |    6 ++++++
+ kernel/sysctl.c        |    4 ----
+ 3 files changed, 9 insertions(+), 4 deletions(-)
 
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-12 13:43:17.754981908 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-12 13:44:25.191642639 +0800
-@@ -61,6 +61,7 @@
- #include <linux/compat.h>
- #include <linux/latencytop.h>
- #include <linux/file.h>
-+#include <linux/blk-iopoll.h>
+--- linux-2.6.32.orig/include/linux/module.h	2010-02-20 14:02:19.704925558 +0800
++++ linux-2.6.32/include/linux/module.h	2010-02-20 14:29:59.621428095 +0800
+@@ -34,6 +34,12 @@
  
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -74,11 +75,6 @@
+ #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
  
- #if defined(CONFIG_SYSCTL)
++#ifdef CONFIG_SYSCTL
++#ifdef CONFIG_MODULES
++extern int modules_disabled;
++#endif
++#endif
++
+ struct kernel_symbol
+ {
+ 	unsigned long value;
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:27:44.608107474 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:27:50.691439411 +0800
+@@ -100,10 +100,6 @@ static int min_percpu_pagelist_fract = 8
  
--/* External variables not in a header file. */
--#ifdef CONFIG_BLOCK
--extern int blk_iopoll_enabled;
+ static int ngroups_max = NGROUPS_MAX;
+ 
+-#ifdef CONFIG_MODULES
+-extern char *modprobe_path;
+-extern int modules_disabled;
 -#endif
--
- /* Constants used for minimum and  maximum */
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- static int sixty = 60;
+ #ifdef CONFIG_CHR_DEV_SG
+ extern int sg_big_buff;
+ #endif
+--- linux-2.6.32.orig/include/linux/kmod.h	2010-02-20 14:02:19.694925349 +0800
++++ linux-2.6.32/include/linux/kmod.h	2010-02-20 14:30:48.918089456 +0800
+@@ -28,6 +28,9 @@
+ #define KMOD_PATH_LEN 256
+ 
+ #ifdef CONFIG_MODULES
++#ifdef CONFIG_SYSCTL
++extern char *modprobe_path;
++#endif
+ /* modprobe exit status on success, -ve on error.  Return value
+  * usually useless though. */
+ extern int __request_module(bool wait, const char *name, ...) \
