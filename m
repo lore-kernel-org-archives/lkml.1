@@ -1,68 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525Ab0BTI5K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 03:57:10 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:56936 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047Ab0BTI5G (ORCPT
+	id S1754548Ab0BTJBL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 04:01:11 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53104 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566Ab0BTJBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 03:57:06 -0500
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
-	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-	 <1266518735.3829.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-7SuY73oIWyVPk6EOjYN6"
-Date: Sat, 20 Feb 2010 09:56:53 +0100
-Message-ID: <1266656213.5347.0.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+	Sat, 20 Feb 2010 04:01:09 -0500
+Date: Sat, 20 Feb 2010 10:01:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Borislav Petkov <borislav.petkov@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
+	on PCI
+Message-ID: <20100220090102.GA11287@basil.fritz.box>
+References: <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu> <4B7B1C40.8070208@linux.intel.com> <alpine.LFD.2.00.1002191031190.2811@localhost.localdomain> <20100219121734.GA8300@basil.fritz.box> <20100219124540.GC30243@aftab> <4B7E906D.8050501@linux.intel.com> <4B7EAB9E.2010509@redhat.com> <4B7EB04E.8050601@linux.intel.com> <4B7F2959.4080301@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7F2959.4080301@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 19, 2010 at 10:14:17PM -0200, Mauro Carvalho Chehab wrote:
 
---=-7SuY73oIWyVPk6EOjYN6
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mauro,
 
-On Sat, 2010-02-20 at 15:13 +0800, Am=C3=A9rico Wang wrote:
+> I was thinking on a way where we could work with the EDAC/MCE issues, and
+> a way for us to move ahead. My proposal is to organize an EDAC/MCE BoF session
+> or a mini-summit during the Collaboration Summit, in San Francisco, with 
+> the interested parties. I suspect that some of us will be there already. 
 
-> Does my following untested patch help?
+I didn't plan to be there so far. A BoF is probably a good idea,
+and also looking closely at EDAC together,
+but it would be better at some more kernel focussed conference.
 
-Sorry, no. I'll hook up a screen to the box after I return from the
-fresh market.
+If everyone else is at that summit I can try to come,
+but it would be likely difficult.
 
-johannes
+We could probably do some kind of online BoF shorter time
+(e.g. using some chat setup or on the phone)
 
---=-7SuY73oIWyVPk6EOjYN6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
+> It shouldn't be hard to find some place there for us to take a look at the
+> EDAC architecture and come with some proposal.
 
-iQIcBAABAgAGBQJLf6PSAAoJEODzc/N7+QmasiYP/jAW8FxKm8MBkTuHXEuFEW+E
-KpaZo3IxeLGl5qSLUi+0PZDsQooGXY7WO5csN9cVYqVE/+BiG6c8OxahKClZwoMX
-h9j/Dcg+CXsVqkiCpo2698AkES60fc8n/m8O/eL3nHyQ5lAIgy+OxaF0qaBw+73z
-pIve24iYvkeAklrjucQMljr5LHjcrQGOjnhCT1l200Q5VUNdHxEcWwnY2aQbsXct
-F/tz+LRBij7ORW/ijZs4ULjm6e0sPOLVhIvaJS9vjXVkRVDMTBzV0HcMIH/h3Bbn
-rdEJq/FvP+phwkhH4lXC/eqFo22BMZX/9o8ONApFaV4AUqZvVhKS81uuM7XZX35b
-j77qT6NE/3QpWEfqnZzgcC3Od734d+fq8fOajzAwETWGEErmNTosXS3KS+Mc25/Q
-hHMbNVrmDTxuM1yk8GOodcQdllbpMlq4O9Mxz+a0DHOFteSOmClmxg4Xz9cq/13b
-aO8LONjPL1GTlJ2IUnXuUuB4/cU+P6KiTOBIEJRLewhy2saZGx3Xkq4aFgYJJVF1
-qDKDdK1d2IjVkZoBH0B28UkEmDHdZ6MSfvm7EUdlHYY8XI+qNg+1yk5yj845Trxw
-w1b/7nRjQfGotAa5XfsFqpwQwFWhYp21EDGBl89+z/dDf4aHmOQ17JFkN3KUmkXi
-mothzH49ZOCkjDWQRO8Y
-=yCeE
------END PGP SIGNATURE-----
+Proposal for what exactly?
 
---=-7SuY73oIWyVPk6EOjYN6--
+Is this for a event interface or for a topology interface or both
+or something else entirely?
 
+My personal plan so far was to work on the APEI interface
+and then possibly look at migrating MCE to that infrastructure too,
+while updating mcelog to talk to it. This would be mostly
+addressing events so far.
+
+> As today is the last day for CFP, I've also submitted there a proposal for a
+> panel. If approved, we can use it to collect data from hardware error users
+> (sysops and other users that require high availability on their services),
+> for us to discuss some strategies to address the issue or to summarize what
+> will be discussed on the event.
+
+You want to collect error rates or want to collect use cases?
+
+For a serious collection doing it online would probably
+give better coverage.
+
+I do both to some degree already.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
