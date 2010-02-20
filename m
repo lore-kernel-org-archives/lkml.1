@@ -1,76 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986Ab0BTTw2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 14:52:28 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:34153 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189Ab0BTTw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 14:52:27 -0500
-From: Francisco Jerez <currojerez@riseup.net>
-To: chris.nicholson@cnick.org.uk
-Cc: airlied@linux.ie, bskeggs@redhat.com, madman2003@gmail.com,
-       koriakin@0x04.net, tacconet@libero.it, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Gpu: drm: fix buffer overflow in nouveau_bios.c
-References: <1266691783-25029-1-git-send-email-chris.nicholson@cnick.org.uk>
-Date: Sat, 20 Feb 2010 20:58:15 +0100
-In-Reply-To: <1266691783-25029-1-git-send-email-chris.nicholson@cnick.org.uk>
-	(chris nicholson's message of "Sat, 20 Feb 2010 18:49:43 +0000")
-Message-ID: <87aav3wug8.fsf@riseup.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+	id S1756148Ab0BTU1T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 15:27:19 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:63438 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756017Ab0BTU1S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 15:27:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=DL8XNA+7JUeyMPfH1bCz192DUvmXVmMiB2YqjVfd1F3SBYeZjL3vwYZGfATZNNi+JT
+         huKcSIS9hU7rh7AF2DB+C5aOyYFCk8MUqZpTUPRlkzwFZVep1CDa01As0e9iiSRJ2dIQ
+         kcW+8+mduni5SiYW/kmu6SS8T+UvZhXlzqk98=
+Subject: Re: [PATCH 0/14 V9] Work to enable SmartMedia/xD support in mtd
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "stanley.miao" <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>
+In-Reply-To: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
+References: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 20 Feb 2010 22:27:10 +0200
+Message-ID: <1266697630.4152.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
+On Wed, 2010-02-17 at 23:49 +0200, Maxim Levitsky wrote: 
+> This is slightly updated version of my patchset.
+> Now I can tell you for sure that hotplug works.
+> It was used/abused for long time.
+> I did some changes in richoh card reader driver, to work better after resume
+> and renamed it to r852.
+> 
+> I kindly ask you to merge this patchset to 2.6.34.
+> If I/users find other bugs they can be addressed by follow up patches.
+> 
+> Best regards,
+> 	Maxim Levitsky
+> 
+> 
+> 
+Should I expect at least some response on that?
+Or not?
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Best regards,
+Maxim Levitsky
 
-chris.nicholson@cnick.org.uk writes:
-
-> From: Chris Nicholson <chris@port.cnick.org.uk>
->
-> This is a patch to the nouveau_bios.c file that fixes up a
-> buffer overflow
->
-This bug was already fixed upstream (774baeb0ba92bcb082f9868726a27a015c9a0897).
-In any case, thank you.
-
-> Signed-off-by: Chris Nicholson <chris.nicholson@cnick.org.uk>
-> ---
->  drivers/gpu/drm/nouveau/nouveau_bios.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_bios.c b/drivers/gpu/drm/nouveau/nouveau_bios.c
-> index 0e9cd1d..c1cee91 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_bios.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_bios.c
-> @@ -762,7 +762,7 @@ static uint32_t get_tmds_index_reg(struct drm_device *dev, uint8_t mlv)
->  			dacoffset ^= 8;
->  		return 0x6808b0 + dacoffset;
->  	} else {
-> -		if (mlv > ARRAY_SIZE(pramdac_table)) {
-> +		if (mlv >= ARRAY_SIZE(pramdac_table)) {
->  			NV_ERROR(dev, "Magic Lookup Value too big (%02X)\n",
->  									mlv);
->  			return 0;
-
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuAPtgACgkQ196Zy2qEI5eLUgCfYXOXZsWfuvHhgoVdhizHtFu2
-GGIAnRmuy4Oazffw8wl9Xdz894eXylh6
-=A4QF
------END PGP SIGNATURE-----
---==-=-=--
