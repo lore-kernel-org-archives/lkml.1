@@ -1,52 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351Ab0BTCYL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 21:24:11 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:37894 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754435Ab0BTCYH (ORCPT
+	id S1755644Ab0BTCbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 21:31:21 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:7975 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567Ab0BTCbT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 21:24:07 -0500
+	Fri, 19 Feb 2010 21:31:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=pQEMJAqoYR558UkdRULhD+F3bngm2UYSwiydNKG6aL3wD7hLpWUzx6A2AayPy5h44w
-         M1ktB4Ph8QQGvVZW+QkHRmZ3QZEe+7bAqgKrwi7GAQqGdpkB0BubjewuxUlRmNFyDGRF
-         PvtSfBcgXngbexLLJhzx3MdzThgvwZRNdxGsU=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=beTf5G7jixXz++GLKhE+a7aTSMgzMqT4Kk0d4dMMGBXHR7WNLZc0rC4koxadEZPNNJ
+         DcFoQQFq8hjfDZC8lWw9hdrUifl9P/JEezf4Z0nwgIpVVdXphOjh6YGW0wFQuJOW+bL3
+         T+jj67/8LcMszWY6ayGO0vtRrCr0M4iPQ+Lso=
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 19 Feb 2010 18:23:47 -0800
-Message-ID: <43e72e891002191823h3245bc0cn7a8745ae77409aa8@mail.gmail.com>
-Subject: Firmware versioning best practices II
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Vipin Mehta <Vipin.Mehta@atheros.com>
+In-Reply-To: <1266582790-11506-1-git-send-email-jglisse@redhat.com>
+References: <1266582790-11506-1-git-send-email-jglisse@redhat.com>
+Date: Sat, 20 Feb 2010 10:31:18 +0800
+Message-ID: <2375c9f91002191831y10918541mb5e2463d97c8f3ae@mail.gmail.com>
+Subject: Re: [PATCH] git ignore *.builtin generated file
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Jerome Glisse <jglisse@redhat.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last year, with the help of the community we at Atheros opened up the
-first (to my knowledge) firmware for a device driver used on the Linux
-kernel. The community has been advancing the firmware and making
-changes and even an alternative driver with more features is being
-baked. We hadn't dealt with open firmware before and this itself
-raises a few management questions about the firmware APIs, code
-revision and general best practices which are likely not documented
-anywhere. We reviewed this on linux-wireless last year [1] and Pavel
-Roskin made a good suggestion for model to follow. I still have a few
-more questions though and wanted a wider review on this.
+On Fri, Feb 19, 2010 at 8:33 PM, Jerome Glisse <jglisse@redhat.com> wrote:
+> This patch makes git ignore any *.builtin file (best patch of the year)
+>
+> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 
-I've documented a summary of what we have discussed and suggested so far here:
 
-http://wireless.kernel.org/en/developers/Documentation/firmware-versioning
+Sorry, besides "modules.builtin", what other builtin files did you see?
+We already exclude "modules.builtin".
 
-We should still address how drivers should deprecate firmware. Can we
-deprecate old firmware APIs from drivers on each kernel release? Any
-other comments or feedback?
-
-[1] http://wireless.kernel.org/en/developers/Documentation/firmware-versioning
-
-  Luis
+> ---
+>  .gitignore |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/.gitignore b/.gitignore
+> index 946c7ec..2db1c56 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -29,6 +29,7 @@
+>  *.lzma
+>  *.patch
+>  *.gcno
+> +*.builtin
+>
+>  #
+>  # Top-level generic files
+> --
+> 1.6.6
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
