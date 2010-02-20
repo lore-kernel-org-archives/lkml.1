@@ -1,54 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641Ab0BTPoL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 10:44:11 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:42745 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756428Ab0BTPoI (ORCPT
+	id S1756613Ab0BTQDr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 11:03:47 -0500
+Received: from sirokuusama.dnainternet.net ([83.102.40.133]:49241 "EHLO
+	sirokuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754848Ab0BTQDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 10:44:08 -0500
-Subject: Re: sysfs lockdep complaint
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20100220154408.GN3000@hack>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
-	 <1266664814.11514.5.camel@jlt3.sipsolutions.net>
-	 <20100220135122.GB3000@hack>
-	 <1266674493.18465.9.camel@jlt3.sipsolutions.net>
-	 <20100220150327.GG3000@hack>
-	 <1266678496.32309.1.camel@jlt3.sipsolutions.net>
-	 <20100220152010.GI3000@hack>
-	 <1266679687.17363.1.camel@jlt3.sipsolutions.net>
-	 <1266679883.17363.3.camel@jlt3.sipsolutions.net>
-	 <20100220154408.GN3000@hack>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 20 Feb 2010 16:44:03 +0100
-Message-ID: <1266680643.17363.8.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
-Content-Transfer-Encoding: 8bit
+	Sat, 20 Feb 2010 11:03:45 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Sat, 20 Feb 2010 18:03:41 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002122148050.13658-100000@netrider.rowland.org> <201002132101.55079.anssi.hannula@iki.fi> <201002151408.27146.oliver@neukum.org>
+In-Reply-To: <201002151408.27146.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002201803.41594.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 23:44 +0800, Américo Wang wrote:
-> On Sat, Feb 20, 2010 at 04:31:23PM +0100, Johannes Berg wrote:
-> >On Sat, 2010-02-20 at 16:28 +0100, Johannes Berg wrote:
-> >
-> >> I have this now, and that removed all the warnings:
-> >
-> >But I still don't get anything back wrt. the original problem ...
-> still
-> >hangs after printing "disabling non-boot CPUs"
-> >
+On maanantai 15 helmikuu 2010 15:08:27 Oliver Neukum wrote:
+> Am Samstag, 13. Februar 2010 20:01:54 schrieb Anssi Hannula:
+> > > I'll get back to this later today, including testing with mdelay in
+> > > port_release with the extra sleep calls in gobi_loader.
+> > 
+> > port_release is only called when the serial device is removed, so this
+> > has no effect here.
 > 
-> Odd, it seems we still have some problem... maybe my quick patch is
-> broken, I will check it tomorrow, it's mid-night here. :)
+> But something must kill your last URB.
+> You are not using autosuspend are you?
 
-Oi! Thanks for all your help so far.
+Don't know, usbcore has autosuspend=2 and the gobi device has autosuspend=2 
+and supports_autosuspend=1.
 
-johannes
+> Can load usbserial with "debug=1"?
 
+Here's the end of dmesg when running with that option:
+http://stuff.onse.fi/gobi2000/gobi-regression.dmesg.log
+
+This is again with the gobi_loader with extra sleep added in the beginning. 
+Otherwise it hangs (which is the actual original problem).
+
+-- 
+Anssi Hannula
