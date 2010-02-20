@@ -1,57 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842Ab0BTLUT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 06:20:19 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:49519 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753198Ab0BTLUR (ORCPT
+	id S1754739Ab0BTL0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 06:26:12 -0500
+Received: from ftp.biblioteca.ct.ro ([193.41.216.114]:55402 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753986Ab0BTL0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 06:20:17 -0500
-Subject: Re: sysfs lockdep complaint
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 20 Feb 2010 12:20:14 +0100
-Message-ID: <1266664814.11514.5.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+	Sat, 20 Feb 2010 06:26:10 -0500
+X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Feb 2010 06:26:09 EST
+Message-ID: <6f39df231b7a5747741311c5e209889f.squirrel@mail.biblioteca.ct.ro>
+Date: Sat, 20 Feb 2010 19:00:42 +0800 (IRKT)
+Subject: 
+From: "Sr. John Roland" <westerunionheadofficeuk@gmail.com>
+Reply-To: westerunionheadofficeuk@gmail.com
+User-Agent: SquirrelMail/1.4.17-4.fc10
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-bilbioteca_ct_ro-MailScanner-Information: Please contact the ISP for more information
+X-bilbioteca_ct_ro-MailScanner-ID: o1KB0s5Y001627
+X-bilbioteca_ct_ro-MailScanner: Found to be clean
+X-bilbioteca_ct_ro-MailScanner-From: westerunionheadofficeuk@gmail.com
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 17:26 +0800, AmÃ©rico Wang wrote:
-> On Thu, Feb 18, 2010 at 5:32 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > Get this when powernowd starts on my G5:
-> >
-> > [   30.490674] =============================================
-> > [   30.490708] [ INFO: possible recursive locking detected ]
-> > [   30.490727] 2.6.33-rc8-wl-64012-g6917413 #160
-> > [   30.490744] ---------------------------------------------
-> > [   30.490763] powernowd/2577 is trying to acquire lock:
-> > [   30.490782]  (s_active){++++.+}, at: [<c0000000001efa94>]
-> .sysfs_addrm_finish+0x58/0xc0
-> > [   30.490831]
-> > [   30.490833] but task is already holding lock:
-> > [   30.490854]  (s_active){++++.+}, at: [<c0000000001eff80>]
-> .sysfs_get_active_two+0x3c/0x84
-> > [   30.490895]
-> 
-> This should be fixed by the patchset from Eric:
-> 
-> http://lkml.org/lkml/2010/2/11/334
 
-Oh wow, well ..... I get like a thousand of these now:
 
-BUG: key c0000002165eb478 not in .data!
 
-instead of the lockdep complaint above.
+Tá na Seirbhíse Airgeadais fhógra seo, táimid ag tabhairt amach airgead go
+léir
+an duine, go bhfuil scam bhí ag daoine an Nigéir, an rialtas.
+Bíodh Dúirt an t-airgead a bhfuil a aistriú chun tú ag trí aontas thiar ó
+An Nigéir rialtais. Le do thoil go bhfuil a fhios má tá tú scam ag
+An Nigéir Cuir Chun seo toisc go bhfuil sé ach amháin do na daoine a bhfuil a
+scam, táimid an-brón orainn go bhfuil tú a scam amach do
+airgead, is é an rialtas Dul chun íoc ar ais 50% den airgead go bhfuil a
+scam ó tú arís táimid sorry.And tá tú a chur ar aghaidh do ID Cárta
+do theApproval linn an aontas thiar chun an t-aistriú ionas gur féidir
+leat Pioc
+suas an t-airgead i maitheas yourcountry.
+An Chéad faisnéis atá riachtanach:
+AINM ......................................
+TÍR ....................................
+STÁIT ........................................
+SEOLADH ......................................
+Mount SCAM Ó DUIT .........................
+BLIAIN / DÁTA / Míosúil .............................
+GHUTHÁIN ................................... LÍON
+Faigh ais go dom a luaithe is féidir ionas gur féidir liom a thabhairt
+duit ar an
+faisnéis a piocadh suas an t-airgead ar bith ag an aontas thiar i do thír sin
+gur féidir linn chuig an $ 15,000.00 eile. De amárach.
+SEO FAOI DEARA LE DO THOIL nach SCAM DO MAITH LE DO
+Fair I do fhreagairt go pras.
 
-johannes
+Bainisteoir: Mr.John Roland
+westerunionheadofficeuk@gmail.com
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
