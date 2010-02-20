@@ -1,79 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223Ab0BTOUs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 09:20:48 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:59725 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755952Ab0BTOUr (ORCPT
+	id S1756278Ab0BTOVM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 09:21:12 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:39928 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756077Ab0BTOVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 09:20:47 -0500
+	Sat, 20 Feb 2010 09:21:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=X69uHmMayNwHVN45/IThRxdttQxg7qeJlfQ9MGaJgkjbhozgZwtUqrd0JahNTfIrxO
-         9X2V8ke439SXTQgmG+MWlzIJDr/CK5azxGMtLRcGlvXTwLcanFW6ZN5/176d1cFVyF9x
-         BBqAyznEltl5x/OdHeVWTCj2Je+fRkMoceVk0=
-Date: Sat, 20 Feb 2010 22:20:34 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 15/18] sysctl extern cleanup - rtmutex
-Message-ID: <20100220142034.GN3195@darkstar>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=r47Jg4R1dDoL31Tt6bp+B4eGZmFAbCFNuFQblK7v7BRA8TBfFV3kGXlK0kNILDCgzJ
+         HqQN8iPHXv8ho/htOKDqR9BgElfsgoRRUB+HIZDKZ6STFLgei1qo1pEN8xWeMd49pXM/
+         BuVtcmD6RxqJyhDoc3Xs4AfBDVWEzz0aKl6bo=
+Date: Sat, 20 Feb 2010 15:21:04 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
+	function_graph tracer
+Message-ID: <20100220142054.GA5354@nowhere>
+References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com> <1265929831.2737.340.camel@localhost.localdomain> <4B749A42.2080703@am.sony.com> <1265934415.2737.344.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1265934415.2737.344.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extern declarations in sysctl.c should be move to their own head file,
-and then include them in relavant .c files.
+On Thu, Feb 11, 2010 at 07:26:55PM -0500, Steven Rostedt wrote:
+> On Thu, 2010-02-11 at 16:01 -0800, Tim Bird wrote:
+> > On 02/11/2010 03:10 PM, Steven Rostedt wrote:
+> > > On Wed, 2010-02-10 at 14:52 -0800, Tim Bird wrote:
+> > >>  static struct tracer_opt trace_opts[] = {
+> > >>  	/* Display overruns? (for self-debug purpose) */
+> > >> @@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
+> > >>  	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
+> > >>  	/* Display absolute time of an entry */
+> > >>  	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
+> > >> +	/* Display function name on exit, instead of just closing brace */
+> > >> +	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
+> > >>  	{ } /* Empty entry */
+> > > 
+> > > I wonder if this should be enabled on start up of the function graph
+> > > tracer if the threshold is set?
+> > > 
+> > > Otherwise people will wonder WTF?
+> > 
+> > Indeed.  I'm not sure exactly how to do this.
+> > 
+> > Would it be better to set the option when current_tracer
+> > is set with 'function_graph', and tracing_thresh is non-zero?
+> 
+> The above is the only one I would do. If tracing_thresh is non-zero when
+> the function_graph tracer is set, on the start up code in the function
+> tracer (graph_trace_init).
+> 
+> Just enable the option if trace_thresh is set. If you enable function
+> graph tracer and have the trace_thresh set, then this type of tracing
+> starts immediately. It also keeps the code nicely in the
+> trace_function_graph.c file, and does not need to touch the setting of
+> tracing_thresh.
 
-Move max_lock_depth extern declaration to linux/rtmutex.h
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
- include/linux/rtmutex.h |    4 ++++
- kernel/sysctl.c         |    5 +----
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Actually why do we encumber with both tracing_thresh and the funcgraph-exit
+option?
 
---- linux-2.6.32.orig/include/linux/rtmutex.h	2010-02-20 14:02:17.074926676 +0800
-+++ linux-2.6.32/include/linux/rtmutex.h	2010-02-20 14:41:34.618025132 +0800
-@@ -16,6 +16,10 @@
- #include <linux/plist.h>
- #include <linux/spinlock_types.h>
- 
-+#if defined(CONFIG_SYSCTL) && defined(CONFIG_RT_MUTEXES)
-+extern int max_lock_depth;
-+#endif
-+
- /**
-  * The rt_mutex structure
-  *
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-20 14:40:22.392198031 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-20 14:40:24.232197892 +0800
-@@ -63,6 +63,7 @@
- #include <linux/file.h>
- #include <linux/blk-iopoll.h>
- #include <linux/acct.h>
-+#include <linux/rtmutex.h>
- #include <scsi/sg.h>
- 
- #include <asm/uaccess.h>
-@@ -130,10 +131,6 @@ extern int unaligned_dump_stack;
- 
- extern struct ratelimit_state printk_ratelimit_state;
- 
--#ifdef CONFIG_RT_MUTEXES
--extern int max_lock_depth;
--#endif
--
- #ifdef CONFIG_PROC_SYSCTL
- static int proc_do_cad_pid(struct ctl_table *table, int write,
- 		  void __user *buffer, size_t *lenp, loff_t *ppos);
+We could just have the output and the record check tracing_thresh instead
+of the funcgraph-exit option.
+
