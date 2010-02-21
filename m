@@ -1,101 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550Ab0BULOv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 06:14:51 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:34166 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050Ab0BULOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 06:14:50 -0500
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <7b6bb4a51002210312o2a1d070aneb54c107aeab6952@mail.gmail.com>
-References: <1264740107.20211.53.camel@pasglop>
-	 <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-	 <1266656213.5347.0.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200106j56b0298ds1a425fde8983d988@mail.gmail.com>
-	 <1266665331.12525.0.camel@jlt3.sipsolutions.net>
-	 <20100220134447.GA3000@hack>
-	 <1266674268.18465.6.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002210151i6fe3f769k72a8a6a3485d8cf5@mail.gmail.com>
-	 <1266749023.5468.1.camel@jlt3.sipsolutions.net>
-	 <7b6bb4a51002210255t5ceaeb84r1438461085446385@mail.gmail.com>
-	 <7b6bb4a51002210312o2a1d070aneb54c107aeab6952@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-EWI9mcQBbeUpvIMJ400W"
-Date: Sun, 21 Feb 2010 12:14:41 +0100
-Message-ID: <1266750881.10419.1.camel@jlt3.sipsolutions.net>
+	id S1751657Ab0BULWF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 06:22:05 -0500
+Received: from ist.d-labs.de ([213.239.218.44]:40164 "EHLO mx01.d-labs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751115Ab0BULWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 06:22:01 -0500
+Date: Sun, 21 Feb 2010 12:21:55 +0100
+From: Florian Mickler <florian@mickler.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-wireless@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 1/2] Document the rfkill sysfs ABI
+Message-ID: <20100221122155.7b163b55@schatten.dmk.lab>
+In-Reply-To: <1266746930.18491.1.camel@violet>
+References: <1266702045-6062-1-git-send-email-florian@mickler.org>
+	<1266702045-6062-2-git-send-email-florian@mickler.org>
+	<1266704345.32739.0.camel@jlt3.sipsolutions.net>
+	<1266746930.18491.1.camel@violet>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 21 Feb 2010 11:08:50 +0100
+Marcel Holtmann <marcel@holtmann.org> wrote:
 
---=-EWI9mcQBbeUpvIMJ400W
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> Hi Johannes,
+> 
+> > > This moves sysfs ABI info from Documentation/rfkill.txt to the
+> > > ABI subfolder and reformats it.
+> > > 
+> > > Signed-off-by: Florian Mickler <florian@mickler.org>
+> > 
+> > This is fine with me.
+> 
+> we have to be careful here. Some of these sysfs details needs to be
+> deprecated and removed. Applications should use /dev/rfkill actually.
+> 
+> Regards
+> 
+> Marcel
+> 
 
-On Sun, 2010-02-21 at 19:12 +0800, Xiaotian Feng wrote:
-> On Sun, Feb 21, 2010 at 6:55 PM, Xiaotian Feng <xtfeng@gmail.com>
-> wrote:
-> > On Sun, Feb 21, 2010 at 6:43 PM, Johannes Berg
-> > <johannes@sipsolutions.net> wrote:
-> >> Incidentally, the machine also freezes hard without any output at
-> all if
-> >> I "echo 0 > /sys/.../cpu1/online".
-> >
-> > It might be nothing related with cpufreq. I think there's something
-> > wrong during the _cpu_down path.
-> > put more debug printks into _cpu_down(), if we can find kernel is
-> > stuck in which place in _cpu_down, it would be helpful.
->=20
-> and it looks like this breakage is only seen on powerMac G5, so it
-> might be arch specific. Maybe some commit in powermac breaks G5's
-> cpu_down, just a guess ;-)
+There are three different categories: 
+Documentation/ABI/stable 
+Documentation/ABI/obsolete
+Documentation/ABI/testing
 
-Hmm, not sure ... it seems to be in __stop_machine(), in this code:
+Quoting from the ABI/README:
+> The different levels of stability are:
+> 
+>   stable/
+>         This directory documents the interfaces that the developer has
+>         defined to be stable.  Userspace programs are free to use these
+>         interfaces with no restrictions, and backward compatibility for
+>         them will be guaranteed for at least 2 years.  Most interfaces
+>         (like syscalls) are expected to never change and always be
+>         available.
+> 
+>   testing/
+>         This directory documents interfaces that are felt to be stable,
+>         as the main development of this interface has been completed.
+>         The interface can be changed to add new features, but the
+>         current interface will not break by doing this, unless grave
+>         errors or security problems are found in them.  Userspace
+>         programs can start to rely on these interfaces, but they must be
+>         aware of changes that can occur before these interfaces move to
+>         be marked stable.  Programs that use these interfaces are
+>         strongly encouraged to add their name to the description of
+>         these interfaces, so that the kernel developers can easily
+>         notify them if any changes occur (see the description of the
+>         layout of the files below for details on how to do this.)
+> 
+>   obsolete/
+>         This directory documents interfaces that are still remaining in
+>         the kernel, but are marked to be removed at some later point in
+>         time.  The description of the interface will document the reason
+>         why it is obsolete and when it can be expected to be removed.
+>         The file Documentation/feature-removal-schedule.txt may describe
+>         some of these interfaces, giving a schedule for when they will
+>         be removed.
+> 
+>   removed/
+>         This directory contains a list of the old interfaces that have
+>         been removed from the kernel.
+> 
 
-        printk("got cpu\n");
-        for_each_online_cpu(i) {
-                sm_work =3D per_cpu_ptr(stop_machine_work, i);
-                INIT_WORK(sm_work, stop_cpu);
-                queue_work_on(i, stop_machine_wq, sm_work);
-        }
-        /* This will release the thread on our CPU. */
-        put_cpu();
-        printk("put cpu\n");
 
+So the question is: are the state and claim file deprecated or obsolete? 
+If they are considered obsolete I presume it would be ok, to put this
+part of the ABI description into the obsolete/ subfolder. 
 
-which is weird... the "got cpu" printk is the last thing I see.
+And should they be obsolete, should there be a new file ("blocked",
+"state2.0",whatever,...) which exposes all possible states? I assume it
+do be handy for scripted access to the rfkill device. 
 
-johannes
-
---=-EWI9mcQBbeUpvIMJ400W
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLgRWeAAoJEODzc/N7+QmaGmoQAIbdXxUYomOwMTDhe+0lOvDJ
-XZ67cAcLh5NdvebMdylB+OiHAq+jzZSPTnacJQTq/69t/THetuJ+ZDav//TgKsVu
-Wh/+Xk6LK2084n6Yn6ZtvckCJuESHgl5KoUtRyhDBbrlR0LUELu+M2Rzp15XP/OF
-/m8DxwmSKaw3NLNVQZ7Wx8b2SUU58Vvh1rQalWm9bIsGirunOR6QIBeZbNGs7iE5
-v/haI64muNEzPHFK3v7fHuI9rhFKcuE7lM6A2AR5Ff/UZ2jLywjIaXMiH+GanM6b
-sJ0k5jV1xauf5t+g4y6qLa7eJY/H6na57vANGhBsTw2qrOUqgW9soSfspfTsM6Hl
-PDHD/jPWivebPIAMClNcWEiALz21rjGKHEwIX3desDG8bg0dlYg9Q9bkvm22hxuu
-++8kf9M9GqCILlmP5HYYDrOMjfbuGjfdyiX64AgEM8DL9m4qy+KJo6uBid0sHQQI
-mvC3dqeJhw50iPZiIAbA4FVjm8QV5c8jK1G/WdFrltqeccB8uht84rryw77b6693
-nDghs+FJ/sC6WTPyHAvUe4pQG61Iw7U0fs+oJkh1hAnshJdawiqe4pfdHVbzSd2w
-uothp2U722kJI0Q3GflyQcOYrge2j6IyVP74xwnY2Hk/y8HMAVpRDo+XPx6G2hS0
-gQ23w9aCsP5BkGfe0eGx
-=CDro
------END PGP SIGNATURE-----
-
---=-EWI9mcQBbeUpvIMJ400W--
-
+cheers,
+Flo
