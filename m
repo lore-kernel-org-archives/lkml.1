@@ -1,61 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350Ab0BUVii (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 16:38:38 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:7842 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752990Ab0BUVig (ORCPT
+	id S1753400Ab0BUVmQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 16:42:16 -0500
+Received: from tulikuusama.dnainternet.net ([83.102.40.132]:57694 "EHLO
+	tulikuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753301Ab0BUVmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 16:38:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=PUTD2k237rRrOgFUGYKEoWj0FwxvP0i0Q63ExAQlwb87USsdOMLZsiGr+wtOVvEJH
-	WFZly9f+H898BUoISno4Q==
-Date: Sun, 21 Feb 2010 13:38:28 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrea Righi <arighi@develer.com>
-cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
-In-Reply-To: <1266765525-30890-3-git-send-email-arighi@develer.com>
-Message-ID: <alpine.DEB.2.00.1002211328530.22858@chino.kir.corp.google.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com> <1266765525-30890-3-git-send-email-arighi@develer.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 21 Feb 2010 16:42:15 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Sun, 21 Feb 2010 23:42:12 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002211627430.32083-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002211627430.32083-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002212342.12301.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Feb 2010, Andrea Righi wrote:
+On sunnuntai 21 helmikuu 2010 23:28:54 Alan Stern wrote:
+> On Sat, 20 Feb 2010, Oliver Neukum wrote:
+> > Am Samstag, 20. Februar 2010 17:03:41 schrieb Anssi Hannula:
+> > > > Can load usbserial with "debug=1"?
+> > > 
+> > > Here's the end of dmesg when running with that option:
+> > > http://stuff.onse.fi/gobi2000/gobi-regression.dmesg.log
+> > > 
+> > > This is again with the gobi_loader with extra sleep added in the
+> > > beginning. Otherwise it hangs (which is the actual original problem).
+> > 
+> > That log makes sure that the final cancellation comes from closing
+> > the file. Is that a log of a working run?
+> 
+> Could this simply be one of those cases where the device file is closed
+> just after the final write URB is submitted but before it can complete,
+> so the URB gets cancelled and the data isn't transferred?
 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 0b19943..c9ff1cd 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
->   */
->  static int calc_period_shift(void)
->  {
-> -	unsigned long dirty_total;
-> +	unsigned long dirty_total, dirty_bytes;
->  
-> -	if (vm_dirty_bytes)
-> -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> +	dirty_bytes = mem_cgroup_dirty_bytes();
-> +	if (dirty_bytes)
-> +		dirty_total = dirty_bytes / PAGE_SIZE;
->  	else
->  		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
->  				100;
+Seems so. I don't think that is the expected behaviour though (and of course 
+it used to work).
 
-This needs a comment since mem_cgroup_dirty_bytes() doesn't imply that it 
-is responsible for returning the global vm_dirty_bytes when that's 
-actually what it does (both for CONFIG_CGROUP_MEM_RES_CTRL=n and root 
-cgroup).
+And of course this doesn't explain why it hangs (and the WARNING) if I remove 
+the sleep calls I added in gobi_loader.
+
+-- 
+Anssi Hannula
