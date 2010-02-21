@@ -1,115 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114Ab0BUODL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 09:03:11 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:54349 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702Ab0BUODJ (ORCPT
+	id S1752144Ab0BUOGz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:06:55 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51959 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751863Ab0BUOGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 09:03:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=InKaclEpLSCJGlv3DnIgmMnXmuHz9a0OYGfL09uz7Cj4u40AfvRR1XnhwqvOklfaVT
-         pOKdEFbyPtVdXVfPhELwytkNG39libsqLcD/ngHale0RX8UztOZgG7M25LFKoEOgVBDH
-         qswThzwB2o3impV873J1yIbwDXFhUKjlaWIAk=
-Date: Sun, 21 Feb 2010 16:03:00 +0200
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] nsproxy: remove INIT_NSPROXY()
-Message-ID: <20100221140300.GA21281@core2>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 21 Feb 2010 09:06:54 -0500
+Date: Sun, 21 Feb 2010 14:09:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "yinghai@kernel.org" <yinghai@kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/2] x86, irq: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
+ instead of 0x1f
+Message-ID: <20100221140938.7aaab70d@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B80C699.1030302@zytor.com>
+References: <20100114002118.436172066@sbs-t61.sc.intel.com>
+	<20100114002118.521826763@sbs-t61.sc.intel.com>
+	<alpine.LFD.2.00.1001240545180.13034@eddie.linux-mips.org>
+	<4B5C00EB.3000208@zytor.com>
+	<alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
+	<1265059497.2802.178.camel@sbs-t61.sc.intel.com>
+	<4B674C82.9050703@zytor.com>
+	<alpine.LFD.2.00.1002210438220.1146@eddie.linux-mips.org>
+	<4B80C699.1030302@zytor.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove INIT_NSPROXY(), use C99 initializer.
-Remove INIT_IPC_NS(), INIT_NET_NS() while I'm at it.
+> Either way, this doesn't exactly sound too bad.  A bigger question is if
+> we want to do this globally or end up having different vector
+> assignments for these oddball CPUs.  Testing it, too, will be almost
+> impossible...
 
-Note: headers trim will be done later, now it's quite pointless because
-results will be invalidated by merge window.
+If you panic it won't get tested. If its done (even as 'experimental' then
+it'll either get tested or not matter). They also have relatively few IRQ
+sources by modern standards so there isn't a lot to map.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+The bigger problem with the old processors is that some Pentium era SMP
+boards actually get material numbers of repeated interrupts where one IPI
+arrives twice on another CPU. That's something present in a lot of the
+later chips (pre P4 I believe but don't quote me on that) but very
+unusual to observe except on a few specific boards (eg the BP6))
 
- include/linux/init_task.h     |    8 --------
- include/linux/ipc_namespace.h |    5 -----
- include/net/net_namespace.h   |    5 -----
- kernel/nsproxy.c              |   13 ++++++++++++-
- 4 files changed, 12 insertions(+), 19 deletions(-)
 
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -32,14 +32,6 @@ extern struct fs_struct init_fs;
- }
- 
- extern struct nsproxy init_nsproxy;
--#define INIT_NSPROXY(nsproxy) {						\
--	.pid_ns		= &init_pid_ns,					\
--	.count		= ATOMIC_INIT(1),				\
--	.uts_ns		= &init_uts_ns,					\
--	.mnt_ns		= NULL,						\
--	INIT_NET_NS(net_ns)                                             \
--	INIT_IPC_NS(ipc_ns)						\
--}
- 
- #define INIT_SIGHAND(sighand) {						\
- 	.count		= ATOMIC_INIT(1), 				\
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -62,11 +62,6 @@ extern struct ipc_namespace init_ipc_ns;
- extern atomic_t nr_ipc_ns;
- 
- extern spinlock_t mq_lock;
--#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
--#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
--#else
--#define INIT_IPC_NS(ns)
--#endif
- 
- #ifdef CONFIG_SYSVIPC
- extern int register_ipcns_notifier(struct ipc_namespace *);
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -98,14 +98,9 @@ struct net {
- extern struct net init_net;
- 
- #ifdef CONFIG_NET
--#define INIT_NET_NS(net_ns) .net_ns = &init_net,
--
- extern struct net *copy_net_ns(unsigned long flags, struct net *net_ns);
- 
- #else /* CONFIG_NET */
--
--#define INIT_NET_NS(net_ns)
--
- static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
- {
- 	/* There is nothing to copy so this is a noop */
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -24,7 +24,18 @@
- 
- static struct kmem_cache *nsproxy_cachep;
- 
--struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
-+struct nsproxy init_nsproxy = {
-+	.count	= ATOMIC_INIT(1),
-+	.uts_ns	= &init_uts_ns,
-+#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
-+	.ipc_ns	= &init_ipc_ns,
-+#endif
-+	.mnt_ns	= NULL,
-+	.pid_ns	= &init_pid_ns,
-+#ifdef CONFIG_NET
-+	.net_ns	= &init_net,
-+#endif
-+};
- 
- static inline struct nsproxy *create_nsproxy(void)
- {
+Alan
