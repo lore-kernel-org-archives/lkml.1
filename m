@@ -1,302 +1,221 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685Ab0BUP0X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 10:26:23 -0500
-Received: from trinity.develer.com ([83.149.158.210]:49255 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602Ab0BUP0T (ORCPT
+	id S1752712Ab0BUP0x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 10:26:53 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:64937 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400Ab0BUP0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 10:26:19 -0500
-From: Andrea Righi <arighi@develer.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andrea Righi <arighi@develer.com>
-Subject: [PATCH 2/2] memcg: dirty pages instrumentation
-Date: Sun, 21 Feb 2010 16:18:45 +0100
-Message-Id: <1266765525-30890-3-git-send-email-arighi@develer.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1266765525-30890-1-git-send-email-arighi@develer.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+	Sun, 21 Feb 2010 10:26:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=esPl+vNBIhjLr05PXqyGmjWyT4uyNb67C6K82jQGD8oORiaMnublSPbgm/CHG3yOZc
+         /Tgb2j5wm+ntYbbWlMr+AOH8k4EGDZma2JVzGm1iKF5dgJTbCs39ydRBJsEgP9vlpOgG
+         P+RKA3r2/0iYJTuXaCHxF/Va2pLmbDjZK+HQM=
+Date: Sun, 21 Feb 2010 17:26:45 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -next] rcu: remove INIT_RCU_HEAD, RCU_HEAD_INIT, RCU_HEAD
+Message-ID: <20100221152644.GD21281@core2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the cgroup dirty pages accounting and limiting infrastructure to
-the opportune kernel functions.
+call_rcu() will unconditionally reinitialize RCU head anyway.
+New users of these macros constantly appear, so remove them.
 
-Signed-off-by: Andrea Righi <arighi@develer.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- fs/fuse/file.c      |    3 ++
- fs/nfs/write.c      |    3 ++
- fs/nilfs2/segment.c |    8 ++++-
- mm/filemap.c        |    1 +
- mm/page-writeback.c |   69 ++++++++++++++++++++++++++++++++++++--------------
- mm/truncate.c       |    1 +
- 6 files changed, 63 insertions(+), 22 deletions(-)
 
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index a9f5e13..357632a 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -11,6 +11,7 @@
- #include <linux/pagemap.h>
- #include <linux/slab.h>
- #include <linux/kernel.h>
-+#include <linux/memcontrol.h>
- #include <linux/sched.h>
- #include <linux/module.h>
+ Documentation/DocBook/kernel-locking.tmpl   |    8 --------
+ arch/powerpc/mm/pgtable.c                   |    1 -
+ block/cfq-iosched.c                         |    1 -
+ block/genhd.c                               |    1 -
+ drivers/staging/batman-adv/hard-interface.c |    1 -
+ fs/file.c                                   |    3 ---
+ fs/fs-writeback.c                           |    1 -
+ fs/partitions/check.c                       |    1 -
+ include/linux/init_task.h                   |    1 -
+ include/linux/rcupdate.h                    |    6 ------
+ mm/backing-dev.c                            |    1 -
+ mm/slob.c                                   |    1 -
+ security/selinux/avc.c                      |    1 -
+ security/selinux/netnode.c                  |    2 --
+ 14 files changed, 29 deletions(-)
+
+--- a/Documentation/DocBook/kernel-locking.tmpl
++++ b/Documentation/DocBook/kernel-locking.tmpl
+@@ -1725,14 +1725,6 @@ the amount of locking which needs to be done.
+          if (++cache_num > MAX_CACHE_SIZE) {
+                  struct object *i, *outcast = NULL;
+                  list_for_each_entry(i, &amp;cache, list) {
+-@@ -85,6 +94,7 @@
+-         obj-&gt;popularity = 0;
+-         atomic_set(&amp;obj-&gt;refcnt, 1); /* The cache holds a reference */
+-         spin_lock_init(&amp;obj-&gt;lock);
+-+        INIT_RCU_HEAD(&amp;obj-&gt;rcu);
+-
+-         spin_lock_irqsave(&amp;cache_lock, flags);
+-         __cache_add(obj);
+ @@ -104,12 +114,11 @@
+  struct object *cache_find(int id)
+  {
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -91,7 +91,6 @@ static void pte_free_rcu_callback(struct rcu_head *head)
  
-@@ -1129,6 +1130,7 @@ static void fuse_writepage_finish(struct fuse_conn *fc, struct fuse_req *req)
- 
- 	list_del(&req->writepages_entry);
- 	dec_bdi_stat(bdi, BDI_WRITEBACK);
-+	mem_cgroup_charge_dirty(req->pages[0], NR_WRITEBACK_TEMP, -1);
- 	dec_zone_page_state(req->pages[0], NR_WRITEBACK_TEMP);
- 	bdi_writeout_inc(bdi);
- 	wake_up(&fi->page_waitq);
-@@ -1240,6 +1242,7 @@ static int fuse_writepage_locked(struct page *page)
- 	req->inode = inode;
- 
- 	inc_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
-+	mem_cgroup_charge_dirty(tmp_page, NR_WRITEBACK_TEMP, 1);
- 	inc_zone_page_state(tmp_page, NR_WRITEBACK_TEMP);
- 	end_page_writeback(page);
- 
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index d63d964..3d9de01 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -439,6 +439,7 @@ nfs_mark_request_commit(struct nfs_page *req)
- 			req->wb_index,
- 			NFS_PAGE_TAG_COMMIT);
- 	spin_unlock(&inode->i_lock);
-+	mem_cgroup_charge_dirty(req->wb_page, NR_UNSTABLE_NFS, 1);
- 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
- 	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
-@@ -450,6 +451,7 @@ nfs_clear_request_commit(struct nfs_page *req)
- 	struct page *page = req->wb_page;
- 
- 	if (test_and_clear_bit(PG_CLEAN, &(req)->wb_flags)) {
-+		mem_cgroup_charge_dirty(page, NR_UNSTABLE_NFS, -1);
- 		dec_zone_page_state(page, NR_UNSTABLE_NFS);
- 		dec_bdi_stat(page->mapping->backing_dev_info, BDI_RECLAIMABLE);
- 		return 1;
-@@ -1320,6 +1322,7 @@ nfs_commit_list(struct inode *inode, struct list_head *head, int how)
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
- 		nfs_mark_request_commit(req);
-+		mem_cgroup_charge_dirty(req->wb_page, NR_UNSTABLE_NFS, -1);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
- 		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
- 				BDI_RECLAIMABLE);
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index 105b508..b9ffac5 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -1660,8 +1660,10 @@ nilfs_copy_replace_page_buffers(struct page *page, struct list_head *out)
- 	} while (bh = bh->b_this_page, bh2 = bh2->b_this_page, bh != head);
- 	kunmap_atomic(kaddr, KM_USER0);
- 
--	if (!TestSetPageWriteback(clone_page))
-+	if (!TestSetPageWriteback(clone_page)) {
-+		mem_cgroup_charge_dirty(clone_page, NR_WRITEBACK, 1);
- 		inc_zone_page_state(clone_page, NR_WRITEBACK);
-+	}
- 	unlock_page(clone_page);
- 
- 	return 0;
-@@ -1788,8 +1790,10 @@ static void __nilfs_end_page_io(struct page *page, int err)
- 	}
- 
- 	if (buffer_nilfs_allocated(page_buffers(page))) {
--		if (TestClearPageWriteback(page))
-+		if (TestClearPageWriteback(page)) {
-+			mem_cgroup_charge_dirty(clone_page, NR_WRITEBACK, -1);
- 			dec_zone_page_state(page, NR_WRITEBACK);
-+		}
- 	} else
- 		end_page_writeback(page);
+ static void pte_free_submit(struct pte_freelist_batch *batch)
+ {
+-	INIT_RCU_HEAD(&batch->rcu);
+ 	call_rcu(&batch->rcu, pte_free_rcu_callback);
  }
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 698ea80..c19d809 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -135,6 +135,7 @@ void __remove_from_page_cache(struct page *page)
- 	 * having removed the page entirely.
+ 
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -3730,7 +3730,6 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	 * second, in order to have larger depth for async operations.
  	 */
- 	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
-+		mem_cgroup_charge_dirty(page, NR_FILE_DIRTY, -1);
- 		dec_zone_page_state(page, NR_FILE_DIRTY);
- 		dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	}
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 0b19943..c9ff1cd 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
-  */
- static int calc_period_shift(void)
- {
--	unsigned long dirty_total;
-+	unsigned long dirty_total, dirty_bytes;
+ 	cfqd->last_delayed_sync = jiffies - HZ;
+-	INIT_RCU_HEAD(&cfqd->rcu);
+ 	return cfqd;
+ }
  
--	if (vm_dirty_bytes)
--		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-+	dirty_bytes = mem_cgroup_dirty_bytes();
-+	if (dirty_bytes)
-+		dirty_total = dirty_bytes / PAGE_SIZE;
- 	else
- 		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
- 				100;
-@@ -406,14 +407,20 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
-  */
- unsigned long determine_dirtyable_memory(void)
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -987,7 +987,6 @@ int disk_expand_part_tbl(struct gendisk *disk, int partno)
+ 	if (!new_ptbl)
+ 		return -ENOMEM;
+ 
+-	INIT_RCU_HEAD(&new_ptbl->rcu_head);
+ 	new_ptbl->len = target;
+ 
+ 	for (i = 0; i < len; i++)
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -301,7 +301,6 @@ int hardif_add_interface(char *dev, int if_num)
+ 	batman_if->if_num = if_num;
+ 	batman_if->dev = dev;
+ 	batman_if->if_active = IF_INACTIVE;
+-	INIT_RCU_HEAD(&batman_if->rcu);
+ 
+ 	printk(KERN_INFO "batman-adv:Adding interface: %s\n", dev);
+ 	avail_ifs++;
+--- a/fs/file.c
++++ b/fs/file.c
+@@ -178,7 +178,6 @@ static struct fdtable * alloc_fdtable(unsigned int nr)
+ 	fdt->open_fds = (fd_set *)data;
+ 	data += nr / BITS_PER_BYTE;
+ 	fdt->close_on_exec = (fd_set *)data;
+-	INIT_RCU_HEAD(&fdt->rcu);
+ 	fdt->next = NULL;
+ 
+ 	return fdt;
+@@ -312,7 +311,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
+ 	new_fdt->close_on_exec = (fd_set *)&newf->close_on_exec_init;
+ 	new_fdt->open_fds = (fd_set *)&newf->open_fds_init;
+ 	new_fdt->fd = &newf->fd_array[0];
+-	INIT_RCU_HEAD(&new_fdt->rcu);
+ 	new_fdt->next = NULL;
+ 
+ 	spin_lock(&oldf->file_lock);
+@@ -430,7 +428,6 @@ struct files_struct init_files = {
+ 		.fd		= &init_files.fd_array[0],
+ 		.close_on_exec	= (fd_set *)&init_files.close_on_exec_init,
+ 		.open_fds	= (fd_set *)&init_files.open_fds_init,
+-		.rcu		= RCU_HEAD_INIT,
+ 	},
+ 	.file_lock	= __SPIN_LOCK_UNLOCKED(init_task.file_lock),
+ };
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -77,7 +77,6 @@ static inline bool bdi_work_on_stack(struct bdi_work *work)
+ static inline void bdi_work_init(struct bdi_work *work,
+ 				 struct wb_writeback_args *args)
  {
--	unsigned long x;
+-	INIT_RCU_HEAD(&work->rcu_head);
+ 	work->args = *args;
+ 	work->state = WS_USED;
+ }
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -455,7 +455,6 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
+ 	}
+ 
+ 	/* everything is up and running, commence */
+-	INIT_RCU_HEAD(&p->rcu_head);
+ 	rcu_assign_pointer(ptbl->part[partno], p);
+ 
+ 	/* suppress uevent if the disk supresses it */
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -57,7 +57,6 @@ extern struct group_info init_groups;
+ 		{ .first = &init_task.pids[PIDTYPE_PGID].node },	\
+ 		{ .first = &init_task.pids[PIDTYPE_SID].node },		\
+ 	},								\
+-	.rcu		= RCU_HEAD_INIT,				\
+ 	.level		= 0,						\
+ 	.numbers	= { {						\
+ 		.nr		= 0,					\
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -71,12 +71,6 @@ extern void rcu_init(void);
+ #error "Unknown RCU implementation specified to kernel configuration"
+ #endif
+ 
+-#define RCU_HEAD_INIT	{ .next = NULL, .func = NULL }
+-#define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
+-#define INIT_RCU_HEAD(ptr) do { \
+-       (ptr)->next = NULL; (ptr)->func = NULL; \
+-} while (0)
 -
--	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ extern struct lockdep_map rcu_lock_map;
+ # define rcu_read_acquire()	\
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -655,7 +655,6 @@ int bdi_init(struct backing_dev_info *bdi)
+ 	bdi->max_ratio = 100;
+ 	bdi->max_prop_frac = PROP_FRAC_BASE;
+ 	spin_lock_init(&bdi->wb_lock);
+-	INIT_RCU_HEAD(&bdi->rcu_head);
+ 	INIT_LIST_HEAD(&bdi->bdi_list);
+ 	INIT_LIST_HEAD(&bdi->wb_list);
+ 	INIT_LIST_HEAD(&bdi->work_list);
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -647,7 +647,6 @@ void kmem_cache_free(struct kmem_cache *c, void *b)
+ 	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
+ 		struct slob_rcu *slob_rcu;
+ 		slob_rcu = b + (c->size - sizeof(struct slob_rcu));
+-		INIT_RCU_HEAD(&slob_rcu->head);
+ 		slob_rcu->size = c->size;
+ 		call_rcu(&slob_rcu->head, kmem_rcu_free);
+ 	} else {
+--- a/security/selinux/avc.c
++++ b/security/selinux/avc.c
+@@ -288,7 +288,6 @@ static struct avc_node *avc_alloc_node(void)
+ 	if (!node)
+ 		goto out;
+ 
+-	INIT_RCU_HEAD(&node->rhead);
+ 	INIT_HLIST_NODE(&node->list);
+ 	avc_cache_stats_incr(allocations);
+ 
+--- a/security/selinux/netnode.c
++++ b/security/selinux/netnode.c
+@@ -182,8 +182,6 @@ static void sel_netnode_insert(struct sel_netnode *node)
+ 		BUG();
+ 	}
+ 
+-	INIT_RCU_HEAD(&node->rcu);
 -
-+	unsigned long memcg_memory, memory;
-+
-+	memory = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-+	memcg_memory = mem_cgroup_page_state(MEMCG_NR_FREE_PAGES);
-+	if (memcg_memory > 0) {
-+		memcg_memory +=
-+			mem_cgroup_page_state(MEMCG_NR_RECLAIMABLE_PAGES);
-+		if (memcg_memory < memory)
-+			return memcg_memory;
-+	}
- 	if (!vm_highmem_is_dirtyable)
--		x -= highmem_dirtyable_memory(x);
-+		memory -= highmem_dirtyable_memory(memory);
- 
--	return x + 1;	/* Ensure that we never return 0 */
-+	return memory + 1;	/* Ensure that we never return 0 */
- }
- 
- void
-@@ -421,12 +428,13 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
- 		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
- {
- 	unsigned long background;
--	unsigned long dirty;
-+	unsigned long dirty, dirty_bytes;
- 	unsigned long available_memory = determine_dirtyable_memory();
- 	struct task_struct *tsk;
- 
--	if (vm_dirty_bytes)
--		dirty = DIV_ROUND_UP(vm_dirty_bytes, PAGE_SIZE);
-+	dirty_bytes = mem_cgroup_dirty_bytes();
-+	if (dirty_bytes)
-+		dirty = DIV_ROUND_UP(dirty_bytes, PAGE_SIZE);
- 	else {
- 		int dirty_ratio;
- 
-@@ -505,9 +513,17 @@ static void balance_dirty_pages(struct address_space *mapping,
- 		get_dirty_limits(&background_thresh, &dirty_thresh,
- 				&bdi_thresh, bdi);
- 
--		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-+		nr_reclaimable = mem_cgroup_page_state(MEMCG_NR_FILE_DIRTY);
-+		if (nr_reclaimable == 0) {
-+			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
- 					global_page_state(NR_UNSTABLE_NFS);
--		nr_writeback = global_page_state(NR_WRITEBACK);
-+			nr_writeback = global_page_state(NR_WRITEBACK);
-+		} else {
-+			nr_reclaimable +=
-+				mem_cgroup_page_state(MEMCG_NR_UNSTABLE_NFS);
-+			nr_writeback =
-+				mem_cgroup_page_state(MEMCG_NR_WRITEBACK);
-+		}
- 
- 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
- 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-@@ -660,6 +676,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
- 	unsigned long dirty_thresh;
- 
-         for ( ; ; ) {
-+		unsigned long dirty;
-+
- 		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
- 
-                 /*
-@@ -668,10 +686,15 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-                  */
-                 dirty_thresh += dirty_thresh / 10;      /* wheeee... */
- 
--                if (global_page_state(NR_UNSTABLE_NFS) +
--			global_page_state(NR_WRITEBACK) <= dirty_thresh)
--                        	break;
--                congestion_wait(BLK_RW_ASYNC, HZ/10);
-+		dirty = mem_cgroup_page_state(MEMCG_NR_WRITEBACK);
-+		if (dirty < 0)
-+			dirty = global_page_state(NR_UNSTABLE_NFS) +
-+				global_page_state(NR_WRITEBACK);
-+		else
-+			dirty += mem_cgroup_page_state(MEMCG_NR_UNSTABLE_NFS);
-+		if (dirty <= dirty_thresh)
-+			break;
-+		congestion_wait(BLK_RW_ASYNC, HZ/10);
- 
- 		/*
- 		 * The caller might hold locks which can prevent IO completion
-@@ -1078,6 +1101,7 @@ int __set_page_dirty_no_writeback(struct page *page)
- void account_page_dirtied(struct page *page, struct address_space *mapping)
- {
- 	if (mapping_cap_account_dirty(mapping)) {
-+		mem_cgroup_charge_dirty(page, NR_FILE_DIRTY, 1);
- 		__inc_zone_page_state(page, NR_FILE_DIRTY);
- 		__inc_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
- 		task_dirty_inc(current);
-@@ -1253,6 +1277,7 @@ int clear_page_dirty_for_io(struct page *page)
- 		 * for more comments.
- 		 */
- 		if (TestClearPageDirty(page)) {
-+			mem_cgroup_charge_dirty(page, NR_FILE_DIRTY, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
-@@ -1288,8 +1313,10 @@ int test_clear_page_writeback(struct page *page)
- 	} else {
- 		ret = TestClearPageWriteback(page);
- 	}
--	if (ret)
-+	if (ret) {
-+		mem_cgroup_charge_dirty(page, NR_WRITEBACK, -1);
- 		dec_zone_page_state(page, NR_WRITEBACK);
-+	}
- 	return ret;
- }
- 
-@@ -1319,8 +1346,10 @@ int test_set_page_writeback(struct page *page)
- 	} else {
- 		ret = TestSetPageWriteback(page);
- 	}
--	if (!ret)
-+	if (!ret) {
-+		mem_cgroup_charge_dirty(page, NR_WRITEBACK, 1);
- 		inc_zone_page_state(page, NR_WRITEBACK);
-+	}
- 	return ret;
- 
- }
-diff --git a/mm/truncate.c b/mm/truncate.c
-index e87e372..f44e370 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -73,6 +73,7 @@ void cancel_dirty_page(struct page *page, unsigned int account_size)
- 	if (TestClearPageDirty(page)) {
- 		struct address_space *mapping = page->mapping;
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_dirty(page, NR_FILE_DIRTY, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
--- 
-1.6.3.3
-
+ 	/* we need to impose a limit on the growth of the hash table so check
+ 	 * this bucket to make sure it is within the specified bounds */
+ 	list_add_rcu(&node->list, &sel_netnode_hash[idx].list);
