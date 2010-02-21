@@ -1,63 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469Ab0BUXPb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 18:15:31 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:45175 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752990Ab0BUXP3 (ORCPT
+	id S1753428Ab0BUXV7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 18:21:59 -0500
+Received: from tulikuusama.dnainternet.net ([83.102.40.132]:52598 "EHLO
+	tulikuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752281Ab0BUXV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 18:15:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=klmgaN0xhnEx0TLiMpaGe2JGh8snu6gbLBix5RoLUsFIxkm9Ob3SZZM9nA9Lxuie3K
-         4Wsd17gAOjN//lqRTAJb+qWYrSwvqMnRELfsjup9kj8Oc3+aJwattrZS4HwurH57GG/N
-         hdpjebXzrzuWn4/3Nu1ieIrZ6+UVZK8z/dbOk=
-Date: Mon, 22 Feb 2010 00:15:24 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Michael Stefaniuc <mstefani@redhat.com>
-Subject: Re: [Bug #15273] Regression in ptrace (Wine) starting with
-	2.6.33-rc1
-Message-ID: <20100221231522.GA7625@nowhere>
-References: <b_eAfX__uZL.A.lvE.HcagLB@chimera> <ClJsQB_ZlxO.A.cQG.WdagLB@chimera>
+	Sun, 21 Feb 2010 18:21:57 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Mon, 22 Feb 2010 01:21:53 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002211627430.32083-100000@netrider.rowland.org> <201002220106.36476.anssi.hannula@iki.fi> <201002220113.35941.anssi.hannula@iki.fi>
+In-Reply-To: <201002220113.35941.anssi.hannula@iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ClJsQB_ZlxO.A.cQG.WdagLB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002220121.53882.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 10:30:15PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a summary report
-> of recent regressions.
+On maanantai 22 helmikuu 2010 01:13:35 Anssi Hannula wrote:
+> On maanantai 22 helmikuu 2010 01:06:36 Anssi Hannula wrote:
+> > On maanantai 22 helmikuu 2010 00:12:36 Oliver Neukum wrote:
+> > > Am Sonntag, 21. Februar 2010 22:42:12 schrieb Anssi Hannula:
+> > > > And of course this doesn't explain why it hangs (and the WARNING) if
+> > > > I remove the sleep calls I added in gobi_loader.
+> > > 
+> > > Please tell us where you put a delay.
+> > 
+> > As I said earlier, the delay was put *before* most of the data gets
+> > written.
+> > 
+> > More specifically, I inserted a delay of one second between transmission
+> > of magic1 and magic2, one between magic2 and magic3, and one between
+> > magic3 and the first firmware file.
+> > 
+> > If I additionally insert a one-second delay before the fd is closed, I
+> > get this usbmon log:
+> > http://stuff.onse.fi/gobi2000/gobi-regression5.mon.log
+> > 
+> > The firmware upload is still unsuccessful.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15273
-> Subject		: Regression in ptrace (Wine) starting with 2.6.33-rc1
-> Submitter	: Michael Stefaniuc <mstefani@redhat.com>
-> Date		: 2010-02-11 16:21 (11 days old)
-> Handled-By	: Frederic Weisbecker <fweisbec@gmail.com>
-> Patch		: http://patchwork.kernel.org/patch/80783/
-> 		  http://patchwork.kernel.org/patch/80785/
+> If I use the option driver instead of qcserial, the firmware upload is
+> always successful (without any added delays needed). The usbmon log for
+> that case can be found here:
+> http://stuff.onse.fi/gobi2000/gobi-regression6.mon.log
 
+I installed 2.6.31.12 to get a usbmon log with qcserial before the regression 
+as well (without delays, upload successful):
+http://stuff.onse.fi/gobi2000/gobi-regression7.mon.log
 
-
-Michael tested the patches and this seems to do the trick.
-I'm just waiting for Ingo to get the patches and send them
-to Linus.
-
-Thanks.
-
+-- 
+Anssi Hannula
