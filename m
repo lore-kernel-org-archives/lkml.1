@@ -1,47 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076Ab0BUJ4x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 04:56:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34231 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862Ab0BUJ4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 04:56:51 -0500
-Message-ID: <4B810360.7030108@redhat.com>
-Date: Sun, 21 Feb 2010 11:56:48 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/11] Nested SVM fixes v2
-References: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1755241Ab0BUKGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 05:06:16 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:43293 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754083Ab0BUKGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 05:06:14 -0500
+Subject: Re: [PATCH 2/2] enhance /sys/class/rfkill/<rfkill>/state interface
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-wireless@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <20100221000716.29ad3e90@schatten.dmk.lab>
+References: <1266702045-6062-1-git-send-email-florian@mickler.org>
+	 <1266702045-6062-3-git-send-email-florian@mickler.org>
+	 <1266704090.10980.0.camel@jlt3.sipsolutions.net>
+	 <20100221000716.29ad3e90@schatten.dmk.lab>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 21 Feb 2010 11:07:35 +0100
+Message-ID: <1266746855.18491.0.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/19/2010 05:22 PM, Joerg Roedel wrote:
-> Hi,
->
-> this is the second version of the KVM fixes queued up while testing
-> nested svm with Windows 7 64 bit. Changes to the previous version:
->
-> 	* Fixed kunmap bug
-> 	* Introduced nested_svm_intercept insteat of
-> 	  nested_svm_exit_handled_atomic()
-> 	* Added missing patch description
-> 	* Added wbinvd/invd skip functions because the instruction
-> 	  emulator fails on these instructions (found during Windows 7
-> 	  XP mode bringup)
->
-> Please review and comment (or apply ;-) these patches.
->    
+Hi Florian,
 
-Applied 1-10, thanks.  11 got a comment.
+> > > Introduce a new state-value RFKILL_STATE_SOFT_AND_HARD_BLOCKED
+> > > which is returned only through the sysfs state file.
+> > > The other interfaces are designed so that they don't need this extra
+> > > state.
+> > > 
+> > > This allows the sysfs to represent all possible states an rfkill
+> > > driver can
+> > > have.
+> > > 
+> > > Signed-off-by: Florian Mickler <florian@mickler.org>
+> > > ---
+> > > 
+> > > After stumbling over this arbitrary limitation of
+> > > sys/class/rfkill/*/state I
+> > > wondered what would hinder this patch?
+> > 
+> > This is not backward compatible, so can't be done.
+> > 
+> > johannes
+> 
+> hmm... ah, i see... if driver is in hard'n'soft-block state 
+> an userspace program would expect to read hardblock instead of the
+> new hard'n'softblock-state... 
+> now that i think of it, it even becomes obvious :) 
 
--- 
-error compiling committee.c: too many arguments to function
+a userspace program would be expected to use /dev/rfkill and do this
+properly. Don't bother with sysfs at all.
+
+Regards
+
+Marcel
+
 
