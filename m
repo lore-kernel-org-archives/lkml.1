@@ -1,56 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751729Ab0BULWr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 06:22:47 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:55111 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398Ab0BULWp (ORCPT
+	id S1751724Ab0BULX7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 06:23:59 -0500
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:59237 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751398Ab0BULX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 06:22:45 -0500
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1266750881.10419.1.camel@jlt3.sipsolutions.net>
-References: <1264740107.20211.53.camel@pasglop>
-	 <2375c9f91002192313j3fb84acje4c286c4f86457f3@mail.gmail.com>
-	 <1266656213.5347.0.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200106j56b0298ds1a425fde8983d988@mail.gmail.com>
-	 <1266665331.12525.0.camel@jlt3.sipsolutions.net>
-	 <20100220134447.GA3000@hack>
-	 <1266674268.18465.6.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002210151i6fe3f769k72a8a6a3485d8cf5@mail.gmail.com>
-	 <1266749023.5468.1.camel@jlt3.sipsolutions.net>
-	 <7b6bb4a51002210255t5ceaeb84r1438461085446385@mail.gmail.com>
-	 <7b6bb4a51002210312o2a1d070aneb54c107aeab6952@mail.gmail.com>
-	 <1266750881.10419.1.camel@jlt3.sipsolutions.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 21 Feb 2010 12:22:29 +0100
-Message-ID: <1266751349.10419.2.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Feb 2010 06:23:57 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=us-ascii
+X-IronPort-AV: E=Sophos;i="4.49,511,1262559600";   d="scan'208";a="45849912"
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+From: Alexander Zimmermann <zimmermann@nets.rwth-aachen.de>
+In-reply-to: <20100221102102.GB1311@ucw.cz>
+Date: Sun, 21 Feb 2010 12:23:55 +0100
+Cc: netdev@vger.kernel.org, Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       Lukowski Damian <damian@tvk.rwth-aachen.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Message-id: <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+References: <4B7AAE60.3070305@simula.no> <20100221102102.GB1311@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>, Andreas Petlund <apetlund@simula.no>,
+       lars.eggert@nokia.com
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-21 at 12:14 +0100, Johannes Berg wrote:
 
->         printk("got cpu\n");
->         for_each_online_cpu(i) {
->                 sm_work = per_cpu_ptr(stop_machine_work, i);
->                 INIT_WORK(sm_work, stop_cpu);
->                 queue_work_on(i, stop_machine_wq, sm_work);
->         }
->         /* This will release the thread on our CPU. */
->         put_cpu();
->         printk("put cpu\n");
+Am 21.02.2010 um 11:21 schrieb Pavel Machek:
 
-As odd as that may be, it hangs in put_cpu() here.
+> Hi!
+> 
+>> +After analysing a large number of time-dependent interactive
+>> +applications, we have seen that they often produce thin streams
+>> +and also stay with this traffic pattern throughout its entire
+>> +lifespan. The combination of time-dependency and the fact that the
+>> +streams provoke high latencies when using TCP is unfortunate.
+>> +
+>> +In order to reduce application-layer latency when packets are lost,
+>> +a set of mechanisms has been made, which address these latency issues
+>> +for thin streams. In short, if the kernel detects a thin stream,
+>> +the retransmission mechanisms are modified in the following manner:
+>> +
+>> +1) If the stream is thin, fast retransmit on the first dupACK.
+>> +2) If the stream is thin, do not apply exponential backoff.
+> 
+> 2) seems very dangerous/unfair. If network  congestion is caused just
+> by thin streams, will the network just fall apart?
 
-johannes
+and 1) can also be dangerous if we have reordering on the path.
+
+I strongly suggest that we discuss Andreas' idea on IETF TCPM *before*
+we integrate it in the kernel and enable it for everyone
+
+Alex,
+
+as an netdev reader and TCPM member
+
+> 
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+//
+// Dipl.-Inform. Alexander Zimmermann
+// Department of Computer Science, Informatik 4
+// RWTH Aachen University
+// Ahornstr. 55, 52056 Aachen, Germany
+// phone: (49-241) 80-21422, fax: (49-241) 80-22220
+// email: zimmermann@cs.rwth-aachen.de
+// web: http://www.umic-mesh.net
+//
 
