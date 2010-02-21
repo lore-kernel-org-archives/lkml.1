@@ -1,44 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092Ab0BUDAI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 22:00:08 -0500
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:40104 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450Ab0BUDAF (ORCPT
+	id S1756574Ab0BUDCl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 22:02:41 -0500
+Received: from straum.hexapodia.org ([64.81.70.185]:14744 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920Ab0BUDCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 22:00:05 -0500
-Message-ID: <4B80A1B2.10207@shikadi.net>
-Date: Sun, 21 Feb 2010 13:00:02 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: UML broken - runaway loop modprobe binfmt-464c
-References: <4B78EE15.9020407@shikadi.net> <20100215113730.GL12076@hack.private> <20100215161111.GA18664@c2.user-mode-linux.org>
-In-Reply-To: <20100215161111.GA18664@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Feb 2010 22:02:39 -0500
+Date: Sat, 20 Feb 2010 19:02:38 -0800
+From: Andy Isaacson <adi@hexapodia.org>
+To: Chris Frost <chris@frostnet.net>
+Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Benny Halevy <bhalevy@panasas.com>, Andrew@firstfloor.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       linux-fsdevel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
+Message-ID: <20100221030238.GA26511@hexapodia.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100216181312.GA9700@frostnet.net>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> So you are using 32-bit modprobe binary and 64-bit kernel?
->>
->> This will not work, since kernel binfmt_elf module checks
->> if e_machine is EM_X86_64.
->
-> Not just 32-bit modprobe - any 32-bit binary on a 64-bit UML will
-> cause this, I think.
+On Tue, Feb 16, 2010 at 10:13:12AM -0800, Chris Frost wrote:
+> Add the fincore() system call. fincore() is mincore() for file descriptors.
+> 
+> The functionality of fincore() can be emulated with an mmap(), mincore(),
+> and munmap(), but this emulation requires more system calls and requires
+> page table modifications. fincore() can provide a significant performance
+> improvement for non-sequential in-core queries.
 
-Thanks for the suggestions.  After some more investigation and off-list 
-pointers, it seems the problem is caused because compiling UML for x86_64 
-doesn't allow you to enable IA32 emulation.
+In addition to being expensive, mmap/mincore/munmap perturb the VM's
+eviction algorithm -- a page is less likely to be evicted if it's
+mmapped when being considered for eviction.
 
-Is this just a case of the Kconfig option being missed, or is there a more 
-fundamental reason as to why, unlike with the Linux kernel, it's not possible 
-to run 32-bit apps inside a 64-bit UML?
+I frequently see this happen when using mincore(1) from
+http://bitbucket.org/radii/mincore/ -- "watch mincore -v *.big" while
+*.big are being sequentially read results in a significant number of
+pages remaining in-core, whereas if I only run mincore after the
+sequential read is complete, the large files will be nearly-completely
+out of core (except for the tail of the last file, of course).
 
-Thanks,
-Adam.
+It's very interesting to watch
+% watch --interval=.5 mincore -v *
+
+while an IO-intensive process is happening, such as mke2fs on a
+filesystem image.
+
+So, I support the addition of fincore(2) and would use it if it were
+merged.
+
+-andy
