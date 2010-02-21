@@ -1,105 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157Ab0BUNxx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 08:53:53 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:47781 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751976Ab0BUNxv (ORCPT
+	id S1752114Ab0BUODL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:03:11 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:54349 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702Ab0BUODJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 08:53:51 -0500
-Date: Sun, 21 Feb 2010 14:53:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100221135341.GC1307@ucw.cz>
-References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <1265988318.24271.30.camel@gandalf.stny.rr.com> <20100216153905.GA1541@ucw.cz> <1266337061.24271.138.camel@gandalf.stny.rr.com> <20100216162745.GA1660@ucw.cz>
+	Sun, 21 Feb 2010 09:03:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=InKaclEpLSCJGlv3DnIgmMnXmuHz9a0OYGfL09uz7Cj4u40AfvRR1XnhwqvOklfaVT
+         pOKdEFbyPtVdXVfPhELwytkNG39libsqLcD/ngHale0RX8UztOZgG7M25LFKoEOgVBDH
+         qswThzwB2o3impV873J1yIbwDXFhUKjlaWIAk=
+Date: Sun, 21 Feb 2010 16:03:00 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] nsproxy: remove INIT_NSPROXY()
+Message-ID: <20100221140300.GA21281@core2>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100216162745.GA1660@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2010-02-16 17:27:45, Pavel Machek wrote:
-> Add --only-dl option -- when you want to cache the needed patches but
-> not apply anything yet.
+Remove INIT_NSPROXY(), use C99 initializer.
+Remove INIT_IPC_NS(), INIT_NET_NS() while I'm at it.
 
-Actually, you'll probably get a better patch if you relace 'only-dl'
-with just 'dl'. Mistaking --only-dl and --dl-only is just too easy.
+Note: headers trim will be done later, now it's quite pointless because
+results will be invalidated by merge window.
 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> 
-> diff --git a/ketchup b/ketchup
-> index 0728aec..3249cbc 100755
-> --- a/ketchup
-> +++ b/ketchup
-> @@ -405,7 +405,7 @@ def apply_patch(ver, reverse = 0):
->          r = " -R"
->  
->      qprint("Applying %s%s" % (os.path.basename(p), r))
-> -    if options["dry-run"]:
-> +    if options["dry-run"] or options["only-dl"]:
->          return ver
->  
->      def cmd(patch, reverse, dry):
-> @@ -484,7 +484,7 @@ def install_nearest(ver):
->          ver = list[0][2]
->  
->      qprint("Unpacking %s" % os.path.basename(f))
-> -    if options["dry-run"]: return ver
-> +    if options["dry-run"] or options["only-dl"]: return ver
->      untar(f)
->  
->      return ver
-> @@ -658,6 +658,7 @@ opts = [
->      ('l', 'list-trees', None, 'list supported trees'),
->      ('m', 'show-makefile', None, 'output version in makefile <arg>'),
->      ('n', 'dry-run', None, 'don\'t download or apply patches'),
-> +    ('o', 'only-dl', None, 'don\'t apply patches'),
->      ('p', 'show-previous', None, 'output version previous to <arg>'),
->      ('q', 'quiet', None, 'reduce output'),
->      ('r', 'rename-directory', None, 'rename updated directory to %s<v>'
-> @@ -750,7 +751,7 @@ if not a and os.listdir("."):
->  b = find_ver(args[0])
->  qprint("%s -> %s" % (a, b))
->  transform(a, b)
-> -if options["rename-directory"] and not options["dry-run"]:
-> +if options["rename-directory"] and not options["dry-run"] and not options["only-dl"] :
->      rename_dir(b)
->  
->  if postcommand and os.system(postcommand):
-> 
-> 
-> diff --git a/ketchup.1 b/ketchup.1
-> index 0a313ee..9e5a385 100644
-> --- a/ketchup.1
-> +++ b/ketchup.1
-> @@ -1,5 +1,5 @@
->  .\"                                      Hey, EMACS: -*- nroff -*-
-> -.TH KETCHUP 1 "April 12, 2006"
-> +.TH KETCHUP 1 "February 16, 2010"
->  .\" Please adjust this date whenever revising the manpage.
->  .\"
->  .\" Some roff macros, for reference:
-> @@ -74,6 +74,11 @@ output version in makefile <arg>
->  .IP
->  don't download or apply patches
->  .HP
-> +.B \-o
-> +.B \-\-only\-dl
-> +.IP
-> +don't apply patches
-> +.HP
->  .B \-p
->  .B \-\-show\-previous
->  .IP
-> 
-> 
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ include/linux/init_task.h     |    8 --------
+ include/linux/ipc_namespace.h |    5 -----
+ include/net/net_namespace.h   |    5 -----
+ kernel/nsproxy.c              |   13 ++++++++++++-
+ 4 files changed, 12 insertions(+), 19 deletions(-)
+
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -32,14 +32,6 @@ extern struct fs_struct init_fs;
+ }
+ 
+ extern struct nsproxy init_nsproxy;
+-#define INIT_NSPROXY(nsproxy) {						\
+-	.pid_ns		= &init_pid_ns,					\
+-	.count		= ATOMIC_INIT(1),				\
+-	.uts_ns		= &init_uts_ns,					\
+-	.mnt_ns		= NULL,						\
+-	INIT_NET_NS(net_ns)                                             \
+-	INIT_IPC_NS(ipc_ns)						\
+-}
+ 
+ #define INIT_SIGHAND(sighand) {						\
+ 	.count		= ATOMIC_INIT(1), 				\
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -62,11 +62,6 @@ extern struct ipc_namespace init_ipc_ns;
+ extern atomic_t nr_ipc_ns;
+ 
+ extern spinlock_t mq_lock;
+-#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
+-#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
+-#else
+-#define INIT_IPC_NS(ns)
+-#endif
+ 
+ #ifdef CONFIG_SYSVIPC
+ extern int register_ipcns_notifier(struct ipc_namespace *);
+--- a/include/net/net_namespace.h
++++ b/include/net/net_namespace.h
+@@ -98,14 +98,9 @@ struct net {
+ extern struct net init_net;
+ 
+ #ifdef CONFIG_NET
+-#define INIT_NET_NS(net_ns) .net_ns = &init_net,
+-
+ extern struct net *copy_net_ns(unsigned long flags, struct net *net_ns);
+ 
+ #else /* CONFIG_NET */
+-
+-#define INIT_NET_NS(net_ns)
+-
+ static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
+ {
+ 	/* There is nothing to copy so this is a noop */
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -24,7 +24,18 @@
+ 
+ static struct kmem_cache *nsproxy_cachep;
+ 
+-struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
++struct nsproxy init_nsproxy = {
++	.count	= ATOMIC_INIT(1),
++	.uts_ns	= &init_uts_ns,
++#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
++	.ipc_ns	= &init_ipc_ns,
++#endif
++	.mnt_ns	= NULL,
++	.pid_ns	= &init_pid_ns,
++#ifdef CONFIG_NET
++	.net_ns	= &init_net,
++#endif
++};
+ 
+ static inline struct nsproxy *create_nsproxy(void)
+ {
