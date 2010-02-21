@@ -1,48 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154Ab0BUUfe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 15:35:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58395 "EHLO ogre.sisk.pl"
+	id S1753210Ab0BUUqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 15:46:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58440 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977Ab0BUUfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 15:35:30 -0500
+	id S1752789Ab0BUUqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 15:46:35 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: What's the right value for idle= (was: Re: [linux-pm] regression on P-II SMP)
-Date: Sun, 21 Feb 2010 21:36:03 +0100
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Sun, 21 Feb 2010 21:47:07 +0100
 User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.64.1002212117540.9624@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1002212117540.9624@axis700.grange>
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002182104.49631.rjw@sisk.pl> <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com>
+In-Reply-To: <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002212136.03783.rjw@sisk.pl>
+Message-Id: <201002212147.07987.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 21 February 2010, Guennadi Liakhovetski wrote:
-> Hi
+On Friday 19 February 2010, Alan Jenkins wrote:
+> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday 18 February 2010, Alan Jenkins wrote:
+> >> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Wednesday 17 February 2010, Alan Jenkins wrote:
+> >> >> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> > On Tuesday 16 February 2010, Alan Jenkins wrote:
+> >> >> >> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+> >> >> >> > On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> >> >> On Tuesday 09 February 2010, Alan Jenkins wrote:
+> >> >> >> >>> Perhaps I spoke too soon.  I see the same hang if I run too many
+> >> >> >> >>> applications.  The first hibernation fails with "not enough
+> >> >> >> >>> swap"
+> >> >> >> >>> as
+> >> >> >> >>> expected, but the second or third attempt hangs (with the same
+> >> >> >> >>> backtrace
+> >> >> >> >>> as before).
+> >> >> >> >>>
+> >> >> >> >>> The patch definitely helps though.  Without the patch, I see a
+> >> >> >> >>> hang
+> >> >> >> >>> the
+> >> >> >> >>> first time I try to hibernate with too many applications
+> >> >> >> >>> running.
+> >> >> >> >>
+> >> >> >> >> Well, I have an idea.
+> >> >> >> >>
+> >> >> >> >> Can you try to apply the appended patch in addition and see if
+> >> >> >> >> that
+> >> >> >> >> helps?
+> >> >> >> >>
+> >> >> >> >> Rafael
+> >> >> >> >
+> >> >> >> > It doesn't seem to help.
+> >> >> >>
+> >> >> >> To be clear: It doesn't stop the hang when I hibernate with too many
+> >> >> >> applications.
+> >> >> >>
+> >> >> >> It does stop the same hang in a different case though.
+> >> >> >>
+> >> >> >> 1. boot with init=/bin/bash
+> >> >> >> 2. run s2disk
+> >> >> >> 3. cancel the s2disk
+> >> >> >> 4. repeat steps 2&3
+> >> >> >>
+> >> >> >> With the patch, I can run 10s of iterations, with no hang.
+> >> >> >> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+> >> >> >> always).
+> >> >> >>
+> >> >> >> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+> >> >> >> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+> >> >> >> allocation
+> >> >> >> failure after a couple of iterations ("kthreadd: page allocation
+> >> >> >> failure. order:1, mode:0xd0").  It looks like it might be the same
+> >> >> >> stop_machine thread allocation failure that causes the hang.
+> >> >> >
+> >> >> > Have you tested it alone or on top of the previous one?  If you've
+> >> >> > tested it
+> >> >> > alone, please apply the appended one in addition to it and retest.
+> >> >> >
+> >> >> > Rafael
+> >> >>
+> >> >> I did test with both patches applied together -
+> >> >>
+> >> >> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+> >> >> resume
+> >> >> 2. "reducing the number of pages that we're going to keep preallocated
+> >> >> by
+> >> >> 20%"
+> >> >
+> >> > In that case you can try to reduce the number of preallocated pages even
+> >> > more,
+> >> > ie. change "/ 5" to "/ 2" (for example) in the second patch.
+> >>
+> >> It still hangs if I try to hibernate a couple of times with too many
+> >> applications.
+> >
+> > Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
+> > how much RAM is there in the box?
+> >
+> > Rafael
 > 
-> my 2xP-II@400MHz locks up with 2.6.32(.X) unless I specify "idle=*" on the 
-> kernel command-line, where "*" is one of "poll," "mwait," "halt," and only 
-> "nomwait" indeed locks it up. Last kernel known to work was 2.6.25. So, it 
-> doesn't bother me all that much - I have a way to boot it, but maybe 
-> someone would be interested to fix this (this system already has a few 
-> quirks on the kernel command line, so, one more doesn't really hurt;)). 
-> What interests me more - which of those shall I be using? From 
-> Documentation/kernel-parameters.txt it looks like "mwait" should be best 
-> for me? Or should I be using "halt?" "Poll" does indeed fry CPUs - raises 
-> sys temperatures to 50 / 60 degrees C. Power-saving is not that much of a 
-> concern for me - I only run that system occasionally, but it shouldn't 
-> produce more heat than it must;) And since this system does have a broken 
-> ACPI (Compaq AP400), I wouldn't try to be too smart with it.
+> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
 
-I guess "mwait" is the right one, but let's try to ask experts.
+Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
+pages and see what happens.
 
 Rafael
