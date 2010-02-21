@@ -1,56 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144Ab0BUOGz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 09:06:55 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51959 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751863Ab0BUOGy (ORCPT
+	id S1752178Ab0BUOKh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:10:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:10303 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034Ab0BUOKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 09:06:54 -0500
-Date: Sun, 21 Feb 2010 14:09:38 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "yinghai@kernel.org" <yinghai@kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/2] x86, irq: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
- instead of 0x1f
-Message-ID: <20100221140938.7aaab70d@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B80C699.1030302@zytor.com>
-References: <20100114002118.436172066@sbs-t61.sc.intel.com>
-	<20100114002118.521826763@sbs-t61.sc.intel.com>
-	<alpine.LFD.2.00.1001240545180.13034@eddie.linux-mips.org>
-	<4B5C00EB.3000208@zytor.com>
-	<alpine.LFD.2.00.1001310705280.31764@eddie.linux-mips.org>
-	<1265059497.2802.178.camel@sbs-t61.sc.intel.com>
-	<4B674C82.9050703@zytor.com>
-	<alpine.LFD.2.00.1002210438220.1146@eddie.linux-mips.org>
-	<4B80C699.1030302@zytor.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Feb 2010 09:10:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=eotNPSwrfqFNl0tBaEQk3SGk1lYmHGwWlL+QCb81xmeWANfl1L+fYUzv8GWhDGVupw
+         LwFLXwvgfdfgRuomWutHs+TCKPLkXagsjpTH8215BRkgdtEYfl1AQupZYtox0ejrnUf4
+         jKb0D9EUKaqBwjRxsPk+NNR5Ir08hR1dVvlUE=
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sourceforge.net
+Cc: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+Subject: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep (w. timeout) until wake_up
+Date: Sun, 21 Feb 2010 15:10:22 +0100
+Message-Id: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Either way, this doesn't exactly sound too bad.  A bigger question is if
-> we want to do this globally or end up having different vector
-> assignments for these oddball CPUs.  Testing it, too, will be almost
-> impossible...
+Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+---
+We try to implement some PM in radeon KMS and we need to sync with VLBANK for
+reclocking engine/memory. The easiest and cleanest way seems to be sleeping in
+timer handler just before reclocking. Then our IRQ handler calls wake_up and we
+continue reclocking.
 
-If you panic it won't get tested. If its done (even as 'experimental' then
-it'll either get tested or not matter). They also have relatively few IRQ
-sources by modern standards so there isn't a lot to map.
+As you see our sleeping is condition-less, we just wait for waking up queue.
 
-The bigger problem with the old processors is that some Pentium era SMP
-boards actually get material numbers of repeated interrupts where one IPI
-arrives twice on another CPU. That's something present in a lot of the
-later chips (pre P4 I believe but don't quote me on that) but very
-unusual to observe except on a few specific boards (eg the BP6))
+We hope this waking will happen from IRQ handler, but for less-happy case we
+also use some timeout (this will probably cause some single corruption, but
+we can live with it).
 
+Following macro is soemthing that seems to work fine for us, but instead
+introducing this to radeon KMS only, I'd like to propose adding this to whole
+wait.h. Do you this it's something we should place there? Can someone take this
+patch for me? Or maybe you find this rather useless and we should keep this
+marco locally?
+---
+ include/linux/wait.h |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-Alan
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index a48e16b..998475b 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -332,6 +332,31 @@ do {									\
+ 	__ret;								\
+ })
+ 
++/**
++ * wait_interruptible_timeout - sleep until a waitqueue is woken up
++ * @wq: the waitqueue to wait on
++ * @timeout: timeout, in jiffies
++ *
++ * The process is put to sleep (TASK_INTERRUPTIBLE) until the waitqueue
++ * @wq is woken up. It can be done manually with wake_up or will happen
++ * if timeout elapses.
++ *
++ * The function returns 0 if the @timeout elapsed, remaining jiffies
++ * if workqueue was waken up earlier.
++ */
++#define wait_interruptible_timeout(wq, timeout)				\
++({									\
++	long __ret = timeout;						\
++									\
++	DEFINE_WAIT(__wait);						\
++	prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);		\
++	if (!signal_pending(current))					\
++		__ret = schedule_timeout(__ret);			\
++	finish_wait(&wq, &__wait);					\
++									\
++	__ret;								\
++})
++
+ #define __wait_event_interruptible_exclusive(wq, condition, ret)	\
+ do {									\
+ 	DEFINE_WAIT(__wait);						\
+-- 
+1.6.4.2
+
