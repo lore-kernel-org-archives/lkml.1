@@ -1,184 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757008Ab0BUC2h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Feb 2010 21:28:37 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11184 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756493Ab0BUC2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Feb 2010 21:28:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,510,1262592000"; 
-   d="scan'208";a="542458499"
-Date: Sun, 21 Feb 2010 10:28:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Chris Frost <frost@cs.ucla.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Keiichi KII <k-keiichi@bx.jp.nec.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lwoodman@redhat.com" <lwoodman@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Tom Zanussi <tzanussi@gmail.com>, "riel@redhat.com" <riel@redhat.com>,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
-Message-ID: <20100221022831.GB6448@localhost>
-References: <4B6B7FBF.9090005@bx.jp.nec.com> <20100205072858.GC9320@elte.hu> <20100208155450.GA17055@localhost> <20100209162101.GA12840@localhost> <20100213132952.GG11364@balbir.in.ibm.com>
+	id S1756092Ab0BUDAI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Feb 2010 22:00:08 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:40104 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450Ab0BUDAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Feb 2010 22:00:05 -0500
+Message-ID: <4B80A1B2.10207@shikadi.net>
+Date: Sun, 21 Feb 2010 13:00:02 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100213132952.GG11364@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Dike <jdike@addtoit.com>
+CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: UML broken - runaway loop modprobe binfmt-464c
+References: <4B78EE15.9020407@shikadi.net> <20100215113730.GL12076@hack.private> <20100215161111.GA18664@c2.user-mode-linux.org>
+In-Reply-To: <20100215161111.GA18664@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir,
+>> So you are using 32-bit modprobe binary and 64-bit kernel?
+>>
+>> This will not work, since kernel binfmt_elf module checks
+>> if e_machine is EM_X86_64.
+>
+> Not just 32-bit modprobe - any 32-bit binary on a 64-bit UML will
+> cause this, I think.
 
-> > tracing: pagecache object collections
-> >
-> > This dumps
-> > - all cached files of a mounted fs  (the inode-cache)
-> > - all cached pages of a cached file (the page-cache)
-> >
-> > Usage and Sample output:
-> >
-> > # echo /dev > /debug/tracing/objects/mm/pages/walk-fs
-> > # tail /debug/tracing/trace
-> >              zsh-2528  [000] 10429.172470: dump_inode: ino=889 size=0 cached=0 age=442 dirty=0 dev=0:18 file=/dev/console
-> >              zsh-2528  [000] 10429.172472: dump_inode: ino=888 size=0 cached=0 age=442 dirty=7 dev=0:18 file=/dev/null
-> >              zsh-2528  [000] 10429.172474: dump_inode: ino=887 size=40 cached=0 age=442 dirty=0 dev=0:18 file=/dev/shm
-> >              zsh-2528  [000] 10429.172477: dump_inode: ino=886 size=40 cached=0 age=442 dirty=0 dev=0:18 file=/dev/pts
-> >              zsh-2528  [000] 10429.172479: dump_inode: ino=885 size=11 cached=0 age=442 dirty=0 dev=0:18 file=/dev/core
-> >              zsh-2528  [000] 10429.172481: dump_inode: ino=884 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stderr
-> >              zsh-2528  [000] 10429.172483: dump_inode: ino=883 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stdout
-> >              zsh-2528  [000] 10429.172486: dump_inode: ino=882 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stdin
-> >              zsh-2528  [000] 10429.172488: dump_inode: ino=881 size=13 cached=0 age=442 dirty=0 dev=0:18 file=/dev/fd
-> >              zsh-2528  [000] 10429.172491: dump_inode: ino=872 size=13360 cached=0 age=442 dirty=0 dev=0:18 file=/dev
-> >
-> > Here "age" is either age from inode create time, or from last dirty time.
-> >
-> 
-> It would be nice to see mapped/unmapped information as well.
+Thanks for the suggestions.  After some more investigation and off-list 
+pointers, it seems the problem is caused because compiling UML for x86_64 
+doesn't allow you to enable IA32 emulation.
 
-As you noticed, we have mapcount for individual pages :)
-
-> > +static int pages_similiar(struct page* page0, struct page* page)
-> > +{
-> > +     if (page_count(page0) != page_count(page))
-> > +             return 0;
-> > +
-> > +     if (page_mapcount(page0) != page_mapcount(page))
-> > +             return 0;
-> > +
-> > +     if (page_flags(page0) != page_flags(page))
-> > +             return 0;
-> > +
-> > +     return 1;
-> > +}
-> > +
-> 
-> OK, so pages_similar() is used to identify a range of pages in the
-> cache?
-
-Right. Many files are accessed sequentially or clustered, so
-pages_similar() can save lots of output lines :)
-
-> > +#define BATCH_LINES  100
-> > +static void dump_pagecache(struct address_space *mapping)
-> > +{
-> > +     int i;
-> > +     int lines = 0;
-> > +     pgoff_t len = 0;
-> > +     struct pagevec pvec;
-> > +     struct page *page;
-> > +     struct page *page0 = NULL;
-> > +     unsigned long start = 0;
-> > +
-> > +     for (;;) {
-> > +             pagevec_init(&pvec, 0);
-> > +             pvec.nr = radix_tree_gang_lookup(&mapping->page_tree,
-> > +                             (void **)pvec.pages, start + len, PAGEVEC_SIZE);
-> 
-> Is radix_tree_gang_lookup synchronized somewhere? Don't we need to
-> call it under RCU or a lock (mapping) ?
-
-No. This function is inherently non-atomic, and it seems that most in-kernel
-users do not bother to take rcu_read_lock(). So lets leave it as is?
-
-> > +static ssize_t
-> > +trace_pagecache_write(struct file *filp, const char __user *ubuf, size_t count,
-> > +                   loff_t *ppos)
-> > +{
-> > +     struct file *file = NULL;
-> > +     char *name;
-> > +     int err = 0;
-> > +
-> 
-> Can't we use the trace_parser here?
-
-Seems not necessary? It's merely one file name, which could contain spaces.
-
-> > +     if (count <= 1)
-> > +             return -EINVAL;
-> > +     if (count > PATH_MAX + 1)
-> > +             return -ENAMETOOLONG;
-> > +
-> > +     name = kmalloc(count+1, GFP_KERNEL);
-> > +     if (!name)
-> > +             return -ENOMEM;
-> > +
-> > +     if (copy_from_user(name, ubuf, count)) {
-> > +             err = -EFAULT;
-> > +             goto out;
-> > +     }
-> > +
-> > +     /* strip the newline added by `echo` */
-> > +     if (name[count-1] != '\n')
-> > +             return -EINVAL;
-> 
-> Doesn't sound correct, what happens if we use echo -n?
-
-It's a bit sad. If we accept both "echo" and "echo -n" with some
-smart logic to test for trailing '\n', then it will go wrong for a
-'\n'-terminated file name.
-
-Or shall we support only "echo -n"?  I can do with either one.
-
-> > --- linux-mm.orig/fs/inode.c  2010-02-08 23:19:12.000000000 +0800
-> > +++ linux-mm/fs/inode.c       2010-02-08 23:19:22.000000000 +0800
-> > @@ -149,7 +149,7 @@ struct inode *inode_init_always(struct s
-> >       inode->i_bdev = NULL;
-> >       inode->i_cdev = NULL;
-> >       inode->i_rdev = 0;
-> > -     inode->dirtied_when = 0;
-> > +     inode->dirtied_when = jiffies;
-> >
-> 
-> Hmmm... Is the inode really dirtied when initialized? I know the
-> change is for tracing, but the code when read is confusing.
-
-Huh. Not really dirtied (for that you need to check I_DIRTY), but
-dirtied_when is only used in writeback code when I_DIRTY is set.
-
-So I overload dirtied_when in the clean case to indicate the inode
-load time. This is a useful trick for fastboot to collect cache
-footprint shortly after boot, when most inodes are clean.
-
-It does ask for a comment:
-
-        /*
-         * This records inode load time. It will be invalidated once inode is
-         * dirtied, or jiffies wraps around. Despite the pitfalls it still
-         * provides useful information for some use cases like fastboot.
-         */
-        inode->dirtied_when = jiffies;
-
+Is this just a case of the Kconfig option being missed, or is there a more 
+fundamental reason as to why, unlike with the Linux kernel, it's not possible 
+to run 32-bit apps inside a 64-bit UML?
 
 Thanks,
-Fengguang
+Adam.
