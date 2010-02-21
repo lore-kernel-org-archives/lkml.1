@@ -1,29 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685Ab0BUOaR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 09:30:17 -0500
+	id S1752732Ab0BUOaX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:30:23 -0500
 Received: from mail-gx0-f225.google.com ([209.85.217.225]:39513 "EHLO
 	mail-gx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620Ab0BUOaP (ORCPT
+	with ESMTP id S1752678Ab0BUOaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 09:30:15 -0500
+	Sun, 21 Feb 2010 09:30:20 -0500
 X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Feb 2010 09:30:15 EST
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=svihYA2cRocChHARzWEKoXk6KFGurOgv17OZxeFsPnqpqDA3EQoNcy2PP8+gkjSiXI
-         clnZuYgMz0fWpVO7vMi9vDxV2w7DU9587fKYE2W43VHAdgfVrg5KXlzNhDvv4oZTyJGA
-         yiDUlL3ZBpG21wmJD/Lp/YLHFpnP3yjcRaIRA=
-Date: Sun, 21 Feb 2010 22:25:01 +0800
+        b=K2rfdWPWs7vRGZV/SpleKXd++vsGL/xbs7RJz3mGOe7jXqeTZxi/o5S45JIqPQFa4r
+         J7DVJ2VFYgIjra5fQpn+KTfxpsQxdOvoM1mlstv50ow10S3BD+m0aLJ4a5IsLc0/fNDm
+         qzCVyFBHqUJ2x1GyhDu15LgGrs+lmBVu6fIJs=
+Date: Sun, 21 Feb 2010 22:22:40 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 13/17] sysctl extern cleanup - acct
-Message-ID: <20100221142501.GA3026@darkstar>
+Subject: [PATCH -mm 01/17] sysctl extern cleanup - C_A_D
+Message-ID: <20100221142240.GA3001@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,44 +35,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Extern declarations in sysctl.c should be move to their own head file,
 and then include them in relavant .c files.
 
-Move acct_parm extern declaration to linux/acct.h
+Move C_A_D extern variable declaration to linux/reboot.h
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/acct.h |    1 +
- kernel/sysctl.c      |    7 +++----
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/reboot.h |    1 +
+ kernel/sysctl.c        |    1 -
+ 2 files changed, 1 insertions(+), 1 deletion(-)
 
---- linux-2.6.32.orig/include/linux/acct.h	2010-02-21 11:15:43.763425087 +0800
-+++ linux-2.6.32/include/linux/acct.h	2010-02-21 11:21:31.812557029 +0800
-@@ -121,6 +121,7 @@ struct vfsmount;
- struct super_block;
- struct pacct_struct;
- struct pid_namespace;
-+extern int acct_parm[]; /* for sysctl */
- extern void acct_auto_close_mnt(struct vfsmount *m);
- extern void acct_auto_close(struct super_block *sb);
- extern void acct_collect(long exitcode, int group_dead);
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-21 11:21:02.202561933 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-21 11:22:08.955888265 +0800
-@@ -63,6 +63,9 @@
- #ifdef CONFIG_BLOCK
- #include <linux/blk-iopoll.h>
- #endif
-+#ifdef CONFIG_BSD_PROCESS_ACCT
-+#include <linux/acct.h>
-+#endif
- #ifdef CONFIG_CHR_DEV_SG
- #include <scsi/sg.h>
- #endif
-@@ -128,10 +131,6 @@ extern int sysctl_userprocess_debug;
- extern int spin_retry;
- #endif
+--- linux-2.6.32.orig/include/linux/reboot.h	2010-02-21 09:38:10.237344322 +0800
++++ linux-2.6.32/include/linux/reboot.h	2010-02-21 09:40:04.999834287 +0800
+@@ -64,6 +64,7 @@ extern void kernel_restart(char *cmd);
+ extern void kernel_halt(void);
+ extern void kernel_power_off(void);
  
--#ifdef CONFIG_BSD_PROCESS_ACCT
--extern int acct_parm[];
--#endif
--
- #ifdef CONFIG_IA64
- extern int no_unaligned_warning;
- extern int unaligned_dump_stack;
++extern int C_A_D; /* for sysctl */
+ void ctrl_alt_del(void);
+ 
+ #define POWEROFF_CMD_PATH_LEN	256
+--- linux-2.6.32.orig/kernel/sysctl.c	2010-02-21 09:38:10.224011478 +0800
++++ linux-2.6.32/kernel/sysctl.c	2010-02-21 09:42:13.647319319 +0800
+@@ -68,7 +68,6 @@
+ #if defined(CONFIG_SYSCTL)
+ 
+ /* External variables not in a header file. */
+-extern int C_A_D;
+ extern int print_fatal_signals;
+ extern int max_threads;
+ extern int core_uses_pid;
