@@ -1,190 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349Ab0BUWRK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 17:17:10 -0500
-Received: from trinity.develer.com ([83.149.158.210]:34561 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753136Ab0BUWRJ (ORCPT
+	id S1753469Ab0BUWSd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 17:18:33 -0500
+Received: from alternativer.internetendpunkt.de ([88.198.24.89]:41421 "EHLO
+	geheimer.internetendpunkt.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753180Ab0BUWSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 17:17:09 -0500
-Date: Sun, 21 Feb 2010 23:17:01 +0100
-From: Andrea Righi <arighi@develer.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100221221700.GA5233@linux>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
- <1266765525-30890-2-git-send-email-arighi@develer.com>
- <alpine.DEB.2.00.1002211321010.22858@chino.kir.corp.google.com>
+	Sun, 21 Feb 2010 17:18:32 -0500
+Date: Sun, 21 Feb 2010 23:18:29 +0100
+From: Hagen Paul Pfeifer <hagen@jauu.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andreas Petlund <apetlund@simula.no>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       damian@tvk.rwth-aachen.de, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+Message-ID: <20100221221829.GX2659@nuttenaction>
+References: <4B7AAE60.3070305@simula.no>
+ <20100221102102.GB1311@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002211321010.22858@chino.kir.corp.google.com>
+In-Reply-To: <20100221102102.GB1311@ucw.cz>
+X-Key-Id: 98350C22
+X-Key-Fingerprint: 490F 557B 6C48 6D7E 5706 2EA2 4A22 8D45 9835 0C22
+X-GPG-Key: gpg --recv-keys --keyserver wwwkeys.eu.pgp.net 98350C22
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 01:28:35PM -0800, David Rientjes wrote:
+* Pavel Machek | 2010-02-21 11:21:03 [+0100]:
 
-[snip]
+>> +1) If the stream is thin, fast retransmit on the first dupACK.
+>> +2) If the stream is thin, do not apply exponential backoff.
+>
+>2) seems very dangerous/unfair. If network  congestion is caused just
+>by thin streams, will the network just fall apart?
 
-> > +static struct mem_cgroup *get_mem_cgroup_from_page(struct page *page)
-> > +{
-> > +	struct page_cgroup *pc;
-> > +	struct mem_cgroup *mem = NULL;
-> > +
-> > +	pc = lookup_page_cgroup(page);
-> > +	if (unlikely(!pc))
-> > +		return NULL;
-> > +	lock_page_cgroup(pc);
-> > +	if (PageCgroupUsed(pc)) {
-> > +		mem = pc->mem_cgroup;
-> > +		if (mem)
-> > +			css_get(&mem->css);
-> > +	}
-> > +	unlock_page_cgroup(pc);
-> > +	return mem;
-> > +}
-> 
-> Is it possible to merge this with try_get_mem_cgroup_from_page()?
+I question the fairness of this modification! The modification sounds _really_
+far-reaching. Did you analyse the behaviour of this modification? What about
+fairness analysis? Great work is available in the network simulator sector for
+this kind of analysis (e.g. jain's fairness index).
 
-Agreed.
 
-> 
-> > +
-> > +void mem_cgroup_charge_dirty(struct page *page,
-> > +			enum zone_stat_item idx, int charge)
-> > +{
-> > +	struct mem_cgroup *mem;
-> > +	struct mem_cgroup_stat_cpu *cpustat;
-> > +	unsigned long flags;
-> > +	int cpu;
-> > +
-> > +	if (mem_cgroup_disabled())
-> > +		return;
-> > +	/* Translate the zone_stat_item into a mem_cgroup_stat_index */
-> > +	switch (idx) {
-> > +	case NR_FILE_DIRTY:
-> > +		idx = MEM_CGROUP_STAT_FILE_DIRTY;
-> > +		break;
-> > +	case NR_WRITEBACK:
-> > +		idx = MEM_CGROUP_STAT_WRITEBACK;
-> > +		break;
-> > +	case NR_WRITEBACK_TEMP:
-> > +		idx = MEM_CGROUP_STAT_WRITEBACK_TEMP;
-> > +		break;
-> > +	case NR_UNSTABLE_NFS:
-> > +		idx = MEM_CGROUP_STAT_UNSTABLE_NFS;
-> > +		break;
-> > +	default:
-> > +		return;
-> 
-> WARN()?  We don't want to silently leak counters.
+HGN
 
-Agreed.
-
-> 
-> > +	}
-> > +	/* Charge the memory cgroup statistics */
-> > +	mem = get_mem_cgroup_from_page(page);
-> > +	if (!mem) {
-> > +		mem = root_mem_cgroup;
-> > +		css_get(&mem->css);
-> > +	}
-> 
-> get_mem_cgroup_from_page() should probably handle the root_mem_cgroup case 
-> and return a reference from it.
-
-Right. But I'd prefer to use try_get_mem_cgroup_from_page() without
-changing the behaviour of this function.
-
-> 
-> > +
-> > +	local_irq_save(flags);
-> > +	cpu = get_cpu();
-> > +	cpustat = &mem->stat.cpustat[cpu];
-> > +	__mem_cgroup_stat_add_safe(cpustat, idx, charge);
-> 
-> get_cpu()?  Preemption is already disabled, just use smp_processor_id().
-
-mmmh... actually, we can just copy the code from
-mem_cgroup_charge_statistics(), so local_irq_save/restore are not
-necessarily needed and we can just use get_cpu()/put_cpu().
-
-> > +	put_cpu();
-> > +	local_irq_restore(flags);
-> > +	css_put(&mem->css);
-> > +}
-> > +
-> >  static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
-> >  					enum lru_list idx)
-> >  {
-> > @@ -992,6 +1061,97 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
-> >  	return swappiness;
-> >  }
-> >  
-> > +static unsigned long get_dirty_bytes(struct mem_cgroup *memcg)
-> > +{
-> > +	struct cgroup *cgrp = memcg->css.cgroup;
-> > +	unsigned long dirty_bytes;
-> > +
-> > +	/* root ? */
-> > +	if (cgrp->parent == NULL)
-> > +		return vm_dirty_bytes;
-> > +
-> > +	spin_lock(&memcg->reclaim_param_lock);
-> > +	dirty_bytes = memcg->dirty_bytes;
-> > +	spin_unlock(&memcg->reclaim_param_lock);
-> > +
-> > +	return dirty_bytes;
-> > +}
-> > +
-> > +unsigned long mem_cgroup_dirty_bytes(void)
-> > +{
-> > +	struct mem_cgroup *memcg;
-> > +	unsigned long dirty_bytes;
-> > +
-> > +	if (mem_cgroup_disabled())
-> > +		return vm_dirty_bytes;
-> > +
-> > +	rcu_read_lock();
-> > +	memcg = mem_cgroup_from_task(current);
-> > +	if (memcg == NULL)
-> > +		dirty_bytes = vm_dirty_bytes;
-> > +	else
-> > +		dirty_bytes = get_dirty_bytes(memcg);
-> > +	rcu_read_unlock();
-> 
-> The rcu_read_lock() isn't protecting anything here.
-
-Right!
-
-> 
-> > +
-> > +	return dirty_bytes;
-> > +}
-> > +
-> > +u64 mem_cgroup_page_state(enum memcg_page_stat_item item)
-> > +{
-> > +	struct mem_cgroup *memcg;
-> > +	struct cgroup *cgrp;
-> > +	u64 ret = 0;
-> > +
-> > +	if (mem_cgroup_disabled())
-> > +		return 0;
-> > +
-> > +	rcu_read_lock();
-> 
-> Again, this isn't necessary.
-
-OK. I'll apply your changes to the next version of this patch.
-
-Thanks for reviewing!
-
--Andrea
+-- 
+Hagen Paul Pfeifer <hagen@jauu.net>  ||  http://jauu.net/
+Telephone: +49 174 5455209           ||  Key Id: 0x98350C22
+Key Fingerprint: 490F 557B 6C48 6D7E 5706 2EA2 4A22 8D45 9835 0C22
