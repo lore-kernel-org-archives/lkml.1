@@ -1,72 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280Ab0BUVJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 16:09:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51473 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753228Ab0BUVJ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 16:09:57 -0500
-Date: Sun, 21 Feb 2010 13:11:44 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: What's the right value for idle= (was: Re: [linux-pm]
- regression on P-II SMP)
-Message-ID: <20100221131144.34a9b8e1@infradead.org>
-In-Reply-To: <201002212136.03783.rjw@sisk.pl>
-References: <Pine.LNX.4.64.1002212117540.9624@axis700.grange>
-	<201002212136.03783.rjw@sisk.pl>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753303Ab0BUVPb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 16:15:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12572 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753249Ab0BUVPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 16:15:30 -0500
+Message-ID: <4B81A308.3020204@redhat.com>
+Date: Sun, 21 Feb 2010 16:18:00 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+CC: Christoph Hellwig <hch@infradead.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, Jason Baron <jbaron@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [Dle-develop] [PATCH -tip 5/9] perf probe: Use elfutils-libdw
+ for	analyzing	debuginfo
+References: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com> <20100218232741.21679.22423.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20100218232741.21679.22423.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Feb 2010 21:36:03 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Masami Hiramatsu wrote:
+> Newer gcc introduces newer & richer debuginfo, and only libdw
+> in elfutils project can support it. So perf probe moves onto
+> elfutils-libdw from libdwarf.
 
-> On Sunday 21 February 2010, Guennadi Liakhovetski wrote:
-> > Hi
-> > 
-> > my 2xP-II@400MHz locks up with 2.6.32(.X) unless I specify "idle=*"
-> > on the kernel command-line, where "*" is one of "poll," "mwait,"
-> > "halt," and only "nomwait" indeed locks it up. Last kernel known to
-> > work was 2.6.25. So, it doesn't bother me all that much - I have a
-> > way to boot it, but maybe someone would be interested to fix this
-> > (this system already has a few quirks on the kernel command line,
-> > so, one more doesn't really hurt;)). What interests me more - which
-> > of those shall I be using? From Documentation/kernel-parameters.txt
-> > it looks like "mwait" should be best for me? Or should I be using
-> > "halt?" "Poll" does indeed fry CPUs - raises sys temperatures to
-> > 50 / 60 degrees C. Power-saving is not that much of a concern for
-> > me - I only run that system occasionally, but it shouldn't produce
-> > more heat than it must;) And since this system does have a broken
-> > ACPI (Compaq AP400), I wouldn't try to be too smart with it.
-> 
-> I guess "mwait" is the right one, but let's try to ask experts.
+Hmm, this has some bit-width related issues on x86-64.
+I'll update this patch.
 
-can you get us /proc/cpuinfo ?
-(only one of the cpus, the other ones are just duplicates)
-
-if the CPU advertizes mwait, we normally ought to use it,
-but there's some exceptions to that due to buggy-as-**** bioses.
-
-can you also run powertop -d and get that output ?
-(preferably on a fully known working kernel)
-
+Thank you,
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Masami
