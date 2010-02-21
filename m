@@ -1,61 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428Ab0BUWvM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 17:51:12 -0500
-Received: from mail-px0-f184.google.com ([209.85.216.184]:39615 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753190Ab0BUWvK (ORCPT
+	id S1753489Ab0BUXCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 18:02:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50077
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753308Ab0BUXCy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 17:51:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=c6l6tIZ9p+YH4OGfYGO92zeoucrkcb2vnvewQU8Bii1KBT2C7gN7XDoZj6gzt3KVaz
-         Ie8ZZ1/0huHplvRVz/dXyZQicXGg5ZqgY33CWM02+fmQvj4iJtqAhdgMigXActW15YzT
-         +Eo3o7KDai3+/zuklCzcZ+Q69bTd8VRZJqKmU=
-MIME-Version: 1.0
-In-Reply-To: <4B80CA55.3040402@zytor.com>
-References: <4B80946D.1030503@gmail.com> <4B80C892.9000303@zytor.com>
-	 <4B80CA55.3040402@zytor.com>
-Date: Mon, 22 Feb 2010 09:51:09 +1100
-Message-ID: <d66caabb1002211451s5a68565fue6096e17b99402f7@mail.gmail.com>
-Subject: Re: x86 embedded - Problem getting past 'move compressed kernel 
-	before decompression'
-From: Graeme Russ <graeme.russ@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 21 Feb 2010 18:02:54 -0500
+Date: Sun, 21 Feb 2010 15:03:11 -0800 (PST)
+Message-Id: <20100221.150311.193707249.davem@davemloft.net>
+To: lars.eggert@nokia.com
+Cc: zimmermann@nets.rwth-aachen.de, pavel@ucw.cz, apetlund@simula.no,
+       netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
+       eric.dumazet@gmail.com, Arnd.Hannemann@nets.rwth-aachen.de,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       william.allen.simpson@gmail.com, damian@tvk.rwth-aachen.de,
+       ebiederm@xmission.com
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
+References: <20100221102102.GB1311@ucw.cz>
+	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 4:53 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 02/20/2010 09:45 PM, H. Peter Anvin wrote:
->
-> Make that:
->
->        asm volatile(
->                "movl   %2, %%ds\n" \
->                "movl   %2, %%es\n" \
->                "movl   %2, %%fs\n" \
->                "movl   %2, %%gs\n" \
->                "movl   %2, %%ss\n" \
->                "xorl   %ebp, %ebp\n" \
->                "xorl   %ebx, %ebx\n" \
->                "ljmpl  $0x10,$0x100000"
->         : : "S" (&boot_params), "D" (0), "r" (0x18));
->
+From: Lars Eggert <lars.eggert@nokia.com>
+Date: Sun, 21 Feb 2010 22:04:46 +0200
 
-Thanks Peter - I gave that a try but no luck. I am in the process of
-writing some routines which will dump the contents of the registers
-upon entering startup_32 and the relocation jump address prior to
-the jump.
+> Agree with Alexander. It is not at all clear to me that these
+> changes are safe for non-exerimental use in the wider Internet.
 
-My assembler is a bit rusty, so it is taking a bit of time
+It's off by default and we provide all sorts of experimental
+congestion control algorithms which can cause just as much
+if not more trouble than these thin-stream bits.
 
-What other information should I dump?
-
-Regards,
-
-Graeme
+There is no problem integrating these changes.
