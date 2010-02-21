@@ -1,16 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244Ab0BUWHw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 17:07:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59088 "EHLO ogre.sisk.pl"
+	id S1755262Ab0BUWII (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 17:08:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59083 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755106Ab0BUWGb convert rfc822-to-8bit (ORCPT
+	id S1755098Ab0BUWGa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 17:06:31 -0500
+	Sun, 21 Feb 2010 17:06:30 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Michal Nowak" <mnowak@redhat.com>
+       "Cijoml Cijomlovic Cijomlov" <cijoml@volny.cz>
 References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 In-Reply-To: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <wj3ZQZlk_KB.A.5s.sqagLB@chimera>
-Subject: [Bug #15248] KMS broken on Intel 855GM broken with 2.6.32/33
+Message-ID: <wj3ZQZlk_KB.A.uu.uqagLB@chimera>
+Subject: [Bug #15220] Kernel freezes when playing DVB stream and having 3D acceleration in the same time
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 21 Feb 2010 22:42:48 +0100 (CET)
+Date: Sun, 21 Feb 2010 22:42:47 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,11 +33,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15248
-Subject		: KMS broken on Intel 855GM broken with 2.6.32/33
-Submitter	: Michal Nowak <mnowak@redhat.com>
-Date		: 2010-02-07 09:59 (15 days old)
-Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-Patch		: http://patchwork.kernel.org/patch/78947/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15220
+Subject		: Kernel freezes when playing DVB stream and having 3D acceleration in the same time
+Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Date		: 2010-02-03 20:34 (19 days old)
 
 
