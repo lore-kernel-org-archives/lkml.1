@@ -1,17 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867Ab0BUWJQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 17:09:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59033 "EHLO ogre.sisk.pl"
+	id S1755046Ab0BUWJJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 17:09:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59036 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754858Ab0BUWFv convert rfc822-to-8bit (ORCPT
+	id S1754851Ab0BUWFw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 17:05:51 -0500
+	Sun, 21 Feb 2010 17:05:52 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>, "al" <al@dizzy.pdmi.ras.ru>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christian Casteyde" <casteyde.christian@free.fr>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "Maciej Piechotka" <uzytkownik2@gmail.com>
 References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 In-Reply-To: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +17,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <wj3ZQZlk_KB.A.huB.8ragLB@chimera>
-Subject: [Bug #14998] Caught 32-bit read from uninitialized memory in acpi_system_read_event -- 2.6.31 regression
+Message-ID: <wj3ZQZlk_KB.A.SnB.nragLB@chimera>
+Subject: [Bug #15021] agpgart sometimes fails to initialize sometimes
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 21 Feb 2010 22:42:40 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +33,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14998
-Subject		: Caught 32-bit read from uninitialized memory in acpi_system_read_event -- 2.6.31 regression
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2010-01-06 21:40 (47 days old)
-First-Bad-Commit: http://git.kernel.org/git/linus/eca6f534e61919b28fb21aafbd1c2983deae75be
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15021
+Subject		: agpgart sometimes fails to initialize sometimes
+Submitter	: Maciej Piechotka <uzytkownik2@gmail.com>
+Date		: 2010-01-09 23:31 (44 days old)
 
 
