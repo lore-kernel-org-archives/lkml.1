@@ -1,203 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752110Ab0BUNlj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 08:41:39 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:47530 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401Ab0BUNlh (ORCPT
+	id S1752157Ab0BUNxx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 08:53:53 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:47781 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751976Ab0BUNxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 08:41:37 -0500
-Date: Sun, 21 Feb 2010 10:35:29 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Bruno =?utf-8?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Daniel Oliveira Nascimento <don@syst.com.br>,
-       Len Brown <len.brown@intel.com>, Anisse Astier <anisse@astier.eu>,
-       Thomas Renninger <trenn@suse.de>, Matt Chen <machen@novell.com>,
-       Harald Welte <laforge@gnumonks.org>, Martin Lucina <mato@kotelna.sk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       pancho horrillo <pancho@pancho.name>,
-       Mike Frysinger <vapier@gentoo.org>,
-       Vivek Kutal <vivek.kutal@azingo.com>,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 3/3] backlight: fix missing/incomplete registration
- failure handling
-Message-ID: <20100221133528.GB1840@holoscopio.com>
-References: <20100221001049.2f63f5d6@neptune.home>
- <20100221002831.689bace8@neptune.home>
+	Sun, 21 Feb 2010 08:53:51 -0500
+Date: Sun, 21 Feb 2010 14:53:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100221135341.GC1307@ucw.cz>
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <1265988318.24271.30.camel@gandalf.stny.rr.com> <20100216153905.GA1541@ucw.cz> <1266337061.24271.138.camel@gandalf.stny.rr.com> <20100216162745.GA1660@ucw.cz>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MW5yreqqjyrRcusr"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100221002831.689bace8@neptune.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100216162745.GA1660@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2010-02-16 17:27:45, Pavel Machek wrote:
+> Add --only-dl option -- when you want to cache the needed patches but
+> not apply anything yet.
 
---MW5yreqqjyrRcusr
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Actually, you'll probably get a better patch if you relace 'only-dl'
+with just 'dl'. Mistaking --only-dl and --dl-only is just too easy.
 
-On Sun, Feb 21, 2010 at 12:28:31AM +0100, Bruno Pr=C3=A9mont wrote:
-> Check newly registered backlight_device for error and properly
-> return error to parent
->=20
-> Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-> ---
->  drivers/platform/x86/classmate-laptop.c |    2 ++
->  drivers/platform/x86/msi-wmi.c          |    4 +++-
->  drivers/platform/x86/panasonic-laptop.c |    4 +++-
->  drivers/usb/misc/appledisplay.c         |    1 +
->  drivers/video/bf54x-lq043fb.c           |    8 ++++++++
->  drivers/video/bfin-t350mcqb-fb.c        |    8 ++++++++
->  6 files changed, 25 insertions(+), 2 deletions(-)
->=20
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> 
+> diff --git a/ketchup b/ketchup
+> index 0728aec..3249cbc 100755
+> --- a/ketchup
+> +++ b/ketchup
+> @@ -405,7 +405,7 @@ def apply_patch(ver, reverse = 0):
+>          r = " -R"
+>  
+>      qprint("Applying %s%s" % (os.path.basename(p), r))
+> -    if options["dry-run"]:
+> +    if options["dry-run"] or options["only-dl"]:
+>          return ver
+>  
+>      def cmd(patch, reverse, dry):
+> @@ -484,7 +484,7 @@ def install_nearest(ver):
+>          ver = list[0][2]
+>  
+>      qprint("Unpacking %s" % os.path.basename(f))
+> -    if options["dry-run"]: return ver
+> +    if options["dry-run"] or options["only-dl"]: return ver
+>      untar(f)
+>  
+>      return ver
+> @@ -658,6 +658,7 @@ opts = [
+>      ('l', 'list-trees', None, 'list supported trees'),
+>      ('m', 'show-makefile', None, 'output version in makefile <arg>'),
+>      ('n', 'dry-run', None, 'don\'t download or apply patches'),
+> +    ('o', 'only-dl', None, 'don\'t apply patches'),
+>      ('p', 'show-previous', None, 'output version previous to <arg>'),
+>      ('q', 'quiet', None, 'reduce output'),
+>      ('r', 'rename-directory', None, 'rename updated directory to %s<v>'
+> @@ -750,7 +751,7 @@ if not a and os.listdir("."):
+>  b = find_ver(args[0])
+>  qprint("%s -> %s" % (a, b))
+>  transform(a, b)
+> -if options["rename-directory"] and not options["dry-run"]:
+> +if options["rename-directory"] and not options["dry-run"] and not options["only-dl"] :
+>      rename_dir(b)
+>  
+>  if postcommand and os.system(postcommand):
+> 
+> 
+> diff --git a/ketchup.1 b/ketchup.1
+> index 0a313ee..9e5a385 100644
+> --- a/ketchup.1
+> +++ b/ketchup.1
+> @@ -1,5 +1,5 @@
+>  .\"                                      Hey, EMACS: -*- nroff -*-
+> -.TH KETCHUP 1 "April 12, 2006"
+> +.TH KETCHUP 1 "February 16, 2010"
+>  .\" Please adjust this date whenever revising the manpage.
+>  .\"
+>  .\" Some roff macros, for reference:
+> @@ -74,6 +74,11 @@ output version in makefile <arg>
+>  .IP
+>  don't download or apply patches
+>  .HP
+> +.B \-o
+> +.B \-\-only\-dl
+> +.IP
+> +don't apply patches
+> +.HP
+>  .B \-p
+>  .B \-\-show\-previous
+>  .IP
+> 
+> 
 
-I think you should split the patch for every driver. Then, every
-mantainer may ack only its particular section of the patch.
-
-> diff --git a/drivers/platform/x86/classmate-laptop.c b/drivers/platform/x=
-86/classmate-laptop.c
-> index bfae789..66f6aad 100644
-> --- a/drivers/platform/x86/classmate-laptop.c
-> +++ b/drivers/platform/x86/classmate-laptop.c
-> @@ -463,6 +463,8 @@ static int cmpc_bl_add(struct acpi_device *acpi)
-> =20
->  	bd =3D backlight_device_register("cmpc_bl", &acpi->dev,
->  				       acpi->handle, &cmpc_bl_ops);
-> +	if (IS_ERR(bd))
-> +		return PTR_ERR(bd);
->  	bd->props.max_brightness =3D 7;
->  	dev_set_drvdata(&acpi->dev, bd);
->  	return 0;
-> diff --git a/drivers/platform/x86/msi-wmi.c b/drivers/platform/x86/msi-wm=
-i.c
-> index 5f7cff1..2ffbfcf 100644
-> --- a/drivers/platform/x86/msi-wmi.c
-> +++ b/drivers/platform/x86/msi-wmi.c
-> @@ -251,8 +251,10 @@ static int __init msi_wmi_init(void)
->  	if (!acpi_video_backlight_support()) {
->  		backlight =3D backlight_device_register(DRV_NAME,
->  				NULL, NULL, &msi_backlight_ops);
-> -		if (IS_ERR(backlight))
-> +		if (IS_ERR(backlight)) {
-> +			err =3D PTR_ERR(backlight);
->  			goto err_free_input;
-> +		}
-> =20
->  		backlight->props.max_brightness =3D ARRAY_SIZE(backlight_map) - 1;
->  		err =3D bl_get(NULL);
-> diff --git a/drivers/platform/x86/panasonic-laptop.c b/drivers/platform/x=
-86/panasonic-laptop.c
-> index 9012d8d..9b17343 100644
-> --- a/drivers/platform/x86/panasonic-laptop.c
-> +++ b/drivers/platform/x86/panasonic-laptop.c
-> @@ -644,8 +644,10 @@ static int acpi_pcc_hotkey_add(struct acpi_device *d=
-evice)
->  	/* initialize backlight */
->  	pcc->backlight =3D backlight_device_register("panasonic", NULL, pcc,
->  						   &pcc_backlight_ops);
-> -	if (IS_ERR(pcc->backlight))
-> +	if (IS_ERR(pcc->backlight)) {
-> +		result =3D PTR_ERR(pcc->backlight);
->  		goto out_input;
-> +	}
-> =20
->  	if (!acpi_pcc_retrieve_biosdata(pcc, pcc->sinf)) {
->  		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-> diff --git a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisp=
-lay.c
-> index ef79ca2..413f154 100644
-> --- a/drivers/usb/misc/appledisplay.c
-> +++ b/drivers/usb/misc/appledisplay.c
-> @@ -283,6 +283,7 @@ static int appledisplay_probe(struct usb_interface *i=
-face,
->  						&appledisplay_bl_data);
->  	if (IS_ERR(pdata->bd)) {
->  		dev_err(&iface->dev, "Backlight registration failed\n");
-> +		retval =3D PTR_ERR(pdata->bd);
->  		goto error;
->  	}
-> =20
-> diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-> index db4e6f7..a589216 100644
-> --- a/drivers/video/bf54x-lq043fb.c
-> +++ b/drivers/video/bf54x-lq043fb.c
-> @@ -678,6 +678,12 @@ static int __devinit bfin_bf54x_probe(struct platfor=
-m_device *pdev)
->  	bl_dev =3D
->  	    backlight_device_register("bf54x-bl", NULL, NULL,
->  				      &bfin_lq043fb_bl_ops);
-> +	if (IS_ERR(bl_dev)) {
-> +		printk(KERN_ERR DRIVER_NAME
-> +		       ": unable to register backlight.\n");
-> +		ret =3D -EINVAL;
-> +		goto out9;
-> +	}
->  	bl_dev->props.max_brightness =3D 255;
-> =20
->  	lcd_dev =3D lcd_device_register(DRIVER_NAME, &pdev->dev, NULL, &bfin_lc=
-d_ops);
-> @@ -686,6 +692,8 @@ static int __devinit bfin_bf54x_probe(struct platform=
-_device *pdev)
-> =20
->  	return 0;
-> =20
-> +out9:
-> +	unregister_framebuffer(fbinfo);
->  out8:
->  	free_irq(info->irq, info);
->  out7:
-> diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mc=
-qb-fb.c
-> index bc204c6..fe1492b 100644
-> --- a/drivers/video/bfin-t350mcqb-fb.c
-> +++ b/drivers/video/bfin-t350mcqb-fb.c
-> @@ -572,6 +572,12 @@ static int __devinit bfin_t350mcqb_probe(struct plat=
-form_device *pdev)
->  	bl_dev =3D
->  	    backlight_device_register("bf52x-bl", NULL, NULL,
->  				      &bfin_lq043fb_bl_ops);
-> +	if (IS_ERR(bl_dev)) {
-> +		printk(KERN_ERR DRIVER_NAME
-> +		       ": unable to register backlight.\n");
-> +		ret =3D -EINVAL;
-> +		goto out9;
-> +	}
->  	bl_dev->props.max_brightness =3D 255;
-> =20
->  	lcd_dev =3D lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
-> @@ -580,6 +586,8 @@ static int __devinit bfin_t350mcqb_probe(struct platf=
-orm_device *pdev)
-> =20
->  	return 0;
-> =20
-> +out9:
-> +	unregister_framebuffer(fbinfo);
->  out8:
->  	free_irq(info->irq, info);
->  out7:
-> --=20
-> 1.6.4.4
->=20
-
---MW5yreqqjyrRcusr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuBNqAACgkQyTpryRcqtS15HACfVQz1uStlJRp3mjAA8KLSlMeW
-vYsAnishemhGzRkV8dqshPJ3pU+4pO9H
-=sKGs
------END PGP SIGNATURE-----
-
---MW5yreqqjyrRcusr--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
