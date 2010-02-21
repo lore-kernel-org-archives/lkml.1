@@ -1,113 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267Ab0BUGXn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 01:23:43 -0500
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:47293 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752916Ab0BUGXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 01:23:41 -0500
-X-Greylist: delayed 797 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Feb 2010 01:23:41 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=b5/02YBVHp4LKoXeyBQs5Rtf2achgn8Q/3lOM9cCTg02SZ31PspOpK7YlPCkiocj;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Sun, 21 Feb 2010 01:10:21 -0500
-From: Bill Fink <billfink@mindspring.com>
+	id S1753358Ab0BUGbf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 01:31:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26665 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752925Ab0BUGbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 01:31:34 -0500
+Message-ID: <4B80D416.7090207@redhat.com>
+Date: Sun, 21 Feb 2010 14:35:02 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+MIME-Version: 1.0
 To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: Cong Wang <amwang@redhat.com>, David Miller <davem@davemloft.net>,
+CC: David Miller <davem@davemloft.net>,
        Linux Kernel Network Developers <netdev@vger.kernel.org>,
        Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v5 0/3] net: reserve ports for applications
- using fixed port numbers
-Message-Id: <20100221011021.948676c4.billfink@mindspring.com>
-In-Reply-To: <201002201557.04427.opurdila@ixiacom.com>
-References: <1266532210-11536-1-git-send-email-opurdila@ixiacom.com>
-	<4B7F993C.9000007@redhat.com>
-	<201002201557.04427.opurdila@ixiacom.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+References: <1266532346-11604-1-git-send-email-opurdila@ixiacom.com>
+In-Reply-To: <1266532346-11604-1-git-send-email-opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d7c99d5827c3040b1c07ae92d3b29968b350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 71.127.147.254
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Feb 2010, Octavian Purdila wrote:
+Octavian Purdila wrote:
+> The new function can be used to read/write large bitmaps via /proc. A
+> comma separated range format is used for compact output and input
+> (e.g. 1,3-4,10-10).
+> 
+> Writing into the file will first reset the bitmap then update it
+> based on the given input.
+> 
+> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+> Cc: WANG Cong <amwang@redhat.com>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  include/linux/sysctl.h |    2 +
+>  kernel/sysctl.c        |  122 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 124 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+> index f66014c..7bb5cb6 100644
+> --- a/include/linux/sysctl.h
+> +++ b/include/linux/sysctl.h
+> @@ -980,6 +980,8 @@ extern int proc_doulongvec_minmax(struct ctl_table *, int,
+>  				  void __user *, size_t *, loff_t *);
+>  extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
+>  				      void __user *, size_t *, loff_t *);
+> +extern int proc_do_large_bitmap(struct ctl_table *, int,
+> +				void __user *, size_t *, loff_t *);
+>  
+>  /*
+>   * Register a set of sysctl names by calling register_sysctl_table
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 5259727..ef2c13d 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -2635,6 +2635,128 @@ static int proc_do_cad_pid(struct ctl_table *table, int write,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * proc_do_large_bitmap - read/write from/to a large bitmap
+> + * @table: the sysctl table
+> + * @write: %TRUE if this is a write to the sysctl file
+> + * @buffer: the user buffer
+> + * @lenp: the size of the user buffer
+> + * @ppos: file position
+> + *
+> + * The bitmap is stored at table->data and the bitmap length (in bits)
+> + * in table->maxlen.
+> + *
+> + * We use a range comma separated format (e.g. 1,3-4,10-10) so that
+> + * large bitmaps may be represented in a compact manner. Writing into
+> + * the file will clear the bitmap then update it with the given input.
 
-> On Saturday 20 February 2010 10:11:40 you wrote:
-> > Octavian Purdila wrote:
-> > > This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports which
-> > > allows users to reserve ports for third-party applications.
-> > >
-> > > The reserved ports will not be used by automatic port assignments
-> > > (e.g. when calling connect() or bind() with port number 0). Explicit
-> > > port allocation behavior is unchanged.
-> > >
-> > > Changes from the previous version:
-> > > - switch the /proc entry format to coma separated list of range ports
-> > > - treat -EFAULT just like any other error and acknowledge written values
-> > > - use isdigit() in proc_get_ulong
-> > >
-> > > Octavian Purdila (3):
-> > >   sysctl: refactor integer handling proc code
-> > >   sysctl: add proc_do_large_bitmap
-> > >   net: reserve ports for applications using fixed port numbers
-> > 
-> > Hi,
-> > 
-> > This version looks fine for me, but I need to give them a test, and
-> > I will put feedbacks asap. Thanks for your work!
-> > 
-> > Still two things:
-> > 
-> > 1) bitops are always atomic on every arch, right? If yes, then ok.
-> 
-> AFAIK, yes.
-> 
-> > 2) I hope you could add some documentation to show the relations
-> >     between ip_local_port_range and ip_local_reserved_ports.
-> > 
-> 
-> How does this sound:
-> 
-> ip_local_reserved_ports - list of comma separated ranges
->         Specify the ports which are reserved for known third-party
->         applications. These ports will not be used by automatic port
->         assignments (e.g. when calling connect() or bind() with port
->         number 0). Explicit port allocation behavior is unchanged.
-> 
->         The format used for both input and output is a comma separated
->         list of ranges (e.g. "1,2-4,10-10" for ports 1, 2, 3, 4 and
->         10). Writing to the file will clear all previously reserved
->         ports and update the current list with the one given in the
->         input.
-> 
->         Note that ip_local_port_range and ip_local_port_range settings
+My test shows it still accepts spaces, e.g.
 
-Change second ip_local_port_range to ip_local_reserved_ports.
+echo '50000 50003 50005' > ip_local_reserved_ports
 
-						-Bill
+works same as
+
+echo '50000,50003,50005' > ip_local_reserved_ports
+
+Is this expected? We will only accept commas, right?
 
 
+Also, if I write an invalid value, it does reject this, but the previous
+value in that file is cleared, shouldn't we keep the previous one?
 
->         are independent and both are considered by the kernel when
->         determining which ports are available for automatic port
->         assignments.
-> 
->         You can reserve ports which are not in the current
->         ip_local_port_range, e.g.:
-> 
->         $ cat /proc/sys/net/ipv4/ip_local_port_range
->         32000   61000
->         $ cat /proc/sys/net/ipv4/ip_local_reserved_ports
->         8080,9148
-> 
->         although this is redundant. However such a setting is useful
->         if later the port range is changed to a value that will
->         include the reserved ports.
