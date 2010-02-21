@@ -1,43 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751862Ab0BULhM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 06:37:12 -0500
-Received: from 8bytes.org ([88.198.83.132]:33625 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700Ab0BULhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 06:37:10 -0500
-Date: Sun, 21 Feb 2010 12:37:08 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/11] KVM: SVM: Don't call instruction emulator for
-	invd and wbinvd
-Message-ID: <20100221113708.GH20833@8bytes.org>
-References: <1266592990-8911-1-git-send-email-joerg.roedel@amd.com> <1266592990-8911-12-git-send-email-joerg.roedel@amd.com> <4B81028A.7080909@redhat.com>
+	id S1751904Ab0BULk5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 06:40:57 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:18706 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751485Ab0BULk4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 06:40:56 -0500
+From: "Octavian Purdila" <opurdila@ixiacom.com>
+Reply-To: <opurdila@ixiacom.com>
+To: "Cong Wang" <amwang@redhat.com>
+Cc: "David Miller" <davem@davemloft.net>,
+       "Linux Kernel Network Developers" <netdev@vger.kernel.org>,
+       "Linux Kernel Developers" <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+X-Mailer: Modest 3.1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Content-ID: <1266752532.3428.27.camel@Nokia-N900-42-11>
+X-MSMail-Priority: Normal
+Thread-Topic: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+Thread-Index: Acqy6rnbzfTKu/NtRmyxp6pCCX4vpw==
+X-Priority: 3
+Date: Sun, 21 Feb 2010 13:42:13 +0200
+Message-ID: <1266752533.3428.28.camel@Nokia-N900-42-11>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B81028A.7080909@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 11:53:14AM +0200, Avi Kivity wrote:
-> On 02/19/2010 05:23 PM, Joerg Roedel wrote:
->> There is an intercept for WBINVD and INVD in SVM so we don't
->> need the instruction emulator. The primary reason is that
->> the current instruction emulator fails to emulate these
->> instructions and the rip is not advanced.
->>    
 >
-> The bios (at least bochs bios) does have wbinvd, so this ought to work.
+> My test shows it still accepts spaces, e.g.
+>
+> echo '50000 50003 50005' > ip_local_reserved_ports
+>
+> works same as
+>
+> echo '50000,50003,50005' > ip_local_reserved_ports
+>
+> Is this expected? We will only accept commas, right?
+>
 
-Weird. For some reason the Windows 7 XP emulation was executing wbinvd
-which caused an nested intercept for the host level and the rip was not
-advanced. So the nested guest did not advance and just produces wbinvd
-intercepts all the time.
+Thanks for testing, I didn't saw that comming! I wanted to allow whitespaces in between the commas but it looks like I got overzealous. I can easily fix that. 
 
-	Joerg
+But I think its worth to keep the whitespaces in beetween, e.g. allow
 
+$ echo '1, 2 ,3 ' >   ip_local_reserved_ports.
+
+>
+> Also, if I write an invalid value, it does reject this, but the previous
+> value in that file is cleared, shouldn't we keep the previous one?
+>
+>
+
+The only way I see to fix this is to return EINVAL if we detect a write with offset.
+
+IMO we should do that for the other proc write routines as well, as otherwise ther result is confusing, e.g.
+
+write("1 2"); write(" 3");
+
+will set first value in the vector to 1, than second value to 2 then *first* value to 3.
+
+I am all for it, but again, this changes userspace ABI. 
