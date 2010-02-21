@@ -1,115 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612Ab0BUO00 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 09:26:26 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:63788 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207Ab0BUO0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 09:26:24 -0500
-Date: Sun, 21 Feb 2010 15:26:21 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Steven Rostedt <rostedt@goodmis.org>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100221152621.4e3d5389@hyperion.delvare>
-In-Reply-To: <20100221135341.GC1307@ucw.cz>
-References: <4B744E13.8040004@kernel.org>
-	<20100212150137.648dca7c@hyperion.delvare>
-	<1265988318.24271.30.camel@gandalf.stny.rr.com>
-	<20100216153905.GA1541@ucw.cz>
-	<1266337061.24271.138.camel@gandalf.stny.rr.com>
-	<20100216162745.GA1660@ucw.cz>
-	<20100221135341.GC1307@ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752658Ab0BUO2W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:28:22 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:36258 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570Ab0BUO2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 09:28:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kbqhHZZY2+gOhT+cGq8BPLbq6tc1bzmTTqmCOkDmOZZAPS9c5Az0k1BgvaAGiabV3y
+         e0I5uZ3+CaG86gI/Uki0g9/hdb84X+Eal2Lis9RdEWM629Lv/uDOOQpUpHRdc9nktSta
+         a3cCUkNe4uHHkYjoTYP06uV4FCzEby6M7fwMg=
+Date: Sun, 21 Feb 2010 16:28:13 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 03/17] sysctl extern cleanup - binfmts
+Message-ID: <20100221142813.GB21281@core2>
+References: <20100221142303.GA3004@darkstar>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100221142303.GA3004@darkstar>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Feb 2010 14:53:41 +0100, Pavel Machek wrote:
-> On Tue 2010-02-16 17:27:45, Pavel Machek wrote:
-> > Add --only-dl option -- when you want to cache the needed patches but
-> > not apply anything yet.
-> 
-> Actually, you'll probably get a better patch if you relace 'only-dl'
-> with just 'dl'. Mistaking --only-dl and --dl-only is just too easy.
+On Sun, Feb 21, 2010 at 10:23:03PM +0800, Dave Young wrote:
+> --- linux-2.6.32.orig/include/linux/binfmts.h
+> +++ linux-2.6.32/include/linux/binfmts.h
+> @@ -20,6 +20,11 @@ struct pt_regs;
+>  #ifdef __KERNEL__
+>  #include <linux/list.h>
+>  
+> +/* for sysctl */
 
-Or --download. Acronyms just suck.
+This comment is neither accurate nor needed. :^)
 
-> 
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > diff --git a/ketchup b/ketchup
-> > index 0728aec..3249cbc 100755
-> > --- a/ketchup
-> > +++ b/ketchup
-> > @@ -405,7 +405,7 @@ def apply_patch(ver, reverse = 0):
-> >          r = " -R"
-> >  
-> >      qprint("Applying %s%s" % (os.path.basename(p), r))
-> > -    if options["dry-run"]:
-> > +    if options["dry-run"] or options["only-dl"]:
-> >          return ver
-> >  
-> >      def cmd(patch, reverse, dry):
-> > @@ -484,7 +484,7 @@ def install_nearest(ver):
-> >          ver = list[0][2]
-> >  
-> >      qprint("Unpacking %s" % os.path.basename(f))
-> > -    if options["dry-run"]: return ver
-> > +    if options["dry-run"] or options["only-dl"]: return ver
-> >      untar(f)
-> >  
-> >      return ver
-> > @@ -658,6 +658,7 @@ opts = [
-> >      ('l', 'list-trees', None, 'list supported trees'),
-> >      ('m', 'show-makefile', None, 'output version in makefile <arg>'),
-> >      ('n', 'dry-run', None, 'don\'t download or apply patches'),
-> > +    ('o', 'only-dl', None, 'don\'t apply patches'),
-> >      ('p', 'show-previous', None, 'output version previous to <arg>'),
-> >      ('q', 'quiet', None, 'reduce output'),
-> >      ('r', 'rename-directory', None, 'rename updated directory to %s<v>'
-> > @@ -750,7 +751,7 @@ if not a and os.listdir("."):
-> >  b = find_ver(args[0])
-> >  qprint("%s -> %s" % (a, b))
-> >  transform(a, b)
-> > -if options["rename-directory"] and not options["dry-run"]:
-> > +if options["rename-directory"] and not options["dry-run"] and not options["only-dl"] :
-> >      rename_dir(b)
-> >  
-> >  if postcommand and os.system(postcommand):
-> > 
-> > 
-> > diff --git a/ketchup.1 b/ketchup.1
-> > index 0a313ee..9e5a385 100644
-> > --- a/ketchup.1
-> > +++ b/ketchup.1
-> > @@ -1,5 +1,5 @@
-> >  .\"                                      Hey, EMACS: -*- nroff -*-
-> > -.TH KETCHUP 1 "April 12, 2006"
-> > +.TH KETCHUP 1 "February 16, 2010"
-> >  .\" Please adjust this date whenever revising the manpage.
-> >  .\"
-> >  .\" Some roff macros, for reference:
-> > @@ -74,6 +74,11 @@ output version in makefile <arg>
-> >  .IP
-> >  don't download or apply patches
-> >  .HP
-> > +.B \-o
-> > +.B \-\-only\-dl
-> > +.IP
-> > +don't apply patches
-> > +.HP
-> >  .B \-p
-> >  .B \-\-show\-previous
-> >  .IP
-> > 
-> > 
-> 
+In fact master sysctl table always was a big mess, so slight mess
+caused by extern declarations is fine.
 
-
--- 
-Jean Delvare
+> +extern int core_uses_pid;
+> +extern char *core_pattern;
+> +extern unsigned int core_pipe_limit;
