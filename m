@@ -1,43 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489Ab0BUXCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 18:02:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50077
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753308Ab0BUXCy (ORCPT
+	id S1753531Ab0BUXGl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 18:06:41 -0500
+Received: from sinikuusama.dnainternet.net ([83.102.40.134]:48948 "EHLO
+	sinikuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753345Ab0BUXGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 18:02:54 -0500
-Date: Sun, 21 Feb 2010 15:03:11 -0800 (PST)
-Message-Id: <20100221.150311.193707249.davem@davemloft.net>
-To: lars.eggert@nokia.com
-Cc: zimmermann@nets.rwth-aachen.de, pavel@ucw.cz, apetlund@simula.no,
-       netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
-       eric.dumazet@gmail.com, Arnd.Hannemann@nets.rwth-aachen.de,
-       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-       william.allen.simpson@gmail.com, damian@tvk.rwth-aachen.de,
-       ebiederm@xmission.com
-Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
-References: <20100221102102.GB1311@ucw.cz>
-	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
-	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 21 Feb 2010 18:06:40 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Mon, 22 Feb 2010 01:06:36 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002211627430.32083-100000@netrider.rowland.org> <201002212342.12301.anssi.hannula@iki.fi> <201002212312.36320.oliver@neukum.org>
+In-Reply-To: <201002212312.36320.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002220106.36476.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lars Eggert <lars.eggert@nokia.com>
-Date: Sun, 21 Feb 2010 22:04:46 +0200
+On maanantai 22 helmikuu 2010 00:12:36 Oliver Neukum wrote:
+> Am Sonntag, 21. Februar 2010 22:42:12 schrieb Anssi Hannula:
+> > And of course this doesn't explain why it hangs (and the WARNING) if I
+> > remove the sleep calls I added in gobi_loader.
+> 
+> Please tell us where you put a delay.
 
-> Agree with Alexander. It is not at all clear to me that these
-> changes are safe for non-exerimental use in the wider Internet.
+As I said earlier, the delay was put *before* most of the data gets written.
 
-It's off by default and we provide all sorts of experimental
-congestion control algorithms which can cause just as much
-if not more trouble than these thin-stream bits.
+More specifically, I inserted a delay of one second between transmission of 
+magic1 and magic2, one between magic2 and magic3, and one between magic3 and 
+the first firmware file.
 
-There is no problem integrating these changes.
+If I additionally insert a one-second delay before the fd is closed, I get 
+this usbmon log:
+http://stuff.onse.fi/gobi2000/gobi-regression5.mon.log
+
+The firmware upload is still unsuccessful.
+
+-- 
+Anssi Hannula
