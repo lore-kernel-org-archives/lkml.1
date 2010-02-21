@@ -1,140 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083Ab0BUTsQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 14:48:16 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51117 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752925Ab0BUTsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 14:48:15 -0500
-X-Authenticated: #25574588
-X-Provags-ID: V01U2FsdGVkX1/zbH4MoSHzgMsIR7URNmMiTTPJ8d7aVAVIfN0YOz
-	aJLFcvgiQOr1ur
-Date: Mon, 22 Feb 2010 08:47:53 +1300
-From: Johannes Buchner <buchner.johannes@gmx.at>
-To: Edward Shishkin <edward.shishkin@gmail.com>
-Cc: Ronni Holm-Nielsen <theronni@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [patch 0/7] per-bdi flushing model improvements. reiser4
-Message-Id: <20100222084753.0a5d613c.buchner.johannes@gmx.at>
-In-Reply-To: <4B68A68C.6030001@gmail.com>
-References: <201002020255.46920.edward.shishkin@gmail.com>
-	<20100202081728.GA2384@infradead.org>
-	<4B6843E9.9070600@gmail.com>
-	<20100202194208.GD5733@kernel.dk>
-	<5e2ec5ac1002021345g569c743dtc5ccf77cde6738ae@mail.gmail.com>
-	<4B68A68C.6030001@gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Feb_2010_08_47_53_+1300__Sx+aOQ/8.uWm8.0"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57999999999999996
+	id S1753141Ab0BUUFb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 15:05:31 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:45788 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957Ab0BUUFa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 15:05:30 -0500
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: multipart/signed; boundary=Apple-Mail-2-712678364; protocol="application/pkcs7-signature"; micalg=sha1
+From: Lars Eggert <lars.eggert@nokia.com>
+In-Reply-To: <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+Date: Sun, 21 Feb 2010 22:04:46 +0200
+Cc: Pavel Machek <pavel@ucw.cz>, Andreas Petlund <apetlund@simula.no>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>,
+       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
+       Lukowski Damian <damian@tvk.rwth-aachen.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Message-Id: <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
+References: <4B7AAE60.3070305@simula.no> <20100221102102.GB1311@ucw.cz> <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+To: Alexander Zimmermann <zimmermann@nets.rwth-aachen.de>
+X-Mailer: Apple Mail (2.1077)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.2.3 (mail.fit.nokia.com [0.0.0.0]); Sun, 21 Feb 2010 22:04:52 +0200 (EET)
+X-OriginalArrivalTime: 21 Feb 2010 20:04:58.0170 (UTC) FILETIME=[249081A0:01CAB331]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Feb_2010_08_47_53_+1300__Sx+aOQ/8.uWm8.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Disposition: inline
+
+--Apple-Mail-2-712678364
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-Hi.
+On 2010-2-21, at 13:23, Alexander Zimmermann wrote:
+> I strongly suggest that we discuss Andreas' idea on IETF TCPM *before*
+> we integrate it in the kernel and enable it for everyone
 
-Thank you Edward. The related bug was/is
-http://bugzilla.kernel.org/show_bug.cgi?id=3D14915
-It'd be great if someone could solve this, as the reiser4 patch is
-not usable in its current state, with or without my illfated attempts
-to fix it.
+Agree with Alexander. It is not at all clear to me that these changes =
+are safe for non-exerimental use in the wider Internet.
 
-Kind regards,
-Johannes
+Lars=
 
-On Tue, 02 Feb 2010 23:26:20 +0100
-Edward Shishkin <edward.shishkin@gmail.com> wrote:
+--Apple-Mail-2-712678364
+Content-Disposition: attachment;
+	filename=smime.p7s
+Content-Type: application/pkcs7-signature;
+	name=smime.p7s
+Content-Transfer-Encoding: base64
 
-> Hello everyone.
->=20
-> The patches 1-3 are reverses for the following -mm stuff:
->=20
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-fixed-null-point=
-er-dereference.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-generic_sync_sb_=
-inodes-doesnt-exist-anymore.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-vfs-add-super_op=
-erationssync_inodes-2.patch
->=20
-> This is incorrect attempts to adjust reiser4 to the new per-bdi
-> flushing model.
-> The authors are cc-ed,
-> any comments, suggestions are welcome.
->=20
-> Thanks,
-> Edward.
->=20
->=20
-> Ronni Holm-Nielsen wrote:
-> > To clarify (being a ReiserFS subscriber):
-> >
-> > patch 0, 4-6 sent to Andrew, ReiserFS, linux-fsdevel, linux-kernel,
-> > xfs, jens.axboe
-> > patch 1-3, 7 sent to Andrew, ReiserFS
-> >
-> > - Ronni
-> >
-> > On Tue, Feb 2, 2010 at 11:42 PM, Jens Axboe <jens.axboe@oracle.com>
-> > wrote:
-> >
-> >  =20
-> >> On Tue, Feb 02 2010, Edward Shishkin wrote:
-> >>    =20
-> >>> Christoph Hellwig wrote:
-> >>>      =20
-> >>>> I got this introduction twice, but patches 1-3 didn't make it to
-> >>>> any of the lists.
-> >>>>
-> >>>>
-> >>>>
-> >>>>        =20
-> >>> done
-> >>>      =20
-> >> Where?
-> >>
-> >> --
-> >> Jens Axboe
-> >>
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe
-> >> reiserfs-devel" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >>
-> >>    =20
-> >
-> >
-> >
-> >  =20
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGbDCCAyUw
+ggKOoAMCAQICEAdjk36sXKbnVn15S0/qUp0wDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA5MDYxNTExMjYxNFoXDTEwMDYxNTExMjYx
+NFowXDEPMA0GA1UEBBMGRWdnZXJ0MQ0wCwYDVQQqEwRMYXJzMRQwEgYDVQQDEwtMYXJzIEVnZ2Vy
+dDEkMCIGCSqGSIb3DQEJARYVbGFycy5lZ2dlcnRAbm9raWEuY29tMIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEA7mR8A+Pn0/FsUkMX6Pyjw+FL3IFcJk8GaKV5VJ40TMI0Wh8oq20cqA9X
+uqnVDW9WztKwH+o+msJenLwWpprbpJm4TImYGbnUJxYyN8gb81aiX1Bw2xCpJ5z3H2+8DsReJLuY
+Rdl4bVvaIxLIL4odmfsRwzPyNkOK8LRtfl6OPcaDOlFWzbikULfIVGGu7BqK4lxQSpYwwpZkOMOB
+6nnBSfUOtBEmqO+qZG/nL/JxWFV5vxQgg4XHbsMMTxFf6+ji18BD09BUIfDLTuJoCzFmQhrM9vLT
+VuRhHWSL20LoafGjXv6mPt3i9IGJHpVb2dMQUgOgRyWHTKiUJVU/rUTdWwIDAQABo14wXDAqBgUr
+ZQEEAQQhMB8CAQAwGjAYAgEEBBNMMnVNeWZmQk5VYk5KSmNkWjJzMCAGA1UdEQQZMBeBFWxhcnMu
+ZWdnZXJ0QG5va2lhLmNvbTAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBBQUAA4GBADUx+67n98wt
+I1vydB90HeSZP4Y64VCxxb0NxGGFvfc2+JdVKeHJ/xT+l+ygYKsWNwJJprkPi4WZ5G0crkq4VK1H
+5drEJIztpSPVfWI05vPidaaGuuuCR+6MvJMtOTEYEvc/6eovBnkrzRf9x5x5EyuJXAWTeuBADg80
+QI3vQ1tZMIIDPzCCAqigAwIBAgIBDTANBgkqhkiG9w0BAQUFADCB0TELMAkGA1UEBhMCWkExFTAT
+BgNVBAgTDFdlc3Rlcm4gQ2FwZTESMBAGA1UEBxMJQ2FwZSBUb3duMRowGAYDVQQKExFUaGF3dGUg
+Q29uc3VsdGluZzEoMCYGA1UECxMfQ2VydGlmaWNhdGlvbiBTZXJ2aWNlcyBEaXZpc2lvbjEkMCIG
+A1UEAxMbVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIENBMSswKQYJKoZIhvcNAQkBFhxwZXJzb25h
+bC1mcmVlbWFpbEB0aGF3dGUuY29tMB4XDTAzMDcxNzAwMDAwMFoXDTEzMDcxNjIzNTk1OVowYjEL
+MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
+BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMIGfMA0GCSqGSIb3DQEBAQUA
+A4GNADCBiQKBgQDEpjxVc1X7TrnKmVoeaMB1BHCd3+n/ox7svc31W/Iadr1/DDph8r9RzgHU5VAK
+MNcCY1osiRVwjt3J8CuFWqo/cVbLrzwLB+fxH5E2JCoTzyvV84J3PQO+K/67GD4Hv0CAAmTXp6a7
+n2XRxSpUhQ9IBH+nttE8YQRAHmQZcmC3+wIDAQABo4GUMIGRMBIGA1UdEwEB/wQIMAYBAf8CAQAw
+QwYDVR0fBDwwOjA4oDagNIYyaHR0cDovL2NybC50aGF3dGUuY29tL1RoYXd0ZVBlcnNvbmFsRnJl
+ZW1haWxDQS5jcmwwCwYDVR0PBAQDAgEGMCkGA1UdEQQiMCCkHjAcMRowGAYDVQQDExFQcml2YXRl
+TGFiZWwyLTEzODANBgkqhkiG9w0BAQUFAAOBgQBIjNFQg+oLLswNo2asZw9/r6y+whehQ5aUnX9M
+Ibj4Nh+qLZ82L8D0HFAgk3A8/a3hYWLD2ToZfoSxmRsAxRoLgnSeJVCUYsfbJ3FXJY3dqZw5jowg
+T2Vfldr394fWxghOrvbqNOUQGls1TXfjViF4gtwhGTXeJLHTHUb/XV9lTzGCAxAwggMMAgEBMHYw
+YjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAq
+BgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAHY5N+rFym51Z9eUtP
+6lKdMAkGBSsOAwIaBQCgggFvMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkF
+MQ8XDTEwMDIyMTIwMDQ0N1owIwYJKoZIhvcNAQkEMRYEFDNoWYjCmw9MfGJRVJ8IAgch1i3UMIGF
+BgkrBgEEAYI3EAQxeDB2MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGlu
+ZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBD
+QQIQB2OTfqxcpudWfXlLT+pSnTCBhwYLKoZIhvcNAQkQAgsxeKB2MGIxCzAJBgNVBAYTAlpBMSUw
+IwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVy
+c29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQB2OTfqxcpudWfXlLT+pSnTANBgkqhkiG9w0BAQEF
+AASCAQCnv8uut+TlZs6F4lF2zLvJZVanVaowWkjAvrJAoTwuV9fxh8Xky3No3UENFyQHwplFrLv1
+guOx3eD1Tx6n41fJOiDA/9QYGN8I9Hendq8wjJtPgN8b7g3uS6aRMyfcoBycQUtSzFGAmxlZ0gJI
+uG8jXup6v+IjTxNozYwsh3hb31ctBtpGnzzWy+TF/P+7F/Jfe4YWM3oAoqOwhtamEKDSo9VttQ6l
+146fB1Ucrs9CVCKeHjBkLL/ej0g+/M02T5VjkvnIxpogrIoawRALZWFRQK8A/VH7VFDKF3XfnHyV
+DAzqD4/5HB/4nQMwD3b6kfYhLxSELB9GwiMq5nFsTlHGAAAAAAAA
 
-
---=20
-Emails k=F6nnen ge=E4ndert, gef=E4lscht und eingesehen werden. Signiere oder
-versch=FCssele deine Mails mit GPG.
-http://web.student.tuwien.ac.at/~e0625457/pgp.html
-
---Signature=_Mon__22_Feb_2010_08_47_53_+1300__Sx+aOQ/8.uWm8.0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.14 (GNU/Linux)
-
-iEYEARECAAYFAkuBje4ACgkQ7X1+MfqVcr0wLgCeOJ7XVuqYHjy4twdFtIiBA82l
-v6MAoJSr/2YiUOOLKnaAfONO7YbTKGUc
-=1YuB
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Feb_2010_08_47_53_+1300__Sx+aOQ/8.uWm8.0--
+--Apple-Mail-2-712678364--
