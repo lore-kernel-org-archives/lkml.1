@@ -1,80 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503Ab0BUOZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 09:25:58 -0500
-Received: from mail-yx0-f193.google.com ([209.85.210.193]:58923 "EHLO
-	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209Ab0BUOZz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 09:25:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qp/oMKOl1QO5qDV/SdDNLnbA8baAwANArrClYKThbwcbjaLlQ6EuHXTRf/9CXBXxeI
-         3h1DZnXM3S3TiQD/XJtX1et90uhT+vwhlw9LXt8lOA+aiD4F8ejvnIKVRyU3tssuzOgf
-         hM/QkStWxAKGRNyNzfDJcUMwsIbq7VsP4fwM8=
-Date: Sun, 21 Feb 2010 22:25:46 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: John McCutchan <john@johnmccutchan.com>, Robert Love <rlove@rlove.org>,
-       Eric Paris <eparis@parisplace.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 17/17] sysctl extern cleanup - inotify
-Message-ID: <20100221142546.GA3031@darkstar>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752612Ab0BUO00 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 09:26:26 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:63788 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752207Ab0BUO0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 09:26:24 -0500
+Date: Sun, 21 Feb 2010 15:26:21 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Steven Rostedt <rostedt@goodmis.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100221152621.4e3d5389@hyperion.delvare>
+In-Reply-To: <20100221135341.GC1307@ucw.cz>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<1265988318.24271.30.camel@gandalf.stny.rr.com>
+	<20100216153905.GA1541@ucw.cz>
+	<1266337061.24271.138.camel@gandalf.stny.rr.com>
+	<20100216162745.GA1660@ucw.cz>
+	<20100221135341.GC1307@ucw.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extern declarations in sysctl.c should be move to their own head file,
-and then include them in relavant .c files.
+On Sun, 21 Feb 2010 14:53:41 +0100, Pavel Machek wrote:
+> On Tue 2010-02-16 17:27:45, Pavel Machek wrote:
+> > Add --only-dl option -- when you want to cache the needed patches but
+> > not apply anything yet.
+> 
+> Actually, you'll probably get a better patch if you relace 'only-dl'
+> with just 'dl'. Mistaking --only-dl and --dl-only is just too easy.
 
-Move inotify_table extern declaration to linux/inotify.h
+Or --download. Acronyms just suck.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
- include/linux/inotify.h |    5 +++++
- kernel/sysctl.c         |    6 +++---
- 2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > 
+> > diff --git a/ketchup b/ketchup
+> > index 0728aec..3249cbc 100755
+> > --- a/ketchup
+> > +++ b/ketchup
+> > @@ -405,7 +405,7 @@ def apply_patch(ver, reverse = 0):
+> >          r = " -R"
+> >  
+> >      qprint("Applying %s%s" % (os.path.basename(p), r))
+> > -    if options["dry-run"]:
+> > +    if options["dry-run"] or options["only-dl"]:
+> >          return ver
+> >  
+> >      def cmd(patch, reverse, dry):
+> > @@ -484,7 +484,7 @@ def install_nearest(ver):
+> >          ver = list[0][2]
+> >  
+> >      qprint("Unpacking %s" % os.path.basename(f))
+> > -    if options["dry-run"]: return ver
+> > +    if options["dry-run"] or options["only-dl"]: return ver
+> >      untar(f)
+> >  
+> >      return ver
+> > @@ -658,6 +658,7 @@ opts = [
+> >      ('l', 'list-trees', None, 'list supported trees'),
+> >      ('m', 'show-makefile', None, 'output version in makefile <arg>'),
+> >      ('n', 'dry-run', None, 'don\'t download or apply patches'),
+> > +    ('o', 'only-dl', None, 'don\'t apply patches'),
+> >      ('p', 'show-previous', None, 'output version previous to <arg>'),
+> >      ('q', 'quiet', None, 'reduce output'),
+> >      ('r', 'rename-directory', None, 'rename updated directory to %s<v>'
+> > @@ -750,7 +751,7 @@ if not a and os.listdir("."):
+> >  b = find_ver(args[0])
+> >  qprint("%s -> %s" % (a, b))
+> >  transform(a, b)
+> > -if options["rename-directory"] and not options["dry-run"]:
+> > +if options["rename-directory"] and not options["dry-run"] and not options["only-dl"] :
+> >      rename_dir(b)
+> >  
+> >  if postcommand and os.system(postcommand):
+> > 
+> > 
+> > diff --git a/ketchup.1 b/ketchup.1
+> > index 0a313ee..9e5a385 100644
+> > --- a/ketchup.1
+> > +++ b/ketchup.1
+> > @@ -1,5 +1,5 @@
+> >  .\"                                      Hey, EMACS: -*- nroff -*-
+> > -.TH KETCHUP 1 "April 12, 2006"
+> > +.TH KETCHUP 1 "February 16, 2010"
+> >  .\" Please adjust this date whenever revising the manpage.
+> >  .\"
+> >  .\" Some roff macros, for reference:
+> > @@ -74,6 +74,11 @@ output version in makefile <arg>
+> >  .IP
+> >  don't download or apply patches
+> >  .HP
+> > +.B \-o
+> > +.B \-\-only\-dl
+> > +.IP
+> > +don't apply patches
+> > +.HP
+> >  .B \-p
+> >  .B \-\-show\-previous
+> >  .IP
+> > 
+> > 
+> 
 
---- linux-2.6.32.orig/kernel/sysctl.c	2010-02-21 11:25:35.455865983 +0800
-+++ linux-2.6.32/kernel/sysctl.c	2010-02-21 11:27:43.782519869 +0800
-@@ -75,6 +75,9 @@
- #ifdef CONFIG_EPOLL
- #include <linux/poll.h>
- #endif
-+#ifdef CONFIG_INOTIFY_USER
-+#include <linux/inotify.h>
-+#endif
- #ifdef CONFIG_CHR_DEV_SG
- #include <scsi/sg.h>
- #endif
-@@ -174,9 +177,6 @@ static struct ctl_table fs_table[];
- static struct ctl_table debug_table[];
- static struct ctl_table dev_table[];
- extern struct ctl_table random_table[];
--#ifdef CONFIG_INOTIFY_USER
--extern struct ctl_table inotify_table[];
--#endif
- 
- /* The default sysctl tables: */
- 
---- linux-2.6.32.orig/include/linux/inotify.h	2010-02-21 11:25:35.465866403 +0800
-+++ linux-2.6.32/include/linux/inotify.h	2010-02-21 11:28:20.686684371 +0800
-@@ -69,4 +69,9 @@ struct inotify_event {
- #define IN_CLOEXEC O_CLOEXEC
- #define IN_NONBLOCK O_NONBLOCK
- 
-+#ifdef __KERNEL__
-+#include <linux/sysctl.h>
-+extern struct ctl_table inotify_table[]; /* for sysctl */
-+#endif
-+
- #endif	/* _LINUX_INOTIFY_H */
+
+-- 
+Jean Delvare
