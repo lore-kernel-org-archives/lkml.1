@@ -1,85 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332Ab0BUPHT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 10:07:19 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:63820 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751976Ab0BUPHQ convert rfc822-to-8bit (ORCPT
+	id S1752429Ab0BUPK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 10:10:57 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:39690 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751957Ab0BUPKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 10:07:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=VhwONCBu0ZORG92LMzRrU0RYAoA1oPkF93JTvcLF7vgq3mbv3iSug7VgELS5MxePr4
-         iPHk1U4e2R3N0vkYd3tznQLHbFM9FiZ+HpIxfq5TBHwTTAGliaFXkAhq0DVdKhTuxEqh
-         ZOCY47Achwe9DhrGUnmQdRH95yeB1bgDTqHFI=
+	Sun, 21 Feb 2010 10:10:54 -0500
+X-Greylist: delayed 580 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Feb 2010 10:10:54 EST
+Message-ID: <4B814AB3.1030404@shipmail.org>
+Date: Sun, 21 Feb 2010 16:01:07 +0100
+From: Thomas Hellstrom <thomas@shipmail.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
 MIME-Version: 1.0
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Sun, 21 Feb 2010 16:06:54 +0100
-Message-ID: <69e28c911002210706k1a5ae686r76df74a743dcce1c@mail.gmail.com>
-Subject: Re: [PATCH] Staging: wlan-ng: Fix 80 character limit warnings Fixed 2 
-	warnings identified by the checkpatch.pl tool which occured due to two lines 
-	of code going over the 80 character limit. Fixed by wrapping the lines. 
-	Signed-off-by: Jim Dog <jimdog@
-To: jimdog@northern-indymedia.org
-Cc: gregkh@suse.de, jmm@debian.org, mithlesh@linsyssoft.com,
-       richard@rsk.demon.co.uk, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep
+ (w.	timeout) until wake_up
+References: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
+In-Reply-To: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 4:03 PM,  <jimdog@northern-indymedia.org> wrote:
-> From: Jim Dog <jimdog@northern-indymedia.org>
->
+Rafa≈Ç Mi≈Çecki wrote:
+> Signed-off-by: Rafa≈Ç Mi≈Çecki <zajec5@gmail.com>
 > ---
-> †drivers/staging/wlan-ng/prism2usb.c | † †9 ++++++---
-> †1 files changed, 6 insertions(+), 3 deletions(-)
+> We try to implement some PM in radeon KMS and we need to sync with VLBANK for
+> reclocking engine/memory. The easiest and cleanest way seems to be sleeping in
+> timer handler just before reclocking. Then our IRQ handler calls wake_up and we
+> continue reclocking.
 >
-> diff --git a/drivers/staging/wlan-ng/prism2usb.c b/drivers/staging/wlan-ng/prism2usb.c
-> index 9dde68b..b55930c 100644
-> --- a/drivers/staging/wlan-ng/prism2usb.c
-> +++ b/drivers/staging/wlan-ng/prism2usb.c
-> @@ -24,8 +24,9 @@ static struct usb_device_id usb_prism_tbl[] = {
-> † † † † (0x066b, 0x2213, "Linksys WUSB12v1.1 11Mbps WLAN USB Adapter")},
-> † † † †{PRISM_USB_DEVICE
-> † † † † (0x067c, 0x1022, "Siemens SpeedStream 1022 11Mbps WLAN USB Adapter")},
-> - † † † {PRISM_USB_DEVICE(0x049f, 0x0033,
-> - † † † † † † † † † † † † "Compaq/Intel W100 PRO/Wireless 11Mbps multiport WLAN Adapter")},
-> + † † † {PRISM_USB_DEVICE
-> + † † † †(0x049f, 0x0033,
-> + † † † † "Compaq/Intel W100 PRO/Wireless 11Mbps multiport WLAN Adapter")},
-> † † † †{PRISM_USB_DEVICE
-> † † † † (0x0411, 0x0016, "Melco WLI-USB-S11 11Mbps WLAN Adapter")},
-> † † † †{PRISM_USB_DEVICE
-> @@ -55,7 +56,9 @@ static struct usb_device_id usb_prism_tbl[] = {
-> † † † † (0x04f1, 0x3009, "JVC MP-XP7250 Builtin USB WLAN Adapter")},
-> † † † †{PRISM_USB_DEVICE(0x0846, 0x4110, "NetGear MA111")},
-> † † † †{PRISM_USB_DEVICE(0x03f3, 0x0020, "Adaptec AWN-8020 USB WLAN Adapter")},
-> -/* † † †{PRISM_USB_DEVICE(0x0ace, 0x1201, "ZyDAS ZD1201 Wireless USB Adapter")}, */
-> +/*
-> + † † † {PRISM_USB_DEVICE(0x0ace, 0x1201, "ZyDAS ZD1201 Wireless USB Adapter")},
-> +*/
-
-Why is this even included? We do have support for this in zd1201, and
-I'm pretty sure wlan-ng doesn't actually handle it.
-
-> † † † †{PRISM_USB_DEVICE(0x2821, 0x3300, "ASUS-WL140 Wireless USB Adapter")},
-> † † † †{PRISM_USB_DEVICE(0x2001, 0x3700, "DWL-122 Wireless USB Adapter")},
-> † † † †{PRISM_USB_DEVICE
-> --
-> 1.6.3.3
+> As you see our sleeping is condition-less, we just wait for waking up queue.
 >
-> _______________________________________________
-> devel mailing list
-> devel@linuxdriverproject.org
-> http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
+> We hope this waking will happen from IRQ handler, but for less-happy case we
+> also use some timeout (this will probably cause some single corruption, but
+> we can live with it).
 >
+> Following macro is soemthing that seems to work fine for us, but instead
+> introducing this to radeon KMS only, I'd like to propose adding this to whole
+> wait.h. Do you this it's something we should place there? Can someone take this
+> patch for me? Or maybe you find this rather useless and we should keep this
+> marco locally?
+> ---
+>  include/linux/wait.h |   25 +++++++++++++++++++++++++
+>  1 files changed, 25 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/linux/wait.h b/include/linux/wait.h
+> index a48e16b..998475b 100644
+> --- a/include/linux/wait.h
+> +++ b/include/linux/wait.h
+> @@ -332,6 +332,31 @@ do {									\
+>  	__ret;								\
+>  })
+>  
+> +/**
+> + * wait_interruptible_timeout - sleep until a waitqueue is woken up
+> + * @wq: the waitqueue to wait on
+> + * @timeout: timeout, in jiffies
+> + *
+> + * The process is put to sleep (TASK_INTERRUPTIBLE) until the waitqueue
+> + * @wq is woken up. It can be done manually with wake_up or will happen
+> + * if timeout elapses.
+> + *
+> + * The function returns 0 if the @timeout elapsed, remaining jiffies
+> + * if workqueue was waken up earlier.
+> + */
+> +#define wait_interruptible_timeout(wq, timeout)				\
+> +({									\
+> +	long __ret = timeout;						\
+> +									\
+> +	DEFINE_WAIT(__wait);						\
+> +	prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);		\
+> +	if (!signal_pending(current))					\
+> +		__ret = schedule_timeout(__ret);			\
+> +	finish_wait(&wq, &__wait);					\
+> +									\
+> +	__ret;								\
+> +})
+> +
+>  #define __wait_event_interruptible_exclusive(wq, condition, ret)	\
+>  do {									\
+>  	DEFINE_WAIT(__wait);						\
+>   
+What about msleep_interruptible in <linux/delay.h> ?
 
+/Thomas
 
-
--- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
