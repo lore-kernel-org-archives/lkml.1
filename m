@@ -1,15 +1,16 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217Ab0BUWEL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 17:04:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58937 "EHLO ogre.sisk.pl"
+	id S1754776Ab0BUWFg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 17:05:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59013 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753428Ab0BUWEF convert rfc822-to-8bit (ORCPT
+	id S1754665Ab0BUWFa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 17:04:05 -0500
+	Sun, 21 Feb 2010 17:05:30 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Duncan" <1i5t5.duncan@cox.net>, "Greg Kroah-Hartman" <gregkh@suse.de>
+       "Stephen R. van den Berg" <srb@cuci.nl>,
+       "Trond Myklebust" <Trond.Myklebust@netapp.com>
 References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 In-Reply-To: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +18,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <wj3ZQZlk_KB.A.PUD.vxagLB@chimera>
-Subject: [Bug #14442] resume after hibernate: /dev/sdb drops and returns as /dev/sde
+Message-ID: <wj3ZQZlk_KB.A.mSC.osagLB@chimera>
+Subject: [Bug #14891] Deadlock regression related to NFS root
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 21 Feb 2010 22:42:33 +0100 (CET)
+Date: Sun, 21 Feb 2010 22:42:38 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +34,11 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14442
-Subject		: resume after hibernate: /dev/sdb drops and returns as /dev/sde
-Submitter	: Duncan <1i5t5.duncan@cox.net>
-Date		: 2009-10-20 01:52 (125 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14891
+Subject		: Deadlock regression related to NFS root
+Submitter	: Stephen R. van den Berg <srb@cuci.nl>
+Date		: 2009-11-24 0:24 (90 days old)
+References	: http://marc.info/?l=linux-kernel&m=125902279909452&w=4
+Handled-By	: Trond Myklebust <Trond.Myklebust@netapp.com>
 
 
