@@ -1,150 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506Ab0BVSVJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:21:09 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52564 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152Ab0BVSVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:21:04 -0500
-Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
+	id S1753137Ab0BVSW6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:22:58 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:54299 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152Ab0BVSW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 13:22:56 -0500
+Date: Mon, 22 Feb 2010 10:22:29 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: rostedt@goodmis.org
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Cong Wang <amwang@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1266765525-30890-3-git-send-email-arighi@develer.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
-	 <1266765525-30890-3-git-send-email-arighi@develer.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 22 Feb 2010 19:20:09 +0100
-Message-ID: <1266862809.6122.436.camel@laptop>
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Uwe =?UTF-8?B?S2xlaW5lLUvDg8K2bmln?= 
+	<u.kleine-koenig@pengutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Arnd Bergmann <arnd@arndb.de>, Hui Zhu <teawater@gmail.com>,
+       Ozan =?UTF-8?B?w4NhZ2xheWFu?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>, Li Hong <lihong.hi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
+       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scripts: improve checkstack
+Message-ID: <20100222102229.78e3c0e2@nehalam>
+In-Reply-To: <1266861540.24271.4609.camel@gandalf.stny.rr.com>
+References: <20100219175217.385580142@vyatta.com>
+	<20100219175429.611463369@vyatta.com>
+	<4B7F5128.70501@redhat.com>
+	<20100219222554.17d4bae6@nehalam>
+	<4B7F90AA.8050306@redhat.com>
+	<20100222084339.1367cfe6@nehalam>
+	<4B82B7B0.7040203@linux.intel.com>
+	<1266861540.24271.4609.camel@gandalf.stny.rr.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-21 at 16:18 +0100, Andrea Righi wrote:
-> @@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
->   */
->  static int calc_period_shift(void)
->  {
-> -       unsigned long dirty_total;
-> +       unsigned long dirty_total, dirty_bytes;
->  
-> -       if (vm_dirty_bytes)
-> -               dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> +       dirty_bytes = mem_cgroup_dirty_bytes();
-> +       if (dirty_bytes)
-> +               dirty_total = dirty_bytes / PAGE_SIZE;
->         else
->                 dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
->                                 100;
-> @@ -406,14 +407,20 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
->   */
->  unsigned long determine_dirtyable_memory(void)
->  {
-> -       unsigned long x;
-> -
-> -       x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-> -
-> +       unsigned long memcg_memory, memory;
-> +
-> +       memory = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-> +       memcg_memory = mem_cgroup_page_state(MEMCG_NR_FREE_PAGES);
-> +       if (memcg_memory > 0) {
-> +               memcg_memory +=
-> +                       mem_cgroup_page_state(MEMCG_NR_RECLAIMABLE_PAGES);
-> +               if (memcg_memory < memory)
-> +                       return memcg_memory;
-> +       }
->         if (!vm_highmem_is_dirtyable)
-> -               x -= highmem_dirtyable_memory(x);
-> +               memory -= highmem_dirtyable_memory(memory);
->  
-> -       return x + 1;   /* Ensure that we never return 0 */
-> +       return memory + 1;      /* Ensure that we never return 0 */
->  }
->  
->  void
-> @@ -421,12 +428,13 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
->                  unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
->  {
->         unsigned long background;
-> -       unsigned long dirty;
-> +       unsigned long dirty, dirty_bytes;
->         unsigned long available_memory = determine_dirtyable_memory();
->         struct task_struct *tsk;
->  
-> -       if (vm_dirty_bytes)
-> -               dirty = DIV_ROUND_UP(vm_dirty_bytes, PAGE_SIZE);
-> +       dirty_bytes = mem_cgroup_dirty_bytes();
-> +       if (dirty_bytes)
-> +               dirty = DIV_ROUND_UP(dirty_bytes, PAGE_SIZE);
->         else {
->                 int dirty_ratio;
->  
-> @@ -505,9 +513,17 @@ static void balance_dirty_pages(struct address_space *mapping,
->                 get_dirty_limits(&background_thresh, &dirty_thresh,
->                                 &bdi_thresh, bdi);
->  
-> -               nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> +               nr_reclaimable = mem_cgroup_page_state(MEMCG_NR_FILE_DIRTY);
-> +               if (nr_reclaimable == 0) {
-> +                       nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
->                                         global_page_state(NR_UNSTABLE_NFS);
-> -               nr_writeback = global_page_state(NR_WRITEBACK);
-> +                       nr_writeback = global_page_state(NR_WRITEBACK);
-> +               } else {
-> +                       nr_reclaimable +=
-> +                               mem_cgroup_page_state(MEMCG_NR_UNSTABLE_NFS);
-> +                       nr_writeback =
-> +                               mem_cgroup_page_state(MEMCG_NR_WRITEBACK);
-> +               }
->  
->                 bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
->                 bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-> @@ -660,6 +676,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
->         unsigned long dirty_thresh;
->  
->          for ( ; ; ) {
-> +               unsigned long dirty;
-> +
->                 get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
->  
->                  /*
-> @@ -668,10 +686,15 @@ void throttle_vm_writeout(gfp_t gfp_mask)
->                   */
->                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
->  
-> -                if (global_page_state(NR_UNSTABLE_NFS) +
-> -                       global_page_state(NR_WRITEBACK) <= dirty_thresh)
-> -                               break;
-> -                congestion_wait(BLK_RW_ASYNC, HZ/10);
-> +               dirty = mem_cgroup_page_state(MEMCG_NR_WRITEBACK);
-> +               if (dirty < 0)
-> +                       dirty = global_page_state(NR_UNSTABLE_NFS) +
-> +                               global_page_state(NR_WRITEBACK);
-> +               else
-> +                       dirty += mem_cgroup_page_state(MEMCG_NR_UNSTABLE_NFS);
-> +               if (dirty <= dirty_thresh)
-> +                       break;
-> +               congestion_wait(BLK_RW_ASYNC, HZ/10);
->  
->                 /*
->                  * The caller might hold locks which can prevent IO completion 
+Cleanup checkstack script:
+  * Turn on strict checking
+  * Fix resulting error message because the declaration syntax
+    was incorrect.
+  * Remove incorrect and misleading use of prototype
+     - prototype not required for this type of sort function
+       because $a and $b are being used in this contex
+     - if prototype was being used it should be for both arguments
+  * Use closure for sort function
+
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
 
-This stuff looks really rather horrible, 
-
-Relying on these cgroup functions returning 0 seems fragile, some of
-them can really be 0. Also sprinkling all that if cgroup foo all over
-the place leads to these ugly indentation problems you have.
-
-How about pulling all these things into separate functions, and using a
-proper mem_cgroup_has_dirty() function to select on?
-
+--- a/scripts/checkstack.pl	2010-02-22 10:15:08.120323236 -0800
++++ b/scripts/checkstack.pl	2010-02-22 10:17:49.878421919 -0800
+@@ -21,6 +21,8 @@
+ #
+ #	TODO :	Port to all architectures (one regex per arch)
+ 
++use strict;
++
+ # check for arch
+ #
+ # $re is used for two matches:
+@@ -104,19 +106,11 @@ my (@stack, $re, $dre, $x, $xs);
+ 	}
+ }
+ 
+-sub bysize($) {
+-	my ($asize, $bsize);
+-	($asize = $a) =~ s/.*:	*(.*)$/$1/;
+-	($bsize = $b) =~ s/.*:	*(.*)$/$1/;
+-	$bsize <=> $asize
+-}
+-
+ #
+ # main()
+ #
+ my $funcre = qr/^$x* <(.*)>:$/;
+-my $func;
+-my $file, $lastslash;
++my ($func, $file, $lastslash);
+ 
+ while (my $line = <STDIN>) {
+ 	if ($line =~ m/$funcre/) {
+@@ -173,4 +167,6 @@ while (my $line = <STDIN>) {
+ 	}
+ }
+ 
+-print sort bysize @stack;
++# Sort output by size (last field)
++print sort { ($b =~ /:\t*(\d+)$/)[0] <=> ($a =~ /:\t*(\d+)$/)[0] } @stack;
++
