@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081Ab0BVSkI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:40:08 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56979 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928Ab0BVSkD (ORCPT
+	id S1754160Ab0BVSkN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:40:13 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:9830 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753928Ab0BVSkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:40:03 -0500
+	Mon, 22 Feb 2010 13:40:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=xeHtkh9+fB32g3eKjd31EBRSH92Mj6sqBc5Nb7huJ88Yn+HX+Ubrh90zJ6hfUoPouE
-         09r+oOUt+1+f5SWP2GbHmfjsClE6/U+v9d6gV9rLprgC4TKsNfMFg45PGnqElkhk8NhM
-         BhMXLMzhbDARnw3XdNCIhk2Vd0GlHSQXtQE/o=
+        b=FysgMDuQg4ig+5ZIhoVHm9qS87RTJYe+rpgeuxrnTx8Adr26aFbAZDbm6w5uWW+xmo
+         5c8SYPnnJJdyG0juBcJpakrru5ZUDyynJYxgzPOF4sCpI6XM0PSIB7Qa+5LXdnyBI0Ka
+         8II5++9aaEDYYRqxA+oYOujZSmnXQ/aOWdxNg=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: linux-mtd <linux-mtd@lists.infradead.org>,
@@ -21,9 +21,9 @@ Cc: linux-mtd <linux-mtd@lists.infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>, <stanley.miao@windriver.com>,
        Vitaly Wool <vitalywool@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 04/15] MTD: mtdblock: test return value of add_mtd_blktrans_dev, because if can fail
-Date: Mon, 22 Feb 2010 20:39:31 +0200
-Message-Id: <1266863982-5258-5-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 06/15] blktrans: allow FTL drivers to export sysfs attributes
+Date: Mon, 22 Feb 2010 20:39:33 +0200
+Message-Id: <1266863982-5258-7-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
 References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
@@ -31,42 +31,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This prevents a memory leak
+This patch adds an ability to export sysfs attributes below
+the block disk device.
+
+This can be used to pass the udev an information about the FTL
+and could include the vendor, serial, version, etc...
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtdblock.c    |    3 ++-
- drivers/mtd/mtdblock_ro.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/mtd/mtd_blkdevs.c    |    8 ++++++++
+ include/linux/mtd/blktrans.h |    2 ++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mtd/mtdblock.c b/drivers/mtd/mtdblock.c
-index 8e5da1e..7ce30a2 100644
---- a/drivers/mtd/mtdblock.c
-+++ b/drivers/mtd/mtdblock.c
-@@ -348,7 +348,8 @@ static void mtdblock_add_mtd(struct mtd_blktrans_ops *tr, struct mtd_info *mtd)
- 	if (!(mtd->flags & MTD_WRITEABLE))
- 		dev->mbd.readonly = 1;
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 646cc84..9dd23d6 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -379,6 +379,10 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 		set_disk_ro(gd, 1);
  
--	add_mtd_blktrans_dev(&dev->mbd);
-+	if (add_mtd_blktrans_dev(&dev->mbd))
-+		kfree(dev);
- }
+ 	add_disk(gd);
++
++	if (new->disk_attributes)
++		sysfs_create_group(&disk_to_dev(gd)->kobj,
++					new->disk_attributes);
+ 	return 0;
+ error4:
+ 	module_put(tr->owner);
+@@ -405,6 +409,10 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 	/* Stop new requests to arrive */
+ 	del_gendisk(old->disk);
  
- static void mtdblock_remove_dev(struct mtd_blktrans_dev *dev)
-diff --git a/drivers/mtd/mtdblock_ro.c b/drivers/mtd/mtdblock_ro.c
-index 54ff288..d0d3f79 100644
---- a/drivers/mtd/mtdblock_ro.c
-+++ b/drivers/mtd/mtdblock_ro.c
-@@ -43,7 +43,8 @@ static void mtdblock_add_mtd(struct mtd_blktrans_ops *tr, struct mtd_info *mtd)
- 	dev->tr = tr;
- 	dev->readonly = 1;
++	if (old->disk_attributes)
++		sysfs_remove_group(&disk_to_dev(old->disk)->kobj,
++						old->disk_attributes);
++
+ 	/* Stop the thread */
+ 	kthread_stop(old->thread);
  
--	add_mtd_blktrans_dev(dev);
-+	if (add_mtd_blktrans_dev(dev))
-+		kfree(dev);
- }
+diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
+index d89b8fb..b481ccd 100644
+--- a/include/linux/mtd/blktrans.h
++++ b/include/linux/mtd/blktrans.h
+@@ -10,6 +10,7 @@
  
- static void mtdblock_remove_dev(struct mtd_blktrans_dev *dev)
+ #include <linux/mutex.h>
+ #include <linux/kref.h>
++#include <linux/sysfs.h>
+ 
+ struct hd_geometry;
+ struct mtd_info;
+@@ -28,6 +29,7 @@ struct mtd_blktrans_dev {
+ 	int open;
+ 	struct kref ref;
+ 	struct gendisk *disk;
++	struct attribute_group *disk_attributes;
+ 	struct task_struct *thread;
+ 	struct request_queue *rq;
+ 	spinlock_t queue_lock;
 -- 
 1.6.3.3
 
