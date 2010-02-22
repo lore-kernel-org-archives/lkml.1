@@ -1,153 +1,357 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269Ab0BVSnb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:43:31 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56979 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752881Ab0BVSj4 (ORCPT
+	id S1753769Ab0BVStj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:49:39 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:47789 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554Ab0BVSth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:39:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=dtxk1ygorGqnYh0lJQ4pIQoEPeFfbe6yP5f9zRl/ufI6+5QJ8RNwW7DA9Gv9j7nJvf
-         toPJEMcYCkGIbWOy0Kw39A5HmqKQBBd0E/gFDArXmeaEzhTD6ugvM67F3OlN7m+4X/k7
-         0GFwYTmufCYNcYVgwDu6k5nKOllrc43Uht9G0=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>, <stanley.miao@windriver.com>,
-       Vitaly Wool <vitalywool@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 01/15] MTD: create unlocked versions of {get,put}_mtd_device
-Date: Mon, 22 Feb 2010 20:39:28 +0200
-Message-Id: <1266863982-5258-2-git-send-email-maximlevitsky@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
-References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
+	Mon, 22 Feb 2010 13:49:37 -0500
+Date: Mon, 22 Feb 2010 19:49:45 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <bp@amd64.org>, Michal Marek <mmarek@suse.cz>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+Message-ID: <20100222184945.GD21233@aftab>
+References: <20100217172040.GC13429@aftab>
+ <4B7C27D8.9050408@suse.cz>
+ <4B7C29C1.10906@suse.cz>
+ <20100218061923.GA1594@liondog.tnic>
+ <20100219142205.GA32533@aftab>
+ <4B7EB6EF.9010405@zytor.com>
+ <20100219164512.GA492@aftab>
+ <4B7EC20C.30607@zytor.com>
+ <20100222141737.GB21233@aftab>
+ <4B82BD01.3030008@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B82BD01.3030008@zytor.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use these only if you know that you already hold mtd_table_mutex
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Mon, Feb 22, 2010 at 09:21:05AM -0800
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> On 02/22/2010 06:17 AM, Borislav Petkov wrote:
+> >  
+> > +config ARCH_HWEIGHT_CFLAGS
+> > +	string
+> > +	default "-fcall-saved-rsi -fcall-saved-rdx -fcall-saved-rcx -fcall-saved-r8 -fcall-saved-r9 -fcall-saved-r10 -fcall-saved-r11" if X86_64
+> > +
+> 
+> [...]
+> 
+> > +
+> > +#ifdef CONFIG_64BIT
+> > +/* popcnt %rdi, %rax */
+> > +#define POPCNT ".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t.byte 0xb8\n\t.byte 0xc7"
+> > +#define REG_IN "D"
+> > +#define REG_OUT "a"
+> > +#else
+> 
+> Just a note: this still means rdi is clobbered on x86-64, which is
+> probably fine, but needs to be recorded as such.  Since gcc doesn't
+> support clobbers for registers used as operands (sigh), you have to
+> create a dummy output and assign it a "=D" constraint.
+> 
+> I don't know if gcc would handle -fcall-saved-rdi here... and if so, how
+> reliably.
+
+Ok, from looking at kernel/sched.s output it looks like it saves rdi
+content over the alternative where needed. I'll do some more testing
+just to make sure.
+
+--
+From: Borislav Petkov <borislav.petkov@amd.com>
+Date: Thu, 11 Feb 2010 00:48:31 +0100
+Subject: [PATCH] x86: Add optimized popcnt variants
+
+Add support for the hardware version of the Hamming weight function,
+popcnt, present in CPUs which advertize it under CPUID, Function
+0x0000_0001_ECX[23]. On CPUs which don't support it, we fallback to the
+default lib/hweight.c sw versions.
+
+A synthetic benchmark comparing popcnt with __sw_hweight64 showed almost
+a 3x speedup on a F10h machine.
+
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
- include/linux/mtd/mtd.h |    3 +-
- 2 files changed, 41 insertions(+), 22 deletions(-)
+ arch/x86/Kconfig                          |    5 ++
+ arch/x86/include/asm/alternative.h        |    9 +++-
+ arch/x86/include/asm/arch_hweight.h       |   59 +++++++++++++++++++++++++++++
+ arch/x86/include/asm/bitops.h             |    4 +-
+ include/asm-generic/bitops/arch_hweight.h |   22 +++++++++--
+ lib/Makefile                              |    3 +
+ lib/hweight.c                             |   20 +++++-----
+ scripts/Makefile.lib                      |    4 ++
+ 8 files changed, 108 insertions(+), 18 deletions(-)
+ create mode 100644 arch/x86/include/asm/arch_hweight.h
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index b3b98d1..67669a7 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -463,27 +463,38 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
- 			ret = NULL;
- 	}
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index eb40925..176950e 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -230,6 +230,11 @@ config X86_32_LAZY_GS
+ 	def_bool y
+ 	depends on X86_32 && !CC_STACKPROTECTOR
  
--	if (!ret)
--		goto out_unlock;
--
--	if (!try_module_get(ret->owner))
--		goto out_unlock;
--
--	if (ret->get_device) {
--		err = ret->get_device(ret);
--		if (err)
--			goto out_put;
-+	if (!ret) {
-+		ret = ERR_PTR(err);
-+		goto out;
- 	}
++config ARCH_HWEIGHT_CFLAGS
++	string
++	default "-fcall-saved-ecx -fcall-saved-edx" if X86_32
++	default "-fcall-saved-rsi -fcall-saved-rdx -fcall-saved-rcx -fcall-saved-r8 -fcall-saved-r9 -fcall-saved-r10 -fcall-saved-r11" if X86_64
++
+ config KTIME_SCALAR
+ 	def_bool X86_32
+ source "init/Kconfig"
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index 69b74a7..0720c96 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -39,9 +39,6 @@
+ #define LOCK_PREFIX ""
+ #endif
  
--	ret->usecount++;
-+	err = __get_mtd_device(ret);
-+	if (err)
-+		ret = ERR_PTR(err);
-+out:
- 	mutex_unlock(&mtd_table_mutex);
- 	return ret;
+-/* This must be included *after* the definition of LOCK_PREFIX */
+-#include <asm/cpufeature.h>
+-
+ struct alt_instr {
+ 	u8 *instr;		/* original instruction */
+ 	u8 *replacement;
+@@ -91,6 +88,12 @@ static inline void alternatives_smp_switch(int smp) {}
+       ".previous"
+ 
+ /*
++ * This must be included *after* the definition of ALTERNATIVE due to
++ * <asm/arch_hweight.h>
++ */
++#include <asm/cpufeature.h>
++
++/*
+  * Alternative instructions for different CPU types or capabilities.
+  *
+  * This allows to use optimized instructions even on generic binary
+diff --git a/arch/x86/include/asm/arch_hweight.h b/arch/x86/include/asm/arch_hweight.h
+new file mode 100644
+index 0000000..cc3a188
+--- /dev/null
++++ b/arch/x86/include/asm/arch_hweight.h
+@@ -0,0 +1,59 @@
++#ifndef _ASM_X86_HWEIGHT_H
++#define _ASM_X86_HWEIGHT_H
++
++#ifdef CONFIG_64BIT
++/* popcnt %rdi, %rax */
++#define POPCNT ".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t.byte 0xb8\n\t.byte 0xc7"
++#define REG_IN "D"
++#define REG_OUT "a"
++#else
++/* popcnt %eax, %eax */
++#define POPCNT ".byte 0xf3\n\t.byte 0x0f\n\t.byte 0xb8\n\t.byte 0xc0"
++#define REG_IN "a"
++#define REG_OUT "a"
++#endif
++
++/*
++ * __sw_hweightXX are called from within the alternatives below
++ * and callee-clobbered registers need to be taken care of. See
++ * ARCH_HWEIGHT_CFLAGS in <arch/x86/Kconfig> for the respective
++ * compiler switches.
++ */
++static inline unsigned int __arch_hweight32(unsigned int w)
++{
++	unsigned int res = 0;
++
++	asm (ALTERNATIVE("call __sw_hweight32", POPCNT, X86_FEATURE_POPCNT)
++		     : "="REG_OUT (res)
++		     : REG_IN (w));
++
++	return res;
++}
++
++static inline unsigned int __arch_hweight16(unsigned int w)
++{
++	return __arch_hweight32(w & 0xffff);
++}
++
++static inline unsigned int __arch_hweight8(unsigned int w)
++{
++	return __arch_hweight32(w & 0xff);
++}
++
++static inline unsigned long __arch_hweight64(__u64 w)
++{
++	unsigned long res = 0, dummy;
++
++#ifdef CONFIG_X86_32
++	return  __arch_hweight32((u32)w) +
++		__arch_hweight32((u32)(w >> 32));
++#else
++	asm (ALTERNATIVE("call __sw_hweight64", POPCNT, X86_FEATURE_POPCNT)
++		     : "="REG_OUT (res), "="REG_IN (dummy)
++		     : REG_IN (w));
++#endif /* CONFIG_X86_32 */
++
++	return res;
++}
++
++#endif
+diff --git a/arch/x86/include/asm/bitops.h b/arch/x86/include/asm/bitops.h
+index 02b47a6..545776e 100644
+--- a/arch/x86/include/asm/bitops.h
++++ b/arch/x86/include/asm/bitops.h
+@@ -444,7 +444,9 @@ static inline int fls(int x)
+ 
+ #define ARCH_HAS_FAST_MULTIPLIER 1
+ 
+-#include <asm-generic/bitops/hweight.h>
++#include <asm/arch_hweight.h>
++
++#include <asm-generic/bitops/const_hweight.h>
+ 
+ #endif /* __KERNEL__ */
+ 
+diff --git a/include/asm-generic/bitops/arch_hweight.h b/include/asm-generic/bitops/arch_hweight.h
+index 3a7be84..9a81c1e 100644
+--- a/include/asm-generic/bitops/arch_hweight.h
++++ b/include/asm-generic/bitops/arch_hweight.h
+@@ -3,9 +3,23 @@
+ 
+ #include <asm/types.h>
+ 
+-extern unsigned int __arch_hweight32(unsigned int w);
+-extern unsigned int __arch_hweight16(unsigned int w);
+-extern unsigned int __arch_hweight8(unsigned int w);
+-extern unsigned long __arch_hweight64(__u64 w);
++inline unsigned int __arch_hweight32(unsigned int w)
++{
++	return __sw_hweight32(w);
 +}
  
--out_put:
--	module_put(ret->owner);
--out_unlock:
--	mutex_unlock(&mtd_table_mutex);
--	return ERR_PTR(err);
-+
-+int __get_mtd_device(struct mtd_info *mtd)
++inline unsigned int __arch_hweight16(unsigned int w)
 +{
-+	int err;
++	return __sw_hweight16(w);
++}
 +
-+	if (!try_module_get(mtd->owner))
-+		return -ENODEV;
++inline unsigned int __arch_hweight8(unsigned int w)
++{
++	return __sw_hweight8(w);
++}
 +
-+	if (mtd->get_device) {
++inline unsigned long __arch_hweight64(__u64 w)
++{
++	return __sw_hweight64(w);
++}
+ #endif /* _ASM_GENERIC_BITOPS_HWEIGHT_H_ */
+diff --git a/lib/Makefile b/lib/Makefile
+index 3b0b4a6..e2ad17c 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -39,7 +39,10 @@ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
+ lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
+ lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+ obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
 +
-+		err = mtd->get_device(mtd);
++CFLAGS_hweight.o = $(subst $(quote),,$(CONFIG_ARCH_HWEIGHT_CFLAGS))
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
 +
-+		if (err) {
-+			module_put(mtd->owner);
-+			return err;
-+		}
-+	}
-+	mtd->usecount++;
-+	return 0;
- }
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+ obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+diff --git a/lib/hweight.c b/lib/hweight.c
+index 9ff86df..f9ce440 100644
+--- a/lib/hweight.c
++++ b/lib/hweight.c
+@@ -9,7 +9,7 @@
+  * The Hamming Weight of a number is the total number of bits set in it.
+  */
  
- /**
-@@ -534,14 +545,19 @@ out_unlock:
- 
- void put_mtd_device(struct mtd_info *mtd)
+-unsigned int __arch_hweight32(unsigned int w)
++unsigned int __sw_hweight32(unsigned int w)
  {
--	int c;
--
- 	mutex_lock(&mtd_table_mutex);
--	c = --mtd->usecount;
-+	__put_mtd_device(mtd);
-+	mutex_unlock(&mtd_table_mutex);
-+
-+}
-+
-+void __put_mtd_device(struct mtd_info *mtd)
-+{
-+	--mtd->usecount;
-+	BUG_ON(mtd->usecount < 0);
-+
- 	if (mtd->put_device)
- 		mtd->put_device(mtd);
--	mutex_unlock(&mtd_table_mutex);
--	BUG_ON(c < 0);
- 
- 	module_put(mtd->owner);
+ 	unsigned int res = w - ((w >> 1) & 0x55555555);
+ 	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
+@@ -17,30 +17,30 @@ unsigned int __arch_hweight32(unsigned int w)
+ 	res = res + (res >> 8);
+ 	return (res + (res >> 16)) & 0x000000FF;
  }
-@@ -579,7 +595,9 @@ EXPORT_SYMBOL_GPL(add_mtd_device);
- EXPORT_SYMBOL_GPL(del_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device_nm);
-+EXPORT_SYMBOL_GPL(__get_mtd_device);
- EXPORT_SYMBOL_GPL(put_mtd_device);
-+EXPORT_SYMBOL_GPL(__put_mtd_device);
- EXPORT_SYMBOL_GPL(register_mtd_user);
- EXPORT_SYMBOL_GPL(unregister_mtd_user);
- EXPORT_SYMBOL_GPL(default_mtd_writev);
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index ba53ecc..11d8e68 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -289,8 +289,9 @@ extern int add_mtd_device(struct mtd_info *mtd);
- extern int del_mtd_device (struct mtd_info *mtd);
+-EXPORT_SYMBOL(__arch_hweight32);
++EXPORT_SYMBOL(__sw_hweight32);
  
- extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
-+extern int __get_mtd_device(struct mtd_info *mtd);
-+extern void __put_mtd_device(struct mtd_info *mtd);
- extern struct mtd_info *get_mtd_device_nm(const char *name);
--
- extern void put_mtd_device(struct mtd_info *mtd);
+-unsigned int __arch_hweight16(unsigned int w)
++unsigned int __sw_hweight16(unsigned int w)
+ {
+ 	unsigned int res = w - ((w >> 1) & 0x5555);
+ 	res = (res & 0x3333) + ((res >> 2) & 0x3333);
+ 	res = (res + (res >> 4)) & 0x0F0F;
+ 	return (res + (res >> 8)) & 0x00FF;
+ }
+-EXPORT_SYMBOL(__arch_hweight16);
++EXPORT_SYMBOL(__sw_hweight16);
  
+-unsigned int __arch_hweight8(unsigned int w)
++unsigned int __sw_hweight8(unsigned int w)
+ {
+ 	unsigned int res = w - ((w >> 1) & 0x55);
+ 	res = (res & 0x33) + ((res >> 2) & 0x33);
+ 	return (res + (res >> 4)) & 0x0F;
+ }
+-EXPORT_SYMBOL(__arch_hweight8);
++EXPORT_SYMBOL(__sw_hweight8);
  
+-unsigned long __arch_hweight64(__u64 w)
++unsigned long __sw_hweight64(__u64 w)
+ {
+ #if BITS_PER_LONG == 32
+-	return __arch_hweight32((unsigned int)(w >> 32)) +
+-	       __arch_hweight32((unsigned int)w);
++	return __sw_hweight32((unsigned int)(w >> 32)) +
++	       __sw_hweight32((unsigned int)w);
+ #elif BITS_PER_LONG == 64
+ #ifdef ARCH_HAS_FAST_MULTIPLIER
+ 	w -= (w >> 1) & 0x5555555555555555ul;
+@@ -57,4 +57,4 @@ unsigned long __arch_hweight64(__u64 w)
+ #endif
+ #endif
+ }
+-EXPORT_SYMBOL(__arch_hweight64);
++EXPORT_SYMBOL(__sw_hweight64);
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index f9bdf26..cbcd654 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -245,3 +245,7 @@ quiet_cmd_lzo = LZO    $@
+ cmd_lzo = (cat $(filter-out FORCE,$^) | \
+ 	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+ 	(rm -f $@ ; false)
++
++# misc stuff
++# ---------------------------------------------------------------------------
++quote:="
 -- 
-1.6.3.3
+1.6.4.2
 
+
+-- 
+Regards/Gruss,
+Boris.
+
+--
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
