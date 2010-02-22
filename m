@@ -1,43 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858Ab0BVW0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 17:26:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40930 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754687Ab0BVW0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 17:26:43 -0500
-Date: Mon, 22 Feb 2010 14:24:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: akataria@vmware.com
-Cc: venkatesh.pallipadi@intel.com, vojtech@suse.cz,
-       Dan Hecht <dhecht@vmware.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in HPET RTC emulation.
-Message-Id: <20100222142418.936a7808.akpm@linux-foundation.org>
-In-Reply-To: <1266532208.4757.14.camel@promb-2n-dhcp251.eng.vmware.com>
-References: <1265765192.1470.24.camel@ank32.eng.vmware.com>
-	<1266532208.4757.14.camel@promb-2n-dhcp251.eng.vmware.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754859Ab0BVWtv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 17:49:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16726 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754554Ab0BVWtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 17:49:50 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v2 0/9] perf-probe updates - use elfutils and introduce
+	lazy matching
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Mon, 22 Feb 2010 17:53:21 -0500
+Message-ID: <20100222225320.20686.17645.stgit@localhost6.localdomain6>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Feb 2010 14:30:08 -0800 Alok Kataria <akataria@vmware.com> wrote:
+Hi Ingo,
 
-> [Copying LKML]
+Here are several bugfixes and updates of perf-probe (v2).
+This updates includes moving onto elfutils-libdw and
+the lazy line matching support which you had mentioned :-)
 
-Please do that all the time!
+elfutils library is developed closely with gcc team,
+and it is simple and fast dwarf analysis library.
 
-> <ping>
-> 
-> Not sure if you guys got a chance to look at this patch, the fix is
-> pretty trivial too.
-> 
+lazy-matching is similar to glob matching but ignoring
+spaces in both of target and pattern.
 
-Please resend everything, including a Signed-off-by: as per
-Documentation/SubmittingPatches.
+Changes in v2:
+ (Fixed bugs on x86-64)
+ - Fix a type-casting bug in Makefile.
+ - Cast Dwarf_Addr/Dwarf_Word to unsigned long long for
+   printf-formats.
 
-Thanks.
+
+This is updated todo list. Most of them are related
+to the 'type' support.
+
+Long-term TODOs (future features):
+  - Enhance probe-finder to decode call frame instructions.
+  - Support sys_perf_counter_open (for non-root users)
+  - Support tracing static variables (non global)
+  - Support variable types from debuginfo (e.g. char, int, ...)
+  - Support fields of data structures (var->field)
+  - Support array (var[N])
+  - Support dynamic array-indexing (var[var2])
+  - Support string/dynamic arrays (*var, var[N..M])
+  - Support force type-casting ((type)var)
+  - Support the type of return value
+
+Miscs:
+  - Better support for probes on modules
+  - --list option shows the file-name/line-number of each events.
+  - More debugger like enhancements(%next, --disasm, etc.)
+
+
+Thank you,
+
+---
+
+Masami Hiramatsu (9):
+      perf probe: Add lazy line matching support
+      perf probe: show more lines after last line
+      perf probe: Check function address range strictly in line finder
+      perf probe: Use libdw callback routines
+      perf probe: Use elfutils-libdw for analyzing debuginfo
+      perf probe: Rename probe finder functions
+      perf probe: Fix bugs in line range finder
+      perf probe: Update perf probe document
+      perf probe: Do not show --line option without dwarf support
+
+
+ tools/perf/Documentation/perf-probe.txt |   58 ++
+ tools/perf/Makefile                     |   10 
+ tools/perf/builtin-probe.c              |   36 +
+ tools/perf/util/probe-event.c           |   55 +-
+ tools/perf/util/probe-finder.c          | 1002 ++++++++++++++-----------------
+ tools/perf/util/probe-finder.h          |   53 +-
+ tools/perf/util/string.c                |   55 +-
+ tools/perf/util/string.h                |    1 
+ 8 files changed, 644 insertions(+), 626 deletions(-)
+
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
