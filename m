@@ -1,120 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753496Ab0BVSaG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:30:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12263 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905Ab0BVSaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:30:05 -0500
-Date: Mon, 22 Feb 2010 13:29:34 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-ID: <20100222182934.GD3096@redhat.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com> <20100222142744.GB13823@redhat.com> <20100222181226.GC4052@linux>
+	id S1753556Ab0BVSfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:35:41 -0500
+Received: from sypressi.dnainternet.net ([83.102.40.135]:36735 "EHLO
+	sypressi.dnainternet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522Ab0BVSfj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 13:35:39 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0.033
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Mon, 22 Feb 2010 20:35:35 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222181226.GC4052@linux>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002222035.36043.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 07:12:27PM +0100, Andrea Righi wrote:
-> On Mon, Feb 22, 2010 at 09:27:45AM -0500, Vivek Goyal wrote:
-> > On Sun, Feb 21, 2010 at 04:18:43PM +0100, Andrea Righi wrote:
-> > > Control the maximum amount of dirty pages a cgroup can have at any given time.
+On maanantai 22 helmikuu 2010 17:28:36 Alan Stern wrote:
+> On Mon, 22 Feb 2010, Anssi Hannula wrote:
+> > > > If I additionally insert a one-second delay before the fd is closed,
+> > > > I get this usbmon log:
+> > > > http://stuff.onse.fi/gobi2000/gobi-regression5.mon.log
+> > > > 
+> > > > The firmware upload is still unsuccessful.
 > > > 
-> > > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> > > page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> > > will not be able to consume more than their designated share of dirty pages and
-> > > will be forced to perform write-out if they cross that limit.
-> > > 
-> > > The overall design is the following:
-> > > 
-> > >  - account dirty pages per cgroup
-> > >  - limit the number of dirty pages via memory.dirty_bytes in cgroupfs
-> > >  - start to write-out in balance_dirty_pages() when the cgroup or global limit
-> > >    is exceeded
-> > > 
-> > > This feature is supposed to be strictly connected to any underlying IO
-> > > controller implementation, so we can stop increasing dirty pages in VM layer
-> > > and enforce a write-out before any cgroup will consume the global amount of
-> > > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
-> > > 
+> > > If I use the option driver instead of qcserial, the firmware upload is
+> > > always successful (without any added delays needed). The usbmon log for
+> > > that case can be found here:
+> > > http://stuff.onse.fi/gobi2000/gobi-regression6.mon.log
 > > 
-> > Thanks Andrea. I had been thinking about looking into it from IO
-> > controller perspective so that we can control async IO (buffered writes
-> > also).
-> > 
-> > Before I dive into patches, two quick things.
-> > 
-> > - IIRC, last time you had implemented per memory cgroup "dirty_ratio" and
-> >   not "dirty_bytes". Why this change? To begin with either per memcg
-> >   configurable dirty ratio also makes sense? By default it can be the
-> >   global dirty ratio for each cgroup.
+> > I installed 2.6.31.12 to get a usbmon log with qcserial before the
+> > regression as well (without delays, upload successful):
+> > http://stuff.onse.fi/gobi2000/gobi-regression7.mon.log
 > 
-> I would't like to add many different interfaces to do the same thing.
-> I'd prefer to choose just one interface and always use it. We just have
-> to define which is the best one. IMHO dirty_bytes is more generic. If
-> we want to define the limit as a % we can always do that in userspace.
+> The major difference between the logs is in the way the data get
+> divided up into packets.  In both the successful logs, there are
+> sequences of bulk-OUT packets with lengths like:
 > 
-
-dirty_ratio is easy to configure. One system wide default value works for
-all the newly created cgroups. For dirty_bytes, you shall have to
-configure each and individual cgroup with a specific value depneding on
-what is the upper limit of memory for that cgroup.
-
-Secondly, memory cgroup kind of partitions global memory resource per
-cgroup. So if as long as we have global dirty ratio knobs, it makes sense
-to have per cgroup dirty ratio knob also. 
-
-But I guess we can introduce that later and use gloabl dirty ratio for
-all the memory cgroups (instead of each cgroup having a separate dirty
-ratio). The only thing is that we need to enforce this dirty ratio on the
-cgroup and if I am reading the code correctly, your modifications of
-calculating available_memory() per cgroup should take care of that.
-
-> > 
-> > - Looks like we will start writeout from memory cgroup once we cross the
-> >   dirty ratio, but still there is no gurantee that we be writting pages
-> >   belonging to cgroup which crossed the dirty ratio and triggered the
-> >   writeout.
-> > 
-> >   This behavior is not very good at least from IO controller perspective
-> >   where if two dd threads are dirtying memory in two cgroups, then if
-> >   one crosses it dirty ratio, it should perform writeouts of its own pages
-> >   and not other cgroups pages. Otherwise we probably will again introduce
-> >   serialization among two writers and will not see service differentation.
+> 	44, 1, 15, 1, 13
 > 
-> Right, but I'd prefer to start with a simple solution. Handling this
-> per-page is too costly and not good for entire I/O for now. We can
-> always improve service differentiation and fairness in a second
-> step, I think.
+> where the unsuccessful transfer just has a single packet of length 74.
+> Also, the successful transfers show a lot of bulk-IN traffic where the
+> unsuccessful transfer doesn't have any.  I don't know if that is
+> relevant, however.
 > 
-> > 
-> >   May be we can modify writeback_inodes_wbc() to check first dirty page
-> >   of the inode. And if it does not belong to same memcg as the task who
-> >   is performing balance_dirty_pages(), then skip that inode.
-> > 
-> >   This does not handle the problem of shared files where processes from
-> >   two different cgroups are dirtying same file but it will atleast cover
-> >   other cases without introducing too much of complexity?
-> 
-> Yes, if we want to take care ot that, at least we could start with a
-> per-inode solution. It will probably introduce less overhead and will
-> work the the most part of the cases (except the case when multiple
-> cgroups write to the same file/inode).
+> No other differences stand out.
 
-Fair enough. In first round we can take care of enforcing dirty ratio per
-cgroup and configurable dirty_bytes per cgroup. Once that is in, we can
-look into doing writeout from inodes of memory cgroup being throttled.
+I guess that would suggest that the device doesn't allow the initialization 
+data to be broken into packets arbitrarily (though some differences seem 
+allowed, as the windows driver transmits them differently).
 
-Thanks
-Vivek
+Does this mean a tty interface is ill-suited for the microcode upload, and 
+instead qcserial should use the kernel's generic microcode upload mechanism or 
+the userspace should use libusb to do it?
+
+Any idea what could be causing the hang, then? The WARNING that appears when 
+interrupting the hung gobi_loader is for serial_unthrottle() being called 
+while usb_serial_port->port.count == 0.
+
+-- 
+Anssi Hannula
