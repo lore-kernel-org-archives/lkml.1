@@ -1,67 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335Ab0BVUth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:49:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53611 "EHLO mx1.redhat.com"
+	id S1753924Ab0BVUye (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:54:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51865 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753342Ab0BVUtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:49:35 -0500
-Date: Mon, 22 Feb 2010 15:49:20 -0500
-From: Mike Snitzer <snitzer@redhat.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] block: warn if blk_stack_limits() undermines atomicity
-Message-ID: <20100222204920.GA24514@redhat.com>
-MIME-Version: 1.0
+	id S1752199Ab0BVUyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 15:54:33 -0500
+Date: Mon, 22 Feb 2010 15:54:29 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] vfs: Fix use-after-free of vfsmount by mnt_drop_write()
+Message-ID: <20100222205429.GH972@shell>
+References: <874ol9cfm7.fsf@devron.myhome.or.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <874ol9cfm7.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Device Mapper (DM) and Software Raid (MD) device drivers can be
-used to arbitrarily combine devices with different "I/O Limits".  The
-kernel's block layer goes to great lengths to reasonably combine the
-"I/O Limits" of the individual devices.  The kernel will not prevent
-combining heterogenuous devices but the user should be aware of the risk
-associated with doing so.
+On Tue, Feb 23, 2010 at 03:03:28AM +0900, OGAWA Hirofumi wrote:
+> Hi,
+> 
+> Please review this. (This originally was for #untested branch, so this is
+> not minimal change perfectly.)
+> 
+> 
+> 
+> Those might be assuming that the nd->path.mnt refcnt is keeped by
+> filp after nameidata_to_filp().
+> 
+> It's wrong if nameidata_to_filp() returned the error.  (nd->path and
+> filp are invalid)
+> 
+> Instead to use deep knowledge of nameidata_to_filp() internal, this
+> thinks the nd->path is invalid after nameidata_to_filp(). So, this
+> just take refcnt for mnt_want/drop_write().
 
-For instance, a 512 byte device and a 4K device may be combined into a
-single logical DM device; the resulting DM device would have a
-logical_block_size of 4K.  Filesystems layered on such a hybrid device
-assume that 4K will be written atomically but in reality that 4K will be
-split into 8 512 byte IOs when issued to the 512 byte device.  Using a
-4K logical_block_size for the higher-level DM device increases potential
-for a partial write to the 512b device if there is a system crash.
+You might take a look at the patch I just posted:
 
-If combining multiple devices' "I/O Limits" results in a conflict the
-block layer will report a warning that the device is more susceptible to
-partial writes and misaligned. [NOTE: setting "misaligned" for this
-warning is somewhat awkward but blk_stack_limits() return of -1 can be
-viewed as there was an "alignment inconsistency".  Would it be better to
-return -1 but avoid setting t->misaligned?]
+Subject: [RFC PATCH] VFS: Simplify truncate logic in do_filp_open()
 
-Signed-off-by: Mike Snitzer <snitzer@redhat.com>
+If that patch is correct, it will considerably simplify the second
+part of your patch.
 
-diff --git a/block/blk-settings.c b/block/blk-settings.c
-index 5eeb9e0..33bebe7 100644
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -566,8 +566,16 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
- 		}
- 	}
- 
-+	top = t->logical_block_size;
- 	t->logical_block_size = max(t->logical_block_size,
- 				    b->logical_block_size);
-+	if (top && top < t->logical_block_size) {
-+		printk(KERN_NOTICE "Warning: changing logical_block_size of top device "
-+		       "(from %u to %u) increases potential for partial writes\n",
-+		       top, t->logical_block_size);
-+		t->misaligned = 1;
-+		ret = -1;
-+	}
- 
- 	t->physical_block_size = max(t->physical_block_size,
- 				     b->physical_block_size);
+-VAL
+
+> 
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  fs/namei.c |   35 +++++++++++++++++++++++------------
+>  1 file changed, 23 insertions(+), 12 deletions(-)
+> 
+> diff -puN fs/namei.c~nameidata_to_filp-mount-writer-fix fs/namei.c
+> --- linux-2.6/fs/namei.c~nameidata_to_filp-mount-writer-fix	2010-02-22 23:22:26.000000000 +0900
+> +++ linux-2.6-hirofumi/fs/namei.c	2010-02-22 23:59:34.000000000 +0900
+> @@ -1617,6 +1617,7 @@ struct file *do_filp_open(int dfd, const
+>  	struct path path;
+>  	struct dentry *dir;
+>  	int count = 0;
+> +	struct vfsmount *uninitialized_var(mnt_writer);
+>  	int will_truncate;
+>  	int flag = open_to_namei_flags(open_flag);
+>  	int force_reval = 0;
+> @@ -1733,16 +1734,20 @@ do_last:
+>  		 * a permanent write count is taken through
+>  		 * the 'struct file' in nameidata_to_filp().
+>  		 */
+> -		error = mnt_want_write(nd.path.mnt);
+> +		mnt_writer = nd.path.mnt;
+> +		error = mnt_want_write(mnt_writer);
+>  		if (error)
+>  			goto exit_mutex_unlock;
+>  		error = __open_namei_create(&nd, &path, flag, mode);
+>  		if (error) {
+> -			mnt_drop_write(nd.path.mnt);
+> +			mnt_drop_write(mnt_writer);
+>  			goto exit;
+>  		}
+> +		mntget(mnt_writer);
+> +		/* nd->path is invalid after this */
+>  		filp = nameidata_to_filp(&nd);
+> -		mnt_drop_write(nd.path.mnt);
+> +		mnt_drop_write(mnt_writer);
+> +		mntput(mnt_writer);
+>  		if (nd.root.mnt)
+>  			path_put(&nd.root);
+>  		if (!IS_ERR(filp)) {
+> @@ -1794,16 +1799,20 @@ ok:
+>  	 */
+>  	will_truncate = open_will_truncate(flag, nd.path.dentry->d_inode);
+>  	if (will_truncate) {
+> -		error = mnt_want_write(nd.path.mnt);
+> +		mnt_writer = nd.path.mnt;
+> +		error = mnt_want_write(mnt_writer);
+>  		if (error)
+>  			goto exit;
+>  	}
+>  	error = may_open(&nd.path, acc_mode, flag);
+>  	if (error) {
+>  		if (will_truncate)
+> -			mnt_drop_write(nd.path.mnt);
+> +			mnt_drop_write(mnt_writer);
+>  		goto exit;
+>  	}
+> +	if (will_truncate)
+> +		mntget(mnt_writer);
+> +	/* nd->path is invalid after this */
+>  	filp = nameidata_to_filp(&nd);
+>  	if (!IS_ERR(filp)) {
+>  		error = ima_file_check(filp, acc_mode);
+> @@ -1814,10 +1823,10 @@ ok:
+>  	}
+>  	if (!IS_ERR(filp)) {
+>  		if (acc_mode & MAY_WRITE)
+> -			vfs_dq_init(nd.path.dentry->d_inode);
+> +			vfs_dq_init(filp->f_path.dentry->d_inode);
+>  
+>  		if (will_truncate) {
+> -			error = handle_truncate(&nd.path);
+> +			error = handle_truncate(&filp->f_path);
+>  			if (error) {
+>  				fput(filp);
+>  				filp = ERR_PTR(error);
+> @@ -1825,12 +1834,14 @@ ok:
+>  		}
+>  	}
+>  	/*
+> -	 * It is now safe to drop the mnt write
+> -	 * because the filp has had a write taken
+> -	 * on its behalf.
+> +	 * It is now safe to drop the mnt write because the filp has
+> +	 * had a write taken on its behalf. (NOTE: since O_TRUNC can
+> +	 * be used with O_RDONLY, this needs to cover truncate path)
+>  	 */
+> -	if (will_truncate)
+> -		mnt_drop_write(nd.path.mnt);
+> +	if (will_truncate) {
+> +		mnt_drop_write(mnt_writer);
+> +		mntput(mnt_writer);
+> +	}
+>  	if (nd.root.mnt)
+>  		path_put(&nd.root);
+>  	return filp;
+> _
+> 
+> -- 
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
