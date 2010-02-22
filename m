@@ -1,62 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018Ab0BVPvg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:51:36 -0500
-Received: from mail.2750.no ([62.101.244.198]:38605 "EHLO mail.2750.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753771Ab0BVPvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:51:35 -0500
-Message-ID: <4B82A7FF.9000801@simula.no>
-Date: Mon, 22 Feb 2010 16:51:27 +0100
-From: Andreas Petlund <apetlund@simula.no>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
+	id S1754170Ab0BVPyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:54:14 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:53315 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756Ab0BVPyM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 10:54:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=okwADlymkHp+txvzozUyKbDPnexaHsXY3aXqR7CWHdPWll5Owq5iwLxVFzd0aSO0kr
+         27i6rEMhmKsRd3fLZ1vCNdIV8EKZzhd8BXwrXBQpSOW5cQsDSdXELFO9Wji4/MlMoD39
+         L3NFoPx/6FLkNJmd10VP2V55FN64HNwitfrYI=
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
-       "zimmermann@nets.rwth-aachen.de" <zimmermann@nets.rwth-aachen.de>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
-       "eric.dumazet@gmail.com" <eric.dumazet@gmail.com>,
-       "Arnd.Hannemann@nets.rwth-aachen.de" 
-	<Arnd.Hannemann@nets.rwth-aachen.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
-       "damian@tvk.rwth-aachen.de" <damian@tvk.rwth-aachen.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
-References: <20100221102102.GB1311@ucw.cz>	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>	<20100221.150311.193707249.davem@davemloft.net>	<FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> <87k4u5mh9u.fsf@basil.nowhere.org>
-In-Reply-To: <87k4u5mh9u.fsf@basil.nowhere.org>
+Date: Mon, 22 Feb 2010 21:24:09 +0530
+Message-ID: <29820bf41002220754g32463236gace768157ae76c0b@mail.gmail.com>
+Subject: Is NET_KEY (native IPSec stack in Linux) asynchronous?
+From: hiren joshi <joshihirenn@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22. feb. 2010 16:17, Andi Kleen wrote:
-> Lars Eggert <lars.eggert@nokia.com> writes:
-> 
->> If it's off by default there is no issue.
-> 
-> Still a sufficient large number of people might turn it on
-> and then the network would melt.
-> 
-> IMHO TCP changes with badly understood congestion behaviour
-> should not be merged until the necessary analysis/simulation etc.
-> is done.
-> 
-> -Andi
-> 
+Hello,
 
-I also encourage you to read the discussions from the first posted
-version of the patch set, since I here reference a lot of the 
-supporting research and related material from other researchers.
+I am planning to use NET_KEY (the Linux IPSec stack) with hardware
+acceleration cards that let me offload operations related to
+encryption, crypto digest and compression.
+The acceleration card API is asynchronous. I just want to know if
+NET_KEY itself is asynchronous so that I can utilize the card properly
+by integrating its API with NET_KEY.
 
-http://thread.gmane.org/gmane.linux.network/141394
-http://thread.gmane.org/gmane.linux.network/141395
-http://thread.gmane.org/gmane.linux.network/141396
-http://thread.gmane.org/gmane.linux.network/141397
+Thank you for your time.
 
-Cheers,
-Andreas
+Regards,
+Hiren
