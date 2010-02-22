@@ -1,65 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515Ab0BVSCC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:02:02 -0500
-Received: from gw1.transmode.se ([213.115.205.20]:45733 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889Ab0BVSCA convert rfc822-to-8bit (ORCPT
+	id S1753610Ab0BVSDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:03:34 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:44429 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752903Ab0BVSDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:02:00 -0500
-X-Greylist: delayed 502 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Feb 2010 13:02:00 EST
-In-Reply-To: <a9e22dff1002220840x7e86a1a0i3d44cefc1c6a79c0@mail.gmail.com>
-References: <a9e22dff1002220826p63209a33n27e84ea10e191a19@mail.gmail.com> <a9e22dff1002220840x7e86a1a0i3d44cefc1c6a79c0@mail.gmail.com>
-Subject: Re: [PATCH] jffs2: fix memory leak if the sector was successfully erased
-X-KeepSent: B51E93AB:187F855F-C12576D2:00618F62;
- type=4; name=$KeepSent
-To: niam <niam.niam@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
-Message-ID: <OFB51E93AB.187F855F-ONC12576D2.00618F62-C12576D2.0061DEB5@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 22 Feb 2010 18:49:00 +0100
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5.1|September 28, 2009) at
- 2010-02-22 18:53:36
+	Mon, 22 Feb 2010 13:03:33 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] vfs: Fix use-after-free of vfsmount by mnt_drop_write()
+Date: Tue, 23 Feb 2010 03:03:28 +0900
+Message-ID: <874ol9cfm7.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Content-transfer-encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-niam <niam.niam@gmail.com> wrote on 2010/02/22 17:40:11:
->
-> Resending patch to proper people/mailing list.
->
-> Memory allocated for erase instruction is not freed if the sector was
-> successfully erased.
+Hi,
 
-NAK, jffs2_erase_callback() will free it so
-you have added a double free I think. Did you measure a memory leak?
+Please review this. (This originally was for #untested branch, so this is
+not minimal change perfectly.)
 
->
-> Signed-off-by: Dmytro Milinevskyy <niam.niam@gmail.com>
-> ---
->  fs/jffs2/erase.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
->
-> diff --git a/fs/jffs2/erase.c b/fs/jffs2/erase.c
-> index b47679b..c0a5604 100644
-> --- a/fs/jffs2/erase.c
-> +++ b/fs/jffs2/erase.c
-> @@ -74,8 +74,10 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
->        ((struct erase_priv_struct *)instr->priv)->c = c;
->
->        ret = c->mtd->erase(c->mtd, instr);
-> -       if (!ret)
-> +       if (!ret) {
-> +        kfree(instr);
->                return;
-> +    }
->
->        bad_offset = instr->fail_addr;
->        kfree(instr);
->
 
+
+Those might be assuming that the nd->path.mnt refcnt is keeped by
+filp after nameidata_to_filp().
+
+It's wrong if nameidata_to_filp() returned the error.  (nd->path and
+filp are invalid)
+
+Instead to use deep knowledge of nameidata_to_filp() internal, this
+thinks the nd->path is invalid after nameidata_to_filp(). So, this
+just take refcnt for mnt_want/drop_write().
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ fs/namei.c |   35 +++++++++++++++++++++++------------
+ 1 file changed, 23 insertions(+), 12 deletions(-)
+
+diff -puN fs/namei.c~nameidata_to_filp-mount-writer-fix fs/namei.c
+--- linux-2.6/fs/namei.c~nameidata_to_filp-mount-writer-fix	2010-02-22 23:22:26.000000000 +0900
++++ linux-2.6-hirofumi/fs/namei.c	2010-02-22 23:59:34.000000000 +0900
+@@ -1617,6 +1617,7 @@ struct file *do_filp_open(int dfd, const
+ 	struct path path;
+ 	struct dentry *dir;
+ 	int count = 0;
++	struct vfsmount *uninitialized_var(mnt_writer);
+ 	int will_truncate;
+ 	int flag = open_to_namei_flags(open_flag);
+ 	int force_reval = 0;
+@@ -1733,16 +1734,20 @@ do_last:
+ 		 * a permanent write count is taken through
+ 		 * the 'struct file' in nameidata_to_filp().
+ 		 */
+-		error = mnt_want_write(nd.path.mnt);
++		mnt_writer = nd.path.mnt;
++		error = mnt_want_write(mnt_writer);
+ 		if (error)
+ 			goto exit_mutex_unlock;
+ 		error = __open_namei_create(&nd, &path, flag, mode);
+ 		if (error) {
+-			mnt_drop_write(nd.path.mnt);
++			mnt_drop_write(mnt_writer);
+ 			goto exit;
+ 		}
++		mntget(mnt_writer);
++		/* nd->path is invalid after this */
+ 		filp = nameidata_to_filp(&nd);
+-		mnt_drop_write(nd.path.mnt);
++		mnt_drop_write(mnt_writer);
++		mntput(mnt_writer);
+ 		if (nd.root.mnt)
+ 			path_put(&nd.root);
+ 		if (!IS_ERR(filp)) {
+@@ -1794,16 +1799,20 @@ ok:
+ 	 */
+ 	will_truncate = open_will_truncate(flag, nd.path.dentry->d_inode);
+ 	if (will_truncate) {
+-		error = mnt_want_write(nd.path.mnt);
++		mnt_writer = nd.path.mnt;
++		error = mnt_want_write(mnt_writer);
+ 		if (error)
+ 			goto exit;
+ 	}
+ 	error = may_open(&nd.path, acc_mode, flag);
+ 	if (error) {
+ 		if (will_truncate)
+-			mnt_drop_write(nd.path.mnt);
++			mnt_drop_write(mnt_writer);
+ 		goto exit;
+ 	}
++	if (will_truncate)
++		mntget(mnt_writer);
++	/* nd->path is invalid after this */
+ 	filp = nameidata_to_filp(&nd);
+ 	if (!IS_ERR(filp)) {
+ 		error = ima_file_check(filp, acc_mode);
+@@ -1814,10 +1823,10 @@ ok:
+ 	}
+ 	if (!IS_ERR(filp)) {
+ 		if (acc_mode & MAY_WRITE)
+-			vfs_dq_init(nd.path.dentry->d_inode);
++			vfs_dq_init(filp->f_path.dentry->d_inode);
+ 
+ 		if (will_truncate) {
+-			error = handle_truncate(&nd.path);
++			error = handle_truncate(&filp->f_path);
+ 			if (error) {
+ 				fput(filp);
+ 				filp = ERR_PTR(error);
+@@ -1825,12 +1834,14 @@ ok:
+ 		}
+ 	}
+ 	/*
+-	 * It is now safe to drop the mnt write
+-	 * because the filp has had a write taken
+-	 * on its behalf.
++	 * It is now safe to drop the mnt write because the filp has
++	 * had a write taken on its behalf. (NOTE: since O_TRUNC can
++	 * be used with O_RDONLY, this needs to cover truncate path)
+ 	 */
+-	if (will_truncate)
+-		mnt_drop_write(nd.path.mnt);
++	if (will_truncate) {
++		mnt_drop_write(mnt_writer);
++		mntput(mnt_writer);
++	}
+ 	if (nd.root.mnt)
+ 		path_put(&nd.root);
+ 	return filp;
+_
+
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
