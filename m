@@ -1,468 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089Ab0BVA0P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 19:26:15 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44271 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753748Ab0BVA0O (ORCPT
+	id S1754113Ab0BVAaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 19:30:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:59082 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748Ab0BVAae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 19:26:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 22 Feb 2010 09:22:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-Id: <20100222092242.98df82e4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1266765525-30890-2-git-send-email-arighi@develer.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
-	<1266765525-30890-2-git-send-email-arighi@develer.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 21 Feb 2010 19:30:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=GL9dUtBbPS9w5+FH9xWwQ5HBMVrCpbEEY3o5kHdr0PJm1XmUvo/PuUlmCVY6qum80H
+         lItKISSYJiW+sU2wrrz5pixTFWUgzayBTnkwYTnxJzEFoTL4dlDhEXdF48+YAN089OEN
+         n7c8E8yJWy1wg19Adw5+mahegmcV0vD7ojvkU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: Commit 085219f79cad broke Sparc-32 back in 2.6.28.
+Date: Mon, 22 Feb 2010 01:28:20 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: rob@landley.net, qemu-devel@nongnu.org, blauwirbel@gmail.com,
+       pbonzini@redhat.com, atar4qemu@googlemail.com,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <f43fc5581002201359x50aff2b1ofc4f816762bda597@mail.gmail.com> <201002211025.11588.rob@landley.net> <20100221.155719.226789440.davem@davemloft.net>
+In-Reply-To: <20100221.155719.226789440.davem@davemloft.net>
+MIME-Version: 1.0
+Message-Id: <201002220128.21067.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Feb 2010 16:18:44 +0100
-Andrea Righi <arighi@develer.com> wrote:
-
-> Infrastructure to account dirty pages per cgroup + add memory.dirty_bytes limit
-> in cgroupfs.
+On Monday 22 February 2010 12:57:19 am David Miller wrote:
+> From: Rob Landley <rob@landley.net>
+> Date: Sun, 21 Feb 2010 10:25:09 -0600
 > 
-> Signed-off-by: Andrea Righi <arighi@develer.com>
-
-Looks clean in general. But some confliction with memcg in mmotm.
-And please CC: to linux-mm@kvack.org when you modify memcg.
-
-
-> ---
->  include/linux/memcontrol.h |   31 ++++++
->  mm/memcontrol.c            |  218 +++++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 248 insertions(+), 1 deletions(-)
+> > 085219f79cad89291699bd2bfb21c9fdabafe65f is first bad commit
+> > commit 085219f79cad89291699bd2bfb21c9fdabafe65f
+> > Author: Sam Ravnborg <sam@ravnborg.org>
+> > Date:   Fri Jan 2 18:47:34 2009 -0800
+> > 
+> >     sparc32: use proper types in struct stat
+> >     
+> >     Like sparc64 use proper types in struct stat
+> >     
+> >     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> > 
+> > This commit breaks stat and makes sparc32 essentially unusable.  It changes 
+> > the size of the various types in stat.h, and means that if you "mount -t tmpfs 
+> > /tmp /tmp" and then try to ls /tmp, ls dies with a memory allocation error.
+> > 
+> > I've confirmed that reverting it fixes the problem.
 > 
-> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> index 1f9b119..ba3fe0d 100644
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -25,6 +25,16 @@ struct page_cgroup;
->  struct page;
->  struct mm_struct;
->  
-> +/* Cgroup memory statistics items exported to the kernel */
-> +enum memcg_page_stat_item {
-> +	MEMCG_NR_FREE_PAGES,
-> +	MEMCG_NR_RECLAIMABLE_PAGES,
-> +	MEMCG_NR_FILE_DIRTY,
-> +	MEMCG_NR_WRITEBACK,
-> +	MEMCG_NR_WRITEBACK_TEMP,
-> +	MEMCG_NR_UNSTABLE_NFS,
-> +};
-> +
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  /*
->   * All "charge" functions with gfp_mask should use GFP_KERNEL or
-> @@ -48,6 +58,8 @@ extern void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *ptr);
->  
->  extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
->  					gfp_t gfp_mask);
-> +extern void mem_cgroup_charge_dirty(struct page *page,
-> +			enum zone_stat_item idx, int charge);
->  extern void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru);
->  extern void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru);
->  extern void mem_cgroup_rotate_lru_list(struct page *page, enum lru_list lru);
-> @@ -117,6 +129,10 @@ extern void mem_cgroup_print_oom_info(struct mem_cgroup *memcg,
->  extern int do_swap_account;
->  #endif
->  
-> +extern unsigned long mem_cgroup_dirty_bytes(void);
-> +
-> +extern u64 mem_cgroup_page_state(enum memcg_page_stat_item item);
-> +
->  static inline bool mem_cgroup_disabled(void)
->  {
->  	if (mem_cgroup_subsys.disabled)
-> @@ -144,6 +160,11 @@ static inline int mem_cgroup_cache_charge(struct page *page,
->  	return 0;
->  }
->  
-> +static inline void mem_cgroup_charge_dirty(struct page *page,
-> +			enum zone_stat_item idx, int charge)
-> +{
-> +}
-> +
->  static inline int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
->  		struct page *page, gfp_t gfp_mask, struct mem_cgroup **ptr)
->  {
-> @@ -312,6 +333,16 @@ unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  	return 0;
->  }
->  
-> +static inline unsigned long mem_cgroup_dirty_bytes(void)
-> +{
-> +	return vm_dirty_bytes;
-> +}
-> +
-> +static inline u64 mem_cgroup_page_state(enum memcg_page_stat_item item)
-> +{
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_CGROUP_MEM_CONT */
->  
->  #endif /* _LINUX_MEMCONTROL_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 954032b..288b9a4 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -64,13 +64,18 @@ enum mem_cgroup_stat_index {
->  	/*
->  	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
->  	 */
-> -	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
-> +	MEM_CGROUP_STAT_CACHE,	   /* # of pages charged as cache */
-?
+> Thanks for tracking this down Rob, I'll work on a fix and
+> push it around.
 
->  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
->  	MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
->  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
->  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
->  	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
->  	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
-> +	MEM_CGROUP_STAT_FILE_DIRTY,   /* # of dirty pages in page cache */
-> +	MEM_CGROUP_STAT_WRITEBACK,   /* # of pages under writeback */
-> +	MEM_CGROUP_STAT_WRITEBACK_TEMP,   /* # of pages under writeback using
-> +						temporary buffers */
-> +	MEM_CGROUP_STAT_UNSTABLE_NFS,   /* # of NFS unstable pages */
->  
->  	MEM_CGROUP_STAT_NSTATS,
->  };
-> @@ -225,6 +230,9 @@ struct mem_cgroup {
->  	/* set when res.limit == memsw.limit */
->  	bool		memsw_is_minimum;
->  
-> +	/* control memory cgroup dirty pages */
-> +	unsigned long dirty_bytes;
-> +
->  	/*
->  	 * statistics. This must be placed at the end of memcg.
->  	 */
-> @@ -519,6 +527,67 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
->  	put_cpu();
->  }
->  
-> +static struct mem_cgroup *get_mem_cgroup_from_page(struct page *page)
-> +{
-> +	struct page_cgroup *pc;
-> +	struct mem_cgroup *mem = NULL;
-> +
-> +	pc = lookup_page_cgroup(page);
-> +	if (unlikely(!pc))
-> +		return NULL;
-> +	lock_page_cgroup(pc);
-> +	if (PageCgroupUsed(pc)) {
-> +		mem = pc->mem_cgroup;
-> +		if (mem)
-> +			css_get(&mem->css);
-> +	}
-> +	unlock_page_cgroup(pc);
-> +	return mem;
-> +}
-> +
-Hmm. do we need to get refcnt for dirty page accounting ?
+Looking at how whole sparc32 has been apparently broken for over a year now
+because of a purely cleanup patch I wonder if it would be appropriate to
+make sparc32 into 'legacy only' and provide 'a stability promise' for it?
 
+Just an idea.. ;)
 
-> +void mem_cgroup_charge_dirty(struct page *page,
-> +			enum zone_stat_item idx, int charge)
-> +{
-> +	struct mem_cgroup *mem;
-> +	struct mem_cgroup_stat_cpu *cpustat;
-> +	unsigned long flags;
-> +	int cpu;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return;
-> +	/* Translate the zone_stat_item into a mem_cgroup_stat_index */
-> +	switch (idx) {
-> +	case NR_FILE_DIRTY:
-> +		idx = MEM_CGROUP_STAT_FILE_DIRTY;
-> +		break;
-> +	case NR_WRITEBACK:
-> +		idx = MEM_CGROUP_STAT_WRITEBACK;
-> +		break;
-> +	case NR_WRITEBACK_TEMP:
-> +		idx = MEM_CGROUP_STAT_WRITEBACK_TEMP;
-> +		break;
-> +	case NR_UNSTABLE_NFS:
-> +		idx = MEM_CGROUP_STAT_UNSTABLE_NFS;
-> +		break;
-> +	default:
-> +		return;
-> +	}
-> +	/* Charge the memory cgroup statistics */
-> +	mem = get_mem_cgroup_from_page(page);
-> +	if (!mem) {
-> +		mem = root_mem_cgroup;
-> +		css_get(&mem->css);
-> +	}
-> +
-> +	local_irq_save(flags);
-> +	cpu = get_cpu();
-> +	cpustat = &mem->stat.cpustat[cpu];
-> +	__mem_cgroup_stat_add_safe(cpustat, idx, charge);
-> +	put_cpu();
-> +	local_irq_restore(flags);
-> +	css_put(&mem->css);
-> +}
-This patch will conflict with mmotm. per_cpu stats are all rewritten.
-In 1st impression, I think you should add DIRTY/WRITEBACK/UNSTABLE flag to
-page_cgroup. If not, you can never handle migration.
-
-And css_get()/css_put() is very heavy operation. (You can see it by perf, I think.)
-
-So,
-	pc = lookup_page_cgroup(page);
-	lock_page_cgroup(pc);
-	mem = pc->page_cgroup;
-	if (mem && PageCgroupUsed(pc)) {
-		/* account */
-	}
-	unlock_page_cgroup(pc);
-
-is better, rather than adding accessing function.
-memcg is stable when USED page_cgroup is under lock.
-
-> +
->  static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
->  					enum lru_list idx)
->  {
-> @@ -992,6 +1061,97 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
->  	return swappiness;
->  }
->  
-> +static unsigned long get_dirty_bytes(struct mem_cgroup *memcg)
-> +{
-> +	struct cgroup *cgrp = memcg->css.cgroup;
-> +	unsigned long dirty_bytes;
-> +
-> +	/* root ? */
-> +	if (cgrp->parent == NULL)
-> +		return vm_dirty_bytes;
-
-We have mem_cgroup_is_root() macro.
-
-> +
-> +	spin_lock(&memcg->reclaim_param_lock);
-> +	dirty_bytes = memcg->dirty_bytes;
-> +	spin_unlock(&memcg->reclaim_param_lock);
-> +
-> +	return dirty_bytes;
-> +}
-Hmm...do we need spinlock ? You use "unsigned long", then, read-write
-is always atomic if not read-modify-write.
-
-
-
-
-> +
-> +unsigned long mem_cgroup_dirty_bytes(void)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	unsigned long dirty_bytes;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return vm_dirty_bytes;
-> +
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (memcg == NULL)
-> +		dirty_bytes = vm_dirty_bytes;
-> +	else
-> +		dirty_bytes = get_dirty_bytes(memcg);
-> +	rcu_read_unlock();
-> +
-> +	return dirty_bytes;
-> +}
-> +
-> +u64 mem_cgroup_page_state(enum memcg_page_stat_item item)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	struct cgroup *cgrp;
-> +	u64 ret = 0;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return 0;
-> +
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (memcg == NULL)
-> +		goto out;
-> +	cgrp = memcg->css.cgroup;
-> +	/* Use system-wide statistics for the root cgroup */
-> +	if (cgrp->parent == NULL)
-> +		goto out;
-mem_cgroup_is_root() again.
-
-
-> +	switch (item) {
-> +	case MEMCG_NR_FREE_PAGES:
-> +		ret = res_counter_read_u64(&memcg->res, RES_LIMIT) -
-> +			res_counter_read_u64(&memcg->res, RES_USAGE);
-> +		/*
-> +		 * Translate free memory in pages and ensure we never return 0.
-> +		 */
-> +		ret = (ret >> PAGE_SHIFT) + 1;
-> +		break;
-> +	case MEMCG_NR_RECLAIMABLE_PAGES:
-> +		ret = mem_cgroup_read_stat(&memcg->stat, LRU_ACTIVE_ANON) +
-> +			mem_cgroup_read_stat(&memcg->stat, LRU_ACTIVE_FILE) +
-> +			mem_cgroup_read_stat(&memcg->stat, LRU_INACTIVE_ANON) +
-> +			mem_cgroup_read_stat(&memcg->stat, LRU_INACTIVE_FILE);
-> +		break;
-> +	case MEMCG_NR_FILE_DIRTY:
-> +		ret = mem_cgroup_read_stat(&memcg->stat,
-> +				MEM_CGROUP_STAT_FILE_DIRTY);
-> +		break;
-> +	case MEMCG_NR_WRITEBACK:
-> +		ret = mem_cgroup_read_stat(&memcg->stat,
-> +				MEM_CGROUP_STAT_WRITEBACK);
-> +		break;
-> +	case MEMCG_NR_WRITEBACK_TEMP:
-> +		ret = mem_cgroup_read_stat(&memcg->stat,
-> +				MEM_CGROUP_STAT_WRITEBACK_TEMP);
-> +		break;
-> +	case MEMCG_NR_UNSTABLE_NFS:
-> +		ret = mem_cgroup_read_stat(&memcg->stat,
-> +				MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +		break;
-> +	default:
-> +		WARN_ON(1);
-> +	}
-> +out:
-> +	rcu_read_unlock();
-
-Hmm. A concern here is that whether you have to consider
-"hierarchical accounting" or not. It's design descision but you have
-to describe "dirty limit doesn't handle hierarchical accounting"
-somewhere. But I should read 2nd patch before I comment more.
-
-nitpick: When I add "per-memcg, not for hierarchy" function, I tend to
-add _local_ in the function name. As mem_cgroup_get_local_stat().
-
-
-> +	return ret;
-> +}
-> +
->  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
->  {
->  	int *val = data;
-> @@ -2874,6 +3034,10 @@ enum {
->  	MCS_PGPGIN,
->  	MCS_PGPGOUT,
->  	MCS_SWAP,
-> +	MCS_FILE_DIRTY,
-> +	MCS_WRITEBACK,
-> +	MCS_WRITEBACK_TEMP,
-> +	MCS_UNSTABLE_NFS,
->  	MCS_INACTIVE_ANON,
->  	MCS_ACTIVE_ANON,
->  	MCS_INACTIVE_FILE,
-> @@ -2896,6 +3060,10 @@ struct {
->  	{"pgpgin", "total_pgpgin"},
->  	{"pgpgout", "total_pgpgout"},
->  	{"swap", "total_swap"},
-> +	{"filedirty", "dirty_pages"},
-> +	{"writeback", "writeback_pages"},
-> +	{"writeback_tmp", "writeback_temp_pages"},
-> +	{"nfs", "nfs_unstable"},
->  	{"inactive_anon", "total_inactive_anon"},
->  	{"active_anon", "total_active_anon"},
->  	{"inactive_file", "total_inactive_file"},
-> @@ -2924,6 +3092,14 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
->  		val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_SWAPOUT);
->  		s->stat[MCS_SWAP] += val * PAGE_SIZE;
->  	}
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_DIRTY);
-> +	s->stat[MCS_FILE_DIRTY] += val;
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_WRITEBACK);
-> +	s->stat[MCS_WRITEBACK] += val;
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_WRITEBACK_TEMP);
-> +	s->stat[MCS_WRITEBACK_TEMP] += val;
-> +	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +	s->stat[MCS_UNSTABLE_NFS] += val;
->  
->  	/* per zone stat */
->  	val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_ANON);
-> @@ -3049,6 +3225,41 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
->  	return 0;
->  }
->  
-> +static u64 mem_cgroup_dirty_bytes_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +
-> +	return get_dirty_bytes(memcg);
-> +}
-> +
-> +static int mem_cgroup_dirty_bytes_write(struct cgroup *cgrp, struct cftype *cft,
-> +				       u64 val)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +	struct mem_cgroup *parent;
-> +
-> +	if (cgrp->parent == NULL)
-> +		return -EINVAL;
-> +
-> +	parent = mem_cgroup_from_cont(cgrp->parent);
-> +
-> +	cgroup_lock();
-> +
-> +	/* If under hierarchy, only empty-root can set this value */
-> +	if ((parent->use_hierarchy) ||
-> +	    (memcg->use_hierarchy && !list_empty(&cgrp->children))) {
-> +		cgroup_unlock();
-> +		return -EINVAL;
-> +	}
-
-Okay, then, only hierarchy root can set the value.
-Please descirbe this kind of important things in patch description.
-
-Thanks.
--Kame
-
-
-> +
-> +	spin_lock(&memcg->reclaim_param_lock);
-> +	memcg->dirty_bytes = val;
-> +	spin_unlock(&memcg->reclaim_param_lock);
-> +
-> +	cgroup_unlock();
-> +
-> +	return 0;
-> +}
->  
->  static struct cftype mem_cgroup_files[] = {
->  	{
-> @@ -3098,6 +3309,11 @@ static struct cftype mem_cgroup_files[] = {
->  		.read_u64 = mem_cgroup_swappiness_read,
->  		.write_u64 = mem_cgroup_swappiness_write,
->  	},
-> +	{
-> +		.name = "dirty_bytes",
-> +		.read_u64 = mem_cgroup_dirty_bytes_read,
-> +		.write_u64 = mem_cgroup_dirty_bytes_write,
-> +	},
->  };
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> -- 
-> 1.6.3.3
-> 
-> 
-
+--
+Bartlomiej Zolnierkiewicz
