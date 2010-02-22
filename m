@@ -1,41 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236Ab0BVX1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 18:27:34 -0500
-Received: from mailout.swiftkenya.com ([80.240.192.25]:57421 "EHLO
-	mailout.swiftkenya.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846Ab0BVX1d convert rfc822-to-8bit (ORCPT
+	id S1755083Ab0BVXcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 18:32:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:57329 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754713Ab0BVXcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 18:27:33 -0500
-X-Greylist: delayed 925 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Feb 2010 18:27:32 EST
-X-ASG-Debug-ID: 1266880174-0f62b1130001-xx1T2L
-X-Barracuda-Envelope-From: info@kiamotors.co.uk
-Message-ID: <20100222222224.94663ejdu38knp8g@webmail.swiftkisumu.com>
-Date: Mon, 22 Feb 2010 22:22:24 +0000
-From: KIA MOTORS <info@kiamotors.co.uk>
-Reply-To: kiamotorscustomercare1@live.com
-To: undisclosed-recipients:;
-X-ASG-Orig-Subj: KIA MOTORS INTERNATIONAL PROMOTION
-Subject: KIA MOTORS INTERNATIONAL PROMOTION
+	Mon, 22 Feb 2010 18:32:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FcJmaufvDJG6ujou6YQqpPCCEI5OtlY6n8mEjXhDL/AT+whsDbetExN62kSuIMXiSR
+         71ldTFQfomXKQ9D9bJWJeXLwhxTR6Xa8h1Ev1HnqjiqqZNDycGTX1pC7R3YTdWfqPYqv
+         hNyc6+CkShgnkwGYSKrQLoaGXVTAO9oCSgqh8=
+Date: Tue, 23 Feb 2010 02:31:58 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Don Zickus <dzickus@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, peterz@infradead.org, aris@redhat.com
+Subject: Re: [PATCH] nmi_watchdog: checkpatch.pl cleanups from earlier
+	patches
+Message-ID: <20100222233158.GC20084@lenovo>
+References: <1266880143-24943-1-git-send-email-dzickus@redhat.com> <20100222232427.GB20084@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=ISO-8859-1;
- DelSp="Yes";
- format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) 4.3.3 / FreeBSD-7.2
-X-Barracuda-Connect: ksmmail.swiftkisumu.com[217.21.112.57]
-X-Barracuda-Start-Time: 1266880174
-X-Barracuda-URL: http://spamfilter1.kdn.co.ke:8000/cgi-mod/mark.cgi
+In-Reply-To: <20100222232427.GB20084@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You won (£1,000,000.00 GBP)1 Million Great British Pounds from KIA  
-MOTORS INTERNATIONAL PROMOTION,you are required to send your contact  
-details to(kiamotorscustomercare1@live.com)FULLNAMES,ADDRESS,PHONE  
-NUMBER.
+On Tue, Feb 23, 2010 at 02:24:27AM +0300, Cyrill Gorcunov wrote:
+> On Mon, Feb 22, 2010 at 06:09:03PM -0500, Don Zickus wrote:
+> ...
+> 
+> Hi Don!
+> 
+> > diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
+> > index 3c75cbf..0a6f57f 100644
+> > --- a/kernel/nmi_watchdog.c
+> > +++ b/kernel/nmi_watchdog.c
+> > @@ -50,31 +50,31 @@ void touch_all_nmi_watchdog(void)
+> >  
+> >  static int __init setup_nmi_watchdog(char *str)
+> >  {
+> > -        if (!strncmp(str, "panic", 5)) {
+> > -                panic_on_timeout = 1;
+> > -                str = strchr(str, ',');
+> > -                if (!str)
+> > -                        return 1;
+> > -                ++str;
+> > -        }
+> > -        return 1;
+> > +	if (!strncmp(str, "panic", 5)) {
+> > +		panic_on_timeout = 1;
+> 
+> If I understand all the things correct -- you don't need to check for ','
+> after panic. It seems so. Because we're switching to perf_events I suppose
+> we may drop expecting "lapic,ioapic" or whatever here? Or there is an idea
+> to parse say "panic,software" (ie to switch to software events by default)?
+> 
+> Though strictly speaking my question in rather unrelated to this patch
+> agenda :)
+> 
+> > +		str = strchr(str, ',');
+> > +		if (!str)
+> > +			return 1;
+> > +		++str;
+> > +	}
+> > +	return 1;
+> >  }
+> >  __setup("nmi_watchdog=", setup_nmi_watchdog);
+> ...
+> 
+> 	-- Cyrill
 
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+If I'm right -- the fix could be done later, after this patch applied.
+
+	-- Cyrill
