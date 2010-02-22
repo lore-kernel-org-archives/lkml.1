@@ -1,50 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050Ab0BVBKD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 20:10:03 -0500
-Received: from ozlabs.org ([203.10.76.45]:34419 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753796Ab0BVBKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 20:10:00 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH -mm 11/17] sysctl extern cleanup - module
-Date: Mon, 22 Feb 2010 11:39:45 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; i686; ; )
-Cc: Patrick McHardy <kaber@trash.net>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-References: <20100221142435.GA3019@darkstar>
-In-Reply-To: <20100221142435.GA3019@darkstar>
+	id S1754089Ab0BVBZs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 20:25:48 -0500
+Received: from mail-qy0-f184.google.com ([209.85.221.184]:38739 "EHLO
+	mail-qy0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753796Ab0BVBZr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 20:25:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pw7ijyrnYMlq0Qin0vGmhl2mWECR3glK4E5q+LRNckcvwNAydJaRxHgrYu27kfiZ/h
+         5uHxWV/xFhRb0ghFP0o5MqY48d94uj65ww1cryMwt1lfNQaHbUVhhLhqvtDyBPfHYy3b
+         nPHndAHnSGvqk9XW9N5HtKtNmzN63k5SBA4cI=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002221139.46057.rusty@rustcorp.com.au>
+In-Reply-To: <ClJsQB_ZlxO.A.eNH.WeagLB@chimera>
+References: <b_eAfX__uZL.A.lvE.HcagLB@chimera>
+	 <ClJsQB_ZlxO.A.eNH.WeagLB@chimera>
+Date: Mon, 22 Feb 2010 09:25:46 +0800
+Message-ID: <2375c9f91002211725u699a4b49y8dcae9829a3d3659@mail.gmail.com>
+Subject: Re: [Bug #15142] sysfs-related lockdep warning in __blkdev_get
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Matti Aarnio <matti.aarnio--kernel-bugzilla@zmailer.org>,
+       NeilBrown <neilb@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010 12:54:35 am Dave Young wrote:
-> Extern declarations in sysctl.c should be move to their own head file,
-> and then include them in relavant .c files.
-> 
-> Move modprobe_path extern declaration to linux/kmod.h
-> Move modules_disabled extern declaration to linux/module.h
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+On Mon, Feb 22, 2010 at 5:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a summary report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let the tracking team
+> know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15142
+> Subject         : sysfs-related lockdep warning in __blkdev_get
+> Submitter       : Matti Aarnio <matti.aarnio--kernel-bugzilla@zmailer.org>
+> Date            : 2010-01-25 13:38 (28 days old)
+>
+>
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+This should be fixed by the patchset from Eric too. Here:
 
-Thanks!
-Rusty.
--- 
-Away travelling 25Feb-26Mar (6 .de + 1 .pl + 17 .lt + 2 .sg)
+http://lkml.org/lkml/2010/2/11/329
