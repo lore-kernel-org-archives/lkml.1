@@ -1,88 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344Ab0BVCKH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 21:10:07 -0500
-Received: from mail-yx0-f196.google.com ([209.85.210.196]:56278 "EHLO
-	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754020Ab0BVCKF (ORCPT
+	id S1754428Ab0BVCNV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 21:13:21 -0500
+Received: from mail-qy0-f175.google.com ([209.85.221.175]:59431 "EHLO
+	mail-qy0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133Ab0BVCNT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 21:10:05 -0500
+	Sun, 21 Feb 2010 21:13:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=lgbe2jgxb3oNrP8JzzYY4YsRO6k0+G3QTIwKS3AeDCev3CrDwJqrJ7DBCfKGmvmcmQ
-         Ay/82ZCeq0c3P6JbOp/5NJG+zcZF94fUBHU98310x2dw0zmAqvm9zoaxhpnW8siHDENx
-         o+1o1Wkeu6e5np3qYKR6zvUG2j4/v8UVNq3h4=
+         :cc:content-type:content-transfer-encoding;
+        b=pHqtsUqypKeMRNMDzSI4szm9G/dGBr7QQqS4NI7vnNV52l+GPNaNuQ2ZRHtdlmhaun
+         YQuPILUX7N8cPzAWk23ckKtCm4NwJl01Z60eizZFInkSVIpPNExbNB367I5PhxkzdGy9
+         1vh/91RrwHT/FjLWxPSlvP2LlkSWBLYup8uHE=
 MIME-Version: 1.0
-In-Reply-To: <20100220171423.GA30123@rhlx01.hs-esslingen.de>
-References: <6ea9ef0f1002200520w7ad62618hc680380142f5f0d@mail.gmail.com>
-	 <20100220171423.GA30123@rhlx01.hs-esslingen.de>
-Date: Mon, 22 Feb 2010 11:03:11 +0900
-Message-ID: <6ea9ef0f1002211803u6b39ab48ybb73c56e06a7fa03@mail.gmail.com>
-Subject: [PATCH resubmit] USB: serial: ftdi: add CONTEC vendor and product id
-From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Radek Liboska <liboska@uochb.cas.cz>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <wj3ZQZlk_KB.A.M6B.QsagLB@chimera>
+References: <4u4d-2M3yXH.A.XW.XqagLB@chimera>
+	 <wj3ZQZlk_KB.A.M6B.QsagLB@chimera>
+Date: Mon, 22 Feb 2010 10:13:18 +0800
+Message-ID: <2375c9f91002211813m8f637c1g73c4314eab96f81e@mail.gmail.com>
+Subject: Re: [Bug #14943] nfs regression?
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Nikola Ciprich <extmaillist@linuxbox.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, Feb 22, 2010 at 5:42 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let the tracking team know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14943
+> Subject         : nfs regression?
+> Submitter       : Nikola Ciprich <extmaillist@linuxbox.cz>
+> Date            : 2009-12-28 12:10 (56 days old)
+> References      : http://marc.info/?l=linux-kernel&m=126200276223524&w=4
+>
 
-> Andreas Mohr:
-> This VID is not sorted (which also leads to a possibility of merge conflicts),
-> perhaps resubmit?
+This seems that we missed checking XPT_DEAD too.
 
-Sorry (^^), here is the new patch. Hope it is sorted now (although in
-ftdi_sio.c it didnt seem to be sorted)
+Nikola, does adding !test_bit(XPT_DEAD, &xprt->xpt_flags) in the same
+place as commit b292cf9ce70d221c3f04f help?
 
-From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
-Date: Mon, 22 Feb 2010 10:51:50 +0900
-Subject: [PATCH] USB: serial: ftdi: add CONTEC vendor and product id
+Something like:
 
-This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
-identifiers for CONTEC USB serial converter. I tested it
-with the device COM-1(USB)H
+diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
+index 7d1f9e9..7b66c7f 100644
+--- a/net/sunrpc/svc_xprt.c
++++ b/net/sunrpc/svc_xprt.c
+@@ -700,7 +700,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
 
-Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
----
- drivers/usb/serial/ftdi_sio.c     |    1 +
- drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 7638828..91124be 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -614,6 +614,7 @@ static struct usb_device_id id_table_combined [] = {
- 	{ USB_DEVICE(FTDI_VID, FTDI_OCEANIC_PID) },
- 	{ USB_DEVICE(TTI_VID, TTI_QL355P_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_RM_CANVIEW_PID) },
-+	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
- 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
-diff --git a/drivers/usb/serial/ftdi_sio_ids.h
-b/drivers/usb/serial/ftdi_sio_ids.h
-index c8951ae..6fd503b 100644
---- a/drivers/usb/serial/ftdi_sio_ids.h
-+++ b/drivers/usb/serial/ftdi_sio_ids.h
-@@ -494,6 +494,13 @@
- #define RATOC_PRODUCT_ID_USB60F	0xb020
-
- /*
-+ * Contec products (http://www.contec.com)
-+ * Submitted by Daniel Sangorrin
-+ */
-+#define CONTEC_VID		0x06CE	/* Vendor ID */
-+#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
-+
-+/*
-  * Definitions for B&B Electronics products.
-  */
- #define BANDB_VID		0x0856	/* B&B Electronics Vendor ID */
--- 
-1.6.0.4
+        len = 0;
+        if (test_bit(XPT_LISTENER, &xprt->xpt_flags) &&
+-           !test_bit(XPT_CLOSE, &xprt->xpt_flags)) {
++           !test_bit(XPT_CLOSE, &xprt->xpt_flags) &&
++           !test_bit(XPT_DEAD, &xprt->xpt_flags)) {
+                struct svc_xprt *newxpt;
+                newxpt = xprt->xpt_ops->xpo_accept(xprt);
+                if (newxpt) {
