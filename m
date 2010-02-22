@@ -1,58 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993Ab0BVP2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:28:39 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43427 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753857Ab0BVP2h (ORCPT
+	id S1753986Ab0BVPds (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:33:48 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:39018 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955Ab0BVPdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:28:37 -0500
-Date: Mon, 22 Feb 2010 10:28:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Anssi Hannula <anssi.hannula@iki.fi>
-cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       <dvomlehn@cisco.com>, <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes"
- causes gobi_loader to hang
-In-Reply-To: <201002220121.53882.anssi.hannula@iki.fi>
-Message-ID: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Feb 2010 10:33:47 -0500
+X-Greylist: delayed 474 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Feb 2010 10:33:46 EST
+X-Spam-Processed: digidescorp.com, Mon, 22 Feb 2010 09:25:47 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=16695eb497=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+From: "Steven J. Magnani" <steve@digidescorp.com>
+To: microblaze-uclinux@itee.uq.edu.au
+Cc: monstr@monstr.eu, linux-kernel@vger.kernel.org,
+       "Steven J. Magnani" <steve@digidescorp.com>
+Subject: [PATCH][trivial] microblaze: Fix out_le32() macro
+Date: Mon, 22 Feb 2010 09:25:42 -0600
+Message-Id: <1266852342-9033-1-git-send-email-steve@digidescorp.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010, Anssi Hannula wrote:
+Trailing semicolon causes compilation involving out_le32() to fail.
 
-> > > If I additionally insert a one-second delay before the fd is closed, I
-> > > get this usbmon log:
-> > > http://stuff.onse.fi/gobi2000/gobi-regression5.mon.log
-> > > 
-> > > The firmware upload is still unsuccessful.
-> > 
-> > If I use the option driver instead of qcserial, the firmware upload is
-> > always successful (without any added delays needed). The usbmon log for
-> > that case can be found here:
-> > http://stuff.onse.fi/gobi2000/gobi-regression6.mon.log
-> 
-> I installed 2.6.31.12 to get a usbmon log with qcserial before the regression 
-> as well (without delays, upload successful):
-> http://stuff.onse.fi/gobi2000/gobi-regression7.mon.log
-
-The major difference between the logs is in the way the data get
-divided up into packets.  In both the successful logs, there are 
-sequences of bulk-OUT packets with lengths like:
-
-	44, 1, 15, 1, 13
-
-where the unsuccessful transfer just has a single packet of length 74.  
-Also, the successful transfers show a lot of bulk-IN traffic where the 
-unsuccessful transfer doesn't have any.  I don't know if that is 
-relevant, however.
-
-No other differences stand out.
-
-Alan Stern
+Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+diff -uprN a/arch/microblaze/include/asm/io.h b/arch/microblaze/include/asm/io.h
+--- a/arch/microblaze/include/asm/io.h	2010-02-22 09:21:14.000000000 -0600
++++ b/arch/microblaze/include/asm/io.h	2010-02-22 09:21:44.000000000 -0600
+@@ -217,7 +217,7 @@ static inline void __iomem *__ioremap(ph
+  * Little endian
+  */
+ 
+-#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
++#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a))
+ #define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
+ 
+ #define in_le32(a) __le32_to_cpu(__raw_readl(a))
 
