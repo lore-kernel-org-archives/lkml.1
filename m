@@ -1,82 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214Ab0BVUR3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:17:29 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:49225 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818Ab0BVUR1 convert rfc822-to-8bit (ORCPT
+	id S1754239Ab0BVUUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:20:25 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47345 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934Ab0BVUUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:17:27 -0500
-Date: Mon, 22 Feb 2010 21:17:25 +0100
-Message-Id: <1155618003@web.de>
+	Mon, 22 Feb 2010 15:20:24 -0500
+Date: Mon, 22 Feb 2010 21:20:19 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, haicheng.li@intel.com, rientjes@google.com
+Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
+Message-ID: <20100222202019.GD15778@basil.fritz.box>
+References: <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <4B826227.9010101@cs.helsinki.fi> <20100222143111.GA15778@basil.fritz.box> <4B82AC97.6000901@cs.helsinki.fi>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: Atul.Mukker@lsi.com, Manoj.Jose@lsi.com, Sreenivas.Bagalkote@lsi.com,
-       Robert Hancock <hancockrwd@gmail.com>, sju@lsil.com
-Subject: Re: [BUG]  smartd crashing recent 2.6.32 kernel
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+fUrfIwGcWxkwkM1bHSy6/KFgrG9ELM0fCHFMWVa8QFmbIi
- lI/JcXwSIycDTcwWzpFTk9Sma12G2dqDWQFgHUGP6VpcTe+UE8=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B82AC97.6000901@cs.helsinki.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apparently,  i´m not alone:
+On Mon, Feb 22, 2010 at 06:11:03PM +0200, Pekka Enberg wrote:
+> Andi Kleen wrote:
+>> On Mon, Feb 22, 2010 at 12:53:27PM +0200, Pekka Enberg wrote:
+>>> Andi Kleen kirjoitti:
+>>>> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
+>>>>> On Mon, 15 Feb 2010, Nick Piggin wrote:
+>>>>>
+>>>>>> I'm just worried there is still an underlying problem here.
+>>>>> So am I. What caused the breakage that requires this patchset?
+>>>> Memory hotadd with a new node being onlined.
+>>> So can you post the oops, please? Right now I am looking at zapping the 
+>>
+>> I can't post the oops from a pre-release system.
+>>
+>>> series from slab.git due to NAKs from both Christoph and Nick.
+>>
+>> Huh? They just complained about the patch, not the whole series.
+>> I don't understand how that could prompt you to drop the whole series.
+>
+> Yeah, I meant the non-ACK'd patches. Sorry for the confusion.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12544
+Ok it's fine for me to drop that patch for now. I'll try to reproduce
+that oops and if I can't then it might be just not needed.
 
-as my box is definitely into production at the start of next week, cc`ing driver authors (found in source) as last resort. so, last chance to have a box to reproduce for ~1 week.
+-Andi
 
-btw, http://megaraid.lsilogic.com in MAINTAINERS seems down. server problem or website cancelled?
-
-regards
-roland
-
-3542 MEGARAID SCSI DRIVERS
-3543 M:      Neela Syam Kolli <megaraidlinux@lsi.com>
-3544 L:      linux-scsi@vger.kernel.org
-3545 W:      http://megaraid.lsilogic.com
-3546 S:      Maintained
-3547 F:      Documentation/scsi/megaraid.txt
-3548 F:      drivers/scsi/megaraid.*
-3549 F:      drivers/scsi/megaraid/
-
-12  * FILE         : megaraid_mbox.c
-13  * Version      : v2.20.5.1 (Nov 16 2006)
-14  *
-15  * Authors:
-16  *      Atul Mukker             <Atul.Mukker@lsi.com>
-17  *      Sreenivas Bagalkote     <Sreenivas.Bagalkote@lsi.com>
-18  *      Manoj Jose              <Manoj.Jose@lsi.com>
-19  *      Seokmann Ju
-
-
-
-List:       linux-kernel
-Subject:    Re: [BUG]  smartd crashing recent 2.6.32 kernel
-From:       Robert Hancock <hancockrwd () gmail ! com>
-Date:       2010-02-20 1:16:42
-Message-ID: 4B7F37FA.2050608 () gmail ! com
-[Download message RAW]
-
-Adding CCs. Looks like a megaraid_mbox bug..
-
-On 02/19/2010 04:13 PM, devzero@web.de wrote:
-> as time goes by, no real attempt or progress has been made to fix bug #15171. ( \
-> http://bugzilla.kernel.org/show_bug.cgi?id=15171 ) 
-> when smartd starts, the kernel crashes with this trace:
-> https://bugzillafiles.novell.org/attachment.cgi?id=338427
-> 
-> the machine with this problem will be go into production very soon, so if anybody \
-> want`s to help on fixing this - we have a few days left...... \
-> ______________________________________________________ GRATIS für alle \
-> WEB.DE-Nutzer: Die maxdome Movie-FLAT! Jetzt freischalten unter \
-> http://movieflat.web.de 
-
-______________________________________________________
-GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://movieflat.web.de
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
