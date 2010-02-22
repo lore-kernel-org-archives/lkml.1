@@ -1,64 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253Ab0BVX0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 18:26:19 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:59578 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883Ab0BVX0R (ORCPT
+	id S1755236Ab0BVX1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 18:27:34 -0500
+Received: from mailout.swiftkenya.com ([80.240.192.25]:57421 "EHLO
+	mailout.swiftkenya.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754846Ab0BVX1d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 18:26:17 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Anssi Hannula <anssi.hannula@iki.fi>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Tue, 23 Feb 2010 00:26:02 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
-       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org> <201002222035.36043.anssi.hannula@iki.fi>
-In-Reply-To: <201002222035.36043.anssi.hannula@iki.fi>
+	Mon, 22 Feb 2010 18:27:33 -0500
+X-Greylist: delayed 925 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Feb 2010 18:27:32 EST
+X-ASG-Debug-ID: 1266880174-0f62b1130001-xx1T2L
+X-Barracuda-Envelope-From: info@kiamotors.co.uk
+Message-ID: <20100222222224.94663ejdu38knp8g@webmail.swiftkisumu.com>
+Date: Mon, 22 Feb 2010 22:22:24 +0000
+From: KIA MOTORS <info@kiamotors.co.uk>
+Reply-To: kiamotorscustomercare1@live.com
+To: undisclosed-recipients:;
+X-ASG-Orig-Subj: KIA MOTORS INTERNATIONAL PROMOTION
+Subject: KIA MOTORS INTERNATIONAL PROMOTION
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002230026.02941.oliver@neukum.org>
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) 4.3.3 / FreeBSD-7.2
+X-Barracuda-Connect: ksmmail.swiftkisumu.com[217.21.112.57]
+X-Barracuda-Start-Time: 1266880174
+X-Barracuda-URL: http://spamfilter1.kdn.co.ke:8000/cgi-mod/mark.cgi
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 22. Februar 2010 19:35:35 schrieb Anssi Hannula:
-> On maanantai 22 helmikuu 2010 17:28:36 Alan Stern wrote:
+You won (£1,000,000.00 GBP)1 Million Great British Pounds from KIA  
+MOTORS INTERNATIONAL PROMOTION,you are required to send your contact  
+details to(kiamotorscustomercare1@live.com)FULLNAMES,ADDRESS,PHONE  
+NUMBER.
 
-> > The major difference between the logs is in the way the data get
-> > divided up into packets.  In both the successful logs, there are
-> > sequences of bulk-OUT packets with lengths like:
-> > 
-> > 	44, 1, 15, 1, 13
-> > 
-> > where the unsuccessful transfer just has a single packet of length 74.
-> > Also, the successful transfers show a lot of bulk-IN traffic where the
-> > unsuccessful transfer doesn't have any.  I don't know if that is
-> > relevant, however.
-> > 
-> > No other differences stand out.
-> 
-> I guess that would suggest that the device doesn't allow the initialization 
-> data to be broken into packets arbitrarily (though some differences seem 
-> allowed, as the windows driver transmits them differently).
-
-Hi,
-
-let's try testing this hypothesis. Can you change the following line in
-usb_serial_probe():
-		if (kfifo_alloc(&port->write_fifo, PAGE_SIZE, GFP_KERNEL))
-			goto probe_error;
-
-to:
-
-		if (kfifo_alloc(&port->write_fifo, 64, GFP_KERNEL))
-			goto probe_error;
-
-This may shed some light on the behavior.
-
-	Regards
-		Oliver
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
