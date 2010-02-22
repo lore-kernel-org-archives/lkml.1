@@ -1,70 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289Ab0BVR7J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 12:59:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58168 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554Ab0BVR7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 12:59:05 -0500
-X-Authority-Analysis: v=1.0 c=1 a=7U3hwN5JcxgA:10 a=gBUr1MAetDtUQIFfWl0A:9 a=dp2HRQ-t2szm_CLU_qAAypJ5hUYA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH] scripts: improve checkstack
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, Cong Wang <amwang@redhat.com>,
+	id S1753478Ab0BVSAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:00:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641Ab0BVR77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 12:59:59 -0500
+Date: Mon, 22 Feb 2010 12:58:33 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Arnd Bergmann <arnd@arndb.de>, Hui Zhu <teawater@gmail.com>,
-       Ozan =?ISO-8859-1?Q?=C3aglayan?= <ozan@pardus.org.tr>,
-       Matthew Wilcox <willy@linux.intel.com>, Li Hong <lihong.hi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
-       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <4B82B7B0.7040203@linux.intel.com>
-References: <20100219175217.385580142@vyatta.com>
-	 <20100219175429.611463369@vyatta.com>	<4B7F5128.70501@redhat.com>
-	 <20100219222554.17d4bae6@nehalam>	<4B7F90AA.8050306@redhat.com>
-	 <20100222084339.1367cfe6@nehalam>  <4B82B7B0.7040203@linux.intel.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 22 Feb 2010 12:59:00 -0500
-Message-ID: <1266861540.24271.4609.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
+Message-ID: <20100222175833.GB3096@redhat.com>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com> <20100222142744.GB13823@redhat.com> <20100222173640.GG3063@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100222173640.GG3063@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-22 at 08:58 -0800, Arjan van de Ven wrote:
-> On 2/22/2010 8:43, Stephen Hemminger wrote:
+On Mon, Feb 22, 2010 at 11:06:40PM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2010-02-22 09:27:45]:
 > 
+> > On Sun, Feb 21, 2010 at 04:18:43PM +0100, Andrea Righi wrote:
+> > > Control the maximum amount of dirty pages a cgroup can have at any given time.
+> > > 
+> > > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> > > page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> > > will not be able to consume more than their designated share of dirty pages and
+> > > will be forced to perform write-out if they cross that limit.
+> > > 
+> > > The overall design is the following:
+> > > 
+> > >  - account dirty pages per cgroup
+> > >  - limit the number of dirty pages via memory.dirty_bytes in cgroupfs
+> > >  - start to write-out in balance_dirty_pages() when the cgroup or global limit
+> > >    is exceeded
+> > > 
+> > > This feature is supposed to be strictly connected to any underlying IO
+> > > controller implementation, so we can stop increasing dirty pages in VM layer
+> > > and enforce a write-out before any cgroup will consume the global amount of
+> > > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
+> > > 
+> > 
+> > Thanks Andrea. I had been thinking about looking into it from IO
+> > controller perspective so that we can control async IO (buffered writes
+> > also).
+> > 
+> > Before I dive into patches, two quick things.
+> > 
+> > - IIRC, last time you had implemented per memory cgroup "dirty_ratio" and
+> >   not "dirty_bytes". Why this change? To begin with either per memcg
+> >   configurable dirty ratio also makes sense? By default it can be the
+> >   global dirty ratio for each cgroup.
+> > 
+> > - Looks like we will start writeout from memory cgroup once we cross the
+> >   dirty ratio, but still there is no gurantee that we be writting pages
+> >   belonging to cgroup which crossed the dirty ratio and triggered the
+> >   writeout.
+> > 
+> >   This behavior is not very good at least from IO controller perspective
+> >   where if two dd threads are dirtying memory in two cgroups, then if
+> >   one crosses it dirty ratio, it should perform writeouts of its own pages
+> >   and not other cgroups pages. Otherwise we probably will again introduce
+> >   serialization among two writers and will not see service differentation.
 > 
-> btw as a general comment on these guys
+> I thought that the I/O controller would eventually provide hooks to do
+> this.. no?
+
+Actually no. This belongs to writeback logic which selects the inode to
+write from. Ideally, like reclaim logic, we need to flush out the pages
+from memory cgroup which is being throttled so that we can create
+parallel buffered write paths at higher layer and rate of IO allowed on
+this paths can be controlled by IO controller (either proportional BW or
+max BW etc).
+
+Currently the issue is that everything in page cache is common and there
+is no means in writeout path to create a service differentiation. This is
+where this per memory cgroup dirty_ratio/dirty_bytes can be useful where
+writeout from a cgroup are not throttled till it does not hit its own
+dirty limits.
+
+Also we need to make sure that in case of throttling, we are submitting pages
+to writeout from our own cgroup and not from other cgroup, otherwise we
+are back to same situation.
+
 > 
-> "make it more perl-ish" is not a good feature for me.
+> > 
+> >   May be we can modify writeback_inodes_wbc() to check first dirty page
+> >   of the inode. And if it does not belong to same memcg as the task who
+> >   is performing balance_dirty_pages(), then skip that inode.
 > 
-> "make it more readable" would be.
-> 
-> these guys are not performance sensitive, lets make them as readable as possible, and not line noise.
-> 
+> Do you expect all pages of an inode to be paged in by the same cgroup?
 
-Acked-by: Steven Rostedt
+I guess at least in simple cases. Not sure whether it will cover majority
+of usage or not and up to what extent that matters.
 
-That is, I've purposely did not do "perlish" code in the perl scripts
-that I wrote, and have consistently NACKed changes to make it so.
+If we start doing background writeout, on per page (like memory reclaim),
+the it probably will be slower and hence flusing out pages sequentially
+from inode makes sense. 
 
-The perl scripts in the kernel need to be "C-ish" not "perl-ish", that
-way the other 70% of the kernel programmers that do not do perl can
-still understand these scripts.
+At one point I was thinking, like pages, can we have an inode list per
+memory cgroup so that writeback logic can traverse that inode list to
+determine which inodes need to be cleaned. But associating inodes to
+memory cgroup is not very intutive at the same time, we again have the
+issue of shared file pages from two differnent cgroups. 
 
--- Steve
+But I guess, a simpler scheme would be to just check first dirty page from
+inode and if it does not belong to memory cgroup of task being throttled,
+skip it.
 
+It will not cover the case of shared file pages across memory cgroups, but
+at least something relatively simple to begin with. Do you have more ideas
+on how it can be handeled better.
 
+Vivek
