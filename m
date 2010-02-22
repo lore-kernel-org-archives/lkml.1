@@ -1,84 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238Ab0BVQEG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 11:04:06 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:47335 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133Ab0BVQEC (ORCPT
+	id S1754292Ab0BVQG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 11:06:27 -0500
+Received: from alternativer.internetendpunkt.de ([88.198.24.89]:56443 "EHLO
+	geheimer.internetendpunkt.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754259Ab0BVQG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 11:04:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=tsVtrUbWbNN3kedrGgZeuOmavRmBAwm8WjGMpz/jzNeK+lz7AZhjtEGV3LfYaN9Slw
-         Zgpb24LmqiaiQNVlxfhYYe8Q4xQqpvYhaIQMnQ13k5FX9JmSkc3G9G8zkoVpPL7f75jv
-         eWaEormIE1gnxKGhQFSC7t08aDAw9INnq9nh4=
-Message-ID: <4B82AAEE.9060805@tuffmail.co.uk>
-Date: Mon, 22 Feb 2010 16:03:58 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 22 Feb 2010 11:06:26 -0500
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
 MIME-Version: 1.0
-To: linux acpi <linux-acpi@vger.kernel.org>
-CC: Corentin Chary <corentin.chary@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] eeepc-laptop: check wireless hotplug events
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Mon, 22 Feb 2010 17:06:25 +0100
+From: Hagen Paul Pfeifer <hagen@jauu.net>
+Cc: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
+       <zimmermann@nets.rwth-aachen.de>, <pavel@ucw.cz>, <apetlund@simula.no>,
+       <netdev@vger.kernel.org>, <ilpo.jarvinen@helsinki.fi>,
+       <eric.dumazet@gmail.com>, <Arnd.Hannemann@nets.rwth-aachen.de>,
+       <linux-kernel@vger.kernel.org>, <shemminger@vyatta.com>,
+       <william.allen.simpson@gmail.com>, <damian@tvk.rwth-aachen.de>,
+       <ebiederm@xmission.com>
+In-Reply-To: <87k4u5mh9u.fsf@basil.nowhere.org>
+References: <20100221102102.GB1311@ucw.cz> <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de> <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com> <20100221.150311.193707249.davem@davemloft.net> <FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> <87k4u5mh9u.fsf@basil.nowhere.org>
+Message-ID: <228e2e29ccd24144a77d42cfc5bc72fa@localhost>
+User-Agent: RoundCube Webmail/0.1-rc1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before we mark the wireless device as unplugged, check PCI config space
-to see whether the wireless device is really disabled (and vice versa).
-This works around newer models which don't want the hotplug code, where
-we end up disabling the wired network device.
 
-My old 701 still works correctly with this.  I can also simulate an
-afflicted model by changing the hardcoded PCI bus/slot number in the
-driver, and it seems to work nicely (although it is a bit noisy).
+On Mon, 22 Feb 2010 16:17:33 +0100, Andi Kleen <andi@firstfloor.org> wrote:
+> Lars Eggert <lars.eggert@nokia.com> writes:
+> 
+>> If it's off by default there is no issue.
+> 
+> Still a sufficient large number of people might turn it on
+> and then the network would melt.
 
-In future this type of hotplug support will be implemented by the PCI
-core.  The existing blacklist and the new warning message will be
-removed at that point.
+Then we should apply the same policy as used for the congestion control
+algorithms!? Restrict the usage to change the standard behavior via Kconfig
+(e.g. menuconfig TCP_CONG_ADVANCED) or even more restricted demand for
+CAP_NET_ADMIN.
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Hagen
 
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-index 6a47bb7..9a844ca 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -578,6 +578,8 @@ static void eeepc_rfkill_hotplug(struct eeepc_laptop *eeepc)
- 	struct pci_dev *dev;
- 	struct pci_bus *bus;
- 	bool blocked = eeepc_wlan_rfkill_blocked(eeepc);
-+	bool absent;
-+	u32 l;
- 
- 	if (eeepc->wlan_rfkill)
- 		rfkill_set_sw_state(eeepc->wlan_rfkill, blocked);
-@@ -591,6 +593,22 @@ static void eeepc_rfkill_hotplug(struct eeepc_laptop *eeepc)
- 			goto out_unlock;
- 		}
- 
-+		if (pci_bus_read_config_dword(bus, 0, PCI_VENDOR_ID, &l)) {
-+			pr_err("Unable to read PCI config space?\n");
-+			goto out_unlock;
-+		}
-+		absent = (l == 0xffffffff);
-+
-+		if (blocked != absent) {
-+			pr_warning("BIOS says wireless lan is %s, "
-+					"but the pci device is %s\n",
-+				blocked ? "blocked" : "unblocked",
-+				absent ? "absent" : "present");
-+			pr_warning("skipped wireless hotplug as probably "
-+					"inappropriate for this model\n");
-+			goto out_unlock;
-+		}
-+
- 		if (!blocked) {
- 			dev = pci_get_slot(bus, 0);
- 			if (dev) {
 
 
