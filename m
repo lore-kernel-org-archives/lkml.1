@@ -1,187 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076Ab0BVPfk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:35:40 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:47817 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955Ab0BVPfe (ORCPT
+	id S1754103Ab0BVPfv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:35:51 -0500
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:63607 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754081Ab0BVPfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:35:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=TiIMVYny5xA1ANccFpmlSae0dimmP/UCf1i1el2B2pcVyBNmMd5B8CXdA3AjLW71SD
-         6NxvNh5MD/EGezhC/ENNgYv9BveU87GN+QMtJxa0qKDbfmcFm1ahzeNOq8VErnJWa4Bn
-         jua/+XwCuqkzpLZpDm3J3CrCmj3KzMnirgEsc=
-Message-ID: <4B82A440.6010701@googlemail.com>
-Date: Mon, 22 Feb 2010 15:35:28 +0000
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: s2disk hang update
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002182104.49631.rjw@sisk.pl> <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com> <201002212147.07987.rjw@sisk.pl>
-In-Reply-To: <201002212147.07987.rjw@sisk.pl>
-Content-Type: multipart/mixed;
- boundary="------------020509080901090000030303"
+	Mon, 22 Feb 2010 10:35:48 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=us-ascii
+X-IronPort-AV: E=Sophos;i="4.49,518,1262559600";   d="scan'208";a="46009440"
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+From: Alexander Zimmermann <Alexander.Zimmermann@nets.rwth-aachen.de>
+In-reply-to: <87k4u5mh9u.fsf@basil.nowhere.org>
+Date: Mon, 22 Feb 2010 16:35:49 +0100
+Cc: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "apetlund@simula.no" <apetlund@simula.no>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
+       "eric.dumazet@gmail.com" <eric.dumazet@gmail.com>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
+       "damian@tvk.rwth-aachen.de" <damian@tvk.rwth-aachen.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>
+Message-id: <2114B7CA-8078-4D90-BEFA-91956C58B6DA@nets.rwth-aachen.de>
+References: <20100221102102.GB1311@ucw.cz>
+ <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+ <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
+ <20100221.150311.193707249.davem@davemloft.net>
+ <FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com>
+ <87k4u5mh9u.fsf@basil.nowhere.org>
+To: Andi Kleen <andi@firstfloor.org>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020509080901090000030303
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Rafael J. Wysocki wrote:
-> On Friday 19 February 2010, Alan Jenkins wrote:
->   
->> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>     
->>> On Thursday 18 February 2010, Alan Jenkins wrote:
->>>       
->>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>>         
->>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
->>>>>           
->>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>>>>             
->>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
->>>>>>>               
->>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
->>>>>>>>                 
->>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>>>>>>>                   
->>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
->>>>>>>>>>                     
->>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too many
->>>>>>>>>>> applications.  The first hibernation fails with "not enough
->>>>>>>>>>> swap"
->>>>>>>>>>> as
->>>>>>>>>>> expected, but the second or third attempt hangs (with the same
->>>>>>>>>>> backtrace
->>>>>>>>>>> as before).
->>>>>>>>>>>
->>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
->>>>>>>>>>> hang
->>>>>>>>>>> the
->>>>>>>>>>> first time I try to hibernate with too many applications
->>>>>>>>>>> running.
->>>>>>>>>>>                       
->>>>>>>>>> Well, I have an idea.
->>>>>>>>>>
->>>>>>>>>> Can you try to apply the appended patch in addition and see if
->>>>>>>>>> that
->>>>>>>>>> helps?
->>>>>>>>>>
->>>>>>>>>> Rafael
->>>>>>>>>>                     
->>>>>>>>> It doesn't seem to help.
->>>>>>>>>                   
->>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too many
->>>>>>>> applications.
->>>>>>>>
->>>>>>>> It does stop the same hang in a different case though.
->>>>>>>>
->>>>>>>> 1. boot with init=/bin/bash
->>>>>>>> 2. run s2disk
->>>>>>>> 3. cancel the s2disk
->>>>>>>> 4. repeat steps 2&3
->>>>>>>>
->>>>>>>> With the patch, I can run 10s of iterations, with no hang.
->>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
->>>>>>>> always).
->>>>>>>>
->>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
->>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
->>>>>>>> allocation
->>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
->>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the same
->>>>>>>> stop_machine thread allocation failure that causes the hang.
->>>>>>>>                 
->>>>>>> Have you tested it alone or on top of the previous one?  If you've
->>>>>>> tested it
->>>>>>> alone, please apply the appended one in addition to it and retest.
->>>>>>>
->>>>>>> Rafael
->>>>>>>               
->>>>>> I did test with both patches applied together -
->>>>>>
->>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
->>>>>> resume
->>>>>> 2. "reducing the number of pages that we're going to keep preallocated
->>>>>> by
->>>>>> 20%"
->>>>>>             
->>>>> In that case you can try to reduce the number of preallocated pages even
->>>>> more,
->>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
->>>>>           
->>>> It still hangs if I try to hibernate a couple of times with too many
->>>> applications.
->>>>         
->>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
->>> how much RAM is there in the box?
->>>
->>> Rafael
->>>       
->> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
->>     
->
-> Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
-> pages and see what happens.
->   
+Am 22.02.2010 um 16:17 schrieb Andi Kleen:
 
-It still hangs in hibernation_snapshot() / disable_nonboot_cpus().  
-After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
+> Lars Eggert <lars.eggert@nokia.com> writes:
+> 
+>> If it's off by default there is no issue.
+> 
+> Still a sufficient large number of people might turn it on
+> and then the network would melt.
+> 
+> IMHO TCP changes with badly understood congestion behaviour
+> should not be merged until the necessary analysis/simulation etc.
+> is done.
+> 
+> -Andi
 
+100% ack.
 
+See for example here: http://www.umic-mesh.net/~zimmermann/linux.png
 
-There is a change which I missed before.  When I applied your first 
-patch ("Force GFP_NOIO during suspend" etc.), it did change the hung 
-task backtraces a bit.  I don't know if it tells us anything.
+It's a screenshot of the ps3mediaserver. Since it's a streaming server, it's
+very useful to deactivate Nagle :-)
 
-Without the patch, there were two backtraces.  The first backtrace 
-suggested a problem allocating pages for a kernel thread (at 
-copy_process() / try_to_free_pages()).  The second showed that this 
-problem was blocking s2disk (at hibernation_snapshot() / 
-disable_nonboot_cpus() / stop_machine_create()). 
+Alex
 
-With the GFP_NOIO patch, I see only the s2disk backtrace.
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
 
+//
+// Dipl.-Inform. Alexander Zimmermann
+// Department of Computer Science, Informatik 4
+// RWTH Aachen University
+// Ahornstr. 55, 52056 Aachen, Germany
+// phone: (49-241) 80-21422, fax: (49-241) 80-22220
+// email: zimmermann@cs.rwth-aachen.de
+// web: http://www.umic-mesh.net
+//
 
-Thanks
-Alan
-
---------------020509080901090000030303
-Content-Type: text/x-diff;
- name="free-all-prealloc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="free-all-prealloc.patch"
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 36cb168..970930a 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1179,6 +1179,12 @@ static void free_unnecessary_pages(void)
- 		to_free_normal -= save_highmem - alloc_highmem;
- 	}
- 
-+	to_free_normal = alloc_normal;
-+	printk(KERN_ERR "Freeing all %d preallocated pages\n",
-+			to_free_normal);
-+	printk(KERN_ERR "(and %d highmem pages, out of %d)\n",
-+			alloc_highmem, to_free_highmem);
-+
- 	memory_bm_position_reset(&copy_bm);
- 
- 	while (to_free_normal > 0 && to_free_highmem > 0) {
-
---------------020509080901090000030303--
