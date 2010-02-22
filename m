@@ -1,59 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525Ab0BVUon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:44:43 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:46812 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928Ab0BVUom (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:44:42 -0500
-Date: Mon, 22 Feb 2010 15:44:29 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: akpm@linux-foundation.org
-Cc: oleg@redhat.com, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       nhorman@tuxdriver.com
-Subject: [PATCH] supress uid comparison test if core output files are pipes
-Message-ID: <20100222200851.GD3344@hmsreliant.think-freely.org>
+	id S1754335Ab0BVUth (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:49:37 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53611 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753342Ab0BVUtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 15:49:35 -0500
+Date: Mon, 22 Feb 2010 15:49:20 -0500
+From: Mike Snitzer <snitzer@redhat.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] block: warn if blk_stack_limits() undermines atomicity
+Message-ID: <20100222204920.GA24514@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Spam-Score: -4.1 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify uid check in do_coredump so as to not apply it in the case of pipes
+Linux Device Mapper (DM) and Software Raid (MD) device drivers can be
+used to arbitrarily combine devices with different "I/O Limits".  The
+kernel's block layer goes to great lengths to reasonably combine the
+"I/O Limits" of the individual devices.  The kernel will not prevent
+combining heterogenuous devices but the user should be aware of the risk
+associated with doing so.
 
-So this just got noticed in testing.  The end of do_coredump validates the uid
-of the inode for the created file against the uid of the crashing process to
-ensure that no one can pre-create a core file with different ownership and grab
-the information contained in the core when they shouldn' tbe able to.  This
-causes failures when using pipes for a core dumps if the crashing process is not
-root, which is the uid of the pipe when it is created.
+For instance, a 512 byte device and a 4K device may be combined into a
+single logical DM device; the resulting DM device would have a
+logical_block_size of 4K.  Filesystems layered on such a hybrid device
+assume that 4K will be written atomically but in reality that 4K will be
+split into 8 512 byte IOs when issued to the 512 byte device.  Using a
+4K logical_block_size for the higher-level DM device increases potential
+for a partial write to the 512b device if there is a system crash.
 
-The fix is simple.  Since the check for matching uid's isn't relevant for pipes
-(a process can't create a pipe that the uermodehelper code will open anyway), we
-can just just skip it in the event ispipe is non-zero
+If combining multiple devices' "I/O Limits" results in a conflict the
+block layer will report a warning that the device is more susceptible to
+partial writes and misaligned. [NOTE: setting "misaligned" for this
+warning is somewhat awkward but blk_stack_limits() return of -1 can be
+viewed as there was an "alignment inconsistency".  Would it be better to
+return -1 but avoid setting t->misaligned?]
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Mike Snitzer <snitzer@redhat.com>
 
-
- exec.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 6303d18..6af2214 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1987,8 +1987,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	/*
- 	 * Dont allow local users get cute and trick others to coredump
- 	 * into their pre-created files:
-+	 * Note, this is not relevant for pipes
- 	 */
--	if (inode->i_uid != current_fsuid())
-+	if (!ispipe && (inode->i_uid != current_fsuid()))
- 		goto close_fail;
- 	if (!cprm.file->f_op)
- 		goto close_fail;
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 5eeb9e0..33bebe7 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -566,8 +566,16 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
+ 		}
+ 	}
+ 
++	top = t->logical_block_size;
+ 	t->logical_block_size = max(t->logical_block_size,
+ 				    b->logical_block_size);
++	if (top && top < t->logical_block_size) {
++		printk(KERN_NOTICE "Warning: changing logical_block_size of top device "
++		       "(from %u to %u) increases potential for partial writes\n",
++		       top, t->logical_block_size);
++		t->misaligned = 1;
++		ret = -1;
++	}
+ 
+ 	t->physical_block_size = max(t->physical_block_size,
+ 				     b->physical_block_size);
