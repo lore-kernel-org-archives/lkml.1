@@ -1,111 +1,156 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873Ab0BVLsG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 06:48:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59463 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344Ab0BVLsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 06:48:01 -0500
-Date: Mon, 22 Feb 2010 22:47:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com, linux-tip-commits@vger.kernel.org
-Subject: Re: linux-next requirements (Was: Re: [tip:x86/ptrace] ptrace: Add
- support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
-Message-Id: <20100222224752.0cbd5807.sfr@canb.auug.org.au>
-In-Reply-To: <20100222102745.GJ20844@elte.hu>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
-	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
-	<20100222090710.GA31357@elte.hu>
-	<20100222203319.8bd497a2.sfr@canb.auug.org.au>
-	<20100222102745.GJ20844@elte.hu>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Feb_2010_22_47_52_+1100_V8btWHwOiZxVCGHT"
+	id S1752901Ab0BVLyM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 06:54:12 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54105 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524Ab0BVLyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 06:54:10 -0500
+Message-ID: <4B827043.3060305@cn.fujitsu.com>
+Date: Mon, 22 Feb 2010 19:53:39 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time (58568d2)
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Feb_2010_22_47_52_+1100_V8btWHwOiZxVCGHT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm sorry for replying this late.
 
-Hi Ingo,
+on 2010-2-19 18:06, David Rientjes wrote:
+> On Fri, 19 Feb 2010, Nick Piggin wrote:
+> 
+>>> guarantee_online_cpus() truly does require callback_mutex, the 
+>>> cgroup_scan_tasks() iterator locking can protect changes in the cgroup 
+>>> hierarchy but it doesn't protect a store to cs->cpus_allowed or for 
+>>> hotplug.
+>>
+>> Right, but the callback_mutex was being removed by this patch.
+>>
+> 
+> I was making the case for it to be readded :)
 
-On Mon, 22 Feb 2010 11:27:45 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > On Mon, 22 Feb 2010 10:07:10 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > I'll keep them in tip:master to get them tested, but note that i cann=
-ot=20
-> > > push any of these patches into linux-next until this is fixed, as=20
-> > > linux-next requires all architectures to build, with no regard to whi=
-ch=20
-> > > architectures are tested by kernel testers in practice.
-> >=20
-> > I merely expect people not to push known broken code into linux-next.
->=20
-> FYI, this 'mere' kind of indiscriminate definition of 'breakage' is what =
-i am=20
-> talking about.
+But cgroup_mutex is held when someone changes cs->cpus_allowed or doing hotplug,
+so I think callback_mutex is not necessary in this case.
 
-OK, let me remove "merely" from this.
+> 
+>>> top_cpuset.cpus_allowed will always need to track cpu_active_map since 
+>>> those are the schedulable cpus, it looks like that's initialized for SMP 
+>>> and the cpu hotplug notifier does that correctly.
+>>>
+>>> I'm not sure what the logic is doing in cpuset_attach() where cs is the 
+>>> cpuset to attach to:
+>>>
+>>> 	if (cs == &top_cpuset) {
+>>> 		cpumask_copy(cpus_attach, cpu_possible_mask);
+>>> 		to = node_possible_map;
+>>> 	}
+>>>
+>>> cpus_attach is properly protected by cgroup_lock, but using 
+>>> node_possible_map here will set task->mems_allowed to node_possible_map 
+>>> when the cpuset does not have memory_migrate enabled.  This is the source 
+>>> of your oops, I think.
+>>
+>> Could be, yes.
+>>
+> 
+> I'd be interested to see if you still get the same oops with the patch at 
+> the end of this email that fixes this logic.
 
-I expect people not to push known broken code into linux-next.  Code in
-linux-next is meant to be as ready as possible to be sent to Linus.  If
-you know that it breaks some architecture then it should obviously be
-fixed some how (unless the architecture maintainer really doesn't care,
-of course).
+I think this patch can't fix this bug, because mems_allowed of tasks in the
+top group is set to node_possible_map by default, not when the task is 
+attached.
 
-This is different from not knowing that it breaks some architecture even
-though you have done reasonable testing.
+I made a new patch at the end of this email to fix it, but I have no machine
+to test it now. who can test it for me.
 
-> The occasional driver build breakage can be tested relatively easily: one=
-=20
-> allyesconfig build and it's done. Build testing 22 architectures is=20
-> exponentially harder: it requires the setup (and constant maintenance) of=
-=20
-> zillions of tool-chains, plus the build time is significant as well.
->=20
-> So this kind of linux-next requirement causes the over-testing of code th=
-at=20
-> doesnt get all that much active usage, plus it increases build testing=20
-> overhead 10-fold. That, by definition, causes the under-testing of code t=
-hat=20
-> _does_ matter a whole lot more to active testers of the Linux kernel.
+---
+diff --git a/init/main.c b/init/main.c
+index 4cb47a1..512ba15 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -846,7 +846,7 @@ static int __init kernel_init(void * unused)
+ 	/*
+ 	 * init can allocate pages on any node
+ 	 */
+-	set_mems_allowed(node_possible_map);
++	set_mems_allowed(node_states[N_HIGH_MEMORY]);
+ 	/*
+ 	 * init can run on any cpu.
+ 	 */
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index ba401fa..e29b440 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -935,10 +935,12 @@ static void cpuset_migrate_mm(struct mm_struct *mm, const nodemask_t *from,
+ 	struct task_struct *tsk = current;
+ 
+ 	tsk->mems_allowed = *to;
++	wmb();
+ 
+ 	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+ 
+ 	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
++	wmb();
+ }
+ 
+ /*
+@@ -1391,11 +1393,10 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+ 
+ 	if (cs == &top_cpuset) {
+ 		cpumask_copy(cpus_attach, cpu_possible_mask);
+-		to = node_possible_map;
+ 	} else {
+ 		guarantee_online_cpus(cs, cpus_attach);
+-		guarantee_online_mems(cs, &to);
+ 	}
++	guarantee_online_mems(cs, &to);
+ 
+ 	/* do per-task migration stuff possibly for each in the threadgroup */
+ 	cpuset_attach_task(tsk, &to, cs);
+@@ -2090,15 +2091,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
+ static int cpuset_track_online_nodes(struct notifier_block *self,
+ 				unsigned long action, void *arg)
+ {
++	nodemask_t oldmems;
++
+ 	cgroup_lock();
+ 	switch (action) {
+ 	case MEM_ONLINE:
+-	case MEM_OFFLINE:
++		oldmems = top_cpuset.mems_allowed;
+ 		mutex_lock(&callback_mutex);
+ 		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+ 		mutex_unlock(&callback_mutex);
+-		if (action == MEM_OFFLINE)
+-			scan_for_empty_cpusets(&top_cpuset);
++		update_tasks_nodemask(&top_cpuset, &oldmems, NULL);
++		break;
++	case MEM_OFFLINE:
++		scan_for_empty_cpusets(&top_cpuset);
+ 		break;
+ 	default:
+ 		break;
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index fbb6222..84c7f99 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -219,7 +219,7 @@ int kthreadd(void *unused)
+ 	set_task_comm(tsk, "kthreadd");
+ 	ignore_signals(tsk);
+ 	set_cpus_allowed_ptr(tsk, cpu_all_mask);
+-	set_mems_allowed(node_possible_map);
++	set_mems_allowed(node_states[N_HIGH_MEMORY]);
+ 
+ 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
 
-Which is why linux-next does *not* require that. (Did you read the part
-of my email that you removed?)  I do point out when build failures occur
-(that is part of the point of linux-next after all) but they only upset
-me when it is clear that the code that has been changed was not built at
-all (which doesn't happen too often).
-=20
-> Which is a problem, obviously.
-
-It certainly would be.
-
-Maybe I don't understand what you are trying to say.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__22_Feb_2010_22_47_52_+1100_V8btWHwOiZxVCGHT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuCbugACgkQjjKRsyhoI8wddgCgkTLE4NngSRHwP6Tkg0fw3DrR
-igkAoJxnHuDPvS2/XAtF5gcaqGIu2ak7
-=HcvW
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Feb_2010_22_47_52_+1100_V8btWHwOiZxVCGHT--
