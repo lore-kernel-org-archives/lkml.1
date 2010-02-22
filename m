@@ -1,18 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148Ab0BVP6I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:58:08 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:35040 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463Ab0BVP6E (ORCPT
+	id S1754177Ab0BVP6t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:58:49 -0500
+Received: from mail-px0-f184.google.com ([209.85.216.184]:44262 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333Ab0BVP6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:58:04 -0500
+	Mon, 22 Feb 2010 10:58:48 -0500
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 0/2] Make of_fdt conditionally compile gracefully
+Subject: [PATCH 1/2] of/flattree: make of_fdt.h safe to unconditionally
+	include.
 To: devicetree-discuss@lists.ozlabs.org, monstr@monstr.eu,
        linux-kernel@vger.kernel.org, jeremy.kerr@canonical.com
-Date: Mon, 22 Feb 2010 08:50:48 -0700
-Message-ID: <20100222154816.3604.67114.stgit@angua>
+Date: Mon, 22 Feb 2010 08:50:54 -0700
+Message-ID: <20100222155053.3604.45279.stgit@angua>
+In-Reply-To: <20100222154816.3604.67114.stgit@angua>
+References: <20100222154816.3604.67114.stgit@angua>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -21,19 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple more minor changes for cross-arch device tree support.
+If CONFIG_OF_FLATTREE is not set, then don't process the body of
+linux/of_fdt.h
 
-g.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
-Grant Likely (2):
-      of/flattree: Make unflatten_device_tree() safe to call from any arch
-      of/flattree: make of_fdt.h safe to unconditionally include.
+ include/linux/of_fdt.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index a1ca92c..f0fdd1f 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -57,6 +57,7 @@ struct boot_param_header {
+ 	__be32	dt_struct_size;		/* size of the DT structure block */
+ };
+ 
++#if defined(CONFIG_OF_FLATTREE)
+ /* TBD: Temporary export of fdt globals - remove when code fully merged */
+ extern int __initdata dt_root_addr_cells;
+ extern int __initdata dt_root_size_cells;
+@@ -98,6 +99,7 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+ /* Other Prototypes */
+ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
++#endif /* CONFIG_OF_FLATTREE */
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif /* _LINUX_OF_FDT_H */
 
- drivers/of/fdt.c       |   15 +++++++++++++++
- include/linux/of_fdt.h |    4 ++++
- 2 files changed, 19 insertions(+), 0 deletions(-)
-
--- 
-Signature
