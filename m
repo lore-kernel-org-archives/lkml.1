@@ -1,1711 +1,1499 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752509Ab0BVLTb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 06:19:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53963 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773Ab0BVLT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 06:19:28 -0500
-Subject: Re: reformat: [PATCH] hwmon: Driver for Andigilog aSC7621 family
- monitoring chips
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: George Joseph <george.joseph@fairview5.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>, lm-sensors@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <4B822449.6050700@fairview5.com>
-References: <1266661166.6895.2.camel@localhost>
-	 <1266744143.2133.80.camel@localhost>  <4B8186D5.501@fairview5.com>
-	 <1266818861.2443.6.camel@localhost>  <4B822449.6050700@fairview5.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 22 Feb 2010 16:46:38 +0530
-Message-Id: <1266837398.1868.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 8bit
+	id S1752048Ab0BVLT6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 06:19:58 -0500
+Received: from sm-d311v.smileserver.ne.jp ([203.211.202.206]:26873 "EHLO
+	sm-d311v.smileserver.ne.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751773Ab0BVLTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 06:19:55 -0500
+Message-ID: <004401cab3b0$f4d387c0$66f8800a@maildom.okisemi.com>
+From: "Masayuki Ohtake" <masa-korg@dsn.okisemi.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>, <andrew.chih.howe.khor@intel.com>,
+       <joel.clark@intel.com>
+References: <000a01cab118$8bbc8600$66f8800a@maildom.okisemi.com> <20100219152907.75065c83@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH]Add new device drivers for Topcliff
+Date: Mon, 22 Feb 2010 20:19:50 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1983
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1983
+X-Hosting-Pf: 0
+X-NAI-Spam-Score: 2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello George,
+Hi Alan,
 
-On Sun, 2010-02-21 at 23:29 -0700, George Joseph wrote: 
-> Fixed word wrap this time (I hope)...
-> ---
-> 
-> From: George Joseph <george.joseph@fairview5.com>
->  
-> Hwmon driver for Andigilog aSC7621 family monitoring chips
->  
-> Signed-off-by: George Joseph <george.joseph@fairview5.com>
-> ---
-> 
-> Patch against 2.6.33-rc8
-> 
+Thank you for very useful advice and it was good example.
+I confirm "linux/Documentation/SubmittingPatches" and tried "diff -up" for
+8250 driver.
 
+The driver is developed for new device of Topcliff.
 
-Yes, this applies cleanly thanks.
+Signed-off-by: Masayuki Ohtake <masa-korg@dsn.okisemi.com>
 
-I have compared the sensors output of Intel WX58BP with its BIOS
-hardware monitoring.
+--- a/drivers/serial/8250.c 2010-01-05 19:02:46.000000000 -0500
++++ b/drivers/serial/8250.c 2010-02-04 18:15:27.000000000 -0500
+@@ -39,6 +39,14 @@
+ #include <linux/nmi.h>
+ #include <linux/mutex.h>
 
-http://userweb.kernel.org/~jaswinder/Corei7/sensors_Intel_WX58P.txt :
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++/* For using DMA features. */
++#include <linux/pci.h>
++#include <linux/pci_ids.h>
++#include <linux/dma-mapping.h>
++#include <ioh/ioh_dma_main.h>
++#endif
++
+ #include <asm/io.h>
+ #include <asm/irq.h>
 
-asc7621a-i2c-0-2e
-Adapter: SMBus I801 adapter at 2000
-in0:         +1.08 V  (min =  +0.00 V, max =  +3.31 V)
-in1:         +0.92 V  (min =  +0.00 V, max =  +2.99 V)  
-in2:         +3.19 V  (min =  +0.00 V, max =  +4.36 V)   
-in3:         +4.99 V  (min =  +0.00 V, max =  +6.61 V)   
-in4:        +12.00 V  (min =  +0.00 V, max = +15.94 V)   
-fan1:        949 RPM  (min =    0 RPM)
-fan2:       2437 RPM  (min =    0 RPM)
-fan3:          0 RPM  (min =    0 RPM)
-fan4:        623 RPM  (min =    0 RPM)
-temp1:       -57.5°C  (low  = -127.0°C, high =  +0.0°C)  
-                      (crit = -17.0°C)                  
-temp2:       +35.8°C  (low  = -127.0°C, high = +127.0°C)  
-                      (crit = +65.0°C)                  
-temp3:       +42.5°C  (low  = -127.0°C, high = +127.0°C)  
-                      (crit = +65.0°C)                  
-temp4:       +52.5°C  (low  = -127.0°C, high = +127.0°C)  
-                      (crit = +103.0°C)                  
-temp5:       -57.5°C                                    
-temp6:       -84.5°C                                    
-temp7:       +96.2°C                                    
-temp8:      +118.5°C      
+@@ -126,6 +134,18 @@ static unsigned long probe_rsa[PORT_RSA_
+ static unsigned int probe_rsa_count;
+ #endif /* CONFIG_SERIAL_8250_RSA  */
 
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++/* Structure for storing the DMA channel related information. */
++struct ioh_dma_feature
++{
++ u32 buf;
++ u32 phy_addr;
++ s32 channel;
++ u32 size;
++};
++#endif
++
++
+ struct uart_8250_port {
+  struct uart_port port;
+  struct timer_list timer;  /* "no irq" timer */
+@@ -156,6 +176,17 @@ struct uart_8250_port {
+   */
+  void   (*pm)(struct uart_port *port,
+           unsigned int state, unsigned int old);
++
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ struct ioh_dma_feature rx_dma; /* DMA operation for Receive.      */
++ struct ioh_dma_feature tx_dma; /* DMA operation for Transmit.      */
++ unsigned int buffer;   /* The buffer for DMA descriptors.    */
++ unsigned int buffer_phy;  /* The physical address of the buffer.   */
++ unsigned int dma_flag;   /* DMA flag variable for enabling DMA transfer.
+*/
++ unsigned int rx_fifo_size;  /* The UART Rx fifo size.      */
++ unsigned int dma_progress;  /* The DMA in progress flag.     */
++ unsigned int dma_enabled;  /* The DMA enable flag.       */
++#endif
+ };
 
-BIOS hardware monitoring :
+ struct irq_info {
+@@ -296,6 +327,25 @@ static const struct serial8250_config ua
+   .fcr  = UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_00,
+   .flags  = UART_CAP_FIFO | UART_CAP_AFE,
+  },
++#if defined(CONFIG_SERIAL_8250_IOH)
++ [PORT_IOH_256FIFO] = {
++  .name       = "IOH_256FIFO",
++  .fifo_size  = 256,
++  .tx_loadsz  = 256,
++  .fcr        = UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10 |
++       UART_FCR7_256BYTE,
++  .flags      = UART_CAP_FIFO | UART_CAP_AFE,
++ },
++
++ [PORT_IOH_64FIFO] = {
++  .name       = "IOH_64FIFO",
++  .fifo_size  = 64,
++  .tx_loadsz  = 64,
++  .fcr        = UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10 |
++       UART_FCR7_64BYTE,
++  .flags      = UART_CAP_FIFO | UART_BUG_NOMSR,
++ },
++#endif
+ };
 
-Processor Fan speed: 0900 (which is same as fan1)
-Aux Fan speed: 2400 (which is same as fan2)
-Front Fan speed: 0000 (which is same as fan3 and this fan is not
-installed yet)
-Rear Fan speed: 600 RPM (which is same as fan4)
+ #if defined (CONFIG_SERIAL_8250_AU1X00)
+@@ -380,6 +430,71 @@ static inline int map_8250_out_reg(struc
 
-Processor Thermal Margin: 57 C (which is same as temp1 but without -ve)
-IOH Temperature: 52 C (which is same as temp4)
-Motherboard Ambient Temperature: 35 C (which is same as temp2)
-Voltage Regulator Temperature: 42C (which is same as temp3)
+ #endif
 
-V12.0 : 12.000 V (which is same as in4)
-V5.0 : 4.999 V (which is same as in3)
-V3.3 : 3.197 V (which is same as in2)
-V1.1 : 0.920 V (which is same as in1)
-VCCP : 1.080 V (which is same as in0)
++
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++
++/* Function for calculating the Rx FIFO size of the IOH UART. */
++void get_rx_fifo_size(struct uart_8250_port * up,u8 fcr_value)
++{
++ unsigned fifo_size;
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"get_rx_fifo -> The FCR register value:
+%x.\n",fcr_value);
++#endif
++/* check if the UART is a 64 byte FIFO UART */
++ if((up->port.flags & UPF_IOH_UART_64_FIFO) != 0)
++ {
++  switch((fcr_value & 0xC0))
++  {
++   case 0: fifo_size = 1;
++     break;
++
++   case 0x40: fifo_size = 16;
++     break;
++
++   case 0x80: fifo_size = 32;
++     break;
++
++   case 0xC0: fifo_size = 56;
++     break;
++
++   default: fifo_size = 1;
++     break;
++  }
++ }
++ else
++ {
++/* UART is 256 byte byte FIFO UART */
++  switch((fcr_value & 0xC0))
++  {
++   case 0: fifo_size = 1;
++     break;
++
++   case 0x40: fifo_size = 64;
++     break;
++
++   case 0x80: fifo_size = 128;
++     break;
++
++   case 0xC0: fifo_size = 224;
++     break;
++
++   default: fifo_size = 1;
++     break;
++  }
++ }
++/* save the fifo size for reference */
++ up->rx_fifo_size = fifo_size;
++#ifdef DEBUG
++ printk(KERN_DEBUG"Function get_rx_fifo_size stores fifo_size as:
+%u.\n",fifo_size);
++#endif
++}
++
++#endif
++
++
++
++
+ static unsigned int hub6_serial_in(struct uart_port *p, int offset)
+ {
+  offset = map_8250_in_reg(p, offset) << p->regshift;
+@@ -547,15 +662,277 @@ serial_out_sync(struct uart_8250_port *u
+  (up->port.serial_in(&(up)->port, (offset)))
+ #define serial_out(up, offset, value) \
+  (up->port.serial_out(&(up)->port, (offset), (value)))
++
+ /*
+  * We used to support using pause I/O for certain machines.  We
+  * haven't supported this for a while, but just in case it's badly
+  * needed for certain old 386 machines, I've left these #define's
+  * in....
+  */
++
+ #define serial_inp(up, offset)  serial_in(up, offset)
+ #define serial_outp(up, offset, value) serial_out(up, offset, value)
 
-temp5 is same as temp1 and temp6, temp7 and temp8 never changes. So in
-my case temp5 to temp8 are not required. Please also relate your sensors
-output with your BIOS.
++
++#if 1  //  /*for 2.6.33-rc3 */
++
++/* DMA TX callback function */
++void ioh_dma_tx_callback(int status,unsigned long data)
++{
++ struct uart_8250_port *up = (struct uart_8250_port *)data;
++// struct circ_buf *xmit = &up->port.info->xmit;
++ struct circ_buf *xmit = &up->port.state->xmit;/*for 2.6.33-rc3*/
++ u8 value;
++
++#ifdef DEBUG
++ if(status == IOH_DMA_END)
++ {
++  printk(KERN_DEBUG"ioh_dma_tx_callback -> DMA END interrupt obtained " \
++     "for transmission.\n");
++
++ }
++#endif
++ if(status == IOH_DMA_ABORT)
++ {
++  printk(KERN_ERR"ioh_dma_tx_callback -> DMA ABORT interrupt obtained " \
++    "for transmission.\n");
++ }
++
++ /* Un-mapping the DMA buffer. */
++ if(up->tx_dma.phy_addr > 0)
++
+dma_unmap_single(up->port.dev,up->tx_dma.phy_addr,up->tx_dma.size,DMA_TO_DEV
+ICE);
++
++ dma_unmap_single(up->port.dev,up->buffer_phy,PAGE_SIZE,DMA_TO_DEVICE);
++
++ /*Enable TX interrupt.*/
++ if(uart_circ_chars_pending(xmit))
++ {
++  value = (u8)serial_in(up,UART_IER);
++  serial_out(up,UART_IER,(value | 0x02));
++  up->ier = serial_in(up,UART_IER);
++ }
++#ifdef DEBUG
++ printk(KERN_DEBUG"Function ioh_dma_tx_callback invoked.\n");
++#endif
++}
++
++/* Function for DMA setting for Scatter Gather Mode. */
++void set_scatter_gather_dma_mode(struct uart_8250_port *up,unsigned count)
++{
++ u32 in_address;
++ u32 out_address;
++ u32 desc_address;
++ u32 total_desc;
++ u32 i,j;
++ u8 value;
++ ioh_dma_desc_t * desc;
++ int channel = up->tx_dma.channel;
++ ioh_dma_mode_param_t mode = {
++         .TransferDirection = IOH_DMA_DIR_OUT_TO_IN,
++         .DMASizeType  = IOH_DMA_SIZE_TYPE_8BIT,
++         .DMATransferMode = DMA_SCATTER_GATHER_MODE
++        };
++
++ desc = (ioh_dma_desc_t *)up->tx_dma.buf;
++
++ /* Mapping the DMA buffer for transfer. */
++ out_address  = dma_map_single(up->port.dev,(void
+*)up->buffer,PAGE_SIZE,DMA_TO_DEVICE);
++ in_address  = up->port.mapbase + (map_8250_in_reg(up,UART_TX));
++ desc_address = dma_map_single(up->port.dev,(void
+*)up->tx_dma.buf,up->tx_dma.size,DMA_TO_DEVICE);
++ up->buffer_phy = out_address;
++ up->tx_dma.phy_addr = desc_address;
++
++ /* Disable Transmit hardware interrupt.*/
++ value = (u8)serial_in(up,UART_IER);
++ serial_out(up,UART_IER,(value & 0xFD));
++ up->ier = serial_in(up,UART_IER);
++
++ total_desc = count/(up->tx_loadsz);
++
++ if((count % (up->tx_loadsz)) > 0)
++  total_desc++;
++
++
+dma_sync_single_for_cpu(up->port.dev,desc_address,up->tx_dma.size,DMA_TO_DEV
+ICE);
++
++ /* Organising the DMA descriptors. */
++ for(i = 0,j = 0; (i< total_desc && count > 0); i++)
++ {
++  desc[i].insideAddress = in_address;
++  desc[i].outsideAddress = (out_address + j);
++
++  if((int)(count - (up->tx_loadsz)) > 0)
++  {
++   desc[i].size = up->tx_loadsz | IOH_DMA_SIZE_TYPE_8BIT;
++   count = count - (up->tx_loadsz);
++   j+=(up->tx_loadsz);
++  }
++  else
++  {
++   desc[i].size = count | IOH_DMA_SIZE_TYPE_8BIT;
++   j+=count;
++   count = 0;
++  }
++
++  desc[i].nextDesc = ((((u32)((desc_address + ((i +
+1)*(sizeof(ioh_dma_desc_t)))))) & 0xFFFFFFFC) |
+DMA_DESC_FOLLOW_WITHOUT_INTERRUPT);
++ }
++
++ desc[i - 1].nextDesc = (DMA_DESC_END_WITH_INTERRUPT);
++
++
+dma_sync_single_for_device(up->port.dev,desc_address,up->tx_dma.size,DMA_TO_
+DEVICE);
++
++ /* Initiating the DMA transfer. */
++ ioh_set_dma_mode(channel,mode);
++ ioh_set_dma_desc(channel,(ioh_dma_desc_t *)((desc_address & 0xFFFFFFFC) |
+DMA_DESC_FOLLOW_WITHOUT_INTERRUPT),\
++     (((ioh_dma_desc_t *)desc_address) + (total_desc - 1)));
++ ioh_dma_set_callback(channel,ioh_dma_tx_callback,(u32)up);
++ ioh_enable_dma(channel);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"Function set_scatter_gather_dma_mode invoked.\n");
++#endif
++}
++
++/* Function for DMA settings for ONE SHOT mode. */
++void set_one_shot_dma_mode(struct uart_8250_port *up,unsigned count)
++{
++ u32 in_address;
++ u32 out_address;
++ u8 value;
++ int channel = up->tx_dma.channel;
++ ioh_dma_mode_param_t mode = {
++         .TransferDirection = IOH_DMA_DIR_OUT_TO_IN,
++         .DMASizeType  = IOH_DMA_SIZE_TYPE_8BIT,
++         .DMATransferMode = DMA_ONE_SHOT_MODE
++        };
++
++ /* Disable Receive hardware interrupt.*/
++ value = (u8)serial_in(up,UART_IER);
++ serial_out(up,UART_IER,(value & 0xFD));
++ up->ier = serial_in(up,UART_IER);
++
++ /* Mapping the DMA buffer for transfer. */
++ out_address  = dma_map_single(up->port.dev,(void
+*)up->buffer,PAGE_SIZE,DMA_TO_DEVICE);
++ in_address  = up->port.mapbase + (map_8250_in_reg(up,UART_TX));
++ up->buffer_phy = out_address;
++ up->tx_dma.phy_addr = 0;
++
++ /* Initiating the DMA transfer. */
++ ioh_set_dma_mode(channel,mode);
++ ioh_set_dma_addr(channel,in_address,out_address);
++ ioh_set_dma_count(channel,count);
++ ioh_dma_set_callback(channel,ioh_dma_tx_callback,(u32)up);
++ ioh_enable_dma(channel);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"Function set_one_shot_dma_mode invoked.\n");
++#endif
++}
++
++/* Function for pushing the received characters to tty buffer. */
++/* At high baud rates tty buffer does not get emptied sufficiently fast
++     and hence multiple retries are required to push the data into the
+buffer */
++
++static int push_rx(struct tty_struct *tty, const unsigned char *buf, int
+size)
++{
++    u32 sz, i, j;
++    u32 loop;
++    u32 pushed;
++
++     for (pushed = 0, i = 0, loop = 1; (pushed < size) && loop; pushed +=
+sz, i++)
++      {
++         sz = tty_insert_flip_string(tty, &buf[pushed], size - pushed);
++
++         for (j = 0; (j < 100000) && (sz == 0); j++)
++          {
++            tty_flip_buffer_push(tty);
++            sz = tty_insert_flip_string(tty, &buf[pushed], size - pushed);
++          }
++
++         if (sz == 0)
++          {
++            loop = 0;
++          }
++      }
++
++     tty_flip_buffer_push(tty);
++
++#ifdef DEBUG
++     printk(KERN_DEBUG"push_rx -> %d characters pushed. Remained " \
++   "%d characters.\n", pushed, size - pushed);
++ printk(KERN_DEBUG"Function push_rx return %u.\n",pushed);
++#endif
++
++     return(pushed);
++}
++
++/* The DMA reception callback function. */
++void ioh_dma_rx_callback(int status,unsigned long data)
++{
++ struct uart_8250_port *up = (struct uart_8250_port *)data;
++ unsigned fifo_size;
++      unsigned long flags;
++ u8 value;
++
++ spin_lock_irqsave(&up->port.lock, flags);
++
++ /* Normal end. */
++ if(status == IOH_DMA_END)
++ {
++  /* Preparing the DMA buffer to be accessed by the CPU*/
++
+dma_sync_single_for_cpu(up->port.dev,up->rx_dma.phy_addr,up->rx_dma.size,DMA
+_FROM_DEVICE);
++
++#ifdef DEBUG
++  printk(KERN_DEBUG"ioh_dma_rx_callback -> DMA END interrupt obtained for
+reception.\n");
++#endif
++  fifo_size = up->rx_fifo_size;
++//  push_rx(up->port.info->port.tty,(char *)up->rx_dma.buf,fifo_size);
++  push_rx(up->port.state->port.tty,(char *)up->rx_dma.buf,fifo_size);
+/*for 2.6.33-rc3 */
++
++ }
++ /* DMA abort. */
++ else if(status == IOH_DMA_ABORT)
++ {
++  printk(KERN_ERR"ioh_dma_rx_callback -> DMA ABORT interrupt obtained for
+reception.\n");
++ }
++
++ /* Unmapping the buffer from DMA accesible area. */
++
+dma_unmap_single(up->port.dev,up->rx_dma.phy_addr,up->rx_dma.size,DMA_FROM_D
+EVICE);
++
++ /*Enable hardware interrupt.*/
++ value = (u8)serial_in(up,UART_IER);
++ serial_out(up,UART_IER,(value | 0x01));
++ up->ier = serial_in(up,UART_IER);
++ up->dma_progress = 0;
++
++ spin_unlock_irqrestore(&up->port.lock, flags);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"ioh_dma_rx_callback -> Function ioh_dma_rx_callback is
+invoked.\n");
++#endif
++}
++
++/* For initiating the DMA operation.*/
++void handle_dma_operation(struct uart_8250_port *up)
++{
++ u8 value;
++ int channel = up->rx_dma.channel;
++
++ /* Disable Receive hardware interrupt.*/
++ value = (u8)serial_in(up,UART_IER);
++ serial_out(up,UART_IER,(value & 0xFE));
++ up->ier = serial_in(up,UART_IER);
++
++ /* Enabling the DMA transfer. */
++ ioh_enable_dma(channel);
++ up->dma_progress = 1;
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"handle_dma_operation -> DMA settings for reception
+completed.\n");
++ printk(KERN_DEBUG"Function handle_dma_operation invoked.\n");
++#endif
++}
++#endif  //   /*for 2.6.33-rc3 */
++
+ /* Uart divisor latch read */
+ static inline int _serial_dl_read(struct uart_8250_port *up)
+ {
+@@ -1037,6 +1414,20 @@ static void autoconfig_16550a(struct uar
+   return;
+  }
 
-Can we remove useless sensors like temp5 to temp8.
-And can we show the temp1 output as positive as BIOS monitoring.
++#if defined(CONFIG_SERIAL_8250_IOH)
++ if((up->port.flags & UPF_IOH_UART ) != 0)
++ {
++  if((up->port.flags & UPF_IOH_UART_64_FIFO) != 0)
++  {
++   up->port.type = PORT_IOH_64FIFO;  /* IOH 2 Line 64 FIFO UART */
++  }
++  else
++  {
++    up->port.type = PORT_IOH_256FIFO;  /* IOH 8 Line 256 FIFO UART */
++  }
++ }
++#endif
++
+  /*
+   * Try writing and reading the UART_IER_UUE bit (b6).
+   * If it works, this is probably one of the Xscale platform's
+@@ -1184,6 +1575,7 @@ static void autoconfig(struct uart_8250_
 
-I am CC Andrew, Ingo, Stephen and LKML. I hope we can also get reviews
-and feedback from them.
+  switch (scratch) {
+  case 0:
++
+   autoconfig_8250(up);
+   break;
+  case 1:
+@@ -1193,7 +1585,31 @@ static void autoconfig(struct uart_8250_
+   up->port.type = PORT_16550;
+   break;
+  case 3:
+-  autoconfig_16550a(up);
++#ifdef CONFIG_SERIAL_8250_IOH
++  if ((up->port.type != PORT_IOH_256FIFO) && (up->port.type !=
+PORT_IOH_64FIFO))
++#endif
++  {
++
++#ifdef DEBUG
++   printk(KERN_DEBUG
++   "IOH UART LOG:function autoconfig->autoconfig_16550a invoked "
++   "for port %d\n",up->port.type);
++#endif
++   autoconfig_16550a(up);
++
++  }
++
++#ifdef CONFIG_SERIAL_8250_IOH
++  else
++  {
++
++#ifdef DEBUG
++   printk(KERN_DEBUG
++   "IOH UART LOG:function autoconfig->autoconfig_16550a not "
++   "invoked for IOH UART port %d\n",up->port.type);
++#endif
++  }
++#endif
+   break;
+  }
 
-Thanks,
---
-Jaswinder Singh.
+@@ -1221,18 +1637,35 @@ static void autoconfig(struct uart_8250_
+ #endif
 
->  Documentation/hwmon/asc7621 |  295 ++++++++++
->  MAINTAINERS                 |    7 
->  drivers/hwmon/Kconfig       |   13 
->  drivers/hwmon/Makefile      |    1 
->  drivers/hwmon/asc7621.c     | 1233 ++++++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 1549 insertions(+)
-> 
-> diff -uprN a/Documentation/hwmon/asc7621 b/Documentation/hwmon/asc7621
-> --- a/Documentation/hwmon/asc7621	1969-12-31 17:00:00.000000000 -0700
-> +++ b/Documentation/hwmon/asc7621	2010-02-21 11:47:26.000000000 -0700
-> @@ -0,0 +1,295 @@
-> +Kernel driver asc7621
-> +==================
-> +
-> +Supported chips:
-> +    Andigilog aSC7621 and aSC7621a
-> +    Prefix: 'asc7621'
-> +    Addresses scanned: I2C 0x2c, 0x2d, 0x2e
-> +    Datasheet: http://www.fairview5.com/linux/asc7621/asc7621.pdf
-> +
-> +Author:
-> +		George Joseph
-> +
-> +Description provided by Dave Pivin @ Andigilog:
-> +
-> +Andigilog has both the PECI and pre-PECI versions of the Heceta-6, as
-> +Intel calls them. Heceta-6e has high frequency PWM and Heceta-6p has
-> +added PECI and a 4th thermal zone. The Andigilog aSC7611 is the
-> +Heceta-6e part and aSC7621 is the Heceta-6p part. They are both in
-> +volume production, shipping to Intel and their subs.
-> +
-> +We have enhanced both parts relative to the governing Intel
-> +specification. First enhancement is temperature reading resolution. We
-> +have used registers below 20h for vendor-specific functions in addition
-> +to those in the Intel-specified vendor range.
-> +
-> +Our conversion process produces a result that is reported as two bytes.
-> +The fan speed control uses this finer value to produce a "step-less" fan
-> +PWM output. These two bytes are "read-locked" to guarantee that once a
-> +high or low byte is read, the other byte is locked-in until after the
-> +next read of any register. So to get an atomic reading, read high or low
-> +byte, then the very next read should be the opposite byte. Our data
-> +sheet says 10-bits of resolution, although you may find the lower bits
-> +are active, they are not necessarily reliable or useful externally. We
-> +chose not to mask them.
-> +
-> +We employ significant filtering that is user tunable as described in the
-> +data sheet. Our temperature reports and fan PWM outputs are very smooth
-> +when compared to the competition, in addition to the higher resolution
-> +temperature reports. The smoother PWM output does not require user
-> +intervention.
-> +
-> +We offer GPIO features on the former VID pins. These are open-drain
-> +outputs or inputs and may be used as general purpose I/O or as alarm
-> +outputs that are based on temperature limits. These are in 19h and 1Ah.
-> +
-> +We offer flexible mapping of temperature readings to thermal zones. Any
-> +temperature may be mapped to any zone, which has a default assignment
-> +that follows Intel's specs.
-> +
-> +Since there is a fan to zone assignment that allows for the "hotter" of
-> +a set of zones to control the PWM of an individual fan, but there is no
-> +indication to the user, we have added an indicator that shows which zone
-> +is currently controlling the PWM for a given fan. This is in register
-> +00h.
-> +
-> +Both remote diode temperature readings may be given an offset value such
-> +that the reported reading as well as the temperature used to determine
-> +PWM may be offset for system calibration purposes.
-> +
-> +PECI Extended configuration allows for having more than two domains per
-> +PECI address and also provides an enabling function for each PECI
-> +address. One could use our flexible zone assignment to have a zone
-> +assigned to up to 4 PECI addresses. This is not possible in the default
-> +Intel configuration. This would be useful in multi-CPU systems with
-> +individual fans on each that would benefit from individual fan control.
-> +This is in register 0Eh.
-> +
-> +The tachometer measurement system is flexible and able to adapt to many
-> +fan types. We can also support pulse-stretched PWM so that 3-wire fans
-> +may be used. These characteristics are in registers 04h to 07h.
-> +
-> +Finally, we have added a tach disable function that turns off the tach
-> +measurement system for individual tachs in order to save power. That is
-> +in register 75h.
-> +
-> +--
-> +aSC7621 Product Description
-> +
-> +The aSC7621 has a two wire digital interface compatible with SMBus 2.0.
-> +Using a 10-bit ADC, the aSC7621 measures the temperature of two remote diode
-> +connected transistors as well as its own die. Support for Platform
-> +Environmental Control Interface (PECI) is included.
-> +
-> +Using temperature information from these four zones, an automatic fan speed
-> +control algorithm is employed to minimize acoustic impact while achieving
-> +recommended CPU temperature under varying operational loads.
-> +
-> +To set fan speed, the aSC7621 has three independent pulse width modulation
-> +(PWM) outputs that are controlled by one, or a combination of three,
-> +temperature zones. Both high- and low-frequency PWM ranges are supported.
-> +
-> +The aSC7621 also includes a digital filter that can be invoked to smooth
-> +temperature readings for better control of fan speed and minimum acoustic
-> +impact.
-> +
-> +The aSC7621 has tachometer inputs to measure fan speed on up to four fans.
-> +Limit and status registers for all measured values are included to alert
-> +the system host that any measurements are outside of programmed limits
-> +via status registers.
-> +
-> +System voltages of VCCP, 2.5V, 3.3V, 5.0V, and 12V motherboard power are
-> +monitored efficiently with internal scaling resistors.
-> +
-> +Features
-> +- Supports PECI interface and monitors internal and remote thermal diodes
-> +- 2-wire, SMBus 2.0 compliant, serial interface
-> +- 10-bit ADC
-> +- Monitors VCCP, 2.5V, 3.3V, 5.0V, and 12V motherboard/processor supplies
-> +- Programmable autonomous fan control based on temperature readings
-> +- Noise filtering of temperature reading for fan speed control
-> +- 0.25C digital temperature sensor resolution
-> +- 3 PWM fan speed control outputs for 2-, 3- or 4-wire fans and up to 4 fan
-> +	tachometer inputs
-> +- Enhanced measured temperature to Temperature Zone assignment.
-> +- Provides high and low PWM frequency ranges
-> +- 3 GPIO pins for custom use
-> +- 24-Lead QSOP package
-> +
-> +Configuration Notes
-> +===================
-> +
-> +Except where noted below, the sysfs entries created by this driver follow
-> +the standards defined in "sysfs-interface".
-> +
-> +temp1_source
-> +	0 	(default) peci_legacy = 0, Remote 1 Temperature
-> +			peci_legacy = 1, PECI Processor Temperature 0
-> +	1 	Remote 1 Temperature
-> +	2 	Remote 2 Temperature
-> +	3 	Internal Temperature
-> +	4 	PECI Processor Temperature 0
-> +	5 	PECI Processor Temperature 1
-> +	6 	PECI Processor Temperature 2
-> +	7  PECI Processor Temperature 3
-> +
-> +temp2_source
-> +	0 	(default) Internal Temperature
-> +	1 	Remote 1 Temperature
-> +	2 	Remote 2 Temperature
-> +	3 	Internal Temperature
-> +	4 	PECI Processor Temperature 0
-> +	5 	PECI Processor Temperature 1
-> +	6 	PECI Processor Temperature 2
-> +	7 	PECI Processor Temperature 3
-> +
-> +temp3_source
-> +	0 	(default) Remote 2 Temperature
-> +	1 	Remote 1 Temperature
-> +	2 	Remote 2 Temperature
-> +	3 	Internal Temperature
-> +	4 	PECI Processor Temperature 0
-> +	5 	PECI Processor Temperature 1
-> +	6 	PECI Processor Temperature 2
-> +	7 	PECI Processor Temperature 3
-> +
-> +temp4_source
-> +	0 	(default) peci_legacy = 0, PECI Processor Temperature 0
-> +			peci_legacy = 1, Remote 1 Temperature
-> +	1 	Remote 1 Temperature
-> +	2 	Remote 2 Temperature
-> +	3 	Internal Temperature
-> +	4 	PECI Processor Temperature 0
-> +	5 	PECI Processor Temperature 1
-> +	6 	PECI Processor Temperature 2
-> +	7 	PECI Processor Temperature 3
-> +
-> +temp[1-4]_smoothing_enable
-> +temp[1-4]_smoothing_time
-> +	Smooths spikes in temp readings caused by noise.
-> +	0	35 sec
-> +	1	17.6 sec
-> +	2	11.8 sec
-> +	3	7.0 sec
-> +	4	4.4 sec
-> +	5	3.0 sec
-> +	6	1.6 sec
-> +	7	0.8 sec
-> +
-> +temp[1-4]_crit
-> +	When the corresponding zone temperature reaches this value,
-> +	ALL pwm outputs will got to 100%.
-> +
-> +temp[5-8]_input
-> +temp[5-8]_enable
-> +	The aSC7621 can also read temperatures provided by the processor
-> +	via the PECI bus.  Usually these are "core" temps and are relative
-> +	to the point where the automatic thermal control circuit starts
-> +	throttling.  This means that these are usually negative numbers.
-> +
-> +pwm[1-3]_enable
-> +	0		Fan off.
-> +	1		Fan on manual control.
-> +	2		Fan on automatic control and will run at the minimum pwm
-> +				if the temperature for the zone is below the minimum.
-> +	3		Fan on automatic control but will be off if the temperature
-> +				for the zone is below the minimum.
-> +	4-254	Ignored.
-> +	255		Fan on full.
-> +
-> +pwm[1-3]_auto_channels
-> +	Bitmap as described in sysctl-interface with the following
-> +	exceptions...
-> +	Only the following combination of zones (and their corresponding masks)
-> +	are valid:
-> +	1
-> +	2
-> +	3
-> +	2,3
-> +	1,2,3
-> +	4
-> +	1,2,3,4
-> +
-> +	Special values:
-> +	0			Disabled.
-> +	16		Fan on manual control.
-> +	31		Fan on full.
-> +
-> +
-> +pwm[1-3]_invert
-> +	When set, inverts the meaning of pwm[1-3].
-> +	i.e.  when pwm = 0, the fan will be on full and
-> +	when pwm = 255 the fan will be off.
-> +
-> +pwm[1-3]_freq
-> +	PWM frequency in Hz
-> +	Valid values in Hz are:
-> +
-> +	10
-> +	15
-> +	23
-> +	30  (default)
-> +	38
-> +	47
-> +	62
-> +	94
-> +	23000
-> +	24000
-> +	25000
-> +	26000
-> +	27000
-> +	28000
-> +	29000
-> +	30000
-> +
-> +	Setting any other value will be ignored.
-> +
-> +peci_enable
-> +	Enables or disables PECI
-> +
-> +peci_avg
-> +	Input filter average time.
-> +
-> +	0 	0 Sec. (no Smoothing) (default)
-> +	1 	0.25 Sec.
-> +	2 	0.5 Sec.
-> +	3 	1.0 Sec.
-> +	4 	2.0 Sec.
-> +	5 	4.0 Sec.
-> +	6 	8.0 Sec.
-> +	7 	0.0 Sec.
-> +
-> +peci_legacy
-> +
-> +	0	Standard Mode (default)
-> +		Remote Diode 1 reading is associated with
-> +		Temperature Zone 1, PECI is associated with
-> +		Zone 4
-> +
-> +	1	Legacy Mode
-> +		PECI is associated with Temperature Zone 1,
-> +		Remote Diode 1 is associated with Zone 4
-> +
-> +peci_diode
-> +	Diode filter
-> +
-> +	0	0.25 Sec.
-> +	1 	1.1 Sec.
-> +	2 	2.4 Sec.  (default)
-> +	3 	3.4 Sec.
-> +	4 	5.0 Sec.
-> +	5 	6.8 Sec.
-> +	6 	10.2 Sec.
-> +	7 	16.4 Sec.
-> +
-> +peci_4domain
-> +	Four domain enable
-> +
-> +	0 	1 or 2 Domains for enabled processors (default)
-> +	1 	3 or 4 Domains for enabled processors
-> +
-> +peci_domain
-> +	Domain
-> +
-> +	0 	Processor contains a single domain (0) 	 (default)
-> +	1 	Processor contains two domains (0,1)
-> diff -uprN a/drivers/hwmon/asc7621.c b/drivers/hwmon/asc7621.c
-> --- a/drivers/hwmon/asc7621.c	1969-12-31 17:00:00.000000000 -0700
-> +++ b/drivers/hwmon/asc7621.c	2010-02-21 10:47:06.000000000 -0700
-> @@ -0,0 +1,1233 @@
-> +/*
-> + * asc7621.c - Part of lm_sensors, Linux kernel modules for hardware monitoring
-> + * Copyright (c) 2007, 2010 George Joseph  <george.joseph@fairview5.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/slab.h>
-> +#include <linux/jiffies.h>
-> +#include <linux/i2c.h>
-> +#include <linux/hwmon.h>
-> +#include <linux/hwmon-sysfs.h>
-> +#include <linux/err.h>
-> +#include <linux/mutex.h>
-> +
-> +/* Addresses to scan */
-> +static unsigned short normal_i2c[] = {
-> +	0x2c, 0x2d, 0x2e, I2C_CLIENT_END
-> +};
-> +
-> +enum asc7621_type {
-> +	asc7621,
-> +	asc7621a
-> +};
-> +
-> +#define INTERVAL_HIGH		(HZ + HZ / 2)
-> +#define INTERVAL_LOW		(1 * 60 * HZ)
-> +#define PRI_NONE 		0
-> +#define PRI_LOW 		1
-> +#define PRI_HIGH 		2
-> +#define FIRST_CHIP 		asc7621
-> +#define LAST_CHIP 		asc7621a
-> +
-> +struct asc7621_chip {
-> +	char *name;
-> +	enum asc7621_type chip_type;
-> +	u8 company_reg;
-> +	u8 company_id;
-> +	u8 verstep_reg;
-> +	u8 verstep_id;
-> +	unsigned short *addresses;
-> +};
-> +
-> +static struct asc7621_chip asc7621_chips[] = {
-> +	{
-> +		.name = "asc7621",
-> +		.chip_type = asc7621,
-> +		.company_reg = 0x3e,
-> +		.company_id = 0x61,
-> +		.verstep_reg = 0x3f,
-> +		.verstep_id = 0x6c,
-> +		.addresses = normal_i2c,
-> +	 },
-> +	{
-> +		.name = "asc7621a",
-> +		.chip_type = asc7621a,
-> +		.company_reg = 0x3e,
-> +		.company_id = 0x61,
-> +		.verstep_reg = 0x3f,
-> +		.verstep_id = 0x6d,
-> +		.addresses = normal_i2c,
-> +	 },
-> +};
-> +
-> +/*
-> + * Defines the highest register to be used, not the count.
-> + * The actual count will probably be smaller because of gaps
-> + * in the implementation (unused register locations).
-> + * This define will safely set the array size of both the parameter
-> + * and data arrays.
-> + * This comes from the data sheet register description table.
-> + */
-> +#define LAST_REGISTER 0xff
-> +
-> +struct asc7621_data {
-> +	struct i2c_client client;
-> +	struct device *class_dev;
-> +	struct mutex update_lock;
-> +	int valid;		/* !=0 if following fields are valid */
-> +	unsigned long last_high_reading;	/* In jiffies */
-> +	unsigned long last_low_reading;		/* In jiffies */
-> +	/*
-> +	 * Registers we care about occupy the corresponding index
-> +	 * in the array.  Registers we don't care about are left
-> +	 * at 0.
-> +	 */
-> +	u8 reg[LAST_REGISTER + 1];
-> +};
-> +
-> +/*
-> + * Macro to get the parent asc7621_param structure
-> + * from a sensor_device_attribute passed into the
-> + * show/store functions.
-> + */
-> +#define to_asc7621_param(_sda) \
-> +	container_of(_sda, struct asc7621_param, sda)
-> +
-> +/*
-> + * Each parameter to be retrieved needs an asc7621_param structure
-> + * allocated.  It contains the sensor_device_attribute structure
-> + * and the control info needed to retrieve the value from the register map.
-> + */
-> +struct asc7621_param {
-> +	struct sensor_device_attribute sda;
-> +	u8 priority;
-> +	u8 msb[3];
-> +	u8 lsb[3];
-> +	u8 mask[3];
-> +	u8 shift[3];
-> +};
-> +
-> +/*
-> + * This is the map that ultimately indicates whether we'll be
-> + * retrieving a register value or not, and at what frequency.
-> + */
-> +static u8 asc7621_register_priorities[255];
-> +
-> +static struct asc7621_data *asc7621_update_device(struct device *dev);
-> +
-> +#define read_byte(reg)		(i2c_smbus_read_byte_data(client, reg) & 0xff)
-> +#define write_byte(reg, data)	i2c_smbus_write_byte_data(client, reg, data)
-> +
-> +/*
-> + * Data Handlers
-> + * Each function handles the formatting, storage
-> + * and retrieval of like parameters.
-> + */
-> +
-> +#define SETUP_SHOW_data_param(d, a) \
-> +	struct sensor_device_attribute *sda = to_sensor_dev_attr(a); \
-> +	struct asc7621_data *data = asc7621_update_device(d); \
-> +	struct asc7621_param *param = to_asc7621_param(sda)
-> +
-> +#define SETUP_STORE_data_param(d, a) \
-> +	struct sensor_device_attribute *sda = to_sensor_dev_attr(a); \
-> +	struct i2c_client *client = to_i2c_client(d); \
-> +	struct asc7621_data *data = i2c_get_clientdata(client); \
-> +	struct asc7621_param *param = to_asc7621_param(sda)
-> +
-> +/*
-> + * u8 is just what it sounds like...an unsigned byte with no
-> + * special formatting.
-> + */
-> +static ssize_t show_u8(struct device *dev, struct device_attribute *attr,
-> +		       char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +
-> +	return sprintf(buf, "%u\n", data->reg[param->msb[0]]);
-> +}
-> +
-> +static ssize_t store_u8(struct device *dev, struct device_attribute *attr,
-> +			const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval = SENSORS_LIMIT(reqval, 0, 255);
-> +
-> +	mutex_lock(&data->update_lock);
-> +	data->reg[param->msb[0]] = reqval;
-> +	write_byte(param->msb[0], reqval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +/*
-> + * Many of the config values occupy only a few bits of a register.
-> + */
-> +static ssize_t show_bitmask(struct device *dev,
-> +			    struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +
-> +	return sprintf(buf, "%u\n",
-> +		       (data->reg[param->msb[0]] >> param->
-> +			shift[0]) & param->mask[0]);
-> +}
-> +
-> +static ssize_t store_bitmask(struct device *dev,
-> +			     struct device_attribute *attr,
-> +			     const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	u8 currval;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval = SENSORS_LIMIT(reqval, 0, param->mask[0]);
-> +
-> +	reqval = (reqval & param->mask[0]) << param->shift[0];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	currval = read_byte(param->msb[0]);
-> +	reqval |= (currval & ~(param->mask[0] << param->shift[0]));
-> +	data->reg[param->msb[0]] = reqval;
-> +	write_byte(param->msb[0], reqval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +/*
-> + * 16 bit fan rpm values
-> + * reported by the device as the number of 11.111us periods (90khz)
-> + * between full fan rotations.  Therefore...
-> + * RPM = (90000 * 60) / register value
-> + */
-> +static ssize_t show_fan16(struct device *dev,
-> +			  struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u16 regval;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	regval = (data->reg[param->msb[0]] << 8) | data->reg[param->lsb[0]];
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%u\n",
-> +		       (regval == 0 ? -1 : (regval) ==
-> +			0xffff ? 0 : 5400000 / regval));
-> +}
-> +
-> +static ssize_t store_fan16(struct device *dev,
-> +			   struct device_attribute *attr, const char *buf,
-> +			   size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval =
-> +	    (SENSORS_LIMIT((reqval) <= 0 ? 0 : 5400000 / (reqval), 0, 65534));
-> +
-> +	mutex_lock(&data->update_lock);
-> +	data->reg[param->msb[0]] = (reqval >> 8) & 0xff;
-> +	data->reg[param->lsb[0]] = reqval & 0xff;
-> +	write_byte(param->msb[0], data->reg[param->msb[0]]);
-> +	write_byte(param->lsb[0], data->reg[param->lsb[0]]);
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return count;
-> +}
-> +
-> +/*
-> + * Voltages are scaled in the device so that the nominal voltage
-> + * is 3/4ths of the 0-255 range (i.e. 192).
-> + * If all voltages are 'normal' then all voltage registers will
-> + * read 0xC0.  This doesn't help us if we don't have a point of refernce.
-> + * The data sheet however provides us with the full scale value for each
-> + * which is stored in in_scaling.  The sda->index parameter value provides
-> + * the index into in_scaling.
-> + *
-> + * NOTE: The chip expects the first 2 inputs be 2.5 and 2.25 volts
-> + * respectively. That doesn't mean that's what the motherboard provides. :)
-> + */
-> +
-> +static int asc7621_in_scaling[] = {
-> +	3320, 3000, 4380, 6640, 16000
-> +};
-> +
-> +static ssize_t show_in10(struct device *dev, struct device_attribute *attr,
-> +			 char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u16 regval;
-> +	u8 nr = sda->index;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	regval = (data->reg[param->msb[0]] * asc7621_in_scaling[nr]) / 256;
-> +
-> +	/* The LSB value is a 2-bit scaling of the MSB's LSbit value.
-> +	 * I.E.  If the maximim voltage for this input is 6640 millivolts then
-> +	 * a MSB register value of 0 = 0mv and 255 = 6640mv.
-> +	 * A 1 step change therefore represents 25.9mv (6640 / 256).
-> +	 * The extra 2-bits therefore represent increments of 6.48mv.
-> +	 */
-> +	regval += ((asc7621_in_scaling[nr] / 256) / 4) *
-> +	    (data->reg[param->lsb[0]] >> 6);
-> +
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%u\n", regval);
-> +}
-> +
-> +/* 8 bit voltage values (the mins and maxs) */
-> +static ssize_t show_in8(struct device *dev, struct device_attribute *attr,
-> +			char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 nr = sda->index;
-> +
-> +	return sprintf(buf, "%u\n",
-> +		       ((data->reg[param->msb[0]] *
-> +			 asc7621_in_scaling[nr]) / 256));
-> +}
-> +
-> +static ssize_t store_in8(struct device *dev, struct device_attribute *attr,
-> +			 const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	u8 nr = sda->index;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval = SENSORS_LIMIT(reqval, 0, asc7621_in_scaling[nr]);
-> +
-> +	reqval = (reqval * 256) / asc7621_in_scaling[nr];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	data->reg[param->msb[0]] = reqval;
-> +	write_byte(param->msb[0], reqval);
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t show_temp8(struct device *dev,
-> +			  struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +
-> +	return sprintf(buf, "%d\n", ((s8) data->reg[param->msb[0]]) * 1000);
-> +}
-> +
-> +static ssize_t store_temp8(struct device *dev,
-> +			   struct device_attribute *attr, const char *buf,
-> +			   size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	s8 temp;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval = SENSORS_LIMIT(reqval, -127000, 127000);
-> +
-> +	temp = reqval / 1000;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	data->reg[param->msb[0]] = temp;
-> +	write_byte(param->msb[0], temp);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +/*
-> + * Temperatures that occupy 2 bytes always have the whole
-> + * number of degrees in the MSB with some part of the LSB
-> + * indicating fractional degrees.
-> + */
-> +
-> +/*   mmmmmmmm.llxxxxxx */
-> +static ssize_t show_temp10(struct device *dev,
-> +			   struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 msb, lsb;
-> +	int temp;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	msb = data->reg[param->msb[0]];
-> +	lsb = (data->reg[param->lsb[0]] >> 6) & 0x03;
-> +	temp = (((s8) msb) * 1000) + (lsb * 250);
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%d\n", temp);
-> +}
-> +
-> +/*   mmmmmm.ll */
-> +static ssize_t show_temp62(struct device *dev,
-> +			   struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 regval = data->reg[param->msb[0]];
-> +	int temp = ((s8) (regval & 0xfc) * 1000) + ((regval & 0x03) * 250);
-> +
-> +	return sprintf(buf, "%d\n", temp);
-> +}
-> +
-> +static ssize_t store_temp62(struct device *dev,
-> +			    struct device_attribute *attr, const char *buf,
-> +			    size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval, i, f;
-> +	s8 temp;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	reqval = SENSORS_LIMIT(reqval, -32000, 31750);
-> +	i = reqval / 1000;
-> +	f = reqval - (i * 1000);
-> +	temp = i << 2;
-> +	temp |= f / 250;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	data->reg[param->msb[0]] = temp;
-> +	write_byte(param->msb[0], temp);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +/*
-> + * The aSC7621 doesn't provide an "auto_point2".  Instead, you
-> + * specify the auto_point1 and a range.  To keep with the sysfs
-> + * hwmon specs, we synthesize the auto_point_2 from them.
-> + */
-> +
-> +static u32 asc7621_range_map[] = {
-> +	2000, 2500, 3330, 4000, 5000, 6670, 8000, 10000,
-> +	13330, 16000, 20000, 26670, 32000, 40000, 53330, 80000,
-> +};
-> +
-> +static ssize_t show_ap2_temp(struct device *dev,
-> +			     struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	long auto_point1;
-> +	u8 regval;
-> +	int temp;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	auto_point1 = ((s8) data->reg[param->msb[1]]) * 1000;
-> +	regval =
-> +	    ((data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0]);
-> +	temp = auto_point1 + asc7621_range_map[SENSORS_LIMIT(regval, 0, 15)];
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%d\n", temp);
-> +
-> +}
-> +
-> +static ssize_t store_ap2_temp(struct device *dev,
-> +			      struct device_attribute *attr,
-> +			      const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval, auto_point1;
-> +	int i;
-> +	u8 currval, newval = 255;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	auto_point1 = data->reg[param->msb[1]] * 1000;
-> +	for (i = ARRAY_SIZE(asc7621_range_map) - 1; i >= 0; i--) {
-> +		if (reqval >= auto_point1 + asc7621_range_map[i]) {
-> +			newval = i;
-> +			break;
-> +		}
-> +	}
-> +	if (newval == 255) {
-> +		mutex_unlock(&data->update_lock);
-> +		return -EINVAL;
-> +	}
-> +
-> +	newval = (newval & param->mask[0]) << param->shift[0];
-> +	currval = read_byte(param->msb[0]);
-> +	newval |= (currval & ~(param->mask[0] << param->shift[0]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +static ssize_t show_pwm_ac(struct device *dev,
-> +			   struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 config, altbit, regval;
-> +	u8 map[] = {
-> +		0x01, 0x02, 0x04, 0x1f, 0x00, 0x06, 0x07, 0x10,
-> +		0x08, 0x0f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f
-> +	};
-> +
-> +	mutex_lock(&data->update_lock);
-> +	config = (data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0];
-> +	altbit = (data->reg[param->msb[1]] >> param->shift[1]) & param->mask[1];
-> +	regval = config | (altbit << 3);
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%u\n", map[SENSORS_LIMIT(regval, 0, 15)]);
-> +}
-> +
-> +static ssize_t store_pwm_ac(struct device *dev,
-> +			    struct device_attribute *attr,
-> +			    const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	unsigned long reqval;
-> +	u8 currval, config, altbit, newval;
-> +	u16 map[] = {
-> +		0x04, 0x00, 0x01, 0xff, 0x02, 0xff, 0x05, 0x06,
-> +		0x08, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0f,
-> +		0x07, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-> +		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x03,
-> +	};
-> +
-> +	if (strict_strtoul(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	if (reqval > 31)
-> +		return -EINVAL;
-> +
-> +	reqval = map[reqval];
-> +
-> +	config = reqval & 0x07;
-> +	altbit = (reqval >> 3) & 0x01;
-> +
-> +	config = (config & param->mask[0]) << param->shift[0];
-> +	altbit = (altbit & param->mask[1]) << param->shift[1];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	currval = read_byte(param->msb[0]);
-> +	newval = config | (currval & ~(param->mask[0] << param->shift[0]));
-> +	newval = altbit | (newval & ~(param->mask[1] << param->shift[1]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +static ssize_t show_pwm_enable(struct device *dev,
-> +			       struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 config, altbit, minoff, val, newval;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	config = (data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0];
-> +	altbit = (data->reg[param->msb[1]] >> param->shift[1]) & param->mask[1];
-> +	minoff = (data->reg[param->msb[2]] >> param->shift[2]) & param->mask[2];
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	val = config | (altbit << 3);
-> +	newval = 0;
-> +
-> +	if (val == 3 || val >= 10)
-> +		newval = 255;
-> +	else if (val == 4)
-> +		newval = 0;
-> +	else if (val == 7)
-> +		newval = 1;
-> +	else if (minoff == 1)
-> +		newval = 2;
-> +	else
-> +		newval = 3;
-> +
-> +	return sprintf(buf, "%u\n", newval);
-> +}
-> +
-> +static ssize_t store_pwm_enable(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	u8 currval, config, altbit, newval, minoff = 255;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	switch (reqval) {
-> +	case 0:
-> +		newval = 0x04;
-> +		break;
-> +	case 1:
-> +		newval = 0x07;
-> +		break;
-> +	case 2:
-> +		newval = 0x00;
-> +		minoff = 1;
-> +		break;
-> +	case 3:
-> +		newval = 0x00;
-> +		minoff = 0;
-> +		break;
-> +	case 255:
-> +		newval = 0x03;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	config = newval & 0x07;
-> +	altbit = (newval >> 3) & 0x01;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	config = (config & param->mask[0]) << param->shift[0];
-> +	altbit = (altbit & param->mask[1]) << param->shift[1];
-> +	currval = read_byte(param->msb[0]);
-> +	newval = config | (currval & ~(param->mask[0] << param->shift[0]));
-> +	newval = altbit | (newval & ~(param->mask[1] << param->shift[1]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	if (minoff < 255) {
-> +		minoff = (minoff & param->mask[2]) << param->shift[2];
-> +		currval = read_byte(param->msb[2]);
-> +		newval =
-> +		    minoff | (currval & ~(param->mask[2] << param->shift[2]));
-> +		data->reg[param->msb[2]] = newval;
-> +		write_byte(param->msb[2], newval);
-> +	}
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +static u32 asc7621_pwm_freq_map[] = {
-> +	10, 15, 23, 30, 38, 47, 62, 94,
-> +	23000, 24000, 25000, 26000, 27000, 28000, 29000, 30000
-> +};
-> +
-> +static ssize_t show_pwm_freq(struct device *dev,
-> +			     struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 regval =
-> +	    (data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0];
-> +
-> +	regval = SENSORS_LIMIT(regval, 0, 15);
-> +
-> +	return sprintf(buf, "%u\n", asc7621_pwm_freq_map[regval]);
-> +}
-> +
-> +static ssize_t store_pwm_freq(struct device *dev,
-> +			      struct device_attribute *attr,
-> +			      const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	unsigned long reqval;
-> +	u8 currval, newval = 255;
-> +	int i;
-> +
-> +	if (strict_strtoul(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_pwm_freq_map); i++) {
-> +		if (reqval == asc7621_pwm_freq_map[i]) {
-> +			newval = i;
-> +			break;
-> +		}
-> +	}
-> +	if (newval == 255)
-> +		return -EINVAL;
-> +
-> +	newval = (newval & param->mask[0]) << param->shift[0];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	currval = read_byte(param->msb[0]);
-> +	newval |= (currval & ~(param->mask[0] << param->shift[0]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +static u32 asc7621_pwm_auto_spinup_map[] =  {
-> +	0, 100, 250, 400, 700, 1000, 2000, 4000
-> +};
-> +
-> +static ssize_t show_pwm_ast(struct device *dev,
-> +			    struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 regval =
-> +	    (data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0];
-> +
-> +	regval = SENSORS_LIMIT(regval, 0, 7);
-> +
-> +	return sprintf(buf, "%u\n", asc7621_pwm_auto_spinup_map[regval]);
-> +
-> +}
-> +
-> +static ssize_t store_pwm_ast(struct device *dev,
-> +			     struct device_attribute *attr,
-> +			     const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	u8 currval, newval = 255;
-> +	u32 i;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_pwm_auto_spinup_map); i++) {
-> +		if (reqval == asc7621_pwm_auto_spinup_map[i]) {
-> +			newval = i;
-> +			break;
-> +		}
-> +	}
-> +	if (newval == 255)
-> +		return -EINVAL;
-> +
-> +	newval = (newval & param->mask[0]) << param->shift[0];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	currval = read_byte(param->msb[0]);
-> +	newval |= (currval & ~(param->mask[0] << param->shift[0]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +static u32 asc7621_temp_smoothing_time_map[] = {
-> +	35000, 17600, 11800, 7000, 4400, 3000, 1600, 800
-> +};
-> +
-> +static ssize_t show_temp_st(struct device *dev,
-> +			    struct device_attribute *attr, char *buf)
-> +{
-> +	SETUP_SHOW_data_param(dev, attr);
-> +	u8 regval =
-> +	    (data->reg[param->msb[0]] >> param->shift[0]) & param->mask[0];
-> +	regval = SENSORS_LIMIT(regval, 0, 7);
-> +
-> +	return sprintf(buf, "%u\n", asc7621_temp_smoothing_time_map[regval]);
-> +}
-> +
-> +static ssize_t store_temp_st(struct device *dev,
-> +			     struct device_attribute *attr,
-> +			     const char *buf, size_t count)
-> +{
-> +	SETUP_STORE_data_param(dev, attr);
-> +	long reqval;
-> +	u8 currval, newval = 255;
-> +	u32 i;
-> +
-> +	if (strict_strtol(buf, 10, &reqval))
-> +		return -EINVAL;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_pwm_auto_spinup_map); i++) {
-> +		if (reqval == asc7621_temp_smoothing_time_map[i]) {
-> +			newval = i;
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (newval == 255)
-> +		return -EINVAL;
-> +
-> +	newval = (newval & param->mask[0]) << param->shift[0];
-> +
-> +	mutex_lock(&data->update_lock);
-> +	currval = read_byte(param->msb[0]);
-> +	newval |= (currval & ~(param->mask[0] << param->shift[0]));
-> +	data->reg[param->msb[0]] = newval;
-> +	write_byte(param->msb[0], newval);
-> +	mutex_unlock(&data->update_lock);
-> +	return count;
-> +}
-> +
-> +/*
-> + * End of data handlers
-> + *
-> + * These defines do nothing more than make the table easier
-> + * to read when wrapped at column 80.
-> + */
-> +
-> +/*
-> + * Creates a variable length array inititalizer.
-> + * VAA(1,3,5,7) would produce {1,3,5,7}
-> + */
-> +#define VAA(args...) {args}
-> +
-> +#define PREAD(name, n, pri, rm, rl, m, s, r) \
-> +	{.sda = SENSOR_ATTR(name, S_IRUGO, show_##r, NULL, n), \
-> +	  .priority = pri, .msb[0] = rm, .lsb[0] = rl, .mask[0] = m, \
-> +	  .shift[0] = s,}
-> +
-> +#define PWRITE(name, n, pri, rm, rl, m, s, r) \
-> +	{.sda = SENSOR_ATTR(name, S_IRUGO | S_IWUSR, show_##r, store_##r, n), \
-> +	  .priority = pri, .msb[0] = rm, .lsb[0] = rl, .mask[0] = m, \
-> +	  .shift[0] = s,}
-> +
-> +/*
-> + * PWRITEM assumes that the initializers for the .msb, .lsb, .mask and .shift
-> + * were created using the VAA macro.
-> + */
-> +#define PWRITEM(name, n, pri, rm, rl, m, s, r) \
-> +	{.sda = SENSOR_ATTR(name, S_IRUGO | S_IWUSR, show_##r, store_##r, n), \
-> +	  .priority = pri, .msb = rm, .lsb = rl, .mask = m, .shift = s,}
-> +
-> +static struct asc7621_param asc7621_params[] = {
-> +	PREAD(in0_input, 0, PRI_HIGH, 0x20, 0x13, 0, 0, in10),
-> +	PREAD(in1_input, 1, PRI_HIGH, 0x21, 0x18, 0, 0, in10),
-> +	PREAD(in2_input, 2, PRI_HIGH, 0x22, 0x11, 0, 0, in10),
-> +	PREAD(in3_input, 3, PRI_HIGH, 0x23, 0x12, 0, 0, in10),
-> +	PREAD(in4_input, 4, PRI_HIGH, 0x24, 0x14, 0, 0, in10),
-> +
-> +	PWRITE(in0_min, 0, PRI_LOW, 0x44, 0, 0, 0, in8),
-> +	PWRITE(in1_min, 1, PRI_LOW, 0x46, 0, 0, 0, in8),
-> +	PWRITE(in2_min, 2, PRI_LOW, 0x48, 0, 0, 0, in8),
-> +	PWRITE(in3_min, 3, PRI_LOW, 0x4a, 0, 0, 0, in8),
-> +	PWRITE(in4_min, 4, PRI_LOW, 0x4c, 0, 0, 0, in8),
-> +
-> +	PWRITE(in0_max, 0, PRI_LOW, 0x45, 0, 0, 0, in8),
-> +	PWRITE(in1_max, 1, PRI_LOW, 0x47, 0, 0, 0, in8),
-> +	PWRITE(in2_max, 2, PRI_LOW, 0x49, 0, 0, 0, in8),
-> +	PWRITE(in3_max, 3, PRI_LOW, 0x4b, 0, 0, 0, in8),
-> +	PWRITE(in4_max, 4, PRI_LOW, 0x4d, 0, 0, 0, in8),
-> +
-> +	PREAD(in0_alarm, 0, PRI_LOW, 0x41, 0, 0x01, 0, bitmask),
-> +	PREAD(in1_alarm, 1, PRI_LOW, 0x41, 0, 0x01, 1, bitmask),
-> +	PREAD(in2_alarm, 2, PRI_LOW, 0x41, 0, 0x01, 2, bitmask),
-> +	PREAD(in3_alarm, 3, PRI_LOW, 0x41, 0, 0x01, 3, bitmask),
-> +	PREAD(in4_alarm, 4, PRI_LOW, 0x42, 0, 0x01, 0, bitmask),
-> +
-> +	PREAD(fan1_input, 0, PRI_HIGH, 0x29, 0x28, 0, 0, fan16),
-> +	PREAD(fan2_input, 1, PRI_HIGH, 0x2b, 0x2a, 0, 0, fan16),
-> +	PREAD(fan3_input, 2, PRI_HIGH, 0x2d, 0x2c, 0, 0, fan16),
-> +	PREAD(fan4_input, 3, PRI_HIGH, 0x2f, 0x2e, 0, 0, fan16),
-> +
-> +	PWRITE(fan1_min, 0, PRI_LOW, 0x55, 0x54, 0, 0, fan16),
-> +	PWRITE(fan2_min, 1, PRI_LOW, 0x57, 0x56, 0, 0, fan16),
-> +	PWRITE(fan3_min, 2, PRI_LOW, 0x59, 0x58, 0, 0, fan16),
-> +	PWRITE(fan4_min, 3, PRI_LOW, 0x5b, 0x5a, 0, 0, fan16),
-> +
-> +	PREAD(fan1_alarm, 0, PRI_LOW, 0x42, 0, 0x01, 0, bitmask),
-> +	PREAD(fan2_alarm, 1, PRI_LOW, 0x42, 0, 0x01, 1, bitmask),
-> +	PREAD(fan3_alarm, 2, PRI_LOW, 0x42, 0, 0x01, 2, bitmask),
-> +	PREAD(fan4_alarm, 3, PRI_LOW, 0x42, 0, 0x01, 3, bitmask),
-> +
-> +	PREAD(temp1_input, 0, PRI_HIGH, 0x25, 0x10, 0, 0, temp10),
-> +	PREAD(temp2_input, 1, PRI_HIGH, 0x26, 0x15, 0, 0, temp10),
-> +	PREAD(temp3_input, 2, PRI_HIGH, 0x27, 0x16, 0, 0, temp10),
-> +	PREAD(temp4_input, 3, PRI_HIGH, 0x33, 0x17, 0, 0, temp10),
-> +	PREAD(temp5_input, 4, PRI_HIGH, 0xf7, 0xf6, 0, 0, temp10),
-> +	PREAD(temp6_input, 5, PRI_HIGH, 0xf9, 0xf8, 0, 0, temp10),
-> +	PREAD(temp7_input, 6, PRI_HIGH, 0xfb, 0xfa, 0, 0, temp10),
-> +	PREAD(temp8_input, 7, PRI_HIGH, 0xfd, 0xfc, 0, 0, temp10),
-> +
-> +	PWRITE(temp1_min, 0, PRI_LOW, 0x4e, 0, 0, 0, temp8),
-> +	PWRITE(temp2_min, 1, PRI_LOW, 0x50, 0, 0, 0, temp8),
-> +	PWRITE(temp3_min, 2, PRI_LOW, 0x52, 0, 0, 0, temp8),
-> +	PWRITE(temp4_min, 3, PRI_LOW, 0x34, 0, 0, 0, temp8),
-> +
-> +	PWRITE(temp1_max, 0, PRI_LOW, 0x4f, 0, 0, 0, temp8),
-> +	PWRITE(temp2_max, 1, PRI_LOW, 0x51, 0, 0, 0, temp8),
-> +	PWRITE(temp3_max, 2, PRI_LOW, 0x53, 0, 0, 0, temp8),
-> +	PWRITE(temp4_max, 3, PRI_LOW, 0x35, 0, 0, 0, temp8),
-> +
-> +	PREAD(temp1_alarm, 0, PRI_LOW, 0x41, 0, 0x01, 4, bitmask),
-> +	PREAD(temp2_alarm, 1, PRI_LOW, 0x41, 0, 0x01, 5, bitmask),
-> +	PREAD(temp3_alarm, 2, PRI_LOW, 0x41, 0, 0x01, 6, bitmask),
-> +	PREAD(temp4_alarm, 3, PRI_LOW, 0x43, 0, 0x01, 0, bitmask),
-> +
-> +	PWRITE(temp1_source, 0, PRI_LOW, 0x02, 0, 0x07, 4, bitmask),
-> +	PWRITE(temp2_source, 1, PRI_LOW, 0x02, 0, 0x07, 0, bitmask),
-> +	PWRITE(temp3_source, 2, PRI_LOW, 0x03, 0, 0x07, 4, bitmask),
-> +	PWRITE(temp4_source, 3, PRI_LOW, 0x03, 0, 0x07, 0, bitmask),
-> +
-> +	PWRITE(temp1_smoothing_enable, 0, PRI_LOW, 0x62, 0, 0x01, 3, bitmask),
-> +	PWRITE(temp2_smoothing_enable, 1, PRI_LOW, 0x63, 0, 0x01, 7, bitmask),
-> +	PWRITE(temp3_smoothing_enable, 2, PRI_LOW, 0x64, 0, 0x01, 3, bitmask),
-> +	PWRITE(temp4_smoothing_enable, 3, PRI_LOW, 0x3c, 0, 0x01, 3, bitmask),
-> +
-> +	PWRITE(temp1_smoothing_time, 0, PRI_LOW, 0x62, 0, 0x07, 0, temp_st),
-> +	PWRITE(temp2_smoothing_time, 1, PRI_LOW, 0x63, 0, 0x07, 4, temp_st),
-> +	PWRITE(temp3_smoothing_time, 2, PRI_LOW, 0x63, 0, 0x07, 0, temp_st),
-> +	PWRITE(temp4_smoothing_time, 3, PRI_LOW, 0x3c, 0, 0x07, 0, temp_st),
-> +
-> +	PWRITE(temp1_auto_point1_temp_hyst, 0, PRI_LOW, 0x6d, 0, 0x0f, 4,
-> +	       bitmask),
-> +	PWRITE(temp2_auto_point1_temp_hyst, 1, PRI_LOW, 0x6d, 0, 0x0f, 0,
-> +	       bitmask),
-> +	PWRITE(temp3_auto_point1_temp_hyst, 2, PRI_LOW, 0x6e, 0, 0x0f, 4,
-> +	       bitmask),
-> +	PWRITE(temp4_auto_point1_temp_hyst, 3, PRI_LOW, 0x6e, 0, 0x0f, 0,
-> +	       bitmask),
-> +
-> +	PREAD(temp1_auto_point2_temp_hyst, 0, PRI_LOW, 0x6d, 0, 0x0f, 4,
-> +	      bitmask),
-> +	PREAD(temp2_auto_point2_temp_hyst, 1, PRI_LOW, 0x6d, 0, 0x0f, 0,
-> +	      bitmask),
-> +	PREAD(temp3_auto_point2_temp_hyst, 2, PRI_LOW, 0x6e, 0, 0x0f, 4,
-> +	      bitmask),
-> +	PREAD(temp4_auto_point2_temp_hyst, 3, PRI_LOW, 0x6e, 0, 0x0f, 0,
-> +	      bitmask),
-> +
-> +	PWRITE(temp1_auto_point1_temp, 0, PRI_LOW, 0x67, 0, 0, 0, temp8),
-> +	PWRITE(temp2_auto_point1_temp, 1, PRI_LOW, 0x68, 0, 0, 0, temp8),
-> +	PWRITE(temp3_auto_point1_temp, 2, PRI_LOW, 0x69, 0, 0, 0, temp8),
-> +	PWRITE(temp4_auto_point1_temp, 3, PRI_LOW, 0x3b, 0, 0, 0, temp8),
-> +
-> +	PWRITEM(temp1_auto_point2_temp, 0, PRI_LOW, VAA(0x5f, 0x67), VAA(0),
-> +		VAA(0x0f), VAA(4), ap2_temp),
-> +	PWRITEM(temp2_auto_point2_temp, 1, PRI_LOW, VAA(0x60, 0x68), VAA(0),
-> +		VAA(0x0f), VAA(4), ap2_temp),
-> +	PWRITEM(temp3_auto_point2_temp, 2, PRI_LOW, VAA(0x61, 0x69), VAA(0),
-> +		VAA(0x0f), VAA(4), ap2_temp),
-> +	PWRITEM(temp4_auto_point2_temp, 3, PRI_LOW, VAA(0x3c, 0x3b), VAA(0),
-> +		VAA(0x0f), VAA(4), ap2_temp),
-> +
-> +	PWRITE(temp1_crit, 0, PRI_LOW, 0x6a, 0, 0, 0, temp8),
-> +	PWRITE(temp2_crit, 1, PRI_LOW, 0x6b, 0, 0, 0, temp8),
-> +	PWRITE(temp3_crit, 2, PRI_LOW, 0x6c, 0, 0, 0, temp8),
-> +	PWRITE(temp4_crit, 3, PRI_LOW, 0x3d, 0, 0, 0, temp8),
-> +
-> +	PWRITE(temp5_enable, 4, PRI_LOW, 0x0e, 0, 0x01, 0, bitmask),
-> +	PWRITE(temp6_enable, 5, PRI_LOW, 0x0e, 0, 0x01, 1, bitmask),
-> +	PWRITE(temp7_enable, 6, PRI_LOW, 0x0e, 0, 0x01, 2, bitmask),
-> +	PWRITE(temp8_enable, 7, PRI_LOW, 0x0e, 0, 0x01, 3, bitmask),
-> +
-> +	PWRITE(remote1_offset, 0, PRI_LOW, 0x1c, 0, 0, 0, temp62),
-> +	PWRITE(remote2_offset, 1, PRI_LOW, 0x1d, 0, 0, 0, temp62),
-> +
-> +	PWRITE(pwm1, 0, PRI_HIGH, 0x30, 0, 0, 0, u8),
-> +	PWRITE(pwm2, 1, PRI_HIGH, 0x31, 0, 0, 0, u8),
-> +	PWRITE(pwm3, 2, PRI_HIGH, 0x32, 0, 0, 0, u8),
-> +
-> +	PWRITE(pwm1_invert, 0, PRI_LOW, 0x5c, 0, 0x01, 4, bitmask),
-> +	PWRITE(pwm2_invert, 1, PRI_LOW, 0x5d, 0, 0x01, 4, bitmask),
-> +	PWRITE(pwm3_invert, 2, PRI_LOW, 0x5e, 0, 0x01, 4, bitmask),
-> +
-> +	PWRITEM(pwm1_enable, 0, PRI_LOW, VAA(0x5c, 0x5c, 0x62), VAA(0, 0, 0),
-> +		VAA(0x07, 0x01, 0x01), VAA(5, 3, 5), pwm_enable),
-> +	PWRITEM(pwm2_enable, 1, PRI_LOW, VAA(0x5d, 0x5d, 0x62), VAA(0, 0, 0),
-> +		VAA(0x07, 0x01, 0x01), VAA(5, 3, 6), pwm_enable),
-> +	PWRITEM(pwm3_enable, 2, PRI_LOW, VAA(0x5e, 0x5e, 0x62), VAA(0, 0, 0),
-> +		VAA(0x07, 0x01, 0x01), VAA(5, 3, 7), pwm_enable),
-> +
-> +	PWRITEM(pwm1_auto_channels, 0, PRI_LOW, VAA(0x5c, 0x5c), VAA(0, 0),
-> +		VAA(0x07, 0x01), VAA(5, 3), pwm_ac),
-> +	PWRITEM(pwm2_auto_channels, 1, PRI_LOW, VAA(0x5d, 0x5d), VAA(0, 0),
-> +		VAA(0x07, 0x01), VAA(5, 3), pwm_ac),
-> +	PWRITEM(pwm3_auto_channels, 2, PRI_LOW, VAA(0x5e, 0x5e), VAA(0, 0),
-> +		VAA(0x07, 0x01), VAA(5, 3), pwm_ac),
-> +
-> +	PWRITE(pwm1_auto_point1_pwm, 0, PRI_LOW, 0x64, 0, 0, 0, u8),
-> +	PWRITE(pwm2_auto_point1_pwm, 1, PRI_LOW, 0x65, 0, 0, 0, u8),
-> +	PWRITE(pwm3_auto_point1_pwm, 2, PRI_LOW, 0x66, 0, 0, 0, u8),
-> +
-> +	PWRITE(pwm1_auto_point2_pwm, 0, PRI_LOW, 0x38, 0, 0, 0, u8),
-> +	PWRITE(pwm2_auto_point2_pwm, 1, PRI_LOW, 0x39, 0, 0, 0, u8),
-> +	PWRITE(pwm3_auto_point2_pwm, 2, PRI_LOW, 0x3a, 0, 0, 0, u8),
-> +
-> +	PWRITE(pwm1_freq, 0, PRI_LOW, 0x5f, 0, 0x0f, 0, pwm_freq),
-> +	PWRITE(pwm2_freq, 1, PRI_LOW, 0x60, 0, 0x0f, 0, pwm_freq),
-> +	PWRITE(pwm3_freq, 2, PRI_LOW, 0x61, 0, 0x0f, 0, pwm_freq),
-> +
-> +	PREAD(pwm1_auto_zone_assigned, 0, PRI_LOW, 0, 0, 0x03, 2, bitmask),
-> +	PREAD(pwm2_auto_zone_assigned, 1, PRI_LOW, 0, 0, 0x03, 4, bitmask),
-> +	PREAD(pwm3_auto_zone_assigned, 2, PRI_LOW, 0, 0, 0x03, 6, bitmask),
-> +
-> +	PWRITE(pwm1_auto_spinup_time, 0, PRI_LOW, 0x5c, 0, 0x07, 0, pwm_ast),
-> +	PWRITE(pwm2_auto_spinup_time, 1, PRI_LOW, 0x5d, 0, 0x07, 0, pwm_ast),
-> +	PWRITE(pwm3_auto_spinup_time, 2, PRI_LOW, 0x5e, 0, 0x07, 0, pwm_ast),
-> +
-> +	PWRITE(peci_enable, 0, PRI_LOW, 0x40, 0, 0x01, 4, bitmask),
-> +	PWRITE(peci_avg, 0, PRI_LOW, 0x36, 0, 0x07, 0, bitmask),
-> +	PWRITE(peci_domain, 0, PRI_LOW, 0x36, 0, 0x01, 3, bitmask),
-> +	PWRITE(peci_legacy, 0, PRI_LOW, 0x36, 0, 0x01, 4, bitmask),
-> +	PWRITE(peci_diode, 0, PRI_LOW, 0x0e, 0, 0x07, 4, bitmask),
-> +	PWRITE(peci_4domain, 0, PRI_LOW, 0x0e, 0, 0x01, 4, bitmask),
-> +
-> +};
-> +
-> +static struct asc7621_data *asc7621_update_device(struct device *dev)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	struct asc7621_data *data = i2c_get_clientdata(client);
-> +	int i;
-> +
-> +/*
-> + * The asc7621 chips guarantee consistent reads of multi-byte values
-> + * regardless of the order of the reads.  No special logic is needed
-> + * so we can just read the registers in whatever  order they appear
-> + * in the asc7621_params array.
-> + */
-> +
-> +	mutex_lock(&data->update_lock);
-> +
-> +	/* Read all the high priority registers */
-> +
-> +	if (!data->valid ||
-> +	    time_after(jiffies, data->last_high_reading + INTERVAL_HIGH)) {
-> +
-> +		for (i = 0; i < ARRAY_SIZE(asc7621_register_priorities); i++) {
-> +			if (asc7621_register_priorities[i] == PRI_HIGH) {
-> +				data->reg[i] =
-> +				    i2c_smbus_read_byte_data(client, i) & 0xff;
-> +			}
-> +		}
-> +		data->last_high_reading = jiffies;
-> +	};			/* last_reading */
-> +
-> +	/* Read all the low priority registers. */
-> +
-> +	if (!data->valid ||
-> +	    time_after(jiffies, data->last_high_reading + INTERVAL_LOW)) {
-> +
-> +		for (i = 0; i < ARRAY_SIZE(asc7621_params); i++) {
-> +			if (asc7621_register_priorities[i] == PRI_LOW) {
-> +				data->reg[i] =
-> +				    i2c_smbus_read_byte_data(client, i) & 0xff;
-> +			}
-> +		}
-> +		data->last_low_reading = jiffies;
-> +	};			/* last_reading */
-> +
-> +	data->valid = 1;
-> +
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return data;
-> +}
-> +
-> +/*
-> + * Standard detection and initialization below
-> + *
-> + * Helper function that checks if an address is valid
-> + * for a particular chip.
-> + */
-> +
-> +static inline int valid_address_for_chip(int chip_type, int address)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; asc7621_chips[chip_type].addresses[i] != I2C_CLIENT_END;
-> +	     i++) {
-> +		if (asc7621_chips[chip_type].addresses[i] == address)
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static void asc7621_init_client(struct i2c_client *client)
-> +{
-> +	int value, i, j;
-> +
-> +	/* Warn if part was not "READY" */
-> +
-> +	value = read_byte(0x40);
-> +
-> +	if (value & 0x02) {
-> +		dev_err(&client->dev,
-> +			"Client (%d,0x%02x) config is locked.\n",
-> +			i2c_adapter_id(client->adapter), client->addr);
-> +	};
-> +	if (!(value & 0x04)) {
-> +		dev_err(&client->dev, "Client (%d,0x%02x) is not ready.\n",
-> +			i2c_adapter_id(client->adapter), client->addr);
-> +	};
-> +
-> +/*
-> + * Start monitoring
-> + *
-> + * Try to clear LOCK, Set START, save everything else
-> + */
-> +	value = (value & ~0x02) | 0x01;
-> +	write_byte(0x40, value & 0xff);
-> +
-> +	/*
-> +	 * Collect all the registers needed into a single array.
-> +	 * This way, if a register isn't actually used for anything,
-> +	 * we don't retrieve it.
-> +	 */
-> +
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_params); i++) {
-> +		for (j = 0; j < ARRAY_SIZE(asc7621_params[i].msb); j++)
-> +			asc7621_register_priorities[asc7621_params[i].msb[j]] =
-> +			    asc7621_params[i].priority;
-> +		for (j = 0; j < ARRAY_SIZE(asc7621_params[i].lsb); j++)
-> +			asc7621_register_priorities[asc7621_params[i].lsb[j]] =
-> +			    asc7621_params[i].priority;
-> +	}
-> +}
-> +
-> +static int
-> +asc7621_probe(struct i2c_client *client, const struct i2c_device_id *id)
-> +{
-> +	struct asc7621_data *data;
-> +	int i, err;
-> +
-> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-> +		return -EIO;
-> +
-> +	data = kzalloc(sizeof(struct asc7621_data), GFP_KERNEL);
-> +	if (data == NULL)
-> +		return -ENOMEM;
-> +
-> +	i2c_set_clientdata(client, data);
-> +	data->valid = 0;
-> +	mutex_init(&data->update_lock);
-> +
-> +	/* Initialize the asc7621 chip */
-> +	asc7621_init_client(client);
-> +
-> +	/* Create the sysfs entries */
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_params); i++) {
-> +		err =
-> +		    device_create_file(&client->dev,
-> +				       &(asc7621_params[i].sda.dev_attr));
-> +		if (err)
-> +			goto exit_remove;
-> +	}
-> +
-> +	data->class_dev = hwmon_device_register(&client->dev);
-> +	if (IS_ERR(data->class_dev)) {
-> +		err = PTR_ERR(data->class_dev);
-> +		goto exit_remove;
-> +	}
-> +
-> +	return 0;
-> +
-> +exit_remove:
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_params); i++) {
-> +		device_remove_file(&client->dev,
-> +				   &(asc7621_params[i].sda.dev_attr));
-> +	}
-> +
-> +	i2c_set_clientdata(client, NULL);
-> +	kfree(data);
-> +	return err;
-> +}
-> +
-> +static int asc7621_detect(struct i2c_client *client,
-> +			  struct i2c_board_info *info)
-> +{
-> +	struct i2c_adapter *adapter = client->adapter;
-> +	int company, verstep, chip_index;
-> +	struct device *dev;
-> +
-> +	dev = &client->dev;
-> +
-> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-> +		return -ENODEV;
-> +
-> +	for (chip_index = FIRST_CHIP; chip_index <= LAST_CHIP; chip_index++) {
-> +
-> +		if (!valid_address_for_chip(chip_index, client->addr))
-> +			continue;
-> +
-> +		company = read_byte(asc7621_chips[chip_index].company_reg);
-> +		verstep = read_byte(asc7621_chips[chip_index].verstep_reg);
-> +
-> +		if (company == asc7621_chips[chip_index].company_id &&
-> +		    verstep == asc7621_chips[chip_index].verstep_id) {
-> +			strlcpy(client->name, asc7621_chips[chip_index].name,
-> +				I2C_NAME_SIZE);
-> +			strlcpy(info->type, asc7621_chips[chip_index].name,
-> +				I2C_NAME_SIZE);
-> +
-> +			dev_info(&adapter->dev, "Matched %s\n",
-> +				 asc7621_chips[chip_index].name);
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	return -ENODEV;
-> +}
-> +
-> +static int asc7621_remove(struct i2c_client *client)
-> +{
-> +	struct asc7621_data *data = i2c_get_clientdata(client);
-> +	int i;
-> +
-> +	hwmon_device_unregister(data->class_dev);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(asc7621_params); i++) {
-> +		device_remove_file(&client->dev,
-> +				   &(asc7621_params[i].sda.dev_attr));
-> +	}
-> +
-> +	i2c_set_clientdata(client, NULL);
-> +	kfree(data);
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id asc7621_id[] = {
-> +	{"asc7621", asc7621},
-> +	{"asc7621a", asc7621a},
-> +	{},
-> +};
-> +
-> +MODULE_DEVICE_TABLE(i2c, asc7621_id);
-> +
-> +static struct i2c_driver asc7621_driver = {
-> +	.class = I2C_CLASS_HWMON,
-> +	.driver = {
-> +		.name = "asc7621",
-> +	},
-> +	.probe = asc7621_probe,
-> +	.remove = asc7621_remove,
-> +	.id_table = asc7621_id,
-> +	.detect = asc7621_detect,
-> +	.address_list = normal_i2c,
-> +};
-> +
-> +static int __init sm_asc7621_init(void)
-> +{
-> +	return i2c_add_driver(&asc7621_driver);
-> +}
-> +
-> +static void __exit sm_asc7621_exit(void)
-> +{
-> +	i2c_del_driver(&asc7621_driver);
-> +}
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("George Joseph");
-> +MODULE_DESCRIPTION("Andigilog aSC7621 and aSC7621a driver");
-> +
-> +module_init(sm_asc7621_init);
-> +module_exit(sm_asc7621_exit);
-> diff -uprN a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-> --- a/drivers/hwmon/Kconfig	2010-02-21 09:33:51.000000000 -0700
-> +++ b/drivers/hwmon/Kconfig	2010-02-21 09:57:46.000000000 -0700
-> @@ -277,6 +277,19 @@ config SENSORS_ASB100
->  	  This driver can also be built as a module.  If so, the module
->  	  will be called asb100.
->  
-> +config SENSORS_ASC7621
-> +	tristate "Andigilog aSC7621"
-> +	depends on HWMON && I2C
-> +	help
-> +	  If you say yes here you get support for the aSC7621
-> +	  family of SMBus sensors chip found on most Intel X48, X38, 975,
-> +	  965 and 945 desktop boards.  Currently supported chips:
-> +	  aSC7621
-> +	  aSC7621a
-> +
-> +	  This driver can also be built as a module.  If so, the module
-> +	  will be called asc7621.
-> +
->  config SENSORS_ATXP1
->  	tristate "Attansic ATXP1 VID controller"
->  	depends on I2C && EXPERIMENTAL
-> diff -uprN a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-> --- a/drivers/hwmon/Makefile	2010-02-21 09:33:51.000000000 -0700
-> +++ b/drivers/hwmon/Makefile	2010-02-21 09:55:37.000000000 -0700
-> @@ -35,6 +35,7 @@ obj-$(CONFIG_SENSORS_ADT7473)	+= adt7473
->  obj-$(CONFIG_SENSORS_ADT7475)	+= adt7475.o
->  obj-$(CONFIG_SENSORS_APPLESMC)	+= applesmc.o
->  obj-$(CONFIG_SENSORS_AMS)	+= ams/
-> +obj-$(CONFIG_SENSORS_ASC7621)	+= asc7621.o
->  obj-$(CONFIG_SENSORS_ATXP1)	+= atxp1.o
->  obj-$(CONFIG_SENSORS_CORETEMP)	+= coretemp.o
->  obj-$(CONFIG_SENSORS_DME1737)	+= dme1737.o
-> diff -uprN a/MAINTAINERS b/MAINTAINERS
-> --- a/MAINTAINERS	2010-02-21 09:33:56.000000000 -0700
-> +++ b/MAINTAINERS	2010-02-21 09:51:43.000000000 -0700
-> @@ -964,6 +964,13 @@ W:	http://www.arm.linux.org.uk/
->  S:	Maintained
->  F:	arch/arm/vfp/
->  
-> +ASC7621 HARDWARE MONITOR DRIVER
-> +M:	George Joseph <george.joseph@fairview5.com>
-> +L:	lm-sensors@lm-sensors.org
-> +S:	Maintained
-> +F:	Documentation/hwmon/asc7621
-> +F:	drivers/hwmon/asc7621.c
-> +
->  ASUS ACPI EXTRAS DRIVER
->  M:	Corentin Chary <corentincj@iksaif.net>
->  M:	Karol Kozimor <sziwan@users.sourceforge.net>
+  serial_outp(up, UART_LCR, save_lcr);
+-
++#ifdef CONFIG_SERIAL_8250_IOH
++ if ((up->port.type != PORT_IOH_256FIFO) && (up->port.type !=
+PORT_IOH_64FIFO))
++ /* autoconfig is not done for ioh uarts. hence do not report any kernel
+warning */
++#endif
++ {
+  if (up->capabilities != uart_config[up->port.type].flags) {
+-  printk(KERN_WARNING
+-         "ttyS%d: detected caps %08x should be %08x\n",
+-         serial_index(&up->port), up->capabilities,
+-         uart_config[up->port.type].flags);
++   printk(KERN_WARNING "ttyS%d: detected caps %08x should be %08x\n",
++    up->port.line, up->capabilities,
++    uart_config[up->port.type].flags);
++  }
++
+  }
 
+  up->port.fifosize = uart_config[up->port.type].fifo_size;
+  up->capabilities = uart_config[up->port.type].flags;
+  up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
 
++#ifdef DEBUG
++    printk(KERN_DEBUG
++          "IOH UART LOG:autoconfig: up->port.type = %d,up->port.fifosize
+=%d,"
++       "up->capabilities = %x,up->tx_loadsz = %d\n",up->port.type,
++        up->port.fifosize, up->capabilities, up->tx_loadsz);
++
++ printk(KERN_DEBUG
++       "IOH UART LOG:autoconfig: port.name = %s, port.fcr = %x\n",
++       uart_config[up->port.type].name,uart_config[up->port.type].fcr);
++
++#endif
++
+  if (up->port.type == PORT_UNKNOWN)
+   goto out;
 
+@@ -1458,7 +1891,11 @@ ignore_char:
+ static void transmit_chars(struct uart_8250_port *up)
+ {
+  struct circ_buf *xmit = &up->port.state->xmit;
+- int count;
++ int count = 0;
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ unsigned limit = 0;
++ unsigned size = 0;
++#endif
+
+  if (up->port.x_char) {
+   serial_outp(up, UART_TX, up->port.x_char);
+@@ -1475,15 +1912,61 @@ static void transmit_chars(struct uart_8
+   return;
+  }
+
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ if(((up->port.flags & UPF_IOH_UART) != 0))
++ {
++  size = uart_circ_chars_pending(xmit);
++
++  if(size  > PAGE_SIZE)
++  {
++   size = PAGE_SIZE;
++  }
++
++  count = size;
++ }
++
++ else
++#endif
+  count = up->tx_loadsz;
+- do {
++ do
++ {
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++  if((((up->port.flags & UPF_IOH_UART) != 0)) && (size > 0))
++  {
++   ((char *)(up->buffer))[limit] = xmit->buf[xmit->tail];
++   limit++;
++
++  }
++  else
++#endif
+   serial_out(up, UART_TX, xmit->buf[xmit->tail]);
++
+   xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+   up->port.icount.tx++;
+   if (uart_circ_empty(xmit))
+    break;
+  } while (--count > 0);
+
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ if(limit > 0)
++ {
++  if(limit > up->tx_loadsz)
++  {
++   set_scatter_gather_dma_mode(up,limit);
++#ifdef DEBUG
++   printk(KERN_DEBUG"transmit_chars -> Function set_scatter_gather_dma_mode
+invoked.\n");
++#endif
++  }
++  else
++  {
++   set_one_shot_dma_mode(up,limit);
++#ifdef DEBUG
++   printk(KERN_DEBUG"transmit_chars -> Function set_one_shot_dma_mode
+invoked.\n");
++#endif
++  }
++ }
++#endif
++
+  if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
+   uart_write_wakeup(&up->port);
+
+@@ -1491,6 +1974,10 @@ static void transmit_chars(struct uart_8
+
+  if (uart_circ_empty(xmit))
+   __stop_tx(up);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"Function transmit_chars invoked.\n");
++#endif
+ }
+
+ static unsigned int check_modem_status(struct uart_8250_port *up)
+@@ -1530,13 +2017,34 @@ static void serial8250_handle_port(struc
+
+  DEBUG_INTR("status = %x...", status);
+
+- if (status & (UART_LSR_DR | UART_LSR_BI))
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ if ((up->dma_flag) && (up->dma_enabled))/* If reception has to be done
+through DMA. */
++ {
++#ifdef DEBUG
++  printk(KERN_DEBUG"serial8250_handle_port -> Proceeding to handle
+reception " \
++    "interrupt through DMA operation.\n");
++#endif
++  handle_dma_operation(up);
++ }
++ else
++#endif
++ {
++  if ((status & (UART_LSR_DR | UART_LSR_BI))
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++    && (!up->dma_progress)
++#endif
++   )
+   receive_chars(up, &status);
++ }
+  check_modem_status(up);
+  if (status & UART_LSR_THRE)
+   transmit_chars(up);
+
+  spin_unlock_irqrestore(&up->port.lock, flags);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"serial8250_handle_port invoked.\n");
++#endif
+ }
+
+ /*
+@@ -1571,7 +2079,28 @@ static irqreturn_t serial8250_interrupt(
+   up = list_entry(l, struct uart_8250_port, list);
+
+   iir = serial_in(up, UART_IIR);
+-  if (!(iir & UART_IIR_NO_INT)) {
++  if (!(iir & UART_IIR_NO_INT))
++  {
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++   /* Determing whether the receive FIFO is full. */
++   if((iir & UART_IIR_RDI) && !(iir & 0x8) && ((up->port.flags &
+UPF_IOH_UART) != 0))
++   {
++
++    up->dma_flag = 1;
++
++#ifdef DEBUG
++    printk(KERN_DEBUG"serial8250_interrupt -> DMA Mode enabled for
+reception.\n");
++#endif
++   }
++   else
++   {
++    up->dma_flag = 0;
++#ifdef DEBUG
++    printk(KERN_DEBUG"serial8250_interrupt -> DMA Mode disabled for
+reception.\n");
++#endif
++   }
++#endif
++
+    serial8250_handle_port(up);
+
+    handled = 1;
+@@ -1945,6 +2474,154 @@ static int serial8250_startup(struct uar
+  unsigned char lsr, iir;
+  int retval;
+
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ /* Initialising the device for DMA support. */
++ int dma_flag = 0;
++ up->dma_progress = 0;
++ up->dma_enabled = 0;
++
++ if((up->port.flags & UPF_IOH_UART ) != 0)
++ {
++  struct pci_dev pdev;
++
++//  switch((up->port.flags & 0xE000000))/*for 2.6.27-rc3 morinaga delete
+2010.01.25*/
++  switch((up->port.flags & (UPF_IOH_UART | UPF_IOH_UART_BIT0 |
+UPF_IOH_UART_BIT1)))  /*for 2.6.33-rc3 */
++
++  {
++   case UPF_IOH_UART0:
++#ifdef DEBUG
++     printk(KERN_DEBUG"serial8250_startup -> UART0 detected.\n");
++#endif
++     pdev.device = PCI_DEVICE_ID_IOH_UART0;
++     up->port.mctrl |= TIOCM_RTS;
++     break;
++
++   case UPF_IOH_UART1:
++#ifdef DEBUG
++     printk(KERN_DEBUG"serial8250_startup -> UART1 detected.\n");
++#endif
++     pdev.device = PCI_DEVICE_ID_IOH_UART1;
++     break;
++
++   case UPF_IOH_UART2:
++#ifdef DEBUG
++     printk(KERN_DEBUG"serial8250_startup -> UART2 detected.\n");
++#endif
++     pdev.device = PCI_DEVICE_ID_IOH_UART2;
++     break;
++
++   case UPF_IOH_UART3:
++#ifdef DEBUG
++     printk(KERN_DEBUG"serial8250_startup -> UART3 detected.\n");
++#endif
++     pdev.device = PCI_DEVICE_ID_IOH_UART3;
++     break;
++
++   default:
++     break;
++  }
++
++  /* Allocating space for DMA buffer. */
++  up->rx_dma.buf = (u32)__get_free_page(GFP_KERNEL|GFP_DMA);
++  if(!(up->rx_dma.buf))
++  {
++   printk(KERN_ERR"serial8250_startup -> DMA buffer allocation " \
++     "failed for Rx DMA buffer.\n");
++   return -ENOMEM;
++  }
++
++  /* For transmission process. */
++  up->tx_dma.buf = (u32)__get_free_page(GFP_KERNEL|GFP_DMA);
++  if(!(up->tx_dma.buf))
++  {
++   free_page(up->rx_dma.buf);
++   printk(KERN_ERR"serial8250_startup -> DMA buffer allocation " \
++     "failed for TX DMA buffer.\n");
++   return -ENOMEM;
++  }
++
++  /* For copying of transmit data. */
++  up->buffer = (u32)__get_free_page(GFP_KERNEL|GFP_DMA);
++  if(!(up->buffer))
++  {
++   free_page(up->rx_dma.buf);
++   free_page(up->tx_dma.buf);
++   printk(KERN_ERR"serial8250_startup -> DMA buffer allocation " \
++     "failed for Buffer.\n");
++   return -ENOMEM;
++  }
++
++  up->rx_dma.size = PAGE_SIZE;
++  up->tx_dma.size = PAGE_SIZE;
++
++  /* Requesting for DMA channel for reception. */
++  up->rx_dma.channel = ioh_request_dma(&pdev,IOH_DMA_RX_DATA_REQ0);
++  if(up->rx_dma.channel < 0)
++  {
++   free_page(up->rx_dma.buf);
++   free_page(up->tx_dma.buf);
++   free_page(up->buffer);
++   up->rx_dma.buf = 0;
++   up->tx_dma.buf = 0;
++   up->buffer = 0;
++
++   printk(KERN_ERR"serial8250_startup -> DMA channel allocation for " \
++     "reception failed.\n");
++   return -EIO;
++  }
++
++  /* Requesting DMA channel for transmission. */
++  up->tx_dma.channel = ioh_request_dma(&pdev,IOH_DMA_TX_DATA_REQ0);
++  if(up->tx_dma.channel < 0)
++  {
++   free_page(up->rx_dma.buf);
++   free_page(up->tx_dma.buf);
++   free_page(up->buffer);
++   up->rx_dma.buf = 0;
++   up->tx_dma.buf = 0;
++   up->buffer = 0;
++   ioh_free_dma(up->rx_dma.channel);
++
++   printk(KERN_ERR"serial8250_startup -> DMA channel allocation for " \
++     "transmission failed.\n");
++   return -EIO;
++  }
++
++  /* Performing DMA settings for reception. */
++  {
++   u32 in_address;
++   u32 out_address;
++   u32 size;
++   int channel = up->rx_dma.channel;
++   ioh_dma_mode_param_t mode = {
++           .TransferDirection = IOH_DMA_DIR_IN_TO_OUT,
++           .DMASizeType  = IOH_DMA_SIZE_TYPE_8BIT,
++           .DMATransferMode = DMA_ONE_SHOT_MODE
++          };
++
++   /* Mapping the DMA buffer to DMA accessible area and obtaining its base
+address. */
++   out_address = dma_map_single(up->port.dev,(void
+*)up->rx_dma.buf,up->rx_dma.size,DMA_FROM_DEVICE);
++   in_address = up->port.mapbase + (map_8250_in_reg(up,UART_RX));
++   size  = up->rx_fifo_size;
++   up->rx_dma.phy_addr = out_address;
++
++   /* Setting the DMA settings. */
++   (void)ioh_set_dma_mode(channel,mode);
++   (void)ioh_set_dma_addr(channel,in_address,out_address);
++   (void)ioh_set_dma_count(channel,size);
++   (void)ioh_dma_set_callback(channel,ioh_dma_rx_callback,(u32)up);
++  }
++
++  dma_flag = 1;
++
++#ifdef DEBUG
++  printk(KERN_DEBUG"serial8250_startup -> Buffer Allocation successful and
+DMA " \
++    "channels obtained are Reception: %d Transmission: %d.\n", \
++    up->rx_dma.channel,up->tx_dma.channel);
++#endif
++ }
++#endif
++
+  up->capabilities = uart_config[up->port.type].flags;
+  up->mcr = 0;
+
+@@ -1995,6 +2672,22 @@ static int serial8250_startup(struct uar
+      (serial_inp(up, UART_LSR) == 0xff)) {
+   printk(KERN_INFO "ttyS%d: LSR safety check engaged!\n",
+          serial_index(&up->port));
++
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ /* Releasing the DMA resources on failure.*/
++ if(dma_flag == 1 )
++ {
++  ioh_free_dma(up->rx_dma.channel);
++  ioh_free_dma(up->tx_dma.channel);
++  free_page(up->rx_dma.buf);
++  free_page(up->tx_dma.buf);
++  free_page(up->buffer);
++  up->rx_dma.buf = 0;
++  up->tx_dma.buf = 0;
++  up->buffer = 0;
++ }
++#endif
++
+   return -ENODEV;
+  }
+
+@@ -2076,7 +2769,23 @@ static int serial8250_startup(struct uar
+  } else {
+   retval = serial_link_irq_chain(up);
+   if (retval)
++  {
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++  /* Releasing the DMA resources on failure.*/
++   if(dma_flag == 1 )
++   {
++    ioh_free_dma(up->rx_dma.channel);
++    ioh_free_dma(up->tx_dma.channel);
++    free_page(up->rx_dma.buf);
++    free_page(up->tx_dma.buf);
++    free_page(up->buffer);
++    up->rx_dma.buf = 0;
++    up->tx_dma.buf = 0;
++    up->buffer = 0;
++   }
++  #endif
+    return retval;
++  }
+  }
+
+  /*
+@@ -2171,6 +2880,31 @@ static void serial8250_shutdown(struct u
+  struct uart_8250_port *up = (struct uart_8250_port *)port;
+  unsigned long flags;
+
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ /* Releasing the DMA resources on exit.*/
++ if((up->port.flags & UPF_IOH_UART ) != 0 )
++ {
++  if(up->rx_dma.channel >= 0)
++   ioh_free_dma(up->rx_dma.channel);
++  if(up->tx_dma.channel >= 0)
++   ioh_free_dma(up->tx_dma.channel);
++
++  if(up->rx_dma.buf)
++   free_page(up->rx_dma.buf);
++  if(up->tx_dma.buf)
++   free_page(up->tx_dma.buf);
++  if(up->buffer)
++   free_page(up->buffer);
++
++  up->rx_dma.buf = 0;
++  up->tx_dma.buf = 0;
++  up->buffer = 0;
++
++#ifdef DEBUG
++  printk(KERN_DEBUG"serial8250_shutdown -> DMA buffers and channels
+released.\n");
++#endif
++ }
++#endif
+  /*
+   * Disable interrupts from this port
+   */
+@@ -2241,6 +2975,7 @@ serial8250_set_termios(struct uart_port
+  unsigned char cval, fcr = 0;
+  unsigned long flags;
+  unsigned int baud, quot;
++ unsigned int bdrate;
+
+  switch (termios->c_cflag & CSIZE) {
+  case CS5:
+@@ -2277,6 +3012,11 @@ serial8250_set_termios(struct uart_port
+       port->uartclk / 16);
+  quot = serial8250_get_divisor(port, baud);
+
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:max_baud: %d\n,baud :%d\n quot:%d\n"
++          ,max_baud,baud, quot);
++#endif
++
+  /*
+   * Oxford Semi 952 rev B workaround
+   */
+@@ -2285,11 +3025,42 @@ serial8250_set_termios(struct uart_port
+
+  if (up->capabilities & UART_CAP_FIFO && up->port.fifosize > 1) {
+   if (baud < 2400)
++   {
+    fcr = UART_FCR_ENABLE_FIFO | UART_FCR_TRIGGER_1;
++
++#ifdef CONFIG_SERIAL_8250_IOH
++    if((up->port.flags & UPF_IOH_UART) !=0)
++    {
++               fcr |= UART_FCR7_64BYTE; /* This enables 256 byte FIFO for
+UART 0.*/
++    }
++#endif
++   }
++
+   else
+    fcr = uart_config[up->port.type].fcr;
+  }
+
++#if defined(CONFIG_SERIAL_8250_IOH) && defined(ENABLE_IOH_DMA_FEATURE)
++ /* Deciding whether to use DMA feature or not.*/
++ if ((baud >=38400) && ((up->port.flags & UPF_IOH_UART) !=0))
++ {
++  up->dma_enabled = 1;
++
++ }
++ else
++ {
++  up->dma_enabled = 0;
++ }
++
++
++ get_rx_fifo_size(up,fcr);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG"serial8250_set_termios -> The Rx fifo size is:
+%u\n",up->rx_fifo_size);
++#endif
++
++#endif
++
+  /*
+   * MCR-based auto flow control.  When AFE is enabled, RTS will be
+   * deasserted when the receive FIFO contains more characters than
+@@ -2408,8 +3179,22 @@ serial8250_set_termios(struct uart_port
+  serial8250_set_mctrl(&up->port, up->port.mctrl);
+  spin_unlock_irqrestore(&up->port.lock, flags);
+  /* Don't rewrite B0 */
+- if (tty_termios_baud_rate(termios))
++
++ bdrate = tty_termios_baud_rate(termios);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "tty_termios_baud_rate value:%d\n",bdrate);
++#endif
++
++ if (bdrate)
++ {
+   tty_termios_encode_baud_rate(termios, baud, baud);
++
++#ifdef DEBUG
++  printk(KERN_DEBUG "termios->c_ispeed:%d\n,termios->c_ospeed:%d\n "
++        ,termios->c_ispeed,termios->c_ospeed );
++#endif
++ }
+ }
+
+ static void
+@@ -2576,21 +3361,27 @@ static void serial8250_config_port(struc
+   return;
+
+  ret = serial8250_request_rsa_resource(up);
+- if (ret < 0)
++ if (ret < 0){
+   probeflags &= ~PROBE_RSA;
++ }
+
+- if (up->port.iotype != up->cur_iotype)
++ if (up->port.iotype != up->cur_iotype){
+   set_io_from_upio(port);
++ }
+
+- if (flags & UART_CONFIG_TYPE)
++ if (flags & UART_CONFIG_TYPE){
+   autoconfig(up, probeflags);
+- if (up->port.type != PORT_UNKNOWN && flags & UART_CONFIG_IRQ)
++ }
++ if (up->port.type != PORT_UNKNOWN && flags & UART_CONFIG_IRQ){
+   autoconfig_irq(up);
++ }
+
+- if (up->port.type != PORT_RSA && probeflags & PROBE_RSA)
++ if (up->port.type != PORT_RSA && probeflags & PROBE_RSA){
+   serial8250_release_rsa_resource(up);
+- if (up->port.type == PORT_UNKNOWN)
++ }
++ if (up->port.type == PORT_UNKNOWN){
+   serial8250_release_std_resource(up);
++ }
+ }
+
+ static int
+@@ -2685,6 +3476,7 @@ static void __init serial8250_isa_init_p
+   up->port.regshift = old_serial_port[i].iomem_reg_shift;
+   set_io_from_upio(&up->port);
+   up->port.irqflags |= irqflag;
++
+  }
+ }
+
+diff -up a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+--- a/drivers/serial/8250_pci.c 2010-01-05 19:02:46.000000000 -0500
++++ b/drivers/serial/8250_pci.c 2010-02-04 18:15:27.000000000 -0500
+@@ -14,6 +14,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <linux/pci_ids.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+@@ -30,6 +31,8 @@
+
+ #undef SERIAL_DEBUG_PCI
+
++#define PCI_VENDOR_ID_IOH (0x8086)
++
+ /*
+  * init function returns:
+  *  > 0 - number of ports
+@@ -726,6 +729,83 @@ static int pci_ni8430_init(struct pci_de
+ #define NI8430_PORTCON 0x0f
+ #define NI8430_PORTCON_TXVR_ENABLE (1 << 3)
+
++#if defined(CONFIG_SERIAL_8250_IOH)
++
++static int
++pci_ioh_init(struct pci_dev *dev)
++{
++ int retval = 0;
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:function pci_ioh_init invoked \n");
++
++ printk(KERN_DEBUG "IOH UART LOG:function pci_ioh_init->pci_enable_wake
+invoked \n");
++#endif
++
++ /* disable Wake on UART */
++   pci_enable_wake(dev,PCI_D3hot,0);
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:function pci_ioh_init return =
+%d\n",retval);
++#endif
++
++  return (retval);
++}
++
++static int
++pci_ioh_setup(struct serial_private *priv, const struct pciserial_board
+*board,
++  struct uart_port *port, int idx)
++{
++ int retval = 1 ;
++ unsigned int bar = 0;
++ unsigned int offset = 0;
++
++ if (idx == 0)
++ {
++  /* IOH UART has only 1 channel per device */
++  switch (priv->dev->device)
++  {
++   case PCI_DEVICE_ID_IOH_UART0:
++     port->flags |= UPF_IOH_UART0;
++     break;
++
++   case PCI_DEVICE_ID_IOH_UART1:
++     port->flags |= UPF_IOH_UART1;
++     break;
++   case PCI_DEVICE_ID_IOH_UART2:
++     port->flags |= UPF_IOH_UART2;
++     break;
++   case PCI_DEVICE_ID_IOH_UART3:
++     port->flags |= UPF_IOH_UART3;
++     break;
++   default:
++    break;
++  }
++
++  retval=setup_port(priv, port, bar, offset, board->reg_shift);
++
++  #ifdef ENABLE_IOH_DMA_FEATURE
++   /* Obtaing the Memory Map base for DMA operations. */
++   port->mapbase = pci_resource_start(priv->dev,1);
++  #ifdef DEBUG
++   printk(KERN_DEBUG"pci_ioh_setup -> The Map Base has been obtained.\n");
++  #endif
++  #endif
++ }
++
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "pci_ioh_setup -> Function pci_ioh_setup invoked \n");
++ printk(KERN_DEBUG "pci_ioh_setup -> board.base_baud = %d, flags = %d,
+num_ports = %d,reg_shift = %d\n",
++   board->base_baud,board->flags,board->num_ports,board->reg_shift);
++ printk(KERN_DEBUG "pci_ioh_setup -> port->flags =%x\n",port->flags);
++ printk(KERN_DEBUG "Function pci_ioh_setup return = %d\n",retval);
++
++#endif
++ return (retval);
++}
++#endif
++
+ static int
+ pci_ni8430_setup(struct serial_private *priv,
+    const struct pciserial_board *board,
+@@ -918,7 +998,8 @@ static int pci_oxsemi_tornado_init(struc
+      (dev->device & 0xF000) != 0xC000)
+   return 0;
+
+- p = pci_iomap(dev, 0, 5);
++ //p = pci_iomap(dev, 0, 5);
++ p = pci_iomap(dev, 1, 5);
+  if (p == NULL)
+   return -ENOMEM;
+
+@@ -1393,6 +1474,43 @@ static struct pci_serial_quirk pci_seria
+   .setup  = pci_default_setup,
+  },
+  /*
++  * IOH UART
++  */
++#if defined(CONFIG_SERIAL_8250_IOH)
++ {
++  .vendor     = PCI_VENDOR_ID_IOH,
++  .device     = PCI_DEVICE_ID_IOH_UART0,
++  .subvendor  = PCI_ANY_ID,
++  .subdevice  = PCI_ANY_ID,
++  .init  = pci_ioh_init,
++  .setup      = pci_ioh_setup,
++ },
++ {
++  .vendor     = PCI_VENDOR_ID_IOH,
++  .device     = PCI_DEVICE_ID_IOH_UART1,
++  .subvendor  = PCI_ANY_ID,
++  .subdevice  = PCI_ANY_ID,
++  .init  = pci_ioh_init,
++  .setup      = pci_ioh_setup,
++ },
++ {
++  .vendor     = PCI_VENDOR_ID_IOH,
++  .device     = PCI_DEVICE_ID_IOH_UART2,
++  .subvendor  = PCI_ANY_ID,
++  .subdevice  = PCI_ANY_ID,
++  .init  = pci_ioh_init,
++  .setup      = pci_ioh_setup,
++ },
++ {
++  .vendor     = PCI_VENDOR_ID_IOH,
++  .device     = PCI_DEVICE_ID_IOH_UART3,
++  .subvendor  = PCI_ANY_ID,
++  .subdevice  = PCI_ANY_ID,
++  .init  = pci_ioh_init,
++  .setup      = pci_ioh_setup,
++ },
++#endif
++ /*
+   * Default "match everything" terminator entry
+   */
+  {
+@@ -1571,6 +1689,10 @@ enum pci_board_num_t {
+  pbn_ADDIDATA_PCIe_2_3906250,
+  pbn_ADDIDATA_PCIe_4_3906250,
+  pbn_ADDIDATA_PCIe_8_3906250,
++#if defined(CONFIG_SERIAL_8250_IOH)
++ pbn_ioh_uart_8L_256FIFO,  /* ioh 8 Line UART with 256 byte FIFO */
++ pbn_ioh_uart_2L_64FIFO    /* ioh 2 Line UART with 64 byte FIFO */
++#endif
+ };
+
+ /*
+@@ -2228,6 +2350,27 @@ static struct pciserial_board pci_boards
+   .uart_offset = 0x200,
+   .first_offset = 0x1000,
+  },
++
++#if defined(CONFIG_SERIAL_8250_IOH)
++
++ /*
++  * IOH UART
++  */
++ [pbn_ioh_uart_8L_256FIFO] = {
++  .flags      = FL_BASE0,
++  .num_ports  = 1,
++  .base_baud  = 115200,  /* OKISEMI For LSI */
++  .reg_shift  = 0,
++ },
++
++ [pbn_ioh_uart_2L_64FIFO] = {
++  .flags      = FL_BASE0,
++  .num_ports  = 1,
++  .base_baud  = 115200,  /* OKISEMI For LSI*/
++  .reg_shift  = 0,
++ },
++#endif
++
+ };
+
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -2473,8 +2616,20 @@ pciserial_init_one(struct pci_dev *dev,
+   return -EINVAL;
+  }
+
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:function pciserial_init_one ent->vendor"
++        " = %x\n, ent->device = %x, ent->driver_data = %ld\n  ",
++        ent->vendor, ent->device, ent->driver_data);
++#endif
++
+  board = &pci_boards[ent->driver_data];
+
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:function pciserial_init_one board->"
++       "base_baud = %u\n, board->flags = %d, board->num_ports = %d\n "
++       , board->base_baud,board->flags, board->num_ports);
++#endif
++
+  rc = pci_enable_device(dev);
+  if (rc)
+   return rc;
+@@ -2540,6 +2695,17 @@ static int pciserial_suspend_one(struct
+  if (priv)
+   pciserial_suspend_ports(priv);
+
++#if defined(CONFIG_SERIAL_8250_IOH)
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:pciserial_suspend_one->pci_enable_wake"
++       "invoked \n");
++#endif
++
++
++ pci_enable_wake(dev, PCI_D3hot, 1);
++#endif
++
+  pci_save_state(dev);
+  pci_set_power_state(dev, pci_choose_state(dev, state));
+  return 0;
+@@ -2561,6 +2727,17 @@ static int pciserial_resume_one(struct p
+   /* FIXME: We cannot simply error out here */
+   if (err)
+    printk(KERN_ERR "pciserial: Unable to re-enable ports, trying to
+continue.\n");
++
++#if defined(CONFIG_SERIAL_8250_IOH)
++
++#ifdef DEBUG
++ printk(KERN_DEBUG "IOH UART LOG:pciserial_resume_one->pci_enable_wake"
++       "invoked \n");
++#endif
++
++ pci_enable_wake(dev, PCI_D3hot, 0);
++#endif
++
+   pciserial_resume_ports(priv);
+  }
+  return 0;
+@@ -3649,6 +3826,44 @@ static struct pci_device_id serial_pci_t
+   0, 0, pbn_b0_1_115200 },
+
+  /*
++  * IOH UART
++  */
++#if defined(CONFIG_SERIAL_8250_IOH)
++
++ {   PCI_VENDOR_ID_IOH,
++  PCI_DEVICE_ID_IOH_UART0,  /*device id for ioh uart with 8 i/o lines and
+256 byte fifo. */
++  PCI_ANY_ID,
++  PCI_ANY_ID,
++  0,
++  0,
++  pbn_ioh_uart_8L_256FIFO },
++
++ {   PCI_VENDOR_ID_IOH,
++  PCI_DEVICE_ID_IOH_UART1,  /*device id for ioh uart with 2 i/o lines and
+256 byte fifo. */
++  PCI_ANY_ID,
++  PCI_ANY_ID,
++  0,
++  0,
++  pbn_ioh_uart_2L_64FIFO },
++
++ {   PCI_VENDOR_ID_IOH,
++  PCI_DEVICE_ID_IOH_UART2,  /*device id for ioh uart with 8 i/o lines and
+64 byte fifo. */
++  PCI_ANY_ID,
++  PCI_ANY_ID,
++  0,
++  0,
++  pbn_ioh_uart_2L_64FIFO },
++
++ {   PCI_VENDOR_ID_IOH,
++  PCI_DEVICE_ID_IOH_UART3,  /*device id for ioh uart with 2 i/o lines and
+64 byte fifo. */
++  PCI_ANY_ID,
++  PCI_ANY_ID,
++  0,
++  0,
++  pbn_ioh_uart_2L_64FIFO },
++#endif
++
++ /*
+   * These entries match devices with class COMMUNICATION_SERIAL,
+   * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
+   */
+Common subdirectories: a/drivers/serial/cpm_uart and
+b/drivers/serial/cpm_uart
+Common subdirectories: a/drivers/serial/jsm and b/drivers/serial/jsm
+diff -up a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+--- a/drivers/serial/Kconfig 2010-01-05 19:02:46.000000000 -0500
++++ b/drivers/serial/Kconfig 2010-02-04 18:15:27.000000000 -0500
+@@ -89,6 +89,14 @@ config SERIAL_8250_PCI
+    disable this feature if you only need legacy serial support.
+    Saves about 9K.
+
++config SERIAL_8250_IOH
++ tristate "IOH PCI serial device support"
++ depends on SERIAL_8250 && PCI && SERIAL_8250_PCI
++ default SERIAL_8250_PCI
++ help
++   This makes the PCI serial driver to support high speed IOH serial ports.
++
++
+ config SERIAL_8250_PNP
+  tristate "8250/16550 PNP device support" if EMBEDDED
+  depends on SERIAL_8250 && PNP
+diff -up a/drivers/serial/Makefile b/drivers/serial/Makefile
+--- a/drivers/serial/Makefile 2010-01-05 19:02:46.000000000 -0500
++++ b/drivers/serial/Makefile 2010-02-04 18:15:27.000000000 -0500
+@@ -1,6 +1,10 @@
+ #
+ # Makefile for the kernel serial device drivers.
+ #
++#
++#This is needed to enable ioh dma#
++EXTRA_CFLAGS +=-DENABLE_IOH_DMA_FEATURE
++EXTRA_CFLAGS +=-DCONFIG_SERIAL_8250_IOH
+
+ obj-$(CONFIG_SERIAL_CORE) += serial_core.o
+ obj-$(CONFIG_SERIAL_21285) += 21285.o
+diff -up a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+--- a/drivers/serial/serial_core.c 2010-01-05 19:02:46.000000000 -0500
++++ b/drivers/serial/serial_core.c 2010-02-04 18:15:27.000000000 -0500
+@@ -2197,6 +2197,7 @@ uart_configure_port(struct uart_driver *
+   * is expected to claim the resources and map the port for us.
+   */
+  flags = 0;
++
+  if (port->flags & UPF_AUTO_IRQ)
+   flags |= UART_CONFIG_IRQ;
+  if (port->flags & UPF_BOOT_AUTOCONF) {
+@@ -2486,6 +2487,7 @@ int uart_add_one_port(struct uart_driver
+   printk(KERN_ERR "Cannot register tty device on line %d\n",
+          uport->line);
+
++
+  /*
+   * Ensure UPF_DEAD is not set.
+   */
 
