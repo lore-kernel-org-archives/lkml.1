@@ -1,128 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537Ab0BVVKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 16:10:51 -0500
-Received: from gimli.pxnet.com ([195.227.45.7]:39621 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753947Ab0BVVKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 16:10:50 -0500
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH] isdn: fix a few Kconfig imperfections
-To: Karsten Keil <isdn@linux-pingi.de>
-CC: Karsten Keil <keil@b1-systems.de>, David Miller <davem@davemloft.net>,
-       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <20100222210938.75A3B4011D@xenon.ts.pxnet.com>
-Date: Mon, 22 Feb 2010 22:09:38 +0100 (CET)
-X-Spam-Score: -2.186 () AWL,BAYES_00,RDNS_NONE
+	id S1754578Ab0BVVOH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 16:14:07 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:37619 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754308Ab0BVVOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 16:14:06 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] vfs: Fix use-after-free of vfsmount by mnt_drop_write()
+References: <874ol9cfm7.fsf@devron.myhome.or.jp> <20100222205429.GH972@shell>
+Date: Tue, 23 Feb 2010 06:13:59 +0900
+In-Reply-To: <20100222205429.GH972@shell> (Valerie Aurora's message of "Mon,
+	22 Feb 2010 15:54:29 -0500")
+Message-ID: <87pr3x6kiw.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. Rewrite the outdated help texts for config options ISDN and ISDN_CAPI.
-2. The MISDN config option appeared between ISDN_I4L and the I4L hardware
-   driver options; move it to a less irritating place.
-3. HYSDN is not in fact an I4L driver, and needn't depend on ISDN_I4L, so
-   move it from the I4L section to the general section.
-4. ISDN_HDLC is now also used by drivers outside I4L.  Move it from the
-   I4L section to the general section, too.
+Valerie Aurora <vaurora@redhat.com> writes:
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
- drivers/isdn/Kconfig     |   43 ++++++++++++++++++++++++++++---------------
- drivers/isdn/i4l/Kconfig |    7 -------
- 2 files changed, 28 insertions(+), 22 deletions(-)
+>> Those might be assuming that the nd->path.mnt refcnt is keeped by
+>> filp after nameidata_to_filp().
+>> 
+>> It's wrong if nameidata_to_filp() returned the error.  (nd->path and
+>> filp are invalid)
+>> 
+>> Instead to use deep knowledge of nameidata_to_filp() internal, this
+>> thinks the nd->path is invalid after nameidata_to_filp(). So, this
+>> just take refcnt for mnt_want/drop_write().
+>
+> You might take a look at the patch I just posted:
+>
+> Subject: [RFC PATCH] VFS: Simplify truncate logic in do_filp_open()
+>
+> If that patch is correct, it will considerably simplify the second
+> part of your patch.
 
-diff --git a/drivers/isdn/Kconfig b/drivers/isdn/Kconfig
-index 022a194..4fb6016 100644
---- a/drivers/isdn/Kconfig
-+++ b/drivers/isdn/Kconfig
-@@ -7,15 +7,14 @@ menuconfig ISDN
- 	depends on NET
- 	depends on !S390
- 	---help---
--	  ISDN ("Integrated Services Digital Networks", called RNIS in France)
--	  is a special type of fully digital telephone service; it's mostly
--	  used to connect to your Internet service provider (with SLIP or
--	  PPP).  The main advantage is that the speed is higher than ordinary
--	  modem/telephone connections, and that you can have voice
--	  conversations while downloading stuff.  It only works if your
--	  computer is equipped with an ISDN card and both you and your service
--	  provider purchased an ISDN line from the phone company.  For
--	  details, read <http://www.alumni.caltech.edu/~dank/isdn/> on the WWW.
-+	  ISDN ("Integrated Services Digital Network", called RNIS in France)
-+	  is a fully digital telephone service that can be used for voice and
-+	  data connections.  If your computer is equipped with an ISDN
-+	  adapter you can use it to connect to your Internet service provider
-+	  (with SLIP or PPP) faster than via a conventional telephone modem
-+	  (though still much slower than with DSL) or to make and accept
-+	  voice calls (eg. turning your PC into a software answering machine
-+	  or PABX).
- 
- 	  Select this option if you want your kernel to support ISDN.
- 
-@@ -39,17 +38,22 @@ menuconfig ISDN_I4L
- 	  It is still available, though, for use with adapters that are not
- 	  supported by the new CAPI subsystem yet.
- 
--source "drivers/isdn/mISDN/Kconfig"
--
- source "drivers/isdn/i4l/Kconfig"
- 
- menuconfig ISDN_CAPI
- 	tristate "CAPI 2.0 subsystem"
- 	help
--	  This provides the CAPI (Common ISDN Application Programming
--	  Interface, a standard making it easy for programs to access ISDN
--	  hardware, see <http://www.capi.org/>.  This is needed for AVM's set
--	  of active ISDN controllers like B1, T1, M1.
-+	  This provides CAPI (the Common ISDN Application Programming
-+	  Interface) Version 2.0, a standard making it easy for programs to
-+	  access ISDN hardware in a device independent way. (For details see
-+	  <http://www.capi.org/>.)  CAPI supports making and accepting voice
-+	  and data connections, controlling call options and protocols,
-+	  as well as ISDN supplementary services like call forwarding or
-+	  three-party conferences (if supported by the specific hardware
-+	  driver).
-+
-+	  Select this option and the appropriate hardware driver below if
-+	  you have an ISDN adapter supported by the CAPI subsystem.
- 
- if ISDN_CAPI
- 
-@@ -61,4 +65,13 @@ endif # ISDN_CAPI
- 
- source "drivers/isdn/gigaset/Kconfig"
- 
-+source "drivers/isdn/hysdn/Kconfig"
-+
-+source "drivers/isdn/mISDN/Kconfig"
-+
-+config ISDN_HDLC
-+	tristate
-+	select CRC_CCITT
-+	select BITREVERSE
-+
- endif # ISDN
-diff --git a/drivers/isdn/i4l/Kconfig b/drivers/isdn/i4l/Kconfig
-index 07c4e49..9c6650e 100644
---- a/drivers/isdn/i4l/Kconfig
-+++ b/drivers/isdn/i4l/Kconfig
-@@ -134,14 +134,7 @@ source "drivers/isdn/sc/Kconfig"
- 
- source "drivers/isdn/act2000/Kconfig"
- 
--source "drivers/isdn/hysdn/Kconfig"
--
- endmenu
- # end ISDN_I4L
- endif
- 
--config ISDN_HDLC
--	tristate
--	select CRC_CCITT
--	select BITREVERSE
--
+[...]
+>>  	/*
+>> -	 * It is now safe to drop the mnt write
+>> -	 * because the filp has had a write taken
+>> -	 * on its behalf.
+>> +	 * It is now safe to drop the mnt write because the filp has
+>> +	 * had a write taken on its behalf. (NOTE: since O_TRUNC can
+>> +	 * be used with O_RDONLY, this needs to cover truncate path)
+>>  	 */
+>> -	if (will_truncate)
+>> -		mnt_drop_write(nd.path.mnt);
+>> +	if (will_truncate) {
+>> +		mnt_drop_write(mnt_writer);
+>> +		mntput(mnt_writer);
+>> +	}
+
+Unfortunately, no. I already noted that we can't it simply. ;)
+
+Thanks.
 -- 
-1.6.5.3.298.g39add
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
