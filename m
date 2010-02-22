@@ -1,66 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330Ab0BVJ5B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 04:57:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53061 "EHLO mx2.mail.elte.hu"
+	id S1752600Ab0BVKBi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 05:01:38 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55050 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863Ab0BVJ5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 04:57:00 -0500
-Date: Mon, 22 Feb 2010 10:56:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Alexandre Julliard <julliard@winehq.org>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [GIT PULL] hw-breakpoint regression fixes
-Message-ID: <20100222095620.GC20844@elte.hu>
-References: <20100219180435.GB4736@in.ibm.com>
- <1266603171-6615-1-git-send-regression-fweisbec@gmail.com>
+	id S1752110Ab0BVKBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 05:01:36 -0500
+Date: Mon, 22 Feb 2010 11:01:34 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Stefan Achatz <erazor_de@users.sourceforge.net>,
+       Jussi Kivilinna <jussi.kivilinna@mbnet.fi>, wylda@volny.cz,
+       Pavel Machek <pavel@suse.cz>,
+       Alessandro Guido <ag@alessandroguido.name>,
+       Tomas Hanak <tomas.hanak@gmail.com>, Jason Noble <nobleja@polezero.com>,
+       simon.windows@gmail.com, Sean Hildebrand <silverwraithii@gmail.com>,
+       Sid Boyce <sboyce@blueyonder.co.uk>, Henning Glawe <glaweh@debian.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] HID: documentation additions and elimination of
+ legacy filenames for Roccat Kone driver
+In-Reply-To: <20100222062916.GA2095@core.coreip.homeip.net>
+Message-ID: <alpine.LNX.2.00.1002221100130.30967@pobox.suse.cz>
+References: <201002200911.53900.stefan_achatz@web.de> <20100221081327.GB18298@core.coreip.homeip.net> <201002211750.45618.erazor_de@users.sourceforge.net> <20100222062916.GA2095@core.coreip.homeip.net>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266603171-6615-1-git-send-regression-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 21 Feb 2010, Dmitry Torokhov wrote:
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Sun, Feb 21, 2010 at 05:50:45PM +0100, Stefan Achatz wrote:
+> >  This patch adds more documentation and renames sysfs attributes to eliminate my legacy naming.
+> 
+> There are still questions as to the intended use of the attributes...
 
-> Ingo,
-> 
-> Please pull the perf/urgent branch that can be found at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	perf/urgent
-> 
-> Thanks,
-> 	Frederic
-> ---
-> 
-> Frederic Weisbecker (2):
->       hw-breakpoints: Accept breakpoints on NULL address
->       hw-breakpoint: Keep track of dr7 local enable bits
-> 
-> 
->  arch/x86/include/asm/processor.h |    2 ++
->  arch/x86/kernel/hw_breakpoint.c  |   30 +++++++-----------------------
->  arch/x86/kernel/ptrace.c         |    7 +++++--
->  3 files changed, 14 insertions(+), 25 deletions(-)
+Indeed.
 
-Pulled, thanks a lot!
+Originally there was a plan to have everything under sysfs documented in 
+Documentation/ABI.
 
-	Ingo
+Many developers (including me) have been too lazy to do that (or forgot to 
+do so), but it might still be worthwile to resurrect this.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
