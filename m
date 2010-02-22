@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955Ab0BVN2G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 08:28:06 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:31639 "EHLO
+	id S1753021Ab0BVN3q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 08:29:46 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:64489 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102Ab0BVN2B (ORCPT
+	with ESMTP id S1752260Ab0BVN3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 08:28:01 -0500
+	Mon, 22 Feb 2010 08:29:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mail-followup-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :user-agent;
-        b=PpAp8cGAJpBEbDsMiHCIz5n8Om4+0povl32dHXn8nuh7MXE2FqrE3uNLvJjME59RmX
-         HFxdSBgUL0UHEhHNgPo2GzF6kL0/m3G4+ERWfZNFNyoSPIYmHi91B5tOG6MsDsB+qg+t
-         GL2ReDSEER5T7pLXXNxiSEgUUjOq4H0CRtb7M=
-Date: Mon, 22 Feb 2010 16:27:43 +0300
+        b=pH/xrTDn+bGVMd7leX0XB4F8Eu8qknWLFDI8fX4Oeh+AgwlKfDDiWIax7PVjUTu+0K
+         yCmBl976TMEaIxwdcXmvI+wIhqAEqbFAwSzwGetRa2gjC89b1xhmAYC93UOexE9wtNYa
+         tQtRXISnnAKer2WpZ0Tku/rwJrCt3FIKwlT8s=
+Date: Mon, 22 Feb 2010 16:29:27 +0300
 From: Dan Carpenter <error27@gmail.com>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -32,8 +32,8 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Sven-Thorsten Dietrich <sdietrich@novell.com>,
        Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
        John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [patch] latency_hist: fix small memory leak
-Message-ID: <20100222132743.GB5416@bicker>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+Message-ID: <20100222132927.GC5416@bicker>
 Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	LKML <linux-kernel@vger.kernel.org>,
@@ -62,23 +62,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-index_ptr needs to be freed on the error path.
+kernel/trace/latency_hist.c
+   373  static ssize_t
+   374  latency_hist_show_maxlatproc(struct file *filp, char __user *ubuf,
+   375                        size_t cnt, loff_t *ppos)
+   376  {
+   377          char buf[1024];
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+This is a large buffer to put on the stack.
 
-diff --git a/kernel/trace/latency_hist.c b/kernel/trace/latency_hist.c
-index b3b5ea2..8edc70c 100644
---- a/kernel/trace/latency_hist.c
-+++ b/kernel/trace/latency_hist.c
-@@ -204,8 +204,10 @@ static void *l_start(struct seq_file *m, loff_t *pos)
- 			   , my_hist->beyond_hist_bound_samples
- 			   , MAX_ENTRY_NUM, "samples");
- 	}
--	if (index >= MAX_ENTRY_NUM)
-+	if (index >= MAX_ENTRY_NUM) {
-+		kfree(index_ptr);
- 		return NULL;
-+	}
- 
- 	*index_ptr = index;
- 	return index_ptr;
+regards,
+dan carpenter
