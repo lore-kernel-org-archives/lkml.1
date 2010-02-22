@@ -1,63 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330Ab0BVUY0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:24:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33356 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753800Ab0BVUYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:24:24 -0500
-Date: Mon, 22 Feb 2010 12:23:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: radeonfb backlight fix
-Message-Id: <20100222122354.50a85575.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1002161817570.23940@casper.infradead.org>
-References: <alpine.LFD.2.00.1002161817570.23940@casper.infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754454Ab0BVU0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:26:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48248 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754300Ab0BVU0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 15:26:24 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+ATfh0hg+AKW64Uf0YsWig3fIvWCKUuNdfi8Ul3t
+	jh2DiDbPrFJgE4
+Date: Mon, 22 Feb 2010 21:26:13 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: "Steven J. Magnani" <steve@digidescorp.com>
+cc: Dan Williams <dan.j.williams@intel.com>, Zhang Wei <zw@zh-kernel.org>,
+       Li Yang <leoli@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [async_tx-next PATCH 2/2] fsldma: Fix cookie issues
+In-Reply-To: <1266860439-17352-1-git-send-email-steve@digidescorp.com>
+Message-ID: <Pine.LNX.4.64.1002222123350.4120@axis700.grange>
+References: <1266860439-17352-1-git-send-email-steve@digidescorp.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57999999999999996
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 18:19:21 +0000 (GMT) James Simmons <jsimmons@infradead.org> wrote:
+On Mon, 22 Feb 2010, Steven J. Magnani wrote:
 
-> 
-> A simple patch to allow radeonfb to compile if the backlight option is 
-> set.
-> 
-> diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-> index 6c37e8e..2c01726 100644
-> --- a/drivers/video/aty/radeon_base.c
-> +++ b/drivers/video/aty/radeon_base.c
-> @@ -276,7 +276,7 @@ static int nomtrr = 0;
->  #endif
->  static int force_sleep;
->  static int ignore_devlist;
-> -#ifdef CONFIG_PMAC_BACKLIGHT
-> +#ifdef CONFIG_FB_RADEON_BACKLIGHT
->  static int backlight = 1;
->  #else
->  static int backlight = 0;
+> diff -uprN a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+> --- a/include/linux/dmaengine.h	2010-02-22 11:18:11.000000000 -0600
+> +++ b/include/linux/dmaengine.h	2010-02-22 11:18:30.000000000 -0600
+> @@ -31,6 +31,8 @@
+>   * if dma_cookie_t is >0 it's a DMA request cookie, <0 it's an error code
+>   */
+>  typedef s32 dma_cookie_t;
+> +#define DMA_MIN_COOKIE	1
+> +#define DMA_MAX_COOKIE	2147483647
 
-Changelog is very poor.  It doesn't tell us what the error was, nor how
-the patch fixes it.
+Taking into account, that dma_cookie_t is 32 bits:
 
-I attempted to reverse-engineer the patch but gave up.
++#define DMA_MAX_COOKIE		((1 << 31) - 1)
 
-radeonfb_bl_init() is omitted from the link if
-CONFIG_FB_RADEON_BACKLIGHT=n.  And this code:
-
-	if (backlight)
-		radeonfb_bl_init(rinfo);
-
-will emit a call to radeonfb_bl_init() regardless of the value of
-`backlight', so as far as I can tell, there will be a linkage error
-with CONFIG_FB_RADEON_BACKLIGHT=n both before and after your patch.
-
-So.  Please resend, with a proper description.  And a Signed-off-by: line.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
