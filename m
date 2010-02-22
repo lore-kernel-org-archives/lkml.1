@@ -1,52 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503Ab0BVQfI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 11:35:08 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:35142 "HELO
-	outboundproxy6.bluehost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1751893Ab0BVQfF (ORCPT
+	id S1752043Ab0BVQg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 11:36:27 -0500
+Received: from gabe.freedesktop.org ([131.252.210.177]:35666 "EHLO
+	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126Ab0BVQg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 11:35:05 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=HxD753s1by7iZBa5a5Jfbt2eJbS/5Tv8L9S5JF1Hgmw/gZaCM3o9Kjto/t2EhzBd3q5+20PHkS/nMXOkGbLTBBD7mZx5oSb2oqzNVL1JwLowglyUUxSPo2FE374BDP9f;
-Date: Mon, 22 Feb 2010 08:32:36 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pedro Ribeiro <pedrib@gmail.com>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+	Mon, 22 Feb 2010 11:36:26 -0500
+From: Eric Anholt <eric@anholt.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pedro Ribeiro <pedrib@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-kernel@vger.kernel.org,
        pm list <linux-pm@lists.linux-foundation.org>
 Subject: Re: [PATCH] i915 / PM: Fix hibernate regression caused by
  suspend/resume splitting
-Message-ID: <20100222083236.45bf150d@jbarnes-piketon>
 In-Reply-To: <alpine.LFD.2.00.1002220746260.4141@localhost.localdomain>
 References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
 	<201002172320.57491.rjw@sisk.pl>
 	<74fd948d1002171629v7e86371cna4441e8feb27c326@mail.gmail.com>
 	<201002182306.28052.rjw@sisk.pl>
 	<alpine.LFD.2.00.1002220746260.4141@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Date: Mon, 22 Feb 2010 11:36:36 -0500
+Message-ID: <87hbp9b52j.fsf@pollan.anholt.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010 07:47:53 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Jesse, Eric, what's the status of this patch? 
-> 
-> Should I take it directly (I'd really like an Ack) or is it queued up in 
-> some tree waiting for me to pull? Or is there some reason not to have it, 
+On Mon, 22 Feb 2010 07:47:53 -0800 (PST), Linus Torvalds <torvalds@linux-fo=
+undation.org> wrote:
+>=20
+> Jesse, Eric, what's the status of this patch?=20
+>=20
+> Should I take it directly (I'd really like an Ack) or is it queued up in=
+=20
+> some tree waiting for me to pull? Or is there some reason not to have it,=
+=20
 > despite it fixing things for some people?
 
-Hm, I thought Eric had applied that to his for-linus branch, but it
-looks like that branch is empty now.  Maybe Rafael posted an update
-that Eric missed and so you just have a partial fix in your tree?
+Acked-by: Eric Anholt <eric@anholt.net>
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I just reviewed the rest of my tag:todo and I don't think I have
+anything else I want to pull request for this kernel (finally), so if
+you could just grab this patch it would be great.
+
+(Well, there's also "quit trying to _LID on 855 because it's always a
+pack of lies", but I'd rather do it as a backport later in case someone
+screams)
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuCspQACgkQHUdvYGzw6ve4ugCeOGhREYyfd4NszfhiKiGda/OP
+usIAnRQkBw81tfG3bmEGBNruqqmWJQ4t
+=0Nxr
+-----END PGP SIGNATURE-----
+--=-=-=--
