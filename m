@@ -1,62 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185Ab0BVXZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 18:25:21 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38229 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754876Ab0BVXZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 18:25:20 -0500
-Date: Tue, 23 Feb 2010 10:25:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: devicetree-discuss@lists.ozlabs.org, monstr@monstr.eu,
-       linux-kernel@vger.kernel.org, jeremy.kerr@canonical.com
-Subject: Re: [PATCH 2/2] of/flattree: Make unflatten_device_tree() safe to 
- call from any arch
-Message-Id: <20100223102514.46369a42.sfr@canb.auug.org.au>
-In-Reply-To: <fa686aa41002221511r67c79534od562bef934c4d7a7@mail.gmail.com>
-References: <20100222154816.3604.67114.stgit@angua>
-	<20100222155059.3604.39718.stgit@angua>
-	<20100223095118.bed93bac.sfr@canb.auug.org.au>
-	<fa686aa41002221511r67c79534od562bef934c4d7a7@mail.gmail.com>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F"
+	id S1755253Ab0BVX0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 18:26:19 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:59578 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883Ab0BVX0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 18:26:17 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Anssi Hannula <anssi.hannula@iki.fi>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Tue, 23 Feb 2010 00:26:02 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org> <201002222035.36043.anssi.hannula@iki.fi>
+In-Reply-To: <201002222035.36043.anssi.hannula@iki.fi>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002230026.02941.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Montag, 22. Februar 2010 19:35:35 schrieb Anssi Hannula:
+> On maanantai 22 helmikuu 2010 17:28:36 Alan Stern wrote:
 
-Hi Grant,
+> > The major difference between the logs is in the way the data get
+> > divided up into packets.  In both the successful logs, there are
+> > sequences of bulk-OUT packets with lengths like:
+> > 
+> > 	44, 1, 15, 1, 13
+> > 
+> > where the unsuccessful transfer just has a single packet of length 74.
+> > Also, the successful transfers show a lot of bulk-IN traffic where the
+> > unsuccessful transfer doesn't have any.  I don't know if that is
+> > relevant, however.
+> > 
+> > No other differences stand out.
+> 
+> I guess that would suggest that the device doesn't allow the initialization 
+> data to be broken into packets arbitrarily (though some differences seem 
+> allowed, as the windows driver transmits them differently).
 
-On Mon, 22 Feb 2010 16:11:48 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> No reason, just wasn't thinking of that.  I've changed this.
+Hi,
 
-Thanks.  Andrew Morton says that (unless there is a good reason) we
-should program the kernel in C not CPP.
+let's try testing this hypothesis. Can you change the following line in
+usb_serial_probe():
+		if (kfifo_alloc(&port->write_fifo, PAGE_SIZE, GFP_KERNEL))
+			goto probe_error;
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+to:
 
---Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F
-Content-Type: application/pgp-signature
+		if (kfifo_alloc(&port->write_fifo, 64, GFP_KERNEL))
+			goto probe_error;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+This may shed some light on the behavior.
 
-iEYEARECAAYFAkuDEloACgkQjjKRsyhoI8zHQwCfYX3qluTEv1ODD/poMg+QSsu0
-38IAn2mdbz08wt9A7bzvyFQmoB7M0/H4
-=c+un
------END PGP SIGNATURE-----
-
---Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F--
+	Regards
+		Oliver
