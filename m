@@ -1,64 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862Ab0BWXyx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 18:54:53 -0500
-Received: from borg.medozas.de ([188.40.89.202]:44509 "EHLO borg.medozas.de"
+	id S1754902Ab0BWXzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 18:55:10 -0500
+Received: from mail.idngh.com ([41.204.36.5]:36837 "EHLO idngh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754758Ab0BWXyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 18:54:52 -0500
-Date: Wed, 24 Feb 2010 00:54:51 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: tools/perf: libraries must come after objects
-In-Reply-To: <20100222134754.GA8559@elte.hu>
-Message-ID: <alpine.LSU.2.01.1002240049280.16982@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1002110124030.13770@obet.zrqbmnf.qr> <20100222105025.GA25661@elte.hu> <alpine.LSU.2.01.1002221430440.23762@obet.zrqbmnf.qr> <20100222134754.GA8559@elte.hu>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	id S1754758Ab0BWXzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 18:55:07 -0500
+Message-ID: <20100222175338.jvx0u2c19kooggw4@mail.idngh.com>
+Date: Mon, 22 Feb 2010 17:53:38 +0000
+From: JOSE LOANS <joseokes005@admin.in.th>
+To: undisclosed-recipients:;
+Subject: 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+X-idngh-MailScanner-Information: Please contact the ISP for more information
+X-idngh-MailScanner-ID: 1NjcTa-00061G-3v
+X-idngh-MailScanner: Found to be clean
+X-idngh-MailScanner-SpamCheck: not spam, SpamAssassin (cached, score=-2.637,
+	required 4, ALL_TRUSTED -1.80, BAYES_00 -2.60, MISSING_SUBJECT 1.76)
+X-idngh-MailScanner-From: joseokes005@admin.in.th
+Subject: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Monday 2010-02-22 14:47, Ingo Molnar wrote:
->> >> tools/perf: libraries must come after objects
->> >> 
->> >> Link order matters, especially now since distributions are
->> >> using -Wl,--as-needed.
+JOSE LOANS CO-OPERATION gives out loans at low interest rate 3% to
+student,individuals,business men and woman with low credit all over
+the globe.Sound lending is base on the promise that the borrowers will
+repay.contact us on :(:+234 705 167 9220)
 
->> >>  tools/perf/Makefile |   16 ++++++++--------
->> >>  1 files changed, 8 insertions(+), 8 deletions(-)
->> >
->> >FYI, this patch doesnt apply to the latest version of perf:
->> >  http://people.redhat.com/mingo/tip.git/README
 
-Seems like it was already merged - half of it.
+First Name:_________________________ __
+Gender:_______________________ ________
+Marital status:_______________________
+Contact Address:______________________
+Country:______________________ ________
+Amount Needed as Loan:________________
+Loan Duration:_____________________ ___
+Monthly Income/Yearly Income:_________
+Occupation:___________________ ________
+Purpose for Loan:_____________________
+Phone:________________________ ________
 
-There is this perl linking error now remaining, because
-libperf.a comes after the perl part, and I am not sure
-how to fix cleanly that Makefile without making more
-mess of it.
 
-$ make CC=gcc-4.4
-touch .perf.dev.null
-gcc-4.4 -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement  -fstack-protector-all -Iutil/include -I/usr/include/libdwarf -DSHA1_HEADER='<openssl/sha.h>'  -o perf perf.o \
-		 builtin-annotate.o builtin-bench.o bench/sched-messaging.o bench/sched-pipe.o bench/mem-memcpy.o builtin-diff.o builtin-help.o builtin-sched.o builtin-buildid-list.o builtin-buildid-cache.o builtin-list.o builtin-record.o builtin-report.o builtin-stat.o builtin-timechart.o builtin-top.o builtin-trace.o builtin-probe.o builtin-kmem.o builtin-lock.o  `perl -MExtUtils::Embed -e ldopts 2>/dev/null`  libperf.a -lpthread -lrt -lelf -lm -lelf -ldwarf -lbfd -liberty -lz 
-libperf.a(trace-event-perl.o): In function `define_flag_value':
-/home/jengelh/code/linux/tools/perf/util/trace-event-perl.c:125: undefined reference to `Perl_push_scope'
-[...]
-/home/jengelh/code/linux/tools/perf/Context.c:54: undefined reference to `Perl_croak_nocontext'
-collect2: ld returned 1 exit status
-make: *** [perf] Error 1
-rm .perf.dev.null
 
-$ perl -MExtUtils::Embed -e ldopts
--Wl,-E
--Wl,-rpath,/usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE
--L/usr/local/lib64
--L/usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE -lperl -lm
--ldl -lcrypt -lpthread
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
+
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
