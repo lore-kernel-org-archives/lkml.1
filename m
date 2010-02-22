@@ -1,146 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173Ab0BVKab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 05:30:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11731 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592Ab0BVKa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 05:30:29 -0500
-Date: Mon, 22 Feb 2010 11:30:26 +0100
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.17.1
-Message-ID: <20100222103026.GA6375@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752232Ab0BVKev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 05:34:51 -0500
+Received: from mail.windriver.com ([147.11.1.11]:36038 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862Ab0BVKet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 05:34:49 -0500
+From: Dongdong Deng <dongdong.deng@windriver.com>
+To: rusty@rustcorp.com.au, xiyou.wangcong@gmail.com
+Cc: linux-kernel@vger.kernel.org, jason.wessel@windriver.com,
+       davem@davemloft.net, dongdong.deng@windriver.com
+Subject: [RESEND PATCH] module param_call: fix potential NULL pointer dereference
+Date: Mon, 22 Feb 2010 18:40:51 +0800
+Message-Id: <1266835251-15457-1-git-send-email-dongdong.deng@windriver.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 22 Feb 2010 10:34:42.0033 (UTC) FILETIME=[A4921610:01CAB3AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The param_set_fn() function will get a parameter which is a NULL
+pointer when insmod module via bare params as following method:
 
-The stable util-linux-ng 2.17.1 release is available at
+$insmod foo.ko foo
 
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
+If the param_set_fn() function didn't check that parameter and used
+it directly, it could caused an OOPS due to NULL pointer dereference.
 
-Feedback and bug reports, as always, are welcomed.
+The solution is simple:
+Using "" to replace NULL parameter, thereby the param_set_fn()
+function will never get a NULL pointer.
 
-	Karel
+Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+---
+ kernel/params.c |   30 ++++++------------------------
+ 1 files changed, 6 insertions(+), 24 deletions(-)
 
-
-Util-linux-ng 2.17.1 Release Notes
-==================================
-
-Release highlights
-------------------
-
-fdisk:
-   - supports new command line option "-c" to disable DOS-compatible mode from
-     command line.
-
-     The DOS-compatible mode is DEPRECATED and will be disabled by default
-     in the next major release. Currently, the DOS mode is enabled by default
-     for backward compatibility only. 
-
-     The cylinders as display units are DEPRECATED. It's recommended to use
-     "-u" command line option or "u" fdisk command and use sectors as display
-     units.
-
-   Note that the new support for 4K-sector disks is useless in DOS-compatible
-   mode. The fdisk command prints warning(s) when startup in DOS mode.
-
-
-Changes since v2.17
--------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
-
-
-blkid:
-   - add newline when only one value is printed  [Karel Zak]
-   - fix #ifdef HAVE_TERMIO[S]_H  [Karel Zak]
-   - probe for PT, don't probe for FS on small whole-disks  [Karel Zak]
-   - report open() errors in low-level probing  [Karel Zak]
-build-sys:
-   - add missing tests for libuuid and libblkid  [Karel Zak]
-   - release++ (v2.17.1-rc1)  [Karel Zak]
-   - remove duplicate #includes  [Karel Zak]
-cal:
-   - fix first day of the week calculation on BE systems  [Karel Zak]
-cfdisk:
-   - set '[New]' as default item on menu for non allocated space instead of '[Help]'.  [Francesco Cosoleto]
-   - set '[Quit]' as default menu item on first run instead of '[Bootable]'.  [Francesco Cosoleto]
-docs:
-   - add v2.17.1 ReleaseNotes  [Karel Zak]
-   - update AUTHORS file  [Karel Zak]
-fdisk:
-   - add -c option (switch off DOS mode)  [Karel Zak]
-   - cleanup alignment, default to 1MiB offset  [Karel Zak]
-   - cleanup help, add -h option  [Karel Zak]
-   - cleanup warnings  [Karel Zak]
-   - don't check alignment_offset against geometry  [Karel Zak]
-   - don't include scsi.h  [Karel Zak]
-   - don't use 1MiB grain on small devices  [Karel Zak]
-   - fallback for topology values  [Karel Zak]
-   - fix ALIGN_UP  [Karel Zak]
-   - fix check_alignment()  [Karel Zak]
-   - fix default first sector  [Karel Zak]
-   - swap VTOC values for warning messages  [Karel Zak]
-   - use "optimal I/O size" in warnings  [Karel Zak]
-   - use 1MiB offset and grain always when possible  [Karel Zak]
-   - use more elegant way to count and check alignment  [Karel Zak]
-   - use optimal_io_size  [Karel Zak]
-include:
-   - add min/max macros  [Karel Zak]
-libblkid:
-   - add minimal sizes for OCFS and GFS  [Karel Zak]
-   - add sanity checks for FAT to DOS PT parser  [Karel Zak]
-   - call read() per FAT root dir entry  [Karel Zak]
-   - disable read-ahead when probing device files  [Linus Torvalds]
-   - don't call read() per FAT dir-entry on large disks  [Karel Zak]
-   - don't probe for GPT and Unixware PT on floppies  [Karel Zak]
-   - don't return error on empty files  [Karel Zak]
-   - fix ZSF detection  [Andreas Dilger]
-   - fix segfault in drdb  [Matthias König]
-   - more robust minix probing  [Karel Zak]
-   - read whole SB buffer (69kB) on large disks  [Karel Zak]
-   - read() optimization for small devices  [Karel Zak]
-   - restrict RAID/FS proving for small devices (1.4MiB)  [Karel Zak]
-   - rewrite blkid_probe_get_buffer()  [Karel Zak]
-   - set minimal size for jfs, reiser, swap and zfs  [Karel Zak]
-login:
-   - check that after tty reopen we still work with a terminal  [Karel Zak]
-   - don't link PAMed version with libcrypt  [Karel Zak]
-   - use fd instead of pathname for update tty's owner and permissions  [Yann Droneaud]
-mount:
-   - advise users to use "modprobe", not "insmod"  [Karel Zak]
-   - update documentation about barrier mount options  [Jan Kara]
-   - warn users that mtab is read-only  [Karel Zak]
-namei:
-   - fix man page formatting  [Vladimir Brednikov]
-po:
-   - merge changes  [Karel Zak]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update eu.po (from translationproject.org)  [Mikel Olasagasti Uranga]
-   - update id.po (from translationproject.org)  [Arif E. Nugroho]
-   - update pl.po (from translationproject.org)  [Jakub Bogusz]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-sfdisk:
-   - make sure writes make it to disk in write_partitions()  [Bryn M. Reeves]
-swapon:
-   - fix swapsize calculation  [Karel Zak]
-tests:
-   - add fdisk alignment tests  [Karel Zak]
-   - fix RAIDs tests  [Karel Zak]
-   - fix and update old fdisk tests  [Karel Zak]
-   - update FS test images  [Karel Zak]
-   - update fdisk tests  [Karel Zak]
-   - update fdisk tests (add whitespaces)  [Karel Zak]
-wipefs:
-   - ignore devices with partition table  [Karel Zak]
+diff --git a/kernel/params.c b/kernel/params.c
+index cf1b691..548d680 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -101,7 +101,11 @@ static char *next_arg(char *args, char **param, char **val)
+ 
+ 	*param = args;
+ 	if (!equals)
+-		*val = NULL;
++		/*
++		 * We used to hand NULL for bare params, but most code
++		 *  didn't handle it. Using "" to replace NULL here.
++		 */
++		*val = "";
+ 	else {
+ 		args[equals] = '\0';
+ 		*val = args + equals + 1;
+@@ -180,10 +184,7 @@ int parse_args(const char *name,
+ 	int param_set_##name(const char *val, struct kernel_param *kp)	\
+ 	{								\
+ 		tmptype l;						\
+-		int ret;						\
+-									\
+-		if (!val) return -EINVAL;				\
+-		ret = strtolfn(val, 0, &l);				\
++		int ret = strtolfn(val, 0, &l);				\
+ 		if (ret == -EINVAL || ((type)l != l))			\
+ 			return -EINVAL;					\
+ 		*((type *)kp->arg) = l;					\
+@@ -204,12 +205,6 @@ STANDARD_PARAM_DEF(ulong, unsigned long, "%lu", unsigned long, strict_strtoul);
+ 
+ int param_set_charp(const char *val, struct kernel_param *kp)
+ {
+-	if (!val) {
+-		printk(KERN_ERR "%s: string parameter expected\n",
+-		       kp->name);
+-		return -EINVAL;
+-	}
+-
+ 	if (strlen(val) > 1024) {
+ 		printk(KERN_ERR "%s: string parameter too long\n",
+ 		       kp->name);
+@@ -238,9 +233,6 @@ int param_set_bool(const char *val, struct kernel_param *kp)
+ {
+ 	bool v;
+ 
+-	/* No equals means "set"... */
+-	if (!val) val = "1";
+-
+ 	/* One of =[yYnN01] */
+ 	switch (val[0]) {
+ 	case 'y': case 'Y': case '1':
+@@ -310,12 +302,6 @@ static int param_array(const char *name,
+ 	kp.arg = elem;
+ 	kp.flags = flags;
+ 
+-	/* No equals sign? */
+-	if (!val) {
+-		printk(KERN_ERR "%s: expects arguments\n", name);
+-		return -EINVAL;
+-	}
+-
+ 	*num = 0;
+ 	/* We expect a comma-separated list of values. */
+ 	do {
+@@ -382,10 +368,6 @@ int param_set_copystring(const char *val, struct kernel_param *kp)
+ {
+ 	const struct kparam_string *kps = kp->str;
+ 
+-	if (!val) {
+-		printk(KERN_ERR "%s: missing param set value\n", kp->name);
+-		return -EINVAL;
+-	}
+ 	if (strlen(val)+1 > kps->maxlen) {
+ 		printk(KERN_ERR "%s: string doesn't fit in %u chars.\n",
+ 		       kp->name, kps->maxlen-1);
 -- 
- Karel Zak  <kzak@redhat.com>
+1.6.0.4
+
