@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115Ab0BVM2J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 07:28:09 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56602 "EHLO
+	id S1753191Ab0BVM2N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 07:28:13 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:62947 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716Ab0BVM1M (ORCPT
+	with ESMTP id S1752709Ab0BVM1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Feb 2010 07:27:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=oK7QT25KOVjkgeLHFINYWpzGxHNSQk7jQQTJqaKI+CtbnaD2tlYgDDs7KG9nlg/jXO
-         5ZwOj5eMh+4r12wbmlUAQWrekzaJ82y9DxzK2uR1qhthXnBSPt3SJNxLDkBFeEyISNyf
-         vuL1huo70k5i6U71Ovd5eYKwIhYfFrrjDerwQ=
+        b=YxN6384sAqh6Qx4E8yG8Qlhw9LWys1COtpNHHxkvJTuGvY7bXOAPjVIcI652CkJjKk
+         lupZUTBfW4To+F4KNNy+TW8EnatdSgML3YbvzPjld2FtP7f27i/YAr23pIYeGWuEZ5CS
+         m4q4+1lZ54wk7iIbdBMXSposKeop9LqbXL7U0=
 From: Stefan Melmuk <stefan.melmuk@gmail.com>
 To: Jens Axboe <axboe@kernel.dk>
 Cc: linux-kernel@vger.kernel.org, Stefan Melmuk <stefan.melmuk@gmail.com>
-Subject: [PATCH 4/8] cdrom: added some spaces to fix coding style issues
-Date: Mon, 22 Feb 2010 13:26:34 +0100
-Message-Id: <1266841598-19662-4-git-send-email-stefan.melmuk@gmail.com>
+Subject: [PATCH 5/8] cdrom: fixed assignment in if condition style issues
+Date: Mon, 22 Feb 2010 13:26:35 +0100
+Message-Id: <1266841598-19662-5-git-send-email-stefan.melmuk@gmail.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <1266841598-19662-1-git-send-email-stefan.melmuk@gmail.com>
 References: <1266841598-19662-1-git-send-email-stefan.melmuk@gmail.com>
@@ -26,235 +26,332 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added required spaces around binary operators and after commas.
+Fixed all assignments in conditions errors.
 
 Signed-off-by: Stefan Melmuk <stefan.melmuk@gmail.com>
 ---
- drivers/cdrom/cdrom.c |   66 ++++++++++++++++++++++++------------------------
- 1 files changed, 33 insertions(+), 33 deletions(-)
+ drivers/cdrom/cdrom.c |   96 ++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 64 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index fdd251e..6a4f0ab 100644
+index 6a4f0ab..0062bf4 100644
 --- a/drivers/cdrom/cdrom.c
 +++ b/drivers/cdrom/cdrom.c
-@@ -288,7 +288,7 @@ static int debug;
- /* used to keep tray locked at all times */
- static int keeplocked;
- /* default compatibility mode */
--static int autoclose=1;
-+static int autoclose = 1;
- static int autoeject;
- static int lockdoor = 1;
- /* will we ever get to use this... sigh. */
-@@ -313,9 +313,9 @@ static const char *mrw_format_status[] = {
+@@ -524,7 +524,8 @@ static int cdrom_is_mrw(struct cdrom_device_info *cdi, int *write)
+ 	cgc.cmd[8] = sizeof(buffer);
+ 	cgc.quiet = 1;
  
- static const char *mrw_address_space[] = { "DMA", "GAA" };
+-	if ((ret = cdi->ops->generic_packet(cdi, &cgc)))
++	ret = cdi->ops->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
  
--#if (ERRLOGMASK!=CD_NOTHING)
-+#if (ERRLOGMASK != CD_NOTHING)
- #define cdinfo(type, fmt, args...) \
--        if ((ERRLOGMASK & type) || debug==1 ) \
-+        if ((ERRLOGMASK & type) || debug == 1 ) \
-             printk(KERN_INFO "cdrom: " fmt, ## args)
- #else
- #define cdinfo(type, fmt, args...)
-@@ -335,7 +335,7 @@ static const char *mrw_address_space[] = { "DMA", "GAA" };
- #define CDROM_CAN(type) (cdi->ops->capability & ~cdi->mask & (type))
+ 	mfd = (struct mrw_feature_desc *)&buffer[sizeof(struct feature_header)];
+@@ -532,7 +533,8 @@ static int cdrom_is_mrw(struct cdrom_device_info *cdi, int *write)
+ 		return 1;
+ 	*write = mfd->write;
  
- /* used in the audio ioctls */
--#define CHECKAUDIO if ((ret=check_for_audio_disc(cdi, cdo))) return ret
-+#define CHECKAUDIO if ((ret = check_for_audio_disc(cdi, cdo))) return ret
+-	if ((ret = cdrom_mrw_probe_pc(cdi))) {
++	ret = cdrom_mrw_probe_pc(cdi);
++	if (ret) {
+ 		*write = 0;
+ 		return ret;
+ 	}
+@@ -645,7 +647,8 @@ static int cdrom_mrw_set_lba_space(struct cdrom_device_info *cdi, int space)
+ 	cgc.buffer = buffer;
+ 	cgc.buflen = sizeof(buffer);
  
- /*
-  * Another popular OS uses 7 seconds as the hard timeout for default
-@@ -413,13 +413,13 @@ int register_cdrom(struct cdrom_device_info *cdi)
- 	cdo->n_minors = 0;
-         cdi->options = CDO_USE_FFLAGS;
+-	if ((ret = cdrom_mode_sense(cdi, &cgc, cdi->mrw_mode_page, 0)))
++	ret = cdrom_mode_sense(cdi, &cgc, cdi->mrw_mode_page, 0);
++	if (ret)
+ 		return ret;
  
--	if (autoclose==1 && CDROM_CAN(CDC_CLOSE_TRAY))
-+	if (autoclose == 1 && CDROM_CAN(CDC_CLOSE_TRAY))
- 		cdi->options |= (int) CDO_AUTO_CLOSE;
--	if (autoeject==1 && CDROM_CAN(CDC_OPEN_TRAY))
-+	if (autoeject == 1 && CDROM_CAN(CDC_OPEN_TRAY))
- 		cdi->options |= (int) CDO_AUTO_EJECT;
--	if (lockdoor==1)
-+	if (lockdoor == 1)
- 		cdi->options |= (int) CDO_LOCK;
--	if (check_media_type==1)
-+	if (check_media_type == 1)
- 		cdi->options |= (int) CDO_CHECK_TYPE;
+ 	mph = (struct mode_page_header *) buffer;
+@@ -655,7 +658,8 @@ static int cdrom_mrw_set_lba_space(struct cdrom_device_info *cdi, int space)
+ 	buffer[offset + 3] = space;
+ 	cgc.buflen = size;
  
- 	if (CDROM_CAN(CDC_MRW_W))
-@@ -617,7 +617,7 @@ static int cdrom_mrw_exit(struct cdrom_device_info *cdi)
+-	if ((ret = cdrom_mode_select(cdi, &cgc)))
++	ret = cdrom_mode_select(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	printk(KERN_INFO "cdrom: %s: mrw address space %s selected\n", cdi->name, mrw_address_space[space]);
+@@ -676,7 +680,8 @@ static int cdrom_get_random_writable(struct cdrom_device_info *cdi,
+ 	cgc.cmd[8] = sizeof(buffer);		/* often 0x18 */
+ 	cgc.quiet = 1;
+ 
+-	if ((ret = cdi->ops->generic_packet(cdi, &cgc)))
++	ret = cdi->ops->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	memcpy(rfd, &buffer[sizeof(struct feature_header)], sizeof (*rfd));
+@@ -697,7 +702,8 @@ static int cdrom_has_defect_mgt(struct cdrom_device_info *cdi)
+ 	cgc.cmd[8] = sizeof(buffer);
+ 	cgc.quiet = 1;
+ 
+-	if ((ret = cdi->ops->generic_packet(cdi, &cgc)))
++	ret = cdi->ops->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	feature_code = (__be16 *) &buffer[sizeof(struct feature_header)];
+@@ -715,7 +721,8 @@ static int cdrom_is_random_writable(struct cdrom_device_info *cdi, int *write)
+ 
+ 	*write = 0;
+ 
+-	if ((ret = cdrom_get_random_writable(cdi, &rfd)))
++	ret = cdrom_get_random_writable(cdi, &rfd);
++	if (ret)
+ 		return ret;
+ 
+ 	if (CDF_RWRT == be16_to_cpu(rfd.feature_code))
+@@ -826,10 +833,12 @@ static int cdrom_ram_open_write(struct cdrom_device_info *cdi)
+ 	struct rwrt_feature_desc rfd;
  	int ret;
  
- 	ret = cdrom_get_disc_info(cdi, &di);
--	if (ret < 0 || ret < (int)offsetof(typeof(di),disc_type))
-+	if (ret < 0 || ret < (int)offsetof(typeof(di), disc_type))
- 		return 1;
+-	if ((ret = cdrom_has_defect_mgt(cdi)))
++	ret = cdrom_has_defect_mgt(cdi);
++	if (ret)
+ 		return ret;
  
- 	ret = 0;
-@@ -767,7 +767,7 @@ static int cdrom_mrw_open_write(struct cdrom_device_info *cdi)
+-	if ((ret = cdrom_get_random_writable(cdi, &rfd)))
++	ret = cdrom_get_random_writable(cdi, &rfd);
++	if (ret)
+ 		return ret;
+ 	else if (CDF_RWRT == be16_to_cpu(rfd.feature_code))
+ 		ret = !rfd.curr;
+@@ -852,7 +861,8 @@ static void cdrom_mmc3_profile(struct cdrom_device_info *cdi)
+ 	cgc.cmd[8] = sizeof(buffer);		/* Allocation Length */
+ 	cgc.quiet = 1;
+ 
+-	if ((ret = cdi->ops->generic_packet(cdi, &cgc)))
++	ret = cdi->ops->generic_packet(cdi, &cgc);
++	if (ret)
+ 		mmc3_profile = 0xffff;
+ 	else
+ 		mmc3_profile = (buffer[6] << 8) | buffer[7];
+@@ -1265,7 +1275,8 @@ static int cdrom_slot_status(struct cdrom_device_info *cdi, int slot)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
+-	if ((ret = cdrom_read_mech_status(cdi, info)))
++	ret = cdrom_read_mech_status(cdi, info);
++	if (ret)
+ 		goto out_free;
+ 
+ 	if (info->slots[slot].disc_present)
+@@ -1295,7 +1306,8 @@ int cdrom_number_of_slots(struct cdrom_device_info *cdi)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
+-	if ((status = cdrom_read_mech_status(cdi, info)) == 0)
++	status = cdrom_read_mech_status(cdi, info);
++	if (status == 0)
+ 		nslots = info->hdr.nslots;
+ 
+ 	kfree(info);
+@@ -1353,7 +1365,8 @@ static int cdrom_select_disc(struct cdrom_device_info *cdi, int slot)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
+-	if ((ret = cdrom_read_mech_status(cdi, info))) {
++	ret = cdrom_read_mech_status(cdi, info);
++	if (ret) {
+ 		kfree(info);
+ 		return ret;
  	}
+@@ -1378,7 +1391,8 @@ static int cdrom_select_disc(struct cdrom_device_info *cdi, int slot)
  
- 	ret = cdrom_get_disc_info(cdi, &di);
--	if (ret < 0 || ret < offsetof(typeof(di),disc_type))
-+	if (ret < 0 || ret < offsetof(typeof(di), disc_type))
- 		return 1;
+ 	/* set media changed bits on both queues */
+ 	cdi->mc_flags = 0x3;
+-	if ((ret = cdrom_load_unload(cdi, slot)))
++	ret = cdrom_load_unload(cdi, slot);
++	if (ret)
+ 		return ret;
  
- 	if (!di.erasable)
-@@ -1038,7 +1038,7 @@ int open_for_data(struct cdrom_device_info *cdi)
- 			if (CDROM_CAN(CDC_CLOSE_TRAY) &&
- 			    cdi->options & CDO_AUTO_CLOSE) {
- 				cdinfo(CD_OPEN, "trying to close the tray.\n");
--				ret=cdo->tray_move(cdi,0);
-+				ret = cdo->tray_move(cdi, 0);
- 				if (ret) {
- 					cdinfo(CD_OPEN, "bummer. tried to close the tray but failed.\n");
- 					/* Ignore the error from the low
-@@ -1046,27 +1046,27 @@ int open_for_data(struct cdrom_device_info *cdi)
- 					couldn't close the tray.  We only care
- 					that there is no disc in the drive,
- 					since that is the _REAL_ problem here.*/
--					ret=-ENOMEDIUM;
-+					ret = -ENOMEDIUM;
- 					goto clean_up_and_return;
- 				}
- 			} else {
- 				cdinfo(CD_OPEN, "bummer. this drive can't close the tray.\n");
--				ret=-ENOMEDIUM;
-+				ret = -ENOMEDIUM;
- 				goto clean_up_and_return;
- 			}
- 			/* Ok, the door should be closed now.. Check again */
- 			ret = cdo->drive_status(cdi, CDSL_CURRENT);
--			if ((ret == CDS_NO_DISC) || (ret==CDS_TRAY_OPEN)) {
-+			if ((ret == CDS_NO_DISC) || (ret == CDS_TRAY_OPEN)) {
- 				cdinfo(CD_OPEN, "bummer. the tray is still not closed.\n");
- 				cdinfo(CD_OPEN, "tray might not contain a medium.\n");
--				ret=-ENOMEDIUM;
-+				ret = -ENOMEDIUM;
- 				goto clean_up_and_return;
- 			}
- 			cdinfo(CD_OPEN, "the tray is now closed.\n");
- 		}
- 		/* the door should be closed now, check for the disc */
- 		ret = cdo->drive_status(cdi, CDSL_CURRENT);
--		if (ret!=CDS_DISC_OK) {
-+		if (ret != CDS_DISC_OK) {
- 			ret = -ENOMEDIUM;
- 			goto clean_up_and_return;
- 		}
-@@ -1074,19 +1074,19 @@ int open_for_data(struct cdrom_device_info *cdi)
- 	cdrom_count_tracks(cdi, &tracks);
- 	if (tracks.error == CDS_NO_DISC) {
- 		cdinfo(CD_OPEN, "bummer. no disc.\n");
--		ret=-ENOMEDIUM;
-+		ret = -ENOMEDIUM;
- 		goto clean_up_and_return;
- 	}
- 	/* CD-Players which don't use O_NONBLOCK, workman
- 	 * for example, need bit CDO_CHECK_TYPE cleared! */
--	if (tracks.data==0) {
-+	if (tracks.data == 0) {
- 		if (cdi->options & CDO_CHECK_TYPE) {
- 		    /* give people a warning shot, now that CDO_CHECK_TYPE
- 		       is the default case! */
- 		    cdinfo(CD_OPEN, "bummer. wrong media type.\n");
- 		    cdinfo(CD_WARNING, "pid %d must open device O_NONBLOCK!\n",
- 					(unsigned int)task_pid_nr(current));
--		    ret=-EMEDIUMTYPE;
-+		    ret = -EMEDIUMTYPE;
- 		    goto clean_up_and_return;
- 		} else {
- 		    cdinfo(CD_OPEN, "wrong media type, but CDO_CHECK_TYPE not set.\n");
-@@ -1146,7 +1146,7 @@ static int check_for_audio_disc(struct cdrom_device_info *cdi,
- 			if (CDROM_CAN(CDC_CLOSE_TRAY) &&
- 			    cdi->options & CDO_AUTO_CLOSE) {
- 				cdinfo(CD_OPEN, "trying to close the tray.\n");
--				ret=cdo->tray_move(cdi,0);
-+				ret = cdo->tray_move(cdi, 0);
- 				if (ret) {
- 					cdinfo(CD_OPEN, "bummer. tried to close tray but failed.\n");
- 					/* Ignore the error from the low
-@@ -1162,11 +1162,11 @@ static int check_for_audio_disc(struct cdrom_device_info *cdi,
- 			}
- 			/* Ok, the door should be closed now.. Check again */
- 			ret = cdo->drive_status(cdi, CDSL_CURRENT);
--			if ((ret == CDS_NO_DISC) || (ret==CDS_TRAY_OPEN)) {
-+			if ((ret == CDS_NO_DISC) || (ret == CDS_TRAY_OPEN)) {
- 				cdinfo(CD_OPEN, "bummer. the tray is still not closed.\n");
- 				return -ENOMEDIUM;
- 			}
--			if (ret!=CDS_DISC_OK) {
-+			if (ret != CDS_DISC_OK) {
- 				cdinfo(CD_OPEN, "bummer. disc isn't ready.\n");
- 				return -EIO;
- 			}
-@@ -1177,7 +1177,7 @@ static int check_for_audio_disc(struct cdrom_device_info *cdi,
- 	if (tracks.error)
- 		return(tracks.error);
- 
--	if (tracks.audio==0)
-+	if (tracks.audio == 0)
- 		return -EMEDIUMTYPE;
- 
- 	return 0;
-@@ -1426,11 +1426,11 @@ static void cdrom_count_tracks(struct cdrom_device_info *cdi, tracktype* tracks)
- 	struct cdrom_tochdr header;
- 	struct cdrom_tocentry entry;
- 	int ret, i;
--	tracks->data=0;
--	tracks->audio=0;
--	tracks->cdi=0;
--	tracks->xa=0;
--	tracks->error=0;
-+	tracks->data = 0;
-+	tracks->audio = 0;
-+	tracks->cdi = 0;
-+	tracks->xa = 0;
-+	tracks->error = 0;
+ 	return slot;
+@@ -1433,7 +1447,8 @@ static void cdrom_count_tracks(struct cdrom_device_info *cdi, tracktype* tracks)
+ 	tracks->error = 0;
  	cdinfo(CD_COUNT_TRACKS, "entering cdrom_count_tracks\n");
  	/* Grab the TOC header so we can see how many tracks there are */
- 	if ((ret = cdi->ops->audio_ioctl(cdi, CDROMREADTOCHDR, &header))) {
-@@ -1445,7 +1445,7 @@ static void cdrom_count_tracks(struct cdrom_device_info *cdi, tracktype* tracks)
- 	for (i = header.cdth_trk0; i <= header.cdth_trk1; i++) {
- 		entry.cdte_track  = i;
- 		if (cdi->ops->audio_ioctl(cdi, CDROMREADTOCENTRY, &entry)) {
--			tracks->error=CDS_NO_INFO;
-+			tracks->error = CDS_NO_INFO;
- 			return;
+-	if ((ret = cdi->ops->audio_ioctl(cdi, CDROMREADTOCHDR, &header))) {
++	ret = cdi->ops->audio_ioctl(cdi, CDROMREADTOCHDR, &header);
++	if (ret) {
+ 		if (ret == -ENOMEDIUM)
+ 			tracks->error = CDS_NO_DISC;
+ 		else
+@@ -1580,7 +1595,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cgc.quiet = 1;
+ 		setup_report_key(&cgc, ai->lsa.agid, 0);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		ai->lsa.agid = buf[7] >> 6;
+@@ -1591,7 +1607,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cdinfo(CD_DVD, "entering DVD_LU_SEND_KEY1\n");
+ 		setup_report_key(&cgc, ai->lsk.agid, 2);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		copy_key(ai->lsk.key, &buf[4]);
+@@ -1602,7 +1619,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cdinfo(CD_DVD, "entering DVD_LU_SEND_CHALLENGE\n");
+ 		setup_report_key(&cgc, ai->lsc.agid, 1);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		copy_chal(ai->lsc.chal, &buf[4]);
+@@ -1619,7 +1637,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cgc.cmd[3] = ai->lstk.lba >> 16;
+ 		cgc.cmd[2] = ai->lstk.lba >> 24;
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		ai->lstk.cpm = (buf[4] >> 7) & 1;
+@@ -1633,7 +1652,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cdinfo(CD_DVD, "entering DVD_LU_SEND_ASF\n");
+ 		setup_report_key(&cgc, ai->lsasf.agid, 5);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		ai->lsasf.asf = buf[7] & 1;
+@@ -1646,7 +1666,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		buf[1] = 0xe;
+ 		copy_chal(&buf[4], ai->hsc.chal);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 
+ 		ai->type = DVD_LU_SEND_KEY1;
+@@ -1658,7 +1679,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		buf[1] = 0xa;
+ 		copy_key(&buf[4], ai->hsk.key);
+ 
+-		if ((ret = cdo->generic_packet(cdi, &cgc))) {
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret) {
+ 			ai->type = DVD_AUTH_FAILURE;
+ 			return ret;
  		}
- 		if (entry.cdte_ctrl & CDROM_DATA_TRACK) {
-@@ -1515,8 +1515,8 @@ void init_cdrom_command(struct packet_command *cgc, void *buf, int len,
+@@ -1670,7 +1692,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		cgc.quiet = 1;
+ 		cdinfo(CD_DVD, "entering DVD_INVALIDATE_AGID\n");
+ 		setup_report_key(&cgc, ai->lsa.agid, 0x3f);
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 		break;
  
- /* DVD handling */
+@@ -1681,7 +1704,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		memset(&rpc_state, 0, sizeof(rpc_state_t));
+ 		cgc.buffer = (char *) &rpc_state;
  
--#define copy_key(dest,src)	memcpy((dest), (src), sizeof(dvd_key))
--#define copy_chal(dest,src)	memcpy((dest), (src), sizeof(dvd_challenge))
-+#define copy_key(dest, src)	memcpy((dest), (src), sizeof(dvd_key))
-+#define copy_chal(dest, src)	memcpy((dest), (src), sizeof(dvd_challenge))
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
  
- static void setup_report_key(struct packet_command *cgc, unsigned agid, unsigned type)
- {
-@@ -2501,7 +2501,7 @@ static int cdrom_ioctl_disc_status(struct cdrom_device_info *cdi)
- 		return CDS_DATA_1;
- 	/* Policy mode off */
+ 		ai->lrpcs.type = rpc_state.type_code;
+@@ -1698,7 +1722,8 @@ static int dvd_do_auth(struct cdrom_device_info *cdi, dvd_authinfo *ai)
+ 		buf[1] = 6;
+ 		buf[4] = ai->hrpcs.pdrc;
  
--	cdinfo(CD_WARNING,"This disc doesn't have any tracks I recognize!\n");
-+	cdinfo(CD_WARNING, "This disc doesn't have any tracks I recognize!\n");
- 	return CDS_NO_INFO;
- }
+-		if ((ret = cdo->generic_packet(cdi, &cgc)))
++		ret = cdo->generic_packet(cdi, &cgc);
++		if (ret)
+ 			return ret;
+ 		break;
  
-@@ -3248,7 +3248,7 @@ int cdrom_get_last_written(struct cdrom_device_info *cdi, long *last_written)
+@@ -1955,7 +1980,8 @@ static int cdrom_read_subchannel(struct cdrom_device_info *cdi,
+ 	cgc.cmd[3] = mcn ? 2 : 1;
+ 	cgc.cmd[8] = 16;
  
- 	/* if this track is blank, try the previous. */
- 	if (ti.blank) {
--		if (last_track==1)
-+		if (last_track == 1)
- 			goto use_toc;
- 		last_track--;
- 		ti_size = cdrom_get_track_info(cdi, last_track, 1, &ti);
+-	if ((ret = cdo->generic_packet(cdi, &cgc)))
++	ret = cdo->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	subchnl->cdsc_audiostatus = cgc.buffer[1];
+@@ -3172,7 +3198,8 @@ static int cdrom_get_track_info(struct cdrom_device_info *cdi, __u16 track, __u8
+ 	cgc.cmd[8] = 8;
+ 	cgc.quiet = 1;
+ 
+-	if ((ret = cdo->generic_packet(cdi, &cgc)))
++	ret = cdo->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	buflen = be16_to_cpu(ti->track_information_length) +
+@@ -3182,7 +3209,8 @@ static int cdrom_get_track_info(struct cdrom_device_info *cdi, __u16 track, __u8
+ 		buflen = sizeof(track_information);
+ 
+ 	cgc.cmd[8] = cgc.buflen = buflen;
+-	if ((ret = cdo->generic_packet(cdi, &cgc)))
++	ret = cdo->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	/* return actual fill size */
+@@ -3202,7 +3230,8 @@ static int cdrom_get_disc_info(struct cdrom_device_info *cdi, disc_information *
+ 	cgc.cmd[8] = cgc.buflen = 2;
+ 	cgc.quiet = 1;
+ 
+-	if ((ret = cdo->generic_packet(cdi, &cgc)))
++	ret = cdo->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	/* not all drives have the same disc_info length, so requeue
+@@ -3215,7 +3244,8 @@ static int cdrom_get_disc_info(struct cdrom_device_info *cdi, disc_information *
+ 		buflen = sizeof(disc_information);
+ 
+ 	cgc.cmd[8] = cgc.buflen = buflen;
+-	if ((ret = cdo->generic_packet(cdi, &cgc)))
++	ret = cdo->generic_packet(cdi, &cgc);
++	if (ret)
+ 		return ret;
+ 
+ 	/* return actual fill size */
+@@ -3278,7 +3308,8 @@ int cdrom_get_last_written(struct cdrom_device_info *cdi, long *last_written)
+ use_toc:
+ 	toc.cdte_format = CDROM_MSF;
+ 	toc.cdte_track = CDROM_LEADOUT;
+-	if ((ret = cdi->ops->audio_ioctl(cdi, CDROMREADTOCENTRY, &toc)))
++	ret = cdi->ops->audio_ioctl(cdi, CDROMREADTOCENTRY, &toc);
++	if (ret)
+ 		return ret;
+ 	sanitize_format(&toc.cdte_addr, &toc.cdte_format, CDROM_LBA);
+ 	*last_written = toc.cdte_addr.lba;
+@@ -3325,7 +3356,8 @@ static int cdrom_get_next_writable(struct cdrom_device_info *cdi, long *next_wri
+ 	}
+ 
+ use_last_written:
+-	if ((ret = cdrom_get_last_written(cdi, next_writable))) {
++	ret = cdrom_get_last_written(cdi, next_writable);
++	if (ret) {
+ 		*next_writable = 0;
+ 		return ret;
+ 	} else {
 -- 
 1.7.0
 
