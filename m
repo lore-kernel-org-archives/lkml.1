@@ -1,56 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253Ab0BVBbh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 20:31:37 -0500
-Received: from mail-qy0-f184.google.com ([209.85.221.184]:38052 "EHLO
-	mail-qy0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753796Ab0BVBbf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 20:31:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZPO1yrpSemaJBta1LmvLXYDL9rFePLQdJ33qIN7EJ59z9VK13UW69Nfs8DtoQwu2GN
-         gkv0LTzilvg4BKcCSKa9H+vAixprJkvRJZRbBGd+vJ8OTTLBMMVpgUr9hI/5bspQYwng
-         eVvfus/ZmxWGFH4OzWvs5QZGAhonixPRMFPn4=
-MIME-Version: 1.0
-In-Reply-To: <ClJsQB_ZlxO.A.S_E.RcagLB@chimera>
-References: <b_eAfX__uZL.A.lvE.HcagLB@chimera>
-	 <ClJsQB_ZlxO.A.S_E.RcagLB@chimera>
-Date: Mon, 22 Feb 2010 09:31:34 +0800
-Message-ID: <2375c9f91002211731y354a7975oc863db321375d330@mail.gmail.com>
-Subject: Re: [Bug #15319] [BUG]: Possibe recursive locking detected in sysfs
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Eric Biederman <ebiederm@aristanetworks.com>,
-       John Kacur <jkacur@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1754283Ab0BVBhf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 20:37:35 -0500
+Received: from mga03.intel.com ([143.182.124.21]:32906 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754066Ab0BVBhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 20:37:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,514,1262592000"; 
+   d="scan'208";a="246452545"
+Subject: Re: [PATCH] drivers: acpi: fan.c move a dereference below the NULL
+ test
+From: Zhang Rui <rui.zhang@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Darren Jenkins <darrenrjenkins@gmail.com>,
+       Thomas Renninger <trenn@suse.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Matthew Garrett <mjg@redhat.com>,
+       linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Janitors <kernel-janitors@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.1002190026070.17638@localhost.localdomain>
+References: <1265882202.27789.0.camel@ICE-BOX>
+	 <alpine.LFD.2.00.1002190026070.17638@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 22 Feb 2010 09:37:03 +0800
+Message-ID: <1266802623.2608.1471.camel@rzhang1-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 5:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a summary report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> know (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15319
-> Subject         : [BUG]: Possibe recursive locking detected in sysfs
-> Submitter       : John Kacur <jkacur@redhat.com>
-> Date            : 2010-02-11 17:11 (11 days old)
-> Message-ID      : <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
-> References      : http://marc.info/?l=linux-kernel&m=126590832432598&w=2
-> Handled-By      : Eric Biederman <ebiederm@aristanetworks.com>
->
->
+On Fri, 2010-02-19 at 13:27 +0800, Len Brown wrote:
+> I think think this is a run-time check for a programming error,
+> and the current fashion is to delete the check and take a fault
+> if this happens so the caller can be fixed.
+> 
+I agree.
 
-http://lkml.org/lkml/2010/2/11/329
+> There are a couple of checks like this in fan.c --
+> perhaps Rui can clean them up when he comes back next week.
+> 
+I'll send the cleanup patch later.
+
+thanks,
+rui
+
+> thanks,
+> Len Brown, Intel Open Source Technology Center
+> 
+> On Thu, 11 Feb 2010, Darren Jenkins wrote:
+> 
+> > In acpi_fan_remove() device is being dereferenced before the NULL test.
+> > This reorders the code to ensure it is checked for NULL first.
+> > 
+> > Coverity CID: 2758
+> > 
+> > Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
+> > ---
+> >  drivers/acpi/fan.c |    9 +++++++--
+> >  1 files changed, 7 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+> > index acf2ab2..dc39640 100644
+> > --- a/drivers/acpi/fan.c
+> > +++ b/drivers/acpi/fan.c
+> > @@ -298,9 +298,14 @@ static int acpi_fan_add(struct acpi_device *device)
+> >  
+> >  static int acpi_fan_remove(struct acpi_device *device, int type)
+> >  {
+> > -	struct thermal_cooling_device *cdev = acpi_driver_data(device);
+> > +	struct thermal_cooling_device *cdev;
+> > +
+> > +	if (!device)
+> > +		return -EINVAL;
+> > +
+> > +	cdev = acpi_driver_data(device);
+> >  
+> > -	if (!device || !cdev)
+> > +	if (!cdev)
+> >  		return -EINVAL;
+> >  
+> >  	acpi_fan_remove_fs(device);
+> > -- 
+> > 1.6.3.3
+> > 
+> > 
+> > 
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+
+
