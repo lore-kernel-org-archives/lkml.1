@@ -1,79 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690Ab0BVV0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 16:26:18 -0500
-Received: from mail-px0-f184.google.com ([209.85.216.184]:49847 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754489Ab0BVV0N convert rfc822-to-8bit (ORCPT
+	id S1754679Ab0BVV1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 16:27:30 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:59593 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753618Ab0BVV12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 16:26:13 -0500
+	Mon, 22 Feb 2010 16:27:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=nBfir+fTqBS8zCsKqXAOXGYy5g/UIxRqLQ4SkOcOouIVDiTlXLrHWspaP0jo/R8ZJ6
-         JzbpMVQP77H6LzYFPOWPMb+WONVDBYcrUIcltk8NomIU+sB4FidoNEK8XTRdKCjoYY55
-         0plabhRhv8mo8kdL/D5vE9lz+xj5+Hh/iYapo=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=kDhKyEd014GI/r1w+bDMI5F36lHbicC9++3GVD2ym181qUxUvbS3uUbKG+y4/eSBz8
+         BCKGHoNSYSMaZOZBDCMM/rciq4V4YlQpJ931UVahO/y14t5vIqTpO5UjgmUslYanBv83
+         QeKclvqG2IbE2csCJOtpt88cqhV7qHUtNAAhg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [git patch] atang tree: fix 2.6.32 SSD performance regression
+Date: Mon, 22 Feb 2010 22:24:35 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "Benjamin S." <sbenni@gmx.de>,
+       Jens Axboe <jens.axboe@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 22 Feb 2010 13:25:53 -0800
-Message-ID: <43e72e891002221325i5ecba6bdl2a9d560dc2afdf20@mail.gmail.com>
-Subject: Re: Linux wireless GSoC 2010 project ideas
-To: linux-wireless <linux-wireless@vger.kernel.org>
-Cc: Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002222224.35860.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 1:38 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> Google has confirmed it will have a Google Summer of Code for 2010
-> [1]. Last year we had a few projects suggested (4) and accepted (3)
-> under the Linux Foundation sponsoring organization umbrella [2].
-> Unfortunately out of the three projects that were approved only one
-> completed successfully, that of the adding AP support to Network
-> Manger. I haven't seen specific updates to the progress of that but I
-> do know some patches were indeed submitted to help with this effort.
-> Perhaps the student can elaborate more.
->
-> The other projects that did not pass are up as suggestion for this
-> year again, but am hoping there are more. If you do have a project
-> idea please just go ahead and add your idea to the list of possible
-> projects [3]; you don't have to fill out a full page for it for now
-> but the more details you can add the better. If the Linux Foundation
-> does give us a few slots I recommend we be a little more strict about
-> acceptance criteria since our failure rate was pretty high (2/3) and
-> it would be better to see other projects get accepted if we do not
-> have the confidence our projects will be completed. One possibility to
-> help with the success rate of our projects might be to narrow the
-> scope down a little more. I think the testing and GeoClue project
-> might have been a little too ambitious and although we did have pretty
-> excited students we saw no progress at all.
->
-> If you have ideas for projects just feel free to add to the wiki. We
-> should strive to get all project ideas finalized by the middle of
-> February, latest the end of February. Hopefully towards the end of
-> February we can see who would be willing to mentor each project.
-> Google plans on starting to accept would-be-mentor organization
-> applications on  March 8th so we'll need our ideas finalized well
-> before that so we can send them as suggestions to the Linux Foundation
-> to see if we can get a few good project candidates accepted.
->
-> [1] http://groups.google.com/group/google-summer-of-code-discuss/browse_thread/thread/d839c0b02ac15b3f
-> [2] http://wireless.kernel.org/en/developers/GSoC/2009
-> [3] http://wireless.kernel.org/en/developers/GSoC/2010
+DISCLAIMER: the fact of getting patches merged into atang tree means
+that from now on they will be getting updates for changes happening
+in atang tree and it should not be treated as an indication regarding
+decisions taken by 'upstream' kernel trees
 
-Its the end of February, so we need to finalize the GSoC projects. I'm
-only up to mentor the automation of testing, with a reduced scope of
-using just having something register to nl80211 events and have a set
-of tests cases run. Orbit testing and integration is completely
-optional.
 
-If anyone cares to mentor any of the other projects please let me know
-as otherwise we just have one project on the 802.11 front.
+Fix 2.6.32 regression bringing back the desired SSD performance.
 
-  Luis
+[ 'upstream' may want to wait for a proper resolution, for atang tree
+  performance of big non-ATA boxes owned by a very few people is not
+  of such a big concern as a major regression on a commodity hardware ]
+
+
+The following changes since commit ded92e0d01fbb7f27bec7a35606847a2547e95e0:
+  Bartlomiej Zolnierkiewicz (1):
+        libata: enhanced SSD detection
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git atang-v4.8
+
+Bartlomiej Zolnierkiewicz (1):
+      block: fix SSD performance regression
+
+ block/blk-core.c       |   11 ++---------
+ include/linux/blkdev.h |    2 --
+ 2 files changed, 2 insertions(+), 11 deletions(-)
+
+commit cad2f21db052f21beafd44d3396a565d9a485073
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Mon Feb 22 22:19:14 2010 +0100
+
+    block: fix SSD performance regression
+    
+    Revert "block: improve queue_should_plug() by looking at IO depths".
+    
+    This reverts commit fb1e75389bd06fd5987e9cda1b4e0305c782f854 which was
+    reported to negatively affect performance for SSD devices in 2.6.32:
+    
+    	http://article.gmane.org/gmane.linux.ide/45053
+    
+    "Without that patch my SSD (Super Talent Ultradrive GX MLC 64GB)
+     reaches about 200MB/s sequentiell read. After applying the patch it
+     reaches only 70MB/s."
+    
+    Reported-by: "Benjamin S." <sbenni@gmx.de>
+    Cc: Jens Axboe <jens.axboe@oracle.com>
+    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 71da511..f8f01f2 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1147,7 +1147,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
+  */
+ static inline bool queue_should_plug(struct request_queue *q)
+ {
+-	return !(blk_queue_nonrot(q) && blk_queue_queuing(q));
++	return !(blk_queue_nonrot(q) && blk_queue_tagged(q));
+ }
+ 
+ static int __make_request(struct request_queue *q, struct bio *bio)
+@@ -1859,15 +1859,8 @@ void blk_dequeue_request(struct request *rq)
+ 	 * and to it is freed is accounted as io that is in progress at
+ 	 * the driver side.
+ 	 */
+-	if (blk_account_rq(rq)) {
++	if (blk_account_rq(rq))
+ 		q->in_flight[rq_is_sync(rq)]++;
+-		/*
+-		 * Mark this device as supporting hardware queuing, if
+-		 * we have more IOs in flight than 4.
+-		 */
+-		if (!blk_queue_queuing(q) && queue_in_flight(q) > 4)
+-			set_bit(QUEUE_FLAG_CQ, &q->queue_flags);
+-	}
+ }
+ 
+ /**
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 221cecd..7db4f99 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -457,7 +457,6 @@ struct request_queue
+ #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
+ #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
+ #define QUEUE_FLAG_IO_STAT     15	/* do IO stats */
+-#define QUEUE_FLAG_CQ	       16	/* hardware does queuing */
+ #define QUEUE_FLAG_DISCARD     17	/* supports DISCARD */
+ 
+ #define QUEUE_FLAG_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
+@@ -582,7 +581,6 @@ enum {
+ 
+ #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
+ #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+-#define blk_queue_queuing(q)	test_bit(QUEUE_FLAG_CQ, &(q)->queue_flags)
+ #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
+ #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
+ #define blk_queue_nonrot(q)	test_bit(QUEUE_FLAG_NONROT, &(q)->queue_flags)
