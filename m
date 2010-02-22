@@ -1,184 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369Ab0BVHTH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 02:19:07 -0500
-Received: from mail-yx0-f196.google.com ([209.85.210.196]:59526 "EHLO
-	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126Ab0BVHTF (ORCPT
+	id S1752282Ab0BVHhF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 02:37:05 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:15744 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043Ab0BVHhB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 02:19:05 -0500
+	Mon, 22 Feb 2010 02:37:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bomZGVhrXMxLn/ydNX1UgxIdAGBXjMO4fLd4C3oQDsnd3T/U3z8Pda6Pes0tMke0kK
-         6cdJYqFhvylPZQdxpD7tTthsH5hLyStY8jF0fRdq5PL/bizGrVsCluuYEGiqYNMFbeV0
-         zHQSmW/oywO9DQJPOoiU1YfLyBYYFcAfb3fzc=
-Subject: Re: [PATCH 06/12] perf trace/scripting: add Python scripting engine
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       k-keiichi@bx.jp.nec.com
-In-Reply-To: <20100222022735.GC8791@nowhere>
-References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
-	 <1264580883-15324-7-git-send-email-tzanussi@gmail.com>
-	 <20100222022735.GC8791@nowhere>
-Content-Type: text/plain
-Date: Mon, 22 Feb 2010 01:12:59 -0600
-Message-Id: <1266822779.6426.4.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tKXKfVqt1+iSBHdGk8Cf4MlBvECxC6+D1eqOVF/d2QP9bJWWsrToQT6b5Xvf6nErzi
+         7M7jYMZbqrU7Py78OKedqoyOOX9pUawh6EMWFMH8cUFAkQdAhj/117kzrZoked/aCV9Q
+         8ezYRTYhWNDN7yyHZPNHqnP8b7IyPHFu5raLs=
+MIME-Version: 1.0
+In-Reply-To: <4B80FA08.8080304@windriver.com>
+References: <1266737078-26186-1-git-send-email-dongdong.deng@windriver.com>
+	 <2375c9f91002210041l1bf30871vdf3881589a654d5a@mail.gmail.com>
+	 <4B80FA08.8080304@windriver.com>
+Date: Mon, 22 Feb 2010 15:37:00 +0800
+Message-ID: <2375c9f91002212337l543795d5ndb24173dd19e039e@mail.gmail.com>
+Subject: Re: [PATCH] module param_call: fix potential NULL pointer dereference
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: DDD <dongdong.deng@windriver.com>
+Cc: rusty@rustcorp.com.au, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com, lenb@kernel.org,
+       dwmw2@infradead.org, mdharm-usb@one-eyed-alien.net,
+       bfields@fieldses.org, robert.richter@amd.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-22 at 03:27 +0100, Frederic Weisbecker wrote:
-> On Wed, Jan 27, 2010 at 02:27:57AM -0600, Tom Zanussi wrote:
-> > +static void define_value(enum print_arg_type field_type,
-> > +			 const char *ev_name,
-> > +			 const char *field_name,
-> > +			 const char *field_value,
-> > +			 const char *field_str)
-> > +{
-> > +	const char *handler_name = "define_flag_value";
-> > +	PyObject *handler, *t, *retval;
-> > +	unsigned long long value;
-> > +	unsigned n = 0;
-> > +
-> > +	if (field_type == PRINT_SYMBOL)
-> > +		handler_name = "define_symbolic_value";
-> > +
-> > +	t = PyTuple_New(MAX_FIELDS);
-> > +	if (!t)
-> > +		Py_FatalError("couldn't create Python tuple");
-> > +
-> > +	value = eval_flag(field_value);
-> > +
-> > +	PyTuple_SetItem(t, n++, PyString_FromString(ev_name));
-> > +	PyTuple_SetItem(t, n++, PyString_FromString(field_name));
-> > +	PyTuple_SetItem(t, n++, PyInt_FromLong(value));
-> > +	PyTuple_SetItem(t, n++, PyString_FromString(field_str));
-> > +
-> > +	if (_PyTuple_Resize(&t, n) == -1)
-> > +		Py_FatalError("error resizing Python tuple");
-> 
-> 
-> 
-> Why are creating a tuple of 64 fields while you are always using
-> 4?
-> 
-> 
-> 
-> > +
-> > +	handler = PyDict_GetItemString(main_dict, handler_name);
-> > +	if (handler && PyCallable_Check(handler)) {
-> > +		retval = PyObject_CallObject(handler, t);
-> > +		if (retval == NULL)
-> > +			handler_call_die(handler_name);
-> > +	}
-> > +
-> > +	Py_DECREF(t);
-> > +}
-> > +
-> > +
-> 
-> [...]
-> 
-> > +static void define_field(enum print_arg_type field_type,
-> > +			 const char *ev_name,
-> > +			 const char *field_name,
-> > +			 const char *delim)
-> > +{
-> > +	const char *handler_name = "define_flag_field";
-> > +	PyObject *handler, *t, *retval;
-> > +	unsigned n = 0;
-> > +
-> > +	if (field_type == PRINT_SYMBOL)
-> > +		handler_name = "define_symbolic_field";
-> > +
-> > +	t = PyTuple_New(MAX_FIELDS);
-> > +	if (!t)
-> > +		Py_FatalError("couldn't create Python tuple");
-> > +
-> > +	PyTuple_SetItem(t, n++, PyString_FromString(ev_name));
-> > +	PyTuple_SetItem(t, n++, PyString_FromString(field_name));
-> > +	if (field_type == PRINT_FLAGS)
-> > +		PyTuple_SetItem(t, n++, PyString_FromString(delim));
-> > +
-> > +	if (_PyTuple_Resize(&t, n) == -1)
-> > +		Py_FatalError("error resizing Python tuple");
-> 
-> 
-> 
-> Same here (except you may or may not have a PRINT_FLAGS type).
-> 
+On Sun, Feb 21, 2010 at 5:16 PM, DDD <dongdong.deng@windriver.com> wrote:
+> Américo Wang wrote:
+>>
+>> On Sun, Feb 21, 2010 at 3:24 PM, Dongdong Deng
+>> <dongdong.deng@windriver.com> wrote:
+>>>
+>>> The param_set_fn() function will get a parameter which is a NULL
+>>> pointer when insmod module with params via following method:
+>>>
+>>> $insmod module.ko module_params
+>>>
+>>> BTW: the normal method usually as following format:
+>>> $insmod module.ko module_params=example
+>>>
+>>> If the param_set_fn() function didn't check that parameter and used
+>>> it directly, it could caused an OOPS due to NULL pointer dereference.
+>>>
+>>> The solution is simple:
+>>> Just checking the parameter before using in param_set_fn().
+>>>
+>>> Example:
+>>> int set_module_params(const char *val, struct kernel_param *kp)
+>>> {
+>>>       /*Checking the val parameter before using */
+>>>       if (!val)
+>>>               return -EINVAL;
+>>>       ...
+>>> }
+>>> module_param_call(module_params, set_module_params, NULL, NULL, 0644);
+>>>
+>>
+>> Why not just checking all of them in the generic code?
+>
+> It is no problem that we check the params before invoking param_set_fn().
+>
+> But I trend to do the checking in param_set_*fn(), because we can offer some
+> special prompt infos to user if we want and handle some special cases like
+> param_set_bool().
+>
 
-Good point - no reason to resize if we don't have to.  Here's a patch to
-change that.
+Yeah, I knew standard bool parameters can accept that,
+the problem is that KPARAM_ISBOOL is not enough to
+check if a parameter is bool or not. Probably we need
+a new flag...
 
-Thanks,
-
-Tom
-
-[PATCH] perf trace/scripting: remove unnecessary PyTuple resizes
-
-If we know the size of a tuple in advance, there's no need to resize
-it - start out with the known size in the first place.
-
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
----
- .../util/scripting-engines/trace-event-python.c    |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/tools/perf/util/scripting-engines/trace-event-python.c b/tools/perf/util/scripting-engines/trace-event-python.c
-index d402f64..33a414b 100644
---- a/tools/perf/util/scripting-engines/trace-event-python.c
-+++ b/tools/perf/util/scripting-engines/trace-event-python.c
-@@ -68,7 +68,7 @@ static void define_value(enum print_arg_type field_type,
- 	if (field_type == PRINT_SYMBOL)
- 		handler_name = "define_symbolic_value";
- 
--	t = PyTuple_New(MAX_FIELDS);
-+	t = PyTuple_New(4);
- 	if (!t)
- 		Py_FatalError("couldn't create Python tuple");
- 
-@@ -79,9 +79,6 @@ static void define_value(enum print_arg_type field_type,
- 	PyTuple_SetItem(t, n++, PyInt_FromLong(value));
- 	PyTuple_SetItem(t, n++, PyString_FromString(field_str));
- 
--	if (_PyTuple_Resize(&t, n) == -1)
--		Py_FatalError("error resizing Python tuple");
--
- 	handler = PyDict_GetItemString(main_dict, handler_name);
- 	if (handler && PyCallable_Check(handler)) {
- 		retval = PyObject_CallObject(handler, t);
-@@ -116,7 +113,10 @@ static void define_field(enum print_arg_type field_type,
- 	if (field_type == PRINT_SYMBOL)
- 		handler_name = "define_symbolic_field";
- 
--	t = PyTuple_New(MAX_FIELDS);
-+	if (field_type == PRINT_FLAGS)
-+		t = PyTuple_New(3);
-+	else
-+		t = PyTuple_New(2);
- 	if (!t)
- 		Py_FatalError("couldn't create Python tuple");
- 
-@@ -125,9 +125,6 @@ static void define_field(enum print_arg_type field_type,
- 	if (field_type == PRINT_FLAGS)
- 		PyTuple_SetItem(t, n++, PyString_FromString(delim));
- 
--	if (_PyTuple_Resize(&t, n) == -1)
--		Py_FatalError("error resizing Python tuple");
--
- 	handler = PyDict_GetItemString(main_dict, handler_name);
- 	if (handler && PyCallable_Check(handler)) {
- 		retval = PyObject_CallObject(handler, t);
--- 
-1.6.4.GIT
-
-
-
-
+Thanks.
