@@ -1,205 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260Ab0BVS1l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:27:41 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47088 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786Ab0BVS1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:27:39 -0500
-Date: Mon, 22 Feb 2010 13:26:53 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: pull request: wireless-2.6 2010-02-22
-Message-ID: <20100222182653.GB2988@tuxdriver.com>
+	id S1753496Ab0BVSaG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:30:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12263 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752905Ab0BVSaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 13:30:05 -0500
+Date: Mon, 22 Feb 2010 13:29:34 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
+Message-ID: <20100222182934.GD3096@redhat.com>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com> <20100222142744.GB13823@redhat.com> <20100222181226.GC4052@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100222181226.GC4052@linux>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Mon, Feb 22, 2010 at 07:12:27PM +0100, Andrea Righi wrote:
+> On Mon, Feb 22, 2010 at 09:27:45AM -0500, Vivek Goyal wrote:
+> > On Sun, Feb 21, 2010 at 04:18:43PM +0100, Andrea Righi wrote:
+> > > Control the maximum amount of dirty pages a cgroup can have at any given time.
+> > > 
+> > > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> > > page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> > > will not be able to consume more than their designated share of dirty pages and
+> > > will be forced to perform write-out if they cross that limit.
+> > > 
+> > > The overall design is the following:
+> > > 
+> > >  - account dirty pages per cgroup
+> > >  - limit the number of dirty pages via memory.dirty_bytes in cgroupfs
+> > >  - start to write-out in balance_dirty_pages() when the cgroup or global limit
+> > >    is exceeded
+> > > 
+> > > This feature is supposed to be strictly connected to any underlying IO
+> > > controller implementation, so we can stop increasing dirty pages in VM layer
+> > > and enforce a write-out before any cgroup will consume the global amount of
+> > > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
+> > > 
+> > 
+> > Thanks Andrea. I had been thinking about looking into it from IO
+> > controller perspective so that we can control async IO (buffered writes
+> > also).
+> > 
+> > Before I dive into patches, two quick things.
+> > 
+> > - IIRC, last time you had implemented per memory cgroup "dirty_ratio" and
+> >   not "dirty_bytes". Why this change? To begin with either per memcg
+> >   configurable dirty ratio also makes sense? By default it can be the
+> >   global dirty ratio for each cgroup.
+> 
+> I would't like to add many different interfaces to do the same thing.
+> I'd prefer to choose just one interface and always use it. We just have
+> to define which is the best one. IMHO dirty_bytes is more generic. If
+> we want to define the limit as a % we can always do that in userspace.
+> 
 
-I have a handful of late-breakers for iwlwifi.  The one from Dan
-Halperin moves a single line of code and is a fix for an 802.11n
-regression introduced in the 2.6.33 cycle.  The other two combine
-to address a problem that causes the wireless LAN connection to
-die without any error message.  It has been developed and tested in
-combination between the Intel wireless team and a contributor from
-Red Hat.  I hope you will consider including these for 2.6.33 if at
-all possible.
+dirty_ratio is easy to configure. One system wide default value works for
+all the newly created cgroups. For dirty_bytes, you shall have to
+configure each and individual cgroup with a specific value depneding on
+what is the upper limit of memory for that cgroup.
 
-Please let me know if there are problems!
+Secondly, memory cgroup kind of partitions global memory resource per
+cgroup. So if as long as we have global dirty ratio knobs, it makes sense
+to have per cgroup dirty ratio knob also. 
 
-Thanks,
+But I guess we can introduce that later and use gloabl dirty ratio for
+all the memory cgroups (instead of each cgroup having a separate dirty
+ratio). The only thing is that we need to enforce this dirty ratio on the
+cgroup and if I am reading the code correctly, your modifications of
+calculating available_memory() per cgroup should take care of that.
 
-John
+> > 
+> > - Looks like we will start writeout from memory cgroup once we cross the
+> >   dirty ratio, but still there is no gurantee that we be writting pages
+> >   belonging to cgroup which crossed the dirty ratio and triggered the
+> >   writeout.
+> > 
+> >   This behavior is not very good at least from IO controller perspective
+> >   where if two dd threads are dirtying memory in two cgroups, then if
+> >   one crosses it dirty ratio, it should perform writeouts of its own pages
+> >   and not other cgroups pages. Otherwise we probably will again introduce
+> >   serialization among two writers and will not see service differentation.
+> 
+> Right, but I'd prefer to start with a simple solution. Handling this
+> per-page is too costly and not good for entire I/O for now. We can
+> always improve service differentiation and fairness in a second
+> step, I think.
+> 
+> > 
+> >   May be we can modify writeback_inodes_wbc() to check first dirty page
+> >   of the inode. And if it does not belong to same memcg as the task who
+> >   is performing balance_dirty_pages(), then skip that inode.
+> > 
+> >   This does not handle the problem of shared files where processes from
+> >   two different cgroups are dirtying same file but it will atleast cover
+> >   other cases without introducing too much of complexity?
+> 
+> Yes, if we want to take care ot that, at least we could start with a
+> per-inode solution. It will probably introduce less overhead and will
+> work the the most part of the cases (except the case when multiple
+> cgroups write to the same file/inode).
 
-P.S.  The wireless-2.6 tree should be safe/clean for Linus to pull if
-time is too short for a round-trip through net-2.6... :-)
+Fair enough. In first round we can take care of enforcing dirty ratio per
+cgroup and configurable dirty_bytes per cgroup. Once that is in, we can
+look into doing writeout from inodes of memory cgroup being throttled.
 
----
-
-The following changes since commit 242cc0547f3bcecc0b02ca6f3e9512760185727e:
-  Ben Hutchings (1):
-        sfc: SFE4002/SFN4112F: Widen temperature and voltage tolerances
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Dan Halperin (1):
-      iwlwifi: set HT flags after channel in rxon
-
-Stanislaw Gruszka (1):
-      iwlwifi: sanity check before counting number of tfds can be free
-
-Wey-Yi Guy (1):
-      iwlwifi: error checking for number of tfds in queue
-
- drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c |    8 +++-----
- drivers/net/wireless/iwlwifi/iwl-core.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-core.h |    2 ++
- drivers/net/wireless/iwlwifi/iwl-tx.c   |   22 ++++++++++++++++++++--
- 5 files changed, 27 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
-index 9b4b8b5..3146281 100644
---- a/drivers/net/wireless/iwlwifi/iwl-4965.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
-@@ -2008,7 +2008,7 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
- 			IWL_DEBUG_TX_REPLY(priv, "Retry scheduler reclaim scd_ssn "
- 					   "%d index %d\n", scd_ssn , index);
- 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
- 
- 			if (priv->mac80211_registered &&
- 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
-diff --git a/drivers/net/wireless/iwlwifi/iwl-5000.c b/drivers/net/wireless/iwlwifi/iwl-5000.c
-index de45f30..cffaae7 100644
---- a/drivers/net/wireless/iwlwifi/iwl-5000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
-@@ -1125,7 +1125,7 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
- 					scd_ssn , index, txq_id, txq->swq_id);
- 
- 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
- 
- 			if (priv->mac80211_registered &&
- 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
-@@ -1153,16 +1153,14 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
- 				   tx_resp->failure_frame);
- 
- 		freed = iwl_tx_queue_reclaim(priv, txq_id, index);
--		if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
--			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
- 
- 		if (priv->mac80211_registered &&
- 		    (iwl_queue_space(&txq->q) > txq->q.low_mark))
- 			iwl_wake_queue(priv, txq_id);
- 	}
- 
--	if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
--		iwl_txq_check_empty(priv, sta_id, tid, txq_id);
-+	iwl_txq_check_empty(priv, sta_id, tid, txq_id);
- 
- 	if (iwl_check_bits(status, TX_ABORT_REQUIRED_MSK))
- 		IWL_ERR(priv, "TODO:  Implement Tx ABORT REQUIRED!!!\n");
-diff --git a/drivers/net/wireless/iwlwifi/iwl-core.c b/drivers/net/wireless/iwlwifi/iwl-core.c
-index d10bea6..f36f804 100644
---- a/drivers/net/wireless/iwlwifi/iwl-core.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.c
-@@ -2744,8 +2744,8 @@ int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
- 		if ((le16_to_cpu(priv->staging_rxon.channel) != ch))
- 			priv->staging_rxon.flags = 0;
- 
--		iwl_set_rxon_ht(priv, ht_conf);
- 		iwl_set_rxon_channel(priv, conf->channel);
-+		iwl_set_rxon_ht(priv, ht_conf);
- 
- 		iwl_set_flags_for_band(priv, conf->channel->band);
- 		spin_unlock_irqrestore(&priv->lock, flags);
-diff --git a/drivers/net/wireless/iwlwifi/iwl-core.h b/drivers/net/wireless/iwlwifi/iwl-core.h
-index 675b7df..fe37d6a 100644
---- a/drivers/net/wireless/iwlwifi/iwl-core.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.h
-@@ -446,6 +446,8 @@ void iwl_hw_txq_ctx_free(struct iwl_priv *priv);
- int iwl_hw_tx_queue_init(struct iwl_priv *priv,
- 			 struct iwl_tx_queue *txq);
- int iwl_txq_update_write_ptr(struct iwl_priv *priv, struct iwl_tx_queue *txq);
-+void iwl_free_tfds_in_queue(struct iwl_priv *priv,
-+			    int sta_id, int tid, int freed);
- int iwl_tx_queue_init(struct iwl_priv *priv, struct iwl_tx_queue *txq,
- 		      int slots_num, u32 txq_id);
- void iwl_tx_queue_free(struct iwl_priv *priv, int txq_id);
-diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
-index 87ce2bd..8f40715 100644
---- a/drivers/net/wireless/iwlwifi/iwl-tx.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
-@@ -120,6 +120,20 @@ int iwl_txq_update_write_ptr(struct iwl_priv *priv, struct iwl_tx_queue *txq)
- EXPORT_SYMBOL(iwl_txq_update_write_ptr);
- 
- 
-+void iwl_free_tfds_in_queue(struct iwl_priv *priv,
-+			    int sta_id, int tid, int freed)
-+{
-+	if (priv->stations[sta_id].tid[tid].tfds_in_queue >= freed)
-+		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+	else {
-+		IWL_ERR(priv, "free more than tfds_in_queue (%u:%d)\n",
-+			priv->stations[sta_id].tid[tid].tfds_in_queue,
-+			freed);
-+		priv->stations[sta_id].tid[tid].tfds_in_queue = 0;
-+	}
-+}
-+EXPORT_SYMBOL(iwl_free_tfds_in_queue);
-+
- /**
-  * iwl_tx_queue_free - Deallocate DMA queue.
-  * @txq: Transmit queue to deallocate.
-@@ -1131,6 +1145,7 @@ int iwl_tx_queue_reclaim(struct iwl_priv *priv, int txq_id, int index)
- 	struct iwl_queue *q = &txq->q;
- 	struct iwl_tx_info *tx_info;
- 	int nfreed = 0;
-+	struct ieee80211_hdr *hdr;
- 
- 	if ((index >= q->n_bd) || (iwl_queue_used(q, index) == 0)) {
- 		IWL_ERR(priv, "Read index for DMA queue txq id (%d), index %d, "
-@@ -1145,13 +1160,16 @@ int iwl_tx_queue_reclaim(struct iwl_priv *priv, int txq_id, int index)
- 
- 		tx_info = &txq->txb[txq->q.read_ptr];
- 		iwl_tx_status(priv, tx_info->skb[0]);
-+
-+		hdr = (struct ieee80211_hdr *)tx_info->skb[0]->data;
-+		if (hdr && ieee80211_is_data_qos(hdr->frame_control))
-+			nfreed++;
- 		tx_info->skb[0] = NULL;
- 
- 		if (priv->cfg->ops->lib->txq_inval_byte_cnt_tbl)
- 			priv->cfg->ops->lib->txq_inval_byte_cnt_tbl(priv, txq);
- 
- 		priv->cfg->ops->lib->txq_free_tfd(priv, txq);
--		nfreed++;
- 	}
- 	return nfreed;
- }
-@@ -1559,7 +1577,7 @@ void iwl_rx_reply_compressed_ba(struct iwl_priv *priv,
- 	if (txq->q.read_ptr != (ba_resp_scd_ssn & 0xff)) {
- 		/* calculate mac80211 ampdu sw queue to wake */
- 		int freed = iwl_tx_queue_reclaim(priv, scd_flow, index);
--		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-+		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
- 
- 		if ((iwl_queue_space(&txq->q) > txq->q.low_mark) &&
- 		    priv->mac80211_registered &&
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Thanks
+Vivek
