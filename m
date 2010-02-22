@@ -1,322 +1,618 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165Ab0BVGW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 01:22:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51054 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753204Ab0BVGWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 01:22:25 -0500
-Date: Mon, 22 Feb 2010 17:22:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for February 22
-Message-Id: <20100222172218.4fd82a45.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Feb_2010_17_22_18_+1100_2e8je26MzgDgDMjc"
+	id S1754466Ab0BVG3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 01:29:31 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:57886 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739Ab0BVG31 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 01:29:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uDpZcIGj1DMAypolBwWsn5PRiKdC8dTSgZcYuNPyydKl70rbfEjD+eq3Mq+8O/D6oF
+         rHC9KW3u28f0/r/RrxXVpuL6HRv8m/ERy/bQ0OjdZLc19YzdwdElm9HIO1Pl/6rwVL51
+         ZMInhDMT058B4sfmnD2XDWtbGAiwjBN0tx0oY=
+Date: Sun, 21 Feb 2010 22:29:17 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Stefan Achatz <erazor_de@users.sourceforge.net>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
+       wylda@volny.cz, Pavel Machek <pavel@suse.cz>,
+       Alessandro Guido <ag@alessandroguido.name>,
+       Tomas Hanak <tomas.hanak@gmail.com>, Jason Noble <nobleja@polezero.com>,
+       simon.windows@gmail.com, Sean Hildebrand <silverwraithii@gmail.com>,
+       Sid Boyce <sboyce@blueyonder.co.uk>, Henning Glawe <glaweh@debian.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] HID: documentation additions and elimination of
+ legacy filenames for Roccat Kone driver
+Message-ID: <20100222062916.GA2095@core.coreip.homeip.net>
+References: <201002200911.53900.stefan_achatz@web.de>
+ <20100221081327.GB18298@core.coreip.homeip.net>
+ <201002211750.45618.erazor_de@users.sourceforge.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002211750.45618.erazor_de@users.sourceforge.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Feb_2010_17_22_18_+1100_2e8je26MzgDgDMjc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Stefan,
 
-Hi all,
+On Sun, Feb 21, 2010 at 05:50:45PM +0100, Stefan Achatz wrote:
+>  This patch adds more documentation and renames sysfs attributes to eliminate my legacy naming.
 
-Changes since 20100219:
+There are still questions as to the intended use of the attributes...
 
-The arm tree lots its build failure.
+>  Signed-off-by: Stefan Achatz <erazor_de@users.sourceforge.net>
+> 
+> ---
+>  drivers/hid/hid-roccat-kone.c |  265 +++++++++++++++++++++++++++--------------
+>  drivers/hid/hid-roccat-kone.h |    7 +-
+>  2 files changed, 178 insertions(+), 94 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-roccat-kone.c b/drivers/hid/hid-roccat-kone.c
+> index 94a2fb9..941f5b3 100644
+> --- a/drivers/hid/hid-roccat-kone.c
+> +++ b/drivers/hid/hid-roccat-kone.c
+> @@ -54,6 +54,11 @@ static void kone_set_profile_checksum(struct kone_profile *profile)
+>  	profile->checksum = cpu_to_le16(kone_calc_profile_checksum(profile));
+>  }
+>  
+> +/*
+> + * Checks success after writing data to mouse
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_check_write(struct usb_device *usb_dev)
+>  {
+>  	int len;
+> @@ -95,6 +100,11 @@ static int kone_check_write(struct usb_device *usb_dev)
+>  	}
+>  }
+>  
+> +/*
+> + * Reads settings data from mouse and stores it in @buf
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_settings(struct usb_device *usb_dev,
+>  		struct kone_settings *buf)
+>  {
+> @@ -112,6 +122,13 @@ static int kone_get_settings(struct usb_device *usb_dev,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Write settings to mouse
+> + * Reads and compares stored data with new data to prevent needless write
+> + * Sets checksum of supplied data
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_set_settings(struct usb_device *usb_dev,
+>  		struct kone_settings const *buf)
+>  {
+> @@ -167,6 +184,11 @@ static int kone_set_settings(struct usb_device *usb_dev,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Stores number of startup profile in @result
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_startup_profile(struct usb_device *usb_dev, int *result)
+>  {
+>  	struct kone_settings *buf;
+> @@ -187,6 +209,12 @@ static int kone_get_startup_profile(struct usb_device *usb_dev, int *result)
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Reads profile data from mouse and stores it in @buf
+> + * @number: profile number to read
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_profile(struct usb_device *usb_dev,
+>  		struct kone_profile *buf, int number)
+>  {
+> @@ -195,6 +223,11 @@ static int kone_get_profile(struct usb_device *usb_dev,
+>  	if (number < 1 || number > 5)
+>  		return -EINVAL;
+>  
+> +	/*
+> +	 * The manufacturer uses a control message of type class with interface
+> +	 * as recipient and provides the profile number as index parameter.
+> +	 * This is prevented in userspace by function check_ctrlrecip.
+> +	 */
+>  	len = usb_control_msg(usb_dev, usb_rcvctrlpipe(usb_dev, 0),
+>  			USB_REQ_CLEAR_FEATURE, USB_TYPE_CLASS
+>  					| USB_RECIP_INTERFACE | USB_DIR_IN,
+> @@ -209,6 +242,15 @@ static int kone_get_profile(struct usb_device *usb_dev,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Writes profile data to mouse
+> + * Reads and compares stored data with new one to reduce unnecessary writes.
 
-The net tree lost its build failure.
+Do we care?
 
-The trivial tree gained a conflict against the sparc tree.
+> + * Sets profile number and checksum of data, so one can copy profile data
+> + * from one profile to another without usage of a userland tool.
 
-The staging tree gained a conflict against the wireless tree.
+What is in a profile?
 
-----------------------------------------------------------------------------
+> + * @number: profile number to write
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_set_profile(struct usb_device *usb_dev, char const *buf,
+>  		int number)
+>  {
+> @@ -272,6 +314,11 @@ static int kone_set_profile(struct usb_device *usb_dev, char const *buf,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Reads dpi setting from startup profile and stores it in @result
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_profile_startup_dpi(struct usb_device *usb_dev, int number,
+>  		int *result)
+>  {
+> @@ -293,6 +340,11 @@ static int kone_get_profile_startup_dpi(struct usb_device *usb_dev, int number,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Reads value of "fast-clip-weight" and stores it in @result
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_weight(struct usb_device *usb_dev, int *result)
+>  {
+>  	int len;
+> @@ -315,6 +367,11 @@ static int kone_get_weight(struct usb_device *usb_dev, int *result)
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Reads firmware_version of mouse and stores it in @result
+> + * On success returns 0
+> + * On failure returns errno
+> + */
+>  static int kone_get_firmware_version(struct usb_device *usb_dev, int *result)
+>  {
+>  	int len;
+> @@ -338,7 +395,7 @@ static int kone_get_firmware_version(struct usb_device *usb_dev, int *result)
+>  	return 0;
+>  }
+>  
+> -static ssize_t kone_set_settings_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_settings(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+>  	struct hid_device *hdev = dev_get_drvdata(dev);
+> @@ -365,7 +422,7 @@ static ssize_t kone_set_settings_raw(struct device *dev,
+>  	return sizeof(struct kone_settings);
+>  }
+>  
+> -static ssize_t kone_show_settings_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_settings(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+> @@ -378,7 +435,7 @@ static ssize_t kone_show_settings_raw(struct device *dev,
+>  	return sizeof(struct kone_settings);
+>  }
+>  
+> -static ssize_t kone_get_profile_raw(struct device *dev, char *buf, int number)
+> +static ssize_t kone_sysfs_get_profile(struct device *dev, char *buf, int number)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+>  	struct usb_device *usb_dev = interface_to_usbdev(intf);
+> @@ -389,7 +446,7 @@ static ssize_t kone_get_profile_raw(struct device *dev, char *buf, int number)
+>  	return sizeof(struct kone_profile);
+>  }
+>  
+> -static ssize_t kone_set_profile_raw(struct device *dev, char const *buf,
+> +static ssize_t kone_sysfs_set_profile(struct device *dev, char const *buf,
+>  		size_t size, int number)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+> @@ -407,69 +464,70 @@ static ssize_t kone_set_profile_raw(struct device *dev, char const *buf,
+>  	return sizeof(struct kone_profile);
+>  }
+>  
+> -static ssize_t kone_show_profile_1_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_profile_1(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> -	return kone_get_profile_raw(dev, buf, 1);
+> +	return kone_sysfs_get_profile(dev, buf, 1);
+>  }
+>  
+> -static ssize_t kone_set_profile_1_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_profile_1(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+> -	return kone_set_profile_raw(dev, buf, size, 1);
+> +	return kone_sysfs_set_profile(dev, buf, size, 1);
+>  }
+>  
+> -static ssize_t kone_show_profile_2_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_profile_2(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> -	return kone_get_profile_raw(dev, buf, 2);
+> +	return kone_sysfs_get_profile(dev, buf, 2);
+>  }
+>  
+> -static ssize_t kone_set_profile_2_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_profile_2(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+> -	return kone_set_profile_raw(dev, buf, size, 2);
+> +	return kone_sysfs_set_profile(dev, buf, size, 2);
+>  }
+>  
+> -static ssize_t kone_show_profile_3_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_profile_3(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> -	return kone_get_profile_raw(dev, buf, 3);
+> +	return kone_sysfs_get_profile(dev, buf, 3);
+>  }
+>  
+> -static ssize_t kone_set_profile_3_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_profile_3(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+> -	return kone_set_profile_raw(dev, buf, size, 3);
+> +	return kone_sysfs_set_profile(dev, buf, size, 3);
+>  }
+>  
+> -static ssize_t kone_show_profile_4_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_profile_4(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> -	return kone_get_profile_raw(dev, buf, 4);
+> +	return kone_sysfs_get_profile(dev, buf, 4);
+>  }
+>  
+> -static ssize_t kone_set_profile_4_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_profile_4(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+> -	return kone_set_profile_raw(dev, buf, size, 4);
+> +	return kone_sysfs_set_profile(dev, buf, size, 4);
+>  }
+>  
+> -static ssize_t kone_show_profile_5_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_profile_5(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> -	return kone_get_profile_raw(dev, buf, 5);
+> +	return kone_sysfs_get_profile(dev, buf, 5);
+>  }
+>  
+> -static ssize_t kone_set_profile_5_raw(struct device *dev,
+> +static ssize_t kone_sysfs_set_profile_5(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+> -	return kone_set_profile_raw(dev, buf, size, 5);
+> +	return kone_sysfs_set_profile(dev, buf, size, 5);
+>  }
+>  
+>  /*
+> - * helper to fill kone_device structure with actual values
+> - * returns 0 on success or error
+> + * Helper to fill kone_device structure with actual values
+> + * On success returns 0
+> + * On failure returns errno
+>   */
+>  static int kone_device_set_actual_values(struct kone_device *kone,
+>  		struct device *dev, int both)
+> @@ -498,7 +556,7 @@ static int kone_device_set_actual_values(struct kone_device *kone,
+>  	return 0;
+>  }
+>  
+> -static ssize_t kone_show_actual_profile(struct device *dev,
+> +static ssize_t kone_sysfs_show_actual_profile(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct hid_device *hdev = dev_get_drvdata(dev);
+> @@ -511,7 +569,7 @@ static ssize_t kone_show_actual_profile(struct device *dev,
+>  	return snprintf(buf, PAGE_SIZE, "%d\n", kone->act_profile);
+>  }
+>  
+> -static ssize_t kone_show_actual_dpi_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_actual_dpi(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct hid_device *hdev = dev_get_drvdata(dev);
+> @@ -525,31 +583,7 @@ static ssize_t kone_show_actual_dpi_raw(struct device *dev,
+>  	return snprintf(buf, PAGE_SIZE, "%d\n", kone->act_dpi);
+>  }
+>  
+> -static ssize_t kone_show_actual_dpi(struct device *dev,
+> -		struct device_attribute *attr, char *buf)
+> -{
+> -	struct hid_device *hdev = dev_get_drvdata(dev);
+> -	struct kone_device *kone = hid_get_drvdata(hdev);
+> -	int err, dpi;
+> -	err = kone_device_set_actual_values(kone, dev, 1);
+> -	if (err)
+> -		return err;
+> -
+> -	dpi = kone->act_dpi;
+> -	switch (dpi) {
+> -	case 0:
+> -		break;
+> -	case 6:
+> -		dpi = 3200;
+> -		break;
+> -	default:
+> -		dpi = dpi * 400;
+> -	}
+> -
+> -	return snprintf(buf, PAGE_SIZE, "%ddpi\n", dpi);
+> -}
+> -
+> -static ssize_t kone_show_weight_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_weight(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+> @@ -562,7 +596,7 @@ static ssize_t kone_show_weight_raw(struct device *dev,
+>  	return snprintf(buf, PAGE_SIZE, "%d\n", weight);
+>  }
+>  
+> -static ssize_t kone_show_firmware_version_raw(struct device *dev,
+> +static ssize_t kone_sysfs_show_firmware_version(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+> @@ -575,8 +609,8 @@ static ssize_t kone_show_firmware_version_raw(struct device *dev,
+>  	return snprintf(buf, PAGE_SIZE, "%d\n", firmware_version);
+>  }
+>  
+> -static ssize_t kone_show_tcu(struct device *dev, struct device_attribute *attr,
+> -		char *buf)
+> +static ssize_t kone_sysfs_show_tcu(struct device *dev,
+> +		struct device_attribute *attr, char *buf)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+>  	struct usb_device *usb_dev = interface_to_usbdev(intf);
+> @@ -624,9 +658,8 @@ static int kone_tcu_command(struct usb_device *usb_dev, int number)
+>  	return 0;
+>  }
+>  
+> -/* integer of 0 deactivates tcu, 1 activates it */
+> -static ssize_t kone_set_tcu(struct device *dev, struct device_attribute *attr,
+> -		char const *buf, size_t size)
+> +static ssize_t kone_sysfs_set_tcu(struct device *dev,
+> +		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+>  	struct usb_interface *intf = to_usb_interface(dev);
+>  	struct usb_device *usb_dev = interface_to_usbdev(intf);
+> @@ -692,7 +725,7 @@ static ssize_t kone_set_tcu(struct device *dev, struct device_attribute *attr,
+>  	return size;
+>  }
+>  
+> -static ssize_t kone_show_startup_profile(struct device *dev,
+> +static ssize_t kone_sysfs_show_startup_profile(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	struct usb_device *usb_dev = interface_to_usbdev(to_usb_interface(dev));
+> @@ -703,7 +736,7 @@ static ssize_t kone_show_startup_profile(struct device *dev,
+>  	return snprintf(buf, PAGE_SIZE, "%d\n", result);
+>  }
+>  
+> -static ssize_t kone_set_startup_profile(struct device *dev,
+> +static ssize_t kone_sysfs_set_startup_profile(struct device *dev,
+>  		struct device_attribute *attr, char const *buf, size_t size)
+>  {
+>  	struct hid_device *hdev = dev_get_drvdata(dev);
+> @@ -747,48 +780,85 @@ static ssize_t kone_set_startup_profile(struct device *dev,
+>  	return size;
+>  }
+>  
+> -static ssize_t kone_show_driver_version(struct device *dev,
+> +/*
+> + * This file is used by userland software to find devices that are handled by
+> + * this driver. This provides a consistent way for actual and older kernels
+> + * where this driver replaced usbhid instead of generic-usb.
+> + * Driver capabilities are determined by version number.
+> + */
+> +static ssize_t kone_sysfs_show_driver_version(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+>  	return snprintf(buf, PAGE_SIZE, DRIVER_VERSION "\n");
+>  }
+>  
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+This should not be a per-device but belong to the module, if it is
+really needed. Normally you query device's capabilities to determine
+what's there. Also, why the need for special driver, can't evdev be
+used/extended?
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
+> -static DEVICE_ATTR(actual_dpi_raw, S_IRUGO, kone_show_actual_dpi_raw, NULL);
+> -static DEVICE_ATTR(actual_dpi, S_IRUGO, kone_show_actual_dpi, NULL);
+> -static DEVICE_ATTR(actual_profile, S_IRUGO, kone_show_actual_profile, NULL);
+> -static DEVICE_ATTR(weight_raw, S_IRUGO, kone_show_weight_raw, NULL);
+> -static DEVICE_ATTR(profile1_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_profile_1_raw, kone_set_profile_1_raw);
+> -static DEVICE_ATTR(profile2_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_profile_2_raw, kone_set_profile_2_raw);
+> -static DEVICE_ATTR(profile3_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_profile_3_raw, kone_set_profile_3_raw);
+> -static DEVICE_ATTR(profile4_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_profile_4_raw, kone_set_profile_4_raw);
+> -static DEVICE_ATTR(profile5_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_profile_5_raw, kone_set_profile_5_raw);
+> -static DEVICE_ATTR(settings_raw, S_IRUGO | S_IWUGO,
+> -		kone_show_settings_raw, kone_set_settings_raw);
+> -static DEVICE_ATTR(firmware_version_raw, S_IRUGO,
+> -		kone_show_firmware_version_raw, NULL);
+> -static DEVICE_ATTR(tcu, S_IRUGO | S_IWUGO, kone_show_tcu, kone_set_tcu);
+> +/*
+> + * Read actual dpi settings.
+> + * Returns raw value for further processing. Refer to enum kone_polling_rates to
+> + * get real value.
+> + */
+> +static DEVICE_ATTR(actual_dpi, S_IRUGO, kone_sysfs_show_actual_dpi, NULL);
+> +
+> +static DEVICE_ATTR(actual_profile, S_IRUGO, kone_sysfs_show_actual_profile,
+> +		NULL);
+> +
+> +/*
+> + * The mouse can be equipped with one of four supplied weights from 5 to 20
+> + * grams which are recognized and its value can be read out.
+> + * This returns the raw value reported by the mouse for easy evaluation by
+> + * software. Refer to enum kone_weights to get corresponding real weight.
+> + */
+> +static DEVICE_ATTR(weight, S_IRUGO, kone_sysfs_show_weight, NULL);
 
-Below is a summary of the state of the merge.
+Why is this useful?
 
-We are up to 158 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+> +
+> +static DEVICE_ATTR(profile1, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_profile_1, kone_sysfs_set_profile_1);
+> +static DEVICE_ATTR(profile2, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_profile_2, kone_sysfs_set_profile_2);
+> +static DEVICE_ATTR(profile3, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_profile_3, kone_sysfs_set_profile_3);
+> +static DEVICE_ATTR(profile4, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_profile_4, kone_sysfs_set_profile_4);
+> +static DEVICE_ATTR(profile5, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_profile_5, kone_sysfs_set_profile_5);
+> +
+> +static DEVICE_ATTR(settings, S_IRUGO | S_IWUGO,
+> +		kone_sysfs_show_settings, kone_sysfs_set_settings);
+> +
+> +/*
+> + * Prints firmware version stored in mouse as integer.
+> + * The raw value reported by the mouse is returned for easy evaluation, to get
+> + * the real version number the decimal point has to be shifted 2 positions to
+> + * the left. E.g. a value of 138 means 1.38.
+> + */
+> +static DEVICE_ATTR(firmware_version, S_IRUGO,
+> +		kone_sysfs_show_firmware_version, NULL);
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+Why is this useful?
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
+> +
+> +/*
+> + * Prints state of Tracking Control Unit as number where 0 = off and 1 = on
+> + * Writing 0 deactivates tcu and writing 1 calibrates and activates the tcu
+> + */
+> +static DEVICE_ATTR(tcu, S_IRUGO | S_IWUGO, kone_sysfs_show_tcu,
+> +		kone_sysfs_set_tcu);
+> +
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+What does TCU do?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> +/* Prints and takes the number of the profile the mouse starts with */
+>  static DEVICE_ATTR(startup_profile, S_IRUGO | S_IWUGO,
+> -		kone_show_startup_profile, kone_set_startup_profile);
+> +		kone_sysfs_show_startup_profile,
+> +		kone_sysfs_set_startup_profile);
+> +
+>  static DEVICE_ATTR(kone_driver_version, S_IRUGO,
+> -		kone_show_driver_version, NULL);
+> +		kone_sysfs_show_driver_version, NULL);
+>  
+>  static struct attribute *kone_attributes[] = {
+> -		&dev_attr_actual_dpi_raw.attr,
+>  		&dev_attr_actual_dpi.attr,
+>  		&dev_attr_actual_profile.attr,
+> -		&dev_attr_weight_raw.attr,
+> -		&dev_attr_profile1_raw.attr,
+> -		&dev_attr_profile2_raw.attr,
+> -		&dev_attr_profile3_raw.attr,
+> -		&dev_attr_profile4_raw.attr,
+> -		&dev_attr_profile5_raw.attr,
+> -		&dev_attr_settings_raw.attr,
+> -		&dev_attr_firmware_version_raw.attr,
+> +		&dev_attr_weight.attr,
+> +		&dev_attr_profile1.attr,
+> +		&dev_attr_profile2.attr,
+> +		&dev_attr_profile3.attr,
+> +		&dev_attr_profile4.attr,
+> +		&dev_attr_profile5.attr,
+> +		&dev_attr_settings.attr,
+> +		&dev_attr_firmware_version.attr,
+>  		&dev_attr_tcu.attr,
+>  		&dev_attr_startup_profile.attr,
+>  		&dev_attr_kone_driver_version.attr,
+> @@ -801,6 +871,13 @@ static struct attribute_group kone_attribute_group = {
+>  
+>  static int kone_create_files(struct usb_interface *intf)
+>  {
+> +	/*
+> +	 * Kone consists of a mouse and a keyboard part.
+> +	 * Adding sysfs files only to mousepart as information about
+> +	 * profile and dpi change is reported only in mouseevent.
+> +	 * There is no way to bind only to mousepart since IGNORE_MOUSE quirk
+> +	 * moved to hid-apple
+> +	 */
+>  	if (intf->cur_altsetting->desc.bInterfaceProtocol
+>  			== USB_INTERFACE_PROTOCOL_MOUSE)
+>  		return sysfs_create_group(&intf->dev.kobj,
+> @@ -882,6 +959,10 @@ static int kone_raw_event(struct hid_device *hdev, struct hid_report *report,
+>  	else
+>  		kone->last_tilt_state = event->tilt;
+>  
+> +	/*
+> +	 * handle special events and keep actual profile and dpi values
+> +	 * up to date
+> +	 */
+>  	switch (event->event) {
+>  	case kone_mouse_event_osd_dpi:
+>  		kone->act_dpi = event->value;
+> diff --git a/drivers/hid/hid-roccat-kone.h b/drivers/hid/hid-roccat-kone.h
+> index 14f5ebf..35a5806 100644
+> --- a/drivers/hid/hid-roccat-kone.h
+> +++ b/drivers/hid/hid-roccat-kone.h
+> @@ -21,11 +21,12 @@
+>  
+>  struct kone_device {
+>  	/*
+> -	 * Actual values might not get called that much so I store them when
+> -	 * they are at hand or get them only when needed.
+> +	 * Storing actual values since there is no way of getting this
+> +	 * information from the device.
+>  	 */
+>  	int act_profile, act_profile_valid;
+>  	int act_dpi, act_dpi_valid;
+> +	/* used for neutralizing abnormal tilt button behaviour */
+>  	int last_tilt_state;
+>  };
+>  
+> @@ -163,11 +164,13 @@ struct kone_mouse_event {
+>  };
+>  
+>  enum kone_mouse_events {
+> +	/* osd events are thought to be display on screen */
+>  	kone_mouse_event_osd_dpi = 0xa0,
+>  	kone_mouse_event_osd_profile = 0xb0,
+>  	/* TODO clarify meaning and occurence of kone_mouse_event_calibration */
+>  	kone_mouse_event_calibration = 0xc0,
+>  	kone_mouse_event_call_overlong_macro = 0xe0,
+> +	/* switch events notify if user changed values wiht mousebutton click */
+>  	kone_mouse_event_switch_dpi = 0xf0,
+>  	kone_mouse_event_switch_profile = 0xf1
+>  };
+> -- 
+> 1.6.6
+> 
 
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging i.MX/for-next
-CONFLICT (content): Merge conflict in arch/arm/Makefile
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging genesis/master
-CONFLICT (content): Merge conflict in arch/arm/Kconfig
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-CONFLICT (content): Merge conflict in fs/gfs2/super.c
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-CONFLICT (content): Merge conflict in fs/gfs2/super.c
-Applying: ceph: update for BDI_RECLAIMABLE change
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_super.c
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Applying: logfs: fixup for write_inode API change
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Kconfig
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Makefile
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/video/bt8xx/bttv-driver=
-.c
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2800pci=
-.c
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-CONFLICT (content): Merge conflict in arch/arm/plat-mxc/Makefile
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.c
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.h
-Merging mmc/next
-Merging tmio-mmc/linux-next
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-Merging input/next
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_fb_helper.c
-CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/i915_irq.c
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in security/tomoyo/realpath.c
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-u300/include/mach/debug=
--macro.S
-CONFLICT (content): Merge conflict in arch/sparc/kernel/leon_kernel.c
-CONFLICT (content): Merge conflict in drivers/net/qlge/qlge_ethtool.c
-CONFLICT (content): Merge conflict in drivers/net/qlge/qlge_main.c
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
-CONFLICT (content): Merge conflict in kernel/audit_tree.c
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-CONFLICT (content): Merge conflict in arch/microblaze/include/asm/prom.h
-CONFLICT (content): Merge conflict in drivers/serial/pmac_zilog.c
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging als/for-next
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/base/power/main.c
-CONFLICT (content): Merge conflict in drivers/pcmcia/ds.c
-CONFLICT (content): Merge conflict in include/linux/device.h
-Applying: i2c: update for semaphore to mutex conversion of devices
-Merging quilt/tty
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/early/ehci-dbgp.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rtl8192su/ieee80211/i=
-eee80211_rx.c
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.c deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.c=
- left in tree.
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.h deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.h=
- left in tree.
-$ git rm -f drivers/staging/sm7xx/smtc2d.c drivers/staging/sm7xx/smtc2d.h
-Merging scsi-post-merge/master
-
---Signature=_Mon__22_Feb_2010_17_22_18_+1100_2e8je26MzgDgDMjc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuCIpoACgkQjjKRsyhoI8wQzQCfRlhU+H+bKtjc+D5Q8uEesxwZ
-8UQAniyw8tiswsgoe/cPGiFNkWb1kCbn
-=7T37
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Feb_2010_17_22_18_+1100_2e8je26MzgDgDMjc--
+-- 
+Dmitry
