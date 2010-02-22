@@ -1,84 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901Ab0BVPvH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:51:07 -0500
-Received: from mail-px0-f184.google.com ([209.85.216.184]:63759 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753770Ab0BVPvF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:51:05 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/2] of/flattree: Make unflatten_device_tree() safe to call
-	from any arch
-To: devicetree-discuss@lists.ozlabs.org, monstr@monstr.eu,
-       linux-kernel@vger.kernel.org, jeremy.kerr@canonical.com
-Date: Mon, 22 Feb 2010 08:50:59 -0700
-Message-ID: <20100222155059.3604.39718.stgit@angua>
-In-Reply-To: <20100222154816.3604.67114.stgit@angua>
-References: <20100222154816.3604.67114.stgit@angua>
-User-Agent: StGIT/0.14.2
+	id S1754018Ab0BVPvg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:51:36 -0500
+Received: from mail.2750.no ([62.101.244.198]:38605 "EHLO mail.2750.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753771Ab0BVPvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 10:51:35 -0500
+Message-ID: <4B82A7FF.9000801@simula.no>
+Date: Mon, 22 Feb 2010 16:51:27 +0100
+From: Andreas Petlund <apetlund@simula.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
+       "zimmermann@nets.rwth-aachen.de" <zimmermann@nets.rwth-aachen.de>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
+       "eric.dumazet@gmail.com" <eric.dumazet@gmail.com>,
+       "Arnd.Hannemann@nets.rwth-aachen.de" 
+	<Arnd.Hannemann@nets.rwth-aachen.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
+       "damian@tvk.rwth-aachen.de" <damian@tvk.rwth-aachen.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+References: <20100221102102.GB1311@ucw.cz>	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>	<20100221.150311.193707249.davem@davemloft.net>	<FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> <87k4u5mh9u.fsf@basil.nowhere.org>
+In-Reply-To: <87k4u5mh9u.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes unflatten_device_tree() safe to call from any arch
-setup code with the following changes:
-- Make sure initial_boot_params actually points to a device tree blob
-  before unflattening
-- Make sure the initial_boot_params->magic field is correct
-- If CONFIG_OF_FLATTREE is not set, then make unflatten_device_tree()
-  an empty #define.
+On 22. feb. 2010 16:17, Andi Kleen wrote:
+> Lars Eggert <lars.eggert@nokia.com> writes:
+> 
+>> If it's off by default there is no issue.
+> 
+> Still a sufficient large number of people might turn it on
+> and then the network would melt.
+> 
+> IMHO TCP changes with badly understood congestion behaviour
+> should not be merged until the necessary analysis/simulation etc.
+> is done.
+> 
+> -Andi
+> 
 
-This patch also adds some additional debug output to the top of
-unflatten_device_tree().
+I also encourage you to read the discussions from the first posted
+version of the patch set, since I here reference a lot of the 
+supporting research and related material from other researchers.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+http://thread.gmane.org/gmane.linux.network/141394
+http://thread.gmane.org/gmane.linux.network/141395
+http://thread.gmane.org/gmane.linux.network/141396
+http://thread.gmane.org/gmane.linux.network/141397
 
- drivers/of/fdt.c       |   15 +++++++++++++++
- include/linux/of_fdt.h |    2 ++
- 2 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 406757a..5ce7bd5 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -553,6 +553,21 @@ void __init unflatten_device_tree(void)
- 
- 	pr_debug(" -> unflatten_device_tree()\n");
- 
-+	if (!initial_boot_params) {
-+		pr_debug("No device tree pointer\n");
-+		return;
-+	}
-+
-+	pr_debug("Unflattening device tree:\n");
-+	pr_debug("magic: %08x\n", be32_to_cpu(initial_boot_params->magic));
-+	pr_debug("size: %08x\n", be32_to_cpu(initial_boot_params->totalsize));
-+	pr_debug("version: %08x\n", be32_to_cpu(initial_boot_params->version));
-+
-+	if (be32_to_cpu(initial_boot_params->magic) != OF_DT_HEADER) {
-+		pr_err("Invalid device tree blob header\n");
-+		return;
-+	}
-+
- 	/* First pass, scan for size */
- 	start = ((unsigned long)initial_boot_params) +
- 		be32_to_cpu(initial_boot_params->off_dt_struct);
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index f0fdd1f..9d7fd6d 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -99,6 +99,8 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
- /* Other Prototypes */
- extern void unflatten_device_tree(void);
- extern void early_init_devtree(void *);
-+#else /* CONFIG_OF_FLATTREE */
-+#define unflatten_device_tree() do {} while(0)
- #endif /* CONFIG_OF_FLATTREE */
- 
- #endif /* __ASSEMBLY__ */
-
+Cheers,
+Andreas
