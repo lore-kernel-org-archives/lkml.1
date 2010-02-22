@@ -1,90 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110Ab0BVRgu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 12:36:50 -0500
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:50783 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752503Ab0BVRgs (ORCPT
+	id S1753304Ab0BVRhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 12:37:13 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:39694 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752199Ab0BVRhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 12:36:48 -0500
-Date: Mon, 22 Feb 2010 23:06:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrea Righi <arighi@develer.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-ID: <20100222173640.GG3063@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
- <20100222142744.GB13823@redhat.com>
+	Mon, 22 Feb 2010 12:37:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=vgyYBTY9FHx7R1N+oFOgKkNS8aSrLofR3PBTPaxDP0D/aPSLReaN3l00kMZNm6Nypu
+         MrafJtREyi2dMVpRcxdtt8XymE0h9aXOWiNnvqEMsyCsdEDvjyvscZeemf6xQ/UgDqn0
+         WmWQyPAU5x61IXkC2UxD5f/BDrUDdP+XB8HK4=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/7] vfs: notify_changes() error handling
+References: <1266608845-13212-1-git-send-email-dmonakhov@openvz.org>
+	<20100222103516.GA5131@atrey.karlin.mff.cuni.cz>
+	<20100222111510.GT9738@laptop> <87eikdo0st.fsf@openvz.org>
+	<20100222145639.GW9738@laptop>
+Date: Mon, 22 Feb 2010 20:37:02 +0300
+In-Reply-To: <20100222145639.GW9738@laptop> (Nick Piggin's message of "Tue, 23
+	Feb 2010 01:56:39 +1100")
+Message-ID: <873a0t2mv5.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100222142744.GB13823@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2010-02-22 09:27:45]:
+Nick Piggin <npiggin@suse.de> writes:
 
-> On Sun, Feb 21, 2010 at 04:18:43PM +0100, Andrea Righi wrote:
-> > Control the maximum amount of dirty pages a cgroup can have at any given time.
-> > 
-> > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> > page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> > will not be able to consume more than their designated share of dirty pages and
-> > will be forced to perform write-out if they cross that limit.
-> > 
-> > The overall design is the following:
-> > 
-> >  - account dirty pages per cgroup
-> >  - limit the number of dirty pages via memory.dirty_bytes in cgroupfs
-> >  - start to write-out in balance_dirty_pages() when the cgroup or global limit
-> >    is exceeded
-> > 
-> > This feature is supposed to be strictly connected to any underlying IO
-> > controller implementation, so we can stop increasing dirty pages in VM layer
-> > and enforce a write-out before any cgroup will consume the global amount of
-> > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
-> > 
-> 
-> Thanks Andrea. I had been thinking about looking into it from IO
-> controller perspective so that we can control async IO (buffered writes
-> also).
-> 
-> Before I dive into patches, two quick things.
-> 
-> - IIRC, last time you had implemented per memory cgroup "dirty_ratio" and
->   not "dirty_bytes". Why this change? To begin with either per memcg
->   configurable dirty ratio also makes sense? By default it can be the
->   global dirty ratio for each cgroup.
-> 
-> - Looks like we will start writeout from memory cgroup once we cross the
->   dirty ratio, but still there is no gurantee that we be writting pages
->   belonging to cgroup which crossed the dirty ratio and triggered the
->   writeout.
-> 
->   This behavior is not very good at least from IO controller perspective
->   where if two dd threads are dirtying memory in two cgroups, then if
->   one crosses it dirty ratio, it should perform writeouts of its own pages
->   and not other cgroups pages. Otherwise we probably will again introduce
->   serialization among two writers and will not see service differentation.
+> On Mon, Feb 22, 2010 at 04:30:26PM +0300, Dmitry Monakhov wrote:
+>> Nick Piggin <npiggin@suse.de> writes:
+>> 
+>> > On Mon, Feb 22, 2010 at 11:35:17AM +0100, Jan Kara wrote:
+>> >> > After this notify_change() perform all necessary checks inside
+>> >> > inode_change_ok() and simply call nofail version of vmtruncate().
+>> >>   Actually, there are more problems than these in the truncate path.  Some
+>> >> filesystems can decide to fail truncate only in their .truncate method but that
+>> >> is called only after i_size is set which is too late.  Nick Piggin has a patch
+>> >> set which was addressing this problem and should be basically a superset of
+>> >> your changes. But I'm not sure whether the patch series is available somewhere
+>> >> or what it's current status. Nick?
+>> >
+>> > I think Al is happy with it in principle, I changed it as he suggested.
+>> > Maybe it was put on hold for other reasons. Anyway, here is the core
+>> > patch again. It now is basically just adding more helpers, so it's not
+>> > so intrusive.
+>> >
+>> > Al, what are your thoughts on merging? It doesn't appear to conflict
+>> > with the -vfs tree.
+>> >
+>> > Dmitry, this doesn't solve your quota problem, but they obviously clash
+>> > rather heavily. Do you see any problems with the way my patch goes?
+>> In fact i dont tried to solve quota issue. I just want to understand
+>> why error paths in my code becomes so huge and why they so differ
+>> from existing code, now i do understand why :)
+>
+> Oh, but you attempted it (partially?) by moving the inode size
+> check into inode_change_ok().
+>
+>> As soon as i understand this patch add changes only for core part.
+>> And later other filesystems will handle the rest.
+>
+> Yes. Most of them we have converted to the new sequence in
+> subsequent patches. From that point it should be easier to improve
+> error handling.
+>
+>> I am agree with it, vmtruncate is nightmare.
+>> But imho also we have to solve generic inode attr check/set issue
+>> fs_XXX_setattr()
+>> {
+>> ...
+>>    ret = inode_size_ok(inode, attr)
+>>    if (ret)
+>>         goto bad;
+>>    if(private_fs_update_on_disk_data(new_size))
+>>         goto bad;
+>>    if(simple_setsize(inode,new_size)) {
+>>      /* We still can get in to this because RLIMIT_FSIZE may be
+>>       * changed after inode_size_ok();
+>>       * So we have to roll back all fs-speciffic data which may be 
+>>       * paintfull or impossible
+>>       */
+>>       ret = private_fs_update_on_disk_data(old_size)
+>>       BUG_ON(ret)
+>>     }
+>> }
+>> So my purpose is:
+>> 1) to move inode_size_ok check in to inode_change_ok()
+>> 2) Introduce simple_setsize_nocheck() which just do it's work
+>>    after all checks was already done.
+>>    And call simple_setsize_nocheck() inside fsXXX_setattr instead
+>>    of simple_setsize().
+>> 
+>> Patch prepared agains yours "truncate: introduce new sequence"
+>  
+> Hmm, I wonder if it would be safer to rename the function if
+> changing behaviour like this so it loudly breaks external modules.
+>
+Yeah. Since your patch is mandatory as a start point. And i'm trying
+to solve slightly  different issue. Which result in core patch pending.
+Let it goes in to vfs tree as is. Later i'll convert all fsXXX_setattr()
+to sane attribute checks logic.
+ACK from me.
 
-I thought that the I/O controller would eventually provide hooks to do
-this.. no?
-
-> 
->   May be we can modify writeback_inodes_wbc() to check first dirty page
->   of the inode. And if it does not belong to same memcg as the task who
->   is performing balance_dirty_pages(), then skip that inode.
-
-Do you expect all pages of an inode to be paged in by the same cgroup?
-
-
--- 
-	Three Cheers,
-	Balbir
