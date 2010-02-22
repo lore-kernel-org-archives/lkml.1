@@ -1,66 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900Ab0BVTUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 14:20:14 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:51899 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753208Ab0BVTUM (ORCPT
+	id S1754165Ab0BVTYg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 14:24:36 -0500
+Received: from saarni.dnainternet.net ([83.102.40.136]:55802 "EHLO
+	saarni.dnainternet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153Ab0BVTYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 14:20:12 -0500
-Date: Mon, 22 Feb 2010 20:20:09 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Rabin Vincent <rabin@rab.in>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>
-Subject: Re: [PATCH 02/10] ARM: ftrace: document mcount formats
-Message-ID: <20100222192009.GA13527@pengutronix.de>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in> <1266090518-31120-3-git-send-email-rabin@rab.in> <20100213203748.GC16528@pengutronix.de> <20100222180624.GA4061@debian>
+	Mon, 22 Feb 2010 14:24:35 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0.032
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Mon, 22 Feb 2010 21:24:27 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002221408200.1251-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002221408200.1251-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100222180624.GA4061@debian>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002222124.27777.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 11:36:24PM +0530, Rabin Vincent wrote:
-> On Sat, Feb 13, 2010 at 09:37:48PM +0100, Uwe Kleine-König wrote:
-> > On Sun, Feb 14, 2010 at 01:18:30AM +0530, Rabin Vincent wrote:
-> > > + * With both the mcount types, we need to restore the original lr before
-> > > + * returning.  In the __gnu_mcount_nc, version we're allowed to clobber ip.
-> > > + * No other registers should be clobbered.
-> > > + */
-> > Very nice.
+On maanantai 22 helmikuu 2010 21:10:33 Alan Stern wrote:
+> On Mon, 22 Feb 2010, Anssi Hannula wrote:
+> > I guess that would suggest that the device doesn't allow the
+> > initialization data to be broken into packets arbitrarily (though some
+> > differences seem allowed, as the windows driver transmits them
+> > differently).
 > > 
-> > Maybe make the last two sentences:
-> > 
-> > In the __gnu_mcount_nc case the ip register is clobbered which is OK as
-> > the calling convention for ARM allow clobbering this value for
-> > subroutines and it doesn't contain parameters.
+> > Does this mean a tty interface is ill-suited for the microcode upload,
+> > and instead qcserial should use the kernel's generic microcode upload
+> > mechanism or the userspace should use libusb to do it?
 > 
-> Won't quoting calling conventions here be misleading?  The mcounts don't
-> following normal convention for the other bits (we can't clobber even
-> the registers that are normally caller-saved, we need to restore lr,
-> etc.)
-actually mcount is a function in the middle of a function call.  So it
-must be transparent for both the caller and the callee.  As the called
-function needs to know the return address, mcount must not clobber it.
-And as ip is don't care and can be clobbered mcount can use it as it
-likes.
+> I don't know.  Didn't the old successful code use a tty interface?
 
-Best regards
-Uwe
+Yes, but does the tty interface guarantee that the data of one write call is 
+sent as one packet to the device?
+
+If I understood this correctly, it seems the changes have caused it to now 
+concatenate short writes into one packet, which the device doesn't seem to 
+like.
 
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Anssi Hannula
