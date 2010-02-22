@@ -1,149 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976Ab0BVTRL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 14:17:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34593 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208Ab0BVTRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 14:17:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: s2disk hang update
-Date: Mon, 22 Feb 2010 20:17:55 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002212147.07987.rjw@sisk.pl> <4B82A440.6010701@googlemail.com>
-In-Reply-To: <4B82A440.6010701@googlemail.com>
+	id S1753900Ab0BVTUO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 14:20:14 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51899 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208Ab0BVTUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 14:20:12 -0500
+Date: Mon, 22 Feb 2010 20:20:09 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Rabin Vincent <rabin@rab.in>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>
+Subject: Re: [PATCH 02/10] ARM: ftrace: document mcount formats
+Message-ID: <20100222192009.GA13527@pengutronix.de>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in> <1266090518-31120-3-git-send-email-rabin@rab.in> <20100213203748.GC16528@pengutronix.de> <20100222180624.GA4061@debian>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002222017.55588.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100222180624.GA4061@debian>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 February 2010, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
-> > On Friday 19 February 2010, Alan Jenkins wrote:
-> >   
-> >> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>     
-> >>> On Thursday 18 February 2010, Alan Jenkins wrote:
-> >>>       
-> >>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>>         
-> >>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
-> >>>>>           
-> >>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>>>>             
-> >>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
-> >>>>>>>               
-> >>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
-> >>>>>>>>                 
-> >>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>>>>>>>                   
-> >>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
-> >>>>>>>>>>                     
-> >>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too many
-> >>>>>>>>>>> applications.  The first hibernation fails with "not enough
-> >>>>>>>>>>> swap"
-> >>>>>>>>>>> as
-> >>>>>>>>>>> expected, but the second or third attempt hangs (with the same
-> >>>>>>>>>>> backtrace
-> >>>>>>>>>>> as before).
-> >>>>>>>>>>>
-> >>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
-> >>>>>>>>>>> hang
-> >>>>>>>>>>> the
-> >>>>>>>>>>> first time I try to hibernate with too many applications
-> >>>>>>>>>>> running.
-> >>>>>>>>>>>                       
-> >>>>>>>>>> Well, I have an idea.
-> >>>>>>>>>>
-> >>>>>>>>>> Can you try to apply the appended patch in addition and see if
-> >>>>>>>>>> that
-> >>>>>>>>>> helps?
-> >>>>>>>>>>
-> >>>>>>>>>> Rafael
-> >>>>>>>>>>                     
-> >>>>>>>>> It doesn't seem to help.
-> >>>>>>>>>                   
-> >>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too many
-> >>>>>>>> applications.
-> >>>>>>>>
-> >>>>>>>> It does stop the same hang in a different case though.
-> >>>>>>>>
-> >>>>>>>> 1. boot with init=/bin/bash
-> >>>>>>>> 2. run s2disk
-> >>>>>>>> 3. cancel the s2disk
-> >>>>>>>> 4. repeat steps 2&3
-> >>>>>>>>
-> >>>>>>>> With the patch, I can run 10s of iterations, with no hang.
-> >>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
-> >>>>>>>> always).
-> >>>>>>>>
-> >>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
-> >>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
-> >>>>>>>> allocation
-> >>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
-> >>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the same
-> >>>>>>>> stop_machine thread allocation failure that causes the hang.
-> >>>>>>>>                 
-> >>>>>>> Have you tested it alone or on top of the previous one?  If you've
-> >>>>>>> tested it
-> >>>>>>> alone, please apply the appended one in addition to it and retest.
-> >>>>>>>
-> >>>>>>> Rafael
-> >>>>>>>               
-> >>>>>> I did test with both patches applied together -
-> >>>>>>
-> >>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
-> >>>>>> resume
-> >>>>>> 2. "reducing the number of pages that we're going to keep preallocated
-> >>>>>> by
-> >>>>>> 20%"
-> >>>>>>             
-> >>>>> In that case you can try to reduce the number of preallocated pages even
-> >>>>> more,
-> >>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
-> >>>>>           
-> >>>> It still hangs if I try to hibernate a couple of times with too many
-> >>>> applications.
-> >>>>         
-> >>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
-> >>> how much RAM is there in the box?
-> >>>
-> >>> Rafael
-> >>>       
-> >> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
-> >>     
-> >
-> > Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
-> > pages and see what happens.
-> >   
+On Mon, Feb 22, 2010 at 11:36:24PM +0530, Rabin Vincent wrote:
+> On Sat, Feb 13, 2010 at 09:37:48PM +0100, Uwe Kleine-König wrote:
+> > On Sun, Feb 14, 2010 at 01:18:30AM +0530, Rabin Vincent wrote:
+> > > + * With both the mcount types, we need to restore the original lr before
+> > > + * returning.  In the __gnu_mcount_nc, version we're allowed to clobber ip.
+> > > + * No other registers should be clobbered.
+> > > + */
+> > Very nice.
+> > 
+> > Maybe make the last two sentences:
+> > 
+> > In the __gnu_mcount_nc case the ip register is clobbered which is OK as
+> > the calling convention for ARM allow clobbering this value for
+> > subroutines and it doesn't contain parameters.
 > 
-> It still hangs in hibernation_snapshot() / disable_nonboot_cpus().  
-> After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
-> 
-> 
-> 
-> There is a change which I missed before.  When I applied your first 
-> patch ("Force GFP_NOIO during suspend" etc.), it did change the hung 
-> task backtraces a bit.  I don't know if it tells us anything.
-> 
-> Without the patch, there were two backtraces.  The first backtrace 
-> suggested a problem allocating pages for a kernel thread (at 
-> copy_process() / try_to_free_pages()).  The second showed that this 
-> problem was blocking s2disk (at hibernation_snapshot() / 
-> disable_nonboot_cpus() / stop_machine_create()). 
-> 
-> With the GFP_NOIO patch, I see only the s2disk backtrace.
+> Won't quoting calling conventions here be misleading?  The mcounts don't
+> following normal convention for the other bits (we can't clobber even
+> the registers that are normally caller-saved, we need to restore lr,
+> etc.)
+actually mcount is a function in the middle of a function call.  So it
+must be transparent for both the caller and the callee.  As the called
+function needs to know the return address, mcount must not clobber it.
+And as ip is don't care and can be clobbered mcount can use it as it
+likes.
 
-Can you please post this backtrace?
+Best regards
+Uwe
 
-Rafael
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
