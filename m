@@ -1,59 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026Ab0BVPkd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:40:33 -0500
-Received: from mail.2750.no ([62.101.244.198]:54101 "EHLO mail.2750.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753770Ab0BVPkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:40:31 -0500
-Message-ID: <4B82A566.5000600@simula.no>
-Date: Mon, 22 Feb 2010 16:40:22 +0100
-From: Andreas Petlund <apetlund@simula.no>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100217 Shredder/3.0.3pre
+	id S1753890Ab0BVPnK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:43:10 -0500
+Received: from mtagate7.uk.ibm.com ([194.196.100.167]:53559 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265Ab0BVPnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 10:43:08 -0500
+Message-ID: <4B82A603.9030602@linux.vnet.ibm.com>
+Date: Mon, 22 Feb 2010 16:42:59 +0100
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
-       "zimmermann@nets.rwth-aachen.de" <zimmermann@nets.rwth-aachen.de>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
-       "eric.dumazet@gmail.com" <eric.dumazet@gmail.com>,
-       "Arnd.Hannemann@nets.rwth-aachen.de" 
-	<Arnd.Hannemann@nets.rwth-aachen.de>,
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "shemminger@vyatta.com" <shemminger@vyatta.com>,
-       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
-       "damian@tvk.rwth-aachen.de" <damian@tvk.rwth-aachen.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
-References: <20100221102102.GB1311@ucw.cz>	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>	<20100221.150311.193707249.davem@davemloft.net>	<FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> <87k4u5mh9u.fsf@basil.nowhere.org>
-In-Reply-To: <87k4u5mh9u.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+ due to "e084b - page-allocator: preserve PFN ordering when	__GFP_COLD is
+ set"
+References: <20100209175707.GB5098@csn.ul.ie> <4B742C2C.5080305@linux.vnet.ibm.com> <20100212100519.GA29085@laptop> <4B796C6D.80800@linux.vnet.ibm.com> <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com> <20100218114310.GC32626@csn.ul.ie> <4B7D664C.20507@linux.vnet.ibm.com> <4B7E73BF.5030901@linux.vnet.ibm.com> <20100219151934.GA1445@csn.ul.ie>
+In-Reply-To: <20100219151934.GA1445@csn.ul.ie>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22. feb. 2010 16:17, Andi Kleen wrote:
-> Lars Eggert <lars.eggert@nokia.com> writes:
+Mel Gorman wrote:
+[...]
 > 
->> If it's off by default there is no issue.
+>> Unfortunately even now knowing the place of the issue so well I don't see
+>> the connection to the commits e084b+5f8dcc21
 > 
-> Still a sufficient large number of people might turn it on
-> and then the network would melt.
+> Still a mystery.
 > 
-> IMHO TCP changes with badly understood congestion behaviour
-> should not be merged until the necessary analysis/simulation etc.
-> is done.
+>>  - I couldn't find something but
+>> did they change the accounting somewhere or e.g. changed the timing/order
+>> of watermark updates and allocations?
+>>
 > 
-> -Andi
+> Not that I can think of.
+> 
+>> Eventually it might come down to a discussion of allocation priorities and
+>> we might even keep them as is and accept this issue - I still would prefer
+>> a good second chance implementation, other page cache allocation flags or
+>> something else that explicitly solves this issue.
+>>
+> 
+> In that line, the patch that replaced congestion_wait() with a waitqueue
+> makes some sense.
 
-Graphs from our experiments can be found here:
-http://simula.no/research/nd/publications/Simula.nd.477/simula_pdf_file
+[...]
 
-Section 5.2.5 covers experiments on fairness-issues. We have found no
-adverse effects of the modifications submitted in this patch set (mFR
-and LT in the plot), but further testing cannot hurt.
+> I'll need to do a number of tests before I can move that upstream but I
+> don't think it's a merge candidate. Unfortunately, I'll be offline for a
+> week starting tomorrow so I won't be able to do the testing.
+> 
+> When I get back, I'll revisit those patches with the view to pushing
+> them upstream. I hate to treat symptoms here without knowing the
+> underlying problem but this has been spinning in circles for ages with
+> little forward progress :(
 
-Best regards,
-Andreas
+I'll continue with some debugging in search for the real reasons, but if 
+I can't find a new way to look at it I think we have to drop it for now.
+
+While I hate fixing symptoms too, I completely agree that  it is time to 
+bring this fix upstream and in fact into the stable kernel too, to have 
+at least a ~98% workaround out there.
+
+I'm looking forward for your revised patch after you are back and I'm 
+eager to test this one again.
+
+
+-- 
+
+Grüsse / regards, Christian Ehrhardt
+IBM Linux Technology Center, System z Linux Performance
