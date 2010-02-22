@@ -1,36 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652Ab0BVEG0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 23:06:26 -0500
-Received: from n67.bullet.mail.sp1.yahoo.com ([98.136.44.47]:22790 "HELO
-	n67.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754502Ab0BVEGY (ORCPT
+	id S1754665Ab0BVEhh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 23:37:37 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:33666 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754568Ab0BVEhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 23:06:24 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 997432.79754.bm@omp109.mail.sk1.yahoo.com
-Message-ID: <772813.51946.qm@web1113.biz.mail.sk1.yahoo.com>
-X-YMail-OSG: 8StJz1kVM1nGzyqejF_Ikrt_0uP7wRhx011FV7lA6GtZmgNmd.UTtWDpaQjv0yIUlh6Hdr.DPHTLcjwAjQqHlAV0IoGH6YZwgQS1cVWpGSxgU2d9jvhkPP_aVIyW_AN3d4rbtYravXvtLyPQiGFYt_sCeuIQCYNttx6Zkak5Y2ma.1sLziu227U_evp1ULghAbLQtd8Ew45llz8kPfuCd2cZ7D9U3xH1FK7v3otdP98UyckiTx4gS7hCcRZqMS1bDDuJFcmiifuliOq_H0SBspddQjZBSJsLAcchL9qOQ63v1fo5AVflCsOwfPy47_iNy7qyjHyfRd9hFPxKyIOLSJPCu7WXZgkCo3iBa6FZqWOPd4NrKLyB4VPlMVWEyHDDdj7kFf4Aeh5vdt3Mvcr3SQbReGhqqtcKstxl2dSyv3tl0NbAvT8LKxfnuc8RIgoSQJZEOh.y2zl4Su_4JL8txIi1fqR00j0PGChd0Q_sewF3CE1P.yGirMQsMov9Mw0yYWxlvP8nj34.iXrSj6Fgl47gKTHgDetuOBQPCaKPSuOPyKCeuMfOs5oIg334njc5NyiFFP6yJdPVnUeNFnlMxYhsTivFLHS2x6Atmgi0jCAsCwsvSXWputwfLE.SKegQE3rmduaD2r8eONm_FBGKexAnOdsBR57Kw3dse0HzGMYqFOeQb5yydXcO9E2FV3GZvZEKDYVK2OOXzk7InNLvJmN5pJo82KNMw9ZmhGztmrLQJ0kUxUBA9H179OY0ow8pe5Umj.jyRVRh0BGFuv5jaStPWthDzhpf4lPDrP0L2z4BdPgqGU91j1amKvDETe2mVKSyPzelHF0Sc7ltjiUyCYYmCDANlkxBbBkWiZKs2vE3XtxCCmJu9CdTc26hq65gt9uPKUMwoVIATfrGCW7J377VXpgeXdHc4B.ANvhHY6phDu37SLaOloGd_kTBFx9Jrtw07a7ysZYXfH9fHvLtiPhSoYr5MW9czf0nF.D5oOWYj0D2ns7VxBT763s4
-X-Mailer: YahooMailClassic/9.2.12 YahooMailWebService/0.8.100.260964
-Date: Sun, 21 Feb 2010 20:06:23 -0800 (PST)
-From: Ben Idriss <ben_idriss34@ubannese.com>
-Reply-To: benidriss02@gmail.com
-Subject: Mr. Ben Idriss
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 21 Feb 2010 23:37:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=BtknjO9Il+R5dvoJ6yRWF15RHHXYgjP04YeUG5U/ig5vRFiZi17wcJHUbRv03yRx2l
+         WrMKs47r6PrHcM6IkExZ3Xzn151Tx+fVyYCeAfa7JjiDyAPEAN/MEm39IBj0DmSxferF
+         RClZ+O6ZMWkXrBtKKHK3jf8Z6fVeDrq+69CdY=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org,
+       sameo@linux.intel.com, linux-sh@vger.kernel.org
+Date: Mon, 22 Feb 2010 13:37:09 +0900
+Message-Id: <20100222043709.4675.49750.sendpatchset@t400s>
+Subject: [PATCH] mfd: sh_mobile_sdhi MMC_CAP_MMC_HIGHSPEED support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Friend 
-   
-I am Mr. Ben Idriss a banker in Islamic development bank I contacted you now on a business deal of US$10.5m (ten million five hundred thousand united states dollar). to transfer to your account the depositor of the said fund died with his entire family during the Iraq war in 2006. unfortunately leaving nobody for the claim. if we make this claim, we will share it 50%/50%. there is no risk involved in this transaction If you are interested reply to this my private mail address benidriss02@gmail.com for more details.about this transaction  I shall be waiting for your reply 
-  
-Best regard  
-Mr. Ben Idriss 
- 
- 
- 
+From: Magnus Damm <damm@opensource.se>
 
+Add MMC_CAP_MMC_HIGHSPEED support to the sh_mobile_sdhi
+driver. Also, remove type cast and FIXME comment.
 
+Signed-off-by: Magnus Damm <damm@opensource.se>
+---
+
+ Depends on the series:
+ "[PATCH 00/05] tmio_mmc: SDHI hotplug and random fixes"
+
+ drivers/mfd/sh_mobile_sdhi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- 0001/drivers/mfd/sh_mobile_sdhi.c
++++ work/drivers/mfd/sh_mobile_sdhi.c	2010-02-22 11:51:12.000000000 +0900
+@@ -21,7 +21,7 @@
+ #include <linux/kernel.h>
+ #include <linux/clk.h>
+ #include <linux/platform_device.h>
+-
++#include <linux/mmc/host.h>
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/tmio.h>
+ #include <linux/mfd/sh_mobile_sdhi.h>
+@@ -95,9 +95,9 @@ static int __init sh_mobile_sdhi_probe(s
+ 
+ 	clk_enable(priv->clk);
+ 
+-	/* FIXME: silly const unsigned int hclk */
+-	*(unsigned int *)&priv->mmc_data.hclk = clk_get_rate(priv->clk);
++	priv->mmc_data.hclk = clk_get_rate(priv->clk);
+ 	priv->mmc_data.set_pwr = sh_mobile_sdhi_set_pwr;
++	priv->mmc_data.capabilities = MMC_CAP_MMC_HIGHSPEED;
+ 
+ 	memcpy(&priv->cell_mmc, &sh_mobile_sdhi_cell, sizeof(priv->cell_mmc));
+ 	priv->cell_mmc.driver_data = &priv->mmc_data;
