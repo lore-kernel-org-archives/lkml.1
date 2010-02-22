@@ -1,248 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325Ab0BVQ2I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 11:28:08 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:25497 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751143Ab0BVQ2G (ORCPT
+	id S1752503Ab0BVQfI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 11:35:08 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:35142 "HELO
+	outboundproxy6.bluehost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751893Ab0BVQfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 11:28:06 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
-Date: Mon, 22 Feb 2010 18:29:13 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1266752533.3428.28.camel@Nokia-N900-42-11> <4B81EFD8.8020202@redhat.com>
-In-Reply-To: <4B81EFD8.8020202@redhat.com>
-MIME-Version: 1.0
-Message-Id: <201002221829.13987.opurdila@ixiacom.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Mon, 22 Feb 2010 11:35:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=HxD753s1by7iZBa5a5Jfbt2eJbS/5Tv8L9S5JF1Hgmw/gZaCM3o9Kjto/t2EhzBd3q5+20PHkS/nMXOkGbLTBBD7mZx5oSb2oqzNVL1JwLowglyUUxSPo2FE374BDP9f;
+Date: Mon, 22 Feb 2010 08:32:36 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pedro Ribeiro <pedrib@gmail.com>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] i915 / PM: Fix hibernate regression caused by
+ suspend/resume splitting
+Message-ID: <20100222083236.45bf150d@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.1002220746260.4141@localhost.localdomain>
+References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
+	<201002172320.57491.rjw@sisk.pl>
+	<74fd948d1002171629v7e86371cna4441e8feb27c326@mail.gmail.com>
+	<201002182306.28052.rjw@sisk.pl>
+	<alpine.LFD.2.00.1002220746260.4141@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Feb 2010 16:27:58.0925 (UTC) FILETIME=[FEE71FD0:01CAB3DB]
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 February 2010 04:45:44 you wrote:
-> Octavian Purdila wrote:
-> > But I think its worth to keep the whitespaces in beetween, e.g. allow
-> >
-> > $ echo '1, 2 ,3 ' >   ip_local_reserved_ports.
+On Mon, 22 Feb 2010 07:47:53 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> Sure.
+> Jesse, Eric, what's the status of this patch? 
 > 
-> >> Also, if I write an invalid value, it does reject this, but the previous
-> >> value in that file is cleared, shouldn't we keep the previous one?
-> >
-> > The only way I see to fix this is to return EINVAL if we detect a write
-> > with offset.
-> 
-> Yeah, we shouldn't continue once we find any invalid value.
-> 
-> > IMO we should do that for the other proc write routines as well, as
-> > otherwise ther result is confusing, e.g.
-> >
-> > write("1 2"); write(" 3");
-> >
-> > will set first value in the vector to 1, than second value to 2 then
-> > *first* value to 3.
-> >
-> > I am all for it, but again, this changes userspace ABI.
-> 
-> Sorry, is this related with the problem I mentioned above? Both "1 2"
-> and " 3" are valid values.
-> 
+> Should I take it directly (I'd really like an Ack) or is it queued up in 
+> some tree waiting for me to pull? Or is there some reason not to have it, 
+> despite it fixing things for some people?
 
-Never mind, please disregard my "return EINVAL if we detect a write
-with offset", it breaks the ABI in a significant way.
+Hm, I thought Eric had applied that to his for-linus branch, but it
+looks like that branch is empty now.  Maybe Rafael posted an update
+that Eric missed and so you just have a partial fix in your tree?
 
-Here is a new version of this patch which fixes both the comma and invalid 
-value issues, please give it a try.
-
-[net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
-
-The new function can be used to read/write large bitmaps via /proc. A
-comma separated range format is used for compact output and input
-(e.g. 1,3-4,10-10).
-
-Writing into the file will first reset the bitmap then update it
-based on the given input.
-
-Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-Cc: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
- include/linux/sysctl.h |    2 +
- kernel/sysctl.c        |  134 
-++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 136 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index f66014c..7bb5cb6 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -980,6 +980,8 @@ extern int proc_doulongvec_minmax(struct ctl_table *, int,
- 				  void __user *, size_t *, loff_t *);
- extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
- 				      void __user *, size_t *, loff_t *);
-+extern int proc_do_large_bitmap(struct ctl_table *, int,
-+				void __user *, size_t *, loff_t *);
- 
- /*
-  * Register a set of sysctl names by calling register_sysctl_table
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 5259727..d8ea839 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2635,6 +2635,140 @@ static int proc_do_cad_pid(struct ctl_table *table, 
-int write,
- 	return 0;
- }
- 
-+/**
-+ * proc_do_large_bitmap - read/write from/to a large bitmap
-+ * @table: the sysctl table
-+ * @write: %TRUE if this is a write to the sysctl file
-+ * @buffer: the user buffer
-+ * @lenp: the size of the user buffer
-+ * @ppos: file position
-+ *
-+ * The bitmap is stored at table->data and the bitmap length (in bits)
-+ * in table->maxlen.
-+ *
-+ * We use a range comma separated format (e.g. 1,3-4,10-10) so that
-+ * large bitmaps may be represented in a compact manner. Writing into
-+ * the file will clear the bitmap then update it with the given input.
-+ *
-+ * Returns 0 on success.
-+ */
-+int proc_do_large_bitmap(struct ctl_table *table, int write,
-+			 void __user *_buffer, size_t *lenp, loff_t *ppos)
-+{
-+	bool first = 1;
-+	unsigned long *bitmap = (unsigned long *) table->data;
-+	unsigned long bitmap_len = table->maxlen;
-+	int left = *lenp, err = 0;
-+	char __user *buffer = (char __user *) _buffer;
-+	char tr_a[] = { '-', ',', 0 }, tr_b[] = { ',', 0 }, c;
-+
-+
-+	if (!bitmap_len || !left || (*ppos && !write)) {
-+		*lenp = 0;
-+		return 0;
-+	}
-+
-+	if (write) {
-+		err = proc_skip_wspace(&buffer, &left);
-+		while (!err && left) {
-+			unsigned long val_a, val_b;
-+			bool neg;
-+
-+			err = proc_get_ulong(&buffer, &left, tr_a,
-+					     &val_a, &neg, &c);
-+			if (err)
-+				break;
-+
-+			if (val_a >= bitmap_len || neg) {
-+				err = -EINVAL;
-+				break;
-+			}
-+
-+			val_b = val_a;
-+			if (left && c == '-') {
-+				/* skip the - */
-+				buffer++; left--;
-+
-+				err = proc_get_ulong(&buffer, &left, tr_b,
-+						     &val_b, &neg, &c);
-+				if (err)
-+					break;
-+
-+				if (val_b >= bitmap_len || neg ||
-+				    val_a > val_b) {
-+					err = -EINVAL;
-+					break;
-+				}
-+			}
-+
-+			if (left) {
-+				err = proc_skip_wspace(&buffer, &left);
-+				if (err)
-+					break;
-+				if (left) {
-+					if (get_user(c, buffer)) {
-+						err = -EFAULT;
-+						break;
-+					}
-+					if (c != ',') {
-+						err = -EINVAL;
-+						break;
-+					}
-+					/* skip the , */
-+					buffer++; left--;
-+				}
-+			}
-+
-+			if (first)
-+				bitmap_clear(bitmap, 0, bitmap_len);
-+
-+			while (val_a <= val_b)
-+				set_bit(val_a++, bitmap);
-+
-+			first = 0;
-+		}
-+		if (!err)
-+			err = proc_skip_wspace(&buffer, &left);
-+	} else {
-+		unsigned long bit_a, bit_b = 0;
-+
-+		while (left) {
-+			bit_a = find_next_bit(bitmap, bitmap_len, bit_b);
-+			if (bit_a >= bitmap_len)
-+				break;
-+			bit_b = find_next_zero_bit(bitmap, bitmap_len,
-+						   bit_a + 1) - 1;
-+
-+			err = proc_put_ulong(&buffer, &left, bit_a, 0, first,
-+					     ',');
-+			if (err)
-+				break;
-+			if (bit_a != bit_b) {
-+				err = proc_put_char(&buffer, &left, '-');
-+				if (err)
-+					break;
-+				err = proc_put_ulong(&buffer, &left, bit_b, 0,
-+						     1, 0);
-+				if (err)
-+					break;
-+			}
-+
-+			first = 0; bit_b++;
-+		}
-+		if (!err)
-+			err = proc_put_char(&buffer, &left, '\n');
-+	}
-+
-+	if (first) {
-+		if (err)
-+			return err;
-+		bitmap_clear(bitmap, 0, bitmap_len);
-+	}
-+	*lenp -= left;
-+	*ppos += *lenp;
-+	return 0;
-+}
-+
- #else /* CONFIG_PROC_FS */
- 
- int proc_dostring(struct ctl_table *table, int write,
 -- 
-1.5.6.5
-
-
+Jesse Barnes, Intel Open Source Technology Center
