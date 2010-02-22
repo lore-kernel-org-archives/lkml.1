@@ -1,76 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752554Ab0BVJdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 04:33:31 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41660 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220Ab0BVJda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 04:33:30 -0500
-Date: Mon, 22 Feb 2010 20:33:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com, linux-tip-commits@vger.kernel.org
-Subject: linux-next requiements (Was: Re: [tip:x86/ptrace] ptrace: Add
- support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
-Message-Id: <20100222203319.8bd497a2.sfr@canb.auug.org.au>
-In-Reply-To: <20100222090710.GA31357@elte.hu>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
-	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
-	<20100222090710.GA31357@elte.hu>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__22_Feb_2010_20_33_19_+1100_N5YSiwMVWfv1sCJ0"
+	id S1752662Ab0BVJpM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 04:45:12 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48324 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751965Ab0BVJpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 04:45:10 -0500
+X-Sasl-enc: snH8vQErexCEG7kJgWB6be0RMajsVT5mVgYq3hBNvuSy 1266831908
+Message-ID: <4B825223.7030904@ladisch.de>
+Date: Mon, 22 Feb 2010 10:45:07 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] cx88-alsa: prevent out-of-range volume setting
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__22_Feb_2010_20_33_19_+1100_N5YSiwMVWfv1sCJ0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ensure that volume values are always in the allowed range.  Otherwise,
+it would be possible to set other bits in the AUD_VOL_CTL register or to
+get a wrong sign in the AUD_BAL_CTL register.
 
-Hi Ingo,
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 
-On Mon, 22 Feb 2010 10:07:10 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> I'll keep them in tip:master to get them tested, but note that i cannot p=
-ush=20
-> any of these patches into linux-next until this is fixed, as linux-next=20
-> requires all architectures to build, with no regard to which architecture=
-s are=20
-> tested by kernel testers in practice.
-
-I merely expect people not to push known broken code into linux-next.
-linux-next breaks on all sorts of architectures all the time (check
-http://kisskb.ellerman.id.au/kisskb/branch/9/).  One of the reasons
-linux-next exists is so that all kernel developers don't have to build
-test on all architectures all the time.  (And, yes, I know that linux-next
-doesn't build all architectures or all configs.)
-
-That being said, I will complain about breakages on some architectures
-more than others since they are in my personal builds (as opposed to the
-over night builds).
-
-That being said (:-)), I am sure that the PARISC guys would appreciate
-the original problem being fixed.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__22_Feb_2010_20_33_19_+1100_N5YSiwMVWfv1sCJ0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuCT18ACgkQjjKRsyhoI8zvngCeLq6wtpA2Jh85DcFbLMktDgm7
-6skAoJfZ+GslAE6f21SCP5Rl2dXzrr/T
-=oOdT
------END PGP SIGNATURE-----
-
---Signature=_Mon__22_Feb_2010_20_33_19_+1100_N5YSiwMVWfv1sCJ0--
+--- linux/drivers/media/video/cx88/cx88-alsa.c
++++ linux/drivers/media/video/cx88/cx88-alsa.c
+@@ -583,16 +583,18 @@ static int snd_cx88_volume_put(struct sn
+ {
+ 	snd_cx88_card_t *chip = snd_kcontrol_chip(kcontrol);
+ 	struct cx88_core *core=chip->core;
+-	int v, b;
++	int left, right, v, b;
+ 	int changed = 0;
+ 	u32 old;
+ 
+-	b = value->value.integer.value[1] - value->value.integer.value[0];
++	left = value->value.integer.value[0] & 0x3f;
++	right = value->value.integer.value[1] & 0x3f;
++	b = right - left;
+ 	if (b < 0) {
+-	    v = 0x3f - value->value.integer.value[0];
++	    v = 0x3f - left;
+ 	    b = (-b) | 0x40;
+ 	} else {
+-	    v = 0x3f - value->value.integer.value[1];
++	    v = 0x3f - right;
+ 	}
+ 	/* Do we really know this will always be called with IRQs on? */
+ 	spin_lock_irq(&chip->reg_lock);
