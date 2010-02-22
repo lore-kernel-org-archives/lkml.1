@@ -1,55 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662Ab0BVJpM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 04:45:12 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48324 "EHLO
+	id S1752707Ab0BVJpS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 04:45:18 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33289 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751965Ab0BVJpK (ORCPT
+	by vger.kernel.org with ESMTP id S1752667Ab0BVJpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 04:45:10 -0500
-X-Sasl-enc: snH8vQErexCEG7kJgWB6be0RMajsVT5mVgYq3hBNvuSy 1266831908
-Message-ID: <4B825223.7030904@ladisch.de>
-Date: Mon, 22 Feb 2010 10:45:07 +0100
+	Mon, 22 Feb 2010 04:45:14 -0500
+X-Sasl-enc: KHIJnyZc/tt5zJsVlVBt8K3ygo6bxDFv4yEk+02tfz0h 1266831913
+Message-ID: <4B825228.8050405@ladisch.de>
+Date: Mon, 22 Feb 2010 10:45:12 +0100
 From: Clemens Ladisch <clemens@ladisch.de>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cx88-alsa: prevent out-of-range volume setting
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] thinkpad-acpi: fix return value of volume callbacks
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that volume values are always in the allowed range.  Otherwise,
-it would be possible to set other bits in the AUD_VOL_CTL register or to
-get a wrong sign in the AUD_BAL_CTL register.
+Fix up the volume status setting functions to return a non-zero value if
+the control value has changed, so that the ALSA framework can correctly
+generate control change notifications.
 
 Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 
---- linux/drivers/media/video/cx88/cx88-alsa.c
-+++ linux/drivers/media/video/cx88/cx88-alsa.c
-@@ -583,16 +583,18 @@ static int snd_cx88_volume_put(struct sn
- {
- 	snd_cx88_card_t *chip = snd_kcontrol_chip(kcontrol);
- 	struct cx88_core *core=chip->core;
--	int v, b;
-+	int left, right, v, b;
- 	int changed = 0;
- 	u32 old;
+--- linux/drivers/platform/x86/thinkpad_acpi.c
++++ linux/drivers/platform/x86/thinkpad_acpi.c
+@@ -6537,8 +6537,11 @@ static int volume_set_mute_ec(const bool
+ 	n = (mute) ? s | TP_EC_AUDIO_MUTESW_MSK :
+ 		     s & ~TP_EC_AUDIO_MUTESW_MSK;
  
--	b = value->value.integer.value[1] - value->value.integer.value[0];
-+	left = value->value.integer.value[0] & 0x3f;
-+	right = value->value.integer.value[1] & 0x3f;
-+	b = right - left;
- 	if (b < 0) {
--	    v = 0x3f - value->value.integer.value[0];
-+	    v = 0x3f - left;
- 	    b = (-b) | 0x40;
- 	} else {
--	    v = 0x3f - value->value.integer.value[1];
-+	    v = 0x3f - right;
- 	}
- 	/* Do we really know this will always be called with IRQs on? */
- 	spin_lock_irq(&chip->reg_lock);
+-	if (n != s)
++	if (n != s) {
+ 		rc = volume_set_status_ec(n);
++		if (!rc)
++			rc = 1;
++	}
+ 
+ unlock:
+ 	mutex_unlock(&volume_mutex);
+@@ -6569,8 +6572,11 @@ static int volume_set_volume_ec(const u8
+ 
+ 	n = (s & ~TP_EC_AUDIO_LVL_MSK) | vol;
+ 
+-	if (n != s)
++	if (n != s) {
+ 		rc = volume_set_status_ec(n);
++		if (!rc)
++			rc = 1;
++	}
+ 
+ unlock:
+ 	mutex_unlock(&volume_mutex);
