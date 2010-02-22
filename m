@@ -1,54 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482Ab0BVObT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 09:31:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36245 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003Ab0BVObS (ORCPT
+	id S1753510Ab0BVOgN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 09:36:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60238 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371Ab0BVOgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 09:31:18 -0500
-Date: Mon, 22 Feb 2010 15:31:11 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com, rientjes@google.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-Message-ID: <20100222143111.GA15778@basil.fritz.box>
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <4B826227.9010101@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B826227.9010101@cs.helsinki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 22 Feb 2010 09:36:11 -0500
+X-Authority-Analysis: v=1.0 c=1 a=InyUbggdI00A:10 a=7U3hwN5JcxgA:10 a=pGLkceISAAAA:8 a=GrMDFnwiM8No-DILQKgA:9 a=d4JhUndn4rIs6YBaJ63fsKmql94A:4 a=MSl-tDqOz04A:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 05/06] kernel.h tracing stuff cleanup
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Neil Horman <nhorman@tuxdriver.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Markus Metzger <markus.t.metzger@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100222142008.GA9032@darkstar>
+References: <20100222142008.GA9032@darkstar>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 22 Feb 2010 09:36:06 -0500
+Message-ID: <1266849367.24271.4386.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 12:53:27PM +0200, Pekka Enberg wrote:
-> Andi Kleen kirjoitti:
->> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
->>> On Mon, 15 Feb 2010, Nick Piggin wrote:
->>>
->>>> I'm just worried there is still an underlying problem here.
->>> So am I. What caused the breakage that requires this patchset?
->>
->> Memory hotadd with a new node being onlined.
->
-> So can you post the oops, please? Right now I am looking at zapping the 
+On Mon, 2010-02-22 at 22:20 +0800, Dave Young wrote:
+> trace stuff in kernel.h should stay in their own head file 
+> 
+> cleanup trace declarations in kernel.h, put them into ring_buffer.h
+> include ring_buffer.h in every file which need it
 
-I can't post the oops from a pre-release system.
+NAK, sorry.
 
-> series from slab.git due to NAKs from both Christoph and Nick.
+1) it does not belong in ring_buffer.h. The ring buffer.h is for the
+ring buffer only, and is agnostic to other tracing code.
 
-Huh? They just complained about the patch, not the whole series.
-I don't understand how that could prompt you to drop the whole series.
+2) trace_prink() and friends needs to be with printk. It is not used
+much in the delivered kernel but it is used often in development. That
+is, we purposely made it so it is not needed to add a header file to
+everyplace you use trace_prink(). When debugging a problem,
+trace_printk() needs to be as convenient as adding printk(), and by
+needing to find "what header includes trace_printk()" will become an
+overwhelming inconvenience.
 
-As far as I know nobody said the patch is wrong so far, just
-that they wanted to have more analysis.
+-- Steve
 
--Andi
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+
+
