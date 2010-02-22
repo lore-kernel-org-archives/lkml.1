@@ -1,61 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164Ab0BVK32 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 05:29:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42406 "EHLO mx2.mail.elte.hu"
+	id S1752173Ab0BVKab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 05:30:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11731 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115Ab0BVK3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 05:29:25 -0500
-Date: Mon, 22 Feb 2010 11:28:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [Dle-develop] [PATCH -tip 5/9] perf probe: Use elfutils-libdw
- for	analyzing	debuginfo
-Message-ID: <20100222102843.GA9313@elte.hu>
-References: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com>
- <20100218232741.21679.22423.stgit@dhcp-100-2-132.bos.redhat.com>
- <4B81A308.3020204@redhat.com>
+	id S1751592Ab0BVKa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 05:30:29 -0500
+Date: Mon, 22 Feb 2010 11:30:26 +0100
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.17.1
+Message-ID: <20100222103026.GA6375@nb.net.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4B81A308.3020204@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+The stable util-linux-ng 2.17.1 release is available at
 
-> Masami Hiramatsu wrote:
-> > Newer gcc introduces newer & richer debuginfo, and only libdw
-> > in elfutils project can support it. So perf probe moves onto
-> > elfutils-libdw from libdwarf.
-> 
-> Hmm, this has some bit-width related issues on x86-64.
-> I'll update this patch.
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
 
-Ok, i'll wait for the next drop of these patches.
+Feedback and bug reports, as always, are welcomed.
 
-Thanks,
+	Karel
 
-	Ingo
+
+Util-linux-ng 2.17.1 Release Notes
+==================================
+
+Release highlights
+------------------
+
+fdisk:
+   - supports new command line option "-c" to disable DOS-compatible mode from
+     command line.
+
+     The DOS-compatible mode is DEPRECATED and will be disabled by default
+     in the next major release. Currently, the DOS mode is enabled by default
+     for backward compatibility only. 
+
+     The cylinders as display units are DEPRECATED. It's recommended to use
+     "-u" command line option or "u" fdisk command and use sectors as display
+     units.
+
+   Note that the new support for 4K-sector disks is useless in DOS-compatible
+   mode. The fdisk command prints warning(s) when startup in DOS mode.
+
+
+Changes since v2.17
+-------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
+
+
+blkid:
+   - add newline when only one value is printed  [Karel Zak]
+   - fix #ifdef HAVE_TERMIO[S]_H  [Karel Zak]
+   - probe for PT, don't probe for FS on small whole-disks  [Karel Zak]
+   - report open() errors in low-level probing  [Karel Zak]
+build-sys:
+   - add missing tests for libuuid and libblkid  [Karel Zak]
+   - release++ (v2.17.1-rc1)  [Karel Zak]
+   - remove duplicate #includes  [Karel Zak]
+cal:
+   - fix first day of the week calculation on BE systems  [Karel Zak]
+cfdisk:
+   - set '[New]' as default item on menu for non allocated space instead of '[Help]'.  [Francesco Cosoleto]
+   - set '[Quit]' as default menu item on first run instead of '[Bootable]'.  [Francesco Cosoleto]
+docs:
+   - add v2.17.1 ReleaseNotes  [Karel Zak]
+   - update AUTHORS file  [Karel Zak]
+fdisk:
+   - add -c option (switch off DOS mode)  [Karel Zak]
+   - cleanup alignment, default to 1MiB offset  [Karel Zak]
+   - cleanup help, add -h option  [Karel Zak]
+   - cleanup warnings  [Karel Zak]
+   - don't check alignment_offset against geometry  [Karel Zak]
+   - don't include scsi.h  [Karel Zak]
+   - don't use 1MiB grain on small devices  [Karel Zak]
+   - fallback for topology values  [Karel Zak]
+   - fix ALIGN_UP  [Karel Zak]
+   - fix check_alignment()  [Karel Zak]
+   - fix default first sector  [Karel Zak]
+   - swap VTOC values for warning messages  [Karel Zak]
+   - use "optimal I/O size" in warnings  [Karel Zak]
+   - use 1MiB offset and grain always when possible  [Karel Zak]
+   - use more elegant way to count and check alignment  [Karel Zak]
+   - use optimal_io_size  [Karel Zak]
+include:
+   - add min/max macros  [Karel Zak]
+libblkid:
+   - add minimal sizes for OCFS and GFS  [Karel Zak]
+   - add sanity checks for FAT to DOS PT parser  [Karel Zak]
+   - call read() per FAT root dir entry  [Karel Zak]
+   - disable read-ahead when probing device files  [Linus Torvalds]
+   - don't call read() per FAT dir-entry on large disks  [Karel Zak]
+   - don't probe for GPT and Unixware PT on floppies  [Karel Zak]
+   - don't return error on empty files  [Karel Zak]
+   - fix ZSF detection  [Andreas Dilger]
+   - fix segfault in drdb  [Matthias König]
+   - more robust minix probing  [Karel Zak]
+   - read whole SB buffer (69kB) on large disks  [Karel Zak]
+   - read() optimization for small devices  [Karel Zak]
+   - restrict RAID/FS proving for small devices (1.4MiB)  [Karel Zak]
+   - rewrite blkid_probe_get_buffer()  [Karel Zak]
+   - set minimal size for jfs, reiser, swap and zfs  [Karel Zak]
+login:
+   - check that after tty reopen we still work with a terminal  [Karel Zak]
+   - don't link PAMed version with libcrypt  [Karel Zak]
+   - use fd instead of pathname for update tty's owner and permissions  [Yann Droneaud]
+mount:
+   - advise users to use "modprobe", not "insmod"  [Karel Zak]
+   - update documentation about barrier mount options  [Jan Kara]
+   - warn users that mtab is read-only  [Karel Zak]
+namei:
+   - fix man page formatting  [Vladimir Brednikov]
+po:
+   - merge changes  [Karel Zak]
+   - update cs.po (from translationproject.org)  [Petr Pisar]
+   - update eu.po (from translationproject.org)  [Mikel Olasagasti Uranga]
+   - update id.po (from translationproject.org)  [Arif E. Nugroho]
+   - update pl.po (from translationproject.org)  [Jakub Bogusz]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+sfdisk:
+   - make sure writes make it to disk in write_partitions()  [Bryn M. Reeves]
+swapon:
+   - fix swapsize calculation  [Karel Zak]
+tests:
+   - add fdisk alignment tests  [Karel Zak]
+   - fix RAIDs tests  [Karel Zak]
+   - fix and update old fdisk tests  [Karel Zak]
+   - update FS test images  [Karel Zak]
+   - update fdisk tests  [Karel Zak]
+   - update fdisk tests (add whitespaces)  [Karel Zak]
+wipefs:
+   - ignore devices with partition table  [Karel Zak]
+-- 
+ Karel Zak  <kzak@redhat.com>
