@@ -1,133 +1,205 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975Ab0BVSYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:24:18 -0500
-Received: from mga11.intel.com ([192.55.52.93]:65162 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152Ab0BVSYQ convert rfc822-to-8bit (ORCPT
+	id S1753260Ab0BVS1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:27:41 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:47088 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786Ab0BVS1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:24:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,520,1262592000"; 
-   d="scan'208";a="542848099"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       "mingo@redhat.com" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-CC: "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Date: Mon, 22 Feb 2010 10:24:14 -0800
-Subject: RE: [tip:x86/mrst] x86: Initialize stack canary in secondary start
-Thread-Topic: [tip:x86/mrst] x86: Initialize stack canary in secondary start
-Thread-Index: AcqyA1mRymuW8te8SkeN39LRqqi3SAB4EMuw
-Message-ID: <43F901BD926A4E43B106BF17856F0755A318CD2C@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F07559FB80D02@orsmsx508.amr.corp.intel.com>
- <tip-35f720c5930f689647d51ad77e2a8d6f0abf66c8@git.kernel.org>
- <alpine.LFD.2.00.1002200903170.2811@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1002200903170.2811@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Feb 2010 13:27:39 -0500
+Date: Mon, 22 Feb 2010 13:26:53 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: pull request: wireless-2.6 2010-02-22
+Message-ID: <20100222182653.GB2988@tuxdriver.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
 
->So with that patch applied we can remove the boot_init_stack_canary()
->in process_32/64.c cpu_idle(), can't we ?
->
+I have a handful of late-breakers for iwlwifi.  The one from Dan
+Halperin moves a single line of code and is a fix for an 802.11n
+regression introduced in the 2.6.33 cycle.  The other two combine
+to address a problem that causes the wireless LAN connection to
+die without any error message.  It has been developed and tested in
+combination between the Intel wireless team and a contributor from
+Red Hat.  I hope you will consider including these for 2.6.33 if at
+all possible.
 
-[[JPAN]] i agree, bsp stack canary will be initialized in start_kernel() and
-ap stack canary will be covered in start_secondary().
-arjan, do you have any comments? here is the new patch.
+Please let me know if there are problems!
 
->From 1073c9f6e1e3b0012f85b5a9c7c83e35bcc16107 Mon Sep 17 00:00:00 2001
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Mon, 22 Feb 2010 04:14:11 -0800
-Subject: [PATCH] x86/boot: reduce redundant stack canary init
+Thanks,
 
-move secondary cpu boot stack canary initialization prior to cpu_idle()
-then remove boot_init_stack_canary() calls from cpu_idle().
-this change reduced redundent stack canary init for the bsp also avoid
-fake stack check failure for secondary if early schedule needed before
-cpu_idle.
+John
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+P.S.  The wireless-2.6 tree should be safe/clean for Linus to pull if
+time is too short for a round-trip through net-2.6... :-)
+
 ---
- arch/x86/kernel/process_32.c |    9 ---------
- arch/x86/kernel/process_64.c |    9 ---------
- arch/x86/kernel/smpboot.c    |    4 ++++
- 3 files changed, 4 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index f6c6266..d4c764a 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -85,15 +85,6 @@ void cpu_idle(void)
- {
- 	int cpu = smp_processor_id();
+The following changes since commit 242cc0547f3bcecc0b02ca6f3e9512760185727e:
+  Ben Hutchings (1):
+        sfc: SFE4002/SFN4112F: Widen temperature and voltage tolerances
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Dan Halperin (1):
+      iwlwifi: set HT flags after channel in rxon
+
+Stanislaw Gruszka (1):
+      iwlwifi: sanity check before counting number of tfds can be free
+
+Wey-Yi Guy (1):
+      iwlwifi: error checking for number of tfds in queue
+
+ drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-5000.c |    8 +++-----
+ drivers/net/wireless/iwlwifi/iwl-core.c |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-core.h |    2 ++
+ drivers/net/wireless/iwlwifi/iwl-tx.c   |   22 ++++++++++++++++++++--
+ 5 files changed, 27 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+index 9b4b8b5..3146281 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-4965.c
++++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+@@ -2008,7 +2008,7 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
+ 			IWL_DEBUG_TX_REPLY(priv, "Retry scheduler reclaim scd_ssn "
+ 					   "%d index %d\n", scd_ssn , index);
+ 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
+-			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
++			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
  
--	/*
--	 * If we're the non-boot CPU, nothing set the stack canary up
--	 * for us.  CPU0 already has it initialized but no harm in
--	 * doing it again.  This is a good place for updating it, as
--	 * we wont ever return from this function (so the invalid
--	 * canaries already on the stack wont ever trigger).
--	 */
--	boot_init_stack_canary();
--
- 	current_thread_info()->status |= TS_POLLING;
+ 			if (priv->mac80211_registered &&
+ 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
+diff --git a/drivers/net/wireless/iwlwifi/iwl-5000.c b/drivers/net/wireless/iwlwifi/iwl-5000.c
+index de45f30..cffaae7 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-5000.c
++++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
+@@ -1125,7 +1125,7 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
+ 					scd_ssn , index, txq_id, txq->swq_id);
  
- 	/* endless idle loop with no priority at all */
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index fc6ad4b..1fd6713 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -110,15 +110,6 @@ void cpu_idle(void)
- {
- 	current_thread_info()->status |= TS_POLLING;
+ 			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
+-			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
++			iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
  
--	/*
--	 * If we're the non-boot CPU, nothing set the stack canary up
--	 * for us.  CPU0 already has it initialized but no harm in
--	 * doing it again.  This is a good place for updating it, as
--	 * we wont ever return from this function (so the invalid
--	 * canaries already on the stack wont ever trigger).
--	 */
--	boot_init_stack_canary();
--
- 	/* endless idle loop with no priority at all */
- 	while (1) {
- 		tick_nohz_stop_sched_tick(1);
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index c08829a..820638d 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -48,6 +48,7 @@
- #include <linux/err.h>
- #include <linux/nmi.h>
- #include <linux/tboot.h>
-+#include <linux/stackprotector.h>
+ 			if (priv->mac80211_registered &&
+ 			    (iwl_queue_space(&txq->q) > txq->q.low_mark) &&
+@@ -1153,16 +1153,14 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
+ 				   tx_resp->failure_frame);
  
- #include <asm/acpi.h>
- #include <asm/desc.h>
-@@ -328,6 +329,9 @@ notrace static void __cpuinit start_secondary(void *unused)
- 	/* enable local interrupts */
- 	local_irq_enable();
+ 		freed = iwl_tx_queue_reclaim(priv, txq_id, index);
+-		if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
+-			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
++		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
  
-+	/* to prevent fake stack check failure in clock setup */
-+	boot_init_stack_canary();
+ 		if (priv->mac80211_registered &&
+ 		    (iwl_queue_space(&txq->q) > txq->q.low_mark))
+ 			iwl_wake_queue(priv, txq_id);
+ 	}
+ 
+-	if (ieee80211_is_data_qos(tx_resp->frame_ctrl))
+-		iwl_txq_check_empty(priv, sta_id, tid, txq_id);
++	iwl_txq_check_empty(priv, sta_id, tid, txq_id);
+ 
+ 	if (iwl_check_bits(status, TX_ABORT_REQUIRED_MSK))
+ 		IWL_ERR(priv, "TODO:  Implement Tx ABORT REQUIRED!!!\n");
+diff --git a/drivers/net/wireless/iwlwifi/iwl-core.c b/drivers/net/wireless/iwlwifi/iwl-core.c
+index d10bea6..f36f804 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-core.c
++++ b/drivers/net/wireless/iwlwifi/iwl-core.c
+@@ -2744,8 +2744,8 @@ int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
+ 		if ((le16_to_cpu(priv->staging_rxon.channel) != ch))
+ 			priv->staging_rxon.flags = 0;
+ 
+-		iwl_set_rxon_ht(priv, ht_conf);
+ 		iwl_set_rxon_channel(priv, conf->channel);
++		iwl_set_rxon_ht(priv, ht_conf);
+ 
+ 		iwl_set_flags_for_band(priv, conf->channel->band);
+ 		spin_unlock_irqrestore(&priv->lock, flags);
+diff --git a/drivers/net/wireless/iwlwifi/iwl-core.h b/drivers/net/wireless/iwlwifi/iwl-core.h
+index 675b7df..fe37d6a 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-core.h
++++ b/drivers/net/wireless/iwlwifi/iwl-core.h
+@@ -446,6 +446,8 @@ void iwl_hw_txq_ctx_free(struct iwl_priv *priv);
+ int iwl_hw_tx_queue_init(struct iwl_priv *priv,
+ 			 struct iwl_tx_queue *txq);
+ int iwl_txq_update_write_ptr(struct iwl_priv *priv, struct iwl_tx_queue *txq);
++void iwl_free_tfds_in_queue(struct iwl_priv *priv,
++			    int sta_id, int tid, int freed);
+ int iwl_tx_queue_init(struct iwl_priv *priv, struct iwl_tx_queue *txq,
+ 		      int slots_num, u32 txq_id);
+ void iwl_tx_queue_free(struct iwl_priv *priv, int txq_id);
+diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
+index 87ce2bd..8f40715 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -120,6 +120,20 @@ int iwl_txq_update_write_ptr(struct iwl_priv *priv, struct iwl_tx_queue *txq)
+ EXPORT_SYMBOL(iwl_txq_update_write_ptr);
+ 
+ 
++void iwl_free_tfds_in_queue(struct iwl_priv *priv,
++			    int sta_id, int tid, int freed)
++{
++	if (priv->stations[sta_id].tid[tid].tfds_in_queue >= freed)
++		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
++	else {
++		IWL_ERR(priv, "free more than tfds_in_queue (%u:%d)\n",
++			priv->stations[sta_id].tid[tid].tfds_in_queue,
++			freed);
++		priv->stations[sta_id].tid[tid].tfds_in_queue = 0;
++	}
++}
++EXPORT_SYMBOL(iwl_free_tfds_in_queue);
 +
- 	x86_cpuinit.setup_percpu_clockev();
+ /**
+  * iwl_tx_queue_free - Deallocate DMA queue.
+  * @txq: Transmit queue to deallocate.
+@@ -1131,6 +1145,7 @@ int iwl_tx_queue_reclaim(struct iwl_priv *priv, int txq_id, int index)
+ 	struct iwl_queue *q = &txq->q;
+ 	struct iwl_tx_info *tx_info;
+ 	int nfreed = 0;
++	struct ieee80211_hdr *hdr;
  
- 	wmb();
+ 	if ((index >= q->n_bd) || (iwl_queue_used(q, index) == 0)) {
+ 		IWL_ERR(priv, "Read index for DMA queue txq id (%d), index %d, "
+@@ -1145,13 +1160,16 @@ int iwl_tx_queue_reclaim(struct iwl_priv *priv, int txq_id, int index)
+ 
+ 		tx_info = &txq->txb[txq->q.read_ptr];
+ 		iwl_tx_status(priv, tx_info->skb[0]);
++
++		hdr = (struct ieee80211_hdr *)tx_info->skb[0]->data;
++		if (hdr && ieee80211_is_data_qos(hdr->frame_control))
++			nfreed++;
+ 		tx_info->skb[0] = NULL;
+ 
+ 		if (priv->cfg->ops->lib->txq_inval_byte_cnt_tbl)
+ 			priv->cfg->ops->lib->txq_inval_byte_cnt_tbl(priv, txq);
+ 
+ 		priv->cfg->ops->lib->txq_free_tfd(priv, txq);
+-		nfreed++;
+ 	}
+ 	return nfreed;
+ }
+@@ -1559,7 +1577,7 @@ void iwl_rx_reply_compressed_ba(struct iwl_priv *priv,
+ 	if (txq->q.read_ptr != (ba_resp_scd_ssn & 0xff)) {
+ 		/* calculate mac80211 ampdu sw queue to wake */
+ 		int freed = iwl_tx_queue_reclaim(priv, scd_flow, index);
+-		priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
++		iwl_free_tfds_in_queue(priv, sta_id, tid, freed);
+ 
+ 		if ((iwl_queue_space(&txq->q) > txq->q.low_mark) &&
+ 		    priv->mac80211_registered &&
 -- 
-1.5.6.5
-
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
