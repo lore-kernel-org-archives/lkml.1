@@ -1,51 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621Ab0BVTKg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 14:10:36 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:34375 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753291Ab0BVTKe (ORCPT
+	id S1753890Ab0BVTLK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 14:11:10 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:25767 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122Ab0BVTLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 14:10:34 -0500
-Date: Mon, 22 Feb 2010 14:10:33 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Anssi Hannula <anssi.hannula@iki.fi>
-cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       <dvomlehn@cisco.com>, <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes"
- causes gobi_loader to hang
-In-Reply-To: <201002222035.36043.anssi.hannula@iki.fi>
-Message-ID: <Pine.LNX.4.44L0.1002221408200.1251-100000@iolanthe.rowland.org>
+	Mon, 22 Feb 2010 14:11:07 -0500
+Subject: [PATCH v2 00/12] ACPI: processor driver vs. core
+To: lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 22 Feb 2010 12:11:03 -0700
+Message-ID: <20100222190145.19752.20978.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010, Anssi Hannula wrote:
+Original thread:
+	http://thread.gmane.org/gmane.linux.kernel/942423
 
-> I guess that would suggest that the device doesn't allow the initialization 
-> data to be broken into packets arbitrarily (though some differences seem 
-> allowed, as the windows driver transmits them differently).
-> 
-> Does this mean a tty interface is ill-suited for the microcode upload, and 
-> instead qcserial should use the kernel's generic microcode upload mechanism or 
-> the userspace should use libusb to do it?
+Refreshed against lenb/test (a0eb5a84da383539f11e777bdde5e69a31ed25c7)
 
-I don't know.  Didn't the old successful code use a tty interface?
+Added Venki's Acked-by.
 
-> Any idea what could be causing the hang, then?
+The first patch has lots of legacy checkpatch warnings/errors, and
+I have another series to clean those up after this series is applied.
 
-No idea, unless it's the device.
+Thanks,
+/ac
 
->  The WARNING that appears when 
-> interrupting the hung gobi_loader is for serial_unthrottle() being called 
-> while usb_serial_port->port.count == 0.
+---
 
-That's a bogus warning.  It will be removed in an upcoming kernel 
-version.
+Alex Chiang (12):
+      ACPI: processor: mv processor_core.c processor_driver.c
+      ACPI: processor: mv processor_pdc.c processor_core.c
+      ACPI: processor: export acpi_get_cpuid()
+      ACPI: processor: move acpi_get_cpuid into processor_core.c
+      ACPI: processor: add internal processor_physically_present()
+      ACPI: processor: remove early _PDC optin quirks
+      ACPI: processor: driver doesn't need to evaluate _PDC
+      ACPI: processor: refactor internal map_lapic_id()
+      ACPI: processor: refactor internal map_x2apic_id()
+      ACPI: processor: refactor internal map_lsapic_id()
+      ACPI: processor: push file static MADT pointer into internal map_madt_entry()
+      ACPI: processor core: style and sparse cleanups
 
-Alan Stern
+
+ Documentation/kernel-parameters.txt |    4 
+ arch/ia64/kernel/acpi.c             |    3 
+ arch/x86/kernel/acpi/boot.c         |    3 
+ drivers/acpi/Makefile               |    4 
+ drivers/acpi/processor_core.c       | 1149 +++++------------------------------
+ drivers/acpi/processor_driver.c     |  976 ++++++++++++++++++++++++++++++
+ drivers/acpi/processor_pdc.c        |  209 ------
+ include/acpi/processor.h            |   10 
+ 8 files changed, 1172 insertions(+), 1186 deletions(-)
+ create mode 100644 drivers/acpi/processor_driver.c
+ delete mode 100644 drivers/acpi/processor_pdc.c
 
