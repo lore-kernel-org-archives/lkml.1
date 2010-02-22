@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557Ab0BVTMH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 14:12:07 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:36190 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147Ab0BVTMB (ORCPT
+	id S1754399Ab0BVTLq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 14:11:46 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:46491 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754308Ab0BVTLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 14:12:01 -0500
-Subject: [PATCH v2 11/12] ACPI: processor: push file static MADT pointer into
-	internal map_madt_entry()
+	Mon, 22 Feb 2010 14:11:41 -0500
+Subject: [PATCH v2 07/12] ACPI: processor: driver doesn't need to evaluate _PDC
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Date: Mon, 22 Feb 2010 12:12:00 -0700
-Message-ID: <20100222191200.19752.90558.stgit@bob.kio>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-acpi@vger.kernel.org, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>
+Date: Mon, 22 Feb 2010 12:11:39 -0700
+Message-ID: <20100222191139.19752.57656.stgit@bob.kio>
 In-Reply-To: <20100222190145.19752.20978.stgit@bob.kio>
 References: <20100222190145.19752.20978.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -25,61 +25,109 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no real need for a pointer to the MADT to be global. The only
-function who uses it is map_madt_entry.
+Now that the early _PDC evaluation path knows how to correctly
+evaluate _PDC on only physically present processors, there's no
+need for the processor driver to evaluate it later when it loads.
 
-This allows us to remove some more ugly #ifdefs.
+To cover the hotplug case, push _PDC evaluation down into the
+hotplug paths.
 
+Cc: x86@kernel.org
+Cc: Tony Luck <tony.luck@intel.com>
 Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/processor_core.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+ arch/ia64/kernel/acpi.c         |    3 +++
+ arch/x86/kernel/acpi/boot.c     |    3 +++
+ drivers/acpi/processor_core.c   |    7 -------
+ drivers/acpi/processor_driver.c |    3 ---
+ 4 files changed, 6 insertions(+), 10 deletions(-)
 
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+index 40574ae..394742a 100644
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -44,6 +44,7 @@
+ #include <linux/efi.h>
+ #include <linux/mmzone.h>
+ #include <linux/nodemask.h>
++#include <acpi/processor.h>
+ #include <asm/io.h>
+ #include <asm/iosapic.h>
+ #include <asm/machvec.h>
+@@ -936,6 +937,8 @@ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
+ 	cpu_set(cpu, cpu_present_map);
+ 	ia64_cpu_to_sapicid[cpu] = physid;
+ 
++	acpi_processor_set_pdc(handle);
++
+ 	*pcpu = cpu;
+ 	return (0);
+ }
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 97229f3..124de35 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -480,6 +480,7 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+  *  ACPI based hotplug support for CPU
+  */
+ #ifdef CONFIG_ACPI_HOTPLUG_CPU
++#include <acpi/processor.h>
+ 
+ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+ {
+@@ -538,6 +539,8 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+ 		goto free_new_map;
+ 	}
+ 
++	acpi_processor_set_pdc(handle);
++
+ 	cpu = cpumask_first(new_map);
+ 
+ 	*pcpu = cpu;
 diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index ee9bce1..791ac7b 100644
+index ef34faa..626c754 100644
 --- a/drivers/acpi/processor_core.c
 +++ b/drivers/acpi/processor_core.c
-@@ -43,8 +43,6 @@ static struct dmi_system_id __cpuinitdata processor_idle_dmi_table[] = {
- };
+@@ -317,8 +317,6 @@ acpi_processor_eval_pdc(acpi_handle handle, struct acpi_object_list *pdc_in)
+ 	return status;
+ }
  
- #ifdef CONFIG_SMP
--static struct acpi_table_madt *madt;
+-static int early_pdc_done;
 -
- static int map_lapic_id(struct acpi_subtable_header *entry,
- 		 u32 acpi_id, int *apic_id)
+ void acpi_processor_set_pdc(acpi_handle handle)
  {
-@@ -100,8 +98,17 @@ static int map_lsapic_id(struct acpi_subtable_header *entry,
- static int map_madt_entry(int type, u32 acpi_id)
- {
- 	unsigned long madt_end, entry;
-+	static struct acpi_table_madt *madt;
-+	static int read_madt;
- 	int apic_id = -1;
+ 	struct acpi_object_list *obj_list;
+@@ -326,9 +324,6 @@ void acpi_processor_set_pdc(acpi_handle handle)
+ 	if (arch_has_acpi_pdc() == false)
+ 		return;
  
-+	if (!read_madt) {
-+		if (ACPI_FAILURE(acpi_get_table(ACPI_SIG_MADT, 0,
-+					(struct acpi_table_header **)&madt)))
-+			madt = NULL;
-+		read_madt++;
-+	}
-+
- 	if (!madt)
- 		return apic_id;
- 
-@@ -335,13 +342,6 @@ early_init_pdc(acpi_handle handle, u32 lvl, void *context, void **rv)
- 
- void __init acpi_early_processor_set_pdc(void)
- {
+-	if (early_pdc_done)
+-		return;
 -
--#ifdef CONFIG_SMP
--	if (ACPI_FAILURE(acpi_get_table(ACPI_SIG_MADT, 0,
--				(struct acpi_table_header **)&madt)))
--		madt = NULL;
--#endif
+ 	obj_list = acpi_processor_alloc_pdc();
+ 	if (!obj_list)
+ 		return;
+@@ -369,6 +364,4 @@ void __init acpi_early_processor_set_pdc(void)
+ 	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
+ 			    ACPI_UINT32_MAX,
+ 			    early_init_pdc, NULL, NULL, NULL);
 -
- 	/*
- 	 * Check whether the system is DMI table. If yes, OSPM
- 	 * should not use mwait for CPU-states.
+-	early_pdc_done = 1;
+ }
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index 777d046..7e8e1ba 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -606,9 +606,6 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 		goto err_remove_fs;
+ 	}
+ 
+-	/* _PDC call should be done before doing anything else (if reqd.). */
+-	acpi_processor_set_pdc(pr->handle);
+-
+ #ifdef CONFIG_CPU_FREQ
+ 	acpi_processor_ppc_has_changed(pr, 0);
+ #endif
 
