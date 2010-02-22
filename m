@@ -1,104 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349Ab0BVXtn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 18:49:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36478 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752264Ab0BVXtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 18:49:41 -0500
-Date: Mon, 22 Feb 2010 23:48:43 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       konrad.wilk@oracle.com, suresh.b.siddha@intel.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       konrad.wilk@oracle.com, suresh.b.siddha@intel.com, tglx@linutronix.de
-In-Reply-To: <1266522700.2909.34.camel@sbs-t61.sc.intel.com>
-References: <1266522700.2909.34.camel@sbs-t61.sc.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86_64, cpa: Don't work hard in preserving kernel 2M mappings when using 4K already
-Message-ID: <tip-281ff33b7c1b1ba2a5f9b03425e5f692a94913fa@git.kernel.org>
-Git-Commit-ID: 281ff33b7c1b1ba2a5f9b03425e5f692a94913fa
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 22 Feb 2010 23:48:47 +0000 (UTC)
+	id S1752199Ab0BVXxl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 18:53:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34671
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750930Ab0BVXxk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 18:53:40 -0500
+Date: Mon, 22 Feb 2010 15:53:57 -0800 (PST)
+Message-Id: <20100222.155357.235673585.davem@davemloft.net>
+To: hancockrwd@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NETIF_F_HIGHDMA misuse in networking drivers?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B8029FA.2000404@gmail.com>
+References: <4B8029FA.2000404@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  281ff33b7c1b1ba2a5f9b03425e5f692a94913fa
-Gitweb:     http://git.kernel.org/tip/281ff33b7c1b1ba2a5f9b03425e5f692a94913fa
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Thu, 18 Feb 2010 11:51:40 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 22 Feb 2010 15:09:31 -0800
+From: Robert Hancock <hancockrwd@gmail.com>
+Date: Sat, 20 Feb 2010 12:29:14 -0600
 
-x86_64, cpa: Don't work hard in preserving kernel 2M mappings when using 4K already
+> Was just part of a discussion in another thread talking about 64-bit
+> DMA support issues where NETIF_F_HIGHDMA came up. I was originally
+> under the impression that this flag indicated the device supported
+> 64-bit DMA addressing. However, from looking at the code that checks
+> for it (and, well, the actual comment for the flag) it really means
+> "can access highmem" which has nothing to do with 64-bit at all. And
+> if there's no highmem (like on x86_64) it has no effect at all.
 
-We currently enforce the !RW mapping for the kernel mapping that maps
-holes between different text, rodata and data sections. However, kernel
-identity mappings will have different RWX permissions to the pages mapping to
-text and to the pages padding (which are freed) the text, rodata sections.
-Hence kernel identity mappings will be broken to smaller pages. For 64-bit,
-kernel text and kernel identity mappings are different, so we can enable
-protection checks that come with CONFIG_DEBUG_RODATA, as well as retain 2MB
-large page mappings for kernel text.
+I think it's trying to do two things, and doing only one of them
+well :-)
 
-Konrad reported a boot failure with the Linux Xen paravirt guest because of
-this. In this paravirt guest case, the kernel text mapping and the kernel
-identity mapping share the same page-table pages. Thus forcing the !RW mapping
-for some of the kernel mappings also cause the kernel identity mappings to be
-read-only resulting in the boot failure. Linux Xen paravirt guest also
-uses 4k mappings and don't use 2M mapping.
+It's trying to keep drivers from receiving highmem pages if they are
+not able to access them properly.  F.e. imagine a driver that copies
+data out of the packet assuming that page_address() is always valid on
+the SKB pages.
 
-Fix this issue and retain large page performance advantage for native kernels
-by not working hard and not enforcing !RW for the kernel text mapping,
-if the current mapping is already using small page mapping.
+It's also trying to use this to prevent physical addresses beyond 4GB
+from reaching the driver, which as you note is not implemented
+precisely here.
 
-Reported-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <1266522700.2909.34.camel@sbs-t61.sc.intel.com>
-Tested-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: stable@kernel.org	[2.6.32, 2.6.33]
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/mm/pageattr.c |   25 +++++++++++++++++++++++--
- 1 files changed, 23 insertions(+), 2 deletions(-)
+Without knowing something about how the driver "DMAs" packet data we
+can't really do an accurate test here.  Maybe the driver directly DMAs
+using physical addressing (an ASIC inside of a CPU, for example,
+drivers/net/niu.c has a case of this).
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 1d4eb93..cf07c26 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -291,8 +291,29 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address,
- 	 */
- 	if (kernel_set_to_readonly &&
- 	    within(address, (unsigned long)_text,
--		   (unsigned long)__end_rodata_hpage_align))
--		pgprot_val(forbidden) |= _PAGE_RW;
-+		   (unsigned long)__end_rodata_hpage_align)) {
-+		unsigned int level;
-+
-+		/*
-+		 * Don't enforce the !RW mapping for the kernel text mapping,
-+		 * if the current mapping is already using small page mapping.
-+		 * No need to work hard to preserve large page mappings in this
-+		 * case.
-+		 *
-+		 * This also fixes the Linux Xen paravirt guest boot failure
-+		 * (because of unexpected read-only mappings for kernel identity
-+		 * mappings). In this paravirt guest case, the kernel text
-+		 * mapping and the kernel identity mapping share the same
-+		 * page-table pages. Thus we can't really use different
-+		 * protections for the kernel text and identity mappings. Also,
-+		 * these shared mappings are made of small page mappings.
-+		 * Thus this don't enforce !RW mapping for small page kernel
-+		 * text mapping logic will help Linux Xen parvirt guest boot
-+		 * aswell.
-+		 */
-+		if (lookup_address(address, &level) && (level != PG_LEVEL_4K))
-+			pgprot_val(forbidden) |= _PAGE_RW;
-+	}
- #endif
- 
- 	prot = __pgprot(pgprot_val(prot) & ~pgprot_val(forbidden));
+Maybe the platform uses an IOMMU with 32-bit virtual addressing, so
+any physical address is fine even if the card only supports 32-bit
+addressing (basically any PCI coard on sparc64 is an example of this).
+
+And finally maybe the card supports 64-bit DMA addressing so anything
+works on any platform.
+
+How to test all of these possible cases precisely that at this spot in
+the transmit path is the question at hand.  To be honest I consider
+the current hack "good enough" :-)
+
+
