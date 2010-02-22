@@ -1,130 +1,187 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976Ab0BVPfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:35:32 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:44789 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752955Ab0BVPfb (ORCPT
+	id S1754076Ab0BVPfk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:35:40 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:47817 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955Ab0BVPfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:35:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEABctgktGGOLY/2dsb2JhbACbC3S7ZIJNgh4EgxWCfQ
-Date: Mon, 22 Feb 2010 10:35:27 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: naresh kamboju <naresh.kernel@gmail.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: error: 'subbuf_idx' undeclared after enabling
-	CONFIG_LTT_RELAY_LOCKED=y
-Message-ID: <20100222153526.GA29856@Krystal>
-References: <f5a7b3811002220601k3525f733jb046cfe3ee69963a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <f5a7b3811002220601k3525f733jb046cfe3ee69963a@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:31:51 up 67 days, 23:50,  5 users,  load average: 0.16, 0.14,
-	0.05
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 22 Feb 2010 10:35:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=TiIMVYny5xA1ANccFpmlSae0dimmP/UCf1i1el2B2pcVyBNmMd5B8CXdA3AjLW71SD
+         6NxvNh5MD/EGezhC/ENNgYv9BveU87GN+QMtJxa0qKDbfmcFm1ahzeNOq8VErnJWa4Bn
+         jua/+XwCuqkzpLZpDm3J3CrCmj3KzMnirgEsc=
+Message-ID: <4B82A440.6010701@googlemail.com>
+Date: Mon, 22 Feb 2010 15:35:28 +0000
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: s2disk hang update
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002182104.49631.rjw@sisk.pl> <9b2b86521002190348k61e3bce0m8d036d1068c05644@mail.gmail.com> <201002212147.07987.rjw@sisk.pl>
+In-Reply-To: <201002212147.07987.rjw@sisk.pl>
+Content-Type: multipart/mixed;
+ boundary="------------020509080901090000030303"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* naresh kamboju (naresh.kernel@gmail.com) wrote:
-> Hi,
-> 
-> I have noticed below error after enabling CONFIG_LTT_RELAY_LOCKED=y
+This is a multi-part message in MIME format.
+--------------020509080901090000030303
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Naresh,
+Rafael J. Wysocki wrote:
+> On Friday 19 February 2010, Alan Jenkins wrote:
+>   
+>> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>     
+>>> On Thursday 18 February 2010, Alan Jenkins wrote:
+>>>       
+>>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>>         
+>>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
+>>>>>           
+>>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>>>>             
+>>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
+>>>>>>>               
+>>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+>>>>>>>>                 
+>>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>>>>>>>>                   
+>>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
+>>>>>>>>>>                     
+>>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too many
+>>>>>>>>>>> applications.  The first hibernation fails with "not enough
+>>>>>>>>>>> swap"
+>>>>>>>>>>> as
+>>>>>>>>>>> expected, but the second or third attempt hangs (with the same
+>>>>>>>>>>> backtrace
+>>>>>>>>>>> as before).
+>>>>>>>>>>>
+>>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
+>>>>>>>>>>> hang
+>>>>>>>>>>> the
+>>>>>>>>>>> first time I try to hibernate with too many applications
+>>>>>>>>>>> running.
+>>>>>>>>>>>                       
+>>>>>>>>>> Well, I have an idea.
+>>>>>>>>>>
+>>>>>>>>>> Can you try to apply the appended patch in addition and see if
+>>>>>>>>>> that
+>>>>>>>>>> helps?
+>>>>>>>>>>
+>>>>>>>>>> Rafael
+>>>>>>>>>>                     
+>>>>>>>>> It doesn't seem to help.
+>>>>>>>>>                   
+>>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too many
+>>>>>>>> applications.
+>>>>>>>>
+>>>>>>>> It does stop the same hang in a different case though.
+>>>>>>>>
+>>>>>>>> 1. boot with init=/bin/bash
+>>>>>>>> 2. run s2disk
+>>>>>>>> 3. cancel the s2disk
+>>>>>>>> 4. repeat steps 2&3
+>>>>>>>>
+>>>>>>>> With the patch, I can run 10s of iterations, with no hang.
+>>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+>>>>>>>> always).
+>>>>>>>>
+>>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+>>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+>>>>>>>> allocation
+>>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
+>>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the same
+>>>>>>>> stop_machine thread allocation failure that causes the hang.
+>>>>>>>>                 
+>>>>>>> Have you tested it alone or on top of the previous one?  If you've
+>>>>>>> tested it
+>>>>>>> alone, please apply the appended one in addition to it and retest.
+>>>>>>>
+>>>>>>> Rafael
+>>>>>>>               
+>>>>>> I did test with both patches applied together -
+>>>>>>
+>>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+>>>>>> resume
+>>>>>> 2. "reducing the number of pages that we're going to keep preallocated
+>>>>>> by
+>>>>>> 20%"
+>>>>>>             
+>>>>> In that case you can try to reduce the number of preallocated pages even
+>>>>> more,
+>>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
+>>>>>           
+>>>> It still hangs if I try to hibernate a couple of times with too many
+>>>> applications.
+>>>>         
+>>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
+>>> how much RAM is there in the box?
+>>>
+>>> Rafael
+>>>       
+>> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
+>>     
+>
+> Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
+> pages and see what happens.
+>   
 
-A few LTTng versions after the one you are working on, I flagged
-LTT_RELAY_LOCKED and LTT_RELAY_IRQOFF as "CONFIG_BROKEN", because I did
-not want to go through the trouble of duplicating the changes I did to
-the lockless ring buffer to the two other flavors. I recommend using the
-lockless ring buffer anyway.
+It still hangs in hibernation_snapshot() / disable_nonboot_cpus().  
+After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
 
-So I recommend that you simply do the same with your old LTTng version
-and flag LTT_RELAY_LOCKED and LTT_RELAY_IRQOFF as "CONFIG_BROKEN", as I
-don't see the point in spending time on these at the moment.
 
-Thanks,
 
-Mathieu
+There is a change which I missed before.  When I applied your first 
+patch ("Force GFP_NOIO during suspend" etc.), it did change the hung 
+task backtraces a bit.  I don't know if it tells us anything.
 
-> 
->   CC      ltt/ltt-relay-locked.o
-> In file included from ltt/ltt-relay-locked.c:56:
-> ltt/ltt-relay-locked.h: In function 'ltt_check_deliver':
-> ltt/ltt-relay-locked.h:167:  (first use in this function)
-> ltt/ltt-relay-locked.h:167: error: (Each undeclared identifier is
-> reported only once
-> ltt/ltt-relay-locked.h:167: error: for each function it appears in.)
-> 
-> After my work around I have found error is caused from the
-> lttng-relay-locked-writer-use-noref-flag.patch
-> 
-> Below patch will fix the compilation issues.
-> Please review this patch.
-> 
-> ---
->  ltt/ltt-relay-locked.h |    2  1 +     1 -     0 !
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/ltt/ltt-relay-locked.h
-> ===================================================================
-> --- a/ltt/ltt-relay-locked.h
-> +++ b/ltt/ltt-relay-locked.h
-> @@ -164,7 +164,7 @@ static __inline__ void ltt_check_deliver
->                  */
->                 ltt_set_noref_flag(rchan, buf, idx);
->  #ifdef CONFIG_LTT_VMCORE
-> -               ltt_buf->commit_seq[subbuf_idx] = commit_count;
-> +               ltt_buf->commit_seq[idx] = commit_count;
->  #endif
->                 ltt_buf->wakeup_readers = 1;
->         }
-> 
-> For your information LTTng configuration. dotconfig
-> 
-> 
-> CONFIG_LTT=y
-> CONFIG_LTT_FILTER=m
-> CONFIG_HAVE_LTT_DUMP_TABLES=y
-> CONFIG_LTT_RELAY_ALLOC=y
-> # CONFIG_LTT_RELAY_LOCKLESS is not set
-> # CONFIG_LTT_RELAY_IRQOFF is not set
-> CONFIG_LTT_RELAY_LOCKED=y
-> CONFIG_LTT_SERIALIZE=y
-> CONFIG_LTT_FAST_SERIALIZE=y
-> CONFIG_LTT_TRACEPROBES=m
-> CONFIG_LTT_TRACE_CONTROL=y
-> CONFIG_LTT_TRACER=y
-> CONFIG_LTT_ALIGNMENT=y
-> CONFIG_LTT_CHECK_ARCH_EFFICIENT_UNALIGNED_ACCESS=y
-> # CONFIG_LTT_DEBUG_EVENT_SIZE is not set
-> CONFIG_LTT_USERSPACE_EVENT=m
-> CONFIG_LTT_VMCORE=y
-> CONFIG_LTT_STATEDUMP=m
-> CONFIG_LTT_KPROBES=m
-> 
-> Please review the patch and provide your comments.
-> 
-> Kernel: 2.6.29-RT
-> Lttng: 0.158
-> ARCH: ARM
-> 
-> Best regards
-> Naresh Kamboju
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+Without the patch, there were two backtraces.  The first backtrace 
+suggested a problem allocating pages for a kernel thread (at 
+copy_process() / try_to_free_pages()).  The second showed that this 
+problem was blocking s2disk (at hibernation_snapshot() / 
+disable_nonboot_cpus() / stop_machine_create()). 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+With the GFP_NOIO patch, I see only the s2disk backtrace.
+
+
+Thanks
+Alan
+
+--------------020509080901090000030303
+Content-Type: text/x-diff;
+ name="free-all-prealloc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="free-all-prealloc.patch"
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 36cb168..970930a 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1179,6 +1179,12 @@ static void free_unnecessary_pages(void)
+ 		to_free_normal -= save_highmem - alloc_highmem;
+ 	}
+ 
++	to_free_normal = alloc_normal;
++	printk(KERN_ERR "Freeing all %d preallocated pages\n",
++			to_free_normal);
++	printk(KERN_ERR "(and %d highmem pages, out of %d)\n",
++			alloc_highmem, to_free_highmem);
++
+ 	memory_bm_position_reset(&copy_bm);
+ 
+ 	while (to_free_normal > 0 && to_free_highmem > 0) {
+
+--------------020509080901090000030303--
