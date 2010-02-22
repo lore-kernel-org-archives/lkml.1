@@ -1,52 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693Ab0BVEzT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 23:55:19 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:62314 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754569Ab0BVEzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 23:55:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=NAeY7rBEPz5cPqVfan5vYpWtw1VFtzGIkxJckdheWzmc5y7NfjTykPINadUqXCWmto
-         tGpmX+Vi7eZ59A8nw/cq3aEmM704NqNOjlAf/mi0R2Lace8qfMP76hc5tRRKBtQU1yjX
-         oBoH6XRMXL28NFJg7RiXkAKzHmAz8JulLUCII=
-Date: Mon, 22 Feb 2010 07:54:45 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [patch] mca: remove some dead code
-Message-ID: <20100222045445.GA4853@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754761Ab0BVE73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 23:59:29 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47365 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754673Ab0BVE71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 23:59:27 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18WPucMsO4WdtQu+Sr9VJrxRNXqSP/MaWP/htMAA0
+	nSXEiLudxjrIUN
+Subject: Re: [Bug #15192] netperf ~50% regression with 2.6.33-rc1, bisect
+ to 1b9508f
+From: Mike Galbraith <efault@gmx.de>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       venkatesh.pallipadi@intel.com, Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+In-Reply-To: <1266652377.3464.6.camel@minggr.sh.intel.com>
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
+	 <d3IDKWHT5gE.A.Z-B.V7hZLB@chimera>
+	 <1265011447.6220.15.camel@marge.simson.net>
+	 <1266652377.3464.6.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Mon, 22 Feb 2010 05:59:22 +0100
+Message-Id: <1266814762.6072.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.56999999999999995
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are two return statements in a row.  The first return statement is
-the correct one.  For the unused return statement, it is the 
-mca_device_read_stored_pos() which returns mca_dev->pos[reg];
+On Sat, 2010-02-20 at 15:52 +0800, Lin Ming wrote:
+> On Mon, 2010-02-01 at 16:04 +0800, Mike Galbraith wrote:
+> > On Mon, 2010-02-01 at 01:22 +0100, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.32.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > 
+> > Yes, it should remain open.  We're currently waiting for some data from
+> > Lin Ming.  The regression itself isn't making much sense.. a kernel with
+> > NEWIDLE disabled should show the same performance, but does not.  
+> 
+> (sorry for late response, I'm just back from vacation)
+> 
+> We finally located this to a bug in mwait based C-state entry.
+> Venki's patch has fixed it.
+> http://patchwork.kernel.org/patch/78544/
+> 
+> Venki, this is the original report,
+> http://marc.info/?l=linux-kernel&m=126441481427331&w=4
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+Excellent, mystery solved.  (adds acpi)
 
-diff --git a/drivers/mca/mca-device.c b/drivers/mca/mca-device.c
-index e7adf89..ff078f4 100644
---- a/drivers/mca/mca-device.c
-+++ b/drivers/mca/mca-device.c
-@@ -65,8 +65,6 @@ unsigned char mca_device_read_pos(struct mca_device *mca_dev, int reg)
- 	struct mca_bus *mca_bus = to_mca_bus(mca_dev->dev.parent);
- 
- 	return mca_bus->f.mca_read_pos(mca_dev, reg);
--
--	return 	mca_dev->pos[reg];
- }
- EXPORT_SYMBOL(mca_device_read_pos);
- 
+	-Mike
+
