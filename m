@@ -1,77 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754935Ab0BVXYd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 18:24:33 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:42119 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643Ab0BVXYc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 18:24:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=juNVPtjtt1tITmDU/lNnD9ZcwtiMyO9CdtWKKaeIbeP27avWKhCgrsvlGK7mHahLWw
-         MUs+XYISLtgTggl2wOCIZ5DV7Cq+sDVAo0rR5YFpf7aZeHvkkm2lTj1gX87VWGvDIjfe
-         rkISkDnv+DZBnQbbcJIa1bAjshrA9g/14rCno=
-Date: Tue, 23 Feb 2010 02:24:27 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       aris@redhat.com
-Subject: Re: [PATCH] nmi_watchdog: checkpatch.pl cleanups from earlier
-	patches
-Message-ID: <20100222232427.GB20084@lenovo>
-References: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755185Ab0BVXZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 18:25:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38229 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754876Ab0BVXZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 18:25:20 -0500
+Date: Tue, 23 Feb 2010 10:25:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: devicetree-discuss@lists.ozlabs.org, monstr@monstr.eu,
+       linux-kernel@vger.kernel.org, jeremy.kerr@canonical.com
+Subject: Re: [PATCH 2/2] of/flattree: Make unflatten_device_tree() safe to 
+ call from any arch
+Message-Id: <20100223102514.46369a42.sfr@canb.auug.org.au>
+In-Reply-To: <fa686aa41002221511r67c79534od562bef934c4d7a7@mail.gmail.com>
+References: <20100222154816.3604.67114.stgit@angua>
+	<20100222155059.3604.39718.stgit@angua>
+	<20100223095118.bed93bac.sfr@canb.auug.org.au>
+	<fa686aa41002221511r67c79534od562bef934c4d7a7@mail.gmail.com>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 06:09:03PM -0500, Don Zickus wrote:
-...
+--Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Don!
+Hi Grant,
 
-> diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
-> index 3c75cbf..0a6f57f 100644
-> --- a/kernel/nmi_watchdog.c
-> +++ b/kernel/nmi_watchdog.c
-> @@ -50,31 +50,31 @@ void touch_all_nmi_watchdog(void)
->  
->  static int __init setup_nmi_watchdog(char *str)
->  {
-> -        if (!strncmp(str, "panic", 5)) {
-> -                panic_on_timeout = 1;
-> -                str = strchr(str, ',');
-> -                if (!str)
-> -                        return 1;
-> -                ++str;
-> -        }
-> -        return 1;
-> +	if (!strncmp(str, "panic", 5)) {
-> +		panic_on_timeout = 1;
+On Mon, 22 Feb 2010 16:11:48 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> No reason, just wasn't thinking of that.  I've changed this.
 
-If I understand all the things correct -- you don't need to check for ','
-after panic. It seems so. Because we're switching to perf_events I suppose
-we may drop expecting "lapic,ioapic" or whatever here? Or there is an idea
-to parse say "panic,software" (ie to switch to software events by default)?
+Thanks.  Andrew Morton says that (unless there is a good reason) we
+should program the kernel in C not CPP.
 
-Though strictly speaking my question in rather unrelated to this patch
-agenda :)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> +		str = strchr(str, ',');
-> +		if (!str)
-> +			return 1;
-> +		++str;
-> +	}
-> +	return 1;
->  }
->  __setup("nmi_watchdog=", setup_nmi_watchdog);
-...
+--Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F
+Content-Type: application/pgp-signature
 
-	-- Cyrill
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuDEloACgkQjjKRsyhoI8zHQwCfYX3qluTEv1ODD/poMg+QSsu0
+38IAn2mdbz08wt9A7bzvyFQmoB7M0/H4
+=c+un
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__23_Feb_2010_10_25_14_+1100_QPBSvCtdVpTrOG+F--
