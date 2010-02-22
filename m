@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219Ab0BVM5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 07:57:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43124 "EHLO mx1.redhat.com"
+	id S1753371Ab0BVM54 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 07:57:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37695 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307Ab0BVM5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 07:57:30 -0500
+	id S1753265Ab0BVM5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 07:57:24 -0500
 From: Jiri Olsa <jolsa@redhat.com>
 To: mingo@elte.hu, rostedt@goodmis.org, fweisbec@gmail.com
 Cc: linux-kernel@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 1/4] tracing: adding ftrace events for graph tracer
-Date: Mon, 22 Feb 2010 13:56:59 +0100
-Message-Id: <1266843422-18288-2-git-send-email-jolsa@redhat.com>
+Subject: [PATCH 4/4] tracing: raw output for graph tracer
+Date: Mon, 22 Feb 2010 13:57:02 +0100
+Message-Id: <1266843422-18288-5-git-send-email-jolsa@redhat.com>
 In-Reply-To: <1266843422-18288-1-git-send-email-jolsa@redhat.com>
 References: <1266843422-18288-1-git-send-email-jolsa@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,8 +20,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 hi,
 
-this patch adds ftrace events for graph tracer, so the graph output
-could be shared within other tracers.
+this patch adds raw trace output for graph tracer.
+
+I have this one around for long time and it was quite handy
+for investigating graph tracer issues.
 
 wbr,
 jirka
@@ -29,88 +31,132 @@ jirka
 
 Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 ---
- kernel/trace/trace.h                 |    3 ++-
- kernel/trace/trace_functions_graph.c |   25 ++++++++++++++++++++++---
- 2 files changed, 24 insertions(+), 4 deletions(-)
+ kernel/trace/trace.c                 |    2 +-
+ kernel/trace/trace_functions_graph.c |   69 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index b477fce..1feda87 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -490,7 +490,8 @@ extern int trace_clock_id;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 032c57c..723fa93 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1900,7 +1900,7 @@ static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
+ 	entry = iter->ent;
  
- /* Standard output formatting function used for function return traces */
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--extern enum print_line_t print_graph_function(struct trace_iterator *iter);
-+extern enum print_line_t print_graph_function(struct trace_iterator *iter,
-+					      int flags);
- extern enum print_line_t
- trace_print_graph_duration(unsigned long long duration, struct trace_seq *s);
- 
+ 	if (trace_flags & TRACE_ITER_CONTEXT_INFO) {
+-		if (!trace_seq_printf(s, "%d %d %llu ",
++		if (!trace_seq_printf(s, " %6d %3d %20llu ",
+ 				      entry->pid, iter->cpu, iter->ts))
+ 			goto partial;
+ 	}
 diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 616b135..41cec17 100644
+index eca09b3..023e0be 100644
 --- a/kernel/trace/trace_functions_graph.c
 +++ b/kernel/trace/trace_functions_graph.c
-@@ -38,7 +38,7 @@ struct fgraph_data {
- #define TRACE_GRAPH_PRINT_OVERHEAD	0x4
- #define TRACE_GRAPH_PRINT_PROC		0x8
- #define TRACE_GRAPH_PRINT_DURATION	0x10
--#define TRACE_GRAPH_PRINT_ABS_TIME	0X20
-+#define TRACE_GRAPH_PRINT_ABS_TIME	0x20
+@@ -1033,6 +1033,66 @@ print_graph_function(struct trace_iterator *iter, int flags)
+ 	return TRACE_TYPE_HANDLED;
+ }
  
- static struct tracer_opt trace_opts[] = {
- 	/* Display overruns? (for self-debug purpose) */
-@@ -985,7 +985,7 @@ print_graph_comment(struct trace_seq *s,  struct trace_entry *ent,
- 
- 
- enum print_line_t
--print_graph_function(struct trace_iterator *iter)
-+print_graph_function(struct trace_iterator *iter, int flags)
++static enum print_line_t
++print_graph_raw(struct trace_iterator *iter, int flags)
++{
++	struct trace_entry *entry = iter->ent;
++	struct trace_seq *s = &iter->seq;
++	int ret = 0;
++	int depth;
++	void *func;
++	char *io;
++
++	switch (entry->type) {
++	case TRACE_GRAPH_ENT: {
++		struct ftrace_graph_ent_entry *field;
++		trace_assign_type(field, entry);
++		depth = field->graph_ent.depth;
++		func = (void *) field->graph_ent.func;
++		io = "-->";
++		break;
++	}
++	case TRACE_GRAPH_RET: {
++		struct ftrace_graph_ret_entry *field;
++		trace_assign_type(field, entry);
++		depth = field->ret.depth;
++		func = (void *) field->ret.func;
++		io = "<--";
++		break;
++	}
++	default:
++		return print_graph_comment(s, entry, iter);
++	}
++
++	ret = trace_seq_printf(s, "%s%6d %6d %6d %4d %7d %20p %4s %ps\n",
++		trace_flags & TRACE_ITER_CONTEXT_INFO ? "" : " ",
++		depth,
++		entry->lock_depth,
++		entry->flags,
++		entry->preempt_count,
++		entry->pid,
++		entry,
++		io,
++		func);
++
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	return TRACE_TYPE_HANDLED;
++}
++
++static void print_graph_raw_header(struct seq_file *s)
++{
++	if (trace_flags & TRACE_ITER_CONTEXT_INFO)
++		seq_printf(s, "#%6s %3s %20s ", "pid", "cpu", "duration");
++	else
++		seq_printf(s, "#");
++
++	seq_printf(s, "%6s %6s %6s %4s %7s %20s %4s %s\n",
++		"depth", "ldepth", "flags", "pc", "pid",
++		"entry", "i/o", "function");
++}
++
+ static void print_lat_header(struct seq_file *s)
  {
- 	struct ftrace_graph_ent_entry *field;
- 	struct fgraph_data *data = iter->private;
-@@ -1143,6 +1143,16 @@ static void graph_trace_close(struct trace_iterator *iter)
+ 	static const char spaces[] = "                "	/* 16 spaces */
+@@ -1059,6 +1119,11 @@ void print_graph_headers(struct seq_file *s)
+ {
+ 	int lat = trace_flags & TRACE_ITER_LATENCY_FMT;
+ 
++	if (trace_flags & TRACE_ITER_RAW) {
++		print_graph_raw_header(s);
++		return;
++	}
++
+ 	if (lat)
+ 		print_lat_header(s);
+ 
+@@ -1074,6 +1139,7 @@ void print_graph_headers(struct seq_file *s)
+ 		seq_printf(s, "|||||");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
+ 		seq_printf(s, "  DURATION   ");
++
+ 	seq_printf(s, "               FUNCTION CALLS\n");
+ 
+ 	/* 2nd line */
+@@ -1136,14 +1202,17 @@ void graph_trace_close(struct trace_iterator *iter)
  	}
  }
  
-+static struct trace_event graph_trace_entry_event = {
-+	.type		= TRACE_GRAPH_ENT,
-+	.trace		= print_graph_function,
-+};
 +
-+static struct trace_event graph_trace_ret_event = {
-+	.type		= TRACE_GRAPH_RET,
-+	.trace		= print_graph_function,
-+};
-+
+ static struct trace_event graph_trace_entry_event = {
+ 	.type		= TRACE_GRAPH_ENT,
+ 	.trace		= print_graph_function,
++	.raw		= print_graph_raw,
+ };
+ 
+ static struct trace_event graph_trace_ret_event = {
+ 	.type		= TRACE_GRAPH_RET,
+ 	.trace		= print_graph_function,
++	.raw		= print_graph_raw,
+ };
+ 
  static struct tracer graph_trace __read_mostly = {
- 	.name		= "function_graph",
- 	.open		= graph_trace_open,
-@@ -1152,7 +1162,6 @@ static struct tracer graph_trace __read_mostly = {
- 	.wait_pipe	= poll_wait_pipe,
- 	.init		= graph_trace_init,
- 	.reset		= graph_trace_reset,
--	.print_line	= print_graph_function,
- 	.print_header	= print_graph_headers,
- 	.flags		= &tracer_flags,
- #ifdef CONFIG_FTRACE_SELFTEST
-@@ -1164,6 +1173,16 @@ static __init int init_graph_trace(void)
- {
- 	max_bytes_for_cpu = snprintf(NULL, 0, "%d", nr_cpu_ids - 1);
- 
-+	if (!register_ftrace_event(&graph_trace_entry_event)) {
-+		pr_warning("Warning: could not register graph trace events\n");
-+		return 1;
-+	}
-+
-+	if (!register_ftrace_event(&graph_trace_ret_event)) {
-+		pr_warning("Warning: could not register graph trace events\n");
-+		return 1;
-+	}
-+
- 	return register_tracer(&graph_trace);
- }
- 
 -- 
 1.6.6
 
