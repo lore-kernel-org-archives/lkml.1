@@ -1,68 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224Ab0BVCGm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 21:06:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40518
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753876Ab0BVCGl (ORCPT
+	id S1754344Ab0BVCKH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 21:10:07 -0500
+Received: from mail-yx0-f196.google.com ([209.85.210.196]:56278 "EHLO
+	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754020Ab0BVCKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 21:06:41 -0500
-Date: Sun, 21 Feb 2010 18:06:58 -0800 (PST)
-Message-Id: <20100221.180658.226784107.davem@davemloft.net>
-To: rob@landley.net
-Cc: qemu-devel@nongnu.org, blauwirbel@gmail.com, pbonzini@redhat.com,
-       atar4qemu@googlemail.com, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org
-Subject: Re: Commit 085219f79cad broke Sparc-32 back in 2.6.28.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201002211025.11588.rob@landley.net>
-References: <f43fc5581002201359x50aff2b1ofc4f816762bda597@mail.gmail.com>
-	<201002201712.23628.rob@landley.net>
-	<201002211025.11588.rob@landley.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Feb 2010 21:10:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=lgbe2jgxb3oNrP8JzzYY4YsRO6k0+G3QTIwKS3AeDCev3CrDwJqrJ7DBCfKGmvmcmQ
+         Ay/82ZCeq0c3P6JbOp/5NJG+zcZF94fUBHU98310x2dw0zmAqvm9zoaxhpnW8siHDENx
+         o+1o1Wkeu6e5np3qYKR6zvUG2j4/v8UVNq3h4=
+MIME-Version: 1.0
+In-Reply-To: <20100220171423.GA30123@rhlx01.hs-esslingen.de>
+References: <6ea9ef0f1002200520w7ad62618hc680380142f5f0d@mail.gmail.com>
+	 <20100220171423.GA30123@rhlx01.hs-esslingen.de>
+Date: Mon, 22 Feb 2010 11:03:11 +0900
+Message-ID: <6ea9ef0f1002211803u6b39ab48ybb73c56e06a7fa03@mail.gmail.com>
+Subject: [PATCH resubmit] USB: serial: ftdi: add CONTEC vendor and product id
+From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Radek Liboska <liboska@uochb.cas.cz>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-Here's the fix I'll use, thanks for the report Rob:
+> Andreas Mohr:
+> This VID is not sorted (which also leads to a possibility of merge conflicts),
+> perhaps resubmit?
 
-sparc32: Fix struct stat uid/gid types.
+Sorry (^^), here is the new patch. Hope it is sorted now (although in
+ftdi_sio.c it didnt seem to be sorted)
 
-Commit 085219f79cad89291699bd2bfb21c9fdabafe65f
-("sparc32: use proper types in struct stat")
+From: Daniel Sangorrin <daniel.sangorrin@gmail.com>
+Date: Mon, 22 Feb 2010 10:51:50 +0900
+Subject: [PATCH] USB: serial: ftdi: add CONTEC vendor and product id
 
-Accidently changed the struct stat uid/gid members
-to uid_t and gid_t, but those get set to
-__kernel_uid32_t and __kernel_gid32_t respectively.
-Those are of type 'int' but the structure is meant
-to have 'short'.  So use uid16_t and gid16_t to
-correct this.
+This is a patch to ftdi_sio_ids.h and ftdi_sio.c that adds
+identifiers for CONTEC USB serial converter. I tested it
+with the device COM-1(USB)H
 
-Reported-by: Rob Landley <rob@landley.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Daniel Sangorrin <daniel.sangorrin@gmail.com>
 ---
- arch/sparc/include/asm/stat.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/serial/ftdi_sio.c     |    1 +
+ drivers/usb/serial/ftdi_sio_ids.h |    7 +++++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/sparc/include/asm/stat.h b/arch/sparc/include/asm/stat.h
-index 55db5ec..39327d6 100644
---- a/arch/sparc/include/asm/stat.h
-+++ b/arch/sparc/include/asm/stat.h
-@@ -53,8 +53,8 @@ struct stat {
- 	ino_t		st_ino;
- 	mode_t		st_mode;
- 	short		st_nlink;
--	uid_t		st_uid;
--	gid_t		st_gid;
-+	uid16_t		st_uid;
-+	gid16_t		st_gid;
- 	unsigned short	st_rdev;
- 	off_t		st_size;
- 	time_t		st_atime;
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 7638828..91124be 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -614,6 +614,7 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ USB_DEVICE(FTDI_VID, FTDI_OCEANIC_PID) },
+ 	{ USB_DEVICE(TTI_VID, TTI_QL355P_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_RM_CANVIEW_PID) },
++	{ USB_DEVICE(CONTEC_VID, CONTEC_COM1USBH_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USOTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USTL4_PID) },
+ 	{ USB_DEVICE(BANDB_VID, BANDB_USO9ML2_PID) },
+diff --git a/drivers/usb/serial/ftdi_sio_ids.h
+b/drivers/usb/serial/ftdi_sio_ids.h
+index c8951ae..6fd503b 100644
+--- a/drivers/usb/serial/ftdi_sio_ids.h
++++ b/drivers/usb/serial/ftdi_sio_ids.h
+@@ -494,6 +494,13 @@
+ #define RATOC_PRODUCT_ID_USB60F	0xb020
+
+ /*
++ * Contec products (http://www.contec.com)
++ * Submitted by Daniel Sangorrin
++ */
++#define CONTEC_VID		0x06CE	/* Vendor ID */
++#define CONTEC_COM1USBH_PID	0x8311	/* COM-1(USB)H */
++
++/*
+  * Definitions for B&B Electronics products.
+  */
+ #define BANDB_VID		0x0856	/* B&B Electronics Vendor ID */
 -- 
-1.6.6.1
-
+1.6.0.4
