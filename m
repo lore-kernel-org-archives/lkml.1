@@ -1,92 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865Ab0BVSKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:10:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45467 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086Ab0BVSKY (ORCPT
+	id S1754121Ab0BVSLE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:11:04 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:18830 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927Ab0BVSK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:10:24 -0500
-Date: Mon, 22 Feb 2010 16:09:52 -0300
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: perf sched broken on tip, bisected
-Message-ID: <20100222190952.GD15854@ghostprotocols.net>
-References: <20100222190042.GB15854@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222190042.GB15854@ghostprotocols.net>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 22 Feb 2010 13:10:56 -0500
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>,
+       Len Brown <lenb@kernel.org>
+Subject: [PATCH 11/11] drivers: acpi: don't use own implementation of hex_to_bin()
+Date: Mon, 22 Feb 2010 20:09:10 +0200
+Message-Id: <6c9ddf543ee5880fa8560e7ab90aeb3e934499e3.1266861292.git.ext-andriy.shevchenko@nokia.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <727e1d8eb3bd9a859f1e28a50b60becb7ca3acbe.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <d8c224af14aa936dcd692c70656559fe9726d997.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <5627f8a3ddb2d746e58409d1d59338a99b77291a.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <c515333a5ade859310436de33402a057080ec429.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <939cb3c63fbf6639b5d301ddc79c64d5642a6b81.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <d8efe17f827514a0c470191dccaf00afd09c2854.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <8470deda388af7015db44e96fa69560dd6e30126.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <5c02662a55439f65791e24b8282d4face566955e.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <1c143f904aaf005e81f1adf057d8c8df8b6ea294.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <1592c1379a6fda43140d113bb8001badce461bd9.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <727e1d8eb3bd9a859f1e28a50b60becb7ca3acbe.1266861291.git.ext-andriy.shevchenko@nokia.com>
+In-Reply-To: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+X-OriginalArrivalTime: 22 Feb 2010 18:10:34.0604 (UTC) FILETIME=[53F932C0:01CAB3EA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While testing a patch series I'm working on I noticed that 'perf sched record ;
-perf sched latency' is broken on tip, bisected it down to this cset, investigating...
+From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-[acme@mica linux-2.6-tip]$ git bisect good
-86d8d29634de4464d568e7c335c0da6cba64e8ab is first bad commit
-commit 86d8d29634de4464d568e7c335c0da6cba64e8ab
-Author: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Date:   Sat Jan 30 20:43:23 2010 +0900
+Get rid of own implementation of hex_to_bin(). It requires to have hex_to_bin()
+introduced by starter patch in the series.
 
-    perf tools: Add __data_loc support
-    
-    This patch is required to test the next patch for perf lock.
-    
-    At 064739bc4b3d7f424b2f25547e6611bcf0132415 ,
-    support for the modifier "__data_loc" of format is added.
-    
-    But, when I wanted to parse format of lock_acquired (or some
-    event else), raw_field_ptr() did not returned correct pointer.
-    
-    So I modified raw_field_ptr() like this patch. Then
-    raw_field_ptr() works well.
-    
-    Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-    Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-    Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: Tom Zanussi <tzanussi@gmail.com>
-    Cc: Steven Rostedt <srostedt@redhat.com>
-    LKML-Reference: <1264851813-8413-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-    [ v3: fixed minor stylistic detail ]
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Cc: Len Brown <lenb@kernel.org>
+---
+ drivers/acpi/bus.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
-:040000 040000 8650752c9d8295e3c0ae3999b237fb86eb269e5d eb3ecfba6bfbcc80ecde51e10307fefc4d43864e M	tools
-[acme@mica linux-2.6-tip]$
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index a52126e..c42a692 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -362,11 +362,6 @@ static void acpi_print_osc_error(acpi_handle handle,
+ 	printk("\n");
+ }
+ 
+-static u8 hex_val(unsigned char c)
+-{
+-	return isdigit(c) ? c - '0' : toupper(c) - 'A' + 10;
+-}
+-
+ static acpi_status acpi_str_to_uuid(char *str, u8 *uuid)
+ {
+ 	int i;
+@@ -383,8 +378,8 @@ static acpi_status acpi_str_to_uuid(char *str, u8 *uuid)
+ 			return AE_BAD_PARAMETER;
+ 	}
+ 	for (i = 0; i < 16; i++) {
+-		uuid[i] = hex_val(str[opc_map_to_uuid[i]]) << 4;
+-		uuid[i] |= hex_val(str[opc_map_to_uuid[i] + 1]);
++		uuid[i] = hex_to_bin(str[opc_map_to_uuid[i]]) << 4;
++		uuid[i] |= hex_to_bin(str[opc_map_to_uuid[i] + 1]);
+ 	}
+ 	return AE_OK;
+ }
+-- 
+1.5.6.5
 
-(gdb) run sched latency
-Starting program: /root/bin/perf sched latency
-[Thread debugging using libthread_db enabled]
-[Detaching after fork from child process 30314. (Try `set detach-on-fork off'.)]
-[New Thread 139670509008608 (LWP 30311)]
-
-Program received signal SIGSEGV, Segmentation fault.
-[Switching to Thread 139670509008608 (LWP 30311)]
-0x000000000040df1b in process_sched_switch_event (data=0x7f079312f9fc, session=0xcaf780, event=0xcaff50, this_cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1489
-1489		FILL_ARRAY(switch_event, prev_comm, event, data);
-(gdb) bt
-#0  0x000000000040df1b in process_sched_switch_event (data=0x7f079312f9fc, session=0xcaf780, event=0xcaff50, this_cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1489
-#1  0x000000000040e508 in process_raw_event (raw_event=0x7f079312f9d0, session=0xcaf780, data=0x7f079312f9fc, cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1594
-#2  0x000000000040e7ec in process_sample_event (event=0x7f079312f9d0, session=0xcaf780) at builtin-sched.c:1639
-#3  0x000000000043be6f in perf_session__process_event (self=0xcaf780, event=0x7f079312f9d0, ops=0x6878e0, offset=0, head=117200) at util/session.c:298
-#4  0x000000000043c5f0 in perf_session__process_events (self=0xcaf780, ops=0x6878e0) at util/session.c:464
-#5  0x000000000040e8e0 in read_events () at builtin-sched.c:1667
-#6  0x000000000040edb7 in __cmd_lat () at builtin-sched.c:1708
-#7  0x000000000040f355 in cmd_sched (argc=1, argv=0x7fff2a064640, prefix=0x0) at builtin-sched.c:1911
-#8  0x0000000000404fdd in run_builtin (p=0x682cd0, argc=2, argv=0x7fff2a064640) at perf.c:264
-#9  0x00000000004051b3 in handle_internal_command (argc=2, argv=0x7fff2a064640) at perf.c:329
-#10 0x00000000004052f2 in run_argv (argcp=0x7fff2a064534, argv=0x7fff2a064528) at perf.c:373
-#11 0x00000000004054ce in main (argc=2, argv=0x7fff2a064640) at perf.c:457
-(gdb)
