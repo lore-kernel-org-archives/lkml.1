@@ -1,60 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753758Ab0BVO5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 09:57:53 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54955 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753690Ab0BVO5v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 09:57:51 -0500
-X-Authority-Analysis: v=1.0 c=1 a=Lp5yzKHX74QA:10 a=bvlAmaRIi62YJpkBrPQA:9 a=er4tAr7PPB6MDohw_wsA:7 a=S0LMAwYPEqPgHTHjaUk5JTF_B1UA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
- function_graph tracer
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20100220144302.GB5354@nowhere>
-References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com>
-	 <20100220144302.GB5354@nowhere>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 22 Feb 2010 09:57:43 -0500
-Message-ID: <1266850663.24271.4425.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753810Ab0BVPCM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:02:12 -0500
+Received: from www.tglx.de ([62.245.132.106]:57093 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753770Ab0BVPCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 10:02:10 -0500
+Date: Mon, 22 Feb 2010 16:00:20 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dan Carpenter <error27@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+In-Reply-To: <20100222133629.GD5416@bicker>
+Message-ID: <alpine.LFD.2.00.1002221559510.3281@localhost.localdomain>
+References: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+ <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>
+ <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222133629.GD5416@bicker>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 15:43 +0100, Frederic Weisbecker wrote:
-> 
-> Instead of having yet another check here, may be should we
-> have a dedicated stub trace_graph_entry?
-> 
-> 
-> 
-> > @@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
-> >  	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
-> >  		return;
-> >  
-> > +	if (tracing_thresh &&
-> > +		(trace->rettime - trace->calltime < tracing_thresh))
-> > +		return;
-> > +
-> 
-> 
-> 
-> And perhaps we can do the same for the return handler?
-> We could have a trace_graph_return_threshold that
-> performs the above check and then relies on trace_graph_return.
+On Mon, 22 Feb 2010, Dan Carpenter wrote:
 
-So you mean to register a different type of function to the graph tracer
-if trace_thresh is enabled? That does sound like a better idea.
+> mm/slab.c
+>   2117                  kmem_freepages(cachep, addr, *this_cpu);
+>   2118                  if (OFF_SLAB(cachep)) {
+>   2119                          if (this_cpu)
+> 
+> 	We already dereferenced "this_cpu" two lines earlier. 
+> 
+>   2120                                  __cache_free(cachep->slabp_cache, slabp, this_cpu);
+>   2121                          else
+>   2122                                  kmem_cache_free(cachep->slabp_cache, slabp);
+> 
 
--- Steve
+Good catch. Thanks,
 
-
+     tglx
