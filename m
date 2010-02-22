@@ -1,70 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800Ab0BVWIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 17:08:13 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39425 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754335Ab0BVWIK (ORCPT
+	id S1754483Ab0BVWMf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 17:12:35 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:37943 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146Ab0BVWMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 17:08:10 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=Dt7itoPtOF9s2Q5fv4H/oiEHHI30HF+s+s8igPzNPuN1P2A/PSylXqL/EDm4agXkV
-	vOaRVAyxz+wORk1uFMqXA==
-Date: Mon, 22 Feb 2010 14:07:59 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch] x86: fix compile errors for no CONFIG_ZONE_DMA or no
- CONFIG_ZONE_DMA32
-Message-ID: <alpine.DEB.2.00.1002221407100.25776@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 22 Feb 2010 17:12:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BqUftV3tRdXP4ReXxxSCCarMGyKvpB0YpYvIs/2qcak+i4wXnaOe0OQJLPRU7AEvur
+         Dd6MKLBfxb4NDgf7Nd3xl+pZbS9xNUXqJmZ6ie7SAcum5WnCvgSGFQfVsI8Kixx2Aibn
+         8ra0ETkNOYnpLcCs+zmuf2X8MRM3zqm/t+m+E=
+Subject: Re: [PATCH 13/15] MTD: add few workarounds to nand system for
+ SmartMedia/xD chips.
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       stanley.miao@windriver.com, Vitaly Wool <vitalywool@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.1002222235560.4136@localhost.localdomain>
+References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
+	 <1266863982-5258-14-git-send-email-maximlevitsky@gmail.com>
+	 <alpine.LFD.2.00.1002222223090.4136@localhost.localdomain>
+	 <1266874402.4971.9.camel@maxim-laptop>
+	 <alpine.LFD.2.00.1002222235560.4136@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 00:12:29 +0200
+Message-ID: <1266876749.4971.15.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disabling CONFIG_ZONE_DMA or CONFIG_ZONE_DMA32 results in compile errors
-since ZONE_DMA and ZONE_DMA32, respectively, are not defined.
+On Mon, 2010-02-22 at 22:53 +0100, Thomas Gleixner wrote: 
+> On Mon, 22 Feb 2010, Maxim Levitsky wrote:
+> 
+> > On Mon, 2010-02-22 at 22:25 +0100, Thomas Gleixner wrote: 
+> > > On Mon, 22 Feb 2010, Maxim Levitsky wrote:
+> > > 
+> > > > * Add an option NAND_SMARTMEDIA that can be set by nand driver
+> > > >  If set, it will cause separate ID table to be used, which includes
+> > > >  mask rom devices and new xD cards
+> > > 
+> > > Why that option ? We can just extend the existing ids table and be
+> > > done. No extra magic needed.
+> > >  
+> > 
+> > Two reasons.
+> > 
+> > First of all several xD chips (I belive the Type M) have exactly same
+> > IDs like normal nand chips. However they don't report capabilities about
+> > pagesize, blocksize, etc.
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- arch/x86/mm/init_32.c |    2 ++
- arch/x86/mm/init_64.c |    4 ++++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+Sure, I didn't meant the #WP line. Sure it is set by the controller.
+I mean WP bit in status report.
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -738,8 +738,10 @@ static void __init zone_sizes_init(void)
- {
- 	unsigned long max_zone_pfns[MAX_NR_ZONES];
- 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-+#ifdef CONFIG_ZONE_DMA
- 	max_zone_pfns[ZONE_DMA] =
- 		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
-+#endif
- 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
- #ifdef CONFIG_HIGHMEM
- 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -594,8 +594,12 @@ void __init paging_init(void)
- 	unsigned long max_zone_pfns[MAX_NR_ZONES];
- 
- 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-+#ifdef CONFIG_ZONE_DMA
- 	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
-+#endif
-+#ifdef CONFIG_ZONE_DMA32
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
-+#endif
- 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
- 
- 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+Best regards,
+Maxim Levitsky
+
+
