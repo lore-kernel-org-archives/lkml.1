@@ -1,91 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278Ab0BVUVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:21:39 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:62752 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754081Ab0BVUVi convert rfc822-to-8bit (ORCPT
+	id S1754330Ab0BVUY0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:24:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33356 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753800Ab0BVUYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:21:38 -0500
-MIME-Version: 1.0
-In-Reply-To: <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
-References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com>
-	 <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com>
-	 <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
-Date: Mon, 22 Feb 2010 15:21:36 -0500
-Message-ID: <7e0fb38c1002221221xf8a2fb8ob3eb0098e8e75faf@mail.gmail.com>
-Subject: Re: [PATCH 02/12] audit: use kernel's method to get byte in hex form
-From: Eric Paris <eparis@parisplace.org>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>, aviro@redhat.com,
-       Eric Paris <eparis@redhat.com>, Steve Grubb <sgrubb@redhat.com>,
-       dwalsh@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Feb 2010 15:24:24 -0500
+Date: Mon, 22 Feb 2010 12:23:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: radeonfb backlight fix
+Message-Id: <20100222122354.50a85575.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.1002161817570.23940@casper.infradead.org>
+References: <alpine.LFD.2.00.1002161817570.23940@casper.infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 1:55 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
->
-> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+On Tue, 16 Feb 2010 18:19:21 +0000 (GMT) James Simmons <jsimmons@infradead.org> wrote:
 
+> 
+> A simple patch to allow radeonfb to compile if the backlight option is 
+> set.
+> 
+> diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+> index 6c37e8e..2c01726 100644
+> --- a/drivers/video/aty/radeon_base.c
+> +++ b/drivers/video/aty/radeon_base.c
+> @@ -276,7 +276,7 @@ static int nomtrr = 0;
+>  #endif
+>  static int force_sleep;
+>  static int ignore_devlist;
+> -#ifdef CONFIG_PMAC_BACKLIGHT
+> +#ifdef CONFIG_FB_RADEON_BACKLIGHT
+>  static int backlight = 1;
+>  #else
+>  static int backlight = 0;
 
-It changes the case from ABCDEF to abcdef but there are a number of
-userspace tools which might not be able to handle it, have you tested
-any or all of these?  The two that come to mind are ausearch and
-setroubleshoot, which I believe both may try to recreate pathnames
-when they contain a space....
+Changelog is very poor.  It doesn't tell us what the error was, nor how
+the patch fixes it.
 
--Eric
+I attempted to reverse-engineer the patch but gave up.
 
+radeonfb_bl_init() is omitted from the link if
+CONFIG_FB_RADEON_BACKLIGHT=n.  And this code:
 
-> ---
->  kernel/audit.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
->
-> diff --git a/kernel/audit.c b/kernel/audit.c
-> index 5feed23..160abad 100644
-> --- a/kernel/audit.c
-> +++ b/kernel/audit.c
-> @@ -58,6 +58,7 @@
->  #include <linux/inotify.h>
->  #include <linux/freezer.h>
->  #include <linux/tty.h>
-> +#include <linux/kernel.h>
->
->  #include "audit.h"
->
-> @@ -1308,7 +1309,6 @@ void audit_log_n_hex(struct audit_buffer *ab, const unsigned char *buf,
->        int i, avail, new_len;
->        unsigned char *ptr;
->        struct sk_buff *skb;
-> -       static const unsigned char *hex = "0123456789ABCDEF";
->
->        if (!ab)
->                return;
-> @@ -1326,10 +1326,8 @@ void audit_log_n_hex(struct audit_buffer *ab, const unsigned char *buf,
->        }
->
->        ptr = skb_tail_pointer(skb);
-> -       for (i=0; i<len; i++) {
-> -               *ptr++ = hex[(buf[i] & 0xF0)>>4]; /* Upper nibble */
-> -               *ptr++ = hex[buf[i] & 0x0F];      /* Lower nibble */
-> -       }
-> +       for (i=0; i<len; i++)
-> +               ptr = pack_hex_byte(ptr, buf[i]);
->        *ptr = 0;
->        skb_put(skb, len << 1); /* new string is twice the old string */
->  }
-> --
-> 1.5.6.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+	if (backlight)
+		radeonfb_bl_init(rinfo);
+
+will emit a call to radeonfb_bl_init() regardless of the value of
+`backlight', so as far as I can tell, there will be a linkage error
+with CONFIG_FB_RADEON_BACKLIGHT=n both before and after your patch.
+
+So.  Please resend, with a proper description.  And a Signed-off-by: line.
