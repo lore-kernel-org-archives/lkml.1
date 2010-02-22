@@ -1,53 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552Ab0BVTOs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 14:14:48 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:48824 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754370Ab0BVTOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 14:14:44 -0500
-Date: Mon, 22 Feb 2010 19:14:32 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Anssi Hannula <anssi.hannula@iki.fi>, Oliver Neukum <oliver@neukum.org>,
-       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
-	writes" causes gobi_loader to hang
-Message-ID: <20100222191432.GA27418@srcf.ucam.org>
-References: <201002222035.36043.anssi.hannula@iki.fi> <Pine.LNX.4.44L0.1002221408200.1251-100000@iolanthe.rowland.org>
+	id S1753976Ab0BVTRL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 14:17:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34593 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753208Ab0BVTRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 14:17:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Mon, 22 Feb 2010 20:17:55 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002212147.07987.rjw@sisk.pl> <4B82A440.6010701@googlemail.com>
+In-Reply-To: <4B82A440.6010701@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002221408200.1251-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002222017.55588.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 02:10:33PM -0500, Alan Stern wrote:
-> On Mon, 22 Feb 2010, Anssi Hannula wrote:
-> > Does this mean a tty interface is ill-suited for the microcode upload, and 
-> > instead qcserial should use the kernel's generic microcode upload mechanism or 
-> > the userspace should use libusb to do it?
+On Monday 22 February 2010, Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > On Friday 19 February 2010, Alan Jenkins wrote:
+> >   
+> >> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>     
+> >>> On Thursday 18 February 2010, Alan Jenkins wrote:
+> >>>       
+> >>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>         
+> >>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
+> >>>>>           
+> >>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>>>             
+> >>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
+> >>>>>>>               
+> >>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+> >>>>>>>>                 
+> >>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>>>>>>                   
+> >>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
+> >>>>>>>>>>                     
+> >>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too many
+> >>>>>>>>>>> applications.  The first hibernation fails with "not enough
+> >>>>>>>>>>> swap"
+> >>>>>>>>>>> as
+> >>>>>>>>>>> expected, but the second or third attempt hangs (with the same
+> >>>>>>>>>>> backtrace
+> >>>>>>>>>>> as before).
+> >>>>>>>>>>>
+> >>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
+> >>>>>>>>>>> hang
+> >>>>>>>>>>> the
+> >>>>>>>>>>> first time I try to hibernate with too many applications
+> >>>>>>>>>>> running.
+> >>>>>>>>>>>                       
+> >>>>>>>>>> Well, I have an idea.
+> >>>>>>>>>>
+> >>>>>>>>>> Can you try to apply the appended patch in addition and see if
+> >>>>>>>>>> that
+> >>>>>>>>>> helps?
+> >>>>>>>>>>
+> >>>>>>>>>> Rafael
+> >>>>>>>>>>                     
+> >>>>>>>>> It doesn't seem to help.
+> >>>>>>>>>                   
+> >>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too many
+> >>>>>>>> applications.
+> >>>>>>>>
+> >>>>>>>> It does stop the same hang in a different case though.
+> >>>>>>>>
+> >>>>>>>> 1. boot with init=/bin/bash
+> >>>>>>>> 2. run s2disk
+> >>>>>>>> 3. cancel the s2disk
+> >>>>>>>> 4. repeat steps 2&3
+> >>>>>>>>
+> >>>>>>>> With the patch, I can run 10s of iterations, with no hang.
+> >>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+> >>>>>>>> always).
+> >>>>>>>>
+> >>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+> >>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+> >>>>>>>> allocation
+> >>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
+> >>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the same
+> >>>>>>>> stop_machine thread allocation failure that causes the hang.
+> >>>>>>>>                 
+> >>>>>>> Have you tested it alone or on top of the previous one?  If you've
+> >>>>>>> tested it
+> >>>>>>> alone, please apply the appended one in addition to it and retest.
+> >>>>>>>
+> >>>>>>> Rafael
+> >>>>>>>               
+> >>>>>> I did test with both patches applied together -
+> >>>>>>
+> >>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+> >>>>>> resume
+> >>>>>> 2. "reducing the number of pages that we're going to keep preallocated
+> >>>>>> by
+> >>>>>> 20%"
+> >>>>>>             
+> >>>>> In that case you can try to reduce the number of preallocated pages even
+> >>>>> more,
+> >>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
+> >>>>>           
+> >>>> It still hangs if I try to hibernate a couple of times with too many
+> >>>> applications.
+> >>>>         
+> >>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
+> >>> how much RAM is there in the box?
+> >>>
+> >>> Rafael
+> >>>       
+> >> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
+> >>     
+> >
+> > Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
+> > pages and see what happens.
+> >   
 > 
-> I don't know.  Didn't the old successful code use a tty interface?
-
-Yes. The kfifo changes have caused some sort of alteration in behaviour.
-
-> > Any idea what could be causing the hang, then?
+> It still hangs in hibernation_snapshot() / disable_nonboot_cpus().  
+> After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
 > 
-> No idea, unless it's the device.
+> 
+> 
+> There is a change which I missed before.  When I applied your first 
+> patch ("Force GFP_NOIO during suspend" etc.), it did change the hung 
+> task backtraces a bit.  I don't know if it tells us anything.
+> 
+> Without the patch, there were two backtraces.  The first backtrace 
+> suggested a problem allocating pages for a kernel thread (at 
+> copy_process() / try_to_free_pages()).  The second showed that this 
+> problem was blocking s2disk (at hibernation_snapshot() / 
+> disable_nonboot_cpus() / stop_machine_create()). 
+> 
+> With the GFP_NOIO patch, I see only the s2disk backtrace.
 
-Once the device hangs, it then tends to refuse any input until power 
-cycled. So it's clearly getting into some sort of undefined state, 
-though whether that's because it only gets sent half of its firmware 
-(ie, the hang occurs and as a result the hardware dies) or whether it's 
-causing the hang by dying is unclear.
+Can you please post this backtrace?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Rafael
