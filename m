@@ -1,64 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752192Ab0BVJFB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 04:05:01 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:56209 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879Ab0BVJE7 (ORCPT
+	id S1752240Ab0BVJGk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 04:06:40 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:60455 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020Ab0BVJGj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 04:04:59 -0500
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Xiaotian Feng <xtfeng@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <2375c9f91002220034m1beec51co7385a1cdbbcce7d2@mail.gmail.com>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266665331.12525.0.camel@jlt3.sipsolutions.net>
-	 <20100220134447.GA3000@hack>
-	 <1266674268.18465.6.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002210151i6fe3f769k72a8a6a3485d8cf5@mail.gmail.com>
-	 <1266749023.5468.1.camel@jlt3.sipsolutions.net>
-	 <7b6bb4a51002210255t5ceaeb84r1438461085446385@mail.gmail.com>
-	 <7b6bb4a51002210312o2a1d070aneb54c107aeab6952@mail.gmail.com>
-	 <1266750881.10419.1.camel@jlt3.sipsolutions.net>
-	 <1266751349.10419.2.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002220034m1beec51co7385a1cdbbcce7d2@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 22 Feb 2010 10:04:50 +0100
-Message-ID: <1266829490.5609.0.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
-Content-Transfer-Encoding: 8bit
+	Mon, 22 Feb 2010 04:06:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mwk3NXVnlHmBZpoqmvacfhmtYtiLYLZLlj4fi1ndoegLo8a7MWj5vpm8zNTThYB1ly
+         rCM0IQ3G8lA9pwkSaohjK/6sv+Y6gUR684zb0fwBSH6ySIJCjDNmcOriLG006cvbmBI6
+         IfzRR9Unvtxq6vKofpzjTqKmmQSPbZil0r164=
+MIME-Version: 1.0
+In-Reply-To: <1266766047-3308-1-git-send-email-chris.nicholson@cnick.org.uk>
+References: <1266766047-3308-1-git-send-email-chris.nicholson@cnick.org.uk>
+Date: Mon, 22 Feb 2010 11:06:35 +0200
+Message-ID: <269694c01002220106v20a0c32fkfea44dc8a022661e@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Staging: mimio: Fix Coding style errors in mimio.c
+From: Ameya Palande <2ameya@gmail.com>
+To: Chris Nicholson <chris.nicholson@cnick.org.uk>
+Cc: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-22 at 16:34 +0800, Américo Wang wrote:
-> On Sun, Feb 21, 2010 at 7:22 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > On Sun, 2010-02-21 at 12:14 +0100, Johannes Berg wrote:
-> >
-> >>         printk("got cpu\n");
-> >>         for_each_online_cpu(i) {
-> >>                 sm_work = per_cpu_ptr(stop_machine_work,
-> i);
-> >>                 INIT_WORK(sm_work, stop_cpu);
-> >>                 queue_work_on(i, stop_machine_wq, sm_work);
-> >>         }
-> >>         /* This will release the thread on our CPU. */
-> >>         put_cpu();
-> >>         printk("put cpu\n");
-> >
-> > As odd as that may be, it hangs in put_cpu() here.
-> >
-> 
-> Hmm, does adding synchronize_sched() in _cpu_down() help?
+Hi Chris,
 
-No luck.
+On Sun, Feb 21, 2010 at 5:27 PM, Chris Nicholson
+<chris.nicholson@cnick.org.uk> wrote:
+> This is a patch to the mimio.c that fixes a couple of
+> space errors picked up by checkpatch.pl
+>
+> Signed-off-by: Chris Nicholson <chris.nicholson@cnick.org.uk>
+> ---
+>  drivers/staging/mimio/mimio.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/staging/mimio/mimio.c b/drivers/staging/mimio/mimio.c
+> index 1ba8103..4d7a602 100644
+> --- a/drivers/staging/mimio/mimio.c
+> +++ b/drivers/staging/mimio/mimio.c
+> @@ -145,7 +145,7 @@ static void mimio_rx_handler(struct mimio *, unsigned char *, unsigned int);
+>  static int mimio_tx(struct mimio *, const char *, int);
+>
+>  static char mimio_name[] = "VirtualInk mimio-Xi";
+> -static struct usb_device_id mimio_table [] = {
+> +static struct usb_device_id mimio_table[] = {
+>        { USB_DEVICE(MIMIO_VENDOR_ID, MIMIO_PRODUCT_ID) },
+>        { USB_DEVICE(0x0525, 0xa4a0) }, /* gadget zero firmware */
+>        { }
+> @@ -588,7 +588,7 @@ static int handle_mimio_rx_penupdown(struct mimio *mimio,
+>                        *(mimio->pktbuf.p + 2);
+>                if (x != *(mimio->pktbuf.p + 3)) {
+>                        dev_dbg(&mimio->idev->dev, "EV_PEN%s: bad xsum.\n",
+> -                               down ? "DOWN":"UP");
+> +                               down ? "DOWN" : "UP");
+>                        /* skip this event data */
+>                        mimio->pktbuf.p += 4;
+>                        /* decode any remaining events */
+> --
+> 1.6.6
 
-johannes
+I sent the same patch in Dec 2009 :(
+http://driverdev.linuxdriverproject.org/pipermail/devel/2009-December/003128.html
 
+It seems that mimio driver is already removed from linux-next:
+
+commit c5982142e80229a90cd1a73eedef886de9c8e271
+Author: Greg Kroah-Hartman <gregkh@suse.de>
+Date:   Thu Feb 11 17:15:14 2010 -0800
+
+    Staging: mimio: remove the mimio driver
+
+Cheers,
+Ameya.
