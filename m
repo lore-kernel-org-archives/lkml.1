@@ -1,72 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515Ab0BVLB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 06:01:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60720 "EHLO mx2.mail.elte.hu"
+	id S1752260Ab0BVLDt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 06:03:49 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43904 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149Ab0BVLB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 06:01:28 -0500
-Date: Mon, 22 Feb 2010 12:01:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: mingo@redhat.com, hpa@zytor.com, sliakh.lkml@gmail.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com, tglx@linutronix.de,
-       jiang@cs.ncsu.edu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86, mm: NX protection for kernel data
-Message-ID: <20100222110106.GA7206@elte.hu>
-References: <817ecb6f1001311527w7914ab20sf15b800dcaa37df7@mail.gmail.com>
- <tip-01ab31371da90a795b774d87edf2c21bb3a64dda@git.kernel.org>
- <20100222105457.GA31148@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222105457.GA31148@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751111Ab0BVLDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 06:03:47 -0500
+Date: Mon, 22 Feb 2010 22:03:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, x86@kernel.org
+Subject: linux-next: build failure in i386 since next-20100104
+Message-Id: <20100222220340.4b0a19fb.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__22_Feb_2010_22_03_40_+1100_=K9TpKMVkdSVh5GD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__22_Feb_2010_22_03_40_+1100_=K9TpKMVkdSVh5GD
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi,
 
-> 
-> * tip-bot for Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
-> 
-> > Commit-ID:  01ab31371da90a795b774d87edf2c21bb3a64dda
-> > Gitweb:     http://git.kernel.org/tip/01ab31371da90a795b774d87edf2c21bb3a64dda
-> > Author:     Siarhei Liakh <sliakh.lkml@gmail.com>
-> > AuthorDate: Sun, 31 Jan 2010 18:27:55 -0500
-> > Committer:  H. Peter Anvin <hpa@zytor.com>
-> > CommitDate: Wed, 17 Feb 2010 10:11:24 -0800
-> > 
-> > x86, mm: NX protection for kernel data
-> > 
-> > This patch expands functionality of CONFIG_DEBUG_RODATA to set main
-> > (static) kernel data area as NX.
-> 
-> -tip testing is seeing boot hangs along the lines of:
-> 
-> [   15.568108] EXT3-fs (sda1): recovery complete
-> [   15.573064] EXT3-fs (sda1): mounted filesystem with ordered data mode
-> [   15.580313] VFS: Mounted root (ext3 filesystem) readonly on device 8:1.
-> [   15.584021] async_waiting @ 1
-> [   15.588008] async_continuing @ 1 after 0 usec
-> [   15.592163] Freeing unused kernel memory: 540k freed
-> [   15.600126] NX-protecting the kernel data: c15ab000, 2919 pages
-> 
-> which i suspect could be due to the commit above.
+The i386 allmodconfig builds of linux-next have been failing since
+next-20100204 like this:
 
-Yep, that's confirmed now, applying these 3 reverts makes it boot fine:
+In file included from arch/x86/include/asm/uaccess.h:571,
+                 from include/linux/uaccess.h:5,
+                 from include/linux/highmem.h:6,
+                 from include/linux/pagemap.h:10,
+                 from include/linux/mempolicy.h:62,
+                 from include/linux/migrate.h:5,
+                 from mm/migrate.c:15:
+In function 'copy_from_user',
+    inlined from 'do_pages_stat' at mm/migrate.c:1009:
+arch/x86/include/asm/uaccess_32.h:212: error: call to 'copy_from_user_overf=
+low' declared with attribute error: copy_from_user() buffer size is not pro=
+vably correct
 
-833e0ca: Revert "x86, mm: NX protection for kernel data"
-ce4b6b4: Revert "x86: RO/NX protection for loadable kernel modules"
-e357312: Revert "module: fix () used as prototype in include/linux/module.h"
+[Today's linux-next is the same except for the one line starting
+"inlined" which is now:
+    inlined from 'do_pages_stat' at mm/migrate.c:1012:
+]
 
-	Ingo
+ I use gcc 4.4.3 for those compiles.  (See
+http://kisskb.ellerman.id.au/kisskb/buildresult/2118967/ for full logs.)
+
+There doesn't seem to be any relevant change in the config from Feb 3 to
+4:
+
++CONFIG_I2C_XILINX=3Dm
++CONFIG_RADIO_SAA7706H=3Dm
+
+and nothing else jumps out. The i386 defconfig and allnoconfig builds do
+not fail.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__22_Feb_2010_22_03_40_+1100_=K9TpKMVkdSVh5GD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuCZIwACgkQjjKRsyhoI8x/MgCdHr222WUhicry76VV2pa6bYri
+vUkAn04rdzvxJIRO+GDmP0XeuMzVW3yQ
+=zZKV
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__22_Feb_2010_22_03_40_+1100_=K9TpKMVkdSVh5GD--
