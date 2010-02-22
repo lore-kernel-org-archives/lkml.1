@@ -1,56 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239Ab0BVUUZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:20:25 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47345 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934Ab0BVUUY (ORCPT
+	id S1754278Ab0BVUVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:21:39 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:62752 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081Ab0BVUVi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:20:24 -0500
-Date: Mon, 22 Feb 2010 21:20:19 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com, rientjes@google.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-Message-ID: <20100222202019.GD15778@basil.fritz.box>
-References: <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <4B826227.9010101@cs.helsinki.fi> <20100222143111.GA15778@basil.fritz.box> <4B82AC97.6000901@cs.helsinki.fi>
+	Mon, 22 Feb 2010 15:21:38 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B82AC97.6000901@cs.helsinki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
+References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com>
+	 <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com>
+	 <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
+Date: Mon, 22 Feb 2010 15:21:36 -0500
+Message-ID: <7e0fb38c1002221221xf8a2fb8ob3eb0098e8e75faf@mail.gmail.com>
+Subject: Re: [PATCH 02/12] audit: use kernel's method to get byte in hex form
+From: Eric Paris <eparis@parisplace.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>, aviro@redhat.com,
+       Eric Paris <eparis@redhat.com>, Steve Grubb <sgrubb@redhat.com>,
+       dwalsh@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 06:11:03PM +0200, Pekka Enberg wrote:
-> Andi Kleen wrote:
->> On Mon, Feb 22, 2010 at 12:53:27PM +0200, Pekka Enberg wrote:
->>> Andi Kleen kirjoitti:
->>>> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
->>>>> On Mon, 15 Feb 2010, Nick Piggin wrote:
->>>>>
->>>>>> I'm just worried there is still an underlying problem here.
->>>>> So am I. What caused the breakage that requires this patchset?
->>>> Memory hotadd with a new node being onlined.
->>> So can you post the oops, please? Right now I am looking at zapping the 
->>
->> I can't post the oops from a pre-release system.
->>
->>> series from slab.git due to NAKs from both Christoph and Nick.
->>
->> Huh? They just complained about the patch, not the whole series.
->> I don't understand how that could prompt you to drop the whole series.
+On Thu, Feb 18, 2010 at 1:55 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 >
-> Yeah, I meant the non-ACK'd patches. Sorry for the confusion.
+> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-Ok it's fine for me to drop that patch for now. I'll try to reproduce
-that oops and if I can't then it might be just not needed.
 
--Andi
+It changes the case from ABCDEF to abcdef but there are a number of
+userspace tools which might not be able to handle it, have you tested
+any or all of these?  The two that come to mind are ausearch and
+setroubleshoot, which I believe both may try to recreate pathnames
+when they contain a space....
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+-Eric
+
+
+> ---
+>  kernel/audit.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/audit.c b/kernel/audit.c
+> index 5feed23..160abad 100644
+> --- a/kernel/audit.c
+> +++ b/kernel/audit.c
+> @@ -58,6 +58,7 @@
+>  #include <linux/inotify.h>
+>  #include <linux/freezer.h>
+>  #include <linux/tty.h>
+> +#include <linux/kernel.h>
+>
+>  #include "audit.h"
+>
+> @@ -1308,7 +1309,6 @@ void audit_log_n_hex(struct audit_buffer *ab, const unsigned char *buf,
+>        int i, avail, new_len;
+>        unsigned char *ptr;
+>        struct sk_buff *skb;
+> -       static const unsigned char *hex = "0123456789ABCDEF";
+>
+>        if (!ab)
+>                return;
+> @@ -1326,10 +1326,8 @@ void audit_log_n_hex(struct audit_buffer *ab, const unsigned char *buf,
+>        }
+>
+>        ptr = skb_tail_pointer(skb);
+> -       for (i=0; i<len; i++) {
+> -               *ptr++ = hex[(buf[i] & 0xF0)>>4]; /* Upper nibble */
+> -               *ptr++ = hex[buf[i] & 0x0F];      /* Lower nibble */
+> -       }
+> +       for (i=0; i<len; i++)
+> +               ptr = pack_hex_byte(ptr, buf[i]);
+>        *ptr = 0;
+>        skb_put(skb, len << 1); /* new string is twice the old string */
+>  }
+> --
+> 1.5.6.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
