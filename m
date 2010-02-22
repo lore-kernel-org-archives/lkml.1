@@ -1,60 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489Ab0BVCmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 21:42:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58215 "EHLO mx1.redhat.com"
+	id S1754603Ab0BVDN4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 22:13:56 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44757 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754050Ab0BVCmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 21:42:16 -0500
-Message-ID: <4B81EFD8.8020202@redhat.com>
-Date: Mon, 22 Feb 2010 10:45:44 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: opurdila@ixiacom.com
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
-References: <1266752533.3428.28.camel@Nokia-N900-42-11>
-In-Reply-To: <1266752533.3428.28.camel@Nokia-N900-42-11>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754509Ab0BVDNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 22:13:54 -0500
+Date: Mon, 22 Feb 2010 14:13:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frans Pop <elendil@planet.nl>, David Miller <davem@davemloft.net>,
+       Daniel Mack <daniel@caiaq.de>
+Subject: linux-next: manual merge of the trivial tree with the sparc tree
+Message-Id: <20100222141341.f5c92be4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__22_Feb_2010_14_13_41_+1100_67DVQuCCUj8x=ubP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> 
-> But I think its worth to keep the whitespaces in beetween, e.g. allow
-> 
-> $ echo '1, 2 ,3 ' >   ip_local_reserved_ports.
+--Signature=_Mon__22_Feb_2010_14_13_41_+1100_67DVQuCCUj8x=ubP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jiri,
 
-Sure.
+Today's linux-next merge of the trivial tree got a conflict in
+arch/sparc/kernel/leon_kernel.c between commit
+0da2b300b91ddeb9944c3fb4faaf78c1c482c0af ("sparc: remove trailing space
+in messages") from the sparc tree and commit
+3ad2f3fbb961429d2aa627465ae4829758bc7e07 ("tree-wide: Assorted spelling
+fixes") from the trivial tree.
 
-> 
->> Also, if I write an invalid value, it does reject this, but the previous
->> value in that file is cleared, shouldn't we keep the previous one?
->>
->>
-> 
-> The only way I see to fix this is to return EINVAL if we detect a write with offset.
+The former also fixed the spelling mistake fixed by the latter.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__22_Feb_2010_14_13_41_+1100_67DVQuCCUj8x=ubP
+Content-Type: application/pgp-signature
 
-Yeah, we shouldn't continue once we find any invalid value.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> 
-> IMO we should do that for the other proc write routines as well, as otherwise ther result is confusing, e.g.
-> 
-> write("1 2"); write(" 3");
-> 
-> will set first value in the vector to 1, than second value to 2 then *first* value to 3.
-> 
-> I am all for it, but again, this changes userspace ABI. 
+iEYEARECAAYFAkuB9mUACgkQjjKRsyhoI8yx6ACgqQdqdK5iN6962aBur8gklv+P
+G6sAoIh8hY4eodFSCUiBl+73C1Ntqc/e
+=sKur
+-----END PGP SIGNATURE-----
 
-Sorry, is this related with the problem I mentioned above? Both "1 2"
-and " 3" are valid values.
-
-Thanks.
+--Signature=_Mon__22_Feb_2010_14_13_41_+1100_67DVQuCCUj8x=ubP--
