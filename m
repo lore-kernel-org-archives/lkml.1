@@ -1,72 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650Ab0BVQoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 11:44:18 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:48821 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746Ab0BVQoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 11:44:15 -0500
-Date: Mon, 22 Feb 2010 08:43:39 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Cong Wang <amwang@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Uwe =?UTF-8?B?S2xlaW5lLUvDg8K2bmln?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       Hui Zhu <teawater@gmail.com>,
-       Ozan =?UTF-8?B?w4NhZ2xheWFu?= <ozan@pardus.org.tr>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Hong <lihong.hi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
-       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scripts: improve checkstack
-Message-ID: <20100222084339.1367cfe6@nehalam>
-In-Reply-To: <4B7F90AA.8050306@redhat.com>
-References: <20100219175217.385580142@vyatta.com>
-	<20100219175429.611463369@vyatta.com>
-	<4B7F5128.70501@redhat.com>
-	<20100219222554.17d4bae6@nehalam>
-	<4B7F90AA.8050306@redhat.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752560Ab0BVQoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 11:44:00 -0500
+Received: from mail.gmx.net ([213.165.64.20]:32935 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752264Ab0BVQny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 11:43:54 -0500
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX198Ye93EsJ8jdQDqvrrUpWnIaahYZlSsJZuxhXEcW
+	IFpa+DsvT95W6C
+Date: Mon, 22 Feb 2010 18:43:50 +0200 (EET)
+From: Dimitrios Apostolou <jimis@gmx.net>
+X-X-Sender: jimis@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>, Len Brown <lenb@kernel.org>
+cc: Wojciech Ploskonka <wploskonka@gmail.com>, thomas@archlinux.org,
+       Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Yinghai Lu <yinghai@kernel.org>,
+       linux-kernel@vger.kernel.org, mie.iscrizioni@gmail.com
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+In-Reply-To: <20100211212415.2eace0c2@infradead.org>
+Message-ID: <alpine.LNX.2.00.1002221836060.15882@localhost.localdomain>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain> <20100108171513.GB22713@ldl.fc.hp.com> <20100109134352.3dedd4ea@infradead.org> <alpine.LNX.2.00.1001100155370.1325@localhost.localdomain> <20100109160836.26a344a9@infradead.org>
+ <alpine.LNX.2.00.1001100226570.1325@localhost.localdomain> <20100109164240.43b21247@infradead.org> <alpine.LNX.2.00.1001100251210.1334@localhost.localdomain> <20100112160734.89ee6b11.akpm@linux-foundation.org> <20100112213205.7d74808a@infradead.org>
+ <alpine.LNX.2.00.1002102245200.1675@localhost.localdomain> <20100210205637.63131c24@infradead.org> <alpine.LNX.2.00.1002111929300.1668@localhost.localdomain> <4B747D7D.2070002@gmail.com> <20100211212415.2eace0c2@infradead.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.60999999999999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Feb 2010 15:35:06 +0800
-Cong Wang <amwang@redhat.com> wrote:
+Hi Arjan, Len,
 
-> Stephen Hemminger wrote:
-> > Turn on strict checking, and get rid of annoying use of prototype.
-> > Fix syntax error in declaration
-> > 
-> > Use efficient sort algorithm by using schwartzian transform.
-> >   http://en.wikipedia.org/wiki/Schwartzian_transform
-> 
-> 
-> Yeah, the idea is good, this can also make it more perlish. ;)
-> 
-> But...
-> 
-> 
-> > -print sort bysize @stack;
-> > +# Use Schwartzian transform to sort by last field (size)
-> > +print map { $_->[0] }
-> > +      sort { $b->[1] <=> $a->[1] }
-> > +      map { [$_, /:\t*(\d+)$/] } @stack;
-> 
-> This regex here is not strictly the same as before.
-> 
-> Can we just keep the original regex? If not, what's wrong?
+It seems that another user of archlinux (mie.iscrizioni CC'd) is having 
+the same problem, and this time I can't see any PME+ flag in lspci output. 
+The bug report is at [1] but since it's getting too big perhaps you want 
+to take a look at attachment [2], which includes "powertop -d", 
+"dmidecode" and "lspci -vvv" output.
 
-The original one had extra cruft:
-  1. The expression is anchored on right, so leading .* is meaningless
-  2. Putting tab directly makes it invisible when reading source (use \t)
-  3. Want to match on number, not just anything (that is why the \d)
+BTW, the common denominator for all these cases is the message "Marking 
+TSC unstable due to TSC halts in idle". So I was thinking perhaps the code 
+that detects the bug is already there! What do you think?
+
+
+Thanks,
+Dimitris
+
+
+[1] http://bugs.archlinux.org/task/17771
+[2] http://bugs.archlinux.org/task/17771?getfile=4899
