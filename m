@@ -1,61 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276Ab0BVSMA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:12:00 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:64614 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838Ab0BVSLy (ORCPT
+	id S1754214Ab0BVSLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:11:22 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:27401 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180Ab0BVSLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:11:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=pvaQs/QAFgZCyH2gLzr/5i9N4lU8GyGsTYsntluN3VhetclPf4FJuTBlZzvOsMjdXT
-         JNxnF2wAYrk+T3wcCo8Mcc48jktikk+EpWSozzXI7fbiJ9gRoWajjmL0oJHAhUEXsNt6
-         3E2df8r+/JFzX9rl4nieQidStAA2yGsmY3bVQ=
-Date: Mon, 22 Feb 2010 23:36:24 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>
-Subject: Re: [PATCH 02/10] ARM: ftrace: document mcount formats
-Message-ID: <20100222180624.GA4061@debian>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in>
- <1266090518-31120-3-git-send-email-rabin@rab.in>
- <20100213203748.GC16528@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100213203748.GC16528@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 22 Feb 2010 13:11:15 -0500
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [PATCH 03/11] drivers: net: optimize hex2bin()
+Date: Mon, 22 Feb 2010 20:09:02 +0200
+Message-Id: <c515333a5ade859310436de33402a057080ec429.1266861291.git.ext-andriy.shevchenko@nokia.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <5627f8a3ddb2d746e58409d1d59338a99b77291a.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <d8c224af14aa936dcd692c70656559fe9726d997.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <5627f8a3ddb2d746e58409d1d59338a99b77291a.1266861291.git.ext-andriy.shevchenko@nokia.com>
+In-Reply-To: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+X-OriginalArrivalTime: 22 Feb 2010 18:10:34.0564 (UTC) FILETIME=[53F31840:01CAB3EA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 09:37:48PM +0100, Uwe Kleine-König wrote:
-> On Sun, Feb 14, 2010 at 01:18:30AM +0530, Rabin Vincent wrote:
-> > + * With both the mcount types, we need to restore the original lr before
-> > + * returning.  In the __gnu_mcount_nc, version we're allowed to clobber ip.
-> > + * No other registers should be clobbered.
-> > + */
-> Very nice.
-> 
-> Maybe make the last two sentences:
-> 
-> In the __gnu_mcount_nc case the ip register is clobbered which is OK as
-> the calling convention for ARM allow clobbering this value for
-> subroutines and it doesn't contain parameters.
+From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-Won't quoting calling conventions here be misleading?  The mcounts don't
-following normal convention for the other bits (we can't clobber even
-the registers that are normally caller-saved, we need to restore lr,
-etc.)
+Optimize hex2bin() function used in ps3_gelic_wireless.c. It requires to have
+hex_to_bin() implementation introduced by starter patch in series.
 
-Rabin
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/net/ps3_gelic_wireless.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
+index 227b141..43e9688 100644
+--- a/drivers/net/ps3_gelic_wireless.c
++++ b/drivers/net/ps3_gelic_wireless.c
+@@ -1394,23 +1394,19 @@ static int gelic_wl_get_mode(struct net_device *netdev,
+ static int hex2bin(u8 *str, u8 *bin, unsigned int len)
+ {
+ 	unsigned int i;
+-	static unsigned char *hex = "0123456789ABCDEF";
+-	unsigned char *p, *q;
+-	u8 tmp;
+ 
+ 	if (len != WPA_PSK_LEN * 2)
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < WPA_PSK_LEN * 2; i += 2) {
+-		p = strchr(hex, toupper(str[i]));
+-		q = strchr(hex, toupper(str[i + 1]));
+-		if (!p || !q) {
++		int h = hex_to_bin(str[i]);
++		int l = hex_to_bin(str[i+1]);
++		if ((h == -1) || (l == -1)) {
+ 			pr_info("%s: unconvertible PSK digit=%d\n",
+ 				__func__, i);
+ 			return -EINVAL;
+ 		}
+-		tmp = ((p - hex) << 4) + (q - hex);
+-		*bin++ = tmp;
++		*bin++ = (h << 4) + l;
+ 	}
+ 	return 0;
+ };
+-- 
+1.5.6.5
+
