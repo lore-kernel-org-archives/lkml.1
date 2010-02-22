@@ -1,85 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876Ab0BVPRM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 10:17:12 -0500
-Received: from www.tglx.de ([62.245.132.106]:58311 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753804Ab0BVPRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 10:17:08 -0500
-Date: Mon, 22 Feb 2010 16:16:03 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: John Kacur <jkacur@redhat.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
-In-Reply-To: <520f0cf11002220423u64daf89dxa6a4249522adabee@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1002221614480.4136@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>  <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain>  <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> 
- <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain>  <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>  <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>  <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> 
- <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com>  <alpine.LFD.2.00.1002221228130.2811@localhost.localdomain> <520f0cf11002220423u64daf89dxa6a4249522adabee@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753910Ab0BVPRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 10:17:36 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60758 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753804Ab0BVPRe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 10:17:34 -0500
+To: Lars Eggert <lars.eggert@nokia.com>
+Cc: David Miller <davem@davemloft.net>,
+       "zimmermann@nets.rwth-aachen.de" <zimmermann@nets.rwth-aachen.de>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "apetlund@simula.no" <apetlund@simula.no>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "ilpo.jarvinen@helsinki.fi" <ilpo.jarvinen@helsinki.fi>,
+       "eric.dumazet@gmail.com" <eric.dumazet@gmail.com>,
+       "Arnd.Hannemann@nets.rwth-aachen.de" 
+	<Arnd.Hannemann@nets.rwth-aachen.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "shemminger@vyatta.com" <shemminger@vyatta.com>,
+       "william.allen.simpson@gmail.com" <william.allen.simpson@gmail.com>,
+       "damian@tvk.rwth-aachen.de" <damian@tvk.rwth-aachen.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100221102102.GB1311@ucw.cz>
+	<D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de>
+	<2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com>
+	<20100221.150311.193707249.davem@davemloft.net>
+	<FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com>
+Date: Mon, 22 Feb 2010 16:17:33 +0100
+In-Reply-To: <FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> (Lars Eggert's message of "Mon, 22 Feb 2010 08:41:32 +0200")
+Message-ID: <87k4u5mh9u.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010, John Kacur wrote:
-> That patch fixes the symptom I reported, but unfortunately, I still
-> can't log-in to my laptop without the machine freezing.
-> Not sure why, investigating.
+Lars Eggert <lars.eggert@nokia.com> writes:
 
-Found it, at least it make my mouse/keyboard work again and fixes the
-weird double character problem on VT login.
+> If it's off by default there is no issue.
 
-Thanks,
+Still a sufficient large number of people might turn it on
+and then the network would melt.
 
-	tglx
-----
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 25642d1..1efad98 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -563,15 +563,20 @@ irq_wait_for_interrupt(struct irq_desc *desc, struct irqaction *action)
-  * handler finished. unmask if the interrupt has not been disabled and
-  * is marked MASKED.
-  */
--static void irq_finalize_oneshot(unsigned int irq, struct irq_desc *desc)
-+static void irq_finalize_oneshot(unsigned int irq, struct irq_desc *desc,
-+				 struct irqaction *action)
- {
- 	chip_bus_lock(irq, desc);
-+#ifndef CONFIG_PREEMPT_RT
- 	raw_spin_lock_irq(&desc->lock);
- 	if (!(desc->status & IRQ_DISABLED) && (desc->status & IRQ_MASKED)) {
- 		desc->status &= ~IRQ_MASKED;
- 		desc->chip->unmask(irq);
- 	}
- 	raw_spin_unlock_irq(&desc->lock);
-+#else
-+	preempt_hardirq_thread_done(desc, action);
-+#endif
- 	chip_bus_sync_unlock(irq, desc);
- }
- 
-@@ -645,7 +650,7 @@ static int irq_thread(void *data)
- 			action->thread_fn(action->irq, action->dev_id);
- 
- 			if (oneshot)
--				irq_finalize_oneshot(action->irq, desc);
-+				irq_finalize_oneshot(action->irq, desc, action);
- 		}
- 
- 		wake = atomic_dec_and_test(&desc->threads_active);
+IMHO TCP changes with badly understood congestion behaviour
+should not be merged until the necessary analysis/simulation etc.
+is done.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
