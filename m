@@ -1,148 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277Ab0BVB3v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Feb 2010 20:29:51 -0500
-Received: from mga03.intel.com ([143.182.124.21]:4165 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754167Ab0BVB3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Feb 2010 20:29:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,514,1262592000"; 
-   d="scan'208";a="246451060"
-Date: Sun, 21 Feb 2010 23:52:08 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Dave Chinner <david@fromorbit.com>, Ankit Jain <radical@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Make VM_MAX_READAHEAD a kernel parameter
-Message-ID: <20100221155208.GA22319@localhost>
-References: <201002091659.27037.knikanth@suse.de> <201002111715.04411.knikanth@suse.de> <20100214213724.GA28392@discord.disaster> <201002151006.37294.knikanth@suse.de> <20100221142600.GA10036@localhost>
+	id S1754330Ab0BVBaW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Feb 2010 20:30:22 -0500
+Received: from mail-qy0-f184.google.com ([209.85.221.184]:61289 "EHLO
+	mail-qy0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754119Ab0BVBaT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Feb 2010 20:30:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fQrMq3COLaL8N/kaMWLiz2xWYwfvUffENNDcsY03asUKetTMYCV/clJu4YlMkfzgeA
+         YTr1wCpUSL6k8h5Y7fqncXZBpQe84471B+sViyiDjacEXkkmT2s1jcKP4pbnlDCeVqPS
+         ferCp9jkWgGnuBoZky5lPKvsgSUKr4hwmaUms=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100221142600.GA10036@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ClJsQB_ZlxO.A.YyG.4dagLB@chimera>
+References: <b_eAfX__uZL.A.lvE.HcagLB@chimera>
+	 <ClJsQB_ZlxO.A.YyG.4dagLB@chimera>
+Date: Mon, 22 Feb 2010 09:30:17 +0800
+Message-ID: <2375c9f91002211730l6835cae1x1693da3d94fccc0c@mail.gmail.com>
+Subject: Re: [Bug #15202] lockdep warning during elevator_switch
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +unsigned long max_readahead_pages = VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE;
-> +
-> +static int __init readahead(char *str)
-> +{
-> +	unsigned long bytes;
-> +
-> +	if (!str)
-> +		return -EINVAL;
-> +	bytes = memparse(str, &str);
-> +	if (*str != '\0')
-> +		return -EINVAL;
-> +
-> +	if (bytes) {
-> +		if (bytes < PAGE_CACHE_SIZE)	/* missed 'k'/'m' suffixes? */
-> +			return -EINVAL;
-> +		if (bytes > 128 << 20)		/* limit to 128MB */
-> +			bytes = 128 << 20;
-> +	}
-> +
-> +	max_readahead_pages = bytes / PAGE_CACHE_SIZE;
-> +	default_backing_dev_info.ra_pages = max_readahead_pages;
-> +	return 0;
-> +}
-> +
-> +early_param("readahead", readahead);
+On Mon, Feb 22, 2010 at 5:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a summary report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let the tracking team
+> know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15202
+> Subject         : lockdep warning during elevator_switch
+> Submitter       : Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Date            : 2010-01-31 23:55 (22 days old)
+> References      : http://marc.info/?l=linux-kernel&m=126498212613051&w=4
+>
 
-This further optimizes away max_readahead_pages :)
-
----
-make default readahead size a kernel parameter
-
-From: Nikanth Karthikesan <knikanth@suse.de>
-
-Add new kernel parameter "readahead", which allows user to override
-the static VM_MAX_READAHEAD=512kb.
-
-CC: Ankit Jain <radical@gmail.com>
-CC: Dave Chinner <david@fromorbit.com>
-CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- Documentation/kernel-parameters.txt |    4 ++++
- block/blk-core.c                    |    3 +--
- fs/fuse/inode.c                     |    2 +-
- mm/readahead.c                      |   22 ++++++++++++++++++++++
- 4 files changed, 28 insertions(+), 3 deletions(-)
-
---- linux.orig/Documentation/kernel-parameters.txt	2010-02-21 22:41:29.000000000 +0800
-+++ linux/Documentation/kernel-parameters.txt	2010-02-21 22:41:30.000000000 +0800
-@@ -2174,6 +2174,10 @@ and is between 256 and 4096 characters. 
- 			Run specified binary instead of /init from the ramdisk,
- 			used for early userspace startup. See initrd.
- 
-+	readahead=nn[KM]
-+			Default max readahead size for block devices.
-+			Range: 0; 4k - 128m
-+
- 	reboot=		[BUGS=X86-32,BUGS=ARM,BUGS=IA-64] Rebooting mode
- 			Format: <reboot_mode>[,<reboot_mode2>[,...]]
- 			See arch/*/kernel/reboot.c or arch/*/kernel/process.c
---- linux.orig/block/blk-core.c	2010-02-21 22:41:29.000000000 +0800
-+++ linux/block/blk-core.c	2010-02-21 22:41:30.000000000 +0800
-@@ -498,8 +498,7 @@ struct request_queue *blk_alloc_queue_no
- 
- 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
- 	q->backing_dev_info.unplug_io_data = q;
--	q->backing_dev_info.ra_pages =
--			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+	q->backing_dev_info.ra_pages = default_backing_dev_info.ra_pages;
- 	q->backing_dev_info.state = 0;
- 	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
- 	q->backing_dev_info.name = "block";
---- linux.orig/fs/fuse/inode.c	2010-02-21 22:41:29.000000000 +0800
-+++ linux/fs/fuse/inode.c	2010-02-21 22:41:30.000000000 +0800
-@@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_con
- 	int err;
- 
- 	fc->bdi.name = "fuse";
--	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+	fc->bdi.ra_pages = default_backing_dev_info.ra_pages;
- 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
- 	/* fuse does it's own writeback accounting */
- 	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
---- linux.orig/mm/readahead.c	2010-02-21 22:41:29.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-21 22:42:15.000000000 +0800
-@@ -19,6 +19,28 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-+static int __init config_readahead_size(char *str)
-+{
-+	unsigned long bytes;
-+
-+	if (!str)
-+		return -EINVAL;
-+	bytes = memparse(str, &str);
-+	if (*str != '\0')
-+		return -EINVAL;
-+
-+	if (bytes) {
-+		if (bytes < PAGE_CACHE_SIZE)	/* missed 'k'/'m' suffixes? */
-+			return -EINVAL;
-+		if (bytes > 128 << 20)		/* limit to 128MB */
-+			bytes = 128 << 20;
-+	}
-+
-+	default_backing_dev_info.ra_pages = bytes / PAGE_CACHE_SIZE;
-+	return 0;
-+}
-+early_param("readahead", config_readahead_size);
-+
- /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
+This should be fixed by:
+http://lkml.org/lkml/2010/2/11/329
