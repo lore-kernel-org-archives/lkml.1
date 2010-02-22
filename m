@@ -1,147 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752219Ab0BVFiN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 00:38:13 -0500
-Received: from gwu.lbox.cz ([62.245.111.132]:46629 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751655Ab0BVFiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 00:38:10 -0500
-Date: Mon, 22 Feb 2010 06:37:41 +0100
-From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Nikola Ciprich <extmaillist@linuxbox.cz>,
-       Harry Edmon <harry@atmos.washington.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
-Message-ID: <20100222053741.GE29366@develbox.linuxbox.cz>
-References: <20100122150325.6ad12428.akpm@linux-foundation.org>
- <20100127190522.GB18278@fieldses.org>
- <4B60C5D4.6070000@atmos.washington.edu>
- <20100202162228.GD4293@fieldses.org>
- <20100216182248.GA4922@nik-comp.linuxbox.cz>
- <20100216202121.GE26292@fieldses.org>
- <20100216202720.GB4922@nik-comp.linuxbox.cz>
- <20100216202947.GF26292@fieldses.org>
- <20100217151435.GC30897@develbox.linuxbox.cz>
- <20100220235105.GB15015@fieldses.org>
+	id S1752708Ab0BVFoP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 00:44:15 -0500
+Received: from forum.psychotherapie.org ([217.160.22.205]:57260 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751411Ab0BVFoO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 00:44:14 -0500
+Message-ID: <4B82197F.4050902@metux.de>
+Date: Mon, 22 Feb 2010 06:43:27 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+Organization: metux IT service
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.23) Gecko/20091124 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5oH/S/bF6lOfqCQb"
-Content-Disposition: inline
-In-Reply-To: <20100220235105.GB15015@fieldses.org>
-User-Agent: Mutt/1.5.20 (2009-12-10)
-X-Milter-Copy-Status: I
-X-Milter-Copy-Status: I
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3390894 records(22-02-2010)
-X-Spam-Score: N/A (trusted relay)
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Dynamic linking in the kernel
+References: <4B802870.5030201@metux.de> <20100220.125758.174837163.davem@davemloft.net>
+In-Reply-To: <20100220.125758.174837163.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
 
---5oH/S/bF6lOfqCQb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> In order to implement this the kernel would have to also save a copy
+> of all pieces of the processes's environment and compare all of the
+> environment variable settings on every execution.  This would be
+> needed to handle things like LD_PRELOAD, LD_LIBRARY_PATH, and LD_DEBUG
+> as just three examples.
 
-It was working pretty well when we were using 2.6.27.x, but after upgrade, I
-also changed FS from XFS to ext4, (so I can't easily test with 2.6.27 now) =
-and
-since then NFS is almost unusable on this machine.
-But 2.6.27 is pretty old, so there's been a lot of changes.
-But greg released 2.6.32.9-rc1 which contains bunch of NFS-related fixes,
-so I'll give it a try and report.
-nik
+Fairly simple:
 
-On Sat, Feb 20, 2010 at 06:51:05PM -0500, J. Bruce Fields wrote:
-> On Wed, Feb 17, 2010 at 04:14:35PM +0100, Nikola Ciprich wrote:
-> > Well,
-> > I did a lot of stress tests, and it seems to be pretty random, and what=
-'s
-> > worse, I think it is more then one problem, oh great...
-> > Seems that at least one of my NFS problems was in fact caused by ext4 r=
-egression
-> > (what FS are you using?)
-> > applying this one: http://bugzilla.kernel.org/attachment.cgi?id=3D24975
-> > improved things for me a lot (see http://bugzilla.kernel.org/show_bug.c=
-gi?id=3D15231 for
-> > full discussion).
-> > I'll watch the machine for next few days and report...
->=20
-> Is there *any* kernel (however old) on which you are confident you can
-> *not* reproduce the kref bug?
->=20
-> --b.
->=20
-> > regards
-> > nik
-> >=20
-> > On Tue, Feb 16, 2010 at 03:29:47PM -0500, J. Bruce Fields wrote:
-> > > On Tue, Feb 16, 2010 at 09:27:20PM +0100, Nikola Ciprich wrote:
-> > > > > Nothing yet.  I'm taking another look.
-> > > > >=20
-> > > > > Do you know what the most recent version was where you did *not* =
-see
-> > > > > these warnings?
-> > > > well, actually I decided I'll bisect this one no matter what, so ho=
-pefully
-> > > > we'll see soon :)
-> > > > I'll report
-> > >=20
-> > > That would be fantastic, thanks.  What test-case are you using?
-> > >=20
-> > > Any partial information ("xxxx good, xxxx bad") would also be useful.
-> > >=20
-> > > --b.
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-nfs" =
-in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > >=20
-> >=20
-> > --=20
-> > -------------------------------------
-> > Ing. Nikola CIPRICH
-> > LinuxBox.cz, s.r.o.
-> > 28. rijna 168, 709 01 Ostrava
-> >=20
-> > tel.:   +420 596 603 142
-> > fax:    +420 596 621 273
-> > mobil:  +420 777 093 799
-> > www.linuxbox.cz
-> >=20
-> > mobil servis: +420 737 238 656
-> > email servis: servis@linuxbox.cz
-> > -------------------------------------
->=20
+* parsed per-module data is cached by its inode id
+* cached data that can be influenced by LD_PRELOAD/LD_LIBRARY_PATH
+  (eg. mapping of library names to actual filenames or inode-id's)
+  is cached on hash of these variables plus inode-id
 
---=20
--------------------------------------
-Ing. Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
+> What's more, any filesystem change involved in the shared libraries,
+> the executable, or the dynamic linker would have to be monitored as
+> well.
 
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
+What could go wrong ?
 
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+a) overwring an currently mapped-in library. this also applies to
+   the traditional approach as well. write-locking (w/o locking
+   against removal, of course ;-)) might help.
+b) filesystems could get remounted while modules are already cached:
+   that (IMHO) changes the inode-id's as well, so not affecting the
+   inode-id based cache lookups
+c) permissions could get changed: either use the inode data we can on
+   the file lookups (we most likely wont get rid of) or use inotify.
 
---5oH/S/bF6lOfqCQb
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> Really, this is not a good idea, and the cost is only ~3 system calls
+> per shared library and considering the amount of flexibility we get in
+> return it's not that bad at all.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+It's worth much more than that:
 
-iD8DBQFLghgl3xdJJrLygV4RAhjlAKDDuEk+3fib3A2Af1kIkMgOkrkikACeMqGN
-OAoq1VR8TECw28TxKDUWY6E=
-=JJo9
------END PGP SIGNATURE-----
+a) able to cache much data that now have to be parsed/computed on
+   each single exec (eg. dependencies, symbol tables, etc)
+b) sharing pages even when mmap() is not available
 
---5oH/S/bF6lOfqCQb--
+
+cu
+-- 
+----------------------------------------------------------------------
+ Enrico Weigelt, metux IT service -- http://www.metux.de/
+
+ cellphone: +49 174 7066481   email: info@metux.de   skype: nekrad666
+----------------------------------------------------------------------
+ Embedded-Linux / Portierung / Opensource-QM / Verteilte Systeme
+----------------------------------------------------------------------
+
