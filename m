@@ -1,89 +1,147 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041Ab0BVFbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 00:31:39 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33914 "EHLO smtps.tip.net.au"
+	id S1752219Ab0BVFiN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 00:38:13 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:46629 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953Ab0BVFbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 00:31:38 -0500
-Date: Mon, 22 Feb 2010 16:31:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Leroy <fredo@starox.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Joe Perches <joe@perches.com>
-Subject: linux-next: manual merge of the staging tree with the wireless tree
-Message-Id: <20100222163134.367353e7.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751655Ab0BVFiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 00:38:10 -0500
+Date: Mon, 22 Feb 2010 06:37:41 +0100
+From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Nikola Ciprich <extmaillist@linuxbox.cz>,
+       Harry Edmon <harry@atmos.washington.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
+Message-ID: <20100222053741.GE29366@develbox.linuxbox.cz>
+References: <20100122150325.6ad12428.akpm@linux-foundation.org>
+ <20100127190522.GB18278@fieldses.org>
+ <4B60C5D4.6070000@atmos.washington.edu>
+ <20100202162228.GD4293@fieldses.org>
+ <20100216182248.GA4922@nik-comp.linuxbox.cz>
+ <20100216202121.GE26292@fieldses.org>
+ <20100216202720.GB4922@nik-comp.linuxbox.cz>
+ <20100216202947.GF26292@fieldses.org>
+ <20100217151435.GC30897@develbox.linuxbox.cz>
+ <20100220235105.GB15015@fieldses.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5oH/S/bF6lOfqCQb"
+Content-Disposition: inline
+In-Reply-To: <20100220235105.GB15015@fieldses.org>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-Milter-Copy-Status: I
+X-Milter-Copy-Status: I
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3390894 records(22-02-2010)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
 
-Today's linux-next merge of the staging tree got a conflict in
-drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c between commit
-e2117cea27c6b27e1a379acac5eb0433eeb7033a ("staging: rtl8192su: fix
-compile error from wireless-testing commit") from the wireless tree and
-commit 7332868b1aea2a5900a70acadf767f7632b1c2c2 ("Staging: rtl8187x: Use %
-pM for mac address output") from the staging tree.
+--5oH/S/bF6lOfqCQb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Just context changes.  I fixed it up (see below) and can carry the fix
-as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+It was working pretty well when we were using 2.6.27.x, but after upgrade, I
+also changed FS from XFS to ext4, (so I can't easily test with 2.6.27 now) =
+and
+since then NFS is almost unusable on this machine.
+But 2.6.27 is pretty old, so there's been a lot of changes.
+But greg released 2.6.32.9-rc1 which contains bunch of NFS-related fixes,
+so I'll give it a try and report.
+nik
 
-diff --cc drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-index 095b8c6,67b99ad..0000000
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-@@@ -2366,11 -2366,11 +2366,11 @@@ static inline void ieee80211_process_pr
-  		(beacon->capability & (1<<0x0)) ? '1' : '0');
-  
-  	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
-- 		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
-+ 		IEEE80211_DEBUG_SCAN("Dropped '%s' (%pM) via %s.\n",
-  				     escape_essid(info_element->data,
-  						  info_element->len),
-- 				     MAC_ARG(beacon->header.addr3),
-+ 				     beacon->header.addr3,
- -				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- +				     WLAN_FC_GET_STYPE(beacon->header.frame_control) ==
-  				     IEEE80211_STYPE_PROBE_RESP ?
-  				     "PROBE RESPONSE" : "BEACON");
-  		return;
-@@@ -2492,11 -2492,11 +2492,11 @@@
-  
-  
-  #ifdef CONFIG_IEEE80211_DEBUG
-- 		IEEE80211_DEBUG_SCAN("Adding '%s' (" MAC_FMT ") via %s.\n",
-+ 		IEEE80211_DEBUG_SCAN("Adding '%s' (%pM) via %s.\n",
-  				     escape_essid(network.ssid,
-  						  network.ssid_len),
-- 				     MAC_ARG(network.bssid),
-+ 				     network.bssid,
- -				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- +				     WLAN_FC_GET_STYPE(beacon->header.frame_control) ==
-  				     IEEE80211_STYPE_PROBE_RESP ?
-  				     "PROBE RESPONSE" : "BEACON");
-  #endif
-@@@ -2505,11 -2505,11 +2505,11 @@@
-  		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
-  			ieee80211_softmac_new_net(ieee,&network);
-  	} else {
-- 		IEEE80211_DEBUG_SCAN("Updating '%s' (" MAC_FMT ") via %s.\n",
-+ 		IEEE80211_DEBUG_SCAN("Updating '%s' (%pM) via %s.\n",
-  				     escape_essid(target->ssid,
-  						  target->ssid_len),
-- 				     MAC_ARG(target->bssid),
-+ 				     target->bssid,
- -				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- +				     WLAN_FC_GET_STYPE(beacon->header.frame_control) ==
-  				     IEEE80211_STYPE_PROBE_RESP ?
-  				     "PROBE RESPONSE" : "BEACON");
-  
+On Sat, Feb 20, 2010 at 06:51:05PM -0500, J. Bruce Fields wrote:
+> On Wed, Feb 17, 2010 at 04:14:35PM +0100, Nikola Ciprich wrote:
+> > Well,
+> > I did a lot of stress tests, and it seems to be pretty random, and what=
+'s
+> > worse, I think it is more then one problem, oh great...
+> > Seems that at least one of my NFS problems was in fact caused by ext4 r=
+egression
+> > (what FS are you using?)
+> > applying this one: http://bugzilla.kernel.org/attachment.cgi?id=3D24975
+> > improved things for me a lot (see http://bugzilla.kernel.org/show_bug.c=
+gi?id=3D15231 for
+> > full discussion).
+> > I'll watch the machine for next few days and report...
+>=20
+> Is there *any* kernel (however old) on which you are confident you can
+> *not* reproduce the kref bug?
+>=20
+> --b.
+>=20
+> > regards
+> > nik
+> >=20
+> > On Tue, Feb 16, 2010 at 03:29:47PM -0500, J. Bruce Fields wrote:
+> > > On Tue, Feb 16, 2010 at 09:27:20PM +0100, Nikola Ciprich wrote:
+> > > > > Nothing yet.  I'm taking another look.
+> > > > >=20
+> > > > > Do you know what the most recent version was where you did *not* =
+see
+> > > > > these warnings?
+> > > > well, actually I decided I'll bisect this one no matter what, so ho=
+pefully
+> > > > we'll see soon :)
+> > > > I'll report
+> > >=20
+> > > That would be fantastic, thanks.  What test-case are you using?
+> > >=20
+> > > Any partial information ("xxxx good, xxxx bad") would also be useful.
+> > >=20
+> > > --b.
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-nfs" =
+in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >=20
+> >=20
+> > --=20
+> > -------------------------------------
+> > Ing. Nikola CIPRICH
+> > LinuxBox.cz, s.r.o.
+> > 28. rijna 168, 709 01 Ostrava
+> >=20
+> > tel.:   +420 596 603 142
+> > fax:    +420 596 621 273
+> > mobil:  +420 777 093 799
+> > www.linuxbox.cz
+> >=20
+> > mobil servis: +420 737 238 656
+> > email servis: servis@linuxbox.cz
+> > -------------------------------------
+>=20
+
+--=20
+-------------------------------------
+Ing. Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
+
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+www.linuxbox.cz
+
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
+
+--5oH/S/bF6lOfqCQb
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFLghgl3xdJJrLygV4RAhjlAKDDuEk+3fib3A2Af1kIkMgOkrkikACeMqGN
+OAoq1VR8TECw28TxKDUWY6E=
+=JJo9
+-----END PGP SIGNATURE-----
+
+--5oH/S/bF6lOfqCQb--
