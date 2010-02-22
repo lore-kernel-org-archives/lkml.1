@@ -1,55 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909Ab0BVSi6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:38:58 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:41186 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400Ab0BVSi4 (ORCPT
+	id S1753800Ab0BVSj5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:39:57 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:56979 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801Ab0BVSjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:38:56 -0500
-Message-ID: <4B82CF1A.3010501@nortel.com>
-Date: Mon, 22 Feb 2010 12:38:18 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory	barrier
- (v9)
-References: <20100212224606.GA30280@Krystal>
-In-Reply-To: <20100212224606.GA30280@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Feb 2010 18:38:45.0364 (UTC) FILETIME=[43BEB340:01CAB3EE]
+	Mon, 22 Feb 2010 13:39:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=kDEqXJN0TOIofklkI4l+u54CA6mX9DGEqAgwEN/g5wmNOsncOSaxA/OgsVH8t2AZ30
+         jucyxWsRtzged8ME49Jd3NeZYXRC0XDybRvBPEQM6+wnSxZ+WNstwoGkiqFbRO92vM4d
+         p0yfatJbpdBKvAxYHtcZvRXCfJQNn14sPTOOo=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>, <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>
+Subject: [PATCH 0/15 V10] Work to enable SmartMedia/xD support in mtd
+Date: Mon, 22 Feb 2010 20:39:27 +0200
+Message-Id: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 04:46 PM, Mathieu Desnoyers wrote:
+Changes:
 
-> Editorial question: 
-> 
-> This synchronization only takes care of threads using the current process memory
-> map. It should not be used to synchronize accesses performed on memory maps
-> shared between different processes. Is that a limitation we can live with ?
+* Rebased the series against patches from Ben Hutchings.
+Now it applies cleanly on top of
+git://git.infradead.org/users/dedekind/l2-mtd-2.6.git
 
-It makes sense for an initial version.  It would be unfortunate if this
-were a permanent limitation, since using separate processes with
-explicit shared memory is a useful way to mitigate memory trampler issues.
+* Fixed another blktrans hotplug problem. 
+If you remove that card while it is used, then add it while,
+the user still holds the block device open, block device wasn't accesable
 
-If we were going to allow that, it might make sense to add an address
-range such that only those processes which have mapped that range would
-execute the barrier.  Come to think of it, it might be possible to use
-this somehow to avoid having to execute the barrier on *all* threads
-within a process.
+* Fixed minor memory leak in mtdblock (unrelated to the patchset)
 
-Chris
+Best regards,
+	Maxim Levitsky
+
