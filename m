@@ -1,81 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417Ab0BVVxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 16:53:19 -0500
-Received: from www.tglx.de ([62.245.132.106]:43296 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753506Ab0BVVxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 16:53:17 -0500
-Date: Mon, 22 Feb 2010 22:53:04 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       stanley.miao@windriver.com, Vitaly Wool <vitalywool@gmail.com>
-Subject: Re: [PATCH 13/15] MTD: add few workarounds to nand system for
- SmartMedia/xD chips.
-In-Reply-To: <1266874402.4971.9.camel@maxim-laptop>
-Message-ID: <alpine.LFD.2.00.1002222235560.4136@localhost.localdomain>
-References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>  <1266863982-5258-14-git-send-email-maximlevitsky@gmail.com>  <alpine.LFD.2.00.1002222223090.4136@localhost.localdomain> <1266874402.4971.9.camel@maxim-laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754568Ab0BVWBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 17:01:05 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:35619 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754476Ab0BVWBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 17:01:01 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Oc2EWr5/chBb3jnOYnb6MOdp2+W6QDB/ApgfCl7ev5qTl0Yq8piX7tUKDwnPjnV3u
+	IW+eU/W9ylXnSUhrhxfcw==
+Date: Mon, 22 Feb 2010 14:00:52 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Miao Xie <miaox@cn.fujitsu.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time
+ (58568d2)
+In-Reply-To: <20100222121222.GV9738@laptop>
+Message-ID: <alpine.DEB.2.00.1002221400060.23881@chino.kir.corp.google.com>
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <20100222121222.GV9738@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010, Maxim Levitsky wrote:
+On Mon, 22 Feb 2010, Nick Piggin wrote:
 
-> On Mon, 2010-02-22 at 22:25 +0100, Thomas Gleixner wrote: 
-> > On Mon, 22 Feb 2010, Maxim Levitsky wrote:
-> > 
-> > > * Add an option NAND_SMARTMEDIA that can be set by nand driver
-> > >  If set, it will cause separate ID table to be used, which includes
-> > >  mask rom devices and new xD cards
-> > 
-> > Why that option ? We can just extend the existing ids table and be
-> > done. No extra magic needed.
-> >  
+> If you have a concurrent reader without any synchronisation, then what
+> stops it from loading a word of the mask before stores to add the new
+> nodes and then loading another word of the mask after the stores to
+> remove the old nodes? (which can give an empty mask).
 > 
-> Two reasons.
-> 
-> First of all several xD chips (I belive the Type M) have exactly same
-> IDs like normal nand chips. However they don't report capabilities about
-> pagesize, blocksize, etc.
 
-You mean that crap ?
-
-+       /* xD only */
-+       {"xD 512MiB 3,3V",              0xDC, 512, 512, 0x4000, XD_TYPEM},
-+       {"xD 1GiB 3,3V",                0xD3, 512, 1024, 0x4000, XD_TYPEM},
-+       {"xD 2GiB 3,3V",                0xD5, 512, 2048, 0x4000, XD_TYPEM},
-
-Oh well, that's a perfect example of designed by comittee shit.
- 
-They abuse the 2k chips IDs and define crappy sizes just to fit the
-stupid spec.
-
-> I am confident that these cards have an internal FTL and controller, and
-> just 'emulate' that nand interface.
-
-Either that or the adapter translates the 512B commands to 2K
-commands. I bet on the latter. AFAIK are xD cards just as stupid as
-SmartMedia ones, i.e. bare NAND chips in a flat plastic housing with
-gold contacts.
-
-> Also, my card  reports write protect, although, xD cards don't have any
-> 'switch' to make them protected.
-
-Neither have SmartMedia Cards nor bare NAND chips. WP is a pin on the
-interface which is controlled by the adapter hardware.
-
-> Even if there were readonly ROM xD cards (the odds of this are virtually
-> zero), these won't just expose this in WP bit.
-
-Hmm, I wonder whether that horror has the WP bit inverted.
-
-Thanks,
-
-	tglx
+Currently nothing, so we'll need a variant for configurations where the 
+size of nodemask_t is larger than we can atomically store.
