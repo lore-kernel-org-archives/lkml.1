@@ -1,49 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292Ab0BVQG1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 11:06:27 -0500
-Received: from alternativer.internetendpunkt.de ([88.198.24.89]:56443 "EHLO
-	geheimer.internetendpunkt.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754259Ab0BVQG0 (ORCPT
+	id S1754342Ab0BVQLe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 11:11:34 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56494 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756Ab0BVQLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 11:06:26 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+	Mon, 22 Feb 2010 11:11:32 -0500
+Message-ID: <4B82AC97.6000901@cs.helsinki.fi>
+Date: Mon, 22 Feb 2010 18:11:03 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Date: Mon, 22 Feb 2010 17:06:25 +0100
-From: Hagen Paul Pfeifer <hagen@jauu.net>
-Cc: Lars Eggert <lars.eggert@nokia.com>, David Miller <davem@davemloft.net>,
-       <zimmermann@nets.rwth-aachen.de>, <pavel@ucw.cz>, <apetlund@simula.no>,
-       <netdev@vger.kernel.org>, <ilpo.jarvinen@helsinki.fi>,
-       <eric.dumazet@gmail.com>, <Arnd.Hannemann@nets.rwth-aachen.de>,
-       <linux-kernel@vger.kernel.org>, <shemminger@vyatta.com>,
-       <william.allen.simpson@gmail.com>, <damian@tvk.rwth-aachen.de>,
-       <ebiederm@xmission.com>
-In-Reply-To: <87k4u5mh9u.fsf@basil.nowhere.org>
-References: <20100221102102.GB1311@ucw.cz> <D40945A6-301D-485D-BB8C-826D2EB68DA4@nets.rwth-aachen.de> <2EC47E8B-BC4C-4DAB-86ED-F702D67F8AD0@nokia.com> <20100221.150311.193707249.davem@davemloft.net> <FB5F656F-091A-4FB5-9586-15C6CB263D05@nokia.com> <87k4u5mh9u.fsf@basil.nowhere.org>
-Message-ID: <228e2e29ccd24144a77d42cfc5bc72fa@localhost>
-User-Agent: RoundCube Webmail/0.1-rc1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       rientjes@google.com
+Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
+References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <4B826227.9010101@cs.helsinki.fi> <20100222143111.GA15778@basil.fritz.box>
+In-Reply-To: <20100222143111.GA15778@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 22 Feb 2010 16:17:33 +0100, Andi Kleen <andi@firstfloor.org> wrote:
-> Lars Eggert <lars.eggert@nokia.com> writes:
+Andi Kleen wrote:
+> On Mon, Feb 22, 2010 at 12:53:27PM +0200, Pekka Enberg wrote:
+>> Andi Kleen kirjoitti:
+>>> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
+>>>> On Mon, 15 Feb 2010, Nick Piggin wrote:
+>>>>
+>>>>> I'm just worried there is still an underlying problem here.
+>>>> So am I. What caused the breakage that requires this patchset?
+>>> Memory hotadd with a new node being onlined.
+>> So can you post the oops, please? Right now I am looking at zapping the 
 > 
->> If it's off by default there is no issue.
+> I can't post the oops from a pre-release system.
 > 
-> Still a sufficient large number of people might turn it on
-> and then the network would melt.
+>> series from slab.git due to NAKs from both Christoph and Nick.
+> 
+> Huh? They just complained about the patch, not the whole series.
+> I don't understand how that could prompt you to drop the whole series.
 
-Then we should apply the same policy as used for the congestion control
-algorithms!? Restrict the usage to change the standard behavior via Kconfig
-(e.g. menuconfig TCP_CONG_ADVANCED) or even more restricted demand for
-CAP_NET_ADMIN.
-
-Hagen
-
-
-
+Yeah, I meant the non-ACK'd patches. Sorry for the confusion.
