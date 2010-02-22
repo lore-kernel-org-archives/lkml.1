@@ -1,100 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311Ab0BVSMj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:12:39 -0500
-Received: from trinity.develer.com ([83.149.158.210]:37612 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754075Ab0BVSMg (ORCPT
+	id S1754105Ab0BVSNL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:13:11 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:27366 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753901Ab0BVSKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:12:36 -0500
-Date: Mon, 22 Feb 2010 19:12:27 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-ID: <20100222181226.GC4052@linux>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
- <20100222142744.GB13823@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222142744.GB13823@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 22 Feb 2010 13:10:39 -0500
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 05/11] drivers: net: use new hex_to_bin() method
+Date: Mon, 22 Feb 2010 20:09:04 +0200
+Message-Id: <d8efe17f827514a0c470191dccaf00afd09c2854.1266861291.git.ext-andriy.shevchenko@nokia.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <939cb3c63fbf6639b5d301ddc79c64d5642a6b81.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <d8c224af14aa936dcd692c70656559fe9726d997.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <5627f8a3ddb2d746e58409d1d59338a99b77291a.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <c515333a5ade859310436de33402a057080ec429.1266861291.git.ext-andriy.shevchenko@nokia.com>
+ <939cb3c63fbf6639b5d301ddc79c64d5642a6b81.1266861291.git.ext-andriy.shevchenko@nokia.com>
+In-Reply-To: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+References: <cover.1266861291.git.ext-andriy.shevchenko@nokia.com>
+X-OriginalArrivalTime: 22 Feb 2010 18:10:30.0120 (UTC) FILETIME=[514CFE80:01CAB3EA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 09:27:45AM -0500, Vivek Goyal wrote:
-> On Sun, Feb 21, 2010 at 04:18:43PM +0100, Andrea Righi wrote:
-> > Control the maximum amount of dirty pages a cgroup can have at any given time.
-> > 
-> > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> > page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> > will not be able to consume more than their designated share of dirty pages and
-> > will be forced to perform write-out if they cross that limit.
-> > 
-> > The overall design is the following:
-> > 
-> >  - account dirty pages per cgroup
-> >  - limit the number of dirty pages via memory.dirty_bytes in cgroupfs
-> >  - start to write-out in balance_dirty_pages() when the cgroup or global limit
-> >    is exceeded
-> > 
-> > This feature is supposed to be strictly connected to any underlying IO
-> > controller implementation, so we can stop increasing dirty pages in VM layer
-> > and enforce a write-out before any cgroup will consume the global amount of
-> > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
-> > 
-> 
-> Thanks Andrea. I had been thinking about looking into it from IO
-> controller perspective so that we can control async IO (buffered writes
-> also).
-> 
-> Before I dive into patches, two quick things.
-> 
-> - IIRC, last time you had implemented per memory cgroup "dirty_ratio" and
->   not "dirty_bytes". Why this change? To begin with either per memcg
->   configurable dirty ratio also makes sense? By default it can be the
->   global dirty ratio for each cgroup.
+From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
 
-I would't like to add many different interfaces to do the same thing.
-I'd prefer to choose just one interface and always use it. We just have
-to define which is the best one. IMHO dirty_bytes is more generic. If
-we want to define the limit as a % we can always do that in userspace.
+Instead of using own implementation involve hex_to_bin() function. It requires
+to have hex_to_bin() introduced by starter patch in series.
 
-> 
-> - Looks like we will start writeout from memory cgroup once we cross the
->   dirty ratio, but still there is no gurantee that we be writting pages
->   belonging to cgroup which crossed the dirty ratio and triggered the
->   writeout.
-> 
->   This behavior is not very good at least from IO controller perspective
->   where if two dd threads are dirtying memory in two cgroups, then if
->   one crosses it dirty ratio, it should perform writeouts of its own pages
->   and not other cgroups pages. Otherwise we probably will again introduce
->   serialization among two writers and will not see service differentation.
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/net/sb1250-mac.c |   32 ++------------------------------
+ 1 files changed, 2 insertions(+), 30 deletions(-)
 
-Right, but I'd prefer to start with a simple solution. Handling this
-per-page is too costly and not good for entire I/O for now. We can
-always improve service differentiation and fairness in a second
-step, I think.
+diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
+index 564d4d7..87c57cb 100644
+--- a/drivers/net/sb1250-mac.c
++++ b/drivers/net/sb1250-mac.c
+@@ -2184,34 +2184,6 @@ static void sbmac_setmulti(struct sbmac_softc *sc)
+ 
+ #if defined(SBMAC_ETH0_HWADDR) || defined(SBMAC_ETH1_HWADDR) || defined(SBMAC_ETH2_HWADDR) || defined(SBMAC_ETH3_HWADDR)
+ /**********************************************************************
+- *  SBMAC_PARSE_XDIGIT(str)
+- *
+- *  Parse a hex digit, returning its value
+- *
+- *  Input parameters:
+- *  	   str - character
+- *
+- *  Return value:
+- *  	   hex value, or -1 if invalid
+- ********************************************************************* */
+-
+-static int sbmac_parse_xdigit(char str)
+-{
+-	int digit;
+-
+-	if ((str >= '0') && (str <= '9'))
+-		digit = str - '0';
+-	else if ((str >= 'a') && (str <= 'f'))
+-		digit = str - 'a' + 10;
+-	else if ((str >= 'A') && (str <= 'F'))
+-		digit = str - 'A' + 10;
+-	else
+-		return -1;
+-
+-	return digit;
+-}
+-
+-/**********************************************************************
+  *  SBMAC_PARSE_HWADDR(str,hwaddr)
+  *
+  *  Convert a string in the form xx:xx:xx:xx:xx:xx into a 6-byte
+@@ -2231,7 +2203,7 @@ static int sbmac_parse_hwaddr(char *str, unsigned char *hwaddr)
+ 	int idx = 6;
+ 
+ 	while (*str && (idx > 0)) {
+-		digit1 = sbmac_parse_xdigit(*str);
++		digit1 = hex_to_bin(*str);
+ 		if (digit1 < 0)
+ 			return -1;
+ 		str++;
+@@ -2243,7 +2215,7 @@ static int sbmac_parse_hwaddr(char *str, unsigned char *hwaddr)
+ 			digit1 = 0;
+ 		}
+ 		else {
+-			digit2 = sbmac_parse_xdigit(*str);
++			digit2 = hex_to_bin(*str);
+ 			if (digit2 < 0)
+ 				return -1;
+ 			str++;
+-- 
+1.5.6.5
 
-> 
->   May be we can modify writeback_inodes_wbc() to check first dirty page
->   of the inode. And if it does not belong to same memcg as the task who
->   is performing balance_dirty_pages(), then skip that inode.
-> 
->   This does not handle the problem of shared files where processes from
->   two different cgroups are dirtying same file but it will atleast cover
->   other cases without introducing too much of complexity?
-
-Yes, if we want to take care ot that, at least we could start with a
-per-inode solution. It will probably introduce less overhead and will
-work the the most part of the cases (except the case when multiple
-cgroups write to the same file/inode).
-
--Andrea
