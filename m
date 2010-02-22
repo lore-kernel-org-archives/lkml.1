@@ -1,58 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946Ab0BVMM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 07:12:27 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33304 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752641Ab0BVMM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 07:12:26 -0500
-Date: Mon, 22 Feb 2010 23:12:22 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Miao Xie <miaox@cn.fujitsu.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time
- (58568d2)
-Message-ID: <20100222121222.GV9738@laptop>
-References: <20100218134921.GF9738@laptop>
- <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com>
- <20100219033126.GI9738@laptop>
- <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com>
+	id S1752426Ab0BVMXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 07:23:36 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:58595 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102Ab0BVMXe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 07:23:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SRT50cxrsdkpCBLMgas8DvwGqxHbSOFosaMKAe3wvXXPDc+U4FRu4RE62O1NsIrA+z
+         H7x0mCDcFnPVI72Ls3t50lUsMyAX1Q2RzFtCuT3x6v9TM47poYVQhPQ2RBOzrGgGPEU4
+         Z2ZuXa2UXGC3YiVcbk2RabyoFytYGL0N3W940=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LFD.2.00.1002221228130.2811@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+	 <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain>
+	 <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain>
+	 <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain>
+	 <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>
+	 <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>
+	 <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>
+	 <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com>
+	 <alpine.LFD.2.00.1002221228130.2811@localhost.localdomain>
+Date: Mon, 22 Feb 2010 13:23:33 +0100
+X-Google-Sender-Auth: c8727fa3bae4b27e
+Message-ID: <520f0cf11002220423u64daf89dxa6a4249522adabee@mail.gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+From: John Kacur <jkacur@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 19, 2010 at 02:06:45AM -0800, David Rientjes wrote:
-> On Fri, 19 Feb 2010, Nick Piggin wrote:
-> > But it doesn't matter if stores are done under lock, if the loads are
-> > not. masks can be multiple words, so there isn't any ordering between
-> > reading half and old mask and half a new one that results in an invalid
-> > state. AFAIKS.
-> > 
-> 
-> It doesn't matter for MAX_NUMNODES > BITS_PER_LONG because 
-> task->mems_alllowed only gets updated via cpuset_change_task_nodemask() 
-> where the added nodes are set and then the removed nodes are cleared.  The 
-> side effect of this lockless access to task->mems_allowed means we may 
-> have a small race between
-> 
-> 	nodes_or(tsk->mems_allowed, tsk->mems_allowed, *newmems);
-> 
-> 		and
-> 
-> 	tsk->mems_allowed = *newmems;
-> 
-> but the penalty is that we get an allocation on a removed node, which 
-> isn't a big deal, especially since it was previously allowed.
+On Mon, Feb 22, 2010 at 12:28 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Mon, 22 Feb 2010, John Kacur wrote:
+>> On Mon, Feb 22, 2010 at 12:24 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > We are zooming in, but there is still a way to go!
+>> >
+>>
+>> Woohoo! More -rt fun.
+>>
+>> Unfortunately, I can't log in on my T500 with this kernel though.
+>> The following shows-up on my serial console.
+>> ------------[ cut here ]------------
+>> WARNING: at /home/jkacur/rt.linux.git/net/mac80211/rx.c:2467 ieee80211_rx+0x4c/0
+>> x721 [mac80211]()
+>
+> Fix below. Thanks,
+>
+>    tglx
+> ----
+> diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
+> index 82a30c1..e735c17 100644
+> --- a/net/mac80211/rx.c
+> +++ b/net/mac80211/rx.c
+> @@ -2464,7 +2464,7 @@ void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
+>        struct ieee80211_supported_band *sband;
+>        struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(skb);
+>
+> -       WARN_ON_ONCE(softirq_count() == 0);
+> +       WARN_ON_ONCE_NONRT(softirq_count() == 0);
+>
+>        if (WARN_ON(status->band < 0 ||
+>                    status->band >= IEEE80211_NUM_BANDS))
+> --
 
-If you have a concurrent reader without any synchronisation, then what
-stops it from loading a word of the mask before stores to add the new
-nodes and then loading another word of the mask after the stores to
-remove the old nodes? (which can give an empty mask).
+Thanks Thomas
 
+That patch fixes the symptom I reported, but unfortunately, I still
+can't log-in to my laptop without the machine freezing.
+Not sure why, investigating.
+
+John
