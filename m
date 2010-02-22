@@ -1,59 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414Ab0BVUlC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 15:41:02 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45011 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289Ab0BVUlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 15:41:00 -0500
-Message-ID: <4B82E144.1050007@zytor.com>
-Date: Mon, 22 Feb 2010 11:55:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-CC: Michal Marek <mmarek@suse.cz>, linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH] x86: Add optimized popcnt variants
-References: <20100217172040.GC13429@aftab> <4B7C27D8.9050408@suse.cz> <4B7C29C1.10906@suse.cz> <20100218061923.GA1594@liondog.tnic> <20100219142205.GA32533@aftab> <4B7EB6EF.9010405@zytor.com> <20100219164512.GA492@aftab> <4B7EC20C.30607@zytor.com> <20100222141737.GB21233@aftab> <4B82BD01.3030008@zytor.com> <20100222184945.GD21233@aftab>
-In-Reply-To: <20100222184945.GD21233@aftab>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1754498Ab0BVUmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 15:42:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753769Ab0BVUmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 15:42:43 -0500
+Date: Mon, 22 Feb 2010 15:42:37 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <jblunck@suse.de>
+Subject: [PATCH] VFS: BUG_ON() rehash of an already hashed dentry
+Message-ID: <20100222204237.GG972@shell>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22/2010 10:49 AM, Borislav Petkov wrote:
->>
->> Just a note: this still means rdi is clobbered on x86-64, which is
->> probably fine, but needs to be recorded as such.  Since gcc doesn't
->> support clobbers for registers used as operands (sigh), you have to
->> create a dummy output and assign it a "=D" constraint.
->>
->> I don't know if gcc would handle -fcall-saved-rdi here... and if so, how
->> reliably.
-> 
-> Ok, from looking at kernel/sched.s output it looks like it saves rdi
-> content over the alternative where needed. I'll do some more testing
-> just to make sure.
-> 
+This is a one-line debugging patch which is invaluable when working on
+the dcache.  Can I get a yea or a nay on this so I can drop it if it
+will never go in?  Thanks,
 
-No, you can't rely on behavioral observation.  A different version of
-gcc could behave differently.  We need to make sure we tell gcc what the
-requirements actually are, as opposed to thinking we can just fix them.
+-VAL
 
-+#define POPCNT ".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t.byte
-0xb8\n\t.byte 0xc7"
+From: Jan Blunck <jblunck@suse.de>
+Date: Sun, 17 May 2009 17:29:47 -0700
 
-BTW, this can be written:
+BUG_ON() rehash of an already hashed dentry.  For debugging of
+dcache-related development.
 
-#define POPCNT ".byte 0xf3,0x48,0x0f,0xb8,0xc7"
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+---
+ fs/dcache.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-	-hpa
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 74da947..3d656ab 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1568,6 +1568,7 @@ void d_rehash(struct dentry * entry)
+ {
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&entry->d_lock);
++	BUG_ON(!d_unhashed(entry));
+ 	_d_rehash(entry);
+ 	spin_unlock(&entry->d_lock);
+ 	spin_unlock(&dcache_lock);
+-- 
+1.5.6.5
+
