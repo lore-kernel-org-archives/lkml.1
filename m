@@ -1,232 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516Ab0BVOUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 09:20:21 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:38588 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395Ab0BVOUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 09:20:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=G+PxvLGuXl/JPiMdcMfMfV+LCiPsmN719htW0z3KPp09KDWvym7Z2PMLcxmrtkEyUC
-         S+/EoO5EjyEKTKesfvnTp19okfQfOLY7my4onaVLU3B7Pc1adQVwC2ANYHsmiK2FuUPp
-         h1BGP6G10znyOzb79VkT2yYv+it6B3SXRT6cc=
-Date: Mon, 22 Feb 2010 22:20:08 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Neil Horman <nhorman@tuxdriver.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Markus Metzger <markus.t.metzger@intel.com>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/06] kernel.h tracing stuff cleanup
-Message-ID: <20100222142008.GA9032@darkstar>
+	id S1753555Ab0BVOU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 09:20:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53328 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753395Ab0BVOUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 09:20:22 -0500
+Message-ID: <4B829347.1090106@redhat.com>
+Date: Mon, 22 Feb 2010 09:23:03 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Mike Frysinger <vapier.adi@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "David S . Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
+References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> <1266491616-6270-3-git-send-regression-fweisbec@gmail.com> <8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> <20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> <20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com> <20100218145055.GB855@nowhere> <4B7D68AA.8060105@redhat.com> <20100222012735.GA8791@nowhere>
+In-Reply-To: <20100222012735.GA8791@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-trace stuff in kernel.h should stay in their own head file 
 
-cleanup trace declarations in kernel.h, put them into ring_buffer.h
-include ring_buffer.h in every file which need it
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
- drivers/char/sysrq.c          |    1 
- include/linux/ring_buffer.h   |  137 ++++++++++++++++++++++++++++++++++++++++++
- kernel/panic.c                |    1 
- kernel/trace/trace_selftest.c |    1 
- 4 files changed, 140 insertions(+)
+Frederic Weisbecker wrote:
+> On Thu, Feb 18, 2010 at 11:19:54AM -0500, Masami Hiramatsu wrote:
+>>> For now it is stored is asm/ptrace.h, but that might be split in
+>>> the future, especially as ptrace has initially nothing related to
+>>> that. A documentation that deals with filenames or API enumerations
+>>> tend to be incidentally async with API evolutions.
+>>
+>> yeah, now those APIs depend on pt_regs, so I put it in ptrace.h.
+>>
+>> Thank you,
+> 
+> 
+> Are you guys fine with the following patch or should I bring
+> more details somewhere?
 
---- linux-2.6.orig/include/linux/ring_buffer.h	2010-02-16 17:11:37.000000000 +0800
-+++ linux-2.6/include/linux/ring_buffer.h	2010-02-16 17:41:33.000000000 +0800
-@@ -1,6 +1,7 @@
- #ifndef _LINUX_RING_BUFFER_H
- #define _LINUX_RING_BUFFER_H
- 
-+#include <stdarg.h>
- #include <linux/kmemcheck.h>
- #include <linux/mm.h>
- #include <linux/seq_file.h>
-@@ -189,4 +190,140 @@ enum ring_buffer_flags {
- 	RB_FL_OVERWRITE		= 1 << 0,
- };
- 
-+/*
-+ * General tracing related utility functions - trace_printk(),
-+ * tracing_on/tracing_off and tracing_start()/tracing_stop
-+ *
-+ * Use tracing_on/tracing_off when you want to quickly turn on or off
-+ * tracing. It simply enables or disables the recording of the trace events.
-+ * This also corresponds to the user space /sys/kernel/debug/tracing/tracing_on
-+ * file, which gives a means for the kernel and userspace to interact.
-+ * Place a tracing_off() in the kernel where you want tracing to end.
-+ * From user space, examine the trace, and then echo 1 > tracing_on
-+ * to continue tracing.
-+ *
-+ * tracing_stop/tracing_start has slightly more overhead. It is used
-+ * by things like suspend to ram where disabling the recording of the
-+ * trace is not enough, but tracing must actually stop because things
-+ * like calling smp_processor_id() may crash the system.
-+ *
-+ * Most likely, you want to use tracing_on/tracing_off.
-+ */
-+#ifdef CONFIG_RING_BUFFER
-+void tracing_on(void);
-+void tracing_off(void);
-+/* trace_off_permanent stops recording with no way to bring it back */
-+void tracing_off_permanent(void);
-+int tracing_is_on(void);
-+#else
-+static inline void tracing_on(void) { }
-+static inline void tracing_off(void) { }
-+static inline void tracing_off_permanent(void) { }
-+static inline int tracing_is_on(void) { return 0; }
-+#endif
-+#ifdef CONFIG_TRACING
-+extern void tracing_start(void);
-+extern void tracing_stop(void);
-+extern void ftrace_off_permanent(void);
-+
-+extern void
-+ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
-+
-+static inline void __attribute__ ((format (printf, 1, 2)))
-+____trace_printk_check_format(const char *fmt, ...)
-+{
-+}
-+#define __trace_printk_check_format(fmt, args...)			\
-+do {									\
-+	if (0)								\
-+		____trace_printk_check_format(fmt, ##args);		\
-+} while (0)
-+
-+/**
-+ * trace_printk - printf formatting in the ftrace buffer
-+ * @fmt: the printf format for printing
-+ *
-+ * Note: __trace_printk is an internal function for trace_printk and
-+ *       the @ip is passed in via the trace_printk macro.
-+ *
-+ * This function allows a kernel developer to debug fast path sections
-+ * that printk is not appropriate for. By scattering in various
-+ * printk like tracing in the code, a developer can quickly see
-+ * where problems are occurring.
-+ *
-+ * This is intended as a debugging tool for the developer only.
-+ * Please refrain from leaving trace_printks scattered around in
-+ * your code.
-+ */
-+
-+#define trace_printk(fmt, args...)					\
-+do {									\
-+	__trace_printk_check_format(fmt, ##args);			\
-+	if (__builtin_constant_p(fmt)) {				\
-+		static const char *trace_printk_fmt			\
-+		  __attribute__((section("__trace_printk_fmt"))) =	\
-+			__builtin_constant_p(fmt) ? fmt : NULL;		\
-+									\
-+		__trace_bprintk(_THIS_IP_, trace_printk_fmt, ##args);	\
-+	} else								\
-+		__trace_printk(_THIS_IP_, fmt, ##args);		\
-+} while (0)
-+
-+extern int
-+__trace_bprintk(unsigned long ip, const char *fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
-+
-+extern int
-+__trace_printk(unsigned long ip, const char *fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
-+
-+extern void trace_dump_stack(void);
-+
-+/*
-+ * The double __builtin_constant_p is because gcc will give us an error
-+ * if we try to allocate the static variable to fmt if it is not a
-+ * constant. Even with the outer if statement.
-+ */
-+#define ftrace_vprintk(fmt, vargs)					\
-+do {									\
-+	if (__builtin_constant_p(fmt)) {				\
-+		static const char *trace_printk_fmt			\
-+		  __attribute__((section("__trace_printk_fmt"))) =	\
-+			__builtin_constant_p(fmt) ? fmt : NULL;		\
-+									\
-+		__ftrace_vbprintk(_THIS_IP_, trace_printk_fmt, vargs);	\
-+	} else								\
-+		__ftrace_vprintk(_THIS_IP_, fmt, vargs);		\
-+} while (0)
-+
-+extern int
-+__ftrace_vbprintk(unsigned long ip, const char *fmt, va_list ap);
-+
-+extern int
-+__ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
-+
-+extern void ftrace_dump(void);
-+#else
-+static inline void
-+ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
-+static inline int
-+trace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-+
-+static inline void tracing_start(void) { }
-+static inline void tracing_stop(void) { }
-+static inline void ftrace_off_permanent(void) { }
-+static inline void trace_dump_stack(void) { }
-+static inline int
-+trace_printk(const char *fmt, ...)
-+{
-+	return 0;
-+}
-+static inline int
-+ftrace_vprintk(const char *fmt, va_list ap)
-+{
-+	return 0;
-+}
-+static inline void ftrace_dump(void) { }
-+#endif /* CONFIG_TRACING */
-+
- #endif /* _LINUX_RING_BUFFER_H */
---- linux-2.6.orig/kernel/panic.c	2010-02-16 17:11:37.000000000 +0800
-+++ linux-2.6/kernel/panic.c	2010-02-16 17:41:33.000000000 +0800
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/nmi.h>
- #include <linux/dmi.h>
-+#include <linux/ring_buffer.h>
- 
- int panic_on_oops;
- static unsigned long tainted_mask;
---- linux-2.6.orig/kernel/trace/trace_selftest.c	2010-02-16 17:11:37.000000000 +0800
-+++ linux-2.6/kernel/trace/trace_selftest.c	2010-02-16 17:41:33.000000000 +0800
-@@ -1,5 +1,6 @@
- /* Include in trace.c */
- 
-+#include <linux/ring_buffer.h>
- #include <linux/stringify.h>
- #include <linux/kthread.h>
- #include <linux/delay.h>
---- linux-2.6.orig/drivers/char/sysrq.c	2010-02-16 17:11:37.000000000 +0800
-+++ linux-2.6/drivers/char/sysrq.c	2010-02-16 17:41:33.000000000 +0800
-@@ -38,6 +38,7 @@
- #include <linux/workqueue.h>
- #include <linux/hrtimer.h>
- #include <linux/oom.h>
-+#include <linux/ring_buffer.h>
- 
- #include <asm/ptrace.h>
- #include <asm/irq_regs.h>
+I'm fine with it :-)
+
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+
+> 
+> Thanks.
+> 
+> ---
+> commit d3643132cfeac24ee20d2b6cd8cb06d73e6a6da9
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Thu Feb 18 14:25:21 2010 +0100
+> 
+>     tracing/kprobes: Add short documentation for HAVE_REGS_AND_STACK_ACCESS_API
+>     
+>     So that arch developers know how to implement it without the
+>     need to dig into changelogs.
+>     
+>     Reported-by: Mike Frysinger <vapier.adi@gmail.com>
+>     Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+>     Cc: Masami Hiramatsu <mhiramat@redhat.com>
+>     Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>     Cc: "David S . Miller" <davem@davemloft.net>
+>     Cc: Paul Mundt <lethal@linux-sh.org>
+>     Cc: Steven Rostedt <rostedt@goodmis.org>
+>     LKML-Reference: <20100218132521.GB2406@osiris.boeblingen.de.ibm.com>
+>     [added reference to ptrace.h in the config help]
+>     Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> diff --git a/arch/Kconfig b/arch/Kconfig
+> index 04e3aa7..50877ef 100644
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -123,6 +123,11 @@ config USE_GENERIC_SMP_HELPERS
+>  
+>  config HAVE_REGS_AND_STACK_ACCESS_API
+>  	bool
+> +	help
+> +	  This symbol should be selected by an architecure if it supports
+> +	  the API needed to access registers and stack entries from pt_regs,
+> +	  declared in asm/ptrace.h
+> +	  For example the kprobes-based event tracer needs this API.
+>  
+>  config HAVE_CLK
+>  	bool
+> 
+> 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
