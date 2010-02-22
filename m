@@ -1,30 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488Ab0BVOTh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 09:19:37 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:42598 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753401Ab0BVOTe (ORCPT
+	id S1753514Ab0BVOTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 09:19:47 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:40671 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408Ab0BVOTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 09:19:34 -0500
+	Mon, 22 Feb 2010 09:19:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=nZUBd0ZF7K/edo1gcmh1LNGzATcxbVywJvMIKqKzTYSILaQcT156cfDIfW818QzcGe
-         PfU+8UVZLPcCACvuzeBkqOxhTXVU6+S8cObr8Xc2yx8N859Zr0iRgpwgUKo3DmqgVqkA
-         mYgpFK1TtI7Yg64p5JayIppIMWrP6Hk7QzJmk=
-Date: Mon, 22 Feb 2010 22:19:18 +0800
+        b=IwUQRupL9wiqbcPN0dgmRl7DXU9gOfsee+QBiy2+EyeVVWUqYKFCJzskgi2HpZD4y/
+         NgCJpKD5QBe9Z3BugWY0uaxPEJfB1XCQUxwxy97hMpdgDgLpb/Nzl2FeghIlvfEqmBNz
+         lfS/mO0KUiYCbWqtQcGSyTpMachYDSMdwZbzw=
+Date: Mon, 22 Feb 2010 22:19:34 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       andre.goddard@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/06] kernel.h printk/panic/string cleanup
-Message-ID: <20100222141918.GA9029@darkstar>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 03/06] kernel.h hexdump cleanup
+Message-ID: <20100222141934.GA9030@darkstar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,803 +28,954 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup kernel.h extern declarations, move printk/panic/string stuff to their
-own head files. But due to lots of files need them, include them in kernel.h
-for convinience. At least it can be thought as the first step to do the full
-cleanup.
+hexdump stuff in kernel.h should be put into a standalone head file
+
+cleanup hexdump declarations in kernel.h, put them into hexdump.h
+include hexdump.h in every file which need it
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
- include/linux/kernel.h |  438 -------------------------------------------------
- include/linux/panic.h  |   35 +++
- include/linux/printk.h |  220 ++++++++++++++++++++++++
- include/linux/string.h |   30 +++
- 4 files changed, 288 insertions(+), 435 deletions(-)
+ arch/blackfin/kernel/shadow_console.c       |    1 
+ arch/cris/arch-v32/kernel/kgdb.c            |    1 
+ arch/frv/kernel/gdb-stub.c                  |    1 
+ arch/mn10300/kernel/gdb-stub.c              |    1 
+ arch/powerpc/kernel/btext.c                 |    1 
+ arch/x86/kernel/mpparse.c                   |    1 
+ crypto/ansi_cprng.c                         |    1 
+ crypto/testmgr.c                            |    1 
+ drivers/bluetooth/btmrvl_main.c             |    1 
+ drivers/char/pcmcia/ipwireless/hardware.c   |    1 
+ drivers/gpu/drm/drm_edid.c                  |    1 
+ drivers/isdn/gigaset/capi.c                 |    1 
+ drivers/isdn/gigaset/isocdata.c             |    1 
+ drivers/isdn/hardware/mISDN/avmfritz.c      |    1 
+ drivers/isdn/hardware/mISDN/mISDNipac.c     |    1 
+ drivers/isdn/hardware/mISDN/mISDNisar.c     |    1 
+ drivers/isdn/hardware/mISDN/netjet.c        |    1 
+ drivers/isdn/hardware/mISDN/w6692.c         |    1 
+ drivers/media/dvb/firewire/firedtv-avc.c    |    1 
+ drivers/media/video/hdpvr/hdpvr-control.c   |    1 
+ drivers/media/video/hdpvr/hdpvr-core.c      |    1 
+ drivers/mfd/pcf50633-core.c                 |    1 
+ drivers/misc/iwmc3200top/log.h              |    2 -
+ drivers/misc/kgdbts.c                       |    1 
+ drivers/mtd/tests/mtd_nandecctest.c         |    1 
+ drivers/mtd/ubi/debug.c                     |    1 
+ drivers/mtd/ubi/io.c                        |    1 
+ drivers/net/a2065.c                         |    1 
+ drivers/net/arcnet/arcnet.c                 |    1 
+ drivers/net/e1000/e1000_main.c              |    1 
+ drivers/net/enc28j60.c                      |    1 
+ drivers/net/sfc/selftest.c                  |    1 
+ drivers/net/skfp/smt.c                      |    1 
+ drivers/net/usb/hso.c                       |    1 
+ drivers/net/wimax/i2400m/rx.c               |    1 
+ drivers/net/wireless/at76c50x-usb.c         |    1 
+ drivers/net/wireless/ath/ar9170/main.c      |    1 
+ drivers/net/wireless/ath/ar9170/usb.c       |    1 
+ drivers/net/wireless/ath/ath5k/debug.c      |    1 
+ drivers/net/wireless/ath/ath9k/common.c     |    1 
+ drivers/net/wireless/b43/main.c             |    1 
+ drivers/net/wireless/iwlwifi/iwl-3945.c     |    1 
+ drivers/net/wireless/iwlwifi/iwl-agn.c      |    1 
+ drivers/net/wireless/iwlwifi/iwl-debug.h    |    1 
+ drivers/net/wireless/iwlwifi/iwl-debugfs.c  |    1 
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    1 
+ drivers/net/wireless/iwmc3200wifi/debug.h   |    1 
+ drivers/net/wireless/p54/eeprom.c           |    1 
+ drivers/net/wireless/ray_cs.c               |    1 
+ drivers/net/wireless/wl12xx/wl1251.h        |    1 
+ drivers/pnp/support.c                       |    1 
+ drivers/s390/cio/device_fsm.c               |    1 
+ drivers/s390/net/qeth_core_main.c           |    1 
+ drivers/scsi/osd/osd_initiator.c            |    1 
+ drivers/spi/spi_stmp.c                      |    1 
+ drivers/staging/hv/ChannelMgmt.c            |    1 
+ drivers/staging/wavelan/wavelan_cs.c        |    1 
+ drivers/usb/c67x00/c67x00-sched.c           |    1 
+ drivers/usb/gadget/storage_common.c         |    1 
+ drivers/usb/wusbcore/crypto.c               |    1 
+ fs/ext3/super.c                             |    1 
+ fs/ext4/super.c                             |    1 
+ fs/jffs2/wbuf.c                             |    1 
+ fs/jfs/jfs_imap.c                           |    1 
+ fs/jfs/jfs_logmgr.c                         |    1 
+ fs/jfs/jfs_metapage.c                       |    1 
+ fs/jfs/jfs_txnmgr.c                         |    1 
+ fs/jfs/xattr.c                              |    1 
+ fs/ubifs/debug.c                            |    1 
+ fs/ubifs/scan.c                             |    1 
+ fs/xfs/support/debug.c                      |    1 
+ include/linux/hexdump.h                     |   30 ++++++++++++++++++++++++++++
+ include/linux/ide.h                         |    1 
+ include/linux/wimax/debug.h                 |    1 
+ kernel/kgdb.c                               |    1 
+ kernel/trace/trace_output.c                 |    1 
+ lib/hexdump.c                               |    1 
+ lib/vsprintf.c                              |    1 
+ mm/debug-pagealloc.c                        |    1 
+ mm/kmemleak.c                               |    1 
+ net/ieee802154/af_ieee802154.c              |    1 
+ net/ipv4/arp.c                              |    1 
+ net/ipv4/netfilter/ipt_CLUSTERIP.c          |    1 
+ sound/pci/oxygen/xonar_hdmi.c               |    1 
+ 84 files changed, 113 insertions(+), 1 deletion(-)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/include/linux/printk.h	2010-02-16 17:25:39.000000000 +0800
-@@ -0,0 +1,220 @@
-+#ifndef _PRINTK_H
-+#define _PRINTK_H
++++ linux-2.6/include/linux/hexdump.h	2010-02-16 17:33:16.000000000 +0800
+@@ -0,0 +1,30 @@
++#ifndef _HEXDUMP_H
++#define _HEXDUMP_H
 +
-+#include <stdarg.h>
-+#include <linux/linkage.h>
 +#include <linux/types.h>
-+#include <linux/dynamic_debug.h>
-+#define	KERN_EMERG	"<0>"	/* system is unusable			*/
-+#define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
-+#define	KERN_CRIT	"<2>"	/* critical conditions			*/
-+#define	KERN_ERR	"<3>"	/* error conditions			*/
-+#define	KERN_WARNING	"<4>"	/* warning conditions			*/
-+#define	KERN_NOTICE	"<5>"	/* normal but significant condition	*/
-+#define	KERN_INFO	"<6>"	/* informational			*/
-+#define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
++enum {
++	DUMP_PREFIX_NONE,
++	DUMP_PREFIX_ADDRESS,
++	DUMP_PREFIX_OFFSET
++};
++extern void hex_dump_to_buffer(const void *buf, size_t len,
++				int rowsize, int groupsize,
++				char *linebuf, size_t linebuflen, bool ascii);
++extern void print_hex_dump(const char *level, const char *prefix_str,
++				int prefix_type, int rowsize, int groupsize,
++				const void *buf, size_t len, bool ascii);
++extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
++			const void *buf, size_t len);
 +
-+/* Use the default kernel loglevel */
-+#define KERN_DEFAULT	"<d>"
-+/*
-+ * Annotation for a "continued" line of log printout (only done after a
-+ * line that had no enclosing \n). Only to be used by core/arch code
-+ * during early bootup (a continued line is not SMP-safe otherwise).
-+ */
-+#define	KERN_CONT	"<c>"
++extern const char hex_asc[];
++#define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
++#define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]
 +
-+/*
-+ * FW_BUG
-+ * Add this to a message where you are sure the firmware is buggy or behaves
-+ * really stupid or out of spec. Be aware that the responsible BIOS developer
-+ * should be able to fix this issue or at least get a concrete idea of the
-+ * problem by reading your message without the need of looking at the kernel
-+ * code.
-+ *
-+ * Use it for definite and high priority BIOS bugs.
-+ *
-+ * FW_WARN
-+ * Use it for not that clear (e.g. could the kernel messed up things already?)
-+ * and medium priority BIOS bugs.
-+ *
-+ * FW_INFO
-+ * Use this one if you want to tell the user or vendor about something
-+ * suspicious, but generally harmless related to the firmware.
-+ *
-+ * Use it for information or very low priority BIOS bugs.
-+ */
-+#define FW_BUG		"[Firmware Bug]: "
-+#define FW_WARN		"[Firmware Warn]: "
-+#define FW_INFO		"[Firmware Info]: "
-+
-+extern int console_printk[];
-+
-+#define console_loglevel (console_printk[0])
-+#define default_message_loglevel (console_printk[1])
-+#define minimum_console_loglevel (console_printk[2])
-+#define default_console_loglevel (console_printk[3])
-+
-+#ifdef CONFIG_PRINTK
-+asmlinkage int vprintk(const char *fmt, va_list args)
-+	__attribute__ ((format (printf, 1, 0)));
-+asmlinkage int printk(const char * fmt, ...)
-+	__attribute__ ((format (printf, 1, 2))) __cold;
-+
-+extern int __printk_ratelimit(const char *func);
-+#define printk_ratelimit() __printk_ratelimit(__func__)
-+extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-+				   unsigned int interval_msec);
-+
-+extern int printk_delay_msec;
-+
-+/*
-+ * Print a one-time message (analogous to WARN_ONCE() et al):
-+ */
-+#define printk_once(x...) ({			\
-+	static bool __print_once;		\
-+						\
-+	if (!__print_once) {			\
-+		__print_once = true;		\
-+		printk(x);			\
-+	}					\
-+})
-+
-+void log_buf_kexec_setup(void);
-+#else
-+static inline int vprintk(const char *s, va_list args)
-+	__attribute__ ((format (printf, 1, 0)));
-+static inline int vprintk(const char *s, va_list args) { return 0; }
-+static inline int printk(const char *s, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-+static inline int __cold printk(const char *s, ...) { return 0; }
-+static inline int printk_ratelimit(void) { return 0; }
-+static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
-+					  unsigned int interval_msec)	\
-+		{ return false; }
-+
-+/* No effect, but we still get type checking even in the !PRINTK case: */
-+#define printk_once(x...) printk(x)
-+
-+static inline void log_buf_kexec_setup(void)
++static inline char *pack_hex_byte(char *buf, u8 byte)
 +{
-+}
-+#endif
-+
-+extern int printk_needs_cpu(int cpu);
-+extern void printk_tick(void);
-+
-+extern void asmlinkage __attribute__((format(printf, 1, 2)))
-+	early_printk(const char *fmt, ...);
-+
-+static inline void console_silent(void)
-+{
-+	console_loglevel = 0;
++	*buf++ = hex_asc_hi(byte);
++	*buf++ = hex_asc_lo(byte);
++	return buf;
 +}
 +
-+static inline void console_verbose(void)
-+{
-+	if (console_loglevel)
-+		console_loglevel = 15;
-+}
-+
-+#ifndef pr_fmt
-+#define pr_fmt(fmt) fmt
 +#endif
-+
-+#define pr_emerg(fmt, ...) \
-+        printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_alert(fmt, ...) \
-+        printk(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_crit(fmt, ...) \
-+        printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_err(fmt, ...) \
-+        printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_warning(fmt, ...) \
-+        printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_notice(fmt, ...) \
-+        printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_info(fmt, ...) \
-+        printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_cont(fmt, ...) \
-+	printk(KERN_CONT fmt, ##__VA_ARGS__)
-+
-+/* pr_devel() should produce zero code unless DEBUG is defined */
-+#ifdef DEBUG
-+#define pr_devel(fmt, ...) \
-+	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#else
-+#define pr_devel(fmt, ...) \
-+	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
-+/* If you are writing a driver, please use dev_dbg instead */
-+#if defined(DEBUG)
-+#define pr_debug(fmt, ...) \
-+	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#elif defined(CONFIG_DYNAMIC_DEBUG)
-+/* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here */
-+#define pr_debug(fmt, ...) \
-+	dynamic_pr_debug(fmt, ##__VA_ARGS__)
-+#else
-+#define pr_debug(fmt, ...) \
-+	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
-+/*
-+ * ratelimited messages with local ratelimit_state,
-+ * no local ratelimit_state used in the !PRINTK case
-+ */
-+#ifdef CONFIG_PRINTK
-+#define printk_ratelimited(fmt, ...)  ({		\
-+	static struct ratelimit_state _rs = {		\
-+		.interval = DEFAULT_RATELIMIT_INTERVAL, \
-+		.burst = DEFAULT_RATELIMIT_BURST,       \
-+	};                                              \
-+							\
-+	if (!__ratelimit(&_rs))                         \
-+		printk(fmt, ##__VA_ARGS__);		\
-+})
-+#else
-+/* No effect, but we still get type checking even in the !PRINTK case: */
-+#define printk_ratelimited printk
-+#endif
-+
-+#define pr_emerg_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_alert_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_crit_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_err_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_warning_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_notice_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_info_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-+/* no pr_cont_ratelimited, don't do that... */
-+/* If you are writing a driver, please use dev_dbg instead */
-+#if defined(DEBUG)
-+#define pr_debug_ratelimited(fmt, ...) \
-+	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#else
-+#define pr_debug_ratelimited(fmt, ...) \
-+	({ if (0) printk_ratelimited(KERN_DEBUG pr_fmt(fmt), \
-+				     ##__VA_ARGS__); 0; })
-+#endif
-+
-+extern void wake_up_klogd(void);
-+
-+/*
-+ *      Display an IP address in readable format.
-+ */
-+
-+#define NIPQUAD(addr) \
-+	((unsigned char *)&addr)[0], \
-+	((unsigned char *)&addr)[1], \
-+	((unsigned char *)&addr)[2], \
-+	((unsigned char *)&addr)[3]
-+#define NIPQUAD_FMT "%u.%u.%u.%u"
-+
-+#endif
---- linux-2.6.orig/include/linux/kernel.h	2010-02-16 17:11:38.000000000 +0800
-+++ linux-2.6/include/linux/kernel.h	2010-02-16 17:25:39.000000000 +0800
-@@ -7,15 +7,15 @@
- 
- #ifdef __KERNEL__
- 
--#include <stdarg.h>
--#include <linux/linkage.h>
- #include <linux/stddef.h>
- #include <linux/types.h>
- #include <linux/compiler.h>
- #include <linux/bitops.h>
- #include <linux/log2.h>
- #include <linux/typecheck.h>
--#include <linux/dynamic_debug.h>
-+#include <linux/printk.h>
-+#include <linux/string.h>
-+#include <linux/panic.h>
- #include <asm/byteorder.h>
- #include <asm/bug.h>
- 
-@@ -87,31 +87,6 @@ extern const char linux_proc_banner[];
+--- linux-2.6.orig/arch/blackfin/kernel/shadow_console.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/blackfin/kernel/shadow_console.c	2010-02-16 17:33:16.000000000 +0800
+@@ -7,6 +7,7 @@
+  * Licensed under the GPL-2 or later.
   */
- #define lower_32_bits(n) ((u32)(n))
  
--#define	KERN_EMERG	"<0>"	/* system is unusable			*/
--#define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
--#define	KERN_CRIT	"<2>"	/* critical conditions			*/
--#define	KERN_ERR	"<3>"	/* error conditions			*/
--#define	KERN_WARNING	"<4>"	/* warning conditions			*/
--#define	KERN_NOTICE	"<5>"	/* normal but significant condition	*/
--#define	KERN_INFO	"<6>"	/* informational			*/
--#define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
--
--/* Use the default kernel loglevel */
--#define KERN_DEFAULT	"<d>"
--/*
-- * Annotation for a "continued" line of log printout (only done after a
-- * line that had no enclosing \n). Only to be used by core/arch code
-- * during early bootup (a continued line is not SMP-safe otherwise).
-- */
--#define	KERN_CONT	"<c>"
--
--extern int console_printk[];
--
--#define console_loglevel (console_printk[0])
--#define default_message_loglevel (console_printk[1])
--#define minimum_console_loglevel (console_printk[2])
--#define default_console_loglevel (console_printk[3])
--
- struct completion;
- struct pt_regs;
- struct user;
-@@ -157,47 +132,10 @@ static inline void might_fault(void)
- 	might_sleep();
- }
- #endif
--
--extern struct atomic_notifier_head panic_notifier_list;
--extern long (*panic_blink)(long time);
--NORET_TYPE void panic(const char * fmt, ...)
--	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
--extern void oops_enter(void);
--extern void oops_exit(void);
--extern int oops_may_print(void);
- NORET_TYPE void do_exit(long error_code)
- 	ATTRIB_NORET;
- NORET_TYPE void complete_and_exit(struct completion *, long)
- 	ATTRIB_NORET;
--extern unsigned long simple_strtoul(const char *,char **,unsigned int);
--extern long simple_strtol(const char *,char **,unsigned int);
--extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
--extern long long simple_strtoll(const char *,char **,unsigned int);
--extern int strict_strtoul(const char *, unsigned int, unsigned long *);
--extern int strict_strtol(const char *, unsigned int, long *);
--extern int strict_strtoull(const char *, unsigned int, unsigned long long *);
--extern int strict_strtoll(const char *, unsigned int, long long *);
--extern int sprintf(char * buf, const char * fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--extern int vsprintf(char *buf, const char *, va_list)
--	__attribute__ ((format (printf, 2, 0)));
--extern int snprintf(char * buf, size_t size, const char * fmt, ...)
--	__attribute__ ((format (printf, 3, 4)));
--extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
--	__attribute__ ((format (printf, 3, 0)));
--extern int scnprintf(char * buf, size_t size, const char * fmt, ...)
--	__attribute__ ((format (printf, 3, 4)));
--extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
--	__attribute__ ((format (printf, 3, 0)));
--extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--extern char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
--
--extern int sscanf(const char *, const char *, ...)
--	__attribute__ ((format (scanf, 2, 3)));
--extern int vsscanf(const char *, const char *, va_list)
--	__attribute__ ((format (scanf, 2, 0)));
--
- extern int get_option(char **str, int *pint);
- extern char *get_options(const char *str, int nints, int *ints);
- extern unsigned long long memparse(const char *ptr, char **retptr);
-@@ -210,106 +148,7 @@ extern int func_ptr_is_kernel_text(void 
- struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
+--- linux-2.6.orig/arch/cris/arch-v32/kernel/kgdb.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/cris/arch-v32/kernel/kgdb.c	2010-02-16 17:33:16.000000000 +0800
+@@ -163,6 +163,7 @@
+  */
  
--/*
-- * FW_BUG
-- * Add this to a message where you are sure the firmware is buggy or behaves
-- * really stupid or out of spec. Be aware that the responsible BIOS developer
-- * should be able to fix this issue or at least get a concrete idea of the
-- * problem by reading your message without the need of looking at the kernel
-- * code.
-- * 
-- * Use it for definite and high priority BIOS bugs.
-- *
-- * FW_WARN
-- * Use it for not that clear (e.g. could the kernel messed up things already?)
-- * and medium priority BIOS bugs.
-- *
-- * FW_INFO
-- * Use this one if you want to tell the user or vendor about something
-- * suspicious, but generally harmless related to the firmware.
-- *
-- * Use it for information or very low priority BIOS bugs.
-- */
--#define FW_BUG		"[Firmware Bug]: "
--#define FW_WARN		"[Firmware Warn]: "
--#define FW_INFO		"[Firmware Info]: "
--
--#ifdef CONFIG_PRINTK
--asmlinkage int vprintk(const char *fmt, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
--asmlinkage int printk(const char * fmt, ...)
--	__attribute__ ((format (printf, 1, 2))) __cold;
--
--extern int __printk_ratelimit(const char *func);
--#define printk_ratelimit() __printk_ratelimit(__func__)
--extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
--				   unsigned int interval_msec);
--
--extern int printk_delay_msec;
--
--/*
-- * Print a one-time message (analogous to WARN_ONCE() et al):
-- */
--#define printk_once(x...) ({			\
--	static bool __print_once;		\
--						\
--	if (!__print_once) {			\
--		__print_once = true;		\
--		printk(x);			\
--	}					\
--})
--
--void log_buf_kexec_setup(void);
--#else
--static inline int vprintk(const char *s, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
--static inline int vprintk(const char *s, va_list args) { return 0; }
--static inline int printk(const char *s, ...)
--	__attribute__ ((format (printf, 1, 2)));
--static inline int __cold printk(const char *s, ...) { return 0; }
--static inline int printk_ratelimit(void) { return 0; }
--static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
--					  unsigned int interval_msec)	\
--		{ return false; }
--
--/* No effect, but we still get type checking even in the !PRINTK case: */
--#define printk_once(x...) printk(x)
--
--static inline void log_buf_kexec_setup(void)
--{
--}
--#endif
--
--extern int printk_needs_cpu(int cpu);
--extern void printk_tick(void);
--
--extern void asmlinkage __attribute__((format(printf, 1, 2)))
--	early_printk(const char *fmt, ...);
--
--unsigned long int_sqrt(unsigned long);
--
--static inline void console_silent(void)
--{
--	console_loglevel = 0;
--}
--
--static inline void console_verbose(void)
--{
--	if (console_loglevel)
--		console_loglevel = 15;
--}
--
- extern void bust_spinlocks(int yes);
--extern void wake_up_klogd(void);
--extern int oops_in_progress;		/* If set, an oops, panic(), BUG() or die() is in progress */
--extern int panic_timeout;
--extern int panic_on_oops;
--extern int panic_on_unrecovered_nmi;
--extern int panic_on_io_nmi;
--extern const char *print_tainted(void);
--extern void add_taint(unsigned flag);
--extern int test_taint(unsigned flag);
--extern unsigned long get_taint(void);
- extern int root_mountflags;
  
- /* Values used for system_state */
-@@ -322,279 +161,8 @@ extern enum system_states {
- 	SYSTEM_SUSPEND_DISK,
- } system_state;
++#include <linux/hexdump.h>
+ #include <linux/string.h>
+ #include <linux/signal.h>
+ #include <linux/kernel.h>
+--- linux-2.6.orig/arch/frv/kernel/gdb-stub.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/frv/kernel/gdb-stub.c	2010-02-16 17:33:16.000000000 +0800
+@@ -114,6 +114,7 @@
+  *
+  */
  
--#define TAINT_PROPRIETARY_MODULE	0
--#define TAINT_FORCED_MODULE		1
--#define TAINT_UNSAFE_SMP		2
--#define TAINT_FORCED_RMMOD		3
--#define TAINT_MACHINE_CHECK		4
--#define TAINT_BAD_PAGE			5
--#define TAINT_USER			6
--#define TAINT_DIE			7
--#define TAINT_OVERRIDDEN_ACPI_TABLE	8
--#define TAINT_WARN			9
--#define TAINT_CRAP			10
--
- extern void dump_stack(void) __cold;
++#include <linux/hexdump.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/signal.h>
+--- linux-2.6.orig/arch/mn10300/kernel/gdb-stub.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/mn10300/kernel/gdb-stub.c	2010-02-16 17:33:16.000000000 +0800
+@@ -120,6 +120,7 @@
+  *
+  */
  
--enum {
--	DUMP_PREFIX_NONE,
--	DUMP_PREFIX_ADDRESS,
--	DUMP_PREFIX_OFFSET
--};
--extern void hex_dump_to_buffer(const void *buf, size_t len,
--				int rowsize, int groupsize,
--				char *linebuf, size_t linebuflen, bool ascii);
--extern void print_hex_dump(const char *level, const char *prefix_str,
--				int prefix_type, int rowsize, int groupsize,
--				const void *buf, size_t len, bool ascii);
--extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
--			const void *buf, size_t len);
++#include <linux/hexdump.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+ #include <linux/signal.h>
+--- linux-2.6.orig/arch/powerpc/kernel/btext.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/powerpc/kernel/btext.c	2010-02-16 17:33:16.000000000 +0800
+@@ -3,6 +3,7 @@
+  *
+  * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  */
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/arch/x86/kernel/mpparse.c	2010-02-16 17:33:16.000000000 +0800
+@@ -7,6 +7,7 @@
+  *      (c) 2008 Alexey Starikovskiy <astarikovskiy@suse.de>
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/mm.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/crypto/ansi_cprng.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/crypto/ansi_cprng.c	2010-02-16 17:33:16.000000000 +0800
+@@ -13,6 +13,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <crypto/internal/rng.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/crypto/testmgr.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/crypto/testmgr.c	2010-02-16 17:33:16.000000000 +0800
+@@ -13,6 +13,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <crypto/hash.h>
+ #include <linux/err.h>
+ #include <linux/module.h>
+--- linux-2.6.orig/drivers/bluetooth/btmrvl_main.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/bluetooth/btmrvl_main.c	2010-02-16 17:33:16.000000000 +0800
+@@ -18,6 +18,7 @@
+  * this warranty disclaimer.
+  **/
+ 
++#include <linux/hexdump.h>
+ #include <net/bluetooth/bluetooth.h>
+ #include <net/bluetooth/hci_core.h>
+ 
+--- linux-2.6.orig/drivers/char/pcmcia/ipwireless/hardware.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/char/pcmcia/ipwireless/hardware.c	2010-02-16 17:33:16.000000000 +0800
+@@ -15,6 +15,7 @@
+  *   Copyright (C) 2007 David Sterba
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
+--- linux-2.6.orig/drivers/gpu/drm/drm_edid.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/gpu/drm/drm_edid.c	2010-02-16 17:33:16.000000000 +0800
+@@ -26,6 +26,7 @@
+  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  * DEALINGS IN THE SOFTWARE.
+  */
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
+--- linux-2.6.orig/drivers/isdn/gigaset/capi.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/gigaset/capi.c	2010-02-16 17:33:16.000000000 +0800
+@@ -11,6 +11,7 @@
+  * =====================================================================
+  */
+ 
++#include <linux/hexdump.h>
+ #include "gigaset.h"
+ #include <linux/ctype.h>
+ #include <linux/isdn/capilli.h>
+--- linux-2.6.orig/drivers/isdn/gigaset/isocdata.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/gigaset/isocdata.c	2010-02-16 17:33:16.000000000 +0800
+@@ -12,6 +12,7 @@
+  * =====================================================================
+  */
+ 
++#include <linux/hexdump.h>
+ #include "gigaset.h"
+ #include <linux/crc-ccitt.h>
+ #include <linux/bitrev.h>
+--- linux-2.6.orig/drivers/isdn/hardware/mISDN/avmfritz.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/hardware/mISDN/avmfritz.c	2010-02-16 17:33:16.000000000 +0800
+@@ -20,6 +20,7 @@
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  *
+  */
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/isdn/hardware/mISDN/mISDNipac.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/hardware/mISDN/mISDNipac.c	2010-02-16 17:33:16.000000000 +0800
+@@ -20,6 +20,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/mISDNhw.h>
+ #include "ipac.h"
+--- linux-2.6.orig/drivers/isdn/hardware/mISDN/mISDNisar.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/hardware/mISDN/mISDNisar.c	2010-02-16 17:33:16.000000000 +0800
+@@ -25,6 +25,7 @@
+  */
+ /* #define DEBUG */
+ 
++#include <linux/hexdump.h>
+ #include <linux/delay.h>
+ #include <linux/vmalloc.h>
+ #include <linux/mISDNhw.h>
+--- linux-2.6.orig/drivers/isdn/hardware/mISDN/netjet.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/hardware/mISDN/netjet.c	2010-02-16 17:33:16.000000000 +0800
+@@ -20,6 +20,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/isdn/hardware/mISDN/w6692.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/isdn/hardware/mISDN/w6692.c	2010-02-16 17:33:16.000000000 +0800
+@@ -21,6 +21,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/media/dvb/firewire/firedtv-avc.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/media/dvb/firewire/firedtv-avc.c	2010-02-16 17:33:16.000000000 +0800
+@@ -11,6 +11,7 @@
+  *	the License, or (at your option) any later version.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/bug.h>
+ #include <linux/crc32.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/media/video/hdpvr/hdpvr-control.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/media/video/hdpvr/hdpvr-control.c	2010-02-16 17:33:16.000000000 +0800
+@@ -9,6 +9,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/media/video/hdpvr/hdpvr-core.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/media/video/hdpvr/hdpvr-core.c	2010-02-16 17:33:16.000000000 +0800
+@@ -11,6 +11,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/mfd/pcf50633-core.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/mfd/pcf50633-core.c	2010-02-16 17:33:16.000000000 +0800
+@@ -12,6 +12,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+ #include <linux/sysfs.h>
+--- linux-2.6.orig/drivers/misc/kgdbts.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/misc/kgdbts.c	2010-02-16 17:33:16.000000000 +0800
+@@ -94,6 +94,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/kgdb.h>
+ #include <linux/ctype.h>
+--- linux-2.6.orig/drivers/mtd/tests/mtd_nandecctest.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/mtd/tests/mtd_nandecctest.c	2010-02-16 17:33:16.000000000 +0800
+@@ -1,3 +1,4 @@
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/list.h>
+--- linux-2.6.orig/drivers/mtd/ubi/debug.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/mtd/ubi/debug.c	2010-02-16 17:33:16.000000000 +0800
+@@ -26,6 +26,7 @@
+ 
+ #ifdef CONFIG_MTD_UBI_DEBUG
+ 
++#include <linux/hexdump.h>
+ #include "ubi.h"
+ 
+ /**
+--- linux-2.6.orig/drivers/mtd/ubi/io.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/mtd/ubi/io.c	2010-02-16 17:33:16.000000000 +0800
+@@ -86,6 +86,7 @@
+  * back and writes the whole sub-page.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/crc32.h>
+ #include <linux/err.h>
+ #include "ubi.h"
+--- linux-2.6.orig/drivers/net/a2065.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/a2065.c	2010-02-16 17:33:16.000000000 +0800
+@@ -37,6 +37,7 @@
+  *	  both 10BASE-2 (thin coax) and AUI (DB-15) connectors
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/errno.h>
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+--- linux-2.6.orig/drivers/net/arcnet/arcnet.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/arcnet/arcnet.c	2010-02-16 17:33:16.000000000 +0800
+@@ -43,6 +43,7 @@
+ 
+ #define VERSION "arcnet: v3.94 BETA 2007/02/08 - by Avery Pennarun et al.\n"
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/net/e1000/e1000_main.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/e1000/e1000_main.c	2010-02-16 17:33:16.000000000 +0800
+@@ -26,6 +26,7 @@
+ 
+ *******************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include "e1000.h"
+ #include <net/ip6_checksum.h>
+ 
+--- linux-2.6.orig/drivers/net/enc28j60.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/enc28j60.c	2010-02-16 17:33:16.000000000 +0800
+@@ -13,6 +13,7 @@
+  * $Id: enc28j60.c,v 1.22 2007/12/20 10:47:01 claudio Exp $
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+--- linux-2.6.orig/drivers/net/sfc/selftest.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/sfc/selftest.c	2010-02-16 17:33:16.000000000 +0800
+@@ -8,6 +8,7 @@
+  * by the Free Software Foundation, incorporated herein by reference.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/netdevice.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+--- linux-2.6.orig/drivers/net/skfp/smt.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/skfp/smt.c	2010-02-16 17:33:16.000000000 +0800
+@@ -14,6 +14,7 @@
+  *
+  ******************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include "h/types.h"
+ #include "h/fddi.h"
+ #include "h/smc.h"
+--- linux-2.6.orig/drivers/net/usb/hso.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/usb/hso.c	2010-02-16 17:33:16.000000000 +0800
+@@ -50,6 +50,7 @@
+  *
+  *****************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/net/wimax/i2400m/rx.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wimax/i2400m/rx.c	2010-02-16 17:33:16.000000000 +0800
+@@ -144,6 +144,7 @@
+  *       i2400m_msg_size_check
+  *       wimax_msg
+  */
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/if_arp.h>
+ #include <linux/netdevice.h>
+--- linux-2.6.orig/drivers/net/wireless/at76c50x-usb.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/at76c50x-usb.c	2010-02-16 17:33:16.000000000 +0800
+@@ -24,6 +24,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+--- linux-2.6.orig/drivers/net/wireless/ath/ar9170/main.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/ath/ar9170/main.c	2010-02-16 17:33:16.000000000 +0800
+@@ -37,6 +37,7 @@
+  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/etherdevice.h>
+--- linux-2.6.orig/drivers/net/wireless/ath/ar9170/usb.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/ath/ar9170/usb.c	2010-02-16 17:33:16.000000000 +0800
+@@ -37,6 +37,7 @@
+  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/usb.h>
+ #include <linux/firmware.h>
+--- linux-2.6.orig/drivers/net/wireless/ath/ath5k/debug.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/ath/ath5k/debug.c	2010-02-16 17:33:16.000000000 +0800
+@@ -58,6 +58,7 @@
+  * THE POSSIBILITY OF SUCH DAMAGES.
+  */
+ 
++#include <linux/hexdump.h>
+ #include "base.h"
+ #include "debug.h"
+ 
+--- linux-2.6.orig/drivers/net/wireless/ath/ath9k/common.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/ath/ath9k/common.c	2010-02-16 17:33:16.000000000 +0800
+@@ -18,6 +18,7 @@
+  * Module for common driver code between ath9k and ath9k_htc
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ 
+--- linux-2.6.orig/drivers/net/wireless/b43/main.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/b43/main.c	2010-02-16 17:33:16.000000000 +0800
+@@ -31,6 +31,7 @@
+ 
+ */
+ 
++#include <linux/hexdump.h>
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/moduleparam.h>
+--- linux-2.6.orig/drivers/net/wireless/iwlwifi/iwl-3945.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl-3945.c	2010-02-16 17:33:16.000000000 +0800
+@@ -24,6 +24,7 @@
+  *
+  *****************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/net/wireless/iwlwifi/iwl-agn.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl-agn.c	2010-02-16 17:33:16.000000000 +0800
+@@ -27,6 +27,7 @@
+  *
+  *****************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/net/wireless/iwlwifi/iwl-debugfs.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl-debugfs.c	2010-02-16 17:33:16.000000000 +0800
+@@ -26,6 +26,7 @@
+  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
+  *****************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/debugfs.h>
+--- linux-2.6.orig/drivers/net/wireless/iwlwifi/iwl3945-base.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl3945-base.c	2010-02-16 17:33:16.000000000 +0800
+@@ -27,6 +27,7 @@
+  *
+  *****************************************************************************/
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- linux-2.6.orig/drivers/net/wireless/ray_cs.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/ray_cs.c	2010-02-16 17:33:16.000000000 +0800
+@@ -30,6 +30,7 @@
+  *
+ =============================================================================*/
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/proc_fs.h>
+--- linux-2.6.orig/drivers/net/wireless/wl12xx/wl1251.h	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/wl12xx/wl1251.h	2010-02-16 17:33:16.000000000 +0800
+@@ -25,6 +25,7 @@
+ #ifndef __WL1251_H__
+ #define __WL1251_H__
+ 
++#include <linux/hexdump.h>
+ #include <linux/mutex.h>
+ #include <linux/list.h>
+ #include <linux/bitops.h>
+--- linux-2.6.orig/drivers/pnp/support.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/pnp/support.c	2010-02-16 17:33:16.000000000 +0800
+@@ -6,6 +6,7 @@
+  *	Bjorn Helgaas <bjorn.helgaas@hp.com>
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/ctype.h>
+ #include <linux/pnp.h>
+--- linux-2.6.orig/drivers/s390/cio/device_fsm.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/s390/cio/device_fsm.c	2010-02-16 17:33:16.000000000 +0800
+@@ -7,6 +7,7 @@
+  *		 Martin Schwidefsky (schwidefsky@de.ibm.com)
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/jiffies.h>
+--- linux-2.6.orig/drivers/s390/net/qeth_core_main.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/s390/net/qeth_core_main.c	2010-02-16 17:33:16.000000000 +0800
+@@ -11,6 +11,7 @@
+ #define KMSG_COMPONENT "qeth"
+ #define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/string.h>
+--- linux-2.6.orig/drivers/scsi/osd/osd_initiator.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/scsi/osd/osd_initiator.c	2010-02-16 17:33:16.000000000 +0800
+@@ -39,6 +39,7 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <scsi/osd_initiator.h>
+ #include <scsi/osd_sec.h>
+ #include <scsi/osd_attributes.h>
+--- linux-2.6.orig/drivers/spi/spi_stmp.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/spi/spi_stmp.c	2010-02-16 17:33:16.000000000 +0800
+@@ -15,6 +15,7 @@
+  * http://www.opensource.org/licenses/gpl-license.html
+  * http://www.gnu.org/copyleft/gpl.html
+  */
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+--- linux-2.6.orig/drivers/staging/hv/ChannelMgmt.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/staging/hv/ChannelMgmt.c	2010-02-16 17:33:16.000000000 +0800
+@@ -18,6 +18,7 @@
+  *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  */
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/list.h>
+--- linux-2.6.orig/drivers/staging/wavelan/wavelan_cs.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/staging/wavelan/wavelan_cs.c	2010-02-16 17:33:16.000000000 +0800
+@@ -57,6 +57,7 @@
+  */
+ 
+ /* Do *NOT* add other headers here, you are guaranteed to be wrong - Jean II */
++#include <linux/hexdump.h>
+ #include "wavelan_cs.p.h"		/* Private header */
+ 
+ #ifdef WAVELAN_ROAMING
+--- linux-2.6.orig/drivers/usb/c67x00/c67x00-sched.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/usb/c67x00/c67x00-sched.c	2010-02-16 17:33:16.000000000 +0800
+@@ -21,6 +21,7 @@
+  * MA  02110-1301  USA.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kthread.h>
+ 
+ #include "c67x00.h"
+--- linux-2.6.orig/drivers/usb/gadget/storage_common.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/usb/gadget/storage_common.c	2010-02-16 17:33:16.000000000 +0800
+@@ -54,6 +54,7 @@
+  */
+ 
+ 
++#include <linux/hexdump.h>
+ #include <asm/unaligned.h>
+ 
+ 
+--- linux-2.6.orig/drivers/usb/wusbcore/crypto.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/usb/wusbcore/crypto.c	2010-02-16 17:33:16.000000000 +0800
+@@ -45,6 +45,7 @@
+  *             funneled through AES are...16 bytes in size!
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/crypto.h>
+ #include <linux/module.h>
+ #include <linux/err.h>
+--- linux-2.6.orig/fs/ext3/super.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/ext3/super.c	2010-02-16 17:33:16.000000000 +0800
+@@ -16,6 +16,7 @@
+  *        David S. Miller (davem@caip.rutgers.edu), 1995
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
+--- linux-2.6.orig/fs/ext4/super.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/ext4/super.c	2010-02-16 17:33:16.000000000 +0800
+@@ -16,6 +16,7 @@
+  *        David S. Miller (davem@caip.rutgers.edu), 1995
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
+--- linux-2.6.orig/fs/jffs2/wbuf.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jffs2/wbuf.c	2010-02-16 17:33:16.000000000 +0800
+@@ -11,6 +11,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/mtd/mtd.h>
+--- linux-2.6.orig/fs/jfs/jfs_imap.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jfs/jfs_imap.c	2010-02-16 17:33:16.000000000 +0800
+@@ -41,6 +41,7 @@
+  *	written out when the filesystem is unmounted by diUnmount().
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/fs.h>
+ #include <linux/buffer_head.h>
+ #include <linux/pagemap.h>
+--- linux-2.6.orig/fs/jfs/jfs_logmgr.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jfs/jfs_logmgr.c	2010-02-16 17:33:16.000000000 +0800
+@@ -59,6 +59,7 @@
+  * 32-bit lspn and page eor.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/fs.h>
+ #include <linux/blkdev.h>
+ #include <linux/interrupt.h>
+--- linux-2.6.orig/fs/jfs/jfs_metapage.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jfs/jfs_metapage.c	2010-02-16 17:33:16.000000000 +0800
+@@ -17,6 +17,7 @@
+  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
+--- linux-2.6.orig/fs/jfs/jfs_txnmgr.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jfs/jfs_txnmgr.c	2010-02-16 17:33:16.000000000 +0800
+@@ -42,6 +42,7 @@
+  * hold on to mp+lock thru update of maps
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/fs.h>
+ #include <linux/vmalloc.h>
+ #include <linux/completion.h>
+--- linux-2.6.orig/fs/jfs/xattr.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/jfs/xattr.c	2010-02-16 17:33:16.000000000 +0800
+@@ -17,6 +17,7 @@
+  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/capability.h>
+ #include <linux/fs.h>
+ #include <linux/xattr.h>
+--- linux-2.6.orig/fs/ubifs/debug.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/ubifs/debug.c	2010-02-16 17:33:16.000000000 +0800
+@@ -29,6 +29,7 @@
+ 
+ #define UBIFS_DBG_PRESERVE_UBI
+ 
++#include <linux/hexdump.h>
+ #include "ubifs.h"
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+--- linux-2.6.orig/fs/ubifs/scan.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/ubifs/scan.c	2010-02-16 17:33:16.000000000 +0800
+@@ -27,6 +27,7 @@
+  * debugging functions.
+  */
+ 
++#include <linux/hexdump.h>
+ #include "ubifs.h"
+ 
+ /**
+--- linux-2.6.orig/fs/xfs/support/debug.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/fs/xfs/support/debug.c	2010-02-16 17:33:16.000000000 +0800
+@@ -15,6 +15,7 @@
+  * along with this program; if not, write the Free Software Foundation,
+  * Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
++#include <linux/hexdump.h>
+ #include <xfs.h>
+ #include "debug.h"
+ 
+--- linux-2.6.orig/include/linux/ide.h	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/include/linux/ide.h	2010-02-16 17:33:16.000000000 +0800
+@@ -6,6 +6,7 @@
+  *  Copyright (C) 1994-2002  Linus Torvalds & authors
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/ata.h>
+--- linux-2.6.orig/include/linux/wimax/debug.h	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/include/linux/wimax/debug.h	2010-02-16 17:33:16.000000000 +0800
+@@ -153,6 +153,7 @@
+ #ifndef __debug__h__
+ #define __debug__h__
+ 
++#include <linux/hexdump.h>
+ #include <linux/types.h>
+ #include <linux/device.h>
+ 
+--- linux-2.6.orig/kernel/kgdb.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/kernel/kgdb.c	2010-02-16 17:33:16.000000000 +0800
+@@ -27,6 +27,7 @@
+  * version 2. This program is licensed "as is" without any warranty of any
+  * kind, whether express or implied.
+  */
++#include <linux/hexdump.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/clocksource.h>
+ #include <linux/interrupt.h>
+--- linux-2.6.orig/kernel/trace/trace_output.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/kernel/trace/trace_output.c	2010-02-16 17:33:16.000000000 +0800
+@@ -5,6 +5,7 @@
+  *
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/ftrace.h>
+--- linux-2.6.orig/lib/hexdump.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/lib/hexdump.c	2010-02-16 17:33:16.000000000 +0800
+@@ -7,6 +7,7 @@
+  * more details.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/types.h>
+ #include <linux/ctype.h>
+ #include <linux/kernel.h>
+--- linux-2.6.orig/lib/vsprintf.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/lib/vsprintf.c	2010-02-16 17:33:16.000000000 +0800
+@@ -16,6 +16,7 @@
+  * - scnprintf and vscnprintf
+  */
+ 
++#include <linux/hexdump.h>
+ #include <stdarg.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+--- linux-2.6.orig/mm/debug-pagealloc.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/mm/debug-pagealloc.c	2010-02-16 17:33:16.000000000 +0800
+@@ -1,3 +1,4 @@
++#include <linux/hexdump.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/page-debug-flags.h>
+--- linux-2.6.orig/mm/kmemleak.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/mm/kmemleak.c	2010-02-16 17:33:16.000000000 +0800
+@@ -63,6 +63,7 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/hexdump.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+--- linux-2.6.orig/net/ieee802154/af_ieee802154.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/net/ieee802154/af_ieee802154.c	2010-02-16 17:33:16.000000000 +0800
+@@ -21,6 +21,7 @@
+  * Maxim Gorbachyov <maxim.gorbachev@siemens.com>
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/net.h>
+ #include <linux/capability.h>
+ #include <linux/module.h>
+--- linux-2.6.orig/net/ipv4/arp.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/net/ipv4/arp.c	2010-02-16 17:33:16.000000000 +0800
+@@ -72,6 +72,7 @@
+  *		Harald Welte	:	convert to make use of jenkins hash
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/string.h>
+--- linux-2.6.orig/net/ipv4/netfilter/ipt_CLUSTERIP.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/net/ipv4/netfilter/ipt_CLUSTERIP.c	2010-02-16 17:33:16.000000000 +0800
+@@ -9,6 +9,7 @@
+  * published by the Free Software Foundation.
+  *
+  */
++#include <linux/hexdump.h>
+ #include <linux/module.h>
+ #include <linux/proc_fs.h>
+ #include <linux/jhash.h>
+--- linux-2.6.orig/sound/pci/oxygen/xonar_hdmi.c	2010-02-16 17:11:37.000000000 +0800
++++ linux-2.6/sound/pci/oxygen/xonar_hdmi.c	2010-02-16 17:33:16.000000000 +0800
+@@ -16,6 +16,7 @@
+  *  along with this driver; if not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <sound/asoundef.h>
+--- linux-2.6.orig/drivers/net/wireless/p54/eeprom.c	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/p54/eeprom.c	2010-02-16 17:33:16.000000000 +0800
+@@ -16,6 +16,7 @@
+  * published by the Free Software Foundation.
+  */
+ 
++#include <linux/hexdump.h>
+ #include <linux/init.h>
+ #include <linux/firmware.h>
+ #include <linux/etherdevice.h>
+--- linux-2.6.orig/drivers/misc/iwmc3200top/log.h	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/misc/iwmc3200top/log.h	2010-02-16 17:33:16.000000000 +0800
+@@ -27,7 +27,7 @@
+ #ifndef __LOG_H__
+ #define __LOG_H__
+ 
 -
--extern const char hex_asc[];
--#define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
--#define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]
--
--static inline char *pack_hex_byte(char *buf, u8 byte)
--{
--	*buf++ = hex_asc_hi(byte);
--	*buf++ = hex_asc_lo(byte);
--	return buf;
--}
--
--#ifndef pr_fmt
--#define pr_fmt(fmt) fmt
--#endif
--
--#define pr_emerg(fmt, ...) \
--        printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_alert(fmt, ...) \
--        printk(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_crit(fmt, ...) \
--        printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_err(fmt, ...) \
--        printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_warning(fmt, ...) \
--        printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_notice(fmt, ...) \
--        printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_info(fmt, ...) \
--        printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_cont(fmt, ...) \
--	printk(KERN_CONT fmt, ##__VA_ARGS__)
--
--/* pr_devel() should produce zero code unless DEBUG is defined */
--#ifdef DEBUG
--#define pr_devel(fmt, ...) \
--	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
--#else
--#define pr_devel(fmt, ...) \
--	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
--#endif
--
--/* If you are writing a driver, please use dev_dbg instead */
--#if defined(DEBUG)
--#define pr_debug(fmt, ...) \
--	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
--#elif defined(CONFIG_DYNAMIC_DEBUG)
--/* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here */
--#define pr_debug(fmt, ...) \
--	dynamic_pr_debug(fmt, ##__VA_ARGS__)
--#else
--#define pr_debug(fmt, ...) \
--	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
--#endif
--
--/*
-- * ratelimited messages with local ratelimit_state,
-- * no local ratelimit_state used in the !PRINTK case
-- */
--#ifdef CONFIG_PRINTK
--#define printk_ratelimited(fmt, ...)  ({		\
--	static struct ratelimit_state _rs = {		\
--		.interval = DEFAULT_RATELIMIT_INTERVAL, \
--		.burst = DEFAULT_RATELIMIT_BURST,       \
--	};                                              \
--							\
--	if (!__ratelimit(&_rs))                         \
--		printk(fmt, ##__VA_ARGS__);		\
--})
--#else
--/* No effect, but we still get type checking even in the !PRINTK case: */
--#define printk_ratelimited printk
--#endif
--
--#define pr_emerg_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_alert_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_crit_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_err_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_warning_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_notice_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
--#define pr_info_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
--/* no pr_cont_ratelimited, don't do that... */
--/* If you are writing a driver, please use dev_dbg instead */
--#if defined(DEBUG)
--#define pr_debug_ratelimited(fmt, ...) \
--	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
--#else
--#define pr_debug_ratelimited(fmt, ...) \
--	({ if (0) printk_ratelimited(KERN_DEBUG pr_fmt(fmt), \
--				     ##__VA_ARGS__); 0; })
--#endif
--
--/*
-- * General tracing related utility functions - trace_printk(),
-- * tracing_on/tracing_off and tracing_start()/tracing_stop
-- *
-- * Use tracing_on/tracing_off when you want to quickly turn on or off
-- * tracing. It simply enables or disables the recording of the trace events.
-- * This also corresponds to the user space /sys/kernel/debug/tracing/tracing_on
-- * file, which gives a means for the kernel and userspace to interact.
-- * Place a tracing_off() in the kernel where you want tracing to end.
-- * From user space, examine the trace, and then echo 1 > tracing_on
-- * to continue tracing.
-- *
-- * tracing_stop/tracing_start has slightly more overhead. It is used
-- * by things like suspend to ram where disabling the recording of the
-- * trace is not enough, but tracing must actually stop because things
-- * like calling smp_processor_id() may crash the system.
-- *
-- * Most likely, you want to use tracing_on/tracing_off.
-- */
--#ifdef CONFIG_RING_BUFFER
--void tracing_on(void);
--void tracing_off(void);
--/* trace_off_permanent stops recording with no way to bring it back */
--void tracing_off_permanent(void);
--int tracing_is_on(void);
--#else
--static inline void tracing_on(void) { }
--static inline void tracing_off(void) { }
--static inline void tracing_off_permanent(void) { }
--static inline int tracing_is_on(void) { return 0; }
--#endif
--#ifdef CONFIG_TRACING
--extern void tracing_start(void);
--extern void tracing_stop(void);
--extern void ftrace_off_permanent(void);
--
--extern void
--ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
--
--static inline void __attribute__ ((format (printf, 1, 2)))
--____trace_printk_check_format(const char *fmt, ...)
--{
--}
--#define __trace_printk_check_format(fmt, args...)			\
--do {									\
--	if (0)								\
--		____trace_printk_check_format(fmt, ##args);		\
--} while (0)
--
--/**
-- * trace_printk - printf formatting in the ftrace buffer
-- * @fmt: the printf format for printing
-- *
-- * Note: __trace_printk is an internal function for trace_printk and
-- *       the @ip is passed in via the trace_printk macro.
-- *
-- * This function allows a kernel developer to debug fast path sections
-- * that printk is not appropriate for. By scattering in various
-- * printk like tracing in the code, a developer can quickly see
-- * where problems are occurring.
-- *
-- * This is intended as a debugging tool for the developer only.
-- * Please refrain from leaving trace_printks scattered around in
-- * your code.
-- */
--
--#define trace_printk(fmt, args...)					\
--do {									\
--	__trace_printk_check_format(fmt, ##args);			\
--	if (__builtin_constant_p(fmt)) {				\
--		static const char *trace_printk_fmt			\
--		  __attribute__((section("__trace_printk_fmt"))) =	\
--			__builtin_constant_p(fmt) ? fmt : NULL;		\
--									\
--		__trace_bprintk(_THIS_IP_, trace_printk_fmt, ##args);	\
--	} else								\
--		__trace_printk(_THIS_IP_, fmt, ##args);		\
--} while (0)
--
--extern int
--__trace_bprintk(unsigned long ip, const char *fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--
--extern int
--__trace_printk(unsigned long ip, const char *fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--
--extern void trace_dump_stack(void);
--
--/*
-- * The double __builtin_constant_p is because gcc will give us an error
-- * if we try to allocate the static variable to fmt if it is not a
-- * constant. Even with the outer if statement.
-- */
--#define ftrace_vprintk(fmt, vargs)					\
--do {									\
--	if (__builtin_constant_p(fmt)) {				\
--		static const char *trace_printk_fmt			\
--		  __attribute__((section("__trace_printk_fmt"))) =	\
--			__builtin_constant_p(fmt) ? fmt : NULL;		\
--									\
--		__ftrace_vbprintk(_THIS_IP_, trace_printk_fmt, vargs);	\
--	} else								\
--		__ftrace_vprintk(_THIS_IP_, fmt, vargs);		\
--} while (0)
--
--extern int
--__ftrace_vbprintk(unsigned long ip, const char *fmt, va_list ap);
--
--extern int
--__ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
--
--extern void ftrace_dump(void);
--#else
--static inline void
--ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
--static inline int
--trace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
--
--static inline void tracing_start(void) { }
--static inline void tracing_stop(void) { }
--static inline void ftrace_off_permanent(void) { }
--static inline void trace_dump_stack(void) { }
--static inline int
--trace_printk(const char *fmt, ...)
--{
--	return 0;
--}
--static inline int
--ftrace_vprintk(const char *fmt, va_list ap)
--{
--	return 0;
--}
--static inline void ftrace_dump(void) { }
--#endif /* CONFIG_TRACING */
--
--/*
-- *      Display an IP address in readable format.
-- */
--
--#define NIPQUAD(addr) \
--	((unsigned char *)&addr)[0], \
--	((unsigned char *)&addr)[1], \
--	((unsigned char *)&addr)[2], \
--	((unsigned char *)&addr)[3]
--#define NIPQUAD_FMT "%u.%u.%u.%u"
--
- /*
-  * min()/max()/clamp() macros that also do
-  * strict type-checking.. See the
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/include/linux/panic.h	2010-02-16 17:25:39.000000000 +0800
-@@ -0,0 +1,35 @@
-+#ifndef _PANIC_H
-+#define _PANIC_H
-+
-+#define TAINT_PROPRIETARY_MODULE	0
-+#define TAINT_FORCED_MODULE		1
-+#define TAINT_UNSAFE_SMP		2
-+#define TAINT_FORCED_RMMOD		3
-+#define TAINT_MACHINE_CHECK		4
-+#define TAINT_BAD_PAGE			5
-+#define TAINT_USER			6
-+#define TAINT_DIE			7
-+#define TAINT_OVERRIDDEN_ACPI_TABLE	8
-+#define TAINT_WARN			9
-+#define TAINT_CRAP			10
-+
-+extern struct atomic_notifier_head panic_notifier_list;
-+extern long (*panic_blink)(long time);
-+NORET_TYPE void panic(const char * fmt, ...)
-+	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+extern void oops_enter(void);
-+extern void oops_exit(void);
-+extern int oops_may_print(void);
-+extern const char *print_tainted(void);
-+extern void add_taint(unsigned flag);
-+extern int test_taint(unsigned flag);
-+extern unsigned long get_taint(void);
-+/* If oops_in_progress is set,
-+an oops, panic(), BUG() or die() is in progress */
-+extern int oops_in_progress;
-+extern int panic_timeout;
-+extern int panic_on_oops;
-+extern int panic_on_unrecovered_nmi;
-+extern int panic_on_io_nmi;
-+
-+#endif
---- linux-2.6.orig/include/linux/string.h	2010-02-16 17:11:38.000000000 +0800
-+++ linux-2.6/include/linux/string.h	2010-02-16 17:25:39.000000000 +0800
-@@ -142,5 +142,35 @@ static inline bool strstarts(const char 
- {
- 	return strncmp(str, prefix, strlen(prefix)) == 0;
- }
-+
-+extern unsigned long simple_strtoul(const char *,char **,unsigned int);
-+extern long simple_strtol(const char *,char **,unsigned int);
-+extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
-+extern long long simple_strtoll(const char *,char **,unsigned int);
-+extern int strict_strtoul(const char *, unsigned int, unsigned long *);
-+extern int strict_strtol(const char *, unsigned int, long *);
-+extern int strict_strtoull(const char *, unsigned int, unsigned long long *);
-+extern int strict_strtoll(const char *, unsigned int, long long *);
-+extern int sprintf(char * buf, const char * fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
-+extern int vsprintf(char *buf, const char *, va_list)
-+	__attribute__ ((format (printf, 2, 0)));
-+extern int snprintf(char * buf, size_t size, const char * fmt, ...)
-+	__attribute__ ((format (printf, 3, 4)));
-+extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-+	__attribute__ ((format (printf, 3, 0)));
-+extern int scnprintf(char * buf, size_t size, const char * fmt, ...)
-+	__attribute__ ((format (printf, 3, 4)));
-+extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
-+	__attribute__ ((format (printf, 3, 0)));
-+extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
-+extern char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
-+
-+extern int sscanf(const char *, const char *, ...)
-+	__attribute__ ((format (scanf, 2, 3)));
-+extern int vsscanf(const char *, const char *, va_list)
-+	__attribute__ ((format (scanf, 2, 0)));
- #endif
-+
- #endif /* _LINUX_STRING_H_ */
++#include <linux/hexdump.h>
+ /* log severity:
+  * The log levels here match FW log levels
+  * so values need to stay as is */
+--- linux-2.6.orig/drivers/net/wireless/iwlwifi/iwl-debug.h	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwlwifi/iwl-debug.h	2010-02-16 17:33:16.000000000 +0800
+@@ -29,6 +29,7 @@
+ #ifndef __iwl_debug_h__
+ #define __iwl_debug_h__
+ 
++#include <linux/hexdump.h>
+ struct iwl_priv;
+ extern u32 iwl_debug_level;
+ 
+--- linux-2.6.orig/drivers/net/wireless/iwmc3200wifi/debug.h	2010-02-16 17:11:38.000000000 +0800
++++ linux-2.6/drivers/net/wireless/iwmc3200wifi/debug.h	2010-02-16 17:33:16.000000000 +0800
+@@ -24,6 +24,7 @@
+ #ifndef __IWM_DEBUG_H__
+ #define __IWM_DEBUG_H__
+ 
++#include <linux/hexdump.h>
+ #define IWM_ERR(p, f, a...) dev_err(iwm_to_dev(p), f, ## a)
+ #define IWM_WARN(p, f, a...) dev_warn(iwm_to_dev(p), f, ## a)
+ #define IWM_INFO(p, f, a...) dev_info(iwm_to_dev(p), f, ## a)
