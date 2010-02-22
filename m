@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754160Ab0BVSkN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 13:40:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:9830 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928Ab0BVSkJ (ORCPT
+	id S1754203Ab0BVSkU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 13:40:20 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:56979 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754167Ab0BVSkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 13:40:09 -0500
+	Mon, 22 Feb 2010 13:40:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=FysgMDuQg4ig+5ZIhoVHm9qS87RTJYe+rpgeuxrnTx8Adr26aFbAZDbm6w5uWW+xmo
-         5c8SYPnnJJdyG0juBcJpakrru5ZUDyynJYxgzPOF4sCpI6XM0PSIB7Qa+5LXdnyBI0Ka
-         8II5++9aaEDYYRqxA+oYOujZSmnXQ/aOWdxNg=
+        b=VMSx1GeloWzTKw3bdBCFUqW3QSeCJRPEK4Kb7ws3yR2jh/W/Va8gs6jA58ozxU8cg3
+         fSJwfrnJUqhAr1LwhC6cEewWKEr0TDRkT2VWOvPJgeQtvGc4uHBcv45imF17CMDCJKhR
+         tU4O3j7Q4Es9kysT6ib4minKlOoF4qTVYw6qQ=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: linux-mtd <linux-mtd@lists.infradead.org>,
@@ -21,9 +21,9 @@ Cc: linux-mtd <linux-mtd@lists.infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>, <stanley.miao@windriver.com>,
        Vitaly Wool <vitalywool@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 06/15] blktrans: allow FTL drivers to export sysfs attributes
-Date: Mon, 22 Feb 2010 20:39:33 +0200
-Message-Id: <1266863982-5258-7-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 08/15] MTD: nand: make MTD_OOB_PLACE work correctly.
+Date: Mon, 22 Feb 2010 20:39:35 +0200
+Message-Id: <1266863982-5258-9-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
 References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
@@ -31,64 +31,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an ability to export sysfs attributes below
-the block disk device.
-
-This can be used to pass the udev an information about the FTL
-and could include the vendor, serial, version, etc...
+MTD_OOB_PLACE is supposed to read/write the raw oob data similiar to the MTD_OOB_RAW
+however due to a bug, currently it is not possible to read more data that
+is specified by the oob 'free' regions.
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtd_blkdevs.c    |    8 ++++++++
- include/linux/mtd/blktrans.h |    2 ++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/mtd/nand/nand_base.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 646cc84..9dd23d6 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -379,6 +379,10 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
- 		set_disk_ro(gd, 1);
- 
- 	add_disk(gd);
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 7442b3a..cada4cf 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -1420,6 +1420,9 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+ 	int ret = 0;
+ 	uint32_t readlen = ops->len;
+ 	uint32_t oobreadlen = ops->ooblen;
++	uint32_t max_oobsize = ops->mode == MTD_OOB_AUTO ?
++		mtd->oobavail : mtd->oobsize;
 +
-+	if (new->disk_attributes)
-+		sysfs_create_group(&disk_to_dev(gd)->kobj,
-+					new->disk_attributes);
- 	return 0;
- error4:
- 	module_put(tr->owner);
-@@ -405,6 +409,10 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* Stop new requests to arrive */
- 	del_gendisk(old->disk);
+ 	uint8_t *bufpoi, *oob, *buf;
  
-+	if (old->disk_attributes)
-+		sysfs_remove_group(&disk_to_dev(old->disk)->kobj,
-+						old->disk_attributes);
+ 	stats = mtd->ecc_stats;
+@@ -1470,10 +1473,11 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+ 			buf += bytes;
+ 
+ 			if (unlikely(oob)) {
 +
- 	/* Stop the thread */
- 	kthread_stop(old->thread);
- 
-diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
-index d89b8fb..b481ccd 100644
---- a/include/linux/mtd/blktrans.h
-+++ b/include/linux/mtd/blktrans.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/mutex.h>
- #include <linux/kref.h>
-+#include <linux/sysfs.h>
- 
- struct hd_geometry;
- struct mtd_info;
-@@ -28,6 +29,7 @@ struct mtd_blktrans_dev {
- 	int open;
- 	struct kref ref;
- 	struct gendisk *disk;
-+	struct attribute_group *disk_attributes;
- 	struct task_struct *thread;
- 	struct request_queue *rq;
- 	spinlock_t queue_lock;
+ 				/* Raw mode does data:oob:data:oob */
+ 				if (ops->mode != MTD_OOB_RAW) {
+ 					int toread = min(oobreadlen,
+-						chip->ecc.layout->oobavail);
++								max_oobsize);
+ 					if (toread) {
+ 						oob = nand_transfer_oob(chip,
+ 							oob, ops, toread);
 -- 
 1.6.3.3
 
