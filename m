@@ -1,82 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506Ab0BVR5y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 12:57:54 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:60791 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554Ab0BVR5w convert rfc822-to-8bit (ORCPT
+	id S1753289Ab0BVR7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 12:59:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58168 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554Ab0BVR7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 12:57:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=jV5KSfvRykqeQHgHv1gcpF07hNoNF6RyBi13JFjuNv6jNwNJTzERPe5IZsSRZNkYrM
-         u4k5ZdQSuVUynhbTxCg1Eqi4VkM+4uNflSJzopQ9DWMGfIN6B4HAcJPXS1t0uduop8av
-         /1UQY7EUGdbmYV0gXWFhjz9L9JuFe6hV6i+Us=
-MIME-Version: 1.0
-In-Reply-To: <OFB51E93AB.187F855F-ONC12576D2.00618F62-C12576D2.0061DEB5@transmode.se>
-References: <a9e22dff1002220826p63209a33n27e84ea10e191a19@mail.gmail.com> 
-	<a9e22dff1002220840x7e86a1a0i3d44cefc1c6a79c0@mail.gmail.com> 
-	<OFB51E93AB.187F855F-ONC12576D2.00618F62-C12576D2.0061DEB5@transmode.se>
-From: niam <niam.niam@gmail.com>
-Date: Mon, 22 Feb 2010 19:57:29 +0200
-Message-ID: <a9e22dff1002220957r469ea79cg38309ffd24c19644@mail.gmail.com>
-Subject: Re: [PATCH] jffs2: fix memory leak if the sector was successfully 
-	erased
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: David Woodhouse <dwmw2@infradead.org>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Feb 2010 12:59:05 -0500
+X-Authority-Analysis: v=1.0 c=1 a=7U3hwN5JcxgA:10 a=gBUr1MAetDtUQIFfWl0A:9 a=dp2HRQ-t2szm_CLU_qAAypJ5hUYA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] scripts: improve checkstack
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, Cong Wang <amwang@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Arnd Bergmann <arnd@arndb.de>, Hui Zhu <teawater@gmail.com>,
+       Ozan =?ISO-8859-1?Q?=C3aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>, Li Hong <lihong.hi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
+       Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <4B82B7B0.7040203@linux.intel.com>
+References: <20100219175217.385580142@vyatta.com>
+	 <20100219175429.611463369@vyatta.com>	<4B7F5128.70501@redhat.com>
+	 <20100219222554.17d4bae6@nehalam>	<4B7F90AA.8050306@redhat.com>
+	 <20100222084339.1367cfe6@nehalam>  <4B82B7B0.7040203@linux.intel.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 22 Feb 2010 12:59:00 -0500
+Message-ID: <1266861540.24271.4609.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, you are right.
-Michael Trimarchi also responded that it's freed by the callback.
+On Mon, 2010-02-22 at 08:58 -0800, Arjan van de Ven wrote:
+> On 2/22/2010 8:43, Stephen Hemminger wrote:
+> 
+> 
+> btw as a general comment on these guys
+> 
+> "make it more perl-ish" is not a good feature for me.
+> 
+> "make it more readable" would be.
+> 
+> these guys are not performance sensitive, lets make them as readable as possible, and not line noise.
+> 
 
-My concern now that it's not obvious to free erase instruction in
-jffs2_erase_callback.
-Why not to free it the same piece of code where it was allocated?
+Acked-by: Steven Rostedt
 
---Dima
+That is, I've purposely did not do "perlish" code in the perl scripts
+that I wrote, and have consistently NACKed changes to make it so.
 
-On Mon, Feb 22, 2010 at 7:49 PM, Joakim Tjernlund
-<joakim.tjernlund@transmode.se> wrote:
-> niam <niam.niam@gmail.com> wrote on 2010/02/22 17:40:11:
->>
->> Resending patch to proper people/mailing list.
->>
->> Memory allocated for erase instruction is not freed if the sector was
->> successfully erased.
->
-> NAK, jffs2_erase_callback() will free it so
-> you have added a double free I think. Did you measure a memory leak?
->
->>
->> Signed-off-by: Dmytro Milinevskyy <niam.niam@gmail.com>
->> ---
->>  fs/jffs2/erase.c |    4 +++-
->>  1 files changed, 3 insertions(+), 1 deletions(-)
->>
->> diff --git a/fs/jffs2/erase.c b/fs/jffs2/erase.c
->> index b47679b..c0a5604 100644
->> --- a/fs/jffs2/erase.c
->> +++ b/fs/jffs2/erase.c
->> @@ -74,8 +74,10 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
->>        ((struct erase_priv_struct *)instr->priv)->c = c;
->>
->>        ret = c->mtd->erase(c->mtd, instr);
->> -       if (!ret)
->> +       if (!ret) {
->> +        kfree(instr);
->>                return;
->> +    }
->>
->>        bad_offset = instr->fail_addr;
->>        kfree(instr);
->>
->
->
+The perl scripts in the kernel need to be "C-ish" not "perl-ish", that
+way the other 70% of the kernel programmers that do not do perl can
+still understand these scripts.
+
+-- Steve
+
+
