@@ -1,162 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371Ab0BVM54 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 07:57:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37695 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265Ab0BVM5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 07:57:24 -0500
-From: Jiri Olsa <jolsa@redhat.com>
-To: mingo@elte.hu, rostedt@goodmis.org, fweisbec@gmail.com
-Cc: linux-kernel@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 4/4] tracing: raw output for graph tracer
-Date: Mon, 22 Feb 2010 13:57:02 +0100
-Message-Id: <1266843422-18288-5-git-send-email-jolsa@redhat.com>
-In-Reply-To: <1266843422-18288-1-git-send-email-jolsa@redhat.com>
-References: <1266843422-18288-1-git-send-email-jolsa@redhat.com>
+	id S1752955Ab0BVN2G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 08:28:06 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:31639 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102Ab0BVN2B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 08:28:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=PpAp8cGAJpBEbDsMiHCIz5n8Om4+0povl32dHXn8nuh7MXE2FqrE3uNLvJjME59RmX
+         HFxdSBgUL0UHEhHNgPo2GzF6kL0/m3G4+ERWfZNFNyoSPIYmHi91B5tOG6MsDsB+qg+t
+         GL2ReDSEER5T7pLXXNxiSEgUUjOq4H0CRtb7M=
+Date: Mon, 22 Feb 2010 16:27:43 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [patch] latency_hist: fix small memory leak
+Message-ID: <20100222132743.GB5416@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	LKML <linux-kernel@vger.kernel.org>,
+	rt-users <linux-rt-users@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+	Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+	Clark Williams <williams@redhat.com>,
+	Frank Rowand <frank.rowand@am.sony.com>,
+	Robin Gareus <robin@gareus.org>,
+	Gregory Haskins <ghaskins@novell.com>,
+	Philippe Reynes <philippe.reynes@isismpp.fr>,
+	Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+	Sven-Thorsten Dietrich <sdietrich@novell.com>,
+	Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+	John Kacur <jkacur@redhat.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>
+References: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain> <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain> <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+index_ptr needs to be freed on the error path.
 
-this patch adds raw trace output for graph tracer.
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-I have this one around for long time and it was quite handy
-for investigating graph tracer issues.
-
-wbr,
-jirka
-
-
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
----
- kernel/trace/trace.c                 |    2 +-
- kernel/trace/trace_functions_graph.c |   69 ++++++++++++++++++++++++++++++++++
- 2 files changed, 70 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 032c57c..723fa93 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1900,7 +1900,7 @@ static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
- 	entry = iter->ent;
- 
- 	if (trace_flags & TRACE_ITER_CONTEXT_INFO) {
--		if (!trace_seq_printf(s, "%d %d %llu ",
-+		if (!trace_seq_printf(s, " %6d %3d %20llu ",
- 				      entry->pid, iter->cpu, iter->ts))
- 			goto partial;
+diff --git a/kernel/trace/latency_hist.c b/kernel/trace/latency_hist.c
+index b3b5ea2..8edc70c 100644
+--- a/kernel/trace/latency_hist.c
++++ b/kernel/trace/latency_hist.c
+@@ -204,8 +204,10 @@ static void *l_start(struct seq_file *m, loff_t *pos)
+ 			   , my_hist->beyond_hist_bound_samples
+ 			   , MAX_ENTRY_NUM, "samples");
  	}
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index eca09b3..023e0be 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -1033,6 +1033,66 @@ print_graph_function(struct trace_iterator *iter, int flags)
- 	return TRACE_TYPE_HANDLED;
- }
- 
-+static enum print_line_t
-+print_graph_raw(struct trace_iterator *iter, int flags)
-+{
-+	struct trace_entry *entry = iter->ent;
-+	struct trace_seq *s = &iter->seq;
-+	int ret = 0;
-+	int depth;
-+	void *func;
-+	char *io;
-+
-+	switch (entry->type) {
-+	case TRACE_GRAPH_ENT: {
-+		struct ftrace_graph_ent_entry *field;
-+		trace_assign_type(field, entry);
-+		depth = field->graph_ent.depth;
-+		func = (void *) field->graph_ent.func;
-+		io = "-->";
-+		break;
+-	if (index >= MAX_ENTRY_NUM)
++	if (index >= MAX_ENTRY_NUM) {
++		kfree(index_ptr);
+ 		return NULL;
 +	}
-+	case TRACE_GRAPH_RET: {
-+		struct ftrace_graph_ret_entry *field;
-+		trace_assign_type(field, entry);
-+		depth = field->ret.depth;
-+		func = (void *) field->ret.func;
-+		io = "<--";
-+		break;
-+	}
-+	default:
-+		return print_graph_comment(s, entry, iter);
-+	}
-+
-+	ret = trace_seq_printf(s, "%s%6d %6d %6d %4d %7d %20p %4s %ps\n",
-+		trace_flags & TRACE_ITER_CONTEXT_INFO ? "" : " ",
-+		depth,
-+		entry->lock_depth,
-+		entry->flags,
-+		entry->preempt_count,
-+		entry->pid,
-+		entry,
-+		io,
-+		func);
-+
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	return TRACE_TYPE_HANDLED;
-+}
-+
-+static void print_graph_raw_header(struct seq_file *s)
-+{
-+	if (trace_flags & TRACE_ITER_CONTEXT_INFO)
-+		seq_printf(s, "#%6s %3s %20s ", "pid", "cpu", "duration");
-+	else
-+		seq_printf(s, "#");
-+
-+	seq_printf(s, "%6s %6s %6s %4s %7s %20s %4s %s\n",
-+		"depth", "ldepth", "flags", "pc", "pid",
-+		"entry", "i/o", "function");
-+}
-+
- static void print_lat_header(struct seq_file *s)
- {
- 	static const char spaces[] = "                "	/* 16 spaces */
-@@ -1059,6 +1119,11 @@ void print_graph_headers(struct seq_file *s)
- {
- 	int lat = trace_flags & TRACE_ITER_LATENCY_FMT;
  
-+	if (trace_flags & TRACE_ITER_RAW) {
-+		print_graph_raw_header(s);
-+		return;
-+	}
-+
- 	if (lat)
- 		print_lat_header(s);
- 
-@@ -1074,6 +1139,7 @@ void print_graph_headers(struct seq_file *s)
- 		seq_printf(s, "|||||");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
- 		seq_printf(s, "  DURATION   ");
-+
- 	seq_printf(s, "               FUNCTION CALLS\n");
- 
- 	/* 2nd line */
-@@ -1136,14 +1202,17 @@ void graph_trace_close(struct trace_iterator *iter)
- 	}
- }
- 
-+
- static struct trace_event graph_trace_entry_event = {
- 	.type		= TRACE_GRAPH_ENT,
- 	.trace		= print_graph_function,
-+	.raw		= print_graph_raw,
- };
- 
- static struct trace_event graph_trace_ret_event = {
- 	.type		= TRACE_GRAPH_RET,
- 	.trace		= print_graph_function,
-+	.raw		= print_graph_raw,
- };
- 
- static struct tracer graph_trace __read_mostly = {
--- 
-1.6.6
-
+ 	*index_ptr = index;
+ 	return index_ptr;
