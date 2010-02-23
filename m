@@ -1,69 +1,190 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636Ab0BWWt1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 17:49:27 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:27008 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259Ab0BWWtZ (ORCPT
+	id S1754651Ab0BWWw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 17:52:58 -0500
+Received: from thumper2.emsphone.com ([199.67.51.102]:46872 "EHLO
+	thumper2.allantgroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754381Ab0BWWw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 17:49:25 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fOPciN7oAUNzZHszZUWJoBQD8z6YY8G6y8LXzjGHj910DsxUTjbTURqlUvD84gm0l
-	k9uwWXmFtxKMLSWTYN8ig==
-Date: Tue, 23 Feb 2010 14:49:12 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] memcg: page fault oom improvement v2
-In-Reply-To: <20100223160714.72520b48.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1002231443410.8693@chino.kir.corp.google.com>
-References: <20100223120315.0da4d792.kamezawa.hiroyu@jp.fujitsu.com> <20100223140218.0ab8ee29.nishimura@mxp.nes.nec.co.jp> <20100223152116.327a777e.nishimura@mxp.nes.nec.co.jp> <20100223152650.e8fc275d.kamezawa.hiroyu@jp.fujitsu.com>
- <20100223155543.796138fc.nishimura@mxp.nes.nec.co.jp> <20100223160714.72520b48.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 23 Feb 2010 17:52:56 -0500
+X-Greylist: delayed 816 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 17:52:56 EST
+Date: Tue, 23 Feb 2010 16:39:38 -0600
+From: Andy <genanr@emsphone.com>
+To: andrew.vasquez@qlogic.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: qla2xxx UNDERRUNS and failed multipath paths
+Message-ID: <20100223223938.GA4612@allantgroup.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010, KAMEZAWA Hiroyuki wrote:
+I discovered I was easily able to trigger path failures in kernel 2.6.32.8. 
+Since I had known I had not had this problem in the 2.6.27 series kernels, I
+bisected between 2.6.27 and 2.6.28 and found that the following commit
+causes UNDERRUNS to turn into a serious problem.
 
-> Ouch, I missed to add memcontrol.h to quilt's reflesh set..
-> This is updated one. Anyway, I'd like to wait for the next mmotm.
-> We already have several changes. 
-> 
+2d136938792ba04bf3b6bb2d3a2807dc05c396fc - Additional residual-count
+corrections during UNDERRUN handling 
 
-I think it would be better to just remove mem_cgroup_out_of_memory() and 
-make it go through out_of_memory() by specifying a non-NULL pointer to a 
-struct mem_cgroup.  We don't need the duplication in code that these two 
-functions have and then we can begin to have some consistency with how to 
-deal with panic_on_oom.
+HBA: QLA2460 (ISP2432)
+FW: 4.04.05 (486)
 
-It would be much better to prefer killing current in pagefault oom 
-conditions, as the final patch in my oom killer rewrite does, if it is 
-killable.  If not, we scan the tasklist and find another suitable 
-candidate.  If current is bound to a memcg, we pass that to 
-select_bad_process() so that we only kill other tasks from the same 
-cgroup.
+I have since tested 2.6.32.8 with and without the patch.
 
-This allows us to hijack the TIF_MEMDIE bit to detect when there is a 
-parallel pagefault oom killing when the oom killer hasn't necessarily been 
-invoked to kill a system-wide task (it's simply killing current, by 
-default, and giving it access to memory reserves).  Then, we can change 
-out_of_memory(), which also now handles memcg oom conditions, to always 
-scan the tasklist first (including for mempolicy and cpuset constrained 
-ooms), check for any candidates that have TIF_MEMDIE, and return 
-ERR_PTR(-1UL) if so.  That catches the parallel pagefault oom conditions 
-from needlessly killing memcg tasks.  panic_on_oom would only panic after 
-the tasklist scan has completed and returned != ERR_PTR(-1UL), meaning 
-pagefault ooms are exempt from that sysctl.
+I do have a few systems running kernels that have the patch that run fine,
+but most they seem to be using newer HBAs (most qla2560/2562, but one is running
+a qla2462 fw:4.04.05 (486)). 
 
-Anyway, do you think it would be possible to rebase on mmotm with my oom 
-killer rewrite patches?  They're at 
-http://www.kernel.org/pub/linux/kernel/people/rientjes/oom-killer-rewrite
+Before the patch I get a bunch of UNDERRUN, but nothing else happens:
+
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x2000 cdb=0x2a os_underflow=0x2000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x40000 cdb=0x28 os_underflow=0x40000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x1000 cdb=0x2a os_underflow=0x1000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x20000 cdb=0x28 os_underflow=0x20000
+Feb 23 15:20:03 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:04 linuxdev1 kernel: scsi(3:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:04 linuxdev1 kernel: scsi(4:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:22 linuxdev1 kernel: scsi(3:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 23 15:20:22 linuxdev1 kernel: scsi(3:1:3) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+
+After the patch I get the following:
+
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(1:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: sd 1:0:1:0: [sdg] Unhandled error code
+Feb 22 13:33:06 linuxdev1 kernel: sd 1:0:1:0: [sdg] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK
+Feb 22 13:33:06 linuxdev1 kernel: sd 1:0:1:0: [sdg] CDB: Write(10): 2a 00 00 fa 96 78 00 04 00 00
+Feb 22 13:33:06 linuxdev1 kernel: device-mapper: multipath: Failing path 8:96.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:0:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: sd 2:0:1:0: [sdq] Unhandled error code
+Feb 22 13:33:06 linuxdev1 kernel: sd 2:0:1:0: [sdq] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK
+Feb 22 13:33:06 linuxdev1 kernel: sd 2:0:1:0: [sdq] CDB: Write(10): 2a 00 00 fa 9a 78 00 04 00 00
+Feb 22 13:33:06 linuxdev1 kernel: device-mapper: multipath: Failing path 65:0.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:06 linuxdev1 kernel: scsi(2:0:0:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:07 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022de74700 from RISC. pid=28547.
+Feb 22 13:33:07 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:07 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 6f83 2002.
+
+and eventually...
+
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (8000 of 8000 bytes)...retrying command.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2:1:0) UNDERRUN status detected 0x15-0x8. resid=0x0 fw_resid=0x80000 cdb=0x2a os_underflow=0x80000
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2:0:1:0) Dropped frame(s) detected (80000 of 80000 bytes)...retrying command.
+Feb 22 13:33:13 linuxdev1 kernel: sd 2:0:1:0: [sdq] Unhandled error code
+Feb 22 13:33:13 linuxdev1 kernel: sd 2:0:1:0: [sdq] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK
+Feb 22 13:33:13 linuxdev1 kernel: sd 2:0:1:0: [sdq] CDB: Write(10): 2a 00 01 1d 2a a0 00 00 40 00
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff880226cb1d40 from RISC. pid=31189.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 79d5 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022dedc5c0 from RISC. pid=31199.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 79df 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff880226cb1c40 from RISC. pid=31200.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 79e0 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff880226cb1300 from RISC. pid=31202.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 79e2 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868240 from RISC. pid=31291.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a3b 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868b00 from RISC. pid=31292.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a3c 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e8682c0 from RISC. pid=31293.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a3d 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868880 from RISC. pid=31294.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a3e 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868cc0 from RISC. pid=31295.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a3f 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868e00 from RISC. pid=31297.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a41 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868ec0 from RISC. pid=31298.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a42 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868500 from RISC. pid=31299.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a43 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868d80 from RISC. pid=31301.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a45 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868180 from RISC. pid=31303.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a47 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868f80 from RISC. pid=31304.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a48 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868700 from RISC. pid=31305.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a49 2002.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx_eh_abort(2): aborting sp ffff88022e868600 from RISC. pid=31306.
+Feb 22 13:33:13 linuxdev1 kernel: scsi(2): ABORT status detected 0x5-0x0.
+Feb 22 13:33:13 linuxdev1 kernel: qla2xxx 0000:0e:00.0: scsi(2:1:0): Abort command issued -- 1 7a4a 2002.
+Feb 22 13:33:14 linuxdev1 kernel: __ratelimit: 131618 callbacks suppressed
+Feb 22 13:33:14 linuxdev1 kernel: lost page write due to I/O error on dm-5
+
+Any ideas why the patch would cause such problems?  Any way to reduce my
+underruns?
+
+Thanks,
+
+	Andy
