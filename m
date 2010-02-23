@@ -1,334 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463Ab0BWSmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:42:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55718 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070Ab0BWSmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:42:09 -0500
-Message-ID: <4B842129.8020906@kernel.org>
-Date: Tue, 23 Feb 2010 10:40:41 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>, Gary Hade <garyhade@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: Iranna D Ankad <iranna.ankad@in.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, len.brown@intel.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Other problem/regression with b9c61b70075c87a8612624736faf4a2de5b1ed30
-References: <201002221108.42847.trenn@suse.de> <4B826CA6.7060007@kernel.org> <201002221258.38506.trenn@suse.de> <4B839ACB.3000804@kernel.org>
-In-Reply-To: <4B839ACB.3000804@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753476Ab0BWSsb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 13:48:31 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:56181 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753297Ab0BWSsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 13:48:30 -0500
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Paul Turner <pjt@google.com>,
+       Dario Faggioli <faggioli@gandalf.sssup.it>,
+       Michael Trimarchi <michael@evidence.eu.com>,
+       Dhaval Giani <dhaval@retis.sssup.it>,
+       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org,
+       Fabio Checconi <fchecconi@gmail.com>
+Subject: [PATCH 0/3] sched: use EDF to throttle RT task groups v2
+Date: Tue, 23 Feb 2010 19:56:32 +0100
+Message-Id: <cover.1266931410.git.fabio@helm.retis>
+X-Mailer: git-send-email 1.6.5.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 01:07 AM, Yinghai Lu wrote:
-> Gary,
-> 
-> can you check this patch on your x3950?
+This patchset introduces a group level EDF scheduler extending the
+throttling mechanism, in order to make it support generic period
+assignments.  With this patch, the runtime and period parameters
+can be used to specify arbitrary CPU reservations for RT tasks.
 
-Subject: [PATCH -v2] x86: fix out of order of gsi
+>From the previous post [1] I've integrated Peter's suggestions, using
+a multi-level hierarchy to do admission control, but a one-level only
+equivalent hierarchy for scheduling, and I've not removed the bandwidth
+migration mechanism, trying to adapt it to EDF scheduling.  In this
+version tasks are still inserted into priority arrays and only groups
+are kept in a per-rq edf tree.
 
-found IBM x3950 will have problem after
+The main design issues involved:
 
-|commit b9c61b70075c87a8612624736faf4a2de5b1ed30
-|
-|    x86/pci: update pirq_enable_irq() to setup io apic routing
+  - Since it is not easy to mix tasks and groups on the same scheduler
+    queue (tasks have no deadlines), the bandwidth reserved to the tasks
+    in a group is controlled with two additional cgroup attributes:
+    rt_task_runtime_us and rt_task_period_us.  These attributes control,
+    within a cgroup, how much bandwidth is reserved to the tasks it
+    contains.  The old attributes, rt_runtime_us and rt_period_us, are
+    still there, and control the bandwidth assigned to the cgroup.  They
+    are used only for admission control.
 
-The problem is that with the patch, the machine freezes when
-console=ttyS0,... kernel serial parameter is passed.
-It seem to freeze at DVD initialization and the whole problem seem
-to be DVD/pata related, but somehow exposed through the serial
-parameter.
-Such apic problems can expose really weird behavior..
+  - Shared resources are still handled using boosting.  When a group
+    contains a task inside a critical section it is scheduled according
+    the highest priority among the ones of the tasks it contains.
+    In this way, the same group has two modes: when it is not boosted
+    it is scheduled according to its deadline; when it is boosted, it
+    is scheduled according its priority.  Boosted groups are always
+    favored over non-boosted ones.
 
-<6>ACPI: IOAPIC (id[0x10] address[0xfecff000] gsi_base[0])
-<6>IOAPIC[0]: apic_id 16, version 0, address 0xfecff000, GSI 0-2
-<6>ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[3])
-<6>IOAPIC[1]: apic_id 15, version 0, address 0xfec00000, GSI 3-38
-<6>ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[39])
-<6>IOAPIC[2]: apic_id 14, version 0, address 0xfec01000, GSI 39-74
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 1 global_irq 4 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 5 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 3 global_irq 6 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 4 global_irq 7 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 6 global_irq 9 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 7 global_irq 10 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 8 global_irq 11 low edge)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 12 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 12 global_irq 15 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 13 global_irq 16 dfl dfl)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 17 low edge)
-<6>ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 18 dfl dfl)
+  - Given that the various rt_rq's belonging to the same task group
+    are activated independently, there is the need of a timer per
+    each rt_rq.
 
-it turns out that system have three io apic controller. but put boot ioapic
-routing in second one. and that gsi_base is not 0. it is using bunch of INT_SRC_OVR...
+  - While balancing the bandwidth assigned to a cgroup on various cpus
+    we have to make sure that utilization for the rt_rq's on each cpu
+    does not exceed the global utilization limit for RT tasks.  
 
-recent changes
-1. one set routing for first io apic controller
-2. assume irq = gsi
-will break theat system.
+Please note that these patches target a completely different usage
+scenario from Dario's work on SCHED_DEADLINE.  SCHED_DEADLINE is about
+deadline scheduling for tasks, introducing a new user-visible scheduling
+policy; this patchset is about using throttling to provide real-time
+guarantees to SCHED_RR and SCHED_FIFO tasks on a per-group basis.  The
+two patchsets do not overlap in functionality, both aim at improving
+the predictability of the system; we'll want to work on sharing parts of
+the code, but now, after discussing with Dario, we think it's too early
+to do that.
 
-so try to remap those gsi, need to seperate boot_ioapic_id detection out of enable_IO_APIC
-and call them early.
-introduce boot_ioapic_id, and remap_ioapic_gsi...
+The patchset is against tip, it should compile (and hopefully work) on
+all the combinations of CONFIG_{SMP/RT_GROUP_SCHED}, but the work was
+focused on the SMP & RT_GROUP_SCHED case, I've  only compile- or boot-
+tested the other configs.
 
--v2: shift gsi with delta instead of gsi_base of boot_ioapic_idx
+As usual, feedback welcome.
 
-Reported-by: Iranna D Ankad <iranna.ankad@in.ibm.com>
-Bisected-by: Iranna D Ankad <iranna.ankad@in.ibm.com>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: stable@kernel.org
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+[1] http://lkml.org/lkml/2009/6/15/510
 
----
- arch/x86/include/asm/io_apic.h |    3 +-
- arch/x86/include/asm/mpspec.h  |    1 
- arch/x86/kernel/acpi/boot.c    |   30 +++++++++++++++++++---
- arch/x86/kernel/apic/io_apic.c |   55 ++++++++++++++++++++++++-----------------
- 4 files changed, 62 insertions(+), 27 deletions(-)
+Fabio Checconi (3):
+  sched: use EDF to schedule groups
+  sched: enforce per-cpu utilization limits on runtime balancing
+  sched: make runtime balancing code more EDF-friendly
 
-Index: linux-2.6/arch/x86/include/asm/io_apic.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/io_apic.h
-+++ linux-2.6/arch/x86/include/asm/io_apic.h
-@@ -113,6 +113,7 @@ struct IR_IO_APIC_route_entry {
-  */
- extern int nr_ioapics;
- extern int nr_ioapic_registers[MAX_IO_APICS];
-+extern int boot_ioapic_idx;
- 
- #define MP_MAX_IOAPIC_PIN 127
- 
-@@ -160,7 +161,7 @@ extern int io_apic_get_redir_entries(int
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
- 		 struct io_apic_irq_attr *irq_attr);
--void setup_IO_APIC_irq_extra(u32 gsi);
-+void setup_IO_APIC_irq_extra(u32 gsi, unsigned int *irq);
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- extern void ioapic_insert_resources(void);
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -105,6 +105,7 @@ extern void mp_config_acpi_legacy_irqs(v
- struct device;
- extern int mp_register_gsi(struct device *dev, u32 gsi, int edge_level,
- 				 int active_high_low);
-+int remap_ioapic_gsi(int ioapic, u32 gsi);
- extern int acpi_probe_gsi(void);
- #ifdef CONFIG_X86_IO_APIC
- extern int mp_find_ioapic(int gsi);
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -449,7 +449,7 @@ int acpi_gsi_to_irq(u32 gsi, unsigned in
- 
- #ifdef CONFIG_X86_IO_APIC
- 	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
--		setup_IO_APIC_irq_extra(gsi);
-+		setup_IO_APIC_irq_extra(gsi, irq);
- #endif
- 
- 	return 0;
-@@ -1052,11 +1052,32 @@ static int mp_config_acpi_gsi(struct dev
- 	return 0;
- }
- 
-+int remap_ioapic_gsi(int ioapic, u32 gsi)
-+{
-+	int base_boot = mp_gsi_routing[boot_ioapic_idx].gsi_base;
-+	int base_x;
-+
-+	if (!base_boot)
-+		return gsi;
-+
-+	base_x = mp_gsi_routing[ioapic].gsi_base;
-+	if (base_x < base_boot) {
-+		int delta;
-+		delta = mp_gsi_routing[boot_ioapic_idx].gsi_end + 1;
-+		delta -= base_boot;
-+		gsi += delta;
-+	} else if (base_x == base_boot)
-+		gsi -= base_boot;
-+
-+	return gsi;
-+}
-+
- int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
- {
- 	int ioapic;
- 	int ioapic_pin;
- 	struct io_apic_irq_attr irq_attr;
-+	u32 plat_gsi;
- 
- 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
- 		return gsi;
-@@ -1077,12 +1098,13 @@ int mp_register_gsi(struct device *dev,
- 	if (ioapic_renumber_irq)
- 		gsi = ioapic_renumber_irq(ioapic, gsi);
- #endif
-+	plat_gsi = remap_ioapic_gsi(ioapic, gsi);
- 
- 	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
- 		printk(KERN_ERR "Invalid reference to IOAPIC pin "
- 		       "%d-%d\n", mp_ioapics[ioapic].apicid,
- 		       ioapic_pin);
--		return gsi;
-+		return plat_gsi;
- 	}
- 
- 	if (enable_update_mptable)
-@@ -1091,9 +1113,9 @@ int mp_register_gsi(struct device *dev,
- 	set_io_apic_irq_attr(&irq_attr, ioapic, ioapic_pin,
- 			     trigger == ACPI_EDGE_SENSITIVE ? 0 : 1,
- 			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
--	io_apic_set_pci_routing(dev, gsi, &irq_attr);
-+	io_apic_set_pci_routing(dev, plat_gsi, &irq_attr);
- 
--	return gsi;
-+	return plat_gsi;
- }
- 
- /*
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -84,6 +84,7 @@ int nr_ioapic_registers[MAX_IO_APICS];
- /* I/O APIC entries */
- struct mpc_ioapic mp_ioapics[MAX_IO_APICS];
- int nr_ioapics;
-+int boot_ioapic_idx;
- 
- /* IO APIC gsi routing info */
- struct mp_ioapic_gsi  mp_gsi_routing[MAX_IO_APICS];
-@@ -1028,13 +1029,18 @@ static int pin_2_irq(int idx, int apic,
- 	if (test_bit(bus, mp_bus_not_pci)) {
- 		irq = mp_irqs[idx].srcbusirq;
- 	} else {
--		/*
--		 * PCI IRQs are mapped in order
--		 */
--		i = irq = 0;
--		while (i < apic)
--			irq += nr_ioapic_registers[i++];
--		irq += pin;
-+		if (!acpi_ioapic) {
-+			/*
-+			 * PCI IRQs are mapped in order
-+			 */
-+			i = irq = 0;
-+			while (i < apic)
-+				irq += nr_ioapic_registers[i++];
-+			irq += pin;
-+		} else {
-+			irq = pin + mp_gsi_routing[apic].gsi_base;
-+			irq = remap_ioapic_gsi(apic, irq);
-+		}
- 		/*
-                  * For MPS mode, so far only needed by ES7000 platform
-                  */
-@@ -1473,9 +1479,10 @@ static struct {
- 	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
- } mp_ioapic_routing[MAX_IO_APICS];
- 
--static void __init setup_IO_APIC_irqs(void)
-+
-+static void __init setup_IO_APIC_irqs(int apic_id)
- {
--	int apic_id = 0, pin, idx, irq;
-+	int pin, idx, irq;
- 	int notcon = 0;
- 	struct irq_desc *desc;
- 	struct irq_cfg *cfg;
-@@ -1483,14 +1490,6 @@ static void __init setup_IO_APIC_irqs(vo
- 
- 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
- 
--#ifdef CONFIG_ACPI
--	if (!acpi_disabled && acpi_ioapic) {
--		apic_id = mp_find_ioapic(0);
--		if (apic_id < 0)
--			apic_id = 0;
--	}
--#endif
--
- 	for (pin = 0; pin < nr_ioapic_registers[apic_id]; pin++) {
- 		idx = find_irq_entry(apic_id, pin, mp_INT);
- 		if (idx == -1) {
-@@ -1545,7 +1544,7 @@ static void __init setup_IO_APIC_irqs(vo
-  * but could not use acpi_register_gsi()
-  * like some special sci in IBM x3330
-  */
--void setup_IO_APIC_irq_extra(u32 gsi)
-+void setup_IO_APIC_irq_extra(u32 gsi, unsigned int *pirq)
- {
- 	int apic_id = 0, pin, idx, irq;
- 	int node = cpu_to_node(boot_cpu_id);
-@@ -1565,6 +1564,7 @@ void setup_IO_APIC_irq_extra(u32 gsi)
- 		return;
- 
- 	irq = pin_2_irq(idx, apic_id, pin);
-+	*pirq = irq;
- #ifdef CONFIG_SPARSE_IRQ
- 	desc = irq_to_desc(irq);
- 	if (desc)
-@@ -1940,11 +1940,10 @@ __apicdebuginit(int) print_ICs(void)
- 
- fs_initcall(print_ICs);
- 
--
- /* Where if anywhere is the i8259 connect in external int mode */
- static struct { int pin, apic; } ioapic_i8259 = { -1, -1 };
- 
--void __init enable_IO_APIC(void)
-+static void __init probe_ioapic_i8259(void)
- {
- 	union IO_APIC_reg_01 reg_01;
- 	int i8259_apic, i8259_pin;
-@@ -2001,7 +2000,12 @@ void __init enable_IO_APIC(void)
- 	{
- 		printk(KERN_WARNING "ExtINT in hardware and MP table differ\n");
- 	}
-+}
- 
-+void __init enable_IO_APIC(void)
-+{
-+	if (!nr_legacy_irqs)
-+		return;
- 	/*
- 	 * Do not trust the IO-APIC being empty at bootup
- 	 */
-@@ -3126,7 +3130,6 @@ out:
- 
- void __init setup_IO_APIC(void)
- {
--
- 	/*
- 	 * calling enable_IO_APIC() is moved to setup_local_APIC for BP
- 	 */
-@@ -3139,7 +3142,15 @@ void __init setup_IO_APIC(void)
- 	x86_init.mpparse.setup_ioapic_ids();
- 
- 	sync_Arb_IDs();
--	setup_IO_APIC_irqs();
-+	probe_ioapic_i8259();
-+	boot_ioapic_idx = ioapic_i8259.apic;
-+#ifdef CONFIG_ACPI
-+	if (!acpi_disabled && acpi_ioapic && boot_ioapic_idx < 0)
-+		boot_ioapic_idx = mp_find_ioapic(0);
-+#endif
-+	if (boot_ioapic_idx < 0)
-+		boot_ioapic_idx = 0;
-+	setup_IO_APIC_irqs(boot_ioapic_idx);
- 	init_IO_APIC_traps();
- 	if (nr_legacy_irqs)
- 		check_timer();
+ include/linux/sched.h |    8 +-
+ kernel/sched.c        |  467 +++++++++++---------
+ kernel/sched_rt.c     | 1159 +++++++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 1161 insertions(+), 473 deletions(-)
+
