@@ -1,42 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0BWDR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 22:17:26 -0500
-Received: from zimbra.ccs.neu.edu ([129.10.116.59]:55574 "EHLO
-	zimbra.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753147Ab0BWDRY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 22:17:24 -0500
-Date: Mon, 22 Feb 2010 22:17:06 -0500 (EST)
-From: Ari Entlich <atrigent@ccs.neu.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-ID: <21495088.197211266895026487.JavaMail.root@zimbra>
-In-Reply-To: <8748337.196941266894473447.JavaMail.root@zimbra>
-Subject: Re: [PATCH v2] Add a new VT mode which is like VT_PROCESS but
- doesn't require a VT_RELDISP ioctl call
+	id S1753776Ab0BWDXh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 22:23:37 -0500
+Received: from thunk.org ([69.25.196.29]:53534 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753482Ab0BWDXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 22:23:36 -0500
+Date: Mon, 22 Feb 2010 22:23:17 -0500
+From: tytso@mit.edu
+To: Dave Chinner <david@fromorbit.com>
+Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+       stable@kernel.org, gregkh@suse.de
+Subject: Re: [PATCH] writeback: Fix broken sync writeback
+Message-ID: <20100223032317.GG23832@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Dave Chinner <david@fromorbit.com>,
+	Jan Kara <jack@suse.cz>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+	stable@kernel.org, gregkh@suse.de
+References: <alpine.LFD.2.00.1002151601360.18830@localhost.localdomain>
+ <20100216230017.GJ3153@quack.suse.cz>
+ <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
+ <20100217013336.GK3153@quack.suse.cz>
+ <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
+ <20100217043009.GZ5337@thunk.org>
+ <alpine.LFD.2.00.1002162052230.4141@localhost.localdomain>
+ <20100222172938.GA2601@quack.suse.cz>
+ <20100222210112.GE23832@thunk.org>
+ <20100223025350.GC22370@discord.disaster>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [129.10.223.210]
-X-Mailer: Zimbra 5.0.22_GA_3210.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.22_GA_3210.UBUNTU6)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223025350.GC22370@discord.disaster>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ "Andrew Morton" <akpm@linux-foundation.org> wrote:
-> Well, it "should" become easier, but does it?  Has anyone patched their
-> X server to confirm that this kernel change improves things?  I'm
-> wondering how this change was tested?
+On Tue, Feb 23, 2010 at 01:53:50PM +1100, Dave Chinner wrote:
+> 
+> Ignoring nr_to_write completely can lead to issues like we used to
+> have with XFS - it would write an entire extent (8GB) at a time and
+> starve all other writeback. Those starvation problems - which were
+> very obvious on NFS servers - went away when we trimmed back the
+> amount to write in a single pass to saner amounts...
 
-Haha yeah, that's a very good point. I put a note in the first version of this patch that it had been compile tested only... I probably should have put the note in the second version as well. It would probably be a good idea to hold off on committing this anywhere until I actually get it working with X. In fact, maybe it would even be best for you to back it out of the mm tree until it's been "proven", at which point I'll resubmit the patch.
+How do you determine what a "sane amount" is?  Is it something that is
+determined dynamically, or is it a hard-coded or manually tuned value?
 
-> Is there a plan to get the X server modified to use VT_PROCESS_AUTO?
+> As to a generic solution, why do you think I've been advocating
+> separate per-sb data sync and inode writeback methods that separate
+> data writeback from inode writeback for so long? ;)
 
-I am now actively working on that.
+Heh.
 
-Also, sorry about the code style issues. I'm a bit of a noob at this. I will include the style fixes in the next version of the patch.
+> > This is done to avoid a lock inversion, and so this is an
+> > ext4-specific thing (at least I don't think XFS's delayed allocation
+> > has this misfeature).
+> 
+> Not that I know of, but then again I don't know what inversion ext4
+> is trying to avoid. Can you describe the inversion, Ted?
 
-Ari
+The locking order is journal_start_handle (starting a micro
+transaction in jbd) -> lock_page.  A more detailed description of why
+this locking order is non-trivial for us to fix in ext4 can be found
+in the description of commit f0e6c985.
+
+Regards,
+
+							- Ted
