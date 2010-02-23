@@ -1,73 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667Ab0BWBzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:55:11 -0500
-Received: from sirokuusama.dnainternet.net ([83.102.40.133]:58798 "EHLO
-	sirokuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752325Ab0BWBzI (ORCPT
+	id S1752873Ab0BWB4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:56:20 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:43210 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372Ab0BWB4T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:55:08 -0500
-X-Spam-Flag: NO
-X-Spam-Score: 0
-From: Anssi Hannula <anssi.hannula@iki.fi>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Tue, 23 Feb 2010 03:55:04 +0200
-User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
-       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.1002221013480.1656-100000@iolanthe.rowland.org> <201002222035.36043.anssi.hannula@iki.fi> <201002230026.02941.oliver@neukum.org>
-In-Reply-To: <201002230026.02941.oliver@neukum.org>
+	Mon, 22 Feb 2010 20:56:19 -0500
+Message-ID: <4B8335B7.6010807@canonical.com>
+Date: Mon, 22 Feb 2010 17:56:07 -0800
+From: John Johansen <john.johansen@canonical.com>
+Organization: Canonical
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Fix __d_path for lazy unmounts
+References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com> <20100222161714.de1a7fca.akpm@linux-foundation.org>
+In-Reply-To: <20100222161714.de1a7fca.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002230355.04422.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On tiistai 23 helmikuu 2010 01:26:02 Oliver Neukum wrote:
-> Am Montag, 22. Februar 2010 19:35:35 schrieb Anssi Hannula:
-> > On maanantai 22 helmikuu 2010 17:28:36 Alan Stern wrote:
-> > > The major difference between the logs is in the way the data get
-> > > divided up into packets.  In both the successful logs, there are
-> > > 
-> > > sequences of bulk-OUT packets with lengths like:
-> > > 	44, 1, 15, 1, 13
-> > > 
-> > > where the unsuccessful transfer just has a single packet of length 74.
-> > > Also, the successful transfers show a lot of bulk-IN traffic where the
-> > > unsuccessful transfer doesn't have any.  I don't know if that is
-> > > relevant, however.
-> > > 
-> > > No other differences stand out.
-> > 
-> > I guess that would suggest that the device doesn't allow the
-> > initialization data to be broken into packets arbitrarily (though some
-> > differences seem allowed, as the windows driver transmits them
-> > differently).
+Andrew Morton wrote:
+> On Sat, 20 Feb 2010 04:27:38 -0800 john.johansen@canonical.com wrote:
 > 
-> Hi,
+>> From: John Johansen <john.johansen@canonical.com>
+>>
+>> When __d_path() hits a lazily unmounted mount point, it tries to prepend
+>> the name of the lazily unmounted dentry to the path name.  It gets this wrong,
+>> and also overwrites the slash that separates the name from the following
+>> pathname component. This patch fixes that; if a process was in directory
+>> /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
+>> missing slash), while the new result with this patch is ``/foo/bar''.
+>>
+>> Signed-off-by: John Johansen <john.johansen@canonical.com>
+>> ---
+>>  fs/dcache.c |   27 +++++++++++++++++++++++----
+>>  1 files changed, 23 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/fs/dcache.c b/fs/dcache.c
+>> index 953173a..df49666 100644
+>> --- a/fs/dcache.c
+>> +++ b/fs/dcache.c
+>> @@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
+>>  	retval = end-1;
+>>  	*retval = '/';
+>>  
+>> -	for (;;) {
+>> +	while(dentry != root->dentry || vfsmnt != root->mnt) {
 > 
-> let's try testing this hypothesis. Can you change the following line in
-> usb_serial_probe():
-> 		if (kfifo_alloc(&port->write_fifo, PAGE_SIZE, GFP_KERNEL))
-> 			goto probe_error;
-> 
-> to:
-> 
-> 		if (kfifo_alloc(&port->write_fifo, 64, GFP_KERNEL))
-> 			goto probe_error;
-> 
-> This may shed some light on the behavior.
+thanks, forgot to refresh after checkpatch
 
-No effect.
+> Please put a space between the `while' and the `('.
+> 
+>>  		struct dentry * parent;
+>>  
+>> -		if (dentry == root->dentry && vfsmnt == root->mnt)
+>> -			break;
+>>  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+>>  			/* Global root? */
+>>  			if (vfsmnt->mnt_parent == vfsmnt) {
+>> @@ -1950,9 +1948,30 @@ out:
+>>  	return retval;
+>>  
+>>  global_root:
+>> -	retval += 1;	/* hit the slash */
+>> +	/*
+>> +	 * We went past the (vfsmount, dentry) we were looking for and have
+>> +	 * either hit a root dentry, a lazily unmounted dentry, an
+>> +	 * unconnected dentry, or the file is on a pseudo filesystem.
+>> +	 */
+>> +	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
+>> +	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
+> 
+> Did you really mean to assign 1 to dentry->d_name.len here?  Was `=='
+> intended?  I hope so, because modifying the dentry in d_path() would be odd.
+> 
+> If this was a mistake then why did the patch pass testing?
+> 
+Nope, definite bug, missed that case in testing.  In this case every test that
+had a leading '/' had a d_name.len == 1 as well.
 
-However, I added more sleep(1) calls to gobi_loader, now between every magicX 
-string and firmware files (therefore ensuring the data gets flushed to the 
-device at those points). Now the upload was successful.
+I haven't seen the case of where a root dentry has a leading / and doesn't have
+a d_name.len == 1 and if that case never happens the test wouldn't be needed.
 
--- 
-Anssi Hannula
+I will respin the patch, and include testing this time
+
+thanks
+john
