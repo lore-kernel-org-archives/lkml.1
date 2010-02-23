@@ -1,48 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709Ab0BWRiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:38:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19497 "EHLO mx1.redhat.com"
+	id S1751564Ab0BWRjE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:39:04 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39508 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751037Ab0BWRit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:38:49 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: GeunSik Lim <leemgs1@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: question on readahead and sync mounting
-References: <201002230032.18705.oliver@neukum.org>
-	<49b7c2351002221548ma5b8e81m80ac4b60a6eb9d9d@mail.gmail.com>
-	<201002230059.09390.oliver@neukum.org>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 23 Feb 2010 12:38:44 -0500
-In-Reply-To: <201002230059.09390.oliver@neukum.org> (Oliver Neukum's message
-	of "Tue, 23 Feb 2010 00:59:09 +0100")
-Message-ID: <x497hq34ztn.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	id S1752894Ab0BWRjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:39:01 -0500
+Message-ID: <4B84118C.90203@zytor.com>
+Date: Tue, 23 Feb 2010 09:34:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Borislav Petkov <bp@amd64.org>
+CC: Michal Marek <mmarek@suse.cz>, linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+References: <4B7C29C1.10906@suse.cz> <20100218061923.GA1594@liondog.tnic> <20100219142205.GA32533@aftab> <4B7EB6EF.9010405@zytor.com> <20100219164512.GA492@aftab> <4B7EC20C.30607@zytor.com> <20100222141737.GB21233@aftab> <4B82BD01.3030008@zytor.com> <20100222184945.GD21233@aftab> <4B82E144.1050007@zytor.com> <20100223155852.GF30382@aftab>
+In-Reply-To: <20100223155852.GF30382@aftab>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum <oliver@neukum.org> writes:
-
-> Am Dienstag, 23. Februar 2010 00:48:39 schrieben Sie:
->> Please, Refer to below articles to understand readahead essentially.
->> 
->> http://lwn.net/Articles/235164/ (On-demand readahead by corbet)
->> http://kernelnewbies.org/Linux_2_6_23#head-102af265937262a7a21766ae58fddc1a29a5d8d7(
->> On-demand read-ahead on Linux 2.6.23)
+On 02/23/2010 07:58 AM, Borislav Petkov wrote:
 >
-> OK, I am looking for a way to make sure read requests on a SCSI drive
-> actually hit the bus after a certain event. Is there a way to do this without
-> tossing away the whole cache?
+> Hmm, we cannot do that with the current design since __arch_hweight64
+> is being inlined into every callsite and AFAICT we would have to build
+> every callsite with "-fcall-saved-rdi" which is clearly too much. The
+> explicit "=D" dummy constraint is straightforward, instead.
+>
 
-I'm not sure I understand what you're asking, but it sounds like you
-want to do an O_DIRECT read.  Open the file with O_DIRECT, then pass
-a properly-aligned buffer to the read(2) call.
+Uh... the -fcall-saved-rdi would go with all the other ones.  Assuming 
+it can actually work and that gcc doesn't choke on an inbound argument 
+being saved.
 
-Cheers,
-Jeff
+	-hpa
