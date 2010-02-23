@@ -1,57 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688Ab0BWOCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 09:02:21 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:58744 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959Ab0BWOCU convert rfc822-to-8bit (ORCPT
+	id S1752845Ab0BWODg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 09:03:36 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:47742 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959Ab0BWODe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 09:02:20 -0500
+	Tue, 23 Feb 2010 09:03:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=QzU4JG3SpAfbZuBPM9S6zdsdqvfPcP7j5dWNXIe/71s/lhkGedfNXVf8w2wf3hQpq6
-         dU80n0rX9hlk6IIbUEa1Kjhd2Gt206RuJ0KQz4QyoQpDtEoyKx4ydrgbmVMgVrv3bg0K
-         LzoOAJZ2pVO5zHHDpbueGJABI/yNCxHg5rbtQ=
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] failslab: add abitily to filter slab caches
-References: <1266931960-9779-1-git-send-email-dmonakhov@openvz.org>
-	<961aa3351002230558r6cc5846aq40d6ed21b7686ae7@mail.gmail.com>
-Date: Tue, 23 Feb 2010 17:02:14 +0300
-In-Reply-To: <961aa3351002230558r6cc5846aq40d6ed21b7686ae7@mail.gmail.com>
-	(Akinobu Mita's message of "Tue, 23 Feb 2010 22:58:02 +0900")
-Message-ID: <87mxz0vymx.fsf@openvz.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mqUVWLxJvgMSwPamymWNkIr7ci40KQuoojjYLJ2Gi4XZwU+2IZl7eFdNNK7S3ILTzw
+         LX3IdaNEY1qV0IEBWfwClltXW+hTjuVKb/h9XMH8esM5mTyZ+dRmZYNNLVR02hr56bSG
+         QbMZVQx5tCHo/wPx4gKAs+r1m8ju+71q7jZAo=
+Subject: Re: [patch 2/3] vmscan: drop page_mapping_inuse()
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1266868150-25984-3-git-send-email-hannes@cmpxchg.org>
+References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org>
+	 <1266868150-25984-3-git-send-email-hannes@cmpxchg.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 23:03:20 +0900
+Message-ID: <1266933800.2723.24.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Akinobu Mita <akinobu.mita@gmail.com> writes:
+On Mon, 2010-02-22 at 20:49 +0100, Johannes Weiner wrote:
+> page_mapping_inuse() is a historic predicate function for pages that
+> are about to be reclaimed or deactivated.
+> 
+> According to it, a page is in use when it is mapped into page tables
+> OR part of swap cache OR backing an mmapped file.
+> 
+> This function is used in combination with page_referenced(), which
+> checks for young bits in ptes and the page descriptor itself for the
+> PG_referenced bit.  Thus, checking for unmapped swap cache pages is
+> meaningless as PG_referenced is not set for anonymous pages and
+> unmapped pages do not have young ptes.  The test makes no difference.
 
-> 2010/2/23 Dmitry Monakhov <dmonakhov@openvz.org>:
->> Example:
->> echo 1 > /sys/kernel/slab/skbuff_head_cache/failslab
->> echo 1 > /sys/kernel/debug/failslab/cache-filter
->
-> Looks good.
->
-> .Should we also support clearing the flag by
-> "echo 0 > /sys/kernel/slab/skbuff_head_cache/failslab" ?
-But it already does this, any output except "1" treated as '0'
-I've snipped this from trace option.
->
->> +static ssize_t failslab_store(struct kmem_cache *s, const char *buf,
->> +                                                       size_t length)
->> +{
->> +       s->flags &= ~SLAB_FAILSLAB;
->> +       if (buf[0] == '1')
->> +               s->flags |= SLAB_FAILSLAB;
->> +       return length;
->> +}
->> +SLAB_ATTR(failslab);
+Nice catch!
+
+> 
+> Protecting file pages that are not by themselves mapped but are part
+> of a mapped file is also a historic leftover for short-lived things
+
+
+I have been a question in the part.
+You seem to solve my long question. :)
+But I want to make sure it by any log.
+Could you tell me where I find the discussion mail thread or git log at
+that time?
+
+Just out of curiosity. 
+
+> like the exec() code in libc.  However, the VM now does reference
+> accounting and activation of pages at unmap time and thus the special
+> treatment on reclaim is obsolete.
+
+It does make sense. 
+
+> 
+> This patch drops page_mapping_inuse() and switches the two callsites
+> to use page_mapped() directly.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+>  mm/vmscan.c |   25 ++-----------------------
+>  1 files changed, 2 insertions(+), 23 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index c2db55b..a8e4cbe 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -262,27 +262,6 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+>  	return ret;
+>  }
+>  
+> -/* Called without lock on whether page is mapped, so answer is unstable */
+> -static inline int page_mapping_inuse(struct page *page)
+> -{
+> -	struct address_space *mapping;
+> -
+> -	/* Page is in somebody's page tables. */
+> -	if (page_mapped(page))
+> -		return 1;
+> -
+> -	/* Be more reluctant to reclaim swapcache than pagecache */
+> -	if (PageSwapCache(page))
+> -		return 1;
+> -
+> -	mapping = page_mapping(page);
+> -	if (!mapping)
+> -		return 0;
+> -
+> -	/* File is mmap'd by somebody? */
+> -	return mapping_mapped(mapping);
+> -}
+> -
+>  static inline int is_page_cache_freeable(struct page *page)
+>  {
+>  	/*
+> @@ -603,7 +582,7 @@ static enum page_references page_check_references(struct page *page,
+>  	if (vm_flags & VM_LOCKED)
+>  		return PAGEREF_RECLAIM;
+>  
+> -	if (page_mapping_inuse(page))
+> +	if (page_mapped(page))
+>  		return PAGEREF_ACTIVATE;
+>  
+>  	/* Reclaim if clean, defer dirty pages to writeback */
+> @@ -1378,7 +1357,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+>  		}
+>  
+>  		/* page_referenced clears PageReferenced */
+> -		if (page_mapping_inuse(page) &&
+> +		if (page_mapped(page) &&
+>  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+>  			nr_rotated++;
+>  			/*
+
+It's good to me.
+But page_referenced already have been checked page_mapped. 
+How about folding alone page_mapped check into page_referenced's inner?
+
+-- 
+Kind regards,
+Minchan Kim
+
+
