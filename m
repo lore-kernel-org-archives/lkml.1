@@ -1,79 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023Ab0BWUBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 15:01:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9522 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753191Ab0BWUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 15:01:54 -0500
-Date: Tue, 23 Feb 2010 15:01:07 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-ID: <20100223200107.GE11930@redhat.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com> <20100222142744.GB13823@redhat.com> <20100222181226.GC4052@linux> <20100222182934.GD3096@redhat.com> <20100223095555.GF1882@linux>
+	id S1753966Ab0BWUJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 15:09:38 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:52727 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252Ab0BWUJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 15:09:37 -0500
+Date: Tue, 23 Feb 2010 12:09:35 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: netdev@vger.kernel.org
+Subject: Peer unexpectedly shrunk window
+Message-ID: <alpine.DEB.2.01.1002231154290.28195@bogon.housecafe.de>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100223095555.GF1882@linux>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19Y5f5mtPYvYGFw/1fXHTtHaH8yjk7Ck83yk/S
+ BLG5+xvjk6ReMJEeNRur3H5bX1lD8XUUPUWF6qeTlf9mgEio8w
+ 8fNYJK9P9+/FWBll2+cVg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 10:55:55AM +0100, Andrea Righi wrote:
-> On Mon, Feb 22, 2010 at 01:29:34PM -0500, Vivek Goyal wrote:
-> > > I would't like to add many different interfaces to do the same thing.
-> > > I'd prefer to choose just one interface and always use it. We just have
-> > > to define which is the best one. IMHO dirty_bytes is more generic. If
-> > > we want to define the limit as a % we can always do that in userspace.
-> > > 
-> > 
-> > dirty_ratio is easy to configure. One system wide default value works for
-> > all the newly created cgroups. For dirty_bytes, you shall have to
-> > configure each and individual cgroup with a specific value depneding on
-> > what is the upper limit of memory for that cgroup.
-> 
-> OK.
-> 
-> > 
-> > Secondly, memory cgroup kind of partitions global memory resource per
-> > cgroup. So if as long as we have global dirty ratio knobs, it makes sense
-> > to have per cgroup dirty ratio knob also. 
-> > 
-> > But I guess we can introduce that later and use gloabl dirty ratio for
-> > all the memory cgroups (instead of each cgroup having a separate dirty
-> > ratio). The only thing is that we need to enforce this dirty ratio on the
-> > cgroup and if I am reading the code correctly, your modifications of
-> > calculating available_memory() per cgroup should take care of that.
-> 
-> At the moment (with dirty_bytes) if the cgroup has dirty_bytes == 0, it
-> simply uses the system wide available_memory(), ignoring the memory
-> upper limit for that cgroup and fallbacks to the current behaviour.
-> 
-> With dirty_ratio, should we change the code to *always* apply this
-> percentage to the cgroup memory upper limit, and automatically set it
-> equal to the global dirty_ratio by default when the cgroup is created?
-> mmmh... I vote yes.
 
-Yes inheriting global dirty ratio as per cgroup ratio makes sense. Only
-thing different here is that we apply dirty_ratio on cgroup memory limit
-and not actual available memory. So if one configures cgroup with total
-limit higher than available memory, we could end up lot more dirty pages
-in system.
+OK, the "Treason uncloaked" messages have been reworded[0][1] to now say 
+"Peer [...] unexpectedly shrunk window", but the messages continue to 
+appear. On a small Tor node (~100KB/s, ~200 connections) I'm getting ~2000 
+or so messages per month in my kernel log (and on the console).
 
-But one can then argue that it is wrong system configuration and admin should
-take care of that while configuring the system. :-)
+I see that it's logged with KERN_DEBUG, is there anyway to suppress 
+those, i.e. some magic tcp specific bootparameter? Or is setting 
+loglevel=6 the only way to supress them? But that's a global option :-\
 
-So, I would vote, yes.
+Since the messages always say "repaired", why log them at all? If we can't 
+do something about the remote side, I fail to see the point of these 
+messages or what one is supposed to do to "fix" them.
 
-Thanks
-Vivek
+Thanks for your insights,
+Christian.
 
-> 
-> -Andrea
+[0] http://lkml.org/lkml/2008/12/18/454
+[1] http://kerneltrap.org/mailarchive/linux-netdev/2009/4/19/5518144
+-- 
+BOFH excuse #399:
+
+We are a 100% Microsoft Shop.
