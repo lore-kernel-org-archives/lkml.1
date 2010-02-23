@@ -1,199 +1,154 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178Ab0BWLVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 06:21:50 -0500
-Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:53590 "EHLO
-	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186Ab0BWLVr (ORCPT
+	id S1752217Ab0BWLYj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 06:24:39 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:48759 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184Ab0BWLYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 06:21:47 -0500
-X-Greylist: delayed 445 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 06:21:47 EST
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Tue, 23 Feb 2010 12:13:35 +0100
-From: Michael Thayer <Michael.Thayer@Sun.COM>
-Subject: [PATCH 1/1]: input: add support for VirtualBox touchscreen emulation
- to the Lifebook driver
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <1266923615.3602.85.camel@michael-laptop>
-Organization: Sun Microsystems GmbH
-X-Mailer: Evolution 2.28.1
+	Tue, 23 Feb 2010 06:24:38 -0500
+Date: Tue, 23 Feb 2010 16:54:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
+Message-ID: <20100223112431.GA8871@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+ <20100216064402.GC5723@laptop>
+ <alpine.DEB.2.00.1002152334260.7470@chino.kir.corp.google.com>
+ <20100216075330.GJ5723@laptop>
+ <alpine.DEB.2.00.1002160024370.15201@chino.kir.corp.google.com>
+ <20100217084858.fd72ec4f.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002161555170.11952@chino.kir.corp.google.com>
+ <20100217090303.6bd64209.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002161609200.11952@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002161609200.11952@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for VirtualBox touchscreen emulation to the Lifebook
- input driver.
+* David Rientjes <rientjes@google.com> [2010-02-16 16:21:11]:
 
-The device will be present as an extension to the PS/2 mouse emulation in the
-next major release of VirtualBox.  We chose to emulate the Lifebook touchscreen
-mainly in order to simplify in-kernel support, as the Lifebook driver is active
-by default in most kernel configurations.  We had to extend the protocol
-slightly as we wish to provide five mouse buttons and a two-way scroll wheel to
-virtual guest systems, and we tried to do this in the most non-intrusive way
-possible with regard to the current driver, which is the reason for the slightly
-unusual handling of mouse buttons three to five.
+> On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
+> 
+> > > On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
+> > > 
+> > > > > > > I'll add this check to __alloc_pages_may_oom() for the !(gfp_mask & 
+> > > > > > > __GFP_NOFAIL) path since we're all content with endlessly looping.
+> > > > > > 
+> > > > > > Thanks. Yes endlessly looping is far preferable to randomly oopsing
+> > > > > > or corrupting memory.
+> > > > > > 
+> > > > > 
+> > > > > Here's the new patch for your consideration.
+> > > > > 
+> > > > 
+> > > > Then, can we take kdump in this endlessly looping situaton ?
+> > > > 
+> > > > panic_on_oom=always + kdump can do that. 
+> > > > 
+> > > 
+> > > The endless loop is only helpful if something is going to free memory 
+> > > external to the current page allocation: either another task with 
+> > > __GFP_WAIT | __GFP_FS that invokes the oom killer, a task that frees 
+> > > memory, or a task that exits.
+> > > 
+> > > The most notable endless loop in the page allocator is the one when a task 
+> > > has been oom killed, gets access to memory reserves, and then cannot find 
+> > > a page for a __GFP_NOFAIL allocation:
+> > > 
+> > > 	do {
+> > > 		page = get_page_from_freelist(gfp_mask, nodemask, order,
+> > > 			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
+> > > 			preferred_zone, migratetype);
+> > > 
+> > > 		if (!page && gfp_mask & __GFP_NOFAIL)
+> > > 			congestion_wait(BLK_RW_ASYNC, HZ/50);
+> > > 	} while (!page && (gfp_mask & __GFP_NOFAIL));
+> > > 
+> > > We don't expect any such allocations to happen during the exit path, but 
+> > > we could probably find some in the fs layer.
+> > > 
+> > > I don't want to check sysctl_panic_on_oom in the page allocator because it 
+> > > would start panicking the machine unnecessarily for the integrity 
+> > > metadata GFP_NOIO | __GFP_NOFAIL allocation, for any 
+> > > order > PAGE_ALLOC_COSTLY_ORDER, or for users who can't lock the zonelist 
+> > > for oom kill that wouldn't have panicked before.
+> > > 
+> > 
+> > Then, why don't you check higzone_idx in oom_kill.c
+> > 
+> 
+> out_of_memory() doesn't return a value to specify whether the page 
+> allocator should retry the allocation or just return NULL, all that policy 
+> is kept in mm/page_alloc.c.  For highzone_idx < ZONE_NORMAL, we want to 
+> fail the allocation when !(gfp_mask & __GFP_NOFAIL) and call the oom 
+> killer when it's __GFP_NOFAIL.
+> ---
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1696,6 +1696,9 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+>  		/* The OOM killer will not help higher order allocs */
+>  		if (order > PAGE_ALLOC_COSTLY_ORDER)
+>  			goto out;
+> +		/* The OOM killer does not needlessly kill tasks for lowmem */
+> +		if (high_zoneidx < ZONE_NORMAL)
+> +			goto out;
 
-Most changes in the driver are conditional on the VirtualBox DMI string being
-found.  A notable exception is the removal of the keybit fields for the left,
-right and middle buttons for the first device.  The current X.Org evdev driver
-was seeing these and treating the device as a touchpad instead of a touchscreen.
-I also tested this with a vanilla Ubuntu Lucid live CD while emulating the
-original device and presenting a suitable DMI string.
+I am not sure if this is a good idea, ZONE_DMA could have a lot of
+memory on some architectures. IIUC, we return NULL for allocations
+from ZONE_DMA? What is the reason for the heuristic?
 
-Signed-off-by: Michael Thayer <michael.thayer@sun.com>
---- lifebook.c	2010-02-23 12:01:32.941643681 +0100
-+++ lifebook-vbox.c	2010-02-23 11:44:57.831664482 +0100
-@@ -1,6 +1,8 @@
- /*
-  * Fujitsu B-series Lifebook PS/2 TouchScreen driver
-+ * Also used for Oracle VirtualBox mouse integration
-  *
-+ * Copyright (c) 2010 Oracle.  All rights reserved.
-  * Copyright (c) 2005 Vojtech Pavlik <vojtech@suse.cz>
-  * Copyright (c) 2005 Kenan Esau <kenan.esau@conan.de>
-  *
-@@ -41,6 +43,15 @@ static int lifebook_set_6byte_proto(cons
- 	return 0;
- }
- 
-+static bool lifebook_use_vbox_proto;
-+
-+static int lifebook_set_vbox_proto(const struct dmi_system_id *d)
-+{
-+	lifebook_use_6byte_proto = true;
-+	lifebook_use_vbox_proto = true;
-+	return 0;
-+}
-+
- static const struct dmi_system_id lifebook_dmi_table[] = {
- 	{
- 		.ident = "FLORA-ie 55mi",
-@@ -115,6 +126,13 @@ static const struct dmi_system_id lifebo
- 			DMI_MATCH(DMI_PRODUCT_NAME, "LifeBook B142"),
- 		},
- 	},
-+	{
-+		.ident = "VirtualBox",
-+		.matches = {
-+			DMI_MATCH(DMI_PRODUCT_NAME, "VirtualBox"),
-+		},
-+		.callback = lifebook_set_vbox_proto,
-+	},
- 	{ }
- };
- 
-@@ -180,6 +198,21 @@ static psmouse_ret_t lifebook_process_by
- 				((packet[0] & 0x10) ? packet[1] - 256 : packet[1]));
- 			input_report_rel(dev2, REL_Y,
- 				 -(int)((packet[0] & 0x20) ? packet[2] - 256 : packet[2]));
-+			if (lifebook_use_vbox_proto && !(packet[0] & 0x04)) {
-+				unsigned btn = (packet[0] >> 6);
-+
-+				input_report_key(dev2, BTN_MIDDLE, btn == 1);
-+				input_report_key(dev2, BTN_SIDE, btn == 2);
-+				input_report_key(dev2, BTN_EXTRA, btn == 3);
-+			}
-+			if (lifebook_use_vbox_proto && (packet[0] & 0x04)) {
-+				unsigned wheel = (packet[0] >> 6);
-+
-+				input_report_rel(dev2, REL_WHEEL,
-+					(wheel == 0) - (wheel == 1));
-+				input_report_rel(dev2, REL_HWHEEL,
-+					(wheel == 2) - (wheel == 3));
-+			}
- 		}
- 		input_report_key(dev2, BTN_LEFT, packet[0] & 0x01);
- 		input_report_key(dev2, BTN_RIGHT, packet[0] & 0x02);
-@@ -200,11 +233,17 @@ static int lifebook_absolute_mode(struct
- 	/*
- 	   Enable absolute output -- ps2_command fails always but if
- 	   you leave this call out the touchsreen will never send
--	   absolute coordinates
-+	   absolute coordinates.
-+
-+	   Note that old versions of VirtualBox which didn't emulate the
-+	   touchscreen also failed to return an error here, so if we are
-+	   running inside VirtualBox, we actually have to make sure that
-+	   the command fails!
- 	*/
- 	param = lifebook_use_6byte_proto ? 0x08 : 0x07;
--	ps2_command(ps2dev, &param, PSMOUSE_CMD_SETRES);
--
-+	if (!ps2_command(ps2dev, &param, PSMOUSE_CMD_SETRES) &&
-+		lifebook_use_vbox_proto)
-+		return -1;
- 	return 0;
- }
- 
-@@ -251,11 +290,14 @@ int lifebook_detect(struct psmouse *psmo
- 		return -1;
- 
- 	if (set_properties) {
--		psmouse->vendor = "Fujitsu";
--		psmouse->name = "Lifebook TouchScreen";
-+		psmouse->vendor = !lifebook_use_vbox_proto ? "Fujitsu" :
-+			"VirtualBox";
-+		psmouse->name =  !lifebook_use_vbox_proto ?
-+			"Lifebook TouchScreen" :
-+			"Mouse Integration" ;
- 	}
- 
--        return 0;
-+	return 0;
- }
- 
- static int lifebook_create_relative_device(struct psmouse *psmouse)
-@@ -274,7 +316,8 @@ static int lifebook_create_relative_devi
- 		 "%s/input1", psmouse->ps2dev.serio->phys);
- 
- 	dev2->phys = priv->phys;
--	dev2->name = "PS/2 Touchpad";
-+	dev2->name = !lifebook_use_vbox_proto ? "PS/2 Touchpad" :
-+		"Virtual PS/2 Mouse";
- 	dev2->id.bustype = BUS_I8042;
- 	dev2->id.vendor  = 0x0002;
- 	dev2->id.product = PSMOUSE_LIFEBOOK;
-@@ -285,6 +328,13 @@ static int lifebook_create_relative_devi
- 	dev2->relbit[BIT_WORD(REL_X)] = BIT_MASK(REL_X) | BIT_MASK(REL_Y);
- 	dev2->keybit[BIT_WORD(BTN_LEFT)] = BIT_MASK(BTN_LEFT) |
- 		BIT_MASK(BTN_RIGHT);
-+	if (lifebook_use_vbox_proto) {
-+		__set_bit(BTN_MIDDLE, dev2->keybit);
-+		__set_bit(REL_WHEEL, dev2->relbit);
-+		__set_bit(REL_HWHEEL, dev2->relbit);
-+		__set_bit(BTN_SIDE, dev2->keybit);
-+		__set_bit(BTN_EXTRA, dev2->keybit);
-+	}
- 
- 	error = input_register_device(priv->dev2);
- 	if (error)
-@@ -310,6 +360,14 @@ int lifebook_init(struct psmouse *psmous
- 	dev1->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
- 	dev1->relbit[0] = 0;
- 	dev1->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-+	/*
-+	   The psmouse-base driver enables these bits, but if the X.Org
-+	   evdev driver sees them it thinks we are a touchpad, not a
-+	   touchscreen.
-+	*/
-+	psmouse->dev->keybit[BIT_WORD(BTN_MOUSE)] &= ~(BIT_MASK(BTN_LEFT) |
-+		BIT_MASK(BTN_MIDDLE) | BIT_MASK(BTN_RIGHT));
-+
- 	input_set_abs_params(dev1, ABS_X, 0, max_coord, 0, 0);
- 	input_set_abs_params(dev1, ABS_Y, 0, max_coord, 0, 0);
-
+>  		/*
+>  		 * GFP_THISNODE contains __GFP_NORETRY and we never hit this.
+>  		 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
+> @@ -1924,15 +1927,23 @@ rebalance:
+>  			if (page)
+>  				goto got_pg;
+> 
+> -			/*
+> -			 * The OOM killer does not trigger for high-order
+> -			 * ~__GFP_NOFAIL allocations so if no progress is being
+> -			 * made, there are no other options and retrying is
+> -			 * unlikely to help.
+> -			 */
+> -			if (order > PAGE_ALLOC_COSTLY_ORDER &&
+> -						!(gfp_mask & __GFP_NOFAIL))
+> -				goto nopage;
+> +			if (!(gfp_mask & __GFP_NOFAIL)) {
+> +				/*
+> +				 * The oom killer is not called for high-order
+> +				 * allocations that may fail, so if no progress
+> +				 * is being made, there are no other options and
+> +				 * retrying is unlikely to help.
+> +				 */
+> +				if (order > PAGE_ALLOC_COSTLY_ORDER)
+> +					goto nopage;
+> +				/*
+> +				 * The oom killer is not called for lowmem
+> +				 * allocations to prevent needlessly killing
+> +				 * innocent tasks.
+> +				 */
+> +				if (high_zoneidx < ZONE_NORMAL)
+> +					goto nopage;
+> +			}
+> 
+>  			goto restart;
+>  		}
 
 -- 
-Sun Microsystems GmbH        Michael Thayer
-Werkstrasse 24               VirtualBox engineer
-71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
-
-Sitz der Gesellschaft:
-Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
-Amtsgericht Muenchen: HRB 161028
-Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels, Wolf Frenkel
-Vorsitzender des Aufsichtsrates: Martin Haering
-
+	Three Cheers,
+	Balbir
