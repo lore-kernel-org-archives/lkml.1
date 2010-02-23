@@ -1,134 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751380Ab0BWFwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 00:52:36 -0500
-Received: from vms173015pub.verizon.net ([206.46.173.15]:56715 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979Ab0BWFwe (ORCPT
+	id S1751592Ab0BWFx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 00:53:56 -0500
+Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:33149 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750979Ab0BWFxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 00:52:34 -0500
-Date: Tue, 23 Feb 2010 00:52:17 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: [git pull request] ACPI & driver patches for Linux-2.6.33-rc8 (part 2)
-Message-id: <alpine.LFD.2.00.1002230050390.3772@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Feb 2010 00:53:54 -0500
+Date: Tue, 23 Feb 2010 16:53:35 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+       stable@kernel.org, gregkh@suse.de
+Subject: Re: [PATCH] writeback: Fix broken sync writeback
+Message-ID: <20100223055335.GE22370@discord.disaster>
+References: <20100216230017.GJ3153@quack.suse.cz> <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain> <20100217013336.GK3153@quack.suse.cz> <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain> <20100217043009.GZ5337@thunk.org> <alpine.LFD.2.00.1002162052230.4141@localhost.localdomain> <20100222172938.GA2601@quack.suse.cz> <20100222210112.GE23832@thunk.org> <20100223025350.GC22370@discord.disaster> <20100223032317.GG23832@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223032317.GG23832@thunk.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, Feb 22, 2010 at 10:23:17PM -0500, tytso@mit.edu wrote:
+> On Tue, Feb 23, 2010 at 01:53:50PM +1100, Dave Chinner wrote:
+> > 
+> > Ignoring nr_to_write completely can lead to issues like we used to
+> > have with XFS - it would write an entire extent (8GB) at a time and
+> > starve all other writeback. Those starvation problems - which were
+> > very obvious on NFS servers - went away when we trimmed back the
+> > amount to write in a single pass to saner amounts...
+> 
+> How do you determine what a "sane amount" is?  Is it something that is
+> determined dynamically, or is it a hard-coded or manually tuned value?
 
-please pull from: 
+"sane amount" was a hard coded mapping look-ahead value that limited
+the size of the allocation that was done. It got set to 64 pages,
+back in 2.6.16 (IIRC) so that we'd do at least a 256k allocation
+on x86 or 1MB on ia64 (which had 16k page size at the time).
+It was previously unbound, which is why XFS was mapping entire
+extents...
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+Hence ->writepage() on XFS will write 64 pages at a time if there
+are contiguous pages in the page cache, and then go back up to
+write_cache_pages() for the loop to either terminate due to
+nr_to_write <= 0 or call ->writepage on the next dirty page not
+under writeback on the inode.
 
-Three more bug-fixes.
-This will update the files shown below.
+This behaviour pretty much defines the _minimum IO size_ we'd issue
+if there are contiguous dirty pages in the page cache. It was (and
+still is) primarily to work around the deficiencies of the random
+single page writeback that the VM's memory reclaim algorithms are so
+fond of (another of my pet peeves)....
 
-thanks!
+> > As to a generic solution, why do you think I've been advocating
+> > separate per-sb data sync and inode writeback methods that separate
+> > data writeback from inode writeback for so long? ;)
+> 
+> Heh.
+> 
+> > > This is done to avoid a lock inversion, and so this is an
+> > > ext4-specific thing (at least I don't think XFS's delayed allocation
+> > > has this misfeature).
+> > 
+> > Not that I know of, but then again I don't know what inversion ext4
+> > is trying to avoid. Can you describe the inversion, Ted?
+> 
+> The locking order is journal_start_handle (starting a micro
+> transaction in jbd) -> lock_page.  A more detailed description of why
+> this locking order is non-trivial for us to fix in ext4 can be found
+> in the description of commit f0e6c985.
 
---
-Len Brown
-Intel Open Source Technology Center
+Nasty - you need to start a transaction before you lock pages for
+writeback and allocation, but ->writepage hands you a locked page.
+And you can't use an existing transaction handle open because you
+can't guarantee that you have journal credits reserved for the
+allocation?  IIUC, ext3/4 has this problem due to the ordered data
+writeback constraints, right?
 
+Regardless of the reason for the ext4 behaviour, you are right about
+XFS - it doesn't have this particular problem with delalloc because
+it does have any transaction/page lock ordering constraints in the
+transaction subsystem.
 
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/2.6.33/acpi-release-20091214-2.6.33-rc8.diff.gz
+Cheers,
 
- drivers/acpi/processor_idle.c    |   28 ++++++++++++++++------------
- drivers/acpi/processor_perflib.c |    6 +++++-
- drivers/platform/x86/acer-wmi.c  |    2 +-
- 3 files changed, 22 insertions(+), 14 deletions(-)
-
-through these commits:
-
-Carlos Corbacho (1):
-      acer-wmi: Respect current backlight level when loading
-
-Darrick J. Wong (1):
-      ACPI: Fix regression where _PPC is not read at boot even when ignore_ppc=0
-
-Pallipadi, Venkatesh (1):
-      ACPI: Be in TS_POLLING state during mwait based C-state entry
-
-with this log:
-
-commit b2cb9dcb98cc7a3210e9138a05e0ae1863523a61
-Merge: e4f23f6 455c0d7
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Feb 23 00:39:00 2010 -0500
-
-    Merge branch 'pcc' into release
-
-commit e4f23f66ed2498d7d08437d47cad2fca88b812bc
-Merge: 9f3a628 6f6ef82 d306ebc
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Feb 23 00:19:48 2010 -0500
-
-    Merge branches 'bugzilla-14207' and 'idle' into release
-
-commit d306ebc28649b89877a22158fe0076f06cc46f60
-Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-Date:   Wed Feb 10 10:35:31 2010 -0800
-
-    ACPI: Be in TS_POLLING state during mwait based C-state entry
-    
-    ACPI deep C-state entry had a long standing bug/missing feature, wherein we were sending
-    resched IPIs when an idle CPU is in mwait based deep C-state. Only mwait based C1 was using
-    the write to the monitored address to wake up mwait'ing CPU.
-    
-    This patch changes the code to retain TS_POLLING bit if we are entering an mwait based
-    deep C-state.
-    
-    The patch has been verified to reduce the number of resched IPIs in general and also
-    improves the performance/power on workloads with low system utilization (i.e., when mwait based
-    deep C-states are being used).
-    
-    Fixes "netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f"
-    http://marc.info/?l=linux-kernel&m=126441481427331&w=4
-    
-    Reported-by: Lin Ming <ming.m.lin@intel.com>
-    Tested-by: Alex Shi <alex.shi@intel.com>
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 455c0d71d46e86b0b7ff2c9dcfc19bc162302ee9
-Author: Darrick J. Wong <djwong@us.ibm.com>
-Date:   Thu Feb 18 10:28:20 2010 -0800
-
-    ACPI: Fix regression where _PPC is not read at boot even when ignore_ppc=0
-    
-    Earlier, Ingo Molnar posted a patch to make it so that the kernel would avoid
-    reading _PPC on his broken T60.  Unfortunately, it seems that with Thomas
-    Renninger's patch last July to eliminate _PPC evaluations when the processor
-    driver loads, the kernel never actually reads _PPC at all!  This is problematic
-    if you happen to boot your non-T60 computer in a state where the BIOS _wants_
-    _PPC to be something other than zero.
-    
-    So, put the _PPC evaluation back into acpi_processor_get_performance_info if
-    ignore_ppc isn't 1.
-    
-    Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 6f6ef82cc9de24153ba7d5cedab5970e276aefa1
-Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Date:   Sat Dec 26 19:24:31 2009 +0000
-
-    acer-wmi: Respect current backlight level when loading
-    
-    Set the backlight to use the current brightness when loaded, rather than
-    always resetting the backlight to maximum brightness.
-    
-    Fixes kernel bugzilla #14207
-    
-    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-    Reported-by: Denis Mukhin <denis_mukhin@yahoo.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
