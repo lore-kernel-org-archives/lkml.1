@@ -1,34 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753151Ab0BWOo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 09:44:29 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:59449 "EHLO
+	id S1753130Ab0BWOs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 09:48:27 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:56569 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948Ab0BWOo2 (ORCPT
+	with ESMTP id S1752127Ab0BWOs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 09:44:28 -0500
+	Tue, 23 Feb 2010 09:48:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NhvKzsuUouNlTOpomHpYJDN6+zE06R4f0b/0xGmHt+kGrqvBqZVpm0yV8IrE4d73kT
-         VcIfrQSovQmKjfdPmxxhTzPdfe7Qb4qJj5hTAXd/1oWtZLjFWR+mwa+zvVB1tGoNudV4
-         BAv+ysPetm2hJWhqUi9lGsxXdU5kh+1jLAub4=
-Subject: Re: [patch 1/3] vmscan: factor out page reference checks
+        b=nMn9Py6qWGVlwHwUYQpz+Fv9W9EAS1B2w/8/SK1pBix2IwlLDVwVVnObIMDSsgx2WA
+         JbIKl6PNX7KLfjWWaS62aYNgxapKvSTmwJB/Mc9eRu4V8JeXSX4oJGksTNCfL2cjNXya
+         0tVjSglGJml4C5GNb4m2QBHMWiYmbO8UUEaDE=
+Subject: Re: [patch 2/3] vmscan: drop page_mapping_inuse()
 From: Minchan Kim <minchan.kim@gmail.com>
 To: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20100223142158.GA29762@cmpxchg.org>
+In-Reply-To: <20100223143259.GB29762@cmpxchg.org>
 References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org>
-	 <1266868150-25984-2-git-send-email-hannes@cmpxchg.org>
-	 <1266932303.2723.13.camel@barrios-desktop>
-	 <20100223142158.GA29762@cmpxchg.org>
+	 <1266868150-25984-3-git-send-email-hannes@cmpxchg.org>
+	 <1266933800.2723.24.camel@barrios-desktop>
+	 <20100223143259.GB29762@cmpxchg.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 23:44:14 +0900
-Message-ID: <1266936254.2723.33.camel@barrios-desktop>
+Date: Tue, 23 Feb 2010 23:48:12 +0900
+Message-ID: <1266936492.2723.36.camel@barrios-desktop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -36,40 +36,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-23 at 15:21 +0100, Johannes Weiner wrote:
+On Tue, 2010-02-23 at 15:32 +0100, Johannes Weiner wrote:
 > Hello Minchan,
 > 
-> On Tue, Feb 23, 2010 at 10:38:23PM +0900, Minchan Kim wrote:
-
-<snip>
-
-> > >  
-> > >  		if (PageDirty(page)) {
-> > > -			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
-> > > +			if (references == PAGEREF_RECLAIM_CLEAN)
+> On Tue, Feb 23, 2010 at 11:03:20PM +0900, Minchan Kim wrote:
+> > On Mon, 2010-02-22 at 20:49 +0100, Johannes Weiner wrote:
+> > > Protecting file pages that are not by themselves mapped but are part
+> > > of a mapped file is also a historic leftover for short-lived things
 > > 
-> > How equal PAGEREF_RECLAIM_CLEAN and sc->order <= PAGE_ALLOC_COSTLY_ORDER
-> > && referenced by semantic?
+> > I have been a question in the part.
+> > You seem to solve my long question. :)
+> > But I want to make sure it by any log.
+> > Could you tell me where I find the discussion mail thread or git log at
+> > that time?
 > 
-> It is encoded in page_check_references().  When
-> 	sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced
-> it returns PAGEREF_RECLAIM_CLEAN.
+> I dug up this change in history.git, but unfortunately it was merged
+> undocumented in a large changeset.  So there does not seem to be any
+> written reason for why this was merged initially.    What I wrote is
+> based on what Rik told me on IRC.
 > 
-> So
+> > >  	/* Reclaim if clean, defer dirty pages to writeback */
+> > > @@ -1378,7 +1357,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+> > >  		}
+> > >  
+> > >  		/* page_referenced clears PageReferenced */
+> > > -		if (page_mapping_inuse(page) &&
+> > > +		if (page_mapped(page) &&
+> > >  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+> > >  			nr_rotated++;
+> > >  			/*
+> > 
+> > It's good to me.
+> > But page_referenced already have been checked page_mapped. 
+> > How about folding alone page_mapped check into page_referenced's inner?
 > 
-> 	- PageDirty() && order < COSTLY && referenced
-> 	+ PageDirty() && references == PAGEREF_RECLAIM_CLEAN
+> The next patch essentially does that.  page_referenced() will no longer
+> clear PG_referenced on the page and if page_referenced() is true, it
+> means that young ptes were found and the page must thus be mapped.
 > 
-> is an equivalent transformation.  Does this answer your question?
+> So #3 removes the page_mapped() from this conditional.
 
-Hmm. I knew it. My point was PAGEREF_RECLAIM_CLEAN seems to be a little
-awkward. I thought PAGEREF_RECLAIM_CLEAN means if the page was clean, it
-can be reclaimed.
-
-I think it would be better to rename it with represent "Although it's
-referenced page recently, we can reclaim it if VM try to reclaim high
-order page".
-
+Thanks! 
+I should have reviewed your [3/3] before nitpick. 
 
 > 
 > 	Hannes
