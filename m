@@ -1,110 +1,162 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821Ab0BWJSZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 04:18:25 -0500
-Received: from lo.gmane.org ([80.91.229.12]:34969 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171Ab0BWJSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 04:18:22 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jesper Krogh <jesper@krogh.cc>
-Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
-Date: Tue, 23 Feb 2010 10:17:58 +0100
-Message-ID: <4B839D46.5080300@krogh.cc>
-References: <4B4F5A00.4060604@atmos.washington.edu> <20100122150325.6ad12428.akpm@linux-foundation.org>
+	id S1751846Ab0BWJTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 04:19:53 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:61859 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171Ab0BWJTv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 04:19:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=Wbd6BlKrH55ZxvBxACTn1gfc6cI4ZiuyqW4Ag50e4nglnVdpgp9Ql3ZAUUc08Tk6gK
+         P79+RmPtWzev4nDfURfIbqXnMi2AemPA9IqlGOvpToPlpztg+3DjQENmd5d88sEX+SqI
+         FQGK4rrnECrCfOsvhTFVOPsRpDWDBU55/Xzmc=
+Subject: [PATCH] ALSA: add support for Macbook Air 2,1 internal speaker.
+From: Reimundo Heluani <rheluani@gmail.com>
+To: alsa-devel <alsa-devel@alsa-project.org>
+Cc: tiwai@suse.de, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 23 Feb 2010 01:19:51 -0800
+Message-ID: <1266916791.4582.19.camel@vino>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@dough.gmane.org
-Cc: linux-nfs@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: 2605ds1-ynoe.0.fullrate.dk
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-In-Reply-To: <20100122150325.6ad12428.akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> (cc linux-nfs)
+From: Reimundo Heluani <rheluani@gmail.com>
 
-I seem to get this one this morning on a 2.6.32.8 kernel. 
+Add support for Macbook Air 2,1 (late 2008) internal speaker and 
+headphones. Create a "mba21" model for snd-hda-intel.
 
-Feb 23 06:14:04 hest kernel: [752226.892620] ------------[ cut here ]------------
-Feb 23 06:14:14 hest kernel: [752226.892638] WARNING: at lib/kref.c:43 kref_get+0x20/0x30()
-Feb 23 06:14:14 hest kernel: [752226.892641] Hardware name: Sun Fire X4600 M2
-Feb 23 06:14:24 hest kernel: [752226.892642] Modules linked in: ipmi_msghandler nfsd exportfs autofs4 nfs lockd auth_rpcgss sunrpc iptable_filter ip_tables x_tables ext4 jbd2 crc16 ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc lp parport loop ipv6 ixgbe mdio psmouse serio_raw i2c_nforce2 pcspkr shpchp k8temp pci_hotplug i2c_core button processor evdev joydev ext3 jbd mbcache sr_mod usb_storage usb_libusual usbhid hid sg sd_mod ide_cd_mod cdrom ata_generic libata ehci_hcd ohci_hcd mptsas mptscsih mptbase qla2xxx scsi_transport_sas scsi_transport_fc e1000 scsi_mod amd74xx usbcore dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan thermal_sys fuse
-Feb 23 06:14:40 hest kernel: [752226.892694] Pid: 6785, comm: nfsd Not tainted 2.6.32.8 #3
-Feb 23 06:14:40 hest kernel: [752226.892697] Call Trace:
-Feb 23 06:14:40 hest kernel: [752226.892702]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
-Feb 23 06:14:40 hest kernel: [752226.892704]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
-Feb 23 06:14:40 hest kernel: [752226.892710]  [<ffffffff810455e5>] ? warn_slowpath_common+0x85/0xb0
-Feb 23 06:14:40 hest kernel: [752226.892712]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
-Feb 23 06:14:40 hest kernel: [752226.892740]  [<ffffffffa047be34>] ? svc_recv+0x2c4/0x8d0 [sunrpc]
-Feb 23 06:14:40 hest kernel: [752226.892746]  [<ffffffff8103b470>] ? default_wake_function+0x0/0x10
-Feb 23 06:14:40 hest kernel: [752226.892752]  [<ffffffff812eaf92>] ? __down_read+0x12/0xad
-Feb 23 06:14:40 hest kernel: [752226.892767]  [<ffffffffa05457e0>] ? nfsd+0x0/0x140 [nfsd]
-Feb 23 06:14:40 hest kernel: [752226.892772]  [<ffffffffa0545870>] ? nfsd+0x90/0x140 [nfsd]
-Feb 23 06:14:40 hest kernel: [752226.892776]  [<ffffffff81060626>] ? kthread+0x96/0xa0
-Feb 23 06:14:40 hest kernel: [752226.892780]  [<ffffffff8100cc5a>] ? child_rip+0xa/0x20
-Feb 23 06:14:40 hest kernel: [752226.892785]  [<ffffffff81025230>] ? physflat_send_IPI_mask+0x0/0x10
-Feb 23 06:14:40 hest kernel: [752226.892787]  [<ffffffff81060590>] ? kthread+0x0/0xa0
-Feb 23 06:14:40 hest kernel: [752226.892789]  [<ffffffff8100cc50>] ? child_rip+0x0/0x20
-Feb 23 06:14:40 hest kernel: [752226.892792] ---[ end trace 439f632f874b545a ]---
+Signed-off-by: Reimundo Heluani <rheluani@gmail.com>
 
-Prior to that I have a few messages like this in the log:
-Feb 23 06:10:40 hest kernel: [752026.605489] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
-Feb 23 06:10:40 hest kernel: [752026.605772] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
-Feb 23 06:10:40 hest kernel: [752026.605809] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
-Feb 23 06:10:40 hest kernel: [752026.605844] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
-Feb 23 06:10:40 hest kernel: [752026.605932] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
+---
+Still missing internal microphone support
 
-
-And afterwards this pops up:
-
-Feb 23 06:14:40 hest kernel: [752226.893163] PGD efdfaf067 PUD efdf5e067 PMD 0 
-Feb 23 06:14:58 hest kernel: [752226.893163] CPU 10 
-Feb 23 06:14:58 hest kernel: [752226.893163] Modules linked in: ipmi_msghandler nfsd exportfs autofs4 nfs lockd auth_rpcgss sunrpc iptable_filter ip_tables x_tables ext4 jbd2 crc16 ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc lp parport loop ipv6 ixgbe mdio psmouse serio_raw i2c_nforce2 pcspkr shpchp k8temp pci_hotplug i2c_core button processor evdev joydev ext3 jbd mbcache sr_mod usb_storage usb_libusual usbhid hid sg sd_mod ide_cd_mod cdrom ata_generic libata ehci_hcd ohci_hcd mptsas mptscsih mptbase qla2xxx scsi_transport_sas scsi_transport_fc e1000 scsi_mod amd74xx usbcore dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan thermal_sys fuse
-Feb 23 06:14:58 hest kernel: [752226.893163] Pid: 6785, comm: nfsd Tainted: G        W  2.6.32.8 #3 Sun Fire X4600 M2
-Feb 23 06:14:58 hest kernel: [752226.893163] RIP: 0010:[<ffffffffa047af9a>]  [<ffffffffa047af9a>] svc_xprt_free+0x1a/0x60 [sunrpc]
-Feb 23 06:14:58 hest kernel: [752226.893163] RSP: 0018:ffff8804fdfa1e00  EFLAGS: 00010202
-Feb 23 06:14:58 hest kernel: [752226.893163] RAX: 0000000000000000 RBX: ffff881df5945800 RCX: 000000000001ffff
-Feb 23 06:14:58 hest kernel: [752226.893163] RDX: 0000000000000000 RSI: ffffffffa047af80 RDI: ffff881df5945810
-Feb 23 06:14:58 hest kernel: [752226.893163] RBP: ffffffffa047af80 R08: 00000000ffffffff R09: 0000000000000000
-Feb 23 06:14:58 hest kernel: [752226.893163] R10: 0000000000000000 R11: 0000000000000000 R12: ffff881ff419c000
-Feb 23 06:14:58 hest kernel: [752226.893163] R13: ffff881df5945800 R14: 0000000000000001 R15: 0000000000000102
-Feb 23 06:14:58 hest kernel: [752226.893163] FS:  00007f018d8786e0(0000) GS:ffff88170ac00000(0000) knlGS:00000000f75aa6b0
-Feb 23 06:14:58 hest kernel: [752226.893163] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-Feb 23 06:14:58 hest kernel: [752226.893163] CR2: 0000000000000008 CR3: 0000000efdf11000 CR4: 00000000000006e0
-Feb 23 06:14:58 hest kernel: [752226.893163] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-Feb 23 06:14:58 hest kernel: [752226.893163] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Feb 23 06:14:58 hest kernel: [752226.893163] Process nfsd (pid: 6785, threadinfo ffff8804fdfa0000, task ffff8804fcbb54e0)
-Feb 23 06:14:58 hest kernel: [752226.893163]  ffff881df5945800 ffff881df5945810 ffffffffa047af80 ffffffff81199d23
-Feb 23 06:14:58 hest kernel: [752226.893163] <0> 0000000000000000 0000000000000000 00000000fffffff5 ffffffffa047be9c
-Feb 23 06:14:58 hest kernel: [752226.893163] <0> 00000000000dbba0 ffff881ffdff7900 ffff881ffdcca300 00000102d8dd7018
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa047af80>] ? svc_xprt_free+0x0/0x60 [sunrpc]
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81199d23>] ? kref_put+0x33/0x70
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa047be9c>] ? svc_recv+0x32c/0x8d0 [sunrpc]
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8103b470>] ? default_wake_function+0x0/0x10
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff812eaf92>] ? __down_read+0x12/0xad
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa05457e0>] ? nfsd+0x0/0x140 [nfsd]
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa0545870>] ? nfsd+0x90/0x140 [nfsd]
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81060626>] ? kthread+0x96/0xa0
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8100cc5a>] ? child_rip+0xa/0x20
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81025230>] ? physflat_send_IPI_mask+0x0/0x10
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81060590>] ? kthread+0x0/0xa0
-Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8100cc50>] ? child_rip+0x0/0x20
-Feb 23 06:14:58 hest kernel: [752226.893163]  RSP <ffff8804fdfa1e00>
-Feb 23 06:14:58 hest kernel: [752230.770846] ---[ end trace 439f632f874b545b ]---
-
-dmidecode output: http://shrek.krogh.cc/~jesper/dmidecode.txt
-
-It is a Sun X4600 with 8 x dual-core Opterons CPU's and 128GB of memory, running as NFS server 
-with a mixture of ext3 and ext4 filesystems attached. 
-
--- 
-Jesper
-
+--- linux-2.6/sound/pci/hda/patch_realtek.c.orig	2010-02-23
+00:36:16.000000000 -0800
++++ linux-2.6/sound/pci/hda/patch_realtek.c	2010-02-23
+00:44:35.000000000 -0800
+@@ -207,6 +207,7 @@ enum {
+ 	ALC882_ASUS_A7J,
+ 	ALC882_ASUS_A7M,
+ 	ALC885_MACPRO,
++	ALC885_MBA21,
+ 	ALC885_MBP3,
+ 	ALC885_MB5,
+ 	ALC885_IMAC24,
+@@ -6852,6 +6853,13 @@ static struct hda_channel_mode alc882_si
+ 	{ 8, alc882_sixstack_ch8_init },
+ };
+ 
++
++/* Macbook Air 2,1 */
++
++static struct hda_channel_mode alc885_mba21_ch_modes[1] = {
++      { 2, NULL },
++};
++
+ /*
+  * macbook pro ALC885 can switch LineIn to LineOut without losing Mic
+  */
+@@ -7123,6 +7131,15 @@ static struct snd_kcontrol_new alc882_ba
+ 	{ } /* end */
+ };
+ 
++/* Macbook Air 2,1 same control for HP and internal Speaker */
++
++static struct snd_kcontrol_new alc885_mba21_mixer[] = {
++      HDA_CODEC_VOLUME("Speaker Playback Volume", 0x0c, 0x00,
+HDA_OUTPUT),
++      HDA_BIND_MUTE("Speaker Playback Switch", 0x0c, 0x02, HDA_OUTPUT),
++     { }
++};
++
++
+ static struct snd_kcontrol_new alc885_mbp3_mixer[] = {
+ 	HDA_CODEC_VOLUME("Speaker Playback Volume", 0x0c, 0x00, HDA_OUTPUT),
+ 	HDA_BIND_MUTE   ("Speaker Playback Switch", 0x0c, 0x02, HDA_INPUT),
+@@ -7562,6 +7579,29 @@ static struct hda_verb alc885_mb5_init_v
+ 	{ }
+ };
+ 
++
++static struct hda_verb alc885_mba21_init_verbs[] = {
++	/*Internal and HP Speaker Mixer*/
++	{0x0c, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
++	{0x0c, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
++	{0x0c, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(1)},
++	/*Internal Speaker Pin (0x0c)*/
++	{0x18, AC_VERB_SET_PIN_WIDGET_CONTROL, (PIN_OUT |
+AC_PINCTL_VREF_50) },
++	{0x18, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
++	{0x18, AC_VERB_SET_CONNECT_SEL, 0x00},
++	/* HP Pin: output 0 (0x0e) */
++	{0x14, AC_VERB_SET_PIN_WIDGET_CONTROL, 0xc4},
++	{0x14, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
++	{0x14, AC_VERB_SET_CONNECT_SEL, 0x00},
++	{0x14, AC_VERB_SET_UNSOLICITED_ENABLE, (ALC880_HP_EVENT |
+AC_USRSP_EN)},
++	/* Line in (is hp when jack connected)*/
++	{0x19, AC_VERB_SET_PIN_WIDGET_CONTROL, AC_PINCTL_VREF_50},
++	{0x19, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_MUTE},
++
++	{ }
++ };
++
++
+ /* Macbook Pro rev3 */
+ static struct hda_verb alc885_mbp3_init_verbs[] = {
+ 	/* Front mixer: unmute input/output amp left and right (volume = 0) */
+@@ -7724,6 +7764,17 @@ static void alc885_imac24_setup(struct h
+ 	spec->autocfg.speaker_pins[1] = 0x1a;
+ }
+ 
++/* Macbook Air 2,1 */
++static void alc885_mba21_setup(struct hda_codec *codec)
++{
++       struct alc_spec *spec = codec->spec;
++
++       spec->autocfg.hp_pins[0] = 0x14;
++       spec->autocfg.speaker_pins[0] = 0x18;
++}
++
++
++
+ static void alc885_mbp3_setup(struct hda_codec *codec)
+ {
+ 	struct alc_spec *spec = codec->spec;
+@@ -8938,6 +8989,7 @@ static const char *alc882_models[ALC882_
+ 	[ALC882_ASUS_A7M]	= "asus-a7m",
+ 	[ALC885_MACPRO]		= "macpro",
+ 	[ALC885_MB5]		= "mb5",
++	[ALC885_MBA21]		= "mba21",
+ 	[ALC885_MBP3]		= "mbp3",
+ 	[ALC885_IMAC24]		= "imac24",
+ 	[ALC885_IMAC91]		= "imac91",
+@@ -9172,6 +9224,18 @@ static struct alc_config_preset alc882_p
+ 		.input_mux = &alc882_capture_source,
+ 		.dig_out_nid = ALC882_DIGOUT_NID,
+ 	},
++	   [ALC885_MBA21] = {
++			.mixers = { alc885_mba21_mixer },
++			.init_verbs = { alc885_mba21_init_verbs, alc880_gpio1_init_verbs },
++			.num_dacs = 2,
++			.dac_nids = alc882_dac_nids,
++			.channel_mode = alc885_mba21_ch_modes,
++			.num_channel_mode = ARRAY_SIZE(alc885_mba21_ch_modes),
++			.input_mux = &alc882_capture_source,
++			.unsol_event = alc_automute_amp_unsol_event,
++			.setup = alc885_mba21_setup,
++			.init_hook = alc_automute_amp,
++       },
+ 	[ALC885_MBP3] = {
+ 		.mixers = { alc885_mbp3_mixer, alc882_chmode_mixer },
+ 		.init_verbs = { alc885_mbp3_init_verbs,
 
 
