@@ -1,67 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305Ab0BWSBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:01:43 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:34884 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991Ab0BWSBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:01:41 -0500
-Date: Tue, 23 Feb 2010 10:01:27 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
-	rcu_dereference()
-Message-ID: <20100223180127.GF6700@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231654.09724.arnd@arndb.de> <20100223161602.GD6700@linux.vnet.ibm.com> <201002231816.00117.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002231816.00117.arnd@arndb.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1753260Ab0BWSDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 13:03:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48867 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127Ab0BWSDJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 13:03:09 -0500
+X-Authority-Analysis: v=1.0 c=1 a=TmnEcBdXtfUA:10 a=7U3hwN5JcxgA:10 a=CwPc2XfKizsTsBQkqyQA:9 a=axfCjyS7r7rSqQ-nA74YSFOJgpIA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 04/10] ARM: ftrace: allow building without frame
+ pointers
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Rabin Vincent <rabin@rab.in>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20100223175807.GB5836@debian>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in>
+	 <1266090518-31120-5-git-send-email-rabin@rab.in>
+	 <20100222190516.GJ5055@nowhere> <1266931113.19540.5.camel@frodo>
+	 <20100223171112.GC5357@nowhere>  <20100223175807.GB5836@debian>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 23 Feb 2010 13:03:05 -0500
+Message-ID: <1266948185.24271.6079.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 06:15:59PM +0100, Arnd Bergmann wrote:
-> On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> > We would also need something for initialization of structure fields.
-> > Does __force work in that case as well?
+On Tue, 2010-02-23 at 23:28 +0530, Rabin Vincent wrote:
+
+> The easiest option to have a more obvious message than a linker error
+> would be to add something like this in entry-common.S:
 > 
-> Yes, it will just need some syntactical sugar to avoid placing __force
-> in device drivers.
-
-Very good!
-
-> > > If there are cases where it does not work, we need to come up with
-> > > names for new primitives that just do the assignment or dereference
-> > > with __force but no actual synchronization.
-> > 
-> > Some data structures are shared by RCU and non-RCU code, with struct
-> > list_head being the most prominent example.  Making the "next" pointer
-> > as __rcu might be OK, but there are a -lot- of non-RCU uses of struct
-> > list_head.  Would we really want to introduce rcu_dereference() to all
-> > non-RCU list-traversal primitives, or do we need to do something else?
+>   #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4)) \
+> 	&& !defined(OLD_MCOUNT)
+>   #warning Ftrace on GCC < 4.4 requires frame pointers
+>   #endif
 > 
-> I've just started an experimental implementation and got stuck at list rcu.
-> The two to deal with it that I can see are
-> - ignore list-rcu for now, and make all include/linux/rculist.h __force the
->   problem to be ignored.
-> - introduce a new struct rcu_list_head that needs to be used for list rcu.
+> Messages like this are also present in other places in ARM (for example
+> arch/arm/kernel/unwind.c), so this wouldn't be this first.
 > 
-> A nicer option might be if sparse would let you write
-> 'struct list_head __rcu head' and interpret that as having the pointers
-> inside it annotated as __rcu.
+> Note that the above message would help in all cases except the one where
+> someone builds the kernel with !fp and GCC 4.4+, and then builds a
+> module with an older GCC.  That would still be only a linker error.
 
-Only the "next" pointer, not the "prev" pointer, but yes.
+I was going to recommend the #if above. But shouldn't it be a #error
+instead of a #warning?
 
-Perhaps it would be best to see if the sparse guys are willing to take
-this on?
+-- Steve
 
-							Thanx, Paul
+
