@@ -1,84 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992Ab0BWSct (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:32:49 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:35356 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710Ab0BWScr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:32:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=vJTzpGkHrxrekdH8GR4G7twkAsdnKikpRNrA95+3F4SoB4TRt92XJyCMZ7GbfdiqiN
-         V7uRaPHNeL3pbA/Qgm9z7kQoVvIYCrK6wcaTZyndbSYeTu3GugparJuT5imGP8d4AJPl
-         HI4PLD1ru/KJSclpBHx56rMMpgNOU4FsRoipQ=
-Subject: Re: [PATCH 10/15] MTD: nand: make reads using MTD_OOB_RAW affect
- only ECC validation
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       stanley.miao@windriver.com, Vitaly Wool <vitalywool@gmail.com>
-In-Reply-To: <alpine.LFD.2.00.1002222229091.4136@localhost.localdomain>
-References: <1266863982-5258-1-git-send-email-maximlevitsky@gmail.com>
-	 <1266863982-5258-11-git-send-email-maximlevitsky@gmail.com>
-	 <alpine.LFD.2.00.1002222219430.4136@localhost.localdomain>
-	 <1266874087.4971.4.camel@maxim-laptop>
-	 <alpine.LFD.2.00.1002222229091.4136@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 20:32:40 +0200
-Message-ID: <1266949960.8145.1.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753335Ab0BWSha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 13:37:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50581 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752363Ab0BWSh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 13:37:28 -0500
+Date: Tue, 23 Feb 2010 18:36:43 GMT
+From: tip-bot for Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       roland@redhat.com, jejb@parisc-linux.org, linux-parisc@vger.kernel.org,
+       tglx@linutronix.de, deller@gmx.de, kyle@mcmartin.ca
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       roland@redhat.com, jejb@parisc-linux.org, tglx@linutronix.de,
+       linux-parisc@vger.kernel.org, deller@gmx.de, kyle@mcmartin.ca
+In-Reply-To: <20100222183707.8749D64C@magilla.sf.frob.com>
+References: <20100222183707.8749D64C@magilla.sf.frob.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/ptrace] parisc: Disable CONFIG_HAVE_ARCH_TRACEHOOK
+Message-ID: <tip-5e6dbc260704ce4d22fc9664f517f0bb6748feaa@git.kernel.org>
+Git-Commit-ID: 5e6dbc260704ce4d22fc9664f517f0bb6748feaa
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 23 Feb 2010 18:36:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-22 at 22:29 +0100, Thomas Gleixner wrote: 
-> On Mon, 22 Feb 2010, Maxim Levitsky wrote:
-> > On Mon, 2010-02-22 at 22:20 +0100, Thomas Gleixner wrote: 
-> > > On Mon, 22 Feb 2010, Maxim Levitsky wrote:
-> > > 
-> > > > This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
-> > > > to the data buffer, however you would still need to specify the dummy oob buffer.
-> > > > 
-> > > > This is only used in one place, but makes it hard to read data+oob without ECC
-> > > > test, thus I removed that behavier, and fixed the user.
-> > > > 
-> > > > Now MTD_OOB_RAW behaves just like MTD_OOB_PLACE, but doesn't do ECC validation
-> > > 
-> > > Is this tested against existing user space tools like nanddump ? Can I
-> > > still get the raw data from flash ?
-> > 
-> > Thats the point.
-> > Userspace doesn't/can't use that mode.
-> > It is not exposed through mtdchar.
-> > Userspace reads the page, and then reads the oob.
-> > 
-> > It does use MTD_OOB_RAW, but without data buffer, and this path I don't
-> > change.
-> > 
-> > The only user of this, is the nand itself, when it reads bad block
-> > table.
-> > 
-> > I confess that I didn't run test that I ported this code correctly.
-> > But I did logically verified many times that the new code works just
-> > like old one.
-> 
-> Well, then it's about time to run the tests :)
-> 
-> Thanks,
+Commit-ID:  5e6dbc260704ce4d22fc9664f517f0bb6748feaa
+Gitweb:     http://git.kernel.org/tip/5e6dbc260704ce4d22fc9664f517f0bb6748feaa
+Author:     Roland McGrath <roland@redhat.com>
+AuthorDate: Mon, 22 Feb 2010 10:37:07 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 23 Feb 2010 10:34:41 -0800
 
-Just to be sure, I tested jffs2 and nanddump.
+parisc: Disable CONFIG_HAVE_ARCH_TRACEHOOK
 
-Works just fine.
+> FYI, this commit broke tip:master on PARISC (other architectures are fine):
+>
+>  kernel/built-in.o: In function `ptrace_request':
+>  (.text.ptrace_request+0x2cc): undefined reference to `task_user_regset_view'
 
-Best regards,
-Maxim Levitsky
+This means that parisc failed to meet the documented requirements for
+setting CONFIG_HAVE_ARCH_TRACEHOOK, but set it anyway.  If arch folks don't
+follow the specs, it defeats the whole purpose of having clear statements
+of requirements for arch code.
 
+Until parisc finishes up its requirements, disable CONFIG_HAVE_ARCH_TRACEHOOK.
 
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <20100222183707.8749D64C@magilla.sf.frob.com>
+Cc: <linux-parisc@vger.kernel.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Helge Deller <deller@gmx.de>
+Cc: James E.J. Bottomley <jejb@parisc-linux.org>
+---
+ arch/parisc/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index 524d935..f388dc6 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -18,7 +18,6 @@ config PARISC
+ 	select BUG
+ 	select HAVE_PERF_EVENTS
+ 	select GENERIC_ATOMIC64 if !64BIT
+-	select HAVE_ARCH_TRACEHOOK
+ 	help
+ 	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
+ 	  in many of their workstations & servers (HP9000 700 and 800 series,
