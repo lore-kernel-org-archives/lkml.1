@@ -1,57 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415Ab0BWN2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:28:20 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38912 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881Ab0BWN2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 08:28:19 -0500
-Date: Tue, 23 Feb 2010 05:28:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
-	rcu_dereference()
-Message-ID: <20100223132815.GA6873@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231359.07910.arnd@arndb.de>
+	id S1752401Ab0BWNc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:32:26 -0500
+Received: from bld-mail14.adl6.internode.on.net ([150.101.137.99]:40007 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751893Ab0BWNcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 08:32:25 -0500
+Date: Wed, 24 Feb 2010 00:32:19 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: disk/crypto performance regression 2.6.31 -> 2.6.32 (mmap
+	problem?)
+Message-ID: <20100223133219.GB16175@discord.disaster>
+References: <alpine.DEB.1.10.1002191729220.28940@uplift.swm.pp.se> <alpine.DEB.1.10.1002221337170.28940@uplift.swm.pp.se> <20100223044818.GD22370@discord.disaster> <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002231359.07910.arnd@arndb.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 01:59:07PM +0100, Arnd Bergmann wrote:
-> On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> > This patch series adds lockdep-based checking to the rcu_dereference()
-> > primitive in order to flag misuses of RCU.
-> 
-> While I haven't looked much at this series, I've been thinking about
-> adding static diagnostics for rcu_dereference misuse, in the form of
-> an __rcu address space qualifier for pointers. Such a patch would
-> obviously conflict with this series, so I'd wait for yours to go
-> in first, but maybe you like the idea enough to do it yourself ;-).
-> 
-> The observation is that all accesses to an RCU protected pointer
-> are either through rcu_dereference, rcu_assign_pointer or one of their
-> variants. so it should be possible to add a new address space like we
-> have for __iomem, __user and soon __percpu and have sparse check that
-> we use RCU consistently on pointers that need it.
+On Tue, Feb 23, 2010 at 08:24:26AM +0100, Mikael Abrahamsson wrote:
+> On Tue, 23 Feb 2010, Dave Chinner wrote:
+>
+>> XFS issues IO barriers by default. They were recently enabled in md
+>> for raid5/6, so that might be the cause of the slowdown/latency. You
+>> could try using the "nobarrier" mount option to see if this make the
+>> problem go away, but beware that this can result in filesystem
+>> corruption if the machine crashes.
+>
+> I don't think the crypto layer supports it so I think my barriers are 
+> off, that's what I'm used to seeing every time it mounts the partition.
 
-That is orthogonal to the current series, but sounds like a very good
-idea, give or take how to handle initialization accesses and the like.
+Barriers are only recently supported across DM and MD, so it would
+be worth checking you logs for the last mount of the filesystems to
+confirm.
 
-Your approach would verify that a given RCU-protected pointer is
-consistently handled by rcu_dereference() and presumably also
-rcu_assign_pointer().  This patch series instead verifies that a given
-rcu_dereference() is protected by the proper flavor of RCU or the
-correct lock or whatever else.
+>> If it is not barriers that are causing this, then the other thing
+>> you might want to look at is if XFS is configured with lazy-count=1
+>> (xfs_info <mntpt>). If it is not enabled (0), then a significant
+>> amount of latency could be coming from the superblock buffer being
+>> locked during transaction commits. Unfortunately enabling this
+>> feature is an offline operation (via xfs_admin) so enabling may not
+>> be feasible for you.
+>
+> Currently it's "lazy-count=0", so I'll change that setting tonight.
+>
+> The behaviour I'm seeing right now causes things like "sync" to take very 
+> long time, I just saw this as well (I've seen the same once when I ran  
+> "sync" manually):
+>
+> [210846.031875] INFO: task xfssyncd:3167 blocked for more than 120 seconds.
+> [210846.031879] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [210846.031883] xfssyncd      D 00000000ffffffff     0  3167      2 0x00000000
+> [210846.031889]  ffff880208569c50 0000000000000046 ffff880208569c10 0000000000015880
+> [210846.031895]  ffff88020b0ec7c0 0000000000015880 0000000000015880 0000000000015880
+> [210846.031900]  0000000000015880 ffff88020b0ec7c0 0000000000015880 0000000000015880
+> [210846.031905] Call Trace:
+> [210846.031935]  [<ffffffffa02767d5>] __xfs_iunpin_wait+0x95/0xd0 [xfs]
+> [210846.031943]  [<ffffffff810789c0>] ? autoremove_wake_function+0x0/0x40
+> [210846.031964]  [<ffffffffa0279dad>] xfs_iflush+0x8d/0x2b0 [xfs]
+> [210846.031971]  [<ffffffff815299cb>] ? __down_write+0xb/0x10
+> [210846.031992]  [<ffffffffa02a06f4>] xfs_reclaim_inode+0x114/0x180 [xfs]
+> [210846.032013]  [<ffffffffa02a07e2>] xfs_reclaim_inode_now+0x82/0x90 [xfs]
+> [210846.032033]  [<ffffffffa02a0760>] ? xfs_reclaim_inode_now+0x0/0x90 [xfs]
+> [210846.032053]  [<ffffffffa02a11d2>] xfs_inode_ag_walk+0x72/0xd0 [xfs]
+> [210846.032073]  [<ffffffffa02a0760>] ? xfs_reclaim_inode_now+0x0/0x90 [xfs]
+> [210846.032094]  [<ffffffffa02a1297>] xfs_inode_ag_iterator+0x67/0xa0 [xfs]
+> [210846.032114]  [<ffffffffa02a12e4>] xfs_reclaim_inodes+0x14/0x20 [xfs]
+> [210846.032134]  [<ffffffffa02a1349>] xfs_sync_worker+0x59/0x90 [xfs]
+> [210846.032154]  [<ffffffffa02a0a0a>] xfssyncd+0x17a/0x220 [xfs]
+> [210846.032174]  [<ffffffffa02a0890>] ? xfssyncd+0x0/0x220 [xfs]
+> [210846.032179]  [<ffffffff810785d6>] kthread+0xa6/0xb0
+> [210846.032183]  [<ffffffff810130ea>] child_rip+0xa/0x20
+> [210846.032188]  [<ffffffff81078530>] ? kthread+0x0/0xb0
+> [210846.032191]  [<ffffffff810130e0>] ? child_rip+0x0/0x20
+>
+> So something weird is going on, I don't really see why it wouldn't be 
+> able to write enough data in 120 seconds in an orderly fashion.
 
-							Thanx, Paul
+If is it blocked there, it is waiting for a log force to complete.
+The lazy-count setting will make no difference to that. However,
+this adds more weight to the barrier theory because one of the
+sources of barrier writes are writes triggered by log forces.
+
+It would be instructive to gather the output of:
+
+# echo w > /proc/sysrq-trigger
+
+When IO is really slow so we get a better idea of where things are
+blocking. Running a few of these 30s apart will give a fair
+indication of what is blocked and what is making progress....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
