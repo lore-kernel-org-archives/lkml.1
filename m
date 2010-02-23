@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751976Ab0BWBH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:07:56 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:43214 "EHLO e7.ny.us.ibm.com"
+	id S1753541Ab0BWBIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:08:25 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:36573 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974Ab0BWBFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:05:17 -0500
+	id S1752544Ab0BWBFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 20:05:15 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 10/21] radix-tree: disable RCU lockdep checking in radix tree
-Date: Mon, 22 Feb 2010 17:04:54 -0800
-Message-Id: <1266887105-1528-10-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 19/21] rcu: fix deadlock in TREE_PREEMPT_RCU CPU stall detection
+Date: Mon, 22 Feb 2010 17:05:03 -0800
+Message-Id: <1266887105-1528-19-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
 References: <20100223010435.GA666@linux.vnet.ibm.com>
@@ -24,127 +24,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because the radix tree is used with many different locking designs, we
-cannot do any effective checking without changing the radix-tree APIs.
-It might make sense to do this later, but only if the RCU lockdep checking
-proves itself sufficiently valuable.
+Under TREE_PREEMPT_RCU, print_other_cpu_stall() invokes
+rcu_print_task_stall() with the root rcu_node structure's ->lock held,
+and rcu_print_task_stall() acquires that same lock for self-deadlock.
+Fix this by removing the lock acquisition from rcu_print_task_stall(),
+and making all callers acquire the lock instead.
 
+Tested-by: John Kacur <jkacur@redhat.com>
+Tested-by: Thomas Gleixner <tglx@linutronix.de>
+Located-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- lib/radix-tree.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ kernel/rcutree.c        |    2 ++
+ kernel/rcutree_plugin.h |    3 ---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 92cdd99..6b9670d 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -364,7 +364,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
- 	unsigned int height, shift;
- 	struct radix_tree_node *node, **slot;
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 65a807b..b07be37 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -476,7 +476,9 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
  
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (node == NULL)
- 		return NULL;
+ 	printk(KERN_ERR "INFO: RCU detected CPU stalls:");
+ 	rcu_for_each_leaf_node(rsp, rnp) {
++		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		rcu_print_task_stall(rnp);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		if (rnp->qsmask == 0)
+ 			continue;
+ 		for (cpu = 0; cpu <= rnp->grphi - rnp->grplo; cpu++)
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index a8b2e83..aecfe37 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -318,18 +318,15 @@ EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+  */
+ static void rcu_print_task_stall(struct rcu_node *rnp)
+ {
+-	unsigned long flags;
+ 	struct list_head *lp;
+ 	int phase;
+ 	struct task_struct *t;
  
-@@ -384,7 +384,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
- 	do {
- 		slot = (struct radix_tree_node **)
- 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
--		node = rcu_dereference(*slot);
-+		node = rcu_dereference_raw(*slot);
- 		if (node == NULL)
- 			return NULL;
- 
-@@ -568,7 +568,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
- 	if (!root_tag_get(root, tag))
- 		return 0;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (node == NULL)
- 		return 0;
- 
-@@ -602,7 +602,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
- 			BUG_ON(ret && saw_unset_tag);
- 			return !!ret;
- 		}
--		node = rcu_dereference(node->slots[offset]);
-+		node = rcu_dereference_raw(node->slots[offset]);
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
+ 	if (rcu_preempted_readers(rnp)) {
+-		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		phase = rnp->gpnum & 0x1;
+ 		lp = &rnp->blocked_tasks[phase];
+ 		list_for_each_entry(t, lp, rcu_node_entry)
+ 			printk(" P%d", t->pid);
+-		raw_spin_unlock_irqrestore(&rnp->lock, flags);
  	}
-@@ -711,7 +711,7 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 		}
- 
- 		shift -= RADIX_TREE_MAP_SHIFT;
--		slot = rcu_dereference(slot->slots[i]);
-+		slot = rcu_dereference_raw(slot->slots[i]);
- 		if (slot == NULL)
- 			goto out;
- 	}
-@@ -758,7 +758,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 	unsigned long cur_index = first_index;
- 	unsigned int ret;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -787,7 +787,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 			slot = *(((void ***)results)[ret + i]);
- 			if (!slot)
- 				continue;
--			results[ret + nr_found] = rcu_dereference(slot);
-+			results[ret + nr_found] = rcu_dereference_raw(slot);
- 			nr_found++;
- 		}
- 		ret += nr_found;
-@@ -826,7 +826,7 @@ radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
- 	unsigned long cur_index = first_index;
- 	unsigned int ret;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -915,7 +915,7 @@ __lookup_tag(struct radix_tree_node *slot, void ***results, unsigned long index,
- 			}
- 		}
- 		shift -= RADIX_TREE_MAP_SHIFT;
--		slot = rcu_dereference(slot->slots[i]);
-+		slot = rcu_dereference_raw(slot->slots[i]);
- 		if (slot == NULL)
- 			break;
- 	}
-@@ -951,7 +951,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
- 	if (!root_tag_get(root, tag))
- 		return 0;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -980,7 +980,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
- 			slot = *(((void ***)results)[ret + i]);
- 			if (!slot)
- 				continue;
--			results[ret + nr_found] = rcu_dereference(slot);
-+			results[ret + nr_found] = rcu_dereference_raw(slot);
- 			nr_found++;
- 		}
- 		ret += nr_found;
-@@ -1020,7 +1020,7 @@ radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
- 	if (!root_tag_get(root, tag))
- 		return 0;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
+ }
  
 -- 
 1.6.6
