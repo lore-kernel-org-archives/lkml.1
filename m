@@ -1,74 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528Ab0BWMEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 07:04:40 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:60482 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592Ab0BWMEh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 07:04:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=l3WqOSsrQgVfFni2WLEyg+NSnuGeljGHrKWucLfb1G3Ob6lffPI8llIuZwJreZQbiR
-         3X6y17gqDGTwBtm/Pen+nomwgyCUhc6CPIRaHEE8UiFB0vydrhJFMRJiPduHvU0/Xz4I
-         l5dRBHWnAXzTui55AFeqlgp6/pLrqT3Zu+2gU=
-Date: Tue, 23 Feb 2010 15:04:23 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [patch] uwb: remove duplicate cpu_to_le16()
-Message-ID: <20100223120423.GC5378@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	David Vrabel <david.vrabel@csr.com>,
-	=?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-	Jiri Kosina <jkosina@suse.cz>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+	id S1752562Ab0BWMFP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 07:05:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21551 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752471Ab0BWMFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 07:05:12 -0500
+Message-ID: <4B83C411.9050308@redhat.com>
+Date: Tue, 23 Feb 2010 14:03:29 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Thomas Renninger <trenn@suse.de>
+CC: linux-kernel@vger.kernel.org,
+       Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
+       Yinghai Lu <yinghai@kernel.org>, akpm@linux-foundation.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec
+References: <1266925885-17616-1-git-send-email-trenn@suse.de>
+In-Reply-To: <1266925885-17616-1-git-send-email-trenn@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These parameters should be passed as cpu endian because we change it to
-little endian inside usb_control_msg().  On x86 cpu_to_le16() doesn't
-do anything so either way works but I think the original code would break 
-on big endian systems.
+On 02/23/2010 01:51 PM, Thomas Renninger wrote:
+> From: Kerstin Jonsson<kerstin.jonsson@ericsson.com>
+>
+> When the SMP kernel decides to crash_kexec() the local APICs may have
+> pending interrupts in their vector tables.
+> The setup routine for the local APIC has a deficient mechanism for
+> clearing these interrupts, it only handles interrupts that has already
+> been dispatched to the local core for servicing (the ISR register)
+> safely, it doesn't consider lower prioritized queued interrupts stored
+> in the IRR register.
+>
+> If you have more than one pending interrupt within the same 32 bit word
+> in the LAPIC vector table registers you may find yourself entering the
+> IO APIC setup with pending interrupts left in the LAPIC. This is a
+> situation for wich the IO APIC setup is not prepared. Depending of
+> what/which interrupt vector/vectors are stuck in the APIC tables your
+> system may show various degrees of malfunctioning.
+> That was the reason why the check_timer() failed in our system, the
+> timer interrupts was blocked by pending interrupts from the old kernel
+> when routed trough the IO APIC.
+>
+> Additional comment from Jiri Bohac:
+> ==============
+> If this should go into stable release,
+> I'd add some kind of limit on the number of iterations, just to be safe from
+> hard to debug lock-ups:
+>
+> +if (loops++>  MAX_LOOPS) {
+> +        printk("LAPIC pending clean-up")
+> +        break;
+> +}
+>   while (queued);
+>
+> with MAX_LOOPS something like 1E9 this would leave plenty of time for the
+> pending IRQs to be cleared and would and still cause at most a second of delay
+> if the loop were to lock-up for whatever reason.
+> ==============
+>
+>  From trenn@suse.de:
+> Merged Jiri suggestion into the patch.
+> Also made the max_loops depend on cpu_khz. Not sure how long an apic_read
+> takes, as it is on the CPU it may only be one cycle and we now wait 1 sec
+> in WARN_ON(..) case?
+>
+>    
 
-I removed the masks as well because that usb_control_msg() parameters 
-are __u16 so we already only use the lower bits.
+An apic_read() can take a couple of microseconds when running 
+virtualized, so this loop may run for hours.  On the other hand, 
+virtualized hardware is unlikely to misbehave.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
----
-I found this through static checking and I can't test it.  Please
-review carefully.
+Still I recommend using a clocksource (tsc would do) and not a loop count.
 
-diff --git a/drivers/uwb/i1480/dfu/usb.c b/drivers/uwb/i1480/dfu/usb.c
-index 0bb665a..a7d4023 100644
---- a/drivers/uwb/i1480/dfu/usb.c
-+++ b/drivers/uwb/i1480/dfu/usb.c
-@@ -120,8 +120,7 @@ int i1480_usb_write(struct i1480 *i1480, u32 memory_address,
- 		result = usb_control_msg(
- 			i1480_usb->usb_dev, usb_sndctrlpipe(i1480_usb->usb_dev, 0),
- 			0xf0, USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
--			cpu_to_le16(memory_address & 0xffff),
--			cpu_to_le16((memory_address >> 16) & 0xffff),
-+			memory_address,	(memory_address >> 16),
- 			i1480->cmd_buf, buffer_size, 100 /* FIXME: arbitrary */);
- 		if (result < 0)
- 			break;
-@@ -166,8 +165,7 @@ int i1480_usb_read(struct i1480 *i1480, u32 addr, size_t size)
- 		result = usb_control_msg(
- 			i1480_usb->usb_dev, usb_rcvctrlpipe(i1480_usb->usb_dev, 0),
- 			0xf0, USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
--			cpu_to_le16(itr_addr & 0xffff),
--			cpu_to_le16((itr_addr >> 16) & 0xffff),
-+			itr_addr, (itr_addr >> 16),
- 			i1480->cmd_buf + itr, itr_size,
- 			100 /* FIXME: arbitrary */);
- 		if (result < 0) {
+-- 
+error compiling committee.c: too many arguments to function
+
