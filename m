@@ -1,67 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687Ab0BWWxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 17:53:19 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41995 "EHLO gate.crashing.org"
+	id S1754701Ab0BWWyw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 17:54:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51178 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754381Ab0BWWxQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 17:53:16 -0500
-Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100223194946.GA1941@local>
-Date: Tue, 23 Feb 2010 16:52:56 -0600
-Cc: Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
-References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org> <20100223150140.GA3781@suse.de> <20100223194946.GA1941@local>
-To: "Hans J. Koch" <hjk@linutronix.de>
-X-Mailer: Apple Mail (2.1077)
+	id S1753249Ab0BWWyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 17:54:50 -0500
+Date: Wed, 24 Feb 2010 09:54:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
+       linux-tip-commits@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: linux-next requirements (Was: Re: [tip:x86/ptrace] ptrace: Add
+ support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
+Message-Id: <20100224095443.cb398c27.sfr@canb.auug.org.au>
+In-Reply-To: <4B843F66.6030000@zytor.com>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
+	<20100222090710.GA31357@elte.hu>
+	<20100222203319.8bd497a2.sfr@canb.auug.org.au>
+	<20100222102745.GJ20844@elte.hu>
+	<20100222224752.0cbd5807.sfr@canb.auug.org.au>
+	<4B830BD8.3090600@zytor.com>
+	<20100223105959.a50dbe11.sfr@canb.auug.org.au>
+	<20100223202030.44DED64C@magilla.sf.frob.com>
+	<4B843F66.6030000@zytor.com>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Feb 23, 2010, at 1:49 PM, Hans J. Koch wrote:
+On Tue, 23 Feb 2010 12:49:42 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
+>
+> On 02/23/2010 12:20 PM, Roland McGrath wrote:
+> >> Are there any downsides to Roland's patch as far as PARISC is concerned
+> >> (apart from the loss of some functionality, of course)?
+> >=20
+> > Kyle ACK'd my parisc patch, and my impression is he wants it to go in
+> > and does not plan to work on the necessary arch support imminently.
+> >=20
+> > I think the only visible effect of turning off HAVE_ARCH_TRACEHOOK
+> > on parisc will be that /proc/pid/syscall is not available.
+>=20
+> Added to tip:x86/ptrace.
 
-> On Tue, Feb 23, 2010 at 07:01:41AM -0800, Greg KH wrote:
->> On Tue, Feb 23, 2010 at 08:54:16AM -0600, Kumar Gala wrote:
->>> Hans, Greg,
->>> 
->>> We are looking at using UIO for some driver work and noticed it
->>> assumes the address for MMIO regions is an 'unsigned long'.  This is a
->>> problem for the platforms we have in which we support a 36-bit
->>> physical address in a 32-bit machine.
->>> 
->>> Should we just change addr/size in struct uio_mem to u64 always?
-> 
-> No, if I didn't miss something important, it's not feasible IMHO.
-> 
->>> At
->>> first I was thinking phys_addr_t but realized the addr could be PHYS,
->>> LOGICAL, or VIRTUAL.
->> 
->> I think that would work out fine, Hans, any ideas if this would cause
->> any problems with existing code or not?
-> 
-> It won't work. This is not a UIO problem. UIO just passes addr to other
-> system functions, and all of them use "unsigned long" for these addresses.
-> You'd have to change the whole memory management code.
-> 
-> Note that members vm_start and vm_end in struct vm_area_struct are
-> also unsigned long. Having an u64 in the UIO core doesn't help at all.
+And Linus actually put it in his tree yesterday ... commit
+15cbf627abcd93c3c668d5a92d58d9fec8f953dd "Revert "parisc:
+HAVE_ARCH_TRACEHOOK""
 
-This already works for mmap since we pass down a PFN and not an address to remap_pfn_range.  While we can handle any physical address size we can handle one up to 44 bits on most architectures which is well beyond the 36-bit physical address case I'm dealing with on PPC.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Memory above the 4G border can only be accessed through himem mechanisms
-> or be mapped to an address below that border in lowlevel arch code.
-> 
-> In most cases, I'd say it's bad board design to have memory-mapped hardware
-> above the 4G border on a 32-bit machine.
+--Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1
+Content-Type: application/pgp-signature
 
-While I might agree with you its a reality on a number of embedded processors and I know three different PowerPC based embedded families that have 36-bit physical addressing to allow for >4G of DDR and thus IO ends up being above the 4G physical boundary and we already support these in the kernel.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-- k
+iEYEARECAAYFAkuEXLMACgkQjjKRsyhoI8wb3ACgohZdrhbZ+u+VHt7udSSZx15e
+Nv8Anjm1uBoN+5bclL7q/FI6EJ/d9S+u
+=3rcX
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1--
