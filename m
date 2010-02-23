@@ -1,85 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641Ab0BWMPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 07:15:43 -0500
-Received: from legolas.restena.lu ([158.64.1.34]:59343 "EHLO
-	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480Ab0BWMPm (ORCPT
+	id S1752677Ab0BWMVJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 07:21:09 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:43176 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480Ab0BWMVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 07:15:42 -0500
-Date: Tue, 23 Feb 2010 13:15:08 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: "Benjamin Li" <benli@broadcom.com>
-Cc: NetDEV <netdev@vger.kernel.org>, "Michael Chan" <mchan@broadcom.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
-Message-ID: <20100223131508.4c6cb866@neptune.home>
-In-Reply-To: <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
-References: <20091229084929.54912c0c@pluto.restena.lu>
-	<1262077540.12520.4.camel@localhost>
-	<20091229145403.39f82773@pluto.restena.lu>
-	<1262149691.2788.63.camel@localhost>
-	<20100219091034.5fbb0165@pluto.restena.lu>
-	<1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Feb 2010 07:21:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=mQ6NCifGS6NFRfO59RPzktS9YjK65AnpaKGdt1m3rzRoXTG1ZnBgjTE89jbfD1YX4X
+         EiN8T6LlMky6AYB3zVdeJALzCSNAdWY+a1Gkci0lf1LS1z3SOQe1apoDeEfgeJDKK2Ge
+         AzodCjKhcjW1iaZCwKX7lkG3o+xc6H48Zop+Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git patch] atang tree: enhanced SSD detection
+Date: Tue, 23 Feb 2010 13:13:52 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201002211841.24936.bzolnier@gmail.com> <4B8370D5.1070302@garzik.org>
+In-Reply-To: <4B8370D5.1070302@garzik.org>
+MIME-Version: 1.0
+Message-Id: <201002231313.52569.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Benjamin,
-
-On Fri, 19 February 2010 "Benjamin Li" <benli@broadcom.com> wrote:
-> >From your logs it looks like the device came up using MSI, but in the
-> MSI-X poll routine was being called:
+On Tuesday 23 February 2010 07:08:21 am Jeff Garzik wrote:
+> On 02/21/2010 12:41 PM, Bartlomiej Zolnierkiewicz wrote:
+> > DISCLAIMER: the fact of getting patches merged into atang tree means
+> > that from now on they will be getting updates for changes happening
+> > in atang tree and it should not be treated as an indication regarding
+> > decisions taken by 'upstream' kernel trees
+> >
+> >
+> > Improve SSD detection so block layer optimizations can be applied
+> > to many more SSD devices.
+> >
+> >
+> > The following changes since commit 17c619273d412ed7b6120e448f87b2329457fc90:
+> >    Bartlomiej Zolnierkiewicz (1):
+> >          pata_oldpiix: enable parallel scan
+> >
+> > are available in the git repository at:
+> >
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git atang-v4.7
+> >
+> > Bartlomiej Zolnierkiewicz (1):
+> >        libata: enhanced SSD detection
+> >
+> >   drivers/ata/libata-core.c |    3 +++
+> >   drivers/ata/libata-scsi.c |   18 ++++++++++--------
+> >   include/linux/libata.h    |    1 +
+> >   3 files changed, 14 insertions(+), 8 deletions(-)
+> >
+> >
+> > commit ded92e0d01fbb7f27bec7a35606847a2547e95e0
+> > Author: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> > Date:   Sun Feb 21 18:31:18 2010 +0100
+> >
+> >      libata: enhanced SSD detection
+> >
+> >      Many SSD devices predate or just don't implement non-rotational
+> >      media type advertisement through the word 217 of the id block so
+> >      check also the product id for 'SSD' substring to automatically
+> >      detect SSD devices and apply relevant block layer optimizations.
+> >
+> >      This is based on earlier Jeff Garzik's patch from April 2009:
+> >      http://lkml.org/lkml/2009/4/7/495
+> >
+> >      While at it:
+> >      - cleanup ata_scsi_dev_config() a bit
+> >
+> >      Tested with ASUS-PHISON SSD devices found in Asus Eee 901.
+> >
+> >      Cc: Jeff Garzik<jeff@garzik.org>
+> >      Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
 > 
-> [    9.836673] bnx2: eth0: using MSI
-> ...
+> Yes, I agree we need something like this.  I will review for atang 
+> dependencies, and then make sure it gets applied to upstream.
 > 
-> [  134.643459]  [<ffffffffa004019e>] bnx2_poll_msix+0x3e/0xd0 [bnx2]
-> [  134.643465]  [<ffffffff8135bcd1>] netpoll_poll+0xe1/0x3c0
+> The previous discussion of this approach concluded weakly with "poor 
+> heuristic", but a better approach did not materialize.
 > 
-> which is incorrect.  If we are in MSI mode, the bnx2_poll() routine
-> should be used.
-> 
-> I think what is going on here is that during the bnx2x driver
-> initialization the current bnx2 driver adds all possible NAPI
-> structures that map to all the hardware vectors (BNX2_MAX_MSIX_VEC=9)
-> to the NAPI list in the net_device structure regardless if they are
-> used or not (Seen in drivers/net/bnx2.c:bnx2_init_napi()).  This can
-> cause uninitialized NAPI structures to be placed on the napi_list.
-> Because this device is in MSI mode, only 1 vector is initialized.
-> Now, the problem is triggered when net/core/netpoll.c:poll_napi() is
-> called. This is because this routine will run through the entire
-> napi_list calling all the poll routines.  In your particular case, it
-> is calling the poll routine on an uninitialized vector causing the
-> kernel panic.
-> 
-> Please try the patch below to see if it solves your problem.  Note,
-> this only have been compile tested and tested against basic traffic
-> runs. Unfortunately, I could not reproduce the kernel panic with the
-> instructions below to verify the patch.
-> 
-> Thanks again for all your help in helping us track this down.
+> One question, though:  why did you drop ata_id_is_ssd() test?
 
-I applied the patch today and tried to reproduce with my showcases.
+This test is not in the 'upstream' any longer as 'standard' detection
+is now handled through libata-scsi emulation layer (after SSD related
+SCSI changes made by Martin K. Petersen, commit f17259a etc).
 
-Seems that it's harder to trigger now but I still end up being able to
-crash the box. Don't know if it's the same cause or not (could also
-be the tcp-retransmit ghost)...
-
-This time I had to run a few paralell scp's (8Mb/s each) to the box and 
-'echo t > /proc/sysrq-trigger' multiple times via ssh session for it to
-happen. It didn't trigger with by netbomb though I will try some more
-and see)
-
-I don't know if it's the same reason or not (hopefully something
-reached disk as serial console is dead and pings are not
-answered anymore.
-It's probably some printk/bug/warn that triggers in network stack and
-deadlocks with netconsole.
-
-Regards,
-Bruno
+--
+Bartlomiej Zolnierkiewicz
