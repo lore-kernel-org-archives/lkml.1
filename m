@@ -1,81 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469Ab0BWHY3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 02:24:29 -0500
-Received: from swm.pp.se ([212.247.200.143]:36630 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252Ab0BWHY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 02:24:27 -0500
-Date: Tue, 23 Feb 2010 08:24:26 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: Dave Chinner <david@fromorbit.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: disk/crypto performance regression 2.6.31 -> 2.6.32 (mmap
- problem?)
-In-Reply-To: <20100223044818.GD22370@discord.disaster>
-Message-ID: <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se>
-References: <alpine.DEB.1.10.1002191729220.28940@uplift.swm.pp.se> <alpine.DEB.1.10.1002221337170.28940@uplift.swm.pp.se> <20100223044818.GD22370@discord.disaster>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
+	id S1752489Ab0BWH1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 02:27:31 -0500
+Received: from mail-yx0-f189.google.com ([209.85.210.189]:32955 "EHLO
+	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186Ab0BWH13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 02:27:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QrfQ5FHzdCBikqSLC1Zl4+nmLsVLsgca1F7o0CVgBxQfUNepKmrCD9MYmHfjIf6Sjy
+         rq46R7M+P4fhyXNu/Jx+ydymmdrz0LMZ+hXvx/hM/SNU9FjHrFStCXp8cdxW7KZcHYDg
+         AFW1hAR4craNaYBdLvpOBOLnmkXKTAvFJZToI=
+Message-ID: <4B83835C.8090707@garzik.org>
+Date: Tue, 23 Feb 2010 02:27:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Alan Cox <alan@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/5] libata: Pass host flags into the pci helper
+References: <20100217131532.16884.21696.stgit@localhost.localdomain>
+In-Reply-To: <20100217131532.16884.21696.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010, Dave Chinner wrote:
+On 02/17/2010 08:15 AM, Alan Cox wrote:
+> This allows parallel scan and the like to be set without having to stop
+> using the existing full helper functions. This patch merely adds the argument
+> and fixes up the callers. It doesn't undo the special cases already in the
+> tree or add any new parallel callers.
+>
+> Signed-off-by: Alan Cox<alan@linux.intel.com>
+> ---
+>
+>   drivers/ata/ata_generic.c       |    2 +-
+>   drivers/ata/libata-sff.c        |    6 ++++--
+>   drivers/ata/pata_acpi.c         |    2 +-
+>   drivers/ata/pata_ali.c          |    2 +-
+>   drivers/ata/pata_amd.c          |    2 +-
+>   drivers/ata/pata_artop.c        |    2 +-
+>   drivers/ata/pata_atiixp.c       |    2 +-
+>   drivers/ata/pata_cmd640.c       |    2 +-
+>   drivers/ata/pata_cmd64x.c       |    2 +-
+>   drivers/ata/pata_cs5530.c       |    2 +-
+>   drivers/ata/pata_cs5535.c       |    2 +-
+>   drivers/ata/pata_cs5536.c       |    2 +-
+>   drivers/ata/pata_cypress.c      |    2 +-
+>   drivers/ata/pata_efar.c         |    2 +-
+>   drivers/ata/pata_hpt366.c       |    2 +-
+>   drivers/ata/pata_hpt37x.c       |    2 +-
+>   drivers/ata/pata_hpt3x2n.c      |    2 +-
+>   drivers/ata/pata_it8213.c       |    2 +-
+>   drivers/ata/pata_it821x.c       |    2 +-
+>   drivers/ata/pata_jmicron.c      |    2 +-
+>   drivers/ata/pata_marvell.c      |    2 +-
+>   drivers/ata/pata_netcell.c      |    2 +-
+>   drivers/ata/pata_ns87410.c      |    2 +-
+>   drivers/ata/pata_ns87415.c      |    2 +-
+>   drivers/ata/pata_oldpiix.c      |    2 +-
+>   drivers/ata/pata_opti.c         |    2 +-
+>   drivers/ata/pata_optidma.c      |    2 +-
+>   drivers/ata/pata_pdc202xx_old.c |    2 +-
+>   drivers/ata/pata_piccolo.c      |    2 +-
+>   drivers/ata/pata_radisys.c      |    2 +-
+>   drivers/ata/pata_rz1000.c       |    2 +-
+>   drivers/ata/pata_sc1200.c       |    2 +-
+>   drivers/ata/pata_serverworks.c  |    2 +-
+>   drivers/ata/pata_sil680.c       |    2 +-
+>   drivers/ata/pata_sis.c          |    2 +-
+>   drivers/ata/pata_sl82c105.c     |    2 +-
+>   drivers/ata/pata_triflex.c      |    2 +-
+>   drivers/ata/pata_via.c          |    2 +-
+>   include/linux/libata.h          |    4 ++--
+>   39 files changed, 43 insertions(+), 41 deletions(-)
 
-> XFS issues IO barriers by default. They were recently enabled in md
-> for raid5/6, so that might be the cause of the slowdown/latency. You
-> could try using the "nobarrier" mount option to see if this make the
-> problem go away, but beware that this can result in filesystem
-> corruption if the machine crashes.
+applied (after catching one miss in drivers/staging/)
 
-I don't think the crypto layer supports it so I think my barriers are off, 
-that's what I'm used to seeing every time it mounts the partition.
 
-> If it is not barriers that are causing this, then the other thing
-> you might want to look at is if XFS is configured with lazy-count=1
-> (xfs_info <mntpt>). If it is not enabled (0), then a significant
-> amount of latency could be coming from the superblock buffer being
-> locked during transaction commits. Unfortunately enabling this
-> feature is an offline operation (via xfs_admin) so enabling may not
-> be feasible for you.
-
-Currently it's "lazy-count=0", so I'll change that setting tonight.
-
-The behaviour I'm seeing right now causes things like "sync" to take very 
-long time, I just saw this as well (I've seen the same once when I ran 
-"sync" manually):
-
-[210846.031875] INFO: task xfssyncd:3167 blocked for more than 120 seconds.
-[210846.031879] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[210846.031883] xfssyncd      D 00000000ffffffff     0  3167      2 0x00000000
-[210846.031889]  ffff880208569c50 0000000000000046 ffff880208569c10 0000000000015880
-[210846.031895]  ffff88020b0ec7c0 0000000000015880 0000000000015880 0000000000015880
-[210846.031900]  0000000000015880 ffff88020b0ec7c0 0000000000015880 0000000000015880
-[210846.031905] Call Trace:
-[210846.031935]  [<ffffffffa02767d5>] __xfs_iunpin_wait+0x95/0xd0 [xfs]
-[210846.031943]  [<ffffffff810789c0>] ? autoremove_wake_function+0x0/0x40
-[210846.031964]  [<ffffffffa0279dad>] xfs_iflush+0x8d/0x2b0 [xfs]
-[210846.031971]  [<ffffffff815299cb>] ? __down_write+0xb/0x10
-[210846.031992]  [<ffffffffa02a06f4>] xfs_reclaim_inode+0x114/0x180 [xfs]
-[210846.032013]  [<ffffffffa02a07e2>] xfs_reclaim_inode_now+0x82/0x90 [xfs]
-[210846.032033]  [<ffffffffa02a0760>] ? xfs_reclaim_inode_now+0x0/0x90 [xfs]
-[210846.032053]  [<ffffffffa02a11d2>] xfs_inode_ag_walk+0x72/0xd0 [xfs]
-[210846.032073]  [<ffffffffa02a0760>] ? xfs_reclaim_inode_now+0x0/0x90 [xfs]
-[210846.032094]  [<ffffffffa02a1297>] xfs_inode_ag_iterator+0x67/0xa0 [xfs]
-[210846.032114]  [<ffffffffa02a12e4>] xfs_reclaim_inodes+0x14/0x20 [xfs]
-[210846.032134]  [<ffffffffa02a1349>] xfs_sync_worker+0x59/0x90 [xfs]
-[210846.032154]  [<ffffffffa02a0a0a>] xfssyncd+0x17a/0x220 [xfs]
-[210846.032174]  [<ffffffffa02a0890>] ? xfssyncd+0x0/0x220 [xfs]
-[210846.032179]  [<ffffffff810785d6>] kthread+0xa6/0xb0
-[210846.032183]  [<ffffffff810130ea>] child_rip+0xa/0x20
-[210846.032188]  [<ffffffff81078530>] ? kthread+0x0/0xb0
-[210846.032191]  [<ffffffff810130e0>] ? child_rip+0x0/0x20
-
-So something weird is going on, I don't really see why it wouldn't be able 
-to write enough data in 120 seconds in an orderly fashion.
-
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
