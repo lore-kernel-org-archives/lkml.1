@@ -1,46 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751846Ab0BWJYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 04:24:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50097 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909Ab0BWJYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 04:24:08 -0500
-Message-ID: <4B839E9D.8020604@cn.fujitsu.com>
-Date: Tue, 23 Feb 2010 17:23:41 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	id S1752077Ab0BWJZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 04:25:27 -0500
+Received: from compulab.co.il ([67.18.134.219]:39153 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518Ab0BWJZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 04:25:24 -0500
+Message-ID: <4B839F27.2040003@compulab.co.il>
+Date: Tue, 23 Feb 2010 11:25:59 +0200
+From: Denis Turischev <denis@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time (58568d2)
-References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <4B827043.3060305@cn.fujitsu.com> <alpine.DEB.2.00.1002221339160.14426@chino.kir.corp.google.com> <4B838490.1050908@cn.fujitsu.com> <alpine.DEB.2.00.1002230046160.12015@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1002230046160.12015@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Samuel Ortiz <sameo@linux.intel.com>
+CC: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-i2c@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
+References: <4B73DAEE.5080400@compulab.co.il>	<4B73DB4B.40501@compulab.co.il>	<4B7D7C13.20703@compulab.co.il>	<4B7D7CD0.7080202@oracle.com>	<4B7D807D.9060105@compulab.co.il> <20100223092636.42b083f0@hyperion.delvare>
+In-Reply-To: <20100223092636.42b083f0@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2010-2-23 16:55, David Rientjes wrote:
-> Cpu hotplug sets top_cpuset's cpus_allowed to cpu_active_mask by default, 
-> regardless of what was onlined or offlined.  cpus_attach in the context of 
-> your patch (in cpuset_attach()) passes cpu_possible_mask to 
-> set_cpus_allowed_ptr() if the task is being attached to top_cpuset, my 
-> question was why don't we pass cpu_active_mask instead?  In other words, I 
-> think we should do
-> 
-> 	cpumask_copy(cpus_attach, cpu_active_mask);
-> 
-> when attached to top_cpuset like my patch did.
+Hi Samuel,
+Regarding renaming of sch* to isch* do you want incremental patch, or fresh version?
 
-If we pass cpu_active_mask to set_cpus_allowed_ptr(), task->cpus_allowed just contains
-the online cpus. In this way, if we do cpu hotplug(such as: online some cpu), we must
-update cpus_allowed of all tasks in the top cpuset.
+Denis
 
-But if we pass cpu_possible_mask, we needn't update cpus_allowed of all tasks in the
-top cpuset. And when the kernel looks for a cpu for task to run, the kernel will use
-cpu_active_mask to filter out offline cpus in task->cpus_allowed. Thus, it is safe.
+Jean Delvare wrote:
+>> +static struct mfd_cell lpc_sch_cells[] = {
+>> +	{
+>> +		.name = "isch_smbus",
+>> +		.num_resources = 1,
+>> +		.resources = &smbus_sch_resource,
+>> +	},
+>> +	{
+>> +		.name = "sch_gpio",
+>> +		.num_resources = 1,
+>> +		.resources = &gpio_sch_resource,
+>> +	},
+>> +};
+> 
+> These names are nicely inconsistent. What about "isch_gpio"?
+> 
+
+>> +obj-$(CONFIG_LPC_SCH)		+= lpc_sch.o
+> 
+> I don't like this name either. There is another vendor (SMSC) shipping
+> LPC devices with "SCH" in their names, so there is room for confusion.
+> "isch" makes it clearer that we are talking about the Intel ones.
+> 
 
