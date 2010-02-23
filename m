@@ -1,14 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018Ab0BWCFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 21:05:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63255 "EHLO mx1.redhat.com"
+	id S1753130Ab0BWCFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 21:05:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60151 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115Ab0BWCE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 21:04:58 -0500
+	id S1751115Ab0BWCFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 21:05:21 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v3 1/9] perf probe: Do not show --line option without
-	dwarf support
+Subject: [PATCH -tip v3 2/9] perf probe: Update perf probe document
 To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
@@ -18,8 +17,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Date: Mon, 22 Feb 2010 21:08:25 -0500
-Message-ID: <20100223020825.26668.14443.stgit@localhost6.localdomain6>
+Date: Mon, 22 Feb 2010 21:08:32 -0500
+Message-ID: <20100223020832.26668.45079.stgit@localhost6.localdomain6>
 In-Reply-To: <20100223020818.26668.79685.stgit@localhost6.localdomain6>
 References: <20100223020818.26668.79685.stgit@localhost6.localdomain6>
 User-Agent: StGIT/0.14.3
@@ -30,8 +29,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not show --line option in help message when perf
-doesn't support dwarf.
+Update perf-probe.txt to suit to current perf-probe command
+and add some examples.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -43,23 +42,62 @@ Cc: Mike Galbraith <efault@gmx.de>
 Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
 
- tools/perf/builtin-probe.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ tools/perf/Documentation/perf-probe.txt |   28 ++++++++++++++++++++++++++--
+ 1 files changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index ad47bd4..c7e14d0 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -156,7 +156,9 @@ static const char * const probe_usage[] = {
- 	"perf probe [<options>] --add 'PROBEDEF' [--add 'PROBEDEF' ...]",
- 	"perf probe [<options>] --del '[GROUP:]EVENT' ...",
- 	"perf probe --list",
-+#ifndef NO_LIBDWARF
- 	"perf probe --line 'LINEDESC'",
-+#endif
- 	NULL
- };
+diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
+index 2de3407..5fe63c0 100644
+--- a/tools/perf/Documentation/perf-probe.txt
++++ b/tools/perf/Documentation/perf-probe.txt
+@@ -41,7 +41,8 @@ OPTIONS
  
+ -d::
+ --del=::
+-	Delete a probe event.
++	Delete probe events. This accepts glob wildcards('*', '?') and character
++	classes(e.g. [a-z], [!A-Z]).
+ 
+ -l::
+ --list::
+@@ -50,7 +51,11 @@ OPTIONS
+ -L::
+ --line=::
+ 	Show source code lines which can be probed. This needs an argument
+-	which specifies a range of the source code.
++	which specifies a range of the source code. (see LINE SYNTAX for detail)
++
++-f::
++--force::
++	Forcibly add events with existing name.
+ 
+ PROBE SYNTAX
+ ------------
+@@ -76,6 +81,25 @@ and 'ALN2' is end line number in the file. It is also possible to specify how
+ many lines to show by using 'NUM'.
+ So, "source.c:100-120" shows lines between 100th to l20th in source.c file. And "func:10+20" shows 20 lines from 10th line of func function.
+ 
++EXAMPLES
++--------
++Display which lines in schedule() can be probed:
++
++ ./perf probe --line schedule
++
++Add a probe on schedule() function 12th line with recording cpu local variable:
++
++ ./perf probe schedule:12 cpu
++ or
++ ./perf probe --add='schedule:12 cpu'
++
++ this will add one or more probes which has the name start with "schedule".
++
++Delete all probes on schedule().
++
++ ./perf probe --del='schedule*'
++
++
+ SEE ALSO
+ --------
+ linkperf:perf-trace[1], linkperf:perf-record[1]
 
 
 -- 
