@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629Ab0BWRBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:01:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	id S1753787Ab0BWRB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:01:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48609 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753492Ab0BWRBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:01:39 -0500
-Date: Tue, 23 Feb 2010 18:57:43 +0200
+	id S1753688Ab0BWRBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:01:55 -0500
+Date: Tue, 23 Feb 2010 18:57:58 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
        virtualization@lists.osdl.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
        markmc@redhat.com, gleb@redhat.com, herbert.xu@redhat.com,
        quintela@redhat.com, dlaor@redhat.com, avi@redhat.com
-Subject: [PATCH 1/3] vhost: logging math fix
-Message-ID: <51e0f786b06c198ab355abab19f0bd11ac6a167b.1266943453.git.mst@redhat.com>
+Subject: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
+Message-ID: <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
 References: <cover.1266943453.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,39 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vhost was dong some complex math to get
-offset to log at, and got it wrong by a couple of bytes,
-while in fact it's simple: get address where we write,
-subtract start of buffer, add log base.
-
-Do it this way.
+get_user_pages_fast returns number of pages on success, negative value
+on failure, but never 0. Fix vhost code to match this logic.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- drivers/vhost/vhost.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/vhost/vhost.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 6eb1525..c767279 100644
+index d4f8fdf..d003504 100644
 --- a/drivers/vhost/vhost.c
 +++ b/drivers/vhost/vhost.c
-@@ -1004,10 +1004,12 @@ int vhost_add_used(struct vhost_virtqueue *vq, unsigned int head, int len)
- 	if (unlikely(vq->log_used)) {
- 		/* Make sure data is seen before log. */
- 		smp_wmb();
--		log_write(vq->log_base, vq->log_addr + sizeof *vq->used->ring *
--			  (vq->last_used_idx % vq->num),
--			  sizeof *vq->used->ring);
--		log_write(vq->log_base, vq->log_addr, sizeof *vq->used->ring);
-+		log_write(vq->log_base,
-+			  vq->log_addr + ((void *)used - (void *)vq->used),
-+			  sizeof *used);
-+		log_write(vq->log_base,
-+			  vq->log_addr + offsetof(struct vring_used, idx),
-+			  sizeof vq->used->idx);
- 		if (vq->log_ctx)
- 			eventfd_signal(vq->log_ctx, 1);
- 	}
+@@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
+ 	int bit = nr + (log % PAGE_SIZE) * 8;
+ 	int r;
+ 	r = get_user_pages_fast(log, 1, 1, &page);
+-	if (r)
++	if (r < 0)
+ 		return r;
++	BUG_ON(r != 1);
+ 	base = kmap_atomic(page, KM_USER0);
+ 	set_bit(bit, base);
+ 	kunmap_atomic(base, KM_USER0);
 -- 
 1.7.0.18.g0d53a5
-
