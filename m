@@ -1,63 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524Ab0BWSxQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:53:16 -0500
-Received: from mail.perches.com ([173.55.12.10]:1195 "EHLO mail.perches.com"
+	id S1753605Ab0BWTCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 14:02:50 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45527 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752140Ab0BWSxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:53:15 -0500
-Subject: [PATCH V2] scripts/get_maintainer.pl: Fix possible infinite loop
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1266946280.9265.31.camel@Joe-Laptop.home>
-References: <1266946280.9265.31.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 10:53:13 -0800
-Message-ID: <1266951193.9265.40.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751990Ab0BWTCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 14:02:48 -0500
+Date: Tue, 23 Feb 2010 11:02:31 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Renninger <trenn@suse.de>, Gary Hade <garyhade@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Iranna D Ankad <iranna.ankad@in.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, len.brown@intel.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Other problem/regression with
+	b9c61b70075c87a8612624736faf4a2de5b1ed30
+Message-ID: <20100223190231.GB12105@us.ibm.com>
+References: <201002221108.42847.trenn@suse.de> <4B826CA6.7060007@kernel.org> <201002221258.38506.trenn@suse.de> <4B839ACB.3000804@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B839ACB.3000804@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is simpler.
+On Tue, Feb 23, 2010 at 01:07:23AM -0800, Yinghai Lu wrote:
+> Gary,
+> 
+> can you check this patch on your x3950?
 
-If MAINTAINERS section entries are misformatted,
-it was possible to have an infinite loop.
+Yinghai, Wouldn't it be better to have the person that
+reported the problem (Iranna) do that?
 
-Correct the defect by always moving the index
-to the end of section + 1
+Gary
 
-Also, exit check for exclude as soon as possible.
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
- scripts/get_maintainer.pl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 2f3230d..049c419 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -314,6 +314,7 @@ foreach my $file (@files) {
- 		if ($type eq 'X') {
- 		    if (file_match_pattern($file, $value)) {
- 			$exclude = 1;
-+			last;
- 		    }
- 		}
- 	    }
-@@ -340,8 +341,7 @@ foreach my $file (@files) {
- 	    }
- 	}
- 
--	$tvi += ($end - $start);
--
-+	$tvi = $end + 1;
-     }
- 
-     foreach my $line (sort {$hash{$b} <=> $hash{$a}} keys %hash) {
-
-
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
