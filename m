@@ -1,96 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821Ab0BWXjr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 18:39:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:35664 "EHLO www.tglx.de"
+	id S1754862Ab0BWXyx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 18:54:53 -0500
+Received: from borg.medozas.de ([188.40.89.202]:44509 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753506Ab0BWXjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 18:39:46 -0500
-Date: Wed, 24 Feb 2010 00:39:38 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
-Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
-Message-ID: <20100223233938.GA2938@local>
-References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org>
- <20100223150140.GA3781@suse.de>
- <20100223194946.GA1941@local>
- <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
+	id S1754758Ab0BWXyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 18:54:52 -0500
+Date: Wed, 24 Feb 2010 00:54:51 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: tools/perf: libraries must come after objects
+In-Reply-To: <20100222134754.GA8559@elte.hu>
+Message-ID: <alpine.LSU.2.01.1002240049280.16982@obet.zrqbmnf.qr>
+References: <alpine.LSU.2.01.1002110124030.13770@obet.zrqbmnf.qr> <20100222105025.GA25661@elte.hu> <alpine.LSU.2.01.1002221430440.23762@obet.zrqbmnf.qr> <20100222134754.GA8559@elte.hu>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 04:52:56PM -0600, Kumar Gala wrote:
-> 
-> On Feb 23, 2010, at 1:49 PM, Hans J. Koch wrote:
-> 
-> > On Tue, Feb 23, 2010 at 07:01:41AM -0800, Greg KH wrote:
-> >> On Tue, Feb 23, 2010 at 08:54:16AM -0600, Kumar Gala wrote:
-> >>> Hans, Greg,
-> >>> 
-> >>> We are looking at using UIO for some driver work and noticed it
-> >>> assumes the address for MMIO regions is an 'unsigned long'.  This is a
-> >>> problem for the platforms we have in which we support a 36-bit
-> >>> physical address in a 32-bit machine.
-> >>> 
-> >>> Should we just change addr/size in struct uio_mem to u64 always?
-> > 
-> > No, if I didn't miss something important, it's not feasible IMHO.
-> > 
-> >>> At
-> >>> first I was thinking phys_addr_t but realized the addr could be PHYS,
-> >>> LOGICAL, or VIRTUAL.
-> >> 
-> >> I think that would work out fine, Hans, any ideas if this would cause
-> >> any problems with existing code or not?
-> > 
-> > It won't work. This is not a UIO problem. UIO just passes addr to other
-> > system functions, and all of them use "unsigned long" for these addresses.
-> > You'd have to change the whole memory management code.
-> > 
-> > Note that members vm_start and vm_end in struct vm_area_struct are
-> > also unsigned long. Having an u64 in the UIO core doesn't help at all.
-> 
-> This already works for mmap since we pass down a PFN and not an address to remap_pfn_range.  While we can handle any physical address size we can handle one up to 44 bits on most architectures which is well beyond the 36-bit physical address case I'm dealing with on PPC.
-> 
 
-Sure, there are always ways to handle physical addresses up to the buswidth
-of the arch. But above the "natural" size (32 bits on 32-bit archs), it
-becomes a bit clumsy. UIO has a documented interface to userspace. The user
-is supposed to use the traditional mmap() call. mmap() returns void*, which
-is also 32 bits on 32-bit archs.
+On Monday 2010-02-22 14:47, Ingo Molnar wrote:
+>> >> tools/perf: libraries must come after objects
+>> >> 
+>> >> Link order matters, especially now since distributions are
+>> >> using -Wl,--as-needed.
 
-Because of this, UIO already needs a 32-bit address. It might be possible to
-map your I/O memory from above 4G down into the 32-bit space and then use
-this address, probably not with UIO_MEM_PHYS but with UIO_MEM_VIRTUAL.
-I understand PPC (is that an E500?) has some special features for doing
-these kind of shifts in hardware. But I'm not really a PPC expert, I'll
-ask a friend of mine.
+>> >>  tools/perf/Makefile |   16 ++++++++--------
+>> >>  1 files changed, 8 insertions(+), 8 deletions(-)
+>> >
+>> >FYI, this patch doesnt apply to the latest version of perf:
+>> >  http://people.redhat.com/mingo/tip.git/README
 
-> > Memory above the 4G border can only be accessed through himem mechanisms
-> > or be mapped to an address below that border in lowlevel arch code.
-> > 
-> > In most cases, I'd say it's bad board design to have memory-mapped hardware
-> > above the 4G border on a 32-bit machine.
-> 
-> While I might agree with you its a reality on a number of embedded processors and I know three different PowerPC based embedded families that have 36-bit physical addressing to allow for >4G of DDR and thus IO ends up being above the 4G physical boundary and we already support these in the kernel.
+Seems like it was already merged - half of it.
 
-Well, UIO is (up to now) completely independent of the architecture. If you've
-got a good idea how to implement such mappings, feel free to come up with your
-suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
-enough.
+There is this perl linking error now remaining, because
+libperf.a comes after the perl part, and I am not sure
+how to fix cleanly that Makefile without making more
+mess of it.
 
-I'll give it some thoughts myself, and will discuss the problem with friends,
-maybe there's a nice solution. Help from your side is much appreciated.
+$ make CC=gcc-4.4
+touch .perf.dev.null
+gcc-4.4 -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement  -fstack-protector-all -Iutil/include -I/usr/include/libdwarf -DSHA1_HEADER='<openssl/sha.h>'  -o perf perf.o \
+		 builtin-annotate.o builtin-bench.o bench/sched-messaging.o bench/sched-pipe.o bench/mem-memcpy.o builtin-diff.o builtin-help.o builtin-sched.o builtin-buildid-list.o builtin-buildid-cache.o builtin-list.o builtin-record.o builtin-report.o builtin-stat.o builtin-timechart.o builtin-top.o builtin-trace.o builtin-probe.o builtin-kmem.o builtin-lock.o  `perl -MExtUtils::Embed -e ldopts 2>/dev/null`  libperf.a -lpthread -lrt -lelf -lm -lelf -ldwarf -lbfd -liberty -lz 
+libperf.a(trace-event-perl.o): In function `define_flag_value':
+/home/jengelh/code/linux/tools/perf/util/trace-event-perl.c:125: undefined reference to `Perl_push_scope'
+[...]
+/home/jengelh/code/linux/tools/perf/Context.c:54: undefined reference to `Perl_croak_nocontext'
+collect2: ld returned 1 exit status
+make: *** [perf] Error 1
+rm .perf.dev.null
 
-Thanks,
-Hans
-
-> 
-> - k
+$ perl -MExtUtils::Embed -e ldopts
+-Wl,-E
+-Wl,-rpath,/usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE
+-L/usr/local/lib64
+-L/usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE -lperl -lm
+-ldl -lcrypt -lpthread
