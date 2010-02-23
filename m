@@ -1,52 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751846Ab0BWIYf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 03:24:35 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:57636 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171Ab0BWIYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 03:24:33 -0500
-Date: Tue, 23 Feb 2010 09:24:31 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mike Rapoport <mike@compulab.co.il>, LKML <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org, Denis Turischev <denis@compulab.co.il>
-Subject: Re: [PATCH v3 2/3] i2c: convert i2c-isch to platform_device
-Message-ID: <20100223092431.0fd05b5c@hyperion.delvare>
-In-Reply-To: <20100223082054.GA3550@sortiz.org>
-References: <4B73DAEE.5080400@compulab.co.il>
-	<4B73DBB2.7020601@compulab.co.il>
-	<4B7C0E5D.3070909@compulab.co.il>
-	<4B812B42.2090405@compulab.co.il>
-	<4B837D0C.3000708@compulab.co.il>
-	<20100223091221.086ff17b@hyperion.delvare>
-	<20100223082054.GA3550@sortiz.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751961Ab0BWI0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 03:26:11 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55834 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380Ab0BWI0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 03:26:09 -0500
+Message-ID: <4B839103.2060901@cn.fujitsu.com>
+Date: Tue, 23 Feb 2010 16:25:39 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time (58568d2)
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <20100222121222.GV9738@laptop> <alpine.DEB.2.00.1002221400060.23881@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002221400060.23881@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
-
-On Tue, 23 Feb 2010 09:20:55 +0100, Samuel Ortiz wrote:
-> Hi Jean,
+on 2010-2-23 6:00, David Rientjes wrote:
+> On Mon, 22 Feb 2010, Nick Piggin wrote:
 > 
-> On Tue, Feb 23, 2010 at 09:12:21AM +0100, Jean Delvare wrote:
-> > I can add my
-> > 
-> > Acked-by: Jean Delvare <khali@linux-fr.org>
-> > 
-> > but the patch itself would rather go through Samuel's mfd tree. The
-> > different patches depend on each other so pushing them through
-> > different trees would cause trouble.
-> Exactly. I asked Denis to rebase them against Linus' latest because I was
-> planning to merge them through my tree.
-> I'll take patches 2 and 3 from this patchset.
+>> If you have a concurrent reader without any synchronisation, then what
+>> stops it from loading a word of the mask before stores to add the new
+>> nodes and then loading another word of the mask after the stores to
+>> remove the old nodes? (which can give an empty mask).
+>>
+> 
+> Currently nothing, so we'll need a variant for configurations where the 
+> size of nodemask_t is larger than we can atomically store.
+> 
 
-You mean patches 1 and 2?
+Sorry, Could you explain what you advised?
+I think it is hard to fix this problem by adding a variant, because it is
+hard to avoid loading a word of the mask before
 
--- 
-Jean Delvare
+	nodes_or(tsk->mems_allowed, tsk->mems_allowed, *newmems);
+
+and then loading another word of the mask after
+
+	tsk->mems_allowed = *newmems;
+
+unless we use lock.
+
+Maybe we need a rw-lock to protect task->mems_allowed.
+
