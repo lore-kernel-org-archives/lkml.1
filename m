@@ -1,66 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752509Ab0BWL6u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 06:58:50 -0500
-Received: from trinity.develer.com ([83.149.158.210]:56150 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710Ab0BWL6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 06:58:48 -0500
-Date: Tue, 23 Feb 2010 12:58:46 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100223115846.GI1882@linux>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
- <1266765525-30890-2-git-send-email-arighi@develer.com>
- <alpine.DEB.2.00.1002211321010.22858@chino.kir.corp.google.com>
- <20100221221700.GA5233@linux>
- <20100222180732.GC3096@redhat.com>
+	id S1752498Ab0BWMBO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 07:01:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45620 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751710Ab0BWMBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 07:01:13 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec
+Date: Tue, 23 Feb 2010 13:01:11 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32.1-0.0.14.f17927a-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
+       "Yinghai Lu" <yinghai@kernel.org>, akpm@linux-foundation.org,
+       mingo@elte.hu
+References: <1266925885-17616-1-git-send-email-trenn@suse.de>
+In-Reply-To: <1266925885-17616-1-git-send-email-trenn@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222180732.GC3096@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002231301.11372.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 01:07:32PM -0500, Vivek Goyal wrote:
-> > > > +unsigned long mem_cgroup_dirty_bytes(void)
-> > > > +{
-> > > > +	struct mem_cgroup *memcg;
-> > > > +	unsigned long dirty_bytes;
-> > > > +
-> > > > +	if (mem_cgroup_disabled())
-> > > > +		return vm_dirty_bytes;
-> > > > +
-> > > > +	rcu_read_lock();
-> > > > +	memcg = mem_cgroup_from_task(current);
-> > > > +	if (memcg == NULL)
-> > > > +		dirty_bytes = vm_dirty_bytes;
-> > > > +	else
-> > > > +		dirty_bytes = get_dirty_bytes(memcg);
-> > > > +	rcu_read_unlock();
-> > > 
-> > > The rcu_read_lock() isn't protecting anything here.
-> > 
-> > Right!
-> 
-> Are we not protecting "memcg" pointer using rcu here?
+On Tuesday 23 February 2010 12:51:25 Thomas Renninger wrote:
+> From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+...
+> +	int i, j, acked = 0, max_loops = cpu_khz * 1000;
+Grmpfl, an unsigned long for max_loops, probably is a better idea...
+What do you think, could this one get picked up then, anything else
+to improve?
 
-Vivek, you are right:
+Thanks,
 
- mem_cgroup_from_task() -> task_subsys_state() -> rcu_dereference()
-
-So, this *must* be RCU protected.
-
-Thanks!
--Andrea
+      Thomas
