@@ -1,122 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465Ab0BWLzJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 06:55:09 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:48638 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380Ab0BWLzG (ORCPT
+	id S1752509Ab0BWL6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 06:58:50 -0500
+Received: from trinity.develer.com ([83.149.158.210]:56150 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710Ab0BWL6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 06:55:06 -0500
-Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
- DEVKIT8000
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-To: ext Thomas Weber <weber@corscience.de>
-Cc: ext Jaya Kumar <jayakumar.lkml@gmail.com>, Thomas Weber <swirl@gmx.li>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B7E8AA4.40307@corscience.de>
-References: <1265917278-22011-1-git-send-email-swirl@gmx.li>
-	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
-	 <1265988343.2433.312.camel@tubuntu.research.nokia.com>
-	 <4B7E8AA4.40307@corscience.de>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Nokia
-Date: Tue, 23 Feb 2010 13:54:55 +0200
-Message-ID: <1266926095.2411.69.camel@tubuntu.research.nokia.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Feb 2010 11:54:57.0319 (UTC) FILETIME=[051E2B70:01CAB47F]
-X-Nokia-AV: Clean
+	Tue, 23 Feb 2010 06:58:48 -0500
+Date: Tue, 23 Feb 2010 12:58:46 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-ID: <20100223115846.GI1882@linux>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+ <1266765525-30890-2-git-send-email-arighi@develer.com>
+ <alpine.DEB.2.00.1002211321010.22858@chino.kir.corp.google.com>
+ <20100221221700.GA5233@linux>
+ <20100222180732.GC3096@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100222180732.GC3096@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-19 at 13:57 +0100, ext Thomas Weber wrote:
-> Tomi Valkeinen wrote:
-> > On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
-> >   
-> >> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
-> >>     
-> >
-> > [snip]
-> >
-> >   
-> >>> +
-> >>> +static struct omap_video_timings innolux_at_timings = {
-> >>> +       .x_res          = 800,
-> >>> +       .y_res          = 480,
-> >>> +
-> >>> +       .pixel_clock    = 40000,
-> >>> +
-> >>> +       .hsw            = 48,
-> >>> +       .hfp            = 1,
-> >>> +       .hbp            = 1,
-> >>> +
-> >>> +       .vsw            = 3,
-> >>> +       .vfp            = 12,
-> >>> +       .vbp            = 25,
-> >>> +};
-> >>> +
-> >>> +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
-> >>> +{
-> >>> +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-> >>> +               OMAP_DSS_LCD_IHS;
-> >>> +       dssdev->panel.acb = 0x28;
-> >>> +       dssdev->panel.timings = innolux_at_timings;
-> >>> +
-> >>> +       return 0;
-> >>> +}
-> >>> +
-> >>>       
-> >> Hi Thomas, Tomi,
-> >>
-> >> Just curious, does this patch imply that code like this needs to be
-> >> written for every single LCD type and resolution that can be connected
-> >> to omap2? Maybe there is a better way, like a common table of timings
-> >> and values that can be selected with a module option or even
-> >> autodetected.
-> >>     
-> >
-> > Yes, it is true that currently you need to write these for every LCD. I
-> > have been thinking this issue, and I think we can make a common driver. 
-> >
-> > However, it's not just selecting timings, as LCDs can have also other
-> > characteristics than just the video timings. For example, some may have
-> > power on/off line, some reset enable/disable, some need 50ms after
-> > reset, some 80ms after reset etc.
-> >
-> > But if we manage to get a sane set of those settings into the table, we
-> > could perhaps cover most of the "dummy" LCDs with it.
-> >
-> > This change doesn't probably need any changes to the DSS core, only for
-> > the panel driver. Any takers for this task? =) 
-> >
-> >  Tomi
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> >
-> >   
-> Hello,
+On Mon, Feb 22, 2010 at 01:07:32PM -0500, Vivek Goyal wrote:
+> > > > +unsigned long mem_cgroup_dirty_bytes(void)
+> > > > +{
+> > > > +	struct mem_cgroup *memcg;
+> > > > +	unsigned long dirty_bytes;
+> > > > +
+> > > > +	if (mem_cgroup_disabled())
+> > > > +		return vm_dirty_bytes;
+> > > > +
+> > > > +	rcu_read_lock();
+> > > > +	memcg = mem_cgroup_from_task(current);
+> > > > +	if (memcg == NULL)
+> > > > +		dirty_bytes = vm_dirty_bytes;
+> > > > +	else
+> > > > +		dirty_bytes = get_dirty_bytes(memcg);
+> > > > +	rcu_read_unlock();
+> > > 
+> > > The rcu_read_lock() isn't protecting anything here.
+> > 
+> > Right!
 > 
-> sorry but I am not able to take the task.
-> Make it sense to rework this patch or do you want first the changes to
-> the panel driver?
+> Are we not protecting "memcg" pointer using rcu here?
 
-I probably won't have time to implement this generic panel driver yet.
-However, I will be merging some DSS driver model changes (sent to
-mailing lists) soon, after which this patch needs to be changed a bit.
+Vivek, you are right:
 
-The changes can be found from
-http://gitorious.org/linux-omap-dss2/linux/commits/work but they may
-still change a bit.
+ mem_cgroup_from_task() -> task_subsys_state() -> rcu_dereference()
 
- Tomi
+So, this *must* be RCU protected.
 
-
+Thanks!
+-Andrea
