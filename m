@@ -1,102 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666Ab0BWA2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 19:28:18 -0500
-Received: from mail-iw0-f177.google.com ([209.85.223.177]:55452 "EHLO
-	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750766Ab0BWA2Q convert rfc822-to-8bit (ORCPT
+	id S1752264Ab0BWBEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:04:21 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:36314 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115Ab0BWBET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 19:28:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Np67sPWXMsfROHJ5St6OM6DHi65RrbbraKFrJGw2s14R6+187rSYoJxyJZuLVUELNy
-         6QiipOk7mgr0wxsUj2G0o3zag6AWZoaHpLgD1L5/vHB8G2wIUeYhZFZmznqq6ws+UUA/
-         JLsCXJ85m8TjEF6xNsddDM5VgaiXOXfALQM0M=
+	Mon, 22 Feb 2010 20:04:19 -0500
+Date: Mon, 22 Feb 2010 19:04:13 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: john.johansen@canonical.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Fix __d_path for lazy unmounts
+Message-ID: <20100223010413.GA31046@us.ibm.com>
+References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
+ <20100222161714.de1a7fca.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20100222.155357.235673585.davem@davemloft.net>
-References: <4B8029FA.2000404@gmail.com>
-	 <20100222.155357.235673585.davem@davemloft.net>
-Date: Mon, 22 Feb 2010 18:28:15 -0600
-Message-ID: <51f3faa71002221628n120070e1ic66f094a229df72a@mail.gmail.com>
-Subject: Re: NETIF_F_HIGHDMA misuse in networking drivers?
-From: Robert Hancock <hancockrwd@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100222161714.de1a7fca.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 5:53 PM, David Miller <davem@davemloft.net> wrote:
-> From: Robert Hancock <hancockrwd@gmail.com>
-> Date: Sat, 20 Feb 2010 12:29:14 -0600
->
->> Was just part of a discussion in another thread talking about 64-bit
->> DMA support issues where NETIF_F_HIGHDMA came up. I was originally
->> under the impression that this flag indicated the device supported
->> 64-bit DMA addressing. However, from looking at the code that checks
->> for it (and, well, the actual comment for the flag) it really means
->> "can access highmem" which has nothing to do with 64-bit at all. And
->> if there's no highmem (like on x86_64) it has no effect at all.
->
-> I think it's trying to do two things, and doing only one of them
-> well :-)
->
-> It's trying to keep drivers from receiving highmem pages if they are
-> not able to access them properly.  F.e. imagine a driver that copies
-> data out of the packet assuming that page_address() is always valid on
-> the SKB pages.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Sat, 20 Feb 2010 04:27:38 -0800 john.johansen@canonical.com wrote:
+> 
+> > From: John Johansen <john.johansen@canonical.com>
+> > 
+> > When __d_path() hits a lazily unmounted mount point, it tries to prepend
+> > the name of the lazily unmounted dentry to the path name.  It gets this wrong,
+> > and also overwrites the slash that separates the name from the following
+> > pathname component. This patch fixes that; if a process was in directory
+> > /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
+> > missing slash), while the new result with this patch is ``/foo/bar''.
+> > 
+> > Signed-off-by: John Johansen <john.johansen@canonical.com>
+> > ---
+> >  fs/dcache.c |   27 +++++++++++++++++++++++----
+> >  1 files changed, 23 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/fs/dcache.c b/fs/dcache.c
+> > index 953173a..df49666 100644
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
+> >  	retval = end-1;
+> >  	*retval = '/';
+> >  
+> > -	for (;;) {
+> > +	while(dentry != root->dentry || vfsmnt != root->mnt) {
+> 
+> Please put a space between the `while' and the `('.
+> 
+> >  		struct dentry * parent;
+> >  
+> > -		if (dentry == root->dentry && vfsmnt == root->mnt)
+> > -			break;
+> >  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+> >  			/* Global root? */
+> >  			if (vfsmnt->mnt_parent == vfsmnt) {
+> > @@ -1950,9 +1948,30 @@ out:
+> >  	return retval;
+> >  
+> >  global_root:
+> > -	retval += 1;	/* hit the slash */
+> > +	/*
+> > +	 * We went past the (vfsmount, dentry) we were looking for and have
+> > +	 * either hit a root dentry, a lazily unmounted dentry, an
+> > +	 * unconnected dentry, or the file is on a pseudo filesystem.
+> > +	 */
+> > +	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
+> > +	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
+> 
+> Did you really mean to assign 1 to dentry->d_name.len here?  Was `=='
+> intended?  I hope so, because modifying the dentry in d_path() would be odd.
+> 
+> If this was a mistake then why did the patch pass testing?
 
-Yeah, it appears this is the only reason not to set the HIGHDMA flag.
-Of course, given that relatively few drivers should need to do this (I
-would think only emulated/virtual adapters, or really old/crappy
-hardware with no bus-master support) ideally it would be better if
-only those drivers needed to do something special (i.e. a NOHIGHDMA
-flag or something) rather than making all the normal ones do it..
+Jinkeys!  Well I guess it must've passed testing bc that will only be
+done for MS_NOUSER filesystems, and we won't later be doing any 'ls'
+so the d_name.len isn't really used?
 
->
-> It's also trying to use this to prevent physical addresses beyond 4GB
-> from reaching the driver, which as you note is not implemented
-> precisely here.
-
-If by "precisely" you mean "at all, on many architectures".. on a
-non-highmem arch, setting or not setting HIGHDMA has no effect on
-anything, including whether >4GB addresses will be received by the
-driver or not. Only the device DMA mask (presumably) does. Therefore,
-conditionally setting HIGHDMA based on what DMA mask the driver has
-been able to set is almost certainly a bug.
-
->
-> Without knowing something about how the driver "DMAs" packet data we
-> can't really do an accurate test here.  Maybe the driver directly DMAs
-> using physical addressing (an ASIC inside of a CPU, for example,
-> drivers/net/niu.c has a case of this).
->
-> Maybe the platform uses an IOMMU with 32-bit virtual addressing, so
-> any physical address is fine even if the card only supports 32-bit
-> addressing (basically any PCI coard on sparc64 is an example of this).
->
-> And finally maybe the card supports 64-bit DMA addressing so anything
-> works on any platform.
-
-The DMA mask facility already should address all of these cases
-AFAICS, so there should be no need for any extra handling here..
-
->
-> How to test all of these possible cases precisely that at this spot in
-> the transmit path is the question at hand.  To be honest I consider
-> the current hack "good enough" :-)
-
-Well, as I see it there are two big problems with the current state:
-
--As there are a lot of bad examples in the tree of this flag being set
-based on irrelevant criteria, such mistakes will propagate to new
-drivers in cargo-cult fashion. (Looking at some of the existing
-examples, it seems like has already occurred for a lot of them.)
-
--Failing to set the HIGHDMA flag when it should be is likely to impact
-performance on highmem architectures by causing unnecessary packet
-copying, and potentially using up more precious low memory.
+> > +		/*
+> > +		 * Historically, we also glue together the root dentry and
+> > +		 * remaining name for pseudo filesystems like pipefs, which
+> > +		 * have the MS_NOUSER flag set. This results in pathnames
+> > +		 * like "pipe:[439336]".
+> > +		 */
+> > +		retval += 1;	/* overwrite the slash */
+> > +		buflen++;
+> > +	}
+> >  	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
+> >  		goto Elong;
+> > +
+> > +	/* connect lazily unmounted mount point */
+> > +	if (*retval != '/' && !(dentry->d_sb->s_flags & MS_NOUSER) &&
+> > +	    prepend(&retval, &buflen, "/", 1) != 0)
+> > +		goto Elong;
+> > +
+> >  	root->mnt = vfsmnt;
+> >  	root->dentry = dentry;
+> >  	goto out;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
