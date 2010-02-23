@@ -1,89 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752426Ab0BWRbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:31:32 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:41033 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201Ab0BWRb3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:31:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GMET0hwynBpqrhMZDeT3M4oDWZ+nNjfg3UGaR/B1Zgi7HURugOwONDka7CoUdBSx8M
-         q/Kjh34ZuEX0s0K23HSsLNoheclNAdv0z7lEnjwyFumtBC/SYkgyIweAYZNm3HzcZdFB
-         lqiEC8SKxDwey7RlUbKgbIQ92KDtDfy5E5nb4=
-Date: Tue, 23 Feb 2010 18:31:26 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       k-keiichi@bx.jp.nec.com, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH 00/12] perf trace: Python scripting support
-Message-ID: <20100223173121.GD5357@nowhere>
-References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com> <20100219213707.GA6991@nowhere> <1266702715.6977.13.camel@tropicana>
+	id S1752264Ab0BWRfR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:35:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11439 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654Ab0BWRfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:35:15 -0500
+Date: Tue, 23 Feb 2010 19:34:34 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       markmc@redhat.com, herbert.xu@redhat.com, quintela@redhat.com,
+       dlaor@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
+Message-ID: <20100223173434.GB9834@redhat.com>
+References: <cover.1266943453.git.mst@redhat.com>
+ <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1266702715.6977.13.camel@tropicana>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 03:51:55PM -0600, Tom Zanussi wrote:
-> On Fri, 2010-02-19 at 22:37 +0100, Frederic Weisbecker wrote:
-> > On Wed, Jan 27, 2010 at 02:27:51AM -0600, Tom Zanussi wrote:
-> > > This patchset adds a Python scripting engine to perf trace.  In the
-> > > process, it also creates a scripting-engines directory under perf/util
-> > > and moves the existing Perl support there, to avoid cluttering the
-> > > main perf/util directory with scripting support files.
-> > > 
-> > > It also includes some minor bugfixes and adds Documentation for the
-> > > Python support, which includes a step-by-step example detailing how to
-> > > write a new trace stream processing script using Python.
-> > > 
-> > > Finally, it adds several new scripts, all dealing with aggregation of
-> > > system call trace data.  To make those scripts more user-friendly, it
-> > > adds a couple patches that export some of the syscall metadata, enough
-> > > to allow syscall names rather than raw numbers to be printed in the
-> > > output.
-> > 
-> > 
-> > Sorry to answer that late.
-> > 
-> > This looks very nice! And seeing how you made it easy to plug
-> > new languages, and how easy it is to write trace report scripts,
-> > this looks like a cool new step for the tracing over perf tools.
-> > 
-> > Focusing on scripts to post-process the tracing will certainly
-> > accelerate the movement in this area.
-> > 
-> > I've looked at some patches in the set, this looks good at
-> > a first glance. I'll review it in detail and test it, and
-> > then apply/push it if I don't encounter problems.
-> > 
+On Tue, Feb 23, 2010 at 06:57:58PM +0200, Michael S. Tsirkin wrote:
+> get_user_pages_fast returns number of pages on success, negative value
+> on failure, but never 0. Fix vhost code to match this logic.
 > 
-> No problem, thanks for reviewing them!
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+>  drivers/vhost/vhost.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> They've been working fine for me - playing with the Python support over
-> the past few weeks, I haven't seen any problems, but there's one other
-> patch that came up later that you might also want to take a look, with
-> the title [PATCH] perf record: filter out perf process tracepoint
-> events.  Here's a link to that patch, in case you've lost track of it:
-> 
-> http://patchwork.kernel.org/patch/76042/
-> 
-> Thanks,
-> 
-> Tom
+> diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+> index d4f8fdf..d003504 100644
+> --- a/drivers/vhost/vhost.c
+> +++ b/drivers/vhost/vhost.c
+> @@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
+>  	int bit = nr + (log % PAGE_SIZE) * 8;
+>  	int r;
+>  	r = get_user_pages_fast(log, 1, 1, &page);
+> -	if (r)
+> +	if (r < 0)
+>  		return r;
+> +	BUG_ON(r != 1);
+Can't this be easily triggered from user space?
 
+>  	base = kmap_atomic(page, KM_USER0);
+>  	set_bit(bit, base);
+>  	kunmap_atomic(base, KM_USER0);
+> -- 
+> 1.7.0.18.g0d53a5
 
-Ah right. Hmm it's a more sensible patch, and not mandatory for
-the python scripting support I guess. I'll comment in on its thread.
-
-Thanks (BTW, I've included your change on the Pytuple size).
-
+--
+			Gleb.
