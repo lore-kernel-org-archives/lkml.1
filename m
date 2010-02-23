@@ -1,105 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650Ab0BWBEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:04:42 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:58517 "EHLO e5.ny.us.ibm.com"
+	id S1752987Ab0BWBFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:05:19 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:47423 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752498Ab0BWBEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:04:40 -0500
-Date: Mon, 22 Feb 2010 17:04:35 -0800
+	id S1751976Ab0BWBFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 20:05:13 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
-	rcu_dereference()
-Message-ID: <20100223010435.GA666@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 02/21] rcu: add lockdep-enabled variants of rcu_dereference()
+Date: Mon, 22 Feb 2010 17:04:46 -0800
+Message-Id: <1266887105-1528-2-git-send-email-paulmck@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
+References: <20100223010435.GA666@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Make rcu_dereference() check for being in an RCU read-side critical
+section, and create rcu_dereference_bh(), rcu_dereference_sched(), and
+srcu_dereference() to check for the other flavors of RCU.  Also create
+rcu_dereference_raw() to avoid checking, and make rcu_dereference_check()
+use rcu_dereference_raw().
 
-This patch series adds lockdep-based checking to the rcu_dereference()
-primitive in order to flag misuses of RCU.  The first four patches put
-the RCU infrastructure in place, the next eight use this infrastructure
-in the net, sched, vfs, radix-tree, idr, and security subsystems, and
-patch 13 documents how to use the new lockdep-checked rcu_dereference()
-primitives.  The remaining eight patches are other changes that also need
-to be applied, including some relatively urgent RCU_STALL patches.
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ include/linux/rcupdate.h |   41 ++++++++++++++++++++++++++++++++++-------
+ include/linux/srcu.h     |    8 ++++++++
+ 2 files changed, 42 insertions(+), 7 deletions(-)
 
-The new (and default-disabled) CONFIG_PROVE_RCU makes this safe to
-include in tip/core/rcu -- unlike v2 and earlier, your system won't
-complain about RCU misuse unless you ask it to.  There are still several
-situations that trigger on systems I have access to (and I have email
-out on a couple of them), some of the remaining will be triggered only by
-hardware I don't have access to and kernel features I am unfamiliar with.
-So this is ready for much wider testing.
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index e3d37ef..839d296 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -184,12 +184,12 @@ static inline int rcu_read_lock_sched_held(void)
+ 	({ \
+ 		if (debug_locks) \
+ 			WARN_ON_ONCE(!(c)); \
+-		rcu_dereference(p); \
++		rcu_dereference_raw(p); \
+ 	})
+ 
+ #else /* #ifdef CONFIG_PROVE_RCU */
+ 
+-#define rcu_dereference_check(p, c)	rcu_dereference(p)
++#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
+ 
+ #endif /* #else #ifdef CONFIG_PROVE_RCU */
+ 
+@@ -325,22 +325,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
+ 
+ 
+ /**
+- * rcu_dereference - fetch an RCU-protected pointer in an
+- * RCU read-side critical section.  This pointer may later
+- * be safely dereferenced.
++ * rcu_dereference_raw - fetch an RCU-protected pointer
++ *
++ * The caller must be within some flavor of RCU read-side critical
++ * section, or must be otherwise preventing the pointer from changing,
++ * for example, by holding an appropriate lock.  This pointer may later
++ * be safely dereferenced.  It is the caller's responsibility to have
++ * done the right thing, as this primitive does no checking of any kind.
+  *
+  * Inserts memory barriers on architectures that require them
+  * (currently only the Alpha), and, more importantly, documents
+  * exactly which pointers are protected by RCU.
+  */
+-
+-#define rcu_dereference(p)     ({ \
++#define rcu_dereference_raw(p)	({ \
+ 				typeof(p) _________p1 = ACCESS_ONCE(p); \
+ 				smp_read_barrier_depends(); \
+ 				(_________p1); \
+ 				})
+ 
+ /**
++ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference(p) \
++	rcu_dereference_check(p, rcu_read_lock_held())
++
++/**
++ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_bh(p) \
++		rcu_dereference_check(p, rcu_read_lock_bh_held())
++
++/**
++ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_sched(p) \
++		rcu_dereference_check(p, rcu_read_lock_sched_held())
++
++/**
+  * rcu_assign_pointer - assign (publicize) a pointer to a newly
+  * initialized structure that will be dereferenced by RCU read-side
+  * critical sections.  Returns the value assigned.
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index adbe167..3084f80 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ /**
++ * srcu_dereference - fetch SRCU-protected pointer with checking
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define srcu_dereference(p, sp) \
++		rcu_dereference_check(p, srcu_read_lock_held(sp))
++
++/**
+  * srcu_read_lock - register a new reader for an SRCU-protected structure.
+  * @sp: srcu_struct in which to register the new reader.
+  *
+-- 
+1.6.6
 
-Changes since v5 (http://lkml.org/lkml/2010/2/17/271)
-
-o	Fix a deadlock located by Thomas Gleixner that affects
-	TREE_PREEMPT_RCU in some CPU-stall detection scenarios.
-
-o	Add Dan Carpenter's cleanup to a mod_timer() in rcutorture.
-
-o	Add a RCU_CPU_STALL_VERBOSE to enable dumping more information
-	on tasks stalling the current RCU grace period.
-
-o	Applied Acked-by lines that people have sent (thank you all!).
-
-Changes since v4 (http://lkml.org/lkml/2010/2/11/356)
-
-o	Apply review comments from Peter Ziljstra.
-
-o	Another documentation update.
-
-o	Fixes that avoid overflowing signed integers.
-
-o	Rebased Thomas Gleixner's raw-spinlock patch on this series.
-	(Thomas's original at http://lkml.org/lkml/2010/2/17/182.)
-
-Changes since v3 (http://lkml.org/lkml/2010/1/14/505)
-
-o	Fix a few more issues identified by the checking.
-
-o	Add a documentation update.
-
-o	Accelerate RCU grace periods when the current CPU is the last
-	non-dyntick-idle CPU in the system, which is important for
-	some multi-core battery-powered devices.
-
-Changes since v2 (http://lkml.org/lkml/2010/1/4/496):
-
-o	Removed references to the check condition for the non-lockdep
-	version of rcu_dereference_check(), thus preventing numerous
-	build errors.
-
-o	Create a CONFIG_PROVE_RCU (default disabled) so that developers
-	who want to use lockdep only to debug locks aren't bothered 
-	by RCU-specific lockdep complaints that will no doubt persist
-	for a little bit while some of the more obscure uses of RCU
-	are reverse-engineered.
-
-o	Fix a few more issues identified by the checking.
-
-o	Add documentation in Documentation/RCU/lockdep.txt.
-
-Changes since v1 (http://lkml.org/lkml/2009/12/15/553):
-
-o	Made SRCU have per-srcu_struct lockdep maps to prevent lockdep
-	from conflating independent uses of SRCU, and updated the
-	rcu_dereference() checking in rcutorture to match.
-
-o	Fix a few issues identified by the checking.
-
-o	Disable checking within RCU list macros, RCU radix trees, and
-	IDR.
