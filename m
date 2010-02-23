@@ -1,240 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434Ab0BWWgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 17:36:24 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:21741 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754020Ab0BWWgX (ORCPT
+	id S1754531Ab0BWWlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 17:41:35 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:54649 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754127Ab0BWWld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 17:36:23 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=PnIM8OwSARpgTmQ8KWD+05HAClwVUEOqS+OYaDBKbRXVSVQJf20+BzmynwDy3DMjh
-	UlSqmhRM+qF9Q+mpUEnSg==
-Date: Tue, 23 Feb 2010 14:36:00 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-cc: linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
-Subject: Re: [PATCH] failslab: add abitily to filter slab caches
-In-Reply-To: <1266931960-9779-1-git-send-email-dmonakhov@openvz.org>
-Message-ID: <alpine.DEB.2.00.1002231432530.8693@chino.kir.corp.google.com>
-References: <1266931960-9779-1-git-send-email-dmonakhov@openvz.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 23 Feb 2010 17:41:33 -0500
+Date: Wed, 24 Feb 2010 09:41:11 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: disk/crypto performance regression 2.6.31 -> 2.6.32 (mmap
+	problem?)
+Message-ID: <20100223224111.GC16175@discord.disaster>
+References: <alpine.DEB.1.10.1002191729220.28940@uplift.swm.pp.se> <alpine.DEB.1.10.1002221337170.28940@uplift.swm.pp.se> <20100223044818.GD22370@discord.disaster> <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se> <20100223133219.GB16175@discord.disaster> <alpine.DEB.1.10.1002232138021.12694@uplift.swm.pp.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.1002232138021.12694@uplift.swm.pp.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010, Dmitry Monakhov wrote:
+On Tue, Feb 23, 2010 at 09:42:40PM +0100, Mikael Abrahamsson wrote:
+> On Wed, 24 Feb 2010, Dave Chinner wrote:
+>
+> Thought I should send the dump only to you, would you like me to post to  
+> the list as well and include a link to the logfile (think attachments  
+> shouldn't be done too much to lkml, right?). Feel free to post any  
+> information from this letter or attachment back onto lkml if you feel 
+> it's appropriate.
 
-> Example:
-> echo 1 > /sys/kernel/slab/skbuff_head_cache/failslab
-> echo 1 > /sys/kernel/debug/failslab/cache-filter
-> 
+Attachments under roughly 100kb (IIRC) are fine for LKML. This is
+allowed specifically to let people attach log files and configs.
 
-Where's the changelog?
+I've re-added the lkml CC to continue the discussion there.  I also
+added the DM mailing list, so that they know directly that barriers
+are causing _significant_ system slowdowns. This is important,
+because there have been several reports of this problem since the
+start of the year to XFS forums as people are upgrading kernels.
 
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-> ---
->  include/linux/fault-inject.h |    4 ++--
->  include/linux/slab.h         |    4 +++-
->  mm/failslab.c                |   18 +++++++++++++++---
->  mm/slab.c                    |    2 +-
->  mm/slub.c                    |   31 +++++++++++++++++++++++++++++--
->  5 files changed, 50 insertions(+), 9 deletions(-)
-> 
-> diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-> index 06ca9b2..d935647 100644
-> --- a/include/linux/fault-inject.h
-> +++ b/include/linux/fault-inject.h
-> @@ -82,9 +82,9 @@ static inline void cleanup_fault_attr_dentries(struct fault_attr *attr)
->  #endif /* CONFIG_FAULT_INJECTION */
->  
->  #ifdef CONFIG_FAILSLAB
-> -extern bool should_failslab(size_t size, gfp_t gfpflags);
-> +extern bool should_failslab(size_t size, gfp_t gfpflags, unsigned long c_flags);
->  #else
-> -static inline bool should_failslab(size_t size, gfp_t gfpflags)
-> +static inline bool should_failslab(size_t size, gfp_t gfpflags, unsigned long f)
->  {
->  	return false;
->  }
+>> Barriers are only recently supported across DM and MD, so it would be  
+>> worth checking you logs for the last mount of the filesystems to  
+>> confirm.
+>
+> You're right, it doesn't say that anymore in 2.6.31, so I think I'm 
+> indeed running with barriers on.
 
-c_flags or f could be described better.
+And the stack traces confirm that. Every single blocked process
+output set has this trace in it:
 
-> diff --git a/include/linux/slab.h b/include/linux/slab.h
-> index 2da8372..9e03a81 100644
-> --- a/include/linux/slab.h
-> +++ b/include/linux/slab.h
-> @@ -70,7 +70,9 @@
->  #else
->  # define SLAB_NOTRACK		0x00000000UL
->  #endif
-> -
-> +#ifdef CONFIG_FAILSLAB
-> +# define SLAB_FAILSLAB	0x02000000UL	/* Fault injection filter mark */
-> +#endif 
->  /* The following flags affect the page allocator grouping pages by mobility */
->  #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
->  #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
-> diff --git a/mm/failslab.c b/mm/failslab.c
-> index 9339de5..bb41f98 100644
-> --- a/mm/failslab.c
-> +++ b/mm/failslab.c
-> @@ -1,18 +1,22 @@
->  #include <linux/fault-inject.h>
->  #include <linux/gfp.h>
-> +#include <linux/slab.h>
->  
->  static struct {
->  	struct fault_attr attr;
->  	u32 ignore_gfp_wait;
-> +	int cache_filter;
->  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
->  	struct dentry *ignore_gfp_wait_file;
-> +	struct dentry *cache_filter_file;
->  #endif
->  } failslab = {
->  	.attr = FAULT_ATTR_INITIALIZER,
->  	.ignore_gfp_wait = 1,
-> +	.cache_filter = 0,
->  };
->  
-> -bool should_failslab(size_t size, gfp_t gfpflags)
-> +bool should_failslab(size_t size, gfp_t gfpflags, unsigned long cache_flags)
->  {
->  	if (gfpflags & __GFP_NOFAIL)
->  		return false;
-> @@ -20,6 +24,9 @@ bool should_failslab(size_t size, gfp_t gfpflags)
->          if (failslab.ignore_gfp_wait && (gfpflags & __GFP_WAIT))
->  		return false;
->  
-> +	if (failslab.cache_filter && !(cache_flags & SLAB_FAILSLAB))
-> +		return false;
-> +
->  	return should_fail(&failslab.attr, size);
->  }
->  
-> @@ -30,7 +37,6 @@ static int __init setup_failslab(char *str)
->  __setup("failslab=", setup_failslab);
->  
->  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
-> -
->  static int __init failslab_debugfs_init(void)
->  {
->  	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
-> @@ -46,8 +52,14 @@ static int __init failslab_debugfs_init(void)
->  		debugfs_create_bool("ignore-gfp-wait", mode, dir,
->  				      &failslab.ignore_gfp_wait);
->  
-> -	if (!failslab.ignore_gfp_wait_file) {
-> +	failslab.cache_filter_file =
-> +		debugfs_create_bool("cache-filter", mode, dir,
-> +				      &failslab.cache_filter);
-> +
-> +	if (!failslab.ignore_gfp_wait_file ||
-> +	    !failslab.cache_filter_file) {
->  		err = -ENOMEM;
-> +		debugfs_remove(failslab.cache_filter_file);
->  		debugfs_remove(failslab.ignore_gfp_wait_file);
->  		cleanup_fault_attr_dentries(&failslab.attr);
->  	}
-> diff --git a/mm/slab.c b/mm/slab.c
-> index 7451bda..33496b7 100644
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -3101,7 +3101,7 @@ static bool slab_should_failslab(struct kmem_cache *cachep, gfp_t flags)
->  	if (cachep == &cache_cache)
->  		return false;
->  
-> -	return should_failslab(obj_size(cachep), flags);
-> +	return should_failslab(obj_size(cachep), flags, cachep->flags);
->  }
->  
->  static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 8d71aaf..64114fa 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -151,7 +151,8 @@
->   * Set of flags that will prevent slab merging
->   */
->  #define SLUB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
-> -		SLAB_TRACE | SLAB_DESTROY_BY_RCU | SLAB_NOLEAKTRACE)
-> +		SLAB_TRACE | SLAB_DESTROY_BY_RCU | SLAB_NOLEAKTRACE | \
-> +		SLAB_FAILSLAB)
+kdmflush      D 0000000000000000     0  3082      2 0x00000000
+ ffff880208553d20 0000000000000046 ffff880210a5f640 0000000000015880
+ ffff8802241ac7c0 0000000000015880 0000000000015880 0000000000015880
+ 0000000000015880 ffff8802241ac7c0 0000000000015880 0000000000015880
+Call Trace:
+ [<ffffffff81527cf8>] io_schedule+0x28/0x40
+ [<ffffffff813e7ca7>] dm_wait_for_completion+0x87/0x150
+ [<ffffffff81053c50>] ? default_wake_function+0x0/0x10
+ [<ffffffff813e8617>] ? __split_and_process_bio+0x107/0x170
+ [<ffffffff813e86a5>] dm_flush+0x25/0x70
+ [<ffffffff813e8749>] process_barrier+0x59/0xf0
+ [<ffffffff813e881b>] dm_wq_work+0x3b/0x100
+ [<ffffffff813e87e0>] ? dm_wq_work+0x0/0x100
+ [<ffffffff81073695>] run_workqueue+0x95/0x170
+ [<ffffffff81073814>] worker_thread+0xa4/0x120
+ [<ffffffff810789c0>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff81073770>] ? worker_thread+0x0/0x120
+ [<ffffffff810785d6>] kthread+0xa6/0xb0
+ [<ffffffff810130ea>] child_rip+0xa/0x20
+ [<ffffffff81078530>] ? kthread+0x0/0xb0
+ [<ffffffff810130e0>] ? child_rip+0x0/0x20
 
-Does this work with CONFIG_FAILSLAB=n?
+That is, it appears that DM is blocking waiting for a barrier to
+complete. Everything else is backed up waiting for IO completion to
+occur...
 
->  
->  #define SLUB_MERGE_SAME (SLAB_DEBUG_FREE | SLAB_RECLAIM_ACCOUNT | \
->  		SLAB_CACHE_DMA | SLAB_NOTRACK)
-> @@ -1020,6 +1021,11 @@ static int __init setup_slub_debug(char *str)
->  		case 't':
->  			slub_debug |= SLAB_TRACE;
->  			break;
-> +#ifdef CONFIG_FAILSLAB
-> +		case 'a':
-> +			slub_debug |= SLAB_FAILSLAB;
-> +			break;
-> +#endif
->  		default:
->  			printk(KERN_ERR "slub_debug option '%c' "
->  				"unknown. skipped\n", *str);
-> @@ -1718,7 +1724,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
->  	lockdep_trace_alloc(gfpflags);
->  	might_sleep_if(gfpflags & __GFP_WAIT);
->  
-> -	if (should_failslab(s->objsize, gfpflags))
-> +	if (should_failslab(s->objsize, gfpflags, s->flags))
->  		return NULL;
->  
->  	local_irq_save(flags);
-> @@ -4171,6 +4177,23 @@ static ssize_t trace_store(struct kmem_cache *s, const char *buf,
->  }
->  SLAB_ATTR(trace);
->  
-> +#ifdef CONFIG_FAILSLAB
-> +static ssize_t failslab_show(struct kmem_cache *s, char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", !!(s->flags & SLAB_FAILSLAB));
-> +}
-> +
-> +static ssize_t failslab_store(struct kmem_cache *s, const char *buf,
-> +							size_t length)
-> +{
-> +	s->flags &= ~SLAB_FAILSLAB;
-> +	if (buf[0] == '1')
-> +		s->flags |= SLAB_FAILSLAB;
-> +	return length;
-> +}
-> +SLAB_ATTR(failslab);
-> +#endif
-> +
->  static ssize_t reclaim_account_show(struct kmem_cache *s, char *buf)
->  {
->  	return sprintf(buf, "%d\n", !!(s->flags & SLAB_RECLAIM_ACCOUNT));
-> @@ -4467,6 +4490,10 @@ static struct attribute *slab_attrs[] = {
->  	&deactivate_remote_frees_attr.attr,
->  	&order_fallback_attr.attr,
->  #endif
-> +#ifdef CONFIG_FAILSLAB
-> +	&failslab_attr.attr,
-> +#endif
-> +
->  	NULL
->  };
->  
-> -- 
-> 1.6.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+>>> Currently it's "lazy-count=0", so I'll change that setting tonight.
+>
+> I didn't do this before the test I'm referring to now.
+>
+>> When IO is really slow so we get a better idea of where things are  
+>> blocking. Running a few of these 30s apart will give a fair indication  
+>> of what is blocked and what is making progress....
+>
+> Attached to this email, logfile from yesterday and today.
+>
+> Some interesting parts as well, that didn't trigger from the above sysrq  
+> stuff:
+>
+> Feb 22 19:56:16 ub kernel: [201245.583915] INFO: task md0_raid5:425 blocked for more than 120 seconds.
+> Feb 22 22:36:16 ub kernel: [210846.031875] INFO: task xfssyncd:3167 blocked for more than 120 seconds.
+> Feb 23 18:10:18 ub kernel: [281287.492499] INFO: task kdmflush:3082 blocked for more than 120 seconds.
+> Feb 23 18:12:18 ub kernel: [281407.491041] INFO: task kdmflush:3082 blocked for more than 120 seconds.
+> Feb 23 21:36:18 ub kernel: [293647.665917] INFO: task md0_raid5:425 blocked for more than 120 seconds.
+>
+> Didn't really think md0_raid5 could be blocked like that...
+
+They are blocking in:
+
+ [<ffffffff813dc0e1>] md_super_wait+0xc1/0xe0
+ [<ffffffff810789c0>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff813dc4e0>] md_update_sb+0x230/0x3b0
+ [<ffffffff813de2f2>] md_check_recovery+0x272/0x590
+ [<ffffffffa0063621>] raid5d+0x21/0x320 [raid456]
+ [<ffffffff813dbd94>] md_thread+0x44/0x120
+
+I'm assuming this is just taking a long time because of all the
+other IO that is going on slowing this down. The other 3 (xfssyncd,
+kdmflush) are all waiting for barrier IO to complete...
+
+So it sounds like the immediate WAR for your extremely slow IO
+problem is to mount the XFS filesystems with "-o nobarrier", but
+keep in mind this can result in corruption if a crash occurrs.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
