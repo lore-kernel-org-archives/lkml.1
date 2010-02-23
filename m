@@ -1,47 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153Ab0BWPUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 10:20:20 -0500
-Received: from DMZ-MAILSEC-SCANNER-5.MIT.EDU ([18.7.68.34]:46822 "EHLO
-	dmz-mailsec-scanner-5.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752499Ab0BWPUR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 10:20:17 -0500
-X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 10:20:17 EST
-X-AuditID: 12074422-b7c71ae000000a1a-6f-4b83f1024d1a
-Subject: Re: QUERY: Inclusion of header files in kernel header files
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Theodore Tso <tytso@MIT.EDU>
-In-Reply-To: <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
-Date: Tue, 23 Feb 2010 10:15:11 -0500
-Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8BIT
-Message-Id: <07BBC9AE-C1A1-449F-AE5E-EB5B1C6323C2@mit.edu>
-References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com> <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com> <20100223065953.GB32503@liondog.tnic> <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com> <20100223095025.GA18559@liondog.tnic> <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
-To: viresh kumar <viresh.linux@gmail.com>
-X-Mailer: Apple Mail (2.1077)
-X-Brightmail-Tracker: AAAAARLvbOs=
+	id S1752667Ab0BWP3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 10:29:46 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:46230 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752178Ab0BWP3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 10:29:45 -0500
+Date: Tue, 23 Feb 2010 10:29:44 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+In-Reply-To: <20100223123321.GA1025@kernel.dk>
+Message-ID: <Pine.LNX.4.44L0.1002231016500.1507-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 23 Feb 2010, Jens Axboe wrote:
 
-On Feb 23, 2010, at 6:37 AM, viresh kumar wrote:
+> On Tue, Feb 16 2010, Alan Stern wrote:
+> > On Mon, 15 Feb 2010, Rafael J. Wysocki wrote:
+> > 
+> > > On Monday 15 February 2010, Maxim Levitsky wrote:
+> > > > On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
+> > > > > I noticed that currently calling del_gendisk leads to sure deadlock if
+> > > > > attemped from .suspend or .resume functions.
+> > > 
+> > > Well, it shouldn't be called from there, then.
+> > 
+> > Even if drivers avoid calling it from within suspend methods, they have
+> > to be able to call it from within resume methods.  After all, the
+> > resume method may find that the disk's device has vanished.
 > 
-> Actually this issue is not present only in bus.h, but some other
-> kernel header files.
-> Like: arch/arm/include/asm/clkdev.h don't include list.h file but
-> using struct list_head
+> del_gendisk() needs process context at least, since it'll sleep (not
+> just for sync/invalidate, but other parts of the destruction as well).
+
+That's not a problem; suspend and resume run in process context.
+
+> > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
+> > is, should it be made unfreezable?
 > 
-> May be we need to check this in other header files also.
+> I'm not a big expect on what tasks should be freezable or not. As it
+> stands, the writeback tasks will attempt to freeze and thaw with the
+> system. I guess that screws the sync from resume call, since it's not
+> running and the sync will wait for it to retrieve and finish that work
+> item.
+> 
+> To the suspend experts - can we safely mark the writeback tasks as
+> non-freezable?
 
+The reason for freezing those tasks is to avoid writebacks at random
+times during a system sleep transition, when the underlying device may
+already be suspended, right?
 
-Before someone goes crazy and starts sending hundreds of patches to the trivial patch folks, please make sure that you only do this for places where header file foo uses "struct bar" in bar.h --- and NOT if it is using "struct bar *".    Blind structure pointers don't cause compile failures, and is a perfectly good thing from the standpoint of data hiding.
+In principle, a device's writeback task could be unfrozen immediately
+after the device is resumed.  In practice this might not solve the
+problem, since the del_gendisk() call occurs _within_ the device's
+resume routine.  I suppose del_gendisk() could be made responsible for 
+unfreezing the writeback task.
 
-Also, it's highly desirable that as much as possible multiple inclusion is fixed up at the same time you add extra #includes into header files.   Protecting against multiple inclusion is critical, yes, but even with the protection against multiple inclusion, the header file has to get parsed a second time, and that slows down kernel compiles.
+The best solution would be to have del_gendisk() avoid waiting for the 
+writeback task in cases where the underlying device has been removed.  
+I don't know if that is feasible, however.
 
-Regards,
+Alan Stern
 
--- Ted
+P.S.: Jens, given a pointer to a struct gendisk or to a struct
+request_queue, is there a good way to tell whether there any dirty
+buffers for that device waiting to be written out?  This is for
+purposes of runtime power management -- in the initial implementation,
+I want to avoid powering-down a block device if it is open or has any
+dirty buffers.  In other words, only completely idle devices should be
+powered down (a good example would be a card reader with no memory card 
+inserted).
 
