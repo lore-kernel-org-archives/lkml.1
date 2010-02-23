@@ -1,55 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541Ab0BWRIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:08:23 -0500
-Received: from mail.perches.com ([173.55.12.10]:1190 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360Ab0BWRIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:08:21 -0500
-Subject: [PATCH - next] MAINTAINERS: Telegent tlg2300 section fix
-From: Joe Perches <joe@perches.com>
-To: Huang Shijie <shijie8@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-media <linux-media@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 09:08:20 -0800
-Message-ID: <1266944900.9265.28.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753191Ab0BWRJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:09:40 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:46429 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720Ab0BWRJj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:09:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=P/+WRMZkZkZTcpwZ1fiwVfbqV9C52kVJ8pTR0otrRnFroAOsyNbZRnFh2adRJEtnk/
+         tSWh36dOg3pwUvZqLPrmsNO5AWiN0zg2n9qdt/1gHy3tSfeBJS4JXqUxDDTi6c81sz9j
+         G/mJcVmnVo6gCUE9YmwWeeZWsEnONI9tQgRFE=
+Date: Tue, 23 Feb 2010 22:40:58 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 09/10] ARM: ftrace: add Thumb-2 support to dynamic
+ ftrace
+Message-ID: <20100223171058.GA5836@debian>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in>
+ <1266090518-31120-10-git-send-email-rabin@rab.in>
+ <1266932100.19540.12.camel@frodo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266932100.19540.12.camel@frodo>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-next commit 2ff8223957d901999bf76aaf2c6183e33a6ad14e
-exposes an infinite loop defect in scripts/get_maintainer.pl
+On Tue, Feb 23, 2010 at 08:35:00AM -0500, Steven Rostedt wrote:
+> On Sun, 2010-02-14 at 01:18 +0530, Rabin Vincent wrote:
+> > --- a/arch/arm/include/asm/ftrace.h
+> > +++ b/arch/arm/include/asm/ftrace.h
+> > @@ -18,7 +18,11 @@ struct dyn_arch_ftrace {
+> >  
+> >  static inline unsigned long ftrace_call_adjust(unsigned long addr)
+> >  {
+> > +#ifdef CONFIG_THUMB2_KERNEL
+> > +	return addr & ~1;
+> 
+> Would it be safe to do that for all arm archs? Instead of adding a
+> config option around it. Or do some arm archs need the lsb set.
+> 
+> I'm just saying a comment here would look better than #ifdef #else.
 
-Fix the incorrect format of the MAINTAINERS "M:" entries.
+You're right; I'll change this.  It's safe even when we build for the
+ARM instruction set.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 57305f6..e633460 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4775,13 +4775,12 @@ F:	drivers/media/video/*7146*
- F:	include/media/*7146*
- 
- TLG2300 VIDEO4LINUX-2 DRIVER
--M 	Huang Shijie	<shijie8@gmail.com>
--M 	Kang Yong	<kangyong@telegent.com>
--M 	Zhang Xiaobing	<xbzhang@telegent.com>
-+M:	Huang Shijie <shijie8@gmail.com>
-+M:	Kang Yong <kangyong@telegent.com>
-+M:	Zhang Xiaobing <xbzhang@telegent.com>
- S:	Supported
- F:	drivers/media/video/tlg2300
- 
--
- SC1200 WDT DRIVER
- M:	Zwane Mwaikambo <zwane@arm.linux.org.uk>
- S:	Maintained
-
-
+Rabin
