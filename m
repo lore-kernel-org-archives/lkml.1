@@ -1,68 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275Ab0BWROb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:14:31 -0500
-Received: from mail1.slb.deg.dub.stisp.net ([84.203.253.98]:10572 "HELO
-	mail1.slb.deg.dub.stisp.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752363Ab0BWROa (ORCPT
+	id S1753070Ab0BWRRd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:17:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:49165 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077Ab0BWRRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:14:30 -0500
-Message-ID: <4B840BC6.9090809@draigBrady.com>
-Date: Tue, 23 Feb 2010 17:09:26 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Tue, 23 Feb 2010 12:17:32 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to rcu_dereference()
+Date: Tue, 23 Feb 2010 18:15:59 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com
+References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231654.09724.arnd@arndb.de> <20100223161602.GD6700@linux.vnet.ibm.com>
+In-Reply-To: <20100223161602.GD6700@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-CC: linux-kernel@vger.kernel.org, wim@iguana.be, seth.heasley@intel.com
-Subject: [PATCH] iTCO_wdt: Don't double the requested timeout
-References: <20100223164019.60a6de1a@marrow.netinsight.se> <4B840154.1010501@draigBrady.com>
-In-Reply-To: <4B840154.1010501@draigBrady.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002231816.00117.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+VaHijxdXBAVtmCmbtOktgxuvddqu0QJUXFNW
+ 5CasZ7N4M1Nnl9sB3VEPEcfX9hhzUBsaP4+ULwM8zOy3EDP2sN
+ CtXPxWIwuU/1HMqIHMWnQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually looking at that code I noticed that it wasn't
-accounting for the timer counting down twice before reboot,
-which I thought was the case for ICH4 at least.
-The following is not even compiled, nor am I sure it
-applies to TCO v2. Testing/info appreciated.
-I might be able to dig out an ICH4 system at some stage.
+On Tuesday 23 February 2010, Paul E. McKenney wrote:
+> We would also need something for initialization of structure fields.
+> Does __force work in that case as well?
 
-cheers,
-Pádraig.
+Yes, it will just need some syntactical sugar to avoid placing __force
+in device drivers.
 
---- a/iTCO_wdt.c    2009-06-10 03:05:27.000000000 +0000
-+++ b/iTCO_wdt.c  2010-02-23 17:02:07.829640740 +0000
-@@ -274,7 +274,7 @@
-  static int heartbeat = WATCHDOG_HEARTBEAT;  /* in seconds */
-  module_param(heartbeat, int, 0);
-  MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. "
--       "(2<heartbeat<39 (TCO v1) or 613 (TCO v2), default="
-+       "(4<heartbeat<78 (TCO v1) or 1226 (TCO v2), default="
-                                 __MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
+> > If there are cases where it does not work, we need to come up with
+> > names for new primitives that just do the assignment or dereference
+> > with __force but no actual synchronization.
+> 
+> Some data structures are shared by RCU and non-RCU code, with struct
+> list_head being the most prominent example.  Making the "next" pointer
+> as __rcu might be OK, but there are a -lot- of non-RCU uses of struct
+> list_head.  Would we really want to introduce rcu_dereference() to all
+> non-RCU list-traversal primitives, or do we need to do something else?
 
-  static int nowayout = WATCHDOG_NOWAYOUT;
-@@ -290,8 +290,8 @@
-  static inline unsigned int seconds_to_ticks(int seconds)
-  {
-         /* the internal timer is stored as ticks which decrement
--        * every 0.6 seconds */
--       return (seconds * 10) / 6;
-+        * every 0.6 seconds. The timer counts down twice before reboot */
-+       return (seconds * 10) / 3;
-  }
+I've just started an experimental implementation and got stuck at list rcu.
+The two to deal with it that I can see are
+- ignore list-rcu for now, and make all include/linux/rculist.h __force the
+  problem to be ignored.
+- introduce a new struct rcu_list_head that needs to be used for list rcu.
 
-  static void iTCO_wdt_set_NO_REBOOT_bit(void)
-@@ -721,8 +721,8 @@
-         if (iTCO_wdt_set_heartbeat(heartbeat)) {
-                 iTCO_wdt_set_heartbeat(WATCHDOG_HEARTBEAT);
-                 printk(KERN_INFO PFX
--                       "heartbeat value must be 2 < heartbeat < 39 (TCO v1) "
--                               "or 613 (TCO v2), using %d\n", heartbeat);
-+                       "heartbeat value must be 4 < heartbeat < 78 (TCO v1) "
-+                               "or 1226 (TCO v2), using %d\n", heartbeat);
-         }
+A nicer option might be if sparse would let you write
+'struct list_head __rcu head' and interpret that as having the pointers
+inside it annotated as __rcu.
 
-         ret = misc_register(&iTCO_wdt_miscdev);
+	Arnd
