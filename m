@@ -1,44 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751564Ab0BWRjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:39:04 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39508 "EHLO mail.zytor.com"
+	id S1753151Ab0BWRkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:40:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38269 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894Ab0BWRjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:39:01 -0500
-Message-ID: <4B84118C.90203@zytor.com>
-Date: Tue, 23 Feb 2010 09:34:04 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752363Ab0BWRka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:40:30 -0500
+Date: Tue, 23 Feb 2010 19:39:52 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       markmc@redhat.com, herbert.xu@redhat.com, quintela@redhat.com,
+       dlaor@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
+Message-ID: <20100223173952.GC9834@redhat.com>
+References: <cover.1266943453.git.mst@redhat.com>
+ <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
+ <20100223173434.GB9834@redhat.com>
+ <20100223173258.GA25338@redhat.com>
 MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-CC: Michal Marek <mmarek@suse.cz>, linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH] x86: Add optimized popcnt variants
-References: <4B7C29C1.10906@suse.cz> <20100218061923.GA1594@liondog.tnic> <20100219142205.GA32533@aftab> <4B7EB6EF.9010405@zytor.com> <20100219164512.GA492@aftab> <4B7EC20C.30607@zytor.com> <20100222141737.GB21233@aftab> <4B82BD01.3030008@zytor.com> <20100222184945.GD21233@aftab> <4B82E144.1050007@zytor.com> <20100223155852.GF30382@aftab>
-In-Reply-To: <20100223155852.GF30382@aftab>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223173258.GA25338@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 07:58 AM, Borislav Petkov wrote:
->
-> Hmm, we cannot do that with the current design since __arch_hweight64
-> is being inlined into every callsite and AFAICT we would have to build
-> every callsite with "-fcall-saved-rdi" which is clearly too much. The
-> explicit "=D" dummy constraint is straightforward, instead.
->
+On Tue, Feb 23, 2010 at 07:32:58PM +0200, Michael S. Tsirkin wrote:
+> On Tue, Feb 23, 2010 at 07:34:34PM +0200, Gleb Natapov wrote:
+> > On Tue, Feb 23, 2010 at 06:57:58PM +0200, Michael S. Tsirkin wrote:
+> > > get_user_pages_fast returns number of pages on success, negative value
+> > > on failure, but never 0. Fix vhost code to match this logic.
+> > > 
+> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > > ---
+> > >  drivers/vhost/vhost.c |    3 ++-
+> > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+> > > index d4f8fdf..d003504 100644
+> > > --- a/drivers/vhost/vhost.c
+> > > +++ b/drivers/vhost/vhost.c
+> > > @@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
+> > >  	int bit = nr + (log % PAGE_SIZE) * 8;
+> > >  	int r;
+> > >  	r = get_user_pages_fast(log, 1, 1, &page);
+> > > -	if (r)
+> > > +	if (r < 0)
+> > >  		return r;
+> > > +	BUG_ON(r != 1);
+> > Can't this be easily triggered from user space?
+> 
+> I think no. get_user_pages_fast always returns number of pages
+> pinned (in this case always 1) or an error (< 0).
+> Anything else is a kernel bug.
+> 
+But what if page is unmapped from userspace?
 
-Uh... the -fcall-saved-rdi would go with all the other ones.  Assuming 
-it can actually work and that gcc doesn't choke on an inbound argument 
-being saved.
+> > >  	base = kmap_atomic(page, KM_USER0);
+> > >  	set_bit(bit, base);
+> > >  	kunmap_atomic(base, KM_USER0);
+> > > -- 
+> > > 1.7.0.18.g0d53a5
+> > 
+> > --
+> > 			Gleb.
 
-	-hpa
+--
+			Gleb.
