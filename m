@@ -1,80 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429Ab0BWCGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 21:06:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64061 "EHLO mx1.redhat.com"
+	id S1752917Ab0BWCTO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 21:19:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44475 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992Ab0BWCFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 21:05:23 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v3 3/9] perf probe: Fix bugs in line range finder
-To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Date: Mon, 22 Feb 2010 21:08:39 -0500
-Message-ID: <20100223020839.26668.91987.stgit@localhost6.localdomain6>
-In-Reply-To: <20100223020818.26668.79685.stgit@localhost6.localdomain6>
-References: <20100223020818.26668.79685.stgit@localhost6.localdomain6>
-User-Agent: StGIT/0.14.3
+	id S1752470Ab0BWCTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 21:19:12 -0500
+Message-ID: <4B833B13.7060109@kernel.org>
+Date: Mon, 22 Feb 2010 18:18:59 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: linux-next: build failure in i386 since next-20100104
+References: <20100222220340.4b0a19fb.sfr@canb.auug.org.au>
+In-Reply-To: <20100222220340.4b0a19fb.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix find_line_range_by_line() to init line_list and remove
-misconseptional found marking which should be done when
-real lines are found (if there is no lines probe-able,
-find_line_range() should return 0).
+On 02/22/2010 03:03 AM, Stephen Rothwell wrote:
+> Hi,
+> 
+> The i386 allmodconfig builds of linux-next have been failing since
+> next-20100204 like this:
+> 
+> In file included from arch/x86/include/asm/uaccess.h:571,
+>                  from include/linux/uaccess.h:5,
+>                  from include/linux/highmem.h:6,
+>                  from include/linux/pagemap.h:10,
+>                  from include/linux/mempolicy.h:62,
+>                  from include/linux/migrate.h:5,
+>                  from mm/migrate.c:15:
+> In function 'copy_from_user',
+>     inlined from 'do_pages_stat' at mm/migrate.c:1009:
+> arch/x86/include/asm/uaccess_32.h:212: error: call to 'copy_from_user_overflow' declared with attribute error: copy_from_user() buffer size is not provably correct
+> 
+> [Today's linux-next is the same except for the one line starting
+> "inlined" which is now:
+>     inlined from 'do_pages_stat' at mm/migrate.c:1012:
+> ]
+> 
+>  I use gcc 4.4.3 for those compiles.  (See
+> http://kisskb.ellerman.id.au/kisskb/buildresult/2118967/ for full logs.)
+> 
+> There doesn't seem to be any relevant change in the config from Feb 3 to
+> 4:
+> 
+> +CONFIG_I2C_XILINX=m
+> +CONFIG_RADIO_SAA7706H=m
+> 
+> and nothing else jumps out. The i386 defconfig and allnoconfig builds do
+> not fail.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
----
+Already fixed in upstream, checkin 87b8d1adefa1548b591cbf0d63965987e2cf893d.
 
- tools/perf/util/probe-finder.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+	-hpa
 
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index 1b2124d..3e10dbe 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -788,6 +788,7 @@ static void find_line_range_by_line(struct line_finder *lf)
- 	Dwarf_Addr addr;
- 	int ret;
- 
-+	INIT_LIST_HEAD(&lf->lr->line_list);
- 	ret = dwarf_srclines(lf->cu_die, &lines, &cnt, &__dw_error);
- 	DIE_IF(ret != DW_DLV_OK);
- 
-@@ -848,8 +849,6 @@ static int linefunc_callback(struct die_link *dlink, void *data)
- 		lr->start = lf->lno_s;
- 		lr->end = lf->lno_e;
- 		find_line_range_by_line(lf);
--		/* If we find a target function, this should be end. */
--		lf->found = 1;
- 		return 1;
- 	}
- 	return 0;
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
