@@ -1,151 +1,232 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707Ab0BWR4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:56:45 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:37553 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140Ab0BWR4n (ORCPT
+	id S1753098Ab0BWR7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:59:13 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:45130 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422Ab0BWR7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:56:43 -0500
+	Tue, 23 Feb 2010 12:59:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+        h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=c/Am0MrbLdErv+02oAktGa505OnCoXeNvYA6IixX6e+RrNUTigzLsVXNLxrhi86yrC
-         65A4xmAiS2Kb2s6WOL03XHnKBho1HBsbZQnZfmdqFg3QswQcfKiDuvV3P9uEZA5+QlLB
-         07zZbDNCjv/v/UnZvHalQ8mXHTA8ko41CwTPE=
-Date: Tue, 23 Feb 2010 23:28:07 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 04/10] ARM: ftrace: allow building without frame
- pointers
-Message-ID: <20100223175807.GB5836@debian>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in>
- <1266090518-31120-5-git-send-email-rabin@rab.in>
- <20100222190516.GJ5055@nowhere>
- <1266931113.19540.5.camel@frodo>
- <20100223171112.GC5357@nowhere>
+        b=xj7mvz4f3dIADB25RjBMXXyb3pDGEUaT35If6H/v+VuRhpZQARYe7dwe4MP2fnoU1H
+         Pxlums2QK+5YFNIqhdFgdrs12IuZsHX8Uoz2N/Kqz8Mt+DWOCx+aJJ+9MS1+ZD1Q04H5
+         NOLyvUbFVSROwF/gYyGk2S/qgRTig32IiZEC8=
+Date: Tue, 23 Feb 2010 09:58:53 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Michael Thayer <Michael.Thayer@Sun.COM>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
+ emulation to the Lifebook driver
+Message-ID: <20100223175852.GA11301@core.coreip.homeip.net>
+References: <1266923615.3602.85.camel@michael-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100223171112.GC5357@nowhere>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1266923615.3602.85.camel@michael-laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 06:11:16PM +0100, Frederic Weisbecker wrote:
-> On Tue, Feb 23, 2010 at 08:18:33AM -0500, Steven Rostedt wrote:
-> > On Mon, 2010-02-22 at 20:05 +0100, Frederic Weisbecker wrote:
-> > > 
-> > > Btw, you described that mcount is used in some gcc versions and
-> > > __gnu_mcount_nc in newers.
-> > > Shouldn't we have a gcc version dependency here? (not sure we can
-> > > do this from Kconfig though).
-> > > 
-> > Maybe we can add something to recordmcount.pl?
+Hi Michael,
+
+On Tue, Feb 23, 2010 at 12:13:35PM +0100, Michael Thayer wrote:
+> This patch adds support for VirtualBox touchscreen emulation to the Lifebook
+>  input driver.
 > 
-> May be yeah, with an explicit message that describes the issue.
+> The device will be present as an extension to the PS/2 mouse emulation in the
+> next major release of VirtualBox.  We chose to emulate the Lifebook touchscreen
+> mainly in order to simplify in-kernel support, as the Lifebook driver is active
+> by default in most kernel configurations.  We had to extend the protocol
+> slightly as we wish to provide five mouse buttons and a two-way scroll wheel to
+> virtual guest systems, and we tried to do this in the most non-intrusive way
+> possible with regard to the current driver, which is the reason for the slightly
+> unusual handling of mouse buttons three to five.
 
-Adding something to recordmcount.pl to detect this would be
-insufficient, because this affects non-dynamic ftrace too.
+I am wondering if it is a good idea to piggy-back on Lifebook. The
+devices are sufficiently different with Lifebook really having 2
+separate devices (touchscreen and either regular external mouse or a
+touchpad) and VirtualBox having asingle device that looks like a pointer
+(not a touchscreen since pointer moves constantly, not while "touching")
+with absolute coordinates reporting.
 
-> > > > +++ b/arch/arm/kernel/entry-common.S
-> > > > @@ -169,6 +169,12 @@ gnu_trace:
-> > > >  	ldmia	sp!, {r0-r3, ip, lr}
-> > > >  	mov	pc, ip
-> > > >  
-> > > > +#ifdef CONFIG_OLD_MCOUNT
-> > > > +/*
-> > > > + * This is under an ifdef in order to force link-time errors for people trying
-> > > > + * to build with !FRAME_POINTER with a GCC which doesn't use the new-style
-> > > > + * mcount.
-> > > > + */
-> > > >  ENTRY(mcount)
-> > > >  	stmdb	sp!, {r0-r3, lr}
-> > > >  	ldr	r0, =ftrace_trace_function
-> > > > @@ -187,6 +193,7 @@ trace:
-> > > >  	mov	pc, r2
-> > > >  	ldr	lr, [fp, #-4]			@ restore lr
-> > > >  	ldmia	sp!, {r0-r3, pc}
-> > > > +#endif
-> > > >  
-> > > >  #endif /* CONFIG_DYNAMIC_FTRACE */
-> > > >  
-> > > > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> > > > index 6c22d8a..7468ffe 100644
-> > > > --- a/kernel/trace/Kconfig
-> > > > +++ b/kernel/trace/Kconfig
-> > > > @@ -126,7 +126,7 @@ if FTRACE
-> > > >  config FUNCTION_TRACER
-> > > >  	bool "Kernel Function Tracer"
-> > > >  	depends on HAVE_FUNCTION_TRACER
-> > > > -	select FRAME_POINTER
-> > > > +	select FRAME_POINTER if (!ARM_UNWIND)
-> > > 
-> > > 
-> > > So, if I understand well. If people have ARM_UNWIND but
-> > > FUNCTION_TRACER, it might crash at link time in case
-> > > they don't have a recent enough gcc version to
-> > > support the new -pg style?
+I think it would be better if we had separate protocol module for that.
+The fact that Lifebook is enabled in many current configurations should
+not affect the decision - current distributions will have to chose to
+backport the change and if they decide to do so will activate the config
+option; users compiling their own kernels will decide if they want it.
+Also, VirualBox may be popular enough to condition the new option on
+EMBEDDED so that it is active by default.
 
-They'd probably get an "undefined reference to mcount" message.  I
-forced the link time error because otherwise they'll have runtime
-problems.
-
-> > > 
-> > > That doesn't look good.
-> > > 
-> > > Ideally, we need HAVE_FUNCTION_TRACER to be enabled in arm
-> > > only if (old gcc && frame pointers) || new gcc
-> > > 
-> > > And then, we need config OLD_MCOUNT:
-> > > 	 old gcc && FUNCTION_TRACER
-> > > 
-> > > and config NEW_MCOUNT:
-> > > 	new gcc && FUNCTION_TRACER
-> > > 
-> > > so that we can selectively build mcount or __gnu_mcount_nc.
-
-There's more to this.  When we build with FRAME_POINTER, we need to
-always build in both version of mcount.  This is to allow modules to be
-built with different versions of the compiler (one which uses the old
-mcount and one with the new mcount).
-
-> > > 
-> > > Hmm, I fear we can't check gcc version from Kconfig, as I'm
-> > > grepping on Kconfig files...
-> > 
-> > 
-> > I would not check gcc version through KCONFIG, but you can have the gcc
-> > version checked and define another macro in a header somewhere, like
-> > asm/ftrace.h. Then we could do something different while it is
-> > compiling.
 > 
-> Yeah. I understand now why we can't do that on Kconfig time, HOSTCC
-> can be different than CC.
+> Most changes in the driver are conditional on the VirtualBox DMI string being
+> found.  A notable exception is the removal of the keybit fields for the left,
+> right and middle buttons for the first device.
+
+This issue should be fixed in the recent kernels.
+
+> The current X.Org evdev driver
+> was seeing these and treating the device as a touchpad instead of a touchscreen.
+> I also tested this with a vanilla Ubuntu Lucid live CD while emulating the
+> original device and presenting a suitable DMI string.
 > 
-> The most important thing is to have a message that describes the issue
-> if the compiler-config combination is impossible.
+> Signed-off-by: Michael Thayer <michael.thayer@sun.com>
+> --- lifebook.c	2010-02-23 12:01:32.941643681 +0100
+> +++ lifebook-vbox.c	2010-02-23 11:44:57.831664482 +0100
+> @@ -1,6 +1,8 @@
+>  /*
+>   * Fujitsu B-series Lifebook PS/2 TouchScreen driver
+> + * Also used for Oracle VirtualBox mouse integration
+>   *
+> + * Copyright (c) 2010 Oracle.  All rights reserved.
+>   * Copyright (c) 2005 Vojtech Pavlik <vojtech@suse.cz>
+>   * Copyright (c) 2005 Kenan Esau <kenan.esau@conan.de>
+>   *
+> @@ -41,6 +43,15 @@ static int lifebook_set_6byte_proto(cons
+>  	return 0;
+>  }
+>  
+> +static bool lifebook_use_vbox_proto;
+> +
+> +static int lifebook_set_vbox_proto(const struct dmi_system_id *d)
+> +{
+> +	lifebook_use_6byte_proto = true;
+> +	lifebook_use_vbox_proto = true;
+> +	return 0;
+> +}
+> +
+>  static const struct dmi_system_id lifebook_dmi_table[] = {
+>  	{
+>  		.ident = "FLORA-ie 55mi",
+> @@ -115,6 +126,13 @@ static const struct dmi_system_id lifebo
+>  			DMI_MATCH(DMI_PRODUCT_NAME, "LifeBook B142"),
+>  		},
+>  	},
+> +	{
+> +		.ident = "VirtualBox",
+> +		.matches = {
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "VirtualBox"),
+> +		},
+> +		.callback = lifebook_set_vbox_proto,
+> +	},
+>  	{ }
+>  };
+>  
+> @@ -180,6 +198,21 @@ static psmouse_ret_t lifebook_process_by
+>  				((packet[0] & 0x10) ? packet[1] - 256 : packet[1]));
+>  			input_report_rel(dev2, REL_Y,
+>  				 -(int)((packet[0] & 0x20) ? packet[2] - 256 : packet[2]));
+> +			if (lifebook_use_vbox_proto && !(packet[0] & 0x04)) {
+> +				unsigned btn = (packet[0] >> 6);
+> +
+> +				input_report_key(dev2, BTN_MIDDLE, btn == 1);
+> +				input_report_key(dev2, BTN_SIDE, btn == 2);
+> +				input_report_key(dev2, BTN_EXTRA, btn == 3);
+> +			}
+> +			if (lifebook_use_vbox_proto && (packet[0] & 0x04)) {
+> +				unsigned wheel = (packet[0] >> 6);
+> +
+> +				input_report_rel(dev2, REL_WHEEL,
+> +					(wheel == 0) - (wheel == 1));
+> +				input_report_rel(dev2, REL_HWHEEL,
+> +					(wheel == 2) - (wheel == 3));
+> +			}
+>  		}
+>  		input_report_key(dev2, BTN_LEFT, packet[0] & 0x01);
+>  		input_report_key(dev2, BTN_RIGHT, packet[0] & 0x02);
+> @@ -200,11 +233,17 @@ static int lifebook_absolute_mode(struct
+>  	/*
+>  	   Enable absolute output -- ps2_command fails always but if
+>  	   you leave this call out the touchsreen will never send
+> -	   absolute coordinates
+> +	   absolute coordinates.
+> +
+> +	   Note that old versions of VirtualBox which didn't emulate the
+> +	   touchscreen also failed to return an error here, so if we are
+> +	   running inside VirtualBox, we actually have to make sure that
+> +	   the command fails!
+>  	*/
+>  	param = lifebook_use_6byte_proto ? 0x08 : 0x07;
+> -	ps2_command(ps2dev, &param, PSMOUSE_CMD_SETRES);
+> -
+> +	if (!ps2_command(ps2dev, &param, PSMOUSE_CMD_SETRES) &&
+> +		lifebook_use_vbox_proto)
+> +		return -1;
+>  	return 0;
+>  }
+>  
+> @@ -251,11 +290,14 @@ int lifebook_detect(struct psmouse *psmo
+>  		return -1;
+>  
+>  	if (set_properties) {
+> -		psmouse->vendor = "Fujitsu";
+> -		psmouse->name = "Lifebook TouchScreen";
+> +		psmouse->vendor = !lifebook_use_vbox_proto ? "Fujitsu" :
+> +			"VirtualBox";
+> +		psmouse->name =  !lifebook_use_vbox_proto ?
+> +			"Lifebook TouchScreen" :
+> +			"Mouse Integration" ;
+>  	}
+>  
+> -        return 0;
+> +	return 0;
+>  }
+>  
+>  static int lifebook_create_relative_device(struct psmouse *psmouse)
+> @@ -274,7 +316,8 @@ static int lifebook_create_relative_devi
+>  		 "%s/input1", psmouse->ps2dev.serio->phys);
+>  
+>  	dev2->phys = priv->phys;
+> -	dev2->name = "PS/2 Touchpad";
+> +	dev2->name = !lifebook_use_vbox_proto ? "PS/2 Touchpad" :
+> +		"Virtual PS/2 Mouse";
+>  	dev2->id.bustype = BUS_I8042;
+>  	dev2->id.vendor  = 0x0002;
+>  	dev2->id.product = PSMOUSE_LIFEBOOK;
+> @@ -285,6 +328,13 @@ static int lifebook_create_relative_devi
+>  	dev2->relbit[BIT_WORD(REL_X)] = BIT_MASK(REL_X) | BIT_MASK(REL_Y);
+>  	dev2->keybit[BIT_WORD(BTN_LEFT)] = BIT_MASK(BTN_LEFT) |
+>  		BIT_MASK(BTN_RIGHT);
+> +	if (lifebook_use_vbox_proto) {
+> +		__set_bit(BTN_MIDDLE, dev2->keybit);
+> +		__set_bit(REL_WHEEL, dev2->relbit);
+> +		__set_bit(REL_HWHEEL, dev2->relbit);
+> +		__set_bit(BTN_SIDE, dev2->keybit);
+> +		__set_bit(BTN_EXTRA, dev2->keybit);
+> +	}
+>  
+>  	error = input_register_device(priv->dev2);
+>  	if (error)
+> @@ -310,6 +360,14 @@ int lifebook_init(struct psmouse *psmous
+>  	dev1->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
+>  	dev1->relbit[0] = 0;
+>  	dev1->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+> +	/*
+> +	   The psmouse-base driver enables these bits, but if the X.Org
+> +	   evdev driver sees them it thinks we are a touchpad, not a
+> +	   touchscreen.
+> +	*/
+> +	psmouse->dev->keybit[BIT_WORD(BTN_MOUSE)] &= ~(BIT_MASK(BTN_LEFT) |
+> +		BIT_MASK(BTN_MIDDLE) | BIT_MASK(BTN_RIGHT));
+> +
+>  	input_set_abs_params(dev1, ABS_X, 0, max_coord, 0, 0);
+>  	input_set_abs_params(dev1, ABS_Y, 0, max_coord, 0, 0);
+> 
+> 
+> -- 
+> Sun Microsystems GmbH        Michael Thayer
+> Werkstrasse 24               VirtualBox engineer
+> 71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
+> 
+> Sitz der Gesellschaft:
+> Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
+> Amtsgericht Muenchen: HRB 161028
+> Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels, Wolf Frenkel
+> Vorsitzender des Aufsichtsrates: Martin Haering
+> 
 
-The easiest option to have a more obvious message than a linker error
-would be to add something like this in entry-common.S:
-
-  #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4)) \
-	&& !defined(OLD_MCOUNT)
-  #warning Ftrace on GCC < 4.4 requires frame pointers
-  #endif
-
-Messages like this are also present in other places in ARM (for example
-arch/arm/kernel/unwind.c), so this wouldn't be this first.
-
-Note that the above message would help in all cases except the one where
-someone builds the kernel with !fp and GCC 4.4+, and then builds a
-module with an older GCC.  That would still be only a linker error.
-
-Rabin
+-- 
+Dmitry
