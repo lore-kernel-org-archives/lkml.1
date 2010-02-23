@@ -1,78 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701Ab0BWWyw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 17:54:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51178 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753249Ab0BWWyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 17:54:50 -0500
-Date: Wed, 24 Feb 2010 09:54:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
-       linux-tip-commits@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: linux-next requirements (Was: Re: [tip:x86/ptrace] ptrace: Add
- support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
-Message-Id: <20100224095443.cb398c27.sfr@canb.auug.org.au>
-In-Reply-To: <4B843F66.6030000@zytor.com>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
-	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
-	<20100222090710.GA31357@elte.hu>
-	<20100222203319.8bd497a2.sfr@canb.auug.org.au>
-	<20100222102745.GJ20844@elte.hu>
-	<20100222224752.0cbd5807.sfr@canb.auug.org.au>
-	<4B830BD8.3090600@zytor.com>
-	<20100223105959.a50dbe11.sfr@canb.auug.org.au>
-	<20100223202030.44DED64C@magilla.sf.frob.com>
-	<4B843F66.6030000@zytor.com>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1"
+	id S1754729Ab0BWWzW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 17:55:22 -0500
+Received: from mail-wy0-f174.google.com ([74.125.82.174]:46657 "EHLO
+	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753249Ab0BWWzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 17:55:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=wmSavME595T9KfMypYtijb5+c6GLPDk23vPOBJjHFiMEQwWFqNi1LKDXohn7EeKoPk
+         uiv4GHgEo3R8hQBHepL5bQuVAvzqnwOKx11+hszlK88x6EnOrcXLTSLvqbXZ7bsW9mQH
+         uuXtOnoYrWRSW99cJ3t45macf72boykPRPE8w=
+MIME-Version: 1.0
+Date: Tue, 23 Feb 2010 16:55:17 -0600
+Message-ID: <808c8e9d1002231455q379b26acq4b4a50188c5d73be@mail.gmail.com>
+Subject: [PATCH] cs5535_gpio: gpio_chip.get should return the input value
+From: Ben Gardner <gardner.ben@gmail.com>
+To: Andres Salomon <dilinger@collabora.co.uk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The gpio_chip.get() function for the CS5535 GPIO driver currently returns the
+output value instead of the input value.
+This patch changes it to return the input value.
 
-On Tue, 23 Feb 2010 12:49:42 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
->
-> On 02/23/2010 12:20 PM, Roland McGrath wrote:
-> >> Are there any downsides to Roland's patch as far as PARISC is concerned
-> >> (apart from the loss of some functionality, of course)?
-> >=20
-> > Kyle ACK'd my parisc patch, and my impression is he wants it to go in
-> > and does not plan to work on the necessary arch support imminently.
-> >=20
-> > I think the only visible effect of turning off HAVE_ARCH_TRACEHOOK
-> > on parisc will be that /proc/pid/syscall is not available.
->=20
-> Added to tip:x86/ptrace.
+Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
+---
+--- linux-2.6.33-rc8.orig/drivers/gpio/cs5535-gpio.c
++++ linux-2.6.33-rc8/drivers/gpio/cs5535-gpio.c
+@@ -154,7 +154,7 @@
 
-And Linus actually put it in his tree yesterday ... commit
-15cbf627abcd93c3c668d5a92d58d9fec8f953dd "Revert "parisc:
-HAVE_ARCH_TRACEHOOK""
+ static int chip_gpio_get(struct gpio_chip *chip, unsigned offset)
+ {
+-	return cs5535_gpio_isset(offset, GPIO_OUTPUT_VAL);
++	return cs5535_gpio_isset(offset, GPIO_READ_BACK);
+ }
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuEXLMACgkQjjKRsyhoI8wb3ACgohZdrhbZ+u+VHt7udSSZx15e
-Nv8Anjm1uBoN+5bclL7q/FI6EJ/d9S+u
-=3rcX
------END PGP SIGNATURE-----
-
---Signature=_Wed__24_Feb_2010_09_54_43_+1100_TlpEJHGffexr1Ph1--
+ static void chip_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
