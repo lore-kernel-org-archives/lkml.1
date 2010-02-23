@@ -1,49 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426Ab0BWQat (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 11:30:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52706 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948Ab0BWQas (ORCPT
+	id S1753452Ab0BWQbF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 11:31:05 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:39299 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752243Ab0BWQbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 11:30:48 -0500
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for
- Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       ego@in.ibm.com
-In-Reply-To: <1266942281.11845.521.camel@laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-	 <1265403478.6089.41.camel@jschopp-laptop>
-	 <1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
-	 <1266499023.26719.597.camel@laptop> <14639.1266559532@neuling.org>
-	 <1266573672.1806.70.camel@laptop> <24165.1266577276@neuling.org>
-	 <23662.1266905307@neuling.org>  <1266942281.11845.521.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 17:30:26 +0100
-Message-ID: <1266942626.11845.527.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Feb 2010 11:31:01 -0500
+Date: Tue, 23 Feb 2010 17:30:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+Subject: Re: [RFC,PATCH] Route kbd leds through the generic leds layer
+ (Was: [PATCH] kbd: (#7063) make CapsLock work as expected even for
+ non-ASCII)
+Message-ID: <20100223163052.GF6220@elf.ucw.cz>
+References: <20091117115503.GB1657@x200>
+ <20091117132358.GJ12736@const.bordeaux.inria.fr>
+ <20091119131854.GA1628@x200.localdomain>
+ <20091119132828.GA31025@const.bordeaux.inria.fr>
+ <20091119133737.GE31025@const.bordeaux.inria.fr>
+ <4B055F24.8030307@zytor.com>
+ <20091120190730.GB1434@ucw.cz>
+ <20091120204612.GA31728@elf.ucw.cz>
+ <4B0709D4.6010305@zytor.com>
+ <20100221050107.GG6133@const.homenet.telecomitalia.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100221050107.GG6133@const.homenet.telecomitalia.it>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-23 at 17:24 +0100, Peter Zijlstra wrote:
+Hi!
+
+> Route keyboard leds through the generic leds layer.
 > 
->         busiest_cpu = group_first_cpu(sds->busiest);
->         if (cpu_rq(this_cpu)->nr_running || this_cpu > busiest_cpu)
->                 return 0; 
+> This permits to reassign keyboard LEDs to something else than keyboard
+> "leds" state, and also permits to fix #7063 by using a modifier to
+> implement proper CapsLock behavior and have the keyboard caps lock led
+> show that caps lock state.
 
-Hmm, we could change the bit in find_busiest_group() to:
+Yes please.
 
-  if (idle == CPU_IDLE && check_asym_packing())
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-and skip the nr_running test..
+Looks good. ACK.
 
+> --- linux-2.6.32-orig/lib/Kconfig.debug	2009-12-03 13:44:04.000000000 +0100
+> +++ linux-2.6.32-perso/lib/Kconfig.debug	2010-02-21 04:36:23.000000000 +0100
+> @@ -103,7 +103,7 @@
+>  
+>  config DEBUG_SECTION_MISMATCH
+>  	bool "Enable full Section mismatch analysis"
+> -	depends on UNDEFINED
+> +	#depends on UNDEFINED
+>  	# This option is on purpose disabled for now.
+>  	# It will be enabled when we are down to a resonable number
+>  	# of section mismatch warnings (< 10 for an allyesconfig build)
+
+You probably want to leave this bit.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
