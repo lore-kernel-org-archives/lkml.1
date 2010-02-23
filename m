@@ -1,62 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793Ab0BWXgA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 18:36:00 -0500
-Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:47743 "EHLO
-	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754758Ab0BWXf5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 18:35:57 -0500
-X-Greylist: delayed 4162 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 18:35:57 EST
-Date: Tue, 23 Feb 2010 23:26:28 +0100 (CET)
-From: Peter Osterlund <petero2@telia.com>
-X-X-Sender: petero@localhost
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] blk-core: use BIO list management functions
-In-Reply-To: <20100223222300.GR1025@kernel.dk>
-Message-ID: <alpine.LFD.2.00.1002232325240.19390@localhost>
-References: <1266845364-3242-1-git-send-email-akinobu.mita@gmail.com> <1266845364-3242-2-git-send-email-akinobu.mita@gmail.com> <20100223075527.GL1025@kernel.dk> <961aa3351002230626g57bbe867gb01c936897dcfedd@mail.gmail.com> <20100223145327.GE1025@kernel.dk>
- <alpine.LFD.2.00.1002231937330.12278@localhost> <20100223222300.GR1025@kernel.dk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754821Ab0BWXjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 18:39:47 -0500
+Received: from www.tglx.de ([62.245.132.106]:35664 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753506Ab0BWXjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 18:39:46 -0500
+Date: Wed, 24 Feb 2010 00:39:38 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
+Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
+Message-ID: <20100223233938.GA2938@local>
+References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org>
+ <20100223150140.GA3781@suse.de>
+ <20100223194946.GA1941@local>
+ <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010, Jens Axboe wrote:
+On Tue, Feb 23, 2010 at 04:52:56PM -0600, Kumar Gala wrote:
+> 
+> On Feb 23, 2010, at 1:49 PM, Hans J. Koch wrote:
+> 
+> > On Tue, Feb 23, 2010 at 07:01:41AM -0800, Greg KH wrote:
+> >> On Tue, Feb 23, 2010 at 08:54:16AM -0600, Kumar Gala wrote:
+> >>> Hans, Greg,
+> >>> 
+> >>> We are looking at using UIO for some driver work and noticed it
+> >>> assumes the address for MMIO regions is an 'unsigned long'.  This is a
+> >>> problem for the platforms we have in which we support a 36-bit
+> >>> physical address in a 32-bit machine.
+> >>> 
+> >>> Should we just change addr/size in struct uio_mem to u64 always?
+> > 
+> > No, if I didn't miss something important, it's not feasible IMHO.
+> > 
+> >>> At
+> >>> first I was thinking phys_addr_t but realized the addr could be PHYS,
+> >>> LOGICAL, or VIRTUAL.
+> >> 
+> >> I think that would work out fine, Hans, any ideas if this would cause
+> >> any problems with existing code or not?
+> > 
+> > It won't work. This is not a UIO problem. UIO just passes addr to other
+> > system functions, and all of them use "unsigned long" for these addresses.
+> > You'd have to change the whole memory management code.
+> > 
+> > Note that members vm_start and vm_end in struct vm_area_struct are
+> > also unsigned long. Having an u64 in the UIO core doesn't help at all.
+> 
+> This already works for mmap since we pass down a PFN and not an address to remap_pfn_range.  While we can handle any physical address size we can handle one up to 44 bits on most architectures which is well beyond the 36-bit physical address case I'm dealing with on PPC.
+> 
 
-> On Tue, Feb 23 2010, Peter Osterlund wrote:
->> On Tue, 23 Feb 2010, Jens Axboe wrote:
->>
->>> On Tue, Feb 23 2010, Akinobu Mita wrote:
->>>> 2010/2/23 Jens Axboe <jens.axboe@oracle.com>:
->>>>> On Mon, Feb 22 2010, Akinobu Mita wrote:
->>>>>> Now that the bio list management stuff is generic, convert
->>>>>> generic_make_request to use bio lists instead of its own private bio
->>>>>> list implementation.
->>>>>
->>>>> Looks good, applied. Also saves 4 bytes in task_struct, not a bad thing
->>>>> :-)
->>>>
->>>> Thanks.
->>>>
->>>> How about another cleanup patch for pktcdvd?
->>>> http://lkml.org/lkml/2010/2/22/93
->>>
->>> Looks fine to me, I can pick it up if need be. Peter?
->>
->> It looks fine to me too. Please pick it up, Jens.
->
-> Certainly, I'll queue it up for 2.6.34. I'm assuming I can add your
-> acked-by?
+Sure, there are always ways to handle physical addresses up to the buswidth
+of the arch. But above the "natural" size (32 bits on 32-bit archs), it
+becomes a bit clumsy. UIO has a documented interface to userspace. The user
+is supposed to use the traditional mmap() call. mmap() returns void*, which
+is also 32 bits on 32-bit archs.
 
-Yes.
+Because of this, UIO already needs a 32-bit address. It might be possible to
+map your I/O memory from above 4G down into the 32-bit space and then use
+this address, probably not with UIO_MEM_PHYS but with UIO_MEM_VIRTUAL.
+I understand PPC (is that an E500?) has some special features for doing
+these kind of shifts in hardware. But I'm not really a PPC expert, I'll
+ask a friend of mine.
 
-Acked-by: Peter Osterlund <petero2@telia.com>
+> > Memory above the 4G border can only be accessed through himem mechanisms
+> > or be mapped to an address below that border in lowlevel arch code.
+> > 
+> > In most cases, I'd say it's bad board design to have memory-mapped hardware
+> > above the 4G border on a 32-bit machine.
+> 
+> While I might agree with you its a reality on a number of embedded processors and I know three different PowerPC based embedded families that have 36-bit physical addressing to allow for >4G of DDR and thus IO ends up being above the 4G physical boundary and we already support these in the kernel.
 
--- 
-Peter Osterlund - petero2@telia.com
-http://web.telia.com/~u89404340
+Well, UIO is (up to now) completely independent of the architecture. If you've
+got a good idea how to implement such mappings, feel free to come up with your
+suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
+enough.
+
+I'll give it some thoughts myself, and will discuss the problem with friends,
+maybe there's a nice solution. Help from your side is much appreciated.
+
+Thanks,
+Hans
+
+> 
+> - k
