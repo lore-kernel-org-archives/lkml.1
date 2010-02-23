@@ -1,151 +1,169 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709Ab0BWNhX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:37:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42368 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480Ab0BWNhV (ORCPT
+	id S1752894Ab0BWNii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:38:38 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:45897 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752264Ab0BWNig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 08:37:21 -0500
-X-Authority-Analysis: v=1.0 c=1 a=S5__Xbcpn5wA:10 a=7CQSdrXTAAAA:8 a=meVymXHHAAAA:8 a=x0avtZDc1Q6PA5id4gMA:9 a=6aMnrJfwfFCCMzBnRYcA:7 a=m48NUM4H5i0hBOrqyjFjD5um-dMA:4 a=ESTKKtUg-DoA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 09/10] ARM: ftrace: add Thumb-2 support to dynamic
- ftrace
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Rabin Vincent <rabin@rab.in>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1266090518-31120-10-git-send-email-rabin@rab.in>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in>
-	 <1266090518-31120-10-git-send-email-rabin@rab.in>
-Content-Type: text/plain
-Date: Tue, 23 Feb 2010 08:35:00 -0500
-Message-Id: <1266932100.19540.12.camel@frodo>
+	Tue, 23 Feb 2010 08:38:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=keqCjf9Y6cTK333BoeiPfvs9JdxhPBiII/JNL8qYxvxXF12qfc9AMjUygIoVm+nssY
+         JEW3ApS9T5nTWyAewQPz0dIhkP5R4Uo40WLGt7AxbdORGqFq0iIY+uMH9WYKp1iga09Q
+         lzVnNZmmbh8T+77vmUdQljcbfLTJ2NdHuglls=
+Subject: Re: [patch 1/3] vmscan: factor out page reference checks
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1266868150-25984-2-git-send-email-hannes@cmpxchg.org>
+References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org>
+	 <1266868150-25984-2-git-send-email-hannes@cmpxchg.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 22:38:23 +0900
+Message-ID: <1266932303.2723.13.camel@barrios-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-14 at 01:18 +0530, Rabin Vincent wrote:
-> Handle the different nop and call instructions for Thumb-2.  Also, we
-> need to adjust the recorded mcount_loc addresses because they have the
-> lsb set.
+Hi, Hannes. 
+
+On Mon, 2010-02-22 at 20:49 +0100, Johannes Weiner wrote:
+> Moving the big conditional into its own predicate function makes the
+> code a bit easier to read and allows for better commenting on the
+> checks one-by-one.
 > 
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> This is just cleaning up, no semantics should have been changed.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 > ---
->  arch/arm/include/asm/ftrace.h |    4 ++++
->  arch/arm/kernel/ftrace.c      |   33 +++++++++++++++++++++++++++++++++
->  scripts/recordmcount.pl       |    2 +-
->  3 files changed, 38 insertions(+), 1 deletions(-)
+>  mm/vmscan.c |   53 ++++++++++++++++++++++++++++++++++++++++-------------
+>  1 files changed, 40 insertions(+), 13 deletions(-)
 > 
-> diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
-> index 4a56a2e..0845f2d 100644
-> --- a/arch/arm/include/asm/ftrace.h
-> +++ b/arch/arm/include/asm/ftrace.h
-> @@ -18,7 +18,11 @@ struct dyn_arch_ftrace {
->  
->  static inline unsigned long ftrace_call_adjust(unsigned long addr)
->  {
-> +#ifdef CONFIG_THUMB2_KERNEL
-> +	return addr & ~1;
-
-Would it be safe to do that for all arm archs? Instead of adding a
-config option around it. Or do some arm archs need the lsb set.
-
-I'm just saying a comment here would look better than #ifdef #else.
-
-> +#else
->  	return addr;
-> +#endif
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index c26986c..c2db55b 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -579,6 +579,37 @@ redo:
+>  	put_page(page);		/* drop ref from isolate */
 >  }
 >  
->  extern void ftrace_caller_old(void);
-> diff --git a/arch/arm/kernel/ftrace.c b/arch/arm/kernel/ftrace.c
-> index f09014c..971ac8c 100644
-> --- a/arch/arm/kernel/ftrace.c
-> +++ b/arch/arm/kernel/ftrace.c
-> @@ -18,7 +18,11 @@
->  #include <asm/cacheflush.h>
->  #include <asm/ftrace.h>
->  
-> +#ifdef CONFIG_THUMB2_KERNEL
-> +#define	NOP		0xeb04f85d	/* pop.w {lr} */
-> +#else
->  #define	NOP		0xe8bd4000	/* pop {lr} */
-> +#endif
->  
->  #ifdef CONFIG_OLD_MCOUNT
->  #define OLD_MCOUNT_ADDR	((unsigned long) mcount)
-> @@ -56,6 +60,34 @@ static unsigned long adjust_address(struct dyn_ftrace *rec, unsigned long addr)
->  #endif
->  
->  /* construct a branch (BL) instruction to addr */
-> +#ifdef CONFIG_THUMB2_KERNEL
-> +static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr)
+> +enum page_references {
+> +	PAGEREF_RECLAIM,
+> +	PAGEREF_RECLAIM_CLEAN,
+> +	PAGEREF_ACTIVATE,
+> +};
+> +
+> +static enum page_references page_check_references(struct page *page,
+> +						  struct scan_control *sc)
 > +{
-> +	unsigned long s, j1, j2, i1, i2, imm10, imm11;
-> +	unsigned long first, second;
-> +	long offset;
+> +	unsigned long vm_flags;
+> +	int referenced;
 > +
-> +	offset = (long)addr - (long)(pc + 4);
-> +	if (offset < -16777216 || offset > 16777214) {
-> +		WARN_ON_ONCE(1);
-> +		return 0;
-> +	}
+> +	referenced = page_referenced(page, 1, sc->mem_cgroup, &vm_flags);
+> +	if (!referenced)
+> +		return PAGEREF_RECLAIM;
 > +
-> +	s	= (offset >> 24) & 0x1;
-> +	i1	= (offset >> 23) & 0x1;
-> +	i2	= (offset >> 22) & 0x1;
-> +	imm10	= (offset >> 12) & 0x3ff;
-> +	imm11	= (offset >>  1) & 0x7ff;
+> +	/* Lumpy reclaim - ignore references */
+> +	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
+> +		return PAGEREF_RECLAIM;
 > +
-> +	j1 = (!i1) ^ s;
-> +	j2 = (!i2) ^ s;
+> +	/* Mlock lost isolation race - let try_to_unmap() handle it */
+
+How doest try_to_unamp handle it?
+
+/* Page which PG_mlocked lost isolation race - let try_to_unmap() move
+the page to unevitable list */
+
+The point is to move the page into unevictable list in case of race. 
+Let's write down comment more clearly. 
+As it was, it was clear, I think. :)
+
+> +	if (vm_flags & VM_LOCKED)
+> +		return PAGEREF_RECLAIM;
 > +
-> +	first = 0xf000 | (s << 10) | imm10;
-> +	second = 0xd000 | (j1 << 13) | (j2 << 11) | imm11;
+> +	if (page_mapping_inuse(page))
+> +		return PAGEREF_ACTIVATE;
 > +
-> +	return (second << 16) | first;
+> +	/* Reclaim if clean, defer dirty pages to writeback */
+> +	return PAGEREF_RECLAIM_CLEAN;
 > +}
-> +#else
->  static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr)
->  {
->  	long offset;
-> @@ -73,6 +105,7 @@ static unsigned long ftrace_call_replace(unsigned long pc, unsigned long addr)
+> +
+>  /*
+>   * shrink_page_list() returns the number of reclaimed pages
+>   */
+> @@ -590,16 +621,15 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>  	struct pagevec freed_pvec;
+>  	int pgactivate = 0;
+>  	unsigned long nr_reclaimed = 0;
+> -	unsigned long vm_flags;
 >  
->  	return 0xeb000000 | offset;
->  }
-> +#endif
+>  	cond_resched();
 >  
->  static int ftrace_modify_code(unsigned long pc, unsigned long old,
->  			      unsigned long new)
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 66c1c4b..88b083b 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-
-For the recordmcount.pl change;
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
-
-> @@ -267,7 +267,7 @@ if ($arch eq "x86_64") {
->  } elsif ($arch eq "arm") {
->      $alignment = 2;
->      $section_type = '%progbits';
-> -    $mcount_regex = "^\\s*([0-9a-fA-F]+):\\s*R_ARM_(CALL|PC24)" .
-> +    $mcount_regex = "^\\s*([0-9a-fA-F]+):\\s*R_ARM_(CALL|PC24|THM_CALL)" .
->  			"\\s+(__gnu_mcount_nc|mcount)\$";
+>  	pagevec_init(&freed_pvec, 1);
+>  	while (!list_empty(page_list)) {
+> +		enum page_references references;
+>  		struct address_space *mapping;
+>  		struct page *page;
+>  		int may_enter_fs;
+> -		int referenced;
 >  
->  } elsif ($arch eq "ia64") {
+>  		cond_resched();
+>  
+> @@ -641,17 +671,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>  				goto keep_locked;
+>  		}
+>  
+> -		referenced = page_referenced(page, 1,
+> -						sc->mem_cgroup, &vm_flags);
+> -		/*
+> -		 * In active use or really unfreeable?  Activate it.
+> -		 * If page which have PG_mlocked lost isoltation race,
+> -		 * try_to_unmap moves it to unevictable list
+> -		 */
+> -		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+> -					referenced && page_mapping_inuse(page)
+> -					&& !(vm_flags & VM_LOCKED))
+> +		references = page_check_references(page, sc);
+> +		switch (references) {
+> +		case PAGEREF_ACTIVATE:
+>  			goto activate_locked;
+> +		case PAGEREF_RECLAIM:
+> +		case PAGEREF_RECLAIM_CLEAN:
+> +			; /* try to reclaim the page below */
+> +		}
+>  
+>  		/*
+>  		 * Anonymous process memory has backing store?
+> @@ -685,7 +712,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>  		}
+>  
+>  		if (PageDirty(page)) {
+> -			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
+> +			if (references == PAGEREF_RECLAIM_CLEAN)
+
+How equal PAGEREF_RECLAIM_CLEAN and sc->order <= PAGE_ALLOC_COSTLY_ORDER
+&& referenced by semantic? 
+Dirtyness test is already done above line by PageDirty. 
+So I think PAGEREF_RECLAIM_CLEAN isn't proper in there. 
+What's your intention I don't catch? 
+
+
+>  				goto keep_locked;
+>  			if (!may_enter_fs)
+>  				goto keep_locked;
+
+
+-- 
+Kind regards,
+Minchan Kim
+
 
