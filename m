@@ -1,62 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991Ab0BWBPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:15:34 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:54610 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752185Ab0BWBPc (ORCPT
+	id S1753131Ab0BWBS3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:18:29 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:35373
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752181Ab0BWBS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:15:32 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=IqEZgLjDEFqHguLkPY6kRIenSpOjyREjWBu2klNynSnoJ3SXAUiiOTdgJtXvm+WtvYzc2Bn8uJW1mQGy2bztDwp1ZDoteXOKgay19i1nM+dBdmH+SU3rtC+URcusxsKn;
-Date: Mon, 22 Feb 2010 17:13:01 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
-       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH v4 1/5] PCI: split up pci_read_bridge_bases()
-Message-ID: <20100222171301.32329c94@jbarnes-piketon>
-In-Reply-To: <20100217201952.4013.62534.stgit@bob.kio>
-References: <20100217201654.4013.70201.stgit@bob.kio>
-	<20100217201952.4013.62534.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Feb 2010 20:18:28 -0500
+X-SpamScore: -29
+X-BigFish: VPS-29(zz1432R98dN936eM9371Pab9bhzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B832CD1.3010602@am.sony.com>
+Date: Mon, 22 Feb 2010 17:18:09 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to	function_graph
+ tracer
+References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com> <20100220144302.GB5354@nowhere> <1266850663.24271.4425.camel@gandalf.stny.rr.com> <20100222181705.GF5055@nowhere>
+In-Reply-To: <20100222181705.GF5055@nowhere>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 13:19:52 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-
+On 02/22/2010 10:17 AM, Frederic Weisbecker wrote:
+> On Mon, Feb 22, 2010 at 09:57:43AM -0500, Steven Rostedt wrote:
+>> On Sat, 2010-02-20 at 15:43 +0100, Frederic Weisbecker wrote:
+>>>
+>>> Instead of having yet another check here, may be should we
+>>> have a dedicated stub trace_graph_entry?
+>>>
+>>>> @@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
+>>>>  	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
+>>>>  		return;
+>>>>
+>>>> +	if (tracing_thresh &&
+>>>> +		(trace->rettime - trace->calltime < tracing_thresh))
+>>>> +		return;
+>>>> +
+>>>
+>>>
+>>>
+>>> And perhaps we can do the same for the return handler?
+>>> We could have a trace_graph_return_threshold that
+>>> performs the above check and then relies on trace_graph_return.
+>>
+>> So you mean to register a different type of function to the graph tracer
+>> if trace_thresh is enabled? That does sound like a better idea.
 > 
-> No functional change; this breaks up pci_read_bridge_bases() into separate
-> pieces for the I/O, memory, and prefetchable memory windows, similar to how
-> Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
 > 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> ---
+> Yeah, this is going to optimize both types of tracing. And I would
+> also like to prevent from adding new checks in the common graph
+> tracing if possible. User's cpus and cachelines deserve better :)
 
-Had to drop these again, got:
+I'll take a look at doing it this way, and see what I come
+up with.  If I can re-use most of trace_graph_entry and
+trace_graph_return (and I don't see why not), it should be
+a pretty small patch.
 
-Kernel: arch/x86/boot/bzImage is ready  (#16)
-  MODPOST 2245 modules
-ERROR: "pci_bus_resource_n" [drivers/pcmcia/yenta_socket.ko] undefined!
-ERROR: "pci_bus_resource_n" [drivers/pcmcia/rsrc_nonstatic.ko] undefined!
-ERROR: "pci_bus_resource_n" [drivers/pci/hotplug/shpchp.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+ -- Tim
 
-when building.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
