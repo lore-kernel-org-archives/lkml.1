@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044Ab0BWBFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:05:23 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36562 "EHLO e3.ny.us.ibm.com"
+	id S1753304Ab0BWBGZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:06:25 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:59044 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043Ab0BWBFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:05:13 -0500
+	id S1752998Ab0BWBFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 20:05:22 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 03/21] rcu: integrate rcu_dereference_check() message into lockdep
-Date: Mon, 22 Feb 2010 17:04:47 -0800
-Message-Id: <1266887105-1528-3-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 11/21] idr: apply lockdep-based diagnostics to rcu_dereference() uses
+Date: Mon, 22 Feb 2010 17:04:55 -0800
+Message-Id: <1266887105-1528-11-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
 References: <20100223010435.GA666@linux.vnet.ibm.com>
@@ -24,70 +24,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make rcu_dereference_check() print the list of held locks in addition
-to the stack dump to ease debugging.
+Because idr can be used with any of a number of locks or with any
+flavor of RCU, just disable the lockdep-based diagnostics.  If idr
+needs diagnostics, the check expression will need to be passed into
+the relevant idr primitives as an additional argument.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/lockdep.h  |    4 ++++
- include/linux/rcupdate.h |    4 ++--
- kernel/lockdep.c         |   18 ++++++++++++++++++
- 3 files changed, 24 insertions(+), 2 deletions(-)
+ lib/idr.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 9ccf0e2..10206a8 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -534,4 +534,8 @@ do {									\
- # define might_lock_read(lock) do { } while (0)
- #endif
+diff --git a/lib/idr.c b/lib/idr.c
+index 1cac726..4877fce 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -502,7 +502,7 @@ void *idr_find(struct idr *idp, int id)
+ 	int n;
+ 	struct idr_layer *p;
  
-+#ifdef CONFIG_PROVE_RCU
-+extern void lockdep_rcu_dereference(const char *file, const int line);
-+#endif
-+
- #endif /* __LINUX_LOCKDEP_H */
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 839d296..1a4de31 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -182,8 +182,8 @@ static inline int rcu_read_lock_sched_held(void)
-  */
- #define rcu_dereference_check(p, c) \
- 	({ \
--		if (debug_locks) \
--			WARN_ON_ONCE(!(c)); \
-+		if (debug_locks && !(c)) \
-+			lockdep_rcu_dereference(__FILE__, __LINE__); \
- 		rcu_dereference_raw(p); \
- 	})
- 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 5feaddc..a44c1b2 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3809,3 +3809,21 @@ void lockdep_sys_exit(void)
- 		lockdep_print_held_locks(curr);
+-	p = rcu_dereference(idp->top);
++	p = rcu_dereference_raw(idp->top);
+ 	if (!p)
+ 		return NULL;
+ 	n = (p->layer+1) * IDR_BITS;
+@@ -517,7 +517,7 @@ void *idr_find(struct idr *idp, int id)
+ 	while (n > 0 && p) {
+ 		n -= IDR_BITS;
+ 		BUG_ON(n != p->layer*IDR_BITS);
+-		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
++		p = rcu_dereference_raw(p->ary[(id >> n) & IDR_MASK]);
  	}
+ 	return((void *)p);
  }
-+
-+void lockdep_rcu_dereference(const char *file, const int line)
-+{
-+	struct task_struct *curr = current;
-+
-+	if (!debug_locks_off())
-+		return;
-+	printk("\n==============================================\n");
-+	printk(  "[ BUG: Unsafe rcu_dereference_check() usage! ]\n");
-+	printk(  "----------------------------------------------\n");
-+	printk("%s:%d invoked rcu_dereference_check() without protection!\n",
-+			file, line);
-+	printk("\nother info that might help us debug this:\n\n");
-+	lockdep_print_held_locks(curr);
-+	printk("\nstack backtrace:\n");
-+	dump_stack();
-+}
-+EXPORT_SYMBOL_GPL(lockdep_rcu_dereference);
+@@ -550,7 +550,7 @@ int idr_for_each(struct idr *idp,
+ 	struct idr_layer **paa = &pa[0];
+ 
+ 	n = idp->layers * IDR_BITS;
+-	p = rcu_dereference(idp->top);
++	p = rcu_dereference_raw(idp->top);
+ 	max = 1 << n;
+ 
+ 	id = 0;
+@@ -558,7 +558,7 @@ int idr_for_each(struct idr *idp,
+ 		while (n > 0 && p) {
+ 			n -= IDR_BITS;
+ 			*paa++ = p;
+-			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
++			p = rcu_dereference_raw(p->ary[(id >> n) & IDR_MASK]);
+ 		}
+ 
+ 		if (p) {
 -- 
 1.6.6
 
