@@ -1,66 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996Ab0BWOdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 09:33:24 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:46507 "EHLO cmpxchg.org"
+	id S1753130Ab0BWOf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 09:35:28 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:59602 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546Ab0BWOdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 09:33:23 -0500
-Date: Tue, 23 Feb 2010 15:32:59 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] vmscan: drop page_mapping_inuse()
-Message-ID: <20100223143259.GB29762@cmpxchg.org>
-References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org> <1266868150-25984-3-git-send-email-hannes@cmpxchg.org> <1266933800.2723.24.camel@barrios-desktop>
-Mime-Version: 1.0
+	id S1752666Ab0BWOf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 09:35:26 -0500
+Date: Tue, 23 Feb 2010 06:35:21 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
+	rcu_dereference()
+Message-ID: <20100223143520.GA6700@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231359.07910.arnd@arndb.de> <20100223131543.GA19174@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1266933800.2723.24.camel@barrios-desktop>
+In-Reply-To: <20100223131543.GA19174@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Minchan,
-
-On Tue, Feb 23, 2010 at 11:03:20PM +0900, Minchan Kim wrote:
-> On Mon, 2010-02-22 at 20:49 +0100, Johannes Weiner wrote:
-> > Protecting file pages that are not by themselves mapped but are part
-> > of a mapped file is also a historic leftover for short-lived things
+On Tue, Feb 23, 2010 at 08:15:44AM -0500, Mathieu Desnoyers wrote:
+> * Arnd Bergmann (arnd@arndb.de) wrote:
+> > On Tuesday 23 February 2010, Paul E. McKenney wrote:
+> > > This patch series adds lockdep-based checking to the rcu_dereference()
+> > > primitive in order to flag misuses of RCU.
+> > 
+> > While I haven't looked much at this series, I've been thinking about
+> > adding static diagnostics for rcu_dereference misuse, in the form of
+> > an __rcu address space qualifier for pointers. Such a patch would
+> > obviously conflict with this series, so I'd wait for yours to go
+> > in first, but maybe you like the idea enough to do it yourself ;-).
+> > 
+> > The observation is that all accesses to an RCU protected pointer
+> > are either through rcu_dereference, rcu_assign_pointer or one of their
+> > variants. so it should be possible to add a new address space like we
+> > have for __iomem, __user and soon __percpu and have sparse check that
+> > we use RCU consistently on pointers that need it.
 > 
-> I have been a question in the part.
-> You seem to solve my long question. :)
-> But I want to make sure it by any log.
-> Could you tell me where I find the discussion mail thread or git log at
-> that time?
+> Just to make myself the devil's advocate: how should we consider
+> initialization of RCU pointers at boot time that happens before any
+> possible concurrent reader is allowed to run ? I think this case is an
+> example of valid RCU-pointer access that is not done through the RCU
+> primitives. It seems valid to perform these RCU-pointer accesses when
+> serialized by a different exclusion mechanism, in this case being the
+> guarantee that no concurrent reader are running at early boot. The same
+> applies to stop_machine(), and, as I come to think of it, we could
+> probably think of a scheme that dynamically switch from an RCU read-lock
+> to, e.g., a mutex for all users, wait for RCU quiescent state, and then
+> serialize all users on the mutex during the update. So while some of
+> these cases are a bit far-fetched, I think they are valid, and I wonder
+> how the address space validation would take them into account.
 
-I dug up this change in history.git, but unfortunately it was merged
-undocumented in a large changeset.  So there does not seem to be any
-written reason for why this was merged initially.    What I wrote is
-based on what Rik told me on IRC.
+And this is an excellent exposition of a few of the initialization
+issues I referred to in my earlier email!
 
-> >  	/* Reclaim if clean, defer dirty pages to writeback */
-> > @@ -1378,7 +1357,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
-> >  		}
-> >  
-> >  		/* page_referenced clears PageReferenced */
-> > -		if (page_mapping_inuse(page) &&
-> > +		if (page_mapped(page) &&
-> >  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-> >  			nr_rotated++;
-> >  			/*
-> 
-> It's good to me.
-> But page_referenced already have been checked page_mapped. 
-> How about folding alone page_mapped check into page_referenced's inner?
-
-The next patch essentially does that.  page_referenced() will no longer
-clear PG_referenced on the page and if page_referenced() is true, it
-means that young ptes were found and the page must thus be mapped.
-
-So #3 removes the page_mapped() from this conditional.
-
-	Hannes
+						Thanx, Paul
