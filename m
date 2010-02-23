@@ -1,237 +1,209 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547Ab0BWHAK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 02:00:10 -0500
-Received: from lo.gmane.org ([80.91.229.12]:33446 "EHLO lo.gmane.org"
+	id S1752498Ab0BWHBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 02:01:51 -0500
+Received: from compulab.co.il ([67.18.134.219]:38212 "EHLO compulab.co.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186Ab0BWHAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 02:00:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Thomas Loo <tloo@saltstorm.net>
-Subject: Re: Sony Ericson w995 does not local net mode
-Followup-To: gmane.linux.kernel
-Date: Tue, 23 Feb 2010 07:55:23 +0100
-Organization: Saltstorm labs.
-Message-ID: <hlvu34$dag$1@dough.gmane.org>
-References: <4B7ACB75.4070907@gmx.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@dough.gmane.org
-X-Gmane-NNTP-Posting-Host: host-90-232-223-38.mobileonline.telia.com
-User-Agent: KNode/4.4
+	id S1751254Ab0BWHBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 02:01:49 -0500
+Message-ID: <4B837D0C.3000708@compulab.co.il>
+Date: Tue, 23 Feb 2010 09:00:28 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20100106)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-i2c@vger.kernel.org, Denis Turischev <denis@compulab.co.il>,
+       Mike Rapoport <mike@compulab.co.il>
+Subject: Re: [PATCH v3 2/3] i2c: convert i2c-isch to platform_device
+References: <4B73DAEE.5080400@compulab.co.il> <4B73DBB2.7020601@compulab.co.il> <4B7C0E5D.3070909@compulab.co.il> <4B812B42.2090405@compulab.co.il>
+In-Reply-To: <4B812B42.2090405@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Sechser wrote:
+Hi Jean,
 
-> Hello guys,
+Denis Turischev wrote:
+> v2: there is no acpi_check_region, it will be implemented in mfd-core
+> v3: patch refreshed against the latest Linus tree
 > 
-> 
-> Please CC me for Questions and answers
-> 
-> 
-> I have got an w995 Sony Ericsson, but i cant make local net via usb 
-with
-> it. I uploaded a recent software version: 1215-7995 R1HA036 091216
-> 
+> Signed-off-by: Denis Turischev <denis@compulab.co.il>
 
-I have run into this aswell. The log seems to indicate its related, 
-though I have a Sony Ericsson J105i (Naite) phone. I figured out it had 
-to be explicitly whitelisted in the drivers/net/usb/cdc_ether.c module.
+Any chance this can go to 2.6.34?
 
-I proposed the following patch for the J105i 
-<http://article.gmane.org/gmane.linux.network/147442/> back in 
-december, but I don't think it was picked up. As I mentioned in the 
-patch, I think a slew of the new SE models trip on this particular 
-issue.
-
-Try replacing the USB id in the patch with the W995 one and see if it 
-makes any difference.
-
-Regards,
-Thomas Loo
-
-
+> ---
+>  drivers/i2c/busses/Kconfig    |    2 +-
+>  drivers/i2c/busses/i2c-isch.c |   68 
+> ++++++++++++++++------------------------
+>  2 files changed, 28 insertions(+), 42 deletions(-)
 > 
-> First for the usb ID guys since the ids are not yet in usbid.txt:
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index 5f318ce..d15b6d3 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -104,7 +104,7 @@ config I2C_I801
 > 
-> PC mode            (for Windows(r))
->   usb 1-4: New USB device found, idVendor=0fce, idProduct=e112
->   usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
->   usb 1-4: Product: Memory Card (MSC)
->   usb 1-4: Manufacturer: Sony Ericsson
->   usb 1-4: SerialNumber: 3582180356368990
->   usb 1-4: configuration #1 chosen from 1 choice
+>  config I2C_ISCH
+>      tristate "Intel SCH SMBus 1.0"
+> -    depends on PCI
+> +    select LPC_SCH
+>      help
+>        Say Y here if you want to use SMBus controller on the Intel SCH
+>        based systems.
+> diff --git a/drivers/i2c/busses/i2c-isch.c b/drivers/i2c/busses/i2c-isch.c
+> index dba6eb0..ddc258e 100644
+> --- a/drivers/i2c/busses/i2c-isch.c
+> +++ b/drivers/i2c/busses/i2c-isch.c
+> @@ -27,7 +27,7 @@
+>  */
 > 
+>  #include <linux/module.h>
+> -#include <linux/pci.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/kernel.h>
+>  #include <linux/delay.h>
+>  #include <linux/stddef.h>
+> @@ -46,12 +46,6 @@
+>  #define SMBHSTDAT1    (7 + sch_smba)
+>  #define SMBBLKDAT    (0x20 + sch_smba)
 > 
-> USB mem. device        (File transfer)
->   usb 1-4: New USB device found, idVendor=0fce, idProduct=2112
->   usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
->   usb 1-4: Product: Sony Ericsson W995
->   usb 1-4: Manufacturer: Sony Ericsson
->   usb 1-4: SerialNumber: 3582180356368990
->   usb 1-4: configuration #1 chosen from 5 choices
->   Initializing USB Mass Storage driver...
+> -/* count for request_region */
+> -#define SMBIOSIZE    64
+> -
+> -/* PCI Address Constants */
+> -#define SMBBA_SCH    0x40
+> -
+>  /* Other settings */
+>  #define MAX_TIMEOUT    500
 > 
-> Other OS         (E.g. Mac(tm), Linux(tm))
->   usb 1-4: New USB device found, idVendor=0fce, idProduct=d112
->   usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
->   usb 1-4: Product: Sony Ericsson W995
->   usb 1-4: Manufacturer: Sony Ericsson
->   usb 1-4: SerialNumber: 3582180356368990
->   usb 1-4: configuration #1 chosen from 1 choice
+> @@ -63,7 +57,6 @@
+>  #define SCH_BLOCK_DATA        0x05
 > 
-> MTP devices        (E.g. certain car stereos)
->   usb 1-4: New USB device found, idVendor=0fce, idProduct=0112
->   usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
->   usb 1-4: Product: W995
->   usb 1-4: Manufacturer: Sony Ericsson
->   usb 1-4: SerialNumber: 3582180356368990
->   usb 1-4: configuration #1 chosen from 1 choice
+>  static unsigned short sch_smba;
+> -static struct pci_driver sch_driver;
+>  static struct i2c_adapter sch_adapter;
 > 
+>  /*
+> @@ -256,37 +249,23 @@ static struct i2c_adapter sch_adapter = {
+>      .algo        = &smbus_algorithm,
+>  };
 > 
-> Now USB mass storage works, PC mode doesnt bother me much, but i
-> actually excepted Other OS mode to work, which it does not.
+> -static struct pci_device_id sch_ids[] = {
+> -    { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
+> -    { 0, }
+> -};
+> -
+> -MODULE_DEVICE_TABLE(pci, sch_ids);
+> -
+> -static int __devinit sch_probe(struct pci_dev *dev,
+> -                const struct pci_device_id *id)
+> +static int __devinit smbus_sch_probe(struct platform_device *dev)
+>  {
+> +    struct resource *res;
+>      int retval;
+> -    unsigned int smba;
 > 
-> following are the logs:
-> Feb  6 18:40:01 jebian2 kernel: [  247.240026] usb 1-4: new high 
-speed
-> USB device using ehci_hcd and address 6
-> Feb  6 18:40:01 jebian2 kernel: [  247.376970] usb 1-4: New USB 
-device
-> found, idVendor=0fce, idProduct=d112
-> Feb  6 18:40:01 jebian2 kernel: [  247.376977] usb 1-4: New USB 
-device
-> strings: Mfr=1, Product=2, SerialNumber=3
-> Feb  6 18:40:01 jebian2 kernel: [  247.376983] usb 1-4: Product: Sony
-> Ericsson W995
-> Feb  6 18:40:01 jebian2 kernel: [  247.376987] usb 1-4: Manufacturer:
-> Sony Ericsson
-> Feb  6 18:40:01 jebian2 kernel: [  247.376991] usb 1-4: SerialNumber:
-> 3582180356368990
-> Feb  6 18:40:01 jebian2 kernel: [  247.378726] usb 1-4: configuration 
-#1
-> chosen from 1 choice
-> Feb  6 18:40:01 jebian2 kernel: [  247.487110] cdc_wdm 1-4:1.7:
-> cdc-wdm0: USB WDM device
-> Feb  6 18:40:01 jebian2 kernel: [  247.487190] usbcore: registered 
-new
-> interface driver cdc_wdm
-> Feb  6 18:40:01 jebian2 kernel: [  247.502990] cdc_acm 1-4:1.1: 
-ttyACM0:
-> USB ACM device
-> Feb  6 18:40:01 jebian2 kernel: [  247.515010] cdc_acm 1-4:1.3: 
-ttyACM1:
-> USB ACM device
-> Feb  6 18:40:01 jebian2 kernel: [  247.531016] usbcore: registered 
-new
-> interface driver cdc_acm
-> Feb  6 18:40:01 jebian2 kernel: [  247.531024] cdc_acm: v0.26:USB
-> Abstract Control Model driver for USB modems and ISDN adapters
-> Feb  6 18:40:01 jebian2 kernel: [  247.536755] usbcore: registered 
-new
-> interface driver cdc_ether
-> Feb  6 18:40:01 jebian2 kernel: [  247.543927] usb 1-4: unsupported 
-MDLM
-> descriptors
-> Feb  6 18:40:01 jebian2 kernel: [  247.544394] usbcore: registered 
-new
-> interface driver zaurus
-> Feb  6 18:40:01 jebian2 modem-manager: (ttyACM1) opening serial 
-device...
-> Feb  6 18:40:01 jebian2 modem-manager: (ttyACM1): probe requested by
-> plugin 'Generic'
-> Feb  6 18:40:01 jebian2 modem-manager: (ttyACM0) opening serial 
-device...
-> Feb  6 18:40:01 jebian2 modem-manager: (ttyACM0): probe requested by
-> plugin 'Generic'
-> Feb  6 18:40:03 jebian2 modem-manager: (ttyACM1) closing serial 
-device...
-> Feb  6 18:40:03 jebian2 modem-manager: (Generic): GSM modem
-> /sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 claimed port ttyACM1
-> Feb  6 18:40:03 jebian2 modem-manager: Added modem
-> /sys/devices/pci0000:00/0000:00:02.1/usb1/1-4
-> Feb  6 18:40:03 jebian2 modem-manager: Exported modem
-> /sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 as
-> /org/freedesktop/ModemManager/Modems/0
-> Feb  6 18:40:03 jebian2 modem-manager: (ttyACM0) closing serial 
-device...
-> Feb  6 18:40:03 jebian2 modem-manager: (Generic): GSM modem
-> /sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 claimed port ttyACM0
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): new GSM
-> device (driver: 'cdc_acm')
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): exported 
-as
-> /org/freedesktop/NetworkManager/Devices/2
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): now 
-managed
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): device 
-state
-> change: 1 -> 2 (reason 2)
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): 
-deactivating
-> device (reason: 2).
-> Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): device 
-state
-> change: 2 -> 3 (reason 0)
+> -    pci_read_config_dword(dev, SMBBA_SCH, &smba);
+> -    if (!(smba & (1 << 31))) {
+> -        dev_err(&dev->dev, "SMBus I/O space disabled!\n");
+> -        return -ENODEV;
+> -    }
+> +    res = platform_get_resource(dev, IORESOURCE_IO, 0);
+> +    if (!res)
+> +        return -EBUSY;
 > 
+> -    sch_smba = (unsigned short)smba;
+> -    if (sch_smba == 0) {
+> -        dev_err(&dev->dev, "SMBus base address uninitialized!\n");
+> -        return -ENODEV;
+> -    }
+> -    if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
+> -        return -ENODEV;
+> -    if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
+> +    if (!request_region(res->start, resource_size(res), dev->name)) {
+>          dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
+>              sch_smba);
+>          return -EBUSY;
+>      }
+> +
+> +    sch_smba = res->start;
+> +
+>      dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
 > 
-> when removing the device
-> Feb  6 18:40:33 jebian2 kernel: [  279.107138] usb 1-4: USB 
-disconnect,
-> address 6
-> Feb  6 18:40:33 jebian2 kernel: [  279.116777] ehci_hcd 0000:00:02.1:
-> dma_pool_free buffer-2048, ffff880052624000/52624000 (bad dma)
-> Feb  6 18:40:33 jebian2 modem-manager: Removed modem
-> /sys/devices/pci0000:00/0000:00:02.1/usb1/1-4
-> Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): now 
-unmanaged
-> Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): device 
-state
-> change: 3 -> 1 (reason 36)
-> Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): cleaning 
-up...
-> Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): taking 
-down
-> device.
+>      /* set up the sysfs linkage to our parent device */
+> @@ -298,37 +277,43 @@ static int __devinit sch_probe(struct pci_dev *dev,
+>      retval = i2c_add_adapter(&sch_adapter);
+>      if (retval) {
+>          dev_err(&dev->dev, "Couldn't register adapter!\n");
+> -        release_region(sch_smba, SMBIOSIZE);
+> +        release_region(res->start, resource_size(res));
+>          sch_smba = 0;
+>      }
 > 
+>      return retval;
+>  }
 > 
-> dmesg orig:
-> [  247.240026] usb 1-4: new high speed USB device using ehci_hcd and
-> address 6
-> [  247.376970] usb 1-4: New USB device found, idVendor=0fce,
-> [  idProduct=d112 247.376977] usb 1-4: New USB device strings: Mfr=1,
-> [  Product=2,
-> SerialNumber=3
-> [  247.376983] usb 1-4: Product: Sony Ericsson W995
-> [  247.376987] usb 1-4: Manufacturer: Sony Ericsson
-> [  247.376991] usb 1-4: SerialNumber: 3582180356368990
-> [  247.378726] usb 1-4: configuration #1 chosen from 1 choice
-> [  247.487110] cdc_wdm 1-4:1.7: cdc-wdm0: USB WDM device
-> [  247.487190] usbcore: registered new interface driver cdc_wdm
-> [  247.502990] cdc_acm 1-4:1.1: ttyACM0: USB ACM device
-> [  247.515010] cdc_acm 1-4:1.3: ttyACM1: USB ACM device
-> [  247.531016] usbcore: registered new interface driver cdc_acm
-> [  247.531024] cdc_acm: v0.26:USB Abstract Control Model driver for 
-USB
-> modems and ISDN adapters
-> [  247.536755] usbcore: registered new interface driver cdc_ether
-> [  247.543927] usb 1-4: unsupported MDLM descriptors
-> [  247.544394] usbcore: registered new interface driver zaurus
-> [  279.107138] usb 1-4: USB disconnect, address 6
-> [  279.116777] ehci_hcd 0000:00:02.1: dma_pool_free buffer-2048,
-> ffff880052624000/52624000 (bad dma)
+> -static void __devexit sch_remove(struct pci_dev *dev)
+> +static int __devexit smbus_sch_remove(struct platform_device *pdev)
+>  {
+> +    struct resource *res;
+>      if (sch_smba) {
+>          i2c_del_adapter(&sch_adapter);
+> -        release_region(sch_smba, SMBIOSIZE);
+> +        res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> +        release_region(res->start, resource_size(res));
+>          sch_smba = 0;
+>      }
+> +
+> +    return 0;
+>  }
 > 
+> -static struct pci_driver sch_driver = {
+> -    .name        = "isch_smbus",
+> -    .id_table    = sch_ids,
+> -    .probe        = sch_probe,
+> -    .remove        = __devexit_p(sch_remove),
+> +static struct platform_driver smbus_sch_driver = {
+> +    .driver = {
+> +        .name = "isch_smbus",
+> +        .owner = THIS_MODULE,
+> +    },
+> +    .probe        = smbus_sch_probe,
+> +    .remove        = __devexit_p(smbus_sch_remove),
+>  };
 > 
+>  static int __init i2c_sch_init(void)
+>  {
+> -    return pci_register_driver(&sch_driver);
+> +    return platform_driver_register(&smbus_sch_driver);
+>  }
 > 
-> I guess you know better whats wrong than me.
+>  static void __exit i2c_sch_exit(void)
+>  {
+> -    pci_unregister_driver(&sch_driver);
+> +    platform_driver_unregister(&smbus_sch_driver);
+>  }
 > 
+>  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
+> @@ -337,3 +322,4 @@ MODULE_LICENSE("GPL");
 > 
-> cheers
-> 
-> jan
+>  module_init(i2c_sch_init);
+>  module_exit(i2c_sch_exit);
+> +MODULE_ALIAS("platform:isch_smbus");
 
 
+-- 
+Sincerely yours,
+Mike.
