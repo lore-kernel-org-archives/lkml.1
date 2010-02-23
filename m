@@ -1,75 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131Ab0BWBS3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:18:29 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:35373
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752181Ab0BWBS2 (ORCPT
+	id S1752604Ab0BWBXK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:23:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54579 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766Ab0BWBXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:18:28 -0500
-X-SpamScore: -29
-X-BigFish: VPS-29(zz1432R98dN936eM9371Pab9bhzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B832CD1.3010602@am.sony.com>
-Date: Mon, 22 Feb 2010 17:18:09 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>,
+	Mon, 22 Feb 2010 20:23:08 -0500
+X-Authority-Analysis: v=1.0 c=1 a=Lp5yzKHX74QA:10 a=7U3hwN5JcxgA:10 a=UO6_2agIeW3gB2uerpcA:9 a=lt8AlqPWMU-DmfIFhpEA:7 a=PjUNpQEZ0w4T_lgFln4omLqtwLAA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
+ function_graph tracer
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
        linux kernel <linux-kernel@vger.kernel.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to	function_graph
- tracer
-References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com> <20100220144302.GB5354@nowhere> <1266850663.24271.4425.camel@gandalf.stny.rr.com> <20100222181705.GF5055@nowhere>
-In-Reply-To: <20100222181705.GF5055@nowhere>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <4B832CD1.3010602@am.sony.com>
+References: <4B733721.3030503@am.sony.com> <4B7338BF.1070505@am.sony.com>
+	 <20100220144302.GB5354@nowhere>
+	 <1266850663.24271.4425.camel@gandalf.stny.rr.com>
+	 <20100222181705.GF5055@nowhere>  <4B832CD1.3010602@am.sony.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 22 Feb 2010 20:23:05 -0500
+Message-ID: <1266888185.24271.5055.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22/2010 10:17 AM, Frederic Weisbecker wrote:
-> On Mon, Feb 22, 2010 at 09:57:43AM -0500, Steven Rostedt wrote:
->> On Sat, 2010-02-20 at 15:43 +0100, Frederic Weisbecker wrote:
->>>
->>> Instead of having yet another check here, may be should we
->>> have a dedicated stub trace_graph_entry?
->>>
->>>> @@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
->>>>  	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
->>>>  		return;
->>>>
->>>> +	if (tracing_thresh &&
->>>> +		(trace->rettime - trace->calltime < tracing_thresh))
->>>> +		return;
->>>> +
->>>
->>>
->>>
->>> And perhaps we can do the same for the return handler?
->>> We could have a trace_graph_return_threshold that
->>> performs the above check and then relies on trace_graph_return.
->>
->> So you mean to register a different type of function to the graph tracer
->> if trace_thresh is enabled? That does sound like a better idea.
+On Mon, 2010-02-22 at 17:18 -0800, Tim Bird wrote:
+
+> > Yeah, this is going to optimize both types of tracing. And I would
+> > also like to prevent from adding new checks in the common graph
+> > tracing if possible. User's cpus and cachelines deserve better :)
 > 
-> 
-> Yeah, this is going to optimize both types of tracing. And I would
-> also like to prevent from adding new checks in the common graph
-> tracing if possible. User's cpus and cachelines deserve better :)
+> I'll take a look at doing it this way, and see what I come
+> up with.  If I can re-use most of trace_graph_entry and
+> trace_graph_return (and I don't see why not), it should be
+> a pretty small patch.
 
-I'll take a look at doing it this way, and see what I come
-up with.  If I can re-use most of trace_graph_entry and
-trace_graph_return (and I don't see why not), it should be
-a pretty small patch.
+Yeah, I did something similar with the function pid tracing. When you
+select that the function tracer should test pids, it registers the
+function that does the pid test, and then if the pid matches, it calls
+the original function tracer callback.
 
- -- Tim
+-- Steve
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
 
