@@ -1,46 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127Ab0BWUuP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 15:50:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53323 "EHLO mx1.redhat.com"
+	id S1754177Ab0BWUxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 15:53:51 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33200 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752420Ab0BWUuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 15:50:13 -0500
+	id S1753264Ab0BWUxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 15:53:50 -0500
+Message-ID: <4B843F66.6030000@zytor.com>
+Date: Tue, 23 Feb 2010 12:49:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Roland McGrath <roland@redhat.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
+       linux-tip-commits@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: linux-next requirements (Was: Re: [tip:x86/ptrace] ptrace: Add
+ support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>	<20100222090710.GA31357@elte.hu>	<20100222203319.8bd497a2.sfr@canb.auug.org.au>	<20100222102745.GJ20844@elte.hu>	<20100222224752.0cbd5807.sfr@canb.auug.org.au>	<4B830BD8.3090600@zytor.com>	<20100223105959.a50dbe11.sfr@canb.auug.org.au> <20100223202030.44DED64C@magilla.sf.frob.com>
+In-Reply-To: <20100223202030.44DED64C@magilla.sf.frob.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH -tip v3 5/9] perf probe: Use elfutils-libdw for analyzing
-	debuginfo
-In-Reply-To: Masami Hiramatsu's message of  Monday, 22 February 2010 21:08:53 -0500 <20100223020852.26668.93415.stgit@localhost6.localdomain6>
-References: <20100223020818.26668.79685.stgit@localhost6.localdomain6>
-	<20100223020852.26668.93415.stgit@localhost6.localdomain6>
-Emacs: a Lisp interpreter masquerading as ... a Lisp interpreter!
-Message-Id: <20100223204933.F0A9164C@magilla.sf.frob.com>
-Date: Tue, 23 Feb 2010 12:49:33 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	BASIC_CFLAGS += -I/usr/include/elfutils
+On 02/23/2010 12:20 PM, Roland McGrath wrote:
+>> Are there any downsides to Roland's patch as far as PARISC is concerned
+>> (apart from the loss of some functionality, of course)?
+> 
+> Kyle ACK'd my parisc patch, and my impression is he wants it to go in
+> and does not plan to work on the necessary arch support imminently.
+> 
+> I think the only visible effect of turning off HAVE_ARCH_TRACEHOOK
+> on parisc will be that /proc/pid/syscall is not available.
 
-The normal method is to use:
+Added to tip:x86/ptrace.
 
-	#include <elfutils/libdw.h>
+	-hpa
 
-Note that <dwarf.h> and <libelf.h> are not in the subdirectory.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-
-Thanks,
-Roland
