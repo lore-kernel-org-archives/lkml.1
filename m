@@ -1,48 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966Ab0BWUJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 15:09:38 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:52727 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252Ab0BWUJh (ORCPT
+	id S1754089Ab0BWUMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 15:12:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40938 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752948Ab0BWUMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 15:09:37 -0500
-Date: Tue, 23 Feb 2010 12:09:35 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: netdev@vger.kernel.org
-Subject: Peer unexpectedly shrunk window
-Message-ID: <alpine.DEB.2.01.1002231154290.28195@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19Y5f5mtPYvYGFw/1fXHTtHaH8yjk7Ck83yk/S
- BLG5+xvjk6ReMJEeNRur3H5bX1lD8XUUPUWF6qeTlf9mgEio8w
- 8fNYJK9P9+/FWBll2+cVg==
+	Tue, 23 Feb 2010 15:12:50 -0500
+Subject: Re: [ANNOUNCE] 2.6.31.12-rt21
+From: Peter Zijlstra <peterz@infradead.org>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <1266951675.2507.49.camel@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+	 <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	 <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+	 <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+	 <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+	 <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+	 <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+	 <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain>
+	 <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain>
+	 <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain>
+	 <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>
+	 <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>
+	 <1266951675.2507.49.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 21:12:13 +0100
+Message-ID: <1266955933.11845.763.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-02-23 at 11:01 -0800, Fernando Lopez-Lezcano wrote:
+> On Thu, 2010-02-18 at 17:54 +0100, Thomas Gleixner wrote:
+> > We are pleased to announce the next update to our new preempt-rt
+> > series.
+> > 
+> >      - fixes and cherry-picks all over the place
+> > 
+> >      - tracer fixes from Carsten 
+> 
+> Seeing this here, otherwise seems fine:
+> 
+> BUG: sleeping function called from invalid context at
+> arch/x86/mm/highmem_32.c:9
+> in_atomic(): 1, irqs_disabled(): 0, pid: 1984, name: Xorg
+> Pid: 1984, comm: Xorg Not tainted
+> 2.6.31.12-1.rt21.1.fc11.ccrma.i686.rtPAE #1
+> Call Trace:
+>  [<c0431852>] __might_sleep+0xc6/0xcb
+>  [<c042b494>] kmap+0x47/0x5a
+>  [<f8049ca7>] i915_gem_pwrite_ioctl+0x3ea/0x631 [i915]
+>  [<f7f61721>] drm_ioctl+0x208/0x2a9 [drm]
+>  [<f80498bd>] ? i915_gem_pwrite_ioctl+0x0/0x631 [i915]
+>  [<c0589d80>] ? inode_has_perm+0x69/0x84
+>  [<c07a31ff>] ? rt_mutex_lock+0x28/0x2b
+>  [<c046a7f3>] ? rt_down+0x1a/0x1d
+>  [<c04e6581>] vfs_ioctl+0x5c/0x76
+>  [<c04e6ae9>] do_vfs_ioctl+0x4a0/0x4de
+>  [<c058a00f>] ? selinux_file_ioctl+0x43/0x46
+>  [<c04e6b6d>] sys_ioctl+0x46/0x66
+>  [<c04090d3>] sysenter_do_call+0x12/0x28
 
-OK, the "Treason uncloaked" messages have been reworded[0][1] to now say 
-"Peer [...] unexpectedly shrunk window", but the messages continue to 
-appear. On a small Tor node (~100KB/s, ~200 connections) I'm getting ~2000 
-or so messages per month in my kernel log (and on the console).
+io_mapping_map_atomic_wc() still appears to use the actual kmap_atomic
+stuff, and we seem to miss an kmap_prot_pfn() function to fill that gap
+with, I'll try and implement that tomorrow.
 
-I see that it's logged with KERN_DEBUG, is there anyway to suppress 
-those, i.e. some magic tcp specific bootparameter? Or is setting 
-loglevel=6 the only way to supress them? But that's a global option :-\
-
-Since the messages always say "repaired", why log them at all? If we can't 
-do something about the remote side, I fail to see the point of these 
-messages or what one is supposed to do to "fix" them.
-
-Thanks for your insights,
-Christian.
-
-[0] http://lkml.org/lkml/2008/12/18/454
-[1] http://kerneltrap.org/mailarchive/linux-netdev/2009/4/19/5518144
--- 
-BOFH excuse #399:
-
-We are a 100% Microsoft Shop.
