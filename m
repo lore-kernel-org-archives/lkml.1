@@ -1,62 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070Ab0BWRRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:17:33 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:49165 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077Ab0BWRRc (ORCPT
+	id S1753314Ab0BWRYZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:24:25 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:47253 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478Ab0BWRYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:17:32 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to rcu_dereference()
-Date: Tue, 23 Feb 2010 18:15:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231654.09724.arnd@arndb.de> <20100223161602.GD6700@linux.vnet.ibm.com>
-In-Reply-To: <20100223161602.GD6700@linux.vnet.ibm.com>
+	Tue, 23 Feb 2010 12:24:22 -0500
+Subject: [PATCH v5 1/5] PCI: split up pci_read_bridge_bases()
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Date: Tue, 23 Feb 2010 10:24:21 -0700
+Message-ID: <20100223172420.17242.34859.stgit@bob.kio>
+In-Reply-To: <20100223172355.17242.55927.stgit@bob.kio>
+References: <20100223172355.17242.55927.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002231816.00117.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+VaHijxdXBAVtmCmbtOktgxuvddqu0QJUXFNW
- 5CasZ7N4M1Nnl9sB3VEPEcfX9hhzUBsaP4+ULwM8zOy3EDP2sN
- CtXPxWIwuU/1HMqIHMWnQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> We would also need something for initialization of structure fields.
-> Does __force work in that case as well?
 
-Yes, it will just need some syntactical sugar to avoid placing __force
-in device drivers.
+No functional change; this breaks up pci_read_bridge_bases() into separate
+pieces for the I/O, memory, and prefetchable memory windows, similar to how
+Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
 
-> > If there are cases where it does not work, we need to come up with
-> > names for new primitives that just do the assignment or dereference
-> > with __force but no actual synchronization.
-> 
-> Some data structures are shared by RCU and non-RCU code, with struct
-> list_head being the most prominent example.  Making the "next" pointer
-> as __rcu might be OK, but there are a -lot- of non-RCU uses of struct
-> list_head.  Would we really want to introduce rcu_dereference() to all
-> non-RCU list-traversal primitives, or do we need to do something else?
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
 
-I've just started an experimental implementation and got stuck at list rcu.
-The two to deal with it that I can see are
-- ignore list-rcu for now, and make all include/linux/rculist.h __force the
-  problem to be ignored.
-- introduce a new struct rcu_list_head that needs to be used for list rcu.
+ drivers/pci/probe.c |   54 +++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 39 insertions(+), 15 deletions(-)
 
-A nicer option might be if sparse would let you write
-'struct list_head __rcu head' and interpret that as having the pointers
-inside it annotated as __rcu.
 
-	Arnd
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index d300943..4b47b4b 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -281,26 +281,12 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
+ 	}
+ }
+ 
+-void __devinit pci_read_bridge_bases(struct pci_bus *child)
++static void __devinit pci_read_bridge_io(struct pci_bus *child)
+ {
+ 	struct pci_dev *dev = child->self;
+ 	u8 io_base_lo, io_limit_lo;
+-	u16 mem_base_lo, mem_limit_lo;
+ 	unsigned long base, limit;
+ 	struct resource *res;
+-	int i;
+-
+-	if (pci_is_root_bus(child))	/* It's a host bus, nothing to read */
+-		return;
+-
+-	dev_info(&dev->dev, "PCI bridge to [bus %02x-%02x]%s\n",
+-		 child->secondary, child->subordinate,
+-		 dev->transparent ? " (subtractive decode)": "");
+-
+-	if (dev->transparent) {
+-		for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
+-			child->resource[i] = child->parent->resource[i - 3];
+-	}
+ 
+ 	res = child->resource[0];
+ 	pci_read_config_byte(dev, PCI_IO_BASE, &io_base_lo);
+@@ -328,6 +314,14 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			 "  bridge window [io  %04lx - %04lx] reg reading\n",
+ 				 base, limit);
+ 	}
++}
++
++static void __devinit pci_read_bridge_mmio(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	u16 mem_base_lo, mem_limit_lo;
++	unsigned long base, limit;
++	struct resource *res;
+ 
+ 	res = child->resource[1];
+ 	pci_read_config_word(dev, PCI_MEMORY_BASE, &mem_base_lo);
+@@ -344,6 +338,14 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			"  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
+ 					 base, limit + 0xfffff);
+ 	}
++}
++
++static void __devinit pci_read_bridge_mmio_pref(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	u16 mem_base_lo, mem_limit_lo;
++	unsigned long base, limit;
++	struct resource *res;
+ 
+ 	res = child->resource[2];
+ 	pci_read_config_word(dev, PCI_PREF_MEMORY_BASE, &mem_base_lo);
+@@ -389,6 +391,28 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 	}
+ }
+ 
++void __devinit pci_read_bridge_bases(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	int i;
++
++	if (pci_is_root_bus(child))	/* It's a host bus, nothing to read */
++		return;
++
++	dev_info(&dev->dev, "PCI bridge to [bus %02x-%02x]%s\n",
++		 child->secondary, child->subordinate,
++		 dev->transparent ? " (subtractive decode)" : "");
++
++	if (dev->transparent) {
++		for (i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
++			child->resource[i] = child->parent->resource[i - 3];
++	}
++
++	pci_read_bridge_io(child);
++	pci_read_bridge_mmio(child);
++	pci_read_bridge_mmio_pref(child);
++}
++
+ static struct pci_bus * pci_alloc_bus(void)
+ {
+ 	struct pci_bus *b;
+
