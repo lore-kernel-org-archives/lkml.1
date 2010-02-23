@@ -1,31 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524Ab0BWAYO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 19:24:14 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:55537 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751422Ab0BWAYM (ORCPT
+	id S1752592Ab0BWA01 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 19:26:27 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:54525 "HELO
+	outboundproxy6.bluehost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1752221Ab0BWA0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 19:24:12 -0500
+	Mon, 22 Feb 2010 19:26:25 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=jT54TTEgoCsc6SEYqsNForTK0skxOcKy0u9CT3KskMRFKqPvHVMV+PFkd+WXdh+61/+sWRgm0GzVffbsKxbYBN1Vs0e6t3mQ6GOh0DbjJ8JSUk5jYUKpb7JgeVwfNOaG;
-Date: Mon, 22 Feb 2010 16:21:42 -0800
+	b=nY1AVKQrjY6YuPMlAceespxQJUjIRj72NYi+de2kHpkkEiRXi0Qu1/9kdn1A5yfFFKC5Kfz0n3qWw3YqTR6m6UAe/zAjDL17kg8VzAsezMLSh7dfI//8w8yTWzZHB59W;
+Date: Mon, 22 Feb 2010 16:23:56 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH 1/8] PCI PM: Add function for checking PME status of
- devices
-Message-ID: <20100222162142.06095230@jbarnes-piketon>
-In-Reply-To: <201002172336.58766.rjw@sisk.pl>
-References: <201002172335.47703.rjw@sisk.pl>
-	<201002172336.58766.rjw@sisk.pl>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH v4 1/5] PCI: split up pci_read_bridge_bases()
+Message-ID: <20100222162356.2e4b3a19@jbarnes-piketon>
+In-Reply-To: <20100217201952.4013.62534.stgit@bob.kio>
+References: <20100217201654.4013.70201.stgit@bob.kio>
+	<20100217201952.4013.62534.stgit@bob.kio>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,21 +35,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 23:36:58 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Wed, 17 Feb 2010 13:19:52 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Add function pci_check_pme_status() that will check the PME status
-> bit of given device and clear it along with the PME enable bit.  It
-> will be necessary for PCI run-time power management.
+> No functional change; this breaks up pci_read_bridge_bases() into separate
+> pieces for the I/O, memory, and prefetchable memory windows, similar to how
+> Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
 > 
-> Based on a patch from Shaohua Li <shaohua.li@intel.com>
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 > ---
 
-Applied this series and dropped the old patches, thanks Rafael.
+Applied this series, thanks Bjorn.  Hopefully this one will
+successfully run the linux-next gauntlet too. :)
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
