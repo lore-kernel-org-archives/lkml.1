@@ -1,111 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752264Ab0BWBEV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:04:21 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36314 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115Ab0BWBET (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 20:04:19 -0500
-Date: Mon, 22 Feb 2010 19:04:13 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: john.johansen@canonical.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Fix __d_path for lazy unmounts
-Message-ID: <20100223010413.GA31046@us.ibm.com>
-References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
- <20100222161714.de1a7fca.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100222161714.de1a7fca.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752716Ab0BWBFQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:05:16 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:47421 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751974Ab0BWBFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Feb 2010 20:05:13 -0500
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 04/21] rcu: disable lockdep checking in RCU list-traversal primitives
+Date: Mon, 22 Feb 2010 17:04:48 -0800
+Message-Id: <1266887105-1528-4-git-send-email-paulmck@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
+References: <20100223010435.GA666@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Sat, 20 Feb 2010 04:27:38 -0800 john.johansen@canonical.com wrote:
-> 
-> > From: John Johansen <john.johansen@canonical.com>
-> > 
-> > When __d_path() hits a lazily unmounted mount point, it tries to prepend
-> > the name of the lazily unmounted dentry to the path name.  It gets this wrong,
-> > and also overwrites the slash that separates the name from the following
-> > pathname component. This patch fixes that; if a process was in directory
-> > /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
-> > missing slash), while the new result with this patch is ``/foo/bar''.
-> > 
-> > Signed-off-by: John Johansen <john.johansen@canonical.com>
-> > ---
-> >  fs/dcache.c |   27 +++++++++++++++++++++++----
-> >  1 files changed, 23 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/fs/dcache.c b/fs/dcache.c
-> > index 953173a..df49666 100644
-> > --- a/fs/dcache.c
-> > +++ b/fs/dcache.c
-> > @@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
-> >  	retval = end-1;
-> >  	*retval = '/';
-> >  
-> > -	for (;;) {
-> > +	while(dentry != root->dentry || vfsmnt != root->mnt) {
-> 
-> Please put a space between the `while' and the `('.
-> 
-> >  		struct dentry * parent;
-> >  
-> > -		if (dentry == root->dentry && vfsmnt == root->mnt)
-> > -			break;
-> >  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
-> >  			/* Global root? */
-> >  			if (vfsmnt->mnt_parent == vfsmnt) {
-> > @@ -1950,9 +1948,30 @@ out:
-> >  	return retval;
-> >  
-> >  global_root:
-> > -	retval += 1;	/* hit the slash */
-> > +	/*
-> > +	 * We went past the (vfsmount, dentry) we were looking for and have
-> > +	 * either hit a root dentry, a lazily unmounted dentry, an
-> > +	 * unconnected dentry, or the file is on a pseudo filesystem.
-> > +	 */
-> > +	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
-> > +	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
-> 
-> Did you really mean to assign 1 to dentry->d_name.len here?  Was `=='
-> intended?  I hope so, because modifying the dentry in d_path() would be odd.
-> 
-> If this was a mistake then why did the patch pass testing?
+The theory is that use of bare rcu_dereference() is more prone to error
+than use of the RCU list-traversal primitives.  Therefore, disable lockdep
+RCU read-side critical-section checking in these primitives for the time
+being.  Once all of the rcu_dereference() uses have been dealt with, it
+may be time to re-enable lockdep checking for the RCU list-traversal
+primitives.
 
-Jinkeys!  Well I guess it must've passed testing bc that will only be
-done for MS_NOUSER filesystems, and we won't later be doing any 'ls'
-so the d_name.len isn't really used?
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ include/linux/rculist.h       |   14 +++++++-------
+ include/linux/rculist_nulls.h |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-> > +		/*
-> > +		 * Historically, we also glue together the root dentry and
-> > +		 * remaining name for pseudo filesystems like pipefs, which
-> > +		 * have the MS_NOUSER flag set. This results in pathnames
-> > +		 * like "pipe:[439336]".
-> > +		 */
-> > +		retval += 1;	/* overwrite the slash */
-> > +		buflen++;
-> > +	}
-> >  	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
-> >  		goto Elong;
-> > +
-> > +	/* connect lazily unmounted mount point */
-> > +	if (*retval != '/' && !(dentry->d_sb->s_flags & MS_NOUSER) &&
-> > +	    prepend(&retval, &buflen, "/", 1) != 0)
-> > +		goto Elong;
-> > +
-> >  	root->mnt = vfsmnt;
-> >  	root->dentry = dentry;
-> >  	goto out;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index 1bf0f70..779d707 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+  */
+ #define list_entry_rcu(ptr, type, member) \
+-	container_of(rcu_dereference(ptr), type, member)
++	container_of(rcu_dereference_raw(ptr), type, member)
+ 
+ /**
+  * list_first_entry_rcu - get the first element from a list
+@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	list_entry_rcu((ptr)->next, type, member)
+ 
+ #define __list_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference((head)->next); \
++	for (pos = rcu_dereference_raw((head)->next); \
+ 		pos != (head); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = rcu_dereference((pos)->next); \
++	for ((pos) = rcu_dereference_raw((pos)->next); \
+ 		prefetch((pos)->next), (pos) != (head); \
+-		(pos) = rcu_dereference((pos)->next))
++		(pos) = rcu_dereference_raw((pos)->next))
+ 
+ /**
+  * list_for_each_entry_continue_rcu - continue iteration over list of given type
+@@ -418,10 +418,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		pos && ({ prefetch(pos->next); 1; }) &&			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif	/* __KERNEL__ */
+ #endif
+diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
+index 589a409..b70ffe5 100644
+--- a/include/linux/rculist_nulls.h
++++ b/include/linux/rculist_nulls.h
+@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+  *
+  */
+ #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		(!is_a_nulls(pos)) &&			\
+ 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif
+ #endif
+-- 
+1.6.6
+
