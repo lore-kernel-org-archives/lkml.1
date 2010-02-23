@@ -1,95 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751592Ab0BWFx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 00:53:56 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:33149 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750979Ab0BWFxy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 00:53:54 -0500
-Date: Tue, 23 Feb 2010 16:53:35 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
-       stable@kernel.org, gregkh@suse.de
-Subject: Re: [PATCH] writeback: Fix broken sync writeback
-Message-ID: <20100223055335.GE22370@discord.disaster>
-References: <20100216230017.GJ3153@quack.suse.cz> <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain> <20100217013336.GK3153@quack.suse.cz> <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain> <20100217043009.GZ5337@thunk.org> <alpine.LFD.2.00.1002162052230.4141@localhost.localdomain> <20100222172938.GA2601@quack.suse.cz> <20100222210112.GE23832@thunk.org> <20100223025350.GC22370@discord.disaster> <20100223032317.GG23832@thunk.org>
+	id S1751660Ab0BWGDJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 01:03:09 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:35132 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751552Ab0BWGDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 01:03:05 -0500
+Date: Tue, 23 Feb 2010 06:02:49 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: [git pull] drm staging driver fixes.
+Message-ID: <alpine.DEB.2.00.1002230600460.29129@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100223032317.GG23832@thunk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 10:23:17PM -0500, tytso@mit.edu wrote:
-> On Tue, Feb 23, 2010 at 01:53:50PM +1100, Dave Chinner wrote:
-> > 
-> > Ignoring nr_to_write completely can lead to issues like we used to
-> > have with XFS - it would write an entire extent (8GB) at a time and
-> > starve all other writeback. Those starvation problems - which were
-> > very obvious on NFS servers - went away when we trimmed back the
-> > amount to write in a single pass to saner amounts...
-> 
-> How do you determine what a "sane amount" is?  Is it something that is
-> determined dynamically, or is it a hard-coded or manually tuned value?
 
-"sane amount" was a hard coded mapping look-ahead value that limited
-the size of the allocation that was done. It got set to 64 pages,
-back in 2.6.16 (IIRC) so that we'd do at least a 256k allocation
-on x86 or 1MB on ia64 (which had 16k page size at the time).
-It was previously unbound, which is why XFS was mapping entire
-extents...
-
-Hence ->writepage() on XFS will write 64 pages at a time if there
-are contiguous pages in the page cache, and then go back up to
-write_cache_pages() for the loop to either terminate due to
-nr_to_write <= 0 or call ->writepage on the next dirty page not
-under writeback on the inode.
-
-This behaviour pretty much defines the _minimum IO size_ we'd issue
-if there are contiguous dirty pages in the page cache. It was (and
-still is) primarily to work around the deficiencies of the random
-single page writeback that the VM's memory reclaim algorithms are so
-fond of (another of my pet peeves)....
-
-> > As to a generic solution, why do you think I've been advocating
-> > separate per-sb data sync and inode writeback methods that separate
-> > data writeback from inode writeback for so long? ;)
-> 
-> Heh.
-> 
-> > > This is done to avoid a lock inversion, and so this is an
-> > > ext4-specific thing (at least I don't think XFS's delayed allocation
-> > > has this misfeature).
-> > 
-> > Not that I know of, but then again I don't know what inversion ext4
-> > is trying to avoid. Can you describe the inversion, Ted?
-> 
-> The locking order is journal_start_handle (starting a micro
-> transaction in jbd) -> lock_page.  A more detailed description of why
-> this locking order is non-trivial for us to fix in ext4 can be found
-> in the description of commit f0e6c985.
-
-Nasty - you need to start a transaction before you lock pages for
-writeback and allocation, but ->writepage hands you a locked page.
-And you can't use an existing transaction handle open because you
-can't guarantee that you have journal credits reserved for the
-allocation?  IIUC, ext3/4 has this problem due to the ordered data
-writeback constraints, right?
-
-Regardless of the reason for the ext4 behaviour, you are right about
-XFS - it doesn't have this particular problem with delalloc because
-it does have any transaction/page lock ordering constraints in the
-transaction subsystem.
-
-Cheers,
+Just nouveau/vmwgfx changes, the nouveau ones fix nouveau to work
+on a range of IGP chipsets, mostly seen as ION or in Apple laptops,
+Without these changes there is a chance of memory corruption on the low 
+pages since the GPU tables are setup different to every other nvidia in
+history.
 
 Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
+The following changes since commit 635f1a31292087a2e99568bf4451c10ee287adaa:
+  Dave Airlie (1):
+        drm/radeon: bump the UMS driver version number to indicate rv740 fix
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+
+Ben Skeggs (5):
+      drm/nv50: make nv50_mem_vm_{bind,unbind} operate only on vram
+      drm/nv50: more efficient clearing of gpu page table entries
+      drm/nv50: improve vram page table construction
+      drm/nv50: fix instmem binding on IGPs to point at stolen system memory
+      drm/nv50: fix vram ptes on IGPs to point at stolen system memory
+
+Dave Airlie (1):
+      Merge remote branch 'nouveau/for-airlied' of ../drm-nouveau-next into drm-linus
+
+Francisco Jerez (1):
+      drm/nouveau: Fix up pre-nv17 analog load detection.
+
+Thomas Hellstrom (1):
+      drm/vmwgfx: Fix queries if no dma buffer thrashing is occuring.
+
+ drivers/gpu/drm/nouveau/nouveau_drv.h   |    1 +
+ drivers/gpu/drm/nouveau/nouveau_mem.c   |  113 ++++++++++++++++++++-----------
+ drivers/gpu/drm/nouveau/nv04_dac.c      |    6 ++-
+ drivers/gpu/drm/nouveau/nv50_instmem.c  |   58 +++++++++++-----
+ drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c |  108 +++++++++++++++++++++++++-----
+ 5 files changed, 210 insertions(+), 76 deletions(-)
