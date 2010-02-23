@@ -1,110 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751606Ab0BWIxu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 03:53:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49883 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750801Ab0BWIxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 03:53:48 -0500
-Message-ID: <4B839749.2060608@kernel.org>
-Date: Tue, 23 Feb 2010 00:52:25 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1751710Ab0BWIzN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 03:55:13 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:51606 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863Ab0BWIzL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 03:55:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=txD1WLy3mirFH7VWOYPm4XTHcFq2T6rFkU8lT5txfutFG2wJWnsVMzRLETf3K3v9I
+	b2N9YBs1kHQfFM5nXSGnQ==
+Date: Tue, 23 Feb 2010 00:55:04 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Miao Xie <miaox@cn.fujitsu.com>
+cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time
+ (58568d2)
+In-Reply-To: <4B838490.1050908@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002230046160.12015@chino.kir.corp.google.com>
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <4B827043.3060305@cn.fujitsu.com>
+ <alpine.DEB.2.00.1002221339160.14426@chino.kir.corp.google.com> <4B838490.1050908@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: build warning after merge of the tip tree
-References: <20100223160129.f3819f35.sfr@canb.auug.org.au>
-In-Reply-To: <20100223160129.f3819f35.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22/2010 09:01 PM, Stephen Rothwell wrote:
-> Hi all,
+On Tue, 23 Feb 2010, Miao Xie wrote:
+
+> >>  /*
+> >> @@ -1391,11 +1393,10 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+> >>  
+> >>  	if (cs == &top_cpuset) {
+> >>  		cpumask_copy(cpus_attach, cpu_possible_mask);
+> >> -		to = node_possible_map;
+> >>  	} else {
+> >>  		guarantee_online_cpus(cs, cpus_attach);
+> >> -		guarantee_online_mems(cs, &to);
+> >>  	}
+> >> +	guarantee_online_mems(cs, &to);
+> >>  
+> >>  	/* do per-task migration stuff possibly for each in the threadgroup */
+> >>  	cpuset_attach_task(tsk, &to, cs);
+> > 
+> > Do we need to set cpus_attach to cpu_possible_mask?  Why won't 
+> > cpu_active_mask suffice?
 > 
-> After merging the tip tree, today's linux-next build (powerpc
-> ppc64_defconfig) produced these warnings:
-> 
-> mm/sparse.c: In function 'sparse_init':
-> mm/sparse.c:488: warning: unused variable 'map_count'
-> mm/sparse.c:484: warning: unused variable 'size2'
-> mm/sparse.c:481: warning: unused variable 'map_map'
-> mm/sparse.c: At top level:
-> mm/sparse.c:442: warning: 'sparse_early_mem_maps_alloc_node' defined but not used
-> 
-> Introduced by commit 9bdac914240759457175ac0d6529a37d2820bc4d
-> ("sparsemem: Put mem map for one node together").
+> If we set cpus_attach to cpu_possible_mask, we needn't do anything for tasks in the top_cpuset when
+> doing cpu hotplug. If not, we will update cpus_allowed of all tasks in the top_cpuset.
 > 
 
-please check
+Cpu hotplug sets top_cpuset's cpus_allowed to cpu_active_mask by default, 
+regardless of what was onlined or offlined.  cpus_attach in the context of 
+your patch (in cpuset_attach()) passes cpu_possible_mask to 
+set_cpus_allowed_ptr() if the task is being attached to top_cpuset, my 
+question was why don't we pass cpu_active_mask instead?  In other words, I 
+think we should do
 
+	cpumask_copy(cpus_attach, cpu_active_mask);
 
-[PATCH] sparsemem: fix compiling with ppc
-
-Stephen reported:
-build (powerpc
-ppc64_defconfig) produced these warnings:
-
-mm/sparse.c: In function 'sparse_init':
-mm/sparse.c:488: warning: unused variable 'map_count'
-mm/sparse.c:484: warning: unused variable 'size2'
-mm/sparse.c:481: warning: unused variable 'map_map'
-mm/sparse.c: At top level:
-mm/sparse.c:442: warning: 'sparse_early_mem_maps_alloc_node' defined but not used
-
-Introduced by commit 9bdac914240759457175ac0d6529a37d2820bc4d
-("sparsemem: Put mem map for one node together").
-
-use macro to fix them
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 9b6b93a..22896d5 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -439,6 +439,7 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
- }
- #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
- 
-+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
- static void __init sparse_early_mem_maps_alloc_node(struct page **map_map,
- 				 unsigned long pnum_begin,
- 				 unsigned long pnum_end,
-@@ -447,8 +448,7 @@ static void __init sparse_early_mem_maps_alloc_node(struct page **map_map,
- 	sparse_mem_maps_populate_node(map_map, pnum_begin, pnum_end,
- 					 map_count, nodeid);
- }
--
--#ifndef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-+#else
- static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- {
- 	struct page *map;
-@@ -478,14 +478,17 @@ void __init sparse_init(void)
- {
- 	unsigned long pnum;
- 	struct page *map;
--	struct page **map_map;
- 	unsigned long *usemap;
- 	unsigned long **usemap_map;
--	int size, size2;
-+	int size;
- 	int nodeid_begin = 0;
- 	unsigned long pnum_begin = 0;
- 	unsigned long usemap_count;
-+#ifdef CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
- 	unsigned long map_count;
-+	int size2;
-+	struct page **map_map;
-+#endif
- 
- 	/*
- 	 * map is using big page (aka 2M in x86 64 bit)
+when attached to top_cpuset like my patch did.
