@@ -1,205 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751606Ab0BWJRP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 04:17:15 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:47036 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909Ab0BWJRM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 04:17:12 -0500
-Message-ID: <4B839D0D.203@canonical.com>
-Date: Tue, 23 Feb 2010 01:17:01 -0800
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: john.johansen@canonical.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [AppArmor #4 0/12] AppArmor security module
-References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com> <201002230831.o1N8V3Iv071911@www262.sakura.ne.jp>
-In-Reply-To: <201002230831.o1N8V3Iv071911@www262.sakura.ne.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
+	id S1751821Ab0BWJSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 04:18:25 -0500
+Received: from lo.gmane.org ([80.91.229.12]:34969 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751171Ab0BWJSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 04:18:22 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jesper Krogh <jesper@krogh.cc>
+Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
+Date: Tue, 23 Feb 2010 10:17:58 +0100
+Message-ID: <4B839D46.5080300@krogh.cc>
+References: <4B4F5A00.4060604@atmos.washington.edu> <20100122150325.6ad12428.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@dough.gmane.org
+Cc: linux-nfs@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: 2605ds1-ynoe.0.fullrate.dk
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+In-Reply-To: <20100122150325.6ad12428.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> Regarding audit.c
-> 
->  53 static int aa_audit_base(int type, struct aa_profile *profile,
->  54                          struct aa_audit *sa, struct audit_context *audit_cxt,
->  55                          void (*cb) (struct audit_buffer *, struct aa_audit *))
-> (...snipped...)
->  93                 pid_t pid = task->real_parent->pid;
-> I think you need to protect this dereference with RCU
-> (see SYSCALL_DEFINE0(getppid)).
-> 
-yep
+Andrew Morton wrote:
+> (cc linux-nfs)
 
-> 
-> 
-> 
-> 
-> Regarding domain.c
-> 
->  54 static int aa_may_change_ptraced_domain(struct task_struct *task,
->  55                                         struct aa_profile *to_profile)
-> (...snipped...)
->  71         /* not ptraced */
->  72         if (!tracer || unconfined(tracerp))
->  73                 goto out;
-> unconfined() does not accept NULL.
-> What guarantees that tracer's profile != NULL?
-> 
-every context needs to have a valid profile now.  That change happened when
-AppArmor made the switch to creds, but internally the change wasn't originally rolled into all the code so NULL was used in a lot of places
-for the unconfined profile.  That should be finally cleaned up in this
-submission.
+I seem to get this one this morning on a 2.6.32.8 kernel. 
 
-> 
-> 
-> 
-> 
-> 197 static const char *separate_fqname(const char *fqname, const char **ns_name)(...snipped...)
-> 201         if (fqname[0] == ':') {
-> 202                 *ns_name = fqname + 1;          /* skip : */
-> 203                 name = *ns_name + strlen(*ns_name) + 1;
-> 204                 if (!*name)
-> This will go beyond \0 if fqname was ":" . Is fqname checked somewhere else?
-> 205                         name = NULL;
-> 
-yes. unpack_trans_table in policy_unpack.c verifies the transition table
-strings.  But thanks for asking because its check isn't quite right.
+Feb 23 06:14:04 hest kernel: [752226.892620] ------------[ cut here ]------------
+Feb 23 06:14:14 hest kernel: [752226.892638] WARNING: at lib/kref.c:43 kref_get+0x20/0x30()
+Feb 23 06:14:14 hest kernel: [752226.892641] Hardware name: Sun Fire X4600 M2
+Feb 23 06:14:24 hest kernel: [752226.892642] Modules linked in: ipmi_msghandler nfsd exportfs autofs4 nfs lockd auth_rpcgss sunrpc iptable_filter ip_tables x_tables ext4 jbd2 crc16 ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc lp parport loop ipv6 ixgbe mdio psmouse serio_raw i2c_nforce2 pcspkr shpchp k8temp pci_hotplug i2c_core button processor evdev joydev ext3 jbd mbcache sr_mod usb_storage usb_libusual usbhid hid sg sd_mod ide_cd_mod cdrom ata_generic libata ehci_hcd ohci_hcd mptsas mptscsih mptbase qla2xxx scsi_transport_sas scsi_transport_fc e1000 scsi_mod amd74xx usbcore dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan thermal_sys fuse
+Feb 23 06:14:40 hest kernel: [752226.892694] Pid: 6785, comm: nfsd Not tainted 2.6.32.8 #3
+Feb 23 06:14:40 hest kernel: [752226.892697] Call Trace:
+Feb 23 06:14:40 hest kernel: [752226.892702]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
+Feb 23 06:14:40 hest kernel: [752226.892704]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
+Feb 23 06:14:40 hest kernel: [752226.892710]  [<ffffffff810455e5>] ? warn_slowpath_common+0x85/0xb0
+Feb 23 06:14:40 hest kernel: [752226.892712]  [<ffffffff81199d80>] ? kref_get+0x20/0x30
+Feb 23 06:14:40 hest kernel: [752226.892740]  [<ffffffffa047be34>] ? svc_recv+0x2c4/0x8d0 [sunrpc]
+Feb 23 06:14:40 hest kernel: [752226.892746]  [<ffffffff8103b470>] ? default_wake_function+0x0/0x10
+Feb 23 06:14:40 hest kernel: [752226.892752]  [<ffffffff812eaf92>] ? __down_read+0x12/0xad
+Feb 23 06:14:40 hest kernel: [752226.892767]  [<ffffffffa05457e0>] ? nfsd+0x0/0x140 [nfsd]
+Feb 23 06:14:40 hest kernel: [752226.892772]  [<ffffffffa0545870>] ? nfsd+0x90/0x140 [nfsd]
+Feb 23 06:14:40 hest kernel: [752226.892776]  [<ffffffff81060626>] ? kthread+0x96/0xa0
+Feb 23 06:14:40 hest kernel: [752226.892780]  [<ffffffff8100cc5a>] ? child_rip+0xa/0x20
+Feb 23 06:14:40 hest kernel: [752226.892785]  [<ffffffff81025230>] ? physflat_send_IPI_mask+0x0/0x10
+Feb 23 06:14:40 hest kernel: [752226.892787]  [<ffffffff81060590>] ? kthread+0x0/0xa0
+Feb 23 06:14:40 hest kernel: [752226.892789]  [<ffffffff8100cc50>] ? child_rip+0x0/0x20
+Feb 23 06:14:40 hest kernel: [752226.892792] ---[ end trace 439f632f874b545a ]---
 
-> 
-> 
-> 
-> 
-> 229 static struct aa_profile *x_to_profile(struct aa_profile *profile,
-> 230                                        const char *name, u16 xindex)
-> (...snipped...)
-> 297 out:
-> This label seems unused.
-> 298         /* released by caller */
-> 299         return new_profile;
-> 
-well it is used by
-	case AA_X_NAME:
-		if (xindex & AA_X_CHILD)
-			/* released by caller */
-			new_profile = aa_find_attach(ns,
-						     &profile->base.profiles,
-						     name);
-		else
-			/* released by caller */
-			new_profile = aa_find_attach(ns, &ns->base.profiles,
-						     name);
-
-		goto out;
-
-but that goto could be replaced by a return
-
-> 
-> 
-> 
-> 
-> 308 int apparmor_bprm_set_creds(struct linux_binprm *bprm)
-> (...snipped...)
-> 336         profile = aa_newest_version(cxt->profile);
-> profile == NULL if cxt->profile == NULL.
-> What guarantees that cxt->profile != NULL?
-> 
-Well every cxt is supposed to point to a valid profile and fn's should fail
-if they violate this.  That being said there really should be some BUG_ONs
-in the code for this, just like there is for the cxt.
-
-> 
-> 
-> 
-> 
-> 534 int aa_change_hat(const char *hats[], int count, u64 token, bool permtest)
-> (...snipped...)
-> 565                 /* find first matching hat */
-> 566                 for (i = 0; i < count && !hat; i++)
-> 567                         /* released below */
-> 568                         hat = aa_find_child(root, hats[i]);
-> 569                 if (!hat) {
-> 570                         if (!COMPLAIN_MODE(root) || permtest) {
-> 571                                 sa.base.info = "hat not found";
-> 572                                 if (list_empty(&root->base.profiles))
-> 573                                         sa.base.error = -ECHILD;
-> 574                                 else
-> 575                                         sa.base.error = -ENOENT;
-> 576                                 goto out;
-> 577                         }
-> 578                         /* freed below */
-> 579                         name = new_compound_name(root->base.hname, hats[0]);
-> Is this hats[0] and not hats[i - 1]?
-> 
-Yep, I know it seems strange and deserves a comment.  This is an artifact
-of what userspace is expecting as logging output.  The traditional
-behavior of learning mode is the first hat request to fail cause switching
-into a learning profile and the failure is logged.  If the requests succeeds
-then the transition is made.  At this point all requests have failed so
-we log the first as expected.
-
-There is a planned improvement here where we log more information but this
-is sufficient for the moment.
-
-> 
-> You have a lot of
-> 
->    sa.base.info = ...;
->    sa.base.error = -E...;
-> 
-> Passing sa.base to functions might simplify the code.
-> 
-Hrmm, yeah I have played around with this some and haven't hit on the right
-combination yet.
-
-> 
-> 
-> 
-> 
-> Regarding file.c
-> 
->  61 static void file_audit_cb(struct audit_buffer *ab, struct aa_audit *va)
->  62 {
->  63         struct aa_audit_file *sa = container_of(va, struct aa_audit_file, base);
->  64         u16 denied = sa->request & ~sa->perms.allowed;
->  65         uid_t fsuid;
->  66 
->  67         if (sa->base.task)
->  68                 fsuid = task_uid(sa->base.task);
-> Is task_struct pointed by sa->base.task guaranteed to exist until now?
-> 
-well yes but only because sa->base.task isn't used :),
+Prior to that I have a few messages like this in the log:
+Feb 23 06:10:40 hest kernel: [752026.605489] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
+Feb 23 06:10:40 hest kernel: [752026.605772] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
+Feb 23 06:10:40 hest kernel: [752026.605809] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
+Feb 23 06:10:40 hest kernel: [752026.605844] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
+Feb 23 06:10:40 hest kernel: [752026.605932] rpc-srv/tcp: nfsd: got error -32 when sending 1048708 bytes - shutting down socket
 
 
-> 
-> 
-> 
-> 
-> Regarding lsm.c
-> 
-> 135 static int apparmor_capable(struct task_struct *task, const struct cred *cred,
-> 136                             int cap, int audit)
-> 137 {
-> 138         struct aa_profile *profile;
-> 139         /* cap_capable returns 0 on success, else -EPERM */
-> 140         int error = cap_capable(task, cred, cap, audit);
-> 141 
-> 142         profile = aa_cred_profile(cred);
-> aa_cred_profile() returns NULL but unconfined() and aa_capable() don't accept
-> profile == NULL case.
-> 143         if (!error  && !unconfined(profile))
-> 144                 error = aa_capable(task, profile, cap, audit);
-> 
-> For me, it is difficult to check "whether parameter may be NULL or not"
-> "whether function may return NULL or not".
-> Adding "Maybe NULL." / "Never NULL." to function parameter's comment line and
-> "May return NULL" / "Never returns NULL" for function's return value would be
-> helpful.
-okay, will do
+And afterwards this pops up:
+
+Feb 23 06:14:40 hest kernel: [752226.893163] PGD efdfaf067 PUD efdf5e067 PMD 0 
+Feb 23 06:14:58 hest kernel: [752226.893163] CPU 10 
+Feb 23 06:14:58 hest kernel: [752226.893163] Modules linked in: ipmi_msghandler nfsd exportfs autofs4 nfs lockd auth_rpcgss sunrpc iptable_filter ip_tables x_tables ext4 jbd2 crc16 ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc lp parport loop ipv6 ixgbe mdio psmouse serio_raw i2c_nforce2 pcspkr shpchp k8temp pci_hotplug i2c_core button processor evdev joydev ext3 jbd mbcache sr_mod usb_storage usb_libusual usbhid hid sg sd_mod ide_cd_mod cdrom ata_generic libata ehci_hcd ohci_hcd mptsas mptscsih mptbase qla2xxx scsi_transport_sas scsi_transport_fc e1000 scsi_mod amd74xx usbcore dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan thermal_sys fuse
+Feb 23 06:14:58 hest kernel: [752226.893163] Pid: 6785, comm: nfsd Tainted: G        W  2.6.32.8 #3 Sun Fire X4600 M2
+Feb 23 06:14:58 hest kernel: [752226.893163] RIP: 0010:[<ffffffffa047af9a>]  [<ffffffffa047af9a>] svc_xprt_free+0x1a/0x60 [sunrpc]
+Feb 23 06:14:58 hest kernel: [752226.893163] RSP: 0018:ffff8804fdfa1e00  EFLAGS: 00010202
+Feb 23 06:14:58 hest kernel: [752226.893163] RAX: 0000000000000000 RBX: ffff881df5945800 RCX: 000000000001ffff
+Feb 23 06:14:58 hest kernel: [752226.893163] RDX: 0000000000000000 RSI: ffffffffa047af80 RDI: ffff881df5945810
+Feb 23 06:14:58 hest kernel: [752226.893163] RBP: ffffffffa047af80 R08: 00000000ffffffff R09: 0000000000000000
+Feb 23 06:14:58 hest kernel: [752226.893163] R10: 0000000000000000 R11: 0000000000000000 R12: ffff881ff419c000
+Feb 23 06:14:58 hest kernel: [752226.893163] R13: ffff881df5945800 R14: 0000000000000001 R15: 0000000000000102
+Feb 23 06:14:58 hest kernel: [752226.893163] FS:  00007f018d8786e0(0000) GS:ffff88170ac00000(0000) knlGS:00000000f75aa6b0
+Feb 23 06:14:58 hest kernel: [752226.893163] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Feb 23 06:14:58 hest kernel: [752226.893163] CR2: 0000000000000008 CR3: 0000000efdf11000 CR4: 00000000000006e0
+Feb 23 06:14:58 hest kernel: [752226.893163] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Feb 23 06:14:58 hest kernel: [752226.893163] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Feb 23 06:14:58 hest kernel: [752226.893163] Process nfsd (pid: 6785, threadinfo ffff8804fdfa0000, task ffff8804fcbb54e0)
+Feb 23 06:14:58 hest kernel: [752226.893163]  ffff881df5945800 ffff881df5945810 ffffffffa047af80 ffffffff81199d23
+Feb 23 06:14:58 hest kernel: [752226.893163] <0> 0000000000000000 0000000000000000 00000000fffffff5 ffffffffa047be9c
+Feb 23 06:14:58 hest kernel: [752226.893163] <0> 00000000000dbba0 ffff881ffdff7900 ffff881ffdcca300 00000102d8dd7018
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa047af80>] ? svc_xprt_free+0x0/0x60 [sunrpc]
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81199d23>] ? kref_put+0x33/0x70
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa047be9c>] ? svc_recv+0x32c/0x8d0 [sunrpc]
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8103b470>] ? default_wake_function+0x0/0x10
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff812eaf92>] ? __down_read+0x12/0xad
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa05457e0>] ? nfsd+0x0/0x140 [nfsd]
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffffa0545870>] ? nfsd+0x90/0x140 [nfsd]
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81060626>] ? kthread+0x96/0xa0
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8100cc5a>] ? child_rip+0xa/0x20
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81025230>] ? physflat_send_IPI_mask+0x0/0x10
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff81060590>] ? kthread+0x0/0xa0
+Feb 23 06:14:58 hest kernel: [752226.893163]  [<ffffffff8100cc50>] ? child_rip+0x0/0x20
+Feb 23 06:14:58 hest kernel: [752226.893163]  RSP <ffff8804fdfa1e00>
+Feb 23 06:14:58 hest kernel: [752230.770846] ---[ end trace 439f632f874b545b ]---
+
+dmidecode output: http://shrek.krogh.cc/~jesper/dmidecode.txt
+
+It is a Sun X4600 with 8 x dual-core Opterons CPU's and 128GB of memory, running as NFS server 
+with a mixture of ext3 and ext4 filesystems attached. 
+
+-- 
+Jesper
+
+
+
