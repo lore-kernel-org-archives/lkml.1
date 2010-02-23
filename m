@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355Ab0BWBGu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 20:06:50 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33323 "EHLO e4.ny.us.ibm.com"
+	id S1753480Ab0BWBHK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 20:07:10 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:43217 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903Ab0BWBFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752873Ab0BWBFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Feb 2010 20:05:18 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 17/21] rcu: stop overflowing signed integers
-Date: Mon, 22 Feb 2010 17:05:01 -0800
-Message-Id: <1266887105-1528-17-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 13/21] rcu: documentation update for CONFIG_PROVE_RCU
+Date: Mon, 22 Feb 2010 17:04:57 -0800
+Message-Id: <1266887105-1528-13-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
 References: <20100223010435.GA666@linux.vnet.ibm.com>
@@ -24,201 +24,230 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The C standard does not specify the result of an operation that overflows
-a signed integer, so such operations need to be avoided.  This patch
-changes the type of several fields from "long" to "unsigned long" and
-adjusts operations as needed.  ULONG_CMP_GE() and ULONG_CMP_LT() macros
-are introduced to do the modular comparisons that are appropriate given
-that overflow is an expected event.
+Adds a lockdep.txt file and updates checklist.txt and whatisRCU.txt
+to reflect the new lockdep-enabled capabilities of RCU.
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c       |   11 +++++------
- kernel/rcutree.h       |   33 ++++++++++++++++++---------------
- kernel/rcutree_trace.c |   14 +++++++-------
- 3 files changed, 30 insertions(+), 28 deletions(-)
+ Documentation/RCU/00-INDEX      |    2 +
+ Documentation/RCU/checklist.txt |   34 +++++++++++--------
+ Documentation/RCU/lockdep.txt   |   67 +++++++++++++++++++++++++++++++++++++++
+ Documentation/RCU/whatisRCU.txt |   13 +++++---
+ 4 files changed, 97 insertions(+), 19 deletions(-)
+ create mode 100644 Documentation/RCU/lockdep.txt
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 29d88c0..dd0d31d 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -500,7 +500,7 @@ static void print_cpu_stall(struct rcu_state *rsp)
- 	trigger_all_cpu_backtrace();
- 
- 	spin_lock_irqsave(&rnp->lock, flags);
--	if ((long)(jiffies - rsp->jiffies_stall) >= 0)
-+	if (ULONG_CMP_GE(jiffies, rsp->jiffies_stall))
- 		rsp->jiffies_stall =
- 			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
- 	spin_unlock_irqrestore(&rnp->lock, flags);
-@@ -1216,8 +1216,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		rsp->n_force_qs_lh++; /* Inexact, can lose counts.  Tough! */
- 		return;	/* Someone else is already on the job. */
- 	}
--	if (relaxed &&
--	    (long)(rsp->jiffies_force_qs - jiffies) >= 0)
-+	if (relaxed && ULONG_CMP_GE(rsp->jiffies_force_qs, jiffies))
- 		goto unlock_fqs_ret; /* no emergency and done recently. */
- 	rsp->n_force_qs++;
- 	spin_lock(&rnp->lock);  /* irqs already disabled */
-@@ -1295,7 +1294,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
- 	 * If an RCU GP has gone long enough, go check for dyntick
- 	 * idle CPUs and, if needed, send resched IPIs.
- 	 */
--	if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
-+	if (ULONG_CMP_LT(ACCESS_ONCE(rsp->jiffies_force_qs), jiffies))
- 		force_quiescent_state(rsp, 1);
- 
- 	/*
-@@ -1392,7 +1391,7 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
- 			force_quiescent_state(rsp, 0);
- 		rdp->n_force_qs_snap = rsp->n_force_qs;
- 		rdp->qlen_last_fqs_check = rdp->qlen;
--	} else if ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)
-+	} else if (ULONG_CMP_LT(ACCESS_ONCE(rsp->jiffies_force_qs), jiffies))
- 		force_quiescent_state(rsp, 1);
- 	local_irq_restore(flags);
- }
-@@ -1525,7 +1524,7 @@ static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
- 
- 	/* Has an RCU GP gone long enough to send resched IPIs &c? */
- 	if (rcu_gp_in_progress(rsp) &&
--	    ((long)(ACCESS_ONCE(rsp->jiffies_force_qs) - jiffies) < 0)) {
-+	    ULONG_CMP_LT(ACCESS_ONCE(rsp->jiffies_force_qs), jiffies)) {
- 		rdp->n_rp_need_fqs++;
- 		return 1;
- 	}
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index d9d032a..7495fed 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -92,10 +92,10 @@ struct rcu_dynticks {
- struct rcu_node {
- 	spinlock_t lock;	/* Root rcu_node's lock protects some */
- 				/*  rcu_state fields as well as following. */
--	long	gpnum;		/* Current grace period for this node. */
-+	unsigned long gpnum;	/* Current grace period for this node. */
- 				/*  This will either be equal to or one */
- 				/*  behind the root rcu_node's gpnum. */
--	long	completed;	/* Last grace period completed for this node. */
-+	unsigned long completed; /* Last GP completed for this node. */
- 				/*  This will either be equal to or one */
- 				/*  behind the root rcu_node's gpnum. */
- 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
-@@ -161,11 +161,11 @@ struct rcu_node {
- /* Per-CPU data for read-copy update. */
- struct rcu_data {
- 	/* 1) quiescent-state and grace-period handling : */
--	long		completed;	/* Track rsp->completed gp number */
-+	unsigned long	completed;	/* Track rsp->completed gp number */
- 					/*  in order to detect GP end. */
--	long		gpnum;		/* Highest gp number that this CPU */
-+	unsigned long	gpnum;		/* Highest gp number that this CPU */
- 					/*  is aware of having started. */
--	long		passed_quiesc_completed;
-+	unsigned long	passed_quiesc_completed;
- 					/* Value of completed at time of qs. */
- 	bool		passed_quiesc;	/* User-mode/idle loop etc. */
- 	bool		qs_pending;	/* Core waits for quiesc state. */
-@@ -221,14 +221,14 @@ struct rcu_data {
- 	unsigned long resched_ipi;	/* Sent a resched IPI. */
- 
- 	/* 5) __rcu_pending() statistics. */
--	long n_rcu_pending;		/* rcu_pending() calls since boot. */
--	long n_rp_qs_pending;
--	long n_rp_cb_ready;
--	long n_rp_cpu_needs_gp;
--	long n_rp_gp_completed;
--	long n_rp_gp_started;
--	long n_rp_need_fqs;
--	long n_rp_need_nothing;
-+	unsigned long n_rcu_pending;	/* rcu_pending() calls since boot. */
-+	unsigned long n_rp_qs_pending;
-+	unsigned long n_rp_cb_ready;
-+	unsigned long n_rp_cpu_needs_gp;
-+	unsigned long n_rp_gp_completed;
-+	unsigned long n_rp_gp_started;
-+	unsigned long n_rp_need_fqs;
-+	unsigned long n_rp_need_nothing;
- 
- 	int cpu;
- };
-@@ -255,6 +255,9 @@ struct rcu_data {
- 
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
- 
-+#define ULONG_CMP_GE(a, b)	(ULONG_MAX / 2 >= (a) - (b))
-+#define ULONG_CMP_LT(a, b)	(ULONG_MAX / 2 < (a) - (b))
+diff --git a/Documentation/RCU/00-INDEX b/Documentation/RCU/00-INDEX
+index 0a27ea9..71b6f50 100644
+--- a/Documentation/RCU/00-INDEX
++++ b/Documentation/RCU/00-INDEX
+@@ -6,6 +6,8 @@ checklist.txt
+ 	- Review Checklist for RCU Patches
+ listRCU.txt
+ 	- Using RCU to Protect Read-Mostly Linked Lists
++lockdep.txt
++	- RCU and lockdep checking
+ NMI-RCU.txt
+ 	- Using RCU to Protect Dynamic NMI Handlers
+ rcubarrier.txt
+diff --git a/Documentation/RCU/checklist.txt b/Documentation/RCU/checklist.txt
+index 767cf06..cbc180f 100644
+--- a/Documentation/RCU/checklist.txt
++++ b/Documentation/RCU/checklist.txt
+@@ -127,10 +127,14 @@ over a rather long period of time, but improvements are always welcome!
+ 		perfectly legal (if redundant) for update-side code to
+ 		use rcu_dereference() and the "_rcu()" list-traversal
+ 		primitives.  This is particularly useful in code that
+-		is common to readers and updaters.  However, neither
+-		rcu_dereference() nor the "_rcu()" list-traversal
+-		primitives can substitute for a good concurrency design
+-		coordinating among multiple updaters.
++		is common to readers and updaters.  However, lockdep
++		will complain if you access rcu_dereference() outside
++		of an RCU read-side critical section.  See lockdep.txt
++		to learn what to do about this.
 +
- /*
-  * RCU global state, including node hierarchy.  This hierarchy is
-  * represented in "heap" form in a dense array.  The root (first level)
-@@ -283,8 +286,8 @@ struct rcu_state {
- 						/*  period because */
- 						/*  force_quiescent_state() */
- 						/*  was running. */
--	long	gpnum;				/* Current gp number. */
--	long	completed;			/* # of last completed gp. */
-+	unsigned long gpnum;			/* Current gp number. */
-+	unsigned long completed;		/* # of last completed gp. */
++		Of course, neither rcu_dereference() nor the "_rcu()"
++		list-traversal primitives can substitute for a good
++		concurrency design coordinating among multiple updaters.
  
- 	/* End of fields guarded by root rcu_node's lock. */
+ 	b.	If the list macros are being used, the list_add_tail_rcu()
+ 		and list_add_rcu() primitives must be used in order
+@@ -249,7 +253,9 @@ over a rather long period of time, but improvements are always welcome!
+ 	must be protected by appropriate update-side locks.  RCU
+ 	read-side critical sections are delimited by rcu_read_lock()
+ 	and rcu_read_unlock(), or by similar primitives such as
+-	rcu_read_lock_bh() and rcu_read_unlock_bh().
++	rcu_read_lock_bh() and rcu_read_unlock_bh(), in which case
++	the matching rcu_dereference() primitive must be used in order
++	to keep lockdep happy, in this case, rcu_dereference_bh().
  
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index 9d2c884..d45db2e 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -50,7 +50,7 @@ static void print_one_rcu_data(struct seq_file *m, struct rcu_data *rdp)
- {
- 	if (!rdp->beenonline)
- 		return;
--	seq_printf(m, "%3d%cc=%ld g=%ld pq=%d pqc=%ld qp=%d",
-+	seq_printf(m, "%3d%cc=%lu g=%lu pq=%d pqc=%lu qp=%d",
- 		   rdp->cpu,
- 		   cpu_is_offline(rdp->cpu) ? '!' : ' ',
- 		   rdp->completed, rdp->gpnum,
-@@ -105,7 +105,7 @@ static void print_one_rcu_data_csv(struct seq_file *m, struct rcu_data *rdp)
- {
- 	if (!rdp->beenonline)
- 		return;
--	seq_printf(m, "%d,%s,%ld,%ld,%d,%ld,%d",
-+	seq_printf(m, "%d,%s,%lu,%lu,%d,%lu,%d",
- 		   rdp->cpu,
- 		   cpu_is_offline(rdp->cpu) ? "\"N\"" : "\"Y\"",
- 		   rdp->completed, rdp->gpnum,
-@@ -155,13 +155,13 @@ static const struct file_operations rcudata_csv_fops = {
+ 	The reason that it is permissible to use RCU list-traversal
+ 	primitives when the update-side lock is held is that doing so
+@@ -302,15 +308,15 @@ over a rather long period of time, but improvements are always welcome!
+ 	not the case, a self-spawning RCU callback would prevent the
+ 	victim CPU from ever going offline.)
  
- static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- {
--	long gpnum;
-+	unsigned long gpnum;
- 	int level = 0;
- 	int phase;
- 	struct rcu_node *rnp;
+-14.	SRCU (srcu_read_lock(), srcu_read_unlock(), synchronize_srcu(),
+-	and synchronize_srcu_expedited()) may only be invoked from
+-	process context.  Unlike other forms of RCU, it -is- permissible
+-	to block in an SRCU read-side critical section (demarked by
+-	srcu_read_lock() and srcu_read_unlock()), hence the "SRCU":
+-	"sleepable RCU".  Please note that if you don't need to sleep
+-	in read-side critical sections, you should be using RCU rather
+-	than SRCU, because RCU is almost always faster and easier to
+-	use than is SRCU.
++14.	SRCU (srcu_read_lock(), srcu_read_unlock(), srcu_dereference(),
++	synchronize_srcu(), and synchronize_srcu_expedited()) may only
++	be invoked from process context.  Unlike other forms of RCU, it
++	-is- permissible to block in an SRCU read-side critical section
++	(demarked by srcu_read_lock() and srcu_read_unlock()), hence the
++	"SRCU": "sleepable RCU".  Please note that if you don't need
++	to sleep in read-side critical sections, you should be using
++	RCU rather than SRCU, because RCU is almost always faster and
++	easier to use than is SRCU.
  
- 	gpnum = rsp->gpnum;
--	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
-+	seq_printf(m, "c=%lu g=%lu s=%d jfq=%ld j=%x "
- 		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
- 		   rsp->completed, gpnum, rsp->signaled,
- 		   (long)(rsp->jiffies_force_qs - jiffies),
-@@ -215,12 +215,12 @@ static const struct file_operations rcuhier_fops = {
- static int show_rcugp(struct seq_file *m, void *unused)
- {
- #ifdef CONFIG_TREE_PREEMPT_RCU
--	seq_printf(m, "rcu_preempt: completed=%ld  gpnum=%ld\n",
-+	seq_printf(m, "rcu_preempt: completed=%ld  gpnum=%lu\n",
- 		   rcu_preempt_state.completed, rcu_preempt_state.gpnum);
- #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
--	seq_printf(m, "rcu_sched: completed=%ld  gpnum=%ld\n",
-+	seq_printf(m, "rcu_sched: completed=%ld  gpnum=%lu\n",
- 		   rcu_sched_state.completed, rcu_sched_state.gpnum);
--	seq_printf(m, "rcu_bh: completed=%ld  gpnum=%ld\n",
-+	seq_printf(m, "rcu_bh: completed=%ld  gpnum=%lu\n",
- 		   rcu_bh_state.completed, rcu_bh_state.gpnum);
- 	return 0;
- }
+ 	Also unlike other forms of RCU, explicit initialization
+ 	and cleanup is required via init_srcu_struct() and
+diff --git a/Documentation/RCU/lockdep.txt b/Documentation/RCU/lockdep.txt
+new file mode 100644
+index 0000000..fe24b58
+--- /dev/null
++++ b/Documentation/RCU/lockdep.txt
+@@ -0,0 +1,67 @@
++RCU and lockdep checking
++
++All flavors of RCU have lockdep checking available, so that lockdep is
++aware of when each task enters and leaves any flavor of RCU read-side
++critical section.  Each flavor of RCU is tracked separately (but note
++that this is not the case in 2.6.32 and earlier).  This allows lockdep's
++tracking to include RCU state, which can sometimes help when debugging
++deadlocks and the like.
++
++In addition, RCU provides the following primitives that check lockdep's
++state:
++
++	rcu_read_lock_held() for normal RCU.
++	rcu_read_lock_bh_held() for RCU-bh.
++	rcu_read_lock_sched_held() for RCU-sched.
++	srcu_read_lock_held() for SRCU.
++
++These functions are conservative, and will therefore return 1 if they
++aren't certain (for example, if CONFIG_DEBUG_LOCK_ALLOC is not set).
++This prevents things like WARN_ON(!rcu_read_lock_held()) from giving false
++positives when lockdep is disabled.
++
++In addition, a separate kernel config parameter CONFIG_PROVE_RCU enables
++checking of rcu_dereference() primitives:
++
++	rcu_dereference(p):
++		Check for RCU read-side critical section.
++	rcu_dereference_bh(p):
++		Check for RCU-bh read-side critical section.
++	rcu_dereference_sched(p):
++		Check for RCU-sched read-side critical section.
++	srcu_dereference(p, sp):
++		Check for SRCU read-side critical section.
++	rcu_dereference_check(p, c):
++		Use explicit check expression "c".
++	rcu_dereference_raw(p)
++		Don't check.  (Use sparingly, if at all.)
++
++The rcu_dereference_check() check expression can be any boolean
++expression, but would normally include one of the rcu_read_lock_held()
++family of functions and a lockdep expression.  However, any boolean
++expression can be used.  For a moderately ornate example, consider
++the following:
++
++	file = rcu_dereference_check(fdt->fd[fd],
++				     rcu_read_lock_held() ||
++				     lockdep_is_held(&files->file_lock) ||
++				     atomic_read(&files->count) == 1);
++
++This expression picks up the pointer "fdt->fd[fd]" in an RCU-safe manner,
++and, if CONFIG_PROVE_RCU is configured, verifies that this expression
++is used in:
++
++1.	An RCU read-side critical section, or
++2.	with files->file_lock held, or
++3.	on an unshared files_struct.
++
++In case (1), the pointer is picked up in an RCU-safe manner for vanilla
++RCU read-side critical sections, in case (2) the ->file_lock prevents
++any change from taking place, and finally, in case (3) the current task
++is the only task accessing the file_struct, again preventing any change
++from taking place.
++
++There are currently only "universal" versions of the rcu_assign_pointer()
++and RCU list-/tree-traversal primitives, which do not (yet) check for
++being in an RCU read-side critical section.  In the future, separate
++versions of these primitives might be created.
+diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
+index 469a58b..1dc00ee 100644
+--- a/Documentation/RCU/whatisRCU.txt
++++ b/Documentation/RCU/whatisRCU.txt
+@@ -323,15 +323,17 @@ used as follows:
+ 	Defer			Protect
+ 
+ a.	synchronize_rcu()	rcu_read_lock() / rcu_read_unlock()
+-	call_rcu()
++	call_rcu()		rcu_dereference()
+ 
+ b.	call_rcu_bh()		rcu_read_lock_bh() / rcu_read_unlock_bh()
++				rcu_dereference_bh()
+ 
+ c.	synchronize_sched()	rcu_read_lock_sched() / rcu_read_unlock_sched()
+ 				preempt_disable() / preempt_enable()
+ 				local_irq_save() / local_irq_restore()
+ 				hardirq enter / hardirq exit
+ 				NMI enter / NMI exit
++				rcu_dereference_sched()
+ 
+ These three mechanisms are used as follows:
+ 
+@@ -781,9 +783,8 @@ Linux-kernel source code, but it helps to have a full list of the
+ APIs, since there does not appear to be a way to categorize them
+ in docbook.  Here is the list, by category.
+ 
+-RCU pointer/list traversal:
++RCU list traversal:
+ 
+-	rcu_dereference
+ 	list_for_each_entry_rcu
+ 	hlist_for_each_entry_rcu
+ 	hlist_nulls_for_each_entry_rcu
+@@ -809,7 +810,7 @@ RCU:	Critical sections	Grace period		Barrier
+ 
+ 	rcu_read_lock		synchronize_net		rcu_barrier
+ 	rcu_read_unlock		synchronize_rcu
+-				synchronize_rcu_expedited
++	rcu_dereference		synchronize_rcu_expedited
+ 				call_rcu
+ 
+ 
+@@ -817,7 +818,7 @@ bh:	Critical sections	Grace period		Barrier
+ 
+ 	rcu_read_lock_bh	call_rcu_bh		rcu_barrier_bh
+ 	rcu_read_unlock_bh	synchronize_rcu_bh
+-				synchronize_rcu_bh_expedited
++	rcu_dereference_bh	synchronize_rcu_bh_expedited
+ 
+ 
+ sched:	Critical sections	Grace period		Barrier
+@@ -826,12 +827,14 @@ sched:	Critical sections	Grace period		Barrier
+ 	rcu_read_unlock_sched	call_rcu_sched
+ 	[preempt_disable]	synchronize_sched_expedited
+ 	[and friends]
++	rcu_dereference_sched
+ 
+ 
+ SRCU:	Critical sections	Grace period		Barrier
+ 
+ 	srcu_read_lock		synchronize_srcu	N/A
+ 	srcu_read_unlock	synchronize_srcu_expedited
++	srcu_dereference
+ 
+ SRCU:	Initialization/cleanup
+ 	init_srcu_struct
 -- 
 1.6.6
 
