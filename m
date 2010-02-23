@@ -1,71 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452Ab0BWQbF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 11:31:05 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:39299 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752243Ab0BWQbB (ORCPT
+	id S1753130Ab0BWQdq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 11:33:46 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36808 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752243Ab0BWQdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 11:31:01 -0500
-Date: Tue, 23 Feb 2010 17:30:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, mgarski@post.pl
-Subject: Re: [RFC,PATCH] Route kbd leds through the generic leds layer
- (Was: [PATCH] kbd: (#7063) make CapsLock work as expected even for
- non-ASCII)
-Message-ID: <20100223163052.GF6220@elf.ucw.cz>
-References: <20091117115503.GB1657@x200>
- <20091117132358.GJ12736@const.bordeaux.inria.fr>
- <20091119131854.GA1628@x200.localdomain>
- <20091119132828.GA31025@const.bordeaux.inria.fr>
- <20091119133737.GE31025@const.bordeaux.inria.fr>
- <4B055F24.8030307@zytor.com>
- <20091120190730.GB1434@ucw.cz>
- <20091120204612.GA31728@elf.ucw.cz>
- <4B0709D4.6010305@zytor.com>
- <20100221050107.GG6133@const.homenet.telecomitalia.it>
+	Tue, 23 Feb 2010 11:33:45 -0500
+Date: Tue, 23 Feb 2010 11:33:43 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+In-Reply-To: <20100223155803.GN1025@kernel.dk>
+Message-ID: <Pine.LNX.4.44L0.1002231115510.1308-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100221050107.GG6133@const.homenet.telecomitalia.it>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 23 Feb 2010, Jens Axboe wrote:
 
-> Route keyboard leds through the generic leds layer.
+> On Tue, Feb 23 2010, Alan Stern wrote:
+> > > > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
+> > > > is, should it be made unfreezable?
+> > > 
+> > > I'm not a big expect on what tasks should be freezable or not. As it
+> > > stands, the writeback tasks will attempt to freeze and thaw with the
+> > > system. I guess that screws the sync from resume call, since it's not
+> > > running and the sync will wait for it to retrieve and finish that work
+> > > item.
+> > > 
+> > > To the suspend experts - can we safely mark the writeback tasks as
+> > > non-freezable?
+> > 
+> > The reason for freezing those tasks is to avoid writebacks at random
+> > times during a system sleep transition, when the underlying device may
+> > already be suspended, right?
 > 
-> This permits to reassign keyboard LEDs to something else than keyboard
-> "leds" state, and also permits to fix #7063 by using a modifier to
-> implement proper CapsLock behavior and have the keyboard caps lock led
-> show that caps lock state.
+> Right, or at least it would seem pointless to have them running while
+> the device is suspended. But my point was that if it's easier (and
+> feasible) to just leave them running, perhaps that was easier.
 
-Yes please.
+I don't have a clear picture of how the block layer operates.  For 
+example, what is the reason for this comment in the definition of 
+struct genhd?
 
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+	struct device *driverfs_dev;  // FIXME: remove
 
-Looks good. ACK.
+Isn't that crucial for making a disk show up in sysfs?  Is the comment 
+out of date?
 
-> --- linux-2.6.32-orig/lib/Kconfig.debug	2009-12-03 13:44:04.000000000 +0100
-> +++ linux-2.6.32-perso/lib/Kconfig.debug	2010-02-21 04:36:23.000000000 +0100
-> @@ -103,7 +103,7 @@
->  
->  config DEBUG_SECTION_MISMATCH
->  	bool "Enable full Section mismatch analysis"
-> -	depends on UNDEFINED
-> +	#depends on UNDEFINED
->  	# This option is on purpose disabled for now.
->  	# It will be enabled when we are down to a resonable number
->  	# of section mismatch warnings (< 10 for an allyesconfig build)
+A possible approach is to add suspend and resume methods for this 
+driverfs_dev, and make them be responsible for stopping and restarting 
+the writeback task instead of relying on the freezer.  Then 
+del_gendisk() could cleanly restart the task when necessary.
 
-You probably want to leave this bit.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > In principle, a device's writeback task could be unfrozen immediately
+> > after the device is resumed.  In practice this might not solve the
+> > problem, since the del_gendisk() call occurs _within_ the device's
+> > resume routine.  I suppose del_gendisk() could be made responsible for 
+> > unfreezing the writeback task.
+> 
+> And that's back to the question of whether or not that is a nice thing to
+> do. It seems a bit dirty, but otoh where else to do it. Perhaps just
+> using the kblockd to postpone the del_gendisk() to out-of-resume context
+> would be the best approach.
+
+That would involve a layering violation, wouldn't it?  Either the 
+driver would have to interface with kblockd directly, or else 
+del_gendisk() would need to know whether the writeback task was frozen.
+
+On the whole, I think it's best for the block layer to retain full
+control over its own tasks and requirements.
+
+Alan Stern
+
