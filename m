@@ -1,79 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592Ab0BWNUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:20:49 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:39368 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751592Ab0BWNUs (ORCPT
+	id S1752709Ab0BWNUy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:20:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63277 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592Ab0BWNUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 08:20:48 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAP9hg0tGGOM5/2dsb2JhbACbCnSuIAiNXYJeCIIGBIMV
-Date: Tue, 23 Feb 2010 08:15:44 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
-	rcu_dereference()
-Message-ID: <20100223131543.GA19174@Krystal>
-References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231359.07910.arnd@arndb.de>
+	Tue, 23 Feb 2010 08:20:50 -0500
+X-Authority-Analysis: v=1.0 c=1 a=TmnEcBdXtfUA:10 a=HvM9zIr2IIqlL4hpBGgA:9 a=e0wJVsH4CcxC3K0uCu4A:7 a=9LKtwND0vJ7YPY1PawkVdtPBjQMA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 04/10] ARM: ftrace: allow building without frame
+ pointers
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Rabin Vincent <rabin@rab.in>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20100222190516.GJ5055@nowhere>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in>
+	 <1266090518-31120-5-git-send-email-rabin@rab.in>
+	 <20100222190516.GJ5055@nowhere>
+Content-Type: text/plain
+Date: Tue, 23 Feb 2010 08:18:33 -0500
+Message-Id: <1266931113.19540.5.camel@frodo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <201002231359.07910.arnd@arndb.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 08:08:59 up 68 days, 21:27,  5 users,  load average: 0.03, 0.14,
-	0.16
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arnd Bergmann (arnd@arndb.de) wrote:
-> On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> > This patch series adds lockdep-based checking to the rcu_dereference()
-> > primitive in order to flag misuses of RCU.
-> 
-> While I haven't looked much at this series, I've been thinking about
-> adding static diagnostics for rcu_dereference misuse, in the form of
-> an __rcu address space qualifier for pointers. Such a patch would
-> obviously conflict with this series, so I'd wait for yours to go
-> in first, but maybe you like the idea enough to do it yourself ;-).
-> 
-> The observation is that all accesses to an RCU protected pointer
-> are either through rcu_dereference, rcu_assign_pointer or one of their
-> variants. so it should be possible to add a new address space like we
-> have for __iomem, __user and soon __percpu and have sparse check that
-> we use RCU consistently on pointers that need it.
-
-Just to make myself the devil's advocate: how should we consider
-initialization of RCU pointers at boot time that happens before any
-possible concurrent reader is allowed to run ? I think this case is an
-example of valid RCU-pointer access that is not done through the RCU
-primitives. It seems valid to perform these RCU-pointer accesses when
-serialized by a different exclusion mechanism, in this case being the
-guarantee that no concurrent reader are running at early boot. The same
-applies to stop_machine(), and, as I come to think of it, we could
-probably think of a scheme that dynamically switch from an RCU read-lock
-to, e.g., a mutex for all users, wait for RCU quiescent state, and then
-serialize all users on the mutex during the update. So while some of
-these cases are a bit far-fetched, I think they are valid, and I wonder
-how the address space validation would take them into account.
-
-Thanks,
-
-Mathieu
+On Mon, 2010-02-22 at 20:05 +0100, Frederic Weisbecker wrote:
 
 > 
-> 	Arnd
+> Btw, you described that mcount is used in some gcc versions and
+> __gnu_mcount_nc in newers.
+> Shouldn't we have a gcc version dependency here? (not sure we can
+> do this from Kconfig though).
+> 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Maybe we can add something to recordmcount.pl?
+
+> 
+> 
+> >  config DEBUG_USER
+> >  	bool "Verbose user fault messages"
+> >  	help
+> > diff --git a/arch/arm/kernel/armksyms.c b/arch/arm/kernel/armksyms.c
+> > index 8214bfe..e5e1e53 100644
+> > --- a/arch/arm/kernel/armksyms.c
+> > +++ b/arch/arm/kernel/armksyms.c
+> > @@ -165,6 +165,8 @@ EXPORT_SYMBOL(_find_next_bit_be);
+> >  #endif
+> >  
+> >  #ifdef CONFIG_FUNCTION_TRACER
+> > +#ifdef CONFIG_OLD_MCOUNT
+> >  EXPORT_SYMBOL(mcount);
+> > +#endif
+> >  EXPORT_SYMBOL(__gnu_mcount_nc);
+> >  #endif
+> > diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
+> > index d412d7c..c98e3a3 100644
+> > --- a/arch/arm/kernel/entry-common.S
+> > +++ b/arch/arm/kernel/entry-common.S
+> > @@ -169,6 +169,12 @@ gnu_trace:
+> >  	ldmia	sp!, {r0-r3, ip, lr}
+> >  	mov	pc, ip
+> >  
+> > +#ifdef CONFIG_OLD_MCOUNT
+> > +/*
+> > + * This is under an ifdef in order to force link-time errors for people trying
+> > + * to build with !FRAME_POINTER with a GCC which doesn't use the new-style
+> > + * mcount.
+> > + */
+> >  ENTRY(mcount)
+> >  	stmdb	sp!, {r0-r3, lr}
+> >  	ldr	r0, =ftrace_trace_function
+> > @@ -187,6 +193,7 @@ trace:
+> >  	mov	pc, r2
+> >  	ldr	lr, [fp, #-4]			@ restore lr
+> >  	ldmia	sp!, {r0-r3, pc}
+> > +#endif
+> >  
+> >  #endif /* CONFIG_DYNAMIC_FTRACE */
+> >  
+> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> > index 6c22d8a..7468ffe 100644
+> > --- a/kernel/trace/Kconfig
+> > +++ b/kernel/trace/Kconfig
+> > @@ -126,7 +126,7 @@ if FTRACE
+> >  config FUNCTION_TRACER
+> >  	bool "Kernel Function Tracer"
+> >  	depends on HAVE_FUNCTION_TRACER
+> > -	select FRAME_POINTER
+> > +	select FRAME_POINTER if (!ARM_UNWIND)
+> 
+> 
+> So, if I understand well. If people have ARM_UNWIND but
+> FUNCTION_TRACER, it might crash at link time in case
+> they don't have a recent enough gcc version to
+> support the new -pg style?
+> 
+> That doesn't look good.
+> 
+> Ideally, we need HAVE_FUNCTION_TRACER to be enabled in arm
+> only if (old gcc && frame pointers) || new gcc
+> 
+> And then, we need config OLD_MCOUNT:
+> 	 old gcc && FUNCTION_TRACER
+> 
+> and config NEW_MCOUNT:
+> 	new gcc && FUNCTION_TRACER
+> 
+> so that we can selectively build mcount or __gnu_mcount_nc.
+> 
+> Hmm, I fear we can't check gcc version from Kconfig, as I'm
+> grepping on Kconfig files...
+
+
+I would not check gcc version through KCONFIG, but you can have the gcc
+version checked and define another macro in a header somewhere, like
+asm/ftrace.h. Then we could do something different while it is
+compiling.
+
+Disclaimer:
+I have to go back and read the entire thread, to know what exactly is
+going on ;-)
+
+-- Steve
+
+
