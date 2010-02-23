@@ -1,35 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493Ab0BWRHV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:07:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34061 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086Ab0BWRHT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:07:19 -0500
-X-Authority-Analysis: v=1.0 c=1 a=cF7qiyD1qO4A:10 a=7U3hwN5JcxgA:10 a=sNVSGU1_Zl12v9OR0MYA:9 a=qAOzDxDvJczuhZXymEeyqEFti8AA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH -tip v10 0/9] kprobes: Kprobes jump optimization support
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-In-Reply-To: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Tue, 23 Feb 2010 12:07:14 -0500
-Message-ID: <1266944834.24271.6021.camel@gandalf.stny.rr.com>
+	id S1753541Ab0BWRIX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:08:23 -0500
+Received: from mail.perches.com ([173.55.12.10]:1190 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752360Ab0BWRIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:08:21 -0500
+Subject: [PATCH - next] MAINTAINERS: Telegent tlg2300 section fix
+From: Joe Perches <joe@perches.com>
+To: Huang Shijie <shijie8@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-media <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 09:08:20 -0800
+Message-ID: <1266944900.9265.28.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -37,16 +23,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 17:12 -0500, Masami Hiramatsu wrote:
+linux-next commit 2ff8223957d901999bf76aaf2c6183e33a6ad14e
+exposes an infinite loop defect in scripts/get_maintainer.pl
 
-> This version of patch series uses text_poke_smp() which
-> update kernel text by stop_machine(). That is 'officially'
-> supported on Intel's processors. text_poke_smp() can't
-> be used for modifying NMI code,
+Fix the incorrect format of the MAINTAINERS "M:" entries.
 
-But it can be made to use with NMI code. If you look at what I did to
-allow ftrace to modify NMI code, it may be able to do the same thing.
-
--- Steve
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 57305f6..e633460 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4775,13 +4775,12 @@ F:	drivers/media/video/*7146*
+ F:	include/media/*7146*
+ 
+ TLG2300 VIDEO4LINUX-2 DRIVER
+-M 	Huang Shijie	<shijie8@gmail.com>
+-M 	Kang Yong	<kangyong@telegent.com>
+-M 	Zhang Xiaobing	<xbzhang@telegent.com>
++M:	Huang Shijie <shijie8@gmail.com>
++M:	Kang Yong <kangyong@telegent.com>
++M:	Zhang Xiaobing <xbzhang@telegent.com>
+ S:	Supported
+ F:	drivers/media/video/tlg2300
+ 
+-
+ SC1200 WDT DRIVER
+ M:	Zwane Mwaikambo <zwane@arm.linux.org.uk>
+ S:	Maintained
 
 
