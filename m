@@ -1,50 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752489Ab0BWNAB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:00:01 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:64357 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373Ab0BWM77 (ORCPT
+	id S1752544Ab0BWNBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:01:20 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:54211 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373Ab0BWNBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 07:59:59 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to rcu_dereference()
-Date: Tue, 23 Feb 2010 13:59:07 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-References: <20100223010435.GA666@linux.vnet.ibm.com>
-In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
+	Tue, 23 Feb 2010 08:01:18 -0500
+Date: Tue, 23 Feb 2010 14:01:28 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: viresh kumar <viresh.linux@gmail.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: QUERY: Inclusion of header files in kernel header files
+Message-ID: <20100223130128.GB30382@aftab>
+References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com>
+ <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com>
+ <20100223065953.GB32503@liondog.tnic>
+ <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com>
+ <20100223095025.GA18559@liondog.tnic>
+ <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002231359.07910.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/p6GCPhuHcRBFRbMEzTVo7OYVxADFnwR11he9
- vbs/5E4oBEWYLmhIEYrXMqHtSM5wywKDGUgLzS4Lb55B6cooq3
- mtZTXRFXpEKKq6ffE1k2g==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> This patch series adds lockdep-based checking to the rcu_dereference()
-> primitive in order to flag misuses of RCU.
+From: viresh kumar <viresh.linux@gmail.com>
+Date: Tue, Feb 23, 2010 at 05:07:47PM +0530
 
-While I haven't looked much at this series, I've been thinking about
-adding static diagnostics for rcu_dereference misuse, in the form of
-an __rcu address space qualifier for pointers. Such a patch would
-obviously conflict with this series, so I'd wait for yours to go
-in first, but maybe you like the idea enough to do it yourself ;-).
+> >> I think, ideally including any header file shouldn't give compilation
+> >> errors for types used in
+> >> included header file.
+> >
+> > Agreed.
+> >
+> > I'd send a patch fixing the bus.h header, in case no one has a valid
+> > technical reason against it.
+> >
+> 
+> That will be great!!!
 
-The observation is that all accesses to an RCU protected pointer
-are either through rcu_dereference, rcu_assign_pointer or one of their
-variants. so it should be possible to add a new address space like we
-have for __iomem, __user and soon __percpu and have sparse check that
-we use RCU consistently on pointers that need it.
+Just to make sure: with "I'd" I meant "I would", i.e. actually _you_
+could send a patch fixing that by explaining the problem in the commit
+message :).
 
-	Arnd
+> Actually this issue is not present only in bus.h, but some other
+> kernel header files.
+> Like: arch/arm/include/asm/clkdev.h don't include list.h file but
+> using struct list_head
+> 
+> May be we need to check this in other header files also.
+
+Well, you should talk to the arm maintainer about that task and whether
+it is desirable.
+
+-- 
+Regards/Gruss,
+Boris.
