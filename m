@@ -1,54 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610Ab0BWMxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 07:53:21 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:34779 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752412Ab0BWMxT (ORCPT
+	id S1752489Ab0BWNAB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:00:01 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:64357 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373Ab0BWM77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 07:53:19 -0500
-X-Sasl-enc: ev7ercqE3ubFHrBCRSdkF614sXhorqYL3mdX0jc0YDBw 1266929598
-Message-ID: <4B83CFBC.5030406@imap.cc>
-Date: Tue, 23 Feb 2010 13:53:16 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18 Mnenhy/0.7.6.0
+	Tue, 23 Feb 2010 07:59:59 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to rcu_dereference()
+Date: Tue, 23 Feb 2010 13:59:07 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+References: <20100223010435.GA666@linux.vnet.ibm.com>
+In-Reply-To: <20100223010435.GA666@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Karsten Keil <isdn@linux-pingi.de>, David Miller <davem@davemloft.net>,
-       Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <keil@b1-systems.de>,
-       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] gigaset: reduce syslog clutter
-References: <1266899531.9265.4.camel@Joe-Laptop.home>
-In-Reply-To: <1266899531.9265.4.camel@Joe-Laptop.home>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002231359.07910.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/p6GCPhuHcRBFRbMEzTVo7OYVxADFnwR11he9
+ vbs/5E4oBEWYLmhIEYrXMqHtSM5wywKDGUgLzS4Lb55B6cooq3
+ mtZTXRFXpEKKq6ffE1k2g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches schrieb:
-> Perhaps it'd be useful to add a ethtool/netif_msg interface
-> and classify the messages as appropriate.
+On Tuesday 23 February 2010, Paul E. McKenney wrote:
+> This patch series adds lockdep-based checking to the rcu_dereference()
+> primitive in order to flag misuses of RCU.
 
-Interesting idea. On first glance, however, I don't see how to map the
-Gigaset driver's diverse debugging categories (like USB communication
-vs. V.25ter communication vs. ISDN subsystem communication) to the
-NETIF_MSG_ flags in a useful way.
+While I haven't looked much at this series, I've been thinking about
+adding static diagnostics for rcu_dereference misuse, in the form of
+an __rcu address space qualifier for pointers. Such a patch would
+obviously conflict with this series, so I'd wait for yours to go
+in first, but maybe you like the idea enough to do it yourself ;-).
 
-What's more, ethtool only seems to allow the setting of a numerical
-message "level" enabling all debug flags "below" that level. It cannot
-enable, for example, NETIF_MSG_TX_ERR without NETIF_MSG_PROBE. The
-Gigaset driver OTOH follows the concept of individually selectable areas
-of interest. In fact, I make frequent use of that ability when I help a
-user with troubleshooting. For example, a typical first setting for a
-user who cannot make an ISDN connection would be the value 0x102020
-mentioned in the README.
+The observation is that all accesses to an RCU protected pointer
+are either through rcu_dereference, rcu_assign_pointer or one of their
+variants. so it should be possible to add a new address space like we
+have for __iomem, __user and soon __percpu and have sparse check that
+we use RCU consistently on pointers that need it.
 
-OTOH, the ability to control the "non-debug" verbosity of the Gigaset
-driver (ie. the messages not controlled by the "debug" parameter) with
-ethtool/netif_msg might be appreciated. Perhaps that's what you had in mind?
-
-Thanks,
-Tilman
+	Arnd
