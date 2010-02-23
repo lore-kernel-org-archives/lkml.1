@@ -1,30 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562Ab0BWAKh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 19:10:37 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59197 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115Ab0BWAKg (ORCPT
+	id S1752330Ab0BWART (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 19:17:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38409 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751115Ab0BWARR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 19:10:36 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 23 Feb 2010 09:07:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrea Righi <arighi@develer.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-Id: <20100223090704.839d8bef.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100222175833.GB3096@redhat.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
-	<20100222142744.GB13823@redhat.com>
-	<20100222173640.GG3063@balbir.in.ibm.com>
-	<20100222175833.GB3096@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 22 Feb 2010 19:17:17 -0500
+Date: Mon, 22 Feb 2010 16:17:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john.johansen@canonical.com
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Fix __d_path for lazy unmounts
+Message-Id: <20100222161714.de1a7fca.akpm@linux-foundation.org>
+In-Reply-To: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
+References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,72 +23,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010 12:58:33 -0500
-Vivek Goyal <vgoyal@redhat.com> wrote:
+On Sat, 20 Feb 2010 04:27:38 -0800 john.johansen@canonical.com wrote:
 
-> On Mon, Feb 22, 2010 at 11:06:40PM +0530, Balbir Singh wrote:
-> > * Vivek Goyal <vgoyal@redhat.com> [2010-02-22 09:27:45]:
-> > 
-> > 
-> > > 
-> > >   May be we can modify writeback_inodes_wbc() to check first dirty page
-> > >   of the inode. And if it does not belong to same memcg as the task who
-> > >   is performing balance_dirty_pages(), then skip that inode.
-> > 
-> > Do you expect all pages of an inode to be paged in by the same cgroup?
+> From: John Johansen <john.johansen@canonical.com>
 > 
-> I guess at least in simple cases. Not sure whether it will cover majority
-> of usage or not and up to what extent that matters.
+> When __d_path() hits a lazily unmounted mount point, it tries to prepend
+> the name of the lazily unmounted dentry to the path name.  It gets this wrong,
+> and also overwrites the slash that separates the name from the following
+> pathname component. This patch fixes that; if a process was in directory
+> /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
+> missing slash), while the new result with this patch is ``/foo/bar''.
 > 
-> If we start doing background writeout, on per page (like memory reclaim),
-> the it probably will be slower and hence flusing out pages sequentially
-> from inode makes sense. 
+> Signed-off-by: John Johansen <john.johansen@canonical.com>
+> ---
+>  fs/dcache.c |   27 +++++++++++++++++++++++----
+>  1 files changed, 23 insertions(+), 4 deletions(-)
 > 
-> At one point I was thinking, like pages, can we have an inode list per
-> memory cgroup so that writeback logic can traverse that inode list to
-> determine which inodes need to be cleaned. But associating inodes to
-> memory cgroup is not very intutive at the same time, we again have the
-> issue of shared file pages from two differnent cgroups. 
-> 
-> But I guess, a simpler scheme would be to just check first dirty page from
-> inode and if it does not belong to memory cgroup of task being throttled,
-> skip it.
-> 
-> It will not cover the case of shared file pages across memory cgroups, but
-> at least something relatively simple to begin with. Do you have more ideas
-> on how it can be handeled better.
-> 
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 953173a..df49666 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
+>  	retval = end-1;
+>  	*retval = '/';
+>  
+> -	for (;;) {
+> +	while(dentry != root->dentry || vfsmnt != root->mnt) {
 
-If pagesa are "shared", it's hard to find _current_ owner. Then, what I'm
-thinking as memcg's update is a memcg-for-page-cache and pagecache
-migration between memcg.
+Please put a space between the `while' and the `('.
 
-The idea is
-  - At first, treat page cache as what we do now.
-  - When a process touches page cache, check process's memcg and page cache's
-    memcg. If process-memcg != pagecache-memcg, we migrate it to a special
-    container as memcg-for-page-cache.
+>  		struct dentry * parent;
+>  
+> -		if (dentry == root->dentry && vfsmnt == root->mnt)
+> -			break;
+>  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+>  			/* Global root? */
+>  			if (vfsmnt->mnt_parent == vfsmnt) {
+> @@ -1950,9 +1948,30 @@ out:
+>  	return retval;
+>  
+>  global_root:
+> -	retval += 1;	/* hit the slash */
+> +	/*
+> +	 * We went past the (vfsmount, dentry) we were looking for and have
+> +	 * either hit a root dentry, a lazily unmounted dentry, an
+> +	 * unconnected dentry, or the file is on a pseudo filesystem.
+> +	 */
+> +	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
+> +	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
 
-Then,
-  - read-once page caches are handled by local memcg.
-  - shared page caches are handled in specail memcg for "shared".
+Did you really mean to assign 1 to dentry->d_name.len here?  Was `=='
+intended?  I hope so, because modifying the dentry in d_path() would be odd.
 
-But this will add significant overhead in native implementation.
-(We may have to use page flags rather than page_cgroup's....)
-
-I'm now wondering about
-  - set "shared flag" to a page_cgroup if cached pages are accessed.
-  - sweep them to special memcg in other (kernel) daemon when we hit thresh
-    or some.
-
-But hmm, I'm not sure that memcg-for-shared-page-cache is accepptable
-for anyone.
-
-Thanks,
--Kame
+If this was a mistake then why did the patch pass testing?
 
 
-
-
-
+> +		/*
+> +		 * Historically, we also glue together the root dentry and
+> +		 * remaining name for pseudo filesystems like pipefs, which
+> +		 * have the MS_NOUSER flag set. This results in pathnames
+> +		 * like "pipe:[439336]".
+> +		 */
+> +		retval += 1;	/* overwrite the slash */
+> +		buflen++;
+> +	}
+>  	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
+>  		goto Elong;
+> +
+> +	/* connect lazily unmounted mount point */
+> +	if (*retval != '/' && !(dentry->d_sb->s_flags & MS_NOUSER) &&
+> +	    prepend(&retval, &buflen, "/", 1) != 0)
+> +		goto Elong;
+> +
+>  	root->mnt = vfsmnt;
+>  	root->dentry = dentry;
+>  	goto out;
 
