@@ -1,123 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707Ab0BWPNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 10:13:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9739 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959Ab0BWPNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 10:13:40 -0500
-Date: Tue, 23 Feb 2010 10:12:01 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrea Righi <arighi@develer.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
-Message-ID: <20100223151201.GB11930@redhat.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com> <20100222142744.GB13823@redhat.com> <20100222173640.GG3063@balbir.in.ibm.com> <20100222175833.GB3096@redhat.com> <20100223090704.839d8bef.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
+	id S1753153Ab0BWPUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 10:20:20 -0500
+Received: from DMZ-MAILSEC-SCANNER-5.MIT.EDU ([18.7.68.34]:46822 "EHLO
+	dmz-mailsec-scanner-5.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752499Ab0BWPUR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 10:20:17 -0500
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 10:20:17 EST
+X-AuditID: 12074422-b7c71ae000000a1a-6f-4b83f1024d1a
+Subject: Re: QUERY: Inclusion of header files in kernel header files
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100223090704.839d8bef.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+From: Theodore Tso <tytso@MIT.EDU>
+In-Reply-To: <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
+Date: Tue, 23 Feb 2010 10:15:11 -0500
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <07BBC9AE-C1A1-449F-AE5E-EB5B1C6323C2@mit.edu>
+References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com> <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com> <20100223065953.GB32503@liondog.tnic> <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com> <20100223095025.GA18559@liondog.tnic> <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
+To: viresh kumar <viresh.linux@gmail.com>
+X-Mailer: Apple Mail (2.1077)
+X-Brightmail-Tracker: AAAAARLvbOs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 09:07:04AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 22 Feb 2010 12:58:33 -0500
-> Vivek Goyal <vgoyal@redhat.com> wrote:
+
+On Feb 23, 2010, at 6:37 AM, viresh kumar wrote:
 > 
-> > On Mon, Feb 22, 2010 at 11:06:40PM +0530, Balbir Singh wrote:
-> > > * Vivek Goyal <vgoyal@redhat.com> [2010-02-22 09:27:45]:
-> > > 
-> > > 
-> > > > 
-> > > >   May be we can modify writeback_inodes_wbc() to check first dirty page
-> > > >   of the inode. And if it does not belong to same memcg as the task who
-> > > >   is performing balance_dirty_pages(), then skip that inode.
-> > > 
-> > > Do you expect all pages of an inode to be paged in by the same cgroup?
-> > 
-> > I guess at least in simple cases. Not sure whether it will cover majority
-> > of usage or not and up to what extent that matters.
-> > 
-> > If we start doing background writeout, on per page (like memory reclaim),
-> > the it probably will be slower and hence flusing out pages sequentially
-> > from inode makes sense. 
-> > 
-> > At one point I was thinking, like pages, can we have an inode list per
-> > memory cgroup so that writeback logic can traverse that inode list to
-> > determine which inodes need to be cleaned. But associating inodes to
-> > memory cgroup is not very intutive at the same time, we again have the
-> > issue of shared file pages from two differnent cgroups. 
-> > 
-> > But I guess, a simpler scheme would be to just check first dirty page from
-> > inode and if it does not belong to memory cgroup of task being throttled,
-> > skip it.
-> > 
-> > It will not cover the case of shared file pages across memory cgroups, but
-> > at least something relatively simple to begin with. Do you have more ideas
-> > on how it can be handeled better.
-> > 
+> Actually this issue is not present only in bus.h, but some other
+> kernel header files.
+> Like: arch/arm/include/asm/clkdev.h don't include list.h file but
+> using struct list_head
 > 
-> If pagesa are "shared", it's hard to find _current_ owner.
+> May be we need to check this in other header files also.
 
-Is it not the case that the task who touched the page first is owner of
-the page and task memcg is charged for that page. Subsequent shared users
-of the page get a free ride?
 
-If yes, why it is hard to find _current_ owner. Will it not be the memory
-cgroup which brought the page into existence?
- 
-> Then, what I'm
-> thinking as memcg's update is a memcg-for-page-cache and pagecache
-> migration between memcg.
-> 
-> The idea is
->   - At first, treat page cache as what we do now.
->   - When a process touches page cache, check process's memcg and page cache's
->     memcg. If process-memcg != pagecache-memcg, we migrate it to a special
->     container as memcg-for-page-cache.
-> 
-> Then,
->   - read-once page caches are handled by local memcg.
->   - shared page caches are handled in specail memcg for "shared".
-> 
-> But this will add significant overhead in native implementation.
-> (We may have to use page flags rather than page_cgroup's....)
-> 
-> I'm now wondering about
->   - set "shared flag" to a page_cgroup if cached pages are accessed.
->   - sweep them to special memcg in other (kernel) daemon when we hit thresh
->     or some.
-> 
-> But hmm, I'm not sure that memcg-for-shared-page-cache is accepptable
-> for anyone.
+Before someone goes crazy and starts sending hundreds of patches to the trivial patch folks, please make sure that you only do this for places where header file foo uses "struct bar" in bar.h --- and NOT if it is using "struct bar *".    Blind structure pointers don't cause compile failures, and is a perfectly good thing from the standpoint of data hiding.
 
-I have not understood the idea well hence few queries/thoughts.
+Also, it's highly desirable that as much as possible multiple inclusion is fixed up at the same time you add extra #includes into header files.   Protecting against multiple inclusion is critical, yes, but even with the protection against multiple inclusion, the header file has to get parsed a second time, and that slows down kernel compiles.
 
-- You seem to be suggesting that shared page caches can be accounted
-  separately with-in memcg. But one page still need to be associated
-  with one specific memcg and one can only do migration across memcg
-  based on some policy who used how much. But we probably are trying
-  to be too accurate there and it might not be needed.
+Regards,
 
-  Can you elaborate a little more on what you meant by migrating pages
-  to special container memcg-for-page-cache? Is it a shared container
-  across memory cgroups which are sharing a page?
+-- Ted
 
-- Current writeback mechanism is flushing per inode basis. I think
-  biggest advantage is faster writeout speed as contiguous pages
-  are dispatched to disk (irrespective to the memory cgroup differnt
-  pages can belong to), resulting in better merging and less seeks.
-
-  Even if we can account shared pages well across memory cgroups, flushing
-  these pages to disk will probably become complicated/slow if we start going
-  through the pages of a memory cgroup and start flushing these out upon
-  hitting the dirty_background/dirty_ratio/dirty_bytes limits.
-
-Thanks
-Vivek
