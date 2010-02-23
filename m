@@ -1,120 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325Ab0BWLx3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 06:53:29 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:55961 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164Ab0BWLx1 convert rfc822-to-8bit (ORCPT
+	id S1752465Ab0BWLzJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 06:55:09 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:48638 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380Ab0BWLzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 06:53:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jVoDxKPii5Ma2YUMSi2lBm1r4myNIK0TyqvbPu7qWNJO1JZSS8CFC7PybNmPL0hJUS
-         vxQJlgNNO2awZlkWGUnPcEWrBDKHjn1SmrV74bZ0c8uRvN+9/RI3M9nJGdMPaF8hxsjg
-         y3Et5wL/KcfKVmuP4xiUFg8Rs0CXuHCKcphLM=
-MIME-Version: 1.0
-In-Reply-To: <f5a7b3811002220737r502e75c1w5ab5a64b6cc27b68@mail.gmail.com>
-References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com>
-	 <1266337450.24271.140.camel@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain>
-	 <20100216164744.GA25115@Krystal>
-	 <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
-	 <20100216170540.GA28039@Krystal>
-	 <f5a7b3811002170236i6c560eadp2de7deb10082db4f@mail.gmail.com>
-	 <20100217230854.GA25636@Krystal>
-	 <f5a7b3811002220737r502e75c1w5ab5a64b6cc27b68@mail.gmail.com>
-Date: Tue, 23 Feb 2010 16:59:03 +0530
-Message-ID: <f5a7b3811002230329w64cabac9lff95a40cb5e7dfa5@mail.gmail.com>
-Subject: Re: [ltt-dev] LTTng 0.193 fixes RT kernel support
-From: naresh kamboju <naresh.kernel@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 23 Feb 2010 06:55:06 -0500
+Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
+ DEVKIT8000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: ext Thomas Weber <weber@corscience.de>
+Cc: ext Jaya Kumar <jayakumar.lkml@gmail.com>, Thomas Weber <swirl@gmx.li>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B7E8AA4.40307@corscience.de>
+References: <1265917278-22011-1-git-send-email-swirl@gmx.li>
+	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
+	 <1265988343.2433.312.camel@tubuntu.research.nokia.com>
+	 <4B7E8AA4.40307@corscience.de>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Nokia
+Date: Tue, 23 Feb 2010 13:54:55 +0200
+Message-ID: <1266926095.2411.69.camel@tubuntu.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Feb 2010 11:54:57.0319 (UTC) FILETIME=[051E2B70:01CAB47F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 9:07 PM, naresh kamboju <naresh.kernel@gmail.com> wrote:
-> On Thu, Feb 18, 2010 at 4:38 AM, Mathieu Desnoyers
-> <mathieu.desnoyers@efficios.com> wrote:
->> * naresh kamboju (naresh.kernel@gmail.com) wrote:
->>> Hi,
->>>
->>> On Tue, Feb 16, 2010 at 10:35 PM, Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
->> [...]
->>> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
->>> > saner del_timer_sync() scheme to delete the timers.
->>>
->>> Could you give more info regarding, what kind of changes we can work on.
->>> let me also work around on it.
->>>
->>
->> I just released LTTng 0.193 for kernel 2.6.32.4 which includes patches
->> fixing these odd per-cpu timer teardowns.
->
-> I have downloaded LTTng 0.193 patches and viewed i can see below patches
->
-> 1. lttng-transport-lockless-add-timer-on-works-with-del-timer-sync.patch
-> 2. omap-trace-clock-use-del-timer-sync.patch
-> 3. x86-trace-clock-use-mod-timer.patch
-> 4. trace-clock-32-to-64-use-del-timer-sync.patch
+On Fri, 2010-02-19 at 13:57 +0100, ext Thomas Weber wrote:
+> Tomi Valkeinen wrote:
+> > On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
+> >   
+> >> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
+> >>     
+> >
+> > [snip]
+> >
+> >   
+> >>> +
+> >>> +static struct omap_video_timings innolux_at_timings = {
+> >>> +       .x_res          = 800,
+> >>> +       .y_res          = 480,
+> >>> +
+> >>> +       .pixel_clock    = 40000,
+> >>> +
+> >>> +       .hsw            = 48,
+> >>> +       .hfp            = 1,
+> >>> +       .hbp            = 1,
+> >>> +
+> >>> +       .vsw            = 3,
+> >>> +       .vfp            = 12,
+> >>> +       .vbp            = 25,
+> >>> +};
+> >>> +
+> >>> +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
+> >>> +{
+> >>> +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> >>> +               OMAP_DSS_LCD_IHS;
+> >>> +       dssdev->panel.acb = 0x28;
+> >>> +       dssdev->panel.timings = innolux_at_timings;
+> >>> +
+> >>> +       return 0;
+> >>> +}
+> >>> +
+> >>>       
+> >> Hi Thomas, Tomi,
+> >>
+> >> Just curious, does this patch imply that code like this needs to be
+> >> written for every single LCD type and resolution that can be connected
+> >> to omap2? Maybe there is a better way, like a common table of timings
+> >> and values that can be selected with a module option or even
+> >> autodetected.
+> >>     
+> >
+> > Yes, it is true that currently you need to write these for every LCD. I
+> > have been thinking this issue, and I think we can make a common driver. 
+> >
+> > However, it's not just selecting timings, as LCDs can have also other
+> > characteristics than just the video timings. For example, some may have
+> > power on/off line, some reset enable/disable, some need 50ms after
+> > reset, some 80ms after reset etc.
+> >
+> > But if we manage to get a sane set of those settings into the table, we
+> > could perhaps cover most of the "dummy" LCDs with it.
+> >
+> > This change doesn't probably need any changes to the DSS core, only for
+> > the panel driver. Any takers for this task? =) 
+> >
+> >  Tomi
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> >
+> >   
+> Hello,
+> 
+> sorry but I am not able to take the task.
+> Make it sense to rework this patch or do you want first the changes to
+> the panel driver?
 
-FYI.
+I probably won't have time to implement this generic panel driver yet.
+However, I will be merging some DSS driver model changes (sent to
+mailing lists) soon, after which this patch needs to be changed a bit.
 
-I have ported  LTTng 0.193 these four patches and able to resolve the
-issues on Uni-processor (UP) on ARM arch Thank you.
+The changes can be found from
+http://gitorious.org/linux-omap-dss2/linux/commits/work but they may
+still change a bit.
 
-A different bug is reported on SMP.
-
-BUG: using smp_processor_id() in preemptible [00000000] code: lttctl/754
-caller is put_synthetic_tsc+0x7c/0xf8
-
-Backtrace:
-[<c002d438>] (dump_backtrace+0x0/0x10c) from [<c03a7150>] (dump_stack+0x18/0x1c)
- r7:c04c4994 r6:c008e24c r5:00000003 r4:ce0b6000
-[<c03a7138>] (dump_stack+0x0/0x1c) from [<c02423b4>]
-(debug_smp_processor_id+0xc0/0xec)
-[<c02422f4>] (debug_smp_processor_id+0x0/0xec) from [<c008e24c>]
-(put_synthetic_tsc+0x7c/0xf8)
- r6:c04f82cc r5:c0023600 r4:00000003
-[<c008e1d0>] (put_synthetic_tsc+0x0/0xf8) from [<c008e610>]
-(put_trace_clock+0x68/0x7c)
- r8:bece6eb9 r7:0000000b r6:ce0b7d2a r5:cc037600 r4:00000000
-[<c008e5a8>] (put_trace_clock+0x0/0x7c) from [<c022a96c>]
-(ltt_trace_destroy+0x40/0x94)
-[<c022a92c>] (ltt_trace_destroy+0x0/0x94) from [<c0232f6c>]
-(destroy_trace_write+0xbc/0x140)
- r5:00000000 r4:0000000b
-[<c0232eb0>] (destroy_trace_write+0x0/0x140) from [<c00be240>]
-(vfs_write+0xb4/0x144)
- r7:0000000b r6:ce0b7f70 r5:bece6eb9 r4:ceae7860
-[<c00be18c>] (vfs_write+0x0/0x144) from [<c00be424>] (sys_write+0x48/0xf4)
- r7:0000000b r6:ceae7860 r5:00000000 r4:00000000
-[<c00be3dc>] (sys_write+0x0/0xf4) from [<c0028e3c>]
-(__sys_trace_return+0x0/0x24)
+ Tomi
 
 
-patch trace-clock-32-to-64-use-del-timer-sync.patch is causing above
-problem on SMP.
-
-with out this patch on SMP reported the previous bug as BUG: sleeping
-function called from invalid context at kernel/rtmutex.c:685
-
-However, i'll investigate.
-
-Best regards,
-Naresh Kamboju
->> Thanks,
->>
->> Mathieu
->>
->> --
->> Mathieu Desnoyers
->> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
->>
->
