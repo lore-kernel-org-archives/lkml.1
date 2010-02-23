@@ -1,85 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752489Ab0BWH1b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 02:27:31 -0500
-Received: from mail-yx0-f189.google.com ([209.85.210.189]:32955 "EHLO
-	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186Ab0BWH13 (ORCPT
+	id S1752733Ab0BWHb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 02:31:29 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:42505 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566Ab0BWHb0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 02:27:29 -0500
+	Tue, 23 Feb 2010 02:31:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QrfQ5FHzdCBikqSLC1Zl4+nmLsVLsgca1F7o0CVgBxQfUNepKmrCD9MYmHfjIf6Sjy
-         rq46R7M+P4fhyXNu/Jx+ydymmdrz0LMZ+hXvx/hM/SNU9FjHrFStCXp8cdxW7KZcHYDg
-         AFW1hAR4craNaYBdLvpOBOLnmkXKTAvFJZToI=
-Message-ID: <4B83835C.8090707@garzik.org>
-Date: Tue, 23 Feb 2010 02:27:24 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=ani+D20YnCOZwTFAOeu2F3jxJiuP6OrZ11HLdXJk+ISQ4RN3HJWxZJsK2dDAl59b0P
+         8tBgO6/ER0G5bMD1ULmTk8iICk9daGyaadV6jekugm8UB07GSaSLojtMY7HFbN811hum
+         4s92tvbykfJB9v7KKQBEu073XM++YARMr7c1Q=
 MIME-Version: 1.0
-To: Alan Cox <alan@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/5] libata: Pass host flags into the pci helper
-References: <20100217131532.16884.21696.stgit@localhost.localdomain>
-In-Reply-To: <20100217131532.16884.21696.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100223065953.GB32503@liondog.tnic>
+References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com>
+	 <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com>
+	 <20100223065953.GB32503@liondog.tnic>
+Date: Tue, 23 Feb 2010 13:01:25 +0530
+Message-ID: <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com>
+Subject: Re: QUERY: Inclusion of header files in kernel header files
+From: viresh kumar <viresh.linux@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       viresh kumar <viresh.linux@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/2010 08:15 AM, Alan Cox wrote:
-> This allows parallel scan and the like to be set without having to stop
-> using the existing full helper functions. This patch merely adds the argument
-> and fixes up the callers. It doesn't undo the special cases already in the
-> tree or add any new parallel callers.
+Hi,
+
+>> Is this correct approach?
+>>
+>> Again, if i include device.h and resource.h, they must be included before bus.h.
 >
-> Signed-off-by: Alan Cox<alan@linux.intel.com>
-> ---
+> and this is the thing: all those other files which include
+> <linux/amba/bus.h> either include <linux/device.h> and
+> <linux/resource.h> directly or the last are being included indirectly
+> through other headers.
 >
->   drivers/ata/ata_generic.c       |    2 +-
->   drivers/ata/libata-sff.c        |    6 ++++--
->   drivers/ata/pata_acpi.c         |    2 +-
->   drivers/ata/pata_ali.c          |    2 +-
->   drivers/ata/pata_amd.c          |    2 +-
->   drivers/ata/pata_artop.c        |    2 +-
->   drivers/ata/pata_atiixp.c       |    2 +-
->   drivers/ata/pata_cmd640.c       |    2 +-
->   drivers/ata/pata_cmd64x.c       |    2 +-
->   drivers/ata/pata_cs5530.c       |    2 +-
->   drivers/ata/pata_cs5535.c       |    2 +-
->   drivers/ata/pata_cs5536.c       |    2 +-
->   drivers/ata/pata_cypress.c      |    2 +-
->   drivers/ata/pata_efar.c         |    2 +-
->   drivers/ata/pata_hpt366.c       |    2 +-
->   drivers/ata/pata_hpt37x.c       |    2 +-
->   drivers/ata/pata_hpt3x2n.c      |    2 +-
->   drivers/ata/pata_it8213.c       |    2 +-
->   drivers/ata/pata_it821x.c       |    2 +-
->   drivers/ata/pata_jmicron.c      |    2 +-
->   drivers/ata/pata_marvell.c      |    2 +-
->   drivers/ata/pata_netcell.c      |    2 +-
->   drivers/ata/pata_ns87410.c      |    2 +-
->   drivers/ata/pata_ns87415.c      |    2 +-
->   drivers/ata/pata_oldpiix.c      |    2 +-
->   drivers/ata/pata_opti.c         |    2 +-
->   drivers/ata/pata_optidma.c      |    2 +-
->   drivers/ata/pata_pdc202xx_old.c |    2 +-
->   drivers/ata/pata_piccolo.c      |    2 +-
->   drivers/ata/pata_radisys.c      |    2 +-
->   drivers/ata/pata_rz1000.c       |    2 +-
->   drivers/ata/pata_sc1200.c       |    2 +-
->   drivers/ata/pata_serverworks.c  |    2 +-
->   drivers/ata/pata_sil680.c       |    2 +-
->   drivers/ata/pata_sis.c          |    2 +-
->   drivers/ata/pata_sl82c105.c     |    2 +-
->   drivers/ata/pata_triflex.c      |    2 +-
->   drivers/ata/pata_via.c          |    2 +-
->   include/linux/libata.h          |    4 ++--
->   39 files changed, 43 insertions(+), 41 deletions(-)
+> Baseline, struct device and struct resource's definitions have to be
+> available before <linux/amba/bus.h> is included. That's why you have to
+> include the bus.h header last.
+>
 
-applied (after catching one miss in drivers/staging/)
+We need to include device.h and resource.h at every place where we use bus.h.
 
+Shouldn't it be responsibility of bus.h only? So that people don't
+have to bother about bus.h
+internal dependencies.
 
+I think, ideally including any header file shouldn't give compilation
+errors for types used in
+included header file.
+
+viresh kumar
+
+On Tue, Feb 23, 2010 at 12:29 PM, Borislav Petkov
+<petkovbb@googlemail.com> wrote:
+> From: viresh kumar <viresh.linux@gmail.com>
+> Date: Tue, Feb 23, 2010 at 12:13:35PM +0530
+>
+> Hi,
+>
+>> I have been through many kernel header files and have found that kernel header
+>> files at many places don't include other header files which they have
+>> dependency upon.
+>>
+>> For example:
+>> <linux/amba/bus.h> uses struct device and struct resource and it doesn't
+>> include <linux/device.h> and <linux/resource.h> header files.
+>>
+>> Now, whenever i try to include bus.h, i have to include device.h and resource.h.
+>>
+>> Is this correct approach?
+>>
+>> Again, if i include device.h and resource.h, they must be included before bus.h.
+>
+> and this is the thing: all those other files which include
+> <linux/amba/bus.h> either include <linux/device.h> and
+> <linux/resource.h> directly or the last are being included indirectly
+> through other headers.
+>
+> Baseline, struct device and struct resource's definitions have to be
+> available before <linux/amba/bus.h> is included. That's why you have to
+> include the bus.h header last.
+>
+>> Now this will disturb the alphabetical ordering of including header files
+>> sometimes. (not in this example)
+>
+> I don't think there's such thing as alphabetical header ordering and if
+> it were it would be rather dumb thing to do.
+>
+> Hope this helps.
+>
+> --
+> Regards/Gruss,
+>    Boris.
+>
