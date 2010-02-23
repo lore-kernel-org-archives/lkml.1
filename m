@@ -1,115 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751444Ab0BWFdE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 00:33:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36757 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751124Ab0BWFdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 00:33:01 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+Sbw51JiaSFweeNzYD1p5fqI86p7nJqYfVfQGofd
-	bMLr8a2m8iw1Pe
-Subject: [patchlet] vfs: tell gcc to st[hHf]u wrt NAMEOFFSET
-From: Mike Galbraith <efault@gmx.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 23 Feb 2010 06:32:57 +0100
-Message-Id: <1266903177.6352.18.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46000000000000002
+	id S1751380Ab0BWFwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 00:52:36 -0500
+Received: from vms173015pub.verizon.net ([206.46.173.15]:56715 "EHLO
+	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979Ab0BWFwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 00:52:34 -0500
+Date: Tue, 23 Feb 2010 00:52:17 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: [git pull request] ACPI & driver patches for Linux-2.6.33-rc8 (part 2)
+Message-id: <alpine.LFD.2.00.1002230050390.3772@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gcc has become smart enough to not figure out the below, so take Al's advice.
+Hi Linus,
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0603.1/0418.html
+please pull from: 
 
-<quote>
-It doesn't dereference it. d_name is an array, not a pointer. FWIW,
-it should've been
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
-#define NAME_OFFSET(de) offsetof(typeof(de), d_name)
+Three more bug-fixes.
+This will update the files shown below.
 
-or, better yet
+thanks!
 
-#define NAME_OFFSET offsetof(struct linux_dirent, d_name)
-#define NAME_OFFSET64 offsetof(struct linux_dirent64, d_name)
-</quote>
-
-vfs: tell gcc to st[hHf]u wrt NAMEOFFSET
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Al Viro <viro@ftp.linux.org.uk>
-LKML-Reference: <new-submission>
-
-diff --git a/fs/compat.c b/fs/compat.c
-index 00d90c2..cf08df5 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -817,7 +817,8 @@ asmlinkage long compat_sys_mount(char __user * dev_name, char __user * dir_name,
- 	return retval;
- }
- 
--#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-+#define NAME_OFFSET_COMPAT offsetof(struct compat_linux_dirent, d_name)
-+#define NAME_OFFSET64 offsetof(struct linux_dirent64, d_name)
- 
- struct compat_old_linux_dirent {
- 	compat_ulong_t	d_ino;
-@@ -907,7 +908,7 @@ static int compat_filldir(void *__buf, const char *name, int namlen,
- 	struct compat_linux_dirent __user * dirent;
- 	struct compat_getdents_callback *buf = __buf;
- 	compat_ulong_t d_ino;
--	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(compat_long_t));
-+	int reclen = ALIGN(NAME_OFFSET_COMPAT + namlen + 2, sizeof(compat_long_t));
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
- 	if (reclen > buf->count)
-@@ -994,7 +995,7 @@ static int compat_filldir64(void * __buf, const char * name, int namlen, loff_t
- {
- 	struct linux_dirent64 __user *dirent;
- 	struct compat_getdents_callback64 *buf = __buf;
--	int jj = NAME_OFFSET(dirent);
-+	int jj = NAME_OFFSET64;
- 	int reclen = ALIGN(jj + namlen + 1, sizeof(u64));
- 	u64 off;
- 
-diff --git a/fs/readdir.c b/fs/readdir.c
-index 7723401..9a1ddb6 100644
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -54,7 +54,8 @@ EXPORT_SYMBOL(vfs_readdir);
-  * anyway. Thus the special "fillonedir()" function for that
-  * case (the low-level handlers don't need to care about this).
-  */
--#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-+#define NAME_OFFSET offsetof(struct linux_dirent, d_name)
-+#define NAME_OFFSET64 offsetof(struct linux_dirent64, d_name)
- 
- #ifdef __ARCH_WANT_OLD_READDIR
- 
-@@ -152,7 +153,7 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
- 	struct linux_dirent __user * dirent;
- 	struct getdents_callback * buf = (struct getdents_callback *) __buf;
- 	unsigned long d_ino;
--	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(long));
-+	int reclen = ALIGN(NAME_OFFSET + namlen + 2, sizeof(long));
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
- 	if (reclen > buf->count)
-@@ -237,7 +238,7 @@ static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
- {
- 	struct linux_dirent64 __user *dirent;
- 	struct getdents_callback64 * buf = (struct getdents_callback64 *) __buf;
--	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(u64));
-+	int reclen = ALIGN(NAME_OFFSET64 + namlen + 1, sizeof(u64));
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
- 	if (reclen > buf->count)
+--
+Len Brown
+Intel Open Source Technology Center
 
 
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/2.6.33/acpi-release-20091214-2.6.33-rc8.diff.gz
+
+ drivers/acpi/processor_idle.c    |   28 ++++++++++++++++------------
+ drivers/acpi/processor_perflib.c |    6 +++++-
+ drivers/platform/x86/acer-wmi.c  |    2 +-
+ 3 files changed, 22 insertions(+), 14 deletions(-)
+
+through these commits:
+
+Carlos Corbacho (1):
+      acer-wmi: Respect current backlight level when loading
+
+Darrick J. Wong (1):
+      ACPI: Fix regression where _PPC is not read at boot even when ignore_ppc=0
+
+Pallipadi, Venkatesh (1):
+      ACPI: Be in TS_POLLING state during mwait based C-state entry
+
+with this log:
+
+commit b2cb9dcb98cc7a3210e9138a05e0ae1863523a61
+Merge: e4f23f6 455c0d7
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Feb 23 00:39:00 2010 -0500
+
+    Merge branch 'pcc' into release
+
+commit e4f23f66ed2498d7d08437d47cad2fca88b812bc
+Merge: 9f3a628 6f6ef82 d306ebc
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Feb 23 00:19:48 2010 -0500
+
+    Merge branches 'bugzilla-14207' and 'idle' into release
+
+commit d306ebc28649b89877a22158fe0076f06cc46f60
+Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+Date:   Wed Feb 10 10:35:31 2010 -0800
+
+    ACPI: Be in TS_POLLING state during mwait based C-state entry
+    
+    ACPI deep C-state entry had a long standing bug/missing feature, wherein we were sending
+    resched IPIs when an idle CPU is in mwait based deep C-state. Only mwait based C1 was using
+    the write to the monitored address to wake up mwait'ing CPU.
+    
+    This patch changes the code to retain TS_POLLING bit if we are entering an mwait based
+    deep C-state.
+    
+    The patch has been verified to reduce the number of resched IPIs in general and also
+    improves the performance/power on workloads with low system utilization (i.e., when mwait based
+    deep C-states are being used).
+    
+    Fixes "netperf ~50% regression with 2.6.33-rc1, bisect to 1b9508f"
+    http://marc.info/?l=linux-kernel&m=126441481427331&w=4
+    
+    Reported-by: Lin Ming <ming.m.lin@intel.com>
+    Tested-by: Alex Shi <alex.shi@intel.com>
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 455c0d71d46e86b0b7ff2c9dcfc19bc162302ee9
+Author: Darrick J. Wong <djwong@us.ibm.com>
+Date:   Thu Feb 18 10:28:20 2010 -0800
+
+    ACPI: Fix regression where _PPC is not read at boot even when ignore_ppc=0
+    
+    Earlier, Ingo Molnar posted a patch to make it so that the kernel would avoid
+    reading _PPC on his broken T60.  Unfortunately, it seems that with Thomas
+    Renninger's patch last July to eliminate _PPC evaluations when the processor
+    driver loads, the kernel never actually reads _PPC at all!  This is problematic
+    if you happen to boot your non-T60 computer in a state where the BIOS _wants_
+    _PPC to be something other than zero.
+    
+    So, put the _PPC evaluation back into acpi_processor_get_performance_info if
+    ignore_ppc isn't 1.
+    
+    Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 6f6ef82cc9de24153ba7d5cedab5970e276aefa1
+Author: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Date:   Sat Dec 26 19:24:31 2009 +0000
+
+    acer-wmi: Respect current backlight level when loading
+    
+    Set the backlight to use the current brightness when loaded, rather than
+    always resetting the backlight to maximum brightness.
+    
+    Fixes kernel bugzilla #14207
+    
+    Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+    Reported-by: Denis Mukhin <denis_mukhin@yahoo.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
