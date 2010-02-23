@@ -1,103 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752733Ab0BWHb3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 02:31:29 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:42505 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566Ab0BWHb0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 02:31:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=ani+D20YnCOZwTFAOeu2F3jxJiuP6OrZ11HLdXJk+ISQ4RN3HJWxZJsK2dDAl59b0P
-         8tBgO6/ER0G5bMD1ULmTk8iICk9daGyaadV6jekugm8UB07GSaSLojtMY7HFbN811hum
-         4s92tvbykfJB9v7KKQBEu073XM++YARMr7c1Q=
+	id S1752908Ab0BWHdD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 02:33:03 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63346 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752656Ab0BWHdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 02:33:00 -0500
+Message-ID: <4B838490.1050908@cn.fujitsu.com>
+Date: Tue, 23 Feb 2010 15:32:32 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <20100223065953.GB32503@liondog.tnic>
-References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com>
-	 <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com>
-	 <20100223065953.GB32503@liondog.tnic>
-Date: Tue, 23 Feb 2010 13:01:25 +0530
-Message-ID: <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com>
-Subject: Re: QUERY: Inclusion of header files in kernel header files
-From: viresh kumar <viresh.linux@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       viresh kumar <viresh.linux@gmail.com>, linux-kernel@vger.kernel.org
+To: David Rientjes <rientjes@google.com>
+CC: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time (58568d2)
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <4B827043.3060305@cn.fujitsu.com> <alpine.DEB.2.00.1002221339160.14426@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002221339160.14426@chino.kir.corp.google.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
->> Is this correct approach?
+on 2010-2-23 6:06, David Rientjes wrote:
+>>>> Right, but the callback_mutex was being removed by this patch.
+>>>>
+>>>
+>>> I was making the case for it to be readded :)
 >>
->> Again, if i include device.h and resource.h, they must be included before bus.h.
->
-> and this is the thing: all those other files which include
-> <linux/amba/bus.h> either include <linux/device.h> and
-> <linux/resource.h> directly or the last are being included indirectly
-> through other headers.
->
-> Baseline, struct device and struct resource's definitions have to be
-> available before <linux/amba/bus.h> is included. That's why you have to
-> include the bus.h header last.
->
-
-We need to include device.h and resource.h at every place where we use bus.h.
-
-Shouldn't it be responsibility of bus.h only? So that people don't
-have to bother about bus.h
-internal dependencies.
-
-I think, ideally including any header file shouldn't give compilation
-errors for types used in
-included header file.
-
-viresh kumar
-
-On Tue, Feb 23, 2010 at 12:29 PM, Borislav Petkov
-<petkovbb@googlemail.com> wrote:
-> From: viresh kumar <viresh.linux@gmail.com>
-> Date: Tue, Feb 23, 2010 at 12:13:35PM +0530
->
-> Hi,
->
->> I have been through many kernel header files and have found that kernel header
->> files at many places don't include other header files which they have
->> dependency upon.
+>> But cgroup_mutex is held when someone changes cs->cpus_allowed or doing hotplug,
+>> so I think callback_mutex is not necessary in this case.
 >>
->> For example:
->> <linux/amba/bus.h> uses struct device and struct resource and it doesn't
->> include <linux/device.h> and <linux/resource.h> header files.
->>
->> Now, whenever i try to include bus.h, i have to include device.h and resource.h.
->>
->> Is this correct approach?
->>
->> Again, if i include device.h and resource.h, they must be included before bus.h.
->
-> and this is the thing: all those other files which include
-> <linux/amba/bus.h> either include <linux/device.h> and
-> <linux/resource.h> directly or the last are being included indirectly
-> through other headers.
->
-> Baseline, struct device and struct resource's definitions have to be
-> available before <linux/amba/bus.h> is included. That's why you have to
-> include the bus.h header last.
->
->> Now this will disturb the alphabetical ordering of including header files
->> sometimes. (not in this example)
->
-> I don't think there's such thing as alphabetical header ordering and if
-> it were it would be rather dumb thing to do.
->
-> Hope this helps.
->
-> --
-> Regards/Gruss,
->    Boris.
->
+> 
+> Then why is it taken in update_cpumask()?
+
+when we read cs->cpus_allowed, we need just hold one of callback_mutex and cgroup_mutex.
+If we want to change cs->cpus_allowed, we must hold callback_mutex and cgroup_mutex.
+
+>>  /*
+>> @@ -1391,11 +1393,10 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+>>  
+>>  	if (cs == &top_cpuset) {
+>>  		cpumask_copy(cpus_attach, cpu_possible_mask);
+>> -		to = node_possible_map;
+>>  	} else {
+>>  		guarantee_online_cpus(cs, cpus_attach);
+>> -		guarantee_online_mems(cs, &to);
+>>  	}
+>> +	guarantee_online_mems(cs, &to);
+>>  
+>>  	/* do per-task migration stuff possibly for each in the threadgroup */
+>>  	cpuset_attach_task(tsk, &to, cs);
+> 
+> Do we need to set cpus_attach to cpu_possible_mask?  Why won't 
+> cpu_active_mask suffice?
+
+If we set cpus_attach to cpu_possible_mask, we needn't do anything for tasks in the top_cpuset when
+doing cpu hotplug. If not, we will update cpus_allowed of all tasks in the top_cpuset.
+
+> 
+>> @@ -2090,15 +2091,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
+>>  static int cpuset_track_online_nodes(struct notifier_block *self,
+>>  				unsigned long action, void *arg)
+>>  {
+>> +	nodemask_t oldmems;
+> 
+> Is it possible to use NODEMASK_ALLOC() instead?
+
+Yes. I will write another patch to fix it.(These are the same problems in the other functions) 
+
+
+
+
