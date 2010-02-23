@@ -1,68 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478Ab0BWSR0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:17:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30540 "EHLO mx1.redhat.com"
+	id S1752604Ab0BWSWJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 13:22:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53964 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115Ab0BWSRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:17:25 -0500
-Date: Tue, 23 Feb 2010 19:16:32 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ia64: ptrace: kill thread_matches()
-Message-ID: <20100223181632.GA19586@redhat.com>
+	id S1751901Ab0BWSWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 13:22:05 -0500
+Message-ID: <4B841BC3.1000908@zytor.com>
+Date: Tue, 23 Feb 2010 10:17:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Borislav Petkov <bp@amd64.org>
+CC: Michal Marek <mmarek@suse.cz>, linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+References: <20100219142205.GA32533@aftab> <4B7EB6EF.9010405@zytor.com> <20100219164512.GA492@aftab> <4B7EC20C.30607@zytor.com> <20100222141737.GB21233@aftab> <4B82BD01.3030008@zytor.com> <20100222184945.GD21233@aftab> <4B82E144.1050007@zytor.com> <20100223155852.GF30382@aftab> <4B84118C.90203@zytor.com> <20100223175457.GA2401@aftab>
+In-Reply-To: <20100223175457.GA2401@aftab>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial. thread_matches() has no callers since
-e868a55c2a8cb72b66d7137fbcc54b82016e98eb, remove it.
+On 02/23/2010 09:54 AM, Borislav Petkov wrote:
+> 
+> Right, doh. Ok, just added it and it builds fine with a gcc (Gentoo
+> 4.4.1 p1.0) 4.4.1. If you have suspicion that some older gcc versions
+> might choke on it, I could leave the "=D" dummy constraint in?
+> 
 
-Ironically, this helper is the only user of ptrace_check_attach()
-outside of kernel/ptrace.c, and it was always wrong because it must
-not use "might_sleep" ptrace_check_attach() under tasklist.
+I can try it with gcc 3.4 here.  -fcall-saved-rdi is cleaner, if it works.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+	-hpa
 
---- a/arch/ia64/kernel/ptrace.c
-+++ b/arch/ia64/kernel/ptrace.c
-@@ -674,33 +674,6 @@ ptrace_attach_sync_user_rbs (struct task
- 	read_unlock(&tasklist_lock);
- }
- 
--static inline int
--thread_matches (struct task_struct *thread, unsigned long addr)
--{
--	unsigned long thread_rbs_end;
--	struct pt_regs *thread_regs;
--
--	if (ptrace_check_attach(thread, 0) < 0)
--		/*
--		 * If the thread is not in an attachable state, we'll
--		 * ignore it.  The net effect is that if ADDR happens
--		 * to overlap with the portion of the thread's
--		 * register backing store that is currently residing
--		 * on the thread's kernel stack, then ptrace() may end
--		 * up accessing a stale value.  But if the thread
--		 * isn't stopped, that's a problem anyhow, so we're
--		 * doing as well as we can...
--		 */
--		return 0;
--
--	thread_regs = task_pt_regs(thread);
--	thread_rbs_end = ia64_get_user_rbs_end(thread, thread_regs, NULL);
--	if (!on_kernel_rbs(addr, thread_regs->ar_bspstore, thread_rbs_end))
--		return 0;
--
--	return 1;	/* looks like we've got a winner */
--}
--
- /*
-  * Write f32-f127 back to task->thread.fph if it has been modified.
-  */
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
