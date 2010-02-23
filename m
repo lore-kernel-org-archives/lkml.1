@@ -1,61 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260Ab0BWSDL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 13:03:11 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48867 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127Ab0BWSDJ (ORCPT
+	id S1753043Ab0BWSGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 13:06:33 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:52079 "HELO
+	outboundproxy6.bluehost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1752260Ab0BWSGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 13:03:09 -0500
-X-Authority-Analysis: v=1.0 c=1 a=TmnEcBdXtfUA:10 a=7U3hwN5JcxgA:10 a=CwPc2XfKizsTsBQkqyQA:9 a=axfCjyS7r7rSqQ-nA74YSFOJgpIA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 04/10] ARM: ftrace: allow building without frame
- pointers
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Rabin Vincent <rabin@rab.in>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20100223175807.GB5836@debian>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in>
-	 <1266090518-31120-5-git-send-email-rabin@rab.in>
-	 <20100222190516.GJ5055@nowhere> <1266931113.19540.5.camel@frodo>
-	 <20100223171112.GC5357@nowhere>  <20100223175807.GB5836@debian>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Tue, 23 Feb 2010 13:03:05 -0500
-Message-ID: <1266948185.24271.6079.camel@gandalf.stny.rr.com>
+	Tue, 23 Feb 2010 13:06:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=dvyBSPyQxC5nv3ETcaKLkBYKXVcDs6PG+F0wZCgC/9w1AG78W76EIoRcf/T9LVgQiyqyrFGfqKzvJ2lSDFeGaXEqJNBG5ixWVfy3JzvYOonWbH7ymzgh6df+xqvGhqqA;
+Date: Tue, 23 Feb 2010 10:06:26 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH v5 0/5] PCI: try "pci=use_crs" again
+Message-ID: <20100223100626.693b50b6@jbarnes-piketon>
+In-Reply-To: <20100223172355.17242.55927.stgit@bob.kio>
+References: <20100223172355.17242.55927.stgit@bob.kio>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-23 at 23:28 +0530, Rabin Vincent wrote:
+On Tue, 23 Feb 2010 10:24:15 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-> The easiest option to have a more obvious message than a linker error
-> would be to add something like this in entry-common.S:
+> Historically, Linux has assumed a single PCI host bridge, with that
+> bridge claiming all the address space left after RAM and legacy
+> devices are taken out.
 > 
->   #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4)) \
-> 	&& !defined(OLD_MCOUNT)
->   #warning Ftrace on GCC < 4.4 requires frame pointers
->   #endif
+> If the system contains multiple host bridges, we can no longer
+> operate under that assumption.  We have to know what parts of the
+> address space are claimed by each bridge so that when we assign
+> resources to a PCI device, we take them from a range claimed by the
+> upstream host bridge.
 > 
-> Messages like this are also present in other places in ARM (for example
-> arch/arm/kernel/unwind.c), so this wouldn't be this first.
+> On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in
+> the system, and part of the host bridge description is the
+> "_CRS" (current resource settings" property, which lists the address
+> space used by the bridge.  On x86, we currently ignore most of the
+> _CRS information.  This patch series changes this, so we will use
+> _CRS to learn about the host bridge windows.
 > 
-> Note that the above message would help in all cases except the one where
-> someone builds the kernel with !fp and GCC 4.4+, and then builds a
-> module with an older GCC.  That would still be only a linker error.
+> Since most x86 machines with multiple host bridges are relatively
+> new, this series only turns this on for machines with BIOS dates of
+> 2008 or newer.
+> 
+> Changes from v4 to v5:
+>     - Add EXPORT_SYMBOL_GPL(pci_bus_resource_n) for module builds.
 
-I was going to recommend the #if above. But shouldn't it be a #error
-instead of a #warning?
+Thanks, it built this time.  Pushed to my linux-next branch.
 
--- Steve
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
