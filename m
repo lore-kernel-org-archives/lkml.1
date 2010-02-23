@@ -1,68 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752544Ab0BWNBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:01:20 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:54211 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373Ab0BWNBS (ORCPT
+	id S1752515Ab0BWNQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:16:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60396 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959Ab0BWNQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 08:01:18 -0500
-Date: Tue, 23 Feb 2010 14:01:28 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: viresh kumar <viresh.linux@gmail.com>
-Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: QUERY: Inclusion of header files in kernel header files
-Message-ID: <20100223130128.GB30382@aftab>
-References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com>
- <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com>
- <20100223065953.GB32503@liondog.tnic>
- <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com>
- <20100223095025.GA18559@liondog.tnic>
- <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 23 Feb 2010 08:16:53 -0500
+X-Authority-Analysis: v=1.0 c=1 a=pi97quWTHqIA:10 a=VwQbUJbxAAAA:8 a=_q2IS3Dq3vcCj2ohVVIA:9 a=FE_Hr-30pBtF0tkxGt5MXDTCjY4A:4 a=U62fhAwekXMA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100222185928.GA1572@ucw.cz>
+References: <4B744E13.8040004@kernel.org>
+	 <20100212150137.648dca7c@hyperion.delvare>
+	 <1265988318.24271.30.camel@gandalf.stny.rr.com>
+	 <20100216153905.GA1541@ucw.cz>
+	 <1266337061.24271.138.camel@gandalf.stny.rr.com>
+	 <20100216162745.GA1660@ucw.cz> <20100221135341.GC1307@ucw.cz>
+	 <20100222185928.GA1572@ucw.cz>
+Content-Type: text/plain
+Date: Tue, 23 Feb 2010 08:14:33 -0500
+Message-Id: <1266930873.19540.2.camel@frodo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: viresh kumar <viresh.linux@gmail.com>
-Date: Tue, Feb 23, 2010 at 05:07:47PM +0530
-
-> >> I think, ideally including any header file shouldn't give compilation
-> >> errors for types used in
-> >> included header file.
-> >
-> > Agreed.
-> >
-> > I'd send a patch fixing the bus.h header, in case no one has a valid
-> > technical reason against it.
-> >
+On Mon, 2010-02-22 at 19:59 +0100, Pavel Machek wrote:
+> On Sun 2010-02-21 14:53:41, Pavel Machek wrote:
+> > On Tue 2010-02-16 17:27:45, Pavel Machek wrote:
+> > > Add --only-dl option -- when you want to cache the needed patches but
+> > > not apply anything yet.
+> > 
+> > Actually, you'll probably get a better patch if you relace 'only-dl'
+> > with just 'dl'. Mistaking --only-dl and --dl-only is just too easy.
 > 
-> That will be great!!!
-
-Just to make sure: with "I'd" I meant "I would", i.e. actually _you_
-could send a patch fixing that by explaining the problem in the commit
-message :).
-
-> Actually this issue is not present only in bus.h, but some other
-> kernel header files.
-> Like: arch/arm/include/asm/clkdev.h don't include list.h file but
-> using struct list_head
+> This should work; save time&bandwidth by using incremental patches
+> between -rcX.
 > 
-> May be we need to check this in other header files also.
+> Is there testsuite for ketchup? It would be useful at this point...
 
-Well, you should talk to the arm maintainer about that task and whether
-it is desirable.
+I don't have one, but that would be helpful.
 
--- 
-Regards/Gruss,
-Boris.
+Would you like to take over maintaining ketchup? I took it over because
+Matt did not want it anymore and I was the last to send him patches.
+
+I've been quite busy working on Ftrace, trace-cmd and kconfig stuff,
+that I'm willing to hand this over to you, if you want it. My last
+release of ketchup is my git tree on kernel.org.
+
+-- Steve
+
+
