@@ -1,53 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592Ab0BWA01 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 19:26:27 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:54525 "HELO
-	outboundproxy6.bluehost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1752221Ab0BWA0Z (ORCPT
+	id S1752666Ab0BWA2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 19:28:18 -0500
+Received: from mail-iw0-f177.google.com ([209.85.223.177]:55452 "EHLO
+	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766Ab0BWA2Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 19:26:25 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=nY1AVKQrjY6YuPMlAceespxQJUjIRj72NYi+de2kHpkkEiRXi0Qu1/9kdn1A5yfFFKC5Kfz0n3qWw3YqTR6m6UAe/zAjDL17kg8VzAsezMLSh7dfI//8w8yTWzZHB59W;
-Date: Mon, 22 Feb 2010 16:23:56 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
-       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH v4 1/5] PCI: split up pci_read_bridge_bases()
-Message-ID: <20100222162356.2e4b3a19@jbarnes-piketon>
-In-Reply-To: <20100217201952.4013.62534.stgit@bob.kio>
-References: <20100217201654.4013.70201.stgit@bob.kio>
-	<20100217201952.4013.62534.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 22 Feb 2010 19:28:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Np67sPWXMsfROHJ5St6OM6DHi65RrbbraKFrJGw2s14R6+187rSYoJxyJZuLVUELNy
+         6QiipOk7mgr0wxsUj2G0o3zag6AWZoaHpLgD1L5/vHB8G2wIUeYhZFZmznqq6ws+UUA/
+         JLsCXJ85m8TjEF6xNsddDM5VgaiXOXfALQM0M=
+MIME-Version: 1.0
+In-Reply-To: <20100222.155357.235673585.davem@davemloft.net>
+References: <4B8029FA.2000404@gmail.com>
+	 <20100222.155357.235673585.davem@davemloft.net>
+Date: Mon, 22 Feb 2010 18:28:15 -0600
+Message-ID: <51f3faa71002221628n120070e1ic66f094a229df72a@mail.gmail.com>
+Subject: Re: NETIF_F_HIGHDMA misuse in networking drivers?
+From: Robert Hancock <hancockrwd@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 13:19:52 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+On Mon, Feb 22, 2010 at 5:53 PM, David Miller <davem@davemloft.net> wrote:
+> From: Robert Hancock <hancockrwd@gmail.com>
+> Date: Sat, 20 Feb 2010 12:29:14 -0600
+>
+>> Was just part of a discussion in another thread talking about 64-bit
+>> DMA support issues where NETIF_F_HIGHDMA came up. I was originally
+>> under the impression that this flag indicated the device supported
+>> 64-bit DMA addressing. However, from looking at the code that checks
+>> for it (and, well, the actual comment for the flag) it really means
+>> "can access highmem" which has nothing to do with 64-bit at all. And
+>> if there's no highmem (like on x86_64) it has no effect at all.
+>
+> I think it's trying to do two things, and doing only one of them
+> well :-)
+>
+> It's trying to keep drivers from receiving highmem pages if they are
+> not able to access them properly.  F.e. imagine a driver that copies
+> data out of the packet assuming that page_address() is always valid on
+> the SKB pages.
 
-> 
-> No functional change; this breaks up pci_read_bridge_bases() into separate
-> pieces for the I/O, memory, and prefetchable memory windows, similar to how
-> Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> ---
+Yeah, it appears this is the only reason not to set the HIGHDMA flag.
+Of course, given that relatively few drivers should need to do this (I
+would think only emulated/virtual adapters, or really old/crappy
+hardware with no bus-master support) ideally it would be better if
+only those drivers needed to do something special (i.e. a NOHIGHDMA
+flag or something) rather than making all the normal ones do it..
 
-Applied this series, thanks Bjorn.  Hopefully this one will
-successfully run the linux-next gauntlet too. :)
+>
+> It's also trying to use this to prevent physical addresses beyond 4GB
+> from reaching the driver, which as you note is not implemented
+> precisely here.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+If by "precisely" you mean "at all, on many architectures".. on a
+non-highmem arch, setting or not setting HIGHDMA has no effect on
+anything, including whether >4GB addresses will be received by the
+driver or not. Only the device DMA mask (presumably) does. Therefore,
+conditionally setting HIGHDMA based on what DMA mask the driver has
+been able to set is almost certainly a bug.
+
+>
+> Without knowing something about how the driver "DMAs" packet data we
+> can't really do an accurate test here.  Maybe the driver directly DMAs
+> using physical addressing (an ASIC inside of a CPU, for example,
+> drivers/net/niu.c has a case of this).
+>
+> Maybe the platform uses an IOMMU with 32-bit virtual addressing, so
+> any physical address is fine even if the card only supports 32-bit
+> addressing (basically any PCI coard on sparc64 is an example of this).
+>
+> And finally maybe the card supports 64-bit DMA addressing so anything
+> works on any platform.
+
+The DMA mask facility already should address all of these cases
+AFAICS, so there should be no need for any extra handling here..
+
+>
+> How to test all of these possible cases precisely that at this spot in
+> the transmit path is the question at hand.  To be honest I consider
+> the current hack "good enough" :-)
+
+Well, as I see it there are two big problems with the current state:
+
+-As there are a lot of bad examples in the tree of this flag being set
+based on irrelevant criteria, such mistakes will propagate to new
+drivers in cargo-cult fashion. (Looking at some of the existing
+examples, it seems like has already occurred for a lot of them.)
+
+-Failing to set the HIGHDMA flag when it should be is likely to impact
+performance on highmem architectures by causing unnecessary packet
+copying, and potentially using up more precious low memory.
