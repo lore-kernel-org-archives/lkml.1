@@ -1,82 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562Ab0BWMFP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 07:05:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21551 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471Ab0BWMFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 07:05:12 -0500
-Message-ID: <4B83C411.9050308@redhat.com>
-Date: Tue, 23 Feb 2010 14:03:29 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: linux-kernel@vger.kernel.org,
-       Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
-       Yinghai Lu <yinghai@kernel.org>, akpm@linux-foundation.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec
-References: <1266925885-17616-1-git-send-email-trenn@suse.de>
-In-Reply-To: <1266925885-17616-1-git-send-email-trenn@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752641Ab0BWMPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 07:15:43 -0500
+Received: from legolas.restena.lu ([158.64.1.34]:59343 "EHLO
+	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480Ab0BWMPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 07:15:42 -0500
+Date: Tue, 23 Feb 2010 13:15:08 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: "Benjamin Li" <benli@broadcom.com>
+Cc: NetDEV <netdev@vger.kernel.org>, "Michael Chan" <mchan@broadcom.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
+Message-ID: <20100223131508.4c6cb866@neptune.home>
+In-Reply-To: <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
+References: <20091229084929.54912c0c@pluto.restena.lu>
+	<1262077540.12520.4.camel@localhost>
+	<20091229145403.39f82773@pluto.restena.lu>
+	<1262149691.2788.63.camel@localhost>
+	<20100219091034.5fbb0165@pluto.restena.lu>
+	<1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 01:51 PM, Thomas Renninger wrote:
-> From: Kerstin Jonsson<kerstin.jonsson@ericsson.com>
->
-> When the SMP kernel decides to crash_kexec() the local APICs may have
-> pending interrupts in their vector tables.
-> The setup routine for the local APIC has a deficient mechanism for
-> clearing these interrupts, it only handles interrupts that has already
-> been dispatched to the local core for servicing (the ISR register)
-> safely, it doesn't consider lower prioritized queued interrupts stored
-> in the IRR register.
->
-> If you have more than one pending interrupt within the same 32 bit word
-> in the LAPIC vector table registers you may find yourself entering the
-> IO APIC setup with pending interrupts left in the LAPIC. This is a
-> situation for wich the IO APIC setup is not prepared. Depending of
-> what/which interrupt vector/vectors are stuck in the APIC tables your
-> system may show various degrees of malfunctioning.
-> That was the reason why the check_timer() failed in our system, the
-> timer interrupts was blocked by pending interrupts from the old kernel
-> when routed trough the IO APIC.
->
-> Additional comment from Jiri Bohac:
-> ==============
-> If this should go into stable release,
-> I'd add some kind of limit on the number of iterations, just to be safe from
-> hard to debug lock-ups:
->
-> +if (loops++>  MAX_LOOPS) {
-> +        printk("LAPIC pending clean-up")
-> +        break;
-> +}
->   while (queued);
->
-> with MAX_LOOPS something like 1E9 this would leave plenty of time for the
-> pending IRQs to be cleared and would and still cause at most a second of delay
-> if the loop were to lock-up for whatever reason.
-> ==============
->
->  From trenn@suse.de:
-> Merged Jiri suggestion into the patch.
-> Also made the max_loops depend on cpu_khz. Not sure how long an apic_read
-> takes, as it is on the CPU it may only be one cycle and we now wait 1 sec
-> in WARN_ON(..) case?
->
->    
+Hi Benjamin,
 
-An apic_read() can take a couple of microseconds when running 
-virtualized, so this loop may run for hours.  On the other hand, 
-virtualized hardware is unlikely to misbehave.
+On Fri, 19 February 2010 "Benjamin Li" <benli@broadcom.com> wrote:
+> >From your logs it looks like the device came up using MSI, but in the
+> MSI-X poll routine was being called:
+> 
+> [    9.836673] bnx2: eth0: using MSI
+> ...
+> 
+> [  134.643459]  [<ffffffffa004019e>] bnx2_poll_msix+0x3e/0xd0 [bnx2]
+> [  134.643465]  [<ffffffff8135bcd1>] netpoll_poll+0xe1/0x3c0
+> 
+> which is incorrect.  If we are in MSI mode, the bnx2_poll() routine
+> should be used.
+> 
+> I think what is going on here is that during the bnx2x driver
+> initialization the current bnx2 driver adds all possible NAPI
+> structures that map to all the hardware vectors (BNX2_MAX_MSIX_VEC=9)
+> to the NAPI list in the net_device structure regardless if they are
+> used or not (Seen in drivers/net/bnx2.c:bnx2_init_napi()).  This can
+> cause uninitialized NAPI structures to be placed on the napi_list.
+> Because this device is in MSI mode, only 1 vector is initialized.
+> Now, the problem is triggered when net/core/netpoll.c:poll_napi() is
+> called. This is because this routine will run through the entire
+> napi_list calling all the poll routines.  In your particular case, it
+> is calling the poll routine on an uninitialized vector causing the
+> kernel panic.
+> 
+> Please try the patch below to see if it solves your problem.  Note,
+> this only have been compile tested and tested against basic traffic
+> runs. Unfortunately, I could not reproduce the kernel panic with the
+> instructions below to verify the patch.
+> 
+> Thanks again for all your help in helping us track this down.
 
-Still I recommend using a clocksource (tsc would do) and not a loop count.
+I applied the patch today and tried to reproduce with my showcases.
 
--- 
-error compiling committee.c: too many arguments to function
+Seems that it's harder to trigger now but I still end up being able to
+crash the box. Don't know if it's the same cause or not (could also
+be the tcp-retransmit ghost)...
 
+This time I had to run a few paralell scp's (8Mb/s each) to the box and 
+'echo t > /proc/sysrq-trigger' multiple times via ssh session for it to
+happen. It didn't trigger with by netbomb though I will try some more
+and see)
+
+I don't know if it's the same reason or not (hopefully something
+reached disk as serial console is dead and pings are not
+answered anymore.
+It's probably some printk/bug/warn that triggers in network stack and
+deadlocks with netconsole.
+
+Regards,
+Bruno
