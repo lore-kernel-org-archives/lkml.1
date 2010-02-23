@@ -1,38 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917Ab0BWNrS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 08:47:18 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:58023 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692Ab0BWNrQ (ORCPT
+	id S1752868Ab0BWNtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 08:49:22 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57953 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172Ab0BWNtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 08:47:16 -0500
-Message-ID: <4B83DC61.2030409@dcl.info.waseda.ac.jp>
-Date: Tue, 23 Feb 2010 22:47:13 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: perf sched broken on tip, bisected
-References: <20100222190042.GB15854@ghostprotocols.net> <20100222190952.GD15854@ghostprotocols.net>
-In-Reply-To: <20100222190952.GD15854@ghostprotocols.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 23 Feb 2010 08:49:21 -0500
+X-Authority-Analysis: v=1.0 c=1 a=TmnEcBdXtfUA:10 a=s2-BoHfGGTZFxdZV1tYA:9 a=cjV3mxiofAIgM_mp-KJMqKGs3loA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 04/10] ARM: ftrace: allow building without frame
+ pointers
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Rabin Vincent <rabin@rab.in>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1266090518-31120-5-git-send-email-rabin@rab.in>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in>
+	 <1266090518-31120-5-git-send-email-rabin@rab.in>
+Content-Type: text/plain
+Date: Tue, 23 Feb 2010 08:47:05 -0500
+Message-Id: <1266932825.19540.17.camel@frodo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010年02月23日 04:09, Arnaldo Carvalho de Melo wrote:
-> While testing a patch series I'm working on I noticed that 'perf sched record ;
-> perf sched latency' is broken on tip, bisected it down to this cset, investigating...
->
+On Sun, 2010-02-14 at 01:18 +0530, Rabin Vincent wrote:
+> With a new enough GCC, ARM function tracing can be supported without the
+> need for frame pointers.  This is essential for Thumb-2 support, since
+> frame pointers aren't available then.
+> 
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
 
-Very sorry, Arnaldo...
-I'll fix it later.
 
-	Hitoshi
+>  
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 6c22d8a..7468ffe 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -126,7 +126,7 @@ if FTRACE
+>  config FUNCTION_TRACER
+>  	bool "Kernel Function Tracer"
+>  	depends on HAVE_FUNCTION_TRACER
+> -	select FRAME_POINTER
+> +	select FRAME_POINTER if (!ARM_UNWIND)
+>  	select KALLSYMS
+>  	select GENERIC_TRACER
+>  	select CONTEXT_SWITCH_TRACER
+
+Ah, evolution is keeping these patches out of order, so I did not see
+this change before commenting about the change to the Makefile.
+
+A better comment is needed in the Makefile.
+
+-- Steve
+
+
