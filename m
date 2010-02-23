@@ -1,83 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191Ab0BWRns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:43:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11318 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953Ab0BWRnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:43:46 -0500
-Date: Tue, 23 Feb 2010 19:43:34 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
-       virtualization@lists.osdl.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       markmc@redhat.com, herbert.xu@redhat.com, quintela@redhat.com,
-       dlaor@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
-Message-ID: <20100223174334.GD9834@redhat.com>
-References: <cover.1266943453.git.mst@redhat.com>
- <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
- <20100223173434.GB9834@redhat.com>
- <20100223173258.GA25338@redhat.com>
- <20100223173952.GC9834@redhat.com>
- <20100223173908.GB25338@redhat.com>
+	id S1752422Ab0BWRyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:54:13 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:13432 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086Ab0BWRyL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:54:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q9+J0OSjPGGo7cg8py52nwRQa18hOFyA2Dv6p3R9EutYzgoO526QqHfszgmU46hb11
+         HtDdQGm3xV9KjzWaOcYszLuhsOkPZkZDjSmBr3CMtK7b5ciuU7qDV1HwsPkO+8wnjrO2
+         gT3Yk1NpJJT6HQGHjHPFQCf/vnvk6RJ/Vru00=
+Date: Tue, 23 Feb 2010 18:54:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Keiichi KII <k-keiichi@bx.jp.nec.com>, linux-kernel@vger.kernel.org,
+       lwoodman@redhat.com, linux-mm@kvack.org, mingo@elte.hu, riel@redhat.com,
+       rostedt@goodmis.org, akpm@linux-foundation.org,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: Re: [RFC PATCH -tip 2/2 v2] add a scripts for pagecache usage per
+	process
+Message-ID: <20100223175402.GE5357@nowhere>
+References: <4B5A3D00.8080901@bx.jp.nec.com> <4B5A3E19.6060502@bx.jp.nec.com> <1264234865.6595.75.camel@tropicana> <4B5E1855.4090809@bx.jp.nec.com> <1265012255.6526.18.camel@tropicana>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100223173908.GB25338@redhat.com>
+In-Reply-To: <1265012255.6526.18.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 07:39:08PM +0200, Michael S. Tsirkin wrote:
-> On Tue, Feb 23, 2010 at 07:39:52PM +0200, Gleb Natapov wrote:
-> > On Tue, Feb 23, 2010 at 07:32:58PM +0200, Michael S. Tsirkin wrote:
-> > > On Tue, Feb 23, 2010 at 07:34:34PM +0200, Gleb Natapov wrote:
-> > > > On Tue, Feb 23, 2010 at 06:57:58PM +0200, Michael S. Tsirkin wrote:
-> > > > > get_user_pages_fast returns number of pages on success, negative value
-> > > > > on failure, but never 0. Fix vhost code to match this logic.
-> > > > > 
-> > > > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > > > > ---
-> > > > >  drivers/vhost/vhost.c |    3 ++-
-> > > > >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > > > > 
-> > > > > diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-> > > > > index d4f8fdf..d003504 100644
-> > > > > --- a/drivers/vhost/vhost.c
-> > > > > +++ b/drivers/vhost/vhost.c
-> > > > > @@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
-> > > > >  	int bit = nr + (log % PAGE_SIZE) * 8;
-> > > > >  	int r;
-> > > > >  	r = get_user_pages_fast(log, 1, 1, &page);
-> > > > > -	if (r)
-> > > > > +	if (r < 0)
-> > > > >  		return r;
-> > > > > +	BUG_ON(r != 1);
-> > > > Can't this be easily triggered from user space?
-> > > 
-> > > I think no. get_user_pages_fast always returns number of pages
-> > > pinned (in this case always 1) or an error (< 0).
-> > > Anything else is a kernel bug.
-> > > 
-> > But what if page is unmapped from userspace?
+On Mon, Feb 01, 2010 at 02:17:35AM -0600, Tom Zanussi wrote:
+> Here's one way, using the tracepoint filters - it does make a big
+> difference in this case.
 > 
-> Then we get -EFAULT
+> Before (using the new -P option, which includes perf in the trace
+> data):  
 > 
-Ah correct.
+> root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache -P sleep 5
+> [ perf record: Woken up 0 times to write data ]
+> [ perf record: Captured and wrote 71.201 MB perf.data (~3110815 samples) ]
+> 
+> After (filters out events generated by perf):
+> 
+> root@tropicana:~# perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache sleep 5
+> [ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 0.309 MB perf.data (~13479 samples) ]
+> 
+> Tom
+> 
+> [PATCH] perf record: filter out perf process tracepoint events
+> 
+> The perf process itself can generate a lot of trace data, which most
+> of the time isn't of any interest.  This patch adds a predicate to the
+> kernel tracepoint filter of each recorded event type which effectively
+> screens out any event generated by perf.
+> 
+> Assuming the common case would be to ignore perf, this makes it the
+> default; the old behavior can be selected by using 'perf record -P'.
 
-> > > > >  	base = kmap_atomic(page, KM_USER0);
-> > > > >  	set_bit(bit, base);
-> > > > >  	kunmap_atomic(base, KM_USER0);
-> > > > > -- 
-> > > > > 1.7.0.18.g0d53a5
-> > > > 
-> > > > --
-> > > > 			Gleb.
-> > 
-> > --
-> > 			Gleb.
 
---
-			Gleb.
+I think filtering out perf from the instrumentation is a very
+desirable features.
+
+But I see two drawbacks with this patch.
+First of all, we want to keep perf as a part of the instrumentation
+as a default behaviour I think, as it is a true part of the system
+wide load. So I would rather suggest to keep it as a default and
+have an exclude_perf option instead of include_perf.
+
+The other downside is that this filtering only applies to ftrace events
+and not to other perf events. I would expect an exclude_perf option
+to apply to every events, not just a family of them.
+
+This is not that easy though. It's trivial for a process bound
+instrumentation as we only need to use enable_on_exec for that
+(assuming we create the targeted process from perf).
+
+Otherwise we need the cpu events to filter out a given context, which
+needs to be done from the kernel, on events scheduling time.
+It's just an idea, I'm adding more interested parties in Cc.
+
+Thanks.
+
