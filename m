@@ -1,136 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221Ab0BWLvj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 06:51:39 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45233 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712Ab0BWLvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 06:51:37 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Kerstin Jonsson <kerstin.jonsson@ericsson.com>, jbohac@novell.com,
-       "Yinghai Lu" <yinghai@kernel.org>, akpm@linux-foundation.org,
-       mingo@elte.hu, Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] x86 apic: Ack all pending irqs when crashed/on kexec
-Date: Tue, 23 Feb 2010 12:51:25 +0100
-Message-Id: <1266925885-17616-1-git-send-email-trenn@suse.de>
-X-Mailer: git-send-email 1.6.3
+	id S1752325Ab0BWLx3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 06:53:29 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:55961 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164Ab0BWLx1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 06:53:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jVoDxKPii5Ma2YUMSi2lBm1r4myNIK0TyqvbPu7qWNJO1JZSS8CFC7PybNmPL0hJUS
+         vxQJlgNNO2awZlkWGUnPcEWrBDKHjn1SmrV74bZ0c8uRvN+9/RI3M9nJGdMPaF8hxsjg
+         y3Et5wL/KcfKVmuP4xiUFg8Rs0CXuHCKcphLM=
+MIME-Version: 1.0
+In-Reply-To: <f5a7b3811002220737r502e75c1w5ab5a64b6cc27b68@mail.gmail.com>
+References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com>
+	 <1266337450.24271.140.camel@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain>
+	 <20100216164744.GA25115@Krystal>
+	 <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
+	 <20100216170540.GA28039@Krystal>
+	 <f5a7b3811002170236i6c560eadp2de7deb10082db4f@mail.gmail.com>
+	 <20100217230854.GA25636@Krystal>
+	 <f5a7b3811002220737r502e75c1w5ab5a64b6cc27b68@mail.gmail.com>
+Date: Tue, 23 Feb 2010 16:59:03 +0530
+Message-ID: <f5a7b3811002230329w64cabac9lff95a40cb5e7dfa5@mail.gmail.com>
+Subject: Re: [ltt-dev] LTTng 0.193 fixes RT kernel support
+From: naresh kamboju <naresh.kernel@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kerstin Jonsson <kerstin.jonsson@ericsson.com>
+On Mon, Feb 22, 2010 at 9:07 PM, naresh kamboju <naresh.kernel@gmail.com> wrote:
+> On Thu, Feb 18, 2010 at 4:38 AM, Mathieu Desnoyers
+> <mathieu.desnoyers@efficios.com> wrote:
+>> * naresh kamboju (naresh.kernel@gmail.com) wrote:
+>>> Hi,
+>>>
+>>> On Tue, Feb 16, 2010 at 10:35 PM, Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+>> [...]
+>>> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
+>>> > saner del_timer_sync() scheme to delete the timers.
+>>>
+>>> Could you give more info regarding, what kind of changes we can work on.
+>>> let me also work around on it.
+>>>
+>>
+>> I just released LTTng 0.193 for kernel 2.6.32.4 which includes patches
+>> fixing these odd per-cpu timer teardowns.
+>
+> I have downloaded LTTng 0.193 patches and viewed i can see below patches
+>
+> 1. lttng-transport-lockless-add-timer-on-works-with-del-timer-sync.patch
+> 2. omap-trace-clock-use-del-timer-sync.patch
+> 3. x86-trace-clock-use-mod-timer.patch
+> 4. trace-clock-32-to-64-use-del-timer-sync.patch
 
-When the SMP kernel decides to crash_kexec() the local APICs may have
-pending interrupts in their vector tables.
-The setup routine for the local APIC has a deficient mechanism for
-clearing these interrupts, it only handles interrupts that has already
-been dispatched to the local core for servicing (the ISR register)
-safely, it doesn't consider lower prioritized queued interrupts stored
-in the IRR register.
+FYI.
 
-If you have more than one pending interrupt within the same 32 bit word
-in the LAPIC vector table registers you may find yourself entering the
-IO APIC setup with pending interrupts left in the LAPIC. This is a
-situation for wich the IO APIC setup is not prepared. Depending of
-what/which interrupt vector/vectors are stuck in the APIC tables your
-system may show various degrees of malfunctioning.
-That was the reason why the check_timer() failed in our system, the
-timer interrupts was blocked by pending interrupts from the old kernel
-when routed trough the IO APIC.
+I have ported  LTTng 0.193 these four patches and able to resolve the
+issues on Uni-processor (UP) on ARM arch Thank you.
 
-Additional comment from Jiri Bohac:
-==============
-If this should go into stable release,
-I'd add some kind of limit on the number of iterations, just to be safe from
-hard to debug lock-ups:
+A different bug is reported on SMP.
 
-+if (loops++  > MAX_LOOPS) {
-+        printk("LAPIC pending clean-up")
-+        break;
-+}
- while (queued);
+BUG: using smp_processor_id() in preemptible [00000000] code: lttctl/754
+caller is put_synthetic_tsc+0x7c/0xf8
 
-with MAX_LOOPS something like 1E9 this would leave plenty of time for the
-pending IRQs to be cleared and would and still cause at most a second of delay
-if the loop were to lock-up for whatever reason.
-==============
+Backtrace:
+[<c002d438>] (dump_backtrace+0x0/0x10c) from [<c03a7150>] (dump_stack+0x18/0x1c)
+ r7:c04c4994 r6:c008e24c r5:00000003 r4:ce0b6000
+[<c03a7138>] (dump_stack+0x0/0x1c) from [<c02423b4>]
+(debug_smp_processor_id+0xc0/0xec)
+[<c02422f4>] (debug_smp_processor_id+0x0/0xec) from [<c008e24c>]
+(put_synthetic_tsc+0x7c/0xf8)
+ r6:c04f82cc r5:c0023600 r4:00000003
+[<c008e1d0>] (put_synthetic_tsc+0x0/0xf8) from [<c008e610>]
+(put_trace_clock+0x68/0x7c)
+ r8:bece6eb9 r7:0000000b r6:ce0b7d2a r5:cc037600 r4:00000000
+[<c008e5a8>] (put_trace_clock+0x0/0x7c) from [<c022a96c>]
+(ltt_trace_destroy+0x40/0x94)
+[<c022a92c>] (ltt_trace_destroy+0x0/0x94) from [<c0232f6c>]
+(destroy_trace_write+0xbc/0x140)
+ r5:00000000 r4:0000000b
+[<c0232eb0>] (destroy_trace_write+0x0/0x140) from [<c00be240>]
+(vfs_write+0xb4/0x144)
+ r7:0000000b r6:ce0b7f70 r5:bece6eb9 r4:ceae7860
+[<c00be18c>] (vfs_write+0x0/0x144) from [<c00be424>] (sys_write+0x48/0xf4)
+ r7:0000000b r6:ceae7860 r5:00000000 r4:00000000
+[<c00be3dc>] (sys_write+0x0/0xf4) from [<c0028e3c>]
+(__sys_trace_return+0x0/0x24)
 
->From trenn@suse.de:
-Merged Jiri suggestion into the patch.
-Also made the max_loops depend on cpu_khz. Not sure how long an apic_read
-takes, as it is on the CPU it may only be one cycle and we now wait 1 sec
-in WARN_ON(..) case?
 
-CC: jbohac@novell.com
-CC: "Yinghai Lu" <yinghai@kernel.org>
-CC: akpm@linux-foundation.org
-CC: mingo@elte.hu
-CC: "Kerstin Jonsson" <kerstin.jonsson@ericsson.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- arch/x86/kernel/apic/apic.c |   34 +++++++++++++++++++++++++---------
- 1 files changed, 25 insertions(+), 9 deletions(-)
+patch trace-clock-32-to-64-use-del-timer-sync.patch is causing above
+problem on SMP.
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 3987e44..912dd59 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -51,6 +51,7 @@
- #include <asm/smp.h>
- #include <asm/mce.h>
- #include <asm/kvm_para.h>
-+#include <asm/tsc.h>
- 
- unsigned int num_processors;
- 
-@@ -1151,8 +1152,8 @@ static void __cpuinit lapic_setup_esr(void)
-  */
- void __cpuinit setup_local_APIC(void)
- {
--	unsigned int value;
--	int i, j;
-+	unsigned int value, queued;
-+	int i, j, acked = 0, max_loops = cpu_khz * 1000;
- 
- 	if (disable_apic) {
- 		arch_disable_smp_support();
-@@ -1204,13 +1205,28 @@ void __cpuinit setup_local_APIC(void)
- 	 * the interrupt. Hence a vector might get locked. It was noticed
- 	 * for timer irq (vector 0x31). Issue an extra EOI to clear ISR.
- 	 */
--	for (i = APIC_ISR_NR - 1; i >= 0; i--) {
--		value = apic_read(APIC_ISR + i*0x10);
--		for (j = 31; j >= 0; j--) {
--			if (value & (1<<j))
--				ack_APIC_irq();
--		}
--	}
-+        do {
-+            queued = 0;
-+            for (i = APIC_ISR_NR - 1; i >= 0; i--)
-+                queued |= apic_read(APIC_IRR + i*0x10);
-+
-+            for (i = APIC_ISR_NR - 1; i >= 0; i--) {
-+                value = apic_read(APIC_ISR + i*0x10);
-+                for (j = 31; j >= 0; j--) {
-+                    if (value & (1<<j)) {
-+                        ack_APIC_irq();
-+                        acked++;
-+                    }
-+                }
-+            }
-+            if (acked > 256) {
-+                printk(KERN_ERR "LAPIC pending interrupts after %d EOI\n",
-+		       acked);
-+                break;
-+            }
-+	    max_loops--;
-+        } while (queued && max_loops > 0);
-+	WARN_ON(!max_loops);
- 
- 	/*
- 	 * Now that we are all set up, enable the APIC
--- 
-1.6.3
+with out this patch on SMP reported the previous bug as BUG: sleeping
+function called from invalid context at kernel/rtmutex.c:685
 
+However, i'll investigate.
+
+Best regards,
+Naresh Kamboju
+>> Thanks,
+>>
+>> Mathieu
+>>
+>> --
+>> Mathieu Desnoyers
+>> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>>
+>
