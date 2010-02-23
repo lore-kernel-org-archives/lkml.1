@@ -1,101 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330Ab0BWART (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Feb 2010 19:17:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38409 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751115Ab0BWARR (ORCPT
+	id S1752524Ab0BWAYO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Feb 2010 19:24:14 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:55537 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751422Ab0BWAYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Feb 2010 19:17:17 -0500
-Date: Mon, 22 Feb 2010 16:17:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: john.johansen@canonical.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Fix __d_path for lazy unmounts
-Message-Id: <20100222161714.de1a7fca.akpm@linux-foundation.org>
-In-Reply-To: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
-References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 22 Feb 2010 19:24:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=jT54TTEgoCsc6SEYqsNForTK0skxOcKy0u9CT3KskMRFKqPvHVMV+PFkd+WXdh+61/+sWRgm0GzVffbsKxbYBN1Vs0e6t3mQ6GOh0DbjJ8JSUk5jYUKpb7JgeVwfNOaG;
+Date: Mon, 22 Feb 2010 16:21:42 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 1/8] PCI PM: Add function for checking PME status of
+ devices
+Message-ID: <20100222162142.06095230@jbarnes-piketon>
+In-Reply-To: <201002172336.58766.rjw@sisk.pl>
+References: <201002172335.47703.rjw@sisk.pl>
+	<201002172336.58766.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Feb 2010 04:27:38 -0800 john.johansen@canonical.com wrote:
+On Wed, 17 Feb 2010 23:36:58 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> From: John Johansen <john.johansen@canonical.com>
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> When __d_path() hits a lazily unmounted mount point, it tries to prepend
-> the name of the lazily unmounted dentry to the path name.  It gets this wrong,
-> and also overwrites the slash that separates the name from the following
-> pathname component. This patch fixes that; if a process was in directory
-> /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
-> missing slash), while the new result with this patch is ``/foo/bar''.
+> Add function pci_check_pme_status() that will check the PME status
+> bit of given device and clear it along with the PME enable bit.  It
+> will be necessary for PCI run-time power management.
 > 
-> Signed-off-by: John Johansen <john.johansen@canonical.com>
+> Based on a patch from Shaohua Li <shaohua.li@intel.com>
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > ---
->  fs/dcache.c |   27 +++++++++++++++++++++++----
->  1 files changed, 23 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index 953173a..df49666 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -1922,11 +1922,9 @@ char *__d_path(const struct path *path, struct path *root,
->  	retval = end-1;
->  	*retval = '/';
->  
-> -	for (;;) {
-> +	while(dentry != root->dentry || vfsmnt != root->mnt) {
 
-Please put a space between the `while' and the `('.
+Applied this series and dropped the old patches, thanks Rafael.
 
->  		struct dentry * parent;
->  
-> -		if (dentry == root->dentry && vfsmnt == root->mnt)
-> -			break;
->  		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
->  			/* Global root? */
->  			if (vfsmnt->mnt_parent == vfsmnt) {
-> @@ -1950,9 +1948,30 @@ out:
->  	return retval;
->  
->  global_root:
-> -	retval += 1;	/* hit the slash */
-> +	/*
-> +	 * We went past the (vfsmount, dentry) we were looking for and have
-> +	 * either hit a root dentry, a lazily unmounted dentry, an
-> +	 * unconnected dentry, or the file is on a pseudo filesystem.
-> +	 */
-> +	if ((dentry->d_sb->s_flags & MS_NOUSER) ||
-> +	    (dentry->d_name.len = 1 && *dentry->d_name.name == '/')) {
-
-Did you really mean to assign 1 to dentry->d_name.len here?  Was `=='
-intended?  I hope so, because modifying the dentry in d_path() would be odd.
-
-If this was a mistake then why did the patch pass testing?
-
-
-> +		/*
-> +		 * Historically, we also glue together the root dentry and
-> +		 * remaining name for pseudo filesystems like pipefs, which
-> +		 * have the MS_NOUSER flag set. This results in pathnames
-> +		 * like "pipe:[439336]".
-> +		 */
-> +		retval += 1;	/* overwrite the slash */
-> +		buflen++;
-> +	}
->  	if (prepend_name(&retval, &buflen, &dentry->d_name) != 0)
->  		goto Elong;
-> +
-> +	/* connect lazily unmounted mount point */
-> +	if (*retval != '/' && !(dentry->d_sb->s_flags & MS_NOUSER) &&
-> +	    prepend(&retval, &buflen, "/", 1) != 0)
-> +		goto Elong;
-> +
->  	root->mnt = vfsmnt;
->  	root->dentry = dentry;
->  	goto out;
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
