@@ -1,73 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042Ab0BWGK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 01:10:28 -0500
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:47170 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648Ab0BWGKZ (ORCPT
+	id S1752086Ab0BWGNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 01:13:38 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:31582 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422Ab0BWGNf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 01:10:25 -0500
-Date: Tue, 23 Feb 2010 11:40:20 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       rientjes@google.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] memcg: page fault oom improvement
-Message-ID: <20100223061020.GH3063@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20100223120315.0da4d792.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 23 Feb 2010 01:13:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=B7ENB96h4W01zwZ7X9IZrJeAHAzicwoC9pZBrRlNFZgQ1ndqbie6ebsPKAW1hBHz6A
+         vVt3rKxsg80WU1qnWAo1ZAy/j25BSXPGNKf6+L4N8RhE6oySZpgLycsuVVpVLZ4rIRZT
+         K8H3Fq1lpcgtkHQ/1RAVHS9jRS2gqCXi00ZoE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100223120315.0da4d792.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <4B7F2EC7.6000305@gmail.com>
+References: <4B7F2EC7.6000305@gmail.com>
+Date: Tue, 23 Feb 2010 07:13:33 +0100
+X-Google-Sender-Auth: 0c8156b67e7e58a5
+Message-ID: <10f740e81002222213n3ef9608frd81422cd9a74c04@mail.gmail.com>
+Subject: Re: [PATCH] m68k,m68knommu: missing asterisk?
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Peter 'p2' De Schrijver" <p2@debian.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-02-23 12:03:15]:
+On Sat, Feb 20, 2010 at 01:37, Roel Kluin <roel.kluin@gmail.com> wrote:
+> An asterisk was missing.
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Correct?
 
-> Nishimura-san, could you review and test your extreme test case with this ?
-> 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, because of page_fault_oom_kill, returning VM_FAULT_OOM means
-> random oom-killer should be called. Considering memcg, it handles
-> OOM-kill in its own logic, there was a problem as "oom-killer called
-> twice" problem.
-> 
-> By commit a636b327f731143ccc544b966cfd8de6cb6d72c6, I added a check
-> in pagefault_oom_killer shouldn't kill some (random) task if
-> memcg's oom-killer already killed anyone.
-> That was done by comapring current jiffies and last oom jiffies of memcg.
-> 
-> I thought that easy fix was enough, but Nishimura could write a test case
-> where checking jiffies is not enough. So, my fix was not enough.
-> This is a fix of above commit.
-> 
-> This new one does this.
->  * memcg's try_charge() never returns -ENOMEM if oom-killer is allowed.
->  * If someone is calling oom-killer, wait for it in try_charge().
->  * If TIF_MEMDIE is set as a result of try_charge(), return 0 and
->    allow process to make progress (and die.) 
->  * removed hook in pagefault_out_of_memory.
-> 
-> By this, pagefult_out_of_memory will be never called if memcg's oom-killer
-> is called and scattered codes are now in memcg's charge logic again.
-> 
-> TODO:
->  If __GFP_WAIT is not specified in gfp_mask flag, VM_FAULT_OOM will return
->  anyway. We need to investigate it whether there is a case.
-> 
-> Cc: David Rientjes <rientjes@google.com>
-> Cc: Balbir Singh <balbir@in.ibm.com>
-> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+No, see arch/m68k/apollo/config.c:dn_dummy_hwclk().
+Andrew: please dequeue.
 
-I've not reviewed David's latest OOM killer changes. Are these changes based on top of
-what is going to come in with David's proposal?
--- 
-	Three Cheers,
-	Balbir
+>  arch/m68k/include/asm/apollohw.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/m68k/include/asm/apollohw.h b/arch/m68k/include/asm/apollohw.h
+> index a1373b9..87e0cc4 100644
+> --- a/arch/m68k/include/asm/apollohw.h
+> +++ b/arch/m68k/include/asm/apollohw.h
+> @@ -94,7 +94,7 @@ extern u_long timer_physaddr;
+>
+>  #define sio01 ((*(volatile struct SCN2681 *)(IO_BASE + sio01_physaddr)))
+>  #define sio23 ((*(volatile struct SCN2681 *)(IO_BASE + sio23_physaddr)))
+> -#define rtc (((volatile struct mc146818 *)(IO_BASE + rtc_physaddr)))
+> +#define rtc ((*(volatile struct mc146818 *)(IO_BASE + rtc_physaddr)))
+>  #define cpuctrl (*(volatile unsigned int *)(IO_BASE + cpuctrl_physaddr))
+>  #define pica (IO_BASE + pica_physaddr)
+>  #define picb (IO_BASE + picb_physaddr)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
