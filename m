@@ -1,64 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089Ab0BWVac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 16:30:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42714 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755Ab0BWVaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 16:30:30 -0500
-Date: Tue, 23 Feb 2010 16:29:43 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
-Message-ID: <20100223212943.GF11930@redhat.com>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com> <1266765525-30890-3-git-send-email-arighi@develer.com>
+	id S1754075Ab0BWVne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 16:43:34 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:58903 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753156Ab0BWVnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 16:43:32 -0500
+Date: Wed, 24 Feb 2010 08:43:30 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Karsten Keil <isdn@linux-pingi.de>, David Miller <davem@davemloft.net>,
+       Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <keil@b1-systems.de>,
+       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] bas_gigaset: collapse CR/LF at end of AT response
+Message-ID: <20100223214329.GA5801@verge.net.au>
+References: <20100221-patch-gigaset-00.tilman@imap.cc>
+ <20100221-patch-gigaset-02.tilman@imap.cc>
+ <20100223063425.GA28744@verge.net.au>
+ <4B83D5D7.3040407@imap.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1266765525-30890-3-git-send-email-arighi@develer.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B83D5D7.3040407@imap.cc>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 21, 2010 at 04:18:45PM +0100, Andrea Righi wrote:
+On Tue, Feb 23, 2010 at 02:19:19PM +0100, Tilman Schmidt wrote:
+> Simon Horman schrieb:
+> > I am confused about what the value of MAX_RESP_SIZE means.
+> > Is it a hw restriction?
+> 
+> It's an arbitrary limitation in the driver. The hardware specification
+> says nothing about the possible length of AT responses from the device,
+> so we had to draw a line somewhere. 512 bytes have so far proved to be
+> amply sufficient.
+> 
+> In practice, the limit is only hit with the M10x devices (which transmit
+> commands and data over the same channel) when the state machine gets out
+> of sync and tries to interpret received payload data as AT responses.
 
-[..]
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 0b19943..c9ff1cd 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
->   */
->  static int calc_period_shift(void)
->  {
-> -	unsigned long dirty_total;
-> +	unsigned long dirty_total, dirty_bytes;
->  
-> -	if (vm_dirty_bytes)
-> -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> +	dirty_bytes = mem_cgroup_dirty_bytes();
-> +	if (dirty_bytes)
-> +		dirty_total = dirty_bytes / PAGE_SIZE;
->  	else
->  		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
->  				100;
+Ok, understood. Thanks for the clarification.
 
-Ok, I don't understand this so I better ask. Can you explain a bit how memory
-cgroup dirty ratio is going to play with per BDI dirty proportion thing.
+> > It seems that up to MAX_RESP_SIZE of string-data is permitted if the line
+> > is terminated by CR. But only MAX_RESP_SIZE -1  bytes if the line is
+> > terminated by LF or CR LF.
+> 
+> Note that when storing the CR in cs->respdata[0] for possible collapsing
+> with a subsequent LF, the cbytes counter is left at 0, so the CR gets
+> overwritten by the first character of the next response if there's no
+> intervening LF.
 
-Currently we seem to be calculating per BDI proportion (based on recently
-completed events), of system wide dirty ratio and decide whether a process
-should be throttled or not.
+Yes, I had to look at that for quite a while :-)
 
-Because throttling decision is also based on BDI and its proportion, how
-are we going to fit it with mem cgroup? Is it going to be BDI proportion
-of dirty memory with-in memory cgroup (and not system wide)?
-
-Thanks
-Vivek
