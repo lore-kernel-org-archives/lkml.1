@@ -1,103 +1,569 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751171Ab0BWGhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 01:37:43 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:63127 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126Ab0BWGhl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 01:37:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=WEfA8++UEC8NpSV8AxL0WmnQJfQ5x8sUOxWzMG6stvBLlWd8/3vg1Zgla6TKikLf27
-         x/wfeu1Z+DFePfsZcMSSUj6HWMFUL7vGwF4J7uOzQlWXy8M9NMVgJtd413n9LPnzcywH
-         WCmZqFqevxc8I9L1j0WjM8YFksct330uALcHU=
-Date: Tue, 23 Feb 2010 07:37:34 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Borislav Petkov <bp@amd64.org>, Michal Marek <mmarek@suse.cz>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH] x86: Add optimized popcnt variants
-Message-ID: <20100223063734.GA32503@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@amd64.org>,
-	Michal Marek <mmarek@suse.cz>,
-	linux-kbuild <linux-kbuild@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jamie Lokier <jamie@shareable.org>,
-	Roland Dreier <rdreier@cisco.com>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-References: <4B7C29C1.10906@suse.cz>
- <20100218061923.GA1594@liondog.tnic>
- <20100219142205.GA32533@aftab>
- <4B7EB6EF.9010405@zytor.com>
- <20100219164512.GA492@aftab>
- <4B7EC20C.30607@zytor.com>
- <20100222141737.GB21233@aftab>
- <4B82BD01.3030008@zytor.com>
- <20100222184945.GD21233@aftab>
- <4B82E144.1050007@zytor.com>
+	id S1751918Ab0BWGl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 01:41:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54285 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750731Ab0BWGlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 01:41:25 -0500
+Message-ID: <4B83781B.20307@kernel.org>
+Date: Mon, 22 Feb 2010 22:39:23 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4B82E144.1050007@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH -v3 1/2] x86: use vector_desc instead of vector_irq
+References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>	<m16360ohi2.fsf@fess.ebiederm.org> <4B773CEB.9010609@kernel.org>	<m1sk94mzg0.fsf@fess.ebiederm.org> <4B7CA9A1.3020806@kernel.org>	<4B7CAADD.2060000@kernel.org> <m1mxz6v4pm.fsf@fess.ebiederm.org>
+In-Reply-To: <m1mxz6v4pm.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Mon, Feb 22, 2010 at 11:55:48AM -0800
 
-> On 02/22/2010 10:49 AM, Borislav Petkov wrote:
-> >>
-> >> Just a note: this still means rdi is clobbered on x86-64, which is
-> >> probably fine, but needs to be recorded as such.  Since gcc doesn't
-> >> support clobbers for registers used as operands (sigh), you have to
-> >> create a dummy output and assign it a "=D" constraint.
-> >>
-> >> I don't know if gcc would handle -fcall-saved-rdi here... and if so, how
-> >> reliably.
-> > 
-> > Ok, from looking at kernel/sched.s output it looks like it saves rdi
-> > content over the alternative where needed. I'll do some more testing
-> > just to make sure.
-> > 
-> 
-> No, you can't rely on behavioral observation.  A different version of
-> gcc could behave differently.  We need to make sure we tell gcc what the
-> requirements actually are, as opposed to thinking we can just fix them.
+Eric pointed out that radix tree version of irq_to_desc will magnify delay on
+the path of handle_irq.
 
-Ok, I've added the dummy "=D" constraint since it sounded like the more
-stable thing to do WRT gcc versions. BTW, I left the machine overnight
-and it is still alive cheerfully building randconfigs.
+use vector_desc to reduce the calling of irq_to_desc.
 
-I'll try the -fcall-saved-rdi thing also later today.
+next step: need to change all ack, mask, umask, eoi for all irq_chip to take irq_desc
 
-> +#define POPCNT ".byte 0xf3\n\t.byte 0x48\n\t.byte 0x0f\n\t.byte
-> 0xb8\n\t.byte 0xc7"
-> 
-> BTW, this can be written:
-> 
-> #define POPCNT ".byte 0xf3,0x48,0x0f,0xb8,0xc7"
+-v2: irq should be unsigned in 32bit handle_irq according to Eric
+     also reset vector_desc for lguest in setup_irq
+-v3: keep irq in x+execute_on_irq_stack() ...
 
-done, updated version coming up.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
--- 
-Regards/Gruss,
-    Boris.
+---
+ arch/x86/include/asm/desc.h    |    2 -
+ arch/x86/include/asm/hw_irq.h  |   10 ++---
+ arch/x86/include/asm/irq.h     |    3 +
+ arch/x86/kernel/apic/io_apic.c |   75 ++++++++++++++++++++---------------------
+ arch/x86/kernel/irq.c          |   15 +++-----
+ arch/x86/kernel/irq_32.c       |   10 ++---
+ arch/x86/kernel/irq_64.c       |    7 +--
+ arch/x86/kernel/irqinit.c      |    8 +---
+ arch/x86/kernel/smpboot.c      |    2 -
+ arch/x86/kernel/vmiclock_32.c  |    2 -
+ arch/x86/lguest/boot.c         |    7 +++
+ 11 files changed, 71 insertions(+), 70 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/desc.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/desc.h
++++ linux-2.6/arch/x86/include/asm/desc.h
+@@ -334,7 +334,7 @@ static inline void set_intr_gate(unsigne
+ }
+ 
+ extern int first_system_vector;
+-/* used_vectors is BITMAP for irq is not managed by percpu vector_irq */
++/* used_vectors is BITMAP for irq is not managed by percpu vector_desc */
+ extern unsigned long used_vectors[];
+ 
+ static inline void alloc_system_vector(int vector)
+Index: linux-2.6/arch/x86/include/asm/hw_irq.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/hw_irq.h
++++ linux-2.6/arch/x86/include/asm/hw_irq.h
+@@ -99,7 +99,7 @@ struct irq_cfg {
+ };
+ 
+ extern struct irq_cfg *irq_cfg(unsigned int);
+-extern int assign_irq_vector(int, struct irq_cfg *, const struct cpumask *);
++extern int assign_irq_vector(struct irq_desc *, struct irq_cfg *, const struct cpumask *);
+ extern void send_cleanup_vector(struct irq_cfg *);
+ 
+ struct irq_desc;
+@@ -138,17 +138,17 @@ extern asmlinkage void smp_invalidate_in
+ 
+ extern void (*__initconst interrupt[NR_VECTORS-FIRST_EXTERNAL_VECTOR])(void);
+ 
+-typedef int vector_irq_t[NR_VECTORS];
+-DECLARE_PER_CPU(vector_irq_t, vector_irq);
++typedef struct irq_desc *vector_desc_t[NR_VECTORS];
++DECLARE_PER_CPU(vector_desc_t, vector_desc);
+ 
+ #ifdef CONFIG_X86_IO_APIC
+ extern void lock_vector_lock(void);
+ extern void unlock_vector_lock(void);
+-extern void __setup_vector_irq(int cpu);
++extern void __setup_vector_desc(int cpu);
+ #else
+ static inline void lock_vector_lock(void) {}
+ static inline void unlock_vector_lock(void) {}
+-static inline void __setup_vector_irq(int cpu) {}
++static inline void __setup_vector_desc(int cpu) {}
+ #endif
+ 
+ #endif /* !ASSEMBLY_ */
+Index: linux-2.6/arch/x86/include/asm/irq.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/irq.h
++++ linux-2.6/arch/x86/include/asm/irq.h
+@@ -39,7 +39,8 @@ extern void irq_force_complete_move(int)
+ 
+ extern void (*x86_platform_ipi_callback)(void);
+ extern void native_init_IRQ(void);
+-extern bool handle_irq(unsigned irq, struct pt_regs *regs);
++struct irq_desc;
++extern bool handle_irq(struct irq_desc *desc, struct pt_regs *regs);
+ 
+ extern unsigned int do_IRQ(struct pt_regs *regs);
+ 
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -1142,7 +1142,7 @@ void unlock_vector_lock(void)
+ }
+ 
+ static int
+-__assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask)
++__assign_irq_vector(struct irq_desc *desc, struct irq_cfg *cfg, const struct cpumask *mask)
+ {
+ 	/*
+ 	 * NOTE! The local APIC isn't very good at handling
+@@ -1201,7 +1201,7 @@ next:
+ 			goto next;
+ 
+ 		for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
+-			if (per_cpu(vector_irq, new_cpu)[vector] != -1)
++			if (per_cpu(vector_desc, new_cpu)[vector] != NULL)
+ 				goto next;
+ 		/* Found one! */
+ 		current_vector = vector;
+@@ -1211,7 +1211,7 @@ next:
+ 			cpumask_copy(cfg->old_domain, cfg->domain);
+ 		}
+ 		for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
+-			per_cpu(vector_irq, new_cpu)[vector] = irq;
++			per_cpu(vector_desc, new_cpu)[vector] = desc;
+ 		cfg->vector = vector;
+ 		cpumask_copy(cfg->domain, tmp_mask);
+ 		err = 0;
+@@ -1221,18 +1221,18 @@ next:
+ 	return err;
+ }
+ 
+-int assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask)
++int assign_irq_vector(struct irq_desc *desc, struct irq_cfg *cfg, const struct cpumask *mask)
+ {
+ 	int err;
+ 	unsigned long flags;
+ 
+ 	raw_spin_lock_irqsave(&vector_lock, flags);
+-	err = __assign_irq_vector(irq, cfg, mask);
++	err = __assign_irq_vector(desc, cfg, mask);
+ 	raw_spin_unlock_irqrestore(&vector_lock, flags);
+ 	return err;
+ }
+ 
+-static void __clear_irq_vector(int irq, struct irq_cfg *cfg)
++static void __clear_irq_vector(struct irq_desc *desc, struct irq_cfg *cfg)
+ {
+ 	int cpu, vector;
+ 
+@@ -1240,7 +1240,7 @@ static void __clear_irq_vector(int irq,
+ 
+ 	vector = cfg->vector;
+ 	for_each_cpu_and(cpu, cfg->domain, cpu_online_mask)
+-		per_cpu(vector_irq, cpu)[vector] = -1;
++		per_cpu(vector_desc, cpu)[vector] = NULL;
+ 
+ 	cfg->vector = 0;
+ 	cpumask_clear(cfg->domain);
+@@ -1250,18 +1250,18 @@ static void __clear_irq_vector(int irq,
+ 	for_each_cpu_and(cpu, cfg->old_domain, cpu_online_mask) {
+ 		for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS;
+ 								vector++) {
+-			if (per_cpu(vector_irq, cpu)[vector] != irq)
++			if (per_cpu(vector_desc, cpu)[vector] != desc)
+ 				continue;
+-			per_cpu(vector_irq, cpu)[vector] = -1;
++			per_cpu(vector_desc, cpu)[vector] = NULL;
+ 			break;
+ 		}
+ 	}
+ 	cfg->move_in_progress = 0;
+ }
+ 
+-void __setup_vector_irq(int cpu)
++void __setup_vector_desc(int cpu)
+ {
+-	/* Initialize vector_irq on a new cpu */
++	/* Initialize vector_desc on a new cpu */
+ 	int irq, vector;
+ 	struct irq_cfg *cfg;
+ 	struct irq_desc *desc;
+@@ -1278,17 +1278,17 @@ void __setup_vector_irq(int cpu)
+ 		if (!cpumask_test_cpu(cpu, cfg->domain))
+ 			continue;
+ 		vector = cfg->vector;
+-		per_cpu(vector_irq, cpu)[vector] = irq;
++		per_cpu(vector_desc, cpu)[vector] = desc;
+ 	}
+ 	/* Mark the free vectors */
+ 	for (vector = 0; vector < NR_VECTORS; ++vector) {
+-		irq = per_cpu(vector_irq, cpu)[vector];
+-		if (irq < 0)
++		desc = per_cpu(vector_desc, cpu)[vector];
++		if (!desc)
+ 			continue;
+ 
+-		cfg = irq_cfg(irq);
++		cfg = desc->chip_data;
+ 		if (!cpumask_test_cpu(cpu, cfg->domain))
+-			per_cpu(vector_irq, cpu)[vector] = -1;
++			per_cpu(vector_desc, cpu)[vector] = NULL;
+ 	}
+ 	raw_spin_unlock(&vector_lock);
+ }
+@@ -1448,7 +1448,7 @@ static void setup_IO_APIC_irq(int apic_i
+ 	if (irq < nr_legacy_irqs && cpumask_test_cpu(0, cfg->domain))
+ 		apic->vector_allocation_domain(0, cfg->domain);
+ 
+-	if (assign_irq_vector(irq, cfg, apic->target_cpus()))
++	if (assign_irq_vector(desc, cfg, apic->target_cpus()))
+ 		return;
+ 
+ 	dest = apic->cpu_mask_to_apicid_and(cfg->domain, apic->target_cpus());
+@@ -1464,7 +1464,7 @@ static void setup_IO_APIC_irq(int apic_i
+ 			       dest, trigger, polarity, cfg->vector, pin)) {
+ 		printk("Failed to setup ioapic entry for ioapic  %d, pin %d\n",
+ 		       mp_ioapics[apic_id].apicid, pin);
+-		__clear_irq_vector(irq, cfg);
++		__clear_irq_vector(desc, cfg);
+ 		return;
+ 	}
+ 
+@@ -2340,14 +2340,12 @@ set_desc_affinity(struct irq_desc *desc,
+ 		  unsigned int *dest_id)
+ {
+ 	struct irq_cfg *cfg;
+-	unsigned int irq;
+ 
+ 	if (!cpumask_intersects(mask, cpu_online_mask))
+ 		return -1;
+ 
+-	irq = desc->irq;
+ 	cfg = desc->chip_data;
+-	if (assign_irq_vector(irq, cfg, mask))
++	if (assign_irq_vector(desc, cfg, mask))
+ 		return -1;
+ 
+ 	cpumask_copy(desc->affinity, mask);
+@@ -2420,7 +2418,7 @@ migrate_ioapic_irq_desc(struct irq_desc
+ 		return ret;
+ 
+ 	cfg = desc->chip_data;
+-	if (assign_irq_vector(irq, cfg, mask))
++	if (assign_irq_vector(desc, cfg, mask))
+ 		return ret;
+ 
+ 	dest = apic->cpu_mask_to_apicid_and(cfg->domain, mask);
+@@ -2474,20 +2472,15 @@ asmlinkage void smp_irq_move_cleanup_int
+ 
+ 	me = smp_processor_id();
+ 	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
+-		unsigned int irq;
+ 		unsigned int irr;
+ 		struct irq_desc *desc;
+ 		struct irq_cfg *cfg;
+-		irq = __get_cpu_var(vector_irq)[vector];
+-
+-		if (irq == -1)
+-			continue;
++		desc = __get_cpu_var(vector_desc)[vector];
+ 
+-		desc = irq_to_desc(irq);
+ 		if (!desc)
+ 			continue;
+ 
+-		cfg = irq_cfg(irq);
++		cfg = desc->chip_data;
+ 		raw_spin_lock(&desc->lock);
+ 
+ 		/*
+@@ -2512,7 +2505,7 @@ asmlinkage void smp_irq_move_cleanup_int
+ 			apic->send_IPI_self(IRQ_MOVE_CLEANUP_VECTOR);
+ 			goto unlock;
+ 		}
+-		__get_cpu_var(vector_irq)[vector] = -1;
++		__get_cpu_var(vector_desc)[vector] = NULL;
+ unlock:
+ 		raw_spin_unlock(&desc->lock);
+ 	}
+@@ -2949,7 +2942,7 @@ static inline void __init check_timer(vo
+ 	 * get/set the timer IRQ vector:
+ 	 */
+ 	disable_8259A_irq(0);
+-	assign_irq_vector(0, cfg, apic->target_cpus());
++	assign_irq_vector(desc, cfg, apic->target_cpus());
+ 
+ 	/*
+ 	 * As IRQ0 is to be enabled in the 8259A, the virtual
+@@ -3285,7 +3278,7 @@ unsigned int create_irq_nr(unsigned int
+ 		desc_new = move_irq_desc(desc_new, node);
+ 		cfg_new = desc_new->chip_data;
+ 
+-		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
++		if (__assign_irq_vector(desc_new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
+ 		break;
+ 	}
+@@ -3315,12 +3308,16 @@ int create_irq(void)
+ void destroy_irq(unsigned int irq)
+ {
+ 	unsigned long flags;
++	struct irq_desc *desc;
++	struct irq_cfg *cfg;
+ 
+ 	dynamic_irq_cleanup_keep_chip_data(irq);
+ 
+ 	free_irte(irq);
+ 	raw_spin_lock_irqsave(&vector_lock, flags);
+-	__clear_irq_vector(irq, get_irq_chip_data(irq));
++	desc = irq_to_desc(irq);
++	cfg = desc->chip_data;
++	__clear_irq_vector(desc, cfg);
+ 	raw_spin_unlock_irqrestore(&vector_lock, flags);
+ }
+ 
+@@ -3331,6 +3328,7 @@ void destroy_irq(unsigned int irq)
+ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq,
+ 			   struct msi_msg *msg, u8 hpet_id)
+ {
++	struct irq_desc *desc;
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 	unsigned dest;
+@@ -3338,8 +3336,9 @@ static int msi_compose_msg(struct pci_de
+ 	if (disable_apic)
+ 		return -ENXIO;
+ 
+-	cfg = irq_cfg(irq);
+-	err = assign_irq_vector(irq, cfg, apic->target_cpus());
++	desc = irq_to_desc(irq);
++	cfg = desc->chip_data;
++	err = assign_irq_vector(desc, cfg, apic->target_cpus());
+ 	if (err)
+ 		return err;
+ 
+@@ -3812,14 +3811,16 @@ static struct irq_chip ht_irq_chip = {
+ 
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+ {
++	struct irq_desc *desc;
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 
+ 	if (disable_apic)
+ 		return -ENXIO;
+ 
+-	cfg = irq_cfg(irq);
+-	err = assign_irq_vector(irq, cfg, apic->target_cpus());
++	desc = irq_to_desc(irq);
++	cfg = desc->chip_data;
++	err = assign_irq_vector(desc, cfg, apic->target_cpus());
+ 	if (!err) {
+ 		struct ht_irq_msg msg;
+ 		unsigned dest;
+Index: linux-2.6/arch/x86/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irq.c
++++ linux-2.6/arch/x86/kernel/irq.c
+@@ -229,19 +229,19 @@ unsigned int __irq_entry do_IRQ(struct p
+ 
+ 	/* high bit used in ret_from_ code  */
+ 	unsigned vector = ~regs->orig_ax;
+-	unsigned irq;
++	struct irq_desc *desc;
+ 
+ 	exit_idle();
+ 	irq_enter();
+ 
+-	irq = __get_cpu_var(vector_irq)[vector];
++	desc = __get_cpu_var(vector_desc)[vector];
+ 
+-	if (!handle_irq(irq, regs)) {
++	if (!handle_irq(desc, regs)) {
+ 		ack_APIC_irq();
+ 
+ 		if (printk_ratelimit())
+-			pr_emerg("%s: %d.%d No irq handler for vector (irq %d)\n",
+-				__func__, smp_processor_id(), vector, irq);
++			pr_emerg("%s: %d.%d No irq handler for vector\n",
++				__func__, smp_processor_id(), vector);
+ 	}
+ 
+ 	irq_exit();
+@@ -348,14 +348,13 @@ void fixup_irqs(void)
+ 	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
+ 		unsigned int irr;
+ 
+-		if (__get_cpu_var(vector_irq)[vector] < 0)
++		if (__get_cpu_var(vector_desc)[vector] == NULL)
+ 			continue;
+ 
+ 		irr = apic_read(APIC_IRR + (vector / 32 * 0x10));
+ 		if (irr  & (1 << (vector % 32))) {
+-			irq = __get_cpu_var(vector_irq)[vector];
++			desc = __get_cpu_var(vector_desc)[vector];
+ 
+-			desc = irq_to_desc(irq);
+ 			raw_spin_lock(&desc->lock);
+ 			if (desc->chip->retrigger)
+ 				desc->chip->retrigger(irq);
+Index: linux-2.6/arch/x86/kernel/irq_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irq_32.c
++++ linux-2.6/arch/x86/kernel/irq_32.c
+@@ -76,7 +76,7 @@ static void call_on_stack(void *func, vo
+ }
+ 
+ static inline int
+-execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq)
++execute_on_irq_stack(int overflow, struct irq_desc *desc, unsigned int irq)
+ {
+ 	union irq_ctx *curctx, *irqctx;
+ 	u32 *isp, arg1, arg2;
+@@ -189,20 +189,20 @@ asmlinkage void do_softirq(void)
+ 
+ #else
+ static inline int
+-execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq) { return 0; }
++execute_on_irq_stack(int overflow, struct irq_desc *desc, unsigned int irq) { return 0; }
+ #endif
+ 
+-bool handle_irq(unsigned irq, struct pt_regs *regs)
++bool handle_irq(struct irq_desc *desc, struct pt_regs *regs)
+ {
+-	struct irq_desc *desc;
+ 	int overflow;
++	unsigned int irq;
+ 
+ 	overflow = check_stack_overflow();
+ 
+-	desc = irq_to_desc(irq);
+ 	if (unlikely(!desc))
+ 		return false;
+ 
++	irq = desc->irq;
+ 	if (!execute_on_irq_stack(overflow, desc, irq)) {
+ 		if (unlikely(overflow))
+ 			print_stack_overflow();
+Index: linux-2.6/arch/x86/kernel/irq_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irq_64.c
++++ linux-2.6/arch/x86/kernel/irq_64.c
+@@ -48,17 +48,14 @@ static inline void stack_overflow_check(
+ #endif
+ }
+ 
+-bool handle_irq(unsigned irq, struct pt_regs *regs)
++bool handle_irq(struct irq_desc *desc, struct pt_regs *regs)
+ {
+-	struct irq_desc *desc;
+-
+ 	stack_overflow_check(regs);
+ 
+-	desc = irq_to_desc(irq);
+ 	if (unlikely(!desc))
+ 		return false;
+ 
+-	generic_handle_irq_desc(irq, desc);
++	generic_handle_irq_desc(desc->irq, desc);
+ 	return true;
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/irqinit.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irqinit.c
++++ linux-2.6/arch/x86/kernel/irqinit.c
+@@ -83,16 +83,14 @@ static struct irqaction irq2 = {
+ 	.name = "cascade",
+ };
+ 
+-DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
+-	[0 ... NR_VECTORS - 1] = -1,
+-};
++DEFINE_PER_CPU(vector_desc_t, vector_desc);
+ 
+ int vector_used_by_percpu_irq(unsigned int vector)
+ {
+ 	int cpu;
+ 
+ 	for_each_online_cpu(cpu) {
+-		if (per_cpu(vector_irq, cpu)[vector] != -1)
++		if (per_cpu(vector_desc, cpu)[vector] != NULL)
+ 			return 1;
+ 	}
+ 
+@@ -139,7 +137,7 @@ void __init init_IRQ(void)
+ 	 * irq's migrate etc.
+ 	 */
+ 	for (i = 0; i < nr_legacy_irqs; i++)
+-		per_cpu(vector_irq, 0)[IRQ0_VECTOR + i] = i;
++		per_cpu(vector_desc, 0)[IRQ0_VECTOR + i] = irq_to_desc(i);
+ 
+ 	x86_init.irqs.intr_init();
+ }
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -245,7 +245,7 @@ static void __cpuinit smp_callin(void)
+ 	/*
+ 	 * Need to setup vector mappings before we enable interrupts.
+ 	 */
+-	__setup_vector_irq(smp_processor_id());
++	__setup_vector_desc(smp_processor_id());
+ 	/*
+ 	 * Get our bogomips.
+ 	 *
+Index: linux-2.6/arch/x86/kernel/vmiclock_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmiclock_32.c
++++ linux-2.6/arch/x86/kernel/vmiclock_32.c
+@@ -236,7 +236,7 @@ void __init vmi_time_init(void)
+ 	vmi_time_init_clockevent();
+ 	setup_irq(0, &vmi_clock_action);
+ 	for_each_possible_cpu(cpu)
+-		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = 0;
++		per_cpu(vector_desc, cpu)[vmi_get_timer_vector()] = irq_to_desc(0);
+ }
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+Index: linux-2.6/arch/x86/lguest/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/lguest/boot.c
++++ linux-2.6/arch/x86/lguest/boot.c
+@@ -819,7 +819,7 @@ static void __init lguest_init_IRQ(void)
+ 
+ 	for (i = FIRST_EXTERNAL_VECTOR; i < NR_VECTORS; i++) {
+ 		/* Some systems map "vectors" to interrupts weirdly.  Not us! */
+-		__get_cpu_var(vector_irq)[i] = i - FIRST_EXTERNAL_VECTOR;
++		__get_cpu_var(vector_desc)[i] = irq_to_desc(i - FIRST_EXTERNAL_VECTOR);
+ 		if (i != SYSCALL_VECTOR)
+ 			set_intr_gate(i, interrupt[i - FIRST_EXTERNAL_VECTOR]);
+ 	}
+@@ -842,6 +842,11 @@ static void __init lguest_init_IRQ(void)
+ void lguest_setup_irq(unsigned int irq)
+ {
+ 	irq_to_desc_alloc_node(irq, 0);
++	/*
++	 *  for sparseirq, we could get new desc other than legacy irq,
++	 *  so set vector_desc again for that irq
++	 */
++	__get_cpu_var(vector_desc)[irq + FIRST_EXTERNAL_VECTOR] = irq_to_desc(irq);
+ 	set_irq_chip_and_handler_name(irq, &lguest_irq_controller,
+ 				      handle_level_irq, "level");
+ }
