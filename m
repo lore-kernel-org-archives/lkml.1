@@ -1,127 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304Ab0BWPwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 10:52:21 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:38041 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753183Ab0BWPwT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 10:52:19 -0500
-Date: Tue, 23 Feb 2010 10:52:17 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: naresh kamboju <naresh.kernel@gmail.com>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: LTTng 0.193 fixes RT kernel support
-Message-ID: <20100223155217.GA7210@Krystal>
-References: <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain> <20100216164744.GA25115@Krystal> <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain> <20100216170540.GA28039@Krystal> <f5a7b3811002170236i6c560eadp2de7deb10082db4f@mail.gmail.com> <20100217230854.GA25636@Krystal> <f5a7b3811002220737r502e75c1w5ab5a64b6cc27b68@mail.gmail.com> <f5a7b3811002230329w64cabac9lff95a40cb5e7dfa5@mail.gmail.com> <20100223123016.GA12857@Krystal> <f5a7b3811002230735p2eb90904l33e8090ade66fc14@mail.gmail.com>
+	id S1753309Ab0BWPy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 10:54:56 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:61462 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164Ab0BWPyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 10:54:55 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to rcu_dereference()
+Date: Tue, 23 Feb 2010 16:54:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+References: <20100223010435.GA666@linux.vnet.ibm.com> <201002231359.07910.arnd@arndb.de> <20100223131543.GA19174@Krystal>
+In-Reply-To: <20100223131543.GA19174@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <f5a7b3811002230735p2eb90904l33e8090ade66fc14@mail.gmail.com>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 10:49:32 up 31 days, 18:27,  5 users,  load average: 0.48, 0.50,
-	0.45
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002231654.09724.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18lZu7y4Xr8kPQh7sSMhuchNJHrWq35KXnzkCB
+ UkyYMfuQKkK8DYwFW0jLR1kKz0frMYiyMOm1JQuyvIoDdhV1CD
+ 8uPUTcbjqPUk+p7Un+29A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* naresh kamboju (naresh.kernel@gmail.com) wrote:
-> On Tue, Feb 23, 2010 at 6:00 PM, Mathieu Desnoyers
-> <mathieu.desnoyers@efficios.com> wrote:
-> > * naresh kamboju (naresh.kernel@gmail.com) wrote:
-> >> On Mon, Feb 22, 2010 at 9:07 PM, naresh kamboju <naresh.kernel@gmail.com> wrote:
-> >> > On Thu, Feb 18, 2010 at 4:38 AM, Mathieu Desnoyers
-> >> > <mathieu.desnoyers@efficios.com> wrote:
-> >> >> * naresh kamboju (naresh.kernel@gmail.com) wrote:
-> >> >>> On Tue, Feb 16, 2010 at 10:35 PM, Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-> >> >>> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
-> >> >>> > saner del_timer_sync() scheme to delete the timers.
-> >>
-> >> patch trace-clock-32-to-64-use-del-timer-sync.patch is causing above
-> >> problem on SMP.
-> >>
-> >> with out this patch on SMP reported the previous bug as BUG: sleeping
-> >> function called from invalid context at kernel/rtmutex.c:685
-> >>
-> >> However, i'll investigate.
-> >
-> > Hrm, we should turn the arch/{arm/mach-omap2,x86/kernel}/trace-clock.c:
-> > trace_clock_lock into a mutex, and kernel/trace/trace-clock-32-to-64.c:
-> > synthetic_tsc_lock into a mutex too.
-> 
-> I have modified kernel/trace/trace-clock-32-to-64.c spin_lock to
-> mutex_lock to all the calls
-> 
-> -static DEFINE_SPINLOCK(synthetic_tsc_lock);
-> +static DEFINE_MUTEX(synthetic_tsc_lock);
-> 
-> -       spin_lock(&synthetic_tsc_lock);
-> +       mutex_lock(&synthetic_tsc_lock);
-> 
-> for arch/{arm/mach-omap2/kernel}/trace-clock.c is already modified as
-> above from the patch
-> omap-trace-clock-fix-mutex.patch
-> from LTTng patches 02-Feb-2009.
-> this patch was prepared by you to fix
-> BUG: sleeping function called from invalid context at kernel/mutex.c:207.
-> 
-> Still reporting same bug at my end :-(
-> 
-> let me try in all possible ways.
+On Tuesday 23 February 2010, Mathieu Desnoyers wrote:
+> Just to make myself the devil's advocate: how should we consider
+> initialization of RCU pointers at boot time that happens before any
+> possible concurrent reader is allowed to run ? I think this case is an
+> example of valid RCU-pointer access that is not done through the RCU
+> primitives. It seems valid to perform these RCU-pointer accesses when
+> serialized by a different exclusion mechanism, in this case being the
+> guarantee that no concurrent reader are running at early boot.
 
-Please note that at the end of 2009, I moved the ARM LTTng omap trace clock to a
-neater per-cpu design. So it's possible that the old implementation you use has
-problems with the mutex. This could be fixed with the newer implementation.
+Like the annotations adding __rcu to each rcu protected pointer, we'd
+also have to add annotations to static initialization of those. E.g.
+something like 
 
-If you can tell us more about the BUG you get with the mutex-based synthetic tsc
-(what the callers are) I could tell you if this problem really goes away in
-newer version.
+#define DEFINE_RCU_VAR(type, name, pointer) \
+	type __rcu *name = (__force type)pointer
 
-Thanks,
+should do for simple initializations, and I guess I can come up
+with similar solutions if we need something more fancy.
 
-Mathieu
+> The same applies to stop_machine(), and, as I come to think of it, we could
+> probably think of a scheme that dynamically switch from an RCU read-lock
+> to, e.g., a mutex for all users, wait for RCU quiescent state, and then
+> serialize all users on the mutex during the update. So while some of
+> these cases are a bit far-fetched, I think they are valid, and I wonder
+> how the address space validation would take them into account.
 
-> 
-> Best regards
-> Naresh Kamboju
-> >
-> > I used a spinlock previously on ARM because it was called from power
-> > management resume, but now that the data structures touched by this code
-> > path are per-cpu, this lock is not taken there, so it should be OK to
-> > turn it into a mutex.
-> >
-> > Can you try that and tell me if that fixes your issues ?
-> >
-> > Thanks,
-> >
-> > Mathieu
-> >
-> >>
-> >> Best regards,
-> >> Naresh Kamboju
-> >> >> Thanks,
-> >> >>
-> >> >> Mathieu
-> >> >>
-> >> >> --
-> >> >> Mathieu Desnoyers
-> >> >> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> >> >>
-> >> >
-> >>
-> >> _______________________________________________
-> >> ltt-dev mailing list
-> >> ltt-dev@lists.casi.polymtl.ca
-> >> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> >>
-> >
-> > --
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> >
+I assume that it's never wrong to do a pointer assignment using
+rcu_assign_pointer, or to do a dereference using rcu_dereference,
+even if you hold a mutex or stop_machine. I would also guess that
+the performance impact of doing so is not measurable. If both are
+true for all corner cases, we could just use the rcu primitives
+for any access on those variables for consistency reasons.
+
+If there are cases where it does not work, we need to come up with
+names for new primitives that just do the assignment or dereference
+with __force but no actual synchronization.
+
+	Arnd
