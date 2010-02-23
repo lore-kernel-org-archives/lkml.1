@@ -1,67 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924Ab0BWT5v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 14:57:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8468 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752127Ab0BWT5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 14:57:49 -0500
-From: Juan Quintela <quintela@redhat.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
-       virtualization@lists.osdl.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       markmc@redhat.com, gleb@redhat.com, herbert.xu@redhat.com,
-       dlaor@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
-In-Reply-To: <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
-	(Michael S. Tsirkin's message of "Tue, 23 Feb 2010 18:57:58 +0200")
-References: <cover.1266943453.git.mst@redhat.com>
-	<82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-Date: Tue, 23 Feb 2010 20:56:56 +0100
-Message-ID: <m3ocjfsp2v.fsf@trasno.mitica>
+	id S1754020Ab0BWT6G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 14:58:06 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55809 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753983Ab0BWT6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 14:58:03 -0500
+Date: Tue, 23 Feb 2010 19:57:45 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, roland@redhat.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: linux-next requirements (Was: Re: [tip:x86/ptrace] ptrace: Add
+ support for generic PTRACE_GETREGSET/PTRACE_SETREGSET)
+Message-ID: <20100223195744.GK30031@ZenIV.linux.org.uk>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+ <tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
+ <20100222090710.GA31357@elte.hu>
+ <20100222203319.8bd497a2.sfr@canb.auug.org.au>
+ <20100222102745.GJ20844@elte.hu>
+ <20100222224752.0cbd5807.sfr@canb.auug.org.au>
+ <20100223084552.GB17617@elte.hu>
+ <20100223195214.GJ30031@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223195214.GJ30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Michael S. Tsirkin" <mst@redhat.com> wrote:
-> get_user_pages_fast returns number of pages on success, negative value
-> on failure, but never 0. Fix vhost code to match this logic.
+On Tue, Feb 23, 2010 at 07:52:14PM +0000, Al Viro wrote:
+> On Tue, Feb 23, 2010 at 09:45:52AM +0100, Ingo Molnar wrote:
+> 
+> > The solution? Stop this anti-real-world-usage bias already. Stop pretending 
+> > that those cross-build results are as important as say the thousands of real 
+> > bugzilla entries we have. They are fine info, but the kind of priority you are 
+> > giving them is causing a waste of resources.
+> 
+> Ho-hum...  "Kernel won't build for several thousand boxen"...  "Five lines
+> contain trailing whitespace"...  Yup, the latter is far higher priority,
+> all right.
 
-It can return 0 if you ask for 0 pages :)
->From the comment:
-
- * Returns number of pages pinned. This may be fewer than the number
- * requested. If nr_pages is 0 or negative, returns 0. If no pages
- * were pinned, returns -errno.
- */
-
-I agree that code was wrong, but the BUG_ON() is not neccessary
-IMHO. The important bit is the change in the comparison.
-
-Reviewed-by: Juan Quintela <quintela@redhat.com>
-
-
-> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> ---
->  drivers/vhost/vhost.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-> index d4f8fdf..d003504 100644
-> --- a/drivers/vhost/vhost.c
-> +++ b/drivers/vhost/vhost.c
-> @@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
->  	int bit = nr + (log % PAGE_SIZE) * 8;
->  	int r;
->  	r = get_user_pages_fast(log, 1, 1, &page);
-> -	if (r)
-> +	if (r < 0)
->  		return r;
-> +	BUG_ON(r != 1);
->  	base = kmap_atomic(page, KM_USER0);
->  	set_bit(bit, base);
->  	kunmap_atomic(base, KM_USER0);
+IOW, I'd buy that argument from somebody who didn't protect checkpatch.pl
+wankers against exactly that kind of criticism.
