@@ -1,53 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787Ab0BWRB5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 12:01:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48609 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753688Ab0BWRBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 12:01:55 -0500
-Date: Tue, 23 Feb 2010 18:57:58 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
-       virtualization@lists.osdl.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       markmc@redhat.com, gleb@redhat.com, herbert.xu@redhat.com,
-       quintela@redhat.com, dlaor@redhat.com, avi@redhat.com
-Subject: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
-Message-ID: <82ba8c97ce55dd4bf9972ad755961cd14e6a0938.1266943453.git.mst@redhat.com>
-References: <cover.1266943453.git.mst@redhat.com>
+	id S1753299Ab0BWRCJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 12:02:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41336 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753297Ab0BWRCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 12:02:05 -0500
+Date: Tue, 23 Feb 2010 09:00:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Stefan Bader <stefan.bader@canonical.com>, Greg KH <gregkh@suse.de>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, linux-kernel@vger.kernel.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk,
+       Junichi Nomura <j-nomura@ce.jp.nec.com>, akpm@linux-foundation.org,
+       stable@kernel.org, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [Stable-review] [93/93] dm mpath: fix stall when requeueing io
+In-Reply-To: <20100223153326.GA4275@kroah.com>
+Message-ID: <alpine.LFD.2.00.1002230852070.4141@localhost.localdomain>
+References: <20100219163257.186977438@kvm.kroah.org> <4B815A3D.9040402@canonical.com> <20100223153326.GA4275@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1266943453.git.mst@redhat.com>
-X-Mutt-Fcc: =sent
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_user_pages_fast returns number of pages on success, negative value
-on failure, but never 0. Fix vhost code to match this logic.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- drivers/vhost/vhost.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index d4f8fdf..d003504 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -646,8 +646,9 @@ static int set_bit_to_user(int nr, void __user *addr)
- 	int bit = nr + (log % PAGE_SIZE) * 8;
- 	int r;
- 	r = get_user_pages_fast(log, 1, 1, &page);
--	if (r)
-+	if (r < 0)
- 		return r;
-+	BUG_ON(r != 1);
- 	base = kmap_atomic(page, KM_USER0);
- 	set_bit(bit, base);
- 	kunmap_atomic(base, KM_USER0);
--- 
-1.7.0.18.g0d53a5
+On Tue, 23 Feb 2010, Greg KH wrote:
+> On Sun, Feb 21, 2010 at 05:07:25PM +0100, Stefan Bader wrote:
+> > > 
+> > > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> > > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+> > > Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+> > >
+> > >  		blk_start_request(rq);
+> > >  		spin_unlock(q->queue_lock);
+> > > -		map_request(ti, rq, md);
+> > > +		if (map_request(ti, rq, md))
+> > > +			goto requeued;
+> > >  		spin_lock_irq(q->queue_lock);
+> > >  	}
+> > 
+> > While looking over the code I also noticed that the spinlock is dropped with
+> > spin_unlock and then reacquired with spin_lock_irq. Isn't the irq version too
+> > much in that case? Or was the intention to have interrupts enabled when unlocking?
+> 
+> Ick, thanks for the review.  I'll drop this patch for now and fix it up
+> in the next release if needed.
+
+This part of the commentary seems to be relevant for mainline too. 
+
+According to git logs, this spin_unlock/spin_lock_irq imbalance goes back 
+to commit cec47e3d4a (last June). Maybe there's some reason for it, but it 
+does look odd.
+
+Ueda-san, Nomura-san, Alasdair? Comments?
+
+			Linus
