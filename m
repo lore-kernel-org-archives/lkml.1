@@ -1,56 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089Ab0BXIF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:05:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58489 "EHLO smtps.tip.net.au"
+	id S1753993Ab0BXIHR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 03:07:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58598 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753137Ab0BXIF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:05:26 -0500
-Date: Wed, 24 Feb 2010 19:05:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: linux-next: build warning after merge of the ext3 tree
-Message-Id: <20100224190520.8cd15930.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__24_Feb_2010_19_05_20_+1100_lpnvOsvUXievMj6o"
+	id S1753132Ab0BXIHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 03:07:15 -0500
+Date: Wed, 24 Feb 2010 08:06:45 GMT
+From: tip-bot for Jacob Pan <jacob.jun.pan@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jacob.jun.pan@intel.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jacob.jun.pan@intel.com, tglx@linutronix.de
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755A318D3AA@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F0755A318D3AA@orsmsx508.amr.corp.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mrst] x86, pic: Fix section mismatch in legacy pic
+Message-ID: <tip-28a3c93d11212655ce0a9be977c405c703844164@git.kernel.org>
+Git-Commit-ID: 28a3c93d11212655ce0a9be977c405c703844164
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 24 Feb 2010 08:06:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__24_Feb_2010_19_05_20_+1100_lpnvOsvUXievMj6o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  28a3c93d11212655ce0a9be977c405c703844164
+Gitweb:     http://git.kernel.org/tip/28a3c93d11212655ce0a9be977c405c703844164
+Author:     Jacob Pan <jacob.jun.pan@intel.com>
+AuthorDate: Tue, 23 Feb 2010 02:03:31 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 23 Feb 2010 23:13:19 -0800
 
-Hi Jan,
+x86, pic: Fix section mismatch in legacy pic
 
-After merging the ext3 tree, today's linux-next build (x86_64
-allmodconfig) produced this warning:
+Move legacy_pic chip dummy functions out of init section as they might
+be referenced at run time.
 
-fs/gfs2/quota.c:1581: warning: initialization from incompatible pointer type
+Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+LKML-Reference: <43F901BD926A4E43B106BF17856F0755A318D3AA@orsmsx508.amr.corp.intel.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/i8259.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Introduced by commit ec304a27d7750ba666ad2d446434ddd47fa93c40 ("quota:
-move code from sync_quota_sb into vfs_quota_sync").  From the commit
-message, I expect that this has been thought about.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__24_Feb_2010_19_05_20_+1100_lpnvOsvUXievMj6o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuE3cAACgkQjjKRsyhoI8yKegCfWux2UzaWBDgoMycPF/iusA+T
-QsAAn2QFs9dJzkMm6bnfgJH3K5X0yGKu
-=o08c
------END PGP SIGNATURE-----
-
---Signature=_Wed__24_Feb_2010_19_05_20_+1100_lpnvOsvUXievMj6o--
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index 9bac681..fb725ee 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -371,9 +371,9 @@ static void init_8259A(int auto_eoi)
+  * platforms, such as x86 MID.
+  */
+ 
+-static void __init legacy_pic_noop(void) { };
+-static void __init legacy_pic_uint_noop(unsigned int unused) { };
+-static void __init legacy_pic_int_noop(int unused) { };
++static void legacy_pic_noop(void) { };
++static void legacy_pic_uint_noop(unsigned int unused) { };
++static void legacy_pic_int_noop(int unused) { };
+ 
+ static struct irq_chip dummy_pic_chip  = {
+ 	.name = "dummy pic",
