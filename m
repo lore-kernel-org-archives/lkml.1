@@ -1,261 +1,150 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886Ab0BXIp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:45:29 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:60729 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755884Ab0BXIoz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:44:55 -0500
-Message-Id: <20100224084453.900936661@de.ibm.com>
-User-Agent: quilt/0.48-1
-Date: Wed, 24 Feb 2010 09:45:02 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 32/32] [PATCH] cio: trigger subchannel event at resume time
-References: <20100224084430.193562869@de.ibm.com>
-Content-Disposition: inline; filename=131-cio-subchannel-event.diff
+	id S1755930Ab0BXIp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 03:45:26 -0500
+Received: from mailout2.zih.tu-dresden.de ([141.30.67.73]:58952 "EHLO
+	mailout2.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755404Ab0BXIo7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 03:44:59 -0500
+Subject: Re: Patch for tracing c states (power_end) on x86
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B84E51A.900@cn.fujitsu.com>
+References: <1266999573.3415.8.camel@localhost>
+	 <4B84E51A.900@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Feb 2010 09:44:44 +0100
+Message-ID: <1267001084.3415.16.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8BIT
+X-TUD-Virus-Scanned: mailout2.zih.tu-dresden.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Hi,
 
-ccw_device_pm_restore: trigger subchannel event to better handle
-changes to the subchannel device.
+I tried to pass 0 in "my" sleep routine "static void mwait_idle(void)"
+Which led to the following behaviour:
+The event was reported on /sys/kernel/debug/tracing, but still not
+for sys_perf_open.
+As 1 had been the argument which led to a working tracing, I assumed,
+that the argument should be the same as the 2nd arg of the last
+power_start event.
+Since this argument had been 1 in my case, it worked for me. However, 0
+did not.
 
-Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Bye Robert
 
- drivers/s390/cio/css.c    |    2 
- drivers/s390/cio/css.h    |    1 
- drivers/s390/cio/device.c |  111 +++++++++++++++++++++++++---------------------
- 3 files changed, 63 insertions(+), 51 deletions(-)
 
-Index: quilt-2.6/drivers/s390/cio/css.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/css.c	2010-02-24 09:44:23.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/css.c	2010-02-24 09:44:29.000000000 +0100
-@@ -1020,7 +1020,7 @@
- 	return 0;
- }
- 
--static inline int css_complete_work(void)
-+int css_complete_work(void)
- {
- 	int ret;
- 
-Index: quilt-2.6/drivers/s390/cio/css.h
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/css.h	2010-02-24 09:44:23.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/css.h	2010-02-24 09:44:29.000000000 +0100
-@@ -146,6 +146,7 @@
- /* Helper functions to build lists for the slow path. */
- void css_schedule_eval(struct subchannel_id schid);
- void css_schedule_eval_all(void);
-+int css_complete_work(void);
- 
- int sch_is_pseudo_sch(struct subchannel *);
- struct schib;
-Index: quilt-2.6/drivers/s390/cio/device.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device.c	2010-02-24 09:44:26.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/device.c	2010-02-24 09:44:29.000000000 +0100
-@@ -1400,6 +1400,12 @@
- 		rc = 0;
- 		goto out_unlock;
- 	case IO_SCH_VERIFY:
-+		if (cdev->private->flags.resuming == 1) {
-+			if (cio_enable_subchannel(sch, (u32)(addr_t)sch)) {
-+				ccw_device_set_notoper(cdev);
-+				break;
-+			}
-+		}
- 		/* Trigger path verification. */
- 		io_subchannel_verify(sch);
- 		rc = 0;
-@@ -1438,7 +1444,8 @@
- 		break;
- 	case IO_SCH_UNREG_ATTACH:
- 		/* Unregister ccw device. */
--		ccw_device_unregister(cdev);
-+		if (!cdev->private->flags.resuming)
-+			ccw_device_unregister(cdev);
- 		break;
- 	default:
- 		break;
-@@ -1447,7 +1454,8 @@
- 	switch (action) {
- 	case IO_SCH_ORPH_UNREG:
- 	case IO_SCH_UNREG:
--		css_sch_device_unregister(sch);
-+		if (!cdev || !cdev->private->flags.resuming)
-+			css_sch_device_unregister(sch);
- 		break;
- 	case IO_SCH_ORPH_ATTACH:
- 	case IO_SCH_UNREG_ATTACH:
-@@ -1769,20 +1777,36 @@
- {
- 	struct subchannel *sch = to_subchannel(cdev->dev.parent);
- 
--	if (cio_is_console(sch->schid))
--		goto out;
-+	spin_lock_irq(sch->lock);
-+	if (cio_is_console(sch->schid)) {
-+		cio_enable_subchannel(sch, (u32)(addr_t)sch);
-+		goto out_unlock;
-+	}
- 	/*
- 	 * While we were sleeping, devices may have gone or become
- 	 * available again. Kick re-detection.
- 	 */
--	spin_lock_irq(sch->lock);
- 	cdev->private->flags.resuming = 1;
-+	css_schedule_eval(sch->schid);
-+	spin_unlock_irq(sch->lock);
-+	css_complete_work();
-+
-+	/* cdev may have been moved to a different subchannel. */
-+	sch = to_subchannel(cdev->dev.parent);
-+	spin_lock_irq(sch->lock);
-+	if (cdev->private->state != DEV_STATE_ONLINE &&
-+	    cdev->private->state != DEV_STATE_OFFLINE)
-+		goto out_unlock;
-+
- 	ccw_device_recognition(cdev);
- 	spin_unlock_irq(sch->lock);
- 	wait_event(cdev->private->wait_q, dev_fsm_final_state(cdev) ||
- 		   cdev->private->state == DEV_STATE_DISCONNECTED);
--out:
-+	spin_lock_irq(sch->lock);
-+
-+out_unlock:
- 	cdev->private->flags.resuming = 0;
-+	spin_unlock_irq(sch->lock);
- }
- 
- static int resume_handle_boxed(struct ccw_device *cdev)
-@@ -1806,40 +1830,31 @@
- static int ccw_device_pm_restore(struct device *dev)
- {
- 	struct ccw_device *cdev = to_ccwdev(dev);
--	struct subchannel *sch = to_subchannel(cdev->dev.parent);
--	int ret = 0, cm_enabled;
-+	struct subchannel *sch;
-+	int ret = 0;
- 
- 	__ccw_device_pm_restore(cdev);
-+	sch = to_subchannel(cdev->dev.parent);
- 	spin_lock_irq(sch->lock);
--	if (cio_is_console(sch->schid)) {
--		cio_enable_subchannel(sch, (u32)(addr_t)sch);
--		spin_unlock_irq(sch->lock);
-+	if (cio_is_console(sch->schid))
- 		goto out_restore;
--	}
--	cdev->private->flags.donotify = 0;
-+
- 	/* check recognition results */
- 	switch (cdev->private->state) {
- 	case DEV_STATE_OFFLINE:
-+	case DEV_STATE_ONLINE:
-+		cdev->private->flags.donotify = 0;
- 		break;
- 	case DEV_STATE_BOXED:
- 		ret = resume_handle_boxed(cdev);
--		spin_unlock_irq(sch->lock);
- 		if (ret)
--			goto out;
-+			goto out_unlock;
- 		goto out_restore;
--	case DEV_STATE_DISCONNECTED:
--		goto out_disc_unlock;
- 	default:
--		goto out_unreg_unlock;
--	}
--	/* check if the device id has changed */
--	if (sch->schib.pmcw.dev != cdev->private->dev_id.devno) {
--		CIO_MSG_EVENT(0, "resume: sch 0.%x.%04x: failed (devno "
--			      "changed from %04x to %04x)\n",
--			      sch->schid.ssid, sch->schid.sch_no,
--			      cdev->private->dev_id.devno,
--			      sch->schib.pmcw.dev);
--		goto out_unreg_unlock;
-+		ret = resume_handle_disc(cdev);
-+		if (ret)
-+			goto out_unlock;
-+		goto out_restore;
- 	}
- 	/* check if the device type has changed */
- 	if (!ccw_device_test_sense_data(cdev)) {
-@@ -1848,24 +1863,30 @@
- 		ret = -ENODEV;
- 		goto out_unlock;
- 	}
--	if (!cdev->online) {
--		ret = 0;
-+	if (!cdev->online)
- 		goto out_unlock;
--	}
--	ret = ccw_device_online(cdev);
--	if (ret)
--		goto out_disc_unlock;
- 
--	cm_enabled = cdev->private->cmb != NULL;
-+	if (ccw_device_online(cdev)) {
-+		ret = resume_handle_disc(cdev);
-+		if (ret)
-+			goto out_unlock;
-+		goto out_restore;
-+	}
- 	spin_unlock_irq(sch->lock);
--
- 	wait_event(cdev->private->wait_q, dev_fsm_final_state(cdev));
--	if (cdev->private->state != DEV_STATE_ONLINE) {
--		spin_lock_irq(sch->lock);
--		goto out_disc_unlock;
-+	spin_lock_irq(sch->lock);
-+
-+	if (ccw_device_notify(cdev, CIO_OPER) == NOTIFY_BAD) {
-+		ccw_device_sched_todo(cdev, CDEV_TODO_UNREG);
-+		ret = -ENODEV;
-+		goto out_unlock;
- 	}
--	if (cm_enabled) {
-+
-+	/* reenable cmf, if needed */
-+	if (cdev->private->cmb) {
-+		spin_unlock_irq(sch->lock);
- 		ret = ccw_set_cmf(cdev, 1);
-+		spin_lock_irq(sch->lock);
- 		if (ret) {
- 			CIO_MSG_EVENT(2, "resume: cdev 0.%x.%04x: cmf failed "
- 				      "(rc=%d)\n", cdev->private->dev_id.ssid,
-@@ -1875,21 +1896,11 @@
- 	}
- 
- out_restore:
-+	spin_unlock_irq(sch->lock);
- 	if (cdev->online && cdev->drv && cdev->drv->restore)
- 		ret = cdev->drv->restore(cdev);
--out:
- 	return ret;
- 
--out_disc_unlock:
--	ret = resume_handle_disc(cdev);
--	spin_unlock_irq(sch->lock);
--	if (ret)
--		return ret;
--	goto out_restore;
--
--out_unreg_unlock:
--	ccw_device_sched_todo(cdev, CDEV_TODO_UNREG_EVAL);
--	ret = -ENODEV;
- out_unlock:
- 	spin_unlock_irq(sch->lock);
- 	return ret;
+
+Am Mittwoch, den 24.02.2010, 16:36 +0800 schrieb Li Zefan:
+> Robert Schöne wrote:
+> > Hello,
+> > 
+> > Since noone replied to my last mail (Febr. 15th, 11:42), describing the
+> > way to fix the missing c-state tracing, here's a patch.
+> > Maybe its easier that way.
+> > 
+> > (I used the perf-fixes-for-linus git tree to obtain a
+> > more-then-up-to-date version)
+> > 
+> > Bye Robert
+> > 
+> > 
+> > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> > index 02d6780..b1cfb88 100644
+> > --- a/arch/x86/kernel/process.c
+> > +++ b/arch/x86/kernel/process.c
+> > @@ -384,6 +384,7 @@ void default_idle(void)
+> >                 else
+> >                         local_irq_enable();
+> >                 current_thread_info()->status |= TS_POLLING;
+> > +               trace_power_end(1);
+> >         } else {
+> >                 local_irq_enable();
+> >                 /* loop is done by the caller */
+> > @@ -451,6 +452,7 @@ void mwait_idle_with_hints(unsigned long ax,
+> > unsigned long cx)
+> >                 if (!need_resched())
+> >                         __mwait(ax, cx);
+> >         }
+> > +       trace_power_end((ax>>4)+1);
+> 
+> The only argument of trace_power_end() is a dummy, so you can just
+> pass 0 or 1 to the trace hook, actually better pass 0 to be
+> consistent with other parts.
+> 
+> The dummy argument can't be eliminated, because the macros that
+> automatically generates racing code have some limitations, and
+> seems it's not so easy to get over.
+> 
+> >  }
+> >  
+> >  /* Default MONITOR/MWAIT with no hints, used for default C1 state */
+> > @@ -467,6 +469,7 @@ static void mwait_idle(void)
+> >                         __sti_mwait(0, 0);
+> >                 else
+> >                         local_irq_enable();
+> > +               trace_power_end(1);
+> >         } else
+> >                 local_irq_enable();
+> >  }
+> > 
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+------------------------- Mail from Febr. 15th --------------------
+Hi,
+I have a question regarding the event "power/power_end".
+For the standard linux kernel (2.6.32.8), it's just not reported -
+neither for the /sys/kernel/debug/tracing nor for the sys_perf_open
+approach.
+
+System:
+        Intel Core 2 Quad,
+        Kernel 2.6.32.8,
+        for sys_perf_open:always using sampling counters,
+        (Kernel 2.6.33-rcX should show the same behavior)
+
+After finding "my" c-state procedure in arch/x86/kernel/process.c
+(which was "static void mwait_idle(void)" btw), I added a
+trace_power_end call on the correct line:
+...
+                else
+                        local_irq_enable();
+        } else
+...
+->
+...
+                else
+                        local_irq_enable();
+                trace_power_end(0);
+        } else
+...
+Now the event was reported on /sys/kernel/debug/tracing, but still not
+for sys_perf_open.
+
+Then I had the idea, that trace_power_end's argument should be the same
+as the 2nd argument of the previous power_start.
+
+That worked.
+
+However, things to be done are: add trace_power_end's to some
+process.c's procedures.
+
+
+Bye Robert
+
+-------------------------End of Mail of Febr. 15th --------------------
+
 
