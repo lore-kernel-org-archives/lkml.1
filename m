@@ -1,267 +1,157 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802Ab0BXAO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 19:14:59 -0500
-Received: from mga01.intel.com ([192.55.52.88]:23698 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752140Ab0BXAO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 19:14:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,528,1262592000"; 
-   d="scan'208";a="775329113"
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-In-Reply-To: <1266864618.6122.472.camel@laptop>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-	 <1266057388.557.59599.camel@twins>
-	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
-	 <1266588316.1529.370.camel@laptop>
-	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
-	 <1266608875.1529.749.camel@laptop>
-	 <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
-	 <1266609734.1529.772.camel@laptop>
-	 <1266628424.4729.23.camel@sbs-t61.sc.intel.com>
-	 <1266864618.6122.472.camel@laptop>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 23 Feb 2010 16:13:52 -0800
-Message-Id: <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
+	id S1754944Ab0BXAXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 19:23:16 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48330 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753793Ab0BXAXP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 19:23:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 24 Feb 2010 09:19:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrea Righi <arighi@develer.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 0/2] memcg: per cgroup dirty limit
+Message-Id: <20100224091941.e2cc3d3a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100223151201.GB11930@redhat.com>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+	<20100222142744.GB13823@redhat.com>
+	<20100222173640.GG3063@balbir.in.ibm.com>
+	<20100222175833.GB3096@redhat.com>
+	<20100223090704.839d8bef.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100223151201.GB11930@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-22 at 10:50 -0800, Peter Zijlstra wrote:
-> On Fri, 2010-02-19 at 17:13 -0800, Suresh Siddha wrote:
-> 
-> > Ok Peter. There is another place that is scaling load_per_task with
-> > cpu_power but later comparing with the difference of max and min of the
-> > actual cpu load. :(
+On Tue, 23 Feb 2010 10:12:01 -0500
+Vivek Goyal <vgoyal@redhat.com> wrote:
+
+> On Tue, Feb 23, 2010 at 09:07:04AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Mon, 22 Feb 2010 12:58:33 -0500
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
 > > 
-> >         avg_load_per_task = (sum_avg_load_per_task * SCHED_LOAD_SCALE) /
-> >                 group->cpu_power;
+> > > On Mon, Feb 22, 2010 at 11:06:40PM +0530, Balbir Singh wrote:
+> > > > * Vivek Goyal <vgoyal@redhat.com> [2010-02-22 09:27:45]:
+> > > > 
+> > > > 
+> > > > > 
+> > > > >   May be we can modify writeback_inodes_wbc() to check first dirty page
+> > > > >   of the inode. And if it does not belong to same memcg as the task who
+> > > > >   is performing balance_dirty_pages(), then skip that inode.
+> > > > 
+> > > > Do you expect all pages of an inode to be paged in by the same cgroup?
+> > > 
+> > > I guess at least in simple cases. Not sure whether it will cover majority
+> > > of usage or not and up to what extent that matters.
+> > > 
+> > > If we start doing background writeout, on per page (like memory reclaim),
+> > > the it probably will be slower and hence flusing out pages sequentially
+> > > from inode makes sense. 
+> > > 
+> > > At one point I was thinking, like pages, can we have an inode list per
+> > > memory cgroup so that writeback logic can traverse that inode list to
+> > > determine which inodes need to be cleaned. But associating inodes to
+> > > memory cgroup is not very intutive at the same time, we again have the
+> > > issue of shared file pages from two differnent cgroups. 
+> > > 
+> > > But I guess, a simpler scheme would be to just check first dirty page from
+> > > inode and if it does not belong to memory cgroup of task being throttled,
+> > > skip it.
+> > > 
+> > > It will not cover the case of shared file pages across memory cgroups, but
+> > > at least something relatively simple to begin with. Do you have more ideas
+> > > on how it can be handeled better.
+> > > 
 > > 
-> >         if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
-> >                 sgs->group_imb = 1;
+> > If pagesa are "shared", it's hard to find _current_ owner.
+> 
+> Is it not the case that the task who touched the page first is owner of
+> the page and task memcg is charged for that page. Subsequent shared users
+> of the page get a free ride?
+
+yes.
+
+> 
+> If yes, why it is hard to find _current_ owner. Will it not be the memory
+> cgroup which brought the page into existence?
+>  
+Considering extreme case, a memcg's dirty ratio can be filled by
+free riders.
+
+
+
+> > Then, what I'm
+> > thinking as memcg's update is a memcg-for-page-cache and pagecache
+> > migration between memcg.
 > > 
-> > Fixing this seems to have fixed the problem you mentioned. Can you
-> > please checkout the appended patch? If everything seems ok, then I will
-> > send the patch (against -tip tree) on monday morning with the detailed
-> > changelog.
+> > The idea is
+> >   - At first, treat page cache as what we do now.
+> >   - When a process touches page cache, check process's memcg and page cache's
+> >     memcg. If process-memcg != pagecache-memcg, we migrate it to a special
+> >     container as memcg-for-page-cache.
+> > 
+> > Then,
+> >   - read-once page caches are handled by local memcg.
+> >   - shared page caches are handled in specail memcg for "shared".
+> > 
+> > But this will add significant overhead in native implementation.
+> > (We may have to use page flags rather than page_cgroup's....)
+> > 
+> > I'm now wondering about
+> >   - set "shared flag" to a page_cgroup if cached pages are accessed.
+> >   - sweep them to special memcg in other (kernel) daemon when we hit thresh
+> >     or some.
+> > 
+> > But hmm, I'm not sure that memcg-for-shared-page-cache is accepptable
+> > for anyone.
 > 
-> Yes, this one does seem to generate the intended behaviour and does look
-> good (after cleaning up some of the now redundant comments).
+> I have not understood the idea well hence few queries/thoughts.
 > 
-> Thanks!
+> - You seem to be suggesting that shared page caches can be accounted
+>   separately with-in memcg. But one page still need to be associated
+>   with one specific memcg and one can only do migration across memcg
+>   based on some policy who used how much. But we probably are trying
+>   to be too accurate there and it might not be needed.
+> 
+>   Can you elaborate a little more on what you meant by migrating pages
+>   to special container memcg-for-page-cache? Is it a shared container
+>   across memory cgroups which are sharing a page?
+> 
+    Assume cgroup, A, B, Share
 
-Ok. Here is the patch with complete changelog. I added "Cc stable" tag
-so that it can be picked up for 2.6.32 and 2.6.33, as we would like to
-see this regression addressed in those kernels. Peter/Ingo: Can you
-please queue this patch for -tip for 2.6.34?
+	/A
+	/B
+	/Share
 
-Thanks.
----
+    - Pages touched by both of A and B are moved to Share.
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: sched: fix imbalance calculations to address SCHED_MC regression
+    Then, libc etc...will be moved to Share.
+    As far as I remember, solaris has similar concept of partitioning.
+   
+> - Current writeback mechanism is flushing per inode basis. I think
+>   biggest advantage is faster writeout speed as contiguous pages
+>   are dispatched to disk (irrespective to the memory cgroup differnt
+>   pages can belong to), resulting in better merging and less seeks.
+> 
+>   Even if we can account shared pages well across memory cgroups, flushing
+>   these pages to disk will probably become complicated/slow if we start going
+>   through the pages of a memory cgroup and start flushing these out upon
+>   hitting the dirty_background/dirty_ratio/dirty_bytes limits.
+> 
+    It's my bad to write this idea on this thread. I noticed my motivation is
+    not related to dirty_ratio. please ignore.
 
-On platforms like dual socket quad-core platform, the scheduler load balancer
-is not detecting the load imbalances in certain scenarios. This is leading to
-scenarios like where one socket is completely busy (with all the 4 cores running
-with 4 tasks) and leaving another socket completely idle. This causes
-performance issues as those 4 tasks share the memory controller, last-level
-cache bandwidth etc. Also we won't be taking advantage of turbo-mode as much as
-we like etc.
-
-Some of the comparisons in the scheduler load balancing code are comparing
-the "weighted cpu load that is scaled wrt sched_group's cpu_power" with the
-"weighted average load per task that is not scaled wrt sched_group's cpu_power".
-While this is probably broken for a long time (for multi socket numa nodes etc),
-the problem is aggrevated with this recent change:
-
-   commit f93e65c186ab3c05ce2068733ca10e34fd00125e
-   Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-   Date:   Tue Sep 1 10:34:32 2009 +0200
-
-	sched: Restore __cpu_power to a straight sum of power
-
-Also with this change, the sched group cpu power alone no longer reflects the
-group capacity that is needed to implement MC, MT performance (default) and
-power-savings (user-selectable) policies. We need to use the computed
-group capacity (sgs.group_capacity, that is computed using the
-SD_PREFER_SIBLING logic in update_sd_lb_stats()) to find out if the group with
-the max load is above its capacity and how much load to move etc.
-
-Fix it.
-
-Reported-by: Ma Ling <ling.ma@intel.com>
-Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: stable@kernel.org [2.6.32.x, 2.6.33.x]
----
-
- kernel/sched_fair.c |   63 ++++++++++++++++++++++++++++++---------------------
- 1 files changed, 37 insertions(+), 26 deletions(-)
-
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index ff7692c..7e0620e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -2097,6 +2097,7 @@ struct sd_lb_stats {
- 	unsigned long max_load;
- 	unsigned long busiest_load_per_task;
- 	unsigned long busiest_nr_running;
-+	unsigned long busiest_group_capacity;
- 
- 	int group_imb; /* Is there imbalance in this sd */
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-@@ -2416,14 +2417,12 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	unsigned long load, max_cpu_load, min_cpu_load;
- 	int i;
- 	unsigned int balance_cpu = -1, first_idle_cpu = 0;
--	unsigned long sum_avg_load_per_task;
--	unsigned long avg_load_per_task;
-+	unsigned long avg_load_per_task = 0;
- 
- 	if (local_group)
- 		balance_cpu = group_first_cpu(group);
- 
- 	/* Tally up the load of all CPUs in the group */
--	sum_avg_load_per_task = avg_load_per_task = 0;
- 	max_cpu_load = 0;
- 	min_cpu_load = ~0UL;
- 
-@@ -2453,7 +2452,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 		sgs->sum_nr_running += rq->nr_running;
- 		sgs->sum_weighted_load += weighted_cpuload(i);
- 
--		sum_avg_load_per_task += cpu_avg_load_per_task(i);
- 	}
- 
- 	/*
-@@ -2474,6 +2472,9 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	sgs->avg_load = (sgs->group_load * SCHED_LOAD_SCALE) / group->cpu_power;
- 
- 
-+	if (sgs->sum_nr_running)
-+		avg_load_per_task =
-+				sgs->sum_weighted_load / sgs->sum_nr_running;
- 	/*
- 	 * Consider the group unbalanced when the imbalance is larger
- 	 * than the average weight of two tasks.
-@@ -2483,9 +2484,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	 *      normalized nr_running number somewhere that negates
- 	 *      the hierarchy?
- 	 */
--	avg_load_per_task = (sum_avg_load_per_task * SCHED_LOAD_SCALE) /
--		group->cpu_power;
--
- 	if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
- 		sgs->group_imb = 1;
- 
-@@ -2553,6 +2551,7 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
- 			sds->max_load = sgs.avg_load;
- 			sds->busiest = group;
- 			sds->busiest_nr_running = sgs.sum_nr_running;
-+			sds->busiest_group_capacity = sgs.group_capacity;
- 			sds->busiest_load_per_task = sgs.sum_weighted_load;
- 			sds->group_imb = sgs.group_imb;
- 		}
-@@ -2575,6 +2574,7 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
- {
- 	unsigned long tmp, pwr_now = 0, pwr_move = 0;
- 	unsigned int imbn = 2;
-+	unsigned long scaled_busy_load_per_task;
- 
- 	if (sds->this_nr_running) {
- 		sds->this_load_per_task /= sds->this_nr_running;
-@@ -2585,8 +2585,12 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
- 		sds->this_load_per_task =
- 			cpu_avg_load_per_task(this_cpu);
- 
--	if (sds->max_load - sds->this_load + sds->busiest_load_per_task >=
--			sds->busiest_load_per_task * imbn) {
-+	scaled_busy_load_per_task = sds->busiest_load_per_task
-+						 * SCHED_LOAD_SCALE;
-+	scaled_busy_load_per_task /= sds->busiest->cpu_power;
-+
-+	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
-+			(scaled_busy_load_per_task * imbn)) {
- 		*imbalance = sds->busiest_load_per_task;
- 		return;
- 	}
-@@ -2637,7 +2641,7 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
- static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
- 		unsigned long *imbalance)
- {
--	unsigned long max_pull;
-+	unsigned long max_pull, load_above_capacity = ~0UL;
- 	/*
- 	 * In the presence of smp nice balancing, certain scenarios can have
- 	 * max load less than avg load(as we skip the groups at or below
-@@ -2648,9 +2652,29 @@ static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
- 		return fix_small_imbalance(sds, this_cpu, imbalance);
- 	}
- 
--	/* Don't want to pull so many tasks that a group would go idle */
--	max_pull = min(sds->max_load - sds->avg_load,
--			sds->max_load - sds->busiest_load_per_task);
-+	if (!sds->group_imb) {
-+		/*
-+		 * Don't want to pull so many tasks that a group would go idle.
-+		 */
-+		load_above_capacity = (sds->busiest_nr_running -
-+						sds->busiest_group_capacity);
-+
-+		load_above_capacity *= (SCHED_LOAD_SCALE * SCHED_LOAD_SCALE);
-+
-+		load_above_capacity /= sds->busiest->cpu_power;
-+	}
-+
-+	/*
-+	 * We're trying to get all the cpus to the average_load, so we don't
-+	 * want to push ourselves above the average load, nor do we wish to
-+	 * reduce the max loaded cpu below the average load. At the same time,
-+	 * we also don't want to reduce the group load below the group capacity
-+	 * (so that we can implement power-savings policies etc). Thus we look
-+	 * for the minimum possible imbalance.
-+	 * Be careful of negative numbers as they'll appear as very large values
-+	 * with unsigned longs.
-+	 */
-+	max_pull = min(sds->max_load - sds->avg_load, load_above_capacity);
- 
- 	/* How much load to actually move to equalise the imbalance */
- 	*imbalance = min(max_pull * sds->busiest->cpu_power,
-@@ -2742,19 +2766,6 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		sds.busiest_load_per_task =
- 			min(sds.busiest_load_per_task, sds.avg_load);
- 
--	/*
--	 * We're trying to get all the cpus to the average_load, so we don't
--	 * want to push ourselves above the average load, nor do we wish to
--	 * reduce the max loaded cpu below the average load, as either of these
--	 * actions would just result in more rebalancing later, and ping-pong
--	 * tasks around. Thus we look for the minimum possible imbalance.
--	 * Negative imbalances (*we* are more loaded than anyone else) will
--	 * be counted as no imbalance for these purposes -- we can't fix that
--	 * by pulling tasks to us. Be careful of negative numbers as they'll
--	 * appear as very large values with unsigned longs.
--	 */
--	if (sds.max_load <= sds.busiest_load_per_task)
--		goto out_balanced;
- 
- 	/* Looks like there is an imbalance. Compute it */
- 	calculate_imbalance(&sds, this_cpu, imbalance);
-
+Thanks,
+-Kame
 
