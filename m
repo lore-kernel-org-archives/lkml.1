@@ -1,65 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172Ab0BXDhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:37:34 -0500
-Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
+	id S1755206Ab0BXDkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:40:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:52733 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754385Ab0BXDg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:36:59 -0500
-Date: Tue, 23 Feb 2010 18:16:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: import of usb series failed
-Message-ID: <20100224021624.GB14159@kroah.com>
-References: <20100218105500.898ece5e.sfr@canb.auug.org.au> <20100218002144.GA17850@kroah.com> <20100218132221.b15d151f.sfr@canb.auug.org.au> <20100219175218.10025a7a.sfr@canb.auug.org.au> <20100219155343.GA3946@kroah.com> <20100220120207.1d765147.sfr@canb.auug.org.au>
+	id S1754385Ab0BXDkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:40:03 -0500
+Date: Tue, 23 Feb 2010 18:05:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Josh Holland <jrh@joshh.co.uk>
+Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@linux.intel.com>,
+       Andr? Goddard Rosa <andre.goddard@gmail.com>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Staging: rar: More style changes to rar_driver.c
+Message-ID: <20100224020544.GC13984@suse.de>
+References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk> <1265407106-19937-1-git-send-email-jrh@joshh.co.uk> <20100217224046.GB31557@kroah.com> <20100220113607.GP24380@polaris.joshh.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100220120207.1d765147.sfr@canb.auug.org.au>
+In-Reply-To: <20100220113607.GP24380@polaris.joshh.co.uk>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 12:02:07PM +1100, Stephen Rothwell wrote:
-> So, since the ".current" series are all empty, I am importing the
-> driver-core, tty and then usb series on top of v2.6.33-rc8.  I have just
-> done this again manually and the failure still happens (I have not
-> refetched your quilt series since yesterday.
+On Sat, Feb 20, 2010 at 11:36:07AM +0000, Josh Holland wrote:
+> On Wed, Feb 17, 2010 at 02:40:46PM -0800, Greg KH wrote:
+> > On Fri, Feb 05, 2010 at 09:58:26PM +0000, Josh Holland wrote:
+> > > Following advice from Krzysztof Halasa, I made a few changes to the
+> > > style bits in rar_driver.c
+> > 
+> > Can you respin both of these patches in 2 days, against the linux-next
+> > tree, as the rar driver author has sent in a bunch of "rename these
+> > files" type patches, which caused these to not apply anymore.
+> How do I do that? I can't see a linux-next branch in my local repo, and
+> I'd rather not download a whole new one...
 > 
-> At this point, the file drivers/usb/serial/ftdi_sio_ids.h from line 185
-> looks like this:
-> 
-> #define FTDI_ELV_PCD200_PID	0xF06C	/* PC-Datenlogger (PCD 200) */
-> #define FTDI_ELV_ULA200_PID	0xF06D	/* USB-LCD-Ansteuerung (ULA 200) */
-> #define FTDI_ELV_ALC8500_PID	0xF06E	/* ALC 8500 Expert */
-> #define FTDI_ELV_FHZ1000PC_PID	0xF06F	/* FHZ 1000 PC */
-> #define FTDI_ELV_UR100_PID	0xFB58	/* USB-RS232-Umsetzer (UR 100) */
-> #define FTDI_ELV_UM100_PID	0xFB5A	/* USB-Modul UM 100 */
-> 
-> The patch hunk looks like this:
-> 
-> @@ -185,7 +185,7 @@
->  #define FTDI_ELV_TFD128_PID	0xE0EC	/* ELV Temperatur-Feuchte-Datenlogger TFD 128 */
->  #define FTDI_ELV_FM3RX_PID	0xE0ED	/* ELV Messwertuebertragung FM3 RX */
->  #define FTDI_ELV_WS777_PID	0xE0EE	/* Conrad WS 777 */
-> -#define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
-> +#define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Energy monitor EM 1010 PC */
->  #define FTDI_ELV_CSI8_PID	0xE0F0	/* Computer-Schalt-Interface (CSI 8) */
->  #define FTDI_ELV_EM1000DL_PID	0xE0F1	/* PC-Datenlogger fuer Energiemonitor (EM 1000 DL) */
->  #define FTDI_ELV_PCK100_PID	0xE0F2	/* PC-Kabeltester (PCK 100) */
-> 
-> Between v2.6.33-rc8 and the head if Linus' tree thee are two patches that
-> change this file.  So I guess the BASE in the driver-core.current series
-> files needs updating.
+> $ git remote show origin
+> * remote origin
+>   URL:
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+>   HEAD branch: master
+>   Remote branch:
+>     master tracked
+>   Local branch configured for 'git pull':
+>     master merges with remote master
+>   Local ref configured for 'git push':
+>     master pushes to master (up to date)
 
-Yes, that seems to be the problem here.
+Google for "linux-next FAQ" for how to set this up properly.
 
-I have been doing the BASE tag as a -rc level tag (or rc-gitX tag), can
-I use a SHA1 of Linus's tree to base this against instead?  Would that
-work ok with your scripts?
-
-thanks for figureing this out, sorry for the trouble, this was my fault.
+thanks,
 
 greg k-h
