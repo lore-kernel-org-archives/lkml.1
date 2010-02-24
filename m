@@ -1,102 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413Ab0BXHLL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:11:11 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:44973 "EHLO toro.web-alm.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755097Ab0BXHLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:11:09 -0500
-Message-ID: <4B84CFCB.4010001@osadl.org>
-Date: Wed, 24 Feb 2010 08:05:47 +0100
-From: Carsten Emde <Carsten.Emde@osadl.org>
-Organization: Open Source Automation Development Lab (OSADL) eG
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1755436Ab0BXHM5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:12:57 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:56947 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755097Ab0BXHM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 02:12:56 -0500
+Date: Tue, 23 Feb 2010 23:12:40 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Johannes Buchner <buchner.johannes@gmx.at>
+cc: Edward Shishkin <edward.shishkin@gmail.com>,
+       Ronni Holm-Nielsen <theronni@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: Re: [patch 0/7] per-bdi flushing model improvements. reiser4
+In-Reply-To: <20100222084753.0a5d613c.buchner.johannes@gmx.at>
+Message-ID: <alpine.DEB.2.01.1002232307380.28195@bogon.housecafe.de>
+References: <201002020255.46920.edward.shishkin@gmail.com> <20100202081728.GA2384@infradead.org> <4B6843E9.9070600@gmail.com> <20100202194208.GD5733@kernel.dk> <5e2ec5ac1002021345g569c743dtc5ccf77cde6738ae@mail.gmail.com> <4B68A68C.6030001@gmail.com>
+ <20100222084753.0a5d613c.buchner.johannes@gmx.at>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
-       John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [patch] latency_hist: fix small memory leak
-References: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain> <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain> <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132743.GB5416@bicker>
-In-Reply-To: <20100222132743.GB5416@bicker>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+eAgy56R7OxOgd4MeQ6vxeXV00fmmWo+wELGD
+ j8hWreUcnyMuuoe2Jrd+oSNb6Epza+ewvOCp3gqf0Dw0kA9vVI
+ PJXeAB6svDEqxCTEsTVlQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22/2010 02:27 PM, Dan Carpenter wrote:
-> index_ptr needs to be freed on the error path.
-> 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
-> 
-> diff --git a/kernel/trace/latency_hist.c b/kernel/trace/latency_hist.c
-> index b3b5ea2..8edc70c 100644
-> --- a/kernel/trace/latency_hist.c
-> +++ b/kernel/trace/latency_hist.c
-> @@ -204,8 +204,10 @@ static void *l_start(struct seq_file *m, loff_t *pos)
->  			   , my_hist->beyond_hist_bound_samples
->  			   , MAX_ENTRY_NUM, "samples");
->  	}
-> -	if (index >= MAX_ENTRY_NUM)
-> +	if (index >= MAX_ENTRY_NUM) {
-> +		kfree(index_ptr);
->  		return NULL;
-> +	}
->  
->  	*index_ptr = index;
->  	return index_ptr;
-Thanks a lot for spotting this leak. We even don't need to allocate the
-memory, if index >= MAX_ENTRY_NUM.
+On Mon, 22 Feb 2010 at 08:47, Johannes Buchner wrote:
+> It'd be great if someone could solve this, as the reiser4 patch is
+> not usable in its current state, with or without my illfated attempts
+> to fix it.
 
-This patch applies to 2.6.31.12-rt21 and 2.6.33-rc8-rt (rt/head).
+FWIW, I'm running Linus' latest -git with refs/heads/reiser4 on top[0], no 
+issues during 2.6.33-git so far. Try it, if you don't like 
+manually applying patches either :-)
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+Christian.
 
-Index: head/kernel/trace/latency_hist.c
-===================================================================
---- head.orig/kernel/trace/latency_hist.c
-+++ head/kernel/trace/latency_hist.c
-@@ -218,13 +218,10 @@ void notrace latency_hist(int latency_ty
+[0] http://git.zen-kernel.org/?p=kernel/zen.git;a=shortlog;h=refs/heads/reiser4
+-- 
+BOFH excuse #275:
 
- static void *l_start(struct seq_file *m, loff_t *pos)
- {
--	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
-+	loff_t *index_ptr = NULL;
- 	loff_t index = *pos;
- 	struct hist_data *my_hist = m->private;
-
--	if (!index_ptr)
--		return NULL;
--
- 	if (index == 0) {
- 		char minstr[32], avgstr[32], maxstr[32];
-
-@@ -263,10 +260,12 @@ static void *l_start(struct seq_file *m,
- 			   MAX_ENTRY_NUM - my_hist->offset,
- 			   "samples");
- 	}
--	if (index >= MAX_ENTRY_NUM)
--		return NULL;
-+	if (index < MAX_ENTRY_NUM) {
-+		index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
-+		if (index_ptr)
-+			*index_ptr = index;
-+	}
-
--	*index_ptr = index;
- 	return index_ptr;
- }
-
+Bit rot
