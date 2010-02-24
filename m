@@ -1,51 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401Ab0BXKTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:19:42 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:46244 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756216Ab0BXKTl (ORCPT
+	id S1756438Ab0BXKUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 05:20:48 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43299 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756267Ab0BXKUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:19:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=FX1ymLSGYeToeO6tyNUUgMFmvfVIF3KDl0XV/hrbmImhbykDKjgHKr8hcMA/bTX//t
-         imzktSeQMKPaLl6VPiwRNTwuisbS46JwPgDwPKnA76x2/C1cRFEjcdJxKsZTB5toQBfC
-         bxCJY09AsEYkMHgs0eZf0JYgDnqR5rJZMWqQ4=
-Date: Wed, 24 Feb 2010 02:19:36 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] winbond-cir: fix suspend/resume
-Message-ID: <20100224101936.GA8036@core.coreip.homeip.net>
-References: <20100210220025.GA10609@hardeman.nu>
+	Wed, 24 Feb 2010 05:20:46 -0500
+Date: Wed, 24 Feb 2010 10:20:44 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/14] Regulators: wm8994 - clean up driver data after
+ removal
+Message-ID: <20100224102044.GF18896@rakim.wolfsonmicro.main>
+References: <20100224073342.15964.8863.stgit@localhost.localdomain>
+ <20100224073844.15964.61692.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100210220025.GA10609@hardeman.nu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20100224073844.15964.61692.stgit@localhost.localdomain>
+X-Cookie: You can't take damsel here now.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 11:00:25PM +0100, David Härdeman wrote:
-> I finally got the time to fix suspend/resume with the winbond-cir
-> driver on my mainboard. The main problem turned out to be that the
-> ACPI _DIS method would completely power off the SP3 module which
-> meant that the output lines (including IRQ lines) would be left
-> in an undefined state which could cause spurious interrupts and
-> that the hardware has to be reinitialized from scratch during
-> resume.
-> 
-> This fixes:
-> http://bugzilla.kernel.org/show_bug.cgi?id=15257
-> 
-> Signed-off-by: David Härdeman <david@hardeman.nu>
+On Tue, Feb 23, 2010 at 11:38:44PM -0800, Dmitry Torokhov wrote:
+> It is a good tone to reset driver data after unbinding the device.
 
-Applied, thank you David. Let's see if I manage to quieeze it in .33.
+You mean "good style" here.  Anyway,
 
--- 
-Dmitry
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+
+BTW, this patch is an example of the sort of stuff I'm talking about
+with adding additional changes that aren't documented in the
+changelog.  As well as nulling out the driver data you're also...
+
+>  struct wm8994_ldo {
+>  	int enable;
+> -	int is_enabled;
+> +	bool is_enabled;
+
+...doing a conversion to bool here and...
+
+> @@ -276,6 +278,7 @@ static struct platform_driver wm8994_ldo_driver = {
+>  	.remove = __devexit_p(wm8994_ldo_remove),
+>  	.driver		= {
+>  		.name	= "wm8994-ldo",
+> +		.owner	= THIS_MODULE,
+>  	},
+
+...adding this.  The change you mention in the changelog is a single
+line edit but with these extra changes the overall diffstat becomes:
+
+>  drivers/regulator/wm8994-regulator.c |   11 +++++++----
+>  1 files changed, 7 insertions(+), 4 deletions(-)
