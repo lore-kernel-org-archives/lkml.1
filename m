@@ -1,96 +1,339 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630Ab0BXIEq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:04:46 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52449 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195Ab0BXIEo (ORCPT
+	id S1753874Ab0BXIFT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 03:05:19 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55181 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753132Ab0BXIFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:04:44 -0500
-Message-ID: <4B84DD9B.2000401@dcl.info.waseda.ac.jp>
-Date: Wed, 24 Feb 2010 17:04:43 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Shredder/3.0
-MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: perf sched broken on tip, bisected
-References: <20100222190042.GB15854@ghostprotocols.net> <20100222190952.GD15854@ghostprotocols.net>
-In-Reply-To: <20100222190952.GD15854@ghostprotocols.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Feb 2010 03:05:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 24 Feb 2010 17:01:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       rientjes@google.com
+Subject: [RFC][PATCH 2/2] memcg: oom kill nofify and disable oom kill for
+ memcg.
+Message-Id: <20100224170146.57364e1a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100224165921.cb091a4f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100224165921.cb091a4f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/10 04:09, Arnaldo Carvalho de Melo wrote:
-> While testing a patch series I'm working on I noticed that 'perf sched record ;
-> perf sched latency' is broken on tip, bisected it down to this cset, investigating...
->
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-I couldn't reproduce your problem on tip/master ( 
-ae37d2288d22938bd48b552f83d3e01c41fd42f9 ),
-could you give me a pointer to your testing patch series?
+This is just a toy for considering problem.
 
-> [acme@mica linux-2.6-tip]$ git bisect good
-> 86d8d29634de4464d568e7c335c0da6cba64e8ab is first bad commit
-> commit 86d8d29634de4464d568e7c335c0da6cba64e8ab
-> Author: Hitoshi Mitake<mitake@dcl.info.waseda.ac.jp>
-> Date:   Sat Jan 30 20:43:23 2010 +0900
->
->      perf tools: Add __data_loc support
->
->      This patch is required to test the next patch for perf lock.
->
->      At 064739bc4b3d7f424b2f25547e6611bcf0132415 ,
->      support for the modifier "__data_loc" of format is added.
->
->      But, when I wanted to parse format of lock_acquired (or some
->      event else), raw_field_ptr() did not returned correct pointer.
->
->      So I modified raw_field_ptr() like this patch. Then
->      raw_field_ptr() works well.
->
->      Signed-off-by: Hitoshi Mitake<mitake@dcl.info.waseda.ac.jp>
->      Acked-by: Frederic Weisbecker<fweisbec@gmail.com>
->      Cc: Peter Zijlstra<a.p.zijlstra@chello.nl>
->      Cc: Paul Mackerras<paulus@samba.org>
->      Cc: Tom Zanussi<tzanussi@gmail.com>
->      Cc: Steven Rostedt<srostedt@redhat.com>
->      LKML-Reference:<1264851813-8413-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
->      [ v3: fixed minor stylistic detail ]
->      Signed-off-by: Ingo Molnar<mingo@elte.hu>
->
-> :040000 040000 8650752c9d8295e3c0ae3999b237fb86eb269e5d eb3ecfba6bfbcc80ecde51e10307fefc4d43864e M	tools
-> [acme@mica linux-2.6-tip]$
->
-> (gdb) run sched latency
-> Starting program: /root/bin/perf sched latency
-> [Thread debugging using libthread_db enabled]
-> [Detaching after fork from child process 30314. (Try `set detach-on-fork off'.)]
-> [New Thread 139670509008608 (LWP 30311)]
->
-> Program received signal SIGSEGV, Segmentation fault.
-> [Switching to Thread 139670509008608 (LWP 30311)]
-> 0x000000000040df1b in process_sched_switch_event (data=0x7f079312f9fc, session=0xcaf780, event=0xcaff50, this_cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1489
-> 1489		FILL_ARRAY(switch_event, prev_comm, event, data);
-> (gdb) bt
-> #0  0x000000000040df1b in process_sched_switch_event (data=0x7f079312f9fc, session=0xcaf780, event=0xcaff50, this_cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1489
-> #1  0x000000000040e508 in process_raw_event (raw_event=0x7f079312f9d0, session=0xcaf780, data=0x7f079312f9fc, cpu=3, timestamp=3964393249899, thread=0xd21ea0) at builtin-sched.c:1594
-> #2  0x000000000040e7ec in process_sample_event (event=0x7f079312f9d0, session=0xcaf780) at builtin-sched.c:1639
-> #3  0x000000000043be6f in perf_session__process_event (self=0xcaf780, event=0x7f079312f9d0, ops=0x6878e0, offset=0, head=117200) at util/session.c:298
-> #4  0x000000000043c5f0 in perf_session__process_events (self=0xcaf780, ops=0x6878e0) at util/session.c:464
-> #5  0x000000000040e8e0 in read_events () at builtin-sched.c:1667
-> #6  0x000000000040edb7 in __cmd_lat () at builtin-sched.c:1708
-> #7  0x000000000040f355 in cmd_sched (argc=1, argv=0x7fff2a064640, prefix=0x0) at builtin-sched.c:1911
-> #8  0x0000000000404fdd in run_builtin (p=0x682cd0, argc=2, argv=0x7fff2a064640) at perf.c:264
-> #9  0x00000000004051b3 in handle_internal_command (argc=2, argv=0x7fff2a064640) at perf.c:329
-> #10 0x00000000004052f2 in run_argv (argcp=0x7fff2a064534, argv=0x7fff2a064528) at perf.c:373
-> #11 0x00000000004054ce in main (argc=2, argv=0x7fff2a064640) at perf.c:457
-> (gdb)
->
+memcg's OOM means "the usage hits limit" and doesn't mean "there is no
+resource.". So, user-land daemon may be able to do better jobs than
+default oom-killer.
+
+This patch adds 
+  - oom notifier for memcg.
+    Implementation is baed on threshold notifier.
+  - dislable_oom flag.
+    If set, avoid to call oom-killer and wait for event (uncharge etc..)
+
+Assume a user land daemon which works on root cgroup.
+  - the daemon registers event fd to wait for memcg's OOM
+    % ./cgroup_event_listener /cgroup/A/memory.usage_in_bytes OOM
+  - set memcg's oom-killing disabled.
+    % echo 1 > /cgroup/A/memory.disable_oom_kill
+After wakeup, the daemon can...
+  - enlarge limit. (adding swap etc.)
+  - kill some processes.
+  - move processes to other group.
+  - send signal to _important_ processes to safe terminate and
+    send SIGSTOP to others. ennlarge limit for a while.
+
+TODO:
+  - many...?
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |  144 +++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 117 insertions(+), 27 deletions(-)
+
+Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
++++ mmotm-2.6.33-Feb11/mm/memcontrol.c
+@@ -216,6 +216,10 @@ struct mem_cgroup {
+ 	/* thresholds for mem+swap usage. RCU-protected */
+ 	struct mem_cgroup_threshold_ary *memsw_thresholds;
+ 
++	/* Notifiers for OOM situation */
++	struct mem_cgroup_threshold_ary *oom_notify;
++	int oom_kill_disabled;
++
+ 	/*
+ 	 * Should we move charges of a task when a task is moved into this
+ 	 * mem_cgroup ? And what type of charges should we move ?
+@@ -1143,6 +1147,7 @@ static void memcg_oom_wake(void)
+  * Check there are ongoing oom-kill in this hierarchy or not.
+  * If now under oom-kill, wait for some event to restart job.
+  */
++static void mem_cgroup_oom_notify(struct mem_cgroup *mem);
+ static bool memcg_handle_oom(struct mem_cgroup *mem, gfp_t mask)
+ {
+ 	int oom_count = 0;
+@@ -1161,8 +1166,14 @@ static bool memcg_handle_oom(struct mem_
+ 	mem_cgroup_walk_tree(mem, &oom_count, set_memcg_oom_cb);
+ 	/* Am I the 1st oom killer in this sub hierarchy ? */
+ 	if (oom_count == 1) {
+-		finish_wait(&memcg_oom_waitq, &wait);
+-		mem_cgroup_out_of_memory(mem, mask);
++		mem_cgroup_oom_notify(mem);
++		if (!mem->oom_kill_disabled) {
++			finish_wait(&memcg_oom_waitq, &wait);
++			mem_cgroup_out_of_memory(mem, mask);
++		} else { /* give chance admin daemon to run */
++			schedule();
++			finish_wait(&memcg_oom_waitq, &wait);
++		}
+ 		mem_cgroup_walk_tree(mem, NULL, unset_memcg_oom_cb);
+ 	} else {
+ 		/*
+@@ -3141,6 +3152,35 @@ static int mem_cgroup_move_charge_write(
+ 	return 0;
+ }
+ 
++static u64 mem_cgroup_oom_kill_disable_read(struct cgroup *cgrp,
++				struct cftype *cft)
++{
++	return mem_cgroup_from_cont(cgrp)->oom_kill_disabled;
++}
++
++static int mem_cgroup_oom_kill_disable_write(struct cgroup *cgrp,
++				struct cftype *cft, u64 val)
++{
++	struct cgroup *parent = cgrp->parent;
++	struct mem_cgroup *mem = mem_cgroup_from_cont(cgrp);
++	struct mem_cgroup *parent_mem = NULL;
++	int retval = 0;
++
++	if (val > 1)
++		return -EINVAL;
++	/*
++	 * can be set only to root cgroup.
++	 */
++	if (parent)
++		parent_mem = mem_cgroup_from_cont(parent);
++	cgroup_lock();
++	if (!parent_mem || !parent_mem->use_hierarchy)
++		mem->oom_kill_disabled = val;
++	else
++		retval = -EINVAL;
++	cgroup_unlock();
++	return retval;
++}
+ 
+ /* For read statistics */
+ enum {
+@@ -3405,6 +3445,25 @@ static int compare_thresholds(const void
+ 	return _a->threshold - _b->threshold;
+ }
+ 
++static int mem_cgroup_oom_notify_cb(struct mem_cgroup *mem, void *data)
++{
++	struct mem_cgroup_threshold_ary *t;
++	int i;
++
++	rcu_read_lock();
++	t = rcu_dereference(mem->oom_notify);
++
++	for (i = 0; i < t->size; i++)
++		eventfd_signal(t->entries[i].eventfd, 1);
++	rcu_read_unlock();
++	return 0;
++}
++
++static void mem_cgroup_oom_notify(struct mem_cgroup *memcg)
++{
++	mem_cgroup_walk_tree(memcg, NULL, mem_cgroup_oom_notify_cb);
++}
++
+ static int mem_cgroup_register_event(struct cgroup *cgrp, struct cftype *cft,
+ 		struct eventfd_ctx *eventfd, const char *args)
+ {
+@@ -3414,23 +3473,30 @@ static int mem_cgroup_register_event(str
+ 	u64 threshold, usage;
+ 	int size;
+ 	int i, ret;
++	int oom = 0;
+ 
+ 	ret = res_counter_memparse_write_strategy(args, &threshold);
+-	if (ret)
++	if (ret) {
++		if (!strcmp(args, "oom") || !strcmp(args, "OOM"))
++			oom = 1;
+ 		return ret;
+-
++	}
+ 	mutex_lock(&memcg->thresholds_lock);
+-	if (type == _MEM)
+-		thresholds = memcg->thresholds;
+-	else if (type == _MEMSWAP)
+-		thresholds = memcg->memsw_thresholds;
+-	else
+-		BUG();
++	if (!oom) {
++		if (type == _MEM)
++			thresholds = memcg->thresholds;
++		else if (type == _MEMSWAP)
++			thresholds = memcg->memsw_thresholds;
++		else
++			BUG();
++	} else {
++		thresholds = memcg->oom_notify;
++	}
+ 
+ 	usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
+ 
+ 	/* Check if a threshold crossed before adding a new one */
+-	if (thresholds)
++	if (!oom && thresholds)
+ 		__mem_cgroup_threshold(memcg, type == _MEMSWAP);
+ 
+ 	if (thresholds)
+@@ -3458,20 +3524,22 @@ static int mem_cgroup_register_event(str
+ 	thresholds_new->entries[size - 1].threshold = threshold;
+ 
+ 	/* Sort thresholds. Registering of new threshold isn't time-critical */
+-	sort(thresholds_new->entries, size,
++	if (!oom) {
++		sort(thresholds_new->entries, size,
+ 			sizeof(struct mem_cgroup_threshold),
+ 			compare_thresholds, NULL);
+ 
+-	/* Find current threshold */
+-	atomic_set(&thresholds_new->current_threshold, -1);
+-	for (i = 0; i < size; i++) {
+-		if (thresholds_new->entries[i].threshold < usage) {
++		/* Find current threshold */
++		atomic_set(&thresholds_new->current_threshold, -1);
++		for (i = 0; i < size; i++) {
++			if (thresholds_new->entries[i].threshold < usage) {
+ 			/*
+ 			 * thresholds_new->current_threshold will not be used
+ 			 * until rcu_assign_pointer(), so it's safe to increment
+ 			 * it here.
+ 			 */
+-			atomic_inc(&thresholds_new->current_threshold);
++				atomic_inc(&thresholds_new->current_threshold);
++			}
+ 		}
+ 	}
+ 
+@@ -3480,11 +3548,12 @@ static int mem_cgroup_register_event(str
+ 	 * will be unregistered before calling __mem_cgroup_free()
+ 	 */
+ 	mem_cgroup_get(memcg);
+-
+-	if (type == _MEM)
++	if (oom)
++		rcu_assign_pointer(memcg->oom_notify, thresholds_new);
++	else if (type == _MEM)
+ 		rcu_assign_pointer(memcg->thresholds, thresholds_new);
+ 	else
+-		rcu_assign_pointer(memcg->memsw_thresholds, thresholds_new);
++		rcu_assign_pointer(memcg->memsw_thresholds,thresholds_new);
+ 
+ 	/* To be sure that nobody uses thresholds before freeing it */
+ 	synchronize_rcu();
+@@ -3502,8 +3571,9 @@ static int mem_cgroup_unregister_event(s
+ 	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+ 	struct mem_cgroup_threshold_ary *thresholds, *thresholds_new;
+ 	int type = MEMFILE_TYPE(cft->private);
+-	u64 usage;
++	u64 usage = 0;
+ 	int size = 0;
++	int oom = 0;
+ 	int i, j, ret;
+ 
+ 	mutex_lock(&memcg->thresholds_lock);
+@@ -3513,17 +3583,29 @@ static int mem_cgroup_unregister_event(s
+ 		thresholds = memcg->memsw_thresholds;
+ 	else
+ 		BUG();
+-
++	/* check it's oom notify or not */
++	if (memcg->oom_notify) {
++		for (i = 0; i < memcg->oom_notify->size; i++) {
++			if (memcg->oom_notify->entries[i].eventfd ==
++				eventfd) {
++				thresholds = memcg->oom_notify;
++				oom = 1;
++				break;
++			}
++		}
++	}
+ 	/*
+ 	 * Something went wrong if we trying to unregister a threshold
+ 	 * if we don't have thresholds
+ 	 */
+ 	BUG_ON(!thresholds);
+ 
+-	usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
++	if (!oom) {
++		usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
+ 
+-	/* Check if a threshold crossed before removing */
+-	__mem_cgroup_threshold(memcg, type == _MEMSWAP);
++		/* Check if a threshold crossed before removing */
++		__mem_cgroup_threshold(memcg, type == _MEMSWAP);
++	}
+ 
+ 	/* Calculate new number of threshold */
+ 	for (i = 0; i < thresholds->size; i++) {
+@@ -3554,7 +3636,7 @@ static int mem_cgroup_unregister_event(s
+ 			continue;
+ 
+ 		thresholds_new->entries[j] = thresholds->entries[i];
+-		if (thresholds_new->entries[j].threshold < usage) {
++		if (!oom && thresholds_new->entries[j].threshold < usage) {
+ 			/*
+ 			 * thresholds_new->current_threshold will not be used
+ 			 * until rcu_assign_pointer(), so it's safe to increment
+@@ -3566,7 +3648,9 @@ static int mem_cgroup_unregister_event(s
+ 	}
+ 
+ assign:
+-	if (type == _MEM)
++	if (oom)
++		rcu_assign_pointer(memcg->oom_notify, thresholds_new);
++	else if (type == _MEM)
+ 		rcu_assign_pointer(memcg->thresholds, thresholds_new);
+ 	else
+ 		rcu_assign_pointer(memcg->memsw_thresholds, thresholds_new);
+@@ -3639,6 +3723,11 @@ static struct cftype mem_cgroup_files[] 
+ 		.read_u64 = mem_cgroup_move_charge_read,
+ 		.write_u64 = mem_cgroup_move_charge_write,
+ 	},
++	{
++		.name = "disable_oom_kill",
++		.read_u64 = mem_cgroup_oom_kill_disable_read,
++		.write_u64 = mem_cgroup_oom_kill_disable_write,
++	},
+ };
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+@@ -3886,6 +3975,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		 * mem_cgroup(see mem_cgroup_put).
+ 		 */
+ 		mem_cgroup_get(parent);
++		mem->oom_kill_disabled = parent->oom_kill_disabled;
+ 	} else {
+ 		res_counter_init(&mem->res, NULL);
+ 		res_counter_init(&mem->memsw, NULL);
 
