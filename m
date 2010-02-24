@@ -1,95 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204Ab0BXDNe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:13:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34692
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754911Ab0BXDNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:13:31 -0500
-Date: Tue, 23 Feb 2010 19:13:47 -0800 (PST)
-Message-Id: <20100223.191347.124292181.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1755140Ab0BXDNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:13:22 -0500
+Received: from mga02.intel.com ([134.134.136.20]:29684 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755114Ab0BXDNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:13:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
+   d="scan'208";a="598621487"
+Message-Id: <20100224031055.594006457@intel.com>
+User-Agent: quilt/0.48-1
+Date: Wed, 24 Feb 2010 11:10:15 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Clemens Ladisch <clemens@ladisch.de>
+CC: Olivier Galibert <galibert@pobox.com>
+cc: Vivek Goyal <vgoyal@redhat.com>
+cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+cc: Matt Mackall <mpm@selenic.com>
+cc: Linux Memory Management List <linux-mm@kvack.org>
+CC: <linux-fsdevel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 14/15] readahead: reduce MMAP_LOTSAMISS for mmap read-around
+References: <20100224031001.026464755@intel.com>
+Content-Disposition: inline; filename=readahead-mmap-around.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Now that we lifts readahead size from 128KB to 512KB,
+the MMAP_LOTSAMISS shall be shrinked accordingly.
 
-1) Wireless fixes from Linville and co. in particular an
-   iwlwifi tfd freeing issue that many people are likely to hit.
+We shrink it a bit more, so that for sparse random access patterns,
+only 10*512KB or ~5MB memory will be wasted, instead of the previous
+100*128KB or ~12MB. The new threshold "10" is still big enough to avoid
+turning off read-around for typical executable/lib page faults.
 
-2) GRO handling uses napi->dev when it should use skb->dev,
-   breaking VLAN + GRO.  Fix from Ajit Khaparde.
+CC: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/filemap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-3) Make IPV6 max_addresses sysctl documentation clearer.
+--- linux.orig/mm/filemap.c	2010-02-21 23:56:22.000000000 +0800
++++ linux/mm/filemap.c	2010-02-21 23:56:26.000000000 +0800
+@@ -1393,7 +1393,7 @@ static int page_cache_read(struct file *
+ 	return ret;
+ }
+ 
+-#define MMAP_LOTSAMISS  (100)
++#define MMAP_LOTSAMISS  (10)
+ 
+ /*
+  * Synchronous readahead happens when we don't even find
 
-4) Add new device ID to cdc_ether, from Torgny Johansson.
 
-5) tc35815 double netif_wake_queue()s, triggering a BUG().
-   Fix from Atsushi Nemoto.
-
-6) DMA mapping error handlng on RX in e1000 driver crashes under
-   load.  Fix from Anton Blanchard.
-
-7) MAINTAINERS update for mv643xx_eth.
-
-Please pull, thanks a lot!
-
-The following changes since commit be64c970f601d5bb439b6cc88ea2bd208b3422a0:
-  Linus Torvalds (1):
-        Merge branch 'release' of git://git.kernel.org/.../lenb/linux-acpi-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (1):
-      net: bug fix for vlan + gro issue
-
-Anton Blanchard (1):
-      e1000: Fix DMA mapping error handling on RX
-
-Atsushi Nemoto (1):
-      tc35815: Remove a wrong netif_wake_queue() call which triggers BUG_ON
-
-Brian Haley (1):
-      IPv6: better document max_addresses parameter
-
-Dan Halperin (1):
-      iwlwifi: set HT flags after channel in rxon
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Lennert Buytenhek (1):
-      MAINTAINERS: update mv643xx_eth maintenance status
-
-Stanislaw Gruszka (1):
-      iwlwifi: sanity check before counting number of tfds can be free
-
-Torgny Johansson (1):
-      cdc_ether: new PID for Ericsson C3607w to the whitelist (resubmit)
-
-Wey-Yi Guy (1):
-      iwlwifi: error checking for number of tfds in queue
-
- Documentation/networking/ip-sysctl.txt  |    8 ++++----
- MAINTAINERS                             |    4 ++--
- drivers/net/e1000/e1000_main.c          |   19 ++++++++++++++++++-
- drivers/net/tc35815.c                   |    1 -
- drivers/net/usb/cdc_ether.c             |    5 +++++
- drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c |    8 +++-----
- drivers/net/wireless/iwlwifi/iwl-core.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-core.h |    2 ++
- drivers/net/wireless/iwlwifi/iwl-tx.c   |   22 ++++++++++++++++++++--
- net/core/dev.c                          |    2 +-
- 11 files changed, 57 insertions(+), 18 deletions(-)
