@@ -1,72 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127Ab0BXNmO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 08:42:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54263 "EHLO mx1.redhat.com"
+	id S1757146Ab0BXNrs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 08:47:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:57739 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756951Ab0BXNmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 08:42:13 -0500
-Message-ID: <4B852C79.8000702@redhat.com>
-Date: Wed, 24 Feb 2010 08:41:13 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1757048Ab0BXNrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 08:47:47 -0500
+Date: Wed, 24 Feb 2010 14:47:32 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
+Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
+Message-ID: <20100224134732.GB1931@local>
+References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org>
+ <20100223150140.GA3781@suse.de>
+ <20100223194946.GA1941@local>
+ <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
+ <20100223233938.GA2938@local>
+ <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip v10 0/9] kprobes: Kprobes jump optimization support
-References: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com> <1266944834.24271.6021.camel@gandalf.stny.rr.com> <4B845668.5090803@redhat.com>
-In-Reply-To: <4B845668.5090803@redhat.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Steven Rostedt wrote:
->> On Thu, 2010-02-18 at 17:12 -0500, Masami Hiramatsu wrote:
->>
->>> This version of patch series uses text_poke_smp() which
->>> update kernel text by stop_machine(). That is 'officially'
->>> supported on Intel's processors. text_poke_smp() can't
->>> be used for modifying NMI code,
->>
->> But it can be made to use with NMI code. If you look at what I did to
->> allow ftrace to modify NMI code, it may be able to do the same thing.
+On Tue, Feb 23, 2010 at 09:24:42PM -0600, Kumar Gala wrote:
+> > Well, UIO is (up to now) completely independent of the architecture. If you've
+> > got a good idea how to implement such mappings, feel free to come up with your
+> > suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
+> > enough.
+> > 
+> > I'll give it some thoughts myself, and will discuss the problem with friends,
+> > maybe there's a nice solution. Help from your side is much appreciated.
 > 
-> Yeah, I know. But basically, kprobes doesn't support probing NMI.
-> Maybe, it's possibly the next step. :)
+> For my needs I believe changing uio_mem.addr to a u64 is sufficient for getting UIO_MEM_PHYS to work for the physical address being above 4G.  I need the type to be large to represent a wider PFN range.  Obviously there are limitations (ie, we can't make an IO region >4G in size, etc.)
+> 
 
-I mean that it may be overkill for this series, because the kprobes
-itself doesn't support NMI. So I think it should be done by another
-series (for simplify patches).
+Hmm, after some research it seems you're right. But the type for the addr
+member of struct uio_mem should be phys_addr_t, not u64. phys_addr_t is
+an u64 on systems that support it, and an u32 otherwise.
 
+It'll probably work with UIO_MEM_LOGICAL and UIO_MEM_VIRTUAL as well.
 
-BTW, now there are two candidates for NMI supported text_poke()
-on x86. AFAIK, those have following issues/features.
+Could you hack up a patch to that effect, and test it? If it works for you,
+I think we should apply it.
 
-- text_poke_fixup()
-  - Send IPI twice instead of kstop_machine.
-  - Need a detour buffer if replacing code is not a jump.
-  - Unofficial method for x86.
+Thanks for pointing this out.
 
-- generic ftrace_modify_code
-  - Use kstop_machine and wait an NMI.
-  - Temporarily clear the kernel text read-only flag entirely 
-    (can we use text_poke instead?)
+Hans
 
-Thank you,
-
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+> - k
