@@ -1,81 +1,168 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758082Ab0BXUXG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:23:06 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:59453 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757984Ab0BXUXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:23:03 -0500
-Date: Wed, 24 Feb 2010 14:22:58 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Panic in reserve_memtype()
-Message-ID: <20100224202258.GA615@sgi.com>
+	id S1758088Ab0BXUX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:23:57 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:33682 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757798Ab0BXUXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:23:55 -0500
+Date: Wed, 24 Feb 2010 14:23:52 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mm-commits@vger.kernel.org, adobriyan@gmail.com
+Subject: Re: + nsproxy-remove-init_nsproxy.patch added to -mm tree
+Message-ID: <20100224202352.GA32098@us.ibm.com>
+References: <201002242005.o1OK5jbD017502@imap1.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <201002242005.o1OK5jbD017502@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+> 
+> The patch titled
+>      nsproxy: remove INIT_NSPROXY()
+> has been added to the -mm tree.  Its filename is
+>      nsproxy-remove-init_nsproxy.patch
+> 
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: nsproxy: remove INIT_NSPROXY()
+> From: Alexey Dobriyan <adobriyan@gmail.com>
+> 
+> Remove INIT_NSPROXY(), use C99 initializer.
+> Remove INIT_IPC_NS(), INIT_NET_NS() while I'm at it.
+> 
+> Note: headers trim will be done later, now it's quite pointless because
+> results will be invalidated by merge window.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> Cc: Serge Hallyn <serue@us.ibm.com>
 
-We see an X86_64 regression that started a few days ago. The kernel is booted
-via EFI & panics in the pat.c code trying to deref a NULL pointer.
+looks ok
 
-I didn't debug the problem but am suspicious of
-	x86, pat: Migrate to rbtree only backend for pat memtype management  x86/pat
-		author	Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>	
-		Wed, 10 Feb 2010 23:26:07 +0000 (15:26 -0800)
-	committer	H. Peter Anvin <hpa@zytor.com>	
-		Thu, 18 Feb 2010 23:41:36 +0000 (15:41 -0800)
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-
-
-Has anyone seen this? If not, I can debug further....
-
-Problem is in the git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git tree.
-
-
-
-Pid: 0, comm: swapper Not tainted 2.6.33-rc8-tip-medusa+ #2 /
-RIP: 0010:[<ffffffff810304b0>]  [<ffffffff810304b0>] rbt_memtype_check_insert+0x1b2/0x232
-RSP: 0000:ffffffff81601df8  EFLAGS: 00000256
-RAX: 00000000000b0000 RBX: ffff88000f840100 RCX: 00000000000001c1
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88000f8244c0
-RBP: ffffffff81601e38 R08: 0000000000000001 R09: ffffffff8152cd79
-R10: ffffffff8152cd79 R11: 0000000000018620 R12: ffff88000f8244c0
-R13: 0000000000000010 R14: 0000000000000000 R15: 00000000fffffff4
-FS:  0000000000000000(0000) GS:ffff880001c00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005007b
-CR2: 0000000000000000 CR3: 0000000001604000 CR4: 00000000000006b0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 0000000000000000 DR7: 0000000000000000
-Process swapper (pid: 0, threadinfo ffffffff81600000, task ffffffff8160c020)
-Stack:
- ffffffff81601e38 00000000000b0000 0000000000006000 ffff88000f840100
-<0> ffff88000f8244c0 0000000000000000 0000000000000010 00000000fffffff4
-<0> ffffffff81601e88 ffffffff8102edff 00000000000b0000 0000000000006000
-Call Trace:
- [<ffffffff8102edff>] reserve_memtype+0x2ce/0x4c9
- [<ffffffff8102e0d0>] set_memory_uc+0x41/0x89
- [<ffffffff816b92be>] efi_enter_virtual_mode+0xc9/0x269
- [<ffffffff816aada0>] start_kernel+0x3b8/0x42b
- [<ffffffff816aa140>] ? early_idt_handler+0x0/0x71
- [<ffffffff816aa29e>] x86_64_start_reservations+0xa5/0xa9
- [<ffffffff816aa3ed>] x86_64_start_kernel+0x14b/0x15a
-
-
-
-Source of the NULL pointer is:
-
-	int set_memory_uc(unsigned long addr, int numpages)
-	{
-		...
-		ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
-                            _PAGE_CACHE_UC_MINUS, NULL);
-
-
-
---- jack
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  include/linux/init_task.h     |    8 --------
+>  include/linux/ipc_namespace.h |    5 -----
+>  include/net/net_namespace.h   |    5 -----
+>  kernel/nsproxy.c              |   13 ++++++++++++-
+>  4 files changed, 12 insertions(+), 19 deletions(-)
+> 
+> diff -puN include/linux/init_task.h~nsproxy-remove-init_nsproxy include/linux/init_task.h
+> --- a/include/linux/init_task.h~nsproxy-remove-init_nsproxy
+> +++ a/include/linux/init_task.h
+> @@ -32,14 +32,6 @@ extern struct fs_struct init_fs;
+>  }
+> 
+>  extern struct nsproxy init_nsproxy;
+> -#define INIT_NSPROXY(nsproxy) {						\
+> -	.pid_ns		= &init_pid_ns,					\
+> -	.count		= ATOMIC_INIT(1),				\
+> -	.uts_ns		= &init_uts_ns,					\
+> -	.mnt_ns		= NULL,						\
+> -	INIT_NET_NS(net_ns)                                             \
+> -	INIT_IPC_NS(ipc_ns)						\
+> -}
+> 
+>  #define INIT_SIGHAND(sighand) {						\
+>  	.count		= ATOMIC_INIT(1), 				\
+> diff -puN include/linux/ipc_namespace.h~nsproxy-remove-init_nsproxy include/linux/ipc_namespace.h
+> --- a/include/linux/ipc_namespace.h~nsproxy-remove-init_nsproxy
+> +++ a/include/linux/ipc_namespace.h
+> @@ -62,11 +62,6 @@ extern struct ipc_namespace init_ipc_ns;
+>  extern atomic_t nr_ipc_ns;
+> 
+>  extern spinlock_t mq_lock;
+> -#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
+> -#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
+> -#else
+> -#define INIT_IPC_NS(ns)
+> -#endif
+> 
+>  #ifdef CONFIG_SYSVIPC
+>  extern int register_ipcns_notifier(struct ipc_namespace *);
+> diff -puN include/net/net_namespace.h~nsproxy-remove-init_nsproxy include/net/net_namespace.h
+> --- a/include/net/net_namespace.h~nsproxy-remove-init_nsproxy
+> +++ a/include/net/net_namespace.h
+> @@ -100,14 +100,9 @@ struct net {
+>  extern struct net init_net;
+> 
+>  #ifdef CONFIG_NET
+> -#define INIT_NET_NS(net_ns) .net_ns = &init_net,
+> -
+>  extern struct net *copy_net_ns(unsigned long flags, struct net *net_ns);
+> 
+>  #else /* CONFIG_NET */
+> -
+> -#define INIT_NET_NS(net_ns)
+> -
+>  static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
+>  {
+>  	/* There is nothing to copy so this is a noop */
+> diff -puN kernel/nsproxy.c~nsproxy-remove-init_nsproxy kernel/nsproxy.c
+> --- a/kernel/nsproxy.c~nsproxy-remove-init_nsproxy
+> +++ a/kernel/nsproxy.c
+> @@ -24,7 +24,18 @@
+> 
+>  static struct kmem_cache *nsproxy_cachep;
+> 
+> -struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
+> +struct nsproxy init_nsproxy = {
+> +	.count	= ATOMIC_INIT(1),
+> +	.uts_ns	= &init_uts_ns,
+> +#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
+> +	.ipc_ns	= &init_ipc_ns,
+> +#endif
+> +	.mnt_ns	= NULL,
+> +	.pid_ns	= &init_pid_ns,
+> +#ifdef CONFIG_NET
+> +	.net_ns	= &init_net,
+> +#endif
+> +};
+> 
+>  static inline struct nsproxy *create_nsproxy(void)
+>  {
+> _
+> 
+> Patches currently in -mm which might be from adobriyan@gmail.com are
+> 
+> origin.patch
+> linux-next.patch
+> bitops-rename-for_each_bit-to-for_each_set_bit.patch
+> arm-convert-proc-cpu-aligment-to-seq_file.patch
+> mpt-fusion-convert-to-seq_file.patch
+> proc-do-translation-unlink-atomically-at-remove_proc_entry.patch
+> proc-warn-on-non-existing-proc-entries.patch
+> tracehooks-kill-some-pt_ptraced-checks.patch
+> tracehooks-check-pt_ptraced-before-reporting-the-single-step.patch
+> ptrace_signal-check-pt_ptraced-before-reporting-a-signal.patch
+> export-__ptrace_detach-and-do_notify_parent_cldstop.patch
+> reorder-the-code-in-kernel-ptracec.patch
+> implement-utrace-ptrace.patch
+> utrace-core.patch
+> nsproxy-remove-init_nsproxy.patch
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
