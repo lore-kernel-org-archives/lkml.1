@@ -1,63 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209Ab0BXVkR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 16:40:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58369 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758182Ab0BXVkP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 16:40:15 -0500
-Date: Wed, 24 Feb 2010 13:39:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: mm: used-once mapped file page detection
-Message-Id: <20100224133946.a5092804.akpm@linux-foundation.org>
-In-Reply-To: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org>
-References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	id S1758223Ab0BXVn5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 16:43:57 -0500
+Received: from mga01.intel.com ([192.55.52.88]:48630 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758199Ab0BXVn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 16:43:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,534,1262592000"; 
+   d="scan'208";a="543666779"
+Date: Wed, 24 Feb 2010 13:43:55 -0800
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Panic in reserve_memtype()
+Message-ID: <20100224214355.GA16431@linux-os.sc.intel.com>
+References: <20100224202258.GA615@sgi.com> <1267045764.16916.920.camel@localhost.localdomain> <20100224213729.GA15936@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224213729.GA15936@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Feb 2010 20:49:07 +0100 Johannes Weiner <hannes@cmpxchg.org> wrote:
-
-> this is the second submission of the used-once mapped file page
-> detection patch.
+On Wed, Feb 24, 2010 at 01:37:29PM -0800, Jack Steiner wrote:
+> On Wed, Feb 24, 2010 at 01:09:24PM -0800, Pallipadi, Venkatesh wrote:
+> > 
+> > On Wed, 2010-02-24 at 12:22 -0800, Jack Steiner wrote:
+> > > We see an X86_64 regression that started a few days ago. The kernel is booted
+> > > via EFI & panics in the pat.c code trying to deref a NULL pointer.
+> > > 
+> > > I didn't debug the problem but am suspicious of
+> > > 	x86, pat: Migrate to rbtree only backend for pat memtype management  x86/pat
+> > > 		author	Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>	
+> > > 		Wed, 10 Feb 2010 23:26:07 +0000 (15:26 -0800)
+> > > 	committer	H. Peter Anvin <hpa@zytor.com>	
+> > > 		Thu, 18 Feb 2010 23:41:36 +0000 (15:41 -0800)
+> > > 
+> > > 
+> > > 
+> > > Has anyone seen this? If not, I can debug further....
+> > > 
+> > 
+> > 
+> > Haven't seen this on my test systems here, but I haven't tested with EFI
+> > boot either.
+> > 
+> > I assume this is repeatable, and you always see this panic. I am looking
+> > at the code right now. Can you rollback this particular patch and see
+> > whether it goes away?
 > 
-> It is meant to help workloads with large amounts of shortly used file
-> mappings, like rtorrent hashing a file or git when dealing with loose
-> objects (git gc on a bigger site?).
+> The problem is very repeatible.
 > 
-> Right now, the VM activates referenced mapped file pages on first
-> encounter on the inactive list and it takes a full memory cycle to
-> reclaim them again.  When those pages dominate memory, the system
-> no longer has a meaningful notion of 'working set' and is required
-> to give up the active list to make reclaim progress.  Obviously,
-> this results in rather bad scanning latencies and the wrong pages
-> being reclaimed.
+> FWIW, we have a nightly regression test that builds/tests the x86 tree
+> everynight at 1 AM. The failure started on the morning of Feb 22.
 > 
-> This patch makes the VM be more careful about activating mapped file
-> pages in the first place.  The minimum granted lifetime without
-> another memory access becomes an inactive list cycle instead of the
-> full memory cycle, which is more natural given the mentioned loads.
+> The build on Feb 21 (& all of Feb before then) passed w/o errors.
+> I can't rule out other errors but I don't see anything else that changed.
+> 
+> The linux-next tree appears to have the same problem.
+> 
 
-iirc from a long time ago, the insta-activation of mapped pages was
-done because people were getting peeved about having their interactive
-applications (X, browser, etc) getting paged out, and bumping the pages
-immediately was found to help with this subjective problem.
+I guess I found an obvious problem in the code. Can you check whether the
+below patch resolves the panic you are seeing.
 
-So it was a latency issue more than a throughput issue.  I wouldn't be
-surprised if we get some complaints from people for the same reasons as
-a result of this patch.
+Thanks,
+Venki
 
-I guess that during the evaluation period of this change, it would be
-useful to have a /proc knob which people can toggle to revert to the
-old behaviour.  So they can verify that this patchset was indeed the
-cause of the deterioration, and so they can easily quantify any
-deterioration?
+
+new->type should only change when there is a valid ret_type. Otherwise
+requested type and return type should be same.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/mm/pat_rbtree.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mm/pat_rbtree.c b/arch/x86/mm/pat_rbtree.c
+index e4cd229..58b6de1 100644
+--- a/arch/x86/mm/pat_rbtree.c
++++ b/arch/x86/mm/pat_rbtree.c
+@@ -223,7 +223,9 @@ int rbt_memtype_check_insert(struct memtype *new, unsigned long *ret_type)
+ 						new->type, ret_type);
+ 
+ 	if (!err) {
+-		new->type = *ret_type;
++		if (ret_type)
++			new->type = *ret_type;
++
+ 		memtype_rb_insert(&memtype_rbroot, new);
+ 	}
+ 	return err;
+-- 
+1.6.0.6
+
