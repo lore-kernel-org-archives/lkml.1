@@ -1,64 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197Ab0BXDeN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:34:13 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44756 "EHLO smtps.tip.net.au"
+	id S1754489Ab0BXDg0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:36:26 -0500
+Received: from cantor.suse.de ([195.135.220.2]:52602 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755083Ab0BXDeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:34:11 -0500
-Date: Wed, 24 Feb 2010 14:34:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Jones <davej@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Naga Chumbalkar <nagananda.chumbalkar@hp.com>,
-       Alex Chiang <achiang@hp.com>, Len Brown <len.brown@intel.com>
-Subject: linux-next: manual merge of the cpufreq tree with the acpi tree
-Message-Id: <20100224143408.69e0c889.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751660Ab0BXDgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:36:25 -0500
+Date: Tue, 23 Feb 2010 17:56:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging/serial2002: Fix filp_open usage
+Message-ID: <20100224015657.GB13959@suse.de>
+References: <87zl31b0zp.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87zl31b0zp.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Tue, Feb 23, 2010 at 03:04:42AM +0900, OGAWA Hirofumi wrote:
+> 
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  drivers/staging/comedi/drivers/serial2002.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN drivers/staging/comedi/drivers/serial2002.c~serial2002-filp_open-fix drivers/staging/comedi/drivers/serial2002.c
+> --- linux-2.6/drivers/staging/comedi/drivers/serial2002.c~serial2002-filp_open-fix	2010-02-22 23:22:27.000000000 +0900
+> +++ linux-2.6-hirofumi/drivers/staging/comedi/drivers/serial2002.c	2010-02-22 23:22:27.000000000 +0900
+> @@ -397,7 +397,7 @@ static void serial_2002_open(struct come
+>  	char port[20];
+>  
+>  	sprintf(port, "/dev/ttyS%d", devpriv->port);
+> -	devpriv->tty = filp_open(port, 0, O_RDWR);
+> +	devpriv->tty = filp_open(port, O_RDWR, 0);
 
-Today's linux-next merge of the cpufreq tree got a conflict in
-drivers/acpi/processor_core.c between commit
-5f45c35d7ede1c00cbaa3b09b8a84c425af81c4b ("ACPI: processor: mv
-processor_core.c processor_driver.c") from the acpi tree and commit
-0f1d683fb35d6c6f49ef696c95757f3970682a0e ("[CPUFREQ] Processor Clocking
-Control interface driver") from the cpufreq tree.
+Oh wow that code is scary :)
 
-I applied the equivalent patch to processor_driver.c (see below) and can
-carry this as necessary.
+I'll queue this up and remember to nuke the whole thing soon...
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 24 Feb 2010 14:29:12 +1100
-Subject: [PATCH] cpufreq: merge fixup for processor_core.c rename
+thanks,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/acpi/processor_driver.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 7e8e1ba..b5658cd 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -123,6 +123,8 @@ static const struct file_operations acpi_processor_info_fops = {
- #endif
- 
- DEFINE_PER_CPU(struct acpi_processor *, processors);
-+EXPORT_PER_CPU_SYMBOL(processors);
-+
- struct acpi_processor_errata errata __read_mostly;
- 
- /* --------------------------------------------------------------------------
--- 
-1.7.0
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+greg k-h
