@@ -1,144 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734Ab0BXDWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:22:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62329 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754385Ab0BXDWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:22:20 -0500
-Message-ID: <4B849B73.1040106@cn.fujitsu.com>
-Date: Wed, 24 Feb 2010 11:22:27 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>
-Subject: [PATCH -mm] cgroups: fix failure path in cgroup_write_event_control()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754651Ab0BXDZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:25:05 -0500
+Received: from gate.crashing.org ([63.228.1.57]:45327 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751660Ab0BXDZD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:25:03 -0500
+Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20100223233938.GA2938@local>
+Date: Tue, 23 Feb 2010 21:24:42 -0600
+Cc: Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
+References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org> <20100223150140.GA3781@suse.de> <20100223194946.GA1941@local> <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org> <20100223233938.GA2938@local>
+To: "Hans J. Koch" <hjk@linutronix.de>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How to reproduce:
 
-  # mount -t cgroup -o memory xxx /cgroup
-  # mkdir /cgroup/tmp
-  # ./cgroup_event_listener /cgroup/tmp/cgroup.event_control abc
-  ^C
-  # rmdir /cgroup/tmp
-  # cat /proc/cgroups | grep memory
-  memory  2       2       1         (should be "2 1 1")
-  # umount /cgroup
-  (failed!)
+On Feb 23, 2010, at 5:39 PM, Hans J. Koch wrote:
 
-Using a single goto label to cleanup multi failure paths can
-get things wrong quite easily, while multi labels makes the
-code cleaner.
+> On Tue, Feb 23, 2010 at 04:52:56PM -0600, Kumar Gala wrote:
+>> 
+>> On Feb 23, 2010, at 1:49 PM, Hans J. Koch wrote:
+>> 
+>>> On Tue, Feb 23, 2010 at 07:01:41AM -0800, Greg KH wrote:
+>>>> On Tue, Feb 23, 2010 at 08:54:16AM -0600, Kumar Gala wrote:
+>>>>> Hans, Greg,
+>>>>> 
+>>>>> We are looking at using UIO for some driver work and noticed it
+>>>>> assumes the address for MMIO regions is an 'unsigned long'.  This is a
+>>>>> problem for the platforms we have in which we support a 36-bit
+>>>>> physical address in a 32-bit machine.
+>>>>> 
+>>>>> Should we just change addr/size in struct uio_mem to u64 always?
+>>> 
+>>> No, if I didn't miss something important, it's not feasible IMHO.
+>>> 
+>>>>> At
+>>>>> first I was thinking phys_addr_t but realized the addr could be PHYS,
+>>>>> LOGICAL, or VIRTUAL.
+>>>> 
+>>>> I think that would work out fine, Hans, any ideas if this would cause
+>>>> any problems with existing code or not?
+>>> 
+>>> It won't work. This is not a UIO problem. UIO just passes addr to other
+>>> system functions, and all of them use "unsigned long" for these addresses.
+>>> You'd have to change the whole memory management code.
+>>> 
+>>> Note that members vm_start and vm_end in struct vm_area_struct are
+>>> also unsigned long. Having an u64 in the UIO core doesn't help at all.
+>> 
+>> This already works for mmap since we pass down a PFN and not an address to remap_pfn_range.  While we can handle any physical address size we can handle one up to 44 bits on most architectures which is well beyond the 36-bit physical address case I'm dealing with on PPC.
+>> 
+> 
+> Sure, there are always ways to handle physical addresses up to the buswidth
+> of the arch. But above the "natural" size (32 bits on 32-bit archs), it
+> becomes a bit clumsy. UIO has a documented interface to userspace. The user
+> is supposed to use the traditional mmap() call. mmap() returns void*, which
+> is also 32 bits on 32-bit archs.
+> 
+> Because of this, UIO already needs a 32-bit address. It might be possible to
+> map your I/O memory from above 4G down into the 32-bit space and then use
+> this address, probably not with UIO_MEM_PHYS but with UIO_MEM_VIRTUAL.
+> I understand PPC (is that an E500?) has some special features for doing
+> these kind of shifts in hardware. But I'm not really a PPC expert, I'll
+> ask a friend of mine.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- cgroup.c |   39 ++++++++++++++++++---------------------
- 1 file changed, 18 insertions(+), 21 deletions(-)
+(Yes this is on e500, but also true on the PPC 44x/46x and 745x processors)
 
-diff --git a/kernel/cgroup.c.orig b/kernel/cgroup.c
-index d142524..6ff40f6 100644
---- a/kernel/cgroup.c.orig
-+++ b/kernel/cgroup.c
-@@ -3029,10 +3029,10 @@ static void cgroup_event_ptable_queue_proc(struct file *file,
- static int cgroup_write_event_control(struct cgroup *cgrp, struct cftype *cft,
- 				      const char *buffer)
- {
--	struct cgroup_event *event = NULL;
-+	struct cgroup_event *event;
- 	unsigned int efd, cfd;
--	struct file *efile = NULL;
--	struct file *cfile = NULL;
-+	struct file *efile;
-+	struct file *cfile;
- 	char *endp;
- 	int ret;
- 
-@@ -3058,46 +3058,46 @@ static int cgroup_write_event_control(struct cgroup *cgrp, struct cftype *cft,
- 	efile = eventfd_fget(efd);
- 	if (IS_ERR(efile)) {
- 		ret = PTR_ERR(efile);
--		goto fail;
-+		goto out_free_event;
- 	}
- 
- 	event->eventfd = eventfd_ctx_fileget(efile);
- 	if (IS_ERR(event->eventfd)) {
- 		ret = PTR_ERR(event->eventfd);
--		goto fail;
-+		goto out_put_efile;
- 	}
- 
- 	cfile = fget(cfd);
- 	if (!cfile) {
- 		ret = -EBADF;
--		goto fail;
-+		goto out_put_eventfd;
- 	}
- 
- 	/* the process need read permission on control file */
- 	ret = file_permission(cfile, MAY_READ);
- 	if (ret < 0)
--		goto fail;
-+		goto out;
- 
- 	event->cft = __file_cft(cfile);
- 	if (IS_ERR(event->cft)) {
- 		ret = PTR_ERR(event->cft);
--		goto fail;
-+		goto out;
- 	}
- 
- 	if (!event->cft->register_event || !event->cft->unregister_event) {
- 		ret = -EINVAL;
--		goto fail;
-+		goto out;
- 	}
- 
- 	ret = event->cft->register_event(cgrp, event->cft,
- 			event->eventfd, buffer);
- 	if (ret)
--		goto fail;
-+		goto out;
- 
- 	if (efile->f_op->poll(efile, &event->pt) & POLLHUP) {
- 		event->cft->unregister_event(cgrp, event->cft, event->eventfd);
- 		ret = 0;
--		goto fail;
-+		goto out;
- 	}
- 
- 	/*
-@@ -3116,16 +3116,13 @@ static int cgroup_write_event_control(struct cgroup *cgrp, struct cftype *cft,
- 
- 	return 0;
- 
--fail:
--	if (!cfile)
--		fput(cfile);
--
--	if (event && event->eventfd && !IS_ERR(event->eventfd))
--		eventfd_ctx_put(event->eventfd);
--
--	if (!IS_ERR_OR_NULL(efile))
--		fput(efile);
--
-+out:
-+	fput(cfile);
-+out_put_eventfd:
-+	eventfd_ctx_put(event->eventfd);
-+out_put_efile:
-+	fput(efile);
-+out_free_event:
- 	kfree(event);
- 
- 	return ret;
+Maybe I'm misunderstanding how UIO_MEM_PHYS works (or what it means).  I was under the assumption that it behaves similar to mmap of pci sysfs files.  In that the virtual address in the application is provided in the mmap call and the physical address is coming from the mem region.  As such the MMU is handling the process translation from the virtual address in the app to whatever the physical address might happen to be (if the HW supports that physical address being >32-bits so bit, the application isn't any the wiser).
+
+>>> Memory above the 4G border can only be accessed through himem mechanisms
+>>> or be mapped to an address below that border in lowlevel arch code.
+>>> 
+>>> In most cases, I'd say it's bad board design to have memory-mapped hardware
+>>> above the 4G border on a 32-bit machine.
+>> 
+>> While I might agree with you its a reality on a number of embedded processors and I know three different PowerPC based embedded families that have 36-bit physical addressing to allow for >4G of DDR and thus IO ends up being above the 4G physical boundary and we already support these in the kernel.
+> 
+> Well, UIO is (up to now) completely independent of the architecture. If you've
+> got a good idea how to implement such mappings, feel free to come up with your
+> suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
+> enough.
+> 
+> I'll give it some thoughts myself, and will discuss the problem with friends,
+> maybe there's a nice solution. Help from your side is much appreciated.
+
+For my needs I believe changing uio_mem.addr to a u64 is sufficient for getting UIO_MEM_PHYS to work for the physical address being above 4G.  I need the type to be large to represent a wider PFN range.  Obviously there are limitations (ie, we can't make an IO region >4G in size, etc.)
+
+- k
