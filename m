@@ -1,44 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298Ab0BXKRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:17:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33502 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755927Ab0BXKRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:17:39 -0500
-Message-ID: <4B84FCBB.8070702@redhat.com>
-Date: Wed, 24 Feb 2010 12:17:31 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1756401Ab0BXKTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 05:19:42 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:46244 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756216Ab0BXKTl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 05:19:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=FX1ymLSGYeToeO6tyNUUgMFmvfVIF3KDl0XV/hrbmImhbykDKjgHKr8hcMA/bTX//t
+         imzktSeQMKPaLl6VPiwRNTwuisbS46JwPgDwPKnA76x2/C1cRFEjcdJxKsZTB5toQBfC
+         bxCJY09AsEYkMHgs0eZf0JYgDnqR5rJZMWqQ4=
+Date: Wed, 24 Feb 2010 02:19:36 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] winbond-cir: fix suspend/resume
+Message-ID: <20100224101936.GA8036@core.coreip.homeip.net>
+References: <20100210220025.GA10609@hardeman.nu>
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@siemens.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
-       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
-References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com> <4B84FBDB.1070006@siemens.com>
-In-Reply-To: <4B84FBDB.1070006@siemens.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100210220025.GA10609@hardeman.nu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 12:13 PM, Jan Kiszka wrote:
->
->    
->> I see.  Won't we hit the same issue when we call pic functions from
->> atomic context during the guest entry sequence?
->>
->>      
-> If there are such call paths, for sure. What concrete path(s) do you
-> have in mind?
->
->    
+On Wed, Feb 10, 2010 at 11:00:25PM +0100, David Härdeman wrote:
+> I finally got the time to fix suspend/resume with the winbond-cir
+> driver on my mainboard. The main problem turned out to be that the
+> ACPI _DIS method would completely power off the SP3 module which
+> meant that the output lines (including IRQ lines) would be left
+> in an undefined state which could cause spurious interrupts and
+> that the hardware has to be reinitialized from scratch during
+> resume.
+> 
+> This fixes:
+> http://bugzilla.kernel.org/show_bug.cgi?id=15257
+> 
+> Signed-off-by: David Härdeman <david@hardeman.nu>
 
-vcpu_enter_guest() -> inject_pending_event() -> 
-kvm_cpu_{has,get}_interrupt() -> various pic functions if you're unlucky.
+Applied, thank you David. Let's see if I manage to quieeze it in .33.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Dmitry
