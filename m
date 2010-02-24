@@ -1,56 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452Ab0BXHey (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:34:54 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:14137 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161Ab0BXHex (ORCPT
+	id S1755499Ab0BXHho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:37:44 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:39422 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546Ab0BXHhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:34:53 -0500
+	Wed, 24 Feb 2010 02:37:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=VeULnncD8N6fzZNotmff4EhODFVzvR/jc3eIgKbkjH0+1CcuzYwcLDLsE1cqPEIPj7
-         1X/pmP2Gf4tRB1k3DvjpH77kw/+P7u0ZR4OphWH+KD/FJt4KTO7E3+ffBsTrm9YANd7h
-         TqvIMNPRxGSuI0vHmrDBBsU+BJdAyTweLi8v4=
+        h=from:subject:to:cc:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding;
+        b=qq4HHyWGV8Qp3OU8RaKTWkZNVlVGkwg18aEsylPoJ1+BGOMPEWQbKfeLeIey83/7hS
+         f0y13oA04AblxS00E+oU0/uF/HCh5BaUtADGyGxDbUPZ7k72UWfwXewk5kPtOcAL8Ees
+         beKT+hjQH+dy9XmMQwVFZxkWemMEzPO/Hhj70=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH 00/14] Assorted small patches for regulators
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 23 Feb 2010 23:37:39 -0800
+Message-ID: <20100224073342.15964.8863.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <1266996757.3903.0.camel@jlt3.sipsolutions.net>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <1266674493.18465.9.camel@jlt3.sipsolutions.net>
-	 <20100220150327.GG3000@hack>
-	 <1266678496.32309.1.camel@jlt3.sipsolutions.net>
-	 <20100220152010.GI3000@hack>
-	 <1266679687.17363.1.camel@jlt3.sipsolutions.net>
-	 <20100220154049.GM3000@hack>
-	 <1266680582.17363.7.camel@jlt3.sipsolutions.net>
-	 <1266979753.23523.1670.camel@pasglop>
-	 <1266996757.3903.0.camel@jlt3.sipsolutions.net>
-Date: Wed, 24 Feb 2010 15:34:52 +0800
-Message-ID: <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
-Subject: Re: [PATCH] windfarm: init sysfs attributes
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 3:32 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Wed, 2010-02-24 at 13:49 +1100, Benjamin Herrenschmidt wrote:
->> On Sat, 2010-02-20 at 16:43 +0100, Johannes Berg wrote:
->> > This is required for lockdep.
->>
->> Please CC linuxppc-dev@ozlabs.org or it doesn't get caught by
->> patchwork.
->
-> Eh, sure, but I think it needs to be part of Eric's series?
->
+Hi Liam,
 
-Yeah, that's why we are Cc'ing Greg, since he took Eric's patches already.
+I happend to peek into drivers/regulator and saw a bunch of small issues, so
+here goes. The patches are against linux-next, compile-tested only since I
+don't have the hardware,
 
-Greg?
+Please consider applying.
+
+Thanks,
+
+Dmitry
+
+---
+
+Dmitry Torokhov (14):
+      Regulators: max8925-regulator - clean up driver data after removal
+      Regulators: wm8400 - cleanup platform driver data handling
+      Regulators: wm8994 - clean up driver data after removal
+      Regulators: wm831x-xxx - clean up driver data after removal
+      Regulators: pcap-regulator - clean up driver data after removal
+      Regulators: max8660 - annotate probe and remove methods
+      Regulators: max1586 - annotate probe and remove methods
+      Regulators: lp3971 - fail if platform data was not supplied
+      Regulators: tps6507x-regulator - mark probe method as __devinit
+      Regulators: tps65023-regulator - mark probe method as __devinit
+      Regulators: twl-regulator - mark probe function as __devinit
+      Regulators: fixed - annotate probe and remove methods
+      Regulators: ab3100 - fix probe and remove annotations
+      Regulators: virtual - use sysfs attribute groups
+
+
+ drivers/regulator/ab3100.c             |    6 ++-
+ drivers/regulator/fixed.c              |   19 +++++-----
+ drivers/regulator/lp3971.c             |   58 +++++++++++++++--------------
+ drivers/regulator/max1586.c            |    9 +++--
+ drivers/regulator/max8660.c            |   11 +++---
+ drivers/regulator/max8925-regulator.c  |    6 ++-
+ drivers/regulator/pcap-regulator.c     |    8 +++-
+ drivers/regulator/tps65023-regulator.c |   35 ++++++++----------
+ drivers/regulator/tps6507x-regulator.c |   34 ++++++++---------
+ drivers/regulator/twl-regulator.c      |    2 +
+ drivers/regulator/virtual.c            |   64 +++++++++++++++++---------------
+ drivers/regulator/wm831x-dcdc.c        |   12 ++++++
+ drivers/regulator/wm831x-isink.c       |    3 ++
+ drivers/regulator/wm831x-ldo.c         |    5 +++
+ drivers/regulator/wm8400-regulator.c   |   13 ++++---
+ drivers/regulator/wm8994-regulator.c   |   11 ++++--
+ include/linux/mfd/wm8400.h             |    4 ++
+ 17 files changed, 164 insertions(+), 136 deletions(-)
