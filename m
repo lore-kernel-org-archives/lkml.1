@@ -1,112 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918Ab0BXIJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:09:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58689 "EHLO hera.kernel.org"
+	id S1755008Ab0BXIJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 03:09:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58705 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668Ab0BXIJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:09:33 -0500
-Date: Wed, 24 Feb 2010 08:09:06 GMT
+	id S1754590Ab0BXIJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 03:09:50 -0500
+Date: Wed, 24 Feb 2010 08:09:23 GMT
 From: tip-bot for Jacob Pan <jacob.jun.pan@intel.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        jacob.jun.pan@intel.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        jacob.jun.pan@intel.com, tglx@linutronix.de
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755A318D2D2@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F0755A318D2D2@orsmsx508.amr.corp.intel.com>
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755A318D2D4@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F0755A318D2D4@orsmsx508.amr.corp.intel.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mrst] x86, apbt: Moorestown APB system timer driver
-Message-ID: <tip-aa19febbc933936219c59ac83e61049fc7136e62@git.kernel.org>
-Git-Commit-ID: aa19febbc933936219c59ac83e61049fc7136e62
+Subject: [tip:x86/mrst] x86, mrst: Platform clock setup code
+Message-ID: <tip-6f19f32a4a30fb40a1a8132f76205400c764196a@git.kernel.org>
+Git-Commit-ID: 6f19f32a4a30fb40a1a8132f76205400c764196a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 24 Feb 2010 08:09:09 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 24 Feb 2010 08:09:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aa19febbc933936219c59ac83e61049fc7136e62
-Gitweb:     http://git.kernel.org/tip/aa19febbc933936219c59ac83e61049fc7136e62
+Commit-ID:  6f19f32a4a30fb40a1a8132f76205400c764196a
+Gitweb:     http://git.kernel.org/tip/6f19f32a4a30fb40a1a8132f76205400c764196a
 Author:     Jacob Pan <jacob.jun.pan@intel.com>
-AuthorDate: Wed, 2 Sep 2009 07:37:17 -0700
+AuthorDate: Fri, 12 Feb 2010 05:01:12 -0800
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 23 Feb 2010 23:15:19 -0800
+CommitDate: Tue, 23 Feb 2010 23:15:20 -0800
 
-x86, apbt: Moorestown APB system timer driver
+x86, mrst: Platform clock setup code
 
-Moorestown platform does not have PIT or HPET platform timers.  Instead it
-has a bank of eight APB timers.  The number of available timers to the os
-is exposed via SFI mtmr tables.  All APB timer interrupts are routed via
-ioapic rtes and delivered as MSI.
-Currently, we use timer 0 and 1 for per cpu clockevent devices, timer 2
-for clocksource.
+Add Moorestown platform clock setup code to the x86_init abstraction.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
-LKML-Reference: <43F901BD926A4E43B106BF17856F0755A318D2D2@orsmsx508.amr.corp.intel.com>
+LKML-Reference: <43F901BD926A4E43B106BF17856F0755A318D2D4@orsmsx508.amr.corp.intel.com>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- Documentation/kernel-parameters.txt |    6 ++++++
- arch/x86/Kconfig                    |   11 +++++++++++
- arch/x86/kernel/Makefile            |    1 +
- 3 files changed, 18 insertions(+), 0 deletions(-)
+ arch/x86/kernel/mrst.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 51bceb0..9172204 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2793,6 +2793,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			default x2apic cluster mode on platforms
- 			supporting x2apic.
+diff --git a/arch/x86/kernel/mrst.c b/arch/x86/kernel/mrst.c
+index b7fa049..0aad867 100644
+--- a/arch/x86/kernel/mrst.c
++++ b/arch/x86/kernel/mrst.c
+@@ -23,6 +23,7 @@
+ #include <asm/mrst.h>
+ #include <asm/io.h>
+ #include <asm/i8259.h>
++#include <asm/apb_timer.h>
  
-+	x86_mrst_timer= [X86-32,APBT]
-+			Choose timer option for x86 Moorestown MID platform.
-+			Two valid options are apbt timer only and lapic timer
-+			plus one apbt timer for broadcast timer.
-+			x86_mrst_timer=apbt_only | lapic_and_apbt
+ static u32 sfi_mtimer_usage[SFI_MTMR_MAX_NUM];
+ static struct sfi_timer_table_entry sfi_mtimer_array[SFI_MTMR_MAX_NUM];
+@@ -166,12 +167,56 @@ int __init sfi_parse_mrtc(struct sfi_table_header *table)
+ 	return 0;
+ }
+ 
++/*
++ * the secondary clock in Moorestown can be APBT or LAPIC clock, default to
++ * APBT but cmdline option can also override it.
++ */
++static void __cpuinit mrst_setup_secondary_clock(void)
++{
++	/* restore default lapic clock if disabled by cmdline */
++	if (disable_apbt_percpu)
++		return setup_secondary_APIC_clock();
++	apbt_setup_secondary_clock();
++}
 +
- 	xd=		[HW,XT] Original XT pre-IDE (RLL encoded) disks.
- 	xd_geo=		See header of drivers/block/xd.c.
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index eb40925..0ab2dce 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -390,6 +390,7 @@ config X86_MRST
-        bool "Moorestown MID platform"
- 	depends on X86_32
- 	depends on X86_EXTENDED_PLATFORM
-+	select APB_TIMER
- 	---help---
- 	  Moorestown is Intel's Low Power Intel Architecture (LPIA) based Moblin
- 	  Internet Device(MID) platform. Moorestown consists of two chips:
-@@ -612,6 +613,16 @@ config HPET_EMULATE_RTC
- 	def_bool y
- 	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
- 
-+config APB_TIMER
-+       def_bool y if MRST
-+       prompt "Langwell APB Timer Support" if X86_MRST
-+       help
-+         APB timer is the replacement for 8254, HPET on X86 MID platforms.
-+         The APBT provides a stable time base on SMP
-+         systems, unlike the TSC, but it is more expensive to access,
-+         as it is off-chip. APB timers are always running regardless of CPU
-+         C states, they are used as per CPU clockevent device when possible.
++static unsigned long __init mrst_calibrate_tsc(void)
++{
++	unsigned long flags, fast_calibrate;
 +
- # Mark as embedded because too many people got it wrong.
- # The code disables itself when not needed.
- config DMI
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index d87f09b..4c58352 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -87,6 +87,7 @@ obj-$(CONFIG_VM86)		+= vm86_32.o
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
++	local_irq_save(flags);
++	fast_calibrate = apbt_quick_calibrate();
++	local_irq_restore(flags);
++
++	if (fast_calibrate)
++		return fast_calibrate;
++
++	return 0;
++}
++
++void __init mrst_time_init(void)
++{
++	sfi_table_parse(SFI_SIG_MTMR, NULL, NULL, sfi_parse_mtmr);
++	pre_init_apic_IRQ0();
++	apbt_time_init();
++}
++
+ void __init mrst_rtc_init(void)
+ {
+ 	sfi_table_parse(SFI_SIG_MRTC, NULL, NULL, sfi_parse_mrtc);
+ }
  
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
-+obj-$(CONFIG_APB_TIMER)		+= apb_timer.o
+ /*
++ * if we use per cpu apb timer, the bootclock already setup. if we use lapic
++ * timer and one apbt timer for broadcast, we need to set up lapic boot clock.
++ */
++static void __init mrst_setup_boot_clock(void)
++{
++	pr_info("%s: per cpu apbt flag %d \n", __func__, disable_apbt_percpu);
++	if (disable_apbt_percpu)
++		setup_boot_APIC_clock();
++};
++
++/*
+  * Moorestown specific x86_init function overrides and early setup
+  * calls.
+  */
+@@ -180,6 +225,14 @@ void __init x86_mrst_early_setup(void)
+ 	x86_init.resources.probe_roms = x86_init_noop;
+ 	x86_init.resources.reserve_resources = x86_init_noop;
  
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
++	x86_init.timers.timer_init = mrst_time_init;
++	x86_init.timers.setup_percpu_clockev = mrst_setup_boot_clock;
++
++	x86_init.irqs.pre_vector_init = x86_init_noop;
++
++	x86_cpuinit.setup_percpu_clockev = mrst_setup_secondary_clock;
++
++	x86_platform.calibrate_tsc = mrst_calibrate_tsc;
+ 	x86_init.pci.init = pci_mrst_init;
+ 	x86_init.pci.fixup_irqs = x86_init_noop;
+ 
