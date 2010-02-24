@@ -1,83 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758578Ab0BXXef (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 18:34:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46965 "EHLO hera.kernel.org"
+	id S1758596Ab0BXXhK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 18:37:10 -0500
+Received: from lucidpixels.com ([75.144.35.66]:36711 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758555Ab0BXXeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 18:34:31 -0500
-Message-ID: <4B85B724.9050304@kernel.org>
-Date: Wed, 24 Feb 2010 15:32:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1758572Ab0BXXhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 18:37:08 -0500
+Date: Wed, 24 Feb 2010 18:37:04 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404
+ hpet_next_event+0x70/0x80
+Message-ID: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 16/35] x86: make 64 bit use early_res instead of bootmem
- before slab
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	 <1265793639-15071-17-git-send-email-yinghai@kernel.org>	 <20100215010833.15f9e09a.sfr@canb.auug.org.au>	 <4B7B4378.1070206@kernel.org> <1267052387.12790.10.camel@laptop> <4B85B65E.503@kernel.org>
-In-Reply-To: <4B85B65E.503@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 03:29 PM, Yinghai Lu wrote:
-> On 02/24/2010 02:59 PM, Peter Zijlstra wrote:
->> On Tue, 2010-02-16 at 17:16 -0800, Yinghai Lu wrote:
->>
->>> Subject: [PATCH -v3 16/35] x86: make 64 bit use early_res instead of bootmem before slab
->>>
->>> finally we can use early_res to replace bootmem for x86_64 now.
->>>
->>> still can use CONFIG_NO_BOOTMEM to enable it or not
->>>
->>> -v2: fix 32bit compiling about MAX_DMA32_PFN
->>> -v3: fix PPC compiling
->>> | mm/page_alloc.c:3468: error: implicit declaration of function 'find_early_area'
->>> | mm/page_alloc.c:3483: error: implicit declaration of function 'reserve_early_without_check'
->>>
->>> | actually the function is only needed for no_bootmem
->>>
->>>
->>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> This makes my machine unhappy and panic.. machine works fine with
->> CONFIG_NO_BOOTMEM=n
->>
->> Kernel panic - not syncing: free_early on not reserved area: 2f80000-2f9ffff!
->> Pid: 0, comm: swapper Not tainted 2.6.33-rc8-tip-00918-gb34d361 #159
->> Call Trace:	
->>  [<ffffffff815d12e2>] panic+0x84/0x147
->>  [<ffffffff81cceecb>] free_early+0x64/0x6d
->>  [<ffffffff81cd2231>] free_bootmem+0xc/0xe
->>  [<ffffffff81cc1cd6>] pcpu_fc_free+0x1d/0x1f
->>  [<ffffffff81cd6056>] pcpu_embed_first_chunk+0x13a/0x27f
->>  [<ffffffff81cc1cd8>] ? pcpu_fc_alloc+0x0/0xac
->>  [<ffffffff81cc1cb9>] ? pcpu_fc_free+0x0/0x1f
->>  [<ffffffff81cc1af7>] setup_per_cpu_areas+0x82/0x239
->>  [<ffffffff81cb5b3c>] start_kernel+0x1b8/0x43b
->>  [<ffffffff81cb52bc>] x86_64_start_reservations+0xa7/0xab
->>  [<ffffffff81cb53b8>] x86_64_start_kernel+0xf8/0x107
->>
-> 
-> we can not handle partial free, and current only user for that is pcpu_setup...
-> 
+Hello,
 
-Tejun,
+Again, on the Intel DP55KG board:
 
-any plan to pcpu_setup to use slab allocation instead of bootmem?
+# uname -a
+Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
 
-that code is only one user that do partial bootmem free.
+[    1.237600] ------------[ cut here ]------------
+[    1.237890] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80()
+[    1.238221] Hardware name:
+[    1.238504] hpet: compare register read back failed.
+[    1.238793] Modules linked in:
+[    1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
+[    1.239605] Call Trace:
+[    1.239886]  <IRQ>  [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
+[    1.240409]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+[    1.240699]  [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
+[    1.240992]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+[    1.241281]  [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
+[    1.241573]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+[    1.241859]  [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
+[    1.246533]  [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
+[    1.246826]  [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
+[    1.247118]  [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
+[    1.247407]  [<ffffffff81029f55>] ? handle_irq+0x15/0x20
+[    1.247689]  [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
+[    1.247976]  [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
+[    1.248262]  <EOI>  [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
+[    1.248796]  [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
+[    1.249080] ---[ end trace db7f668fb6fef4e1 ]---
 
-Thanks
+Is this something Intel has to fix or is it a bug in the kernel?
 
-Yinghai
+Justin.
 
