@@ -1,85 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544Ab0BXSCC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 13:02:02 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:30734
+	id S1757450Ab0BXSEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 13:04:05 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:37659
 	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757477Ab0BXSB4 (ORCPT
+	by vger.kernel.org with ESMTP id S1756344Ab0BXSEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 13:01:56 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh87h61h)
+	Wed, 24 Feb 2010 13:04:01 -0500
+X-SpamScore: -5
+X-BigFish: VPS-5(zz98dNzz1202hzzz32i87h6bh61h)
 X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYCXYZ-01-2QY-02
+X-WSS-ID: 0KYCY4V-02-PUI-02
 X-M-MSG: 
+Date: Wed, 24 Feb 2010 19:02:57 +0100
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 03/11] KVM: SVM: Check for nested intercepts on NMI injection
-Date: Wed, 24 Feb 2010 18:59:12 +0100
-Message-ID: <1267034360-5907-4-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267034360-5907-1-git-send-email-joerg.roedel@amd.com>
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/11] KVM: SVM: Coding style cleanup
+Message-ID: <20100224180256.GB3168@amd.com>
 References: <1267034360-5907-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 24 Feb 2010 17:59:23.0465 (UTC) FILETIME=[18C50390:01CAB57B]
+ <1267034360-5907-2-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1267034360-5907-2-git-send-email-joerg.roedel@amd.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 24 Feb 2010 18:02:57.0379 (UTC) FILETIME=[9845B330:01CAB57B]
 X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements the NMI intercept checking for nested
-svm.
+On Wed, Feb 24, 2010 at 06:59:10PM +0100, Joerg Roedel wrote:
+> This patch removes whitespace errors, fixes comment formats
+> and most of checkpatch warnings. Now vim does not show
+                         ^^^^^^^^
+This means actually "errors". The warnings left in this file are
+completly 80-chars-per-line related. Two errors are left which don't
+make sense to fix.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |   22 +++++++++++++++++++---
- 1 files changed, 19 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index b821b2f..9759d9f 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1480,6 +1480,20 @@ static inline bool nested_svm_intr(struct vcpu_svm *svm)
- 	return true;
- }
- 
-+/* This function returns true if it is save to enable the nmi window */
-+static inline bool nested_svm_nmi(struct vcpu_svm *svm)
-+{
-+	if (!is_nested(svm))
-+		return true;
-+
-+	if (!(svm->nested.intercept & (1ULL << INTERCEPT_NMI)))
-+		return true;
-+
-+	svm->vmcb->control.exit_code = SVM_EXIT_NMI;
-+	svm->nested.exit_required = true;
-+
-+	return false;
-+}
- static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa, struct page **_page)
- {
- 	struct page *page;
-@@ -2681,9 +2695,11 @@ static void enable_nmi_window(struct kvm_vcpu *vcpu)
- 	 * Something prevents NMI from been injected. Single step over possible
- 	 * problem (IRET or exception injection or interrupt shadow)
- 	 */
--	svm->nmi_singlestep = true;
--	svm->vmcb->save.rflags |= (X86_EFLAGS_TF | X86_EFLAGS_RF);
--	update_db_intercept(vcpu);
-+	if (gif_set(svm) && nested_svm_nmi(svm)) {
-+		svm->nmi_singlestep = true;
-+		svm->vmcb->save.rflags |= (X86_EFLAGS_TF | X86_EFLAGS_RF);
-+		update_db_intercept(vcpu);
-+	}
- }
- 
- static int svm_set_tss_addr(struct kvm *kvm, unsigned int addr)
--- 
-1.7.0
+	Joerg
 
 
