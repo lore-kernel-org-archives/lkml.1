@@ -1,133 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633Ab0BXPi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:38:27 -0500
-Received: from mail2.tundra.com ([142.46.200.162]:44324 "EHLO mx2.tundra.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755674Ab0BXPi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 10:38:26 -0500
-X-ASG-Debug-ID: 1267025903-555c01050000-xx1T2L
-X-Barracuda-URL: http://142.46.200.162:8000/cgi-bin/mark.cgi
-X-Barracuda-Envelope-From: alexb@tundra.com
-Date: Wed, 24 Feb 2010 10:37:51 -0500
-From: Alexandre Bounine <alexb@tundra.com>
-To: mporter@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       thomas.moll@sysgo.com, thomas.moll.ext@nsn.com, abounine@idt.com
-X-ASG-Orig-Subj: [PATCH 7/7] powerpc/85xx: Fix the RapidIO maintenance access functions
-Subject: [PATCH 7/7] powerpc/85xx: Fix the RapidIO maintenance access functions
-Message-ID: <20100224153751.GG13661@kaneng01.tundra.com>
+	id S1756764Ab0BXPkY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:40:24 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:36968 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755674Ab0BXPkX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 10:40:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAKPVhEtGGOM5/2dsb2JhbACbEHSvLAmNUwKCSxyCCQSDFg
+Date: Wed, 24 Feb 2010 10:40:21 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Linux Tools developer discussions <linuxtools-dev@eclipse.org>
+Cc: dsdp-tcf-dev@eclipse.org, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [linuxtools-dev] Standard protocols/interfaces/formats for
+	performance tools (TCF, LTTng, ...)
+Message-ID: <20100224154021.GA9692@Krystal>
+References: <D86DB60C62D82A4792CAEC7F58CA04E706C13BB6@NA1-MAIL.mgc.mentorg.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Barracuda-Connect: UNKNOWN[142.46.200.189]
-X-Barracuda-Start-Time: 1267025903
-X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at tundra.com
+In-Reply-To: <D86DB60C62D82A4792CAEC7F58CA04E706C13BB6@NA1-MAIL.mgc.mentorg.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:25:44 up 69 days, 23:44,  4 users,  load average: 0.06, 0.07,
+	0.06
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Spear, Aaron (aaron_spear@mentor.com) wrote:
+> Hello everyone,
+> 
+> As some of you know, at Mentor Graphics we are currently working on
+> multi-core profiling products for embedded systems.  The focus currently
+> is using real-time trace data as the event source for analysis.  In the
+> future this will expand as we desire to be able to correlate analysis of
+> heterogeneous systems, e.g. embedded Linux + LTTng events on one
+> machine, correlated with real-time trace data collected from a bunch of
+> DSP's. 
+> 
+> Like the rest of you, we have spent much time in the past inventing
+> proprietary data collection frameworks, mechanisms and formats only to
+> eventually throw them away because a standard eventually emerges.  We
+> would like to stop the insanity.
+> 
+> So, as an FYI, I am planning to participate in a new tools
+> infrastructure working group under the auspices of the Multi-core
+> association (http://www.multicore-association.org).  The working group
+> aims to:
+> 
+> 1.  Identify common needs, functionality, and opportunities for
+> information sharing between performance analysis tools.
+> 2.  Discussion on identifying sharable components between performance
+> analysis tools.
+> 3.  Discussion on metadata dimensions of interest for standardization
+> (e.g., code, space, metric, time, state)
+> 
+> Along those lines, we (Mentor) have a need for a protocol to connect to
+> remote trace collectors and configure trace triggering/collection, and
+> then efficiently download lots of binary trace data.  Sound familiar?  
+> 
+> TCF is an obvious choice for this as various companies are already using
+> it for this purpose from what I have observed.
+> 
+> So, to my point:
+> -What protocols are currently in use that we might consider as a
+> starting point?  I see that the linuxtools project apparently has one
+> for transferring LTTng event data.  Are there any docs for this
+> protocol?
+> 
+> -Is there any other company with a proprietary protocol that would
+> consider donating it to a standardization effort? (some one else who
+> also desires to end the insanity :-)
+> 
+> -file formats: event log file formats is another obvious candidate for
+> standardization.  Mentor has a file format we use that was inspired by
+> LTTng's format but is optimized for extremely large real-time trace
+> logs.  I intend to throw this into the mix.  Any others we should think
+> about? (The LTTng format obviously...) 
 
-From: Thomas Moll <thomas.moll@sysgo.com>
+Hi Aaron,
 
-Fix the maintenance access functions to farend RapidIO devices.
-1. Fixed shift of the given offset, to open the maintenance window
-2. Mask offset to limit access to the opened maintenance window
-3. Added extended destid part to rowtear register, required for 16bit mode
+I would be glad to provide insight into the LTTng file format as needed.
 
-For easier handling of the access routines, the access was limited to aligned
-memory regions. This should be no problem because all registers are 32bit
-wide.
+It would be good to ask if the Ftrace team is interested to participate
+in this standardization effort. Proposing modifications to the Ftrace
+file format is on my roadmap.
 
-Signed-off-by: Thomas Moll <thomas.moll@sysgo.com>
----
+I'm curious.. which version of the LTTng trace file format have you
+derived your own format from ?
 
- fsl_rio.c |   34 ++++++++++++++++++++++++++++------
- 1 file changed, 28 insertions(+), 6 deletions(-)
+Thanks,
 
-diff -purN linux-base/arch/powerpc/sysdev/fsl_rio.c linux-new/arch/powerpc/sysdev/fsl_rio.c
---- linux-base/arch/powerpc/sysdev/fsl_rio.c	2010-02-24 08:37:05.000000000 +0100
-+++ linux-new/arch/powerpc/sysdev/fsl_rio.c	2010-02-24 08:45:27.000000000 +0100
-@@ -1,6 +1,10 @@
- /*
-  * Freescale MPC85xx/MPC86xx RapidIO support
-  *
-+ * Copyright 2009 Sysgo AG
-+ * Thomas Moll <thomas.moll@sysgo.com>
-+ * - fixed maintenance access routines, check for aligned access
-+ *
-  * Copyright 2009 Integrated Device Technology, Inc.
-  * Alex Bounine <alexandre.bounine@idt.com>
-  * - Added Port-Write message handling
-@@ -370,10 +374,17 @@ fsl_rio_config_read(struct rio_mport *mp
- 	pr_debug
- 	    ("fsl_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
- 	     index, destid, hopcount, offset, len);
-+
-+	/* 16MB maintenance window possible */
-+	/* allow only aligned access to maintenance registers */
-+	if (offset > (0x1000000 - len) || !IS_ALIGNED(offset, len))
-+		return -EINVAL;
-+
- 	out_be32(&priv->maint_atmu_regs->rowtar,
--		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-+		 (destid << 22) | (hopcount << 12) | (offset >> 12));
-+	out_be32(&priv->maint_atmu_regs->rowtear,  (destid >> 10));
- 
--	data = (u8 *) priv->maint_win + offset;
-+	data = (u8 *) priv->maint_win + (offset & 0x3FFFFF);
- 	switch (len) {
- 	case 1:
- 		__fsl_read_rio_config(rval, data, err, "lbz");
-@@ -381,9 +392,11 @@ fsl_rio_config_read(struct rio_mport *mp
- 	case 2:
- 		__fsl_read_rio_config(rval, data, err, "lhz");
- 		break;
--	default:
-+	case 4:
- 		__fsl_read_rio_config(rval, data, err, "lwz");
- 		break;
-+	default:
-+		return -EINVAL;
- 	}
- 
- 	if (err) {
-@@ -418,10 +431,17 @@ fsl_rio_config_write(struct rio_mport *m
- 	pr_debug
- 	    ("fsl_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
- 	     index, destid, hopcount, offset, len, val);
-+
-+	/* 16MB maintenance windows possible */
-+	/* allow only aligned access to maintenance registers */
-+	if (offset > (0x1000000 - len) || !IS_ALIGNED(offset, len))
-+		return -EINVAL;
-+
- 	out_be32(&priv->maint_atmu_regs->rowtar,
--		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-+		 (destid << 22) | (hopcount << 12) | (offset >> 12));
-+	out_be32(&priv->maint_atmu_regs->rowtear,  (destid >> 10));
- 
--	data = (u8 *) priv->maint_win + offset;
-+	data = (u8 *) priv->maint_win + (offset & 0x3FFFFF);
- 	switch (len) {
- 	case 1:
- 		out_8((u8 *) data, val);
-@@ -429,9 +449,11 @@ fsl_rio_config_write(struct rio_mport *m
- 	case 2:
- 		out_be16((u16 *) data, val);
- 		break;
--	default:
-+	case 4:
- 		out_be32((u32 *) data, val);
- 		break;
-+	default:
-+		return -EINVAL;
- 	}
- 
- 	return 0;
+Mathieu
 
----
+> 
+> Best regards,
+> Aaron
+> 
+> --
+> Aaron Spear      
+> Debug Tools Architect/Staff Engineer
+> Embedded Systems Division
+> Mentor Graphics Corporation
+> Office: 303-679-8457
+> 
+> 
+> _______________________________________________
+> linuxtools-dev mailing list
+> linuxtools-dev@eclipse.org
+> https://dev.eclipse.org/mailman/listinfo/linuxtools-dev
+> 
 
-Important Notice: This message is intended for the use of the individual to whom it is addressed and may contain information which is privileged, confidential and/or exempt from disclosure under applicable law. If the reader of this message is not the intended recipient, or is not the employee or agent responsible for delivering the message to the intended recipient, you are hereby notified that any dissemination, distribution, or copying of this communication is strictly prohibited. If you have received this communication in error, please notify the sender immediately by telephone or return e-mail and delete the original message from your systems. Thank you. 
-
+-- 
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
