@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979Ab0BXUF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:05:26 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:61077 "EHLO
+	id S1757477Ab0BXUFd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:05:33 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:63878 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757453Ab0BXUFS (ORCPT
+	with ESMTP id S1757453Ab0BXUF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:05:18 -0500
+	Wed, 24 Feb 2010 15:05:29 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulmck@linux.vnet.ibm.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
@@ -15,140 +15,136 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
        dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
        peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
        dhowells@redhat.com
-Subject: [PATCH 07/10] module: __rcu annotations
-Date: Wed, 24 Feb 2010 21:04:03 +0100
-Message-Id: <1267041846-10469-8-git-send-email-arnd@arndb.de>
+Subject: [PATCH 08/10] pid: __rcu annotations
+Date: Wed, 24 Feb 2010 21:04:04 +0100
+Message-Id: <1267041846-10469-9-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 References: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 In-Reply-To: <20100223180127.GF6700@linux.vnet.ibm.com>
 References: <20100223180127.GF6700@linux.vnet.ibm.com>
-X-Provags-ID: V01U2FsdGVkX1/6O+NeZEuu0CK4tqYSPgjsY6yrU9PzRLO+3lB
- vWh+OFUEMwwmRmR8LhVtAv+JFixvSLwMKb3hJ4doY+dX8/3kZ5
- 3s56I0Aqd7S1Uu80cfNNQ==
+X-Provags-ID: V01U2FsdGVkX19UZt8XMfYzMH5m9G5c42B1LWgzS/KwTStMWNz
+ +2y/4flrlX8IshlCUdFqCM8DIgFRmUjxt6hGGsqQC/j/SbELSg
+ Aik512X0krwcwDKUGNRKg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are partial, because the modules list is used
-inconsistently with RCU. We actually pass a list_head
-of an RCU protected list into another function.
+This demonstrates static initialization of __rcu annotated
+variables using RCU_INIT_POINTER.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/module.h |    4 ++--
- kernel/module.c        |   20 +++++++++++++-------
- 2 files changed, 15 insertions(+), 9 deletions(-)
+ include/linux/init_task.h |    6 +++---
+ include/linux/pid.h       |    9 +++++----
+ kernel/pid.c              |    8 ++++----
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 6cb1a3c..94ce22e 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -6,7 +6,7 @@
-  * Rewritten by Richard Henderson <rth@tamu.edu> Dec 1996
-  * Rewritten again by Rusty Russell, 2002
-  */
--#include <linux/list.h>
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index abec69b..c9cf902 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -53,9 +53,9 @@ extern struct group_info init_groups;
+ #define INIT_STRUCT_PID {						\
+ 	.count 		= ATOMIC_INIT(1),				\
+ 	.tasks		= {						\
+-		{ .first = &init_task.pids[PIDTYPE_PID].node },		\
+-		{ .first = &init_task.pids[PIDTYPE_PGID].node },	\
+-		{ .first = &init_task.pids[PIDTYPE_SID].node },		\
++		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_PID].node)  }, \
++		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_PGID].node) }, \
++		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_SID].node)  }, \
+ 	},								\
+ 	.rcu		= RCU_HEAD_INIT,				\
+ 	.level		= 0,						\
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index 49f1c2f..8eb2aa1 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -2,6 +2,7 @@
+ #define _LINUX_PID_H
+ 
+ #include <linux/rcupdate.h>
 +#include <linux/rculist.h>
- #include <linux/stat.h>
- #include <linux/compiler.h>
- #include <linux/cache.h>
-@@ -238,7 +238,7 @@ struct module
- 	enum module_state state;
  
- 	/* Member of list of modules */
--	struct list_head list;
-+	struct rcu_list_head list;
- 
- 	/* Unique handle for this module */
- 	char name[MODULE_NAME_LEN];
-diff --git a/kernel/module.c b/kernel/module.c
-index f82386b..d8b7603 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -78,7 +78,7 @@ EXPORT_TRACEPOINT_SYMBOL(module_get);
-  * (delete uses stop_machine/add uses RCU list operations). */
- DEFINE_MUTEX(module_mutex);
- EXPORT_SYMBOL_GPL(module_mutex);
--static LIST_HEAD(modules);
-+static LIST_HEAD_RCU(modules);
- 
- /* Block module loading/unloading? */
- int modules_disabled = 0;
-@@ -360,10 +360,12 @@ struct module *find_module(const char *name)
+ enum pid_type
  {
- 	struct module *mod;
+@@ -51,7 +52,7 @@ struct upid {
+ 	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
+ 	int nr;
+ 	struct pid_namespace *ns;
+-	struct hlist_node pid_chain;
++	struct rcu_hlist_node pid_chain;
+ };
  
--	list_for_each_entry(mod, &modules, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		if (strcmp(mod->name, name) == 0)
- 			return mod;
- 	}
-+	rcu_read_unlock();
- 	return NULL;
- }
- EXPORT_SYMBOL_GPL(find_module);
-@@ -544,7 +546,8 @@ static void module_unload_free(struct module *mod)
+ struct pid
+@@ -59,7 +60,7 @@ struct pid
+ 	atomic_t count;
+ 	unsigned int level;
+ 	/* lists of tasks that use this pid */
+-	struct hlist_head tasks[PIDTYPE_MAX];
++	struct rcu_hlist_head tasks[PIDTYPE_MAX];
+ 	struct rcu_head rcu;
+ 	struct upid numbers[1];
+ };
+@@ -68,7 +69,7 @@ extern struct pid init_struct_pid;
+ 
+ struct pid_link
  {
- 	struct module *i;
+-	struct hlist_node node;
++	struct rcu_hlist_node node;
+ 	struct pid *pid;
+ };
  
--	list_for_each_entry(i, &modules, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(i, &modules, list) {
- 		struct module_use *use;
+@@ -164,7 +165,7 @@ pid_t pid_vnr(struct pid *pid);
  
- 		list_for_each_entry(use, &i->modules_which_use_me, list) {
-@@ -559,6 +562,7 @@ static void module_unload_free(struct module *mod)
- 			}
- 		}
- 	}
-+	rcu_read_unlock();
- }
+ #define do_each_pid_task(pid, type, task)				\
+ 	do {								\
+-		struct hlist_node *pos___;				\
++		struct rcu_hlist_node *pos___;				\
+ 		if ((pid) != NULL)					\
+ 			hlist_for_each_entry_rcu((task), pos___,	\
+ 				&(pid)->tasks[type], pids[type].node) {
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 2e17c9c..871d75e 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -39,7 +39,7 @@
  
- #ifdef CONFIG_MODULE_FORCE_UNLOAD
-@@ -1368,7 +1372,7 @@ static void mod_kobject_remove(struct module *mod)
- static int __unlink_module(void *_mod)
+ #define pid_hashfn(nr, ns)	\
+ 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+-static struct hlist_head *pid_hash;
++static struct rcu_hlist_head *pid_hash;
+ static unsigned int pidhash_shift = 4;
+ struct pid init_struct_pid = INIT_STRUCT_PID;
+ 
+@@ -290,7 +290,7 @@ out_free:
+ 
+ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
  {
- 	struct module *mod = _mod;
--	list_del(&mod->list);
-+	list_del_rcu(&mod->list);
- 	return 0;
- }
+-	struct hlist_node *elem;
++	struct rcu_hlist_node *elem;
+ 	struct upid *pnr;
  
-@@ -2718,7 +2722,8 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 	unsigned int i;
- 	int ret;
+ 	hlist_for_each_entry_rcu(pnr, elem,
+@@ -336,7 +336,7 @@ static void __change_pid(struct task_struct *task, enum pid_type type,
+ 	link->pid = new;
  
--	list_for_each_entry(mod, &modules, list) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		for (i = 0; i < mod->num_symtab; i++) {
- 			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
- 				 mod, mod->symtab[i].st_value);
-@@ -2726,6 +2731,7 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- 				return ret;
- 		}
- 	}
-+	rcu_read_unlock();
- 	return 0;
- }
- #endif /* CONFIG_KALLSYMS */
-@@ -2768,12 +2774,12 @@ static char *module_flags(struct module *mod, char *buf)
- static void *m_start(struct seq_file *m, loff_t *pos)
+ 	for (tmp = PIDTYPE_MAX; --tmp >= 0; )
+-		if (!hlist_empty(&pid->tasks[tmp]))
++		if (!hlist_empty_rcu(&pid->tasks[tmp]))
+ 			return;
+ 
+ 	free_pid(pid);
+@@ -366,7 +366,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
  {
- 	mutex_lock(&module_mutex);
--	return seq_list_start(&modules, *pos);
-+	return seq_list_start((struct list_head *)&modules, *pos);
- }
- 
- static void *m_next(struct seq_file *m, void *p, loff_t *pos)
- {
--	return seq_list_next(p, &modules, pos);
-+	return seq_list_next(p, (struct list_head *)&modules, pos);
- }
- 
- static void m_stop(struct seq_file *m, void *p)
+ 	struct task_struct *result = NULL;
+ 	if (pid) {
+-		struct hlist_node *first;
++		struct rcu_hlist_node *first;
+ 		first = rcu_dereference(pid->tasks[type].first);
+ 		if (first)
+ 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
 -- 
 1.6.3.3
 
