@@ -1,79 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267Ab0BXESZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 23:18:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49653 "EHLO hera.kernel.org"
+	id S1755288Ab0BXESb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 23:18:31 -0500
+Received: from mga03.intel.com ([143.182.124.21]:62801 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754732Ab0BXESY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 23:18:24 -0500
-Message-ID: <4B84A846.1000805@kernel.org>
-Date: Tue, 23 Feb 2010 20:17:10 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1755260Ab0BXES0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 23:18:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
+   d="scan'208";a="247418260"
+Date: Wed, 24 Feb 2010 12:18:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] nfs: use 2*rsize readahead size
+Message-ID: <20100224041822.GB27459@localhost>
+References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster>
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, alek.du@intel.com, jacob.jun.pan@intel.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH] x86: remove left over nr_legacy_irqs
-References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org>
-In-Reply-To: <4B8493A0.6080501@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224032934.GF16175@discord.disaster>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 24, 2010 at 11:29:34AM +0800, Dave Chinner wrote:
+> On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
+> > With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+> > readahead size 512k*15=7680k is too large than necessary for typical
+> > clients.
+> > 
+> > On a e1000e--e1000e connection, I got the following numbers
+> > 
+> > 	readahead size		throughput
+> > 		   16k           35.5 MB/s
+> > 		   32k           54.3 MB/s
+> > 		   64k           64.1 MB/s
+> > 		  128k           70.5 MB/s
+> > 		  256k           74.6 MB/s
+> > rsize ==>	  512k           77.4 MB/s
+> > 		 1024k           85.5 MB/s
+> > 		 2048k           86.8 MB/s
+> > 		 4096k           87.9 MB/s
+> > 		 8192k           89.0 MB/s
+> > 		16384k           87.7 MB/s
+> > 
+> > So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
+> > can already get near full NFS bandwidth.
+> > 
+> > The test script is:
+> > 
+> > #!/bin/sh
+> > 
+> > file=/mnt/sparse
+> > BDI=0:15
+> > 
+> > for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+> > do
+> > 	echo 3 > /proc/sys/vm/drop_caches
+> > 	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+> > 	echo readahead_size=${rasize}k
+> > 	dd if=$file of=/dev/null bs=4k count=1024000
+> > done
+> 
+> That's doing a cached read out of the server cache, right? You
 
+It does not involve disk IO at least. (The sparse file dataset is
+larger than server cache.)
 
-already in legacy_pic
+> might find the results are different if the server has to read the
+> file from disk. I would expect reads from the server cache not
+> to require much readahead as there is no IO latency on the server
+> side for the readahead to hide....
 
-Singed-off-by: Yinghai Lu <yinghai@kernel.org>
+Sure the result will be different when disk IO is involved.
+In this case I would expect the server admin to setup the optimal
+readahead size for the disk(s).
 
----
- arch/x86/include/asm/irq.h |    1 -
- arch/x86/kernel/irqinit.c  |    7 ++-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
+It sounds silly to have
 
-Index: linux-2.6/arch/x86/include/asm/irq.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/irq.h
-+++ linux-2.6/arch/x86/include/asm/irq.h
-@@ -48,6 +48,5 @@ extern DECLARE_BITMAP(used_vectors, NR_V
- extern int vector_used_by_percpu_irq(unsigned int vector);
- 
- extern void init_ISA_irqs(void);
--extern int nr_legacy_irqs;
- 
- #endif /* _ASM_X86_IRQ_H */
-Index: linux-2.6/arch/x86/kernel/irqinit.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit.c
-+++ linux-2.6/arch/x86/kernel/irqinit.c
-@@ -99,9 +99,6 @@ int vector_used_by_percpu_irq(unsigned i
- 	return 0;
- }
- 
--/* Number of legacy interrupts */
--int nr_legacy_irqs __read_mostly = NR_IRQS_LEGACY;
--
- void __init init_ISA_irqs(void)
- {
- 	int i;
-@@ -114,7 +111,7 @@ void __init init_ISA_irqs(void)
- 	/*
- 	 * 16 old-style INTA-cycle interrupts:
- 	 */
--	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-+	for (i = 0; i < legacy_pic->nr_legacy_irqs; i++) {
- 		struct irq_desc *desc = irq_to_desc(i);
- 
- 		desc->status = IRQ_DISABLED;
-@@ -138,7 +135,7 @@ void __init init_IRQ(void)
- 	 * then this vector space can be freed and re-used dynamically as the
- 	 * irq's migrate etc.
- 	 */
--	for (i = 0; i < nr_legacy_irqs; i++)
-+	for (i = 0; i < legacy_pic->nr_legacy_irqs; i++)
- 		per_cpu(vector_irq, 0)[IRQ0_VECTOR + i] = i;
- 
- 	x86_init.irqs.intr_init();
+        client_readahead_size > server_readahead_size
+
+Thanks,
+Fengguang
