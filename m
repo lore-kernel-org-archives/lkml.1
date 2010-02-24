@@ -1,60 +1,236 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751515Ab0BXFUO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 00:20:14 -0500
-Received: from swm.pp.se ([212.247.200.143]:38527 "EHLO uplift.swm.pp.se"
+	id S1752235Ab0BXFUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:20:37 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32357 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327Ab0BXFUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 00:20:12 -0500
-Date: Wed, 24 Feb 2010 06:20:11 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: James Cloos <cloos@jhcloos.com>
-cc: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: disk/crypto performance regression 2.6.31 -> 2.6.32 (mmap
- problem?)
-In-Reply-To: <m37hq3id3h.fsf@lugabout.jhcloos.org>
-Message-ID: <alpine.DEB.1.10.1002240612400.12694@uplift.swm.pp.se>
-References: <alpine.DEB.1.10.1002191729220.28940@uplift.swm.pp.se> <alpine.DEB.1.10.1002221337170.28940@uplift.swm.pp.se> <20100223044818.GD22370@discord.disaster> <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se> <20100223133219.GB16175@discord.disaster>
- <alpine.DEB.1.10.1002232138021.12694@uplift.swm.pp.se> <20100223224111.GC16175@discord.disaster> <m37hq3id3h.fsf@lugabout.jhcloos.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
+	id S1751567Ab0BXFUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 00:20:32 -0500
+Message-ID: <4B84B7F0.7090709@redhat.com>
+Date: Wed, 24 Feb 2010 13:24:00 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+References: <1266752533.3428.28.camel@Nokia-N900-42-11> <4B81EFD8.8020202@redhat.com> <201002221829.13987.opurdila@ixiacom.com>
+In-Reply-To: <201002221829.13987.opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010, James Cloos wrote:
+Octavian Purdila wrote:
+> 
+> Here is a new version of this patch which fixes both the comma and invalid 
+> value issues, please give it a try.
+> 
 
-> Based on a recent thread on the ext4 list I've started using deadline
-> rather than cfq on that disk.  There are some slowdowns on that disk's
-> other partition, but the overall throughput is significantly better than
-> using the combination of cfq, ext4 and barriers.
->
-> You might want to test out deadline and/or noop.
->
-> Cf:  /sys/block/*/queue/scheduler
+Sorry, it is even worse. :(
 
-I have been running deadline on the drives itself for years, I've tried 
-both with cfq and deadline in this case, and it doesn't really help.
+> [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+> 
+> The new function can be used to read/write large bitmaps via /proc. A
+> comma separated range format is used for compact output and input
+> (e.g. 1,3-4,10-10).
+> 
 
-Another question is what the recommended scheduler setup when it comes to 
-my different layers drive->md->crypto(dm)->lvm(dm). For now I have only 
-been changing scheduler to deadline on the drive layer.
 
-I guess the different layers doesn't really know that much about each 
-other? I can imagine a few different scenarios where one only wants to do 
-most of the scheduling on the lvm layer, and then wants to keep the 
-queueing to a minimum on the other layers and keep the queue as small as 
-possible there, so it can do the proper re-ordering.
+Writing "50000-50100" gets EINVAL, it should be success.
+Writing "50000,50100" fails too.
 
-Anyone has any thoughts to share on this? I don't have much experience 
-with this when it comes to block devices, I'm a network engineer and I'm 
-trying to use my experience in QoS/packet schedulers in different layers, 
-where for instance when one runs an IP QoS scheduler, one doesn't want a 
-lot of buffering on the underlying ATM layer, because it makes the IP 
-schedulers job much harder.
+Please, at least, do some basic testing.
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+Also some comments below.
+
+> Writing into the file will first reset the bitmap then update it
+> based on the given input.
+> 
+> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+> Cc: WANG Cong <amwang@redhat.com>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+
+Please resend the whole patchset, and update the doc in patch 3/3.
+
+
+> ---
+>  include/linux/sysctl.h |    2 +
+>  kernel/sysctl.c        |  134 
+> ++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 136 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+> index f66014c..7bb5cb6 100644
+> --- a/include/linux/sysctl.h
+> +++ b/include/linux/sysctl.h
+> @@ -980,6 +980,8 @@ extern int proc_doulongvec_minmax(struct ctl_table *, int,
+>  				  void __user *, size_t *, loff_t *);
+>  extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
+>  				      void __user *, size_t *, loff_t *);
+> +extern int proc_do_large_bitmap(struct ctl_table *, int,
+> +				void __user *, size_t *, loff_t *);
+>  
+>  /*
+>   * Register a set of sysctl names by calling register_sysctl_table
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 5259727..d8ea839 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -2635,6 +2635,140 @@ static int proc_do_cad_pid(struct ctl_table *table, 
+> int write,
+
+
+The above line is wrong, it should be a part of previous line.
+
+
+>  	return 0;
+>  }
+>  
+> +/**
+> + * proc_do_large_bitmap - read/write from/to a large bitmap
+> + * @table: the sysctl table
+> + * @write: %TRUE if this is a write to the sysctl file
+> + * @buffer: the user buffer
+> + * @lenp: the size of the user buffer
+> + * @ppos: file position
+> + *
+> + * The bitmap is stored at table->data and the bitmap length (in bits)
+> + * in table->maxlen.
+> + *
+> + * We use a range comma separated format (e.g. 1,3-4,10-10) so that
+> + * large bitmaps may be represented in a compact manner. Writing into
+> + * the file will clear the bitmap then update it with the given input.
+> + *
+> + * Returns 0 on success.
+> + */
+> +int proc_do_large_bitmap(struct ctl_table *table, int write,
+> +			 void __user *_buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	bool first = 1;
+> +	unsigned long *bitmap = (unsigned long *) table->data;
+> +	unsigned long bitmap_len = table->maxlen;
+> +	int left = *lenp, err = 0;
+
+
+'left' should be size_t.
+
+
+> +	char __user *buffer = (char __user *) _buffer;
+> +	char tr_a[] = { '-', ',', 0 }, tr_b[] = { ',', 0 }, c;
+> +
+> +
+> +	if (!bitmap_len || !left || (*ppos && !write)) {
+> +		*lenp = 0;
+> +		return 0;
+> +	}
+> +
+> +	if (write) {
+> +		err = proc_skip_wspace(&buffer, &left);
+> +		while (!err && left) {
+> +			unsigned long val_a, val_b;
+> +			bool neg;
+> +
+> +			err = proc_get_ulong(&buffer, &left, tr_a,
+> +					     &val_a, &neg, &c);
+> +			if (err)
+> +				break;
+> +
+> +			if (val_a >= bitmap_len || neg) {
+> +				err = -EINVAL;
+> +				break;
+> +			}
+> +
+> +			val_b = val_a;
+> +			if (left && c == '-') {
+> +				/* skip the - */
+> +				buffer++; left--;
+> +
+> +				err = proc_get_ulong(&buffer, &left, tr_b,
+> +						     &val_b, &neg, &c);
+> +				if (err)
+> +					break;
+> +
+> +				if (val_b >= bitmap_len || neg ||
+> +				    val_a > val_b) {
+> +					err = -EINVAL;
+> +					break;
+> +				}
+> +			}
+> +
+> +			if (left) {
+> +				err = proc_skip_wspace(&buffer, &left);
+> +				if (err)
+> +					break;
+> +				if (left) {
+> +					if (get_user(c, buffer)) {
+> +						err = -EFAULT;
+> +						break;
+> +					}
+> +					if (c != ',') {
+> +						err = -EINVAL;
+> +						break;
+> +					}
+> +					/* skip the , */
+> +					buffer++; left--;
+> +				}
+> +			}
+> +
+> +			if (first)
+> +				bitmap_clear(bitmap, 0, bitmap_len);
+> +
+> +			while (val_a <= val_b)
+> +				set_bit(val_a++, bitmap);
+> +
+> +			first = 0;
+> +		}
+> +		if (!err)
+> +			err = proc_skip_wspace(&buffer, &left);
+> +	} else {
+> +		unsigned long bit_a, bit_b = 0;
+> +
+> +		while (left) {
+> +			bit_a = find_next_bit(bitmap, bitmap_len, bit_b);
+> +			if (bit_a >= bitmap_len)
+> +				break;
+> +			bit_b = find_next_zero_bit(bitmap, bitmap_len,
+> +						   bit_a + 1) - 1;
+> +
+> +			err = proc_put_ulong(&buffer, &left, bit_a, 0, first,
+> +					     ',');
+> +			if (err)
+> +				break;
+> +			if (bit_a != bit_b) {
+> +				err = proc_put_char(&buffer, &left, '-');
+> +				if (err)
+> +					break;
+> +				err = proc_put_ulong(&buffer, &left, bit_b, 0,
+> +						     1, 0);
+> +				if (err)
+> +					break;
+> +			}
+> +
+> +			first = 0; bit_b++;
+> +		}
+> +		if (!err)
+> +			err = proc_put_char(&buffer, &left, '\n');
+> +	}
+> +
+> +	if (first) {
+> +		if (err)
+> +			return err;
+> +		bitmap_clear(bitmap, 0, bitmap_len);
+> +	}
+> +	*lenp -= left;
+> +	*ppos += *lenp;
+> +	return 0;
+> +}
+> +
+>  #else /* CONFIG_PROC_FS */
+>  
+>  int proc_dostring(struct ctl_table *table, int write,
+
