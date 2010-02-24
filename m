@@ -1,68 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418Ab0BXFVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 00:21:48 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41260 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751402Ab0BXFVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 00:21:46 -0500
-Date: Wed, 24 Feb 2010 16:21:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Buchbinder <adam.buchbinder@gmail.com>,
-       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
-       <netdev@vger.kernel.org>
-Subject: linux-next: manual merge of the trivial tree with the net tree
-Message-Id: <20100224162142.b0c572ed.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752629Ab0BXFWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:22:22 -0500
+Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:49519 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751148Ab0BXFWU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 00:22:20 -0500
+Date: Wed, 24 Feb 2010 16:22:15 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] nfs: use 2*rsize readahead size
+Message-ID: <20100224052215.GH16175@discord.disaster>
+References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster> <20100224041822.GB27459@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224041822.GB27459@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+On Wed, Feb 24, 2010 at 12:18:22PM +0800, Wu Fengguang wrote:
+> On Wed, Feb 24, 2010 at 11:29:34AM +0800, Dave Chinner wrote:
+> > On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
+> > > With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+> > > readahead size 512k*15=7680k is too large than necessary for typical
+> > > clients.
+> > > 
+> > > On a e1000e--e1000e connection, I got the following numbers
+> > > 
+> > > 	readahead size		throughput
+> > > 		   16k           35.5 MB/s
+> > > 		   32k           54.3 MB/s
+> > > 		   64k           64.1 MB/s
+> > > 		  128k           70.5 MB/s
+> > > 		  256k           74.6 MB/s
+> > > rsize ==>	  512k           77.4 MB/s
+> > > 		 1024k           85.5 MB/s
+> > > 		 2048k           86.8 MB/s
+> > > 		 4096k           87.9 MB/s
+> > > 		 8192k           89.0 MB/s
+> > > 		16384k           87.7 MB/s
+> > > 
+> > > So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
+> > > can already get near full NFS bandwidth.
+> > > 
+> > > The test script is:
+> > > 
+> > > #!/bin/sh
+> > > 
+> > > file=/mnt/sparse
+> > > BDI=0:15
+> > > 
+> > > for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+> > > do
+> > > 	echo 3 > /proc/sys/vm/drop_caches
+> > > 	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+> > > 	echo readahead_size=${rasize}k
+> > > 	dd if=$file of=/dev/null bs=4k count=1024000
+> > > done
+> > 
+> > That's doing a cached read out of the server cache, right? You
+> 
+> It does not involve disk IO at least. (The sparse file dataset is
+> larger than server cache.)
 
-Today's linux-next merge of the trivial tree got a conflict in
-drivers/net/typhoon.c between commit
-0bc88e4af07621bc4b84477374745d01a470e85d ("drivers/net/typhoon.c: Use (pr|
-netdev)_<level> macro helpers") from the net tree and commit
-a089377f29d3af0f62f3bdc6db0c5042513fc3f3 ("Fix misspelling of "truly" in
-a label") from the trivial tree.
+It still results in effectively the same thing: very low, consistent
+IO latency.
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
+Effectively all the test results show is that on a clean, low
+latency, uncongested network an unloaded NFS server that has no IO
+latency, a client only requires one 512k readahead block to hide 90%
+of the server read request latency.  I don't think this is a
+particularly good test to base a new default on, though.
+
+e.g. What is the result with a smaller rsize? When the server
+actually has to do disk IO?  When multiple clients are reading at
+the same time so the server may not detect accesses as sequential
+and issue readahead? When another client is writing to the server at
+the same time as the read and causing significant read IO latency at
+the server?
+
+What I'm trying to say is that while I agree with your premise that
+a 7.8MB readahead window is probably far larger than was ever
+intended, I disagree with your methodology and environment for
+selecting a better default value.  The default readahead value needs
+to work well in as many situations as possible, not just in perfect
+1:1 client/server environment.
+
+> > might find the results are different if the server has to read the
+> > file from disk. I would expect reads from the server cache not
+> > to require much readahead as there is no IO latency on the server
+> > side for the readahead to hide....
+> 
+> Sure the result will be different when disk IO is involved.
+> In this case I would expect the server admin to setup the optimal
+> readahead size for the disk(s).
+
+The default should do the right thing when disk IO is involved, as
+almost no-one has an NFS server that doesn't do IO.... ;)
+
+> It sounds silly to have
+> 
+>         client_readahead_size > server_readahead_size
+
+I don't think it is  - the client readahead has to take into account
+the network latency as well as the server latency. e.g. a network
+with a high bandwidth but high latency is going to need much more
+client side readahead than a high bandwidth, low latency network to
+get the same throughput. Hence it is not uncommon to see larger
+readahead windows on network clients than for local disk access.
+
+Also, the NFS server may not even be able to detect sequential IO
+patterns because of the combined access patterns from the clients,
+and so the only effective readahead might be what the clients
+issue....
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc drivers/net/typhoon.c
-index 38c2161,d1a8068..0000000
---- a/drivers/net/typhoon.c
-+++ b/drivers/net/typhoon.c
-@@@ -2098,8 -2111,9 +2098,8 @@@ typhoon_tx_timeout(struct net_device *d
-  	struct typhoon *tp = netdev_priv(dev);
-  
-  	if(typhoon_reset(tp->ioaddr, WaitNoSleep) < 0) {
- -		printk(KERN_WARNING "%s: could not reset in tx timeout\n",
- -					dev->name);
- +		netdev_warn(dev, "could not reset in tx timeout\n");
-- 		goto truely_dead;
-+ 		goto truly_dead;
-  	}
-  
-  	/* If we ever start using the Hi ring, it will need cleaning too */
-@@@ -2107,8 -2121,9 +2107,8 @@@
-  	typhoon_free_rx_rings(tp);
-  
-  	if(typhoon_start_runtime(tp) < 0) {
- -		printk(KERN_ERR "%s: could not start runtime in tx timeout\n",
- -					dev->name);
- +		netdev_err(dev, "could not start runtime in tx timeout\n");
-- 		goto truely_dead;
-+ 		goto truly_dead;
-          }
-  
-  	netif_wake_queue(dev);
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
