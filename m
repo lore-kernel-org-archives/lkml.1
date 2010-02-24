@@ -1,42 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055Ab0BXJM7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 04:12:59 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:39904 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754772Ab0BXJM5 (ORCPT
+	id S1755991Ab0BXJQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 04:16:27 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:54096 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755316Ab0BXJQ0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 04:12:57 -0500
-Subject: Re: [PATCH] windfarm: init sysfs attributes
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>
-In-Reply-To: <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <1266674493.18465.9.camel@jlt3.sipsolutions.net>
-	 <20100220150327.GG3000@hack>
-	 <1266678496.32309.1.camel@jlt3.sipsolutions.net>
-	 <20100220152010.GI3000@hack>
-	 <1266679687.17363.1.camel@jlt3.sipsolutions.net>
-	 <20100220154049.GM3000@hack>
-	 <1266680582.17363.7.camel@jlt3.sipsolutions.net>
-	 <1266979753.23523.1670.camel@pasglop>
-	 <1266996757.3903.0.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 24 Feb 2010 10:12:50 +0100
-Message-ID: <1267002770.3903.4.camel@jlt3.sipsolutions.net>
+	Wed, 24 Feb 2010 04:16:26 -0500
+Date: Wed, 24 Feb 2010 10:16:18 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: =?ISO-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be, seth.heasley@intel.com
+Subject: Re: [PATCH] iTCO_wdt: Don't double the requested timeout
+Message-ID: <20100224101618.39c3468b@marrow.netinsight.se>
+In-Reply-To: <4B840BC6.9090809@draigBrady.com>
+References: <20100223164019.60a6de1a@marrow.netinsight.se>
+	<4B840154.1010501@draigBrady.com>
+	<4B840BC6.9090809@draigBrady.com>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Btw, request_firmware also needs annotation.
+On Tue, 23 Feb 2010 17:09:26 +0000
+Pádraig Brady <P@draigBrady.com> wrote:
 
-johannes
+> Actually looking at that code I noticed that it wasn't
+> accounting for the timer counting down twice before reboot,
+> which I thought was the case for ICH4 at least.
+> The following is not even compiled, nor am I sure it
+> applies to TCO v2. Testing/info appreciated.
 
+I tested your change on our TCO v1-based board, and it doubles the time
+until the watchdog triggers. So:
 
+Tested-by: Simon Kagstrom <simon.kagstrom@netinsight.se>
