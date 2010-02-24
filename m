@@ -1,50 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473Ab0BXKXH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:23:07 -0500
-Received: from david.siemens.de ([192.35.17.14]:19739 "EHLO david.siemens.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756451Ab0BXKXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:23:05 -0500
-Message-ID: <4B84FDF5.5080106@siemens.com>
-Date: Wed, 24 Feb 2010 11:22:45 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	id S1756490Ab0BXKYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 05:24:21 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:48510 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756449Ab0BXKYU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 05:24:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=Wvse5YoC3p9Z8TNDayNg6PfWOLWXF4PnmD6f6yYtQifcZwnNGSLFS1SADVRx7LMj0m
+         /M2tH+lL+F2//8c6bBgey16vgGDoe0GlDyqrRxJwNVr7Qyko0jHiP+yjlFks9FdHlu5J
+         DzWMR5ghfgjdEYXyT/ftJix4iGgS66vORf7Z0=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 08/14] Regulators: max1586 - annotate probe and remove methods
+Date: Wed, 24 Feb 2010 02:16:08 -0800
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8; KDE/4.3.5; x86_64; ; )
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+References: <20100224073342.15964.8863.stgit@localhost.localdomain> <20100224073822.15964.51065.stgit@localhost.localdomain> <20100224100654.GD18896@rakim.wolfsonmicro.main>
+In-Reply-To: <20100224100654.GD18896@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
-       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
-References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com> <4B84FBDB.1070006@siemens.com> <4B84FCBB.8070702@redhat.com>
-In-Reply-To: <4B84FCBB.8070702@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002240216.08893.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> On 02/24/2010 12:13 PM, Jan Kiszka wrote:
->>    
->>> I see.  Won't we hit the same issue when we call pic functions from
->>> atomic context during the guest entry sequence?
->>>
->>>      
->> If there are such call paths, for sure. What concrete path(s) do you
->> have in mind?
->>
->>    
+Hi Mark,
+
+On Wednesday 24 February 2010 02:06:55 am Mark Brown wrote:
+> On Tue, Feb 23, 2010 at 11:38:23PM -0800, Dmitry Torokhov wrote:
+> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 > 
-> vcpu_enter_guest() -> inject_pending_event() -> 
-> kvm_cpu_{has,get}_interrupt() -> various pic functions if you're unlucky.
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> >  	.driver		= {
+> >  		.name	= "max1586",
+> > +		.owner	= THIS_MODULE,
+> >  	},
+> 
+> Note that a large number of your patches introduce this change and none
+> of them note it in the changelog...
+> 
 
-But do they kick anyone or just check/pull information? Never saw any
-warnings during my tests last year (granted: with older -rt and kvm
-versions).
+Thanks for reviewing the lot.
 
-Jan
+Yes, I quite often list only most important changes in the log, and just
+throw stuff like this in because I prefer to work on driver by driver
+basis and splitting everything up produce twice as many patches. I will
+try to be more detailed in my future submissions. 
 
 -- 
-Siemens AG, Corporate Technology, CT T DE IT 1
-Corporate Competence Center Embedded Linux
+Dmitry
