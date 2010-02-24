@@ -1,89 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751175Ab0BXFMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 00:12:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57044 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796Ab0BXFMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 00:12:17 -0500
-Message-ID: <4B84B52A.1000005@infradead.org>
-Date: Wed, 24 Feb 2010 02:12:10 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1751515Ab0BXFUO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:20:14 -0500
+Received: from swm.pp.se ([212.247.200.143]:38527 "EHLO uplift.swm.pp.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327Ab0BXFUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 00:20:12 -0500
+Date: Wed, 24 Feb 2010 06:20:11 +0100 (CET)
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+To: James Cloos <cloos@jhcloos.com>
+cc: Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: disk/crypto performance regression 2.6.31 -> 2.6.32 (mmap
+ problem?)
+In-Reply-To: <m37hq3id3h.fsf@lugabout.jhcloos.org>
+Message-ID: <alpine.DEB.1.10.1002240612400.12694@uplift.swm.pp.se>
+References: <alpine.DEB.1.10.1002191729220.28940@uplift.swm.pp.se> <alpine.DEB.1.10.1002221337170.28940@uplift.swm.pp.se> <20100223044818.GD22370@discord.disaster> <alpine.DEB.1.10.1002230820110.12694@uplift.swm.pp.se> <20100223133219.GB16175@discord.disaster>
+ <alpine.DEB.1.10.1002232138021.12694@uplift.swm.pp.se> <20100223224111.GC16175@discord.disaster> <m37hq3id3h.fsf@lugabout.jhcloos.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Organization: People's Front Against WWW
 MIME-Version: 1.0
-To: Tobias Lorenz <tobias.lorenz@gmx.net>
-CC: Roel Kluin <roel.kluin@gmail.com>, linux-media@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] radio-si470x-common: -EINVAL overwritten in si470x_vidioc_s_tuner()
-References: <4B69D2F5.2050100@gmail.com> <201002032252.36514.tobias.lorenz@gmx.net> <4B6A242C.8060104@infradead.org> <201002182050.41968.tobias.lorenz@gmx.net>
-In-Reply-To: <201002182050.41968.tobias.lorenz@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Lorenz wrote:
-> Hello Mauro,
-> 
->>> no, the default value of retval makes no difference to the function.
->>>
->>> Retval is set by si470x_disconnect_check and si470x_set_register.
->>> After each call, retval is checked.
->>> There is no need to reset it passed.
-> 
->> You may just do then:
->>
->> 	int retval = si470x_disconnect_check(radio);
-> 
-> In all other set/get functions of v4l2_ioctl_ops in the driver, I just set the default value of retval to 0.
-> To be identical in si470x_vidioc_s_tuner, I modified the patch to the one below.
-> I already pushed this and another cosmetic patch into mercurial:
-> 
-> http://linuxtv.org/hg/~tlorenz/v4l-dvb/rev/72a2f38d5956
-See comment bellow.
+On Tue, 23 Feb 2010, James Cloos wrote:
 
+> Based on a recent thread on the ext4 list I've started using deadline
+> rather than cfq on that disk.  There are some slowdowns on that disk's
+> other partition, but the overall throughput is significantly better than
+> using the combination of cfq, ext4 and barriers.
+>
+> You might want to test out deadline and/or noop.
+>
+> Cf:  /sys/block/*/queue/scheduler
 
-> http://linuxtv.org/hg/~tlorenz/v4l-dvb/rev/3efd5d32a618
-Applied.
+I have been running deadline on the drives itself for years, I've tried 
+both with cfq and deadline in this case, and it doesn't really help.
 
-> 
-> Mauro, can you pull them?
+Another question is what the recommended scheduler setup when it comes to 
+my different layers drive->md->crypto(dm)->lvm(dm). For now I have only 
+been changing scheduler to deadline on the drive layer.
 
-Tobias, next time or send one patch per email or send me a pull request.
+I guess the different layers doesn't really know that much about each 
+other? I can imagine a few different scenarios where one only wants to do 
+most of the scheduling on the lvm layer, and then wants to keep the 
+queueing to a minimum on the other layers and keep the queue as small as 
+possible there, so it can do the proper re-ordering.
 
-> 
-> Bye,
-> Tobias
-> 
-> --- a/linux/drivers/media/radio/si470x/radio-si470x-common.c	Thu Feb 11 23:11:30 2010 -0200
-> +++ b/linux/drivers/media/radio/si470x/radio-si470x-common.c	Thu Feb 18 20:31:33 2010 +0100
-> @@ -748,7 +748,7 @@
->  		struct v4l2_tuner *tuner)
->  {
->  	struct si470x_device *radio = video_drvdata(file);
-> -	int retval = -EINVAL;
-> +	int retval = 0;
->  
->  	/* safety checks */
->  	retval = si470x_disconnect_check(radio);
-
-This really doesn't make any sense. Just do:
-
-	int retval = i470x_disconnect_check(radio);
-
-or
-	int retval;
-
-	retval = i470x_disconnect_check(radio);
-
-
+Anyone has any thoughts to share on this? I don't have much experience 
+with this when it comes to block devices, I'm a network engineer and I'm 
+trying to use my experience in QoS/packet schedulers in different layers, 
+where for instance when one runs an IP QoS scheduler, one doesn't want a 
+lot of buffering on the underlying ATM layer, because it makes the IP 
+schedulers job much harder.
 
 -- 
-
-Cheers,
-Mauro
+Mikael Abrahamsson    email: swmike@swm.pp.se
