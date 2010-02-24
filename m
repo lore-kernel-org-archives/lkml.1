@@ -1,71 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035Ab0BXUWF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:22:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44392 "EHLO ogre.sisk.pl"
+	id S1758048Ab0BXUWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:22:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35128 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758018Ab0BXUV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:21:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Moore, Robert" <robert.moore@intel.com>
-Subject: Re: [RFC][PATCH] ACPI: Eliminate race conditions related to removing event handlers
-Date: Wed, 24 Feb 2010 21:22:20 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Lin, Ming M" <ming.m.lin@intel.com>
-References: <201002210151.01159.rjw@sisk.pl> <4911F71203A09E4D9981D27F9D83085859B327F4@orsmsx503.amr.corp.intel.com>
-In-Reply-To: <4911F71203A09E4D9981D27F9D83085859B327F4@orsmsx503.amr.corp.intel.com>
+	id S1758038Ab0BXUWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:22:11 -0500
+Date: Wed, 24 Feb 2010 21:20:31 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Samu Onkalo <samu.p.onkalo@nokia.com>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] workqueues: change cancel_work_sync() to clear
+	work->data
+Message-ID: <20100224202031.GA26987@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002242122.20435.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 February 2010, Moore, Robert wrote:
-> 
-> Rafael,
-> 
-> I've got some issues with this design.
-> 
-> First of all, are the two interfaces, acpi_remove_notify_handler() and
-> acpi_remove_gpe_handler(), really being used in such a way to require such
-> synchronization?
+In short: change cancel_work_sync(work) to mark this work as "never
+queued" upon return.
 
-I had a problem with that when I was trying to implement adding more than one
-system notify handler per device at the PCI level.  Specifically, I was trying
-to create an extra layer of notify objects to be used by the PCI layer for
-installing ACPI system notify handlers such that every PCI device had one
-handler that might handle wakeup notifications as well as hotplug
-notifications.  That didn't work, because I needed to remove a notify object
-from memory after calling acpi_remove_notify_handler() for the handler
-associated with it and I was unable to tell whether that was safe.
+When cancel_work_sync(work) succeeds, we know that this work can't be
+queued or running, and since we own WORK_STRUCT_PENDING nobody can change
+the bits in work->data under us. This means we can also clear the "cwq"
+part along with _PENDING bit lockless before return, unless the work is
+queued nobody can assume get_wq_data() is stable even under cwq->lock.
 
-The patch at http://patchwork.kernel.org/patch/80104/ solved this issue for me
-(BTW, you told me you'd have a look at this one :-)), but I think it generally
-is good to know a handler is not being executed after
-acpi_remove_notify_handler() or acpi_remove_gpe_handler() has been called
-for it.
+This change can speedup the subsequent cancel/flush requests, and as
+Dmitry pointed out this simplifies the usage of work_struct's which
+can be queued on different workqueues. Consider this pseudo code from
+the input subsystem:
 
-> Is there any way to limit their use to times where it is known that no
-> handlers will be executing?
+	struct workqueue_struct *WQ;
+	struct work_struct *WORK;
 
-I don't think this is generally possible.  Since the event handlers are called
-from a workqueue, we can't really guarantee any synchronization between them
-and the other threads unless we use a mechanism that will enforce it.
+	for (;;) {
+		WQ = create_workqueue();
+		...
+		if (condition())
+			queue_work(WQ, WORK);
+		...
+		cancel_work_sync(WORK);
+		destroy_workqueue(WQ);
+	}
+
+If condition() returns T and then F, cancel_work_sync() will crash the
+kernel because WORK->data still points to the already destroyed workqueue.
+With this patch the code like above becomes correct.
+
+Suggested-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ kernel/workqueue.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+--- wq/kernel/workqueue.c~1_CANCEL_CLEAR_WQ	2010-02-24 20:43:32.000000000 +0100
++++ wq/kernel/workqueue.c	2010-02-24 20:55:53.000000000 +0100
+@@ -229,6 +229,16 @@ static inline void set_wq_data(struct wo
+ 	atomic_long_set(&work->data, new);
+ }
  
-> In addition, I'm afraid that this whole "events" mechanism, with an interface
-> to wait for event completion, and now the concept of adding "barriers" to the
-> event queue, is much too OS-specific for the core ACPICA code.
++/*
++ * Clear WORK_STRUCT_PENDING and the workqueue on which it was queued.
++ */
++static inline void clear_wq_data(struct work_struct *work)
++{
++	unsigned long flags = *work_data_bits(work) &
++				(1UL << WORK_STRUCT_STATIC);
++	atomic_long_set(&work->data, flags);
++}
++
+ static inline
+ struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
+ {
+@@ -671,7 +681,7 @@ static int __cancel_work_timer(struct wo
+ 		wait_on_work(work);
+ 	} while (unlikely(ret < 0));
+ 
+-	work_clear_pending(work);
++	clear_wq_data(work);
+ 	return ret;
+ }
+ 
 
-OK, I'm not going to insist.  However, I think that
-acpi_os_wait_events_complete() should be called before we try to acquire
-ACPI_MTX_EVENTS for the first time, because dropping it "temporarily" just in
-order to call acpi_os_wait_events_complete() really defeats the purpose of the
-locking.
-
-Rafael
