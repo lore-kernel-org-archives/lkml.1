@@ -1,63 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361Ab0BXHDy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:03:54 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:52609 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755261Ab0BXHDx (ORCPT
+	id S1755384Ab0BXHEP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:04:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47187
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755346Ab0BXHEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:03:53 -0500
-Date: Tue, 23 Feb 2010 23:03:49 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Bret Towe <magnade@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       reiserfs-devel@vger.kernel.org
-Subject: Re: reiserfs issue with 2.6.32.8
-In-Reply-To: <dda83e781002232131i53b59c8eu7192257fc4e4f3e0@mail.gmail.com>
-Message-ID: <alpine.DEB.2.01.1002232249440.28195@bogon.housecafe.de>
-References: <dda83e781002141023t2abe95b8w83f59d6f411f68a2@mail.gmail.com>  <alpine.DEB.2.01.1002142229470.28195@bogon.housecafe.de> <dda83e781002232131i53b59c8eu7192257fc4e4f3e0@mail.gmail.com>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/715YTZ5ZxA+nCTUbX4MLFYDIT2FN+KmjJXeR
- FUc0Ne1Y0zxwfVIeeIVD7HS4G20szhPfu/Gxs880leynuPpOLF
- 9vj13IosN5gh7l6/CwksA==
+	Wed, 24 Feb 2010 02:04:12 -0500
+Date: Tue, 23 Feb 2010 23:04:28 -0800 (PST)
+Message-Id: <20100223.230428.71578656.davem@davemloft.net>
+To: mst@redhat.com
+Cc: gleb@redhat.com, rusty@rustcorp.com.au, kvm@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, markmc@redhat.com, herbert.xu@redhat.com,
+       quintela@redhat.com, dlaor@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100224053737.GB27806@redhat.com>
+References: <20100223173952.GC9834@redhat.com>
+	<20100223.144235.08984181.davem@davemloft.net>
+	<20100224053737.GB27806@redhat.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010 at 21:31, Bret Towe wrote:
-> ok attached is strace log of cp on 2.6.32.9
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Wed, 24 Feb 2010 07:37:37 +0200
 
-I've run cp through strace as well (copying something from an XFS 
-partition to a reiserfs partition, I guess that's what you did too), and 
-noticed a small difference at the end:
+> Dave, so while Rusty's on vacation, what's the best way to get vhost
+> infrastructure fixes in? Are you ok with getting pull requests and
+> merging them into net-next?  That should keep the clutter in your inbox
+> to the minimum.
+> 
+> Of course network changes would still go the usual way.
 
-< open("/home/foo/1", O_RDONLY)          = 3
-< fstat(3, {st_mode=S_IFREG|0640, st_size=755, ...}) = 0
-< open("2", O_WRONLY|O_CREAT|O_EXCL, 0640) = 4         
-
-While your cp(1) did:
-
-> open("downloads/[DB]_Bleach_258_[27104F7A].avi", O_RDONLY) = 3
-> fstat(3, {st_mode=S_IFREG|0644, st_size=178308328, ...}) = 0
-> open("/mdhd/media/Episodes/unwatched/[DB]_Bleach_258_[27104F7A].avi", O_WRONLY|O_CREAT|O_EXCL, 0644) = -1 EINVAL (Invalid argument)
-
-
-And open(2) will return -EINVAL when:
-   - The implementation does not support synchronised I/O for this file. 
-   - The value of the oflag argument is not valid.
-
-As we're not passing O_SYNC, it's the latter, if I read this correctly. Which
-still doesn't explain *why* (the filesystem?) returns "invalid flag". 
-
-> now I've had a hd drop out of raid (running checks on it atm)
-
-Hm, maybe it's all hardware related after all, let's see what these checks 
-turn up. Strange though, that nothing gets reported in dmesg...
-
-Christian.
--- 
-BOFH excuse #159:
-
-Stubborn processes
+Well, who is providing oversight of vhost work while he's
+gone?  Has he, implicitly or explicitly, appointed a maintainer
+while he's away?
