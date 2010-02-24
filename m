@@ -1,104 +1,322 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298Ab0BXQXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 11:23:22 -0500
-Received: from mail1.slb.deg.dub.stisp.net ([84.203.253.98]:6224 "HELO
-	mail1.slb.deg.dub.stisp.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757270Ab0BXQXV (ORCPT
+	id S1757313Ab0BXQXv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 11:23:51 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:46611 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757265Ab0BXQXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 11:23:21 -0500
-Message-ID: <4B855140.7030408@draigBrady.com>
-Date: Wed, 24 Feb 2010 16:18:08 +0000
-From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Wed, 24 Feb 2010 11:23:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=x/dunfCFY93YZXoVS9NynK7vejkgs6ZW6r7uv0LPGFeOtGw8VIiR+gKPJC/Qdvx9Se
+         23n4EsmcrdMhMamqx35gdX6+SLY4+JhlLettiby3cqvsQY/CWE6fJUcQQ6iZTXlArXhP
+         26NTQSwM0KuuyLA0a2o1d7p9W+RsXnmGca2eA=
 MIME-Version: 1.0
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-CC: linux-kernel@vger.kernel.org, wim@iguana.be, seth.heasley@intel.com
-Subject: Re: [PATCH] iTCO_wdt: Don't double the requested timeout
-References: <20100223164019.60a6de1a@marrow.netinsight.se>	<4B840154.1010501@draigBrady.com>	<4B840BC6.9090809@draigBrady.com> <20100224101618.39c3468b@marrow.netinsight.se>
-In-Reply-To: <20100224101618.39c3468b@marrow.netinsight.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <201002232213.56455.rjw@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	 <201002222017.55588.rjw@sisk.pl>
+	 <9b2b86521002230624g20661564mc35093ee0423ff77@mail.gmail.com>
+	 <201002232213.56455.rjw@sisk.pl>
+Date: Wed, 24 Feb 2010 16:23:46 +0000
+Message-ID: <9b2b86521002240823t126d5ad8nbd292da0f4090e6c@mail.gmail.com>
+Subject: Re: s2disk hang update
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux MM <linux-mm@kvack.org>
+Content-Type: multipart/mixed; boundary=0015174be29e40ac7c04805b177c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/02/10 09:16, Simon Kagstrom wrote:
-> On Tue, 23 Feb 2010 17:09:26 +0000
-> Pádraig Brady<P@draigBrady.com>  wrote:
+--0015174be29e40ac7c04805b177c
+Content-Type: text/plain; charset=ISO-8859-1
+
+On 2/23/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 23 February 2010, Alan Jenkins wrote:
+>> On 2/22/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Monday 22 February 2010, Alan Jenkins wrote:
+>> >> Rafael J. Wysocki wrote:
+>> >> > On Friday 19 February 2010, Alan Jenkins wrote:
+>> >> >
+>> >> >> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >>
+>> >> >>> On Thursday 18 February 2010, Alan Jenkins wrote:
+>> >> >>>
+>> >> >>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >>>>
+>> >> >>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
+>> >> >>>>>
+>> >> >>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >>>>>>
+>> >> >>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
+>> >> >>>>>>>
+>> >> >>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+>> >> >>>>>>>> wrote:
+>> >> >>>>>>>>
+>> >> >>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> >>>>>>>>>
+>> >> >>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
+>> >> >>>>>>>>>>
+>> >> >>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too
+>> >> >>>>>>>>>>> many
+>> >> >>>>>>>>>>> applications.  The first hibernation fails with "not enough
+>> >> >>>>>>>>>>> swap"
+>> >> >>>>>>>>>>> as
+>> >> >>>>>>>>>>> expected, but the second or third attempt hangs (with the
+>> >> >>>>>>>>>>> same
+>> >> >>>>>>>>>>> backtrace
+>> >> >>>>>>>>>>> as before).
+>> >> >>>>>>>>>>>
+>> >> >>>>>>>>>>> The patch definitely helps though.  Without the patch, I
+>> >> >>>>>>>>>>> see a
+>> >> >>>>>>>>>>> hang
+>> >> >>>>>>>>>>> the
+>> >> >>>>>>>>>>> first time I try to hibernate with too many applications
+>> >> >>>>>>>>>>> running.
+>> >> >>>>>>>>>>>
+>> >> >>>>>>>>>> Well, I have an idea.
+>> >> >>>>>>>>>>
+>> >> >>>>>>>>>> Can you try to apply the appended patch in addition and see
+>> >> >>>>>>>>>> if
+>> >> >>>>>>>>>> that
+>> >> >>>>>>>>>> helps?
+>> >> >>>>>>>>>>
+>> >> >>>>>>>>>> Rafael
+>> >> >>>>>>>>>>
+>> >> >>>>>>>>> It doesn't seem to help.
+>> >> >>>>>>>>>
+>> >> >>>>>>>> To be clear: It doesn't stop the hang when I hibernate with
+>> >> >>>>>>>> too
+>> >> >>>>>>>> many
+>> >> >>>>>>>> applications.
+>> >> >>>>>>>>
+>> >> >>>>>>>> It does stop the same hang in a different case though.
+>> >> >>>>>>>>
+>> >> >>>>>>>> 1. boot with init=/bin/bash
+>> >> >>>>>>>> 2. run s2disk
+>> >> >>>>>>>> 3. cancel the s2disk
+>> >> >>>>>>>> 4. repeat steps 2&3
+>> >> >>>>>>>>
+>> >> >>>>>>>> With the patch, I can run 10s of iterations, with no hang.
+>> >> >>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(),
+>> >> >>>>>>>> as
+>> >> >>>>>>>> always).
+>> >> >>>>>>>>
+>> >> >>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no
+>> >> >>>>>>>> problem.
+>> >> >>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+>> >> >>>>>>>> allocation
+>> >> >>>>>>>> failure after a couple of iterations ("kthreadd: page
+>> >> >>>>>>>> allocation
+>> >> >>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the
+>> >> >>>>>>>> same
+>> >> >>>>>>>> stop_machine thread allocation failure that causes the hang.
+>> >> >>>>>>>>
+>> >> >>>>>>> Have you tested it alone or on top of the previous one?  If
+>> >> >>>>>>> you've
+>> >> >>>>>>> tested it
+>> >> >>>>>>> alone, please apply the appended one in addition to it and
+>> >> >>>>>>> retest.
+>> >> >>>>>>>
+>> >> >>>>>>> Rafael
+>> >> >>>>>>>
+>> >> >>>>>> I did test with both patches applied together -
+>> >> >>>>>>
+>> >> >>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation
+>> >> >>>>>> and
+>> >> >>>>>> resume
+>> >> >>>>>> 2. "reducing the number of pages that we're going to keep
+>> >> >>>>>> preallocated
+>> >> >>>>>> by
+>> >> >>>>>> 20%"
+>> >> >>>>>>
+>> >> >>>>> In that case you can try to reduce the number of preallocated
+>> >> >>>>> pages
+>> >> >>>>> even
+>> >> >>>>> more,
+>> >> >>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
+>> >> >>>>>
+>> >> >>>> It still hangs if I try to hibernate a couple of times with too
+>> >> >>>> many
+>> >> >>>> applications.
+>> >> >>>>
+>> >> >>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit
+>> >> >>> system and
+>> >> >>> how much RAM is there in the box?
+>> >> >>>
+>> >> >>> Rafael
+>> >> >>>
+>> >> >> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen"
+>> >> >> SSD.
+>> >> >>
+>> >> >
+>> >> > Hmm.  I'd try to make  free_unnecessary_pages() free all of the
+>> >> > preallocated
+>> >> > pages and see what happens.
+>> >> >
+>> >>
+>> >> It still hangs in hibernation_snapshot() / disable_nonboot_cpus().
+>> >> After apparently freeing over 400Mb / 100,000 pages of preallocated
+>> >> ram.
+>> >>
+>> >>
+>> >>
+>> >> There is a change which I missed before.  When I applied your first
+>> >> patch ("Force GFP_NOIO during suspend" etc.), it did change the hung
+>> >> task backtraces a bit.  I don't know if it tells us anything.
+>> >>
+>> >> Without the patch, there were two backtraces.  The first backtrace
+>> >> suggested a problem allocating pages for a kernel thread (at
+>> >> copy_process() / try_to_free_pages()).  The second showed that this
+>> >> problem was blocking s2disk (at hibernation_snapshot() /
+>> >> disable_nonboot_cpus() / stop_machine_create()).
+>> >>
+>> >> With the GFP_NOIO patch, I see only the s2disk backtrace.
+>> >
+>> > Can you please post this backtrace?
+>>
+>> Sure.  It's rather like the one I posted before, except
+>>
+>> a) it only shows the one hung task (s2disk)
+>> b) this time I had lockdep enabled
+>> c) this time most of the lines don't have question marks.
 >
->> Actually looking at that code I noticed that it wasn't
->> accounting for the timer counting down twice before reboot,
->> which I thought was the case for ICH4 at least.
->> The following is not even compiled, nor am I sure it
->> applies to TCO v2. Testing/info appreciated.
+> Well, it still looks like we're waiting for create_workqueue_thread() to
+> return, which probably is trying to allocate memory for the thread
+> structure.
 >
-> I tested your change on our TCO v1-based board, and it doubles the time
-> until the watchdog triggers. So:
+> My guess is that the preallocated memory pages freed by
+> free_unnecessary_pages() go into a place from where they cannot be taken for
+> subsequent NOIO allocations.  I have no idea why that happens though.
+>
+> To test that theory you can try to change GFP_IOFS to GFP_KERNEL in the
+> calls to clear_gfp_allowed_mask() in kernel/power/hibernate.c (and in
+> kernel/power/suspend.c for completness).
 
-Well it should be halving the timeout :)
-I amended the patch and Simon retested to verify
-that it now honors the requested timeout.
+Effectively forcing GFP_NOWAIT, so the allocation should fail instead
+of hanging?
 
-I also checked an ICH7 box here and it doesn't
-seem to need the adjustment, so I've amended the patch accordingly.
+It seems to stop the hang, but I don't see any other difference - the
+hibernation process isn't stopped earlier, and I don't get any new
+kernel messages about allocation failures.  I wonder if it's because
+GFP_NOWAIT triggers ALLOC_HARDER.
 
-Wim, please apply, thanks...
+I have other evidence which argues for your theory:
 
+[ successful s2disk, with forced NOIO (but not NOWAIT), and test code
+as attached ]
 
-iTCO_wdt: fix TCO V1 timeout values and limits
+ Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+ 1280 GFP_NOWAIT allocations of order 0 are possible
+ 640 GFP_NOWAIT allocations of order 1 are possible
+ 320 GFP_NOWAIT allocations of order 2 are possible
 
-For TCO V1 devices the programmed timeout was twice too long
-because the fact that the TCO V1 timer needs to count down
-twice before triggering the watchdog, wasn't accounted for.
-Also the timeout values in the module description and error
-message were clarified.
+[ note - 1280 pages is the maximum test allocation used here.  The
+test code is only accurate when talking about smaller numbers of free
+pages ]
 
-Signed-off-by: Pádraig Brady <P@draigBrady.com>
-Tested-by: Simon Kagstrom <simon.kagstrom@netinsight.se>
+ 1280 GFP_KERNEL allocations of order 0 are possible
+ 640 GFP_KERNEL allocations of order 1 are possible
+ 320 GFP_KERNEL allocations of order 2 are possible
 
---- a/iTCO_wdt.c        2010-02-24 13:43:54.815676860 +0000
-+++ b/iTCO_wdt.c        2010-02-24 15:18:33.341640363 +0000
-@@ -304,8 +304,8 @@
-  #define WATCHDOG_HEARTBEAT 30  /* 30 sec default heartbeat */
-  static int heartbeat = WATCHDOG_HEARTBEAT;  /* in seconds */
-  module_param(heartbeat, int, 0);
--MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. "
--       "(2<heartbeat<39 (TCO v1) or 613 (TCO v2), default="
-+MODULE_PARM_DESC(heartbeat, "Watchdog timeout in seconds. "
-+       "(5..76 (TCO v1) or 3..614 (TCO v2), default="
-                                 __MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
+ PM: Preallocating image memory...
+ 212 GFP_NOWAIT allocations of order 0 are possible
+ 102 GFP_NOWAIT allocations of order 1 are possible
+ 50 GFP_NOWAIT allocations of order 2 are possible
 
-  static int nowayout = WATCHDOG_NOWAYOUT;
-@@ -321,8 +321,12 @@
-  static inline unsigned int seconds_to_ticks(int seconds)
-  {
-         /* the internal timer is stored as ticks which decrement
--        * every 0.6 seconds */
--       return (seconds * 10) / 6;
-+        * every 0.6 seconds. For TCO v1 the timer counts down
-+        * twice before triggering the watchdog */
-+       if (iTCO_wdt_private.iTCO_version == 1)
-+               return (seconds * 5) / 6;
-+       else
-+               return (seconds * 10) / 6;
-  }
+ Freeing all 90083 preallocated pages
+ (and 0 highmem pages, out of 0)
+ 190 GFP_NOWAIT allocations of order 0 are possible
+ 102 GFP_NOWAIT allocations of order 1 are possible
+ 50 GFP_NOWAIT allocations of order 2 are possible
+ 1280 GFP_KERNEL allocations of order 0 are possible
+ 640 GFP_KERNEL allocations of order 1 are possible
+ 320 GFP_KERNEL allocations of order 2 are possible
+ done (allocated 90083 pages)
 
-  static void iTCO_wdt_set_NO_REBOOT_bit(void)
-@@ -756,9 +760,14 @@
-            if not reset to the default */
-         if (iTCO_wdt_set_heartbeat(heartbeat)) {
-                 iTCO_wdt_set_heartbeat(WATCHDOG_HEARTBEAT);
-+               int tco_min=5; int tco_max=76; /* TCO V1 */
-+               if (iTCO_wdt_private.iTCO_version == 2) {
-+                       tco_min=3; tco_max=614;
-+               }
-                 printk(KERN_INFO PFX
--                       "heartbeat value must be 2 < heartbeat < 39 (TCO v1) "
--                               "or 613 (TCO v2), using %d\n", heartbeat);
-+                       "timeout value %d is not between %d and %d"
-+                       " inclusive, using %d\n",
-+                       heartbeat, tco_min, tco_max, WATCHDOG_HEARTBEAT);
-         }
+It looks like you're right and the freed pages are not accessible with
+GFP_NOWAIT for some reason.
 
-         ret = misc_register(&iTCO_wdt_miscdev);
+I also tried a number of test runs with too many applications, and saw this:
+
+Freeing all 104006 preallocated pages ...
+65 GFP_NOWAIT allocations of order 0 ...
+18 GFP_NOWAIT allocations of order 1 ...
+9 GFP_NOWAIT allocations of order 2 ...
+0 GFP_KERNEL allocations of order 0 are possible
+...
+Disabling nonboot cpus ...
+...
+PM: Hibernation image created
+Force enabled HPET at resume
+PM: early thaw of devices complete after ... msecs
+
+<hang, no backtrace visible even after 120 seconds>
+
+I'm not bothered by the new hang; the test code will inevitably have
+some side effects.  I'm not sure why GFP_KERNEL allocations would fail
+in this scenario though...  perhaps the difference is that we've
+swapped out the entire userspace so GFP_IO doesn't help.
+
+Regards
+Alan
+
+--0015174be29e40ac7c04805b177c
+Content-Type: text/x-patch; charset=US-ASCII; name="check-free.patch"
+Content-Disposition: attachment; filename="check-free.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file1
+
+ZGlmZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9oaWJlcm5hdGUuYyBiL2tlcm5lbC9wb3dlci9oaWJl
+cm5hdGUuYwppbmRleCBkYTUyODhlLi4yZTI0NWQ5IDEwMDY0NAotLS0gYS9rZXJuZWwvcG93ZXIv
+aGliZXJuYXRlLmMKKysrIGIva2VybmVsL3Bvd2VyL2hpYmVybmF0ZS5jCkBAIC0yNjIsNiArMjYy
+LDcgQEAgc3RhdGljIGludCBjcmVhdGVfaW1hZ2UoaW50IHBsYXRmb3JtX21vZGUpCiAJaWYgKGVy
+cm9yIHx8IGhpYmVybmF0aW9uX3Rlc3QoVEVTVF9QTEFURk9STSkpCiAJCWdvdG8gUGxhdGZvcm1f
+ZmluaXNoOwogCisJY2hlY2tfZnJlZShHRlBfTk9XQUlUKTsKIAllcnJvciA9IGRpc2FibGVfbm9u
+Ym9vdF9jcHVzKCk7CiAJaWYgKGVycm9yIHx8IGhpYmVybmF0aW9uX3Rlc3QoVEVTVF9DUFVTKQog
+CSAgICB8fCBoaWJlcm5hdGlvbl90ZXN0bW9kZShISUJFUk5BVElPTl9URVNUKSkKZGlmZiAtLWdp
+dCBhL2tlcm5lbC9wb3dlci9wb3dlci5oIGIva2VybmVsL3Bvd2VyL3Bvd2VyLmgKaW5kZXggNDZj
+NWEyNi4uZDIxNzhkYyAxMDA2NDQKLS0tIGEva2VybmVsL3Bvd2VyL3Bvd2VyLmgKKysrIGIva2Vy
+bmVsL3Bvd2VyL3Bvd2VyLmgKQEAgLTIzNiwzICsyMzYsNTMgQEAgc3RhdGljIGlubGluZSB2b2lk
+IHN1c3BlbmRfdGhhd19wcm9jZXNzZXModm9pZCkKIHsKIH0KICNlbmRpZgorCisvKiBBbiBlbXBp
+cmljYWwgY2hlY2sgb24gdGhlIG51bWJlciBvZiBmcmVlIHBhZ2VzICovCitzdGF0aWMgaW5saW5l
+IGludCBjaGVja19mcmVlX3BhZ2VzKGdmcF90IGdmcF9mbGFncywgY29uc3QgY2hhciAqZ2ZwX25h
+bWUsIGludCBvcmRlcikKK3sKKwlpbnQgcmV0OworCWludCBjb3VudCA9IDA7CisJdm9pZCAqZmly
+c3QgPSBOVUxMOworCXZvaWQgKipwID0gJmZpcnN0OworCXVuc2lnbmVkIGxvbmcgcGFnZTsKKwor
+CS8qIEFsbG9jYXRlIGZyZWUgcGFnZXMgaW50byBhIGxpbmtlZCBsaXN0LCBoZWFkZWQgYnkgImZp
+cnN0IiAqLworCXdoaWxlKGNvdW50IDwgKChQQUdFU19GT1JfSU8gKyBTUEFSRV9QQUdFUykgPj4g
+b3JkZXIpKSB7CisJCXBhZ2UgPSBfX2dldF9mcmVlX3BhZ2VzKGdmcF9mbGFnc3xfX0dGUF9OT1dB
+Uk4sIG9yZGVyKTsKKwkJaWYgKCFwYWdlKQorCQkJYnJlYWs7CisJCSpwID0gKHZvaWQgKilwYWdl
+OworCQlwID0gKHZvaWQgKiopcGFnZTsKKwkJY291bnQrKzsKKwl9CisJKnAgPSBOVUxMOworCisJ
+cmV0ID0gY291bnQ7CisJcHJpbnRrKEtFUk5fSU5GTworCQkiJWQgJXMgYWxsb2NhdGlvbnMgb2Yg
+b3JkZXIgJWQgYXJlIHBvc3NpYmxlXG4iLAorCQljb3VudCwgZ2ZwX25hbWUsIG9yZGVyKTsKKwor
+CS8qIEZyZWUgdGhlIHBhZ2VzIGFnYWluICovCisJcCA9IGZpcnN0OworCXdoaWxlKHApIHsKKwkJ
+cGFnZSA9ICh1bnNpZ25lZCBsb25nKSBwOworCQlwID0gKnA7CisJCWZyZWVfcGFnZXMocGFnZSwg
+b3JkZXIpOworCQljb3VudC0tOworCX0KKwlCVUdfT04oY291bnQgIT0gMCk7CisKKwlyZXR1cm4g
+cmV0OworfQorCitzdGF0aWMgaW5saW5lIHZvaWQgX19jaGVja19mcmVlKGdmcF90IGdmcF9mbGFn
+cywgY29uc3QgY2hhciAqZ2ZwX25hbWUpCit7CisJaW50IG9yZGVyOworCisJZm9yIChvcmRlciA9
+IDA7IG9yZGVyIDwgMzsgb3JkZXIrKykKKwkJaWYgKGNoZWNrX2ZyZWVfcGFnZXMoZ2ZwX2ZsYWdz
+LCBnZnBfbmFtZSwgb3JkZXIpIDw9IDApCisJCQlicmVhazsKK30KKworI2RlZmluZSBjaGVja19m
+cmVlKGZsYWdzKSBfX2NoZWNrX2ZyZWUoZmxhZ3MsICNmbGFncykKKwpkaWZmIC0tZ2l0IGEva2Vy
+bmVsL3Bvd2VyL3NuYXBzaG90LmMgYi9rZXJuZWwvcG93ZXIvc25hcHNob3QuYwppbmRleCAzNmNi
+MTY4Li42MDViN2I3IDEwMDY0NAotLS0gYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYworKysgYi9r
+ZXJuZWwvcG93ZXIvc25hcHNob3QuYwpAQCAtMTI2MSw2ICsxMjYxLDggQEAgaW50IGhpYmVybmF0
+ZV9wcmVhbGxvY2F0ZV9tZW1vcnkodm9pZCkKIAlzdHJ1Y3QgdGltZXZhbCBzdGFydCwgc3RvcDsK
+IAlpbnQgZXJyb3I7CiAKKwljaGVja19mcmVlKEdGUF9OT1dBSVQpOworCWNoZWNrX2ZyZWUoR0ZQ
+X0tFUk5FTCk7CiAJcHJpbnRrKEtFUk5fSU5GTyAiUE06IFByZWFsbG9jYXRpbmcgaW1hZ2UgbWVt
+b3J5Li4uICIpOwogCWRvX2dldHRpbWVvZmRheSgmc3RhcnQpOwogCkBAIC0xMzUwLDcgKzEzNTIs
+MTAgQEAgaW50IGhpYmVybmF0ZV9wcmVhbGxvY2F0ZV9tZW1vcnkodm9pZCkKIAkgKiBwYWdlcyBp
+biBtZW1vcnksIGJ1dCB3ZSBoYXZlIGFsbG9jYXRlZCBtb3JlLiAgUmVsZWFzZSB0aGUgZXhjZXNz
+aXZlCiAJICogb25lcyBub3cuCiAJICovCisJY2hlY2tfZnJlZShHRlBfTk9XQUlUKTsKIAlmcmVl
+X3VubmVjZXNzYXJ5X3BhZ2VzKCk7CisJY2hlY2tfZnJlZShHRlBfTk9XQUlUKTsKKwljaGVja19m
+cmVlKEdGUF9LRVJORUwpOwogCiAgb3V0OgogCWRvX2dldHRpbWVvZmRheSgmc3RvcCk7Cg==
+--0015174be29e40ac7c04805b177c--
