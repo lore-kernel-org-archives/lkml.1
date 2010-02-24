@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028Ab0BXUGl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:06:41 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:50948 "EHLO
+	id S1757969Ab0BXUFX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:05:23 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:63303 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757746Ab0BXUFF (ORCPT
+	with ESMTP id S1757743Ab0BXUFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:05:05 -0500
+	Wed, 24 Feb 2010 15:05:19 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulmck@linux.vnet.ibm.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
@@ -15,288 +15,338 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
        dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
        peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
        dhowells@redhat.com
-Subject: [PATCH 05/10] perf_event: __rcu annotations
-Date: Wed, 24 Feb 2010 21:04:01 +0100
-Message-Id: <1267041846-10469-6-git-send-email-arnd@arndb.de>
+Subject: [PATCH 03/10] cgroups: __rcu annotations
+Date: Wed, 24 Feb 2010 21:03:59 +0100
+Message-Id: <1267041846-10469-4-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 References: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 In-Reply-To: <20100223180127.GF6700@linux.vnet.ibm.com>
 References: <20100223180127.GF6700@linux.vnet.ibm.com>
-X-Provags-ID: V01U2FsdGVkX1+p9hsuXO029Ohib/+SQP4G/GLI2s/VE0a/SRi
- V60syytI8uN0EqKQWWBJb9egbmANWxs5/1HLJY8Amgakg4+Lr4
- UgR6FqBU2GM4c40kXH+CA==
+X-Provags-ID: V01U2FsdGVkX18h8y3UpQuix7UNQ3cjJf9iCV3D9zUl5zsD1RI
+ DW+2qbyJ5H+krHSjTKIq2YSWiVALnnlDJQJJBF7zPITSzf47Qi
+ UPj9s42WHxQyNd6F3dznA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/perf_event.h |   10 ++++----
- include/linux/sched.h      |    2 +-
- kernel/perf_event.c        |   52 ++++++++++++++++++++++----------------------
- 3 files changed, 32 insertions(+), 32 deletions(-)
+ include/linux/cgroup.h |    6 ++--
+ include/linux/sched.h  |    2 +-
+ kernel/cgroup.c        |   63 +++++++++++++++++++++++++----------------------
+ kernel/cpuset.c        |    2 +-
+ 4 files changed, 38 insertions(+), 35 deletions(-)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index a177698..c0d85e3 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -569,11 +569,11 @@ typedef void (*perf_overflow_handler_t)(struct perf_event *, int,
- struct perf_event {
- #ifdef CONFIG_PERF_EVENTS
- 	struct list_head		group_entry;
--	struct list_head		event_entry;
-+	struct rcu_list_head		event_entry;
- 	struct list_head		sibling_list;
- 	int				nr_siblings;
- 	struct perf_event		*group_leader;
--	struct perf_event		*output;
-+	struct perf_event __rcu		*output;
- 	const struct pmu		*pmu;
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 0008dee..832092d 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -66,7 +66,7 @@ struct cgroup_subsys_state {
  
- 	enum perf_event_active_state	state;
-@@ -634,7 +634,7 @@ struct perf_event {
- 	/* mmap bits */
- 	struct mutex			mmap_mutex;
- 	atomic_t			mmap_count;
--	struct perf_mmap_data		*data;
-+	struct perf_mmap_data __rcu	*data;
+ 	unsigned long flags;
+ 	/* ID for this css, if possible */
+-	struct css_id *id;
++	struct css_id __rcu *id;
+ };
  
- 	/* poll related */
- 	wait_queue_head_t		waitq;
-@@ -682,7 +682,7 @@ struct perf_event_context {
- 	struct mutex			mutex;
+ /* bits in struct cgroup_subsys_state flags field */
+@@ -190,7 +190,7 @@ struct cgroup {
+ 	struct list_head children;	/* my children */
  
- 	struct list_head		group_list;
--	struct list_head		event_list;
-+	struct rcu_list_head		event_list;
- 	int				nr_events;
- 	int				nr_active;
- 	int				is_active;
-@@ -700,7 +700,7 @@ struct perf_event_context {
- 	 * These fields let us detect when two contexts have both
- 	 * been cloned (inherited) from a common ancestor.
- 	 */
--	struct perf_event_context	*parent_ctx;
-+	struct perf_event_context	__rcu *parent_ctx;
- 	u64				parent_gen;
- 	u64				generation;
- 	int				pin_count;
+ 	struct cgroup *parent;		/* my parent */
+-	struct dentry *dentry;	  	/* cgroup fs entry, RCU protected */
++	struct dentry __rcu *dentry;	/* cgroup fs entry, RCU protected */
+ 
+ 	/* Private pointers for each registered subsystem */
+ 	struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT];
+@@ -486,7 +486,7 @@ static inline struct cgroup_subsys_state *cgroup_subsys_state(
+ static inline struct cgroup_subsys_state *task_subsys_state(
+ 	struct task_struct *task, int subsys_id)
+ {
+-	return rcu_dereference(task->cgroups->subsys[subsys_id]);
++	return rcu_dereference(task->cgroups)->subsys[subsys_id];
+ }
+ 
+ static inline struct cgroup* task_cgroup(struct task_struct *task,
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 52a33eb..f14d925 100644
+index 78efe7c..038e16f 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1502,7 +1502,7 @@ struct task_struct {
- 	struct futex_pi_state *pi_state_cache;
+@@ -1489,7 +1489,7 @@ struct task_struct {
  #endif
- #ifdef CONFIG_PERF_EVENTS
--	struct perf_event_context *perf_event_ctxp;
-+	struct perf_event_context __rcu *perf_event_ctxp;
- 	struct mutex perf_event_mutex;
- 	struct list_head perf_event_list;
+ #ifdef CONFIG_CGROUPS
+ 	/* Control Group info protected by css_set_lock */
+-	struct css_set *cgroups;
++	struct css_set __rcu *cgroups;
+ 	/* cg_list protected by css_set_lock and tsk->alloc_lock */
+ 	struct list_head cg_list;
  #endif
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 2ae7409..18701de 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -150,7 +150,7 @@ static void put_ctx(struct perf_event_context *ctx)
- {
- 	if (atomic_dec_and_test(&ctx->refcount)) {
- 		if (ctx->parent_ctx)
--			put_ctx(ctx->parent_ctx);
-+			put_ctx(__rcu_dereference(ctx->parent_ctx));
- 		if (ctx->task)
- 			put_task_struct(ctx->task);
- 		call_rcu(&ctx->rcu_head, free_ctx);
-@@ -160,7 +160,7 @@ static void put_ctx(struct perf_event_context *ctx)
- static void unclone_ctx(struct perf_event_context *ctx)
- {
- 	if (ctx->parent_ctx) {
--		put_ctx(ctx->parent_ctx);
-+		put_ctx(__rcu_dereference(ctx->parent_ctx));
- 		ctx->parent_ctx = NULL;
- 	}
- }
-@@ -1129,8 +1129,8 @@ static void __perf_event_sync_stat(struct perf_event *event,
- 	perf_event_update_userpage(next_event);
- }
- 
--#define list_next_entry(pos, member) \
--	list_entry(pos->member.next, typeof(*pos), member)
-+#define list_next_entry_rcu(pos, member) \
-+	list_entry_rcu(pos->member.next, typeof(*pos), member)
- 
- static void perf_event_sync_stat(struct perf_event_context *ctx,
- 				   struct perf_event_context *next_ctx)
-@@ -1142,10 +1142,10 @@ static void perf_event_sync_stat(struct perf_event_context *ctx,
- 
- 	update_context_time(ctx);
- 
--	event = list_first_entry(&ctx->event_list,
-+	event = list_first_entry_rcu(&ctx->event_list,
- 				   struct perf_event, event_entry);
- 
--	next_event = list_first_entry(&next_ctx->event_list,
-+	next_event = list_first_entry_rcu(&next_ctx->event_list,
- 					struct perf_event, event_entry);
- 
- 	while (&event->event_entry != &ctx->event_list &&
-@@ -1153,8 +1153,8 @@ static void perf_event_sync_stat(struct perf_event_context *ctx,
- 
- 		__perf_event_sync_stat(event, next_event);
- 
--		event = list_next_entry(event, event_entry);
--		next_event = list_next_entry(next_event, event_entry);
-+		event = list_next_entry_rcu(event, event_entry);
-+		next_event = list_next_entry_rcu(next_event, event_entry);
- 	}
- }
- 
-@@ -1173,7 +1173,7 @@ void perf_event_task_sched_out(struct task_struct *task,
- 				 struct task_struct *next, int cpu)
- {
- 	struct perf_cpu_context *cpuctx = &per_cpu(perf_cpu_context, cpu);
--	struct perf_event_context *ctx = task->perf_event_ctxp;
-+	struct perf_event_context *ctx = rcu_dereference(task->perf_event_ctxp);
- 	struct perf_event_context *next_ctx;
- 	struct perf_event_context *parent;
- 	struct pt_regs *regs;
-@@ -1187,7 +1187,7 @@ void perf_event_task_sched_out(struct task_struct *task,
- 
- 	rcu_read_lock();
- 	parent = rcu_dereference(ctx->parent_ctx);
--	next_ctx = next->perf_event_ctxp;
-+	next_ctx = rcu_dereference(next->perf_event_ctxp);
- 	if (parent && next_ctx &&
- 	    rcu_dereference(next_ctx->parent_ctx) == parent) {
- 		/*
-@@ -1206,8 +1206,8 @@ void perf_event_task_sched_out(struct task_struct *task,
- 			 * XXX do we need a memory barrier of sorts
- 			 * wrt to rcu_dereference() of perf_event_ctxp
- 			 */
--			task->perf_event_ctxp = next_ctx;
--			next->perf_event_ctxp = ctx;
-+			__rcu_assign_pointer(task->perf_event_ctxp, next_ctx);
-+			__rcu_assign_pointer(next->perf_event_ctxp, ctx);
- 			ctx->task = next;
- 			next_ctx->task = task;
- 			do_switch = 0;
-@@ -1329,7 +1329,7 @@ __perf_event_sched_in(struct perf_event_context *ctx,
- void perf_event_task_sched_in(struct task_struct *task, int cpu)
- {
- 	struct perf_cpu_context *cpuctx = &per_cpu(perf_cpu_context, cpu);
--	struct perf_event_context *ctx = task->perf_event_ctxp;
-+	struct perf_event_context *ctx = __rcu_dereference(task->perf_event_ctxp);
- 
- 	if (likely(!ctx))
- 		return;
-@@ -1470,7 +1470,7 @@ void perf_event_task_tick(struct task_struct *curr, int cpu)
- 		return;
- 
- 	cpuctx = &per_cpu(perf_cpu_context, cpu);
--	ctx = curr->perf_event_ctxp;
-+	ctx = rcu_dereference(curr->perf_event_ctxp);
- 
- 	perf_ctx_adjust_freq(&cpuctx->ctx);
- 	if (ctx)
-@@ -1501,7 +1501,7 @@ static void perf_event_enable_on_exec(struct task_struct *task)
- 	int enabled = 0;
- 
- 	local_irq_save(flags);
--	ctx = task->perf_event_ctxp;
-+	ctx = __rcu_dereference(task->perf_event_ctxp);
- 	if (!ctx || !ctx->nr_events)
- 		goto out;
- 
-@@ -1591,7 +1591,7 @@ __perf_event_init_context(struct perf_event_context *ctx,
- 	raw_spin_lock_init(&ctx->lock);
- 	mutex_init(&ctx->mutex);
- 	INIT_LIST_HEAD(&ctx->group_list);
--	INIT_LIST_HEAD(&ctx->event_list);
-+	INIT_LIST_HEAD_RCU(&ctx->event_list);
- 	atomic_set(&ctx->refcount, 1);
- 	ctx->task = task;
- }
-@@ -2366,7 +2366,7 @@ static void perf_mmap_data_free_rcu(struct rcu_head *rcu_head)
- 
- static void perf_mmap_data_release(struct perf_event *event)
- {
--	struct perf_mmap_data *data = event->data;
-+	struct perf_mmap_data *data = __rcu_dereference(event->data);
- 
- 	WARN_ON(atomic_read(&event->mmap_count));
- 
-@@ -2387,7 +2387,7 @@ static void perf_mmap_close(struct vm_area_struct *vma)
- 
- 	WARN_ON_ONCE(event->ctx->parent_ctx);
- 	if (atomic_dec_and_mutex_lock(&event->mmap_count, &event->mmap_mutex)) {
--		unsigned long size = perf_data_size(event->data);
-+		unsigned long size = perf_data_size(__rcu_dereference(event->data));
- 		struct user_struct *user = current_user();
- 
- 		atomic_long_sub((size >> PAGE_SHIFT) + 1, &user->locked_vm);
-@@ -4421,7 +4421,7 @@ perf_event_alloc(struct perf_event_attr *attr,
- 	INIT_LIST_HEAD(&event->child_list);
- 
- 	INIT_LIST_HEAD(&event->group_entry);
--	INIT_LIST_HEAD(&event->event_entry);
-+	INIT_LIST_HEAD_RCU(&event->event_entry);
- 	INIT_LIST_HEAD(&event->sibling_list);
- 	init_waitqueue_head(&event->waitq);
- 
-@@ -4629,7 +4629,7 @@ static int perf_event_set_output(struct perf_event *event, int output_fd)
- 
- set:
- 	mutex_lock(&event->mmap_mutex);
--	old_output = event->output;
-+	old_output = __rcu_dereference(event->output);
- 	rcu_assign_pointer(event->output, output_event);
- 	mutex_unlock(&event->mmap_mutex);
- 
-@@ -4999,7 +4999,7 @@ void perf_event_exit_task(struct task_struct *child)
- 	 * scheduled, so we are now safe from rescheduling changing
- 	 * our context.
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index aa3bee5..e0f379e 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -127,7 +127,7 @@ struct css_id {
+ 	 * is called after synchronize_rcu(). But for safe use, css_is_removed()
+ 	 * css_tryget() should be used for avoiding race.
  	 */
--	child_ctx = child->perf_event_ctxp;
-+	child_ctx = __rcu_dereference(child->perf_event_ctxp);
- 	__perf_event_task_sched_out(child_ctx);
- 
+-	struct cgroup_subsys_state *css;
++	struct cgroup_subsys_state __rcu *css;
  	/*
-@@ -5062,7 +5062,7 @@ again:
+ 	 * ID of this css.
+ 	 */
+@@ -605,7 +605,7 @@ static struct cgroup *task_cgroup_from_root(struct task_struct *task,
+ 	 * task can't change groups, so the only thing that can happen
+ 	 * is that it exits and its css is set back to init_css_set.
+ 	 */
+-	css = task->cgroups;
++	css = __rcu_dereference(task->cgroups);
+ 	if (css == &init_css_set) {
+ 		res = &root->top_cgroup;
+ 	} else {
+@@ -850,7 +850,7 @@ static void cgroup_d_remove_dir(struct dentry *dentry)
+  *
+  * CGRP_WAIT_ON_RMDIR flag is set under cgroup's inode->i_mutex;
   */
- void perf_event_free_task(struct task_struct *task)
+-DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
++static DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
+ 
+ static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
  {
--	struct perf_event_context *ctx = task->perf_event_ctxp;
-+	struct perf_event_context *ctx = __rcu_dereference(task->perf_event_ctxp);
- 	struct perf_event *event, *tmp;
+@@ -1081,9 +1081,11 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+ 	struct cgroupfs_root *root = sb->s_fs_info;
+ 	struct cgroup *cgrp = &root->top_cgroup;
+ 	struct cgroup_sb_opts opts;
++	struct dentry *dentry;
  
- 	if (!ctx)
-@@ -5160,7 +5160,7 @@ int perf_event_init_task(struct task_struct *child)
- 			}
+ 	lock_kernel();
+-	mutex_lock(&cgrp->dentry->d_inode->i_mutex);
++	dentry = __rcu_dereference(cgrp->dentry);
++	mutex_lock(&dentry->d_inode->i_mutex);
+ 	mutex_lock(&cgroup_mutex);
  
- 			__perf_event_init_context(child_ctx, child);
--			child->perf_event_ctxp = child_ctx;
-+			__rcu_assign_pointer(child->perf_event_ctxp, child_ctx);
- 			get_task_struct(child);
- 		}
+ 	/* See what subsystems are wanted */
+@@ -1116,7 +1118,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+ 	kfree(opts.release_agent);
+ 	kfree(opts.name);
+ 	mutex_unlock(&cgroup_mutex);
+-	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
++	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	unlock_kernel();
+ 	return ret;
+ }
+@@ -1375,7 +1377,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+ 		root_count++;
  
-@@ -5183,13 +5183,13 @@ int perf_event_init_task(struct task_struct *child)
- 		 */
- 		cloned_ctx = rcu_dereference(parent_ctx->parent_ctx);
- 		if (cloned_ctx) {
--			child_ctx->parent_ctx = cloned_ctx;
-+			__rcu_assign_pointer(child_ctx->parent_ctx, cloned_ctx);
- 			child_ctx->parent_gen = parent_ctx->parent_gen;
- 		} else {
--			child_ctx->parent_ctx = parent_ctx;
-+			__rcu_assign_pointer(child_ctx->parent_ctx, parent_ctx);
- 			child_ctx->parent_gen = parent_ctx->generation;
- 		}
--		get_ctx(child_ctx->parent_ctx);
-+		get_ctx(__rcu_dereference(child_ctx->parent_ctx));
+ 		sb->s_root->d_fsdata = root_cgrp;
+-		root->top_cgroup.dentry = sb->s_root;
++		__rcu_assign_pointer(root->top_cgroup.dentry, sb->s_root);
+ 
+ 		/* Link the top cgroup in this hierarchy into all
+ 		 * the css_set objects */
+@@ -1513,7 +1515,7 @@ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
+ 		int len = dentry->d_name.len;
+ 		if ((start -= len) < buf)
+ 			return -ENAMETOOLONG;
+-		memcpy(start, cgrp->dentry->d_name.name, len);
++		memcpy(start, dentry->d_name.name, len);
+ 		cgrp = cgrp->parent;
+ 		if (!cgrp)
+ 			break;
+@@ -1559,7 +1561,7 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
  	}
  
- 	mutex_unlock(&parent_ctx->mutex);
+ 	task_lock(tsk);
+-	cg = tsk->cgroups;
++	cg = __rcu_dereference(tsk->cgroups);
+ 	get_css_set(cg);
+ 	task_unlock(tsk);
+ 	/*
+@@ -1986,7 +1988,7 @@ static int cgroup_create_dir(struct cgroup *cgrp, struct dentry *dentry,
+ 	struct dentry *parent;
+ 	int error = 0;
+ 
+-	parent = cgrp->parent->dentry;
++	parent = __rcu_dereference(cgrp->parent->dentry);
+ 	error = cgroup_create_file(dentry, S_IFDIR | mode, cgrp->root->sb);
+ 	if (!error) {
+ 		dentry->d_fsdata = cgrp;
+@@ -2030,7 +2032,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 		       struct cgroup_subsys *subsys,
+ 		       const struct cftype *cft)
+ {
+-	struct dentry *dir = cgrp->dentry;
++	struct dentry *dir = __rcu_dereference(cgrp->dentry);
+ 	struct dentry *dentry;
+ 	int error;
+ 	mode_t mode;
+@@ -2135,7 +2137,7 @@ static void cgroup_enable_task_cg_lists(void)
+ 		 * entry won't be deleted though the process has exited.
+ 		 */
+ 		if (!(p->flags & PF_EXITING) && list_empty(&p->cg_list))
+-			list_add(&p->cg_list, &p->cgroups->tasks);
++			list_add(&p->cg_list, &__rcu_dereference(p->cgroups)->tasks);
+ 		task_unlock(p);
+ 	} while_each_thread(g, p);
+ 	write_unlock(&css_set_lock);
+@@ -2828,7 +2830,7 @@ static int cgroup_populate_dir(struct cgroup *cgrp)
+ 	struct cgroup_subsys *ss;
+ 
+ 	/* First clear out any existing files */
+-	cgroup_clear_directory(cgrp->dentry);
++	cgroup_clear_directory(__rcu_dereference(cgrp->dentry));
+ 
+ 	err = cgroup_add_files(cgrp, NULL, files, ARRAY_SIZE(files));
+ 	if (err < 0)
+@@ -2852,7 +2854,7 @@ static int cgroup_populate_dir(struct cgroup *cgrp)
+ 		 * from RCU-read-side without locks.
+ 		 */
+ 		if (css->id)
+-			rcu_assign_pointer(css->id->css, css);
++			rcu_assign_pointer(__rcu_dereference(css->id)->css, css);
+ 	}
+ 
+ 	return 0;
+@@ -2960,13 +2962,13 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
+ 		goto err_remove;
+ 
+ 	/* The cgroup directory was pre-locked for us */
+-	BUG_ON(!mutex_is_locked(&cgrp->dentry->d_inode->i_mutex));
++	BUG_ON(!mutex_is_locked(&__rcu_dereference(cgrp->dentry)->d_inode->i_mutex));
+ 
+ 	err = cgroup_populate_dir(cgrp);
+ 	/* If err < 0, we have a half-filled directory - oh well ;) */
+ 
+ 	mutex_unlock(&cgroup_mutex);
+-	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
++	mutex_unlock(&__rcu_dereference(cgrp->dentry)->d_inode->i_mutex);
+ 
+ 	return 0;
+ 
+@@ -3164,8 +3166,8 @@ again:
+ 	list_del(&cgrp->sibling);
+ 	cgroup_unlock_hierarchy(cgrp->root);
+ 
+-	spin_lock(&cgrp->dentry->d_lock);
+-	d = dget(cgrp->dentry);
++	spin_lock(&__rcu_dereference(cgrp->dentry)->d_lock);
++	d = dget(__rcu_dereference(cgrp->dentry));
+ 	spin_unlock(&d->d_lock);
+ 
+ 	cgroup_d_remove_dir(d);
+@@ -3203,7 +3205,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
+ 	/* At system boot, before all subsystems have been
+ 	 * registered, no tasks have been forked, so we don't
+ 	 * need to invoke fork callbacks here. */
+-	BUG_ON(!list_empty(&init_task.tasks));
++	BUG_ON(!list_empty_rcu(&init_task.tasks));
+ 
+ 	mutex_init(&ss->hierarchy_mutex);
+ 	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
+@@ -3226,7 +3228,7 @@ int __init cgroup_init_early(void)
+ 	css_set_count = 1;
+ 	init_cgroup_root(&rootnode);
+ 	root_count = 1;
+-	init_task.cgroups = &init_css_set;
++	__rcu_assign_pointer(init_task.cgroups, &init_css_set);
+ 
+ 	init_css_set_link.cg = &init_css_set;
+ 	init_css_set_link.cgrp = dummytop;
+@@ -3425,7 +3427,7 @@ void cgroup_fork(struct task_struct *child)
+ {
+ 	task_lock(current);
+ 	child->cgroups = current->cgroups;
+-	get_css_set(child->cgroups);
++	get_css_set(__rcu_dereference(child->cgroups));
+ 	task_unlock(current);
+ 	INIT_LIST_HEAD(&child->cg_list);
+ }
+@@ -3465,7 +3467,8 @@ void cgroup_post_fork(struct task_struct *child)
+ 		write_lock(&css_set_lock);
+ 		task_lock(child);
+ 		if (list_empty(&child->cg_list))
+-			list_add(&child->cg_list, &child->cgroups->tasks);
++			list_add(&child->cg_list,
++				 &__rcu_dereference(child->cgroups)->tasks);
+ 		task_unlock(child);
+ 		write_unlock(&css_set_lock);
+ 	}
+@@ -3532,8 +3535,8 @@ void cgroup_exit(struct task_struct *tsk, int run_callbacks)
+ 
+ 	/* Reassign the task to the init_css_set. */
+ 	task_lock(tsk);
+-	cg = tsk->cgroups;
+-	tsk->cgroups = &init_css_set;
++	cg = __rcu_dereference(tsk->cgroups);
++	__rcu_assign_pointer(tsk->cgroups, &init_css_set);
+ 	task_unlock(tsk);
+ 	if (cg)
+ 		put_css_set_taskexit(cg);
+@@ -3583,19 +3586,19 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+ 	/* Keep the cgroup alive */
+ 	task_lock(tsk);
+ 	parent = task_cgroup(tsk, subsys->subsys_id);
+-	cg = tsk->cgroups;
++	cg = __rcu_dereference(tsk->cgroups);
+ 	get_css_set(cg);
+ 	task_unlock(tsk);
+ 
+ 	mutex_unlock(&cgroup_mutex);
+ 
+ 	/* Now do the VFS work to create a cgroup */
+-	inode = parent->dentry->d_inode;
++	inode = __rcu_dereference(parent->dentry)->d_inode;
+ 
+ 	/* Hold the parent directory mutex across this operation to
+ 	 * stop anyone else deleting the new cgroup */
+ 	mutex_lock(&inode->i_mutex);
+-	dentry = lookup_one_len(nodename, parent->dentry, strlen(nodename));
++	dentry = lookup_one_len(nodename, __rcu_dereference(parent->dentry), strlen(nodename));
+ 	if (IS_ERR(dentry)) {
+ 		printk(KERN_INFO
+ 		       "cgroup: Couldn't allocate dentry for %s: %ld\n", nodename,
+@@ -3864,7 +3867,7 @@ static void __free_css_id_cb(struct rcu_head *head)
+ 
+ void free_css_id(struct cgroup_subsys *ss, struct cgroup_subsys_state *css)
+ {
+-	struct css_id *id = css->id;
++	struct css_id *id = __rcu_dereference(css->id);
+ 	/* When this is called before css_id initialization, id can be NULL */
+ 	if (!id)
+ 		return;
+@@ -3941,8 +3944,8 @@ static int __init cgroup_subsys_init_idr(struct cgroup_subsys *ss)
+ 		return PTR_ERR(newid);
+ 
+ 	newid->stack[0] = newid->id;
+-	newid->css = rootcss;
+-	rootcss->id = newid;
++	__rcu_assign_pointer(newid->css, rootcss);
++	__rcu_assign_pointer(rootcss->id, newid);
+ 	return 0;
+ }
+ 
+@@ -3957,7 +3960,7 @@ static int alloc_css_id(struct cgroup_subsys *ss, struct cgroup *parent,
+ 	parent_css = parent->subsys[subsys_id];
+ 	child_css = child->subsys[subsys_id];
+ 	depth = css_depth(parent_css) + 1;
+-	parent_id = parent_css->id;
++	parent_id = __rcu_dereference(parent_css->id);
+ 
+ 	child_id = get_new_cssid(ss, depth);
+ 	if (IS_ERR(child_id))
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index ba401fa..42d4851 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -2434,7 +2434,7 @@ void cpuset_print_task_mems_allowed(struct task_struct *tsk)
+ {
+ 	struct dentry *dentry;
+ 
+-	dentry = task_cs(tsk)->css.cgroup->dentry;
++	dentry = __rcu_dereference(task_cs(tsk)->css.cgroup->dentry);
+ 	spin_lock(&cpuset_buffer_lock);
+ 	snprintf(cpuset_name, CPUSET_NAME_LEN,
+ 		 dentry ? (const char *)dentry->d_name.name : "/");
 -- 
 1.6.3.3
 
