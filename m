@@ -1,78 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911Ab0BXD3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:29:40 -0500
-Received: from bld-mail15.adl6.internode.on.net ([150.101.137.100]:45119 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753541Ab0BXD3j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:29:39 -0500
-Date: Wed, 24 Feb 2010 14:29:34 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] nfs: use 2*rsize readahead size
-Message-ID: <20100224032934.GF16175@discord.disaster>
-References: <20100224024100.GA17048@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224024100.GA17048@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755197Ab0BXDeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:34:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44756 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755083Ab0BXDeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:34:11 -0500
+Date: Wed, 24 Feb 2010 14:34:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Jones <davej@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Naga Chumbalkar <nagananda.chumbalkar@hp.com>,
+       Alex Chiang <achiang@hp.com>, Len Brown <len.brown@intel.com>
+Subject: linux-next: manual merge of the cpufreq tree with the acpi tree
+Message-Id: <20100224143408.69e0c889.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
-> With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
-> readahead size 512k*15=7680k is too large than necessary for typical
-> clients.
-> 
-> On a e1000e--e1000e connection, I got the following numbers
-> 
-> 	readahead size		throughput
-> 		   16k           35.5 MB/s
-> 		   32k           54.3 MB/s
-> 		   64k           64.1 MB/s
-> 		  128k           70.5 MB/s
-> 		  256k           74.6 MB/s
-> rsize ==>	  512k           77.4 MB/s
-> 		 1024k           85.5 MB/s
-> 		 2048k           86.8 MB/s
-> 		 4096k           87.9 MB/s
-> 		 8192k           89.0 MB/s
-> 		16384k           87.7 MB/s
-> 
-> So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
-> can already get near full NFS bandwidth.
-> 
-> The test script is:
-> 
-> #!/bin/sh
-> 
-> file=/mnt/sparse
-> BDI=0:15
-> 
-> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
-> do
-> 	echo 3 > /proc/sys/vm/drop_caches
-> 	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
-> 	echo readahead_size=${rasize}k
-> 	dd if=$file of=/dev/null bs=4k count=1024000
-> done
+Hi Dave,
 
-That's doing a cached read out of the server cache, right? You
-might find the results are different if the server has to read the
-file from disk. I would expect reads from the server cache not
-to require much readahead as there is no IO latency on the server
-side for the readahead to hide....
+Today's linux-next merge of the cpufreq tree got a conflict in
+drivers/acpi/processor_core.c between commit
+5f45c35d7ede1c00cbaa3b09b8a84c425af81c4b ("ACPI: processor: mv
+processor_core.c processor_driver.c") from the acpi tree and commit
+0f1d683fb35d6c6f49ef696c95757f3970682a0e ("[CPUFREQ] Processor Clocking
+Control interface driver") from the cpufreq tree.
 
-Cheers,
+I applied the equivalent patch to processor_driver.c (see below) and can
+carry this as necessary.
 
-Dave.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 24 Feb 2010 14:29:12 +1100
+Subject: [PATCH] cpufreq: merge fixup for processor_core.c rename
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/acpi/processor_driver.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index 7e8e1ba..b5658cd 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -123,6 +123,8 @@ static const struct file_operations acpi_processor_info_fops = {
+ #endif
+ 
+ DEFINE_PER_CPU(struct acpi_processor *, processors);
++EXPORT_PER_CPU_SYMBOL(processors);
++
+ struct acpi_processor_errata errata __read_mostly;
+ 
+ /* --------------------------------------------------------------------------
 -- 
-Dave Chinner
-david@fromorbit.com
+1.7.0
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
