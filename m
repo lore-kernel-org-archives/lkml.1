@@ -1,74 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555Ab0BXBzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 20:55:46 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59928 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216Ab0BXBzp (ORCPT
+	id S1753632Ab0BXB7M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 20:59:12 -0500
+Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:50452 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752165Ab0BXB7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 20:55:45 -0500
-Message-ID: <4B847D10.9040509@ct.jp.nec.com>
-Date: Wed, 24 Feb 2010 10:12:48 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Tue, 23 Feb 2010 20:59:10 -0500
+Date: Wed, 24 Feb 2010 12:58:48 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, xfs-masters@oss.sgi.com,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ben Myers <bpm@sgi.com>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: linux-next: build failure after merge of the nfsd and xfs trees
+Message-ID: <20100224015848.GE16175@discord.disaster>
+References: <20100224123646.bb62faea.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org, Alasdair Kergon <agk@redhat.com>
-CC: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       Stefan Bader <stefan.bader@canonical.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>,
-       stable@kernel.org, Junichi Nomura <j-nomura@ce.jp.nec.com>,
-       akpm@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [93/93] dm mpath: fix stall when requeueing io
-References: <20100219163257.186977438@kvm.kroah.org> <4B815A3D.9040402@canonical.com> <4B825982.3060606@ct.jp.nec.com> <20100223181229.GF560@agk-dp.fab.redhat.com>
-In-Reply-To: <20100223181229.GF560@agk-dp.fab.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100224123646.bb62faea.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair, Linus,
+On Wed, Feb 24, 2010 at 12:36:46PM +1100, Stephen Rothwell wrote:
+> Hi Bruce, David,
+> 
+> After merging the nfsd and xfs trees, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+> 
+> fs/xfs/linux-2.6/xfs_export.c: In function 'xfs_fs_nfs_commit_metadata':
+> fs/xfs/linux-2.6/xfs_export.c:230: error: 'XFS_LOG_FORCE' undeclared (first use in this function)
+> fs/xfs/linux-2.6/xfs_export.c:230: error: too many arguments to function '_xfs_log_force'
+> 
+> Caused by commit 978ebd97d1426d5708d3f353179ab81f191a7eeb
+> ("xfs_export_operations.commit_metadata") from the nfsd tree interacting
+> with commit a14a348bff2f99471a28e5928eb6801224c053d8 ("xfs: cleanup up
+> xfs_log_force calling conventions") from the xfs tree.
 
-On 02/24/2010 03:12 AM +0900, Alasdair G Kergon wrote:
-> On Mon, Feb 22, 2010 at 07:16:34PM +0900, Kiyoshi Ueda wrote:
->> On 02/22/2010 01:07 AM +0900, Stefan Bader wrote:
->>>> @@ -1568,12 +1575,16 @@ static void dm_request_fn(struct request
->>>>  
->>>>  		blk_start_request(rq);
->>>>  		spin_unlock(q->queue_lock);
->>>> -		map_request(ti, rq, md);
->>>> +		if (map_request(ti, rq, md))
->>>> +			goto requeued;
->>>>  		spin_lock_irq(q->queue_lock);
->>>>  	}
->> In the current device-mapper code, I would like to go with
->> spin_unlock/lock here.
->> However, there was a case to enable irq in map_requst() for request
->> allocation, and this spin_lock_irq was a work-around for the case.
->> Now, there is no such case in the device-mapper code, so spin_lock should
->> be enough here.  But I'm still using spin_lock_irq for safeness, since
->> there might be some more cases to enable irq during request submission
->> to underlying devices.
->> I'll remove the _irq in the future after lots of testings.
+I was waiting for this email to come in. ;)
+
+> I applied the following patch (which may not be correct) for today (and
+> can keep it as a merge fixup as necessary):
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Wed, 24 Feb 2010 12:20:01 +1100
+> Subject: [PATCH] nfsd: fixup for _xfs_log_force API change
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  fs/xfs/linux-2.6/xfs_export.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/xfs/linux-2.6/xfs_export.c b/fs/xfs/linux-2.6/xfs_export.c
+> index 8f4d707..846b75a 100644
+> --- a/fs/xfs/linux-2.6/xfs_export.c
+> +++ b/fs/xfs/linux-2.6/xfs_export.c
+> @@ -226,8 +226,8 @@ xfs_fs_nfs_commit_metadata(
 >  
-> So, have I understood your reasoning?
-> 
-> - This function (dm_request_fn) is always called with local interrupts disabled.
-> E.g. from generic_unplug_device() or blk_run_queue().
-> 
-> - The 'map_request()' function was found to re-enable interrupts in one case, but
-> that case got fixed.
-> 
-> - The code still uses spin_lock_irq to ensure they remain disabled as protection
-> against there being other cases.  This should be changed to spin_lock as a clean-up
-> but you are not aware of any current breakage.
+>  	xfs_ilock(ip, XFS_ILOCK_SHARED);
+>  	if (xfs_ipincount(ip)) {
+> -		error = _xfs_log_force(mp, ip->i_itemp->ili_last_lsn,
+> -				XFS_LOG_FORCE | XFS_LOG_SYNC, NULL);
+> +		error = _xfs_log_force_lsn(mp, ip->i_itemp->ili_last_lsn,
+> +				XFS_LOG_SYNC, NULL);
+>  	}
+>  	xfs_iunlock(ip, XFS_ILOCK_SHARED);
 
-That's correct.
-I think the spin_lock_irq can be changed to spin_lock as a clean-up.
-But I don't want to break things in this late stage of 2.6.33-rc
-and/or the stable tree.
-So I'll send the clean-up patch for 2.6.34 once I make sure it's ok.
+Yes, that is the correct fix. Thanks for that, Stephen. Consider it:
 
-Thanks,
-Kiyoshi Ueda
+Reviewed-by: Dave Chinner <david@fromorbit.com>
+
+Іt would be good if you could keep it as a merge fixup - we don't
+really want to have to pull the -next NFS tree into the XFS tree or vice
+versa until one or the other is upstream....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
