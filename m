@@ -1,68 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644Ab0BXHjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:39:49 -0500
-Received: from bld-mail15.adl6.internode.on.net ([150.101.137.100]:53932 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755573Ab0BXHjp (ORCPT
+	id S1755531Ab0BXHiK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:38:10 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:39422 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754476Ab0BXHiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:39:45 -0500
-Date: Wed, 24 Feb 2010 18:39:40 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] nfs: use 2*rsize readahead size
-Message-ID: <20100224073940.GJ16175@discord.disaster>
-References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster> <20100224041822.GB27459@localhost> <20100224052215.GH16175@discord.disaster> <20100224061247.GA8421@localhost>
+	Wed, 24 Feb 2010 02:38:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:to:cc:date:message-id:in-reply-to:references
+         :user-agent:mime-version:content-type:content-transfer-encoding;
+        b=s2rYGuxgLw9wkfAxxoaluHjfrT7WUSD/p1egClw7FZ+4JuOmTrzjvKU3kdLgqfTMej
+         clC64D5fKQDQfqIty4nYr5BusEapj2et6IQ07K6YlhfKf2G8tLIAzXwebM5RZxzk/E/O
+         rT/v+GPMDYZUlBCilyP0FVXgIx2SqYLR/7cqk=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH 04/14] Regulators: twl-regulator - mark probe function as
+	__devinit
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 23 Feb 2010 23:38:01 -0800
+Message-ID: <20100224073801.15964.32639.stgit@localhost.localdomain>
+In-Reply-To: <20100224073342.15964.8863.stgit@localhost.localdomain>
+References: <20100224073342.15964.8863.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224061247.GA8421@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 02:12:47PM +0800, Wu Fengguang wrote:
-> On Wed, Feb 24, 2010 at 01:22:15PM +0800, Dave Chinner wrote:
-> > What I'm trying to say is that while I agree with your premise that
-> > a 7.8MB readahead window is probably far larger than was ever
-> > intended, I disagree with your methodology and environment for
-> > selecting a better default value.  The default readahead value needs
-> > to work well in as many situations as possible, not just in perfect
-> > 1:1 client/server environment.
-> 
-> Good points. It's imprudent to change a default value based on one
-> single benchmark. Need to collect more data, which may take time..
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
 
-Agreed - better to spend time now to get it right...
+ drivers/regulator/twl-regulator.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > > It sounds silly to have
-> > > 
-> > >         client_readahead_size > server_readahead_size
-> > 
-> > I don't think it is  - the client readahead has to take into account
-> > the network latency as well as the server latency. e.g. a network
-> > with a high bandwidth but high latency is going to need much more
-> > client side readahead than a high bandwidth, low latency network to
-> > get the same throughput. Hence it is not uncommon to see larger
-> > readahead windows on network clients than for local disk access.
-> 
-> Hmm I wonder if I can simulate a high-bandwidth high-latency network
-> with e1000's RxIntDelay/TxIntDelay parameters..
+diff --git a/drivers/regulator/twl-regulator.c b/drivers/regulator/twl-regulator.c
+index 5f394bb..9729d76 100644
+--- a/drivers/regulator/twl-regulator.c
++++ b/drivers/regulator/twl-regulator.c
+@@ -531,7 +531,7 @@ static struct twlreg_info twl_regs[] = {
+ 	TWL6030_FIXED_LDO(VUSB, 0x70, 3300, 18, 0, 0x21)
+ };
+ 
+-static int twlreg_probe(struct platform_device *pdev)
++static int __devinit twlreg_probe(struct platform_device *pdev)
+ {
+ 	int				i;
+ 	struct twlreg_info		*info;
 
-I think netem is the blessed method of emulating different network
-behaviours. There's a howto+faq for setting it up here:
-
-http://www.linuxfoundation.org/collaborate/workgroups/networking/netem
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
