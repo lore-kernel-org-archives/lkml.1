@@ -1,105 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935Ab0BXUR0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:17:26 -0500
-Received: from edu-smtp-01.edutel.nl ([88.159.1.221]:38735 "EHLO
-	edu-smtp-01.edutel.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757580Ab0BXURZ (ORCPT
+	id S1757963Ab0BXUTP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:19:15 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37663 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757580Ab0BXUTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:17:25 -0500
-X-Greylist: delayed 876 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 15:17:24 EST
-Message-ID: <4B85894A.6040406@neli.hopto.org>
-Date: Wed, 24 Feb 2010 21:17:14 +0100
-From: Micha Nelissen <micha@neli.hopto.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+	Wed, 24 Feb 2010 15:19:14 -0500
+Date: Wed, 24 Feb 2010 15:19:13 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+In-Reply-To: <20100224191213.GH1025@kernel.dk>
+Message-ID: <Pine.LNX.4.44L0.1002241509210.1253-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alexandre Bounine <alexb@tundra.com>
-CC: mporter@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
-       linux-kernel@vger.kernel.org, thomas.moll.ext@nsn.com,
-       thomas.moll@sysgo.com
-Subject: Re: [PATCH 3/7] RapidIO: Add Port-Write handling for EM
-References: <20100224152401.GC13661@kaneng01.tundra.com>
-In-Reply-To: <20100224152401.GC13661@kaneng01.tundra.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Bounine wrote:
->  /**
-> + * rio_em_set_ops- Sets Error Managment operations for a particular vendor switch
-> + * @rdev: RIO device
-> + *
-> + * Searches the RIO EM ops table for known switch types. If the vid
-> + * and did match a switch table entry, then set the em_init() and
-> + * em_handle() ops to the table entry values.
+On Wed, 24 Feb 2010, Jens Axboe wrote:
 
-Shouldn't any RIO device be able to support error management, not just 
-switches?
+> > How about plugging the request queue instead of freezing the writeback 
+> > task?  Would that work?  It should be easy enough for a driver to 
+> > unplug the queue before unregistering its device from within a resume 
+> > method.
+> 
+> We have specific methods for either freezing of stopping or starting the
+> queue, perhaps those would be appropriate for suspend/resume actions. It
+> effectively prevents the queueing function from being called. If there
+> are dirty pages for the device, then it would not help though, as you
+> would still get stuck waiting for that IO to complete.
 
-> +/**
-> + * rio_pw_enable - Enables/disables port-write handling by a master port
-> + * @port: Master port associated with port-write handling
-> + * @enable:  1=enable,  0=disable
-> + */
-> +static void rio_pw_enable(struct rio_mport *port, int enable)
-> +{
-> +	if (port->ops->pwenable)
-> +		port->ops->pwenable(port, enable);
-> +}
-> +
+If the resume method would restart the queue before unregistering the
+device, pending dirty pages wouldn't cause any problems.  They'd get
+sent down to the driver and rejected immediately because the device was
+dead or done.
 
-Maybe this can be done by switch->init function?
+The difficulty with this approach is that it requires individual
+attention for each block device driver.  Either the driver has to
+freeze/stop/plug the queue during suspend (and restart it during
+resume) or else the device's writeback task has to be frozen.
 
-> +/**
-> + * rio_inb_pwrite_handler - process inbound port-write message
-> + * @pw_msg: pointer to inbound port-write message
-> + *
-> + * Processes an inbound port-write message. Returns 0 if the request
-> + * has been satisfied.
-> + */
-> +int rio_inb_pwrite_handler(u32 *pw_msg)
-> +{
+Can this be encapsulated by a function in the block layer?  For
+example, drivers could call blk_set_hot_unpluggable(bdev) for devices
+that might need to be unregistered during resume.  Then they would
+become responsible for managing the device's queue.
 
-Perhaps map this pw_msg to a struct? Or read it into named variables?
+Alan Stern
 
-> +	/* Clear Port Errors */
-> +	rio_mport_write_config_32(mport, destid, hopcount,
-> +			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
-> +			err_status & 0x07120204);
-
-Hardcoded value!
-
-> +
-> +	if (rdev->rswitch->port_ok & (1 << portnum)) {
-> +		if (err_status & RIO_PORT_N_ERR_STS_PORT_UNINIT) {
-> +			rdev->rswitch->port_ok &= ~(1 << portnum);
-> +			rio_mport_read_config_32(mport, destid, hopcount,
-> +				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
-> +				&regval);
-> +			rio_mport_write_config_32(mport, destid, hopcount,
-> +				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
-> +				regval | RIO_PORT_N_CTL_LOCKOUT);
-
-You have a function for this?
-
-> +			rio_mport_write_config_32(mport, destid, hopcount,
-> +				rdev->phys_efptr +
-> +					RIO_PORT_N_ACK_STS_CSR(portnum),
-> +				RIO_PORT_N_ACK_CLEAR);
-
-This doesn't work for the 568; but the 568 has no special handling?
-
-> +	/* Clear Port-Write Pending bit */
-> +	rio_mport_write_config_32(mport, destid, hopcount,
-> +			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
-> +			RIO_PORT_N_ERR_STS_PW_PEND);
-> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI572, tsi57x_em_init, tsi57x_em_handler);
-> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574, tsi57x_em_init, tsi57x_em_handler);
-> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577, tsi57x_em_init, tsi57x_em_handler);
-> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_em_init, tsi57x_em_handler);
-
-Why not declare these along with the other ops?
-
-Micha
