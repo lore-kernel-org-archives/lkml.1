@@ -1,55 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206Ab0BXDkF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:40:05 -0500
-Received: from cantor.suse.de ([195.135.220.2]:52733 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754385Ab0BXDkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:40:03 -0500
-Date: Tue, 23 Feb 2010 18:05:44 -0800
-From: Greg KH <gregkh@suse.de>
-To: Josh Holland <jrh@joshh.co.uk>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@linux.intel.com>,
-       Andr? Goddard Rosa <andre.goddard@gmail.com>,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Staging: rar: More style changes to rar_driver.c
-Message-ID: <20100224020544.GC13984@suse.de>
-References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk> <1265407106-19937-1-git-send-email-jrh@joshh.co.uk> <20100217224046.GB31557@kroah.com> <20100220113607.GP24380@polaris.joshh.co.uk>
+	id S1755239Ab0BXDxI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:53:08 -0500
+Received: from snt0-omc1-s35.snt0.hotmail.com ([65.55.90.46]:53408 "EHLO
+	snt0-omc1-s35.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755201Ab0BXDxG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:53:06 -0500
+Message-ID: <SNT125-W3300E8CCB5A9BD2D7B9942C3410@phx.gbl>
+X-Originating-IP: [96.253.143.208]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <hancockrwd@gmail.com>, <greg@kroah.com>, <shane.huang@amd.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       <tj@kernel.org>
+Subject: SB600 64-bit DMA BIOS misconfiguration (formerly RE: [PATCH 2.6.34]
+ ehci-hcd: add option to enable 64-bit DMA support)
+Date: Tue, 23 Feb 2010 19:53:05 -0800
+Importance: Normal
+In-Reply-To: <51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>
+References: <4B7CAF95.6020306@gmail.com>
+ <20100218042626.GB11649@kroah.com>,<51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100220113607.GP24380@polaris.joshh.co.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 24 Feb 2010 03:53:05.0311 (UTC) FILETIME=[DEA19AF0:01CAB504]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 11:36:07AM +0000, Josh Holland wrote:
-> On Wed, Feb 17, 2010 at 02:40:46PM -0800, Greg KH wrote:
-> > On Fri, Feb 05, 2010 at 09:58:26PM +0000, Josh Holland wrote:
-> > > Following advice from Krzysztof Halasa, I made a few changes to the
-> > > style bits in rar_driver.c
-> > 
-> > Can you respin both of these patches in 2 days, against the linux-next
-> > tree, as the rar driver author has sent in a bunch of "rename these
-> > files" type patches, which caused these to not apply anymore.
-> How do I do that? I can't see a linux-next branch in my local repo, and
-> I'd rather not download a whole new one...
-> 
-> $ git remote show origin
-> * remote origin
->   URL:
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->   HEAD branch: master
->   Remote branch:
->     master tracked
->   Local branch configured for 'git pull':
->     master merges with remote master
->   Local ref configured for 'git push':
->     master pushes to master (up to date)
 
-Google for "linux-next FAQ" for how to set this up properly.
+> it doesn't work. Based on the libata experience with AHCI which has a
+> similar 64-bit feature flag, there are some controllers that didn't do
+> it properly, but not many (only ATI SB600 it appears, and only on
+> certain boards, as it seems it was a BIOS configuration issue).
+It seems it was solved by a DMI whitelist, but if it is a BIOS configuration issue, I think it would be better if it could be detected directly instead by reading the configuration directly from the device and correcting it if possible. Is that possible?
 
-thanks,
-
-greg k-h
+Yuhong Bao
+ 		 	   		  
+_________________________________________________________________
+Your E-mail and More On-the-Go. Get Windows Live Hotmail Free.
+http://clk.atdmt.com/GBL/go/201469229/direct/01/
