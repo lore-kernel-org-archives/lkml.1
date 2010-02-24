@@ -1,66 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758039Ab0BXUhV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:37:21 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33033 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757966Ab0BXUhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:37:19 -0500
-Subject: [PATCH] Fix oops on !GENERIC_TIME systems when accessing
- current_clocksource
-From: john stultz <johnstul@us.ibm.com>
-To: greg kh <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, aaro.koskinen@iki.fi,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 12:37:11 -0800
-Message-ID: <1267043831.3314.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1758046Ab0BXUiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:38:20 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:61189 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757975Ab0BXUiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:38:18 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Subject: Re: [PATCH 02/10] rcu: annotated list rcu code
+Date: Wed, 24 Feb 2010 21:32:13 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+References: <20100223180127.GF6700@linux.vnet.ibm.com> <1267041846-10469-3-git-send-email-arnd@arndb.de> <20100224201509.GB21067@Krystal>
+In-Reply-To: <20100224201509.GB21067@Krystal>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002242132.13731.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+3DHN9XXRmbs0rKAXep4abAMcqYEK2i8JEn+B
+ oEQIEHnZtM4NGd0fFg096RBtmjsknEJF3ELsnXVGY8sklzCXn7
+ 49tu6ePpr7vPIuU6pbytA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aaro Koskinen reported an issue in bug #15366, where on non-GENERIC_TIME
-systems,
-accessing /sys/devices/system/clocksource/clocksource0/current_clocksource would oops the system. 
+On Wednesday 24 February 2010, Mathieu Desnoyers wrote:
+> * Arnd Bergmann (arnd@arndb.de) wrote:
+> > The listrcu implementation now defines new rcu_list_head,
+> > rcu_hlist_head and rcu_hlist_entry structures that are
+> > annotated with __rcu. Only these can now be passed into
+> > rcu_list_for_each and related interfaces.
+> > 
+> > When not running sparse, the types are defined to the
+> > original list_head etc in order to not break working
+> > setups that are lacking annotation.
+> 
+> Hrm, wait.. dumb question: how can an annotation break compilation ? If there is
+> any way out of this, I would prefer if we can do without a #ifdef __CHECKER__ if
+> possible. It calls for bugs and implementation mismatch.
 
-It seems the timekeeper/clocksource rework missed initializing the
-curr_clocksource value in the !GENERIC_TIME.
+The problem is that you can not (currently) declare a list_head
+to be RCU protected by writing 'struct list_head __rcu list;',
+because address space annotations only work on pointers.
 
-The following patch makes sure it gets initialized, and avoids the
-issue.
+The solution I used was to define a new struct rcu_list_head that
+has the ->next member annotated as __rcu. Unfortunately, this
+means that it is now incompatible to a struct list_head from
+the compiler's point of view.
 
-Thanks to Aaro for reporting and diagnosing the issue as well as testing
-the fix!
+We could get rid of the #ifdef by unconditionally defining
+the separate rcu_list_head, as long as all users are correctly
+converted to it. This does have problems in cases such as the
+module code that uses the same list with and without RCU, as
+Alexey mentioned.
 
-Bug Details: http://bugzilla.kernel.org/show_bug.cgi?id=15366
+The alternative would be not to annotate list RCU at all and
+__force away the warnings for these so we can still keep the
+normal __rcu annotations.
 
-Too late for 2.6.33, but this likely should go into 2.6.33-stable and
-2.6.32-stable.
-
-thanks
--john
-
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index e85c234..c436ee5 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -568,6 +568,10 @@ static inline void clocksource_select(void) { }
-  */
- static int __init clocksource_done_booting(void)
- {
-+	mutex_lock(&clocksource_mutex);
-+	curr_clocksource = clocksource_default_clock();
-+	mutex_unlock(&clocksource_mutex);
-+
- 	finished_booting = 1;
- 
- 	/*
-
+	Arnd
 
