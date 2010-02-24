@@ -1,42 +1,161 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758176Ab0BXVpe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 16:45:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36291 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758229Ab0BXVpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 16:45:32 -0500
-Message-ID: <4B859DD1.601@zytor.com>
-Date: Wed, 24 Feb 2010 13:44:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1758242Ab0BXVqY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 16:46:24 -0500
+Received: from mail-pz0-f174.google.com ([209.85.222.174]:64422 "EHLO
+	mail-pz0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758098Ab0BXVqW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 16:46:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KVVFolq/jwfpfRB5/mJq7ufRuskXqk12VIlzQJQI7fWnzFqHTI7byzVbpyDFKJ4t8Q
+         u2YI1p7BtDKRrG6c++k0BD2DQQd2S/DLU393YvtdEsSUmPCgGuKGiDr+0TOn+DMfcIWl
+         No4sUA6Bd+I58Z+3SnLf5us6I9LhfkG0QTKZ4=
 MIME-Version: 1.0
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-CC: Yinghai Lu <yinghai@kernel.org>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Du, Alek" <alek.du@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86/pci: exclude mrst pci code for other platform
-References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org> <4B84A846.1000805@kernel.org> <4B84AAC4.2020204@kernel.org> <4B858E89.7040807@kernel.org> <43F901BD926A4E43B106BF17856F0755A321EB54@orsmsx508.amr.corp.intel.com>
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755A321EB54@orsmsx508.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49b7c2351002240905n299f86fcq67a16fd97c47021@mail.gmail.com>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>
+	 <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>
+	 <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com>
+	 <49b7c2351002231708r279049f9hcc9cc6ff205a47fb@mail.gmail.com>
+	 <25891f3e1002231719u4d38ed52w99c66ac669c3d965@mail.gmail.com>
+	 <49b7c2351002240643s1aebe384wee5ee7951e62640e@mail.gmail.com>
+	 <alpine.LFD.2.00.1002241609050.4245@localhost.localdomain>
+	 <49b7c2351002240852u3b2e7a56g1b0140d37a02c81f@mail.gmail.com>
+	 <49b7c2351002240905n299f86fcq67a16fd97c47021@mail.gmail.com>
+Date: Thu, 25 Feb 2010 06:46:19 +0900
+Message-ID: <49b7c2351002241346g6b07f9b7u9d9ad67dc63c5b8f@mail.gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Dhaval Giani <dhaval.lists@thegianis.in>, John Kacur <jkacur@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 01:03 PM, Pan, Jacob jun wrote:
-> Our goal is to have a binary compatible kernel runs on Moorestown and PC, can
-> we keep the Moorestown PCI code for this purpose?
+> I will move rt number from v2.6.33-rc8-rt2 to v2.6.33-rc8-rt2.
+oops. sorry. from v2.6.33-rc8-rt1 to v2.6.33-rc8-rt2.
 
-CONFIG_X86_MRST is supposed to reflect the *ability* to run on
-Moorestown, not the *requirement* of running on Moorestown.  As such,
-Yinghai's patch seems correct to me.
+On Thu, Feb 25, 2010 at 2:05 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
+> Thomas. Um.  I checked new -rt tag now.
+> I will move rt number from v2.6.33-rc8-rt2 to v2.6.33-rc8-rt2.
+> And then, I will test v2.6.33-rc8-rt2 on my desktop pc
+> 1) intel core2 quad Q6600 (SSD 64G , 2G DDR RAM )
+> 2) intel core2 quad Q9400 (SATA 320G, 2G DDR RAM)
+>
+> Thanks,
+> Geunsik Lim.
+>
+> On Thu, Feb 25, 2010 at 1:52 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
+>> On Thu, Feb 25, 2010 at 12:09 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>>>> So, I tried linux-2.6.33-rc8-rt1 based on tip/rt/head as you explained.
+>>>>
+>>>> Git development branch:
+>>>>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+>>> What's the sha1 of the head commit ?
+>>> Thanks,
+>>>        tglx
+>>>
+>> Dear Thoomas,
+>>
+>> Below was the  recent commit number  when I typed "git clone" command.
+>>
+>> commit ed0799048b4a38ffb6e33755ba5e6b5dfa9a24d2
+>> Author: Thomas Gleixner <tglx@linutronix.de>
+>> Date:   Sun Feb 21 23:14:28 2010 +0100
+>>
+>>    v2.6.33-rt1
+>>
+>>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>>
+>> commit b635a77f9aadc5ed3fc5a949e3f219c24cdd254c
+>> Author: Carsten Emde <C.Emde@osadl.org>
+>> Date:   Sat Jan 16 17:14:04 2010 +0100
+>>
+>>    hwlat_detector-avoid-smp_processor_id.patch
+>>
+>>    Avoid smp_processor_id() in preemptible code.
+>>
+>>    Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+>>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>>             . . . . . . below omission . . . . . .
+>>
+>>
+>> and, version info is 2.6.33-rc8-rt1 as belows.
+>>
+>> [invain@localhost head]$ head Makefile
+>> VERSION = 2
+>> PATCHLEVEL = 6
+>> SUBLEVEL = 33
+>> EXTRAVERSION = -rc8-rt1
+>> NAME = Man-Eating Seals of Antiquity
+>>
+>> # *DOCUMENTATION*
+>> # To see a list of typical targets execute "make help"
+>> # More info can be located in ./README
+>> # Comments in this file are targeted only to the developer, do not
+>>
+>>
+>> Thanks,
+>> Geunsik Lim.
+>>
+>> --
+>> Regards,
+>> GeunSik Lim ( Samsung Electronics )
+>> Blog : http://blog.naver.com/invain/
+>> e-Mail: geunsik.lim@samsung.com
+>>           leemgs@gmail.com , leemgs1@gmail.com
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+>
+>
+> --
+> Regards,
+> GeunSik Lim ( Samsung Electronics )
+> Blog : http://blog.naver.com/invain/
+> e-Mail: geunsik.lim@samsung.com
+>           leemgs@gmail.com , leemgs1@gmail.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-If you cannot boot a kernel with CONFIG_X86_MRST=y on PC hardware, that
-is a bug which should be fixed.
 
-	-hpa
 
+-- 
+Regards,
+GeunSik Lim ( Samsung Electronics )
+Blog : http://blog.naver.com/invain/
+e-Mail: geunsik.lim@samsung.com
+           leemgs@gmail.com , leemgs1@gmail.com
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
