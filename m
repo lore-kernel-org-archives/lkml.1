@@ -1,75 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757678Ab0BXTVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 14:21:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:22239 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757579Ab0BXTVj (ORCPT
+	id S1757713Ab0BXT1y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 14:27:54 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54422 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757652Ab0BXT1x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 14:21:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wsKqUvJ5j5A2+vtv9dudrMF9W6/3/O4KXuFlLO1S+dVwNcQVo2zHQBREfko0b/FO4A
-         p01zrmv5say75/mb1KOdZHoCCpMdRHteklegcSWk0WSM49EMsa1z4pX8p1Ab2ZUtzDgH
-         6Mod+e/GUiRDNAhb2Sg2zE/mDh01rMph5gXB4=
-Date: Wed, 24 Feb 2010 11:21:26 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/14] Regulators: wm8400 - cleanup platform driver data
- handling
-Message-ID: <20100224192126.GE25304@core.coreip.homeip.net>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
- <20100224073849.15964.62321.stgit@localhost.localdomain>
- <20100224102548.GG18896@rakim.wolfsonmicro.main>
- <20100224190234.GD25304@core.coreip.homeip.net>
- <20100224191402.GA8316@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
+	Wed, 24 Feb 2010 14:27:53 -0500
+Subject: Re: [PATCH 11/11] KVM: SVM: Optimize nested svm msrpm merging
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224191402.GA8316@rakim.wolfsonmicro.main>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1267034360-5907-12-git-send-email-joerg.roedel@amd.com>
+Date: Wed, 24 Feb 2010 20:27:50 +0100
+Cc: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <402BABD5-304A-47EA-B35C-D0E3948BB27E@suse.de>
+References: <1267034360-5907-1-git-send-email-joerg.roedel@amd.com> <1267034360-5907-12-git-send-email-joerg.roedel@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 07:14:03PM +0000, Mark Brown wrote:
-> On Wed, Feb 24, 2010 at 11:02:34AM -0800, Dmitry Torokhov wrote:
-> > On Wed, Feb 24, 2010 at 10:25:49AM +0000, Mark Brown wrote:
-> 
-> > > Nack due to this change - this change would make it impossible for
-> > > callers to actually call the function.  Note that nothing including only
-> > > wm8400.h even has a struct declaration, much less defniition, for struct
-> > > wm8400.
-> 
-> > If you notice I added forward declaration of "struct wm8400" to wm8400.h
-> > thus users can pass around pointer to the structure.
-> 
-> This doesn't help unless you also provide a way for users to obtain a
-> struct wm8400.
 
-Why would they need it? Only code that creates instances of wm8400 needs
-to know the definition of the sturcture, the rest can simply pass the
-pointer around.
+On 24.02.2010, at 18:59, Joerg Roedel wrote:
 
-I guess there is disconnect between us and I do not see any users of
-wm8400_register_regulator() in linux-next... Is there another tree I
-could peek at?
+> This patch optimizes the way the msrpm of the host and the
+> guest are merged. The old code merged the 2 msrpm pages
+> completly. This code needed to touch 24kb of memory for that
+> operation. The optimized variant this patch introduces
+> merges only the parts where the host msrpm may contain zero
+> bits. This reduces the amount of memory which is touched to
+> 48 bytes.
+
+Nice catch!
 
 > 
-> > I really think we should refrain from passing naked 'struct device *'
-> > pointers as much as possible since it is error prone. Otherwise
-> > wm8400_register_regulator has no way of ensuting that passed  'dev' is
-> > indeed wm8400.
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+> arch/x86/kvm/svm.c |   45 ++++++++++++++++++++++++++++++++++++---------
+> 1 files changed, 36 insertions(+), 9 deletions(-)
 > 
-> Right, there's no type safety here (and this whole method of registering
-> regulators is fairly deprecated anyway in favour of just straight
-> platform data) but really it doesn't buy us much - the users get exactly
-> the struct device they need to use passed in to them, there's really
-> very little chance for them to get confused about what they're talking
-> about.
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index ae2f211..eb25fea 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -754,6 +754,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+> 	svm->nested.hsave = page_address(hsave_page);
+> 
+> 	svm->nested.msrpm = page_address(nested_msrpm_pages);
+> +	svm_vcpu_init_msrpm(svm->nested.msrpm);
+> 
+> 	svm->vmcb = page_address(page);
+> 	clear_page(svm->vmcb);
+> @@ -1824,20 +1825,46 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
+> 
+> static bool nested_svm_vmrun_msrpm(struct vcpu_svm *svm)
+> {
+> -	u32 *nested_msrpm;
+> -	struct page *page;
+> +	/*
+> +	 * This function merges the msr permission bitmaps of kvm and the
+> +	 * nested vmcb. It is omptimized in that it only merges the parts where
+> +	 * the kvm msr permission bitmap may contain zero bits
+> +	 */
+> +	static const u32 msrpm_offsets[] = {
+> +		0x0000002c, /* SYSENTER_CS */
+> +
+> +		0x00000038, /* LASTBRANCHFROMIP
+> +			       LASTBRANCHTOIP
+> +			       LASTINTFROMIP
+> +			       LASTINTTOIP */
+> +
+> +		0x00000820, /* STAR
+> +			       LSTAR
+> +			       CSTAR
+> +			       SYSCALL_MASK */
+> +
+> +		0x00000840, /* FS_BASE
+> +			       GS_BASE
+> +			       KERNEL_GS_BASE */
+> +
+> +		0xffffffff, /* End of List */
 
--- 
-Dmitry
+Isn't there such a list around somewhere already? We really should only keep this list once throughout the whole code. If necessary, just create the list on the fly when bits get set in the msrpm.
+
+Alex
+
