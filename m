@@ -1,28 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340Ab0BXE5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 23:57:19 -0500
-Received: from mx02.tie.cl ([200.91.27.37]:19325 "EHLO ironport2-1T.isc.cl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755324Ab0BXE5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 23:57:17 -0500
-X-Greylist: delayed 626 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 23:57:16 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Agk2AJs9hEusHx6O/2dsb2JhbACGNYhlgXSJGoFRtj2IQ4JDBYInBIMThR8
-Date: Wed, 24 Feb 2010 12:46:32 +0800
-Message-ID: <4B2954EC0000DF2B@ms3.isc.cl>
-From: "Mr.Jiang Jianmin." <helmar@tie.cl>
-Subject: REPLY
-Reply-To: mr_jiangjianmin09@8u8.com
+	id S1751175Ab0BXFMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:12:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57044 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796Ab0BXFMR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 00:12:17 -0500
+Message-ID: <4B84B52A.1000005@infradead.org>
+Date: Wed, 24 Feb 2010 02:12:10 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Tobias Lorenz <tobias.lorenz@gmx.net>
+CC: Roel Kluin <roel.kluin@gmail.com>, linux-media@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] radio-si470x-common: -EINVAL overwritten in si470x_vidioc_s_tuner()
+References: <4B69D2F5.2050100@gmail.com> <201002032252.36514.tobias.lorenz@gmx.net> <4B6A242C.8060104@infradead.org> <201002182050.41968.tobias.lorenz@gmx.net>
+In-Reply-To: <201002182050.41968.tobias.lorenz@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tobias Lorenz wrote:
+> Hello Mauro,
+> 
+>>> no, the default value of retval makes no difference to the function.
+>>>
+>>> Retval is set by si470x_disconnect_check and si470x_set_register.
+>>> After each call, retval is checked.
+>>> There is no need to reset it passed.
+> 
+>> You may just do then:
+>>
+>> 	int retval = si470x_disconnect_check(radio);
+> 
+> In all other set/get functions of v4l2_ioctl_ops in the driver, I just set the default value of retval to 0.
+> To be identical in si470x_vidioc_s_tuner, I modified the patch to the one below.
+> I already pushed this and another cosmetic patch into mercurial:
+> 
+> http://linuxtv.org/hg/~tlorenz/v4l-dvb/rev/72a2f38d5956
+See comment bellow.
 
-I am Mr Jiang Jianmin, Principal Assurance Manager for the ChinaTrust Commercial
-Bank in China.Please contact me for a secured business proposal:mr_jiangjianmin09@8u8.com
 
+> http://linuxtv.org/hg/~tlorenz/v4l-dvb/rev/3efd5d32a618
+Applied.
+
+> 
+> Mauro, can you pull them?
+
+Tobias, next time or send one patch per email or send me a pull request.
+
+> 
+> Bye,
+> Tobias
+> 
+> --- a/linux/drivers/media/radio/si470x/radio-si470x-common.c	Thu Feb 11 23:11:30 2010 -0200
+> +++ b/linux/drivers/media/radio/si470x/radio-si470x-common.c	Thu Feb 18 20:31:33 2010 +0100
+> @@ -748,7 +748,7 @@
+>  		struct v4l2_tuner *tuner)
+>  {
+>  	struct si470x_device *radio = video_drvdata(file);
+> -	int retval = -EINVAL;
+> +	int retval = 0;
+>  
+>  	/* safety checks */
+>  	retval = si470x_disconnect_check(radio);
+
+This really doesn't make any sense. Just do:
+
+	int retval = i470x_disconnect_check(radio);
+
+or
+	int retval;
+
+	retval = i470x_disconnect_check(radio);
+
+
+
+-- 
+
+Cheers,
+Mauro
