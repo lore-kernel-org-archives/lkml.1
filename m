@@ -1,80 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804Ab0BXLnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 06:43:13 -0500
-Received: from thoth.sbs.de ([192.35.17.2]:18591 "EHLO thoth.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756704Ab0BXLnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 06:43:12 -0500
-Message-ID: <4B8510BC.4060201@siemens.com>
-Date: Wed, 24 Feb 2010 12:42:52 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
-       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
-References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com> <4B84FBDB.1070006@siemens.com> <4B84FCBB.8070702@redhat.com> <4B84FDF5.5080106@siemens.com> <4B84FF5C.5090603@siemens.com> <4B850266.3070706@redhat.com>
-In-Reply-To: <4B850266.3070706@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756809Ab0BXLrG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 06:47:06 -0500
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:41454 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756744Ab0BXLrD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 06:47:03 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=UTF-8
+Date: Wed, 24 Feb 2010 12:46:29 +0100
+From: Michael Thayer <Michael.Thayer@Sun.COM>
+Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
+ emulation to the Lifebook driver
+In-reply-to: <20100224100206.GA5598@core.coreip.homeip.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <1267011989.2831.30.camel@michael-laptop>
+Organization: Sun Microsystems GmbH
+X-Mailer: Evolution 2.28.1
+References: <1266923615.3602.85.camel@michael-laptop>
+ <20100223175852.GA11301@core.coreip.homeip.net>
+ <1266958533.3602.128.camel@michael-laptop>
+ <20100224100206.GA5598@core.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> On 02/24/2010 12:28 PM, Jan Kiszka wrote:
->> Jan Kiszka wrote:
->>    
->>> Avi Kivity wrote:
->>>      
->>>> On 02/24/2010 12:13 PM, Jan Kiszka wrote:
->>>>        
->>>>>          
->>>>>> I see.  Won't we hit the same issue when we call pic functions from
->>>>>> atomic context during the guest entry sequence?
->>>>>>
->>>>>>
->>>>>>            
->>>>> If there are such call paths, for sure. What concrete path(s) do you
->>>>> have in mind?
->>>>>
->>>>>
->>>>>          
->>>> vcpu_enter_guest() ->  inject_pending_event() ->
->>>> kvm_cpu_{has,get}_interrupt() ->  various pic functions if you're unlucky.
->>>>        
->>> But do they kick anyone or just check/pull information? Never saw any
->>> warnings during my tests last year (granted: with older -rt and kvm
->>> versions).
->>>      
->> Mmh, they could if there is>  1 IRQ pending. Guess this just never
->> triggered in real life due to typical APIC use and low IRQ load during
->> PIC times in my tests.
->>    
+Le mercredi 24 février 2010 à 02:02 -0800, Dmitry Torokhov a écrit :
+> On Tue, Feb 23, 2010 at 09:55:33PM +0100, Michael Thayer wrote:
+> > I'm not sure, if we ended up doing a completely new device, how different it
+> > would end up being.  Emulating a touchscreen or a tablet makes sense for us as
+> > these are both something known, which will work with existing systems without
+> > too much tweaking
+> > [snip]
+> But the virtual mouse is not a touchscreen or a tablet, it behaves
+> differently.
+What would you suggest emulating that exists in the real world?  And might a
+tablet not be better than a touchscreen, given that it doesn't just have a
+binary concept of "touch or not", but a pressure axis as well?  We could report
+"pen on but zero pressure".  I take your point (below) about not relying on
+behaviour that doesn't correspond to real devices like being able to send
+position data without BTN_TOUCH being held down.
+
+> > The two devices also make sense for us on the one hand because xf86-input-evdev
+> > currently only understands absolute devices without mouse buttons
 > 
-> We could just ignore the wakeup in this path.  It's called in vcpu 
-> context, so obviously the vcpu is awake and kicking it will only hurt 
-> your feet.
+> Hmm, I scanned through it and I did not see anything specifically
+> removing mouse buttons from absolute devices there... Is it still valid
+> for the recent version of evdev driver?
+Sorry, I have to correct myself there.  It assumes that an absolute device with
+a "BTN_TOUCH" and mouse buttons and no pen is a touchpad and not a touchscreen.
+Function "EvdevProbe()", search for "Found absolute touchpad".
 
-Looking at kvm_vcpu_kick, this already happens: The wake queue is
-checked for pending waiters (ie. non if waking ourself), and no IPI is
-sent if we run on the same CPU like the VCPU is on. That explains why
-this path is practically safe.
-
+> > (yes I know,
+> > we could send them patches too if we had too, but we would rather not patch the
+> > whole world :) ) and on the other because it makes it easy for us to switch
+> > between absolute and relative event reporting, which is a big plus.
 > 
-> Longer term, we should clear up this mess.  One possible path is to move 
-> the pic/lapic/injection stuff out of the the critical section, and use 
-> vcpu->requests to close the race between querying the pic/lapic and 
-> entering the guest.
-> 
+> Why is this a big plus? Also, can't evdev handle devices reporting both
+> relative and absolute events?
+We sometimes want to switch to relative event reporting to e.g. let people play
+games which are controlled using the mouse.  Don't ask :)  I can check again,
+but I think that xf86-input-evdev ignores relative axes if a device supports
+absolute ones.  I do feel that having two devices from it's point of view is
+a safer bet here, rather than trying something fancier.
 
-Sounds worthwhile as well.
+> You are relying on the fact that currently userspace components rely on
+> drivers not sending coordinates data without touch; as soon as userspace
+> (evdev) starts validating it and ignoring coordinate events without
+> ABS_PRESSURE or BTN_TOUCH you'll be toast.
+Point taken.  See above.
 
-Jan
+> > > I think it would be better if we had separate protocol module for that.
+> [snip]
+> First, create a separate protocol handler (module similar to
+> lifebook.c), allocate protocol number, something like PSMOUSE_VBPS, and
+> plumb it into psmouse-base.c in the same fashion othe protocol handlers
+> do it.
+Sure, I can copy lifebook.c and make the necessary modifications.  I will wait
+for your answers/comments on the above though (particularly the first bit)
+before starting.
 
+Thanks again.
+
+Regards,
+
+Michael
 -- 
-Siemens AG, Corporate Technology, CT T DE IT 1
-Corporate Competence Center Embedded Linux
+Sun Microsystems GmbH        Michael Thayer
+Werkstrasse 24               VirtualBox engineer
+71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
+
+Sitz der Gesellschaft:
+Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
+Amtsgericht Muenchen: HRB 161028
+Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
+Vorsitzender des Aufsichtsrates: Martin Haering
+
