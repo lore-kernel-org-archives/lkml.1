@@ -1,178 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756294Ab0BXPVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:21:12 -0500
-Received: from mail2.tundra.com ([142.46.200.162]:43993 "EHLO mx2.tundra.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753073Ab0BXPVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 10:21:10 -0500
-X-Greylist: delayed 319 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 10:21:10 EST
-X-ASG-Debug-ID: 1267024866-01c300520000-xx1T2L
-X-Barracuda-URL: http://142.46.200.162:8000/cgi-bin/mark.cgi
-X-Barracuda-Envelope-From: alexb@tundra.com
-Date: Wed, 24 Feb 2010 10:20:50 -0500
-From: Alexandre Bounine <alexb@tundra.com>
-To: mporter@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       thomas.moll@sysgo.com, thomas.moll.ext@nsn.com, abounine@idt.com
-X-ASG-Orig-Subj: [PATCH 2/7] RapidIO: Add switch locking during discovery
-Subject: [PATCH 2/7] RapidIO: Add switch locking during discovery
-Message-ID: <20100224152050.GB13661@kaneng01.tundra.com>
-Mime-Version: 1.0
+	id S1756364Ab0BXPW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:22:56 -0500
+Received: from mail.openrapids.net ([64.15.138.104]:49566 "EHLO
+	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756248Ab0BXPWy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 10:22:54 -0500
+Date: Wed, 24 Feb 2010 10:22:52 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com
+Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
+	barrier (v9)
+Message-ID: <20100224152251.GA16295@Krystal>
+References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com> <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Barracuda-Connect: UNKNOWN[142.46.200.189]
-X-Barracuda-Start-Time: 1267024867
-X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at tundra.com
+In-Reply-To: <20100224091052.GY9738@laptop>
+X-Editor: vi
+X-Info: http://www.efficios.com
+X-Operating-System: Linux/2.6.26-2-686 (i686)
+X-Uptime: 10:12:05 up 32 days, 17:49,  4 users,  load average: 2.36, 1.71,
+	1.30
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Nick Piggin (npiggin@suse.de) wrote:
+> On Mon, Feb 22, 2010 at 04:23:21PM -0500, Mathieu Desnoyers wrote:
+> > * Chris Friesen (cfriesen@nortel.com) wrote:
+> > > On 02/12/2010 04:46 PM, Mathieu Desnoyers wrote:
+> > > 
+> > > > Editorial question: 
+> > > > 
+> > > > This synchronization only takes care of threads using the current process memory
+> > > > map. It should not be used to synchronize accesses performed on memory maps
+> > > > shared between different processes. Is that a limitation we can live with ?
+> > > 
+> > > It makes sense for an initial version.  It would be unfortunate if this
+> > > were a permanent limitation, since using separate processes with
+> > > explicit shared memory is a useful way to mitigate memory trampler issues.
+> > > 
+> > > If we were going to allow that, it might make sense to add an address
+> > > range such that only those processes which have mapped that range would
+> > > execute the barrier.  Come to think of it, it might be possible to use
+> > > this somehow to avoid having to execute the barrier on *all* threads
+> > > within a process.
+> > 
+> > The extensible system call mandatory and optional flags will allow this kind of
+> > improvement later on if this appears to be needed. It will also allow user-space
+> > to detect if later kernels support these new features or not. But meanwhile I
+> > think it's good to start with this implementation that covers 99.99% of
+> > use-cases I can currently think of (ok, well, maybe I'm just unimaginative) ;)
+> 
+> It's a good point, I think having at least the ability to do
+> process-shared or process-private in the first version of the API might
+> be a good idea. That matches glibc's synchronisation routines so it
+> would probably be a desirable feature even if you don't implement it in
+> your library initially.
 
-From: Alexandre Bounine <alexandre.bounine@idt.com>
+I am tempted to say that we should probably wait for users of this API feature
+to manifest themselves before we go on and implement it. This will ensure that
+we don't end up maintaining an unused feature and this provides a minimum
+testability. For now, returning -EINVAL seems like an appropriate response for
+this system call feature.
 
-Add switch access locking during RapidIO discovery. Access lock is
-required when reading switch routing table contents due to indexed mechanism
-of RT addressing.
+As I said above, given the exensible nature of the sys_membarrier flags, we can
+assign a MEMBARRIER_SHARED_MEM or something like that to a mandatory flag bit
+later on. So when userspace start using this flag on old kernels that do not
+support it, -EINVAL will be returned, and then the application will know it must
+use a fallback. So, basically, we don't even need to define this flag now.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Tested-by: Thomas Moll <thomas.moll@sysgo.com>
----
+> 
+> When writing multiprocessor scalable software, threads should often be
+> avoided. They share so much state that it is easy to run into
+> scalability issues in the kernel. So yes it would be really nice to
+> have userspace RCU available in a process-shared mode.
+> 
 
- rio-scan.c |   88 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 79 insertions(+), 9 deletions(-)
+Agreed, although some major modifications would also be needed in the userspace
+RCU library to do that, because it currently rely on being able to access other
+thread's TLS.
 
-diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/rio-scan.c w33r7b/drivers/rapidio/rio-scan.c
---- w33r7a/drivers/rapidio/rio-scan.c	2010-02-09 15:11:09.141972000 -0500
-+++ w33r7b/drivers/rapidio/rio-scan.c	2010-02-10 16:13:56.382802000 -0500
-@@ -750,6 +750,7 @@ rio_disc_peer(struct rio_net *net, struc
- 	int num_ports;
- 	struct rio_dev *rdev;
- 	u16 ndestid;
-+	u32 result;
- 
- 	/* Setup new RIO device */
- 	if ((rdev = rio_setup_device(net, port, destid, hopcount, 0))) {
-@@ -778,6 +779,27 @@ rio_disc_peer(struct rio_net *net, struc
- 				pr_debug(
- 				    "RIO: scanning device on port %d\n",
- 				    port_num);
-+
-+				/* Attempt to acquire device lock */
-+				rio_mport_write_config_32(port, destid,
-+							  hopcount,
-+							  RIO_HOST_DID_LOCK_CSR,
-+							  port->host_deviceid);
-+				rio_mport_read_config_32(port, destid, hopcount,
-+					RIO_HOST_DID_LOCK_CSR, &result);
-+				while (result != port->host_deviceid) {
-+					/* Delay a bit */
-+					mdelay(1);
-+					/* Try to acquire device lock again */
-+					rio_mport_write_config_32(port, destid,
-+						hopcount,
-+						RIO_HOST_DID_LOCK_CSR,
-+						port->host_deviceid);
-+					rio_mport_read_config_32(port, destid,
-+						hopcount,
-+						RIO_HOST_DID_LOCK_CSR, &result);
-+				}
-+
- 				for (ndestid = 0;
- 				     ndestid < RIO_ANY_DESTID(port->sys_size);
- 				     ndestid++) {
-@@ -789,6 +811,19 @@ rio_disc_peer(struct rio_net *net, struc
- 						break;
- 				}
- 
-+				/* Release device lock */
-+				rio_mport_write_config_32(port, destid,
-+							  hopcount,
-+							  RIO_HOST_DID_LOCK_CSR,
-+							  port->host_deviceid);
-+				rio_mport_read_config_32(port, destid, hopcount,
-+					RIO_HOST_DID_LOCK_CSR, &result);
-+				if ((result & 0xffff) != 0xffff) {
-+					pr_info("RIO: badness when releasing " \
-+						"host lock on %s\n",
-+						rio_name(rdev));
-+				}
-+
- 				if (rio_disc_peer
- 				    (net, port, ndestid, hopcount + 1) < 0)
- 					return -1;
-@@ -958,17 +993,45 @@ static void rio_build_route_tables(void)
- 	struct rio_dev *rdev;
- 	int i;
- 	u8 sport;
-+	u32 result;
- 
- 	list_for_each_entry(rdev, &rio_devices, global_list)
--	    if (rio_is_switch(rdev))
--		for (i = 0;
--		     i < RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size);
--		     i++) {
--			if (rio_route_get_entry
--			    (rdev->net->hport, rdev->rswitch, RIO_GLOBAL_TABLE,
--			     i, &sport) < 0)
--				continue;
--			rdev->rswitch->route_table[i] = sport;
-+		if (rio_is_switch(rdev)) {
-+			/* Attempt to acquire device lock */
-+			rio_write_config_32(rdev, RIO_HOST_DID_LOCK_CSR,
-+					rdev->net->hport->host_deviceid);
-+			rio_read_config_32(rdev,
-+					RIO_HOST_DID_LOCK_CSR, &result);
-+			while (result != rdev->net->hport->host_deviceid) {
-+				/* Delay a bit */
-+				mdelay(1);
-+				/* Attempt to acquire device lock again */
-+				rio_write_config_32(rdev, RIO_HOST_DID_LOCK_CSR,
-+					rdev->net->hport->host_deviceid);
-+				rio_read_config_32(rdev,
-+					RIO_HOST_DID_LOCK_CSR, &result);
-+			}
-+
-+			for (i = 0;
-+			     i < RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size);
-+			     i++) {
-+				if (rio_route_get_entry
-+				    (rdev->net->hport, rdev->rswitch,
-+				     RIO_GLOBAL_TABLE, i, &sport) < 0)
-+					continue;
-+				rdev->rswitch->route_table[i] = sport;
-+			}
-+
-+			/* Release device lock */
-+			rio_write_config_32(rdev, RIO_HOST_DID_LOCK_CSR,
-+					rdev->net->hport->host_deviceid);
-+			rio_read_config_32(rdev,
-+					RIO_HOST_DID_LOCK_CSR, &result);
-+			if ((result & 0xffff) != 0xffff) {
-+				pr_info("RIO: badness when releasing " \
-+					"host lock on %s\n", rio_name(rdev));
-+			}
-+
- 		}
- }
- 
-@@ -1027,6 +1090,13 @@ int __devinit rio_disc_mport(struct rio_
- 		del_timer_sync(&rio_enum_timer);
- 
- 		pr_debug("done\n");
-+
-+		/* Read DestID assigned by enumerator */
-+		rio_local_read_config_32(mport, RIO_DID_CSR,
-+					 &mport->host_deviceid);
-+		mport->host_deviceid = RIO_GET_DID(mport->sys_size,
-+						   mport->host_deviceid);
-+
- 		if (rio_disc_peer(net, mport, RIO_ANY_DESTID(mport->sys_size),
- 					0) < 0) {
- 			printk(KERN_INFO
+Thanks,
 
----
-
-Important Notice: This message is intended for the use of the individual to whom it is addressed and may contain information which is privileged, confidential and/or exempt from disclosure under applicable law. If the reader of this message is not the intended recipient, or is not the employee or agent responsible for delivering the message to the intended recipient, you are hereby notified that any dissemination, distribution, or copying of this communication is strictly prohibited. If you have received this communication in error, please notify the sender immediately by telephone or return e-mail and delete the original message from your systems. Thank you. 
-
+Mathieu
