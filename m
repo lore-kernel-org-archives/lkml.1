@@ -1,61 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250Ab0BXVtI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 16:49:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59998 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758219Ab0BXVtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 16:49:07 -0500
-Date: Wed, 24 Feb 2010 13:44:42 -0800
-From: Greg KH <gregkh@suse.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-       kay.sievers@vrfy.org, benh@kernel.crashing.org
-Subject: Re: [RFC] driver-core: Add device node pointer to struct device
-Message-ID: <20100224214442.GB18437@suse.de>
-References: <20100224210514.16289.86611.stgit@angua>
+	id S1758259Ab0BXVul (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 16:50:41 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:59641 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758203Ab0BXVuj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 16:50:39 -0500
+Date: Wed, 24 Feb 2010 16:50:38 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       <linux-usb@vger.kernel.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: USB mass storage and ARM cache coherency
+In-Reply-To: <1267046036.23523.1693.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.1002241641370.1253-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224210514.16289.86611.stgit@angua>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 02:10:30PM -0700, Grant Likely wrote:
-> Greg and Kay,
-> 
-> This is a patch from a larger series of OF related cleanup patches.  This
-> one adds a new 'of_node' member to struct device, conditional upon
-> CONFIG_OF.  The goal is to move of_node out of archdata because all
-> arches using CONFIG_OF need it.
-> 
-> Before I commit too much effort down this path, I want to get your
-> feedback.  Do you have any objections to this change to struct device?
-> 
-> @@ -414,6 +415,9 @@ struct device {
->  					     override */
->  	/* arch specific additions */
->  	struct dev_archdata	archdata;
-> +#ifdef CONFIG_OF
-> +	struct device_node	*of_node;
-> +#endif
+On Thu, 25 Feb 2010, Benjamin Herrenschmidt wrote:
 
-No objection from me, but do we really need the #ifdef here?
+> I'm surprised that usb-storage has an issue here. It shouldn't afaik,
+> since it's just a SCSI driver (or not anymore ?)
 
-> Full patch follows...
+It still is.  There's also the ub driver, which is a non-SCSI block 
+device driver for some of the same devices handled by usb-storage.
 
-Do you want to take this patch through your tree?  If so, feel free to
-add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> and the BIO or
+> filesystems handle things there no ? I haven't seen a single call to
+> flush_dcache_page() in any of drivers/scsi, drivers/ata or drivers/ide
+> when I looked...
 
-to the patch.
+There is no real issue; it's just that the problem was first noted in 
+connection with usb-storage reading in executable pages, so Catalin's 
+initial post was oriented toward modifying usb-storage.
 
-If not, let me know and I'll take it through my tree.
+The main issue here is that the same host controller will use PIO
+sometimes and DMA sometimes, depending on the details of the transfer.  
+The USB core didn't expect this and consequently we violated the rules
+for DMA mapping.  The question is: If the core is fixed so that the
+rules aren't violated, will everything work correctly?
 
-Glad to see this work coming along, nice job.
+Alan Stern
 
-thanks,
-
-greg k-h
