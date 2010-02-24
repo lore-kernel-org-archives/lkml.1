@@ -1,32 +1,33 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207Ab0BXCt0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 21:49:26 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44025 "EHLO gate.crashing.org"
+	id S1754263Ab0BXCty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 21:49:54 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44044 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260Ab0BXCtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 21:49:24 -0500
-Subject: Re: [PATCH] windfarm: init sysfs attributes
+	id S1753260Ab0BXCtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 21:49:52 -0500
+Subject: Re: USB mass storage and ARM cache coherency
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>
-In-Reply-To: <1266680582.17363.7.camel@jlt3.sipsolutions.net>
-References: <1266485543.6539.4.camel@jlt3.sipsolutions.net>
-	 <2375c9f91002200126x22b262b3r8b9b58e3cee34077@mail.gmail.com>
-	 <1266664814.11514.5.camel@jlt3.sipsolutions.net>
-	 <20100220135122.GB3000@hack>
-	 <1266674493.18465.9.camel@jlt3.sipsolutions.net>
-	 <20100220150327.GG3000@hack>
-	 <1266678496.32309.1.camel@jlt3.sipsolutions.net>
-	 <20100220152010.GI3000@hack>
-	 <1266679687.17363.1.camel@jlt3.sipsolutions.net>
-	 <20100220154049.GM3000@hack>
-	 <1266680582.17363.7.camel@jlt3.sipsolutions.net>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Greg KH <greg@kroah.com>, "Mankad, Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Ming Lei <tom.leiming@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <201002192153.22159.oliver@neukum.org>
+References: <1266445892.16346.306.camel@pasglop>
+	 <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com>
+	 <1266601011.32546.48.camel@e102109-lin.cambridge.arm.com>
+	 <201002192153.22159.oliver@neukum.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 13:49:13 +1100
-Message-ID: <1266979753.23523.1670.camel@pasglop>
+Date: Wed, 24 Feb 2010 13:48:09 +1100
+Message-ID: <1266979689.23523.1669.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -34,41 +35,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-20 at 16:43 +0100, Johannes Berg wrote:
-> This is required for lockdep.
+On Fri, 2010-02-19 at 21:53 +0100, Oliver Neukum wrote:
+> Am Freitag, 19. Februar 2010 18:36:51 schrieb Catalin Marinas:
+> > If a page is already mapped in user space, flush_dcache_page() on ARM
+> > does the flushing rather than deferring it to update_mmu_cache(). The
+> > PIO HCD drivers, however, don't call flush_dcache_page(). Is it possible
+> > that the HCD could transfer data into a page cache page already mapped
+> > in user space? My understanding is that the scenario above is possible.
+> 
+> Yes, video drivers do that. 
 
-Please CC linuxppc-dev@ozlabs.org or it doesn't get caught by patchwork.
-
-I'll fwd that one myself.
+In which case it would be up to the video driver to call
+flush_dcache_page() (though if it's v4l you are talking about, maybe it
+might make sense to push it into the v4l layer itself).
 
 Cheers,
 Ben.
-
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
->  drivers/macintosh/windfarm_core.c         |    1 +
->  drivers/macintosh/windfarm_smu_controls.c |    1 +
-> 
-> --- wireless-testing.orig/drivers/macintosh/windfarm_smu_controls.c	2010-02-20 16:05:55.738721565 +0100
-> +++ wireless-testing/drivers/macintosh/windfarm_smu_controls.c	2010-02-20 16:07:51.996717974 +0100
-> @@ -173,6 +173,7 @@ static struct smu_fan_control *smu_fan_c
->  
->  	fct->fan_type = pwm_fan;
->  	fct->ctrl.type = pwm_fan ? WF_CONTROL_PWM_FAN : WF_CONTROL_RPM_FAN;
-> +	sysfs_attr_init(&fct->ctrl.attr.attr);
->  
->  	/* We use the name & location here the same way we do for SMU sensors,
->  	 * see the comment in windfarm_smu_sensors.c. The locations are a bit
-> --- wireless-testing.orig/drivers/macintosh/windfarm_core.c	2010-02-20 16:15:14.701580166 +0100
-> +++ wireless-testing/drivers/macintosh/windfarm_core.c	2010-02-20 16:15:38.416369684 +0100
-> @@ -321,6 +321,7 @@ int wf_register_sensor(struct wf_sensor 
->  	kref_init(&new_sr->ref);
->  	list_add(&new_sr->link, &wf_sensors);
->  
-> +	sysfs_attr_init(&new_sr->attr.attr);
->  	new_sr->attr.attr.name = new_sr->name;
->  	new_sr->attr.attr.mode = 0444;
->  	new_sr->attr.show = wf_show_sensor;
-> 
 
 
