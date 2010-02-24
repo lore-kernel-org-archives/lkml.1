@@ -1,41 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757520Ab0BXSYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 13:24:22 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:50315 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757461Ab0BXSYV (ORCPT
+	id S1757536Ab0BXS2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 13:28:17 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:48610 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757471Ab0BXS2P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 13:24:21 -0500
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAMr9hEurRN+J/2dsb2JhbACbEHOkBZhHhHIEgxY
-X-IronPort-AV: E=Sophos;i="4.49,533,1262563200"; 
-   d="scan'208";a="302512752"
-From: Roland Dreier <rdreier@cisco.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 18/18] IB/core: pack struct ib_device a little tighter
-References: <20100202185235.28217.64521.stgit@bob.kio>
-	<20100202190916.28217.90954.stgit@bob.kio>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 24 Feb 2010 10:24:17 -0800
-In-Reply-To: <20100202190916.28217.90954.stgit@bob.kio> (Alex Chiang's message
-	of "Tue, 02 Feb 2010 12:09:16 -0700")
-Message-ID: <adaeika1oha.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Wed, 24 Feb 2010 13:28:15 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
+Date: Wed, 24 Feb 2010 19:27:53 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
+       Nicu Pavel <npavel@ituner.com>
+References: <20100221002001.0a7e05a7@neptune.home> <20100224170049.0d04af3c@neptune.home>
+In-Reply-To: <20100224170049.0d04af3c@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002241927.53532.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied all 18, thanks a lot Alex.  You really made the review easy by
-splitting this up nicely...
+Am Mittwoch, 24. Februar 2010 17:00:49 schrieb Bruno Prémont:
+> +static int picolcd_raw_event(struct hid_device *hdev,
+> +               struct hid_report *report, u8 *raw_data, int size)
+> +{
+> +       struct picolcd_data *data = hid_get_drvdata(hdev);
+> +       char hexdata[25];
+> +       int i;
+> +
+> +       if (data == NULL)
+> +               return 1;
+> +
+> +       for (i = 0; i < sizeof(hexdata) / 2; i++)
+> +               sprintf(hexdata+2*i, "%02hhx", raw_data[i]);
+> +       if (size >= sizeof(hexdata)/2) {
+> +               hexdata[sizeof(hexdata)-4] = '.';
+> +               hexdata[sizeof(hexdata)-3] = '.';
+> +               hexdata[sizeof(hexdata)-2] = '.';
+> +               hexdata[sizeof(hexdata)-1] = '\0';
+> +       } else
+> +               hexdata[size*2] = '\0';
+> +
+> +       switch (report->id) {
+> +       case REPORT_KEYPAD:
+> +               if (size == 3 && raw_data[0] == 0x11 && data->input_keys) {
+> +                       return picolcd_raw_keypad(hdev, report, raw_data+1, size-1);
+> +               } else {
+> +                       dbg_hid(PICOLCD_NAME " unsupported key event (%d bytes): 0x%s\n", size, hexdata);
+> +                       break;
+> +               }
+> +               break;
+> +       case REPORT_VERSION:
+> +               if (size == 3)
+> +                       dev_info(&hdev->dev, "Firmware version is %hd.%hd\n", raw_data[1], raw_data[2]);
+> +
+> +               spin_lock(&data->lock);
 
- - R.
--- 
-Roland Dreier  <rolandd@cisco.com>
-For corporate legal information go to:
-http://www.cisco.com/web/about/doing_business/legal/cri/index.html
+If I recall correctly raw_event is called in interrupt. As you take a spinlock here,
+the lock in code not called in interrupt must disable interrupts, or you may
+deadlock.
+
+	Regards
+		Oliver
