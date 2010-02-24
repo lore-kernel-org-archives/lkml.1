@@ -1,99 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048Ab0BXPEu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:04:50 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58711 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753073Ab0BXPEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 10:04:49 -0500
-Date: Wed, 24 Feb 2010 17:04:47 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-cc: x86@kernel.org, linux-kernel@vger.kernel.org, yinghai@kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: [RFT/PATCH] x86: Unify kernel_physical_mapping_init() API
-Message-ID: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1756149Ab0BXPKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:10:54 -0500
+Received: from www.tglx.de ([62.245.132.106]:35339 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753623Ab0BXPKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 10:10:53 -0500
+Date: Wed, 24 Feb 2010 16:09:40 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: GeunSik Lim <leemgs1@gmail.com>
+cc: Dhaval Giani <dhaval.lists@thegianis.in>, John Kacur <jkacur@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+In-Reply-To: <49b7c2351002240643s1aebe384wee5ee7951e62640e@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1002241609050.4245@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain>  <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain>  <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> 
+ <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>  <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>  <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>  <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com> 
+ <49b7c2351002231708r279049f9hcc9cc6ff205a47fb@mail.gmail.com>  <25891f3e1002231719u4d38ed52w99c66ac669c3d965@mail.gmail.com> <49b7c2351002240643s1aebe384wee5ee7951e62640e@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch changes the 32-bit version of kernel_physical_mapping_init() to
-return the last mapped address like the 64-bit one so that we can unify the
-call-site in init_memory_mapping().
+On Wed, 24 Feb 2010, GeunSik Lim wrote:
 
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-Note: I have only tested this on VirtualBox which is why I tagged the patch as
-RFT.
+> On Wed, Feb 24, 2010 at 10:19 AM, Dhaval Giani
+> <dhaval.lists@thegianis.in> wrote:
+> > Hi GeunSik,
+> > Try the latest tip/rt/head and it should now be fixed up!
+> > Thanks,
+> > --
+> > Dhaval
+> Thank you for your opinion to test with recent version.
+> So, I tried linux-2.6.33-rc8-rt1 based on tip/rt/head as you explained.
+> 
+> Git development branch:
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
 
-  arch/x86/mm/init.c    |    7 -------
-  arch/x86/mm/init_32.c |    8 +++++---
-  2 files changed, 5 insertions(+), 10 deletions(-)
+What's the sha1 of the head commit ?
+ 
+Thanks,
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index d406c52..e71c5cb 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
-  	if (!after_bootmem)
-  		find_early_table_space(end, use_pse, use_gbpages);
-
--#ifdef CONFIG_X86_32
--	for (i = 0; i < nr_range; i++)
--		kernel_physical_mapping_init(mr[i].start, mr[i].end,
--					     mr[i].page_size_mask);
--	ret = end;
--#else /* CONFIG_X86_64 */
-  	for (i = 0; i < nr_range; i++)
-  		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
-  						   mr[i].page_size_mask);
--#endif
-
-  #ifdef CONFIG_X86_32
-  	early_ioremap_page_table_range_init();
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 9a0c258..2226f2c 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
-  			     unsigned long page_size_mask)
-  {
-  	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
-+	unsigned long last_map_addr = end;
-  	unsigned long start_pfn, end_pfn;
-  	pgd_t *pgd_base = swapper_pg_dir;
-  	int pgd_idx, pmd_idx, pte_ofs;
-@@ -341,9 +342,10 @@ repeat:
-  					prot = PAGE_KERNEL_EXEC;
-
-  				pages_4k++;
--				if (mapping_iter == 1)
-+				if (mapping_iter == 1) {
-  					set_pte(pte, pfn_pte(pfn, init_prot));
--				else
-+					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
-+				} else
-  					set_pte(pte, pfn_pte(pfn, prot));
-  			}
-  		}
-@@ -368,7 +370,7 @@ repeat:
-  		mapping_iter = 2;
-  		goto repeat;
-  	}
--	return 0;
-+	return last_map_addr;
-  }
-
-  pte_t *kmap_pte;
--- 
-1.5.6.4
-
+	tglx
