@@ -1,61 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758259Ab0BXVul (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 16:50:41 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:59641 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758203Ab0BXVuj (ORCPT
+	id S1758265Ab0BXVvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 16:51:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44372 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757904Ab0BXVvr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 16:50:39 -0500
-Date: Wed, 24 Feb 2010 16:50:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       <linux-usb@vger.kernel.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "Mankad,Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       Oliver Neukum <oliver@neukum.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: USB mass storage and ARM cache coherency
-In-Reply-To: <1267046036.23523.1693.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.1002241641370.1253-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Feb 2010 16:51:47 -0500
+Date: Wed, 24 Feb 2010 13:50:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: oleg@redhat.com, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] supress uid comparison test if core output files are
+ pipes
+Message-Id: <20100224135053.e75800c1.akpm@linux-foundation.org>
+In-Reply-To: <20100222200851.GD3344@hmsreliant.think-freely.org>
+References: <20100222200851.GD3344@hmsreliant.think-freely.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, Benjamin Herrenschmidt wrote:
+On Mon, 22 Feb 2010 15:44:29 -0500 Neil Horman <nhorman@tuxdriver.com> wrote:
 
-> I'm surprised that usb-storage has an issue here. It shouldn't afaik,
-> since it's just a SCSI driver (or not anymore ?)
+> Modify uid check in do_coredump so as to not apply it in the case of pipes
+> 
+> So this just got noticed in testing.  The end of do_coredump validates the uid
+> of the inode for the created file against the uid of the crashing process to
+> ensure that no one can pre-create a core file with different ownership and grab
+> the information contained in the core when they shouldn' tbe able to.  This
+> causes failures when using pipes for a core dumps if the crashing process is not
+> root, which is the uid of the pipe when it is created.
+> 
+> The fix is simple.  Since the check for matching uid's isn't relevant for pipes
+> (a process can't create a pipe that the uermodehelper code will open anyway), we
+> can just just skip it in the event ispipe is non-zero
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  exec.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 6303d18..6af2214 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -1987,8 +1987,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  	/*
+>  	 * Dont allow local users get cute and trick others to coredump
+>  	 * into their pre-created files:
+> +	 * Note, this is not relevant for pipes
+>  	 */
+> -	if (inode->i_uid != current_fsuid())
+> +	if (!ispipe && (inode->i_uid != current_fsuid()))
+>  		goto close_fail;
+>  	if (!cprm.file->f_op)
+>  		goto close_fail;
 
-It still is.  There's also the ub driver, which is a non-SCSI block 
-device driver for some of the same devices handled by usb-storage.
+hm, this actually appears to fix a regression, added by:
 
-> and the BIO or
-> filesystems handle things there no ? I haven't seen a single call to
-> flush_dcache_page() in any of drivers/scsi, drivers/ata or drivers/ide
-> when I looked...
 
-There is no real issue; it's just that the problem was first noted in 
-connection with usb-storage reading in executable pages, so Catalin's 
-initial post was oriented toward modifying usb-storage.
 
-The main issue here is that the same host controller will use PIO
-sometimes and DMA sometimes, depending on the details of the transfer.  
-The USB core didn't expect this and consequently we violated the rules
-for DMA mapping.  The question is: If the core is fixed so that the
-rules aren't violated, will everything work correctly?
+commit c46f739dd39db3b07ab5deb4e3ec81e1c04a91af
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed Nov 28 13:59:18 2007 +0100
+Commit:     Linus Torvalds <torvalds@woody.linux-foundation.org>
+CommitDate: Wed Nov 28 10:58:01 2007 -0800
 
-Alan Stern
+    vfs: coredumping fix
+    
+    fix: http://bugzilla.kernel.org/show_bug.cgi?id=3043
+    
+    only allow coredumping to the same uid that the coredumping
+    task runs under.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Acked-by: Alan Cox <alan@redhat.com>
+    Acked-by: Christoph Hellwig <hch@lst.de>
+    Acked-by: Al Viro <viro@ftp.linux.org.uk>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 4ccaaa4..282240a 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1780,6 +1780,12 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+ 	   but keep the previous behaviour for now. */
+ 	if (!ispipe && !S_ISREG(inode->i_mode))
+ 		goto close_fail;
++	/*
++	 * Dont allow local users get cute and trick others to coredump
++	 * into their pre-created files:
++	 */
++	if (inode->i_uid != current->fsuid)
++		goto close_fail;
+ 	if (!file->f_op)
+ 		goto close_fail;
+ 	if (!file->f_op->write)
 
