@@ -1,54 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379Ab0BXWLj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:11:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49311 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758360Ab0BXWLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:11:37 -0500
-Message-ID: <4B85A331.7040909@kernel.org>
-Date: Wed, 24 Feb 2010 14:07:45 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1758259Ab0BXWRf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:17:35 -0500
+Received: from mail-yw0-f197.google.com ([209.85.211.197]:56948 "EHLO
+	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757387Ab0BXWRe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 17:17:34 -0500
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH -v2 2/2] genericirq: change ack/mask in irq_chip to take
- irq_desc instead of irq
-References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>	<m16360ohi2.fsf@fess.ebiederm.org> <4B773CEB.9010609@kernel.org>	<m1sk94mzg0.fsf@fess.ebiederm.org> <4B7CA9A1.3020806@kernel.org>	<4B7CAADD.2060000@kernel.org> <m1mxz6v4pm.fsf@fess.ebiederm.org>	<4B83781B.20307@kernel.org> <4B837930.2050907@kernel.org> <m1ljei5n9q.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljei5n9q.fsf@fess.ebiederm.org>
+In-Reply-To: <20100224214442.GB18437@suse.de>
+References: <20100224210514.16289.86611.stgit@angua> <20100224214442.GB18437@suse.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 24 Feb 2010 15:09:24 -0700
+X-Google-Sender-Auth: 5bd79f0784e71c51
+Message-ID: <fa686aa41002241409x4bcdabfet43e410eb8c480166@mail.gmail.com>
+Subject: Re: [RFC] driver-core: Add device node pointer to struct device
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+       kay.sievers@vrfy.org, benh@kernel.crashing.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 01:36 PM, Eric W. Biederman wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
-> 
->> will have
->> void            (*ack)(struct irq_desc *desc);
->> void            (*mask)(struct irq_desc *desc);
->> void            (*mask_ack)(struct irq_desc *desc);
->> void            (*unmask)(struct irq_desc *desc);
->> void            (*eoi)(struct irq_desc *desc);
+On Wed, Feb 24, 2010 at 2:44 PM, Greg KH <gregkh@suse.de> wrote:
+> On Wed, Feb 24, 2010 at 02:10:30PM -0700, Grant Likely wrote:
+>> Greg and Kay,
 >>
->> so for sparseirq with raidix tree, we don't call extra irq_to_desc, and could use desc directly
-> 
-> Overall this looks pretty decent.  This look pretty complete.
-> How many platforms did you manage to compile test this on?
+>> This is a patch from a larger series of OF related cleanup patches.  This
+>> one adds a new 'of_node' member to struct device, conditional upon
+>> CONFIG_OF.  The goal is to move of_node out of archdata because all
+>> arches using CONFIG_OF need it.
+>>
+>> Before I commit too much effort down this path, I want to get your
+>> feedback.  Do you have any objections to this change to struct device?
+>>
+>> @@ -414,6 +415,9 @@ struct device {
+>>                                            override */
+>>       /* arch specific additions */
+>>       struct dev_archdata     archdata;
+>> +#ifdef CONFIG_OF
+>> +     struct device_node      *of_node;
+>> +#endif
+>
+> No objection from me, but do we really need the #ifdef here?
 
-x86 only.
+I added the #ifdef because it is complete dead weight when CONFIG_OF
+is not set.  However, I'll defer to your preference here on what looks
+cleaner w.r.t. maintenance.
 
-any guide to setup cross compiling for 22 archs ?
-on x86_64 platform please
+>> Full patch follows...
+>
+> Do you want to take this patch through your tree?  If so, feel free to
+> add:
+>        Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Thanks
+I'll take it through my tree.  I've got a lot of related patches that
+it should be grouped with, and I'm going to defer it to the 2.6.35
+merge window so that it can get some linux-next exposure.
 
-Yinghai Lu
+> to the patch.
+>
+> If not, let me know and I'll take it through my tree.
+>
+> Glad to see this work coming along, nice job.
+
+Thanks!
+
+Cheers,
+g.
