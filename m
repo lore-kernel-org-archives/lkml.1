@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477Ab0BXUFd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:05:33 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:63878 "EHLO
+	id S1758001Ab0BXUFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:05:42 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:60253 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757453Ab0BXUF3 (ORCPT
+	with ESMTP id S1757453Ab0BXUFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:05:29 -0500
+	Wed, 24 Feb 2010 15:05:37 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulmck@linux.vnet.ibm.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
@@ -15,136 +15,132 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
        dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
        peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
        dhowells@redhat.com
-Subject: [PATCH 08/10] pid: __rcu annotations
-Date: Wed, 24 Feb 2010 21:04:04 +0100
-Message-Id: <1267041846-10469-9-git-send-email-arnd@arndb.de>
+Subject: [PATCH 09/10] notifiers: __rcu annotations
+Date: Wed, 24 Feb 2010 21:04:05 +0100
+Message-Id: <1267041846-10469-10-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 References: <1267041846-10469-1-git-send-email-arnd@arndb.de>
 In-Reply-To: <20100223180127.GF6700@linux.vnet.ibm.com>
 References: <20100223180127.GF6700@linux.vnet.ibm.com>
-X-Provags-ID: V01U2FsdGVkX19UZt8XMfYzMH5m9G5c42B1LWgzS/KwTStMWNz
- +2y/4flrlX8IshlCUdFqCM8DIgFRmUjxt6hGGsqQC/j/SbELSg
- Aik512X0krwcwDKUGNRKg==
+X-Provags-ID: V01U2FsdGVkX1+BfRIoeObEVbJmoV5Zjq2S3BfCGM2odkIEn8/
+ 5RUDW7ogGF8YYQinX8WGV8/My7QR3CmZVm6mE4VTTbl0mljjIr
+ XrIyk7gQnBsp/whEN2OXA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This demonstrates static initialization of __rcu annotated
-variables using RCU_INIT_POINTER.
-
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/init_task.h |    6 +++---
- include/linux/pid.h       |    9 +++++----
- kernel/pid.c              |    8 ++++----
- 3 files changed, 12 insertions(+), 11 deletions(-)
+ include/linux/notifier.h |   10 +++++-----
+ kernel/notifier.c        |   22 +++++++++++-----------
+ 2 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index abec69b..c9cf902 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -53,9 +53,9 @@ extern struct group_info init_groups;
- #define INIT_STRUCT_PID {						\
- 	.count 		= ATOMIC_INIT(1),				\
- 	.tasks		= {						\
--		{ .first = &init_task.pids[PIDTYPE_PID].node },		\
--		{ .first = &init_task.pids[PIDTYPE_PGID].node },	\
--		{ .first = &init_task.pids[PIDTYPE_SID].node },		\
-+		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_PID].node)  }, \
-+		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_PGID].node) }, \
-+		{ RCU_INIT_POINTER(.first, &init_task.pids[PIDTYPE_SID].node)  }, \
- 	},								\
- 	.rcu		= RCU_HEAD_INIT,				\
- 	.level		= 0,						\
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index 49f1c2f..8eb2aa1 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -2,6 +2,7 @@
- #define _LINUX_PID_H
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index fee6c2f..f05f5e4 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -49,28 +49,28 @@
  
- #include <linux/rcupdate.h>
-+#include <linux/rculist.h>
- 
- enum pid_type
- {
-@@ -51,7 +52,7 @@ struct upid {
- 	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
- 	int nr;
- 	struct pid_namespace *ns;
--	struct hlist_node pid_chain;
-+	struct rcu_hlist_node pid_chain;
+ struct notifier_block {
+ 	int (*notifier_call)(struct notifier_block *, unsigned long, void *);
+-	struct notifier_block *next;
++	struct notifier_block __rcu *next;
+ 	int priority;
  };
  
- struct pid
-@@ -59,7 +60,7 @@ struct pid
- 	atomic_t count;
- 	unsigned int level;
- 	/* lists of tasks that use this pid */
--	struct hlist_head tasks[PIDTYPE_MAX];
-+	struct rcu_hlist_head tasks[PIDTYPE_MAX];
- 	struct rcu_head rcu;
- 	struct upid numbers[1];
- };
-@@ -68,7 +69,7 @@ extern struct pid init_struct_pid;
- 
- struct pid_link
- {
--	struct hlist_node node;
-+	struct rcu_hlist_node node;
- 	struct pid *pid;
+ struct atomic_notifier_head {
+ 	spinlock_t lock;
+-	struct notifier_block *head;
++	struct notifier_block __rcu *head;
  };
  
-@@ -164,7 +165,7 @@ pid_t pid_vnr(struct pid *pid);
+ struct blocking_notifier_head {
+ 	struct rw_semaphore rwsem;
+-	struct notifier_block *head;
++	struct notifier_block __rcu *head;
+ };
  
- #define do_each_pid_task(pid, type, task)				\
- 	do {								\
--		struct hlist_node *pos___;				\
-+		struct rcu_hlist_node *pos___;				\
- 		if ((pid) != NULL)					\
- 			hlist_for_each_entry_rcu((task), pos___,	\
- 				&(pid)->tasks[type], pids[type].node) {
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 2e17c9c..871d75e 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -39,7 +39,7 @@
+ struct raw_notifier_head {
+-	struct notifier_block *head;
++	struct notifier_block __rcu *head;
+ };
  
- #define pid_hashfn(nr, ns)	\
- 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
--static struct hlist_head *pid_hash;
-+static struct rcu_hlist_head *pid_hash;
- static unsigned int pidhash_shift = 4;
- struct pid init_struct_pid = INIT_STRUCT_PID;
+ struct srcu_notifier_head {
+ 	struct mutex mutex;
+ 	struct srcu_struct srcu;
+-	struct notifier_block *head;
++	struct notifier_block __rcu *head;
+ };
  
-@@ -290,7 +290,7 @@ out_free:
+ #define ATOMIC_INIT_NOTIFIER_HEAD(name) do {	\
+diff --git a/kernel/notifier.c b/kernel/notifier.c
+index acd24e7..c0e8489 100644
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -18,43 +18,43 @@ BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
+  *	are layered on top of these, with appropriate locking added.
+  */
  
- struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
+-static int notifier_chain_register(struct notifier_block **nl,
++static int notifier_chain_register(struct notifier_block __rcu **nl,
+ 		struct notifier_block *n)
  {
--	struct hlist_node *elem;
-+	struct rcu_hlist_node *elem;
- 	struct upid *pnr;
+ 	while ((*nl) != NULL) {
+-		if (n->priority > (*nl)->priority)
++		if (n->priority > __rcu_dereference(*nl)->priority)
+ 			break;
+-		nl = &((*nl)->next);
++		nl = __rcu_dereference(&((*nl)->next));
+ 	}
+ 	n->next = *nl;
+ 	rcu_assign_pointer(*nl, n);
+ 	return 0;
+ }
  
- 	hlist_for_each_entry_rcu(pnr, elem,
-@@ -336,7 +336,7 @@ static void __change_pid(struct task_struct *task, enum pid_type type,
- 	link->pid = new;
- 
- 	for (tmp = PIDTYPE_MAX; --tmp >= 0; )
--		if (!hlist_empty(&pid->tasks[tmp]))
-+		if (!hlist_empty_rcu(&pid->tasks[tmp]))
- 			return;
- 
- 	free_pid(pid);
-@@ -366,7 +366,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+-static int notifier_chain_cond_register(struct notifier_block **nl,
++static int notifier_chain_cond_register(struct notifier_block __rcu **nl,
+ 		struct notifier_block *n)
  {
- 	struct task_struct *result = NULL;
- 	if (pid) {
--		struct hlist_node *first;
-+		struct rcu_hlist_node *first;
- 		first = rcu_dereference(pid->tasks[type].first);
- 		if (first)
- 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
+ 	while ((*nl) != NULL) {
+-		if ((*nl) == n)
++		if (__rcu_dereference(*nl) == n)
+ 			return 0;
+-		if (n->priority > (*nl)->priority)
++		if (n->priority > __rcu_dereference(*nl)->priority)
+ 			break;
+-		nl = &((*nl)->next);
++		nl = __rcu_dereference(&((*nl)->next));
+ 	}
+ 	n->next = *nl;
+ 	rcu_assign_pointer(*nl, n);
+ 	return 0;
+ }
+ 
+-static int notifier_chain_unregister(struct notifier_block **nl,
++static int notifier_chain_unregister(struct notifier_block __rcu **nl,
+ 		struct notifier_block *n)
+ {
+ 	while ((*nl) != NULL) {
+-		if ((*nl) == n) {
++		if (__rcu_dereference(*nl) == n) {
+ 			rcu_assign_pointer(*nl, n->next);
+ 			return 0;
+ 		}
+-		nl = &((*nl)->next);
++		nl = __rcu_dereference(&((*nl)->next));
+ 	}
+ 	return -ENOENT;
+ }
+@@ -71,7 +71,7 @@ static int notifier_chain_unregister(struct notifier_block **nl,
+  *	@returns:	notifier_call_chain returns the value returned by the
+  *			last notifier function called.
+  */
+-static int __kprobes notifier_call_chain(struct notifier_block **nl,
++static int __kprobes notifier_call_chain(struct notifier_block __rcu **nl,
+ 					unsigned long val, void *v,
+ 					int nr_to_call,	int *nr_calls)
+ {
 -- 
 1.6.3.3
 
