@@ -1,56 +1,378 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904Ab0BXUOH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:14:07 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:39580 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757582Ab0BXUOF (ORCPT
+	id S1757940Ab0BXUPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:15:14 -0500
+Received: from mail.openrapids.net ([64.15.138.104]:44027 "EHLO
+	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757580Ab0BXUPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:14:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iV8kuQAWGEcpRCBYbxg5OQuXtOZfFZCKYhNhEFukb+RF++0+bclw7MODmTXrLwl/R/
-         O5O3yblefCPna8n2DjdcEdpk2GQQmc36SqZi2+srfrtOIMSlYQ9qenbARb1wX0yU73H9
-         5sapemmkkZz/Oiaezu2zb1SOcCu7hpOmeXQH4=
-Date: Wed, 24 Feb 2010 22:13:54 +0200
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Wed, 24 Feb 2010 15:15:12 -0500
+Date: Wed, 24 Feb 2010 15:15:09 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: paulmck@linux.vnet.ibm.com,
-       Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [PATCH 07/10] module: __rcu annotations
-Message-ID: <20100224201354.GA3399@core2>
-References: <20100223180127.GF6700@linux.vnet.ibm.com>
- <1267041846-10469-8-git-send-email-arnd@arndb.de>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH 02/10] rcu: annotated list rcu code
+Message-ID: <20100224201509.GB21067@Krystal>
+References: <20100223180127.GF6700@linux.vnet.ibm.com> <1267041846-10469-3-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267041846-10469-8-git-send-email-arnd@arndb.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267041846-10469-3-git-send-email-arnd@arndb.de>
+X-Editor: vi
+X-Info: http://www.efficios.com
+X-Operating-System: Linux/2.6.26-2-686 (i686)
+X-Uptime: 15:13:49 up 32 days, 22:51,  6 users,  load average: 0.70, 0.98,
+	1.30
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 09:04:03PM +0100, Arnd Bergmann wrote:
-> @@ -360,10 +360,12 @@ struct module *find_module(const char *name)
->  {
->  	struct module *mod;
->  
-> -	list_for_each_entry(mod, &modules, list) {
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(mod, &modules, list) {
->  		if (strcmp(mod->name, name) == 0)
->  			return mod;
->  	}
-> +	rcu_read_unlock();
->  	return NULL;
->  }
->  EXPORT_SYMBOL_GPL(find_module);
+* Arnd Bergmann (arnd@arndb.de) wrote:
+> The listrcu implementation now defines new rcu_list_head,
+> rcu_hlist_head and rcu_hlist_entry structures that are
+> annotated with __rcu. Only these can now be passed into
+> rcu_list_for_each and related interfaces.
+> 
+> When not running sparse, the types are defined to the
+> original list_head etc in order to not break working
+> setups that are lacking annotation.
 
-modules list is under module_mutex, nothing should be done here.
+Hrm, wait.. dumb question: how can an annotation break compilation ? If there is
+any way out of this, I would prefer if we can do without a #ifdef __CHECKER__ if
+possible. It calls for bugs and implementation mismatch.
+
+Thanks,
+
+Mathieu
+
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  include/linux/rculist.h |  152 ++++++++++++++++++++++++++++++++++------------
+>  1 files changed, 112 insertions(+), 40 deletions(-)
+> 
+> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+> index 1bf0f70..dfbc6ea 100644
+> --- a/include/linux/rculist.h
+> +++ b/include/linux/rculist.h
+> @@ -9,16 +9,67 @@
+>  #include <linux/list.h>
+>  #include <linux/rcupdate.h>
+>  
+> +#ifdef __CHECKER__
+> +struct rcu_list_head {
+> +	struct rcu_list_head __rcu *next;
+> +	struct rcu_list_head *prev;
+> +};
+> +#define LIST_HEAD_INIT_RCU(name) { (struct rcu_list_head __force __rcu *)&(name), &(name) }
+> +
+> +#define LIST_HEAD_RCU(name) \
+> +	struct rcu_list_head name = LIST_HEAD_INIT_RCU(name)
+> +
+> +static inline void INIT_LIST_HEAD_RCU(struct rcu_list_head *list)
+> +{
+> +	__rcu_assign_pointer(list->next, list);
+> +	list->prev = list;
+> +}
+> +
+> +struct rcu_hlist_head {
+> +	struct rcu_hlist_node __rcu *first;
+> +};
+> +
+> +struct rcu_hlist_node {
+> +	struct rcu_hlist_node __rcu *next, **pprev;
+> +};
+> +
+> +#define HLIST_HEAD_INIT_RCU { .first = (void __rcu __force *)NULL }
+> +#define HLIST_HEAD_RCU(name) struct rcu_hlist_head name = \
+> +		{  .first = (void __rcu __force *)NULL }
+> +#define INIT_HLIST_HEAD_RCU(ptr) ((ptr)->first = (void __rcu __force *)NULL)
+> +static inline void INIT_HLIST_NODE_RCU(struct rcu_hlist_node *h)
+> +{
+> +	__rcu_assign_pointer(h->next, NULL);
+> +	h->pprev = NULL;
+> +}
+> +
+> +#else /* !__CHECKER__ */
+> +
+> +#define rcu_list_head list_head
+> +#define LIST_HEAD_INIT_RCU LIST_HEAD_INIT
+> +#define LIST_HEAD_RCU LIST_HEAD
+> +#define INIT_LIST_HEAD_RCU INIT_LIST_HEAD
+> +
+> +#define rcu_hlist_head hlist_head
+> +#define rcu_hlist_node hlist_node
+> +#define HLIST_HEAD_INIT_RCU HLIST_HEAD_INIT
+> +#define HLIST_HEAD_RCU HLIST_HEAD
+> +#define INIT_HLIST_HEAD_RCU INIT_HLIST_HEAD
+> +#define INIT_HLIST_NODE_RCU INIT_HLIST_NODE
+> +
+> +#endif /* !__CHECKER__ */
+> +
+> +
+>  /*
+>   * Insert a new entry between two known consecutive entries.
+>   *
+>   * This is only for internal list manipulation where we know
+>   * the prev/next entries already!
+>   */
+> -static inline void __list_add_rcu(struct list_head *new,
+> -		struct list_head *prev, struct list_head *next)
+> +static inline void __list_add_rcu(struct rcu_list_head *new,
+> +		struct rcu_list_head *prev, struct rcu_list_head *next)
+>  {
+> -	new->next = next;
+> +	__rcu_assign_pointer(new->next, next);
+>  	new->prev = prev;
+>  	rcu_assign_pointer(prev->next, new);
+>  	next->prev = new;
+> @@ -40,9 +91,9 @@ static inline void __list_add_rcu(struct list_head *new,
+>   * the _rcu list-traversal primitives, such as
+>   * list_for_each_entry_rcu().
+>   */
+> -static inline void list_add_rcu(struct list_head *new, struct list_head *head)
+> +static inline void list_add_rcu(struct rcu_list_head *new, struct rcu_list_head *head)
+>  {
+> -	__list_add_rcu(new, head, head->next);
+> +	__list_add_rcu(new, head, __rcu_dereference(head->next));
+>  }
+>  
+>  /**
+> @@ -61,8 +112,8 @@ static inline void list_add_rcu(struct list_head *new, struct list_head *head)
+>   * the _rcu list-traversal primitives, such as
+>   * list_for_each_entry_rcu().
+>   */
+> -static inline void list_add_tail_rcu(struct list_head *new,
+> -					struct list_head *head)
+> +static inline void list_add_tail_rcu(struct rcu_list_head *new,
+> +					struct rcu_list_head *head)
+>  {
+>  	__list_add_rcu(new, head->prev, head);
+>  }
+> @@ -91,13 +142,29 @@ static inline void list_add_tail_rcu(struct list_head *new,
+>   * or call_rcu() must be used to defer freeing until an RCU
+>   * grace period has elapsed.
+>   */
+> -static inline void list_del_rcu(struct list_head *entry)
+> +static inline void __list_del_rcu(struct rcu_list_head *prev, struct rcu_list_head *next)
+>  {
+> -	__list_del(entry->prev, entry->next);
+> +	next->prev = prev;
+> +	__rcu_assign_pointer(prev->next, next);
+> +}
+> +
+> +static inline void list_del_rcu(struct rcu_list_head *entry)
+> +{
+> +	__list_del_rcu(entry->prev, __rcu_dereference(entry->next));
+>  	entry->prev = LIST_POISON2;
+>  }
+>  
+>  /**
+> + * list_empty - tests whether a list is empty
+> + * @head: the list to test.
+> + */
+> +static inline int list_empty_rcu(const struct rcu_list_head *head)
+> +{
+> +	return rcu_dereference(head->next) == head;
+> +}
+> +
+> +
+> +/**
+>   * hlist_del_init_rcu - deletes entry from hash list with re-initialization
+>   * @n: the element to delete from the hash list.
+>   *
+> @@ -117,7 +184,7 @@ static inline void list_del_rcu(struct list_head *entry)
+>   * perfectly legal to run concurrently with the _rcu list-traversal
+>   * primitives, such as hlist_for_each_entry_rcu().
+>   */
+> -static inline void hlist_del_init_rcu(struct hlist_node *n)
+> +static inline void hlist_del_init_rcu(struct rcu_hlist_node *n)
+>  {
+>  	if (!hlist_unhashed(n)) {
+>  		__hlist_del(n);
+> @@ -133,13 +200,13 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
+>   * The @old entry will be replaced with the @new entry atomically.
+>   * Note: @old should not be empty.
+>   */
+> -static inline void list_replace_rcu(struct list_head *old,
+> -				struct list_head *new)
+> +static inline void list_replace_rcu(struct rcu_list_head *old,
+> +				struct rcu_list_head *new)
+>  {
+>  	new->next = old->next;
+>  	new->prev = old->prev;
+> -	rcu_assign_pointer(new->prev->next, new);
+> -	new->next->prev = new;
+> +	__rcu_assign_pointer(new->prev->next, new);
+> +	rcu_dereference(new->next)->prev = new;
+>  	old->prev = LIST_POISON2;
+>  }
+>  
+> @@ -160,13 +227,13 @@ static inline void list_replace_rcu(struct list_head *old,
+>   *	based on call_rcu() could be created.  But only if -really-
+>   *	needed -- there is no shortage of RCU API members.
+>   */
+> -static inline void list_splice_init_rcu(struct list_head *list,
+> -					struct list_head *head,
+> +static inline void list_splice_init_rcu(struct rcu_list_head *list,
+> +					struct rcu_list_head *head,
+>  					void (*sync)(void))
+>  {
+> -	struct list_head *first = list->next;
+> -	struct list_head *last = list->prev;
+> -	struct list_head *at = head->next;
+> +	struct rcu_list_head *first = __rcu_dereference(list->next);
+> +	struct rcu_list_head *last = list->prev;
+> +	struct rcu_list_head *at = __rcu_dereference(head->next);
+>  
+>  	if (list_empty(head))
+>  		return;
+> @@ -192,7 +259,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>  	 * this function.
+>  	 */
+>  
+> -	last->next = at;
+> +	__rcu_assign_pointer(last->next,at);
+>  	rcu_assign_pointer(head->next, first);
+>  	first->prev = head;
+>  	at->prev = last;
+> @@ -200,7 +267,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>  
+>  /**
+>   * list_entry_rcu - get the struct for this entry
+> - * @ptr:        the &struct list_head pointer.
+> + * @ptr:        the &struct rcu_list_head pointer.
+>   * @type:       the type of the struct this is embedded in.
+>   * @member:     the name of the list_struct within the struct.
+>   *
+> @@ -241,13 +308,13 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>   */
+>  #define list_for_each_entry_rcu(pos, head, member) \
+>  	for (pos = list_entry_rcu((head)->next, typeof(*pos), member); \
+> -		prefetch(pos->member.next), &pos->member != (head); \
+> +		prefetch(__rcu_dereference(pos->member.next)), &pos->member != (head); \
+>  		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
+>  
+>  
+>  /**
+>   * list_for_each_continue_rcu
+> - * @pos:	the &struct list_head to use as a loop cursor.
+> + * @pos:	the &struct rcu_list_head to use as a loop cursor.
+>   * @head:	the head for your list.
+>   *
+>   * Iterate over an rcu-protected list, continuing after current point.
+> @@ -294,9 +361,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+>   * the _rcu list-traversal primitives, such as
+>   * hlist_for_each_entry().
+>   */
+> -static inline void hlist_del_rcu(struct hlist_node *n)
+> +static inline void hlist_del_rcu(struct rcu_hlist_node *n)
+>  {
+> -	__hlist_del(n);
+> +	__hlist_del((struct hlist_node *)n);
+>  	n->pprev = LIST_POISON2;
+>  }
+>  
+> @@ -307,16 +374,16 @@ static inline void hlist_del_rcu(struct hlist_node *n)
+>   *
+>   * The @old entry will be replaced with the @new entry atomically.
+>   */
+> -static inline void hlist_replace_rcu(struct hlist_node *old,
+> -					struct hlist_node *new)
+> +static inline void hlist_replace_rcu(struct rcu_hlist_node *old,
+> +					struct rcu_hlist_node *new)
+>  {
+> -	struct hlist_node *next = old->next;
+> +	struct rcu_hlist_node __rcu *next = old->next;
+>  
+>  	new->next = next;
+>  	new->pprev = old->pprev;
+>  	rcu_assign_pointer(*new->pprev, new);
+>  	if (next)
+> -		new->next->pprev = &new->next;
+> +		__rcu_dereference(new->next)->pprev = &new->next;
+>  	old->pprev = LIST_POISON2;
+>  }
+>  
+> @@ -339,12 +406,12 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
+>   * problems on Alpha CPUs.  Regardless of the type of CPU, the
+>   * list-traversal primitive must be guarded by rcu_read_lock().
+>   */
+> -static inline void hlist_add_head_rcu(struct hlist_node *n,
+> -					struct hlist_head *h)
+> +static inline void hlist_add_head_rcu(struct rcu_hlist_node *n,
+> +					struct rcu_hlist_head *h)
+>  {
+> -	struct hlist_node *first = h->first;
+> +	struct rcu_hlist_node *first = __rcu_dereference(h->first);
+>  
+> -	n->next = first;
+> +	__rcu_assign_pointer(n->next, first);
+>  	n->pprev = &h->first;
+>  	rcu_assign_pointer(h->first, n);
+>  	if (first)
+> @@ -369,8 +436,8 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
+>   * hlist_for_each_entry_rcu(), used to prevent memory-consistency
+>   * problems on Alpha CPUs.
+>   */
+> -static inline void hlist_add_before_rcu(struct hlist_node *n,
+> -					struct hlist_node *next)
+> +static inline void hlist_add_before_rcu(struct rcu_hlist_node *n,
+> +					struct rcu_hlist_node *next)
+>  {
+>  	n->pprev = next->pprev;
+>  	n->next = next;
+> @@ -396,8 +463,8 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
+>   * hlist_for_each_entry_rcu(), used to prevent memory-consistency
+>   * problems on Alpha CPUs.
+>   */
+> -static inline void hlist_add_after_rcu(struct hlist_node *prev,
+> -				       struct hlist_node *n)
+> +static inline void hlist_add_after_rcu(struct rcu_hlist_node *prev,
+> +				       struct rcu_hlist_node *n)
+>  {
+>  	n->next = prev->next;
+>  	n->pprev = &prev->next;
+> @@ -406,12 +473,17 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+>  		n->next->pprev = &n->next;
+>  }
+>  
+> +static inline int hlist_empty_rcu(const struct rcu_hlist_head *h)
+> +{
+> +	return !__rcu_dereference(h->first);
+> +}
+> +
+>  /**
+>   * hlist_for_each_entry_rcu - iterate over rcu list of given type
+>   * @tpos:	the type * to use as a loop cursor.
+> - * @pos:	the &struct hlist_node to use as a loop cursor.
+> + * @pos:	the &struct rcu_hlist_node to use as a loop cursor.
+>   * @head:	the head for your list.
+> - * @member:	the name of the hlist_node within the struct.
+> + * @member:	the name of the rcu_hlist_node within the struct.
+>   *
+>   * This list-traversal primitive may safely run concurrently with
+>   * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+> @@ -419,7 +491,7 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+>   */
+>  #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+>  	for (pos = rcu_dereference((head)->first);			 \
+> -		pos && ({ prefetch(pos->next); 1; }) &&			 \
+> +		pos && ({ prefetch(__rcu_dereference(pos->next)); 1; }) &&			 \
+>  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+>  		pos = rcu_dereference(pos->next))
+>  
+> -- 
+> 1.6.3.3
+> 
+
+-- 
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
