@@ -1,44 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702Ab0BXF2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 00:28:47 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:61126 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968Ab0BXF2q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 00:28:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kVFRk8WaoQuOe67dzO69lzSnvHwxRqNpUsQTyEDT+or7cbbKQ9VGz/djJe/Abk2k6u
-         WSf6DELCUf4QQE9yakh3PDMrv0PSO7aZbBL89VCM1XdrrNxFIQa+FL2tu4ygLWWQaJsr
-         VMOjOpXPaVjLYkJWqOwnSpXZbh41ylfr1WT8A=
+	id S1752904Ab0BXFav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:30:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7573 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750968Ab0BXFau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 00:30:50 -0500
+Message-ID: <4B84BA58.3040701@redhat.com>
+Date: Wed, 24 Feb 2010 13:34:16 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-In-Reply-To: <201002231758.17454.arnd@arndb.de>
-References: <912ec82a1002230847h11d0f628rbd38b12f38270735@mail.gmail.com>
-	 <201002231758.17454.arnd@arndb.de>
-Date: Wed, 24 Feb 2010 07:28:44 +0200
-Message-ID: <912ec82a1002232128y5ac10c0bpf38e46f6c2d20872@mail.gmail.com>
-Subject: Re: sysfs vs. ioctl
-From: Neshama Parhoti <pneshama@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+References: <1266752533.3428.28.camel@Nokia-N900-42-11> <4B81EFD8.8020202@redhat.com> <201002221829.13987.opurdila@ixiacom.com> <4B84B7F0.7090709@redhat.com>
+In-Reply-To: <4B84B7F0.7090709@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 6:58 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> One rule of thumb is that if you already require a character device, using ioctl
-> is the right answer, but you shouldn't create a character device
-> if all you want to do over it is a single ioctl operation.
+Cong Wang wrote:
+>> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+>> index 5259727..d8ea839 100644
+>> --- a/kernel/sysctl.c
+>> +++ b/kernel/sysctl.c
+>> @@ -2635,6 +2635,140 @@ static int proc_do_cad_pid(struct ctl_table 
+>> *table, int write,
+> 
+> 
+> The above line is wrong, it should be a part of previous line.
+> 
+> 
 
-thank you so much this really helped !
-
-~pnesh
-
->
->        Arnd
->
+Sorry, ignore this, it should be my thunderbird's fault,
+it truncated the line. I will fix it...
