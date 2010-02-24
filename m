@@ -1,100 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671Ab0BXDMO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:12:14 -0500
+	id S1755095Ab0BXDQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:16:00 -0500
 Received: from mga11.intel.com ([192.55.52.93]:10294 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754365Ab0BXDMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:12:08 -0500
+	id S1754390Ab0BXDMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:12:09 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
-   d="scan'208";a="775369722"
-Message-Id: <20100224031053.737437080@intel.com>
+   d="scan'208";a="775369726"
+Message-Id: <20100224031054.032435626@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 24 Feb 2010 11:10:02 +0800
+Date: Wed, 24 Feb 2010 11:10:04 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Li Shaohua <shaohua.li@intel.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
+CC: Jens Axboe <jens.axboe@oracle.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       Matt Mackall <mpm@selenic.com>, David Woodhouse <dwmw2@infradead.org>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
        Wu Fengguang <fengguang.wu@intel.com>
-CC: Chris Mason <chris.mason@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Clemens Ladisch <clemens@ladisch.de>
 CC: Olivier Galibert <galibert@pobox.com>
 cc: Vivek Goyal <vgoyal@redhat.com>
-cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-cc: Matt Mackall <mpm@selenic.com>
 CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 01/15] readahead: limit readahead size for small devices
+Subject: [PATCH 03/15] readahead: bump up the default readahead size
 References: <20100224031001.026464755@intel.com>
-Content-Disposition: inline; filename=readahead-size-for-tiny-device.patch
+Content-Disposition: inline; filename=readahead-enlarge-default-size.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus reports a _really_ small & slow (505kB, 15kB/s) USB device,
-on which blkid runs unpleasantly slow. He manages to optimize the blkid
-reads down to 1kB+16kB, but still kernel read-ahead turns it into 48kB.
+Use 512kb max readahead size, and 32kb min readahead size.
 
-     lseek 0,    read 1024   => readahead 4 pages (start of file)
-     lseek 1536, read 16384  => readahead 8 pages (page contiguous)
+The former helps io performance for common workloads.
+The latter will be used in the thrashing safe context readahead.
 
-The readahead heuristics involved here are reasonable ones in general.
-So it's good to fix blkid with fadvise(RANDOM), as Linus already did.
 
-For the kernel part, Linus suggests:
-  So maybe we could be less aggressive about read-ahead when the size of
-  the device is small? Turning a 16kB read into a 64kB one is a big deal,
-  when it's about 15% of the whole device!
+====== Rationals on the 512kb size ======
 
-This looks reasonable: smaller device tend to be slower (USB sticks as
-well as micro/mobile/old hard disks).
+I believe it yields more I/O throughput without noticeably increasing
+I/O latency for today's HDD.
 
-Given that the non-rotational attribute is not always reported, we can
-take disk size as a max readahead size hint. This patch uses a formula
-that generates the following concrete limits:
+For example, for a 100MB/s and 8ms access time HDD, its random IO or
+highly concurrent sequential IO would in theory be:
 
-        disk size    readahead size
-     (scale by 4)      (scale by 2)
-               1M                8k
-               4M               16k
-              16M               32k
-              64M               64k
-             256M              128k
-               1G              256k
-        --------------------------- (*)
-               4G              512k
-              16G             1024k
-              64G             2048k
-             256G             4096k
+io_size KB  access_time  transfer_time  io_latency   util%   throughput KB/s
+4           8             0.04           8.04        0.49%    497.57  
+8           8             0.08           8.08        0.97%    990.33  
+16          8             0.16           8.16        1.92%   1961.69 
+32          8             0.31           8.31        3.76%   3849.62 
+64          8             0.62           8.62        7.25%   7420.29 
+128         8             1.25           9.25       13.51%  13837.84
+256         8             2.50          10.50       23.81%  24380.95
+512         8             5.00          13.00       38.46%  39384.62
+1024        8            10.00          18.00       55.56%  56888.89
+2048        8            20.00          28.00       71.43%  73142.86
+4096        8            40.00          48.00       83.33%  85333.33
 
-(*) Since the default readahead size is 512k, this limit only takes
-effect for devices whose size is less than 4G.
+The 128KB => 512KB readahead size boosts IO throughput from ~13MB/s to
+~39MB/s, while merely increases (minimal) IO latency from 9.25ms to 13ms.
 
-The formula is determined on the following data, collected by script:
-
-	#!/bin/sh
-
-	# please make sure BDEV is not mounted or opened by others
-	BDEV=sdb
-
-	for rasize in 4 16 32 64 128 256 512 1024 2048 4096 8192
-	do
-		echo $rasize > /sys/block/$BDEV/queue/read_ahead_kb 
-		time dd if=/dev/$BDEV of=/dev/null bs=4k count=102400
-	done
-
-The principle is, the formula shall not limit readahead size to such a
-degree that will impact some device's sequential read performance.
-
-The Intel SSD is special in that its throughput increases steadily with
-larger readahead size. However it may take years for Linux to increase
-its default readahead size to 2MB, so we don't take it seriously in the
-formula.
-
-SSD 80G Intel x25-M SSDSA2M080 (reported by Li Shaohua)
+As for SSD, I find that Intel X25-M SSD desires large readahead size
+even for sequential reads:
 
 	rasize	1st run		2nd run
 	----------------------------------
@@ -107,137 +79,114 @@ SSD 80G Intel x25-M SSDSA2M080 (reported by Li Shaohua)
 	512k	238 MB/s	234 MB/s
 	  1M	251 MB/s	248 MB/s
 	  2M	259 MB/s	257 MB/s
-==>	  4M	269 MB/s	264 MB/s
+   	  4M	269 MB/s	264 MB/s
 	  8M	266 MB/s	266 MB/s
 
-Note that ==> points to the readahead size that yields plateau throughput.
+The two other impacts of an enlarged readahead size are
 
-SSD 22G MARVELL SD88SA02 MP1F (reported by Jens Axboe)
+- memory footprint (caused by readahead miss)
+	Sequential readahead hit ratio is pretty high regardless of max
+	readahead size; the extra memory footprint is mainly caused by
+	enlarged mmap read-around.
+	I measured my desktop:
+	- under Xwindow:
+		128KB readahead hit ratio = 143MB/230MB = 62%
+		512KB readahead hit ratio = 138MB/248MB = 55%
+		  1MB readahead hit ratio = 130MB/253MB = 51%
+	- under console: (seems more stable than the Xwindow data)
+		128KB readahead hit ratio = 30MB/56MB   = 53%
+		  1MB readahead hit ratio = 30MB/59MB   = 51%
+	So the impact to memory footprint looks acceptable.
 
-	rasize  1st             2nd
-	--------------------------------
-	  4k     41 MB/s         41 MB/s
-	 16k     85 MB/s         81 MB/s
-	 32k    102 MB/s        109 MB/s
-	 64k    125 MB/s        144 MB/s
-	128k    183 MB/s        185 MB/s
-	256k    216 MB/s        216 MB/s
-	512k    216 MB/s        236 MB/s
-	1024k   251 MB/s        252 MB/s
-	  2M    258 MB/s        258 MB/s
-==>       4M    266 MB/s        266 MB/s
-	  8M    266 MB/s        266 MB/s
+- readahead thrashing
+	It will now cost 1MB readahead buffer per stream.  Memory tight
+	systems typically do not run multiple streams; but if they do
+	so, it should help I/O performance as long as we can avoid
+	thrashing, which can be achieved with the following patches.
 
-SSD 30G SanDisk SATA 5000
+I also boot the system into console with different readahead size,
+and find that both the io_count and readahead_hit_ratio reduced by
+~10% when increasing readahead_size from 128k to 512k. I guess typical
+desktop users would prefer the reduced IO numbers (for fastboot) at
+the cost of a dozen MB memory.
 
-	  4k	29.6 MB/s	29.6 MB/s	29.6 MB/s
-	 16k	52.1 MB/s	52.1 MB/s	52.1 MB/s
-	 32k	61.5 MB/s	61.5 MB/s	61.5 MB/s
-	 64k	67.2 MB/s	67.2 MB/s	67.1 MB/s
-	128k	71.4 MB/s	71.3 MB/s	71.4 MB/s
-	256k	73.4 MB/s	73.4 MB/s	73.3 MB/s
-==>	512k	74.6 MB/s	74.6 MB/s	74.6 MB/s
-	  1M	74.7 MB/s	74.6 MB/s	74.7 MB/s
-	  2M	76.1 MB/s	74.6 MB/s	74.6 MB/s
+readahead_size	io_count   avg_io_pages   total_readahead_pages	 readahead_hit_ratio
+            4k      6765              1    6765			 -
+          128k      1077              8    8616			 78.5%
+          512k       897             11    9867			 68.6%
+         1024k       867             12   10404			 65.0%
+total_readahead_pages = io_count * avg_io_size
 
-USB stick 32G Teclast CoolFlash idVendor=1307, idProduct=0165
 
-	  4k	7.9 MB/s 	7.9 MB/s 	7.9 MB/s
-	 16k	17.9 MB/s	17.9 MB/s	17.9 MB/s
-	 32k	24.5 MB/s	24.5 MB/s	24.5 MB/s
-	 64k	28.7 MB/s	28.7 MB/s	28.7 MB/s
-	128k	28.8 MB/s	28.9 MB/s	28.9 MB/s
-==>	256k	30.5 MB/s	30.5 MB/s	30.5 MB/s
-	512k	30.9 MB/s	31.0 MB/s	30.9 MB/s
-	  1M	31.0 MB/s	30.9 MB/s	30.9 MB/s
-	  2M	30.9 MB/s	30.9 MB/s	30.9 MB/s
+====== Remarks by Christian Ehrhardt ======
 
-USB stick 4G SanDisk  Cruzer idVendor=0781, idProduct=5151
+- 512 is by far superior to 128 for sequential reads
+- improvements with iozone sequential read scaling from 1 to 64 parallel
+  processes up to +35%
+- readahead sizes larger than 512 reevealed to not be "more useful" but
+  increasing the chance of trashing in low mem systems
 
-	  4k	6.4 MB/s 	6.4 MB/s 	6.4 MB/s
-	 16k	13.4 MB/s	13.4 MB/s	13.2 MB/s
-	 32k	17.8 MB/s	17.9 MB/s	17.8 MB/s
-	 64k	21.3 MB/s	21.3 MB/s	21.2 MB/s
-	128k	21.4 MB/s	21.4 MB/s	21.4 MB/s
-==>	256k	23.3 MB/s	23.2 MB/s	23.2 MB/s
-	512k	23.3 MB/s	23.8 MB/s	23.4 MB/s
-	  1M	23.8 MB/s	23.4 MB/s	23.3 MB/s
-	  2M	23.4 MB/s	23.2 MB/s	23.4 MB/s
 
-USB stick 2G idVendor=0204, idProduct=6025 SerialNumber: 08082005000113
+====== Benchmarks by Vivek Goyal ======
 
-	  4k	6.7 MB/s 	6.9 MB/s 	6.7 MB/s
-	 16k	11.7 MB/s	11.7 MB/s	11.7 MB/s
-	 32k	12.4 MB/s	12.4 MB/s	12.4 MB/s
-   	 64k	13.4 MB/s	13.4 MB/s	13.4 MB/s
-	128k	13.4 MB/s	13.4 MB/s	13.4 MB/s
-==>	256k	13.6 MB/s	13.6 MB/s	13.6 MB/s
-	512k	13.7 MB/s	13.7 MB/s	13.7 MB/s
-	  1M	13.7 MB/s	13.7 MB/s	13.7 MB/s
-	  2M	13.7 MB/s	13.7 MB/s	13.7 MB/s
+I have got two paths to the HP EVA and got multipath device setup(dm-3).
+I run increasing number of sequential readers. File system is ext3 and
+filesize is 1G.
+I have run the tests 3 times (3sets) and taken the average of it.
 
-64 MB, USB full speed (collected by Clemens Ladisch)
-Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
+Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+======================================================================
+                    2.6.33-rc5                2.6.33-rc5-readahead
+job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)
+---   --- --  ------------   -----------    ------------   -----------
+bsr   3   1   141768         130965         190302         97937.3    
+bsr   3   2   131979         135402         185636         223286     
+bsr   3   4   132351         420733         185986         363658     
+bsr   3   8   133152         455434         184352         428478     
+bsr   3   16  130316         674499         185646         594311     
 
-	4KB:    139.339 s, 376 kB/s
-	16KB:   81.0427 s, 647 kB/s
-	32KB:   71.8513 s, 730 kB/s
-==>	64KB:   67.3872 s, 778 kB/s
-	128KB:  67.5434 s, 776 kB/s
-	256KB:  65.9019 s, 796 kB/s
-	512KB:  66.2282 s, 792 kB/s
-	1024KB: 67.4632 s, 777 kB/s
-	2048KB: 69.9759 s, 749 kB/s
+I ran same test on a different piece of hardware. There are few SATA disks
+(5-6) in striped configuration behind a hardware RAID controller.
 
-CC: Li Shaohua <shaohua.li@intel.com>
-CC: Clemens Ladisch <clemens@ladisch.de>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+======================================================================
+                    2.6.33-rc5                2.6.33-rc5-readahead
+job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)    
+---   --- --  ------------   -----------    ------------   -----------    
+bsr   3   1   147569         14369.7        160191         22752          
+bsr   3   2   124716         243932         149343         184698         
+bsr   3   4   123451         327665         147183         430875         
+bsr   3   8   122486         455102         144568         484045         
+bsr   3   16  117645         1.03957e+06    137485         1.06257e+06    
+
+
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>
+CC: Matt Mackall <mpm@selenic.com>
+CC: David Woodhouse <dwmw2@infradead.org>
 Tested-by: Vivek Goyal <vgoyal@redhat.com>
-Tested-by: Linus Torvalds <torvalds@linux-foundation.org> 
+Tested-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Acked-by:  Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- block/genhd.c |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ include/linux/mm.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux.orig/block/genhd.c	2010-02-03 20:40:37.000000000 +0800
-+++ linux/block/genhd.c	2010-02-04 21:19:07.000000000 +0800
-@@ -518,6 +518,7 @@ void add_disk(struct gendisk *disk)
- 	struct backing_dev_info *bdi;
- 	dev_t devt;
- 	int retval;
-+	unsigned long size;
+--- linux.orig/include/linux/mm.h	2010-02-24 10:44:26.000000000 +0800
++++ linux/include/linux/mm.h	2010-02-24 10:44:41.000000000 +0800
+@@ -1186,8 +1186,8 @@ int write_one_page(struct page *page, in
+ void task_dirty_inc(struct task_struct *tsk);
  
- 	/* minors == 0 indicates to use ext devt from part0 and should
- 	 * be accompanied with EXT_DEVT flag.  Make sure all
-@@ -551,6 +552,29 @@ void add_disk(struct gendisk *disk)
- 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
- 				   "bdi");
- 	WARN_ON(retval);
-+
-+	/*
-+	 * Limit default readahead size for small devices.
-+	 *        disk size    readahead size
-+	 *               1M                8k
-+	 *               4M               16k
-+	 *              16M               32k
-+	 *              64M               64k
-+	 *             256M              128k
-+	 *               1G              256k
-+	 *        ---------------------------
-+	 *               4G              512k
-+	 *              16G             1024k
-+	 *              64G             2048k
-+	 *             256G             4096k
-+	 * Since the default readahead size is 512k, this limit
-+	 * only takes effect for devices whose size is less than 4G.
-+	 */
-+	if (get_capacity(disk)) {
-+		size = get_capacity(disk) >> 9;
-+		size = 1UL << (ilog2(size) / 2);
-+		bdi->ra_pages = min(bdi->ra_pages, size);
-+	}
- }
+ /* readahead.c */
+-#define VM_MAX_READAHEAD	128	/* kbytes */
+-#define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
++#define VM_MAX_READAHEAD	512	/* kbytes */
++#define VM_MIN_READAHEAD	32	/* kbytes (includes current page) */
  
- EXPORT_SYMBOL(add_disk);
+ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 			pgoff_t offset, unsigned long nr_to_read);
 
 
