@@ -1,26 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522Ab0BXHhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:37:51 -0500
+	id S1755543Ab0BXHiM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:38:12 -0500
 Received: from mail-gx0-f217.google.com ([209.85.217.217]:39422 "EHLO
 	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755493Ab0BXHhs (ORCPT
+	with ESMTP id S1755511Ab0BXHiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:37:48 -0500
+	Wed, 24 Feb 2010 02:38:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:cc:date:message-id:in-reply-to:references
          :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=o5kCk/1KqVE7mYVRakI6ITT7PKXI+geAOgcrTuc9I35k9VgrOfm/ps37/e+/vkuv6w
-         PAkhPV/JyqhrkNDPt4rLvZBjYuEg9YPm5i4+00zSSOl9Ra2aeFky8MPul9ixoDo7Pnes
-         W/XJJ4FU6kpwJdEet7l6qT8vu4fvsVhkJXbaM=
+        b=b/FV9EFT1OxHXY7YBSSSZHNmW8TmE5nw7I6ie41sOfSOY/eAclMNpjsTQfouhQh/o3
+         T3jp2vaEaGcDrFtYkpeKeuEvJPK/u2JExNki36ElggjJO4IcBIhybw+Tw0aPQb4lwxOb
+         Ir/jyQYQdaSejPsejL142MeTWJJQk8bv5ENE8=
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH 01/14] Regulators: virtual - use sysfs attribute groups
+Subject: [PATCH 05/14] Regulators: tps65023-regulator - mark probe method as
+	__devinit
 To: Liam Girdwood <lrg@slimlogic.co.uk>
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
        linux-kernel@vger.kernel.org
-Date: Tue, 23 Feb 2010 23:37:44 -0800
-Message-ID: <20100224073744.15964.93309.stgit@localhost.localdomain>
+Date: Tue, 23 Feb 2010 23:38:06 -0800
+Message-ID: <20100224073806.15964.87649.stgit@localhost.localdomain>
 In-Reply-To: <20100224073342.15964.8863.stgit@localhost.localdomain>
 References: <20100224073342.15964.8863.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -31,168 +32,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of open-coding sysfs attribute group use canned solution.
-Also add __devinit/__devexit markups for probe and remove methods
-and use 'bool' where it makes sense.
+Also move error handling in probe() out of line and do not bother
+to reset fields in structures that are about to be freed.
 
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 ---
 
- drivers/regulator/virtual.c |   64 ++++++++++++++++++++++---------------------
- 1 files changed, 33 insertions(+), 31 deletions(-)
+ drivers/regulator/tps65023-regulator.c |   35 +++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
-index addc032..d96ceca 100644
---- a/drivers/regulator/virtual.c
-+++ b/drivers/regulator/virtual.c
-@@ -19,7 +19,7 @@
- struct virtual_consumer_data {
- 	struct mutex lock;
- 	struct regulator *regulator;
--	int enabled;
-+	bool enabled;
- 	int min_uV;
- 	int max_uV;
- 	int min_uA;
-@@ -49,7 +49,7 @@ static void update_voltage_constraints(struct device *dev,
- 		dev_dbg(dev, "Enabling regulator\n");
- 		ret = regulator_enable(data->regulator);
- 		if (ret == 0)
--			data->enabled = 1;
-+			data->enabled = true;
- 		else
- 			dev_err(dev, "regulator_enable() failed: %d\n",
- 				ret);
-@@ -59,7 +59,7 @@ static void update_voltage_constraints(struct device *dev,
- 		dev_dbg(dev, "Disabling regulator\n");
- 		ret = regulator_disable(data->regulator);
- 		if (ret == 0)
--			data->enabled = 0;
-+			data->enabled = false;
- 		else
- 			dev_err(dev, "regulator_disable() failed: %d\n",
- 				ret);
-@@ -89,7 +89,7 @@ static void update_current_limit_constraints(struct device *dev,
- 		dev_dbg(dev, "Enabling regulator\n");
- 		ret = regulator_enable(data->regulator);
- 		if (ret == 0)
--			data->enabled = 1;
-+			data->enabled = true;
- 		else
- 			dev_err(dev, "regulator_enable() failed: %d\n",
- 				ret);
-@@ -99,7 +99,7 @@ static void update_current_limit_constraints(struct device *dev,
- 		dev_dbg(dev, "Disabling regulator\n");
- 		ret = regulator_disable(data->regulator);
- 		if (ret == 0)
--			data->enabled = 0;
-+			data->enabled = false;
- 		else
- 			dev_err(dev, "regulator_disable() failed: %d\n",
- 				ret);
-@@ -270,24 +270,28 @@ static DEVICE_ATTR(min_microamps, 0666, show_min_uA, set_min_uA);
- static DEVICE_ATTR(max_microamps, 0666, show_max_uA, set_max_uA);
- static DEVICE_ATTR(mode, 0666, show_mode, set_mode);
- 
--static struct device_attribute *attributes[] = {
--	&dev_attr_min_microvolts,
--	&dev_attr_max_microvolts,
--	&dev_attr_min_microamps,
--	&dev_attr_max_microamps,
--	&dev_attr_mode,
-+static struct attribute *regulator_virtual_attributes[] = {
-+	&dev_attr_min_microvolts.attr,
-+	&dev_attr_max_microvolts.attr,
-+	&dev_attr_min_microamps.attr,
-+	&dev_attr_max_microamps.attr,
-+	&dev_attr_mode.attr,
-+	NULL
+diff --git a/drivers/regulator/tps65023-regulator.c b/drivers/regulator/tps65023-regulator.c
+index 07fda0a..1f18354 100644
+--- a/drivers/regulator/tps65023-regulator.c
++++ b/drivers/regulator/tps65023-regulator.c
+@@ -457,8 +457,8 @@ static struct regulator_ops tps65023_ldo_ops = {
+ 	.list_voltage = tps65023_ldo_list_voltage,
  };
  
--static int regulator_virtual_consumer_probe(struct platform_device *pdev)
-+static const struct attribute_group regulator_virtual_attr_group = {
-+	.attrs	= regulator_virtual_attributes,
-+};
-+
-+static int __devinit regulator_virtual_probe(struct platform_device *pdev)
+-static
+-int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
++static int __devinit tps_65023_probe(struct i2c_client *client,
++				     const struct i2c_device_id *id)
  {
- 	char *reg_id = pdev->dev.platform_data;
- 	struct virtual_consumer_data *drvdata;
--	int ret, i;
-+	int ret;
+ 	static int desc_id;
+ 	const struct tps_info *info = (void *)id->driver_data;
+@@ -466,6 +466,7 @@ int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	struct regulator_dev *rdev;
+ 	struct tps_pmic *tps;
+ 	int i;
++	int error;
  
- 	drvdata = kzalloc(sizeof(struct virtual_consumer_data), GFP_KERNEL);
--	if (drvdata == NULL) {
-+	if (drvdata == NULL)
- 		return -ENOMEM;
--	}
- 
- 	mutex_init(&drvdata->lock);
- 
-@@ -299,13 +303,12 @@ static int regulator_virtual_consumer_probe(struct platform_device *pdev)
- 		goto err;
- 	}
- 
--	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
--		ret = device_create_file(&pdev->dev, attributes[i]);
--		if (ret != 0) {
--			dev_err(&pdev->dev, "Failed to create attr %d: %d\n",
--				i, ret);
--			goto err_regulator;
--		}
-+	ret = sysfs_create_group(&pdev->dev.kobj,
-+				 &regulator_virtual_attr_group);
-+	if (ret != 0) {
-+		dev_err(&pdev->dev,
-+			"Failed to create attribute group: %d\n", ret);
-+		goto err_regulator;
- 	}
- 
- 	drvdata->mode = regulator_get_mode(drvdata->regulator);
-@@ -317,37 +320,36 @@ static int regulator_virtual_consumer_probe(struct platform_device *pdev)
- err_regulator:
- 	regulator_put(drvdata->regulator);
- err:
--	for (i = 0; i < ARRAY_SIZE(attributes); i++)
--		device_remove_file(&pdev->dev, attributes[i]);
- 	kfree(drvdata);
- 	return ret;
- }
- 
--static int regulator_virtual_consumer_remove(struct platform_device *pdev)
-+static int __devexit regulator_virtual_remove(struct platform_device *pdev)
- {
- 	struct virtual_consumer_data *drvdata = platform_get_drvdata(pdev);
--	int i;
- 
--	for (i = 0; i < ARRAY_SIZE(attributes); i++)
--		device_remove_file(&pdev->dev, attributes[i]);
-+	sysfs_remove_group(&pdev->dev.kobj, &regulator_virtual_attr_group);
-+
- 	if (drvdata->enabled)
- 		regulator_disable(drvdata->regulator);
- 	regulator_put(drvdata->regulator);
- 
- 	kfree(drvdata);
- 
-+	platform_set_drvdata(pdev, NULL);
-+
- 	return 0;
- }
- 
- static struct platform_driver regulator_virtual_consumer_driver = {
--	.probe		= regulator_virtual_consumer_probe,
--	.remove		= regulator_virtual_consumer_remove,
-+	.probe		= regulator_virtual_probe,
-+	.remove		= __devexit_p(regulator_virtual_remove),
- 	.driver		= {
- 		.name		= "reg-virt-consumer",
-+		.owner		= THIS_MODULE,
- 	},
- };
- 
+ 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+ 		return -EIO;
+@@ -475,7 +476,6 @@ int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	 * coming from the board-evm file.
+ 	 */
+ 	init_data = client->dev.platform_data;
 -
- static int __init regulator_virtual_consumer_init(void)
- {
- 	return platform_driver_register(&regulator_virtual_consumer_driver);
+ 	if (!init_data)
+ 		return -EIO;
+ 
+@@ -502,21 +502,12 @@ int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 
+ 		/* Register the regulators */
+ 		rdev = regulator_register(&tps->desc[i], &client->dev,
+-								init_data, tps);
++					  init_data, tps);
+ 		if (IS_ERR(rdev)) {
+ 			dev_err(&client->dev, "failed to register %s\n",
+ 				id->name);
+-
+-			/* Unregister */
+-			while (i)
+-				regulator_unregister(tps->rdev[--i]);
+-
+-			tps->client = NULL;
+-
+-			/* clear the client data in i2c */
+-			i2c_set_clientdata(client, NULL);
+-			kfree(tps);
+-			return PTR_ERR(rdev);
++			error = PTR_ERR(rdev);
++			goto fail;
+ 		}
+ 
+ 		/* Save regulator for cleanup */
+@@ -526,6 +517,13 @@ int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	i2c_set_clientdata(client, tps);
+ 
+ 	return 0;
++
++ fail:
++	while (--i >= 0)
++		regulator_unregister(tps->rdev[i]);
++
++	kfree(tps);
++	return error;
+ }
+ 
+ /**
+@@ -539,13 +537,12 @@ static int __devexit tps_65023_remove(struct i2c_client *client)
+ 	struct tps_pmic *tps = i2c_get_clientdata(client);
+ 	int i;
+ 
++	/* clear the client data in i2c */
++	i2c_set_clientdata(client, NULL);
++
+ 	for (i = 0; i < TPS65023_NUM_REGULATOR; i++)
+ 		regulator_unregister(tps->rdev[i]);
+ 
+-	tps->client = NULL;
+-
+-	/* clear the client data in i2c */
+-	i2c_set_clientdata(client, NULL);
+ 	kfree(tps);
+ 
+ 	return 0;
 
