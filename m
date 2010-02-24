@@ -1,47 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758354Ab0BXWLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:11:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49291 "EHLO hera.kernel.org"
+	id S1758379Ab0BXWLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:11:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49311 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758309Ab0BXWLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:11:19 -0500
-Message-ID: <4B85A3C1.3030903@kernel.org>
-Date: Wed, 24 Feb 2010 14:10:09 -0800
+	id S1758360Ab0BXWLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 17:11:37 -0500
+Message-ID: <4B85A331.7040909@kernel.org>
+Date: Wed, 24 Feb 2010 14:07:45 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Du, Alek" <alek.du@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86/pci: exclude mrst pci code for other platform
-References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org> <4B84A846.1000805@kernel.org> <4B84AAC4.2020204@kernel.org> <4B858E89.7040807@kernel.org> <43F901BD926A4E43B106BF17856F0755A321EB54@orsmsx508.amr.corp.intel.com> <4B859DD1.601@zytor.com>
-In-Reply-To: <4B859DD1.601@zytor.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-arch@vger.kernel.org
+Subject: Re: [PATCH -v2 2/2] genericirq: change ack/mask in irq_chip to take
+ irq_desc instead of irq
+References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>	<m16360ohi2.fsf@fess.ebiederm.org> <4B773CEB.9010609@kernel.org>	<m1sk94mzg0.fsf@fess.ebiederm.org> <4B7CA9A1.3020806@kernel.org>	<4B7CAADD.2060000@kernel.org> <m1mxz6v4pm.fsf@fess.ebiederm.org>	<4B83781B.20307@kernel.org> <4B837930.2050907@kernel.org> <m1ljei5n9q.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ljei5n9q.fsf@fess.ebiederm.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 01:44 PM, H. Peter Anvin wrote:
-> On 02/24/2010 01:03 PM, Pan, Jacob jun wrote:
->> Our goal is to have a binary compatible kernel runs on Moorestown and PC, can
->> we keep the Moorestown PCI code for this purpose?
+On 02/24/2010 01:36 PM, Eric W. Biederman wrote:
+> Yinghai Lu <yinghai@kernel.org> writes:
 > 
-> CONFIG_X86_MRST is supposed to reflect the *ability* to run on
-> Moorestown, not the *requirement* of running on Moorestown.  As such,
-> Yinghai's patch seems correct to me.
+>> will have
+>> void            (*ack)(struct irq_desc *desc);
+>> void            (*mask)(struct irq_desc *desc);
+>> void            (*mask_ack)(struct irq_desc *desc);
+>> void            (*unmask)(struct irq_desc *desc);
+>> void            (*eoi)(struct irq_desc *desc);
+>>
+>> so for sparseirq with raidix tree, we don't call extra irq_to_desc, and could use desc directly
 > 
-> If you cannot boot a kernel with CONFIG_X86_MRST=y on PC hardware, that
-> is a bug which should be fixed.
+> Overall this looks pretty decent.  This look pretty complete.
+> How many platforms did you manage to compile test this on?
 
-yes, at 64 bit doesn't need that code yet.
+x86 only.
 
-that pci_fixed_bar_fixup cause my nehalem-ex box warm reset...
+any guide to setup cross compiling for 22 archs ?
+on x86_64 platform please
 
-YH
+Thanks
+
+Yinghai Lu
