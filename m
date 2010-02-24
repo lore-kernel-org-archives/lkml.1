@@ -1,378 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940Ab0BXUPO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:15:14 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:44027 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757580Ab0BXUPM (ORCPT
+	id S1757935Ab0BXUR0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:17:26 -0500
+Received: from edu-smtp-01.edutel.nl ([88.159.1.221]:38735 "EHLO
+	edu-smtp-01.edutel.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757580Ab0BXURZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:15:12 -0500
-Date: Wed, 24 Feb 2010 15:15:09 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH 02/10] rcu: annotated list rcu code
-Message-ID: <20100224201509.GB21067@Krystal>
-References: <20100223180127.GF6700@linux.vnet.ibm.com> <1267041846-10469-3-git-send-email-arnd@arndb.de>
+	Wed, 24 Feb 2010 15:17:25 -0500
+X-Greylist: delayed 876 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 15:17:24 EST
+Message-ID: <4B85894A.6040406@neli.hopto.org>
+Date: Wed, 24 Feb 2010 21:17:14 +0100
+From: Micha Nelissen <micha@neli.hopto.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267041846-10469-3-git-send-email-arnd@arndb.de>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 15:13:49 up 32 days, 22:51,  6 users,  load average: 0.70, 0.98,
-	1.30
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alexandre Bounine <alexb@tundra.com>
+CC: mporter@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org, thomas.moll.ext@nsn.com,
+       thomas.moll@sysgo.com
+Subject: Re: [PATCH 3/7] RapidIO: Add Port-Write handling for EM
+References: <20100224152401.GC13661@kaneng01.tundra.com>
+In-Reply-To: <20100224152401.GC13661@kaneng01.tundra.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arnd Bergmann (arnd@arndb.de) wrote:
-> The listrcu implementation now defines new rcu_list_head,
-> rcu_hlist_head and rcu_hlist_entry structures that are
-> annotated with __rcu. Only these can now be passed into
-> rcu_list_for_each and related interfaces.
-> 
-> When not running sparse, the types are defined to the
-> original list_head etc in order to not break working
-> setups that are lacking annotation.
-
-Hrm, wait.. dumb question: how can an annotation break compilation ? If there is
-any way out of this, I would prefer if we can do without a #ifdef __CHECKER__ if
-possible. It calls for bugs and implementation mismatch.
-
-Thanks,
-
-Mathieu
-
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  include/linux/rculist.h |  152 ++++++++++++++++++++++++++++++++++------------
->  1 files changed, 112 insertions(+), 40 deletions(-)
-> 
-> diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-> index 1bf0f70..dfbc6ea 100644
-> --- a/include/linux/rculist.h
-> +++ b/include/linux/rculist.h
-> @@ -9,16 +9,67 @@
->  #include <linux/list.h>
->  #include <linux/rcupdate.h>
->  
-> +#ifdef __CHECKER__
-> +struct rcu_list_head {
-> +	struct rcu_list_head __rcu *next;
-> +	struct rcu_list_head *prev;
-> +};
-> +#define LIST_HEAD_INIT_RCU(name) { (struct rcu_list_head __force __rcu *)&(name), &(name) }
-> +
-> +#define LIST_HEAD_RCU(name) \
-> +	struct rcu_list_head name = LIST_HEAD_INIT_RCU(name)
-> +
-> +static inline void INIT_LIST_HEAD_RCU(struct rcu_list_head *list)
-> +{
-> +	__rcu_assign_pointer(list->next, list);
-> +	list->prev = list;
-> +}
-> +
-> +struct rcu_hlist_head {
-> +	struct rcu_hlist_node __rcu *first;
-> +};
-> +
-> +struct rcu_hlist_node {
-> +	struct rcu_hlist_node __rcu *next, **pprev;
-> +};
-> +
-> +#define HLIST_HEAD_INIT_RCU { .first = (void __rcu __force *)NULL }
-> +#define HLIST_HEAD_RCU(name) struct rcu_hlist_head name = \
-> +		{  .first = (void __rcu __force *)NULL }
-> +#define INIT_HLIST_HEAD_RCU(ptr) ((ptr)->first = (void __rcu __force *)NULL)
-> +static inline void INIT_HLIST_NODE_RCU(struct rcu_hlist_node *h)
-> +{
-> +	__rcu_assign_pointer(h->next, NULL);
-> +	h->pprev = NULL;
-> +}
-> +
-> +#else /* !__CHECKER__ */
-> +
-> +#define rcu_list_head list_head
-> +#define LIST_HEAD_INIT_RCU LIST_HEAD_INIT
-> +#define LIST_HEAD_RCU LIST_HEAD
-> +#define INIT_LIST_HEAD_RCU INIT_LIST_HEAD
-> +
-> +#define rcu_hlist_head hlist_head
-> +#define rcu_hlist_node hlist_node
-> +#define HLIST_HEAD_INIT_RCU HLIST_HEAD_INIT
-> +#define HLIST_HEAD_RCU HLIST_HEAD
-> +#define INIT_HLIST_HEAD_RCU INIT_HLIST_HEAD
-> +#define INIT_HLIST_NODE_RCU INIT_HLIST_NODE
-> +
-> +#endif /* !__CHECKER__ */
-> +
-> +
->  /*
->   * Insert a new entry between two known consecutive entries.
->   *
->   * This is only for internal list manipulation where we know
->   * the prev/next entries already!
->   */
-> -static inline void __list_add_rcu(struct list_head *new,
-> -		struct list_head *prev, struct list_head *next)
-> +static inline void __list_add_rcu(struct rcu_list_head *new,
-> +		struct rcu_list_head *prev, struct rcu_list_head *next)
->  {
-> -	new->next = next;
-> +	__rcu_assign_pointer(new->next, next);
->  	new->prev = prev;
->  	rcu_assign_pointer(prev->next, new);
->  	next->prev = new;
-> @@ -40,9 +91,9 @@ static inline void __list_add_rcu(struct list_head *new,
->   * the _rcu list-traversal primitives, such as
->   * list_for_each_entry_rcu().
->   */
-> -static inline void list_add_rcu(struct list_head *new, struct list_head *head)
-> +static inline void list_add_rcu(struct rcu_list_head *new, struct rcu_list_head *head)
->  {
-> -	__list_add_rcu(new, head, head->next);
-> +	__list_add_rcu(new, head, __rcu_dereference(head->next));
->  }
->  
+Alexandre Bounine wrote:
 >  /**
-> @@ -61,8 +112,8 @@ static inline void list_add_rcu(struct list_head *new, struct list_head *head)
->   * the _rcu list-traversal primitives, such as
->   * list_for_each_entry_rcu().
->   */
-> -static inline void list_add_tail_rcu(struct list_head *new,
-> -					struct list_head *head)
-> +static inline void list_add_tail_rcu(struct rcu_list_head *new,
-> +					struct rcu_list_head *head)
->  {
->  	__list_add_rcu(new, head->prev, head);
->  }
-> @@ -91,13 +142,29 @@ static inline void list_add_tail_rcu(struct list_head *new,
->   * or call_rcu() must be used to defer freeing until an RCU
->   * grace period has elapsed.
->   */
-> -static inline void list_del_rcu(struct list_head *entry)
-> +static inline void __list_del_rcu(struct rcu_list_head *prev, struct rcu_list_head *next)
->  {
-> -	__list_del(entry->prev, entry->next);
-> +	next->prev = prev;
-> +	__rcu_assign_pointer(prev->next, next);
-> +}
-> +
-> +static inline void list_del_rcu(struct rcu_list_head *entry)
-> +{
-> +	__list_del_rcu(entry->prev, __rcu_dereference(entry->next));
->  	entry->prev = LIST_POISON2;
->  }
->  
->  /**
-> + * list_empty - tests whether a list is empty
-> + * @head: the list to test.
-> + */
-> +static inline int list_empty_rcu(const struct rcu_list_head *head)
-> +{
-> +	return rcu_dereference(head->next) == head;
-> +}
-> +
-> +
+> + * rio_em_set_ops- Sets Error Managment operations for a particular vendor switch
+> + * @rdev: RIO device
+> + *
+> + * Searches the RIO EM ops table for known switch types. If the vid
+> + * and did match a switch table entry, then set the em_init() and
+> + * em_handle() ops to the table entry values.
+
+Shouldn't any RIO device be able to support error management, not just 
+switches?
+
 > +/**
->   * hlist_del_init_rcu - deletes entry from hash list with re-initialization
->   * @n: the element to delete from the hash list.
->   *
-> @@ -117,7 +184,7 @@ static inline void list_del_rcu(struct list_head *entry)
->   * perfectly legal to run concurrently with the _rcu list-traversal
->   * primitives, such as hlist_for_each_entry_rcu().
->   */
-> -static inline void hlist_del_init_rcu(struct hlist_node *n)
-> +static inline void hlist_del_init_rcu(struct rcu_hlist_node *n)
->  {
->  	if (!hlist_unhashed(n)) {
->  		__hlist_del(n);
-> @@ -133,13 +200,13 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
->   * The @old entry will be replaced with the @new entry atomically.
->   * Note: @old should not be empty.
->   */
-> -static inline void list_replace_rcu(struct list_head *old,
-> -				struct list_head *new)
-> +static inline void list_replace_rcu(struct rcu_list_head *old,
-> +				struct rcu_list_head *new)
->  {
->  	new->next = old->next;
->  	new->prev = old->prev;
-> -	rcu_assign_pointer(new->prev->next, new);
-> -	new->next->prev = new;
-> +	__rcu_assign_pointer(new->prev->next, new);
-> +	rcu_dereference(new->next)->prev = new;
->  	old->prev = LIST_POISON2;
->  }
->  
-> @@ -160,13 +227,13 @@ static inline void list_replace_rcu(struct list_head *old,
->   *	based on call_rcu() could be created.  But only if -really-
->   *	needed -- there is no shortage of RCU API members.
->   */
-> -static inline void list_splice_init_rcu(struct list_head *list,
-> -					struct list_head *head,
-> +static inline void list_splice_init_rcu(struct rcu_list_head *list,
-> +					struct rcu_list_head *head,
->  					void (*sync)(void))
->  {
-> -	struct list_head *first = list->next;
-> -	struct list_head *last = list->prev;
-> -	struct list_head *at = head->next;
-> +	struct rcu_list_head *first = __rcu_dereference(list->next);
-> +	struct rcu_list_head *last = list->prev;
-> +	struct rcu_list_head *at = __rcu_dereference(head->next);
->  
->  	if (list_empty(head))
->  		return;
-> @@ -192,7 +259,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
->  	 * this function.
->  	 */
->  
-> -	last->next = at;
-> +	__rcu_assign_pointer(last->next,at);
->  	rcu_assign_pointer(head->next, first);
->  	first->prev = head;
->  	at->prev = last;
-> @@ -200,7 +267,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
->  
->  /**
->   * list_entry_rcu - get the struct for this entry
-> - * @ptr:        the &struct list_head pointer.
-> + * @ptr:        the &struct rcu_list_head pointer.
->   * @type:       the type of the struct this is embedded in.
->   * @member:     the name of the list_struct within the struct.
->   *
-> @@ -241,13 +308,13 @@ static inline void list_splice_init_rcu(struct list_head *list,
->   */
->  #define list_for_each_entry_rcu(pos, head, member) \
->  	for (pos = list_entry_rcu((head)->next, typeof(*pos), member); \
-> -		prefetch(pos->member.next), &pos->member != (head); \
-> +		prefetch(__rcu_dereference(pos->member.next)), &pos->member != (head); \
->  		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
->  
->  
->  /**
->   * list_for_each_continue_rcu
-> - * @pos:	the &struct list_head to use as a loop cursor.
-> + * @pos:	the &struct rcu_list_head to use as a loop cursor.
->   * @head:	the head for your list.
->   *
->   * Iterate over an rcu-protected list, continuing after current point.
-> @@ -294,9 +361,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
->   * the _rcu list-traversal primitives, such as
->   * hlist_for_each_entry().
->   */
-> -static inline void hlist_del_rcu(struct hlist_node *n)
-> +static inline void hlist_del_rcu(struct rcu_hlist_node *n)
->  {
-> -	__hlist_del(n);
-> +	__hlist_del((struct hlist_node *)n);
->  	n->pprev = LIST_POISON2;
->  }
->  
-> @@ -307,16 +374,16 @@ static inline void hlist_del_rcu(struct hlist_node *n)
->   *
->   * The @old entry will be replaced with the @new entry atomically.
->   */
-> -static inline void hlist_replace_rcu(struct hlist_node *old,
-> -					struct hlist_node *new)
-> +static inline void hlist_replace_rcu(struct rcu_hlist_node *old,
-> +					struct rcu_hlist_node *new)
->  {
-> -	struct hlist_node *next = old->next;
-> +	struct rcu_hlist_node __rcu *next = old->next;
->  
->  	new->next = next;
->  	new->pprev = old->pprev;
->  	rcu_assign_pointer(*new->pprev, new);
->  	if (next)
-> -		new->next->pprev = &new->next;
-> +		__rcu_dereference(new->next)->pprev = &new->next;
->  	old->pprev = LIST_POISON2;
->  }
->  
-> @@ -339,12 +406,12 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
->   * problems on Alpha CPUs.  Regardless of the type of CPU, the
->   * list-traversal primitive must be guarded by rcu_read_lock().
->   */
-> -static inline void hlist_add_head_rcu(struct hlist_node *n,
-> -					struct hlist_head *h)
-> +static inline void hlist_add_head_rcu(struct rcu_hlist_node *n,
-> +					struct rcu_hlist_head *h)
->  {
-> -	struct hlist_node *first = h->first;
-> +	struct rcu_hlist_node *first = __rcu_dereference(h->first);
->  
-> -	n->next = first;
-> +	__rcu_assign_pointer(n->next, first);
->  	n->pprev = &h->first;
->  	rcu_assign_pointer(h->first, n);
->  	if (first)
-> @@ -369,8 +436,8 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
->   * hlist_for_each_entry_rcu(), used to prevent memory-consistency
->   * problems on Alpha CPUs.
->   */
-> -static inline void hlist_add_before_rcu(struct hlist_node *n,
-> -					struct hlist_node *next)
-> +static inline void hlist_add_before_rcu(struct rcu_hlist_node *n,
-> +					struct rcu_hlist_node *next)
->  {
->  	n->pprev = next->pprev;
->  	n->next = next;
-> @@ -396,8 +463,8 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
->   * hlist_for_each_entry_rcu(), used to prevent memory-consistency
->   * problems on Alpha CPUs.
->   */
-> -static inline void hlist_add_after_rcu(struct hlist_node *prev,
-> -				       struct hlist_node *n)
-> +static inline void hlist_add_after_rcu(struct rcu_hlist_node *prev,
-> +				       struct rcu_hlist_node *n)
->  {
->  	n->next = prev->next;
->  	n->pprev = &prev->next;
-> @@ -406,12 +473,17 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
->  		n->next->pprev = &n->next;
->  }
->  
-> +static inline int hlist_empty_rcu(const struct rcu_hlist_head *h)
+> + * rio_pw_enable - Enables/disables port-write handling by a master port
+> + * @port: Master port associated with port-write handling
+> + * @enable:  1=enable,  0=disable
+> + */
+> +static void rio_pw_enable(struct rio_mport *port, int enable)
 > +{
-> +	return !__rcu_dereference(h->first);
+> +	if (port->ops->pwenable)
+> +		port->ops->pwenable(port, enable);
 > +}
 > +
->  /**
->   * hlist_for_each_entry_rcu - iterate over rcu list of given type
->   * @tpos:	the type * to use as a loop cursor.
-> - * @pos:	the &struct hlist_node to use as a loop cursor.
-> + * @pos:	the &struct rcu_hlist_node to use as a loop cursor.
->   * @head:	the head for your list.
-> - * @member:	the name of the hlist_node within the struct.
-> + * @member:	the name of the rcu_hlist_node within the struct.
->   *
->   * This list-traversal primitive may safely run concurrently with
->   * the _rcu list-mutation primitives such as hlist_add_head_rcu()
-> @@ -419,7 +491,7 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
->   */
->  #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
->  	for (pos = rcu_dereference((head)->first);			 \
-> -		pos && ({ prefetch(pos->next); 1; }) &&			 \
-> +		pos && ({ prefetch(__rcu_dereference(pos->next)); 1; }) &&			 \
->  		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
->  		pos = rcu_dereference(pos->next))
->  
-> -- 
-> 1.6.3.3
-> 
 
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Maybe this can be done by switch->init function?
+
+> +/**
+> + * rio_inb_pwrite_handler - process inbound port-write message
+> + * @pw_msg: pointer to inbound port-write message
+> + *
+> + * Processes an inbound port-write message. Returns 0 if the request
+> + * has been satisfied.
+> + */
+> +int rio_inb_pwrite_handler(u32 *pw_msg)
+> +{
+
+Perhaps map this pw_msg to a struct? Or read it into named variables?
+
+> +	/* Clear Port Errors */
+> +	rio_mport_write_config_32(mport, destid, hopcount,
+> +			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
+> +			err_status & 0x07120204);
+
+Hardcoded value!
+
+> +
+> +	if (rdev->rswitch->port_ok & (1 << portnum)) {
+> +		if (err_status & RIO_PORT_N_ERR_STS_PORT_UNINIT) {
+> +			rdev->rswitch->port_ok &= ~(1 << portnum);
+> +			rio_mport_read_config_32(mport, destid, hopcount,
+> +				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
+> +				&regval);
+> +			rio_mport_write_config_32(mport, destid, hopcount,
+> +				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
+> +				regval | RIO_PORT_N_CTL_LOCKOUT);
+
+You have a function for this?
+
+> +			rio_mport_write_config_32(mport, destid, hopcount,
+> +				rdev->phys_efptr +
+> +					RIO_PORT_N_ACK_STS_CSR(portnum),
+> +				RIO_PORT_N_ACK_CLEAR);
+
+This doesn't work for the 568; but the 568 has no special handling?
+
+> +	/* Clear Port-Write Pending bit */
+> +	rio_mport_write_config_32(mport, destid, hopcount,
+> +			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
+> +			RIO_PORT_N_ERR_STS_PW_PEND);
+> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI572, tsi57x_em_init, tsi57x_em_handler);
+> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574, tsi57x_em_init, tsi57x_em_handler);
+> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577, tsi57x_em_init, tsi57x_em_handler);
+> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_em_init, tsi57x_em_handler);
+
+Why not declare these along with the other ops?
+
+Micha
