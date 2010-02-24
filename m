@@ -1,67 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222Ab0BXDhH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:37:07 -0500
-Received: from kroah.org ([198.145.64.141]:47114 "EHLO coco.kroah.org"
+	id S1755172Ab0BXDhe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:37:34 -0500
+Received: from kroah.org ([198.145.64.141]:47110 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754121Ab0BXDhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:37:01 -0500
-Date: Tue, 23 Feb 2010 18:18:56 -0800
+	id S1754385Ab0BXDg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:36:59 -0500
+Date: Tue, 23 Feb 2010 18:16:24 -0800
 From: Greg KH <greg@kroah.com>
-To: Neil Kalo <neilkalo@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Steve Holland <sdh4@iastate.edu>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: usbmc seems broken
-Message-ID: <20100224021856.GA14173@kroah.com>
-References: <5c343a41001220840x6ce6bd29q3b69bbc978b1899f@mail.gmail.com> <20100126170125.d199e52c.akpm@linux-foundation.org> <20100127015947.GA11685@kroah.com> <5c343a41002040032w54bb9953nd6bfe60a06553625@mail.gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: import of usb series failed
+Message-ID: <20100224021624.GB14159@kroah.com>
+References: <20100218105500.898ece5e.sfr@canb.auug.org.au> <20100218002144.GA17850@kroah.com> <20100218132221.b15d151f.sfr@canb.auug.org.au> <20100219175218.10025a7a.sfr@canb.auug.org.au> <20100219155343.GA3946@kroah.com> <20100220120207.1d765147.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5c343a41002040032w54bb9953nd6bfe60a06553625@mail.gmail.com>
+In-Reply-To: <20100220120207.1d765147.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 08:32:21AM +0000, Neil Kalo wrote:
-> Upgraded to: 2.6.32.7-37.fc12.i686.PAE
+On Sat, Feb 20, 2010 at 12:02:07PM +1100, Stephen Rothwell wrote:
+> So, since the ".current" series are all empty, I am importing the
+> driver-core, tty and then usb series on top of v2.6.33-rc8.  I have just
+> done this again manually and the failure still happens (I have not
+> refetched your quilt series since yesterday.
 > 
-> Still no joy. Plugging in the meter gives:
+> At this point, the file drivers/usb/serial/ftdi_sio_ids.h from line 185
+> looks like this:
 > 
-> Feb  4 08:27:04 localhost kernel: usb 4-1: new full speed USB device
-> using ohci_hcd and address 2
-> Feb  4 08:27:04 localhost kernel: usb 4-1: New USB device found,
-> idVendor=05e6, idProduct=2100
-> Feb  4 08:27:04 localhost kernel: usb 4-1: New USB device strings:
-> Mfr=2, Product=3, SerialNumber=1
-> Feb  4 08:27:04 localhost kernel: usb 4-1: Product: 2100 Multimeter
-> Feb  4 08:27:04 localhost kernel: usb 4-1: Manufacturer: KEITHLEY INSTRUMENTS
-> Feb  4 08:27:04 localhost kernel: usb 4-1: SerialNumber: 1160791
-> Feb  4 08:27:04 localhost kernel: usb 4-1: configuration #1 chosen from 1 choice
-> Feb  4 08:27:04 localhost kernel: usbcore: registered new interface
-> driver usbtmc
+> #define FTDI_ELV_PCD200_PID	0xF06C	/* PC-Datenlogger (PCD 200) */
+> #define FTDI_ELV_ULA200_PID	0xF06D	/* USB-LCD-Ansteuerung (ULA 200) */
+> #define FTDI_ELV_ALC8500_PID	0xF06E	/* ALC 8500 Expert */
+> #define FTDI_ELV_FHZ1000PC_PID	0xF06F	/* FHZ 1000 PC */
+> #define FTDI_ELV_UR100_PID	0xFB58	/* USB-RS232-Umsetzer (UR 100) */
+> #define FTDI_ELV_UM100_PID	0xFB5A	/* USB-Modul UM 100 */
 > 
-> But "cat /dev/usbtmc0" gives:
-> cat: /dev/usbtmc0: Connection timed out
+> The patch hunk looks like this:
 > 
-> And in the logs:
-> Feb  4 08:27:35 localhost kernel: usbtmc 4-1:1.0: Unable to read data,
-> error -110
+> @@ -185,7 +185,7 @@
+>  #define FTDI_ELV_TFD128_PID	0xE0EC	/* ELV Temperatur-Feuchte-Datenlogger TFD 128 */
+>  #define FTDI_ELV_FM3RX_PID	0xE0ED	/* ELV Messwertuebertragung FM3 RX */
+>  #define FTDI_ELV_WS777_PID	0xE0EE	/* Conrad WS 777 */
+> -#define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
+> +#define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Energy monitor EM 1010 PC */
+>  #define FTDI_ELV_CSI8_PID	0xE0F0	/* Computer-Schalt-Interface (CSI 8) */
+>  #define FTDI_ELV_EM1000DL_PID	0xE0F1	/* PC-Datenlogger fuer Energiemonitor (EM 1000 DL) */
+>  #define FTDI_ELV_PCK100_PID	0xE0F2	/* PC-Kabeltester (PCK 100) */
 > 
-> The very old driver still works:
-> 
-> Feb  4 08:31:02 localhost kernel: USBTMC: MKDEV
-> Feb  4 08:31:02 localhost kernel: USBTMC: CDEV_ADD f900000 1
-> Feb  4 08:31:02 localhost kernel: usbcore: registered new interface
-> driver USBTMC
-> 
-> [root@mc22 usbtmc-module]# cat /dev/usbtmc0
-> Minor Number    Manufacturer    Product Serial Number
-> 001     KEITHLEY INSTRUMENTS    2100 Multimeter 1160791
+> Between v2.6.33-rc8 and the head if Linus' tree thee are two patches that
+> change this file.  So I guess the BASE in the driver-core.current series
+> files needs updating.
 
-Care to try to figure out what is going wrong here and send a patch?
+Yes, that seems to be the problem here.
 
-thanks,
+I have been doing the BASE tag as a -rc level tag (or rc-gitX tag), can
+I use a SHA1 of Linus's tree to base this against instead?  Would that
+work ok with your scripts?
+
+thanks for figureing this out, sorry for the trouble, this was my fault.
 
 greg k-h
