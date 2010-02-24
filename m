@@ -1,50 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408Ab0BXWYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:24:23 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:65141 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758395Ab0BXWYW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:24:22 -0500
-Date: Wed, 24 Feb 2010 14:23:21 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	id S1758432Ab0BXWYi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:24:38 -0500
+Received: from xenotime.net ([72.52.64.118]:50768 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758423Ab0BXWYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 17:24:37 -0500
+Date: Wed, 24 Feb 2010 14:24:35 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: x86@kernel.org
-Subject: [PATCH resend] mtrr: fix missing kernel-doc notation
-Message-Id: <20100224142321.cc614f0e.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
+Cc: x86@kernel.org, Dimitri Sivanich <sivanich@sgi.com>
+Subject: [PATCH resend] x86/uv: fix all sparse warnings in uv_irq.c
+Message-Id: <20100224142435.4be74d54.rdunlap@xenotime.net>
+Organization: YPO4
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B85A6E5.009A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix missing kernel-doc notation in mtrr/main.c:
+Fix all sparse warnings in building uv_irq.c.
 
-Warning(arch/x86/kernel/cpu/mtrr/main.c:152): No description found for parameter 'info'
+arch/x86/kernel/uv_irq.c:46:17: warning: symbol 'uv_irq_chip' was not declared. Should it be static?
+arch/x86/kernel/uv_irq.c:143:50: error: no identifier for function argument
+arch/x86/kernel/uv_irq.c:162:13: error: typename in expression
+arch/x86/kernel/uv_irq.c:162:13: error: undefined identifier 'restrict'
+arch/x86/kernel/uv_irq.c:250:44: error: no identifier for function argument
+arch/x86/kernel/uv_irq.c:260:17: error: typename in expression
+arch/x86/kernel/uv_irq.c:260:17: error: undefined identifier 'restrict'
+arch/x86/kernel/uv_irq.c:233:50: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/uv_irq.c:233:50:    expected int *pnode
+arch/x86/kernel/uv_irq.c:233:50:    got unsigned int *<noident>
+arch/x86/include/asm/uv/uv_hub.h:318:44: warning: incorrect type in argument 2 (different address spaces)
+arch/x86/include/asm/uv/uv_hub.h:318:44:    expected void volatile [noderef] <asn:2>*addr
+arch/x86/include/asm/uv/uv_hub.h:318:44:    got unsigned long *
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Dimitri Sivanich <sivanich@sgi.com>
 ---
- arch/x86/kernel/cpu/mtrr/main.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/include/asm/uv/uv_hub.h |    2 +-
+ arch/x86/kernel/uv_irq.c         |   12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
---- lnx-2633-rc8.orig/arch/x86/kernel/cpu/mtrr/main.c
-+++ lnx-2633-rc8/arch/x86/kernel/cpu/mtrr/main.c
-@@ -145,6 +145,7 @@ struct set_mtrr_data {
+--- linux-2.6.33-rc8.orig/arch/x86/kernel/uv_irq.c
++++ linux-2.6.33-rc8/arch/x86/kernel/uv_irq.c
+@@ -43,7 +43,7 @@ static void uv_ack_apic(unsigned int irq
+ 	ack_APIC_irq();
+ }
  
- /**
-  * ipi_handler - Synchronisation handler. Executed by "other" CPUs.
-+ * @info: pointer to mtrr configuration data
-  *
-  * Returns nothing.
+-struct irq_chip uv_irq_chip = {
++static struct irq_chip uv_irq_chip = {
+ 	.name		= "UV-CORE",
+ 	.startup	= uv_noop_ret,
+ 	.shutdown	= uv_noop,
+@@ -140,7 +140,7 @@ int uv_irq_2_mmr_info(int irq, unsigned 
   */
----
-~Randy
+ static int
+ arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
+-		       unsigned long mmr_offset, int restrict)
++		       unsigned long mmr_offset, int limit)
+ {
+ 	const struct cpumask *eligible_cpu = cpumask_of(cpu);
+ 	struct irq_desc *desc = irq_to_desc(irq);
+@@ -159,7 +159,7 @@ arch_enable_uv_irq(char *irq_name, unsig
+ 	if (err != 0)
+ 		return err;
+ 
+-	if (restrict == UV_AFFINITY_CPU)
++	if (limit == UV_AFFINITY_CPU)
+ 		desc->status |= IRQ_NO_BALANCING;
+ 	else
+ 		desc->status |= IRQ_MOVE_PCNTXT;
+@@ -213,7 +213,7 @@ static int uv_set_irq_affinity(unsigned 
+ 	unsigned long mmr_value;
+ 	struct uv_IO_APIC_route_entry *entry;
+ 	unsigned long mmr_offset;
+-	unsigned mmr_pnode;
++	int mmr_pnode;
+ 
+ 	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+@@ -247,7 +247,7 @@ static int uv_set_irq_affinity(unsigned 
+  * interrupt is raised.
+  */
+ int uv_setup_irq(char *irq_name, int cpu, int mmr_blade,
+-		 unsigned long mmr_offset, int restrict)
++		 unsigned long mmr_offset, int limit)
+ {
+ 	int irq, ret;
+ 
+@@ -257,7 +257,7 @@ int uv_setup_irq(char *irq_name, int cpu
+ 		return -EBUSY;
+ 
+ 	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset,
+-		restrict);
++		limit);
+ 	if (ret == irq)
+ 		uv_set_irq_2_mmr_info(irq, mmr_offset, mmr_blade);
+ 	else
+--- linux-2.6.33-rc8.orig/arch/x86/include/asm/uv/uv_hub.h
++++ linux-2.6.33-rc8/arch/x86/include/asm/uv/uv_hub.h
+@@ -307,7 +307,7 @@ static inline unsigned long uv_read_glob
+  * Access Global MMR space using the MMR space located at the top of physical
+  * memory.
+  */
+-static inline unsigned long *uv_global_mmr64_address(int pnode, unsigned long offset)
++static inline volatile void __iomem *uv_global_mmr64_address(int pnode, unsigned long offset)
+ {
+ 	return __va(UV_GLOBAL_MMR64_BASE |
+ 		    UV_GLOBAL_MMR64_PNODE_BITS(pnode) | offset);
