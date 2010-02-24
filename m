@@ -1,43 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384Ab0BXHEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:04:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47187
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755346Ab0BXHEM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:04:12 -0500
-Date: Tue, 23 Feb 2010 23:04:28 -0800 (PST)
-Message-Id: <20100223.230428.71578656.davem@davemloft.net>
-To: mst@redhat.com
-Cc: gleb@redhat.com, rusty@rustcorp.com.au, kvm@vger.kernel.org,
-       virtualization@lists.osdl.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, markmc@redhat.com, herbert.xu@redhat.com,
-       quintela@redhat.com, dlaor@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100224053737.GB27806@redhat.com>
-References: <20100223173952.GC9834@redhat.com>
-	<20100223.144235.08984181.davem@davemloft.net>
-	<20100224053737.GB27806@redhat.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1755390Ab0BXHG5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:06:57 -0500
+Received: from DMZ-MAILSEC-SCANNER-8.MIT.EDU ([18.7.68.37]:65072 "EHLO
+	dmz-mailsec-scanner-8.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755346Ab0BXHG4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 02:06:56 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 02:06:56 EST
+X-AuditID: 12074425-b7bc8ae00000097f-c6-4b84cee2b282
+Subject: Re: QUERY: Inclusion of header files in kernel header files
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Theodore Tso <tytso@MIT.EDU>
+In-Reply-To: <22dbbef21002232028i705cee09ic50f30bf830e373@mail.gmail.com>
+Date: Wed, 24 Feb 2010 02:02:02 -0500
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <0F8F193C-B75C-40CE-9F23-E77953BB67B0@mit.edu>
+References: <22dbbef21002222241h711402f1me6b60ac7502cccd4@mail.gmail.com> <22dbbef21002222243s7afb8e2cy1c783a29fe22ac55@mail.gmail.com> <20100223065953.GB32503@liondog.tnic> <22dbbef21002222331o6a59dc25mea3fc7e62dae6710@mail.gmail.com> <20100223095025.GA18559@liondog.tnic> <22dbbef21002230337i104c63dcm5d59064ca48a07f0@mail.gmail.com> <07BBC9AE-C1A1-449F-AE5E-EB5B1C6323C2@mit.edu> <22dbbef21002232028i705cee09ic50f30bf830e373@mail.gmail.com>
+To: viresh kumar <viresh.linux@gmail.com>
+X-Mailer: Apple Mail (2.1077)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Wed, 24 Feb 2010 07:37:37 +0200
 
-> Dave, so while Rusty's on vacation, what's the best way to get vhost
-> infrastructure fixes in? Are you ok with getting pull requests and
-> merging them into net-next?  That should keep the clutter in your inbox
-> to the minimum.
+On Feb 23, 2010, at 11:28 PM, viresh kumar wrote:
+
+>> Before someone goes crazy and starts sending hundreds of patches to the trivial patch folks,
+>> please make sure that you only do this for places where header file foo uses "struct bar" in
+>> bar.h --- and NOT if it is using "struct bar *".    Blind structure pointers don't cause compile
+>> failures, and is a perfectly good thing from the standpoint of data hiding.
+>> 
 > 
-> Of course network changes would still go the usual way.
+> Ted,
+> Actually bus.h is using direct instances of these structures and thus
+> it is giving compilation warnings.
 
-Well, who is providing oversight of vhost work while he's
-gone?  Has he, implicitly or explicitly, appointed a maintainer
-while he's away?
+I'm aware of that --- in this case.   However, this would not be the first time some over-eager kernel programmer newbie finds a message in LKML, reads it out of context, and then starts sending large number of useless, and even potentially harmful patches which all of the kernel maintainers then have to check and NACK.
+
+So while I was pretty sure you knew what you meant, the fact that other people were saying, "Yeah!  Let's sweep through the header files finding all of these potential problems and clean them up," sent a chill down my spine.
+
+													-- Ted
+
