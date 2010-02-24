@@ -1,76 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862Ab0BXHqH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:46:07 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:59514 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773Ab0BXHqD (ORCPT
+	id S1755552Ab0BXH6w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:58:52 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:65262 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297Ab0BXH6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:46:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:cc:date:message-id:in-reply-to:references
-         :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=PbTNnQ4mR7sydHFe7mrLe5MJLxqt+897VpYuxHhh7cVM0cXTA2qVQFBrDQlm2FEt46
-         j+1h2B6sC18nVaSUF2IpBaoEIoPnl27ed70Zm1yyv8MCWcFcph74QHq9ZVciZ8NCfOu9
-         dRtN1PqF9tvGSMWnZjLLIdzoMfm22yUjhTdgA=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH 02/14] Regulators: ab3100 - fix probe and remove annotations
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org
-Date: Tue, 23 Feb 2010 23:37:50 -0800
-Message-ID: <20100224073750.15964.22427.stgit@localhost.localdomain>
-In-Reply-To: <20100224073342.15964.8863.stgit@localhost.localdomain>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Wed, 24 Feb 2010 02:58:50 -0500
+Date: Tue, 23 Feb 2010 23:58:42 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: "Lucas C. Villa Real" <lucasvr@gobolinux.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       reiserfs-devel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [Bug #14656] Oops at __rmqueue+0x98 with 2.6.32-rc6
+In-Reply-To: <wj3ZQZlk_KB.A.Q0C.hwagLB@chimera>
+Message-ID: <alpine.DEB.2.01.1002232323440.28195@bogon.housecafe.de>
+References: <4u4d-2M3yXH.A.XW.XqagLB@chimera> <wj3ZQZlk_KB.A.Q0C.hwagLB@chimera>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX18MZa9aqAVuudYwklEIYWjbtcs3QL66L+ykDoU
+ KY2hQ2d8qEUlqRZz1fvBLT/Ck+7tDJkMoW+/yR+kK5qehHj8VV
+ Quk8Fc0z6nu/Rs5h3VCbA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Probe and remove methods should not be marked as __init/__exit but
-rather __devinit/__devexit so that the needed sections stay in memory
-in presence of CONFIG_HOTPLUG. This is needed even on non hotpluggable
-buses.
+Lucas,
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+On Sun, 21 Feb 2010 at 22:42, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14656
+> Subject		: Oops at __rmqueue+0x98 with 2.6.32-rc6
+> References : http://marc.info/?l=linux-kernel&m=125860255229092&w=4
 
- drivers/regulator/ab3100.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Your initial report said:
 
-diff --git a/drivers/regulator/ab3100.c b/drivers/regulator/ab3100.c
-index b349db4..7de9509 100644
---- a/drivers/regulator/ab3100.c
-+++ b/drivers/regulator/ab3100.c
-@@ -561,7 +561,7 @@ ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
-  * for all the different regulators.
-  */
- 
--static int __init ab3100_regulators_probe(struct platform_device *pdev)
-+static int __devinit ab3100_regulators_probe(struct platform_device *pdev)
- {
- 	struct ab3100_platform_data *plfdata = pdev->dev.platform_data;
- 	struct ab3100 *ab3100 = platform_get_drvdata(pdev);
-@@ -641,7 +641,7 @@ static int __init ab3100_regulators_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int __exit ab3100_regulators_remove(struct platform_device *pdev)
-+static int __devexit ab3100_regulators_remove(struct platform_device *pdev)
- {
- 	int i;
- 
-@@ -659,7 +659,7 @@ static struct platform_driver ab3100_regulators_driver = {
- 		.owner = THIS_MODULE,
- 	},
- 	.probe = ab3100_regulators_probe,
--	.remove = __exit_p(ab3100_regulators_remove),
-+	.remove = __devexit_p(ab3100_regulators_remove),
- };
- 
- static __init int ab3100_regulators_init(void)
+kernel: BUG: unable to handle kernel paging request at 0000b2cb
+kernel: IP: [<c0198266>] __rmqueue+0x98/0x36c
 
+
+However, the backtraces you posted later (with DEBUG_LIST=y) always 
+contained:
+
+
+------------[ cut here ]------------
+WARNING: at lib/list_debug.c:51 list_del+0x41/0x60()
+Hardware name: MacBook3,1
+list_del corruption. next->prev should be c1b71018, but was 00005095
+
+
+Not being a kernel hacker, this "list_del corruption" looks kinda weird. At 
+one point[0] it was suggested to reproduce this with an untainted 
+(ndiswrapper?) kernel; on other occurences[1] some code surgery was indeed 
+needed.
+
+I'm afraid I can't help here though, just thinking out loud...
+
+Christian.
+
+[0] http://lkml.org/lkml/2007/1/12/214
+[1] http://lkml.org/lkml/2008/9/26/85
+    http://lkml.indiana.edu/hypermail/linux/kernel/0902.1/01992.html
+-- 
+BOFH excuse #275:
+
+Bit rot
