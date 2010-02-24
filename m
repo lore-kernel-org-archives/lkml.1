@@ -1,32 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404Ab0BXKHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:07:18 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40316 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756358Ab0BXKHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:07:15 -0500
-Date: Wed, 24 Feb 2010 10:07:14 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/14] Regulators: max8660 - annotate probe and remove
- methods
-Message-ID: <20100224100714.GE18896@rakim.wolfsonmicro.main>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
- <20100224073828.15964.55037.stgit@localhost.localdomain>
+	id S1756424Ab0BXKOL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 05:14:11 -0500
+Received: from david.siemens.de ([192.35.17.14]:17291 "EHLO david.siemens.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752651Ab0BXKOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 05:14:09 -0500
+Message-ID: <4B84FBDB.1070006@siemens.com>
+Date: Wed, 24 Feb 2010 11:13:47 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224073828.15964.55037.stgit@localhost.localdomain>
-X-Cookie: You can't take damsel here now.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Avi Kivity <avi@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
+       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
+References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com>
+In-Reply-To: <4B84F9AF.8060804@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 11:38:28PM -0800, Dmitry Torokhov wrote:
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Avi Kivity wrote:
+> On 02/24/2010 11:54 AM, Jan Kiszka wrote:
+>> Avi Kivity wrote:
+>>    
+>>> On 02/24/2010 11:41 AM, Jan Kiszka wrote:
+>>>      
+>>>> Thomas Gleixner wrote:
+>>>>
+>>>>        
+>>>>> On Tue, 23 Feb 2010, Jan Kiszka wrote:
+>>>>>
+>>>>>
+>>>>>          
+>>>>>> Thomas Gleixner wrote:
+>>>>>>
+>>>>>>            
+>>>>>>> The i8254/i8259 locks need to be real spinlocks on preempt-rt. Convert
+>>>>>>> them to raw_spinlock. No change for !RT kernels.
+>>>>>>>
+>>>>>>>              
+>>>>>> Doesn't fly for -rt anymore: pic_irq_update runs under this raw lock and
+>>>>>> calls kvm_vcpu_kick which tries to wake_up some thread ->   scheduling
+>>>>>> while atomic.
+>>>>>>
+>>>>>>            
+>>>>> Hmm, a wakeup itself is fine. Is that code waking a wake queue ?
+>>>>>
+>>>>>          
+>>>> Yes, it's a wake queue.
+>>>>
+>>>>        
+>>> So what's the core issue?  Is the lock_t in the wait_queue a sleeping mutex?
+>>>      
+>> Yep.
+>>    
+> 
+> I see.  Won't we hit the same issue when we call pic functions from 
+> atomic context during the guest entry sequence?
+> 
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+If there are such call paths, for sure. What concrete path(s) do you
+have in mind?
+
+Jan
+
+-- 
+Siemens AG, Corporate Technology, CT T DE IT 1
+Corporate Competence Center Embedded Linux
