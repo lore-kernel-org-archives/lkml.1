@@ -1,57 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323Ab0BXJzm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 04:55:42 -0500
-Received: from goliath.siemens.de ([192.35.17.28]:21158 "EHLO
-	goliath.siemens.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756238Ab0BXJzF (ORCPT
+	id S1756214Ab0BXJye (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 04:54:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:56725 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756188Ab0BXJyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 04:55:05 -0500
-Message-ID: <4B84F765.5040209@siemens.com>
-Date: Wed, 24 Feb 2010 10:54:45 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
-       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
-References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com>
-In-Reply-To: <4B84F5D4.5020202@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Feb 2010 04:54:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=jrOApwxqSM/zgSao/JoF8EvAtisIYGXVrcjAK05Uu9nAS1AmmSJEijN7HD0MZw/2mT
+         zVmsVzFfj6n0ZkB8nr62tjCIPU/3viVdBZF8puz5MM2KiQXTpbOZZJulFiIZ7dKVHyWy
+         HZ42XwKbU1pbNuLbCN+85/xcfbJ01fjfOeKno=
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: hpa@zytor.com
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
+Subject: [PATCH 0/4] x86-32: improve atomic64_t functions (v3, for tip/x86/asm)
+Date: Wed, 24 Feb 2010 10:54:21 +0100
+Message-Id: <1267005265-27958-1-git-send-email-luca@luca-barbieri.com>
+X-Mailer: git-send-email 1.6.6.1.476.g01ddb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> On 02/24/2010 11:41 AM, Jan Kiszka wrote:
->> Thomas Gleixner wrote:
->>    
->>> On Tue, 23 Feb 2010, Jan Kiszka wrote:
->>>
->>>      
->>>> Thomas Gleixner wrote:
->>>>        
->>>>> The i8254/i8259 locks need to be real spinlocks on preempt-rt. Convert
->>>>> them to raw_spinlock. No change for !RT kernels.
->>>>>          
->>>> Doesn't fly for -rt anymore: pic_irq_update runs under this raw lock and
->>>> calls kvm_vcpu_kick which tries to wake_up some thread ->  scheduling
->>>> while atomic.
->>>>        
->>> Hmm, a wakeup itself is fine. Is that code waking a wake queue ?
->>>      
->> Yes, it's a wake queue.
->>    
-> 
-> So what's the core issue?  Is the lock_t in the wait_queue a sleeping mutex?
+Changes in v3:
+- Dropped alternatives CALL patch because tip/x86/asm already had that
+  functionality
+- Patch atomic64_32.h instead of atomic_32.h
 
-Yep.
+Changes in v2:
+- 386/486 is supported with a custom assembly implementation, the generic
+  implementation is no longer used/modified
+- dropped SSE code
+- changed CALL alternative code to use a custom alternative type:
+  insn parser no longer used
+- several implementation improvements
+- several formatting/style improvements
+- merged 386 support into main patch
 
-Jan
+This patchset improves the atomic64_t functions on x86-32.
+It also includes a testsuite that has been used to test this functionality
+and can test any atomic64_t implementation.
 
--- 
-Siemens AG, Corporate Technology, CT T DE IT 1
-Corporate Competence Center Embedded Linux
+It offers the following improvements:
+1. Better code due to hand-written assembly (e.g. use of the ZF flag)
+2. All atomic64 functions implemented
+3. Support for 386/486 due to the ability to alternatively use either
+   the cmpxchg8b assembly implementation or the 386 cli/popf assembly one
+
+The first patch adds functionality to the alternatives system to support
+the new atomic64_t code.
+A patch that improves cmpxchg64() using that functionality is also included.
+
+To test this code, enable CONFIG_ATOMIC64_SELFTEST, compile for 386 and
+boot normally and with "clearcpuid=8".
+
+You should receive a message stating that the atomic64 test passed,
+along with the selected configuration.
+
+386/486 SMP is not supported, following existing practice, but the code
+is structured to allow to very easily add such support.
+
+Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
