@@ -1,248 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430Ab0BXHIP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:08:15 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:45403 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755413Ab0BXHIM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:08:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=aIB8vQGX2dMR+KQNo9+x6a5JcnqFrCyBWr3istHyXI9LFSv8gFvGZyLGopaiNDx2uy
-         C0pLVHcED3aSetAvTHDwPW0IfDZzIEQQhXeS/0KfIqf+SC1XGIbDuZOHUSs+6ddB52zK
-         jnGto8b46jbYElZqJcP4/Sx36hYLPeTMTRlOI=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E . Hallyn" <serue@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH 4/6] mqueue: only set error codes if they are really necessary
-Date: Tue, 23 Feb 2010 04:04:26 -0300
-Message-Id: <5adcc4fa899a19778bb78cd99950772fdf954fb0.1266907496.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.7.0.87.g0901d
-In-Reply-To: <cover.1266907495.git.andre.goddard@gmail.com>
-References: <cover.1266907495.git.andre.goddard@gmail.com>
+	id S1755413Ab0BXHLL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:11:11 -0500
+Received: from toro.web-alm.net ([62.245.132.31]:44973 "EHLO toro.web-alm.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755097Ab0BXHLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 02:11:09 -0500
+Message-ID: <4B84CFCB.4010001@osadl.org>
+Date: Wed, 24 Feb 2010 08:05:47 +0100
+From: Carsten Emde <Carsten.Emde@osadl.org>
+Organization: Open Source Automation Development Lab (OSADL) eG
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Dan Carpenter <error27@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [patch] latency_hist: fix small memory leak
+References: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain> <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain> <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain> <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132743.GB5416@bicker>
+In-Reply-To: <20100222132743.GB5416@bicker>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... postponing assignments until they're needed. Doesn't change code size.
+On 02/22/2010 02:27 PM, Dan Carpenter wrote:
+> index_ptr needs to be freed on the error path.
+> 
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> 
+> diff --git a/kernel/trace/latency_hist.c b/kernel/trace/latency_hist.c
+> index b3b5ea2..8edc70c 100644
+> --- a/kernel/trace/latency_hist.c
+> +++ b/kernel/trace/latency_hist.c
+> @@ -204,8 +204,10 @@ static void *l_start(struct seq_file *m, loff_t *pos)
+>  			   , my_hist->beyond_hist_bound_samples
+>  			   , MAX_ENTRY_NUM, "samples");
+>  	}
+> -	if (index >= MAX_ENTRY_NUM)
+> +	if (index >= MAX_ENTRY_NUM) {
+> +		kfree(index_ptr);
+>  		return NULL;
+> +	}
+>  
+>  	*index_ptr = index;
+>  	return index_ptr;
+Thanks a lot for spotting this leak. We even don't need to allocate the
+memory, if index >= MAX_ENTRY_NUM.
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- ipc/mqueue.c |   77 +++++++++++++++++++++++++++++++++++++--------------------
- 1 files changed, 50 insertions(+), 27 deletions(-)
+This patch applies to 2.6.31.12-rt21 and 2.6.33-rc8-rt (rt/head).
 
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 2cddf93..906e873 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -184,7 +184,7 @@ static int mqueue_fill_super(struct super_block *sb, void *data, int silent)
+Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+
+Index: head/kernel/trace/latency_hist.c
+===================================================================
+--- head.orig/kernel/trace/latency_hist.c
++++ head/kernel/trace/latency_hist.c
+@@ -218,13 +218,10 @@ void notrace latency_hist(int latency_ty
+
+ static void *l_start(struct seq_file *m, loff_t *pos)
  {
- 	struct inode *inode;
- 	struct ipc_namespace *ns = data;
--	int error = 0;
-+	int error;
- 
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-@@ -202,7 +202,9 @@ static int mqueue_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!sb->s_root) {
- 		iput(inode);
- 		error = -ENOMEM;
-+		goto out;
+-	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
++	loff_t *index_ptr = NULL;
+ 	loff_t index = *pos;
+ 	struct hist_data *my_hist = m->private;
+
+-	if (!index_ptr)
+-		return NULL;
+-
+ 	if (index == 0) {
+ 		char minstr[32], avgstr[32], maxstr[32];
+
+@@ -263,10 +260,12 @@ static void *l_start(struct seq_file *m,
+ 			   MAX_ENTRY_NUM - my_hist->offset,
+ 			   "samples");
  	}
-+	error = 0;
- 
- out:
- 	return error;
-@@ -621,9 +623,10 @@ static struct file *do_create(struct ipc_namespace *ipc_ns, struct dentry *dir,
- 	int ret;
- 
- 	if (attr) {
--		ret = -EINVAL;
--		if (!mq_attr_ok(ipc_ns, attr))
-+		if (!mq_attr_ok(ipc_ns, attr)) {
-+			ret = -EINVAL;
- 			goto out;
-+		}
- 		/* store for use during create */
- 		dentry->d_fsdata = attr;
- 	}
-@@ -714,9 +717,10 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
- 	if (oflag & O_CREAT) {
- 		if (dentry->d_inode) {	/* entry already exists */
- 			audit_inode(name, dentry);
--			error = -EEXIST;
--			if (oflag & O_EXCL)
-+			if (oflag & O_EXCL) {
-+				error = -EEXIST;
- 				goto out;
-+			}
- 			filp = do_open(ipc_ns, dentry, oflag);
- 		} else {
- 			filp = do_create(ipc_ns, ipc_ns->mq_mnt->mnt_root,
-@@ -724,9 +728,10 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
- 						u_attr ? &attr : NULL);
- 		}
- 	} else {
--		error = -ENOENT;
--		if (!dentry->d_inode)
-+		if (!dentry->d_inode) {
-+			error = -ENOENT;
- 			goto out;
-+		}
- 		audit_inode(name, dentry);
- 		filp = do_open(ipc_ns, dentry, oflag);
- 	}
-@@ -874,19 +879,24 @@ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
- 	audit_mq_sendrecv(mqdes, msg_len, msg_prio, p);
- 	timeout = prepare_timeout(p);
- 
--	ret = -EBADF;
- 	filp = fget(mqdes);
--	if (unlikely(!filp))
-+	if (unlikely(!filp)) {
-+		ret = -EBADF;
- 		goto out;
+-	if (index >= MAX_ENTRY_NUM)
+-		return NULL;
++	if (index < MAX_ENTRY_NUM) {
++		index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
++		if (index_ptr)
++			*index_ptr = index;
 +	}
- 
- 	inode = filp->f_path.dentry->d_inode;
--	if (unlikely(filp->f_op != &mqueue_file_operations))
-+	if (unlikely(filp->f_op != &mqueue_file_operations)) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 	info = MQUEUE_I(inode);
- 	audit_inode(NULL, filp->f_path.dentry);
- 
--	if (unlikely(!(filp->f_mode & FMODE_WRITE)))
-+	if (unlikely(!(filp->f_mode & FMODE_WRITE))) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 
- 	if (unlikely(msg_len > info->attr.mq_msgsize)) {
- 		ret = -EMSGSIZE;
-@@ -963,19 +973,24 @@ SYSCALL_DEFINE5(mq_timedreceive, mqd_t, mqdes, char __user *, u_msg_ptr,
- 	audit_mq_sendrecv(mqdes, msg_len, 0, p);
- 	timeout = prepare_timeout(p);
- 
--	ret = -EBADF;
- 	filp = fget(mqdes);
--	if (unlikely(!filp))
-+	if (unlikely(!filp)) {
-+		ret = -EBADF;
- 		goto out;
-+	}
- 
- 	inode = filp->f_path.dentry->d_inode;
--	if (unlikely(filp->f_op != &mqueue_file_operations))
-+	if (unlikely(filp->f_op != &mqueue_file_operations)) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 	info = MQUEUE_I(inode);
- 	audit_inode(NULL, filp->f_path.dentry);
- 
--	if (unlikely(!(filp->f_mode & FMODE_READ)))
-+	if (unlikely(!(filp->f_mode & FMODE_READ))) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 
- 	/* checks if buffer is big enough */
- 	if (unlikely(msg_len < info->attr.mq_msgsize)) {
-@@ -1065,13 +1080,14 @@ SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
- 
- 			/* create the notify skb */
- 			nc = alloc_skb(NOTIFY_COOKIE_LEN, GFP_KERNEL);
--			ret = -ENOMEM;
--			if (!nc)
-+			if (!nc) {
-+				ret = -ENOMEM;
- 				goto out;
--			ret = -EFAULT;
-+			}
- 			if (copy_from_user(nc->data,
- 					notification.sigev_value.sival_ptr,
- 					NOTIFY_COOKIE_LEN)) {
-+				ret = -EFAULT;
- 				goto out;
- 			}
- 
-@@ -1080,9 +1096,10 @@ SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
- 			/* and attach it to the socket */
- retry:
- 			filp = fget(notification.sigev_signo);
--			ret = -EBADF;
--			if (!filp)
-+			if (!filp) {
-+				ret = -EBADF;
- 				goto out;
-+			}
- 			sock = netlink_getsockbyfilp(filp);
- 			fput(filp);
- 			if (IS_ERR(sock)) {
-@@ -1094,7 +1111,7 @@ retry:
- 			timeo = MAX_SCHEDULE_TIMEOUT;
- 			ret = netlink_attachskb(sock, nc, &timeo, NULL);
- 			if (ret == 1)
--		       		goto retry;
-+				goto retry;
- 			if (ret) {
- 				sock = NULL;
- 				nc = NULL;
-@@ -1103,14 +1120,17 @@ retry:
- 		}
- 	}
- 
--	ret = -EBADF;
- 	filp = fget(mqdes);
--	if (!filp)
-+	if (!filp) {
-+		ret = -EBADF;
- 		goto out;
-+	}
- 
- 	inode = filp->f_path.dentry->d_inode;
--	if (unlikely(filp->f_op != &mqueue_file_operations))
-+	if (unlikely(filp->f_op != &mqueue_file_operations)) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 	info = MQUEUE_I(inode);
- 
- 	ret = 0;
-@@ -1173,14 +1193,17 @@ SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
- 			return -EINVAL;
- 	}
- 
--	ret = -EBADF;
- 	filp = fget(mqdes);
--	if (!filp)
-+	if (!filp) {
-+		ret = -EBADF;
- 		goto out;
-+	}
- 
- 	inode = filp->f_path.dentry->d_inode;
--	if (unlikely(filp->f_op != &mqueue_file_operations))
-+	if (unlikely(filp->f_op != &mqueue_file_operations)) {
-+		ret = -EBADF;
- 		goto out_fput;
-+	}
- 	info = MQUEUE_I(inode);
- 
- 	spin_lock(&info->lock);
--- 
-1.7.0.87.g0901d
+
+-	*index_ptr = index;
+ 	return index_ptr;
+ }
 
