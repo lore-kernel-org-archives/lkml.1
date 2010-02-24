@@ -1,100 +1,1206 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756364Ab0BXPW4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:22:56 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:49566 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756248Ab0BXPWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 10:22:54 -0500
-Date: Wed, 24 Feb 2010 10:22:52 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100224152251.GA16295@Krystal>
-References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com> <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop>
-MIME-Version: 1.0
+	id S1756477Ab0BXPYN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:24:13 -0500
+Received: from mail2.tundra.com ([142.46.200.162]:44060 "EHLO mx2.tundra.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756318Ab0BXPYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 10:24:11 -0500
+X-ASG-Debug-ID: 1267025047-2b3301520000-xx1T2L
+X-Barracuda-URL: http://142.46.200.162:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: alexb@tundra.com
+Date: Wed, 24 Feb 2010 10:24:01 -0500
+From: Alexandre Bounine <alexb@tundra.com>
+To: mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       thomas.moll@sysgo.com, thomas.moll.ext@nsn.com
+X-ASG-Orig-Subj: [PATCH 3/7] RapidIO: Add Port-Write handling for EM
+Subject: [PATCH 3/7] RapidIO: Add Port-Write handling for EM
+Message-ID: <20100224152401.GC13661@kaneng01.tundra.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100224091052.GY9738@laptop>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 10:12:05 up 32 days, 17:49,  4 users,  load average: 2.36, 1.71,
-	1.30
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.1i
+X-Barracuda-Connect: UNKNOWN[142.46.200.189]
+X-Barracuda-Start-Time: 1267025047
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at tundra.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (npiggin@suse.de) wrote:
-> On Mon, Feb 22, 2010 at 04:23:21PM -0500, Mathieu Desnoyers wrote:
-> > * Chris Friesen (cfriesen@nortel.com) wrote:
-> > > On 02/12/2010 04:46 PM, Mathieu Desnoyers wrote:
-> > > 
-> > > > Editorial question: 
-> > > > 
-> > > > This synchronization only takes care of threads using the current process memory
-> > > > map. It should not be used to synchronize accesses performed on memory maps
-> > > > shared between different processes. Is that a limitation we can live with ?
-> > > 
-> > > It makes sense for an initial version.  It would be unfortunate if this
-> > > were a permanent limitation, since using separate processes with
-> > > explicit shared memory is a useful way to mitigate memory trampler issues.
-> > > 
-> > > If we were going to allow that, it might make sense to add an address
-> > > range such that only those processes which have mapped that range would
-> > > execute the barrier.  Come to think of it, it might be possible to use
-> > > this somehow to avoid having to execute the barrier on *all* threads
-> > > within a process.
-> > 
-> > The extensible system call mandatory and optional flags will allow this kind of
-> > improvement later on if this appears to be needed. It will also allow user-space
-> > to detect if later kernels support these new features or not. But meanwhile I
-> > think it's good to start with this implementation that covers 99.99% of
-> > use-cases I can currently think of (ok, well, maybe I'm just unimaginative) ;)
-> 
-> It's a good point, I think having at least the ability to do
-> process-shared or process-private in the first version of the API might
-> be a good idea. That matches glibc's synchronisation routines so it
-> would probably be a desirable feature even if you don't implement it in
-> your library initially.
 
-I am tempted to say that we should probably wait for users of this API feature
-to manifest themselves before we go on and implement it. This will ensure that
-we don't end up maintaining an unused feature and this provides a minimum
-testability. For now, returning -EINVAL seems like an appropriate response for
-this system call feature.
+From: Alexandre Bounine <alexandre.bounine@idt.com>
 
-As I said above, given the exensible nature of the sys_membarrier flags, we can
-assign a MEMBARRIER_SHARED_MEM or something like that to a mandatory flag bit
-later on. So when userspace start using this flag on old kernels that do not
-support it, -EINVAL will be returned, and then the application will know it must
-use a fallback. So, basically, we don't even need to define this flag now.
+Add RapidIO Port-Write message handling in the context
+of Error Management Extensions Specification Rev.1.3.
 
-> 
-> When writing multiprocessor scalable software, threads should often be
-> avoided. They share so much state that it is easy to run into
-> scalability issues in the kernel. So yes it would be really nice to
-> have userspace RCU available in a process-shared mode.
-> 
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Tested-by: Thomas Moll <thomas.moll@sysgo.com>
+---
 
-Agreed, although some major modifications would also be needed in the userspace
-RCU library to do that, because it currently rely on being able to access other
-thread's TLS.
+ drivers/rapidio/rio-scan.c        |  197 +++++++++++++++++++-----
+ drivers/rapidio/rio.c             |  307 ++++++++++++++++++++++++++++++++++++++
+ drivers/rapidio/rio.h             |   29 +++
+ drivers/rapidio/switches/tsi568.c |   24 ++
+ drivers/rapidio/switches/tsi57x.c |  153 ++++++++++++++++++
+ include/asm-generic/vmlinux.lds.h |    5 
+ include/linux/rio.h               |   30 +++
+ include/linux/rio_drv.h           |    6 
+ include/linux/rio_regs.h          |   60 +++++++
+ 9 files changed, 771 insertions(+), 40 deletions(-)
 
-Thanks,
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/rio-scan.c w33r7b/drivers/rapidio/rio-scan.c
+--- w33r7a/drivers/rapidio/rio-scan.c	2010-02-10 16:25:31.950433000 -0500
++++ w33r7b/drivers/rapidio/rio-scan.c	2010-02-11 14:33:44.796825000 -0500
+@@ -4,6 +4,10 @@
+  * Copyright 2005 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
++ * Copyright 2009 Integrated Device Technology, Inc.
++ * Alex Bounine <alexandre.bounine@idt.com>
++ * - Added Port-Write/Error Management initialization and handling
++ *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+@@ -31,15 +35,16 @@
+ LIST_HEAD(rio_devices);
+ static LIST_HEAD(rio_switches);
+ 
+-#define RIO_ENUM_CMPL_MAGIC	0xdeadbeef
+-
+ static void rio_enum_timeout(unsigned long);
+ 
++static void rio_init_em(struct rio_dev *rdev);
++
+ DEFINE_SPINLOCK(rio_global_list_lock);
+ 
+ static int next_destid = 0;
+ static int next_switchid = 0;
+ static int next_net = 0;
++static int next_comptag;
+ 
+ static struct timer_list rio_enum_timer =
+ TIMER_INITIALIZER(rio_enum_timeout, 0, 0);
+@@ -52,13 +57,6 @@ static int rio_mport_phys_table[] = {
+ 	-1,
+ };
+ 
+-static int rio_sport_phys_table[] = {
+-	RIO_EFB_PAR_EP_FREE_ID,
+-	RIO_EFB_SER_EP_FREE_ID,
+-	RIO_EFB_SER_EP_FREC_ID,
+-	-1,
+-};
+-
+ /**
+  * rio_get_device_id - Get the base/extended device id for a device
+  * @port: RIO master port
+@@ -119,12 +117,26 @@ static int rio_clear_locks(struct rio_mp
+ 	u32 result;
+ 	int ret = 0;
+ 
+-	/* Write component tag CSR magic complete value */
+-	rio_local_write_config_32(port, RIO_COMPONENT_TAG_CSR,
+-				  RIO_ENUM_CMPL_MAGIC);
+-	list_for_each_entry(rdev, &rio_devices, global_list)
+-	    rio_write_config_32(rdev, RIO_COMPONENT_TAG_CSR,
+-				RIO_ENUM_CMPL_MAGIC);
++	/* Assign component tag to all devices */
++	next_comptag = 1;
++	rio_local_write_config_32(port, RIO_COMPONENT_TAG_CSR, next_comptag++);
++
++	list_for_each_entry(rdev, &rio_devices, global_list) {
++		/* Mark device as discovered */
++		rio_read_config_32(rdev,
++				   rdev->phys_efptr + RIO_PORT_GEN_CTL_CSR,
++				   &result);
++		rio_write_config_32(rdev,
++				    rdev->phys_efptr + RIO_PORT_GEN_CTL_CSR,
++				    result | RIO_PORT_GEN_DISCOVERED);
++
++		rio_write_config_32(rdev, RIO_COMPONENT_TAG_CSR, next_comptag);
++		rdev->comp_tag = next_comptag++;
++		if (next_comptag >= 0x10000) {
++			pr_err("RIO: Component Tag Counter Overflow\n");
++			break;
++		}
++	}
+ 
+ 	/* Release host device id locks */
+ 	rio_local_write_config_32(port, RIO_HOST_DID_LOCK_CSR,
+@@ -267,6 +279,30 @@ static void rio_route_set_ops(struct rio
+ }
+ 
+ /**
++ * rio_em_set_ops- Sets Error Managment operations for a particular vendor switch
++ * @rdev: RIO device
++ *
++ * Searches the RIO EM ops table for known switch types. If the vid
++ * and did match a switch table entry, then set the em_init() and
++ * em_handle() ops to the table entry values.
++ */
++static void rio_em_set_ops(struct rio_dev *rdev)
++{
++	struct rio_em_ops *cur = __start_rio_em_ops;
++	struct rio_em_ops *end = __end_rio_em_ops;
++
++	while (cur < end) {
++		if ((cur->vid == rdev->vid) && (cur->did == rdev->did)) {
++			pr_debug("RIO: adding EM ops for %s\n", rio_name(rdev));
++			rdev->rswitch->em_init = cur->init_hook;
++			rdev->rswitch->em_handle = cur->handler_hook;
++			break;
++		}
++		cur++;
++	}
++}
++
++/**
+  * rio_add_device- Adds a RIO device to the device model
+  * @rdev: RIO device
+  *
+@@ -336,8 +372,14 @@ static struct rio_dev __devinit *rio_set
+ 	rdev->asm_rev = result >> 16;
+ 	rio_mport_read_config_32(port, destid, hopcount, RIO_PEF_CAR,
+ 				 &rdev->pef);
+-	if (rdev->pef & RIO_PEF_EXT_FEATURES)
++	if (rdev->pef & RIO_PEF_EXT_FEATURES) {
+ 		rdev->efptr = result & 0xffff;
++		rdev->phys_efptr = rio_mport_get_physefb(port, 0, destid,
++							 hopcount);
++
++		rdev->em_efptr = rio_mport_get_feature(port, 0, destid,
++						hopcount, RIO_EFB_ERR_MGMNT);
++	}
+ 
+ 	rio_mport_read_config_32(port, destid, hopcount, RIO_SRC_OPS_CAR,
+ 				 &rdev->src_ops);
+@@ -366,6 +408,7 @@ static struct rio_dev __devinit *rio_set
+ 		rswitch->switchid = next_switchid;
+ 		rswitch->hopcount = hopcount;
+ 		rswitch->destid = destid;
++		rswitch->port_ok = 0;
+ 		rswitch->route_table = kzalloc(sizeof(u8)*
+ 					RIO_MAX_ROUTE_ENTRIES(port->sys_size),
+ 					GFP_KERNEL);
+@@ -379,6 +422,7 @@ static struct rio_dev __devinit *rio_set
+ 		dev_set_name(&rdev->dev, "%02x:s:%04x", rdev->net->id,
+ 			     rdev->rswitch->switchid);
+ 		rio_route_set_ops(rdev);
++		rio_em_set_ops(rdev);
+ 
+ 		if (do_enum && rdev->rswitch->clr_table)
+ 			rdev->rswitch->clr_table(port, destid, hopcount,
+@@ -429,23 +473,29 @@ cleanup:
+  *
+  * Reads the port error status CSR for a particular switch port to
+  * determine if the port has an active link.  Returns
+- * %PORT_N_ERR_STS_PORT_OK if the port is active or %0 if it is
++ * %RIO_PORT_N_ERR_STS_PORT_OK if the port is active or %0 if it is
+  * inactive.
+  */
+ static int
+ rio_sport_is_active(struct rio_mport *port, u16 destid, u8 hopcount, int sport)
+ {
+-	u32 result;
++	u32 result = 0;
+ 	u32 ext_ftr_ptr;
+ 
+-	int *entry = rio_sport_phys_table;
+-
+-	do {
+-		if ((ext_ftr_ptr =
+-		     rio_mport_get_feature(port, 0, destid, hopcount, *entry)))
++	ext_ftr_ptr = rio_mport_get_efb(port, 0, destid, hopcount, 0);
+ 
++	while (ext_ftr_ptr) {
++		rio_mport_read_config_32(port, destid, hopcount,
++					 ext_ftr_ptr, &result);
++		result = RIO_GET_BLOCK_ID(result);
++		if ((result == RIO_EFB_SER_EP_FREE_ID) ||
++		    (result == RIO_EFB_SER_EP_FREE_ID_V13P) ||
++		    (result == RIO_EFB_SER_EP_FREC_ID))
+ 			break;
+-	} while (*++entry >= 0);
++
++		ext_ftr_ptr = rio_mport_get_efb(port, 0, destid, hopcount,
++						ext_ftr_ptr);
++	}
+ 
+ 	if (ext_ftr_ptr)
+ 		rio_mport_read_config_32(port, destid, hopcount,
+@@ -453,7 +503,38 @@ rio_sport_is_active(struct rio_mport *po
+ 					 RIO_PORT_N_ERR_STS_CSR(sport),
+ 					 &result);
+ 
+-	return (result & PORT_N_ERR_STS_PORT_OK);
++	return result & RIO_PORT_N_ERR_STS_PORT_OK;
++}
++
++/**
++ * rio_set_port_lockout - Sets/clears LOCKOUT bit (RIO EM 1.3) for a switch port.
++ * @rdev: Pointer to RIO device control structure
++ * @pnum: Switch port number to set LOCKOUT bit
++ * @lock: Operation : set (=1) or clear (=0)
++ */
++static int rio_set_port_lockout(struct rio_dev *rdev, u32 pnum, int lock)
++{
++	u8 hopcount = 0xff;
++	u16 destid = rdev->destid;
++	u32 regval;
++
++	if (rdev->rswitch) {
++		destid = rdev->rswitch->destid;
++		hopcount = rdev->rswitch->hopcount;
++	}
++
++	rio_mport_read_config_32(rdev->net->hport, destid, hopcount,
++				 rdev->phys_efptr + RIO_PORT_N_CTL_CSR(pnum),
++				 &regval);
++	if (lock)
++		regval |= RIO_PORT_N_CTL_LOCKOUT;
++	else
++		regval &= ~RIO_PORT_N_CTL_LOCKOUT;
++
++	rio_mport_write_config_32(rdev->net->hport, destid, hopcount,
++				  rdev->phys_efptr + RIO_PORT_N_CTL_CSR(pnum),
++				  regval);
++	return 0;
+ }
+ 
+ /**
+@@ -659,8 +740,10 @@ static int __devinit rio_enum_peer(struc
+ 		    rio_name(rdev), rdev->vid, rdev->did, num_ports);
+ 		sw_destid = next_destid;
+ 		for (port_num = 0; port_num < num_ports; port_num++) {
+-			if (sw_inport == port_num)
++			if (sw_inport == port_num) {
++				rdev->rswitch->port_ok |= (1 << port_num);
+ 				continue;
++			}
+ 
+ 			cur_destid = next_destid;
+ 
+@@ -670,6 +753,7 @@ static int __devinit rio_enum_peer(struc
+ 				pr_debug(
+ 				    "RIO: scanning device on port %d\n",
+ 				    port_num);
++				rdev->rswitch->port_ok |= (1 << port_num);
+ 				rio_route_add_entry(port, rdev->rswitch,
+ 						RIO_GLOBAL_TABLE,
+ 						RIO_ANY_DESTID(port->sys_size),
+@@ -693,9 +777,28 @@ static int __devinit rio_enum_peer(struc
+ 						    port_num;
+ 					}
+ 				}
++			} else {
++				/* If switch supports Error Management,
++				 * set PORT_LOCKOUT bit for unused port
++				 */
++				if (rdev->em_efptr)
++					rio_set_port_lockout(rdev, port_num, 1);
++
++				rdev->rswitch->port_ok &= ~(1 << port_num);
+ 			}
+ 		}
+ 
++		/* Direct Port-write messages to the enumeratiing host */
++		if ((rdev->src_ops & RIO_SRC_OPS_PORT_WRITE) &&
++		    (rdev->em_efptr)) {
++			rio_write_config_32(rdev,
++					rdev->em_efptr + RIO_EM_PW_TGT_DEVID,
++					(port->host_deviceid << 16) |
++					(port->sys_size << 15));
++		}
++
++		rio_init_em(rdev);
++
+ 		/* Check for empty switch */
+ 		if (next_destid == sw_destid) {
+ 			next_destid++;
+@@ -715,21 +818,16 @@ static int __devinit rio_enum_peer(struc
+  * rio_enum_complete- Tests if enumeration of a network is complete
+  * @port: Master port to send transaction
+  *
+- * Tests the Component Tag CSR for presence of the magic enumeration
+- * complete flag. Return %1 if enumeration is complete or %0 if
++ * Tests the Component Tag CSR for non-zero value (enumeration
++ * complete flag). Return %1 if enumeration is complete or %0 if
+  * enumeration is incomplete.
+  */
+ static int rio_enum_complete(struct rio_mport *port)
+ {
+ 	u32 tag_csr;
+-	int ret = 0;
+ 
+ 	rio_local_read_config_32(port, RIO_COMPONENT_TAG_CSR, &tag_csr);
+-
+-	if (tag_csr == RIO_ENUM_CMPL_MAGIC)
+-		ret = 1;
+-
+-	return ret;
++	return (tag_csr & 0xffff) ? 1 : 0;
+ }
+ 
+ /**
+@@ -842,7 +940,7 @@ rio_disc_peer(struct rio_net *net, struc
+  *
+  * Reads the port error status CSR for the master port to
+  * determine if the port has an active link.  Returns
+- * %PORT_N_ERR_STS_PORT_OK if the  master port is active
++ * %RIO_PORT_N_ERR_STS_PORT_OK if the  master port is active
+  * or %0 if it is inactive.
+  */
+ static int rio_mport_is_active(struct rio_mport *port)
+@@ -863,7 +961,7 @@ static int rio_mport_is_active(struct ri
+ 					 RIO_PORT_N_ERR_STS_CSR(port->index),
+ 					 &result);
+ 
+-	return (result & PORT_N_ERR_STS_PORT_OK);
++	return result & RIO_PORT_N_ERR_STS_PORT_OK;
+ }
+ 
+ /**
+@@ -930,6 +1028,32 @@ static void rio_update_route_tables(stru
+ }
+ 
+ /**
++ * rio_init_em - Initializes RIO Error Management (for switches)
++ * @port: Master port associated with the RIO network
++ *
++ * For each enumerated switch, call device-specific error management
++ * initialization routine (if supplied by the switch driver).
++ */
++static void rio_init_em(struct rio_dev *rdev)
++{
++	if (rio_is_switch(rdev) && (rdev->em_efptr) &&
++	    (rdev->rswitch->em_init)) {
++		rdev->rswitch->em_init(rdev);
++	}
++}
++
++/**
++ * rio_pw_enable - Enables/disables port-write handling by a master port
++ * @port: Master port associated with port-write handling
++ * @enable:  1=enable,  0=disable
++ */
++static void rio_pw_enable(struct rio_mport *port, int enable)
++{
++	if (port->ops->pwenable)
++		port->ops->pwenable(port, enable);
++}
++
++/**
+  * rio_enum_mport- Start enumeration through a master port
+  * @mport: Master port to send transactions
+  *
+@@ -972,6 +1096,7 @@ int __devinit rio_enum_mport(struct rio_
+ 		}
+ 		rio_update_route_tables(mport);
+ 		rio_clear_locks(mport);
++		rio_pw_enable(mport, 1);
+ 	} else {
+ 		printk(KERN_INFO "RIO: master port %d link inactive\n",
+ 		       mport->id);
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/rio.c w33r7b/drivers/rapidio/rio.c
+--- w33r7a/drivers/rapidio/rio.c	2010-02-09 15:11:09.147959000 -0500
++++ w33r7b/drivers/rapidio/rio.c	2010-02-11 15:04:35.829619000 -0500
+@@ -5,6 +5,10 @@
+  * Copyright 2005 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
++ * Copyright 2009 Integrated Device Technology, Inc.
++ * Alex Bounine <alexandre.bounine@idt.com>
++ * - Added Port-Write/Error Management initialization and handling
++ *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+@@ -333,6 +337,308 @@ int rio_release_outb_dbell(struct rio_de
+ }
+ 
+ /**
++ * rio_request_inb_pwrite - request inbound port-write message service
++ * @mport: RIO device to which register inbound port-write callback routine
++ * @pwcback: Callback routine to execute when port-write is received
++ *
++ * Binds a port-write callback function to the RapidIO device.
++ * Returns 0 if the request has been satisfied.
++ */
++int rio_request_inb_pwrite(struct rio_dev *rdev,
++		int (*pwcback)(struct rio_dev *rdev, u32* msg, int step))
++{
++	int rc = 0;
++
++	spin_lock(&rio_global_list_lock);
++	if (rdev->pwcback != NULL)
++		rc = -ENOMEM;
++	else
++		rdev->pwcback = pwcback;
++
++	spin_unlock(&rio_global_list_lock);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(rio_request_inb_pwrite);
++
++/**
++ * rio_release_inb_pwrite - release inbound port-write message service
++ * @rdev: RIO device which registered for inbound port-write callback
++ *
++ * Removes callback from the rio_dev structure. Returns 0 if the request
++ * has been satisfied.
++ */
++int rio_release_inb_pwrite(struct rio_dev *rdev)
++{
++	int rc = -ENOMEM;
++
++	spin_lock(&rio_global_list_lock);
++	if (rdev->pwcback) {
++		rdev->pwcback = NULL;
++		rc = 0;
++	}
++
++	spin_unlock(&rio_global_list_lock);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(rio_release_inb_pwrite);
++
++/**
++ * rio_mport_get_physefb - Helper function that returns register offset
++ *                      for Physical Layer Extended Features Block.
++ * @rdev: RIO device
++ */
++u32
++rio_mport_get_physefb(struct rio_mport *port, int local,
++		      u16 destid, u8 hopcount)
++{
++	u32 ext_ftr_ptr;
++	u32 ftr_header;
++
++	ext_ftr_ptr = rio_mport_get_efb(port, local, destid, hopcount, 0);
++
++	while (ext_ftr_ptr)  {
++		if (local)
++			rio_local_read_config_32(port, ext_ftr_ptr,
++						 &ftr_header);
++		else
++			rio_mport_read_config_32(port, destid, hopcount,
++						 ext_ftr_ptr, &ftr_header);
++
++		ftr_header = RIO_GET_BLOCK_ID(ftr_header);
++		switch (ftr_header) {
++
++		case RIO_EFB_SER_EP_ID_V13P:
++		case RIO_EFB_SER_EP_REC_ID_V13P:
++		case RIO_EFB_SER_EP_FREE_ID_V13P:
++		case RIO_EFB_SER_EP_ID:
++		case RIO_EFB_SER_EP_REC_ID:
++		case RIO_EFB_SER_EP_FREE_ID:
++		case RIO_EFB_SER_EP_FREC_ID:
++
++			return ext_ftr_ptr;
++
++		default:
++			break;
++		}
++
++		ext_ftr_ptr = rio_mport_get_efb(port, local, destid,
++						hopcount, ext_ftr_ptr);
++	}
++
++	return ext_ftr_ptr;
++}
++
++/**
++ * rio_get_comptag - Begin or continue searching for a RIO device by component tag
++ * @comp_tag: RIO component tad to match
++ * @from: Previous RIO device found in search, or %NULL for new search
++ *
++ * Iterates through the list of known RIO devices. If a RIO device is
++ * found with a matching @comp_tag, a pointer to its device
++ * structure is returned. Otherwise, %NULL is returned. A new search
++ * is initiated by passing %NULL to the @from argument. Otherwise, if
++ * @from is not %NULL, searches continue from next device on the global
++ * list.
++ */
++static struct rio_dev *rio_get_comptag(u32 comp_tag, struct rio_dev *from)
++{
++	struct list_head *n;
++	struct rio_dev *rdev;
++
++	WARN_ON(in_interrupt());
++	spin_lock(&rio_global_list_lock);
++	n = from ? from->global_list.next : rio_devices.next;
++
++	while (n && (n != &rio_devices)) {
++		rdev = rio_dev_g(n);
++		if (rdev->comp_tag == comp_tag)
++			goto exit;
++		n = n->next;
++	}
++	rdev = NULL;
++exit:
++	spin_unlock(&rio_global_list_lock);
++	return rdev;
++}
++
++/**
++ * rio_inb_pwrite_handler - process inbound port-write message
++ * @pw_msg: pointer to inbound port-write message
++ *
++ * Processes an inbound port-write message. Returns 0 if the request
++ * has been satisfied.
++ */
++int rio_inb_pwrite_handler(u32 *pw_msg)
++{
++	struct rio_dev *rdev;
++	struct rio_mport *mport;
++	u8 hopcount;
++	u16 destid;
++	u32 regval, err_status;
++	int rc, portnum;
++
++	rdev = rio_get_comptag(pw_msg[0], NULL);
++	if (rdev == NULL) {
++		/* Someting bad here (probably enumeration error) */
++		pr_err("RIO: %s No matching device for CTag 0x%08x\n",
++			__func__, pw_msg[0]);
++		return -EIO;
++	}
++
++	pr_debug("RIO: Port-Write message from %s\n", rio_name(rdev));
++
++#ifdef DEBUG_PW
++	{
++	u32 i;
++	pr_debug("%s : Port-Write Message:", __func__);
++	for (i = 0; i < RIO_PW_MSG_SIZE/sizeof(u32); i++) {
++		if ((i%4) == 0)
++			pr_debug("\n0x%02x: 0x%08x", i, pw_msg[i]);
++		else
++			pr_debug(" 0x%08x", pw_msg[i]);
++	}
++	pr_debug("\n");
++	}
++#endif
++
++	/* Call an external service function (if such is registered
++	 * for this device). This may be the service for endpoints that send
++	 * device-specific port-write messages. End-point messages expected
++	 * to be handled completely by EP specific device driver.
++	 * For switches rc==0 signals that no standard processing required.
++	 */
++	if (rdev->pwcback != NULL) {
++		rc = rdev->pwcback(rdev, pw_msg, 0);
++		if (rc == 0)
++			return 0;
++	}
++
++	/* For End-point devices processing stops here */
++	if (!(rdev->pef & RIO_PEF_SWITCH))
++		return 0;
++
++	if (rdev->phys_efptr == 0) {
++		pr_err("RIO_PW: Bad switch initialization for %s\n",
++			rio_name(rdev));
++		return 0;
++	}
++
++	mport = rdev->net->hport;
++	destid = rdev->rswitch->destid;
++	hopcount = rdev->rswitch->hopcount;
++
++	/*
++	 * Process the port-write notification from switch
++	 */
++
++	portnum = pw_msg[2] & 0xFF;
++
++	if (rdev->rswitch->em_handle)
++		rdev->rswitch->em_handle(rdev, portnum);
++
++	rio_mport_read_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
++			&err_status);
++	pr_debug("RIO_PW: SP%d_ERR_STS_CSR=0x%08x\n", portnum, err_status);
++
++	if (pw_msg[1]) {
++		pr_debug("RIO_PW: RIO_EM_P%d_ERR_DETECT=0x%08x\n",
++			 portnum, pw_msg[1]);
++		/* Clear EM Port N Error Detect CSR */
++		rio_mport_write_config_32(mport, destid, hopcount,
++			rdev->em_efptr + RIO_EM_PN_ERR_DETECT(portnum), 0);
++	}
++
++	if (pw_msg[3]) {
++		pr_debug("RIO_PW: RIO_EM_LTL_ERR_DETECT=0x%08x\n", pw_msg[3]);
++		/* Clear EM L/T Layer Error Detect CSR */
++		rio_mport_write_config_32(mport, destid, hopcount,
++			rdev->em_efptr + RIO_EM_LTL_ERR_DETECT, 0);
++	}
++
++	/* Clear Port Errors */
++	rio_mport_write_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
++			err_status & 0x07120204);
++
++	if (rdev->rswitch->port_ok & (1 << portnum)) {
++		if (err_status & RIO_PORT_N_ERR_STS_PORT_UNINIT) {
++			rdev->rswitch->port_ok &= ~(1 << portnum);
++			rio_mport_read_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				&regval);
++			rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				regval | RIO_PORT_N_CTL_LOCKOUT);
++
++			rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr +
++					RIO_PORT_N_ACK_STS_CSR(portnum),
++				RIO_PORT_N_ACK_CLEAR);
++
++			/* Schedule Extraction Service */
++			pr_debug("RIO_PW: Device Extraction on [%s]-P%d\n",
++			       rio_name(rdev), portnum);
++		}
++	} else {
++		if (err_status & RIO_PORT_N_ERR_STS_PORT_OK) {
++			rdev->rswitch->port_ok |= (1 << portnum);
++			rio_mport_read_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				&regval);
++			rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				regval & ~RIO_PORT_N_CTL_LOCKOUT);
++
++			/* Schedule Insertion Service */
++			pr_debug("RIO_PW: Device Insertion on [%s]-P%d\n",
++			       rio_name(rdev), portnum);
++		}
++	}
++
++	/* Clear Port-Write Pending bit */
++	rio_mport_write_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
++			RIO_PORT_N_ERR_STS_PW_PEND);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(rio_inb_pwrite_handler);
++
++/**
++ * rio_mport_get_efb - get pointer to next extended features block
++ * @port: Master port to issue transaction
++ * @local: Indicate a local master port or remote device access
++ * @destid: Destination ID of the device
++ * @hopcount: Number of switch hops to the device
++ * @from: Offset of  current Extended Feature block header (if 0 starts
++ * from	ExtFeaturePtr)
++ */
++u32
++rio_mport_get_efb(struct rio_mport *port, int local, u16 destid,
++		      u8 hopcount, u32 from)
++{
++	u32 reg_val;
++
++	if (from == 0) {
++		if (local)
++			rio_local_read_config_32(port, RIO_ASM_INFO_CAR,
++						 &reg_val);
++		else
++			rio_mport_read_config_32(port, destid, hopcount,
++						 RIO_ASM_INFO_CAR, &reg_val);
++		return reg_val & RIO_EXT_FTR_PTR_MASK;
++	} else {
++		if (local)
++			rio_local_read_config_32(port, from, &reg_val);
++		else
++			rio_mport_read_config_32(port, destid, hopcount,
++						 from, &reg_val);
++		return RIO_GET_BLOCK_ID(reg_val);
++	}
++}
++
++/**
+  * rio_mport_get_feature - query for devices' extended features
+  * @port: Master port to issue transaction
+  * @local: Indicate a local master port or remote device access
+@@ -472,6 +778,7 @@ int rio_std_route_add_entry(struct rio_m
+ 				RIO_STD_RTE_CONF_PORT_SEL_CSR,
+ 				(u32)route_port);
+ 	}
++
+ 	udelay(10);
+ 	return 0;
+ }
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/rio.h w33r7b/drivers/rapidio/rio.h
+--- w33r7a/drivers/rapidio/rio.h	2010-02-09 15:11:09.150956000 -0500
++++ w33r7b/drivers/rapidio/rio.h	2010-02-11 15:07:47.861045000 -0500
+@@ -18,6 +18,10 @@
+ 
+ extern u32 rio_mport_get_feature(struct rio_mport *mport, int local, u16 destid,
+ 				 u8 hopcount, int ftr);
++extern u32 rio_mport_get_physefb(struct rio_mport *port, int local,
++				 u16 destid, u8 hopcount);
++extern u32 rio_mport_get_efb(struct rio_mport *port, int local, u16 destid,
++			     u8 hopcount, u32 from);
+ extern int rio_create_sysfs_dev_files(struct rio_dev *rdev);
+ extern int rio_enum_mport(struct rio_mport *mport);
+ extern int rio_disc_mport(struct rio_mport *mport);
+@@ -61,3 +65,28 @@ extern struct rio_route_ops __end_rio_ro
+ 
+ #define RIO_GET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x00ff0000) >> 16))
+ #define RIO_SET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x000000ff) << 16))
++
++/*
++ *   RapidIO Error Management
++ */
++extern struct rio_em_ops __start_rio_em_ops[];
++extern struct rio_em_ops __end_rio_em_ops[];
++
++/* Helpers internal to the RIO core code */
++#define DECLARE_RIO_EM_SECTION(section, name, vid, did, init_hook, em_hook)  \
++	static const struct rio_em_ops __rio_em_##name __used   \
++	__section(section) = { vid, did, init_hook, em_hook };
++
++/**
++ * DECLARE_RIO_EM_OPS - Registers switch EM operations
++ * @vid: RIO vendor ID
++ * @did: RIO device ID
++ * @init_hook: Callback that initializes device specific EM
++ * @em_hook: Callback that handles device specific EM
++ *
++ * A &struct rio_em_ops is initialized with the ops and placed into a
++ * RIO-specific kernel section.
++ */
++#define DECLARE_RIO_EM_OPS(vid, did, init_hook, em_hook)	\
++	DECLARE_RIO_EM_SECTION(.rio_em_ops, vid##did,		\
++			vid, did, init_hook, em_hook)
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/switches/tsi568.c w33r7b/drivers/rapidio/switches/tsi568.c
+--- w33r7a/drivers/rapidio/switches/tsi568.c	2010-02-09 15:11:09.201908000 -0500
++++ w33r7b/drivers/rapidio/switches/tsi568.c	2010-02-11 11:04:15.904955000 -0500
+@@ -25,6 +25,9 @@
+ #define SPP_ROUTE_CFG_DESTID(n)	(0x11070 + 0x100*n)
+ #define SPP_ROUTE_CFG_PORT(n)	(0x11074 + 0x100*n)
+ 
++#define TSI568_SP_MODE_BC	0x10004
++#define  TSI568_SP_MODE_PW_DIS	0x08000000
++
+ static int
+ tsi568_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
+ 		       u16 table, u16 route_destid, u8 route_port)
+@@ -104,3 +107,24 @@ tsi568_route_clr_table(struct rio_mport 
+ }
+ 
+ DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI568, tsi568_route_add_entry, tsi568_route_get_entry, tsi568_route_clr_table);
++
++static int
++tsi568_em_init(struct rio_dev *rdev)
++{
++	struct rio_mport *mport = rdev->net->hport;
++	u16 destid = rdev->rswitch->destid;
++	u8 hopcount = rdev->rswitch->hopcount;
++	u32 regval;
++
++	pr_debug("TSI568 %s [%d:%d]\n", __func__, destid, hopcount);
++
++	/* Make sure that Port-Writes are disabled (for all ports) */
++	rio_mport_read_config_32(mport, destid, hopcount,
++			TSI568_SP_MODE_BC, &regval);
++	rio_mport_write_config_32(mport, destid, hopcount,
++			TSI568_SP_MODE_BC, regval | TSI568_SP_MODE_PW_DIS);
++
++	return 0;
++}
++
++DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI568, tsi568_em_init, NULL);
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/drivers/rapidio/switches/tsi57x.c w33r7b/drivers/rapidio/switches/tsi57x.c
+--- w33r7a/drivers/rapidio/switches/tsi57x.c	2010-02-09 15:11:09.207894000 -0500
++++ w33r7b/drivers/rapidio/switches/tsi57x.c	2010-02-11 15:17:26.949248000 -0500
+@@ -25,6 +25,14 @@
+ #define SPP_ROUTE_CFG_DESTID(n)	(0x11070 + 0x100*n)
+ #define SPP_ROUTE_CFG_PORT(n)	(0x11074 + 0x100*n)
+ 
++#define TSI578_SP_MODE(n)	(0x11004 + n*0x100)
++#define  TSI578_SP_MODE_PW_DIS	0x08000000
++
++#define TSI578_SP_CTL_INDEP(n)	(0x13004 + n*0x100)
++#define TSI578_SP_LUT_PEINF(n)	(0x13010 + n*0x100)
++#define TSI578_SP_CS_TX(n)	(0x13014 + n*0x100)
++#define TSI578_SP_INT_STATUS(n) (0x13018 + n*0x100)
++
+ static int
+ tsi57x_route_add_entry(struct rio_mport *mport, u16 destid, u8 hopcount,
+ 		       u16 table, u16 route_destid, u8 route_port)
+@@ -104,3 +112,148 @@ DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RI
+ DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
+ DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
+ DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_route_add_entry, tsi57x_route_get_entry, tsi57x_route_clr_table);
++
++static int
++tsi57x_em_init(struct rio_dev *rdev)
++{
++	struct rio_mport *mport = rdev->net->hport;
++	u16 destid = rdev->rswitch->destid;
++	u8 hopcount = rdev->rswitch->hopcount;
++	u32 regval;
++	int portnum;
++
++	pr_debug("TSI578 %s [%d:%d]\n", __func__, destid, hopcount);
++
++	for (portnum = 0; portnum < 16; portnum++) {
++		/* Make sure that Port-Writes are enabled (for all ports) */
++		rio_mport_read_config_32(mport, destid, hopcount,
++				TSI578_SP_MODE(portnum), &regval);
++		rio_mport_write_config_32(mport, destid, hopcount,
++				TSI578_SP_MODE(portnum),
++				regval & ~TSI578_SP_MODE_PW_DIS);
++
++		/* Clear all pending interrupts */
++		rio_mport_read_config_32(mport, destid, hopcount,
++				rdev->phys_efptr +
++					RIO_PORT_N_ERR_STS_CSR(portnum),
++				&regval);
++		rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr +
++					RIO_PORT_N_ERR_STS_CSR(portnum),
++				regval & 0x07120214);
++
++		rio_mport_read_config_32(mport, destid, hopcount,
++				TSI578_SP_INT_STATUS(portnum), &regval);
++		rio_mport_write_config_32(mport, destid, hopcount,
++				TSI578_SP_INT_STATUS(portnum),
++				regval & 0x000700bd);
++
++		/* Enable all interrupts to allow ports to send a port-write */
++		rio_mport_read_config_32(mport, destid, hopcount,
++				TSI578_SP_CTL_INDEP(portnum), &regval);
++		rio_mport_write_config_32(mport, destid, hopcount,
++				TSI578_SP_CTL_INDEP(portnum),
++				regval | 0x000b0000);
++
++		/* Skip next (odd) port if the current port is in x4 mode */
++		rio_mport_read_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				&regval);
++		if ((regval & RIO_PORT_N_CTL_PWIDTH) == RIO_PORT_N_CTL_PWIDTH_4)
++			portnum++;
++	}
++
++	return 0;
++}
++
++static int
++tsi57x_em_handler(struct rio_dev *rdev, u8 portnum)
++{
++	struct rio_mport *mport = rdev->net->hport;
++	u16 destid = rdev->rswitch->destid;
++	u8 hopcount = rdev->rswitch->hopcount;
++	u32 intstat, err_status;
++	int sendcount, checkcount;
++	u8 route_port;
++	u32 regval;
++
++	rio_mport_read_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_ERR_STS_CSR(portnum),
++			&err_status);
++
++	if ((err_status & RIO_PORT_N_ERR_STS_PORT_OK) &&
++	    (err_status & (RIO_PORT_N_ERR_STS_PW_OUT_ES |
++			  RIO_PORT_N_ERR_STS_PW_INP_ES))) {
++		/* Remove any queued packets by locking/unlocking port */
++		rio_mport_read_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++			&regval);
++		if (!(regval & RIO_PORT_N_CTL_LOCKOUT)) {
++			rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				regval | RIO_PORT_N_CTL_LOCKOUT);
++			udelay(50);
++			rio_mport_write_config_32(mport, destid, hopcount,
++				rdev->phys_efptr + RIO_PORT_N_CTL_CSR(portnum),
++				regval);
++		}
++
++		/* Read from link maintenance response register to clear
++		 * valid bit
++		 */
++		rio_mport_read_config_32(mport, destid, hopcount,
++			rdev->phys_efptr + RIO_PORT_N_MNT_RSP_CSR(portnum),
++			&regval);
++
++		/* Send a Packet-Not-Accepted/Link-Request-Input-Status control
++		 * symbol to recover from IES/OES
++		 */
++		sendcount = 3;
++		while (sendcount) {
++			rio_mport_write_config_32(mport, destid, hopcount,
++					  TSI578_SP_CS_TX(portnum), 0x40fc8000);
++			checkcount = 3;
++			while (checkcount--) {
++				udelay(50);
++				rio_mport_read_config_32(
++					mport, destid, hopcount,
++					rdev->phys_efptr +
++						RIO_PORT_N_MNT_RSP_CSR(portnum),
++					&regval);
++				if (regval & RIO_PORT_N_MNT_RSP_RVAL)
++					goto exit_es;
++			}
++
++			sendcount--;
++		}
++	}
++
++exit_es:
++	/* Clear implementation specific error status bits */
++	rio_mport_read_config_32(mport, destid, hopcount,
++				 TSI578_SP_INT_STATUS(portnum), &intstat);
++	pr_debug("TSI578[%x:%x] SP%d_INT_STATUS=0x%08x\n",
++		 destid, hopcount, portnum, intstat);
++
++	if (intstat & 0x10000) {
++		rio_mport_read_config_32(mport, destid, hopcount,
++				TSI578_SP_LUT_PEINF(portnum), &regval);
++		regval = (mport->sys_size) ? (regval >> 16) : (regval >> 24);
++		route_port = rdev->rswitch->route_table[regval];
++		pr_debug("RIO: TSI578[%s] P%d LUT Parity Error (destID=%d)\n",
++			rio_name(rdev), portnum, regval);
++		tsi57x_route_add_entry(mport, destid, hopcount,
++				RIO_GLOBAL_TABLE, regval, route_port);
++	}
++
++	rio_mport_write_config_32(mport, destid, hopcount,
++				  TSI578_SP_INT_STATUS(portnum),
++				  intstat & 0x000700bd);
++
++	return 0;
++}
++
++DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI572, tsi57x_em_init, tsi57x_em_handler);
++DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574, tsi57x_em_init, tsi57x_em_handler);
++DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577, tsi57x_em_init, tsi57x_em_handler);
++DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_em_init, tsi57x_em_handler);
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/include/asm-generic/vmlinux.lds.h w33r7b/include/asm-generic/vmlinux.lds.h
+--- w33r7a/include/asm-generic/vmlinux.lds.h	2010-02-06 17:17:12.000000000 -0500
++++ w33r7b/include/asm-generic/vmlinux.lds.h	2010-02-10 17:02:30.541567000 -0500
+@@ -247,10 +247,13 @@
+ 	}								\
+ 									\
+ 	/* RapidIO route ops */						\
+-	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
++	.rio_ops        : AT(ADDR(.rio_ops) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
+ 		*(.rio_route_ops)					\
+ 		VMLINUX_SYMBOL(__end_rio_route_ops) = .;		\
++		VMLINUX_SYMBOL(__start_rio_em_ops) = .;			\
++		*(.rio_em_ops)						\
++		VMLINUX_SYMBOL(__end_rio_em_ops) = .;			\
+ 	}								\
+ 									\
+ 	TRACEDATA							\
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/include/linux/rio.h w33r7b/include/linux/rio.h
+--- w33r7a/include/linux/rio.h	2010-02-09 15:11:09.280832000 -0500
++++ w33r7b/include/linux/rio.h	2010-02-11 13:07:33.147325000 -0500
+@@ -64,6 +64,8 @@
+ #define RIO_INB_MBOX_RESOURCE	1
+ #define RIO_OUTB_MBOX_RESOURCE	2
+ 
++#define RIO_PW_MSG_SIZE		64
++
+ extern struct bus_type rio_bus_type;
+ extern struct list_head rio_devices;	/* list of all devices */
+ 
+@@ -107,11 +109,15 @@ struct rio_dev {
+ 	u32 swpinfo;		/* Only used for switches */
+ 	u32 src_ops;
+ 	u32 dst_ops;
++	u32 comp_tag;
++	u32 phys_efptr;
++	u32 em_efptr;
+ 	u64 dma_mask;
+ 	struct rio_switch *rswitch;	/* RIO switch info */
+ 	struct rio_driver *driver;	/* RIO driver claiming this device */
+ 	struct device dev;	/* LDM device structure */
+ 	struct resource riores[RIO_MAX_DEV_RESOURCES];
++	int (*pwcback) (struct rio_dev *rdev, u32* msg, int step);
+ 	u16 destid;
+ };
+ 
+@@ -211,9 +217,12 @@ struct rio_net {
+  * @hopcount: Hopcount to this switch
+  * @destid: Associated destid in the path
+  * @route_table: Copy of switch routing table
++ * @port_ok: Status of each port (one bit per port) - OK=1 or UNINIT=0
+  * @add_entry: Callback for switch-specific route add function
+  * @get_entry: Callback for switch-specific route get function
+  * @clr_table: Callback for switch-specific clear route table function
++ * @em_init: Callback for switch-specific error management initialization function
++ * @em_handle: Callback for switch-specific error management handler function
+  */
+ struct rio_switch {
+ 	struct list_head node;
+@@ -221,12 +230,15 @@ struct rio_switch {
+ 	u16 hopcount;
+ 	u16 destid;
+ 	u8 *route_table;
++	u32 port_ok;
+ 	int (*add_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
+ 			  u16 table, u16 route_destid, u8 route_port);
+ 	int (*get_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
+ 			  u16 table, u16 route_destid, u8 * route_port);
+ 	int (*clr_table) (struct rio_mport *mport, u16 destid, u8 hopcount,
+ 			  u16 table);
++	int (*em_init) (struct rio_dev *dev);
++	int (*em_handle) (struct rio_dev *dev, u8 swport);
+ };
+ 
+ /* Low-level architecture-dependent routines */
+@@ -238,6 +250,7 @@ struct rio_switch {
+  * @cread: Callback to perform network read of config space.
+  * @cwrite: Callback to perform network write of config space.
+  * @dsend: Callback to send a doorbell message.
++ * @pwenable: Callback to enable/disable port-write message handling.
+  */
+ struct rio_ops {
+ 	int (*lcread) (struct rio_mport *mport, int index, u32 offset, int len,
+@@ -249,6 +262,7 @@ struct rio_ops {
+ 	int (*cwrite) (struct rio_mport *mport, int index, u16 destid,
+ 			u8 hopcount, u32 offset, int len, u32 data);
+ 	int (*dsend) (struct rio_mport *mport, int index, u16 destid, u16 data);
++	int (*pwenable) (struct rio_mport *mport, int enable);
+ };
+ 
+ #define RIO_RESOURCE_MEM	0x00000100
+@@ -325,6 +339,22 @@ struct rio_route_ops {
+ 			 u16 table);
+ };
+ 
++/**
++ * struct rio_em_ops - Per-switch error management operations
++ * @vid: RIO vendor ID
++ * @did: RIO device ID
++ * @init_hook: Switch specific error management initialization (may be NULL)
++ * @handler_hook: Switch specific error management handler (may be NULL)
++ *
++ * Defines the operations that are necessary to initialize and handle
++ * error management events for a particular RIO switch device.
++ */
++struct rio_em_ops {
++	u16 vid, did;
++	int (*init_hook) (struct rio_dev *dev);
++	int (*handler_hook) (struct rio_dev *dev, u8 swport);
++};
++
+ /* Architecture and hardware-specific functions */
+ extern int rio_init_mports(void);
+ extern void rio_register_mport(struct rio_mport *);
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/include/linux/rio_drv.h w33r7b/include/linux/rio_drv.h
+--- w33r7a/include/linux/rio_drv.h	2010-02-06 17:17:12.000000000 -0500
++++ w33r7b/include/linux/rio_drv.h	2010-02-10 17:02:30.630559000 -0500
+@@ -413,6 +413,12 @@ void rio_release_regions(struct rio_dev 
+ int rio_request_region(struct rio_dev *, int, char *);
+ void rio_release_region(struct rio_dev *, int);
+ 
++/* Port-Write management */
++extern int rio_request_inb_pwrite(struct rio_dev *,
++				  int (*)(struct rio_dev *, u32*, int));
++extern int rio_release_inb_pwrite(struct rio_dev *);
++extern int rio_inb_pwrite_handler(u32 *pw_msg);
++
+ /* LDM support */
+ int rio_register_driver(struct rio_driver *);
+ void rio_unregister_driver(struct rio_driver *);
+diff -x '*.pj' -X dontdiff_2.6.32-rc5 -pNur w33r7a/include/linux/rio_regs.h w33r7b/include/linux/rio_regs.h
+--- w33r7a/include/linux/rio_regs.h	2010-02-09 15:11:09.318794000 -0500
++++ w33r7b/include/linux/rio_regs.h	2010-02-11 13:11:02.420875000 -0500
+@@ -192,10 +192,14 @@
+ #define RIO_EFB_PAR_EP_ID	0x0001	/* [IV] LP/LVDS EP Devices */
+ #define RIO_EFB_PAR_EP_REC_ID	0x0002	/* [IV] LP/LVDS EP Recovery Devices */
+ #define RIO_EFB_PAR_EP_FREE_ID	0x0003	/* [IV] LP/LVDS EP Free Devices */
++#define RIO_EFB_SER_EP_ID_V13P	0x0001	/* [VI] LP/Serial EP Devices, RapidIO Spec ver 1.3 and above */
++#define RIO_EFB_SER_EP_REC_ID_V13P	0x0002	/* [VI] LP/Serial EP Recovery Devices, RapidIO Spec ver 1.3 and above */
++#define RIO_EFB_SER_EP_FREE_ID_V13P	0x0003	/* [VI] LP/Serial EP Free Devices, RapidIO Spec ver 1.3 and above */
+ #define RIO_EFB_SER_EP_ID	0x0004	/* [VI] LP/Serial EP Devices */
+ #define RIO_EFB_SER_EP_REC_ID	0x0005	/* [VI] LP/Serial EP Recovery Devices */
+ #define RIO_EFB_SER_EP_FREE_ID	0x0006	/* [VI] LP/Serial EP Free Devices */
+ #define RIO_EFB_SER_EP_FREC_ID	0x0009  /* [VI] LP/Serial EP Free Recovery Devices */
++#define RIO_EFB_ERR_MGMNT	0x0007  /* [VIII] Error Management Extensions */
+ 
+ /*
+  * Physical 8/16 LP-LVDS
+@@ -211,15 +215,65 @@
+ #define RIO_PORT_MNT_HEADER		0x0000
+ #define RIO_PORT_REQ_CTL_CSR		0x0020
+ #define RIO_PORT_RSP_CTL_CSR		0x0024	/* 0x0001/0x0002 */
++#define RIO_PORT_LINKTO_CTL_CSR		0x0020	/* Serial */
++#define RIO_PORT_RSPTO_CTL_CSR		0x0024	/* Serial */
+ #define RIO_PORT_GEN_CTL_CSR		0x003c
+ #define  RIO_PORT_GEN_HOST		0x80000000
+ #define  RIO_PORT_GEN_MASTER		0x40000000
+ #define  RIO_PORT_GEN_DISCOVERED	0x20000000
+ #define RIO_PORT_N_MNT_REQ_CSR(x)	(0x0040 + x*0x20)	/* 0x0002 */
+ #define RIO_PORT_N_MNT_RSP_CSR(x)	(0x0044 + x*0x20)	/* 0x0002 */
++#define  RIO_PORT_N_MNT_RSP_RVAL	0x80000000 /* Response Valid */
++#define  RIO_PORT_N_MNT_RSP_ASTAT	0x000003e0 /* ackID Status */
++#define  RIO_PORT_N_MNT_RSP_LSTAT	0x0000001f /* Link Status */
+ #define RIO_PORT_N_ACK_STS_CSR(x)	(0x0048 + x*0x20)	/* 0x0002 */
+-#define RIO_PORT_N_ERR_STS_CSR(x)	(0x58 + x*0x20)
+-#define PORT_N_ERR_STS_PORT_OK	0x00000002
+-#define RIO_PORT_N_CTL_CSR(x)		(0x5c + x*0x20)
++#define  RIO_PORT_N_ACK_CLEAR		0x80000000
++#define  RIO_PORT_N_ACK_INBOUND		0x1f000000
++#define  RIO_PORT_N_ACK_OUTSTAND	0x00001f00
++#define  RIO_PORT_N_ACK_OUTBOUND	0x0000001f
++#define RIO_PORT_N_ERR_STS_CSR(x)	(0x0058 + x*0x20)
++#define  RIO_PORT_N_ERR_STS_PW_OUT_ES	0x00010000 /* Output Error-stopped */
++#define  RIO_PORT_N_ERR_STS_PW_INP_ES	0x00000100 /* Input Error-stopped */
++#define  RIO_PORT_N_ERR_STS_PW_PEND	0x00000010 /* Port-Write Pending */
++#define  RIO_PORT_N_ERR_STS_PORT_ERR	0x00000004
++#define  RIO_PORT_N_ERR_STS_PORT_OK	0x00000002
++#define  RIO_PORT_N_ERR_STS_PORT_UNINIT	0x00000001
++#define RIO_PORT_N_CTL_CSR(x)		(0x005c + x*0x20)
++#define  RIO_PORT_N_CTL_PWIDTH		0xc0000000
++#define  RIO_PORT_N_CTL_PWIDTH_1	0x00000000
++#define  RIO_PORT_N_CTL_PWIDTH_4	0x40000000
++#define  RIO_PORT_N_CTL_LOCKOUT		0x00000002
++
++/*
++ * Error Management Extensions (RapidIO 1.3+, Part 8)
++ *
++ * Extended Features Block ID=0x0007
++ */
++
++/* General EM Registers (Common for all Ports) */
++
++#define RIO_EM_EFB_HEADER	0x000	/* Error Management Extensions Block Header */
++#define RIO_EM_LTL_ERR_DETECT	0x008	/* Logical/Transport Layer Error Detect CSR */
++#define RIO_EM_LTL_ERR_EN	0x00c	/* Logical/Transport Layer Error Enable CSR */
++#define RIO_EM_LTL_HIADDR_CAP	0x010	/* Logical/Transport Layer High Address Capture CSR */
++#define RIO_EM_LTL_ADDR_CAP	0x014	/* Logical/Transport Layer Address Capture CSR */
++#define RIO_EM_LTL_DEVID_CAP	0x018	/* Logical/Transport Layer Device ID Capture CSR */
++#define RIO_EM_LTL_CTRL_CAP	0x01c	/* Logical/Transport Layer Control Capture CSR */
++#define RIO_EM_PW_TGT_DEVID	0x028	/* Port-write Target deviceID CSR */
++#define RIO_EM_PKT_TTL		0x02c	/* Packet Time-to-live CSR */
++
++/* Per-Port EM Registers */
++
++#define RIO_EM_PN_ERR_DETECT(x)	(0x040 + x*0x40) /* Port N Error Detect CSR */
++#define  REM_PED_IMPL_SPEC		0x80000000
++#define  REM_PED_LINK_TO		0x00000001
++#define RIO_EM_PN_ERRRATE_EN(x) (0x044 + x*0x40) /* Port N Error Rate Enable CSR */
++#define RIO_EM_PN_ATTRIB_CAP(x)	(0x048 + x*0x40) /* Port N Attributes Capture CSR */
++#define RIO_EM_PN_PKT_CAP_0(x)	(0x04c + x*0x40) /* Port N Packet/Control Symbol Capture 0 CSR */
++#define RIO_EM_PN_PKT_CAP_1(x)	(0x050 + x*0x40) /* Port N Packet Capture 1 CSR */
++#define RIO_EM_PN_PKT_CAP_2(x)	(0x054 + x*0x40) /* Port N Packet Capture 2 CSR */
++#define RIO_EM_PN_PKT_CAP_3(x)	(0x058 + x*0x40) /* Port N Packet Capture 3 CSR */
++#define RIO_EM_PN_ERRRATE(x)	(0x068 + x*0x40) /* Port N Error Rate CSR */
++#define RIO_EM_PN_ERRRATE_TR(x) (0x06c + x*0x40) /* Port N Error Rate Threshold CSR */
+ 
+ #endif				/* LINUX_RIO_REGS_H */
 
-Mathieu
+---
+
+Important Notice: This message is intended for the use of the individual to whom it is addressed and may contain information which is privileged, confidential and/or exempt from disclosure under applicable law. If the reader of this message is not the intended recipient, or is not the employee or agent responsible for delivering the message to the intended recipient, you are hereby notified that any dissemination, distribution, or copying of this communication is strictly prohibited. If you have received this communication in error, please notify the sender immediately by telephone or return e-mail and delete the original message from your systems. Thank you. 
+
