@@ -1,68 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821Ab0BXPlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:41:51 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:47196 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755674Ab0BXPlt (ORCPT
+	id S1756863Ab0BXPtr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:49:47 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:59467 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755674Ab0BXPtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 10:41:49 -0500
-Subject: Re: [PATCH] security: fix error return path in ima_inode_alloc
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mimi Zohar <zohar@us.ibm.com>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       "Amit K. Arora" <amitarora@in.ibm.com>
-In-Reply-To: <1267007942-315-1-git-send-email-dfeng@redhat.com>
-References: <1267007942-315-1-git-send-email-dfeng@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 10:41:30 -0500
-Message-ID: <1267026090.2618.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Feb 2010 10:49:46 -0500
+Date: Wed, 24 Feb 2010 09:49:24 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Andi Kleen <andi@firstfloor.org>
+cc: Nick Piggin <npiggin@suse.de>, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       rientjes@google.com
+Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
+In-Reply-To: <20100220090154.GB11287@basil.fritz.box>
+Message-ID: <alpine.DEB.2.00.1002240949140.26771@router.home>
+References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org>
+ <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 18:39 +0800, Xiaotian Feng wrote:
-> If radix_tree_preload is failed in ima_inode_alloc, we don't need
-> radix_tree_preload_end because kernel is alread preempt enabled
-> 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+On Sat, 20 Feb 2010, Andi Kleen wrote:
 
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
+> > On Mon, 15 Feb 2010, Nick Piggin wrote:
+> >
+> > > I'm just worried there is still an underlying problem here.
+> >
+> > So am I. What caused the breakage that requires this patchset?
+>
+> Memory hotadd with a new node being onlined.
 
-thanks,
-Mimi
-
-> Cc: Mimi Zohar <zohar@us.ibm.com>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Eric Paris <eparis@redhat.com>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Amit K. Arora <amitarora@in.ibm.com>
-> ---
->  security/integrity/ima/ima_iint.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/security/integrity/ima/ima_iint.c b/security/integrity/ima/ima_iint.c
-> index 0d83edc..2d4d05d 100644
-> --- a/security/integrity/ima/ima_iint.c
-> +++ b/security/integrity/ima/ima_iint.c
-> @@ -63,12 +63,11 @@ int ima_inode_alloc(struct inode *inode)
->  	spin_lock(&ima_iint_lock);
->  	rc = radix_tree_insert(&ima_iint_store, (unsigned long)inode, iint);
->  	spin_unlock(&ima_iint_lock);
-> +	radix_tree_preload_end();
->  out:
->  	if (rc < 0)
->  		kmem_cache_free(iint_cache, iint);
-> 
-> -	radix_tree_preload_end();
-> -
->  	return rc;
->  }
-> 
-
+That used to work fine.
 
