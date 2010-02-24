@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894Ab0BXIDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:03:44 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52422 "EHLO
+	id S1753630Ab0BXIEq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 03:04:46 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:52449 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588Ab0BXIDn (ORCPT
+	with ESMTP id S1752195Ab0BXIEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:03:43 -0500
-Message-ID: <4B84DD5D.5080001@dcl.info.waseda.ac.jp>
-Date: Wed, 24 Feb 2010 17:03:41 +0900
+	Wed, 24 Feb 2010 03:04:44 -0500
+Message-ID: <4B84DD9B.2000401@dcl.info.waseda.ac.jp>
+Date: Wed, 24 Feb 2010 17:04:43 +0900
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Shredder/3.0
 MIME-Version: 1.0
