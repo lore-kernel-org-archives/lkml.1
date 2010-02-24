@@ -1,58 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438Ab0BXKUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:20:48 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43299 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756267Ab0BXKUq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:20:46 -0500
-Date: Wed, 24 Feb 2010 10:20:44 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/14] Regulators: wm8994 - clean up driver data after
- removal
-Message-ID: <20100224102044.GF18896@rakim.wolfsonmicro.main>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
- <20100224073844.15964.61692.stgit@localhost.localdomain>
+	id S1756473Ab0BXKXH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 05:23:07 -0500
+Received: from david.siemens.de ([192.35.17.14]:19739 "EHLO david.siemens.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756451Ab0BXKXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 05:23:05 -0500
+Message-ID: <4B84FDF5.5080106@siemens.com>
+Date: Wed, 24 Feb 2010 11:22:45 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224073844.15964.61692.stgit@localhost.localdomain>
-X-Cookie: You can't take damsel here now.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Avi Kivity <avi@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
+       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
+References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com> <4B84FBDB.1070006@siemens.com> <4B84FCBB.8070702@redhat.com>
+In-Reply-To: <4B84FCBB.8070702@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 11:38:44PM -0800, Dmitry Torokhov wrote:
-> It is a good tone to reset driver data after unbinding the device.
+Avi Kivity wrote:
+> On 02/24/2010 12:13 PM, Jan Kiszka wrote:
+>>    
+>>> I see.  Won't we hit the same issue when we call pic functions from
+>>> atomic context during the guest entry sequence?
+>>>
+>>>      
+>> If there are such call paths, for sure. What concrete path(s) do you
+>> have in mind?
+>>
+>>    
+> 
+> vcpu_enter_guest() -> inject_pending_event() -> 
+> kvm_cpu_{has,get}_interrupt() -> various pic functions if you're unlucky.
 
-You mean "good style" here.  Anyway,
+But do they kick anyone or just check/pull information? Never saw any
+warnings during my tests last year (granted: with older -rt and kvm
+versions).
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Jan
 
-BTW, this patch is an example of the sort of stuff I'm talking about
-with adding additional changes that aren't documented in the
-changelog.  As well as nulling out the driver data you're also...
-
->  struct wm8994_ldo {
->  	int enable;
-> -	int is_enabled;
-> +	bool is_enabled;
-
-...doing a conversion to bool here and...
-
-> @@ -276,6 +278,7 @@ static struct platform_driver wm8994_ldo_driver = {
->  	.remove = __devexit_p(wm8994_ldo_remove),
->  	.driver		= {
->  		.name	= "wm8994-ldo",
-> +		.owner	= THIS_MODULE,
->  	},
-
-...adding this.  The change you mention in the changelog is a single
-line edit but with these extra changes the overall diffstat becomes:
-
->  drivers/regulator/wm8994-regulator.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
+-- 
+Siemens AG, Corporate Technology, CT T DE IT 1
+Corporate Competence Center Embedded Linux
