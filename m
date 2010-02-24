@@ -1,40 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301Ab0BXEdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 23:33:11 -0500
-Received: from snt0-omc1-s17.snt0.hotmail.com ([65.55.90.28]:12184 "EHLO
-	snt0-omc1-s17.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752500Ab0BXEdJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 23:33:09 -0500
-Message-ID: <SNT125-W9FEA86A8DEE96A42EB779C3410@phx.gbl>
-X-Originating-IP: [96.253.143.208]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <hancockrwd@gmail.com>
-CC: <greg@kroah.com>, <shane.huang@amd.com>, <linux-kernel@vger.kernel.org>,
-       <linux-ide@vger.kernel.org>, <tj@kernel.org>
-Subject: RE: SB600 64-bit DMA BIOS misconfiguration (formerly RE: [PATCH
- 	2.6.34] ehci-hcd: add option to enable 64-bit DMA support)
-Date: Tue, 23 Feb 2010 20:33:06 -0800
-Importance: Normal
-In-Reply-To: <51f3faa71002232030u4679b6d0yc8df0679d8e19106@mail.gmail.com>
-References: <4B7CAF95.6020306@gmail.com>
- <20100218042626.GB11649@kroah.com>,<51f3faa71002172113o65a85ed6y5fa39d0b3a96f7ce@mail.gmail.com>,<SNT125-W3300E8CCB5A9BD2D7B9942C3410@phx.gbl>,<51f3faa71002232030u4679b6d0yc8df0679d8e19106@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S1755318Ab0BXEdt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 23:33:49 -0500
+Received: from mga09.intel.com ([134.134.136.24]:22259 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752500Ab0BXEdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 23:33:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
+   d="scan'208";a="598639052"
+Date: Wed, 24 Feb 2010 12:33:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] nfs: use 2*rsize readahead size
+Message-ID: <20100224043324.GA31913@localhost>
+References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster> <20100224042414.GG16175@discord.disaster>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 24 Feb 2010 04:33:06.0407 (UTC) FILETIME=[75CBC770:01CAB50A]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224042414.GG16175@discord.disaster>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 24, 2010 at 12:24:14PM +0800, Dave Chinner wrote:
+> On Wed, Feb 24, 2010 at 02:29:34PM +1100, Dave Chinner wrote:
+> > On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
+> > > With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+> > > readahead size 512k*15=7680k is too large than necessary for typical
+> > > clients.
+> > > 
+> > > On a e1000e--e1000e connection, I got the following numbers
+> > > 
+> > > 	readahead size		throughput
+> > > 		   16k           35.5 MB/s
+> > > 		   32k           54.3 MB/s
+> > > 		   64k           64.1 MB/s
+> > > 		  128k           70.5 MB/s
+> > > 		  256k           74.6 MB/s
+> > > rsize ==>	  512k           77.4 MB/s
+> > > 		 1024k           85.5 MB/s
+> > > 		 2048k           86.8 MB/s
+> > > 		 4096k           87.9 MB/s
+> > > 		 8192k           89.0 MB/s
+> > > 		16384k           87.7 MB/s
+> > > 
+> > > So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
+> > > can already get near full NFS bandwidth.
+> > > 
+> > > The test script is:
+> > > 
+> > > #!/bin/sh
+> > > 
+> > > file=/mnt/sparse
+> > > BDI=0:15
+> > > 
+> > > for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+> > > do
+> > > 	echo 3 > /proc/sys/vm/drop_caches
+> > > 	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+> > > 	echo readahead_size=${rasize}k
+> > > 	dd if=$file of=/dev/null bs=4k count=1024000
+> > > done
+> > 
+> > That's doing a cached read out of the server cache, right? You
+> > might find the results are different if the server has to read the
+> > file from disk. I would expect reads from the server cache not
+> > to require much readahead as there is no IO latency on the server
+> > side for the readahead to hide....
+> 
+> FWIW, if you mount the client with "-o rsize=32k" or the server only
+> supports rsize <= 32k then this will probably hurt throughput a lot
+> because then readahead will be capped at 64k instead of 480k....
 
-> That would likely be the ideal solution, but only AMD would likely
-> have the info needed to do that, if it's possible..
-That is why I am CCing shane.huang@amd.com, maybe they can help here.
+That's why I take the max of 2*rsize and system default readahead size
+(which will be enlarged to 512K):
 
-Yuhong Bao
- 		 	   		  
-_________________________________________________________________
-Hotmail: Powerful Free email with security by Microsoft.
-http://clk.atdmt.com/GBL/go/201469230/direct/01/
+-       server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
++       server->backing_dev_info.ra_pages = max_t(unsigned long,
++                                             default_backing_dev_info.ra_pages,
++                                             2 * server->rpages);
+
+Thanks,
+Fengguang
