@@ -1,72 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757829Ab0BXTdY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 14:33:24 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56301 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757811Ab0BXTdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 14:33:23 -0500
-Message-ID: <4B857F00.10005@suse.com>
-Date: Wed, 24 Feb 2010 14:33:20 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.5 Thunderbird/3.0.1
+	id S1757871Ab0BXThN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 14:37:13 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:46556
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757736Ab0BXThL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 14:37:11 -0500
+X-SpamScore: -15
+X-BigFish: VPS-15(zz1432R98dNzz1202hzzz32i6bh87h43h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYD2HM-02-WV2-02
+X-M-MSG: 
+Date: Wed, 24 Feb 2010 20:37:01 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Alexander Graf <agraf@suse.de>
+CC: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/11] KVM: SVM: Optimize nested svm msrpm merging
+Message-ID: <20100224193700.GE3168@amd.com>
+References: <1267034360-5907-1-git-send-email-joerg.roedel@amd.com>
+ <1267034360-5907-12-git-send-email-joerg.roedel@amd.com>
+ <402BABD5-304A-47EA-B35C-D0E3948BB27E@suse.de>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: fix ftrace_event_call alignment for use with
- gcc 4.5
-References: <4B85770B.6010901@suse.com>
-In-Reply-To: <4B85770B.6010901@suse.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <402BABD5-304A-47EA-B35C-D0E3948BB27E@suse.de>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 24 Feb 2010 19:37:01.0185 (UTC) FILETIME=[BC3E2710:01CAB588]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 02/24/2010 01:59 PM, Jeff Mahoney wrote:
->  GCC 4.5 introduces behavior that forces the alignment of structures to
->  use the largest possible value. The default value is 32 bytes, so if
->  some structures are defined with a 4-byte alignment and others aren't
->  declared with an alignment constraint at all - it will align at 32-bytes.
+On Wed, Feb 24, 2010 at 08:27:50PM +0100, Alexander Graf wrote:
+> > +	static const u32 msrpm_offsets[] = {
+> > +		0x0000002c, /* SYSENTER_CS */
+> > +
+> > +		0x00000038, /* LASTBRANCHFROMIP
+> > +			       LASTBRANCHTOIP
+> > +			       LASTINTFROMIP
+> > +			       LASTINTTOIP */
+> > +
+> > +		0x00000820, /* STAR
+> > +			       LSTAR
+> > +			       CSTAR
+> > +			       SYSCALL_MASK */
+> > +
+> > +		0x00000840, /* FS_BASE
+> > +			       GS_BASE
+> > +			       KERNEL_GS_BASE */
+> > +
+> > +		0xffffffff, /* End of List */
 > 
->  For things like the ftrace events, this results in a non-standard array.
->  When initializing the ftrace subsystem, we traverse the _ftrace_events
->  section and call the initialization callback for each event. When the
->  structures are misaligned, we could be treating another part of the
->  structure (or the zeroed out space between them) as a function pointer.
-> 
->  This patch forces the alignment for all the ftrace_event_call structures
->  to 4 bytes.
-> 
->  Without this patch, the kernel fails to boot very early when built with
->  gcc 4.5.
-> 
->  It's trivial to check the alignment of the members of the array, so it
->  might be worthwhile to add something to the build system to do that
->  automatically. Unfortunately, that only covers this case. I've asked one
->  of the gcc developers about adding a warning when this condition is seen.
+> Isn't there such a list around somewhere already? We really should
+> only keep this list once throughout the whole code. If necessary, just
+> create the list on the fly when bits get set in the msrpm.
 
-BTW, the analysis for this is available here:
+No, the list is hardcoded in 3 functions (as parameter of
+set_msr_interception). I think about a variant to do this with a single
+list. Probably I create a list of MSRs and check in
+set_msr_interceptionm for it.
 
-https://bugzilla.novell.com/show_bug.cgi?id=582222
+	Joerg
 
-- -Jeff
 
-- -- 
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkuFfwAACgkQLPWxlyuTD7KvZgCgluUzuO91K0wARk0SaLJeCV7x
-we0AnAjPT/M1c4wD0Ti6mUjsZjKx5CXX
-=zJLJ
------END PGP SIGNATURE-----
