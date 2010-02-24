@@ -1,75 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131Ab0BXCdz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 21:33:55 -0500
-Received: from sinikuusama.dnainternet.net ([83.102.40.134]:53400 "EHLO
-	sinikuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753426Ab0BXCdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 21:33:53 -0500
-X-Spam-Flag: NO
-X-Spam-Score: 0
-From: Anssi Hannula <anssi.hannula@iki.fi>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Wed, 24 Feb 2010 04:33:48 +0200
-User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oliver Neukum <oliver@neukum.org>,
-       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.1002221510570.1328-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002221510570.1328-100000@iolanthe.rowland.org>
+	id S1754092Ab0BXClI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 21:41:08 -0500
+Received: from mga14.intel.com ([143.182.124.37]:30368 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753426Ab0BXClF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 21:41:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
+   d="scan'208";a="247394640"
+Date: Wed, 24 Feb 2010 10:41:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-nfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] nfs: use 2*rsize readahead size
+Message-ID: <20100224024100.GA17048@localhost>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002240433.49116.anssi.hannula@iki.fi>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On maanantai 22 helmikuu 2010 22:12:41 Alan Stern wrote:
-> On Mon, 22 Feb 2010, Matthew Garrett wrote:
-> > On Mon, Feb 22, 2010 at 02:10:33PM -0500, Alan Stern wrote:
-> > > On Mon, 22 Feb 2010, Anssi Hannula wrote:
-> > > > Does this mean a tty interface is ill-suited for the microcode
-> > > > upload, and instead qcserial should use the kernel's generic
-> > > > microcode upload mechanism or the userspace should use libusb to do
-> > > > it?
-> > > 
-> > > I don't know.  Didn't the old successful code use a tty interface?
-> > 
-> > Yes. The kfifo changes have caused some sort of alteration in behaviour.
-> > 
-> > > > Any idea what could be causing the hang, then?
-> > > 
-> > > No idea, unless it's the device.
-> > 
-> > Once the device hangs, it then tends to refuse any input until power
-> > cycled. So it's clearly getting into some sort of undefined state,
-> > though whether that's because it only gets sent half of its firmware
-> > (ie, the hang occurs and as a result the hardware dies) or whether it's
-> > causing the hang by dying is unclear.
-> 
-> The latest logs did show all the firmware getting sent -- or at least,
-> they show that as much data was sent by the nonworking driver as by the
-> working driver.  So I'd say the device causes the hang by dying,
-> although I don't know where the hang is or why a dead device should
-> cause it.
+With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+readahead size 512k*15=7680k is too large than necessary for typical
+clients.
 
-When the hang happens, the complete firmware is *not* sent to the device. The 
-usbmon log is 10 times smaller:
-http://stuff.onse.fi/gobi2000/gobi-regression2.mon.log
-For reference, here's the hang with usbserial debug=1:
-http://stuff.onse.fi/gobi2000/gobi-regression2.dmesg.log
+On a e1000e--e1000e connection, I got the following numbers
 
-The later logs were of runs that did not hang, but did still not work. I added 
-descriptions here, in case someone is confused with all the logs (which I 
-should've named better): http://stuff.onse.fi/gobi2000/
+	readahead size		throughput
+		   16k           35.5 MB/s
+		   32k           54.3 MB/s
+		   64k           64.1 MB/s
+		  128k           70.5 MB/s
+		  256k           74.6 MB/s
+rsize ==>	  512k           77.4 MB/s
+		 1024k           85.5 MB/s
+		 2048k           86.8 MB/s
+		 4096k           87.9 MB/s
+		 8192k           89.0 MB/s
+		16384k           87.7 MB/s
 
-But if a device in corrupt state can cause such a hang, then it is likely that 
-that is happening here (due to the packet bounding issue described in the 
-other messages).
+So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
+can already get near full NFS bandwidth.
 
--- 
-Anssi Hannula
+The test script is:
+
+#!/bin/sh
+
+file=/mnt/sparse
+BDI=0:15
+
+for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+do
+	echo 3 > /proc/sys/vm/drop_caches
+	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+	echo readahead_size=${rasize}k
+	dd if=$file of=/dev/null bs=4k count=1024000
+done
+
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/nfs/client.c   |    4 +++-
+ fs/nfs/internal.h |    8 --------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
+
+--- linux.orig/fs/nfs/client.c	2010-02-23 11:15:44.000000000 +0800
++++ linux/fs/nfs/client.c	2010-02-24 10:16:00.000000000 +0800
+@@ -889,7 +889,9 @@ static void nfs_server_set_fsinfo(struct
+ 	server->rpages = (server->rsize + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+ 
+ 	server->backing_dev_info.name = "nfs";
+-	server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
++	server->backing_dev_info.ra_pages = max_t(unsigned long,
++					      default_backing_dev_info.ra_pages,
++					      2 * server->rpages);
+ 	server->backing_dev_info.capabilities |= BDI_CAP_ACCT_UNSTABLE;
+ 
+ 	if (server->wsize > max_rpc_payload)
+--- linux.orig/fs/nfs/internal.h	2010-02-23 11:15:44.000000000 +0800
++++ linux/fs/nfs/internal.h	2010-02-23 13:26:00.000000000 +0800
+@@ -10,14 +10,6 @@
+ 
+ struct nfs_string;
+ 
+-/* Maximum number of readahead requests
+- * FIXME: this should really be a sysctl so that users may tune it to suit
+- *        their needs. People that do NFS over a slow network, might for
+- *        instance want to reduce it to something closer to 1 for improved
+- *        interactive response.
+- */
+-#define NFS_MAX_READAHEAD	(RPC_DEF_SLOT_TABLE - 1)
+-
+ /*
+  * Determine if sessions are in use.
+  */
