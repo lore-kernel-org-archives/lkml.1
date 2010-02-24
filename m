@@ -1,139 +1,157 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127Ab0BXIzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 03:55:51 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50018 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755884Ab0BXIzt (ORCPT
+	id S1755937Ab0BXJAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 04:00:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53698 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755528Ab0BXJAR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 03:55:49 -0500
-X-Sasl-enc: qpIzwIH+FUACKgklIxXHiUktpxv7tJ27sMXTHLBbg4iI 1267001748
-Message-ID: <4B84E993.5080903@imap.cc>
-Date: Wed, 24 Feb 2010 09:55:47 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.8) Gecko/20100205 SeaMonkey/2.0.3
+	Wed, 24 Feb 2010 04:00:17 -0500
+Message-ID: <4B84EAAE.5020408@cn.fujitsu.com>
+Date: Wed, 24 Feb 2010 17:00:30 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-CC: linux-kernel@vger.kernel.org, Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: [PATCHv2 1/2] drivers: isdn: get rid of custom strtoul()
-References: <47f90389321e1cb7d5adb222cef8c21c7d715bc8.1266952616.git.andy.shevchenko@gmail.com>
-In-Reply-To: <47f90389321e1cb7d5adb222cef8c21c7d715bc8.1266952616.git.andy.shevchenko@gmail.com>
-X-Enigmail-Version: 1.0.1
+To: =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
+CC: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Patch for tracing c states (power_end) on x86
+References: <1266999573.3415.8.camel@localhost>	 <4B84E51A.900@cn.fujitsu.com> <1267001084.3415.16.camel@localhost>
+In-Reply-To: <1267001084.3415.16.camel@localhost>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Robert Schöne wrote:
+> Hi,
+> 
 
-Am 2010-02-23 20:21 schrieb Andy Shevchenko:
-> --- a/drivers/isdn/gigaset/ev-layer.c
-> +++ b/drivers/isdn/gigaset/ev-layer.c
-> @@ -420,64 +420,18 @@ static const struct zsau_resp_t {
->  	{NULL,				ZSAU_UNKNOWN}
->  };
->  
-> -/*
-> - * Get integer from char-pointer
-> - */
-> -static int isdn_getnum(char *p)
-> -{
-> -	int v = -1;
-> -
-> -	gig_dbg(DEBUG_TRANSCMD, "string: %s", p);
+Please don't top posting. :)
 
-This conflicts (trivially) with:
-[PATCH 3/4] gigaset: reduce syslog clutter
-which I submitted the day before yesterday and which has not yet been
-merged into *-next.
+> I tried to pass 0 in "my" sleep routine "static void mwait_idle(void)"
+> Which led to the following behaviour:
+> The event was reported on /sys/kernel/debug/tracing, but still not
+> for sys_perf_open.
 
-> -/*
-> - * Get integer from char-pointer
-> - */
-> -static int isdn_gethex(char *p)
-> -{
-> -	int v = 0;
-> -	int c;
-> -
-> -	gig_dbg(DEBUG_TRANSCMD, "string: %s", p);
+The event was not reported by sys_perf_open()? Could you be more
+elaborate on this? Because I don't get you here.
 
-Idem.
-
->  /* retrieve CID from parsed response
->   * returns 0 if no CID, -1 if invalid CID, or CID value 1..65535
->   */
->  static int cid_of_response(char *s)
->  {
->  	int cid;
-> +	int rc;
->  
->  	if (s[-1] != ';')
->  		return 0;	/* no CID separator */
-> -	cid = isdn_getnum(s);
-> -	if (cid < 0)
-> +	rc = strict_strtoul(s, 10, &cid);
-
-strict_strtoul() expects unsigned long* as its third argument, but cid
-is an int. Consequently, this generates sparse warnings:
-
-drivers/isdn/gigaset/ev-layer.c:433:30: warning: incorrect type in
-argument 3 (different type sizes)
-drivers/isdn/gigaset/ev-layer.c:433:30:    expected unsigned long *<noident>
-drivers/isdn/gigaset/ev-layer.c:433:30:    got int *<noident>
-
-and compiler warnings:
-
-drivers/isdn/gigaset/ev-layer.c: In function ‘cid_of_response’:
-drivers/isdn/gigaset/ev-layer.c:433: warning: passing argument 3 of
-‘strict_strtoul’ from incompatible pointer type
-include/linux/kernel.h:176: note: expected ‘long unsigned int *’ but
-argument is of type ‘int *’
-
-> @@ -648,9 +602,11 @@ void gigaset_handle_modem_response(struct cardstate *cs)
->  		case RT_ZCAU:
->  			event->parameter = -1;
->  			if (curarg + 1 < params) {
-> -				i = isdn_gethex(argv[curarg]);
-> -				j = isdn_gethex(argv[curarg + 1]);
-> -				if (i >= 0 && i < 256 && j >= 0 && j < 256)
-> +				int ri = strict_strtoul(argv[curarg], 16, &i);
-> +				int rj = strict_strtoul(argv[curarg+1], 16, &j);
-
-Idem.
-
-> @@ -660,12 +616,14 @@ void gigaset_handle_modem_response(struct cardstate *cs)
->  		case RT_NUMBER:
->  		case RT_HEX:
->  			if (curarg < params) {
-> -				if (param_type == RT_HEX)
-> -					event->parameter =
-> -						isdn_gethex(argv[curarg]);
-> -				else
-> -					event->parameter =
-> -						isdn_getnum(argv[curarg]);
-> +				int base = (param_type == RT_HEX) ? 16 : 10;
-> +				unsigned long res;
-> +				int rc;
-> +
-> +				rc = strict_strtoul(argv[curarg], base, &res);
-
-Idem.
-
-Thanks,
-Tilman
-
-- -- 
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkuE6ZMACgkQQ3+did9BuFtLUQCfcPv6XMsFCmSJ+BfU4W42F1k4
-tI0AnjsOK0rGkIF3Gnx4S4z3bzMriCw3
-=xfZT
------END PGP SIGNATURE-----
+> As 1 had been the argument which led to a working tracing, I assumed,
+> that the argument should be the same as the 2nd arg of the last
+> power_start event.
+> Since this argument had been 1 in my case, it worked for me. However, 0
+> did not.
+> 
+> Bye Robert
+> 
+> 
+> 
+> Am Mittwoch, den 24.02.2010, 16:36 +0800 schrieb Li Zefan:
+>> Robert Schöne wrote:
+>>> Hello,
+>>>
+>>> Since noone replied to my last mail (Febr. 15th, 11:42), describing the
+>>> way to fix the missing c-state tracing, here's a patch.
+>>> Maybe its easier that way.
+>>>
+>>> (I used the perf-fixes-for-linus git tree to obtain a
+>>> more-then-up-to-date version)
+>>>
+>>> Bye Robert
+>>>
+>>>
+>>> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+>>> index 02d6780..b1cfb88 100644
+>>> --- a/arch/x86/kernel/process.c
+>>> +++ b/arch/x86/kernel/process.c
+>>> @@ -384,6 +384,7 @@ void default_idle(void)
+>>>                 else
+>>>                         local_irq_enable();
+>>>                 current_thread_info()->status |= TS_POLLING;
+>>> +               trace_power_end(1);
+>>>         } else {
+>>>                 local_irq_enable();
+>>>                 /* loop is done by the caller */
+>>> @@ -451,6 +452,7 @@ void mwait_idle_with_hints(unsigned long ax,
+>>> unsigned long cx)
+>>>                 if (!need_resched())
+>>>                         __mwait(ax, cx);
+>>>         }
+>>> +       trace_power_end((ax>>4)+1);
+>> The only argument of trace_power_end() is a dummy, so you can just
+>> pass 0 or 1 to the trace hook, actually better pass 0 to be
+>> consistent with other parts.
+>>
+>> The dummy argument can't be eliminated, because the macros that
+>> automatically generates racing code have some limitations, and
+>> seems it's not so easy to get over.
+>>
+>>>  }
+>>>  
+>>>  /* Default MONITOR/MWAIT with no hints, used for default C1 state */
+>>> @@ -467,6 +469,7 @@ static void mwait_idle(void)
+>>>                         __sti_mwait(0, 0);
+>>>                 else
+>>>                         local_irq_enable();
+>>> +               trace_power_end(1);
+>>>         } else
+>>>                 local_irq_enable();
+>>>  }
+>>>
+>>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> ------------------------- Mail from Febr. 15th --------------------
+> Hi,
+> I have a question regarding the event "power/power_end".
+> For the standard linux kernel (2.6.32.8), it's just not reported -
+> neither for the /sys/kernel/debug/tracing nor for the sys_perf_open
+> approach.
+> 
+> System:
+>         Intel Core 2 Quad,
+>         Kernel 2.6.32.8,
+>         for sys_perf_open:always using sampling counters,
+>         (Kernel 2.6.33-rcX should show the same behavior)
+> 
+> After finding "my" c-state procedure in arch/x86/kernel/process.c
+> (which was "static void mwait_idle(void)" btw), I added a
+> trace_power_end call on the correct line:
+> ...
+>                 else
+>                         local_irq_enable();
+>         } else
+> ...
+> ->
+> ...
+>                 else
+>                         local_irq_enable();
+>                 trace_power_end(0);
+>         } else
+> ...
+> Now the event was reported on /sys/kernel/debug/tracing, but still not
+> for sys_perf_open.
+> 
+> Then I had the idea, that trace_power_end's argument should be the same
+> as the 2nd argument of the previous power_start.
+> 
+> That worked.
+> 
+> However, things to be done are: add trace_power_end's to some
+> process.c's procedures.
+> 
+> 
+> Bye Robert
+> 
+> -------------------------End of Mail of Febr. 15th --------------------
+> 
+> 
+> 
+> 
