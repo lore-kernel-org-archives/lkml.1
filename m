@@ -1,56 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855Ab0BXMhJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 07:37:09 -0500
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:53811 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756551Ab0BXMhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 07:37:07 -0500
-X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 07:37:07 EST
-Message-ID: <4B851ACD.8070307@monstr.eu>
-Date: Wed, 24 Feb 2010 13:25:49 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	id S1756812Ab0BXMpK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 07:45:10 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39421 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497Ab0BXMpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 07:45:08 -0500
+Date: Wed, 24 Feb 2010 13:45:05 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       linux-doc@vger.kernel.org
+Subject: Re: [PATCH] doc: console doc should read "bind & unbind" instead of
+ "bind & bind"
+In-Reply-To: <1265047036-7402-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LNX.2.00.1002241344560.30967@pobox.suse.cz>
+References: <1265047036-7402-1-git-send-email-cascardo@holoscopio.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] arch/microblaze fixes for 2.6.33
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 1 Feb 2010, Thadeu Lima de Souza Cascardo wrote:
 
-Please pull the following two patches. Steven's patch just remove one 
-semicolon and my patch fix wrong cache loop macro for write-through caches.
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  Documentation/console/console.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/console/console.txt b/Documentation/console/console.txt
+> index 877a1b2..926cf1b 100644
+> --- a/Documentation/console/console.txt
+> +++ b/Documentation/console/console.txt
+> @@ -74,7 +74,7 @@ driver takes over the consoles vacated by the driver. Binding, on the other
+>  hand, will bind the driver to the consoles that are currently occupied by a
+>  system driver.
+>  
+> -NOTE1: Binding and binding must be selected in Kconfig. It's under:
+> +NOTE1: Binding and unbinding must be selected in Kconfig. It's under:
+>  
+>  Device Drivers -> Character devices -> Support for binding and unbinding
+>  console drivers
 
-Thanks,
-Michal
-
-The following changes since commit 75ef7cdda2daa35be9e070ac8e5258759ac03d06:
-   Linus Torvalds (1):
-         Merge git://git.kernel.org/.../davem/net-2.6
-
-are available in the git repository at:
-
-   git://git.monstr.eu/linux-2.6-microblaze.git for-linus
-
-Michal Simek (1):
-       microblaze: Fix cache loop function for cache range
-
-Steven J. Magnani (1):
-       microblaze: Fix out_le32() macro
-
-  arch/microblaze/include/asm/io.h   |    2 +-
-  arch/microblaze/kernel/cpu/cache.c |   27 ++++++++-------------------
-  2 files changed, 9 insertions(+), 20 deletions(-)
+Applied, thanks.
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+Jiri Kosina
+SUSE Labs, Novell Inc.
