@@ -1,124 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130Ab0BXUwP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:52:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44499 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758041Ab0BXUwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:52:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: s2disk hang update
-Date: Wed, 24 Feb 2010 21:52:55 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux MM <linux-mm@kvack.org>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002232213.56455.rjw@sisk.pl> <9b2b86521002240823t126d5ad8nbd292da0f4090e6c@mail.gmail.com>
-In-Reply-To: <9b2b86521002240823t126d5ad8nbd292da0f4090e6c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002242152.55408.rjw@sisk.pl>
+	id S1758139Ab0BXVAy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 16:00:54 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:45084 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758041Ab0BXVAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 16:00:53 -0500
+X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 16:00:53 EST
+X-Spam-Processed: digidescorp.com, Wed, 24 Feb 2010 15:00:51 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=167138bab6=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+From: "Steven J. Magnani" <steve@digidescorp.com>
+To: microblaze-uclinux@itee.uq.edu.au
+Cc: monstr@monstr.eu, linux-kernel@vger.kernel.org,
+       "Steven J. Magnani" <steve@digidescorp.com>
+Subject: [PATCH] microblaze: Begin stack dump with caller of dump_stack()
+Date: Wed, 24 Feb 2010 15:00:39 -0600
+Message-Id: <1267045239-7091-1-git-send-email-steve@digidescorp.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 February 2010, Alan Jenkins wrote:
-> On 2/23/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-...
-> > My guess is that the preallocated memory pages freed by
-> > free_unnecessary_pages() go into a place from where they cannot be taken for
-> > subsequent NOIO allocations.  I have no idea why that happens though.
-> >
-> > To test that theory you can try to change GFP_IOFS to GFP_KERNEL in the
-> > calls to clear_gfp_allowed_mask() in kernel/power/hibernate.c (and in
-> > kernel/power/suspend.c for completness).
-> 
-> Effectively forcing GFP_NOWAIT, so the allocation should fail instead
-> of hanging?
-> 
-> It seems to stop the hang, but I don't see any other difference - the
-> hibernation process isn't stopped earlier, and I don't get any new
-> kernel messages about allocation failures.  I wonder if it's because
-> GFP_NOWAIT triggers ALLOC_HARDER.
-> 
-> I have other evidence which argues for your theory:
-> 
-> [ successful s2disk, with forced NOIO (but not NOWAIT), and test code
-> as attached ]
-> 
->  Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
->  1280 GFP_NOWAIT allocations of order 0 are possible
->  640 GFP_NOWAIT allocations of order 1 are possible
->  320 GFP_NOWAIT allocations of order 2 are possible
-> 
-> [ note - 1280 pages is the maximum test allocation used here.  The
-> test code is only accurate when talking about smaller numbers of free
-> pages ]
-> 
->  1280 GFP_KERNEL allocations of order 0 are possible
->  640 GFP_KERNEL allocations of order 1 are possible
->  320 GFP_KERNEL allocations of order 2 are possible
-> 
->  PM: Preallocating image memory...
->  212 GFP_NOWAIT allocations of order 0 are possible
->  102 GFP_NOWAIT allocations of order 1 are possible
->  50 GFP_NOWAIT allocations of order 2 are possible
-> 
->  Freeing all 90083 preallocated pages
->  (and 0 highmem pages, out of 0)
->  190 GFP_NOWAIT allocations of order 0 are possible
->  102 GFP_NOWAIT allocations of order 1 are possible
->  50 GFP_NOWAIT allocations of order 2 are possible
->  1280 GFP_KERNEL allocations of order 0 are possible
->  640 GFP_KERNEL allocations of order 1 are possible
->  320 GFP_KERNEL allocations of order 2 are possible
->  done (allocated 90083 pages)
-> 
-> It looks like you're right and the freed pages are not accessible with
-> GFP_NOWAIT for some reason.
+Adjust the pointer used as the start of a stack dump so that the dump
+begins with the caller of dump_stack(). This makes the dump easier to 
+interpret.
 
-I'd expect this, really.  There only is a limited number of pages you can
-allocate with GFP_NOWAIT.
-
-> I also tried a number of test runs with too many applications, and saw this:
-> 
-> Freeing all 104006 preallocated pages ...
-> 65 GFP_NOWAIT allocations of order 0 ...
-> 18 GFP_NOWAIT allocations of order 1 ...
-> 9 GFP_NOWAIT allocations of order 2 ...
-> 0 GFP_KERNEL allocations of order 0 are possible
-> ...
-
-Now that's interesting.  We've just freed 104006 pages and we can't allocate
-any, so where did all of these freed pages go, actually?
-
-OK, I think I see what the problem is.  Quite embarassing, actually ...
-
-Can you check if the patch below helps?
-
-Rafael
-
+Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
 ---
- kernel/power/snapshot.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+diff -uprN a/arch/microblaze/kernel/traps.c b/arch/microblaze/kernel/traps.c
+--- a/arch/microblaze/kernel/traps.c	2010-02-24 14:12:01.000000000 -0600
++++ b/arch/microblaze/kernel/traps.c	2010-02-24 14:56:21.000000000 -0600
+@@ -73,8 +73,10 @@ void show_stack(struct task_struct *task
+ 		if (task)
+ 			sp = (unsigned long *) ((struct thread_info *)
+ 						(task->stack))->cpu_context.r1;
+-		else
++		else {
+ 			sp = (unsigned long *)&sp;
++			sp -= 2;	/* Pick up caller of dump_stack() */
++		}
+ 	}
+ 
+ 	stack = sp;
 
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1181,7 +1181,7 @@ static void free_unnecessary_pages(void)
- 
- 	memory_bm_position_reset(&copy_bm);
- 
--	while (to_free_normal > 0 && to_free_highmem > 0) {
-+	while (to_free_normal > 0 || to_free_highmem > 0) {
- 		unsigned long pfn = memory_bm_next_pfn(&copy_bm);
- 		struct page *page = pfn_to_page(pfn);
- 
