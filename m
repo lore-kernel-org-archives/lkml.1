@@ -1,79 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483Ab0BXHVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:21:22 -0500
-Received: from n2-vm0.bullet.mail.gq1.yahoo.com ([67.195.23.154]:40232 "HELO
-	n2-vm0.bullet.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755434Ab0BXHVT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:21:19 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 478278.43419.bm@omp125.mail.gq1.yahoo.com
-Message-ID: <351518.49788.qm@web113707.mail.gq1.yahoo.com>
-X-YMail-OSG: vAMF100VM1k.WDqfwDZPEIWN0l_8Wz.Fic2odjbmCzdUyeE
- iZpiz_rzU1a_iVqYjEX20qBbEJFiBNdBN0uHICw2GRiE2_m5f8sTr9xcfd_V
- Q8QZtmeJMzBh5vJ.N.88d5wwyY_1Lw9xwsKp54z20IqPm9KRKMNp30.Af3hx
- 59If_OfwBhFGfaQJxu84njjqPt4lavR7Q6kIXPhSgYzKOujXciWZfhVj9D51
- S86esB3BQy9.cqjPAzbPyOOrvlmZseEVqTfajsvSo.v3F7urlMTUjoD1pPsw
- LxibD26duv3Xih2GlVYGzz7BNHpfgI2EM75gT2vCCzaEtefyHHr7H8Kl54ue
- iWTIqk2yecUTjLxhEGNESAY007uvBF6OJjzxgjRmAU9n6rZpiVe.kAdRiJS3
- OQU3x.KDwLsJpkN8xr8HCyI51H1rDSuYvtD7DQyuVdP5el6l4Xofzav2IcrL
- Tz1UBMcTpSkXv425pUi0a1orAjkQNmLrKqhC_QlOhXos5tO.8A7L.YuNz.5b
- NQe.UmU5SjvzGkMcEj7DEV1610N3RM2Z68gFw6S3M55z5Q4U8ZulInD9ju5S
- MhbgXBQvMcVoOAv4SbKu4PuSaVPe7ZaBRghMIRTshm3eReecKPxYWMg9mV8b
- PxYxd6jc96iSJoVImSRJZxhLkYwOLdU0_KAAIRw75yghk6BNUYmeiw27IjAJ
- o30jZ.HCPcAzxl64sSj6GS9Ltsk_mupN3JFKPdp25KwEb3.KVsia97OCNuA0
- qiKrxyu3rPJEKKYjL5ibU2jiuqHqb2Qz5Go.J.5o8VfynACM7hWrarex2uIO
- Bln9rgcoh_UBAQEFG3yw5Mp9.AHCvSlTQTSV8hpSqyjyUI2X4ZOfEZdLf2Ww
- dWk.c9uLYSBu1F8Runa31KcjkTT747awnaxgUxOKGy7EBjf1PKe3llL1Mflo
- fj0bgGM9CznR9JdmHuDbWHQx_GMiChkQlitpQJi5V7lV6GU6J9K8l1PgqRJW
- wCP3yl9fPWu5MjrVlGgPzsKuOgszOR2zRhxY7pnShz0ZOgCOyDc7UKdh.QiZ
- z2LzZbdWumwn0ZTcFti8UO1lFovfzsgKyRfOmYoa2MRVFdXT_B3.2fdZPqlW
- YnX73tPiF9CujpUk8xegJlkqhDMDSb35LJmFUlwbgdWx8acKXSxFQFrwuu3V
- ZIeUyfOS084o42QM0Kqxp888oc4lBf4CezsnBJVYP3lMk_4ps1zLvA.yi6BX
- GHn.c5J4904cR_v4roVNszLiVuPpKk.4sa6LhoWsQMHtbWpixH4e7VWP76lr
- jslgRG.LsUUiGMrOEFobYS3pmDneJgR9tkqEqu59EWPbH8zvoZii1LXMOpFt
- PgclsYyCuWmvY_vjyo8fFnHT30esyXHm5hMWalfhA667hs_YvqgUq3JWHhia
- ubB2iemAzXd0mk_sbtEX.6.okYb1tv58eE6NKV3C1pEG_44KnCiRTHYSxMNt
- IKgYQRztw3eLquiJozcEdc2egHYcrIu1qzW72g1HuHZBLLbYFY7lh6Yag2ji
- WsMV_bZD.pP29zG7i5qsS1GAIlLn7txdEl4cBMuJxk.w_Ggph3gYCg.zOout
- Ij87iuFZCepjnIIaH3CqdkgCK_vAVqJ79oIa3DlUVNt0T2b.dsv4do.ZX1Zq
- zXcwQbg2vOVsCQqG4nWumjOhmLp3e4ZI4wwnQCuh1gjNKPmLXmJhY94Na54r
- mMuvggXaTiigAcNx29O9FIxI_YfWf33_dci0M4ghH0WOdXVq4XCScAaOXNIq
- 4HiukMsG5P2jxmrMhQ3SnRNzYq2B2jWHuKQM6FYIKNJxa.khoSSqPHhOB.LM
- Bgz.vE84uMFZdZhL9oMNkJFw942DrN3RUfNQmSOO9dvr82xq9WNPdEadsr6I
- LyrZpfU3FmneM3Y4RDkj4PAyU1vle1DCUyAPlaJA26Q5NOcBsrJt4o167xwo
- QPHWeTzlqChSp4QnMjlMVAJidDho0uZyVtjUxpcvTu_TiNXTCV5sYWI5UXww
- kcJU3_TWzex2_7y9zcCB_IUYMhU_8q3pFAs4C5pWRZGEgv2gAi.z3x1ccn47
- 8q5JUHFKS2ljg_CQRy9SUTWnmsmdngnYClJHfgv15AHCmpowIgrZ2KtqTut_
- WhzRKGfpvF6pO9_M5r_v4oMvgz2InOg--
-X-RocketYMMF: salifz02
-X-Mailer: YahooMailClassic/9.2.12 YahooMailWebService/0.8.100.260964
-Date: Tue, 23 Feb 2010 23:21:18 -0800 (PST)
-From: pedrosinger <pedro.singer9@gmail.com>
-Reply-To: pedro.singer9@gmail.com
-Subject: from mr pedrosinger
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	id S1755478Ab0BXHZw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:25:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58554 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755422Ab0BXHZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 02:25:51 -0500
+Date: Wed, 24 Feb 2010 18:25:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next requirements
+Message-Id: <20100224182540.918b48b0.sfr@canb.auug.org.au>
+In-Reply-To: <20100223084552.GB17617@elte.hu>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
+	<20100222090710.GA31357@elte.hu>
+	<20100222203319.8bd497a2.sfr@canb.auug.org.au>
+	<20100222102745.GJ20844@elte.hu>
+	<20100222224752.0cbd5807.sfr@canb.auug.org.au>
+	<20100223084552.GB17617@elte.hu>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__24_Feb_2010_18_25_40_+1100_gl3s4g2eJ6gHaGNY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from mr pedrosinger
- 
-Greeting from Burkina Faso 
-This brief introductory letter may come to you as a big surprise, but I believe it is only a day that people meet and become great friends and business partners. I am Mr. pedrosinger, currently Head of Corporate affairs with a reputable bank here in Burkina Faso , West Africa . And would like to enter into a confidential business deal with you upon your acceptance to co-operate with me I will let you know the details.
-Thanking you in advance and waiting for your urgent reply.
-please call me if you are interested
-Tel: +226-7698-4378
-Regards,
-Mr. pedrosinger. 
- 
- 
+--Signature=_Wed__24_Feb_2010_18_25_40_+1100_gl3s4g2eJ6gHaGNY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+[I have removed linux-tip-commits from the cc list]
 
+Hi Ingo,
 
-      
+On Tue, 23 Feb 2010 09:45:52 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> Developers simply cannot be expected to build for 22 architectures, and t=
+hey=20
+> shouldnt be.
 
+I have agreed with this point of yours several times.  Why do you keep
+stating it?
+
+> The thing is, last i checked you didnt even _test_ x86 as the first step =
+in=20
+> your linux-next build tests. Most of your generic build bug reports are=20
+> against PowerPC. They create the appearance that x86 is a second class ci=
+tizen=20
+> in linux-next.
+
+Lets see.  Over the last 60 days, I have reported 37 build errors.  Of
+these, 16 were reported against x86, 14 against ppc, 7 against other
+archs.  Of the ppc reports, 10 would not affect x86 builds (due to being
+ppc specific problems or dependencies on implicit includes that do happen on
+x86).  None of the reports against other arches would affect x86 builds.
+
+I also reported 31 warnings.  15 against x86, 15 against ppc and 1 against
+both.  Of those only reported against ppc, 13 did not affect x86.
+
+So of my "generic" reports, 4 errors and 2 warnings were reported against
+ppc, 16 errors and 15 warnings again x86.
+
+Also, I am not sure how reports of 37 build errors and 32 warnings over
+60 days can tax the resources of our developer base.  Most of these are
+fairly trivial to fix (as is shown by how quick they are fixed.  Usually
+the developer has just forgotten to test the !CONFIG_SOMETHING case or
+used some function without explicitly including the file that declares it.
+
+As to my perceived pro-PowerPC and anti-x86 bias, you are the only one who
+has even mentioned it to me.
+
+Anyway, I sick of these discussions.  If people see the way I do
+linux-next as a problem, then they can find someone else.  That is not
+the impression I gained at the Kernel Summit and (apart from these
+occasional "discussions") I am quite happy to continue.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__24_Feb_2010_18_25_40_+1100_gl3s4g2eJ6gHaGNY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuE1HQACgkQjjKRsyhoI8x1pACglYmuV96kubBTzaIHKfOOQH3p
+UzYAnjUPiYowTnV5nLWGKVQsY7WTAFc/
+=3vJQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__24_Feb_2010_18_25_40_+1100_gl3s4g2eJ6gHaGNY--
