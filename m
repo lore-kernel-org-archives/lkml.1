@@ -1,92 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0BXBqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 20:46:04 -0500
-Received: from mga01.intel.com ([192.55.52.88]:40537 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952Ab0BXBqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 20:46:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,528,1262592000"; 
-   d="scan'208";a="775349604"
-Message-Id: <20100224013921.629217000@intel.com>
-References: <20100224013858.506388000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 23 Feb 2010 17:38:59 -0800
-From: venkatesh.pallipadi@intel.com
-To: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Andreas Dilger <adilger@sun.com>, Eric Paris <eparis@redhat.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: [patch 1/3] ext4: Fixup rb_root initializations to use RB_ROOT
-Content-Disposition: inline; filename=0001-ext4-fix.patch
+	id S1753400Ab0BXBwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 20:52:11 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47950 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216Ab0BXBwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 20:52:10 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 24 Feb 2010 10:48:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] memcg: page fault oom improvement v2
+Message-Id: <20100224104839.6547ab78.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002231738070.3435@chino.kir.corp.google.com>
+References: <20100223120315.0da4d792.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100223140218.0ab8ee29.nishimura@mxp.nes.nec.co.jp>
+	<20100223152116.327a777e.nishimura@mxp.nes.nec.co.jp>
+	<20100223152650.e8fc275d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100223155543.796138fc.nishimura@mxp.nes.nec.co.jp>
+	<20100223160714.72520b48.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002231443410.8693@chino.kir.corp.google.com>
+	<20100224090836.ba86a4a6.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002231738070.3435@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext4 uses rb_node = NULL; to zero rb_root at few places.
-The problem with this is that 17d9ddc72fb8bba0d4f678 in the
-linux-next tree adds a new field to that struct which needs to be NULLas well.
-This patch uses RB_ROOT as the intializer so all of the relevant fields will
-be NULL'd.
+On Tue, 23 Feb 2010 17:42:33 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
- fs/ext4/block_validity.c |    4 ++--
- fs/ext4/dir.c            |    2 +-
- fs/ext4/mballoc.c        |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+> > > 
+> > > This allows us to hijack the TIF_MEMDIE bit to detect when there is a 
+> > > parallel pagefault oom killing when the oom killer hasn't necessarily been 
+> > > invoked to kill a system-wide task (it's simply killing current, by 
+> > > default, and giving it access to memory reserves).  Then, we can change 
+> > > out_of_memory(), which also now handles memcg oom conditions, to always 
+> > > scan the tasklist first (including for mempolicy and cpuset constrained 
+> > > ooms), check for any candidates that have TIF_MEMDIE, and return 
+> > > ERR_PTR(-1UL) if so.  That catches the parallel pagefault oom conditions 
+> > > from needlessly killing memcg tasks.  panic_on_oom would only panic after 
+> > > the tasklist scan has completed and returned != ERR_PTR(-1UL), meaning 
+> > > pagefault ooms are exempt from that sysctl.
+> > > 
+> > Sorry, I see your concern but I'd like not to do clean-up and bug-fix at
+> > the same time.  
+> > 
+> > I think clean up after fix is easy in this case.
+> > 
+> 
+> If you develop on top of my oom killer rewrite, pagefault ooms already 
+> attempt to kill current first and then defer back to killing another task 
+> if current is unkillable.  
 
-diff --git a/fs/ext4/block_validity.c b/fs/ext4/block_validity.c
-index a60ab9a..983f0e1 100644
---- a/fs/ext4/block_validity.c
-+++ b/fs/ext4/block_validity.c
-@@ -205,14 +205,14 @@ void ext4_release_system_zone(struct super_block *sb)
- 		entry = rb_entry(n, struct ext4_system_zone, node);
- 		kmem_cache_free(ext4_system_zone_cachep, entry);
- 		if (!parent)
--			EXT4_SB(sb)->system_blks.rb_node = NULL;
-+			EXT4_SB(sb)->system_blks = RB_ROOT;
- 		else if (parent->rb_left == n)
- 			parent->rb_left = NULL;
- 		else if (parent->rb_right == n)
- 			parent->rb_right = NULL;
- 		n = parent;
- 	}
--	EXT4_SB(sb)->system_blks.rb_node = NULL;
-+	EXT4_SB(sb)->system_blks = RB_ROOT;
- }
- 
- /*
-diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
-index 9dc9316..6bdb566 100644
---- a/fs/ext4/dir.c
-+++ b/fs/ext4/dir.c
-@@ -303,7 +303,7 @@ static void free_rb_tree_fname(struct rb_root *root)
- 			kfree(old);
- 		}
- 		if (!parent)
--			root->rb_node = NULL;
-+			*root = RB_ROOT;
- 		else if (parent->rb_left == n)
- 			parent->rb_left = NULL;
- 		else if (parent->rb_right == n)
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index d34afad..ba1d99d 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2256,7 +2256,7 @@ int ext4_mb_add_groupinfo(struct super_block *sb, ext4_group_t group,
- 
- 	INIT_LIST_HEAD(&meta_group_info[i]->bb_prealloc_list);
- 	init_rwsem(&meta_group_info[i]->alloc_sem);
--	meta_group_info[i]->bb_free_root.rb_node = NULL;
-+	meta_group_info[i]->bb_free_root = RB_ROOT;
- 
- #ifdef DOUBLE_CHECK
- 	{
--- 
-1.6.0.6
+After my fix, page_fault_out_of_memory is never called. (because memcg doesn't
+return needless failure.)
 
--- 
+Then, that's not point in this thread.
+
+Thanks,
+-Kame
 
