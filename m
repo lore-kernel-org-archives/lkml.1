@@ -1,92 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893Ab0BXC2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 21:28:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39667 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867Ab0BXC2o (ORCPT
+	id S1753951Ab0BXCd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 21:33:26 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:61015 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867Ab0BXCdY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 21:28:44 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 24 Feb 2010 11:25:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] memcg: page fault oom improvement v2
-Message-Id: <20100224112513.3d3e385b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002231818540.9613@chino.kir.corp.google.com>
-References: <20100223120315.0da4d792.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100223140218.0ab8ee29.nishimura@mxp.nes.nec.co.jp>
-	<20100223152116.327a777e.nishimura@mxp.nes.nec.co.jp>
-	<20100223152650.e8fc275d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100223155543.796138fc.nishimura@mxp.nes.nec.co.jp>
-	<20100223160714.72520b48.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002231443410.8693@chino.kir.corp.google.com>
-	<20100224090836.ba86a4a6.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002231738070.3435@chino.kir.corp.google.com>
-	<20100224104839.6547ab78.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002231818540.9613@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Feb 2010 21:33:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=UE+Knc2yLdTb7+IdmM6e8GScjDTsF6apwIeQkqU+vKunpDNLg05ANoMXarjGmLW+gh
+         yi0nJA6pAxZDm/DXodkx3r90V4O1DKrDmRwqWl1MgltzhgAlHqmlXX9FweR9vd/jlvHL
+         5m3JzlW8phF+4YsH/WPeGZGrkpwJOAeJtiUTs=
+MIME-Version: 1.0
+In-Reply-To: <cover.1266893507.git.joe@perches.com>
+References: <cover.1266893507.git.joe@perches.com>
+Date: Tue, 23 Feb 2010 18:33:23 -0800
+X-Google-Sender-Auth: b457a366869f01bf
+Message-ID: <9929d2391002231833j65008a1ev1d2297672a39a483@mail.gmail.com>
+Subject: Re: [PATCH net-next 0/7] drivers/net conversions to netdev_<level>, 
+	etc
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       Alex Duyck <alexander.h.duyck@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       Andrew Gallatin <gallatin@myri.com>, Brice Goglin <brice@myri.com>,
+       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Feb 2010 18:26:17 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+On Mon, Feb 22, 2010 at 18:56, Joe Perches <joe@perches.com> wrote:
+> Some more conversions of drivers to:
+>
+>    netif_<level>
+>    netdev_<level>
+>    pr_<level>
+>
+> with some other minor updates/corrections
+> noticed during conversions.
+>
+> Joe Perches (7):
+>  drivers/net/chelsio: Use pr_<level>, netif_msg_<type>
+>  drivers/net/myri10ge: Use pr_<level> and netdev_<level>
+>  drivers/net/ixgbe: Use pr_<level> and netif_<level>
+>  drivers/net/ixgb: Use pr_<level> and netdev_<level>
+>  drivers/net/e1000: Use pr_<level> and netif_<level>
+>  drivers/net/e1000e: Use pr_<level> and netdev_<level>
+>  drivers/net/igb: Use netdev_<level>
+>
+>  drivers/net/chelsio/common.h      |   24 +--
+>  drivers/net/chelsio/cxgb2.c       |   18 +-
+>  drivers/net/chelsio/espi.c        |    4 +-
+>  drivers/net/chelsio/pm3393.c      |   16 +-
+>  drivers/net/chelsio/sge.c         |   10 +-
+>  drivers/net/chelsio/subr.c        |   32 ++--
+>  drivers/net/chelsio/vsc7326.c     |   24 ++--
+>  drivers/net/e1000/e1000.h         |   17 --
+>  drivers/net/e1000/e1000_ethtool.c |   38 ++--
+>  drivers/net/e1000/e1000_hw.c      |  383 ++++++++++++++++++-------------------
+>  drivers/net/e1000/e1000_main.c    |  272 +++++++++++++-------------
+>  drivers/net/e1000/e1000_osdep.h   |   14 +--
+>  drivers/net/e1000/e1000_param.c   |  121 +++++++------
+>  drivers/net/e1000e/82571.c        |   57 ++++--
+>  drivers/net/e1000e/e1000.h        |   21 --
+>  drivers/net/e1000e/es2lan.c       |   27 ++--
+>  drivers/net/e1000e/ethtool.c      |   37 ++--
+>  drivers/net/e1000e/ich8lan.c      |   90 +++++----
+>  drivers/net/e1000e/lib.c          |  131 +++++++-------
+>  drivers/net/e1000e/netdev.c       |   95 +++++-----
+>  drivers/net/e1000e/param.c        |   20 +-
+>  drivers/net/e1000e/phy.c          |  114 ++++++------
+>  drivers/net/igb/e1000_82575.c     |   58 +++---
+>  drivers/net/igb/e1000_hw.h        |   12 +-
+>  drivers/net/igb/e1000_mac.c       |   84 ++++----
+>  drivers/net/igb/e1000_nvm.c       |   22 +-
+>  drivers/net/igb/e1000_phy.c       |  104 +++++-----
+>  drivers/net/igb/igb.h             |    1 -
+>  drivers/net/igb/igb_ethtool.c     |    6 +-
+>  drivers/net/igb/igb_main.c        |   43 ++---
+>  drivers/net/ixgb/ixgb.h           |    8 +-
+>  drivers/net/ixgb/ixgb_ee.c        |   14 +-
+>  drivers/net/ixgb/ixgb_hw.c        |  147 ++++++---------
+>  drivers/net/ixgb/ixgb_hw.h        |   12 --
+>  drivers/net/ixgb/ixgb_main.c      |   33 ++--
+>  drivers/net/ixgb/ixgb_osdep.h     |   16 +--
+>  drivers/net/ixgb/ixgb_param.c     |   31 ++--
+>  drivers/net/ixgbe/ixgbe.h         |    6 -
+>  drivers/net/ixgbe/ixgbe_common.h  |   15 +-
+>  drivers/net/ixgbe/ixgbe_dcb_nl.c  |    5 +-
+>  drivers/net/ixgbe/ixgbe_ethtool.c |   40 +++--
+>  drivers/net/ixgbe/ixgbe_fcoe.c    |   25 ++--
+>  drivers/net/ixgbe/ixgbe_main.c    |  110 +++++------
+>  drivers/net/ixgbe/ixgbe_phy.c     |    2 +
+>  drivers/net/ixgbe/ixgbe_sriov.c   |   11 +-
+>  drivers/net/myri10ge/myri10ge.c   |  183 +++++++-----------
+>  46 files changed, 1202 insertions(+), 1351 deletions(-)
+>
 
-> On Wed, 24 Feb 2010, KAMEZAWA Hiroyuki wrote:
-> 
-> > > > > This allows us to hijack the TIF_MEMDIE bit to detect when there is a 
-> > > > > parallel pagefault oom killing when the oom killer hasn't necessarily been 
-> > > > > invoked to kill a system-wide task (it's simply killing current, by 
-> > > > > default, and giving it access to memory reserves).  Then, we can change 
-> > > > > out_of_memory(), which also now handles memcg oom conditions, to always 
-> > > > > scan the tasklist first (including for mempolicy and cpuset constrained 
-> > > > > ooms), check for any candidates that have TIF_MEMDIE, and return 
-> > > > > ERR_PTR(-1UL) if so.  That catches the parallel pagefault oom conditions 
-> > > > > from needlessly killing memcg tasks.  panic_on_oom would only panic after 
-> > > > > the tasklist scan has completed and returned != ERR_PTR(-1UL), meaning 
-> > > > > pagefault ooms are exempt from that sysctl.
-> > > > > 
-> > > > Sorry, I see your concern but I'd like not to do clean-up and bug-fix at
-> > > > the same time.  
-> > > > 
-> > > > I think clean up after fix is easy in this case.
-> > > > 
-> > > 
-> > > If you develop on top of my oom killer rewrite, pagefault ooms already 
-> > > attempt to kill current first and then defer back to killing another task 
-> > > if current is unkillable.  
-> > 
-> > After my fix, page_fault_out_of_memory is never called. (because memcg doesn't
-> > return needless failure.)
-> > 
-> 
-> Of course it's called, it's called from the pagefault handler whenever we 
-> return VM_FAULT_OOM.  Whenever that happens, we'd needlessly panic the 
-> machine for panic_on_oom if we didn't do the tasklist scan and check for 
-> eligible tasks with TIF_MEMDIE set because it prefers to kill current 
-> first in pagefault conditions without consideration given to the sysctl.  
-> pagefault_out_of_memory() has changed radically with my rewrite, so I'd 
-> encourage you to develop on top of that where I've completely removed 
-> mem_cgroup_oom_called() and memcg->last_oom_jiffies already because 
-> they're nonsense.
-> 
-> My patches are available from 
-> http://www.kernel.org/pub/linux/kernel/people/rientjes/oom-killer-rewrite
-> 
+I have applied patches 3-7 (the patches to Intel drivers) to my queue
+of patches for review and testing.
 
-I do by myself.
-
-Bye.
--Kame
-
-> Thanks.
-> 
-
+-- 
+Cheers,
+Jeff
