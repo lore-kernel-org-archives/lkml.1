@@ -1,128 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285Ab0BXQVq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 11:21:46 -0500
-Received: from cantor.suse.de ([195.135.220.2]:49197 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757266Ab0BXQVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 11:21:45 -0500
-Date: Wed, 24 Feb 2010 17:21:52 +0100
-From: Jan Kara <jack@suse.cz>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] udf: use ext2_find_next_bit
-Message-ID: <20100224162152.GK3687@quack.suse.cz>
-References: <1266934273-9371-1-git-send-email-akinobu.mita@gmail.com>
+	id S1757298Ab0BXQXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 11:23:22 -0500
+Received: from mail1.slb.deg.dub.stisp.net ([84.203.253.98]:6224 "HELO
+	mail1.slb.deg.dub.stisp.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757270Ab0BXQXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 11:23:21 -0500
+Message-ID: <4B855140.7030408@draigBrady.com>
+Date: Wed, 24 Feb 2010 16:18:08 +0000
+From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266934273-9371-1-git-send-email-akinobu.mita@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>
+CC: linux-kernel@vger.kernel.org, wim@iguana.be, seth.heasley@intel.com
+Subject: Re: [PATCH] iTCO_wdt: Don't double the requested timeout
+References: <20100223164019.60a6de1a@marrow.netinsight.se>	<4B840154.1010501@draigBrady.com>	<4B840BC6.9090809@draigBrady.com> <20100224101618.39c3468b@marrow.netinsight.se>
+In-Reply-To: <20100224101618.39c3468b@marrow.netinsight.se>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 23-02-10 23:11:13, Akinobu Mita wrote:
-> Use ext2_find_next_bit (generic_find_next_le_bit) to find the set bit
-> in little endian bitmap region.
-> 
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Jan Kara <jack@suse.cz>
-  I've looked at the code and I think this is wrong. UDF uses 1 for free
-block in the bitmap and 0 for used one. So you need to use
-generic_find_next_le_bit...
-  Something like the patch below?
+On 24/02/10 09:16, Simon Kagstrom wrote:
+> On Tue, 23 Feb 2010 17:09:26 +0000
+> Pádraig Brady<P@draigBrady.com>  wrote:
+>
+>> Actually looking at that code I noticed that it wasn't
+>> accounting for the timer counting down twice before reboot,
+>> which I thought was the case for ICH4 at least.
+>> The following is not even compiled, nor am I sure it
+>> applies to TCO v2. Testing/info appreciated.
+>
+> I tested your change on our TCO v1-based board, and it doubles the time
+> until the watchdog triggers. So:
 
-								Honza
+Well it should be halving the timeout :)
+I amended the patch and Simon retested to verify
+that it now honors the requested timeout.
 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
+I also checked an ICH7 box here and it doesn't
+seem to need the adjustment, so I've amended the patch accordingly.
 
->From bfc8c674188d4be5856e445f9b57e1b7a3dbff6d Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Wed, 24 Feb 2010 17:18:57 +0100
-Subject: [PATCH] udf: Use generic function for bit searching
+Wim, please apply, thanks...
 
-Use generic_find_next_le_bit to search for bits in bitmap so
-that we don't duplicate code unnecessarily.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/udf/balloc.c |   51 ++-------------------------------------------------
- 1 files changed, 2 insertions(+), 49 deletions(-)
+iTCO_wdt: fix TCO V1 timeout values and limits
 
-diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
-index 82372e3..f5ff06c 100644
---- a/fs/udf/balloc.c
-+++ b/fs/udf/balloc.c
-@@ -31,55 +31,8 @@
- #define udf_clear_bit(nr, addr) ext2_clear_bit(nr, addr)
- #define udf_set_bit(nr, addr) ext2_set_bit(nr, addr)
- #define udf_test_bit(nr, addr) ext2_test_bit(nr, addr)
--#define udf_find_first_one_bit(addr, size) find_first_one_bit(addr, size)
- #define udf_find_next_one_bit(addr, size, offset) \
--		find_next_one_bit(addr, size, offset)
--
--#define leBPL_to_cpup(x) leNUM_to_cpup(BITS_PER_LONG, x)
--#define leNUM_to_cpup(x, y) xleNUM_to_cpup(x, y)
--#define xleNUM_to_cpup(x, y) (le ## x ## _to_cpup(y))
--#define uintBPL_t uint(BITS_PER_LONG)
--#define uint(x) xuint(x)
--#define xuint(x) __le ## x
--
--static inline int find_next_one_bit(void *addr, int size, int offset)
--{
--	uintBPL_t *p = ((uintBPL_t *) addr) + (offset / BITS_PER_LONG);
--	int result = offset & ~(BITS_PER_LONG - 1);
--	unsigned long tmp;
--
--	if (offset >= size)
--		return size;
--	size -= result;
--	offset &= (BITS_PER_LONG - 1);
--	if (offset) {
--		tmp = leBPL_to_cpup(p++);
--		tmp &= ~0UL << offset;
--		if (size < BITS_PER_LONG)
--			goto found_first;
--		if (tmp)
--			goto found_middle;
--		size -= BITS_PER_LONG;
--		result += BITS_PER_LONG;
--	}
--	while (size & ~(BITS_PER_LONG - 1)) {
--		tmp = leBPL_to_cpup(p++);
--		if (tmp)
--			goto found_middle;
--		result += BITS_PER_LONG;
--		size -= BITS_PER_LONG;
--	}
--	if (!size)
--		return result;
--	tmp = leBPL_to_cpup(p);
--found_first:
--	tmp &= ~0UL >> (BITS_PER_LONG - size);
--found_middle:
--	return result + ffz(~tmp);
--}
--
--#define find_first_one_bit(addr, size)\
--	find_next_one_bit((addr), (size), 0)
-+		generic_find_next_le_bit((unsigned long *)addr, size, offset)
- 
- static int read_block_bitmap(struct super_block *sb,
- 			     struct udf_bitmap *bitmap, unsigned int block,
-@@ -356,7 +309,7 @@ repeat:
- 				break;
- 			}
- 		} else {
--			bit = udf_find_next_one_bit((char *)bh->b_data,
-+			bit = udf_find_next_one_bit(bh->b_data,
- 						    sb->s_blocksize << 3,
- 						    group_start << 3);
- 			if (bit < sb->s_blocksize << 3)
--- 
-1.6.4.2
+For TCO V1 devices the programmed timeout was twice too long
+because the fact that the TCO V1 timer needs to count down
+twice before triggering the watchdog, wasn't accounted for.
+Also the timeout values in the module description and error
+message were clarified.
 
+Signed-off-by: Pádraig Brady <P@draigBrady.com>
+Tested-by: Simon Kagstrom <simon.kagstrom@netinsight.se>
+
+--- a/iTCO_wdt.c        2010-02-24 13:43:54.815676860 +0000
++++ b/iTCO_wdt.c        2010-02-24 15:18:33.341640363 +0000
+@@ -304,8 +304,8 @@
+  #define WATCHDOG_HEARTBEAT 30  /* 30 sec default heartbeat */
+  static int heartbeat = WATCHDOG_HEARTBEAT;  /* in seconds */
+  module_param(heartbeat, int, 0);
+-MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. "
+-       "(2<heartbeat<39 (TCO v1) or 613 (TCO v2), default="
++MODULE_PARM_DESC(heartbeat, "Watchdog timeout in seconds. "
++       "(5..76 (TCO v1) or 3..614 (TCO v2), default="
+                                 __MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
+
+  static int nowayout = WATCHDOG_NOWAYOUT;
+@@ -321,8 +321,12 @@
+  static inline unsigned int seconds_to_ticks(int seconds)
+  {
+         /* the internal timer is stored as ticks which decrement
+-        * every 0.6 seconds */
+-       return (seconds * 10) / 6;
++        * every 0.6 seconds. For TCO v1 the timer counts down
++        * twice before triggering the watchdog */
++       if (iTCO_wdt_private.iTCO_version == 1)
++               return (seconds * 5) / 6;
++       else
++               return (seconds * 10) / 6;
+  }
+
+  static void iTCO_wdt_set_NO_REBOOT_bit(void)
+@@ -756,9 +760,14 @@
+            if not reset to the default */
+         if (iTCO_wdt_set_heartbeat(heartbeat)) {
+                 iTCO_wdt_set_heartbeat(WATCHDOG_HEARTBEAT);
++               int tco_min=5; int tco_max=76; /* TCO V1 */
++               if (iTCO_wdt_private.iTCO_version == 2) {
++                       tco_min=3; tco_max=614;
++               }
+                 printk(KERN_INFO PFX
+-                       "heartbeat value must be 2 < heartbeat < 39 (TCO v1) "
+-                               "or 613 (TCO v2), using %d\n", heartbeat);
++                       "timeout value %d is not between %d and %d"
++                       " inclusive, using %d\n",
++                       heartbeat, tco_min, tco_max, WATCHDOG_HEARTBEAT);
+         }
+
+         ret = misc_register(&iTCO_wdt_miscdev);
