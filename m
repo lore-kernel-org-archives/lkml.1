@@ -1,74 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083Ab0BXP7I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 10:59:08 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:57898 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756880Ab0BXP7H (ORCPT
+	id S1757158Ab0BXP7K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:59:10 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:54468 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756886Ab0BXP7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Feb 2010 10:59:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=XG3aub7Sg7ly261cn0gR/c0ENepOV7rsAFqsQN+UfRXRNz2E+OBCis+sUGXbXfyhrL
-         8o/aMBEZ4xCRjt7OrjXFujza80oUvSjNgYIhF0JDcHBVNb/8sz9plO0pTRalCNgpnd9n
-         duUiatqhz2k2RyAo/kWHtEThbB/MXx+7HwjFw=
-Message-ID: <4B854CE1.9020505@gmail.com>
-Date: Wed, 24 Feb 2010 07:59:29 -0800
-From: "Justin P. mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+Date: Wed, 24 Feb 2010 10:59:05 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+In-Reply-To: <20100223221635.GP1025@kernel.dk>
+Message-ID: <Pine.LNX.4.44L0.1002241051470.2436-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug	 #14487]
- PANIC: early exception 08 rip 246:10 error	 ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de> <4B68D4CA.2010803@gmail.com> <4B8547D20200007800031047@vpn.id2.novell.com>
-In-Reply-To: <4B8547D20200007800031047@vpn.id2.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 06:37 AM, Jan Beulich wrote:
->>>> "Justin P. Mattock"<justinmattock@gmail.com>  03.02.10 02:43>>>
-> Could you try this simple patch (against plain 2.6.33-rc8)?
->
-> Thanks, Jan
->
-> --- a/arch/x86/include/asm/fixmap.h
-> +++ b/arch/x86/include/asm/fixmap.h
-> @@ -82,6 +82,9 @@ enum fixed_addresses {
->   #endif
->   	FIX_DBGP_BASE,
->   	FIX_EARLYCON_MEM_BASE,
-> +#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
-> +	FIX_OHCI1394_BASE,
-> +#endif
->   #ifdef CONFIG_X86_LOCAL_APIC
->   	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
->   #endif
-> @@ -126,9 +129,6 @@ enum fixed_addresses {
->   	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
->   			(__end_of_permanent_fixed_addresses&  255),
->   	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
-> -#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
-> -	FIX_OHCI1394_BASE,
-> -#endif
->   #ifdef CONFIG_X86_32
->   	FIX_WP_TEST,
->   #endif
->
->
->
+On Tue, 23 Feb 2010, Jens Axboe wrote:
 
+> > > And that's back to the question of whether or not that is a nice thing to
+> > > do. It seems a bit dirty, but otoh where else to do it. Perhaps just
+> > > using the kblockd to postpone the del_gendisk() to out-of-resume context
+> > > would be the best approach.
+> > 
+> > That would involve a layering violation, wouldn't it?  Either the 
+> > driver would have to interface with kblockd directly, or else 
+> > del_gendisk() would need to know whether the writeback task was frozen.
+> > 
+> > On the whole, I think it's best for the block layer to retain full
+> > control over its own tasks and requirements.
+> 
+> You would export such functionality - del_gendisk_deferred(), or
+> something like that. The kblockd suggestion was implementation detail,
+> not something the driver would concern itself with. It's not exactly
+> picture perfect, but it could be used from eg resume context where the
+> device isn't fully live yet.
 
-heres the bug report on this..
-http://bugzilla.kernel.org/show_bug.cgi?id=14487
+Hmm.  There's still no way for the driver to know whether or not the
+writeback task is frozen when it wants to call del_gendisk().  It
+would have to defer _all_ such calls.  And all hot-pluggable block
+drivers would have to do this -- would that be acceptable?
 
-Justin P. Mattock
+How about plugging the request queue instead of freezing the writeback 
+task?  Would that work?  It should be easy enough for a driver to 
+unplug the queue before unregistering its device from within a resume 
+method.
+
+Alan Stern
+
