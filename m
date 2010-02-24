@@ -1,65 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454Ab0BXWYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:24:48 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:61575 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758423Ab0BXWYp convert rfc822-to-8bit (ORCPT
+	id S1758430Ab0BXW3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:29:42 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:28363 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758406Ab0BXW3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:24:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ku/LDXwLfkbO+vs7xCBx7s9hfSKzLzSXGNxnw0KRoyyFdLI4sCglHJN4TqtXcLSiRy
-         hEUY592yeWStU9g2mb+/wYlcu73X7D406X+moUeWFazOiHOI8OyMFOImBDG9Ef2Qh2kd
-         PpMHaBd4w4cPBDy6MuPUQJmqX9US856Ff/eMQ=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.1002221357280.2701@utopia.booyaka.com>
-References: <4B781E05.9040502@gmail.com> <alpine.DEB.2.00.1002221357280.2701@utopia.booyaka.com>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Wed, 24 Feb 2010 23:24:23 +0100
-Message-ID: <25e057c01002241424s71cc447di4cb93de895cb665b@mail.gmail.com>
-Subject: Re: [PATCH] OMAP: Dereference of NULL autodep in _autodep_lookup()
-To: Paul Walmsley <paul@pwsan.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 24 Feb 2010 17:29:40 -0500
+Date: Wed, 24 Feb 2010 14:27:59 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: David Airlie <airlied@linux.ie>
+Subject: [PATCH] drm: fix char constant (sparse warning)
+Message-Id: <20100224142759.ad4f53ce.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B85A849.01F3:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks for the patch, but I don't understand what problem you're
-> pointing out.  If autodeps is NULL entering clkdm_init(), then the
-> for-loop won't even be entered.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-My first patch was wrong, but there's something I think could
-be wrong. In clkdm_init() we have:
+Fix radeon/atombios.h sparse warning (24 times):
 
-for (autodep = autodeps; autodep->pwrdm.ptr; autodep++)
-        _autodep_lookup(autodep);
+drivers/gpu/drm/radeon/atombios.h:4091:63: error: Bad character constant
 
-In _autodep_lookup() we ensure that we don't dereference
-autodep by:
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc:	David Airlie <airlied@linux.ie>
+---
+ drivers/gpu/drm/radeon/atombios.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-if (!autodep)
-        return;
-
-but if autodep can be NULL we already dereferenced it in
-the aforementioned for loop, so shouldn't that be:
-
-for (autodep = autodeps; autodep && autodep->pwrdm.ptr; autodep++)
-        _autodep_lookup(autodep);
-
-Then since this is the only call to _autodep_lookup() we can remove
-that test there. Do you agree?
-
-> It looks like there may be a problem, however, in _clkdm_add_autodeps()
-> and _clkdm_del_autodeps() if no autodeps were passed in.  What do you
-> think about something like the following instead?
->
->
-> - Paul
-
-Your suggested patch looks right to me as well.
+--- linux-2.6.33-rc8.orig/drivers/gpu/drm/radeon/atombios.h
++++ linux-2.6.33-rc8/drivers/gpu/drm/radeon/atombios.h
+@@ -4088,7 +4088,7 @@ typedef struct _SW_I2C_IO_DATA_PARAMETER
+ #define SW_I2C_CNTL_WRITE1BIT 6
+ 
+ /* ==============================VESA definition Portion=============================== */
+-#define VESA_OEM_PRODUCT_REV			            '01.00'
++#define VESA_OEM_PRODUCT_REV			            "01.00"
+ #define VESA_MODE_ATTRIBUTE_MODE_SUPPORT	     0xBB	/* refer to VBE spec p.32, no TTY support */
+ #define VESA_MODE_WIN_ATTRIBUTE						     7
+ #define VESA_WIN_SIZE											     64
