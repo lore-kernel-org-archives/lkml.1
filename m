@@ -1,42 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108Ab0BXUuP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:50:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60664 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758041Ab0BXUuN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:50:13 -0500
-Date: Wed, 24 Feb 2010 12:50:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Daniel Walker <dwalker@fifo99.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.33 released
-In-Reply-To: <1267042804.30876.37.camel@c-dwalke-linux.qualcomm.com>
-Message-ID: <alpine.LFD.2.00.1002241247130.4513@localhost.localdomain>
-References: <alpine.LFD.2.00.1002241146140.4513@localhost.localdomain> <1267042804.30876.37.camel@c-dwalke-linux.qualcomm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1758130Ab0BXUwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:52:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44499 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758041Ab0BXUwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:52:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Wed, 24 Feb 2010 21:52:55 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux MM <linux-mm@kvack.org>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002232213.56455.rjw@sisk.pl> <9b2b86521002240823t126d5ad8nbd292da0f4090e6c@mail.gmail.com>
+In-Reply-To: <9b2b86521002240823t126d5ad8nbd292da0f4090e6c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002242152.55408.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 24 Feb 2010, Daniel Walker wrote:
+On Wednesday 24 February 2010, Alan Jenkins wrote:
+> On 2/23/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+...
+> > My guess is that the preallocated memory pages freed by
+> > free_unnecessary_pages() go into a place from where they cannot be taken for
+> > subsequent NOIO allocations.  I have no idea why that happens though.
+> >
+> > To test that theory you can try to change GFP_IOFS to GFP_KERNEL in the
+> > calls to clear_gfp_allowed_mask() in kernel/power/hibernate.c (and in
+> > kernel/power/suspend.c for completness).
 > 
-> Last merge window you mention you might do a one week merge window this
-> time around, are you still planning to do that?
+> Effectively forcing GFP_NOWAIT, so the allocation should fail instead
+> of hanging?
+> 
+> It seems to stop the hang, but I don't see any other difference - the
+> hibernation process isn't stopped earlier, and I don't get any new
+> kernel messages about allocation failures.  I wonder if it's because
+> GFP_NOWAIT triggers ALLOC_HARDER.
+> 
+> I have other evidence which argues for your theory:
+> 
+> [ successful s2disk, with forced NOIO (but not NOWAIT), and test code
+> as attached ]
+> 
+>  Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+>  1280 GFP_NOWAIT allocations of order 0 are possible
+>  640 GFP_NOWAIT allocations of order 1 are possible
+>  320 GFP_NOWAIT allocations of order 2 are possible
+> 
+> [ note - 1280 pages is the maximum test allocation used here.  The
+> test code is only accurate when talking about smaller numbers of free
+> pages ]
+> 
+>  1280 GFP_KERNEL allocations of order 0 are possible
+>  640 GFP_KERNEL allocations of order 1 are possible
+>  320 GFP_KERNEL allocations of order 2 are possible
+> 
+>  PM: Preallocating image memory...
+>  212 GFP_NOWAIT allocations of order 0 are possible
+>  102 GFP_NOWAIT allocations of order 1 are possible
+>  50 GFP_NOWAIT allocations of order 2 are possible
+> 
+>  Freeing all 90083 preallocated pages
+>  (and 0 highmem pages, out of 0)
+>  190 GFP_NOWAIT allocations of order 0 are possible
+>  102 GFP_NOWAIT allocations of order 1 are possible
+>  50 GFP_NOWAIT allocations of order 2 are possible
+>  1280 GFP_KERNEL allocations of order 0 are possible
+>  640 GFP_KERNEL allocations of order 1 are possible
+>  320 GFP_KERNEL allocations of order 2 are possible
+>  done (allocated 90083 pages)
+> 
+> It looks like you're right and the freed pages are not accessible with
+> GFP_NOWAIT for some reason.
 
-No. But I might do a ten-to-twelve day thing or something like that - just 
-to make sure that anybody who tries to game the system and send their 
-merge request late will get summarily ignored.
+I'd expect this, really.  There only is a limited number of pages you can
+allocate with GFP_NOWAIT.
 
-So I'm going to stop being so predictable that people can tell that 
-exactly two weeks after the last release is where the merge window closes, 
-and if people want to make sure their stuff merged, I had better have a 
-merge request in my inbox earlier than thirteen days after the release.
+> I also tried a number of test runs with too many applications, and saw this:
+> 
+> Freeing all 104006 preallocated pages ...
+> 65 GFP_NOWAIT allocations of order 0 ...
+> 18 GFP_NOWAIT allocations of order 1 ...
+> 9 GFP_NOWAIT allocations of order 2 ...
+> 0 GFP_KERNEL allocations of order 0 are possible
+> ...
 
-		Linus
+Now that's interesting.  We've just freed 104006 pages and we can't allocate
+any, so where did all of these freed pages go, actually?
+
+OK, I think I see what the problem is.  Quite embarassing, actually ...
+
+Can you check if the patch below helps?
+
+Rafael
+
+---
+ kernel/power/snapshot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1181,7 +1181,7 @@ static void free_unnecessary_pages(void)
+ 
+ 	memory_bm_position_reset(&copy_bm);
+ 
+-	while (to_free_normal > 0 && to_free_highmem > 0) {
++	while (to_free_normal > 0 || to_free_highmem > 0) {
+ 		unsigned long pfn = memory_bm_next_pfn(&copy_bm);
+ 		struct page *page = pfn_to_page(pfn);
+ 
