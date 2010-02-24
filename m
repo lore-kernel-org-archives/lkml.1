@@ -1,91 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757713Ab0BXT1y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 14:27:54 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54422 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757652Ab0BXT1x convert rfc822-to-8bit (ORCPT
+	id S1757746Ab0BXTaN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 14:30:13 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:44560
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757731Ab0BXTaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 14:27:53 -0500
-Subject: Re: [PATCH 11/11] KVM: SVM: Optimize nested svm msrpm merging
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1267034360-5907-12-git-send-email-joerg.roedel@amd.com>
-Date: Wed, 24 Feb 2010 20:27:50 +0100
-Cc: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8BIT
-Message-Id: <402BABD5-304A-47EA-B35C-D0E3948BB27E@suse.de>
-References: <1267034360-5907-1-git-send-email-joerg.roedel@amd.com> <1267034360-5907-12-git-send-email-joerg.roedel@amd.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-X-Mailer: Apple Mail (2.1077)
+	Wed, 24 Feb 2010 14:30:11 -0500
+Date: Wed, 24 Feb 2010 11:29:59 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: phil@ipom.com, usb-storage@lists.one-eyed-alien.net,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [usb-storage] [PATCH] [resend] unusual_devs.h: Fix capacity for SL11R-IDE 2.6c
+Message-ID: <20100224192959.GJ20232@one-eyed-alien.net>
+Mail-Followup-To: Ondrej Zary <linux@rainbow-software.org>, phil@ipom.com,
+	usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <201002241141.10103.linux@rainbow-software.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vKFfOv5t3oGVpiF+"
+Content-Disposition: inline
+In-Reply-To: <201002241141.10103.linux@rainbow-software.org>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2010 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Wed, 24 Feb 2010 11:30:00 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On 24.02.2010, at 18:59, Joerg Roedel wrote:
+--vKFfOv5t3oGVpiF+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> This patch optimizes the way the msrpm of the host and the
-> guest are merged. The old code merged the 2 msrpm pages
-> completly. This code needed to touch 24kb of memory for that
-> operation. The optimized variant this patch introduces
-> merges only the parts where the host msrpm may contain zero
-> bits. This reduces the amount of memory which is touched to
-> 48 bytes.
+On Wed, Feb 24, 2010 at 11:41:08AM +0100, Ondrej Zary wrote:
+> SL11R-IDE 2.6c (at least) reports wrong capacity (one sector more).
+> Reading that last sector causes the device not to work anymore (and looks
+> like HAL or something does that automatically after plugging in):
+> sd 5:0:0:0: [sdc] Device not ready
+> sd 5:0:0:0: [sdc] Result: hostbyte=3D0x00 driverbyte=3D0x08
+> sd 5:0:0:0: [sdc] Sense Key : 0x2 [current]
+> sd 5:0:0:0: [sdc] ASC=3D0x0 ASCQ=3D0x0
+> sd 5:0:0:0: [sdc] CDB: cdb[0]=3D0x28: 28 00 04 a8 b5 70 00 00 01 00
+>=20
+> Add unusual_devs entry to fix the capacity.
 
-Nice catch!
+Why not just adjust the version range of the entry above where you added a
+new one?
 
-> 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
-> arch/x86/kvm/svm.c |   45 ++++++++++++++++++++++++++++++++++++---------
-> 1 files changed, 36 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index ae2f211..eb25fea 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -754,6 +754,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
-> 	svm->nested.hsave = page_address(hsave_page);
-> 
-> 	svm->nested.msrpm = page_address(nested_msrpm_pages);
-> +	svm_vcpu_init_msrpm(svm->nested.msrpm);
-> 
-> 	svm->vmcb = page_address(page);
-> 	clear_page(svm->vmcb);
-> @@ -1824,20 +1825,46 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
-> 
-> static bool nested_svm_vmrun_msrpm(struct vcpu_svm *svm)
-> {
-> -	u32 *nested_msrpm;
-> -	struct page *page;
-> +	/*
-> +	 * This function merges the msr permission bitmaps of kvm and the
-> +	 * nested vmcb. It is omptimized in that it only merges the parts where
-> +	 * the kvm msr permission bitmap may contain zero bits
-> +	 */
-> +	static const u32 msrpm_offsets[] = {
-> +		0x0000002c, /* SYSENTER_CS */
-> +
-> +		0x00000038, /* LASTBRANCHFROMIP
-> +			       LASTBRANCHTOIP
-> +			       LASTINTFROMIP
-> +			       LASTINTTOIP */
-> +
-> +		0x00000820, /* STAR
-> +			       LSTAR
-> +			       CSTAR
-> +			       SYSCALL_MASK */
-> +
-> +		0x00000840, /* FS_BASE
-> +			       GS_BASE
-> +			       KERNEL_GS_BASE */
-> +
-> +		0xffffffff, /* End of List */
+If you just expand the upper version of the previous entry, it should cover
+both devices.
 
-Isn't there such a list around somewhere already? We really should only keep this list once throughout the whole code. If necessary, just create the list on the fly when bits get set in the msrpm.
+Matt
 
-Alex
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
 
+Oh BAY-bee.
+					-- Dust Puppy to Greg
+User Friendly, 12/13/1997
+
+--vKFfOv5t3oGVpiF+
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFLhX43HL9iwnUZqnkRAlHJAJ9RuAOOshTSwcHWPejzr/RfabzPngCcD4VC
+vqhCIR5x1D9F1FW6IUQasGY=
+=Z9Yn
+-----END PGP SIGNATURE-----
+
+--vKFfOv5t3oGVpiF+--
