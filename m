@@ -1,73 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949Ab0BXO4h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 09:56:37 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45849 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755649Ab0BXO4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 09:56:36 -0500
-Date: Wed, 24 Feb 2010 15:56:43 +0100
-From: Jan Kara <jack@suse.cz>
-To: Dave Chinner <david@fromorbit.com>
-Cc: tytso@mit.edu, Jan Kara <jack@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
-       stable@kernel.org, gregkh@suse.de
-Subject: Re: [PATCH] writeback: Fix broken sync writeback
-Message-ID: <20100224145642.GJ3687@quack.suse.cz>
-References: <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
- <20100217013336.GK3153@quack.suse.cz>
- <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
- <20100217043009.GZ5337@thunk.org>
- <alpine.LFD.2.00.1002162052230.4141@localhost.localdomain>
- <20100222172938.GA2601@quack.suse.cz>
- <20100222210112.GE23832@thunk.org>
- <20100223025350.GC22370@discord.disaster>
- <20100223032317.GG23832@thunk.org>
- <20100223055335.GE22370@discord.disaster>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100223055335.GE22370@discord.disaster>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756048Ab0BXPEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 10:04:50 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58711 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073Ab0BXPEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 10:04:49 -0500
+Date: Wed, 24 Feb 2010 17:04:47 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+cc: x86@kernel.org, linux-kernel@vger.kernel.org, yinghai@kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: [RFT/PATCH] x86: Unify kernel_physical_mapping_init() API
+Message-ID: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 23-02-10 16:53:35, Dave Chinner wrote:
-> > > > This is done to avoid a lock inversion, and so this is an
-> > > > ext4-specific thing (at least I don't think XFS's delayed allocation
-> > > > has this misfeature).
-> > > 
-> > > Not that I know of, but then again I don't know what inversion ext4
-> > > is trying to avoid. Can you describe the inversion, Ted?
-> > 
-> > The locking order is journal_start_handle (starting a micro
-> > transaction in jbd) -> lock_page.  A more detailed description of why
-> > this locking order is non-trivial for us to fix in ext4 can be found
-> > in the description of commit f0e6c985.
-> 
-> Nasty - you need to start a transaction before you lock pages for
-> writeback and allocation, but ->writepage hands you a locked page.
-> And you can't use an existing transaction handle open because you
-> can't guarantee that you have journal credits reserved for the
-> allocation?
-  Exactly.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> IIUC, ext3/4 has this problem due to the ordered data writeback
-> constraints, right?
-  Not quite. I don't know how XFS solves this but in ext3/4 starting
-a transaction can block (waiting for journal space) until all users of
-a previous transaction are done with it and we can commit it. Thus
-the transaction start / stop behave just as an ordinary lock. Because
-you need a transaction started when writing a page (for metadata updates)
-there is some lock ordering forced between a page lock and a trasaction
-start / stop. Ext4 chose it to be transaction -> page lock (which makes
-writepages more efficient and writepage hard), ext3 has page lock ->
-transaction (so it has working ->writepage).
+This patch changes the 32-bit version of kernel_physical_mapping_init() to
+return the last mapped address like the 64-bit one so that we can unify the
+call-site in init_memory_mapping().
 
-								Honza
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Note: I have only tested this on VirtualBox which is why I tagged the patch as
+RFT.
+
+  arch/x86/mm/init.c    |    7 -------
+  arch/x86/mm/init_32.c |    8 +++++---
+  2 files changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index d406c52..e71c5cb 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+  	if (!after_bootmem)
+  		find_early_table_space(end, use_pse, use_gbpages);
+
+-#ifdef CONFIG_X86_32
+-	for (i = 0; i < nr_range; i++)
+-		kernel_physical_mapping_init(mr[i].start, mr[i].end,
+-					     mr[i].page_size_mask);
+-	ret = end;
+-#else /* CONFIG_X86_64 */
+  	for (i = 0; i < nr_range; i++)
+  		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
+  						   mr[i].page_size_mask);
+-#endif
+
+  #ifdef CONFIG_X86_32
+  	early_ioremap_page_table_range_init();
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 9a0c258..2226f2c 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
+  			     unsigned long page_size_mask)
+  {
+  	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
++	unsigned long last_map_addr = end;
+  	unsigned long start_pfn, end_pfn;
+  	pgd_t *pgd_base = swapper_pg_dir;
+  	int pgd_idx, pmd_idx, pte_ofs;
+@@ -341,9 +342,10 @@ repeat:
+  					prot = PAGE_KERNEL_EXEC;
+
+  				pages_4k++;
+-				if (mapping_iter == 1)
++				if (mapping_iter == 1) {
+  					set_pte(pte, pfn_pte(pfn, init_prot));
+-				else
++					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
++				} else
+  					set_pte(pte, pfn_pte(pfn, prot));
+  			}
+  		}
+@@ -368,7 +370,7 @@ repeat:
+  		mapping_iter = 2;
+  		goto repeat;
+  	}
+-	return 0;
++	return last_map_addr;
+  }
+
+  pte_t *kmap_pte;
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.5.6.4
+
