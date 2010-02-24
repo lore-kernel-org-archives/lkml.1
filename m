@@ -1,111 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320Ab0BXWSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:18:39 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53854 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758190Ab0BXWSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:18:37 -0500
-Date: Wed, 24 Feb 2010 14:18:34 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [PATCH 00/10] __rcu annotations, first draft
-Message-ID: <20100224221834.GJ6980@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100223180127.GF6700@linux.vnet.ibm.com> <1267041846-10469-1-git-send-email-arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267041846-10469-1-git-send-email-arnd@arndb.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1758383Ab0BXWWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:22:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36916 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758337Ab0BXWWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 17:22:09 -0500
+X-Authority-Analysis: v=1.0 c=1 a=0-XWFxDPI_sA:10 a=7U3hwN5JcxgA:10 a=Z4Rwk6OoAAAA:8 a=9e_8kkgDhmDViemghRgA:9 a=OGZhcf5DYZqcR-sMUNm_oLhuHqsA:4 a=jbrJJM5MRmoA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: + kernelh-printk-panic-string-cleanup.patch added to -mm tree
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       hidave.darkstar@gmail.com, gregkh@suse.de,
+       kosaki.motohiro@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20100224213406.GA7491@nowhere>
+References: <201002242107.o1OL7F6v020376@imap1.linux-foundation.org>
+	 <20100224213406.GA7491@nowhere>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 24 Feb 2010 17:21:59 -0500
+Message-ID: <1267050119.24271.7820.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 09:03:56PM +0100, Arnd Bergmann wrote:
-> On Tuesday 23 February 2010, Paul E. McKenney wrote:
-> > > I've just started an experimental implementation and got stuck at list rcu.
-> > > The two to deal with it that I can see are
-> > > - ignore list-rcu for now, and make all include/linux/rculist.h __force the
-> > >   problem to be ignored.
-> > > - introduce a new struct rcu_list_head that needs to be used for list rcu.
-> > >
-> > > A nicer option might be if sparse would let you write
-> > > 'struct list_head __rcu head' and interpret that as having the pointers
-> > > inside it annotated as __rcu.
-> >
-> > Only the "next" pointer, not the "prev" pointer, but yes.
-> >
-> > Perhaps it would be best to see if the sparse guys are willing to take
-> > this on?
-> 
-> I've implemented the second option now, and this seems to work alright.
-> In order to test this out, I've annotated all rcu users in the kernel
-> directory. One observation is that many members of task_struct are
-> using RCU inconsistently. I'm not sure whether these should be considered
-> bugs or false positives though. If we get a lot of false positives or
-> people are generally unhappy about the annotations, they are not worth
-> it, but if we find a few actual bugs, I guess it would be good to
-> have this.
-> 
-> Examples of pointers that I did not annotate because most of the
-> places accessing them do not use RCU are task->sighand, task->nsproxy,
-> and task->real_parent.
-> 
-> Sorry for hijacking the discussion on your patch, but I assume that
-> the same people interested in the lockdep diagnostics are also
-> interested in the static annotations for RCU.
+On Wed, 2010-02-24 at 22:34 +0100, Frederic Weisbecker wrote:
+> On Wed, Feb 24, 2010 at 01:07:15PM -0800, akpm@linux-foundation.org wrote:
+> > 
 
-No need to apologize, this is an interesting option!
+> That said, it's probably sane to think about a new header to put
+> these tracing prototypes, if it's included by kernel.h,
+> linux/ftrace.h is already filled with non-general purpose things.
+> So may be linux/trace.h ? Yeah this could be confusing, Steve what
+> do you think?
+> 
+> And all in one, it would probably better to split this in three
+> patches: one that moves printk helpers out of kernel.h to printk.h,
+> another following the same pattern for panic things and another one
+> for tracing things.
 
-							Thanx, Paul
+Yeah, I'm fine with moving the tracing related stuff in kernel.h into a
+trace.h file and keep ftrace.h specific to ftrace in general.
 
-> 	Arnd
-> 
-> Arnd Bergmann (10):
->   rcu: define __rcu address space modifier for sparse
->   rcu: annotated list rcu code
->   cgroups: __rcu annotations
->   credentials: rcu annotation
->   perf_event: __rcu annotations
->   audit: __rcu annotations
->   module: __rcu annotations
->   pid: __rcu annotations
->   notifiers: __rcu annotations
->   scheduler: __rcu annotations
-> 
->  include/linux/cgroup.h     |    6 +-
->  include/linux/compiler.h   |    2 +
->  include/linux/cred.h       |    4 +-
->  include/linux/fdtable.h    |    2 +-
->  include/linux/init_task.h  |    6 +-
->  include/linux/module.h     |    4 +-
->  include/linux/notifier.h   |   10 ++--
->  include/linux/perf_event.h |   10 ++--
->  include/linux/pid.h        |    9 ++-
->  include/linux/rculist.h    |  152 ++++++++++++++++++++++++++++++++------------
->  include/linux/rcupdate.h   |   46 ++++++++++++--
->  include/linux/sched.h      |   14 ++--
->  kernel/audit.c             |    4 +-
->  kernel/audit.h             |    6 +-
->  kernel/audit_tree.c        |   14 ++--
->  kernel/auditfilter.c       |   28 ++++----
->  kernel/auditsc.c           |    8 +-
->  kernel/cgroup.c            |   63 ++++++++++---------
->  kernel/cpuset.c            |    2 +-
->  kernel/cred.c              |   50 ++++++++-------
->  kernel/exit.c              |   12 ++--
->  kernel/fork.c              |    6 +-
->  kernel/module.c            |   20 ++++--
->  kernel/notifier.c          |   12 ++--
->  kernel/perf_event.c        |   52 ++++++++--------
->  kernel/pid.c               |    8 +-
->  kernel/sched.c             |   31 +++++----
->  27 files changed, 352 insertions(+), 229 deletions(-)
-> 
+But I still find it necessary that trace.h gets included by kernel.h.
+
+I can just imaging Thomas yelling at me more when he adds a
+tracing_off() or trace_printk() somewhere and then gets a warning about
+it not being declared.
+
+I also gave that patch a NAK, in case that carries any weight.
+
+-- Steve
+
+
