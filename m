@@ -1,115 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951Ab0BXCd0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 21:33:26 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:61015 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867Ab0BXCdY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 21:33:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UE+Knc2yLdTb7+IdmM6e8GScjDTsF6apwIeQkqU+vKunpDNLg05ANoMXarjGmLW+gh
-         yi0nJA6pAxZDm/DXodkx3r90V4O1DKrDmRwqWl1MgltzhgAlHqmlXX9FweR9vd/jlvHL
-         5m3JzlW8phF+4YsH/WPeGZGrkpwJOAeJtiUTs=
-MIME-Version: 1.0
-In-Reply-To: <cover.1266893507.git.joe@perches.com>
-References: <cover.1266893507.git.joe@perches.com>
-Date: Tue, 23 Feb 2010 18:33:23 -0800
-X-Google-Sender-Auth: b457a366869f01bf
-Message-ID: <9929d2391002231833j65008a1ev1d2297672a39a483@mail.gmail.com>
-Subject: Re: [PATCH net-next 0/7] drivers/net conversions to netdev_<level>, 
-	etc
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Joe Perches <joe@perches.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       Alex Duyck <alexander.h.duyck@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       Andrew Gallatin <gallatin@myri.com>, Brice Goglin <brice@myri.com>,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1754103Ab0BXCdj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 21:33:39 -0500
+Received: from mx1.orcon.net.nz ([219.88.242.51]:47032 "EHLO mx1.orcon.net.nz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754032Ab0BXCdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 21:33:36 -0500
+X-Greylist: delayed 3462 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 21:33:36 EST
+Message-Id: <1EE1A83F-EB50-40F3-A6A0-5D8DE0B38446@orcon.net.nz>
+From: Michael Cree <mcree@orcon.net.nz>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: HW perf. events arch implementation
+Date: Wed, 24 Feb 2010 14:35:04 +1300
+Cc: linux-alpha@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+X-Mailer: Apple Mail (2.936)
+X-DSPAM-Check: by mx1.orcon.net.nz on Wed, 24 Feb 2010 14:35:52 +1300
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Wed Feb 24 14:35:52 2010
+X-DSPAM-Confidence: 0.6970
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 18:56, Joe Perches <joe@perches.com> wrote:
-> Some more conversions of drivers to:
->
->    netif_<level>
->    netdev_<level>
->    pr_<level>
->
-> with some other minor updates/corrections
-> noticed during conversions.
->
-> Joe Perches (7):
->  drivers/net/chelsio: Use pr_<level>, netif_msg_<type>
->  drivers/net/myri10ge: Use pr_<level> and netdev_<level>
->  drivers/net/ixgbe: Use pr_<level> and netif_<level>
->  drivers/net/ixgb: Use pr_<level> and netdev_<level>
->  drivers/net/e1000: Use pr_<level> and netif_<level>
->  drivers/net/e1000e: Use pr_<level> and netdev_<level>
->  drivers/net/igb: Use netdev_<level>
->
->  drivers/net/chelsio/common.h      |   24 +--
->  drivers/net/chelsio/cxgb2.c       |   18 +-
->  drivers/net/chelsio/espi.c        |    4 +-
->  drivers/net/chelsio/pm3393.c      |   16 +-
->  drivers/net/chelsio/sge.c         |   10 +-
->  drivers/net/chelsio/subr.c        |   32 ++--
->  drivers/net/chelsio/vsc7326.c     |   24 ++--
->  drivers/net/e1000/e1000.h         |   17 --
->  drivers/net/e1000/e1000_ethtool.c |   38 ++--
->  drivers/net/e1000/e1000_hw.c      |  383 ++++++++++++++++++-------------------
->  drivers/net/e1000/e1000_main.c    |  272 +++++++++++++-------------
->  drivers/net/e1000/e1000_osdep.h   |   14 +--
->  drivers/net/e1000/e1000_param.c   |  121 +++++++------
->  drivers/net/e1000e/82571.c        |   57 ++++--
->  drivers/net/e1000e/e1000.h        |   21 --
->  drivers/net/e1000e/es2lan.c       |   27 ++--
->  drivers/net/e1000e/ethtool.c      |   37 ++--
->  drivers/net/e1000e/ich8lan.c      |   90 +++++----
->  drivers/net/e1000e/lib.c          |  131 +++++++-------
->  drivers/net/e1000e/netdev.c       |   95 +++++-----
->  drivers/net/e1000e/param.c        |   20 +-
->  drivers/net/e1000e/phy.c          |  114 ++++++------
->  drivers/net/igb/e1000_82575.c     |   58 +++---
->  drivers/net/igb/e1000_hw.h        |   12 +-
->  drivers/net/igb/e1000_mac.c       |   84 ++++----
->  drivers/net/igb/e1000_nvm.c       |   22 +-
->  drivers/net/igb/e1000_phy.c       |  104 +++++-----
->  drivers/net/igb/igb.h             |    1 -
->  drivers/net/igb/igb_ethtool.c     |    6 +-
->  drivers/net/igb/igb_main.c        |   43 ++---
->  drivers/net/ixgb/ixgb.h           |    8 +-
->  drivers/net/ixgb/ixgb_ee.c        |   14 +-
->  drivers/net/ixgb/ixgb_hw.c        |  147 ++++++---------
->  drivers/net/ixgb/ixgb_hw.h        |   12 --
->  drivers/net/ixgb/ixgb_main.c      |   33 ++--
->  drivers/net/ixgb/ixgb_osdep.h     |   16 +--
->  drivers/net/ixgb/ixgb_param.c     |   31 ++--
->  drivers/net/ixgbe/ixgbe.h         |    6 -
->  drivers/net/ixgbe/ixgbe_common.h  |   15 +-
->  drivers/net/ixgbe/ixgbe_dcb_nl.c  |    5 +-
->  drivers/net/ixgbe/ixgbe_ethtool.c |   40 +++--
->  drivers/net/ixgbe/ixgbe_fcoe.c    |   25 ++--
->  drivers/net/ixgbe/ixgbe_main.c    |  110 +++++------
->  drivers/net/ixgbe/ixgbe_phy.c     |    2 +
->  drivers/net/ixgbe/ixgbe_sriov.c   |   11 +-
->  drivers/net/myri10ge/myri10ge.c   |  183 +++++++-----------
->  46 files changed, 1202 insertions(+), 1351 deletions(-)
->
+I am trying to implement arch specific code on the Alpha for hardware  
+performance events (yeah, I'm probably a little bit loopy and unsound  
+of mind pursuing this on an end-of-line platform, but it's a way in to  
+learn a little bit of kernel programming and it scratches an itch).
 
-I have applied patches 3-7 (the patches to Intel drivers) to my queue
-of patches for review and testing.
+I have taken a look at the code in the x86, sparc and ppc  
+implementations and tried to drum up an Alpha implementation for the  
+EV67/7/79 cpus, but it ain't working and is producing obviously  
+erroneous counts.  Part of the problem is that I don't understand  
+under what conditions, and with what assumptions, the performance  
+event subsystem is calling into the architecture specific code.  Is  
+there any documentation available that describes the architecture  
+specific interface?
 
--- 
-Cheers,
-Jeff
+The Alpha CPUs of interest have two 20-bit performance monitoring  
+counters that can count cycles, instructions, Bcache misses and Mbox  
+replays (but not all combinations of those).  For round numbers  
+consider a 1GHz CPU, with a theoretical maximal sustained throughput  
+of four instructions per cycle, then a single performance counter  
+could potentially generate 4000 interrupts per second to signal  
+counter overflow when counting instructions.
+
+The x86, sparc and PPC implementations seem to me to assume that calls  
+to read back the counters occur more frequently than performance  
+counter overflow interrupts, and that the highest bit of the counter  
+can safely be used to detect overflow.  (Am I correct?)  That is  
+likely not to be true of the Alpha because of the small width of the  
+counter.  Is there someone who would be happy to give me, a kernel  
+newbie who probably doesn't even make the grade of neophyte, a bit of  
+direction on this?
+
+Also, the Alpha CPUs have an interesting mode whereby one programmes  
+up one counter with a specified (or random) value that specifies a  
+future instruction to profile.  The CPU runs for that number of  
+instructions/cycles, then a short monitoring window (of a few cycles)  
+is opened about the profiled instruction and when completed an  
+interrupt is generated.  One can then read back a whole lot of  
+information about the pipeline at the time of the profiled  
+instruction.  This can be used for statistical sampling.  Does the  
+performance events subsystem support monitoring with such a mode?
+
+Cheers
+Michael.
+
