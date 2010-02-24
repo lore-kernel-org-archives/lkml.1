@@ -1,168 +1,142 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088Ab0BXUX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:23:57 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33682 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757798Ab0BXUXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:23:55 -0500
-Date: Wed, 24 Feb 2010 14:23:52 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: + nsproxy-remove-init_nsproxy.patch added to -mm tree
-Message-ID: <20100224202352.GA32098@us.ibm.com>
-References: <201002242005.o1OK5jbD017502@imap1.linux-foundation.org>
+	id S1757770Ab0BXU2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:28:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45750 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757582Ab0BXU2g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:28:36 -0500
+Date: Wed, 24 Feb 2010 21:28:27 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Borislav Petkov <petkovbb@googlemail.com>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, tglx@linutronix.de,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-tip-commits@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
+       Huang Ying <ying.huang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
+	mce_cpu_specific_poll
+Message-ID: <20100224202827.GA25414@basil.fritz.box>
+References: <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic> <20100216210215.GA9051@elte.hu> <20100222082840.GA3975@liondog.tnic> <20100222094739.GA20844@elte.hu> <4B8271AA.9060005@redhat.com> <4B856500.9030108@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002242005.o1OK5jbD017502@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B856500.9030108@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+On Wed, Feb 24, 2010 at 02:42:24PM -0300, Mauro Carvalho Chehab wrote:
+> Mauro Carvalho Chehab wrote:
+> > The EDAC data model needs some discussion, as, currently, the memory is represented 
+> > per csrow, and modern MCU don't allow such level of control (and it doesn't 
+> > make much sense on representing this way, as you can't replace a csrow). The 
+> > better is to use DIMM as the minumum unit.
 > 
-> The patch titled
->      nsproxy: remove INIT_NSPROXY()
-> has been added to the -mm tree.  Its filename is
->      nsproxy-remove-init_nsproxy.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: nsproxy: remove INIT_NSPROXY()
-> From: Alexey Dobriyan <adobriyan@gmail.com>
-> 
-> Remove INIT_NSPROXY(), use C99 initializer.
-> Remove INIT_IPC_NS(), INIT_NET_NS() while I'm at it.
-> 
-> Note: headers trim will be done later, now it's quite pointless because
-> results will be invalidated by merge window.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Cc: Serge Hallyn <serue@us.ibm.com>
+> Just to start the data model, this is what a typical EDAC driver presents:
 
-looks ok
+First I suspect the result wouldn't be too compatible with current EDAC,
+so it might be less confusing to give it a new name.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+> 
+> /sys/devices/system/edac/mc/mc0/                                                
+> |-- ce_count                                                                    
+> |-- ce_noinfo_count                                                             
+> |-- csrow0
+> |   |-- ce_count
+> |   |-- ch0_ce_count
+> |   |-- ch0_dimm_label
+> |   |-- ch1_ce_count
+> |   |-- ch1_dimm_label
+> |   |-- ch2_ce_count
+> |   |-- ch2_dimm_label
+> |   |-- ch3_ce_count
+> |   |-- ch3_dimm_label
+> |   |-- dev_type
+> |   |-- edac_mode
+> |   |-- mem_type
+> |   |-- size_mb
+> |   `-- ue_count
+> |-- csrow1                                                                      
+> |   |-- ce_count
+> |   |-- ch0_ce_count
+> |   |-- ch0_dimm_label
+> |   |-- ch1_ce_count
+> |   |-- ch1_dimm_label
+> |   |-- ch2_ce_count
+> |   |-- ch2_dimm_label
+> |   |-- ch3_ce_count
+> |   |-- ch3_dimm_label
+> |   |-- dev_type
+> |   |-- edac_mode
+> |   |-- mem_type
+> |   |-- size_mb
+> |   `-- ue_count
+> |-- device -> ../../../../pci0000:3f/0000:3f:03.0                               
+> |-- mc_name                                                                     
+> |-- reset_counters                                                              
+> |-- sdram_scrub_rate                                                            
+> |-- seconds_since_reset                                                         
+> |-- size_mb                                                                     
+> |-- ue_count                                                                    
+> `-- ue_noinfo_count                                                             
+> 
+> In the case of i7core_edac, there's no way to identify csrows by using
+> the public registers (I've no idea is is there any non-documented register
+> for it). So, the driver maps one dimm per "edac csrow".
 
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  include/linux/init_task.h     |    8 --------
->  include/linux/ipc_namespace.h |    5 -----
->  include/net/net_namespace.h   |    5 -----
->  kernel/nsproxy.c              |   13 ++++++++++++-
->  4 files changed, 12 insertions(+), 19 deletions(-)
-> 
-> diff -puN include/linux/init_task.h~nsproxy-remove-init_nsproxy include/linux/init_task.h
-> --- a/include/linux/init_task.h~nsproxy-remove-init_nsproxy
-> +++ a/include/linux/init_task.h
-> @@ -32,14 +32,6 @@ extern struct fs_struct init_fs;
->  }
-> 
->  extern struct nsproxy init_nsproxy;
-> -#define INIT_NSPROXY(nsproxy) {						\
-> -	.pid_ns		= &init_pid_ns,					\
-> -	.count		= ATOMIC_INIT(1),				\
-> -	.uts_ns		= &init_uts_ns,					\
-> -	.mnt_ns		= NULL,						\
-> -	INIT_NET_NS(net_ns)                                             \
-> -	INIT_IPC_NS(ipc_ns)						\
-> -}
-> 
->  #define INIT_SIGHAND(sighand) {						\
->  	.count		= ATOMIC_INIT(1), 				\
-> diff -puN include/linux/ipc_namespace.h~nsproxy-remove-init_nsproxy include/linux/ipc_namespace.h
-> --- a/include/linux/ipc_namespace.h~nsproxy-remove-init_nsproxy
-> +++ a/include/linux/ipc_namespace.h
-> @@ -62,11 +62,6 @@ extern struct ipc_namespace init_ipc_ns;
->  extern atomic_t nr_ipc_ns;
-> 
->  extern spinlock_t mq_lock;
-> -#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
-> -#define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
-> -#else
-> -#define INIT_IPC_NS(ns)
-> -#endif
-> 
->  #ifdef CONFIG_SYSVIPC
->  extern int register_ipcns_notifier(struct ipc_namespace *);
-> diff -puN include/net/net_namespace.h~nsproxy-remove-init_nsproxy include/net/net_namespace.h
-> --- a/include/net/net_namespace.h~nsproxy-remove-init_nsproxy
-> +++ a/include/net/net_namespace.h
-> @@ -100,14 +100,9 @@ struct net {
->  extern struct net init_net;
-> 
->  #ifdef CONFIG_NET
-> -#define INIT_NET_NS(net_ns) .net_ns = &init_net,
-> -
->  extern struct net *copy_net_ns(unsigned long flags, struct net *net_ns);
-> 
->  #else /* CONFIG_NET */
-> -
-> -#define INIT_NET_NS(net_ns)
-> -
->  static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
->  {
->  	/* There is nothing to copy so this is a noop */
-> diff -puN kernel/nsproxy.c~nsproxy-remove-init_nsproxy kernel/nsproxy.c
-> --- a/kernel/nsproxy.c~nsproxy-remove-init_nsproxy
-> +++ a/kernel/nsproxy.c
-> @@ -24,7 +24,18 @@
-> 
->  static struct kmem_cache *nsproxy_cachep;
-> 
-> -struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
-> +struct nsproxy init_nsproxy = {
-> +	.count	= ATOMIC_INIT(1),
-> +	.uts_ns	= &init_uts_ns,
-> +#if defined(CONFIG_POSIX_MQUEUE) || defined(CONFIG_SYSVIPC)
-> +	.ipc_ns	= &init_ipc_ns,
-> +#endif
-> +	.mnt_ns	= NULL,
-> +	.pid_ns	= &init_pid_ns,
-> +#ifdef CONFIG_NET
-> +	.net_ns	= &init_net,
-> +#endif
-> +};
-> 
->  static inline struct nsproxy *create_nsproxy(void)
->  {
-> _
-> 
-> Patches currently in -mm which might be from adobriyan@gmail.com are
-> 
-> origin.patch
-> linux-next.patch
-> bitops-rename-for_each_bit-to-for_each_set_bit.patch
-> arm-convert-proc-cpu-aligment-to-seq_file.patch
-> mpt-fusion-convert-to-seq_file.patch
-> proc-do-translation-unlink-atomically-at-remove_proc_entry.patch
-> proc-warn-on-non-existing-proc-entries.patch
-> tracehooks-kill-some-pt_ptraced-checks.patch
-> tracehooks-check-pt_ptraced-before-reporting-the-single-step.patch
-> ptrace_signal-check-pt_ptraced-before-reporting-a-signal.patch
-> export-__ptrace_detach-and-do_notify_parent_cldstop.patch
-> reorder-the-code-in-kernel-ptracec.patch
-> implement-utrace-ptrace.patch
-> utrace-core.patch
-> nsproxy-remove-init_nsproxy.patch
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Some thoughts on this:
+
+One of my goals would be that a fall back driver can create the information
+just from the SMBIOS (that is without error counts, although there
+are some cases those can be mapped from corrected MCEs)
+
+I think I would prefer a flat model:
+
+socket <-> DIMM 
+
+socket could be arbitary, either a CPU socket, or a external memory controller
+
+and then have a "path" string per DIMM that can be a arbitrary path to the DIMM,
+depending on the system: e.g. on a system with on board buffers it could
+include the buffer, the channel to the buffer and the channel behind
+the buffer. The string could be free form like a path name e.g. 
+
+FOO-CH1/DDR-CH2/DIMMa
+
+I think it doesn't make sense to have that in the file system hierarchy
+itself (that would just make it harder to parse without any real 
+benefit, since hardware changes could completely change the directory
+structure), I would just keep it as an attribute file in the leaf nodes.
+
+I don't think we it makes much sense to have anything below the DIMM (e.g. ranks)
+These are typically hard to get in a generic way and the most important
+information on this level is what units to replace.
+
+Then the other important part is a good way to manage fall back counters 
+when you cannot identify the target DIMM (that happens occasionally for various
+reasons).
+
+In this case would need a "aggregator object" with a truncated path
+that still maintains the same counts.
+
+Then of course there still needs to be a event interface to let someone
+actually do something with all these counts without having to poll.
+
+Most interesting cases always need user space support, so also of course
+user space needs raw events too.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
