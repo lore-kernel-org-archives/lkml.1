@@ -1,49 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158Ab0BXNuF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 08:50:05 -0500
-Received: from kroah.org ([198.145.64.141]:60072 "EHLO coco.kroah.org"
+	id S1757174Ab0BXOAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 09:00:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42323 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757077Ab0BXNuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 08:50:03 -0500
-Date: Wed, 24 Feb 2010 05:24:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Am??rico Wang <xiyou.wangcong@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] windfarm: init sysfs attributes
-Message-ID: <20100224132414.GB21421@kroah.com>
-References: <1266674493.18465.9.camel@jlt3.sipsolutions.net> <20100220150327.GG3000@hack> <1266678496.32309.1.camel@jlt3.sipsolutions.net> <20100220152010.GI3000@hack> <1266679687.17363.1.camel@jlt3.sipsolutions.net> <20100220154049.GM3000@hack> <1266680582.17363.7.camel@jlt3.sipsolutions.net> <1266979753.23523.1670.camel@pasglop> <1266996757.3903.0.camel@jlt3.sipsolutions.net> <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
+	id S1751263Ab0BXOAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 09:00:39 -0500
+Date: Wed, 24 Feb 2010 05:58:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tom Van Braeckel <tomvanbraeckel@gmail.com>
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: Reminder: [PATCH 1/1] Staging: samsung-laptop: fix coding style
+Message-ID: <20100224135833.GA22414@suse.de>
+References: <48d47a051002240545j191214b8q85513be58b738726@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
+In-Reply-To: <48d47a051002240545j191214b8q85513be58b738726@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 03:34:52PM +0800, Am??rico Wang wrote:
-> On Wed, Feb 24, 2010 at 3:32 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > On Wed, 2010-02-24 at 13:49 +1100, Benjamin Herrenschmidt wrote:
-> >> On Sat, 2010-02-20 at 16:43 +0100, Johannes Berg wrote:
-> >> > This is required for lockdep.
-> >>
-> >> Please CC linuxppc-dev@ozlabs.org or it doesn't get caught by
-> >> patchwork.
-> >
-> > Eh, sure, but I think it needs to be part of Eric's series?
-> >
-> 
-> Yeah, that's why we are Cc'ing Greg, since he took Eric's patches already.
-> 
-> Greg?
+"Reminder"?  What is that in the Subject: for?
 
-I didn't take all of them yet, that will happen later today, and I'll
-also queue this up, as it is then required.
+On Wed, Feb 24, 2010 at 02:45:38PM +0100, Tom Van Braeckel wrote:
+> Signed-off-by: Tom Van Braeckel <tomvanbraeckel@gmail.com>
+> ---
+>  drivers/staging/samsung-
+> laptop/samsung-laptop.c |    9 ++++++---
+>  1 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/staging/samsung-laptop/samsung-laptop.c
+> b/drivers/staging/samsung-laptop/samsung-laptop.c
+> index 4877138..dd7ea4c 100644
+> --- a/drivers/staging/samsung-laptop/samsung-laptop.c
+> +++ b/drivers/staging/samsung-laptop/samsung-laptop.c
+> @@ -99,7 +99,8 @@ static struct rfkill *rfk;
+> 
+>  static int force;
+>  module_param(force, bool, 0);
+> -MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be
+> loaded");
+
+Your patch is line-wrapped :(
+
+
+> +MODULE_PARM_DESC(force,
+> +               "Disable the DMI check and forces the driver to be loaded");
+
+And the tabs are not here either.
+
+and also, someone already sent in this fix, sorry.
 
 thanks,
 
