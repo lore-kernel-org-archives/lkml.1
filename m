@@ -1,73 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103Ab0BXCdj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 21:33:39 -0500
-Received: from mx1.orcon.net.nz ([219.88.242.51]:47032 "EHLO mx1.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032Ab0BXCdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 21:33:36 -0500
-X-Greylist: delayed 3462 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2010 21:33:36 EST
-Message-Id: <1EE1A83F-EB50-40F3-A6A0-5D8DE0B38446@orcon.net.nz>
-From: Michael Cree <mcree@orcon.net.nz>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1754131Ab0BXCdz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 21:33:55 -0500
+Received: from sinikuusama.dnainternet.net ([83.102.40.134]:53400 "EHLO
+	sinikuusama.dnainternet.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753426Ab0BXCdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 21:33:53 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0
+From: Anssi Hannula <anssi.hannula@iki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Wed, 24 Feb 2010 04:33:48 +0200
+User-Agent: KMail/1.13.0 (Linux/2.6.33-desktop-0.rc8.1mnb; KDE/4.4.0; x86_64; ; )
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oliver Neukum <oliver@neukum.org>,
+       dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002221510570.1328-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002221510570.1328-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: HW perf. events arch implementation
-Date: Wed, 24 Feb 2010 14:35:04 +1300
-Cc: linux-alpha@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-X-Mailer: Apple Mail (2.936)
-X-DSPAM-Check: by mx1.orcon.net.nz on Wed, 24 Feb 2010 14:35:52 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Wed Feb 24 14:35:52 2010
-X-DSPAM-Confidence: 0.6970
-X-DSPAM-Probability: 0.0000
+Message-Id: <201002240433.49116.anssi.hannula@iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am trying to implement arch specific code on the Alpha for hardware  
-performance events (yeah, I'm probably a little bit loopy and unsound  
-of mind pursuing this on an end-of-line platform, but it's a way in to  
-learn a little bit of kernel programming and it scratches an itch).
+On maanantai 22 helmikuu 2010 22:12:41 Alan Stern wrote:
+> On Mon, 22 Feb 2010, Matthew Garrett wrote:
+> > On Mon, Feb 22, 2010 at 02:10:33PM -0500, Alan Stern wrote:
+> > > On Mon, 22 Feb 2010, Anssi Hannula wrote:
+> > > > Does this mean a tty interface is ill-suited for the microcode
+> > > > upload, and instead qcserial should use the kernel's generic
+> > > > microcode upload mechanism or the userspace should use libusb to do
+> > > > it?
+> > > 
+> > > I don't know.  Didn't the old successful code use a tty interface?
+> > 
+> > Yes. The kfifo changes have caused some sort of alteration in behaviour.
+> > 
+> > > > Any idea what could be causing the hang, then?
+> > > 
+> > > No idea, unless it's the device.
+> > 
+> > Once the device hangs, it then tends to refuse any input until power
+> > cycled. So it's clearly getting into some sort of undefined state,
+> > though whether that's because it only gets sent half of its firmware
+> > (ie, the hang occurs and as a result the hardware dies) or whether it's
+> > causing the hang by dying is unclear.
+> 
+> The latest logs did show all the firmware getting sent -- or at least,
+> they show that as much data was sent by the nonworking driver as by the
+> working driver.  So I'd say the device causes the hang by dying,
+> although I don't know where the hang is or why a dead device should
+> cause it.
 
-I have taken a look at the code in the x86, sparc and ppc  
-implementations and tried to drum up an Alpha implementation for the  
-EV67/7/79 cpus, but it ain't working and is producing obviously  
-erroneous counts.  Part of the problem is that I don't understand  
-under what conditions, and with what assumptions, the performance  
-event subsystem is calling into the architecture specific code.  Is  
-there any documentation available that describes the architecture  
-specific interface?
+When the hang happens, the complete firmware is *not* sent to the device. The 
+usbmon log is 10 times smaller:
+http://stuff.onse.fi/gobi2000/gobi-regression2.mon.log
+For reference, here's the hang with usbserial debug=1:
+http://stuff.onse.fi/gobi2000/gobi-regression2.dmesg.log
 
-The Alpha CPUs of interest have two 20-bit performance monitoring  
-counters that can count cycles, instructions, Bcache misses and Mbox  
-replays (but not all combinations of those).  For round numbers  
-consider a 1GHz CPU, with a theoretical maximal sustained throughput  
-of four instructions per cycle, then a single performance counter  
-could potentially generate 4000 interrupts per second to signal  
-counter overflow when counting instructions.
+The later logs were of runs that did not hang, but did still not work. I added 
+descriptions here, in case someone is confused with all the logs (which I 
+should've named better): http://stuff.onse.fi/gobi2000/
 
-The x86, sparc and PPC implementations seem to me to assume that calls  
-to read back the counters occur more frequently than performance  
-counter overflow interrupts, and that the highest bit of the counter  
-can safely be used to detect overflow.  (Am I correct?)  That is  
-likely not to be true of the Alpha because of the small width of the  
-counter.  Is there someone who would be happy to give me, a kernel  
-newbie who probably doesn't even make the grade of neophyte, a bit of  
-direction on this?
+But if a device in corrupt state can cause such a hang, then it is likely that 
+that is happening here (due to the packet bounding issue described in the 
+other messages).
 
-Also, the Alpha CPUs have an interesting mode whereby one programmes  
-up one counter with a specified (or random) value that specifies a  
-future instruction to profile.  The CPU runs for that number of  
-instructions/cycles, then a short monitoring window (of a few cycles)  
-is opened about the profiled instruction and when completed an  
-interrupt is generated.  One can then read back a whole lot of  
-information about the pipeline at the time of the profiled  
-instruction.  This can be used for statistical sampling.  Does the  
-performance events subsystem support monitoring with such a mode?
-
-Cheers
-Michael.
-
+-- 
+Anssi Hannula
