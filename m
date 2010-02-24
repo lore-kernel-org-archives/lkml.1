@@ -1,53 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761Ab0BXFYO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 00:24:14 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:43053 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751148Ab0BXFYN (ORCPT
+	id S1752702Ab0BXF2r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 00:28:47 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:61126 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968Ab0BXF2q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 00:24:13 -0500
-Date: Wed, 24 Feb 2010 16:24:09 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] nfs: use 2*rsize readahead size
-Message-ID: <20100224052409.GI16175@discord.disaster>
-References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster> <20100224042414.GG16175@discord.disaster> <20100224044356.GA2007@localhost>
+	Wed, 24 Feb 2010 00:28:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kVFRk8WaoQuOe67dzO69lzSnvHwxRqNpUsQTyEDT+or7cbbKQ9VGz/djJe/Abk2k6u
+         WSf6DELCUf4QQE9yakh3PDMrv0PSO7aZbBL89VCM1XdrrNxFIQa+FL2tu4ygLWWQaJsr
+         VMOjOpXPaVjLYkJWqOwnSpXZbh41ylfr1WT8A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224044356.GA2007@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201002231758.17454.arnd@arndb.de>
+References: <912ec82a1002230847h11d0f628rbd38b12f38270735@mail.gmail.com>
+	 <201002231758.17454.arnd@arndb.de>
+Date: Wed, 24 Feb 2010 07:28:44 +0200
+Message-ID: <912ec82a1002232128y5ac10c0bpf38e46f6c2d20872@mail.gmail.com>
+Subject: Re: sysfs vs. ioctl
+From: Neshama Parhoti <pneshama@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 12:43:56PM +0800, Wu Fengguang wrote:
-> On Wed, Feb 24, 2010 at 12:24:14PM +0800, Dave Chinner wrote:
-> > On Wed, Feb 24, 2010 at 02:29:34PM +1100, Dave Chinner wrote:
-> > > That's doing a cached read out of the server cache, right? You
-> > > might find the results are different if the server has to read the
-> > > file from disk. I would expect reads from the server cache not
-> > > to require much readahead as there is no IO latency on the server
-> > > side for the readahead to hide....
-> > 
-> > FWIW, if you mount the client with "-o rsize=32k" or the server only
-> > supports rsize <= 32k then this will probably hurt throughput a lot
-> > because then readahead will be capped at 64k instead of 480k....
-> 
-> I should have mentioned that in changelog.. Hope the updated one
-> helps.
+On Tue, Feb 23, 2010 at 6:58 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> One rule of thumb is that if you already require a character device, using ioctl
+> is the right answer, but you shouldn't create a character device
+> if all you want to do over it is a single ioctl operation.
 
-Sorry, my fault for not reading the code correctly.
+thank you so much this really helped !
 
-Cheers,
+~pnesh
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+>
+>        Arnd
+>
