@@ -1,114 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392Ab0BXRn4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 12:43:56 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46683 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757178Ab0BXRnz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 12:43:55 -0500
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-From: Peter Zijlstra <peterz@infradead.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-In-Reply-To: <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-	 <1266057388.557.59599.camel@twins>
-	 <1266545807.2909.46.camel@sbs-t61.sc.intel.com>
-	 <1266588316.1529.370.camel@laptop>
-	 <1266604594.2814.37.camel@sbs-t61.sc.intel.com>
-	 <1266608875.1529.749.camel@laptop>
-	 <1266609029.4729.1.camel@sbs-t61.sc.intel.com>
-	 <1266609734.1529.772.camel@laptop>
-	 <1266628424.4729.23.camel@sbs-t61.sc.intel.com>
-	 <1266864618.6122.472.camel@laptop>
-	 <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 18:43:38 +0100
-Message-ID: <1267033418.16023.326.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1757421Ab0BXRxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 12:53:17 -0500
+Received: from www.tglx.de ([62.245.132.106]:45558 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757025Ab0BXRxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 12:53:15 -0500
+Date: Wed, 24 Feb 2010 18:52:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: GeunSik Lim <leemgs1@gmail.com>
+cc: Dhaval Giani <dhaval.lists@thegianis.in>, John Kacur <jkacur@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
+In-Reply-To: <49b7c2351002240852u3b2e7a56g1b0140d37a02c81f@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1002241849490.4245@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain>  <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>  <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> 
+ <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>  <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com>  <49b7c2351002231708r279049f9hcc9cc6ff205a47fb@mail.gmail.com>  <25891f3e1002231719u4d38ed52w99c66ac669c3d965@mail.gmail.com> 
+ <49b7c2351002240643s1aebe384wee5ee7951e62640e@mail.gmail.com>  <alpine.LFD.2.00.1002241609050.4245@localhost.localdomain> <49b7c2351002240852u3b2e7a56g1b0140d37a02c81f@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1424811527-1267033938=:4245"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-23 at 16:13 -0800, Suresh Siddha wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-1424811527-1267033938=:4245
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Thu, 25 Feb 2010, GeunSik Lim wrote:
+> On Thu, Feb 25, 2010 at 12:09 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> >> So, I tried linux-2.6.33-rc8-rt1 based on tip/rt/head as you explained.
+> >>
+> >> Git development branch:
+> >>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+> > What's the sha1 of the head commit ?
+> > Thanks,
+> >        tglx
+> >
+> Dear Thoomas,
 > 
-> Ok. Here is the patch with complete changelog. I added "Cc stable" tag
-> so that it can be picked up for 2.6.32 and 2.6.33, as we would like to
-> see this regression addressed in those kernels. Peter/Ingo: Can you
-> please queue this patch for -tip for 2.6.34?
+> Below was the  recent commit number  when I typed "git clone" command.
 > 
+> commit ed0799048b4a38ffb6e33755ba5e6b5dfa9a24d2
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Sun Feb 21 23:14:28 2010 +0100
+> 
+>     v2.6.33-rt1
 
-Have picked it up with the following changes, Thanks!
+So you cloned the rt/2.6.33 branch of tip. rt/head does not have
+release numbers. The version in the Makefile is simply
+2.6.33-rc8-rt. rt/head is where development happens. When stuff seems
+stable I update rt/2.6.xx and bump the -rt version and tag it.
 
+Thanks,
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -2471,10 +2471,6 @@ static inline void update_sg_lb_stats(st
- 	/* Adjust by relative CPU power of the group */
- 	sgs->avg_load = (sgs->group_load * SCHED_LOAD_SCALE) / group->cpu_power;
- 
--
--	if (sgs->sum_nr_running)
--		avg_load_per_task =
--				sgs->sum_weighted_load / sgs->sum_nr_running;
- 	/*
- 	 * Consider the group unbalanced when the imbalance is larger
- 	 * than the average weight of two tasks.
-@@ -2484,6 +2480,9 @@ static inline void update_sg_lb_stats(st
- 	 *      normalized nr_running number somewhere that negates
- 	 *      the hierarchy?
- 	 */
-+	if (sgs->sum_nr_running)
-+		avg_load_per_task = sgs->sum_weighted_load / sgs->sum_nr_running;
-+
- 	if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
- 		sgs->group_imb = 1;
- 
-@@ -2642,6 +2641,13 @@ static inline void calculate_imbalance(s
- 		unsigned long *imbalance)
- {
- 	unsigned long max_pull, load_above_capacity = ~0UL;
-+
-+	sds.busiest_load_per_task /= sds.busiest_nr_running;
-+	if (sds.group_imb) {
-+		sds.busiest_load_per_task = 
-+			min(sds.busiest_load_per_task, sds.avg_load);
-+	}
-+
- 	/*
- 	 * In the presence of smp nice balancing, certain scenarios can have
- 	 * max load less than avg load(as we skip the groups at or below
-@@ -2742,7 +2748,6 @@ find_busiest_group(struct sched_domain *
- 	 * 4) This group is more busy than the avg busieness at this
- 	 *    sched_domain.
- 	 * 5) The imbalance is within the specified limit.
--	 * 6) Any rebalance would lead to ping-pong
- 	 */
- 	if (!(*balance))
- 		goto ret;
-@@ -2761,12 +2766,6 @@ find_busiest_group(struct sched_domain *
- 	if (100 * sds.max_load <= sd->imbalance_pct * sds.this_load)
- 		goto out_balanced;
- 
--	sds.busiest_load_per_task /= sds.busiest_nr_running;
--	if (sds.group_imb)
--		sds.busiest_load_per_task =
--			min(sds.busiest_load_per_task, sds.avg_load);
--
--
- 	/* Looks like there is an imbalance. Compute it */
- 	calculate_imbalance(&sds, this_cpu, imbalance);
- 	return sds.busiest;
-
-
+	tglx
+--8323328-1424811527-1267033938=:4245--
