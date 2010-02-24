@@ -1,56 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146Ab0BXNrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 08:47:48 -0500
-Received: from www.tglx.de ([62.245.132.106]:57739 "EHLO www.tglx.de"
+	id S1757158Ab0BXNuF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 08:50:05 -0500
+Received: from kroah.org ([198.145.64.141]:60072 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757048Ab0BXNrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 08:47:47 -0500
-Date: Wed, 24 Feb 2010 14:47:32 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
-Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
-Message-ID: <20100224134732.GB1931@local>
-References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org>
- <20100223150140.GA3781@suse.de>
- <20100223194946.GA1941@local>
- <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org>
- <20100223233938.GA2938@local>
- <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
+	id S1757077Ab0BXNuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 08:50:03 -0500
+Date: Wed, 24 Feb 2010 05:24:14 -0800
+From: Greg KH <greg@kroah.com>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] windfarm: init sysfs attributes
+Message-ID: <20100224132414.GB21421@kroah.com>
+References: <1266674493.18465.9.camel@jlt3.sipsolutions.net> <20100220150327.GG3000@hack> <1266678496.32309.1.camel@jlt3.sipsolutions.net> <20100220152010.GI3000@hack> <1266679687.17363.1.camel@jlt3.sipsolutions.net> <20100220154049.GM3000@hack> <1266680582.17363.7.camel@jlt3.sipsolutions.net> <1266979753.23523.1670.camel@pasglop> <1266996757.3903.0.camel@jlt3.sipsolutions.net> <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <2375c9f91002232334p219f4ebem6006172153e7a3f1@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 09:24:42PM -0600, Kumar Gala wrote:
-> > Well, UIO is (up to now) completely independent of the architecture. If you've
-> > got a good idea how to implement such mappings, feel free to come up with your
-> > suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
-> > enough.
-> > 
-> > I'll give it some thoughts myself, and will discuss the problem with friends,
-> > maybe there's a nice solution. Help from your side is much appreciated.
+On Wed, Feb 24, 2010 at 03:34:52PM +0800, Am??rico Wang wrote:
+> On Wed, Feb 24, 2010 at 3:32 PM, Johannes Berg
+> <johannes@sipsolutions.net> wrote:
+> > On Wed, 2010-02-24 at 13:49 +1100, Benjamin Herrenschmidt wrote:
+> >> On Sat, 2010-02-20 at 16:43 +0100, Johannes Berg wrote:
+> >> > This is required for lockdep.
+> >>
+> >> Please CC linuxppc-dev@ozlabs.org or it doesn't get caught by
+> >> patchwork.
+> >
+> > Eh, sure, but I think it needs to be part of Eric's series?
+> >
 > 
-> For my needs I believe changing uio_mem.addr to a u64 is sufficient for getting UIO_MEM_PHYS to work for the physical address being above 4G.  I need the type to be large to represent a wider PFN range.  Obviously there are limitations (ie, we can't make an IO region >4G in size, etc.)
+> Yeah, that's why we are Cc'ing Greg, since he took Eric's patches already.
 > 
+> Greg?
 
-Hmm, after some research it seems you're right. But the type for the addr
-member of struct uio_mem should be phys_addr_t, not u64. phys_addr_t is
-an u64 on systems that support it, and an u32 otherwise.
+I didn't take all of them yet, that will happen later today, and I'll
+also queue this up, as it is then required.
 
-It'll probably work with UIO_MEM_LOGICAL and UIO_MEM_VIRTUAL as well.
+thanks,
 
-Could you hack up a patch to that effect, and test it? If it works for you,
-I think we should apply it.
-
-Thanks for pointing this out.
-
-Hans
-
-> - k
+greg k-h
