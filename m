@@ -1,195 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327Ab0BXRkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 12:40:09 -0500
-Received: from mail-pz0-f174.google.com ([209.85.222.174]:46266 "EHLO
-	mail-pz0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755524Ab0BXRkG convert rfc822-to-8bit (ORCPT
+	id S1757385Ab0BXRnF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 12:43:05 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58438 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757178Ab0BXRnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 12:40:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UTBc4NByMUMEc8VjxS8cp9SVl6sAonOHXv/T7HRv+7QAUqad1EzUt0lqWDUPbxXm6X
-         w74NJPWuLPb8Q0cMVXkV0QGCGleUu7vzQ8qCCdkKCP90ipjJyUW+ljoMp7pV1DosOuwT
-         tNvxrVnVhUh3L2PE72iSXeB1eN6O/rJohRDnQ=
+	Wed, 24 Feb 2010 12:43:01 -0500
+Message-ID: <4B856500.9030108@infradead.org>
+Date: Wed, 24 Feb 2010 14:42:24 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-In-Reply-To: <49b7c2351002240905n299f86fcq67a16fd97c47021@mail.gmail.com>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain>
-	 <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain>
-	 <520f0cf11002220311l2a0caa83lf3ae2817b78501b6@mail.gmail.com>
-	 <49b7c2351002231708r279049f9hcc9cc6ff205a47fb@mail.gmail.com>
-	 <25891f3e1002231719u4d38ed52w99c66ac669c3d965@mail.gmail.com>
-	 <49b7c2351002240643s1aebe384wee5ee7951e62640e@mail.gmail.com>
-	 <alpine.LFD.2.00.1002241609050.4245@localhost.localdomain>
-	 <49b7c2351002240852u3b2e7a56g1b0140d37a02c81f@mail.gmail.com>
-	 <49b7c2351002240905n299f86fcq67a16fd97c47021@mail.gmail.com>
-Date: Thu, 25 Feb 2010 02:40:05 +0900
-Message-ID: <49b7c2351002240940u41020034n3e9bcdb40161d175@mail.gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt1
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Dhaval Giani <dhaval.lists@thegianis.in>, John Kacur <jkacur@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Borislav Petkov <petkovbb@googlemail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, andi@firstfloor.org, tglx@linutronix.de,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       linux-tip-commits@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
+       Huang Ying <ying.huang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to mce_cpu_specific_poll
+References: <20100121221711.GA8242@basil.fritz.box> <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic> <20100216210215.GA9051@elte.hu> <20100222082840.GA3975@liondog.tnic> <20100222094739.GA20844@elte.hu> <4B8271AA.9060005@redhat.com>
+In-Reply-To: <4B8271AA.9060005@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+Mauro Carvalho Chehab wrote:
+> The EDAC data model needs some discussion, as, currently, the memory is represented 
+> per csrow, and modern MCU don't allow such level of control (and it doesn't 
+> make much sense on representing this way, as you can't replace a csrow). The 
+> better is to use DIMM as the minumum unit.
 
-Thank you for linux-2.6.33-rc8-rt2 release quickly. :)
-I can boot this linux version  on my desktop (intel core2 Quad Q9400)
-successfully now.
-I uploaded a screenshot file.
+Just to start the data model, this is what a typical EDAC driver presents:
 
-*  Booting result of linux-2.6.33-rc8-rt2 on Q9400 PC. --> Passed.
-http://picasaweb.google.com/leemgs/LinuxRelatedScreenshot#5441865625183643634
+/sys/devices/system/edac/mc/mc0/                                                
+|-- ce_count                                                                    
+|-- ce_noinfo_count                                                             
+|-- csrow0
+|   |-- ce_count
+|   |-- ch0_ce_count
+|   |-- ch0_dimm_label
+|   |-- ch1_ce_count
+|   |-- ch1_dimm_label
+|   |-- ch2_ce_count
+|   |-- ch2_dimm_label
+|   |-- ch3_ce_count
+|   |-- ch3_dimm_label
+|   |-- dev_type
+|   |-- edac_mode
+|   |-- mem_type
+|   |-- size_mb
+|   `-- ue_count
+|-- csrow1                                                                      
+|   |-- ce_count
+|   |-- ch0_ce_count
+|   |-- ch0_dimm_label
+|   |-- ch1_ce_count
+|   |-- ch1_dimm_label
+|   |-- ch2_ce_count
+|   |-- ch2_dimm_label
+|   |-- ch3_ce_count
+|   |-- ch3_dimm_label
+|   |-- dev_type
+|   |-- edac_mode
+|   |-- mem_type
+|   |-- size_mb
+|   `-- ue_count
+|-- device -> ../../../../pci0000:3f/0000:3f:03.0                               
+|-- mc_name                                                                     
+|-- reset_counters                                                              
+|-- sdram_scrub_rate                                                            
+|-- seconds_since_reset                                                         
+|-- size_mb                                                                     
+|-- ue_count                                                                    
+`-- ue_noinfo_count                                                             
 
+In the case of i7core_edac, there's no way to identify csrows by using
+the public registers (I've no idea is is there any non-documented register
+for it). So, the driver maps one dimm per "edac csrow".
 
-Thanks.
-Geunsik Lim.
+It would be good to see a better struct for it.
 
+With respect to error injection, this is the way i7core maps it:
 
-commit 5fd3a249542494b19e3c77c92b5d5ddc7fb8ece4
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Wed Feb 24 17:45:03 2010 +0100
+|-- inject_addrmatch                                                            
+|   |-- bank                                                                    
+|   |-- channel                                                                 
+|   |-- col                                                                     
+|   |-- dimm                                                                    
+|   |-- page                                                                    
+|   `-- rank                                                                    
+|-- inject_eccmask                                                              
+|-- inject_enable                                                               
+|-- inject_section                                                              
+|-- inject_type                                                                 
 
-    v2.6.33-rc8-rt2
+The inject_addrmatch leaves control a match filter for the error
+where the error will be inject. I doubt we would find a way to standardize it.
 
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-commit c3bde8f3a7af0bcdc8844102a08896e3fdd77153
-Merge: ed07990 5f00286
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Wed Feb 24 17:44:48 2010 +0100
-
-    Merge branch 'rt/head' into rt/2.6.33
-
-    Conflicts:
-        Makefile
-
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
-
-On Thu, Feb 25, 2010 at 2:05 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
-> Thomas. Um.  I checked new -rt tag now.
-> I will move rt number from v2.6.33-rc8-rt2 to v2.6.33-rc8-rt2.
-> And then, I will test v2.6.33-rc8-rt2 on my desktop pc
-> 1) intel core2 quad Q6600 (SSD 64G , 2G DDR RAM )
-> 2) intel core2 quad Q9400 (SATA 320G, 2G DDR RAM)
->
-> Thanks,
-> Geunsik Lim.
->
-> On Thu, Feb 25, 2010 at 1:52 AM, GeunSik Lim <leemgs1@gmail.com> wrote:
->> On Thu, Feb 25, 2010 at 12:09 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->>>> So, I tried linux-2.6.33-rc8-rt1 based on tip/rt/head as you explained.
->>>>
->>>> Git development branch:
->>>>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
->>> What's the sha1 of the head commit ?
->>> Thanks,
->>>        tglx
->>>
->> Dear Thoomas,
->>
->> Below was the  recent commit number  when I typed "git clone" command.
->>
->> commit ed0799048b4a38ffb6e33755ba5e6b5dfa9a24d2
->> Author: Thomas Gleixner <tglx@linutronix.de>
->> Date:   Sun Feb 21 23:14:28 2010 +0100
->>
->>    v2.6.33-rt1
->>
->>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->>
->> commit b635a77f9aadc5ed3fc5a949e3f219c24cdd254c
->> Author: Carsten Emde <C.Emde@osadl.org>
->> Date:   Sat Jan 16 17:14:04 2010 +0100
->>
->>    hwlat_detector-avoid-smp_processor_id.patch
->>
->>    Avoid smp_processor_id() in preemptible code.
->>
->>    Signed-off-by: Carsten Emde <C.Emde@osadl.org>
->>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->>             . . . . . . below omission . . . . . .
->>
->>
->> and, version info is 2.6.33-rc8-rt1 as belows.
->>
->> [invain@localhost head]$ head Makefile
->> VERSION = 2
->> PATCHLEVEL = 6
->> SUBLEVEL = 33
->> EXTRAVERSION = -rc8-rt1
->> NAME = Man-Eating Seals of Antiquity
->>
->> # *DOCUMENTATION*
->> # To see a list of typical targets execute "make help"
->> # More info can be located in ./README
->> # Comments in this file are targeted only to the developer, do not
->>
->>
->> Thanks,
->> Geunsik Lim.
->>
->> --
->> Regards,
->> GeunSik Lim ( Samsung Electronics )
->> Blog : http://blog.naver.com/invain/
->> e-Mail: geunsik.lim@samsung.com
->>           leemgs@gmail.com , leemgs1@gmail.com
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
->
->
-> --
-> Regards,
-> GeunSik Lim ( Samsung Electronics )
-> Blog : http://blog.naver.com/invain/
-> e-Mail: geunsik.lim@samsung.com
->           leemgs@gmail.com , leemgs1@gmail.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
-Regards,
-GeunSik Lim ( Samsung Electronics )
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Cheers,
+Mauro
