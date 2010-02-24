@@ -1,99 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651Ab0BXDZF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:25:05 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45327 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660Ab0BXDZD convert rfc822-to-8bit (ORCPT
+	id S1754911Ab0BXD3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:29:40 -0500
+Received: from bld-mail15.adl6.internode.on.net ([150.101.137.100]:45119 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753541Ab0BXD3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:25:03 -0500
-Subject: Re: UIO support for >32-bit physical addresses on 32-bit platforms
-Mime-Version: 1.0 (Apple Message framework v1077)
+	Tue, 23 Feb 2010 22:29:39 -0500
+Date: Wed, 24 Feb 2010 14:29:34 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] nfs: use 2*rsize readahead size
+Message-ID: <20100224032934.GF16175@discord.disaster>
+References: <20100224024100.GA17048@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100223233938.GA2938@local>
-Date: Tue, 23 Feb 2010 21:24:42 -0600
-Cc: Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <554C9C89-9D0A-4307-AC4D-CD67F41A53B7@kernel.crashing.org>
-References: <A596AEB5-BAF0-4BF9-A9C0-44C50B9BCA34@kernel.crashing.org> <20100223150140.GA3781@suse.de> <20100223194946.GA1941@local> <100F3ED0-597E-4F4F-83CC-CC8505E3563F@kernel.crashing.org> <20100223233938.GA2938@local>
-To: "Hans J. Koch" <hjk@linutronix.de>
-X-Mailer: Apple Mail (2.1077)
+Content-Disposition: inline
+In-Reply-To: <20100224024100.GA17048@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 23, 2010, at 5:39 PM, Hans J. Koch wrote:
-
-> On Tue, Feb 23, 2010 at 04:52:56PM -0600, Kumar Gala wrote:
->> 
->> On Feb 23, 2010, at 1:49 PM, Hans J. Koch wrote:
->> 
->>> On Tue, Feb 23, 2010 at 07:01:41AM -0800, Greg KH wrote:
->>>> On Tue, Feb 23, 2010 at 08:54:16AM -0600, Kumar Gala wrote:
->>>>> Hans, Greg,
->>>>> 
->>>>> We are looking at using UIO for some driver work and noticed it
->>>>> assumes the address for MMIO regions is an 'unsigned long'.  This is a
->>>>> problem for the platforms we have in which we support a 36-bit
->>>>> physical address in a 32-bit machine.
->>>>> 
->>>>> Should we just change addr/size in struct uio_mem to u64 always?
->>> 
->>> No, if I didn't miss something important, it's not feasible IMHO.
->>> 
->>>>> At
->>>>> first I was thinking phys_addr_t but realized the addr could be PHYS,
->>>>> LOGICAL, or VIRTUAL.
->>>> 
->>>> I think that would work out fine, Hans, any ideas if this would cause
->>>> any problems with existing code or not?
->>> 
->>> It won't work. This is not a UIO problem. UIO just passes addr to other
->>> system functions, and all of them use "unsigned long" for these addresses.
->>> You'd have to change the whole memory management code.
->>> 
->>> Note that members vm_start and vm_end in struct vm_area_struct are
->>> also unsigned long. Having an u64 in the UIO core doesn't help at all.
->> 
->> This already works for mmap since we pass down a PFN and not an address to remap_pfn_range.  While we can handle any physical address size we can handle one up to 44 bits on most architectures which is well beyond the 36-bit physical address case I'm dealing with on PPC.
->> 
+On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
+> With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+> readahead size 512k*15=7680k is too large than necessary for typical
+> clients.
 > 
-> Sure, there are always ways to handle physical addresses up to the buswidth
-> of the arch. But above the "natural" size (32 bits on 32-bit archs), it
-> becomes a bit clumsy. UIO has a documented interface to userspace. The user
-> is supposed to use the traditional mmap() call. mmap() returns void*, which
-> is also 32 bits on 32-bit archs.
+> On a e1000e--e1000e connection, I got the following numbers
 > 
-> Because of this, UIO already needs a 32-bit address. It might be possible to
-> map your I/O memory from above 4G down into the 32-bit space and then use
-> this address, probably not with UIO_MEM_PHYS but with UIO_MEM_VIRTUAL.
-> I understand PPC (is that an E500?) has some special features for doing
-> these kind of shifts in hardware. But I'm not really a PPC expert, I'll
-> ask a friend of mine.
-
-(Yes this is on e500, but also true on the PPC 44x/46x and 745x processors)
-
-Maybe I'm misunderstanding how UIO_MEM_PHYS works (or what it means).  I was under the assumption that it behaves similar to mmap of pci sysfs files.  In that the virtual address in the application is provided in the mmap call and the physical address is coming from the mem region.  As such the MMU is handling the process translation from the virtual address in the app to whatever the physical address might happen to be (if the HW supports that physical address being >32-bits so bit, the application isn't any the wiser).
-
->>> Memory above the 4G border can only be accessed through himem mechanisms
->>> or be mapped to an address below that border in lowlevel arch code.
->>> 
->>> In most cases, I'd say it's bad board design to have memory-mapped hardware
->>> above the 4G border on a 32-bit machine.
->> 
->> While I might agree with you its a reality on a number of embedded processors and I know three different PowerPC based embedded families that have 36-bit physical addressing to allow for >4G of DDR and thus IO ends up being above the 4G physical boundary and we already support these in the kernel.
+> 	readahead size		throughput
+> 		   16k           35.5 MB/s
+> 		   32k           54.3 MB/s
+> 		   64k           64.1 MB/s
+> 		  128k           70.5 MB/s
+> 		  256k           74.6 MB/s
+> rsize ==>	  512k           77.4 MB/s
+> 		 1024k           85.5 MB/s
+> 		 2048k           86.8 MB/s
+> 		 4096k           87.9 MB/s
+> 		 8192k           89.0 MB/s
+> 		16384k           87.7 MB/s
 > 
-> Well, UIO is (up to now) completely independent of the architecture. If you've
-> got a good idea how to implement such mappings, feel free to come up with your
-> suggestions/patches. Just changing struct uio_mem.addr to u64 is certainly not
-> enough.
+> So it seems that readahead_size=2*rsize (ie. keep two RPC requests in flight)
+> can already get near full NFS bandwidth.
 > 
-> I'll give it some thoughts myself, and will discuss the problem with friends,
-> maybe there's a nice solution. Help from your side is much appreciated.
+> The test script is:
+> 
+> #!/bin/sh
+> 
+> file=/mnt/sparse
+> BDI=0:15
+> 
+> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+> do
+> 	echo 3 > /proc/sys/vm/drop_caches
+> 	echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+> 	echo readahead_size=${rasize}k
+> 	dd if=$file of=/dev/null bs=4k count=1024000
+> done
 
-For my needs I believe changing uio_mem.addr to a u64 is sufficient for getting UIO_MEM_PHYS to work for the physical address being above 4G.  I need the type to be large to represent a wider PFN range.  Obviously there are limitations (ie, we can't make an IO region >4G in size, etc.)
+That's doing a cached read out of the server cache, right? You
+might find the results are different if the server has to read the
+file from disk. I would expect reads from the server cache not
+to require much readahead as there is no IO latency on the server
+side for the readahead to hide....
 
-- k
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
