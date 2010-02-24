@@ -1,48 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663Ab0BXK6K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 05:58:10 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36622 "EHLO mx1.suse.de"
+	id S1756692Ab0BXLFt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 06:05:49 -0500
+Received: from ist.d-labs.de ([213.239.218.44]:49532 "EHLO mx01.d-labs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756639Ab0BXK6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 05:58:08 -0500
-Date: Wed, 24 Feb 2010 11:58:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jan Kara <jack@suse.cz>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: Re: linux-next: build warning after merge of the ext3 tree
-Message-ID: <20100224105808.GB3687@quack.suse.cz>
-References: <20100224190520.8cd15930.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224190520.8cd15930.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756637Ab0BXLFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 06:05:47 -0500
+From: florian@mickler.org
+To: "Marcel Holtmann" <marcel@holtmann.org>
+Cc: "Johannes Berg" <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Florian Mickler <florian@mickler.org>
+Subject: [PATCH v2 0/2] Document and enhance rfkill sysfs abi 
+Date: Wed, 24 Feb 2010 12:05:15 +0100
+Message-Id: <1267009517-5017-1-git-send-email-florian@mickler.org>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1266704345.32739.0.camel@jlt3.sipsolutions.net>
+References: <1266704345.32739.0.camel@jlt3.sipsolutions.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Stephen,
+Hi Marcel,
 
-On Wed 24-02-10 19:05:20, Stephen Rothwell wrote:
-> After merging the ext3 tree, today's linux-next build (x86_64
-> allmodconfig) produced this warning:
-> 
-> fs/gfs2/quota.c:1581: warning: initialization from incompatible pointer type
-> 
-> Introduced by commit ec304a27d7750ba666ad2d446434ddd47fa93c40 ("quota:
-> move code from sync_quota_sb into vfs_quota_sync").  From the commit
-> message, I expect that this has been thought about.
-  Thanks for the notification. It seems Christoph missed to convert
-gfs2_quota_sync(). I've now fixed it in a minimalistic way (just added
-the wait parameter to the function).
-  Steven (Whitehouse), if GFS2 wants to do something more clever, please
-let me know (or fix up in your tree).
+so this obsoletes the claim and state sysfs files and introduces two new files: 
+/sys/class/rfkill/*/sw and hw .. 
 
-								Thanks
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+cheers,
+Flo
+
+p.s.: i even tested them...
+
+Florian Mickler (2):
+  Document the rfkill sysfs ABI
+  enhance sysfs rfkill interface
+
+ Documentation/ABI/obsolete/sysfs-class-rfkill |   29 +++++++++++
+ Documentation/ABI/stable/sysfs-class-rfkill   |   67 +++++++++++++++++++++++++
+ Documentation/feature-removal-schedule.txt    |   18 +++++++
+ Documentation/rfkill.txt                      |   44 +++++-----------
+ net/rfkill/core.c                             |   57 +++++++++++++++++++++
+ 5 files changed, 184 insertions(+), 31 deletions(-)
+ create mode 100644 Documentation/ABI/obsolete/sysfs-class-rfkill
+ create mode 100644 Documentation/ABI/stable/sysfs-class-rfkill
+
