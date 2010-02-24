@@ -1,44 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758091Ab0BXUkw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:40:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54056 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992Ab0BXUkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:40:51 -0500
-Message-ID: <4B858E89.7040807@kernel.org>
-Date: Wed, 24 Feb 2010 12:39:37 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1758119Ab0BXUlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:41:00 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59135 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758024Ab0BXUk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:40:58 -0500
+Date: Wed, 24 Feb 2010 20:40:56 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/14] Regulators: wm8400 - cleanup platform driver
+ data handling
+Message-ID: <20100224204056.GA6824@rakim.wolfsonmicro.main>
+References: <20100224073342.15964.8863.stgit@localhost.localdomain>
+ <20100224073849.15964.62321.stgit@localhost.localdomain>
+ <20100224102548.GG18896@rakim.wolfsonmicro.main>
+ <20100224190234.GD25304@core.coreip.homeip.net>
+ <20100224191402.GA8316@rakim.wolfsonmicro.main>
+ <20100224192126.GE25304@core.coreip.homeip.net>
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, alek.du@intel.com, jacob.jun.pan@intel.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] x86/pci: exclude mrst pci code for other platform
-References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org> <4B84A846.1000805@kernel.org> <4B84AAC4.2020204@kernel.org>
-In-Reply-To: <4B84AAC4.2020204@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224192126.GE25304@core.coreip.homeip.net>
+X-Cookie: You too can wear a nose mitten.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 24, 2010 at 11:21:26AM -0800, Dmitry Torokhov wrote:
+> On Wed, Feb 24, 2010 at 07:14:03PM +0000, Mark Brown wrote:
 
+> > This doesn't help unless you also provide a way for users to obtain a
+> > struct wm8400.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Why would they need it? Only code that creates instances of wm8400 needs
+> to know the definition of the sturcture, the rest can simply pass the
+> pointer around.
 
-diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
-index ab637f9..131e4da 100644
---- a/arch/x86/pci/Makefile
-+++ b/arch/x86/pci/Makefile
-@@ -13,7 +13,8 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- 
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
- 
--obj-y				+= common.o early.o mrst.o
-+obj-y				+= common.o early.o
-+obj-$(CONFIG_X86_MRST)		+= mrst.o
- obj-y				+= amd_bus.o bus_numa.o
- 
- ifeq ($(CONFIG_PCI_DEBUG),y)
+> I guess there is disconnect between us and I do not see any users of
+> wm8400_register_regulator() in linux-next... Is there another tree I
+> could peek at?
+
+There are no users in mainline.  This would be called by board specific
+code from the init callback of the wm8400 - you'd need to pass that
+callback the struct wm8400.
+
+In any case, this is clearly an unrelated change to whatever else you
+were doing to the driver so should be split off into a separate patch,
+but if this is being changed at all then it'd be much more sensible to
+change it to use a more modern pattern which completely removes the
+wm8400_register_regulator() function and just uses platform data.
