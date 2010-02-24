@@ -1,70 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855Ab0BXANZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 19:13:25 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:39350 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307Ab0BXANX (ORCPT
+	id S1754920Ab0BXANi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 19:13:38 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47965 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348Ab0BXANg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 19:13:23 -0500
-To: Mike Snitzer <snitzer@redhat.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] block: warn if blk_stack_limits() undermines atomicity
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <20100222204920.GA24514@redhat.com>
-	<yq1635nop2j.fsf@sermon.lab.mkp.net>
-	<20100223193241.GB24662@redhat.com>
-Date: Tue, 23 Feb 2010 19:12:50 -0500
-In-Reply-To: <20100223193241.GB24662@redhat.com> (Mike Snitzer's message of
-	"Tue, 23 Feb 2010 14:32:41 -0500")
-Message-ID: <yq1sk8rmqyl.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B846F0B.008E:SCFMA4539814,ss=1,fgs=0
+	Tue, 23 Feb 2010 19:13:36 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 24 Feb 2010 09:09:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-Id: <20100224090958.ddca8ff1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100223092853.GB1882@linux>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+	<1266765525-30890-2-git-send-email-arighi@develer.com>
+	<20100222161442.GE3063@balbir.in.ibm.com>
+	<20100223092853.GB1882@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Mike" == Mike Snitzer <snitzer@redhat.com> writes:
+On Tue, 23 Feb 2010 10:28:53 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
->> Not really.  It'll be issued as one I/O with a smaller LBA count but
->> an identical data payload.
+> On Mon, Feb 22, 2010 at 09:44:42PM +0530, Balbir Singh wrote:
+> [snip]
+> > > +void mem_cgroup_charge_dirty(struct page *page,
+> > > +			enum zone_stat_item idx, int charge)
+> > > +{
+> > > +	struct mem_cgroup *mem;
+> > > +	struct mem_cgroup_stat_cpu *cpustat;
+> > > +	unsigned long flags;
+> > > +	int cpu;
+> > > +
+> > > +	if (mem_cgroup_disabled())
+> > > +		return;
+> > > +	/* Translate the zone_stat_item into a mem_cgroup_stat_index */
+> > > +	switch (idx) {
+> > > +	case NR_FILE_DIRTY:
+> > > +		idx = MEM_CGROUP_STAT_FILE_DIRTY;
+> > > +		break;
+> > > +	case NR_WRITEBACK:
+> > > +		idx = MEM_CGROUP_STAT_WRITEBACK;
+> > > +		break;
+> > > +	case NR_WRITEBACK_TEMP:
+> > > +		idx = MEM_CGROUP_STAT_WRITEBACK_TEMP;
+> > > +		break;
+> > > +	case NR_UNSTABLE_NFS:
+> > > +		idx = MEM_CGROUP_STAT_UNSTABLE_NFS;
+> > > +		break;
+> > > +	default:
+> > > +		return;
+> > > +	}
+> > > +	/* Charge the memory cgroup statistics */
+> > > +	mem = get_mem_cgroup_from_page(page);
+> > > +	if (!mem) {
+> > > +		mem = root_mem_cgroup;
+> > > +		css_get(&mem->css);
+> > > +	}
+> > > +
+> > > +	local_irq_save(flags);
+> > > +	cpu = get_cpu();
+> > 
+> > Kamezawa is in the process of changing these, so you might want to
+> > look at and integrate with those patches when they are ready.
+> 
+> OK, I'll rebase the patch to -mm. Are those changes already included in
+> mmotm?
+> 
+yes.
 
-Mike> Can you expand on that a bit?  How does a smaller LBA count relate
-Mike> to this?  On a 512b device the 4K data payload would touch more
-Mike> LBAs.
+-Kame
 
-Sorry, I had my head stuck in the 4KB case.  More blocks.  My point
-being that regardless of the logical block size we'll be issuing a
-single command.  The only difference between the two cases is the LBA
-count. I.e. the protocol encoding of how much data to transfer.
+> Thanks,
+> -Andrea
 
-
-Mike> In any case, a 4K write to a 512b device is not atomic.
-
-Mike> If you think what I've raised here is overblown then I'd like to
-Mike> understand why in more detail.
-
-I'm just playing devil's advocate here.  We have no guarantees that a
-512-byte write to a 512-byte device is atomic either.  None.  We've been
-trying very hard to get any guarantees out of storage vendors for years
-without any luck.  I know that a lot of our stuff operate on the
-assumption that sector writes are atomic.  But in a lot of cases they
-are not.
-
-
-Mike> Otherwise all you have is a largely generic warning (as
-Mike> blk_stack_limits knows nothing about which devices the provided
-Mike> limits belong to).
-
-Yeah, I had a patch at some point that distinguished between the various
-error conditions instead of returning -1.  I'll see if I can dig that
-up...
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
