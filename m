@@ -1,21 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619Ab0BXXsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 18:48:24 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36868 "EHLO smtps.tip.net.au"
+	id S1758640Ab0BXXzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 18:55:31 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40069 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758553Ab0BXXsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 18:48:23 -0500
-Date: Thu, 25 Feb 2010 10:48:19 +1100
+	id S1758625Ab0BXXz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 18:55:29 -0500
+Date: Thu, 25 Feb 2010 10:55:25 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ben Dooks <ben-linux@fluff.org>
+To: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
-       Kukjin Kim <kgene.kim@samsung.com>,
-       Adityapratap Sharma <aditya.ps@samsung.com>,
-       Atul Dahiya <atul.dahiya@samsung.com>
-Subject: linux-next: manual merge of the samsung tree with the arm tree
-Message-Id: <20100225104819.6d117587.sfr@canb.auug.org.au>
+       Kukjin Kim <kgene.kim@samsung.com>, Ben Dooks <ben-linux@fluff.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: linux-next: manual merge of the genesis tree with the arm and
+ samsung trees
+Message-Id: <20100225105525.5ccb84a4.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,34 +23,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+Hi Paul,
 
-Today's linux-next merge of the samsung tree got a conflict in
-arch/arm/mach-s5p6442/include/mach/debug-macro.S between commit
-4e6d488af37980d224cbf298224db6173673f362 ("ARM: 5910/1: ARM: Add tmp
-register for addruart and loadsp") from the arm tree and commit
-5f7f6a4a0df9b43051d57fdb8ea96c083247a08f ("ARM: S5P6442: Add Samsung
-S5P6442 CPU support") from the samsung tree.
+Today's linux-next merge of the genesis tree got a conflict in
+arch/arm/Kconfig between commits c4ffccddd54b669cc9683f2c69e31035e916a1a0
+("ARM: S5P6440: Add new Kconfig and Makefiles") from the arm tree and
+550db7f155c9e51288fbe114fbb33d7a044d8a75 ("ARM: S5P6442: Update Kconfig
+and Makefiles") from the samsung and commit
+c793c1b0c8ea11b46caf5a532752214b27a2df42 ("ARM: mach-shmobile: SH-Mobile
+G3 support") from the genesis tree.
 
-This conflict is a bit strange since this is a new file, but git is a bit
-too clever :-)
-
-I fixed it up (see the change from the samsung tree below) and can carry
-the fix as necessary.
+Just overlapping additions.  I fixed it up (see below) and can carry the
+fix as necessary.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/arm/mach-s5p6442/include/mach/debug-macro.S b/arch/arm/mach-s5p6442/include/mach/debug-macro.S
-index 1aae691..441962c 100644
---- a/arch/arm/mach-s5p6442/include/mach/debug-macro.S
-+++ b/arch/arm/mach-s5p6442/include/mach/debug-macro.S
-@@ -15,7 +15,7 @@
- #include <mach/map.h>
- #include <plat/regs-serial.h>
- 
--	.macro addruart, rx
-+	.macro addruart, rx, tmp
- 		mrc	p15, 0, \rx, c1, c0
- 		tst	\rx, #1
- 		ldreq	\rx, = S3C_PA_UART
+diff --cc arch/arm/Kconfig
+index 8aff2a0,55764a1..0000000
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@@ -616,12 -579,16 +616,17 @@@ config ARCH_MS
+  	select GENERIC_TIME
+  	select GENERIC_CLOCKEVENTS
+  	help
+ -	  Support for Qualcomm MSM7K based systems.  This runs on the ARM11
+ -	  apps processor of the MSM7K and depends on a shared memory
+ -	  interface to the ARM9 modem processor which runs the baseband stack
+ -	  and controls some vital subsystems (clock and power control, etc).
+ +	  Support for Qualcomm MSM/QSD based systems.  This runs on the
+ +	  apps processor of the MSM/QSD and depends on a shared memory
+ +	  interface to the modem processor which runs the baseband
+ +	  stack and controls some vital subsystems
+ +	  (clock and power control, etc).
+  
++ config ARCH_SHMOBILE
++ 	bool "Renesas SH-Mobile"
++ 	help
++ 	  Support for Renesas's SH-Mobile ARM platforms
++ 
+  config ARCH_RPC
+  	bool "RiscPC"
+  	select ARCH_ACORN
+@@@ -887,13 -823,12 +892,15 @@@ source "arch/arm/mach-s3c2443/Kconfig
+  endif
+  
+  if ARCH_S3C64XX
+ -source "arch/arm/mach-s3c6400/Kconfig"
+ -source "arch/arm/mach-s3c6410/Kconfig"
+ +source "arch/arm/mach-s3c64xx/Kconfig"
+  endif
+  
+ +source "arch/arm/mach-s5p6440/Kconfig"
+ +
+ +source "arch/arm/mach-s5p6442/Kconfig"
+ +
++ source "arch/arm/mach-shmobile/Kconfig"
++ 
+  source "arch/arm/plat-stmp3xxx/Kconfig"
+  
+  if ARCH_S5PC1XX
