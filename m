@@ -1,31 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794Ab0BXLkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 06:40:33 -0500
-Received: from comsmtp2.singnet.com.sg ([165.21.101.75]:57795 "EHLO
-	comsmtp2.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756704Ab0BXLkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 06:40:32 -0500
-To: info@iris.cc
-Subject: Irish 2010 Grant Winner
-Message-ID: <1267011613.4b85101dd9a8d@arrowana.singnet.com.sg>
-Date: Wed, 24 Feb 2010 19:40:13 +0800 (SGT)
-From: =?iso-8859-1?Q?=A9Web_Unit?= <web3003@singnet.com.sg>
-Reply-To: bnl.claimdept@live.co.uk
+	id S1756804Ab0BXLnN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 06:43:13 -0500
+Received: from thoth.sbs.de ([192.35.17.2]:18591 "EHLO thoth.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756704Ab0BXLnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 06:43:12 -0500
+Message-ID: <4B8510BC.4060201@siemens.com>
+Date: Wed, 24 Feb 2010 12:42:52 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-User-Agent: SingNet WebMail
+To: Avi Kivity <avi@redhat.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, KVM <kvm@vger.kernel.org>,
+       Gleb Natapov <gleb@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] KVM: x86: Kick VCPU outside PIC lock again
+References: <20100217135901.331576359@linutronix.de> <4B842A1F.50601@siemens.com> <alpine.LFD.2.00.1002232321320.3232@localhost.localdomain> <4B84F466.2080009@siemens.com> <4B84F5D4.5020202@redhat.com> <4B84F765.5040209@siemens.com> <4B84F9AF.8060804@redhat.com> <4B84FBDB.1070006@siemens.com> <4B84FCBB.8070702@redhat.com> <4B84FDF5.5080106@siemens.com> <4B84FF5C.5090603@siemens.com> <4B850266.3070706@redhat.com>
+In-Reply-To: <4B850266.3070706@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-£1,000,000Pounds has been awarded to you in the BRITISH PROMO.send your
-Names,,,,,,,,,,,
-Tel,,,,,,,,,,,,,,,,,,
-Age,,,,,,,,,,,,,,,,
-Address,,,,,,,,,,,,
-Occupation,,,,,,,,,,
-Country,,,,,,,,,,,,,,,
-Email:bnl.claimdept@live.co.uk
+Avi Kivity wrote:
+> On 02/24/2010 12:28 PM, Jan Kiszka wrote:
+>> Jan Kiszka wrote:
+>>    
+>>> Avi Kivity wrote:
+>>>      
+>>>> On 02/24/2010 12:13 PM, Jan Kiszka wrote:
+>>>>        
+>>>>>          
+>>>>>> I see.  Won't we hit the same issue when we call pic functions from
+>>>>>> atomic context during the guest entry sequence?
+>>>>>>
+>>>>>>
+>>>>>>            
+>>>>> If there are such call paths, for sure. What concrete path(s) do you
+>>>>> have in mind?
+>>>>>
+>>>>>
+>>>>>          
+>>>> vcpu_enter_guest() ->  inject_pending_event() ->
+>>>> kvm_cpu_{has,get}_interrupt() ->  various pic functions if you're unlucky.
+>>>>        
+>>> But do they kick anyone or just check/pull information? Never saw any
+>>> warnings during my tests last year (granted: with older -rt and kvm
+>>> versions).
+>>>      
+>> Mmh, they could if there is>  1 IRQ pending. Guess this just never
+>> triggered in real life due to typical APIC use and low IRQ load during
+>> PIC times in my tests.
+>>    
+> 
+> We could just ignore the wakeup in this path.  It's called in vcpu 
+> context, so obviously the vcpu is awake and kicking it will only hurt 
+> your feet.
+
+Looking at kvm_vcpu_kick, this already happens: The wake queue is
+checked for pending waiters (ie. non if waking ourself), and no IPI is
+sent if we run on the same CPU like the VCPU is on. That explains why
+this path is practically safe.
+
+> 
+> Longer term, we should clear up this mess.  One possible path is to move 
+> the pic/lapic/injection stuff out of the the critical section, and use 
+> vcpu->requests to close the race between querying the pic/lapic and 
+> entering the guest.
+> 
+
+Sounds worthwhile as well.
+
+Jan
+
+-- 
+Siemens AG, Corporate Technology, CT T DE IT 1
+Corporate Competence Center Embedded Linux
