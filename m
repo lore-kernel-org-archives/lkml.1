@@ -1,419 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523Ab0BXWi5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 17:38:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49564 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758505Ab0BXWiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 17:38:55 -0500
-Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>, nando@ccrma.Stanford.EDU,
-       Carsten Emde <ce@ceag.ch>
-In-Reply-To: <alpine.LFD.2.00.1002241740410.4245@localhost.localdomain>
-References: <alpine.LFD.2.00.1002241740410.4245@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 23:38:21 +0100
-Message-ID: <1267051101.12790.4.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1758133Ab0BXWoG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 17:44:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54179 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757453Ab0BXWoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 17:44:03 -0500
+Message-ID: <4B85AB6C.8000500@kernel.org>
+Date: Wed, 24 Feb 2010 14:42:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Du, Alek" <alek.du@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] x86/pci: exclude mrst pci code for other platform
+References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org> <4B84A846.1000805@kernel.org> <4B84AAC4.2020204@kernel.org> <4B858E89.7040807@kernel.org> <43F901BD926A4E43B106BF17856F0755A321EB54@orsmsx508.amr.corp.intel.com> <4B859DD1.601@zytor.com> <4B85A3C1.3030903@kernel.org> <4B85A8B8.3000608@zytor.com>
+In-Reply-To: <4B85A8B8.3000608@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 17:52 +0100, Thomas Gleixner wrote:
+On 02/24/2010 02:31 PM, H. Peter Anvin wrote:
+> On 02/24/2010 02:10 PM, Yinghai Lu wrote:
+>> On 02/24/2010 01:44 PM, H. Peter Anvin wrote:
+>>> On 02/24/2010 01:03 PM, Pan, Jacob jun wrote:
+>>>> Our goal is to have a binary compatible kernel runs on Moorestown and PC, can
+>>>> we keep the Moorestown PCI code for this purpose?
+>>>
+>>> CONFIG_X86_MRST is supposed to reflect the *ability* to run on
+>>> Moorestown, not the *requirement* of running on Moorestown.  As such,
+>>> Yinghai's patch seems correct to me.
+>>>
+>>> If you cannot boot a kernel with CONFIG_X86_MRST=y on PC hardware, that
+>>> is a bug which should be fixed.
+>>
+>> yes, at 64 bit doesn't need that code yet.
+>>
+>> that pci_fixed_bar_fixup cause my nehalem-ex box warm reset...
+>>
 > 
->     - the highmem problem which Fernando reported with i915 on 32bit
->       i386 is not yet solved. 
+> There was a fix for that earlier today, did you pick that up?
 
-The below compiles and boots a i386 defconfig kernel in kvm, I don't
-have a system with 32bit userspace and i915 handy further test this.
+seem you rebase tip/x86/mrst, and remove the /* */ for that pci quirks...
 
-
----
- arch/x86/include/asm/highmem.h |    9 ++-
- arch/x86/mm/highmem_32.c       |   27 +++++---
- arch/x86/mm/iomap_32.c         |   17 -----
- mm/highmem.c                   |  151 +++++++++++++++++++++++++++------------
- 4 files changed, 128 insertions(+), 76 deletions(-)
-
-diff --git a/arch/x86/include/asm/highmem.h b/arch/x86/include/asm/highmem.h
-index 433ae1f..8279657 100644
---- a/arch/x86/include/asm/highmem.h
-+++ b/arch/x86/include/asm/highmem.h
-@@ -55,14 +55,17 @@ extern unsigned long highstart_pfn, highend_pfn;
- #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
- 
- extern void *kmap_high(struct page *page);
-+extern void *kmap_pfn_prot(unsigned long pfn, pgprot_t prot);
- extern void kunmap_high(struct page *page);
- 
- void *kmap(struct page *page);
-+void *kmap_page_prot(struct page *page, pgprot_t prot);
- extern void kunmap_virt(void *ptr);
- extern struct page *kmap_to_page(void *ptr);
- void kunmap(struct page *page);
- 
- void *__kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot);
-+void *__kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
- void *__kmap_atomic(struct page *page, enum km_type type);
- void *__kmap_atomic_direct(struct page *page, enum km_type type);
- void __kunmap_atomic(void *kvaddr, enum km_type type);
-@@ -85,15 +88,17 @@ extern void add_highpages_with_active_regions(int nid, unsigned long start_pfn,
-  * on PREEMPT_RT kmap_atomic() is a wrapper that uses kmap():
-  */
- #ifdef CONFIG_PREEMPT_RT
--# define kmap_atomic_prot(page, type, prot)	({ pagefault_disable(); kmap(page); })
-+# define kmap_atomic_prot(page, type, prot)	({ pagefault_disable(); kmap_pfn_prot(page_to_pfn(page), prot); })
-+# define kmap_atomic_prot_pfn(pfn, type, prot)	({ pagefault_disable(); kmap_pfn_prot(pfn, prot); })
- # define kmap_atomic(page, type)	({ pagefault_disable(); kmap(page); })
- # define kmap_atomic_pfn(pfn, type)	kmap(pfn_to_page(pfn))
--# define kunmap_atomic(kvaddr, type)	do { pagefault_enable(); kunmap_virt(kvaddr); } while(0)
-+# define kunmap_atomic(kvaddr, type)	do { kunmap_virt(kvaddr); pagefault_enable(); } while(0)
- # define kmap_atomic_to_page(kvaddr)	kmap_to_page(kvaddr)
- # define kmap_atomic_direct(page, type)	__kmap_atomic_direct(page, type)
- # define kunmap_atomic_direct(kvaddr, type)	__kunmap_atomic(kvaddr, type)
- #else
- # define kmap_atomic_prot(page, type, prot)	__kmap_atomic_prot(page, type, prot)
-+# define kmap_atomic_prot_pfn(pfn, type, prot)  __kmap_atomic_prot_pfn(pfn, type, prot)
- # define kmap_atomic(page, type)	__kmap_atomic(page, type)
- # define kmap_atomic_pfn(pfn, type)	__kmap_atomic_pfn(pfn, type)
- # define kunmap_atomic(kvaddr, type)	__kunmap_atomic(kvaddr, type)
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index dcb1899..b4eb59a 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -19,16 +19,6 @@ void kunmap(struct page *page)
- 	kunmap_high(page);
- }
- 
--void kunmap_virt(void *ptr)
--{
--	struct page *page;
--
--	if ((unsigned long)ptr < PKMAP_ADDR(0))
--		return;
--	page = pte_page(pkmap_page_table[PKMAP_NR((unsigned long)ptr)]);
--	kunmap(page);
--}
--
- struct page *kmap_to_page(void *ptr)
- {
- 	struct page *page;
-@@ -70,6 +60,23 @@ void *__kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
- 	return (void *)vaddr;
- }
- 
-+void *__kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
-+{
-+	enum fixed_addresses idx;
-+	unsigned long vaddr;
-+
-+	preempt_disable();
-+	pagefault_disable();
-+
-+	debug_kmap_atomic(type);
-+	idx = type + KM_TYPE_NR * smp_processor_id();
-+	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
-+	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
-+	arch_flush_lazy_mmu_mode();
-+
-+	return (void *)vaddr;
-+}
-+
- void *__kmap_atomic_direct(struct page *page, enum km_type type)
- {
- 	return __kmap_atomic_prot(page, type, kmap_prot);
-diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
-index 715d822..8b784dd 100644
---- a/arch/x86/mm/iomap_32.c
-+++ b/arch/x86/mm/iomap_32.c
-@@ -55,23 +55,6 @@ iomap_free(resource_size_t base, unsigned long size)
- }
- EXPORT_SYMBOL_GPL(iomap_free);
- 
--void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
--{
--	enum fixed_addresses idx;
--	unsigned long vaddr;
--
--	preempt_disable();
--	pagefault_disable();
--
--	debug_kmap_atomic(type);
--	idx = type + KM_TYPE_NR * smp_processor_id();
--	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
--	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
--	arch_flush_lazy_mmu_mode();
--
--	return (void *)vaddr;
--}
--
- /*
-  * Map 'pfn' using fixed map 'type' and protections 'prot'
-  */
-diff --git a/mm/highmem.c b/mm/highmem.c
-index 446b75c..43447d4 100644
---- a/mm/highmem.c
-+++ b/mm/highmem.c
-@@ -66,7 +66,13 @@ unsigned int nr_free_highpages (void)
-  *  1 means its free for use - either mapped or not.
-  *  n means that there are (n-1) current users of it.
-  */
--static atomic_t pkmap_count[LAST_PKMAP];
-+
-+struct pkmap_state {
-+	atomic_t count;
-+	int	 pfn;
-+};
-+
-+static struct pkmap_state pkmap[LAST_PKMAP];
- static atomic_t pkmap_hand;
- static atomic_t pkmap_free;
- static atomic_t pkmap_users;
-@@ -105,25 +111,26 @@ static DECLARE_WAIT_QUEUE_HEAD(pkmap_wait);
-  */
- static int pkmap_try_free(int pos)
- {
--	if (atomic_cmpxchg(&pkmap_count[pos], 1, 0) != 1)
-+	if (atomic_cmpxchg(&pkmap[pos].count, 1, 0) != 1)
- 		return -1;
- 	atomic_dec(&pkmap_free);
- 	/*
- 	 * TODO: add a young bit to make it CLOCK
- 	 */
- 	if (!pte_none(pkmap_page_table[pos])) {
--		struct page *page = pte_page(pkmap_page_table[pos]);
- 		unsigned long addr = PKMAP_ADDR(pos);
- 		pte_t *ptep = &pkmap_page_table[pos];
- 
--		VM_BUG_ON(addr != (unsigned long)page_address(page));
-+		if (!pkmap[pos].pfn) {
-+			struct page *page = pte_page(pkmap_page_table[pos]);
-+			VM_BUG_ON(addr != (unsigned long)page_address(page));
-+			if (!__set_page_address(page, NULL, pos))
-+				BUG();
-+			flush_kernel_dcache_page(page);
-+		}
- 
--		if (!__set_page_address(page, NULL, pos))
--			BUG();
--		flush_kernel_dcache_page(page);
- 		pte_clear(&init_mm, addr, ptep);
- 
--
- 		return 1;
- 	}
- 
-@@ -187,7 +194,7 @@ got_one:
- 				continue;
- 
- 			if (!flush) {
--				atomic_t *counter = &pkmap_count[pos2];
-+				atomic_t *counter = &pkmap[pos2].count;
- 				VM_BUG_ON(atomic_read(counter) != 0);
- 				atomic_set(counter, 2);
- 				pkmap_put(counter);
-@@ -197,7 +204,7 @@ got_one:
- 		flush_tlb_kernel_range(PKMAP_ADDR(0), PKMAP_ADDR(LAST_PKMAP));
- 
- 		for (i = 0; i < nr; i++) {
--			atomic_t *counter = &pkmap_count[entries[i]];
-+			atomic_t *counter = &pkmap[entries[i]].count;
- 			VM_BUG_ON(atomic_read(counter) != 0);
- 			atomic_set(counter, 2);
- 			pkmap_put(counter);
-@@ -207,32 +214,51 @@ got_one:
- 	return pos;
- }
- 
--static unsigned long pkmap_insert(struct page *page)
-+static unsigned long pkmap_insert(unsigned long pfn, pgprot_t prot)
- {
- 	int pos = pkmap_get_free();
- 	unsigned long vaddr = PKMAP_ADDR(pos);
- 	pte_t *ptep = &pkmap_page_table[pos];
--	pte_t entry = mk_pte(page, kmap_prot);
--	atomic_t *counter = &pkmap_count[pos];
-+	pte_t entry = pfn_pte(pfn, prot);
-+	atomic_t *counter = &pkmap[pos].count;
- 
- 	VM_BUG_ON(atomic_read(counter) != 0);
--
- 	set_pte_at(&init_mm, vaddr, ptep, entry);
--	if (unlikely(!__set_page_address(page, (void *)vaddr, pos))) {
-+
-+	pkmap[pos].pfn = 
-+		!(pgprot_val(prot) == pgprot_val(kmap_prot) && pfn_valid(pfn));
-+
-+	if (!pkmap[pos].pfn) {
-+		struct page *page = pfn_to_page(pfn);
-+
-+		if (unlikely(!__set_page_address(page, (void *)vaddr, pos))) {
-+			/*
-+			 * concurrent pkmap_inserts for this page -
-+			 * the other won the race, release this entry.
-+			 *
-+			 * we can still clear the pte without a tlb flush since
-+			 * it couldn't have been used yet.
-+			 */
-+			pte_clear(&init_mm, vaddr, ptep);
-+			VM_BUG_ON(atomic_read(counter) != 0);
-+			atomic_set(counter, 2);
-+			pkmap_put(counter);
-+			return 0;
-+		}
-+	} else {
-+#ifdef ARCH_NEEDS_KMAP_HIGH_GET
- 		/*
--		 * concurrent pkmap_inserts for this page -
--		 * the other won the race, release this entry.
-+		 * non-default prot and pure pfn memory doesn't
-+		 * get map deduplication, nor a working page_address
- 		 *
--		 * we can still clear the pte without a tlb flush since
--		 * it couldn't have been used yet.
-+		 * this also makes it incompatible with 
-+		 * ARCH_NEEDS_KMAP_HIGH_GET
- 		 */
--		pte_clear(&init_mm, vaddr, ptep);
--		VM_BUG_ON(atomic_read(counter) != 0);
--		atomic_set(counter, 2);
--		pkmap_put(counter);
--		vaddr = 0;
--	} else
--		atomic_set(counter, 2);
-+		BUG();
-+#endif
-+	}
-+
-+	atomic_set(counter, 2);
- 
- 	return vaddr;
- }
-@@ -313,20 +339,17 @@ static void kunmap_account(void)
- 	wake_up(&pkmap_wait);
- }
- 
--void *kmap_high(struct page *page)
-+void *kmap_get(struct page *page)
- {
- 	unsigned long vaddr;
--
--
--	kmap_account();
- again:
- 	vaddr = (unsigned long)page_address(page);
- 	if (vaddr) {
--		atomic_t *counter = &pkmap_count[PKMAP_NR(vaddr)];
-+		atomic_t *counter = &pkmap[PKMAP_NR(vaddr)].count;
- 		if (atomic_inc_not_zero(counter)) {
- 			/*
--			 * atomic_inc_not_zero implies a (memory) barrier on success
--			 * so page address will be reloaded.
-+			 * atomic_inc_not_zero implies a (memory) barrier on
-+			 * success so page address will be reloaded.
- 			 */
- 			unsigned long vaddr2 = (unsigned long)page_address(page);
- 			if (likely(vaddr == vaddr2))
-@@ -341,13 +364,42 @@ again:
- 			 * reused.
- 			 */
- 			pkmap_put(counter);
--			goto again;
- 		}
-+		goto again;
- 	}
-+	return (void *)vaddr;
-+}
- 
--	vaddr = pkmap_insert(page);
--	if (!vaddr)
--		goto again;
-+void *kmap_high(struct page *page)
-+{
-+	unsigned long vaddr;
-+
-+	kmap_account();
-+
-+again:
-+	vaddr = (unsigned long)kmap_get(page);
-+	if (!vaddr) {
-+		vaddr = pkmap_insert(page_to_pfn(page), kmap_prot);
-+		if (!vaddr)
-+			goto again;
-+	}
-+
-+	return (void *)vaddr;
-+}
-+
-+
-+void *kmap_pfn_prot(unsigned long pfn, pgprot_t prot)
-+{
-+	unsigned long vaddr;
-+
-+	if (pgprot_val(prot) == pgprot_val(kmap_prot) && 
-+			pfn_valid(pfn) && PageHighMem(pfn_to_page(pfn)))
-+		return kmap_high(pfn_to_page(pfn));
-+
-+	kmap_account();
-+
-+	vaddr = pkmap_insert(pfn, prot);
-+	BUG_ON(!vaddr);
- 
- 	return (void *)vaddr;
- }
-@@ -370,21 +422,26 @@ void *kmap_high_get(struct page *page)
- 	unsigned long vaddr, flags;
- 
- 	lock_kmap_any(flags);
--	vaddr = (unsigned long)page_address(page);
--	if (vaddr) {
--		BUG_ON(pkmap_count[PKMAP_NR(vaddr)] < 1);
--		pkmap_count[PKMAP_NR(vaddr)]++;
--	}
-+	vaddr = (unsigned long)kmap_get(page);
- 	unlock_kmap_any(flags);
--	return (void*) vaddr;
-+	return (void *)vaddr;
- }
- #endif
- 
-- void kunmap_high(struct page *page)
-+void kunmap_virt(void *ptr)
-+{
-+	unsigned long vaddr = (unsigned long)ptr;
-+	if (vaddr < PKMAP_ADDR(0) || vaddr >= PKMAP_ADDR(LAST_PKMAP))
-+		return;
-+	pkmap_put(&pkmap[PKMAP_NR(vaddr)].count);
-+	kunmap_account();
-+}
-+
-+void kunmap_high(struct page *page)
- {
- 	unsigned long vaddr = (unsigned long)page_address(page);
- 	BUG_ON(!vaddr);
--	pkmap_put(&pkmap_count[PKMAP_NR(vaddr)]);
-+	pkmap_put(&pkmap[PKMAP_NR(vaddr)].count);
- 	kunmap_account();
- }
- 
-@@ -539,8 +596,8 @@ void __init page_address_init(void)
- #ifdef CONFIG_HIGHMEM
- 	int i;
- 
--	for (i = 0; i < ARRAY_SIZE(pkmap_count); i++)
--		atomic_set(&pkmap_count[i], 1);
-+	for (i = 0; i < ARRAY_SIZE(pkmap); i++)
-+		atomic_set(&pkmap[i].count, 1);
- 	atomic_set(&pkmap_hand, 0);
- 	atomic_set(&pkmap_free, LAST_PKMAP);
- 	atomic_set(&pkmap_users, 0);
-
-
+Yinghai
