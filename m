@@ -1,142 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757770Ab0BXU2i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 15:28:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45750 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757582Ab0BXU2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 15:28:36 -0500
-Date: Wed, 24 Feb 2010 21:28:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Borislav Petkov <petkovbb@googlemail.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, tglx@linutronix.de,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-tip-commits@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Aristeu Rozanski <aris@redhat.com>, Doug Thompson <norsk5@yahoo.com>,
-       Huang Ying <ying.huang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [tip:x86/mce] x86, mce: Rename cpu_specific_poll to
-	mce_cpu_specific_poll
-Message-ID: <20100224202827.GA25414@basil.fritz.box>
-References: <tip-f91c4d2649531cc36e10c6bc0f92d0f99116b209@git.kernel.org> <20100123051717.GA26471@elte.hu> <20100123075851.GA7098@liondog.tnic> <20100123090003.GA20056@elte.hu> <20100124100815.GA2895@liondog.tnic> <20100216210215.GA9051@elte.hu> <20100222082840.GA3975@liondog.tnic> <20100222094739.GA20844@elte.hu> <4B8271AA.9060005@redhat.com> <4B856500.9030108@infradead.org>
+	id S1758020Ab0BXUgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 15:36:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44421 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757966Ab0BXUgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 15:36:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: s2disk hang update
+Date: Wed, 24 Feb 2010 21:36:19 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>, Mel Gorman <mel@csn.ul.ie>,
+       hugh.dickins@tiscali.co.uk, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux MM <linux-mm@kvack.org>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com> <201002232213.56455.rjw@sisk.pl> <20100224102037.2cca4f83.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100224102037.2cca4f83.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B856500.9030108@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002242136.19584.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 02:42:24PM -0300, Mauro Carvalho Chehab wrote:
-> Mauro Carvalho Chehab wrote:
-> > The EDAC data model needs some discussion, as, currently, the memory is represented 
-> > per csrow, and modern MCU don't allow such level of control (and it doesn't 
-> > make much sense on representing this way, as you can't replace a csrow). The 
-> > better is to use DIMM as the minumum unit.
+On Wednesday 24 February 2010, KAMEZAWA Hiroyuki wrote:
+> On Tue, 23 Feb 2010 22:13:56 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Just to start the data model, this is what a typical EDAC driver presents:
-
-First I suspect the result wouldn't be too compatible with current EDAC,
-so it might be less confusing to give it a new name.
-
+> > Well, it still looks like we're waiting for create_workqueue_thread() to
+> > return, which probably is trying to allocate memory for the thread
+> > structure.
+> > 
+> > My guess is that the preallocated memory pages freed by
+> > free_unnecessary_pages() go into a place from where they cannot be taken for
+> > subsequent NOIO allocations.  I have no idea why that happens though.
+> > 
+> > To test that theory you can try to change GFP_IOFS to GFP_KERNEL in the
+> > calls to clear_gfp_allowed_mask() in kernel/power/hibernate.c (and in
+> > kernel/power/suspend.c for completness).
+> > 
 > 
-> /sys/devices/system/edac/mc/mc0/                                                
-> |-- ce_count                                                                    
-> |-- ce_noinfo_count                                                             
-> |-- csrow0
-> |   |-- ce_count
-> |   |-- ch0_ce_count
-> |   |-- ch0_dimm_label
-> |   |-- ch1_ce_count
-> |   |-- ch1_dimm_label
-> |   |-- ch2_ce_count
-> |   |-- ch2_dimm_label
-> |   |-- ch3_ce_count
-> |   |-- ch3_dimm_label
-> |   |-- dev_type
-> |   |-- edac_mode
-> |   |-- mem_type
-> |   |-- size_mb
-> |   `-- ue_count
-> |-- csrow1                                                                      
-> |   |-- ce_count
-> |   |-- ch0_ce_count
-> |   |-- ch0_dimm_label
-> |   |-- ch1_ce_count
-> |   |-- ch1_dimm_label
-> |   |-- ch2_ce_count
-> |   |-- ch2_dimm_label
-> |   |-- ch3_ce_count
-> |   |-- ch3_dimm_label
-> |   |-- dev_type
-> |   |-- edac_mode
-> |   |-- mem_type
-> |   |-- size_mb
-> |   `-- ue_count
-> |-- device -> ../../../../pci0000:3f/0000:3f:03.0                               
-> |-- mc_name                                                                     
-> |-- reset_counters                                                              
-> |-- sdram_scrub_rate                                                            
-> |-- seconds_since_reset                                                         
-> |-- size_mb                                                                     
-> |-- ue_count                                                                    
-> `-- ue_noinfo_count                                                             
+> If allocation of kernel threads for stop_machine_run() is the problem,
 > 
-> In the case of i7core_edac, there's no way to identify csrows by using
-> the public registers (I've no idea is is there any non-documented register
-> for it). So, the driver maps one dimm per "edac csrow".
+> What happens when
+> 1. use CONIFG_4KSTACK
+> or
+> 2. make use of stop_machine_create(), stop_machine_destroy().
+>    A new interface added by this commit.
+>   http://git.kernel.org/?p=linux/kernel/git/torvalds/  linux-2.6.git;a=commit;h=9ea09af3bd3090e8349ca2899ca2011bd94cda85
+>    You can do no-fail stop_machine_run().
 
-Some thoughts on this:
+Well, that would probably help in this particular case, but the root cause
+seems to be that the (theoretically) freed memory cannot be used for NOIO
+allocations for some reason, which is shown by the Alan's testing.
 
-One of my goals would be that a fall back driver can create the information
-just from the SMBIOS (that is without error counts, although there
-are some cases those can be mapped from corrected MCEs)
+Generally speaking, we use __free_page() to release some pages preallocated
+for the hibernation image, but the memory subsystem refuses to use these
+pages for NOIO allocations made later.  However, it evidently is able to use
+them is __GFP_WAIT is unset in the mask.
 
-I think I would prefer a flat model:
+Is this behavior intentional?
 
-socket <-> DIMM 
-
-socket could be arbitary, either a CPU socket, or a external memory controller
-
-and then have a "path" string per DIMM that can be a arbitrary path to the DIMM,
-depending on the system: e.g. on a system with on board buffers it could
-include the buffer, the channel to the buffer and the channel behind
-the buffer. The string could be free form like a path name e.g. 
-
-FOO-CH1/DDR-CH2/DIMMa
-
-I think it doesn't make sense to have that in the file system hierarchy
-itself (that would just make it harder to parse without any real 
-benefit, since hardware changes could completely change the directory
-structure), I would just keep it as an attribute file in the leaf nodes.
-
-I don't think we it makes much sense to have anything below the DIMM (e.g. ranks)
-These are typically hard to get in a generic way and the most important
-information on this level is what units to replace.
-
-Then the other important part is a good way to manage fall back counters 
-when you cannot identify the target DIMM (that happens occasionally for various
-reasons).
-
-In this case would need a "aggregator object" with a truncated path
-that still maintains the same counts.
-
-Then of course there still needs to be a event interface to let someone
-actually do something with all these counts without having to poll.
-
-Most interesting cases always need user space support, so also of course
-user space needs raw events too.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Rafael
