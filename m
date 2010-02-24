@@ -1,139 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163Ab0BXDN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:13:28 -0500
-Received: from mga02.intel.com ([134.134.136.20]:29678 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755106Ab0BXDNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:13:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
-   d="scan'208";a="495089975"
-Message-Id: <20100224031053.886603916@intel.com>
-User-Agent: quilt/0.48-1
-Date: Wed, 24 Feb 2010 11:10:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Chris Frost <frost@cs.ucla.edu>,
-       Steve VanDeBogart <vandebo@cs.ucla.edu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-CC: Chris Mason <chris.mason@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Clemens Ladisch <clemens@ladisch.de>
-CC: Olivier Galibert <galibert@pobox.com>
-cc: Vivek Goyal <vgoyal@redhat.com>
-cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-cc: Matt Mackall <mpm@selenic.com>
-CC: Nick Piggin <npiggin@suse.de>
-cc: Linux Memory Management List <linux-mm@kvack.org>
-CC: <linux-fsdevel@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 02/15] readahead: retain inactive lru pages to be accessed soon
-References: <20100224031001.026464755@intel.com>
-Content-Disposition: inline; filename=readahead-retain-pages-find_get_page.patch
+	id S1755204Ab0BXDNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:13:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34692
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754911Ab0BXDNb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:13:31 -0500
+Date: Tue, 23 Feb 2010 19:13:47 -0800 (PST)
+Message-Id: <20100223.191347.124292181.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Frost <frost@cs.ucla.edu>
 
-Ensure that cached pages in the inactive list are not prematurely evicted;
-move such pages to lru head when they are covered by
-- in-kernel heuristic readahead
-- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+1) Wireless fixes from Linville and co. in particular an
+   iwlwifi tfd freeing issue that many people are likely to hit.
 
-Before this patch, pages already in core may be evicted before the
-pages covered by the same prefetch scan but that were not yet in core.
-Many small read requests may be forced on the disk because of this
-behavior.
+2) GRO handling uses napi->dev when it should use skb->dev,
+   breaking VLAN + GRO.  Fix from Ajit Khaparde.
 
-In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-has no effect on the page's location in the LRU list, even if it is the
-next victim on the inactive list.
+3) Make IPV6 max_addresses sysctl documentation clearer.
 
-This change helps address the performance problems we encountered
-while modifying SQLite and the GIMP to use large file prefetching.
-Overall these prefetching techniques improved the runtime of large
-benchmarks by 10-17x for these applications. More in the publication
-_Reducing Seek Overhead with Application-Directed Prefetching_ in
-USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+4) Add new device ID to cdc_ether, from Torgny Johansson.
 
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+5) tc35815 double netif_wake_queue()s, triggering a BUG().
+   Fix from Atsushi Nemoto.
 
---- linux.orig/mm/readahead.c	2010-02-24 10:44:26.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-24 10:44:40.000000000 +0800
-@@ -9,7 +9,9 @@
- 
- #include <linux/kernel.h>
- #include <linux/fs.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
-+#include <linux/mm_inline.h>
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-@@ -133,6 +135,40 @@ out:
- }
- 
- /*
-+ * The file range is expected to be accessed in near future.  Move pages
-+ * (possibly in inactive lru tail) to lru head, so that they are retained
-+ * in memory for some reasonable time.
-+ */
-+static void retain_inactive_pages(struct address_space *mapping,
-+				  pgoff_t index, int len)
-+{
-+	int i;
-+	struct page *page;
-+	struct zone *zone;
-+
-+	for (i = 0; i < len; i++) {
-+		page = find_get_page(mapping, index + i);
-+		if (!page)
-+			continue;
-+
-+		zone = page_zone(page);
-+		spin_lock_irq(&zone->lru_lock);
-+
-+		if (PageLRU(page) &&
-+		    !PageActive(page) &&
-+		    !PageUnevictable(page)) {
-+			int lru = page_lru_base_type(page);
-+
-+			del_page_from_lru_list(zone, page, lru);
-+			add_page_to_lru_list(zone, page, lru);
-+		}
-+
-+		spin_unlock_irq(&zone->lru_lock);
-+		put_page(page);
-+	}
-+}
-+
-+/*
-  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
-  * the pages first, then submits them all for I/O. This avoids the very bad
-  * behaviour which would occur if page allocations are causing VM writeback.
-@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address
- 	}
- 
- 	/*
-+	 * Normally readahead will auto stop on cached segments, so we won't
-+	 * hit many cached pages. If it does happen, bring the inactive pages
-+	 * adjecent to the newly prefetched ones(if any).
-+	 */
-+	if (ret < nr_to_read)
-+		retain_inactive_pages(mapping, offset, page_idx);
-+
-+	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
- 	 * uptodate then the caller will launch readpage again, and
- 	 * will then handle the error.
+6) DMA mapping error handlng on RX in e1000 driver crashes under
+   load.  Fix from Anton Blanchard.
 
+7) MAINTAINERS update for mv643xx_eth.
 
+Please pull, thanks a lot!
+
+The following changes since commit be64c970f601d5bb439b6cc88ea2bd208b3422a0:
+  Linus Torvalds (1):
+        Merge branch 'release' of git://git.kernel.org/.../lenb/linux-acpi-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Ajit Khaparde (1):
+      net: bug fix for vlan + gro issue
+
+Anton Blanchard (1):
+      e1000: Fix DMA mapping error handling on RX
+
+Atsushi Nemoto (1):
+      tc35815: Remove a wrong netif_wake_queue() call which triggers BUG_ON
+
+Brian Haley (1):
+      IPv6: better document max_addresses parameter
+
+Dan Halperin (1):
+      iwlwifi: set HT flags after channel in rxon
+
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+Lennert Buytenhek (1):
+      MAINTAINERS: update mv643xx_eth maintenance status
+
+Stanislaw Gruszka (1):
+      iwlwifi: sanity check before counting number of tfds can be free
+
+Torgny Johansson (1):
+      cdc_ether: new PID for Ericsson C3607w to the whitelist (resubmit)
+
+Wey-Yi Guy (1):
+      iwlwifi: error checking for number of tfds in queue
+
+ Documentation/networking/ip-sysctl.txt  |    8 ++++----
+ MAINTAINERS                             |    4 ++--
+ drivers/net/e1000/e1000_main.c          |   19 ++++++++++++++++++-
+ drivers/net/tc35815.c                   |    1 -
+ drivers/net/usb/cdc_ether.c             |    5 +++++
+ drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-5000.c |    8 +++-----
+ drivers/net/wireless/iwlwifi/iwl-core.c |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-core.h |    2 ++
+ drivers/net/wireless/iwlwifi/iwl-tx.c   |   22 ++++++++++++++++++++--
+ net/core/dev.c                          |    2 +-
+ 11 files changed, 57 insertions(+), 18 deletions(-)
