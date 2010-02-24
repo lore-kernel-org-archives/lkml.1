@@ -1,24 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288Ab0BXESb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 23:18:31 -0500
-Received: from mga03.intel.com ([143.182.124.21]:62801 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755260Ab0BXES0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 23:18:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
-   d="scan'208";a="247418260"
-Date: Wed, 24 Feb 2010 12:18:22 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+	id S1755282Ab0BXEYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 23:24:20 -0500
+Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:59032 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755244Ab0BXEYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 23:24:19 -0500
+Date: Wed, 24 Feb 2010 15:24:14 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
        Linux Memory Management List <linux-mm@kvack.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [RFC] nfs: use 2*rsize readahead size
-Message-ID: <20100224041822.GB27459@localhost>
+Message-ID: <20100224042414.GG16175@discord.disaster>
 References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,7 +26,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 11:29:34AM +0800, Dave Chinner wrote:
+On Wed, Feb 24, 2010 at 02:29:34PM +1100, Dave Chinner wrote:
 > On Wed, Feb 24, 2010 at 10:41:01AM +0800, Wu Fengguang wrote:
 > > With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
 > > readahead size 512k*15=7680k is too large than necessary for typical
@@ -69,22 +66,18 @@ On Wed, Feb 24, 2010 at 11:29:34AM +0800, Dave Chinner wrote:
 > > done
 > 
 > That's doing a cached read out of the server cache, right? You
-
-It does not involve disk IO at least. (The sparse file dataset is
-larger than server cache.)
-
 > might find the results are different if the server has to read the
 > file from disk. I would expect reads from the server cache not
 > to require much readahead as there is no IO latency on the server
 > side for the readahead to hide....
 
-Sure the result will be different when disk IO is involved.
-In this case I would expect the server admin to setup the optimal
-readahead size for the disk(s).
+FWIW, if you mount the client with "-o rsize=32k" or the server only
+supports rsize <= 32k then this will probably hurt throughput a lot
+because then readahead will be capped at 64k instead of 480k....
 
-It sounds silly to have
+Cheers,
 
-        client_readahead_size > server_readahead_size
-
-Thanks,
-Fengguang
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
