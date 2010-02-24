@@ -1,85 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614Ab0BXHih (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 02:38:37 -0500
-Received: from mail-gx0-f217.google.com ([209.85.217.217]:39422 "EHLO
-	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755584Ab0BXHid (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 02:38:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:cc:date:message-id:in-reply-to:references
-         :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=PPqg872y0H8a4VswXcwXTaJh6jHN5XwliXZQGhwWWCDRAP711FccXZdeQVJ9uXssjJ
-         TNWi2B0hQjzr0b2ETbpMaQsDJdr8q6M8+CmhTDAVW5shww+xtopd0SSW1++SaL5tbQFd
-         ATX7oSBbIxw5hugYU07AQmDwiuAN8eTfJsNnY=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH 09/14] Regulators: max8660 - annotate probe and remove methods
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org
-Date: Tue, 23 Feb 2010 23:38:28 -0800
-Message-ID: <20100224073828.15964.55037.stgit@localhost.localdomain>
-In-Reply-To: <20100224073342.15964.8863.stgit@localhost.localdomain>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	id S1755688Ab0BXHju (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 02:39:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53249 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568Ab0BXHiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 02:38:17 -0500
+Date: Wed, 24 Feb 2010 09:34:25 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: gleb@redhat.com, rusty@rustcorp.com.au, kvm@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, markmc@redhat.com, herbert.xu@redhat.com,
+       quintela@redhat.com, dlaor@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 3/3] vhost: fix get_user_pages_fast error handling
+Message-ID: <20100224073424.GC27806@redhat.com>
+References: <20100223173952.GC9834@redhat.com> <20100223.144235.08984181.davem@davemloft.net> <20100224053737.GB27806@redhat.com> <20100223.230428.71578656.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100223.230428.71578656.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+On Tue, Feb 23, 2010 at 11:04:28PM -0800, David Miller wrote:
+> From: "Michael S. Tsirkin" <mst@redhat.com>
+> Date: Wed, 24 Feb 2010 07:37:37 +0200
+> 
+> > Dave, so while Rusty's on vacation, what's the best way to get vhost
+> > infrastructure fixes in? Are you ok with getting pull requests and
+> > merging them into net-next?  That should keep the clutter in your inbox
+> > to the minimum.
+> > 
+> > Of course network changes would still go the usual way.
+> 
+> Well, who is providing oversight of vhost work while he's
+> gone?
 
- drivers/regulator/max8660.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+My plan was to get peer review of the patches before merging.
+So far Juan Quintela and Gleb Natapov gave feedback.
 
-diff --git a/drivers/regulator/max8660.c b/drivers/regulator/max8660.c
-index acc2fb7..f12f1bb 100644
---- a/drivers/regulator/max8660.c
-+++ b/drivers/regulator/max8660.c
-@@ -345,8 +345,8 @@ static struct regulator_desc max8660_reg[] = {
- 	},
- };
- 
--static int max8660_probe(struct i2c_client *client,
--			      const struct i2c_device_id *i2c_id)
-+static int __devinit max8660_probe(struct i2c_client *client,
-+				   const struct i2c_device_id *i2c_id)
- {
- 	struct regulator_dev **rdev;
- 	struct max8660_platform_data *pdata = client->dev.platform_data;
-@@ -354,7 +354,7 @@ static int max8660_probe(struct i2c_client *client,
- 	int boot_on, i, id, ret = -EINVAL;
- 
- 	if (pdata->num_subdevs > MAX8660_V_END) {
--		dev_err(&client->dev, "Too much regulators found!\n");
-+		dev_err(&client->dev, "Too many regulators found!\n");
- 		goto out;
- 	}
- 
-@@ -462,7 +462,7 @@ out:
- 	return ret;
- }
- 
--static int max8660_remove(struct i2c_client *client)
-+static int __devexit max8660_remove(struct i2c_client *client)
- {
- 	struct regulator_dev **rdev = i2c_get_clientdata(client);
- 	int i;
-@@ -485,9 +485,10 @@ MODULE_DEVICE_TABLE(i2c, max8660_id);
- 
- static struct i2c_driver max8660_driver = {
- 	.probe = max8660_probe,
--	.remove = max8660_remove,
-+	.remove = __devexit_p(max8660_remove),
- 	.driver		= {
- 		.name	= "max8660",
-+		.owner	= THIS_MODULE,
- 	},
- 	.id_table	= max8660_id,
- };
+> Has he, implicitly or explicitly, appointed a maintainer
+> while he's away?
 
+Implicitly, I guess. He said "if there's an issue Michael Tsirkin is the
+best person to resolve it", this was wrt merging his virtio&lguest tree.
+He didn't mention vhost, I wrote all of vhost though, there shouldn't be
+an issue with that.
+
+-- 
+MST
