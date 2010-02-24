@@ -1,135 +1,231 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865Ab0BXDMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Feb 2010 22:12:18 -0500
-Received: from mga03.intel.com ([143.182.124.21]:40913 "EHLO mga03.intel.com"
+	id S1754778Ab0BXDMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Feb 2010 22:12:17 -0500
+Received: from mga03.intel.com ([143.182.124.21]:29010 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383Ab0BXDMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Feb 2010 22:12:09 -0500
+	id S1754370Ab0BXDMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Feb 2010 22:12:08 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,529,1262592000"; 
-   d="scan'208";a="247401637"
-Message-Id: <20100224031054.449606633@intel.com>
+   d="scan'208";a="247401634"
+Message-Id: <20100224031054.734136802@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 24 Feb 2010 11:10:07 +0800
+Date: Wed, 24 Feb 2010 11:10:09 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
+CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Clemens Ladisch <clemens@ladisch.de>
 CC: Olivier Galibert <galibert@pobox.com>
 cc: Vivek Goyal <vgoyal@redhat.com>
 cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 cc: Matt Mackall <mpm@selenic.com>
+CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 06/15] readahead: replace ra->mmap_miss with ra->ra_flags
+Subject: [PATCH 08/15] readahead: record readahead patterns
 References: <20100224031001.026464755@intel.com>
-Content-Disposition: inline; filename=readahead-flags.patch
+Content-Disposition: inline; filename=readahead-tracepoints.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a readahead flags field and embed the existing mmap_miss in it
-(mainly to save space).
+Record the readahead pattern in ra_flags. This info can be examined by
+users via the readahead tracing/stats interfaces.
 
-It also changes the mmap_miss upper bound from LONG_MAX to 4096.
-This is to help adapt properly for changing mmap access patterns.
+Currently 7 patterns are defined:
 
-It will be possible to lose the flags in race conditions, however the
-impact should be limited.  For the race to happen, there must be two
-threads sharing the same file descriptor to be in page fault or
-readahead at the same time.
+      	pattern			readahead for
+-----------------------------------------------------------
+	RA_PATTERN_INITIAL	start-of-file/oversize read
+	RA_PATTERN_SUBSEQUENT	trivial     sequential read
+	RA_PATTERN_CONTEXT	interleaved sequential read
+	RA_PATTERN_THRASH	thrashed    sequential read
+	RA_PATTERN_MMAP_AROUND	mmap fault
+	RA_PATTERN_FADVISE	posix_fadvise()
+	RA_PATTERN_RANDOM	random read
 
-Note that it has always been racy for "page faults" at the same time.
-
-And if ever the race happen, we'll lose one mmap_miss++ or mmap_miss--.
-Which may change some concrete readahead behavior, but won't really
-impact overall I/O performance.
-
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu> 
+CC: Jens Axboe <jens.axboe@oracle.com> 
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/fs.h |   30 +++++++++++++++++++++++++++++-
- mm/filemap.c       |    7 ++-----
- 2 files changed, 31 insertions(+), 6 deletions(-)
+ include/linux/fs.h |   32 ++++++++++++++++++++++++++++++++
+ include/linux/mm.h |    4 +++-
+ mm/filemap.c       |    9 +++++++--
+ mm/readahead.c     |   17 +++++++++++++----
+ 4 files changed, 55 insertions(+), 7 deletions(-)
 
---- linux.orig/include/linux/fs.h	2010-02-24 10:44:30.000000000 +0800
-+++ linux/include/linux/fs.h	2010-02-24 10:44:43.000000000 +0800
-@@ -889,10 +889,38 @@ struct file_ra_state {
- 					   there are only # of pages ahead */
- 
- 	unsigned int ra_pages;		/* Maximum readahead window */
--	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
-+	unsigned int ra_flags;
- 	loff_t prev_pos;		/* Cache last read() position */
+--- linux.orig/include/linux/fs.h	2010-02-24 10:44:44.000000000 +0800
++++ linux/include/linux/fs.h	2010-02-24 10:44:45.000000000 +0800
+@@ -894,8 +894,40 @@ struct file_ra_state {
  };
  
-+/* ra_flags bits */
-+#define	READAHEAD_MMAP_MISS	0x00000fff /* cache misses for mmap access */
+ /* ra_flags bits */
++#define READAHEAD_PATTERN_SHIFT	20
++#define READAHEAD_PATTERN	0x00f00000
+ #define	READAHEAD_MMAP_MISS	0x00000fff /* cache misses for mmap access */
+ #define READAHEAD_THRASHED	0x10000000
++#define	READAHEAD_MMAP		0x20000000
 +
 +/*
-+ * Don't do ra_flags++ directly to avoid possible overflow:
-+ * the ra fields can be accessed concurrently in a racy way.
++ * Which policy makes decision to do the current read-ahead IO?
 + */
-+static inline unsigned int ra_mmap_miss_inc(struct file_ra_state *ra)
-+{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
++enum readahead_pattern {
++	RA_PATTERN_INITIAL,
++	RA_PATTERN_SUBSEQUENT,
++	RA_PATTERN_CONTEXT,
++	RA_PATTERN_THRASH,
++	RA_PATTERN_MMAP_AROUND,
++	RA_PATTERN_FADVISE,
++	RA_PATTERN_RANDOM,
++	RA_PATTERN_ALL,		/* for summary stats */
++	RA_PATTERN_MAX
++};
 +
-+	if (miss < READAHEAD_MMAP_MISS) {
-+		miss++;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
-+	return miss;
++static inline int ra_pattern(int ra_flags)
++{
++	int pattern = (ra_flags & READAHEAD_PATTERN)
++			       >> READAHEAD_PATTERN_SHIFT;
++
++	return min(pattern, RA_PATTERN_ALL);
 +}
 +
-+static inline void ra_mmap_miss_dec(struct file_ra_state *ra)
++static inline void ra_set_pattern(struct file_ra_state *ra, int pattern)
 +{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-+
-+	if (miss) {
-+		miss--;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
++	ra->ra_flags = (ra->ra_flags & ~READAHEAD_PATTERN) |
++			    (pattern << READAHEAD_PATTERN_SHIFT);
 +}
-+
+ 
  /*
-  * Check if @index falls in the readahead windows.
+  * Don't do ra_flags++ directly to avoid possible overflow:
+--- linux.orig/mm/readahead.c	2010-02-24 10:44:44.000000000 +0800
++++ linux/mm/readahead.c	2010-02-24 10:44:45.000000000 +0800
+@@ -339,7 +339,10 @@ unsigned long max_sane_readahead(unsigne
+  * Submit IO for the read-ahead request in file_ra_state.
   */
---- linux.orig/mm/filemap.c	2010-02-24 10:44:25.000000000 +0800
-+++ linux/mm/filemap.c	2010-02-24 10:44:43.000000000 +0800
-@@ -1418,14 +1418,12 @@ static void do_sync_mmap_readahead(struc
- 		return;
+ unsigned long ra_submit(struct file_ra_state *ra,
+-		       struct address_space *mapping, struct file *filp)
++			struct address_space *mapping,
++			struct file *filp,
++			pgoff_t offset,
++			unsigned long req_size)
+ {
+ 	int actual;
+ 
+@@ -473,6 +476,7 @@ ondemand_readahead(struct address_space 
+ 	 * start of file
+ 	 */
+ 	if (!offset) {
++		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
+ 		ra->size = get_init_ra_size(req_size, max);
+ 		ra->async_size = ra->size > req_size ?
+@@ -493,6 +497,7 @@ ondemand_readahead(struct address_space 
+ 	 */
+ 	if ((offset == (ra->start + ra->size - ra->async_size) ||
+ 	     offset == (ra->start + ra->size))) {
++		ra_set_pattern(ra, RA_PATTERN_SUBSEQUENT);
+ 		ra->start += ra->size;
+ 		ra->size = get_next_ra_size(ra, max);
+ 		ra->async_size = ra->size;
+@@ -503,6 +508,7 @@ ondemand_readahead(struct address_space 
+ 	 * oversize read, no need to query page cache
+ 	 */
+ 	if (req_size > max && !hit_readahead_marker) {
++		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
+ 		ra->size = max;
+ 		ra->async_size = max;
+@@ -548,8 +554,10 @@ context_readahead:
+ 	 */
+ 	if (!size && !hit_readahead_marker) {
+ 		if (!ra_thrashed(ra, offset)) {
++			ra_set_pattern(ra, RA_PATTERN_RANDOM);
+ 			ra->size = min(req_size, max);
+ 		} else {
++			ra_set_pattern(ra, RA_PATTERN_THRASH);
+ 			retain_inactive_pages(mapping, offset, min(2 * max,
+ 						ra->start + ra->size - offset));
+ 			ra->size = max_t(int, ra->size/2, MIN_READAHEAD_PAGES);
+@@ -566,12 +574,13 @@ context_readahead:
+ 	if (size >= offset)
+ 		size *= 2;
+ 	/*
+-	 * pages to readahead are already cached
++	 * Pages to readahead are already cached?
+ 	 */
+ 	if (size <= start - offset)
+ 		return 0;
+-
+ 	size -= start - offset;
++
++	ra_set_pattern(ra, RA_PATTERN_CONTEXT);
+ 	ra->start = start;
+ 	ra->size = clamp_t(unsigned int, size, MIN_READAHEAD_PAGES, max);
+ 	ra->async_size = min(ra->size, 1 + size / READAHEAD_ASYNC_RATIO);
+@@ -587,7 +596,7 @@ readit:
+ 		ra->size += ra->async_size;
  	}
  
--	if (ra->mmap_miss < INT_MAX)
--		ra->mmap_miss++;
+-	return ra_submit(ra, mapping, filp);
++	return ra_submit(ra, mapping, filp, offset, req_size);
+ }
  
- 	/*
- 	 * Do we miss much more than hit in this file? If so,
- 	 * stop bothering with read-ahead. It will only hurt.
- 	 */
--	if (ra->mmap_miss > MMAP_LOTSAMISS)
-+	if (ra_mmap_miss_inc(ra) > MMAP_LOTSAMISS)
+ /**
+--- linux.orig/include/linux/mm.h	2010-02-24 10:44:41.000000000 +0800
++++ linux/include/linux/mm.h	2010-02-24 10:44:45.000000000 +0800
+@@ -1208,7 +1208,9 @@ void page_cache_async_readahead(struct a
+ unsigned long max_sane_readahead(unsigned long nr);
+ unsigned long ra_submit(struct file_ra_state *ra,
+ 			struct address_space *mapping,
+-			struct file *filp);
++			struct file *filp,
++			pgoff_t offset,
++			unsigned long req_size);
+ 
+ /* Do stack extension */
+ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
+--- linux.orig/mm/filemap.c	2010-02-24 10:44:43.000000000 +0800
++++ linux/mm/filemap.c	2010-02-24 10:44:45.000000000 +0800
+@@ -1413,6 +1413,7 @@ static void do_sync_mmap_readahead(struc
+ 
+ 	if (VM_SequentialReadHint(vma) ||
+ 			offset - 1 == (ra->prev_pos >> PAGE_CACHE_SHIFT)) {
++		ra->ra_flags |= READAHEAD_MMAP;
+ 		page_cache_sync_readahead(mapping, ra, file, offset,
+ 					  ra->ra_pages);
  		return;
+@@ -1431,10 +1432,12 @@ static void do_sync_mmap_readahead(struc
+ 	 */
+ 	ra_pages = max_sane_readahead(ra->ra_pages);
+ 	if (ra_pages) {
++		ra->ra_flags |= READAHEAD_MMAP;
++		ra_set_pattern(ra, RA_PATTERN_MMAP_AROUND);
+ 		ra->start = max_t(long, 0, offset - ra_pages/2);
+ 		ra->size = ra_pages;
+ 		ra->async_size = 0;
+-		ra_submit(ra, mapping, file);
++		ra_submit(ra, mapping, file, offset, 1);
+ 	}
+ }
  
- 	/*
-@@ -1455,8 +1453,7 @@ static void do_async_mmap_readahead(stru
- 	/* If we don't want any read-ahead, don't bother */
+@@ -1454,9 +1457,11 @@ static void do_async_mmap_readahead(stru
  	if (VM_RandomReadHint(vma))
  		return;
--	if (ra->mmap_miss > 0)
--		ra->mmap_miss--;
-+	ra_mmap_miss_dec(ra);
- 	if (PageReadahead(page))
+ 	ra_mmap_miss_dec(ra);
+-	if (PageReadahead(page))
++	if (PageReadahead(page)) {
++		ra->ra_flags |= READAHEAD_MMAP;
  		page_cache_async_readahead(mapping, ra, file,
  					   page, offset, ra->ra_pages);
++	}
+ }
+ 
+ /**
 
 
