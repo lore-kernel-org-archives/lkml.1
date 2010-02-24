@@ -1,73 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615Ab0BXTMQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 14:12:16 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:49735 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757364Ab0BXTMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 14:12:14 -0500
-Date: Wed, 24 Feb 2010 20:12:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Message-ID: <20100224191213.GH1025@kernel.dk>
-References: <20100223221635.GP1025@kernel.dk> <Pine.LNX.4.44L0.1002241051470.2436-100000@iolanthe.rowland.org>
+	id S1757663Ab0BXTOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 14:14:09 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36851 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757576Ab0BXTOI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 14:14:08 -0500
+Date: Wed, 24 Feb 2010 19:14:03 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/14] Regulators: wm8400 - cleanup platform driver
+ data handling
+Message-ID: <20100224191402.GA8316@rakim.wolfsonmicro.main>
+References: <20100224073342.15964.8863.stgit@localhost.localdomain>
+ <20100224073849.15964.62321.stgit@localhost.localdomain>
+ <20100224102548.GG18896@rakim.wolfsonmicro.main>
+ <20100224190234.GD25304@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002241051470.2436-100000@iolanthe.rowland.org>
+In-Reply-To: <20100224190234.GD25304@core.coreip.homeip.net>
+X-Cookie: Approved for veterans.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24 2010, Alan Stern wrote:
-> On Tue, 23 Feb 2010, Jens Axboe wrote:
-> 
-> > > > And that's back to the question of whether or not that is a nice thing to
-> > > > do. It seems a bit dirty, but otoh where else to do it. Perhaps just
-> > > > using the kblockd to postpone the del_gendisk() to out-of-resume context
-> > > > would be the best approach.
-> > > 
-> > > That would involve a layering violation, wouldn't it?  Either the 
-> > > driver would have to interface with kblockd directly, or else 
-> > > del_gendisk() would need to know whether the writeback task was frozen.
-> > > 
-> > > On the whole, I think it's best for the block layer to retain full
-> > > control over its own tasks and requirements.
-> > 
-> > You would export such functionality - del_gendisk_deferred(), or
-> > something like that. The kblockd suggestion was implementation detail,
-> > not something the driver would concern itself with. It's not exactly
-> > picture perfect, but it could be used from eg resume context where the
-> > device isn't fully live yet.
-> 
-> Hmm.  There's still no way for the driver to know whether or not the
-> writeback task is frozen when it wants to call del_gendisk().  It
-> would have to defer _all_ such calls.  And all hot-pluggable block
-> drivers would have to do this -- would that be acceptable?
+On Wed, Feb 24, 2010 at 11:02:34AM -0800, Dmitry Torokhov wrote:
+> On Wed, Feb 24, 2010 at 10:25:49AM +0000, Mark Brown wrote:
 
-I was assuming it knew it was being called from a critical location,
-like from resume. I guess the callback just iterates the bus devices and
-calls the device remove, so that doesn't quite work without other
-changes.
+> > Nack due to this change - this change would make it impossible for
+> > callers to actually call the function.  Note that nothing including only
+> > wm8400.h even has a struct declaration, much less defniition, for struct
+> > wm8400.
 
-> How about plugging the request queue instead of freezing the writeback 
-> task?  Would that work?  It should be easy enough for a driver to 
-> unplug the queue before unregistering its device from within a resume 
-> method.
+> If you notice I added forward declaration of "struct wm8400" to wm8400.h
+> thus users can pass around pointer to the structure.
 
-We have specific methods for either freezing of stopping or starting the
-queue, perhaps those would be appropriate for suspend/resume actions. It
-effectively prevents the queueing function from being called. If there
-are dirty pages for the device, then it would not help though, as you
-would still get stuck waiting for that IO to complete.
+This doesn't help unless you also provide a way for users to obtain a
+struct wm8400.
 
--- 
-Jens Axboe
+> I really think we should refrain from passing naked 'struct device *'
+> pointers as much as possible since it is error prone. Otherwise
+> wm8400_register_regulator has no way of ensuting that passed  'dev' is
+> indeed wm8400.
 
+Right, there's no type safety here (and this whole method of registering
+regulators is fairly deprecated anyway in favour of just straight
+platform data) but really it doesn't buy us much - the users get exactly
+the struct device they need to use passed in to them, there's really
+very little chance for them to get confused about what they're talking
+about.
