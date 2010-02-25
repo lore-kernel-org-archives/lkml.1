@@ -1,41 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933329Ab0BYSeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:34:17 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:42956 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933250Ab0BYSeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:34:16 -0500
-Date: Thu, 25 Feb 2010 12:30:26 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-In-Reply-To: <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002251228140.18861@router.home>
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org>
- <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi>
- <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S932974Ab0BYSgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:36:45 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:50476 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932838Ab0BYSgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 13:36:44 -0500
+Date: Thu, 25 Feb 2010 12:36:43 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: venkatesh.pallipadi@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Fix sched_clock_cpu for systems with unsynchronized TSC
+Message-ID: <20100225183643.GA21302@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, David Rientjes wrote:
+On UV systems, the TSC is not synchronized across blades.  The
+sched_clock_cpu() function is returning values that can go backwards 
+(I've seen as much as 8 seconds) when switching between cpus.
 
-> I don't see how memory hotadd with a new node being onlined could have
-> worked fine before since slab lacked any memory hotplug notifier until
-> Andi just added it.
+As each cpu comes up, early_init_intel() will currently set the
+sched_clock_stable flag true.  When mark_tsc_unstable() runs, it clears
+the flag, but this only occurs once (the first time a cpu comes up whose
+TSC is not synchronized with cpu 0).  After this, early_init_intel() will
+set the flag again as the next cpu comes up.
 
-AFAICR The cpu notifier took on that role in the past.
+This patch changes the logic to assume that the sched_clock is stable at
+first.  From then on it is only cleared.
 
-If what you say is true then memory hotplug has never worked before.
-Kamesan?
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
+---
+
+ arch/x86/kernel/cpu/intel.c |    4 ++--
+ kernel/sched_clock.c        |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/intel.c
++++ linux/arch/x86/kernel/cpu/intel.c
+@@ -70,8 +70,8 @@ static void __cpuinit early_init_intel(s
+ 	if (c->x86_power & (1 << 8)) {
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+ 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
+-		sched_clock_stable = 1;
+-	}
++	} else
++		sched_clock_stable = 0;
+ 
+ 	/*
+ 	 * There is a known erratum on Pentium III and Core Solo
+Index: linux/kernel/sched_clock.c
+===================================================================
+--- linux.orig/kernel/sched_clock.c
++++ linux/kernel/sched_clock.c
+@@ -45,7 +45,7 @@ unsigned long long __attribute__((weak))
+ static __read_mostly int sched_clock_running;
+ 
+ #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+-__read_mostly int sched_clock_stable;
++__read_mostly int sched_clock_stable = 1;
+ 
+ struct sched_clock_data {
+ 	u64			tick_raw;
