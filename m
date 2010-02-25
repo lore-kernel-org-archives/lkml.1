@@ -1,173 +1,221 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933954Ab0BYV1O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:27:14 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63617 "EHLO
+	id S933919Ab0BYV1v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:27:51 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63611 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933876Ab0BYVWk (ORCPT
+	with ESMTP id S933872Ab0BYVWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:40 -0500
+	Thu, 25 Feb 2010 16:22:39 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: [PATCH 17/28] x86,kgdb: Add low level debug hook
-Date: Thu, 25 Feb 2010 15:21:22 -0600
-Message-Id: <1267132893-23624-18-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Henrik Rydberg <rydberg@euromail.se>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-input@vger.kernel.org
+Subject: [PATCH 23/28] keyboard, input: Add hook to input to allow low level event clear
+Date: Thu, 25 Feb 2010 15:21:28 -0600
+Message-Id: <1267132893-23624-24-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:55.0195 (UTC) FILETIME=[8E2D9CB0:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:22:00.0930 (UTC) FILETIME=[9198B420:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a triple fault is
-to have a low level "first opportunity handler" in the int3 exception
-handler.
+When using a keyboard with kdb, on resuming the system there needs to
+be a hook to allow for the keyboard state to get reset.
 
-Generally this will be something the vast majority of folks will not
-need, but for those who need it, it is added as a kernel .config
-option called KGDB_LOW_LEVEL_TRAP.
+This is mainly because there is no way to force the end user to hold
+down the original keys that were pressed prior to entering kdb.
 
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: x86@kernel.org
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Henrik Rydberg <rydberg@euromail.se>
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux-input@vger.kernel.org
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/x86/include/asm/kgdb.h |    3 +++
- arch/x86/kernel/kgdb.c      |   22 +++++++++++++++++++++-
- arch/x86/kernel/traps.c     |    6 ++++++
- include/linux/kgdb.h        |    1 +
- kernel/debug/debug_core.c   |    2 +-
- lib/Kconfig.kgdb            |    9 +++++++++
- 6 files changed, 41 insertions(+), 2 deletions(-)
+ drivers/char/keyboard.c |   29 ++++++++++++++++++++++++-----
+ drivers/input/input.c   |   15 +++++++++++++++
+ drivers/serial/kgdboc.c |   13 +++++++++++++
+ include/linux/input.h   |   10 ++++++++++
+ 4 files changed, 62 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/kgdb.h b/arch/x86/include/asm/kgdb.h
-index e6c6c80..006da36 100644
---- a/arch/x86/include/asm/kgdb.h
-+++ b/arch/x86/include/asm/kgdb.h
-@@ -76,4 +76,7 @@ static inline void arch_kgdb_breakpoint(void)
- #define BREAK_INSTR_SIZE	1
- #define CACHE_FLUSH_IS_SAFE	1
+diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+index f706b1d..d61145a 100644
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1195,6 +1195,11 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ 			if (keycode < BTN_MISC && printk_ratelimit())
+ 				printk(KERN_WARNING "keyboard.c: can't emulate rawmode for keycode %d\n", keycode);
  
-+extern int kgdb_ll_trap(int cmd, const char *str,
-+			struct pt_regs *regs, long err, int trap, int sig);
++	if (down)
++		set_bit(keycode, key_down);
++	else
++		clear_bit(keycode, key_down);
 +
- #endif /* _ASM_X86_KGDB_H */
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index c38c8fb..3b762bc 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -538,7 +538,7 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- 			return NOTIFY_DONE;
+ #ifdef CONFIG_MAGIC_SYSRQ	       /* Handle the SysRq Hack */
+ 	if (keycode == KEY_SYSRQ && (sysrq_down || (down == 1 && sysrq_alt))) {
+ 		if (!sysrq_down) {
+@@ -1237,11 +1242,6 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ 		raw_mode = 1;
  	}
  
--	if (kgdb_handle_exception(args->trapnr, args->signr, args->err, regs))
-+	if (kgdb_handle_exception(args->trapnr, args->signr, cmd, regs))
- 		return NOTIFY_DONE;
+-	if (down)
+-		set_bit(keycode, key_down);
+-	else
+-		clear_bit(keycode, key_down);
+-
+ 	if (rep &&
+ 	    (!vc_kbd_mode(kbd, VC_REPEAT) ||
+ 	     (tty && !L_ECHO(tty) && tty_chars_in_buffer(tty)))) {
+@@ -1410,6 +1410,22 @@ static const struct input_device_id kbd_ids[] = {
  
- 	/* Must touch watchdog before return to normal operation */
-@@ -546,6 +546,26 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- 	return NOTIFY_STOP;
+ MODULE_DEVICE_TABLE(input, kbd_ids);
+ 
++#ifdef CONFIG_KDB_KEYBOARD
++void kbd_clear_keys(void)
++{
++	int i, j, k;
++
++	for (i = 0; i < ARRAY_SIZE(key_down); i++) {
++		k = i * BITS_PER_LONG;
++		for (j = 0; j < BITS_PER_LONG; j++, k++) {
++			if (test_bit(k, key_down)) {
++				kbd_keycode(k, 0, 0);
++			}
++		}
++	}
++}
++#endif
++
+ static struct input_handler kbd_handler = {
+ 	.event		= kbd_event,
+ 	.connect	= kbd_connect,
+@@ -1417,6 +1433,9 @@ static struct input_handler kbd_handler = {
+ 	.start		= kbd_start,
+ 	.name		= "kbd",
+ 	.id_table	= kbd_ids,
++#ifdef CONFIG_KDB_KEYBOARD
++	.dbg_clear_keys = kbd_clear_keys,
++#endif
+ };
+ 
+ int __init kbd_init(void)
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 86cb2d2..7473300 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -1692,6 +1692,21 @@ int input_register_handler(struct input_handler *handler)
+ }
+ EXPORT_SYMBOL(input_register_handler);
+ 
++#ifdef CONFIG_KDB_KEYBOARD
++/* input_db_clear_keys - Clear any keyboards if they have a call back,
++ * after returning from the kernel debugger
++ */
++void input_dbg_clear_keys(void)
++{
++	struct input_handler *handler;
++
++	list_for_each_entry(handler, &input_handler_list, node)
++		if (handler->dbg_clear_keys)
++			handler->dbg_clear_keys();
++}
++EXPORT_SYMBOL_GPL(input_dbg_clear_keys);
++#endif
++
+ /**
+  * input_unregister_handler - unregisters an input handler
+  * @handler: handler to be unregistered
+diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+index b765ab4..201cdf5 100644
+--- a/drivers/serial/kgdboc.c
++++ b/drivers/serial/kgdboc.c
+@@ -17,6 +17,7 @@
+ #include <linux/kdb.h>
+ #include <linux/tty.h>
+ #include <linux/console.h>
++#include <linux/input.h>
+ 
+ #define MAX_CONFIG_LEN		40
+ 
+@@ -35,12 +36,16 @@ static struct tty_driver	*kgdb_tty_driver;
+ static int			kgdb_tty_line;
+ 
+ #ifdef CONFIG_KDB_KEYBOARD
++static int kgdboc_use_kbd;  /* 1 if we use a keyboard */
++
+ static int kgdboc_register_kbd(char **cptr)
+ {
++	kgdboc_use_kbd = 0;
+ 	if (strncmp(*cptr, "kbd", 3) == 0) {
+ 		if (kdb_poll_idx < KDB_POLL_FUNC_MAX) {
+ 			kdb_poll_funcs[kdb_poll_idx] = kdb_get_kbd_char;
+ 			kdb_poll_idx++;
++			kgdboc_use_kbd = 1;
+ 			if (cptr[0][3] == ',')
+ 				*cptr += 4;
+ 			else
+@@ -63,9 +68,16 @@ static void kgdboc_unregister_kbd(void)
+ 		}
+ 	}
+ }
++
++static inline void kgdboc_clear_kbd(void)
++{
++	if (kgdboc_use_kbd)
++		input_dbg_clear_keys(); /* Release all pressed keys */
++}
+ #else /* ! CONFIG_KDB_KEYBOARD */
+ #define kgdboc_register_kbd(x) 0
+ #define kgdboc_unregister_kbd()
++#define kgdboc_clear_kbd()
+ #endif /* ! CONFIG_KDB_KEYBOARD */
+ 
+ static int kgdboc_option_setup(char *opt)
+@@ -213,6 +225,7 @@ static void kgdboc_post_exp_handler(void)
+ 	/* decrement the module count when the debugger detaches */
+ 	if (!kgdb_connected)
+ 		module_put(THIS_MODULE);
++	kgdboc_clear_kbd();
  }
  
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+int kgdb_ll_trap(int cmd, const char *str,
-+		 struct pt_regs *regs, long err, int trap, int sig)
-+{
-+	struct die_args args = {
-+		.regs	= regs,
-+		.str	= str,
-+		.err	= err,
-+		.trapnr	= trap,
-+		.signr	= sig,
+ static struct kgdb_io kgdboc_io_ops = {
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 663208a..9529b63 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -1232,6 +1232,9 @@ struct input_handler {
+ 	int (*connect)(struct input_handler *handler, struct input_dev *dev, const struct input_device_id *id);
+ 	void (*disconnect)(struct input_handle *handle);
+ 	void (*start)(struct input_handle *handle);
++#ifdef CONFIG_KDB_KEYBOARD
++	void (*dbg_clear_keys)(void);
++#endif
+ 
+ 	const struct file_operations *fops;
+ 	int minor;
+@@ -1317,6 +1320,13 @@ int input_flush_device(struct input_handle* handle, struct file* file);
+ void input_event(struct input_dev *dev, unsigned int type, unsigned int code, int value);
+ void input_inject_event(struct input_handle *handle, unsigned int type, unsigned int code, int value);
+ 
++#ifdef CONFIG_KDB_KEYBOARD
++void input_dbg_clear_keys(void);
++#else
++static inline void input_dbg_clear_keys(void)
++{}
++#endif
 +
-+	};
-+
-+	if (!kgdb_io_module_registered)
-+		return NOTIFY_DONE;
-+
-+	return __kgdb_notify(&args, cmd);
-+}
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
-+
- static int
- kgdb_notify(struct notifier_block *self, unsigned long cmd, void *ptr)
+ static inline void input_report_key(struct input_dev *dev, unsigned int code, int value)
  {
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 3339917..6ae2122 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -15,6 +15,7 @@
- #include <linux/kprobes.h>
- #include <linux/uaccess.h>
- #include <linux/kdebug.h>
-+#include <linux/kgdb.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/ptrace.h>
-@@ -460,6 +461,11 @@ void restart_nmi(void)
- /* May run on IST stack. */
- dotraplinkage void __kprobes do_int3(struct pt_regs *regs, long error_code)
- {
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+	if (kgdb_ll_trap(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
-+			== NOTIFY_STOP)
-+		return;
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
- #ifdef CONFIG_KPROBES
- 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
- 			== NOTIFY_STOP)
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 406f6f9..19d1b29 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -60,6 +60,7 @@ struct uart_port;
- void kgdb_breakpoint(void);
- 
- extern int kgdb_connected;
-+extern int kgdb_io_module_registered;
- 
- extern atomic_t			kgdb_setting_breakpoint;
- extern atomic_t			kgdb_cpu_doing_single_step;
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 9cfc71d..8db8e40 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -66,7 +66,7 @@ int				kgdb_connected;
- EXPORT_SYMBOL_GPL(kgdb_connected);
- 
- /* All the KGDB handlers are installed */
--static int			kgdb_io_module_registered;
-+int			kgdb_io_module_registered;
- 
- /* Guard for recursive entry */
- static int			exception_level;
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index c80de7d..0a0e049 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -57,6 +57,15 @@ config KGDB_TESTS_BOOT_STRING
- 	  information about other strings you could use beyond the
- 	  default of V1F100.
- 
-+config KGDB_LOW_LEVEL_TRAP
-+       bool "KGDB: Allow debugging with traps in notifiers"
-+       depends on X86
-+       default n
-+       help
-+         This will add an extra call back to kgdb for the breakpoint
-+         exception handler on which will will allow kgdb to step
-+         through a notify handler.
-+
- config KGDB_KDB
- 	bool "KGDB_KDB: include kdb frontend for kgdb"
- 	default n
+ 	input_event(dev, EV_KEY, code, !!value);
 -- 
 1.6.4.rc1
 
