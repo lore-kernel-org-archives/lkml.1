@@ -1,37 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933435Ab0BYUYg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:24:36 -0500
-Received: from snt0-omc2-s32.snt0.hotmail.com ([65.55.90.107]:10623 "EHLO
-	snt0-omc2-s32.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932792Ab0BYUYe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:24:34 -0500
-Message-ID: <SNT125-W652012E965D81A36E5533C3400@phx.gbl>
-X-Originating-IP: [164.116.126.146]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <hpa@zytor.com>
-CC: <luca@luca-barbieri.com>, <mingo@elte.hu>, <a.p.zijlstra@chello.nl>,
-       <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 10/10] x86-32: panic on !CX8 && XMM
-Date: Thu, 25 Feb 2010 12:24:33 -0800
-Importance: Normal
-In-Reply-To: <SNT125-W43CEC942D4248B42CA7B1DC3470@phx.gbl>
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
- <1266406962-17463-11-git-send-email-luca@luca-barbieri.com>,<4B7C6FC8.7090107@zytor.com>
- <SNT125-W19438E1E5A7FB2F02097DEC3480@phx.gbl>,<4B7C7EB3.6000202@zytor.com>,<SNT125-W43CEC942D4248B42CA7B1DC3470@phx.gbl>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S933461Ab0BYU35 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:29:57 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:52939 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932792Ab0BYU3z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:29:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=FFXLyfKDitIzhvIbKvbJSMvf8UM20XfYinOtTMD1XBeraP4UIsdaFFJcWJi4h99/LO
+         DjbV3hdR8mJPLYYCOF550R43nxF2qrkpwje7wyuK5wUg4XmBTVG+qLfwyq1YX4TuOODh
+         pNZNAAE1YHSkWaToSSZCi8hT9uMbtsLF1lAAA=
 MIME-Version: 1.0
-X-OriginalArrivalTime: 25 Feb 2010 20:24:33.0160 (UTC) FILETIME=[8A90C080:01CAB658]
+In-Reply-To: <20100225202358.GC10960@localhost.localdomain>
+References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com> 
+	<20100225202358.GC10960@localhost.localdomain>
+From: Andrew Lutomirski <luto@mit.edu>
+Date: Thu, 25 Feb 2010 15:29:34 -0500
+X-Google-Sender-Auth: a57ffc2320c89c84
+Message-ID: <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
+Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
+To: Josef Bacik <josef@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 25, 2010 at 3:23 PM, Josef Bacik <josef@redhat.com> wrote:
+> On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
+>> Mounting btrfs corrupts memory and causes nasty crashes within a few
+>> seconds.  This seems to happen even if the mount fails (note the
+>> unrecognized mount option).  This is a regression from 2.6.32, and
+>> I've attached an example.
+>>
+>
+> And it only happens when you mount a btrfs fs?  Can you show me a trace of when
+> you mount a btrfs fs with valid mount options?  I'd like to see if we're not
+> cleaning up something properly or what.  Thanks,
 
-> And in fact, the Linux setup code already has code similar to the code used in XP to disable this NT4 workaround.
-Unfortunately, in virtual machines this often don't work:http://www.virtualbox.org/ticket/370http://www.virtualbox.org/ticket/774http://www.virtualbox.org/ticket/4874
-Yuhong Bao 		 	   		  
-_________________________________________________________________
-Hotmail: Trusted email with powerful SPAM protection.
-http://clk.atdmt.com/GBL/go/201469227/direct/01/
+Seems OK.  Or maybe I just got lucky, but it's crashed every time I
+tried to mount with 'acl' before.
+
+I even went through a couple iterations of trying to mount with
+'xattr' and 'user_xattr', both of which failed.
+
+--Andy
