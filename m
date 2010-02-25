@@ -1,184 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759090Ab0BYKQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:16:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41088 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759079Ab0BYKQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:16:14 -0500
-Date: Thu, 25 Feb 2010 10:15:03 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1266887105-1528-21-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <1266887105-1528-21-git-send-email-paulmck@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Add RCU_CPU_STALL_VERBOSE to dump detailed per-task information
-Message-ID: <tip-1ed509a225008c9e8c0644fbd22168e09a7383a0@git.kernel.org>
-Git-Commit-ID: 1ed509a225008c9e8c0644fbd22168e09a7383a0
-X-Mailer: tip-git-log-daemon
+	id S1754838Ab0BYKRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:17:15 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:48033 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200Ab0BYKRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 05:17:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=vs2nrqneLbk3lZbJ+BFOD0VWxfS+h3TPhDDlpd1P9GcpOHxXeXoZiKcaJCyCnn94tm
+         3PJpwb2gdEO8KpIDmA8Bn4D9h1UF2bfE1ielc25EQzMuAkpeRixOfnSaBTtlTpEOS4ok
+         fW5jF0pVL4Qo8BqWDLj+WH88KzPNajP4jeN7E=
+Date: Thu, 25 Feb 2010 02:17:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Michael Thayer <Michael.Thayer@Sun.COM>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
+ emulation to the Lifebook driver
+Message-ID: <20100225101705.GF10823@core.coreip.homeip.net>
+References: <1266923615.3602.85.camel@michael-laptop>
+ <20100223175852.GA11301@core.coreip.homeip.net>
+ <1266958533.3602.128.camel@michael-laptop>
+ <20100224100206.GA5598@core.coreip.homeip.net>
+ <1267011989.2831.30.camel@michael-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 10:15:04 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1267011989.2831.30.camel@michael-laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1ed509a225008c9e8c0644fbd22168e09a7383a0
-Gitweb:     http://git.kernel.org/tip/1ed509a225008c9e8c0644fbd22168e09a7383a0
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 22 Feb 2010 17:05:05 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 10:35:02 +0100
+On Wed, Feb 24, 2010 at 12:46:29PM +0100, Michael Thayer wrote:
+> Le mercredi 24 février 2010 à 02:02 -0800, Dmitry Torokhov a écrit :
+> > On Tue, Feb 23, 2010 at 09:55:33PM +0100, Michael Thayer wrote:
+> > > I'm not sure, if we ended up doing a completely new device, how different it
+> > > would end up being.  Emulating a touchscreen or a tablet makes sense for us as
+> > > these are both something known, which will work with existing systems without
+> > > too much tweaking
+> > > [snip]
+> > But the virtual mouse is not a touchscreen or a tablet, it behaves
+> > differently.
+> What would you suggest emulating that exists in the real world?
 
-rcu: Add RCU_CPU_STALL_VERBOSE to dump detailed per-task information
+There are not many real devices that have teh same characteristics as
+virtual mouse generating absolute coordinates. Umm, the closest would be
+a wacom tablet when used with its own mouse.
 
-When RCU detects a grace-period stall, it currently just prints
-out the PID of any tasks doing the stalling.  This patch adds
-RCU_CPU_STALL_VERBOSE, which enables the more-verbose reporting
-from sched_show_task().
+>  And might a
+> tablet not be better than a touchscreen, given that it doesn't just have a
+> binary concept of "touch or not", but a pressure axis as well?  We could report
+> "pen on but zero pressure".
 
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <1266887105-1528-21-git-send-email-paulmck@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/rcutree.c        |    4 +++
- kernel/rcutree.h        |    1 +
- kernel/rcutree_plugin.h |   52 +++++++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig.debug       |   12 ++++++++++
- 4 files changed, 69 insertions(+), 0 deletions(-)
+No, tablet still has the property that movement ceases when you remove
+object touching the device from proximity. In your case you will be
+always sending coordinates and expect userspace react to them regardless
+of button/tool/etc state.
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index b07be37..525d398 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -489,6 +489,10 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 	       smp_processor_id(), (long)(jiffies - rsp->gp_start));
- 	trigger_all_cpu_backtrace();
- 
-+	/* If so configured, complain about tasks blocking the grace period. */
-+
-+	rcu_print_detail_task_stall(rsp);
-+
- 	force_quiescent_state(rsp, 0);  /* Kick them all. */
- }
- 
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 6a82c34..2ceb083 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -352,6 +352,7 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp,
- 				      unsigned long flags);
- #endif /* #ifdef CONFIG_HOTPLUG_CPU */
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-+static void rcu_print_detail_task_stall(struct rcu_state *rsp);
- static void rcu_print_task_stall(struct rcu_node *rnp);
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
- static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp);
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index aecfe37..3516de7 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -312,6 +312,50 @@ EXPORT_SYMBOL_GPL(__rcu_read_unlock);
- 
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 
-+#ifdef CONFIG_RCU_CPU_STALL_VERBOSE
-+
-+/*
-+ * Dump detailed information for all tasks blocking the current RCU
-+ * grace period on the specified rcu_node structure.
-+ */
-+static void rcu_print_detail_task_stall_rnp(struct rcu_node *rnp)
-+{
-+	unsigned long flags;
-+	struct list_head *lp;
-+	int phase;
-+	struct task_struct *t;
-+
-+	if (rcu_preempted_readers(rnp)) {
-+		raw_spin_lock_irqsave(&rnp->lock, flags);
-+		phase = rnp->gpnum & 0x1;
-+		lp = &rnp->blocked_tasks[phase];
-+		list_for_each_entry(t, lp, rcu_node_entry)
-+			sched_show_task(t);
-+		raw_spin_unlock_irqrestore(&rnp->lock, flags);
-+	}
-+}
-+
-+/*
-+ * Dump detailed information for all tasks blocking the current RCU
-+ * grace period.
-+ */
-+static void rcu_print_detail_task_stall(struct rcu_state *rsp)
-+{
-+	struct rcu_node *rnp = rcu_get_root(rsp);
-+
-+	rcu_print_detail_task_stall_rnp(rnp);
-+	rcu_for_each_leaf_node(rsp, rnp)
-+		rcu_print_detail_task_stall_rnp(rnp);
-+}
-+
-+#else /* #ifdef CONFIG_RCU_CPU_STALL_VERBOSE */
-+
-+static void rcu_print_detail_task_stall(struct rcu_state *rsp)
-+{
-+}
-+
-+#endif /* #else #ifdef CONFIG_RCU_CPU_STALL_VERBOSE */
-+
- /*
-  * Scan the current list of tasks blocked within RCU read-side critical
-  * sections, printing out the tid of each.
-@@ -764,6 +808,14 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
-  * Because preemptable RCU does not exist, we never have to check for
-  * tasks blocked within RCU read-side critical sections.
-  */
-+static void rcu_print_detail_task_stall(struct rcu_state *rsp)
-+{
-+}
-+
-+/*
-+ * Because preemptable RCU does not exist, we never have to check for
-+ * tasks blocked within RCU read-side critical sections.
-+ */
- static void rcu_print_task_stall(struct rcu_node *rnp)
- {
- }
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 6af20a8..4cdab45 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -781,6 +781,18 @@ config RCU_CPU_STALL_DETECTOR
- 
- 	  Say Y if you are unsure.
- 
-+config RCU_CPU_STALL_VERBOSE
-+	bool "Print additional per-task information for RCU_CPU_STALL_DETECTOR"
-+	depends on RCU_CPU_STALL_DETECTOR && TREE_PREEMPT_RCU
-+	default n
-+	help
-+	  This option causes RCU to printk detailed per-task information
-+	  for any tasks that are stalling the current RCU grace period.
-+
-+	  Say N if you are unsure.
-+
-+	  Say Y if you want to enable such checks.
-+
- config KPROBES_SANITY_TEST
- 	bool "Kprobes sanity tests"
- 	depends on DEBUG_KERNEL
+>  I take your point (below) about not relying on
+> behaviour that doesn't correspond to real devices like being able to send
+> position data without BTN_TOUCH being held down.
+
+I think the cleaniest would be to send ABS_X/ABS_Y nad buttons. Xen does
+this so I'd expect evdev being able to handle it.
+
+> 
+> > > The two devices also make sense for us on the one hand because xf86-input-evdev
+> > > currently only understands absolute devices without mouse buttons
+> > 
+> > Hmm, I scanned through it and I did not see anything specifically
+> > removing mouse buttons from absolute devices there... Is it still valid
+> > for the recent version of evdev driver?
+> Sorry, I have to correct myself there.  It assumes that an absolute device with
+> a "BTN_TOUCH" and mouse buttons and no pen is a touchpad and not a touchscreen.
+> Function "EvdevProbe()", search for "Found absolute touchpad".
+
+And if you remove BTN_TOUCH (which does not make sense in your case)
+then it won't be saying that.
+
+> 
+> > > (yes I know,
+> > > we could send them patches too if we had too, but we would rather not patch the
+> > > whole world :) ) and on the other because it makes it easy for us to switch
+> > > between absolute and relative event reporting, which is a big plus.
+> > 
+> > Why is this a big plus? Also, can't evdev handle devices reporting both
+> > relative and absolute events?
+> We sometimes want to switch to relative event reporting to e.g. let people play
+> games which are controlled using the mouse.  Don't ask :)  I can check again,
+> but I think that xf86-input-evdev ignores relative axes if a device supports
+> absolute ones.
+
+I don't think so, could you please re-test it?
+
+> I do feel that having two devices from it's point of view is
+> a safer bet here, rather than trying something fancier.
+> 
+> > You are relying on the fact that currently userspace components rely on
+> > drivers not sending coordinates data without touch; as soon as userspace
+> > (evdev) starts validating it and ignoring coordinate events without
+> > ABS_PRESSURE or BTN_TOUCH you'll be toast.
+> Point taken.  See above.
+> 
+> > > > I think it would be better if we had separate protocol module for that.
+> > [snip]
+> > First, create a separate protocol handler (module similar to
+> > lifebook.c), allocate protocol number, something like PSMOUSE_VBPS, and
+> > plumb it into psmouse-base.c in the same fashion othe protocol handlers
+> > do it.
+> Sure, I can copy lifebook.c and make the necessary modifications.  I will wait
+> for your answers/comments on the above though (particularly the first bit)
+> before starting.
+> 
+> Thanks again.
+> 
+> Regards,
+> 
+> Michael
+> -- 
+> Sun Microsystems GmbH        Michael Thayer
+> Werkstrasse 24               VirtualBox engineer
+> 71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
+> 
+> Sitz der Gesellschaft:
+> Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
+> Amtsgericht Muenchen: HRB 161028
+> Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
+> Vorsitzender des Aufsichtsrates: Martin Haering
+> 
+
+-- 
+Dmitry
