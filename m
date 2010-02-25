@@ -1,48 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934697Ab0BZANW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:13:22 -0500
-Received: from kroah.org ([198.145.64.141]:43471 "EHLO coco.kroah.org"
+	id S934709Ab0BZANY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:13:24 -0500
+Received: from kroah.org ([198.145.64.141]:43481 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934593Ab0BZANV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:13:21 -0500
-Date: Thu, 25 Feb 2010 15:25:29 -0800
+	id S934695Ab0BZANW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:13:22 -0500
+Date: Thu, 25 Feb 2010 15:40:20 -0800
 From: Greg KH <greg@kroah.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, Oliver Neukum <oliver@neukum.org>,
-       Yuhong Bao <yuhongbao_386@hotmail.com>, david-b@pacbell.net,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA
- support
-Message-ID: <20100225232528.GA24155@kroah.com>
-References: <4B7CAF95.6020306@gmail.com>
- <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl>
- <4B85EE88.5050506@kernel.org>
- <201002250503.09327.oliver@neukum.org>
- <4B8609CE.5000705@kernel.org>
- <20100225161413.GA1229@kroah.com>
- <51f3faa71002251515k51354eb6y3e2cfd1558dba2f1@mail.gmail.com>
+To: Norberto Lopes <nlopes.ml@gmail.com>
+Cc: gregkh@suse.de, alan@linux.intel.com, andre.goddard@gmail.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Staging: rar: fix errors/warnings related to
+ coding style
+Message-ID: <20100225234020.GC24155@kroah.com>
+References: <1266773827-729-1-git-send-email-nlopes.ml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <51f3faa71002251515k51354eb6y3e2cfd1558dba2f1@mail.gmail.com>
+In-Reply-To: <1266773827-729-1-git-send-email-nlopes.ml@gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 05:15:49PM -0600, Robert Hancock wrote:
-> > For now, I'd like to not enable this, given the huge risks and no known
-> > benifit.
+On Sun, Feb 21, 2010 at 06:37:07PM +0100, Norberto Lopes wrote:
 > 
-> "Huge risks" is likely a bit melodramatic
+> Signed-off-by: Norberto Lopes <nlopes.ml@gmail.com>
+> ---
+>  drivers/staging/rar/rar_driver.c |   82 ++++++++++++++++++-------------------
 
-No it is not.  This has the ability to break USB functionality that
-currently works just fine for a user.  That's not acceptable.
+Unfortunatly, I've taken a patch in my tree that moves this file and
+renames it and then cleans up these issues (hopefully).
 
-And yes, we can fix things after-the-fact with blacklists, but as Tejun
-so aptly described, it is a major pain to do so, and lots of users just
-get frustrated and never tell us that problems happen.
+If you look at the linux-next tree, you will see these changes already,
+so I can't accept this patch, sorry.
 
 thanks,
 
