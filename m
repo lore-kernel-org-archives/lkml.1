@@ -1,75 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206Ab0BYHi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 02:38:56 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:64548 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233Ab0BYHiy (ORCPT
+	id S1753219Ab0BYHpm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 02:45:42 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:10155 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752908Ab0BYHpl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 02:38:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=m5aScAsDrzm3jtji0e9ZcxU5v7V0ZhrXbVvOjF1P/b13DWDwIv9tHeJHdjsHbs2P/Z
-         9JKBtQsCw7v/GvQOTpTsPCyzTokVoBsamPWCiJGUranjPqJkF0tmXFOG3P/ZTYSFLS29
-         v7IbP3D5z63mTvNXKhWXAPkU/fLpOzExhgmmo=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Input: serio - re-add thaw (and add freeze)
-Date: Wed, 24 Feb 2010 23:38:49 -0800
-User-Agent: KMail/1.13.0 (Linux/2.6.31.12-174.2.22.fc12.x86_64; KDE/4.4.0; x86_64; ; )
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>, linux-input@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <4B69C7AA.7000904@tuffmail.co.uk> <20100216172233.GA14229@core.coreip.homeip.net> <20100225070302.GB1601@ucw.cz>
-In-Reply-To: <20100225070302.GB1601@ucw.cz>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002242338.49873.dmitry.torokhov@gmail.com>
+	Thu, 25 Feb 2010 02:45:41 -0500
+Date: Thu, 25 Feb 2010 08:45:35 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: =?ISO-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] iTCO_wdt: Don't double the requested timeout
+Message-ID: <20100225084535.4658cbf9@marrow.netinsight.se>
+In-Reply-To: <4B854F58.4050907@draigBrady.com>
+References: <20100223164019.60a6de1a@marrow.netinsight.se>
+	<4B840154.1010501@draigBrady.com>
+	<4B840BC6.9090809@draigBrady.com>
+	<20100224101618.39c3468b@marrow.netinsight.se>
+	<4B84FD15.9020803@draigBrady.com>
+	<20100224124730.6958b2c0@marrow.netinsight.se>
+	<4B8545D1.8000302@draigBrady.com>
+	<20100224165526.61cdd169@marrow.netinsight.se>
+	<4B854F58.4050907@draigBrady.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 February 2010 11:03:03 pm Pavel Machek wrote:
-> On Tue 2010-02-16 09:22:33, Dmitry Torokhov wrote:
-> > On Tue, Feb 16, 2010 at 04:48:30PM +0000, Alan Jenkins wrote:
-> > > On 2/4/10, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
-> > > > Dmitry Torokhov wrote:
-> > > >> On Wed, Feb 03, 2010 at 06:59:54PM +0000, Alan Jenkins wrote:
-> > > >>> 633aae2 "Input: i8042 - switch to using dev_pm_ops"
-> > > >>> removed handling for PMSG_THAW, causing obscure breakage.
-> > > >>> 
-> > > >>> It can break if you press keys during hibernation,
-> > > >>> which causes subsequent keypresses to be lost -
-> > > >>> so you can't cancel s2disk by pressing backspace -
-> > > >>> and then just before system poweroff you get
-> > > >>> "psmouse.c: Failed to deactivate mouse".
-> > > >>> 
-> > > >>> So let's add the thaw handler back.
-> > > >>> 
-> > > >>> Also set the freeze handler.  It looks like PMSG_FREEZE
-> > > >>> didn't do anything in the past, but I think that must
-> > > >>> have been an oversight.
-> > > >> 
-> > > >> We do not need to do anything special at freeze time that is why
-> > > >> there wasn't freeze handler. And so thaw should be pretty much noop
-> > > >> as well.
-> > > 
-> > > Ok, so I did some more mindless fiddling.  It seems that all it needs
-> > > is to call the interrupt handler at thaw time.
-> > 
-> > Yep, this makes more sense. If you happen to press the key(s) while
-> > interrupts are off the keyboard controller becomes "jammed". Your sign
-> > off please?
-> 
-> Dmitry wants your Signed-off-by: line, to easily apply the patch.
->
+(taking back lkml on CC. The discussion is about stopping watchdogs
+before rebooting).
 
-Pavel, I already have it and it is in mainline.
+On Wed, 24 Feb 2010 16:10:00 +0000
+Pádraig Brady <P@draigBrady.com> wrote:
+> > Returning to the initial issue (my patch to avoid stopping the watchdog
+> > before reboot): What is the preferred behavior? I've looked in other
+> > drivers, and see multiple ways being used. Some do as in my patch, some
+> > leave it on unconditionally and some stop it unconditionally.
+> >
+> Well nowayout to me means userspace should have no way out,
+> but when rebooting the system the watchdog should be reset.
+> But in saying that I'm not sure what to do. At least there
+> should be some way to select the operation you want above,
+> so as to protect the reboot process itself.
 
-Thanks.
+Well, from the drives I saw that had this behavior (not that I checked
+all of them), they did look at nowayout to determine whether to stop it
+or not.
 
--- 
-Dmitry
+> In general, I wonder could an order be specified so that
+> the watchdog is disabled as the very last thing by the kernel,
+> right before it does the reboot?
+
+Many other drivers use reboot notifiers, but unfortunately it seems
+that these are called before device shutdown (kernel/sys.c), so it
+wouldn't help here.
+
+
+I guess it would be good to have defined and uniform behavior across
+different watchdogs, and at least an option to specify
+nowayout-also-when-rebooting.
+
+// Simon
