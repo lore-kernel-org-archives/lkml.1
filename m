@@ -1,46 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933165Ab0BYRwv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:52:51 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:42111 "EHLO mail.cs.nmsu.edu"
+	id S933175Ab0BYRyq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:54:46 -0500
+Received: from kroah.org ([198.145.64.141]:39041 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933139Ab0BYRws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:52:48 -0500
-Message-ID: <d8539fd26220388f501300c92b12bbe1.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20100225123214.0523a310@neptune.home>
-References: <20100221002001.0a7e05a7@neptune.home>
-    <20100224170049.0d04af3c@neptune.home>
-    <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
-    <20100225123214.0523a310@neptune.home>
-Date: Thu, 25 Feb 2010 10:52:40 -0700
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: Bruno =?iso-8859-1?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Nicu Pavel" <npavel@ituner.com>
-User-Agent: SquirrelMail/1.4.19
+	id S933137Ab0BYRyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 12:54:45 -0500
+Date: Thu, 25 Feb 2010 09:54:30 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: import of usb series failed
+Message-ID: <20100225175421.GA23662@kroah.com>
+References: <20100218105500.898ece5e.sfr@canb.auug.org.au>
+ <20100218002144.GA17850@kroah.com>
+ <20100218132221.b15d151f.sfr@canb.auug.org.au>
+ <20100219175218.10025a7a.sfr@canb.auug.org.au>
+ <20100219155343.GA3946@kroah.com>
+ <20100220120207.1d765147.sfr@canb.auug.org.au>
+ <20100224021624.GB14159@kroah.com>
+ <20100224150156.d7449bc7.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224150156.d7449bc7.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 24, 2010 at 03:01:56PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Tue, 23 Feb 2010 18:16:24 -0800 Greg KH <greg@kroah.com> wrote:
+> >
+> > Yes, that seems to be the problem here.
+> > 
+> > I have been doing the BASE tag as a -rc level tag (or rc-gitX tag), can
+> > I use a SHA1 of Linus's tree to base this against instead?  Would that
+> > work ok with your scripts?
+> 
+> What ever "git describe" gives you is OK as a BASE.  A SHA1 will work as
+> well, as does a ...-gitx name.
 
-Bruno Prémont wrote:
-> The one for deferredio refresh rate should ideally go below fb device
-> (and I guess that might also be of use for other users of deferredio)
->
+Ok, I'll work on changing my scripts to use a SHA1 or at least a more
+"close" version of what the patches should be against.  Sorry for the
+problem.
 
-I'm testing a patch now. I didn't expect anyone else would really need it,
-but it does help with throttling bus traffic from userspace.
-
-If it's in fbsysfs.c we can both eliminate it from our drivers.
-
--- 
-
-Rick
-
+greg k-h
