@@ -1,55 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329Ab0BYE7b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 23:59:31 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:45889 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290Ab0BYE71 (ORCPT
+	id S1750948Ab0BYFEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 00:04:34 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:52416 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695Ab0BYFEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 23:59:27 -0500
-X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 23:59:26 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=tQmQfHo/nT9c9DLT+RHAgwZrAiz52h0NkUwS+KIPSUvdRT+pz5vW1aPwO6svMj5aGu
-         zKntjY8xUrEFQUX07iqXxwSMLtVqa7KUjNz/DCAZ4G02Y6EfcVQZiJrRkTQ0N5IIwFy9
-         72ZeBfpw2ZPZFZVJxm9DH/TuKOY3ROq8POrk4=
-MIME-Version: 1.0
-In-Reply-To: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
-References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
-Date: Thu, 25 Feb 2010 10:23:52 +0530
-Message-ID: <3f9a31f41002242053r169255d2hf2585aeb55174a92@mail.gmail.com>
-Subject: Re: 802.11 development process - extended documentation
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>, Willy Tarreau <w@1wt.eu>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Feb 2010 00:04:32 -0500
+Date: Thu, 25 Feb 2010 00:04:02 -0500
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Ben Gardner <gardner.ben@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] cs5535_gpio: gpio_chip.get should return the input
+ value
+Message-ID: <20100225000402.0951a473@droptest.queued.net>
+In-Reply-To: <808c8e9d1002242016j52d763e3wb0b00c73a014e6e5@mail.gmail.com>
+References: <808c8e9d1002231455q379b26acq4b4a50188c5d73be@mail.gmail.com>
+	<20100224145822.803e86ed.akpm@linux-foundation.org>
+	<808c8e9d1002241952s63633da3m471b6fb170558789@mail.gmail.com>
+	<20100224200559.fa911282.akpm@linux-foundation.org>
+	<808c8e9d1002242016j52d763e3wb0b00c73a014e6e5@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Luis,
+On Wed, 24 Feb 2010 22:16:43 -0600
+Ben Gardner <gardner.ben@gmail.com> wrote:
 
-On Thu, Feb 25, 2010 at 5:48 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> I've extended our 802.11 development process into a new section on our
-> 802.11 wiki. I often get asked how this works from different parts of
-> the company here at Atheros so figured it'd be easier to illustrate
-> this as best as possible and share it.
->
-> http://wireless.kernel.org/en/developers/process
->
-> Hope it does justice, John if you see any mistakes feel free to edit.
-> If the diagram seems fishy let me know what I can fix.
->
+> >> > What were the user-visible effects of this bug?
+> >>
+> >> The user-visible effects were that the input didn't work.
+> >> I use the CS5535 chip in a custom board that uses GPIO 25 and 26 as
+> >> voltage monitoring inputs (external voltage comparators).
+> >> Since the char-based cs5535-gpio is now deprecated, I'm trying out
+> >> the gpio driver.
+> >> I export the GPIO pins via sysfs to access them from user-space.
+> >> Reading the 'value' member didn't reflect the input.
+> >
+> > OK, then in that case we'd want to backport this into 2.6.33.x and
+> > perhaps earlier?
+> 
+> It looks like the driver was added 15 Dec 2009, so it doesn't look
+> like it existed in an earlier kernel.
 
-Thanks for the beautiful documentation.
+But it should definitely be added to 2.6.33.y.
 
-Is this also applicable for Linux 2.4
-
-What is the status of Wireless in Linux 2.4
-
-Thanks,
---
-Jaswinder Singh.
