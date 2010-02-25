@@ -1,36 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933623Ab0BYUP5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:15:57 -0500
-Received: from claw.goop.org ([74.207.240.146]:55533 "EHLO claw.goop.org"
+	id S933367Ab0BYUYF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:24:05 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6693 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933299Ab0BYUP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:15:56 -0500
-Message-ID: <4B86DA7A.9090706@goop.org>
-Date: Thu, 25 Feb 2010 12:15:54 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S932744Ab0BYUYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:24:01 -0500
+Date: Thu, 25 Feb 2010 15:23:58 -0500
+From: Josef Bacik <josef@redhat.com>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
+Message-ID: <20100225202358.GC10960@localhost.localdomain>
+References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com>
 MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@citrix.com>
-CC: Alok N Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: VMI and kmap_atomic_pte paravirt_op
-References: <1267127532.2488.7.camel@localhost.localdomain>
-In-Reply-To: <1267127532.2488.7.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25/2010 11:52 AM, Ian Campbell wrote:
-> How critical is the vmi_kmap_atomic_pte pv_mmu_op hook to VMI? Is it
-> required for correct functionality or is it simply an optimisation?
->    
+On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
+> Mounting btrfs corrupts memory and causes nasty crashes within a few
+> seconds.  This seems to happen even if the mount fails (note the
+> unrecognized mount option).  This is a regression from 2.6.32, and
+> I've attached an example.
+> 
 
-Or disable high ptes for VMI too.
+And it only happens when you mount a btrfs fs?  Can you show me a trace of when
+you mount a btrfs fs with valid mount options?  I'd like to see if we're not
+cleaning up something properly or what.  Thanks,
 
-
-
-     J
+Josef
