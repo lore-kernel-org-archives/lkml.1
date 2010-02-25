@@ -1,52 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932215Ab0BYLjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 06:39:19 -0500
-Received: from newyear.aktivix.org ([209.234.249.206]:42541 "EHLO
-	newyear.aktivix.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318Ab0BYLjS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 06:39:18 -0500
-From: Jim Dog <jimdog@northern-indymedia.org>
-To: gregkh@suse.de, jmm@debian.org, mithlesh@linsyssoft.com,
-       richard@rsk.demon.co.uk, jimdog@northern-indymedia.org
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Staging: wlan-ng: Fixed line length issues in prism2usb.c This is a patch to the prism2usb.c that fixes one line which was over the 80 character limit by wrapping it to a new line and removes a commented out configuration for a ZyDAS ZD1201 device since support for this device with this driver is now deprecated. Signed-off-by: Jim Dog <jimdog@northern-indymedia.org>
-Date: Thu, 25 Feb 2010 11:38:21 +0000
-Message-Id: <1267097901-8574-1-git-send-email-jimdog@northern-indymedia.org>
-X-Mailer: git-send-email 1.6.3.3
+	id S1759140Ab0BYLmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 06:42:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44537 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754634Ab0BYLmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 06:42:36 -0500
+Date: Thu, 25 Feb 2010 12:42:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Don Zickus <dzickus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, gorcunov@gmail.com,
+       aris@redhat.com
+Subject: Re: [PATCH] nmi_watchdog: checkpatch.pl cleanups from earlier patches
+Message-ID: <20100225114226.GK10212@elte.hu>
+References: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/staging/wlan-ng/prism2usb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/wlan-ng/prism2usb.c b/drivers/staging/wlan-ng/prism2usb.c
-index 9dde68b..501d27f 100644
---- a/drivers/staging/wlan-ng/prism2usb.c
-+++ b/drivers/staging/wlan-ng/prism2usb.c
-@@ -24,8 +24,9 @@ static struct usb_device_id usb_prism_tbl[] = {
- 	 (0x066b, 0x2213, "Linksys WUSB12v1.1 11Mbps WLAN USB Adapter")},
- 	{PRISM_USB_DEVICE
- 	 (0x067c, 0x1022, "Siemens SpeedStream 1022 11Mbps WLAN USB Adapter")},
--	{PRISM_USB_DEVICE(0x049f, 0x0033,
--			  "Compaq/Intel W100 PRO/Wireless 11Mbps multiport WLAN Adapter")},
-+	{PRISM_USB_DEVICE
-+	 (0x049f, 0x0033,
-+	 "Compaq/Intel W100 PRO/Wireless 11Mbps multiport WLAN Adapter")},
- 	{PRISM_USB_DEVICE
- 	 (0x0411, 0x0016, "Melco WLI-USB-S11 11Mbps WLAN Adapter")},
- 	{PRISM_USB_DEVICE
-@@ -55,7 +56,6 @@ static struct usb_device_id usb_prism_tbl[] = {
- 	 (0x04f1, 0x3009, "JVC MP-XP7250 Builtin USB WLAN Adapter")},
- 	{PRISM_USB_DEVICE(0x0846, 0x4110, "NetGear MA111")},
- 	{PRISM_USB_DEVICE(0x03f3, 0x0020, "Adaptec AWN-8020 USB WLAN Adapter")},
--/*      {PRISM_USB_DEVICE(0x0ace, 0x1201, "ZyDAS ZD1201 Wireless USB Adapter")}, */
- 	{PRISM_USB_DEVICE(0x2821, 0x3300, "ASUS-WL140 Wireless USB Adapter")},
- 	{PRISM_USB_DEVICE(0x2001, 0x3700, "DWL-122 Wireless USB Adapter")},
- 	{PRISM_USB_DEVICE
--- 
-1.6.3.3
+* Don Zickus <dzickus@redhat.com> wrote:
 
+> Mostly copy/paste whitespace damage with a couple of nitpicks by the script.
+> Fix the struct definition as requested by Ingo too.
+> 
+> Signed-off-by: Don Zickus <dzickus@redhat.com>
+> --
+> Ingo,
+> 
+> I don't know how you want this patch.  Like this to put on top or do you
+> want me to repost everything with the cleanups inside the appropriate patch?
+
+It's fine this way - i've put them on top - the base patches have a reasonable 
+amount of testing track record already, we dont want to destroy that via a 
+rebase.
+
+(in the future it's useful to run checkpatch as part of your patch submission 
+checks. In my experience it finds real issues most of the time. Some of the 
+warnings have to be ignored.)
+
+	Ingo
