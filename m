@@ -1,47 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932246Ab0BYEHu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 23:07:50 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:38975 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932091Ab0BYEHr (ORCPT
+	id S932239Ab0BYEJK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 23:09:10 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:65341 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932077Ab0BYEJJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 23:07:47 -0500
+	Wed, 24 Feb 2010 23:09:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QU5v2DX4mB8DDMJSnOZW4QdILUayf3ljcgea7BktLgTmsi3vOWIRG+m89wupIGqPgs
-         3c3jnL50bXe0AMAS4eFYZ6Jq4h/IsMB7WUHbC4VOEF8tFpBShQHwHI8V9Hn5fAwtfFQ1
-         Mbq8CnF55NYWolV6Z/5JihuvDBLUegCua3nfc=
-Message-ID: <4B85F786.806@garzik.org>
-Date: Wed, 24 Feb 2010 23:07:34 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=euoEzEgr7r7roisJSaR7AU1v5tDEHIERy/UbT+l0m+WOC5bfGoVlJ1WHOL/G4K5OnO
+         M7iDL0PqIJTsFmVIdLbNAJC0V3kzITa6NVipHqWnJyUVL4I8tY1X/U4urz2a3uLjL6Wn
+         iRE23LFRXThzt70yekwEnyg4H8D6A7YIhBWCU=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: [git patch] libata bug fix
-References: <20100225034937.GA26364@havoc.gtf.org> <20100224200335.32d43577.akpm@linux-foundation.org>
-In-Reply-To: <20100224200335.32d43577.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com>
+References: <cover.1266907495.git.andre.goddard@gmail.com>
+	 <a3a62a6cd7cc0ba011949396a1f2c7f9c32aa4b9.1266907496.git.andre.goddard@gmail.com>
+	 <2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com>
+Date: Thu, 25 Feb 2010 12:00:56 +0800
+Message-ID: <7b6bb4a51002242000x49f0b3bdncb40912bf18f90bb@mail.gmail.com>
+Subject: Re: [PATCH 6/6] mqueue: fix mq_open() file descriptor leak on 
+	user-space processes
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E . Hallyn" <serue@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 11:03 PM, Andrew Morton wrote:
-> On Wed, 24 Feb 2010 22:49:37 -0500 Jeff Garzik<jeff@garzik.org>  wrote:
+2010/2/25 Américo Wang <xiyou.wangcong@gmail.com>:
+> On Tue, Feb 23, 2010 at 3:04 PM, André Goddard Rosa
+> <andre.goddard@gmail.com> wrote:
+>> It can be triggered by the following test program:
+>>
+>
+> <snip>
 >
 >>
->> This is a fix that probably should have gone into 2.6.33.
+>> When not running valgrind, user-space program segfaults trying to execute
+>> strerror(errno). With valgrind, it executes successfully and prints the
+>> 5 open files: stdin, stdout, stderr, pipe[0] and pipe[1].
+>>
+>> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+>> ---
 >
-> It still can if we cc stable@kernel.org?
+> The code has more than just this problem, could you please try
+> my patch below?
+>
+> Thanks.
+>
+> ---------------------------->
+>
+> Clean up the failure path of sys_mq_open().
+>
+> Reorder the goto labels;
+> Rename 'upsem' to 'upunlock';
+> Remove some unused labels;
+> Fix some wrong goto path.
+>
 
-The commit message includes the Cc as per standard.
+I think it's wrong to move dput after mntput
 
-	Jeff
-
-
-
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
+> ---
+>
