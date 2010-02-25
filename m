@@ -1,95 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934524Ab0BYXbO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 18:31:14 -0500
-Received: from mail-iw0-f177.google.com ([209.85.223.177]:54290 "EHLO
-	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934511Ab0BYXbM (ORCPT
+	id S934529Ab0BYXgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 18:36:49 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:13342
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934488Ab0BYXgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 18:31:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=kIp1ipXxg5zi6DJNqSNxctrWi4oZHTZqqrwMIMjuaXv9U67h9xFEhKckmOCtVwezQi
-         IwEAcPUttxCyzyKMxDqq3EyjW1r9+/Pi7uy+owH7JLn7b44MMO43B+vKuMutmzk5QQEr
-         ARSm/uHdibqE37AZytQgZ7HsTrXpC/NcNioTY=
+	Thu, 25 Feb 2010 18:36:48 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz14c3Lab9bhzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B87098B.4040308@am.sony.com>
+Date: Thu, 25 Feb 2010 15:36:43 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Date: Thu, 25 Feb 2010 15:31:05 -0800
-Message-ID: <dd18b0c31002251531k34043f8j5a4cdc99d4ddeb06@mail.gmail.com>
-Subject: xserver + radeon + latest git kernel = crash and burn with startx
-From: Justin Mattock <justinmattock@gmail.com>
-To: xorg@freedesktop.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ftrace: add tracing_thresh support to function_graph tracer
+ (v3)
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this is new:
+Add support for tracing_thresh to the function_graph tracer.  This
+version of this feature isolates the checks into new entry and
+return functions, to avoid adding more conditional code into the
+main function_graph paths.
+
+Also, add support for specifying tracing_thresh on the kernel
+command line.  When used like so: "tracing_thresh=200 ftrace=function_graph"
+this can be used to analyse system startup.  It is important to disable
+tracing soon after boot, in order to avoid losing the trace data.
+
+Note: the elimination of 'notrace' in the definition of '__init'
+may be controversial.  This can be removed, or made conditional,
+if it's a bit too scary, but it worked OK for me.  Tracing during
+kernel startup still works, just with no visibility of routines
+declared __init.
+
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+---
+ include/linux/init.h                 |    2 +-
+ kernel/trace/trace.c                 |   20 ++++++++++++++++++--
+ kernel/trace/trace.h                 |    3 ++-
+ kernel/trace/trace_functions_graph.c |   32 +++++++++++++++++++++++++++++---
+ 4 files changed, 50 insertions(+), 7 deletions(-)
+
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -40,7 +40,7 @@
+
+ /* These are for everybody (although not all archs will actually
+    discard it in modules) */
+-#define __init		__section(.init.text) __cold notrace
++#define __init		__section(.init.text) __cold
+ #define __initdata	__section(.init.data)
+ #define __initconst	__section(.init.rodata)
+ #define __exitdata	__section(.exit.data)
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -297,6 +297,21 @@ static int __init set_buf_size(char *str
+ }
+ __setup("trace_buf_size=", set_buf_size);
+
++static int __init set_tracing_thresh(char *str)
++{
++	unsigned long threshhold;
++	int ret;
++
++	if (!str)
++		return 0;
++	ret = strict_strtoul(str, 0, &threshhold);
++	if (ret < 0)
++		return 0;
++	tracing_thresh = threshhold * 1000;
++	return 1;
++}
++__setup("tracing_thresh=", set_tracing_thresh);
++
+ unsigned long nsecs_to_usecs(unsigned long nsecs)
+ {
+ 	return nsecs / 1000;
+@@ -502,9 +517,10 @@ static ssize_t trace_seq_to_buffer(struc
+ static arch_spinlock_t ftrace_max_lock =
+ 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
+
++unsigned long __read_mostly	tracing_thresh;
++
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ unsigned long __read_mostly	tracing_max_latency;
+-unsigned long __read_mostly	tracing_thresh;
+
+ /*
+  * Copy the new maximum trace into the separate maximum-trace
+@@ -4181,10 +4197,10 @@ static __init int tracer_init_debugfs(vo
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ 	trace_create_file("tracing_max_latency", 0644, d_tracer,
+ 			&tracing_max_latency, &tracing_max_lat_fops);
++#endif
+
+ 	trace_create_file("tracing_thresh", 0644, d_tracer,
+ 			&tracing_thresh, &tracing_max_lat_fops);
+-#endif
+
+ 	trace_create_file("README", 0444, d_tracer,
+ 			NULL, &tracing_readme_fops);
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -396,9 +396,10 @@ extern int process_new_ksym_entry(char *
+
+ extern unsigned long nsecs_to_usecs(unsigned long nsecs);
+
++extern unsigned long tracing_thresh;
++
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ extern unsigned long tracing_max_latency;
+-extern unsigned long tracing_thresh;
+
+ void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
+ void update_max_tr_single(struct trace_array *tr,
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -241,6 +241,14 @@ int trace_graph_entry(struct ftrace_grap
+ 	return ret;
+ }
+
++int trace_graph_thresh_entry(struct ftrace_graph_ent *trace)
++{
++	if (tracing_thresh)
++		return 1;
++	else
++		return trace_graph_entry(trace);
++}
++
+ static void __trace_graph_return(struct trace_array *tr,
+ 				struct ftrace_graph_ret *trace,
+ 				unsigned long flags,
+@@ -287,13 +295,27 @@ void trace_graph_return(struct ftrace_gr
+ 	local_irq_restore(flags);
+ }
+
++void trace_graph_thresh_return(struct ftrace_graph_ret *trace)
++{
++	if (tracing_thresh &&
++		(trace->rettime - trace->calltime < tracing_thresh))
++		return;
++	else
++		trace_graph_return(trace);
++}
++
+ static int graph_trace_init(struct trace_array *tr)
+ {
+ 	int ret;
+
+ 	graph_array = tr;
+-	ret = register_ftrace_graph(&trace_graph_return,
+-				    &trace_graph_entry);
++	if (tracing_thresh)
++		ret = register_ftrace_graph(&trace_graph_thresh_return,
++			    &trace_graph_thresh_entry);
++	else
++		ret = register_ftrace_graph(&trace_graph_return,
++			    &trace_graph_entry);
++
+ 	if (ret)
+ 		return ret;
+ 	tracing_start_cmdline_record();
+@@ -891,7 +913,11 @@ print_graph_return(struct ftrace_graph_r
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
+
+-	ret = trace_seq_printf(s, "}\n");
++	if (tracing_thresh) {
++		ret = trace_seq_printf(s, "} (%ps)\n", (void *)trace->func);
++	} else {
++		ret = trace_seq_printf(s, "}\n");
++	}
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
 
 
- kernel: [   92.899961] pci 0000:01:00.0: PCI INT A -> GSI 16 (level,
-low) -> IRQ 16
-[   93.019936] [drm] Initialized drm 1.1.0 20060810
-[   93.097704] [drm] radeon defaulting to userspace modesetting.
-[   93.100104] [drm] Initialized radeon 1.32.0 20080528 for
-0000:01:00.0 on minor 0
-[   93.489194] [drm] Setting GART location based on new memory map
-[   93.490948] [drm] Loading R500 Microcode
-[   93.491178] platform radeon_cp.0: firmware: requesting radeon/R520_cp.bin
-[   93.552496] [drm] Num pipes: 1
-[   93.552509] [drm] writeback test succeeded in 1 usecs
-[   93.604070] [drm] Num pipes: 1
-[   93.835904] CPU 1
-[   93.835904] Pid: 2091, comm: X Not tainted 2.6.33-dirty #1
-Mac-F42187C8/MacBookPro2,2
-[   93.835904] RIP: 0010:[<ffffffffa02df11b>]  [<ffffffffa02df11b>]
-radeon_read_ring_rptr+0x2b/0x2f [radeon]
-[   93.835904] RSP: 0018:ffff8800369fdc70  EFLAGS: 00010202
-[   93.835904] RAX: ffff88003df3bd48 RBX: ffff880038996360 RCX: ffffc90000aec000
-[   93.835904] RDX: 0000000000000028 RSI: 6b6b6b6b6b6b6b6b RDI: ffff880038996360
-[   93.835904] RBP: ffff8800369fdc70 R08: ffff880038996540 R09: 0000000000000010
-[   93.835904] R10: ffffffffffffffff R11: ffffea0000d8e550 R12: 0000000000000010
-[   93.835904] R13: ffff8800389973f0 R14: ffff8800389964e0 R15: ffff880038997568
-[   93.835904] FS:  00007f14884e47a0(0000) GS:ffff880001900000(0000)
-knlGS:0000000000000000
-[   93.835904] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   93.835904] CR2: 00007f1483ee28d8 CR3: 00000000015f6000 CR4: 00000000000006e0
-[   93.835904] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[   93.835904] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[   93.835904] Process X (pid: 2091, threadinfo ffff8800369fc000, task
-ffff88003743d8b0)
-[   93.835904]  ffff8800369fdc80 ffffffffa02df130 ffff8800369fdc98
-ffffffffa02df81c
-[   93.835904] <0> ffff880038996360 ffff8800369fdcb8 ffffffffa02e0a6a
-0000000000000000
-[   93.835904] <0> ffff880038996360 ffff8800369fdcd8 ffffffffa02e38fd
-ffff880038996360
-[   93.835904]  [<ffffffffa02df130>] radeon_get_ring_head+0x11/0x3c [radeon]
-[   93.835904]  [<ffffffffa02df81c>] radeon_commit_ring+0x48/0x97 [radeon]
-[   93.835904]  [<ffffffffa02e0a6a>] radeon_do_cp_idle+0x140/0x14d [radeon]
-[   93.835904]  [<ffffffffa02e38fd>]
-radeon_apply_surface_regs+0x22/0x138 [radeon]
-[   93.835904]  [<ffffffffa02e3aeb>] free_surface+0xd8/0xee [radeon]
-[   93.835904]  [<ffffffffa02ebcb3>] radeon_driver_lastclose+0x3c/0x56 [radeon]
-[   93.835904]  [<ffffffffa029e14b>] drm_lastclose+0x44/0x2ad [drm]
-[   93.835904]  [<ffffffffa029ec1a>] drm_release+0x656/0x6a3 [drm]
-[   93.835904]  [<ffffffff810ed254>] __fput+0x112/0x1e1
-[   93.835904]  [<ffffffff810ed338>] fput+0x15/0x17
-[   93.835904]  [<ffffffff810ea559>] filp_close+0x63/0x6d
-[   93.835904]  [<ffffffff8105c744>] put_files_struct+0x65/0xb3
-[   93.835904]  [<ffffffff8105c7d8>] exit_files+0x46/0x4e
-[   93.835904]  [<ffffffff8105de6b>] do_exit+0x20f/0x6a8
-[   93.835904]  [<ffffffff81077dcb>] ? up_read+0x9/0xb
-[   93.835904]  [<ffffffff813eca44>] ? do_page_fault+0x2aa/0x2da
-[   93.835904]  [<ffffffff8105e377>] do_group_exit+0x73/0x9c
-[   93.835904]  [<ffffffff8105e3b2>] sys_exit_group+0x12/0x16
-[   93.835904]  [<ffffffff810264c2>] system_call_fastpath+0x16/0x1b
-[   93.835904]  RSP <ffff8800369fdc70>
-[   94.524994] ---[ end trace 603c2d6e0ba70b7f ]---
 
-I can try a bisect, but might be difficult because
-of reproducing this.
-
--- 
-Justin P. Mattock
