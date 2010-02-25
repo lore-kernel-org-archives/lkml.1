@@ -1,72 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066Ab0BYKYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:24:25 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:45996 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759010Ab0BYKYX (ORCPT
+	id S1759118Ab0BYK0F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:26:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47053
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759028Ab0BYK0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:24:23 -0500
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH] cgroup: do not use dprintf in cgroup_event_listener
-Date: Thu, 25 Feb 2010 12:24:07 +0200
-Message-Id: <1267093447-2607-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.6.2
+	Thu, 25 Feb 2010 05:26:00 -0500
+Date: Thu, 25 Feb 2010 02:26:18 -0800 (PST)
+Message-Id: <20100225.022618.256301798.davem@davemloft.net>
+To: a.p.zijlstra@chello.nl
+CC: paulus@samba.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: perf per-symbol histogram causes memory corruption
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-glibc's dprintf(3) is buggy:
-http://sourceware.org/bugzilla/show_bug.cgi?id=11319
 
-Let's not to use it in the example.
+When builtin-annotate.c processes sample events via
+process_sample_event() it uses 'sample_filter'
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- Documentation/cgroups/cgroup_event_listener.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+sample_filter() sizes the histogram object for a symbol based upon the
+size, calculated as "sym->end - sym->start", to determine the number
+of IP sample slots to allocate.
 
-diff --git a/Documentation/cgroups/cgroup_event_listener.c b/Documentation/cgroups/cgroup_event_listener.c
-index 8c2d7aa..8c2bfc4 100644
---- a/Documentation/cgroups/cgroup_event_listener.c
-+++ b/Documentation/cgroups/cgroup_event_listener.c
-@@ -23,6 +23,7 @@ int main(int argc, char **argv)
- 	int cfd = -1;
- 	int event_control = -1;
- 	char event_control_path[PATH_MAX];
-+	char line[LINE_MAX];
- 	int ret;
- 
- 	if (argc != 3) {
-@@ -39,7 +40,7 @@ int main(int argc, char **argv)
- 
- 	ret = snprintf(event_control_path, PATH_MAX, "%s/cgroup.event_control",
- 			dirname(argv[1]));
--	if (ret > PATH_MAX) {
-+	if (ret >= PATH_MAX) {
- 		fputs("Path to cgroup.event_control is too long\n", stderr);
- 		goto out;
- 	}
-@@ -57,7 +58,13 @@ int main(int argc, char **argv)
- 		goto out;
- 	}
- 
--	ret = dprintf(event_control, "%d %d %s", efd, cfd, argv[2]);
-+	ret = snprintf(line, LINE_MAX, "%d %d %s", efd, cfd, argv[2]);
-+	if (ret >= LINE_MAX) {
-+		fputs("Arguments string is too long\n", stderr);
-+		goto out;
-+	}
-+
-+	ret = write(event_control, line, strlen(line) + 1);
- 	if (ret == -1) {
- 		perror("Cannot write to cgroup.event_control");
- 		goto out;
--- 
-1.6.6.2
+The problem is, the sym->end value is not stable at this point.
+
+For example, dso__load_sym() first loads all of the symbols, then it
+makes another pass over the symbols by calling symbols__fixup_end()
+which will adjust the sym->end values of various symbols.
+
+At this point, the histogram IP sample array allocated by
+sample_filter() can become too small, and hits recorded can thus
+access past the end of the array corrupting memory.
+
+I get this very reliably on sparc64, and it took me a few days to root
+cause this. :-)
+
+I don't see an immediate way to fix this, any ideas?
 
