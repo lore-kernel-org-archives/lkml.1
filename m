@@ -1,36 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877Ab0BYC4B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 21:56:01 -0500
-Received: from mail.freehost.com.ua ([194.0.200.218]:50761 "EHLO
-	mail.freehost.com.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758840Ab0BYCz7 convert rfc822-to-8bit (ORCPT
+	id S1758880Ab0BYC6c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 21:58:32 -0500
+Received: from mga10.intel.com ([192.55.52.92]:54597 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758840Ab0BYC6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 21:55:59 -0500
-Message-ID: <20100225045428.44cy35b0rkkog480@mail.freehost.com.ua>
-Date: Thu, 25 Feb 2010 04:54:28 +0200
-From: Microsoft Office <microsoftgame1@aol.co.uk>
-To: undisclosed-recipients:;
-Subject: 2010 Award Promotion
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-15;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.3) / FreeBSD-6.0
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: microsoftgame1@aol.co.uk
-X-SA-Exim-Scanned: No (on mail.freehost.com.ua); SAEximRunCond expanded to false
+	Wed, 24 Feb 2010 21:58:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,536,1262592000"; 
+   d="scan'208";a="775710407"
+Subject: Check the right return variable
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Thu, 25 Feb 2010 11:00:51 +0800
+Message-Id: <1267066851.1726.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-£450,000.00 was awarded to you by the Microsoft Online Promo.,confirm  
-receipt by sending your name,address, age, phone number etc to Dr.  
-Terry Cole via: Email ;microsoftgame1@aol.co.uk
-Tel: +44 702 408 1795.
+In function dso__split_kallsyms, curr_map saves the return value of
+map__new2. So check it instead of var map after the calling returns.
 
+Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
+
+---
+
+diff -Nraup linux-2.6.33/tools/perf/util/symbol.c linux-2.6.33_perf/tools/perf/util/symbol.c
+--- linux-2.6.33/tools/perf/util/symbol.c	2010-02-25 02:52:17.000000000 +0800
++++ linux-2.6.33_perf/tools/perf/util/symbol.c	2010-02-25 10:12:33.000000000 +0800
+@@ -503,7 +503,7 @@ static int dso__split_kallsyms(struct ds
+ 				return -1;
+ 
+ 			curr_map = map__new2(pos->start, dso, map->type);
+-			if (map == NULL) {
++			if (curr_map == NULL) {
+ 				dso__delete(dso);
+ 				return -1;
+ 			}
 
 
