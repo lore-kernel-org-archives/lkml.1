@@ -1,72 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275Ab0BYLTP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 06:19:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33997 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759048Ab0BYLTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 06:19:13 -0500
-Date: Thu, 25 Feb 2010 11:18:34 GMT
-From: "tip-bot for Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       yanmin_zhang@linux.intel.com, davem@davemloft.net, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       yanmin_zhang@linux.intel.com, efault@gmx.de, davem@davemloft.net,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1267066851.1726.9.camel@localhost>
-References: <1267066851.1726.9.camel@localhost>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf symbols: Check the right return variable
-Message-ID: <tip-37fe5fcb7a5b5235c8b71bf5469ce4c7246e3fab@git.kernel.org>
-Git-Commit-ID: 37fe5fcb7a5b5235c8b71bf5469ce4c7246e3fab
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
+	id S932242Ab0BYLcw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 06:32:52 -0500
+Received: from legolas.restena.lu ([158.64.1.34]:40775 "EHLO
+	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932149Ab0BYLcu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 06:32:50 -0500
+Date: Thu, 25 Feb 2010 12:32:14 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
+       Nicu Pavel <npavel@ituner.com>
+Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
+Message-ID: <20100225123214.0523a310@neptune.home>
+In-Reply-To: <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+References: <20100221002001.0a7e05a7@neptune.home>
+	<20100224170049.0d04af3c@neptune.home>
+	<alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 11:18:34 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  37fe5fcb7a5b5235c8b71bf5469ce4c7246e3fab
-Gitweb:     http://git.kernel.org/tip/37fe5fcb7a5b5235c8b71bf5469ce4c7246e3fab
-Author:     Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-AuthorDate: Thu, 25 Feb 2010 11:00:51 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 12:15:24 +0100
+On Thu, 25 February 2010 Jiri Kosina <jkosina@suse.cz> wrote:
+> On Wed, 24 Feb 2010, Bruno Prémont wrote:
+> 
+> > +config HID_PICOLCD
+> > +	tristate "Minibox PicoLCD (graphic version)"
+> > +	depends on FB
+> > +	select FB_DEFERRED_IO
+> > +	select FB_SYS_FILLRECT
+> > +	select FB_SYS_COPYAREA
+> > +	select FB_SYS_IMAGEBLIT
+> > +	select FB_SYS_FOPS
+> > +	select BACKLIGHT_LCD_SUPPORT
+> > +	select BACKLIGHT_CLASS_DEVICE
+> > +	select LCD_CLASS_DEVICE
+> 
+> I guess you need dependency on USB_HID as well, right?
 
-perf symbols: Check the right return variable
+Yep, will add
 
-In function dso__split_kallsyms(), curr_map saves the return value
-of map__new2. So check it instead of var map after the call returns.
+> > --- a/drivers/hid/hid-picolcd.c
+> > +++ b/drivers/hid/hid-picolcd.c
+> > @@ -0,0 +1,1075 @@
+> > +/***************************************************************************
+> > + *   Copyright (C) 2010 by Bruno Prémont <bonbons@linux-vserver.org>       *
+> > + *                                                                         *
+> > + *   Based on Logitech G13 driver (v0.4)                                   *
+> > + *     Copyright (C) 2009 by Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>   *
+> > + *                                                                         *
+> > + *   This program is free software: you can redistribute it and/or modify  *
+> > + *   it under the terms of the GNU General Public License as published by  *
+> > + *   the Free Software Foundation, either version 2 of the License.        *
+> 
+> I support removing the 'or any later' clause, but I think your
+> version has the grammar wrong :)
 
-Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
-Acked-by: David S. Miller <davem@davemloft.net>
-Cc: <stable@kernel.org> # for .33.x
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1267066851.1726.9.camel@localhost>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/symbol.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Oops, will fix
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index ee9c37e..320b151 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -527,7 +527,7 @@ static int dso__split_kallsyms(struct dso *self, struct map *map,
- 				return -1;
- 
- 			curr_map = map__new2(pos->start, dso, map->type);
--			if (map == NULL) {
-+			if (curr_map == NULL) {
- 				dso__delete(dso);
- 				return -1;
- 			}
+> > +/* Update fb_vbitmap from the screen_base and send changed tiles to device */
+> > +static void picolcd_fb_update(struct picolcd_data *data)
+> > +{
+> > +	int chip, tile;
+> > +
+> > +	spin_lock(&data->lock);
+> > +	if (!(data->status & PICOLCD_READY_FB)) {
+> > +		spin_unlock(&data->lock);
+> > +		picolcd_fb_reset(data->hdev, 0);
+> > +	} else
+> > +		spin_unlock(&data->lock);
+> 
+> Please put the brackets to the else branch as well.
+
+Ok, will add the brackets while switching from spin_(un)lock to
+spin_(un)lock_irq{save|restore}.
+
+> Also, it'd be great if the framebuffer part would get Ack from
+> someone more familiar with framebuffer code than me.
+
+I would appreciate such one as well, especially regarding the
+deferredio part and the more advanced fb use. For now I only tested
+read/write from /dev/fbx.
+
+
+For the two sysfs attributes I currently use, the 'reset' one shall
+probably be moved to debugfs (I would like to place it under
+/sys/kernel/debug/hid/$device/ next to rdesc and event).
+
+By the way, I'm wondering why event does not list any of the reports
+coming from my device though as I understand the code it should be
+doing that before my raw_event function gets called...
+
+The one for deferredio refresh rate should ideally go below fb device
+(and I guess that might also be of use for other users of deferredio)
+
+Thanks for the review,
+Bruno
