@@ -1,48 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469Ab0BYRJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:09:43 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:61578 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759333Ab0BYRJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:09:42 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19334.44752.357207.382349@pilspetsen.it.uu.se>
-Date: Thu, 25 Feb 2010 18:09:36 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Roel Kluin <roel.kluin@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
-	sha1_update()
-In-Reply-To: <73c1f2161002250833n120cda05s9371e5ce13cc0aac@mail.gmail.com>
-References: <4B8692E3.9030509@gmail.com>
-	<19334.40337.651079.440912@pilspetsen.it.uu.se>
-	<73c1f2161002250833n120cda05s9371e5ce13cc0aac@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	id S932978Ab0BYRPm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:15:42 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42644 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932681Ab0BYRPk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 12:15:40 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>, stable@kernel.org
+Subject: [PATCH] netdevice.h: check for CONFIG_WLAN instead of CONFIG_WLAN_80211
+Date: Thu, 25 Feb 2010 12:02:45 -0500
+Message-Id: <1267117365-16235-1-git-send-email-linville@tuxdriver.com>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <20100225150423.GA5101@faui49.informatik.uni-erlangen.de>
+References: <20100225150423.GA5101@faui49.informatik.uni-erlangen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> Would barrier() (which is a simple memory clobber) after the memset work?
+In "wireless: remove WLAN_80211 and WLAN_PRE80211 from Kconfig" I
+inadvertantly missed a line in include/linux/netdevice.h.  I thereby
+effectively reverted "net: Set LL_MAX_HEADER properly for wireless." by
+accident. :-(  Now we should check there for CONFIG_WLAN instead.
 
-I don't know. It's implemented as an asm with a "memory" clobber,
-but I wouldn't bet on that forcing previous writes to a dying object
-to actally be performed (it would have to have a data-dependency on
-the dying object, but I don't think there is one).
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Reported-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Cc: stable@kernel.org
+---
+Unless there is objection, I'll push this up through my tree as normal.
 
-void secure_bzero(void *p, size_t n)
-{
-	memset(p, 0, n);
-	asm("" : : "m"(*(char*)p));
-}
+(Apologies for the second copy, I munged the LKML address in the first
+one...)
 
-seems to work, but as the object in general will be larger than a
-single byte, I'd like to see some confirmation from the gcc folks
-first that this will in fact work.
+ include/linux/netdevice.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index a3fccc8..99914e6 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -136,7 +136,7 @@ static inline bool dev_xmit_complete(int rc)
+  *	used.
+  */
+ 
+-#if defined(CONFIG_WLAN_80211) || defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
++#if defined(CONFIG_WLAN) || defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ # if defined(CONFIG_MAC80211_MESH)
+ #  define LL_MAX_HEADER 128
+ # else
+-- 
+1.6.2.5
+
