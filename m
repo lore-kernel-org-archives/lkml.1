@@ -1,102 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933976Ab0BYVin (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:38:43 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:36376 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933759Ab0BYVil convert rfc822-to-8bit (ORCPT
+	id S933898Ab0BYVnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:43:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47914 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933698Ab0BYVnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:38:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DZgdpO0UK4gV0lcBwnNFOzlfkGiCc6ThdVByDYckkS79JmVNF2rtrM72W3Ty/dKr7h
-         dtqc6QEYaQ7xcVzBLPxFX0GfGw9yn+3LZ37KDrBw4vdslWZVdomZehtlv1zZ0Vxzn55p
-         Cpndm19z++NfDV3OemFz3RFsQAhufTLOFWuo4=
-MIME-Version: 1.0
-In-Reply-To: <20100225203834.GD10960@localhost.localdomain>
-References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com>
-	 <20100225202358.GC10960@localhost.localdomain>
-	 <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
-	 <20100225203834.GD10960@localhost.localdomain>
-Date: Thu, 25 Feb 2010 21:38:38 +0000
-Message-ID: <6278d2221002251338x6d235485t832ea6238272b9a7@mail.gmail.com>
-Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Josef Bacik <josef@redhat.com>
-Cc: Andrew Lutomirski <luto@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Feb 2010 16:43:40 -0500
+Subject: Re: [PATCH 0/3] sched: use EDF to throttle RT task groups v2
+From: Peter Zijlstra <peterz@infradead.org>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Paul Turner <pjt@google.com>,
+       Dario Faggioli <faggioli@gandalf.sssup.it>,
+       Michael Trimarchi <michael@evidence.eu.com>,
+       Dhaval Giani <dhaval@retis.sssup.it>,
+       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org
+In-Reply-To: <cover.1266931410.git.fabio@helm.retis>
+References: <cover.1266931410.git.fabio@helm.retis>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Feb 2010 21:28:16 +0100
+Message-ID: <1267129696.22519.556.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 8:38 PM, Josef Bacik <josef@redhat.com> wrote:
-> On Thu, Feb 25, 2010 at 03:29:34PM -0500, Andrew Lutomirski wrote:
->> On Thu, Feb 25, 2010 at 3:23 PM, Josef Bacik <josef@redhat.com> wrote:
->> > On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
->> >> Mounting btrfs corrupts memory and causes nasty crashes within a few
->> >> seconds.  This seems to happen even if the mount fails (note the
->> >> unrecognized mount option).  This is a regression from 2.6.32, and
->> >> I've attached an example.
->> >>
->> >
->> > And it only happens when you mount a btrfs fs?  Can you show me a trace of when
->> > you mount a btrfs fs with valid mount options?  I'd like to see if we're not
->> > cleaning up something properly or what.  Thanks,
->>
->> Seems OK.  Or maybe I just got lucky, but it's crashed every time I
->> tried to mount with 'acl' before.
->>
->> I even went through a couple iterations of trying to mount with
->> 'xattr' and 'user_xattr', both of which failed.
->>
->
-> Ok it looks like we have a problem kfree'ing the wrong stuff.  we kstrdup the
-> options string, but then strsep screws with the pointer, so when we kfree() it,
-> we're not giving it the right pointer.  Please try this patch, and mount with -o
-> acl and other such garbage to make sure it actually worked (acl isn't a valid
-> mount option btw).  Let me know if it works.  Thanks,
->
-> Josef
->
->
-> diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-> index 8a1ea6e..f8b4521 100644
-> --- a/fs/btrfs/super.c
-> +++ b/fs/btrfs/super.c
-> @@ -128,7 +128,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
->  {
->        struct btrfs_fs_info *info = root->fs_info;
->        substring_t args[MAX_OPT_ARGS];
-> -       char *p, *num;
-> +       char *p, *num, *orig;
->        int intarg;
->        int ret = 0;
->
-> @@ -143,6 +143,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
->        if (!options)
->                return -ENOMEM;
->
-> +       orig = options;
->
->        while ((p = strsep(&options, ",")) != NULL) {
->                int token;
-> @@ -280,7 +281,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
->                }
->        }
->  out:
-> -       kfree(options);
-> +       kfree(orig);
->        return ret;
->  }
+On Tue, 2010-02-23 at 19:56 +0100, Fabio Checconi wrote:
+> This patchset introduces a group level EDF scheduler extending the
+> throttling mechanism, in order to make it support generic period
+> assignments.  With this patch, the runtime and period parameters
+> can be used to specify arbitrary CPU reservations for RT tasks.
+> 
+> From the previous post [1] I've integrated Peter's suggestions, using
+> a multi-level hierarchy to do admission control, but a one-level only
+> equivalent hierarchy for scheduling, and I've not removed the bandwidth
+> migration mechanism, trying to adapt it to EDF scheduling.  In this
+> version tasks are still inserted into priority arrays and only groups
+> are kept in a per-rq edf tree.
+> 
+> The main design issues involved:
+> 
+>   - Since it is not easy to mix tasks and groups on the same scheduler
+>     queue (tasks have no deadlines), the bandwidth reserved to the tasks
+>     in a group is controlled with two additional cgroup attributes:
+>     rt_task_runtime_us and rt_task_period_us.  These attributes control,
+>     within a cgroup, how much bandwidth is reserved to the tasks it
+>     contains.  The old attributes, rt_runtime_us and rt_period_us, are
+>     still there, and control the bandwidth assigned to the cgroup.  They
+>     are used only for admission control.
+> 
+>   - Shared resources are still handled using boosting.  When a group
+>     contains a task inside a critical section it is scheduled according
+>     the highest priority among the ones of the tasks it contains.
+>     In this way, the same group has two modes: when it is not boosted
+>     it is scheduled according to its deadline; when it is boosted, it
+>     is scheduled according its priority.  Boosted groups are always
+>     favored over non-boosted ones.
+> 
+>   - Given that the various rt_rq's belonging to the same task group
+>     are activated independently, there is the need of a timer per
+>     each rt_rq.
+> 
+>   - While balancing the bandwidth assigned to a cgroup on various cpus
+>     we have to make sure that utilization for the rt_rq's on each cpu
+>     does not exceed the global utilization limit for RT tasks.  
+> 
 
-The patch is good, and the same as I was testing to fix this issue I
-found a day before with -rc8.
+> As usual, feedback welcome.
 
-Thanks,
-  Daniel
--- 
-Daniel J Blueman
+Looks very nice, good work! comments in individual replies.
+
