@@ -1,50 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780Ab0BYBwr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 20:52:47 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:62790 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753386Ab0BYBwq convert rfc822-to-8bit (ORCPT
+	id S1758792Ab0BYBwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 20:52:50 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:40118 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758774Ab0BYBws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 20:52:46 -0500
+	Wed, 24 Feb 2010 20:52:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kzmtB81jESMpqag3VjRrqacgzwFnfxFqi73bUr4/VEUdepcO6/kqnM8lOpjDjUiQFq
-         uAhLqseH+VJ61xs3yJYZb557AEniB/WRbkoAheCyd9IUMv6opNSAM8rK/5LVuCr551Fd
-         p8WAvY55D/A1d50xpn3c0NVgPoXePp8m4m3Y8=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hYI8RtjH5+pvHPw+786qtI7qMIYKexG5X++g8Onu9xbxRYKb9mKtYk4FIib6sfKeV+
+         dTxm52QatTW1u6Y2qVpJ0qAXTa6TFoZpo9sMoJdlNdap3lwrdIHnsViOGb10Qo4tN4mY
+         B6ZIWqKOOVz05WL61JNhaWYJxSzLUoiJYH0Jw=
+Date: Thu, 25 Feb 2010 02:52:46 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
+       k-keiichi@bx.jp.nec.com
+Subject: Re: [PATCH 08/12] perf: export some syscall metadata
+Message-ID: <20100225015244.GC7491@nowhere>
+References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com> <1264580883-15324-9-git-send-email-tzanussi@gmail.com> <20100223214445.GF5357@nowhere> <1266991243.6427.44.camel@tropicana>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a1002221125pb3836e6nc82cee09f2709467@mail.gmail.com>
-References: <20100222141934.GA9030@darkstar>
-	 <8bd0f97a1002221125pb3836e6nc82cee09f2709467@mail.gmail.com>
-Date: Thu, 25 Feb 2010 09:52:44 +0800
-Message-ID: <a8e1da1002241752s7c16a96eu11ceb5558390257f@mail.gmail.com>
-Subject: Re: [PATCH 03/06] kernel.h hexdump cleanup
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, Li Zefan <lizf@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266991243.6427.44.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 3:25 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Mon, Feb 22, 2010 at 09:19, Dave Young wrote:
->> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
->> +++ linux-2.6/include/linux/hexdump.h   2010-02-16 17:33:16.000000000 +0800
->> @@ -0,0 +1,30 @@
->> +#ifndef _HEXDUMP_H
->> +#define _HEXDUMP_H
->
-> use _LINUX_HEXDUMP_H to match other linux/ headers ?
-> -mike
->
+On Wed, Feb 24, 2010 at 12:00:43AM -0600, Tom Zanussi wrote:
+> You can skip the syscall metadata patches (7-11) and things will still
+> work - you'll just get syscall numbers in the output instead of the
+> nicer syscall names.
+> 
+> When the event injection stuff is ready, I can re-implement those
+> patches on top of it - it shouldn't be a big deal.
 
-Thanks, either is fine for me.
 
--- 
-Regards
-dave
+Yeah, this looks more reasonable I think. The 7th patch can still
+go on though, as it deals with syscall numbers, not yet names, so
+it's fine.
+
+Ah and I'm keeping the 12th patch too (documentation) with some
+few modifications, just to tell people syscall names are not yet
+supported.
+
+I've tested the set and played with it. It works very well.
+
+Actually this work is just amazing. It's so easy to generate
+a script for any perf.data, with the right things inside, easy
+to modify as the callbacks are intuitive.
+
+I'm pushing that right away so happily...
+
