@@ -1,72 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933459Ab0BYTgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:36:08 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:51412 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933187Ab0BYTgE (ORCPT
+	id S933486Ab0BYTgl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:36:41 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:3987 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933187Ab0BYTgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:36:04 -0500
-Date: Thu, 25 Feb 2010 14:36:02 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-cc: =?iso-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>,
-       Sarah Sharp <sarah.a.sharp@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device
- 8087:0020
-In-Reply-To: <20100225190452.GA4184@xanatos>
-Message-ID: <Pine.LNX.4.44L0.1002251430470.1686-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Feb 2010 14:36:37 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5903"; a="34874861"
+Subject: Re: [PATCH] staging/dream: add missing include files/fix
+ compilation
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>, linux-arm-msm@vger.kernel.org
+In-Reply-To: <20100225193027.GA7391@elf.ucw.cz>
+References: <20091225205917.GA25761@elf.ucw.cz>
+	 <20100115002419.GA25643@kroah.com> <20100119054516.GB22153@elf.ucw.cz>
+	 <1263914079.1951.43.camel@m0nster> <20100131084421.GG2238@elf.ucw.cz>
+	 <20100131092829.GJ2238@elf.ucw.cz> <1264953492.2059.5.camel@m0nster>
+	 <20100225193027.GA7391@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Feb 2010 11:36:26 -0800
+Message-ID: <1267126586.5439.56.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, Sarah Sharp wrote:
-
-> > > now, I unplug the USB DVD drive:
+On Thu, 2010-02-25 at 20:30 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > > > (and similar error further down). This fixes it, but you probably want
+> > > > to add machine_is_* to your git. (Aha, is that what you meant by
+> > > > "machine types"?
+> > > > 
+> > > > With this patch it compiles.
 > > > 
-> > > Feb 25 17:35:38 tonkachi kernel: [  276.374282] xhci_hcd 0000:02:00.0:
-> > > WARN: transfer error on endpoint
-> > > Feb 25 17:35:39 tonkachi kernel: [  276.728151] xhci_hcd 0000:02:00.0:
-> > > WARN: transfer error on endpoint
-> > > Feb 25 17:35:39 tonkachi kernel: [  276.728819] xhci_hcd 0000:02:00.0:
-> > > WARN: transfer error on endpoint
-
-Shouldn't there be some messages here about "USB disconnect"?  This 
-suggests there's something wrong with the root hub.
-
-> > > I plug it back in, with a DVD in the drive:
+> > > Ok, it compiles, but I do not see it booting. You config has:
 > > > 
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.701586] Registered led device:
-> > > iwl-phy0::radio
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.701619] Registered led device:
-> > > iwl-phy0::assoc
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.701649] Registered led device:
-> > > iwl-phy0::RX
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.701674] Registered led device:
-> > > iwl-phy0::TX
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.719536] usb 2-3: new high speed
-> > > USB device using xhci_hcd and address 0
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.742028] usb 2-3: New USB device
-> > > found, idVendor=058f, idProduct=6254
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.742034] usb 2-3: New USB device
-> > > strings: Mfr=0, Product=0, SerialNumber=0
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.742155] usb 2-3: configuration
-> > > #1 chosen from 1 choice
-> > > Feb 25 17:41:21 tonkachi kernel: [  618.742168] usb 2-3: ep 0x81 -
-> > > rounding interval to 2048 microframes
+> > > CONFIG_MSM_DEBUG_UART=3
+> > > # CONFIG_MSM_DEBUG_UART_NONE is not set
+> > > # CONFIG_MSM_DEBUG_UART1 is not set
+> > > # CONFIG_MSM_DEBUG_UART2 is not set
+> > > CONFIG_MSM_DEBUG_UART3=y
+> > > ...
+> > > CONFIG_DEBUG_LL=y
+> > > CONFIG_EARLY_PRINTK=y
+> > > 
+> > > set, so I'd expect it to say something on the serial line... (right?
+> > > Or do I still need to patch printk.c to get that?). And I see nothing
+> > > :-(.
+> > > 
+> > > I'm using
+> > > 
+> > > ./fastboot -c "console=ttyMSM2 root=/dev/mmcblk0p1 rootdelay=5 fbcon=rotate:1" boot /data/l/linux-dwalker/arch/arm/boot/zImage
+> > > 
+> > > ...with different kernel, it works (as in "I get most of the boot on
+> > > serial line; it will not actually mount root").
+> > 
+> > Have you seen this error?
+> ...
+> > /home/dwalker/linux-2.6/drivers/video/msm/msm_fb.c:24: fatal error: linux/msm_mdp.h: No such file or directory
+> > compilation terminated.
+> > make[4]: *** [drivers/video/msm/msm_fb.o] Error 1
+> > make[3]: *** [drivers/video/msm] Error 2
+> > make[3]: *** Waiting for unfinished jobs....
+> > make[2]: *** [drivers/video] Error 2
+> > make[1]: *** [drivers] Error 2
+> > make: *** [sub-make] Error 2
+> 
+> Yes, framebuffer has problems.
+> 
+> > Even with the framebuffer off I still don't get any serial output on a
+> > plain 2.6.33-rc6 .. I'm using a config that you sent me when you first
+> > tested my -next tree .
+> 
+> 2.6.33 boots here, with attached config. I'll try -next next.
 
-You must have plugged it into a different port this time, yes?
+My -next tree hasn't changed much since you last looked at it .. I
+wouldn't bother testing it. I might take some small fixes from that tree
+to merge, but what's there is still too much of a mess to merge.
 
-> That looks like a rather long polling interval.  Can you post the output
-> of `lsusb -vvv -d 058f:6254`?
+I just pushed another tree called "working-mmc" which still needs some
+clean up but should have working mmc if you want to test that.
 
-2048 microframes is 256 ms, the normal polling interval for hubs.
-
-Alan Stern
+Daniel
 
