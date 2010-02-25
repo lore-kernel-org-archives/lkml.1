@@ -1,50 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057Ab0BYRaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:30:10 -0500
-Received: from smtp.microsoft.com ([131.107.115.215]:30878 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932994Ab0BYRaI convert rfc822-to-8bit (ORCPT
+	id S933072Ab0BYRcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:32:43 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:51074 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932947Ab0BYRcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:30:08 -0500
-From: Haiyang Zhang <haiyangz@microsoft.com>
-To: Greg KH <greg@kroah.com>, Hank Janssen <hjanssen@microsoft.com>
-CC: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: Problem with auto-detecting a HV environment from within Linux
-Thread-Topic: Problem with auto-detecting a HV environment from within Linux
-Thread-Index: AQHKtjnpPG+DB1+VDUmGCDmANJRAY5HXEhsA
-Date: Thu, 25 Feb 2010 17:30:29 +0000
-Message-ID: <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
-References: <20100225164436.GA3310@kroah.com>
-In-Reply-To: <20100225164436.GA3310@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Feb 2010 12:32:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=foN1hRyWOiBuPwQjzFfO1NdUQgsg0JtnRy3c67KCW6ICf3clZGeBfnDWG/XcVl1pxV
+         4mjiYrNb6MQ1fnApt8agU4mW4kZXSM3aOvCF4h6+4/H5bQeXVmDfrqYzRzr15OAEuV7Z
+         2Xu4fUfVC8rvJXZeRFcHdySId9ZPFuRBBRYGw=
 MIME-Version: 1.0
+In-Reply-To: <19334.44752.357207.382349@pilspetsen.it.uu.se>
+References: <4B8692E3.9030509@gmail.com>
+	 <19334.40337.651079.440912@pilspetsen.it.uu.se>
+	 <73c1f2161002250833n120cda05s9371e5ce13cc0aac@mail.gmail.com>
+	 <19334.44752.357207.382349@pilspetsen.it.uu.se>
+Date: Thu, 25 Feb 2010 12:32:37 -0500
+Message-ID: <73c1f2161002250932j5167e2fan51dc11970df00f7@mail.gmail.com>
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
+	sha1_update()
+From: Brian Gerst <brgerst@gmail.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Greg KH [mailto:greg@kroah.com]
-> So, is there a way to "know" ahead of time if we are in a HV guest
-> environment?
+On Thu, Feb 25, 2010 at 12:09 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
+> Brian Gerst wrote:
+>> Would barrier() (which is a simple memory clobber) after the memset work?
+>
+> I don't know. It's implemented as an asm with a "memory" clobber,
+> but I wouldn't bet on that forcing previous writes to a dying object
+> to actally be performed (it would have to have a data-dependency on
+> the dying object, but I don't think there is one).
 
-Here is some info from dmesg, which shows "VRTUAL MICROSFT".
-ACPI: RSDT (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0000
-ACPI: FADT (v002 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0200
-ACPI: WAET (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0b00
-ACPI: SLIC (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0b40
-ACPI: OEM0 (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0d40
-ACPI: SRAT (v002 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0600
-ACPI: MADT (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0300
-ACPI: OEMB (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001ffff240
-ACPI: DSDT (v001 MSFTVM MSFTVM02 0x00000002 INTL 0x02002026) @ 0x0000000000000000
+>From the GCC manual, section 5.37:
+If your assembler instructions access memory in an unpredictable
+fashion, add `memory' to the list of clobbered registers. This will
+cause GCC to not keep memory values cached in registers across the
+assembler instruction and not optimize stores or loads to that memory.
+You will also want to add the volatile keyword if the memory affected
+is not listed in the inputs or outputs of the asm, as the `memory'
+clobber does not count as a side-effect of the asm.
 
-Thanks,
-
-- Haiyang
-
+--
+Brian Gerst
