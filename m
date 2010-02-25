@@ -1,68 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320Ab0BYPWw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:22:52 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33157 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759202Ab0BYPWu (ORCPT
+	id S1759318Ab0BYPZz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:25:55 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:58313 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754634Ab0BYPZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:22:50 -0500
-Date: Thu, 25 Feb 2010 15:26:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tobias Klauser <tklauser@distanz.ch>
-Cc: linux-serial@vger.kernel.org, nios2-dev@sopc.et.ntust.edu.tw,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] serial: Add driver for the Altera JTAG UART
-Message-ID: <20100225152622.7eb479aa@lxorguk.ukuu.org.uk>
-In-Reply-To: <1267108523-32767-1-git-send-email-tklauser@distanz.ch>
-References: <1267108523-32767-1-git-send-email-tklauser@distanz.ch>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 10:25:54 -0500
+Date: Thu, 25 Feb 2010 10:26:09 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm]
+ kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-
+ and-resolve-limit.cleanup
+Message-ID: <20100225152609.GC2990@shamino.rdu.redhat.com>
+References: <20100225150826.GA22440@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100225150826.GA22440@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Spam-Score: -3.9 (---)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static void altera_jtaguart_set_termios(struct uart_port *port,
-> +					struct ktermios *termios,
-> +					struct ktermios *old)
-> +{
-> +}
+On Thu, Feb 25, 2010 at 04:08:26PM +0100, Oleg Nesterov wrote:
+> Trivial, kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
+> forgot to kill the declaration of call_usermodehelper_stdinpipe() which no
+> longer exists.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> ---
+> 
+> --- mm/include/linux/kmod.h~0_KILL_DECL	2010-02-25 15:57:02.000000000 +0100
+> +++ mm/include/linux/kmod.h	2010-02-25 15:58:20.000000000 +0100
+> @@ -73,8 +73,6 @@ struct subprocess_info *call_usermodehel
+>  /* Set various pieces of state into the subprocess_info structure */
+>  void call_usermodehelper_setkeys(struct subprocess_info *info,
+>  				 struct key *session_keyring);
+> -int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+> -				  struct file **filp);
+>  void call_usermodehelper_setfns(struct subprocess_info *info,
+>  		    int (*init)(struct subprocess_info *info),
+>  		    void (*cleanup)(struct subprocess_info *info),
+> 
+> 
+Thanks, Oleg!
 
-Erm no .. it may be wrong in the code you are copying but please don't
-further that. The requirement is that the termios handed back reflects
-the actual settings not the requested ones.
-
-Use tty_termios_copy_hw() to copy the old termios hardware settings back
-so that the caller sees it cannot set them.
-
-> +
-> +static void altera_jtaguart_rx_chars(struct altera_jtaguart *pp)
-> +{
-> +	struct uart_port *port = &pp->port;
-> +	unsigned char ch, flag;
-> +	unsigned long status;
-> +
-> +	while ((status = readl(port->membase + ALTERA_JTAGUART_DATA_REG)) &
-> +	       ALTERA_JTAGUART_DATA_RVALID_MSK) {
-> +		ch = status & ALTERA_JTAGUART_DATA_DATA_MSK;
-> +		flag = TTY_NORMAL;
-> +		port->icount.rx++;
-> +
-> +		if (uart_handle_sysrq_char(port, ch))
-> +			continue;
-> +		uart_insert_char(port, 0, 0, ch, flag);
-> +	}
-> +
-> +	tty_flip_buffer_push(port->state->port.tty);
-
-port.tty needs to be protected here - you might race an unplug/hangup as
-far as I can see - I think you need to take the lock over a bigger area
-
-[I'm working on switching this to krefs in all the drivers currently so
-that will end up cleaner]
-
-Basically fine other than that. The proposed UART number clashes with
-some other pending patches but that will get sorted out when they get
-merged
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
