@@ -1,96 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933581Ab0BYUCl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:02:41 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55428 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933562Ab0BYUCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:02:40 -0500
-Message-ID: <4B86D75D.1080303@linux.vnet.ibm.com>
-Date: Thu, 25 Feb 2010 14:02:37 -0600
-From: Anthony Liguori <aliguori@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	id S933597Ab0BYUCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:02:50 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:41846 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933562Ab0BYUCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:02:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:from:date:x-google-sender-auth:message-id
+         :subject:to:content-type;
+        b=vtAZFTEHKyRd+o6hfPMzz5av1VwKREtYBPKXOO/M6w+GtWXaXCNdq2HTIf7kMt0359
+         I7DNjitZByFIc7g+KWq+D9qt8EsCqsRgOJShbe2yzMGjLFV8EIdJQLG3r2HTQ8HPzQq4
+         sGNHGlJQqoclWU1XoBglfhqW7w7vTJaMvw7zk=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Shirley Ma <xma@us.ibm.com>,
-       Amit Shah <amit.shah@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio: fix out of range array access
-References: <20100225171340.GA16141@redhat.com>
-In-Reply-To: <20100225171340.GA16141@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Andrew Lutomirski <luto@mit.edu>
+Date: Thu, 25 Feb 2010 15:01:08 -0500
+X-Google-Sender-Auth: 609532e42e942095
+Message-ID: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com>
+Subject: [2.6.33 regression] btrfs mount causes memory corruption
+To: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25/2010 11:13 AM, Michael S. Tsirkin wrote:
-> I have observed the following error on virtio-net module unload:
->
-> ------------[ cut here ]------------
-> WARNING: at kernel/irq/manage.c:858 __free_irq+0xa0/0x14c()
-> Hardware name: Bochs
-> Trying to free already-free IRQ 0
-> Modules linked in: virtio_net(-) virtio_blk virtio_pci virtio_ring
-> virtio af_packet e1000 shpchp aacraid uhci_hcd ohci_hcd ehci_hcd [last
-> unloaded: scsi_wait_scan]
-> Pid: 1957, comm: rmmod Not tainted 2.6.33-rc8-vhost #24
-> Call Trace:
->   [<ffffffff8103e195>] warn_slowpath_common+0x7c/0x94
->   [<ffffffff8103e204>] warn_slowpath_fmt+0x41/0x43
->   [<ffffffff810a7a36>] ? __free_pages+0x5a/0x70
->   [<ffffffff8107cc00>] __free_irq+0xa0/0x14c
->   [<ffffffff8107cceb>] free_irq+0x3f/0x65
->   [<ffffffffa0081424>] vp_del_vqs+0x81/0xb1 [virtio_pci]
->   [<ffffffffa0091d29>] virtnet_remove+0xda/0x10b [virtio_net]
->   [<ffffffffa0075200>] virtio_dev_remove+0x22/0x4a [virtio]
->   [<ffffffff812709ee>] __device_release_driver+0x66/0xac
->   [<ffffffff81270ab7>] driver_detach+0x83/0xa9
->   [<ffffffff8126fc66>] bus_remove_driver+0x91/0xb4
->   [<ffffffff81270fcf>] driver_unregister+0x6c/0x74
->   [<ffffffffa0075418>] unregister_virtio_driver+0xe/0x10 [virtio]
->   [<ffffffffa0091c4d>] fini+0x15/0x17 [virtio_net]
->   [<ffffffff8106997b>] sys_delete_module+0x1c3/0x230
->   [<ffffffff81007465>] ? old_ich_force_enable_hpet+0x117/0x164
->   [<ffffffff813bb720>] ? do_page_fault+0x29c/0x2cc
->   [<ffffffff81028e58>] sysenter_dispatch+0x7/0x27
-> ---[ end trace 15e88e4c576cc62b ]---
->
-> The bug is in virtio-pci: we use msix_vector as array index to get irq
-> entry, but some vqs do not have a dedicated vector so this causes an out
-> of bounds access.  By chance, we seem to often get 0 value, which
-> results in this error.
->
-> Fix by verifying that vector is legal before using it as index.
->
-> Signed-off-by: Michael S. Tsirkin<mst@redhat.com>
->    
+Mounting btrfs corrupts memory and causes nasty crashes within a few
+seconds.  This seems to happen even if the mount fails (note the
+unrecognized mount option).  This is a regression from 2.6.32, and
+I've attached an example.
 
-Acked-by: Anthony Liguori <aliguori@us.ibm.com>
+--Andy
 
-Regards,
-
-Anthony Liguori
-
-> ---
-> Shirley, Amit, with Rusty on vacation, need other reviewers.  Could you
-> please review the following patch and ack on list if appropriate?
->
->   drivers/virtio/virtio_pci.c |    3 ++-
->   1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-> index 28d9cf7..7127bfe 100644
-> --- a/drivers/virtio/virtio_pci.c
-> +++ b/drivers/virtio/virtio_pci.c
-> @@ -473,7 +473,8 @@ static void vp_del_vqs(struct virtio_device *vdev)
->
->   	list_for_each_entry_safe(vq, n,&vdev->vqs, list) {
->   		info = vq->priv;
-> -		if (vp_dev->per_vq_vectors)
-> +		if (vp_dev->per_vq_vectors&&
-> +			info->msix_vector != VIRTIO_MSI_NO_VECTOR)
->   			free_irq(vp_dev->msix_entries[info->msix_vector].vector,
->   				 vq);
->   		vp_del_vq(vq);
->    
-
+Btrfs loaded
+device fsid cf4a8e080605f191-af91bbbf445c98b8 devid 2 transid 68136 /dev/dm-2
+device fsid cf4a8e080605f191-af91bbbf445c98b8 devid 1 transid 68136 /dev/dm-1
+device fsid cf4a8e080605f191-af91bbbf445c98b8 devid 2 transid 68136
+/dev/mapper/big_2
+device fsid cf4a8e080605f191-af91bbbf445c98b8 devid 1 transid 68136
+/dev/mapper/big_1
+device fsid cf4a8e080605f191-af91bbbf445c98b8 devid 1 transid 68136
+/dev/mapper/big_1
+btrfs: unrecognized mount option 'acl'
+btrfs: open_ctree failed
+------------[ cut here ]------------
+kernel BUG at mm/slub.c:2969!
+invalid opcode: 0000 [#1] SMP
+last sysfs file: /sys/kernel/mm/ksm/run
+CPU 6
+Pid: 2692, comm: bash Tainted: G        W  2.6.33 #2 P6T WS PRO/System
+Product Name
+RIP: 0010:[<ffffffff810fbbde>]  [<ffffffff810fbbde>] kfree+0x62/0xd5
+RSP: 0018:ffff88019db87c68  EFLAGS: 00010246
+RAX: 0040000000080000 RBX: ffff88019db87d18 RCX: ffff8801b175de20
+RDX: ffffea0000000000 RSI: ffffea0003800000 RDI: ffff880100000000
+RBP: ffff88019db87c88 R08: ffffffff81a57aa0 R09: ffff8801b551c240
+R10: 00000002412fde13 R11: 0000000000000000 R12: ffff880100000000
+R13: ffffffff811d9532 R14: 0000000000000010 R15: ffff88019db87ce8
+FS:  00007fde0bce7700(0000) GS:ffff8800282c0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f041b1b4600 CR3: 00000001b776a000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process bash (pid: 2692, threadinfo ffff88019db86000, task ffff88019d928000)
+Stack:
+ ffff8801b551c240 ffff88019db87d18 0000000000000000 ffff88019b65f164
+<0> ffff88019db87ca8 ffffffff811d9532 ffff88019db87ce8 ffff8801b4b8f548
+<0> ffff88019db87cc8 ffffffff811de035 ffff8801b4b8f548 ffff8801b644bba8
+Call Trace:
+ [<ffffffff811d9532>] ebitmap_destroy+0x21/0x3c
+ [<ffffffff811de035>] context_destroy+0x58/0x6c
+ [<ffffffff811e0787>] security_compute_sid+0x26d/0x282
+ [<ffffffff811e0815>] security_transition_sid+0x1f/0x21
+ [<ffffffff811d45d9>] selinux_bprm_set_creds+0xd1/0x25f
+ [<ffffffff810e3510>] ? vma_link+0x88/0xb1
+ [<ffffffff811d4a29>] ? selinux_vm_enough_memory+0x40/0x45
+ [<ffffffff8120cc58>] ? spin_unlock_irqrestore+0x9/0xb
+ [<ffffffff8120cce0>] ? __up_write+0x42/0x47
+ [<ffffffff811c909d>] security_bprm_set_creds+0x13/0x15
+ [<ffffffff8110cc3b>] prepare_binprm+0xc3/0xf0
+ [<ffffffff8110d55e>] do_execve+0x150/0x2d2
+ [<ffffffff81010eaf>] sys_execve+0x43/0x5a
+ [<ffffffff8100a0ca>] stub_execve+0x6a/0xc0
+Code: 83 c3 08 48 83 3b 00 eb ec 49 83 fc 10 0f 86 82 00 00 00 4c 89
+e7 e8 c5 e2 ff ff 48 89 c6 48 8b 00 84 c0 78 14 66 a9 00 c0 75 04 <0f>
+0b eb fe 48 89 f7 e8 ea 36 fd ff eb 5c 48 8b 4d 08 48 8b 7e
+RIP  [<ffffffff810fbbde>] kfree+0x62/0xd5
+ RSP <ffff88019db87c68>
+---[ end trace 57f7151f6a5def07 ]---
