@@ -1,61 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201Ab0BYSAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:00:21 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:37126 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933017Ab0BYSAS (ORCPT
+	id S933216Ab0BYSAy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:00:54 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:54238 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933000Ab0BYSAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:00:18 -0500
-Date: Thu, 25 Feb 2010 13:00:15 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu
-Cc: Nick Piggin <npiggin@suse.de>, Chris Friesen <cfriesen@nortel.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100225180014.GB6658@Krystal>
-References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com> <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop> <20100224152251.GA16295@Krystal> <20100225053310.GA9738@laptop> <20100225165301.GF24052@Krystal> <1267118726.6328.20.camel@gandalf.stny.rr.com> <20100225175121.GA6658@Krystal>
+	Thu, 25 Feb 2010 13:00:51 -0500
+Message-ID: <4B86B977.6040303@oracle.com>
+Date: Thu, 25 Feb 2010 09:55:03 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100225175121.GA6658@Krystal>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 12:53:44 up 33 days, 20:31,  4 users,  load average: 1.43, 0.78,
-	0.48
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       devel@driverdev.osuosl.org, Greg KH <gregkh@suse.de>
+Subject: [PATCH -next]  staging: fix wlan-ng printk format warning
+References: <20100225183523.80361261.sfr@canb.auug.org.au>
+In-Reply-To: <20100225183523.80361261.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B86B997.003B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@efficios.com) wrote:
-[...]
-> But... either way we chose, we can extend the system call flags and parameters
-> as needed, so I think it really should not be part of this initial
-> implementation.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-So... considering all this discussion is about future enhancements that are not
-required by anyone at this stage, and that it will be possible to add these
-later on thanks to the extensible sys_membarrier() flags, I propose to merge v9
-of this patch for 2.6.34. I think the logical path for this patch is to go
-through Ingo's tree, as it sits mostly along with the scheduler, but I have not
-heard anything from him yet. Am I taking the correct path ?
+Fix prism2fw.c printk format warning:
 
-Thanks,
+drivers/staging/wlan-ng/prism2fw.c:209: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
 
-Mathieu
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/wlan-ng/prism2fw.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+--- linux-next-20100225.orig/drivers/staging/wlan-ng/prism2fw.c
++++ linux-next-20100225/drivers/staging/wlan-ng/prism2fw.c
+@@ -205,7 +205,7 @@ int prism2_fwtry(struct usb_device *udev
+ 		return 1;
+ 	}
+ 
+-	printk(KERN_INFO "prism2_usb: %s will be processed, size %d\n",
++	printk(KERN_INFO "prism2_usb: %s will be processed, size %zu\n",
+ 	       PRISM2_USB_FWFILE, fw_entry->size);
+ 	prism2_fwapply((const struct ihex_binrec *)fw_entry->data, wlandev);
+ 
