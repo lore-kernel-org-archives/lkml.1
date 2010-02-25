@@ -1,56 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927Ab0BYDso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:48:44 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:35773 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758904Ab0BYDsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:48:43 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: USB mass storage and ARM cache coherency
-Date: Thu, 25 Feb 2010 04:48:17 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Pavel Machek <pavel@ucw.cz>, Ming Lei <tom.leiming@gmail.com>,
-       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>
-References: <1266445892.16346.306.camel@pasglop> <201002240816.10178.oliver@neukum.org> <1267045954.23523.1692.camel@pasglop>
-In-Reply-To: <1267045954.23523.1692.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002250448.17866.oliver@neukum.org>
+	id S932149Ab0BYDtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:49:40 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:44580 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758904Ab0BYDti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:49:38 -0500
+Date: Wed, 24 Feb 2010 22:49:37 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] libata bug fix
+Message-ID: <20100225034937.GA26364@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 24. Februar 2010 22:12:34 schrieb Benjamin Herrenschmidt:
-> On Wed, 2010-02-24 at 08:16 +0100, Oliver Neukum wrote:
-> > I don't know. The issue seems quite complex. It would seem better to
-> > centralize it as far as practical. Do you have a wrapper drivers could
-> > call?
-> 
-> flush_dcache_page() ? :-)
 
-Will this do anything on arches that don't need it?
-Secondly, can we have a wrapper that you can pass a pointer and an
-offset?
+This is a fix that probably should have gone into 2.6.33.  It never
+received an ack from the bug reporter, hence the delay,
+but NVIDIA ok'd it anyway.  It merely disables an optimization.
+
+
+
+
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+
+to receive the following updates:
+
+ drivers/ata/ahci.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+Robert Hancock (1):
+      ahci: disable FPDMA auto-activate optimization on NVIDIA AHCI
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index b343903..a6a736a 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -3082,8 +3082,16 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	ahci_save_initial_config(pdev, hpriv);
  
-> Now, the subsystem might be the one to know whether something is mapped
-> into userspace or not (v4l in our case) in which case a wrapper could be
-> created.
-
-If possible, I'd like to centralize this. Drivers are likely to get this wrong.
-
-	Regards
-		Oliver
+ 	/* prepare host */
+-	if (hpriv->cap & HOST_CAP_NCQ)
+-		pi.flags |= ATA_FLAG_NCQ | ATA_FLAG_FPDMA_AA;
++	if (hpriv->cap & HOST_CAP_NCQ) {
++		pi.flags |= ATA_FLAG_NCQ;
++		/* Auto-activate optimization is supposed to be supported on
++		   all AHCI controllers indicating NCQ support, but it seems
++		   to be broken at least on some NVIDIA MCP79 chipsets.
++		   Until we get info on which NVIDIA chipsets don't have this
++		   issue, if any, disable AA on all NVIDIA AHCIs. */
++		if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
++			pi.flags |= ATA_FLAG_FPDMA_AA;
++	}
+ 
+ 	if (hpriv->cap & HOST_CAP_PMP)
+ 		pi.flags |= ATA_FLAG_PMP;
