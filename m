@@ -1,77 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195Ab0BYWGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 17:06:00 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:52478 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934115Ab0BYWF6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 17:05:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=ntSPgw+wZvV3mm+Y6Cf996GjkGSyRgLyfDTgFfuxqU3tjR7ijS8J1s4PoVJapCDwXk
-         JwaM9VoKkefRld5KF7weH4lJln9jMkNYneCCPcLzqKLQyTtTj1D5dY49m4bZcwEg4kb8
-         5tlQzvDX3/LYJQ3AqSbextoFI0JRZsmKYB6lU=
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Greg Kroah-Hartman <gregkh@suse.de>,
-       Thomas Winischhofer <thomas@winischhofer.net>,
-       Pete Zaitcev <zaitcev@redhat.com>, Tanaka Akira <akr@fsij.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alessio Igor Bogani <abogani@texware.it>
-Subject: [PATCH] sisusbvga: Remove the BKL from ioctl
-Date: Thu, 25 Feb 2010 23:04:59 +0100
-Message-Id: <1267135499-21427-1-git-send-email-abogani@texware.it>
-X-Mailer: git-send-email 1.6.3.3
+	id S934214Ab0BYWG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 17:06:29 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:37296 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933895Ab0BYWG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 17:06:27 -0500
+Date: Thu, 25 Feb 2010 14:06:24 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/2] rcu: fixes for RCU lockdep
+Message-ID: <20100225220624.GA7013@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems to me that BKL is not needed here because necessary locking is already
-provided by mutex sisusb->lock.
+Hello!
 
-Also change the returned value to long.
+This set fixes a couple of problems with the RCU-based lockdep patches:
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
----
- drivers/usb/misc/sisusbvga/sisusb.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+1.	Make the lockdep_rcu_dereference() message less alarmist
 
-diff --git a/drivers/usb/misc/sisusbvga/sisusb.c b/drivers/usb/misc/sisusbvga/sisusb.c
-index 8b37a4b..79b4175 100644
---- a/drivers/usb/misc/sisusbvga/sisusb.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb.c
-@@ -47,7 +47,6 @@
- #include <linux/spinlock.h>
- #include <linux/kref.h>
- #include <linux/usb.h>
--#include <linux/smp_lock.h>
- #include <linux/vmalloc.h>
- 
- #include "sisusb.h"
-@@ -2964,13 +2963,12 @@ sisusb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	struct sisusb_usb_data *sisusb;
- 	struct sisusb_info x;
- 	struct sisusb_command y;
--	int	retval = 0;
-+	long retval = 0;
- 	u32 __user *argp = (u32 __user *)arg;
- 
- 	if (!(sisusb = (struct sisusb_usb_data *)file->private_data))
- 		return -ENODEV;
- 
--	lock_kernel();
- 	mutex_lock(&sisusb->lock);
- 
- 	/* Sanity check */
-@@ -3029,7 +3027,6 @@ sisusb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 
- err_out:
- 	mutex_unlock(&sisusb->lock);
--	unlock_kernel();
- 	return retval;
- }
- 
--- 
-1.6.3.3
+2.	Make rcu_read_lock_sched_held() take boot-time lack of
+	preemption into account.
 
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+ include/linux/rcupdate.h |    4 +++-
+ include/linux/rcutiny.h  |    4 ----
+ include/linux/rcutree.h  |    1 -
+ kernel/lockdep.c         |    7 +++----
+ kernel/rcupdate.c        |   18 ++++++++++++++++++
+ kernel/rcutree.c         |   20 --------------------
+ 6 files changed, 24 insertions(+), 30 deletions(-)
