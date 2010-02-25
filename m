@@ -1,53 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934348Ab0BYWnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 17:43:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43216 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934307Ab0BYWnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 17:43:51 -0500
-Message-ID: <4B86FCDE.1010201@redhat.com>
-Date: Thu, 25 Feb 2010 17:42:38 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S934335Ab0BYWry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 17:47:54 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:44520 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934287Ab0BYWrx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 17:47:53 -0500
+Date: Thu, 25 Feb 2010 23:33:44 +0100
+From: Jens Seidel <jensseidel@users.sf.net>
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Cc: Jens Seidel <jensseidel@users.sf.net>
+Subject: Re: CE: xen increasing min_delta_ns to 7651397591976463850 nsec /
+	pvops domU
+Message-ID: <20100225223342.GA2230@merkur.sol.de>
+Mail-Followup-To: Jens Seidel <jensseidel@users.sf.net>,
+	linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+References: <20100222082657.GA26436@merkur.sol.de> <20100225214442.GG2761@reaktio.net>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 11/15] readahead: dont do start-of-file readahead after
- lseek()
-References: <20100224031001.026464755@intel.com> <20100224031055.164120692@intel.com>
-In-Reply-To: <20100224031055.164120692@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100225214442.GG2761@reaktio.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX18uVPMmPeEu37dTcQa68uUK6e7zGxYSC3RWZvOF
+	FkxAiiQtXzfDfBeSdjyBMegHANwPwd+uzG8uoMUuw9XRDeEWAY
+	qXZQy7XLU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Some applications (eg. blkid, id3tool etc.) seek around the file
-> to get information. For example, blkid does
-> 	     seek to	0
-> 	     read	1024
-> 	     seek to	1536
-> 	     read	16384
->
-> The start-of-file readahead heuristic is wrong for them, whose
-> access pattern can be identified by lseek() calls.
->
-> So test-and-set a READAHEAD_LSEEK flag on lseek() and don't
-> do start-of-file readahead on seeing it. Proposed by Linus.
->
-> Acked-by: Linus Torvalds<torvalds@linux-foundation.org>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
+On Thu, Feb 25, 2010 at 11:44:42PM +0200, Pasi Kärkkäinen wrote:
+> CCing to xen-devel..
 
-Acked-by: Rik van Riel <riel@redhat.com>
+thanks Pasi ...
+
+I have more information:
+ 
+> On Mon, Feb 22, 2010 at 09:26:59AM +0100, Jens Seidel wrote:
+> > I'm using vanilla 2.6.32.7 domU kernel with Xen 3.2 and get very often a
+> > unresponsible system after approximately one or two days with messages such as
+
+The problem seems to occur between 10h - 11.5h (verified three times).
+
+Using the options "hpet=disable clocksource=jiffies nolapic acpi=off" the
+problem vanished but I get a minor time drift between dom0 and domU (and
+missed at least once my bus :-()
+
+> > [43616.674502] CE: xen increasing min_delta_ns to 16086592372704132408 nsec
+> > 
+> > on the console. I fail to login via ssh and even to cleanly shutdown this
+> > system via xm <id> shutdown. sysrq requests still work.
+
+Oops, forget about sysrq. Now I think it didn't worked.
+
+> > PS: Please CC: me.
+
+Jens
