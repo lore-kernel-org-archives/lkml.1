@@ -1,51 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934585Ab0BYX6K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 18:58:10 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42217 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934566Ab0BYX6H (ORCPT
+	id S934595Ab0BYX6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 18:58:30 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:65467 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934566Ab0BYX62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 18:58:07 -0500
-X-Sasl-enc: D0/vT5yd3yZScqiwPp1XOVlNrjZaf+FyFVJkhjDOZAcN 1267142284
-Date: Thu, 25 Feb 2010 20:58:01 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Roel Kluin <roel.kluin@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
-Subject: Re: Is kernel optimized with dead store removal?
-Message-ID: <20100225235801.GE5218@khazad-dum.debian.net>
-References: <4B85A49E.6000803@gmail.com>
- <19334.22971.970220.245930@pilspetsen.it.uu.se>
- <4B8693B9.3060102@gmail.com>
- <19334.40943.479593.304961@pilspetsen.it.uu.se>
+	Thu, 25 Feb 2010 18:58:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Huw6r3jFCUv5nGVQD8wVly3RgOhNqLTM84A5w4xEqLqPGfeOjGU4CTHz+VfIZPbK9S
+         1yn8hfv6NHgRNHVSox6iIDmOL1+IAA1VAkRagLxmXGguMpyxM4XyA1/mluZ9E4MSXz+w
+         6TWbXAZzbFCr1xb6I1dNz/Q8qGYnuIKTTZBZM=
+Date: Fri, 26 Feb 2010 00:58:24 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/8] x86,kgdb: Implement early hardware breakpoint
+	debugging
+Message-ID: <20100225235822.GE5592@nowhere>
+References: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com> <1267132926-23685-4-git-send-email-jason.wessel@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19334.40943.479593.304961@pilspetsen.it.uu.se>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267132926-23685-4-git-send-email-jason.wessel@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, Mikael Pettersson wrote:
->  > In the sha1_update() case I don't know whether the stack is recycled and
->  > leaked - it may be dependent on the calling function, but isn't it
->  > vulnerable?
+On Thu, Feb 25, 2010 at 03:22:01PM -0600, Jason Wessel wrote:
+> It is not possible to use the hw_breakpoint.c API prior to mm_init(),
+> but it is possible to use hardware breakpoints with the kernel
+> debugger.
 > 
-> It's only vulnerable if the data leaks to a less trusted domain.
+> Prior to smp_init() it is possible to simply write to the dr registers
+> of the boot cpu directly.  This can be used up until the
+> kgdb_arch_late() is invoked, at which point the standard hw_breakpoint.c
+> API will get used.
+> 
+> CC: Frederic Weisbecker <fweisbec@gmail.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
 
-If it is anything you wanted to protect badly enough that you already have
-code to clobber it later, this *is* a security bug.
 
-Not only you remove one layer of security, you also widen a lot the window
-of opportunity to, e.g., http://en.wikipedia.org/wiki/Cold_boot_attack
+That looks good to me at a quick glance.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
