@@ -1,51 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933419Ab0BYTds (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:33:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34108 "EHLO hera.kernel.org"
+	id S933481Ab0BYTd6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:33:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:32818 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933368Ab0BYTdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:33:02 -0500
-Date: Thu, 25 Feb 2010 19:31:39 GMT
+	id S933463Ab0BYTdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 14:33:45 -0500
+Date: Thu, 25 Feb 2010 19:32:26 GMT
 From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: acme@redhat.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       hpa@zytor.com, paulus@samba.org, linux-kernel@vger.kernel.org,
-       drepper@redhat.com, ananth@in.ibm.com, roland@redhat.com, mingo@elte.hu,
-       prasad@linux.vnet.ibm.com
-Reply-To: mingo@redhat.com, acme@redhat.com, peterz@infradead.org,
-       efault@gmx.de, dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       hpa@zytor.com, paulus@samba.org, linux-kernel@vger.kernel.org,
-       drepper@redhat.com, ananth@in.ibm.com, roland@redhat.com,
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
+       fweisbec@gmail.com, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, prasad@linux.vnet.ibm.com, systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, efault@gmx.de,
+       ananth@in.ibm.com, fweisbec@gmail.com,
+       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
+       mhiramat@redhat.com, systemtap@sources.redhat.com,
        prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20100225133549.6725.81499.stgit@localhost6.localdomain6>
-References: <20100225133549.6725.81499.stgit@localhost6.localdomain6>
+In-Reply-To: <20100225133611.6725.45078.stgit@localhost6.localdomain6>
+References: <20100225133611.6725.45078.stgit@localhost6.localdomain6>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] perf probe: Use libdw callback routines
-Message-ID: <tip-e92b85e1ffaa0bd8e5d92e7c378a3909e7f23122@git.kernel.org>
-Git-Commit-ID: e92b85e1ffaa0bd8e5d92e7c378a3909e7f23122
+Subject: [tip:perf/probes] perf probe: Add lazy line matching support
+Message-ID: <tip-2a9c8c36092de41c13fdd81fe59556915b080c3e@git.kernel.org>
+Git-Commit-ID: 2a9c8c36092de41c13fdd81fe59556915b080c3e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 19:31:39 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 19:32:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e92b85e1ffaa0bd8e5d92e7c378a3909e7f23122
-Gitweb:     http://git.kernel.org/tip/e92b85e1ffaa0bd8e5d92e7c378a3909e7f23122
+Commit-ID:  2a9c8c36092de41c13fdd81fe59556915b080c3e
+Gitweb:     http://git.kernel.org/tip/2a9c8c36092de41c13fdd81fe59556915b080c3e
 Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Thu, 25 Feb 2010 08:35:50 -0500
+AuthorDate: Thu, 25 Feb 2010 08:36:12 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 17:49:29 +0100
+CommitDate: Thu, 25 Feb 2010 17:49:30 +0100
 
-perf probe: Use libdw callback routines
+perf probe: Add lazy line matching support
 
-Use libdw callback functions aggressively, and remove
-local tree-search API. This change simplifies the code.
+Add lazy line matching support for specifying new probes.
+This also changes the syntax of perf probe a bit. Now
+perf probe accepts one of below probe event definitions.
+
+1) Define event based on function name
+ [EVENT=]FUNC[@SRC][:RLN|+OFF|%return|;PTN] [ARG ...]
+
+2) Define event based on source file with line number
+ [EVENT=]SRC:ALN [ARG ...]
+
+3) Define event based on source file with lazy pattern
+ [EVENT=]SRC;PTN [ARG ...]
+
+- New lazy matching pattern(PTN) follows ';' (semicolon). And it
+  must be put the end of the definition.
+- So, @SRC is no longer the part which must be put at the end
+  of the definition.
+
+Note that ';' (semicolon) can be interpreted as the end of
+a command by the shell. This means that you need to quote it.
+(anyway you will need to quote the lazy pattern itself too,
+because it may contains other sensitive characters, like
+'[',']' etc.).
+
+Lazy matching
+-------------
+The lazy line matching is similar to glob matching except
+ignoring spaces in both of pattern and target.
+
+e.g.
+'a=*' can matches 'a=b', 'a = b', 'a == b' and so on.
+
+This provides some sort of flexibility and robustness to
+probe point definitions against minor code changes.
+(for example, actual 10th line of schedule() can be changed
+ easily by modifying schedule(), but the same line matching
+ 'rq=cpu_rq*' may still exist.)
 
 Changes in v3:
  - Cast Dwarf_Addr to uintmax_t for printf-formats.
@@ -62,414 +96,709 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-LKML-Reference: <20100225133549.6725.81499.stgit@localhost6.localdomain6>
+LKML-Reference: <20100225133611.6725.45078.stgit@localhost6.localdomain6>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/util/probe-finder.c |  262 +++++++++++++---------------------------
- tools/perf/util/probe-finder.h |    1 -
- 2 files changed, 86 insertions(+), 177 deletions(-)
+ tools/perf/Documentation/perf-probe.txt |   30 ++++-
+ tools/perf/builtin-probe.c              |   12 +-
+ tools/perf/util/probe-event.c           |   48 ++++---
+ tools/perf/util/probe-finder.c          |  249 +++++++++++++++++++++++--------
+ tools/perf/util/probe-finder.h          |    2 +
+ tools/perf/util/string.c                |   55 +++++--
+ tools/perf/util/string.h                |    1 +
+ 7 files changed, 298 insertions(+), 99 deletions(-)
 
+diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
+index 5fe63c0..34202b1 100644
+--- a/tools/perf/Documentation/perf-probe.txt
++++ b/tools/perf/Documentation/perf-probe.txt
+@@ -61,11 +61,19 @@ PROBE SYNTAX
+ ------------
+ Probe points are defined by following syntax.
+ 
+- "[EVENT=]FUNC[+OFFS|:RLN|%return][@SRC]|SRC:ALN [ARG ...]"
++    1) Define event based on function name
++     [EVENT=]FUNC[@SRC][:RLN|+OFFS|%return|;PTN] [ARG ...]
++
++    2) Define event based on source file with line number
++     [EVENT=]SRC:ALN [ARG ...]
++
++    3) Define event based on source file with lazy pattern
++     [EVENT=]SRC;PTN [ARG ...]
++
+ 
+ 'EVENT' specifies the name of new event, if omitted, it will be set the name of the probed function. Currently, event group name is set as 'probe'.
+-'FUNC' specifies a probed function name, and it may have one of the following options; '+OFFS' is the offset from function entry address in bytes, 'RLN' is the relative-line number from function entry line, and '%return' means that it probes function return. In addition, 'SRC' specifies a source file which has that function.
+-It is also possible to specify a probe point by the source line number by using 'SRC:ALN' syntax, where 'SRC' is the source file path and 'ALN' is the line number.
++'FUNC' specifies a probed function name, and it may have one of the following options; '+OFFS' is the offset from function entry address in bytes, ':RLN' is the relative-line number from function entry line, and '%return' means that it probes function return. And ';PTN' means lazy matching pattern (see LAZY MATCHING). Note that ';PTN' must be the end of the probe point definition.  In addition, '@SRC' specifies a source file which has that function.
++It is also possible to specify a probe point by the source line number or lazy matching by using 'SRC:ALN' or 'SRC;PTN' syntax, where 'SRC' is the source file path, ':ALN' is the line number and ';PTN' is the lazy matching pattern.
+ 'ARG' specifies the arguments of this probe point. You can use the name of local variable, or kprobe-tracer argument format (e.g. $retval, %ax, etc).
+ 
+ LINE SYNTAX
+@@ -81,6 +89,16 @@ and 'ALN2' is end line number in the file. It is also possible to specify how
+ many lines to show by using 'NUM'.
+ So, "source.c:100-120" shows lines between 100th to l20th in source.c file. And "func:10+20" shows 20 lines from 10th line of func function.
+ 
++LAZY MATCHING
++-------------
++ The lazy line matching is similar to glob matching but ignoring spaces in both of pattern and target. So this accepts wildcards('*', '?') and character classes(e.g. [a-z], [!A-Z]).
++
++e.g.
++ 'a=*' can matches 'a=b', 'a = b', 'a == b' and so on.
++
++This provides some sort of flexibility and robustness to probe point definitions against minor code changes. For example, actual 10th line of schedule() can be moved easily by modifying schedule(), but the same line matching 'rq=cpu_rq*' may still exist in the function.)
++
++
+ EXAMPLES
+ --------
+ Display which lines in schedule() can be probed:
+@@ -95,6 +113,12 @@ Add a probe on schedule() function 12th line with recording cpu local variable:
+ 
+  this will add one or more probes which has the name start with "schedule".
+ 
++ Add probes on lines in schedule() function which calls update_rq_clock().
++
++ ./perf probe 'schedule;update_rq_clock*'
++ or
++ ./perf probe --add='schedule;update_rq_clock*'
++
+ Delete all probes on schedule().
+ 
+  ./perf probe --del='schedule*'
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index d8d3f05..e3dfd0d 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -175,22 +175,24 @@ static const struct option options[] = {
+ 		opt_del_probe_event),
+ 	OPT_CALLBACK('a', "add", NULL,
+ #ifdef NO_DWARF_SUPPORT
+-		"[EVENT=]FUNC[+OFFS|%return] [ARG ...]",
++		"[EVENT=]FUNC[+OFF|%return] [ARG ...]",
+ #else
+-		"[EVENT=]FUNC[+OFFS|%return|:RLN][@SRC]|SRC:ALN [ARG ...]",
++		"[EVENT=]FUNC[+OFF|%return|:RL|;PT][@SRC]|SRC:AL|SRC;PT"
++		" [ARG ...]",
+ #endif
+ 		"probe point definition, where\n"
+ 		"\t\tGROUP:\tGroup name (optional)\n"
+ 		"\t\tEVENT:\tEvent name\n"
+ 		"\t\tFUNC:\tFunction name\n"
+-		"\t\tOFFS:\tOffset from function entry (in byte)\n"
++		"\t\tOFF:\tOffset from function entry (in byte)\n"
+ 		"\t\t%return:\tPut the probe at function return\n"
+ #ifdef NO_DWARF_SUPPORT
+ 		"\t\tARG:\tProbe argument (only \n"
+ #else
+ 		"\t\tSRC:\tSource code path\n"
+-		"\t\tRLN:\tRelative line number from function entry.\n"
+-		"\t\tALN:\tAbsolute line number in file.\n"
++		"\t\tRL:\tRelative line number from function entry.\n"
++		"\t\tAL:\tAbsolute line number in file.\n"
++		"\t\tPT:\tLazy expression of line code.\n"
+ 		"\t\tARG:\tProbe argument (local variable name or\n"
+ #endif
+ 		"\t\t\tkprobe-tracer argument format.)\n",
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 91f55f2..fa156f0 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -119,14 +119,14 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 	char c, nc = 0;
+ 	/*
+ 	 * <Syntax>
+-	 * perf probe [EVENT=]SRC:LN
+-	 * perf probe [EVENT=]FUNC[+OFFS|%return][@SRC]
++	 * perf probe [EVENT=]SRC[:LN|;PTN]
++	 * perf probe [EVENT=]FUNC[@SRC][+OFFS|%return|:LN|;PAT]
+ 	 *
+ 	 * TODO:Group name support
+ 	 */
+ 
+-	ptr = strchr(arg, '=');
+-	if (ptr) {	/* Event name */
++	ptr = strpbrk(arg, ";=@+%");
++	if (ptr && *ptr == '=') {	/* Event name */
+ 		*ptr = '\0';
+ 		tmp = ptr + 1;
+ 		ptr = strchr(arg, ':');
+@@ -139,7 +139,7 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 		arg = tmp;
+ 	}
+ 
+-	ptr = strpbrk(arg, ":+@%");
++	ptr = strpbrk(arg, ";:+@%");
+ 	if (ptr) {
+ 		nc = *ptr;
+ 		*ptr++ = '\0';
+@@ -156,7 +156,11 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 	while (ptr) {
+ 		arg = ptr;
+ 		c = nc;
+-		ptr = strpbrk(arg, ":+@%");
++		if (c == ';') {	/* Lazy pattern must be the last part */
++			pp->lazy_line = strdup(arg);
++			break;
++		}
++		ptr = strpbrk(arg, ";:+@%");
+ 		if (ptr) {
+ 			nc = *ptr;
+ 			*ptr++ = '\0';
+@@ -165,13 +169,13 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 		case ':':	/* Line number */
+ 			pp->line = strtoul(arg, &tmp, 0);
+ 			if (*tmp != '\0')
+-				semantic_error("There is non-digit charactor"
+-						" in line number.");
++				semantic_error("There is non-digit char"
++					       " in line number.");
+ 			break;
+ 		case '+':	/* Byte offset from a symbol */
+ 			pp->offset = strtoul(arg, &tmp, 0);
+ 			if (*tmp != '\0')
+-				semantic_error("There is non-digit charactor"
++				semantic_error("There is non-digit character"
+ 						" in offset.");
+ 			break;
+ 		case '@':	/* File name */
+@@ -179,9 +183,6 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 				semantic_error("SRC@SRC is not allowed.");
+ 			pp->file = strdup(arg);
+ 			DIE_IF(pp->file == NULL);
+-			if (ptr)
+-				semantic_error("@SRC must be the last "
+-					       "option.");
+ 			break;
+ 		case '%':	/* Probe places */
+ 			if (strcmp(arg, "return") == 0) {
+@@ -196,11 +197,18 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 	}
+ 
+ 	/* Exclusion check */
++	if (pp->lazy_line && pp->line)
++		semantic_error("Lazy pattern can't be used with line number.");
++
++	if (pp->lazy_line && pp->offset)
++		semantic_error("Lazy pattern can't be used with offset.");
++
+ 	if (pp->line && pp->offset)
+ 		semantic_error("Offset can't be used with line number.");
+ 
+-	if (!pp->line && pp->file && !pp->function)
+-		semantic_error("File always requires line number.");
++	if (!pp->line && !pp->lazy_line && pp->file && !pp->function)
++		semantic_error("File always requires line number or "
++			       "lazy pattern.");
+ 
+ 	if (pp->offset && !pp->function)
+ 		semantic_error("Offset requires an entry function.");
+@@ -208,11 +216,13 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 	if (pp->retprobe && !pp->function)
+ 		semantic_error("Return probe requires an entry function.");
+ 
+-	if ((pp->offset || pp->line) && pp->retprobe)
+-		semantic_error("Offset/Line can't be used with return probe.");
++	if ((pp->offset || pp->line || pp->lazy_line) && pp->retprobe)
++		semantic_error("Offset/Line/Lazy pattern can't be used with "
++			       "return probe.");
+ 
+-	pr_debug("symbol:%s file:%s line:%d offset:%d, return:%d\n",
+-		 pp->function, pp->file, pp->line, pp->offset, pp->retprobe);
++	pr_debug("symbol:%s file:%s line:%d offset:%d return:%d lazy:%s\n",
++		 pp->function, pp->file, pp->line, pp->offset, pp->retprobe,
++		 pp->lazy_line);
+ }
+ 
+ /* Parse perf-probe event definition */
+@@ -456,6 +466,8 @@ static void clear_probe_point(struct probe_point *pp)
+ 		free(pp->function);
+ 	if (pp->file)
+ 		free(pp->file);
++	if (pp->lazy_line)
++		free(pp->lazy_line);
+ 	for (i = 0; i < pp->nr_args; i++)
+ 		free(pp->args[i]);
+ 	if (pp->args)
 diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index c422472..6305f34 100644
+index a410356..e77dc88 100644
 --- a/tools/perf/util/probe-finder.c
 +++ b/tools/perf/util/probe-finder.c
-@@ -38,13 +38,6 @@
- #include "probe-finder.h"
+@@ -32,6 +32,7 @@
+ #include <stdarg.h>
+ #include <ctype.h>
  
- 
--/* Dwarf_Die Linkage to parent Die */
--struct die_link {
--	struct die_link *parent;	/* Parent die */
--	Dwarf_Die die;			/* Current die */
--};
--
--
- /*
-  * Generic dwarf analysis helpers
-  */
-@@ -177,26 +170,6 @@ static bool die_compare_name(Dwarf_Die *dw_die, const char *tname)
- 	return strcmp(tname, name);
++#include "string.h"
+ #include "event.h"
+ #include "debug.h"
+ #include "util.h"
+@@ -104,8 +105,67 @@ static int strtailcmp(const char *s1, const char *s2)
+ 	return 0;
  }
  
--/* Check the address is in the subprogram(function). */
--static bool die_within_subprogram(Dwarf_Die *sp_die, Dwarf_Addr addr,
--				 size_t *offs)
--{
--	Dwarf_Addr epc;
--	int ret;
--
--	ret = dwarf_haspc(sp_die, addr);
--	if (ret <= 0)
--		return false;
--
--	if (offs) {
--		ret = dwarf_entrypc(sp_die, &epc);
--		DIE_IF(ret == -1);
--		*offs = addr - epc;
--	}
--
--	return true;
--}
--
- /* Get entry pc(or low pc, 1st entry of ranges)  of the die */
- static Dwarf_Addr die_get_entrypc(Dwarf_Die *dw_die)
+-/* Find the fileno of the target file. */
+-static int cu_find_fileno(Dwarf_Die *cu_die, const char *fname)
++/* Line number list operations */
++
++/* Add a line to line number list */
++static void line_list__add_line(struct list_head *head, unsigned int line)
++{
++	struct line_node *ln;
++	struct list_head *p;
++
++	/* Reverse search, because new line will be the last one */
++	list_for_each_entry_reverse(ln, head, list) {
++		if (ln->line < line) {
++			p = &ln->list;
++			goto found;
++		} else if (ln->line == line)	/* Already exist */
++			return ;
++	}
++	/* List is empty, or the smallest entry */
++	p = head;
++found:
++	pr_debug("line list: add a line %u\n", line);
++	ln = zalloc(sizeof(struct line_node));
++	DIE_IF(ln == NULL);
++	ln->line = line;
++	INIT_LIST_HEAD(&ln->list);
++	list_add(&ln->list, p);
++}
++
++/* Check if the line in line number list */
++static int line_list__has_line(struct list_head *head, unsigned int line)
++{
++	struct line_node *ln;
++
++	/* Reverse search, because new line will be the last one */
++	list_for_each_entry(ln, head, list)
++		if (ln->line == line)
++			return 1;
++
++	return 0;
++}
++
++/* Init line number list */
++static void line_list__init(struct list_head *head)
++{
++	INIT_LIST_HEAD(head);
++}
++
++/* Free line number list */
++static void line_list__free(struct list_head *head)
++{
++	struct line_node *ln;
++	while (!list_empty(head)) {
++		ln = list_first_entry(head, struct line_node, list);
++		list_del(&ln->list);
++		free(ln);
++	}
++}
++
++/* Dwarf wrappers */
++
++/* Find the realpath of the target file. */
++static const char *cu_find_realpath(Dwarf_Die *cu_die, const char *fname)
  {
-@@ -208,70 +181,34 @@ static Dwarf_Addr die_get_entrypc(Dwarf_Die *dw_die)
- 	return epc;
- }
- 
--/* Check if the abstract origin's address or not */
--static bool die_compare_abstract_origin(Dwarf_Die *in_die, void *origin_addr)
--{
--	Dwarf_Attribute attr;
--	Dwarf_Die origin;
--
--	if (!dwarf_attr(in_die, DW_AT_abstract_origin, &attr))
--		return false;
--	if (!dwarf_formref_die(&attr, &origin))
--		return false;
--
--	return origin.addr == origin_addr;
--}
--
--/*
-- * Search a Die from Die tree.
-- * Note: cur_link->die should be deallocated in this function.
-- */
--static int __search_die_tree(struct die_link *cur_link,
--			     int (*die_cb)(struct die_link *, void *),
--			     void *data)
-+/* Get a variable die */
-+static Dwarf_Die *die_find_variable(Dwarf_Die *sp_die, const char *name,
-+				    Dwarf_Die *die_mem)
- {
--	struct die_link new_link;
-+	Dwarf_Die child_die;
-+	int tag;
+ 	Dwarf_Files *files;
+ 	size_t nfiles, i;
+@@ -113,21 +173,18 @@ static int cu_find_fileno(Dwarf_Die *cu_die, const char *fname)
  	int ret;
  
--	if (!die_cb)
--		return 0;
--
--	/* Check current die */
--	while (!(ret = die_cb(cur_link, data))) {
--		/* Check child die */
--		ret = dwarf_child(&cur_link->die, &new_link.die);
--		if (ret == 0) {
--			new_link.parent = cur_link;
--			ret = __search_die_tree(&new_link, die_cb, data);
--			if (ret)
--				break;
--		}
-+	ret = dwarf_child(sp_die, die_mem);
-+	if (ret != 0)
+ 	if (!fname)
+-		return -EINVAL;
 +		return NULL;
  
--		/* Move to next sibling */
--		ret = dwarf_siblingof(&cur_link->die, &cur_link->die);
--		if (ret != 0)
--			return 0;
--	}
+ 	ret = dwarf_getsrcfiles(cu_die, &files, &nfiles);
+-	if (ret == 0) {
+-		for (i = 0; i < nfiles; i++) {
+-			src = dwarf_filesrc(files, i, NULL, NULL);
+-			if (strtailcmp(src, fname) == 0) {
+-				ret = (int)i;	/*???: +1 or not?*/
+-				break;
+-			}
+-		}
+-		if (ret)
+-			pr_debug("found fno: %d\n", ret);
++	if (ret != 0)
++		return NULL;
++
++	for (i = 0; i < nfiles; i++) {
++		src = dwarf_filesrc(files, i, NULL, NULL);
++		if (strtailcmp(src, fname) == 0)
++			break;
+ 	}
 -	return ret;
--}
-+	do {
-+		tag = dwarf_tag(die_mem);
-+		if ((tag == DW_TAG_formal_parameter ||
-+		     tag == DW_TAG_variable) &&
-+		    (die_compare_name(die_mem, name) == 0))
-+			return die_mem;
- 
--/* Search a die in its children's die tree */
--static int search_die_from_children(Dwarf_Die *parent_die,
--				    int (*die_cb)(struct die_link *, void *),
--				    void *data)
--{
--	struct die_link new_link;
--	int ret;
-+		if (die_find_variable(die_mem, name, &child_die)) {
-+			memcpy(die_mem, &child_die, sizeof(Dwarf_Die));
-+			return die_mem;
-+		}
-+	} while (dwarf_siblingof(die_mem, die_mem) == 0);
- 
--	new_link.parent = NULL;
--	ret = dwarf_child(parent_die, &new_link.die);
--	if (ret == 0)
--		return __search_die_tree(&new_link, die_cb, data);
--	else
--		return 0;
-+	return NULL;
++	return src;
  }
  
--
- /*
-  * Probe finder related functions
-  */
-@@ -347,28 +284,13 @@ error:
- 	    " Perhaps, it has been optimized out.", pf->var);
- }
- 
--static int variable_search_cb(struct die_link *dlink, void *data)
--{
--	struct probe_finder *pf = (struct probe_finder *)data;
--	int tag;
--
--	tag = dwarf_tag(&dlink->die);
--	DIE_IF(tag < 0);
--	if ((tag == DW_TAG_formal_parameter ||
--	     tag == DW_TAG_variable) &&
--	    (die_compare_name(&dlink->die, pf->var) == 0)) {
--		show_variable(&dlink->die, pf);
--		return 1;
--	}
--	/* TODO: Support struct members and arrays */
--	return 0;
--}
--
- /* Find a variable in a subprogram die */
- static void find_variable(Dwarf_Die *sp_die, struct probe_finder *pf)
- {
- 	int ret;
-+	Dwarf_Die vr_die;
- 
-+	/* TODO: Support struct members and arrays */
- 	if (!is_c_varname(pf->var)) {
- 		/* Output raw parameters */
- 		ret = snprintf(pf->buf, pf->len, " %s", pf->var);
-@@ -379,31 +301,42 @@ static void find_variable(Dwarf_Die *sp_die, struct probe_finder *pf)
- 
- 	pr_debug("Searching '%s' variable in context.\n", pf->var);
- 	/* Search child die for local variables and parameters. */
--	ret = search_die_from_children(sp_die, variable_search_cb, pf);
--	if (!ret)
-+	if (!die_find_variable(sp_die, pf->var, &vr_die))
- 		die("Failed to find '%s' in this function.", pf->var);
-+
-+	show_variable(&vr_die, pf);
- }
- 
- /* Show a probe point to output buffer */
--static void show_probe_point(Dwarf_Die *sp_die, size_t offs,
--			     struct probe_finder *pf)
-+static void show_probe_point(Dwarf_Die *sp_die, struct probe_finder *pf)
- {
- 	struct probe_point *pp = pf->pp;
-+	Dwarf_Addr eaddr;
-+	Dwarf_Die die_mem;
- 	const char *name;
- 	char tmp[MAX_PROBE_BUFFER];
- 	int ret, i, len;
- 	Dwarf_Attribute fb_attr;
- 	size_t nops;
- 
-+	/* If no real subprogram, find a real one */
-+	if (!sp_die || dwarf_tag(sp_die) != DW_TAG_subprogram) {
-+		sp_die = die_get_real_subprogram(&pf->cu_die,
-+						 pf->addr, &die_mem);
-+		if (!sp_die)
-+			die("Probe point is not found in subprograms.");
-+	}
-+
- 	/* Output name of probe point */
- 	name = dwarf_diename(sp_die);
- 	if (name) {
--		ret = snprintf(tmp, MAX_PROBE_BUFFER, "%s+%u", name,
--				(unsigned int)offs);
-+		dwarf_entrypc(sp_die, &eaddr);
-+		ret = snprintf(tmp, MAX_PROBE_BUFFER, "%s+%lu", name,
-+				(unsigned long)(pf->addr - eaddr));
- 		/* Copy the function name if possible */
- 		if (!pp->function) {
- 			pp->function = strdup(name);
--			pp->offset = offs;
-+			pp->offset = (size_t)(pf->addr - eaddr);
- 		}
- 	} else {
- 		/* This function has no name. */
-@@ -450,10 +383,9 @@ static void find_probe_point_by_line(struct probe_finder *pf)
- 	Dwarf_Lines *lines;
- 	Dwarf_Line *line;
- 	size_t nlines, i;
--	Dwarf_Addr addr, epc;
-+	Dwarf_Addr addr;
- 	int lineno;
- 	int ret;
--	Dwarf_Die *sp_die, die_mem;
- 
- 	ret = dwarf_getsrclines(&pf->cu_die, &lines, &nlines);
- 	DIE_IF(ret != 0);
-@@ -474,77 +406,57 @@ static void find_probe_point_by_line(struct probe_finder *pf)
- 			 (int)i, lineno, (uintmax_t)addr);
- 		pf->addr = addr;
- 
--		sp_die = die_get_real_subprogram(&pf->cu_die, addr, &die_mem);
--		if (!sp_die)
--			die("Probe point is not found in subprograms.");
--		dwarf_entrypc(sp_die, &epc);
--		show_probe_point(sp_die, (size_t)(addr - epc), pf);
-+		show_probe_point(NULL, pf);
- 		/* Continuing, because target line might be inlined. */
+ struct __addr_die_search_param {
+@@ -436,17 +493,109 @@ static void find_probe_point_by_line(struct probe_finder *pf)
  	}
  }
  
-+static int probe_point_inline_cb(Dwarf_Die *in_die, void *data)
++/* Find lines which match lazy pattern */
++static int find_lazy_match_lines(struct list_head *head,
++				 const char *fname, const char *pat)
 +{
-+	struct probe_finder *pf = (struct probe_finder *)data;
-+	struct probe_point *pp = pf->pp;
++	char *fbuf, *p1, *p2;
++	int fd, line, nlines = 0;
++	struct stat st;
 +
-+	/* Get probe address */
-+	pf->addr = die_get_entrypc(in_die);
-+	pf->addr += pp->offset;
-+	pr_debug("found inline addr: 0x%jx\n", (uintmax_t)pf->addr);
-+
-+	show_probe_point(in_die, pf);
-+	return DWARF_CB_OK;
++	fd = open(fname, O_RDONLY);
++	if (fd < 0)
++		die("failed to open %s", fname);
++	DIE_IF(fstat(fd, &st) < 0);
++	fbuf = malloc(st.st_size + 2);
++	DIE_IF(fbuf == NULL);
++	DIE_IF(read(fd, fbuf, st.st_size) < 0);
++	close(fd);
++	fbuf[st.st_size] = '\n';	/* Dummy line */
++	fbuf[st.st_size + 1] = '\0';
++	p1 = fbuf;
++	line = 1;
++	while ((p2 = strchr(p1, '\n')) != NULL) {
++		*p2 = '\0';
++		if (strlazymatch(p1, pat)) {
++			line_list__add_line(head, line);
++			nlines++;
++		}
++		line++;
++		p1 = p2 + 1;
++	}
++	free(fbuf);
++	return nlines;
 +}
- 
- /* Search function from function name */
--static int probe_point_search_cb(struct die_link *dlink, void *data)
-+static int probe_point_search_cb(Dwarf_Die *sp_die, void *data)
++
++/* Find probe points from lazy pattern  */
++static void find_probe_point_lazy(Dwarf_Die *sp_die, struct probe_finder *pf)
++{
++	Dwarf_Lines *lines;
++	Dwarf_Line *line;
++	size_t nlines, i;
++	Dwarf_Addr addr;
++	Dwarf_Die die_mem;
++	int lineno;
++	int ret;
++
++	if (list_empty(&pf->lcache)) {
++		/* Matching lazy line pattern */
++		ret = find_lazy_match_lines(&pf->lcache, pf->fname,
++					    pf->pp->lazy_line);
++		if (ret <= 0)
++			die("No matched lines found in %s.", pf->fname);
++	}
++
++	ret = dwarf_getsrclines(&pf->cu_die, &lines, &nlines);
++	DIE_IF(ret != 0);
++	for (i = 0; i < nlines; i++) {
++		line = dwarf_onesrcline(lines, i);
++
++		dwarf_lineno(line, &lineno);
++		if (!line_list__has_line(&pf->lcache, lineno))
++			continue;
++
++		/* TODO: Get fileno from line, but how? */
++		if (strtailcmp(dwarf_linesrc(line, NULL, NULL), pf->fname) != 0)
++			continue;
++
++		ret = dwarf_lineaddr(line, &addr);
++		DIE_IF(ret != 0);
++		if (sp_die) {
++			/* Address filtering 1: does sp_die include addr? */
++			if (!dwarf_haspc(sp_die, addr))
++				continue;
++			/* Address filtering 2: No child include addr? */
++			if (die_get_inlinefunc(sp_die, addr, &die_mem))
++				continue;
++		}
++
++		pr_debug("Probe line found: line[%d]:%d addr:0x%llx\n",
++			 (int)i, lineno, (unsigned long long)addr);
++		pf->addr = addr;
++
++		show_probe_point(sp_die, pf);
++		/* Continuing, because target line might be inlined. */
++	}
++	/* TODO: deallocate lines, but how? */
++}
++
+ static int probe_point_inline_cb(Dwarf_Die *in_die, void *data)
  {
  	struct probe_finder *pf = (struct probe_finder *)data;
  	struct probe_point *pp = pf->pp;
--	struct die_link *lk;
--	size_t offs;
--	int tag;
--	int ret;
  
--	tag = dwarf_tag(&dlink->die);
--	if (tag == DW_TAG_subprogram) {
--		if (die_compare_name(&dlink->die, pp->function) == 0) {
--			if (pp->line) {	/* Function relative line */
--				pf->fname = dwarf_decl_file(&dlink->die);
--				dwarf_decl_line(&dlink->die, &pf->lno);
--				pf->lno += pp->line;
--				find_probe_point_by_line(pf);
--				return 1;
--			}
--			if (dwarf_func_inline(&dlink->die)) {
--				/* Inlined function, save it. */
--				pf->origin = dlink->die.addr;
--				return 0;	/* Continue to search */
--			}
--			/* Get probe address */
--			pf->addr = die_get_entrypc(&dlink->die);
--			pf->addr += pp->offset;
--			/* TODO: Check the address in this function */
--			show_probe_point(&dlink->die, pp->offset, pf);
--			return 1; /* Exit; no same symbol in this CU. */
--		}
--	} else if (tag == DW_TAG_inlined_subroutine && pf->origin) {
--		if (die_compare_abstract_origin(&dlink->die, pf->origin)) {
--			/* Get probe address */
--			pf->addr = die_get_entrypc(&dlink->die);
--			pf->addr += pp->offset;
--			pr_debug("found inline addr: 0x%jx\n",
--				 (uintmax_t)pf->addr);
--			/* Inlined function. Get a real subprogram */
--			for (lk = dlink->parent; lk != NULL; lk = lk->parent) {
--				tag = dwarf_tag(&lk->die);
--				if (tag == DW_TAG_subprogram &&
--				    !dwarf_func_inline(&lk->die))
--					goto found;
--			}
--			die("Failed to find real subprogram.");
--found:
--			/* Get offset from subprogram */
--			ret = die_within_subprogram(&lk->die, pf->addr, &offs);
--			DIE_IF(!ret);
--			show_probe_point(&lk->die, offs, pf);
--			/* Continue to search */
--		}
--	}
--	return 0;
-+	/* Check tag and diename */
-+	if (dwarf_tag(sp_die) != DW_TAG_subprogram ||
-+	    die_compare_name(sp_die, pp->function) != 0)
-+		return 0;
-+
-+	if (pp->line) { /* Function relative line */
-+		pf->fname = dwarf_decl_file(sp_die);
-+		dwarf_decl_line(sp_die, &pf->lno);
-+		pf->lno += pp->line;
-+		find_probe_point_by_line(pf);
-+	} else if (!dwarf_func_inline(sp_die)) {
-+		/* Real function */
-+		pf->addr = die_get_entrypc(sp_die);
+-	/* Get probe address */
+-	pf->addr = die_get_entrypc(in_die);
+-	pf->addr += pp->offset;
+-	pr_debug("found inline addr: 0x%jx\n", (uintmax_t)pf->addr);
++	if (pp->lazy_line)
++		find_probe_point_lazy(in_die, pf);
++	else {
++		/* Get probe address */
++		pf->addr = die_get_entrypc(in_die);
 +		pf->addr += pp->offset;
-+		/* TODO: Check the address in this function */
-+		show_probe_point(sp_die, pf);
-+	} else
-+		/* Inlined function: search instances */
-+		dwarf_func_inline_instances(sp_die, probe_point_inline_cb, pf);
++		pr_debug("found inline addr: 0x%jx\n",
++			 (uintmax_t)pf->addr);
 +
-+	return 1; /* Exit; no same symbol in this CU. */
++		show_probe_point(in_die, pf);
++	}
+ 
+-	show_probe_point(in_die, pf);
+ 	return DWARF_CB_OK;
  }
  
- static void find_probe_point_by_func(struct probe_finder *pf)
- {
--	search_die_from_children(&pf->cu_die, probe_point_search_cb, pf);
-+	dwarf_getfuncs(&pf->cu_die, probe_point_search_cb, pf, 0);
- }
+@@ -461,17 +610,21 @@ static int probe_point_search_cb(Dwarf_Die *sp_die, void *data)
+ 	    die_compare_name(sp_die, pp->function) != 0)
+ 		return 0;
  
- /* Find a probe point */
-@@ -669,27 +581,25 @@ static void find_line_range_by_line(struct line_finder *lf)
- }
++	pf->fname = dwarf_decl_file(sp_die);
+ 	if (pp->line) { /* Function relative line */
+-		pf->fname = dwarf_decl_file(sp_die);
+ 		dwarf_decl_line(sp_die, &pf->lno);
+ 		pf->lno += pp->line;
+ 		find_probe_point_by_line(pf);
+ 	} else if (!dwarf_func_inline(sp_die)) {
+ 		/* Real function */
+-		pf->addr = die_get_entrypc(sp_die);
+-		pf->addr += pp->offset;
+-		/* TODO: Check the address in this function */
+-		show_probe_point(sp_die, pf);
++		if (pp->lazy_line)
++			find_probe_point_lazy(sp_die, pf);
++		else {
++			pf->addr = die_get_entrypc(sp_die);
++			pf->addr += pp->offset;
++			/* TODO: Check the address in this function */
++			show_probe_point(sp_die, pf);
++		}
+ 	} else
+ 		/* Inlined function: search instances */
+ 		dwarf_func_inline_instances(sp_die, probe_point_inline_cb, pf);
+@@ -493,7 +646,6 @@ int find_probe_point(int fd, struct probe_point *pp)
+ 	size_t cuhl;
+ 	Dwarf_Die *diep;
+ 	Dwarf *dbg;
+-	int fno = 0;
  
- /* Search function from function name */
--static int line_range_search_cb(struct die_link *dlink, void *data)
-+static int line_range_search_cb(Dwarf_Die *sp_die, void *data)
- {
- 	struct line_finder *lf = (struct line_finder *)data;
- 	struct line_range *lr = lf->lr;
--	int tag;
- 	int ret;
+ 	dbg = dwarf_begin(fd, DWARF_C_READ);
+ 	if (!dbg)
+@@ -501,6 +653,7 @@ int find_probe_point(int fd, struct probe_point *pp)
  
--	tag = dwarf_tag(&dlink->die);
--	if (tag == DW_TAG_subprogram &&
--	    die_compare_name(&dlink->die, lr->function) == 0) {
-+	if (dwarf_tag(sp_die) == DW_TAG_subprogram &&
-+	    die_compare_name(sp_die, lr->function) == 0) {
- 		/* Get the address range of this function */
--		ret = dwarf_highpc(&dlink->die, &lf->addr_e);
-+		ret = dwarf_highpc(sp_die, &lf->addr_e);
- 		if (ret == 0)
--			ret = dwarf_lowpc(&dlink->die, &lf->addr_s);
-+			ret = dwarf_lowpc(sp_die, &lf->addr_s);
- 		if (ret != 0) {
- 			lf->addr_s = 0;
- 			lf->addr_e = 0;
+ 	pp->found = 0;
+ 	off = 0;
++	line_list__init(&pf.lcache);
+ 	/* Loop on CUs (Compilation Unit) */
+ 	while (!dwarf_nextcu(dbg, off, &noff, &cuhl, NULL, NULL, NULL)) {
+ 		/* Get the DIE(Debugging Information Entry) of this CU */
+@@ -510,17 +663,19 @@ int find_probe_point(int fd, struct probe_point *pp)
+ 
+ 		/* Check if target file is included. */
+ 		if (pp->file)
+-			fno = cu_find_fileno(&pf.cu_die, pp->file);
++			pf.fname = cu_find_realpath(&pf.cu_die, pp->file);
+ 		else
+-			fno = 0;
++			pf.fname = NULL;
+ 
+-		if (!pp->file || fno) {
++		if (!pp->file || pf.fname) {
+ 			/* Save CU base address (for frame_base) */
+ 			ret = dwarf_lowpc(&pf.cu_die, &pf.cu_base);
+ 			if (ret != 0)
+ 				pf.cu_base = 0;
+ 			if (pp->function)
+ 				find_probe_point_by_func(&pf);
++			else if (pp->lazy_line)
++				find_probe_point_lazy(NULL, &pf);
+ 			else {
+ 				pf.lno = pp->line;
+ 				find_probe_point_by_line(&pf);
+@@ -528,36 +683,12 @@ int find_probe_point(int fd, struct probe_point *pp)
  		}
+ 		off = noff;
+ 	}
++	line_list__free(&pf.lcache);
+ 	dwarf_end(dbg);
  
--		lf->fname = dwarf_decl_file(&dlink->die);
--		dwarf_decl_line(&dlink->die, &lr->offset);
-+		lf->fname = dwarf_decl_file(sp_die);
-+		dwarf_decl_line(sp_die, &lr->offset);
- 		pr_debug("fname: %s, lineno:%d\n", lf->fname, lr->offset);
- 		lf->lno_s = lr->offset + lr->start;
- 		if (!lr->end)
-@@ -706,7 +616,7 @@ static int line_range_search_cb(struct die_link *dlink, void *data)
- 
- static void find_line_range_by_func(struct line_finder *lf)
- {
--	search_die_from_children(&lf->cu_die, line_range_search_cb, lf);
-+	dwarf_getfuncs(&lf->cu_die, line_range_search_cb, lf, 0);
+ 	return pp->found;
  }
  
- int find_line_range(int fd, struct line_range *lr)
+-
+-static void line_range_add_line(struct line_range *lr, unsigned int line)
+-{
+-	struct line_node *ln;
+-	struct list_head *p;
+-
+-	/* Reverse search, because new line will be the last one */
+-	list_for_each_entry_reverse(ln, &lr->line_list, list) {
+-		if (ln->line < line) {
+-			p = &ln->list;
+-			goto found;
+-		} else if (ln->line == line)	/* Already exist */
+-			return ;
+-	}
+-	/* List is empty, or the smallest entry */
+-	p = &lr->line_list;
+-found:
+-	pr_debug("Debug: add a line %u\n", line);
+-	ln = zalloc(sizeof(struct line_node));
+-	DIE_IF(ln == NULL);
+-	ln->line = line;
+-	INIT_LIST_HEAD(&ln->list);
+-	list_add(&ln->list, p);
+-}
+-
+ /* Find line range from its line number */
+ static void find_line_range_by_line(Dwarf_Die *sp_die, struct line_finder *lf)
+ {
+@@ -570,7 +701,7 @@ static void find_line_range_by_line(Dwarf_Die *sp_die, struct line_finder *lf)
+ 	const char *src;
+ 	Dwarf_Die die_mem;
+ 
+-	INIT_LIST_HEAD(&lf->lr->line_list);
++	line_list__init(&lf->lr->line_list);
+ 	ret = dwarf_getsrclines(&lf->cu_die, &lines, &nlines);
+ 	DIE_IF(ret != 0);
+ 
+@@ -601,7 +732,7 @@ static void find_line_range_by_line(Dwarf_Die *sp_die, struct line_finder *lf)
+ 		/* Copy real path */
+ 		if (!lf->lr->path)
+ 			lf->lr->path = strdup(src);
+-		line_range_add_line(lf->lr, (unsigned int)lineno);
++		line_list__add_line(&lf->lr->line_list, (unsigned int)lineno);
+ 	}
+ 	/* Update status */
+ 	if (!list_empty(&lf->lr->line_list))
+@@ -659,7 +790,6 @@ int find_line_range(int fd, struct line_range *lr)
+ 	size_t cuhl;
+ 	Dwarf_Die *diep;
+ 	Dwarf *dbg;
+-	int fno;
+ 
+ 	dbg = dwarf_begin(fd, DWARF_C_READ);
+ 	if (!dbg)
+@@ -678,15 +808,14 @@ int find_line_range(int fd, struct line_range *lr)
+ 
+ 		/* Check if target file is included. */
+ 		if (lr->file)
+-			fno = cu_find_fileno(&lf.cu_die, lr->file);
++			lf.fname = cu_find_realpath(&lf.cu_die, lr->file);
+ 		else
+-			fno = 0;
++			lf.fname = 0;
+ 
+-		if (!lr->file || fno) {
++		if (!lr->file || lf.fname) {
+ 			if (lr->function)
+ 				find_line_range_by_func(&lf);
+ 			else {
+-				lf.fname = lr->file;
+ 				lf.lno_s = lr->start;
+ 				if (!lr->end)
+ 					lf.lno_e = INT_MAX;
 diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
-index 9dd4a88..74525ae 100644
+index 75a660d..d1a6517 100644
 --- a/tools/perf/util/probe-finder.h
 +++ b/tools/perf/util/probe-finder.h
-@@ -66,7 +66,6 @@ struct probe_finder {
- 	Dwarf_Addr		addr;		/* Address */
- 	const char		*fname;		/* File name */
- 	int			lno;		/* Line number */
--	void			*origin;	/* Inline origin addr */
- 	Dwarf_Die		cu_die;		/* Current CU */
+@@ -21,6 +21,7 @@ struct probe_point {
+ 	/* Inputs */
+ 	char			*file;			/* File name */
+ 	int			line;			/* Line number */
++	char			*lazy_line;		/* Lazy line pattern */
  
- 	/* For variable searching */
+ 	char			*function;		/* Function name */
+ 	int			offset;			/* Offset bytes */
+@@ -74,6 +75,7 @@ struct probe_finder {
+ 	const char		*var;		/* Current variable name */
+ 	char			*buf;		/* Current output buffer */
+ 	int			len;		/* Length of output buffer */
++	struct list_head	lcache;		/* Line cache for lazy match */
+ };
+ 
+ struct line_finder {
+diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
+index c397d4f..a175949 100644
+--- a/tools/perf/util/string.c
++++ b/tools/perf/util/string.c
+@@ -265,21 +265,21 @@ error:
+ 	return false;
+ }
+ 
+-/**
+- * strglobmatch - glob expression pattern matching
+- * @str: the target string to match
+- * @pat: the pattern string to match
+- *
+- * This returns true if the @str matches @pat. @pat can includes wildcards
+- * ('*','?') and character classes ([CHARS], complementation and ranges are
+- * also supported). Also, this supports escape character ('\') to use special
+- * characters as normal character.
+- *
+- * Note: if @pat syntax is broken, this always returns false.
+- */
+-bool strglobmatch(const char *str, const char *pat)
++/* Glob/lazy pattern matching */
++static bool __match_glob(const char *str, const char *pat, bool ignore_space)
+ {
+ 	while (*str && *pat && *pat != '*') {
++		if (ignore_space) {
++			/* Ignore spaces for lazy matching */
++			if (isspace(*str)) {
++				str++;
++				continue;
++			}
++			if (isspace(*pat)) {
++				pat++;
++				continue;
++			}
++		}
+ 		if (*pat == '?') {	/* Matches any single character */
+ 			str++;
+ 			pat++;
+@@ -308,3 +308,32 @@ bool strglobmatch(const char *str, const char *pat)
+ 	return !*str && !*pat;
+ }
+ 
++/**
++ * strglobmatch - glob expression pattern matching
++ * @str: the target string to match
++ * @pat: the pattern string to match
++ *
++ * This returns true if the @str matches @pat. @pat can includes wildcards
++ * ('*','?') and character classes ([CHARS], complementation and ranges are
++ * also supported). Also, this supports escape character ('\') to use special
++ * characters as normal character.
++ *
++ * Note: if @pat syntax is broken, this always returns false.
++ */
++bool strglobmatch(const char *str, const char *pat)
++{
++	return __match_glob(str, pat, false);
++}
++
++/**
++ * strlazymatch - matching pattern strings lazily with glob pattern
++ * @str: the target string to match
++ * @pat: the pattern string to match
++ *
++ * This is similar to strglobmatch, except this ignores spaces in
++ * the target string.
++ */
++bool strlazymatch(const char *str, const char *pat)
++{
++	return __match_glob(str, pat, true);
++}
+diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
+index 02ede58..542e44d 100644
+--- a/tools/perf/util/string.h
++++ b/tools/perf/util/string.h
+@@ -10,6 +10,7 @@ s64 perf_atoll(const char *str);
+ char **argv_split(const char *str, int *argcp);
+ void argv_free(char **argv);
+ bool strglobmatch(const char *str, const char *pat);
++bool strlazymatch(const char *str, const char *pat);
+ 
+ #define _STR(x) #x
+ #define STR(x) _STR(x)
