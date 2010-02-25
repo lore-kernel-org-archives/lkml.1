@@ -1,75 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933655Ab0BYUfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:35:51 -0500
-Received: from mail-iw0-f177.google.com ([209.85.223.177]:61354 "EHLO
-	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933362Ab0BYUft (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:35:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=xHEoyYQFOy0DXa1XGmtTIsNt7oCtfNRxKkPRmlmRxhLFAefH2ye34x6OUvo710qKXh
-         l3d/iZTXKxcmQLoCeZwifHDz1MVPTl667Y85jUIjl9AmLSc95MUQTXMo4ncoizXbUw21
-         yNPO9967gyuxh5YBCgIpRuDDwub4OuLk5wUnY=
-Message-ID: <4B86DF1E.5030802@gmail.com>
-Date: Thu, 25 Feb 2010 15:35:42 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S933662Ab0BYUij (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:38:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12921 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933362Ab0BYUih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:38:37 -0500
+Date: Thu, 25 Feb 2010 15:38:35 -0500
+From: Josef Bacik <josef@redhat.com>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: Josef Bacik <josef@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
+Message-ID: <20100225203834.GD10960@localhost.localdomain>
+References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com> <20100225202358.GC10960@localhost.localdomain> <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH v3 1/7] net: tcp_header_len_th and tcp_option_len_th
-References: <4B86DDCB.50608@gmail.com>
-In-Reply-To: <4B86DDCB.50608@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------020704080209000605050106"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020704080209000605050106
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Feb 25, 2010 at 03:29:34PM -0500, Andrew Lutomirski wrote:
+> On Thu, Feb 25, 2010 at 3:23 PM, Josef Bacik <josef@redhat.com> wrote:
+> > On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
+> >> Mounting btrfs corrupts memory and causes nasty crashes within a few
+> >> seconds.  This seems to happen even if the mount fails (note the
+> >> unrecognized mount option).  This is a regression from 2.6.32, and
+> >> I've attached an example.
+> >>
+> >
+> > And it only happens when you mount a btrfs fs?  Can you show me a trace of when
+> > you mount a btrfs fs with valid mount options?  I'd like to see if we're not
+> > cleaning up something properly or what.  Thanks,
+> 
+> Seems OK.  Or maybe I just got lucky, but it's crashed every time I
+> tried to mount with 'acl' before.
+> 
+> I even went through a couple iterations of trying to mount with
+> 'xattr' and 'user_xattr', both of which failed.
+> 
 
-Redefine two TCP header functions to accept TCP header pointer.
-When subtracting, return signed int to allow error checking.
+Ok it looks like we have a problem kfree'ing the wrong stuff.  we kstrdup the
+options string, but then strsep screws with the pointer, so when we kfree() it,
+we're not giving it the right pointer.  Please try this patch, and mount with -o
+acl and other such garbage to make sure it actually worked (acl isn't a valid
+mount option btw).  Let me know if it works.  Thanks,
 
-These functions will be used in subsequent patches that implement
-additional features.
-
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  include/linux/tcp.h |   12 ++++++++++++
-  1 files changed, 12 insertions(+), 0 deletions(-)
+Josef
 
 
-
---------------020704080209000605050106
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="len_th+2a3+2.6.33.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="len_th+2a3+2.6.33.patch"
-
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvdGNwLmggYi9pbmNsdWRlL2xpbnV4L3RjcC5o
-CmluZGV4IDdmZWU4YTQuLmQwMTMzY2YgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvdGNw
-LmgKKysrIGIvaW5jbHVkZS9saW51eC90Y3AuaApAQCAtMjIzLDYgKzIyMywxOCBAQCBzdGF0
-aWMgaW5saW5lIHVuc2lnbmVkIGludCB0Y3Bfb3B0bGVuKGNvbnN0IHN0cnVjdCBza19idWZm
-ICpza2IpCiAJcmV0dXJuICh0Y3BfaGRyKHNrYiktPmRvZmYgLSA1KSAqIDQ7CiB9CiAKKy8q
-IExlbmd0aCBvZiBmaXhlZCBoZWFkZXIgcGx1cyBzdGFuZGFyZCBvcHRpb25zLiAqLworc3Rh
-dGljIGlubGluZSB1bnNpZ25lZCBpbnQgdGNwX2hlYWRlcl9sZW5fdGgoY29uc3Qgc3RydWN0
-IHRjcGhkciAqdGgpCit7CisJcmV0dXJuIHRoLT5kb2ZmICogNDsKK30KKworLyogTGVuZ3Ro
-IG9mIHN0YW5kYXJkIG9wdGlvbnMgb25seS4gIFRoaXMgY291bGQgYmUgbmVnYXRpdmUuICov
-CitzdGF0aWMgaW5saW5lIGludCB0Y3Bfb3B0aW9uX2xlbl90aChjb25zdCBzdHJ1Y3QgdGNw
-aGRyICp0aCkKK3sKKwlyZXR1cm4gKGludCkodGgtPmRvZmYgKiA0KSAtIHNpemVvZigqdGgp
-OworfQorCiAvKiBUaGlzIGRlZmluZXMgYSBzZWxlY3RpdmUgYWNrbm93bGVkZ2VtZW50IGJs
-b2NrLiAqLwogc3RydWN0IHRjcF9zYWNrX2Jsb2NrX3dpcmUgewogCV9fYmUzMglzdGFydF9z
-ZXE7Ci0tIAoxLjYuMy4zCgo=
---------------020704080209000605050106--
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 8a1ea6e..f8b4521 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -128,7 +128,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ {
+ 	struct btrfs_fs_info *info = root->fs_info;
+ 	substring_t args[MAX_OPT_ARGS];
+-	char *p, *num;
++	char *p, *num, *orig;
+ 	int intarg;
+ 	int ret = 0;
+ 
+@@ -143,6 +143,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 	if (!options)
+ 		return -ENOMEM;
+ 
++	orig = options;
+ 
+ 	while ((p = strsep(&options, ",")) != NULL) {
+ 		int token;
+@@ -280,7 +281,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 		}
+ 	}
+ out:
+-	kfree(options);
++	kfree(orig);
+ 	return ret;
+ }
+ 
