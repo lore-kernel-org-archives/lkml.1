@@ -1,229 +1,490 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932278Ab0BYMIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 07:08:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45274 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830Ab0BYMIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 07:08:19 -0500
-Date: Thu, 25 Feb 2010 12:07:11 GMT
-From: tip-bot for Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, dzickus@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, dzickus@redhat.com, mingo@elte.hu
-In-Reply-To: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
-References: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/nmi] nmi_watchdog: Clean up various small details
-Message-ID: <tip-47195d57636604ff6048b0d7aa3e4ed9643f6073@git.kernel.org>
-Git-Commit-ID: 47195d57636604ff6048b0d7aa3e4ed9643f6073
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 12:07:11 +0000 (UTC)
+	id S932348Ab0BYMYW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 07:24:22 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:62010 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932314Ab0BYMYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 07:24:20 -0500
+Subject: Re: [PATCH] Route kbd leds through the generic leds layer (3rd
+ version)
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, mgarski@post.pl,
+       linux-input@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>
+In-Reply-To: <20100225102056.GG10823@core.coreip.homeip.net>
+References: <20100224012010.GA4062@const>
+	 <20100225013840.GA5519@const.homenet.telecomitalia.it>
+	 <20100225102056.GG10823@core.coreip.homeip.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Feb 2010 12:23:20 +0000
+Message-ID: <1267100600.4243.13.camel@rex>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  47195d57636604ff6048b0d7aa3e4ed9643f6073
-Gitweb:     http://git.kernel.org/tip/47195d57636604ff6048b0d7aa3e4ed9643f6073
-Author:     Don Zickus <dzickus@redhat.com>
-AuthorDate: Mon, 22 Feb 2010 18:09:03 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 12:40:50 +0100
+On Thu, 2010-02-25 at 02:20 -0800, Dmitry Torokhov wrote:
+> On Thu, Feb 25, 2010 at 02:38:40AM +0100, Samuel Thibault wrote:
+> > Route keyboard leds through the generic leds layer.
+> > 
+> > This permits to reassign keyboard LEDs to something else than keyboard
+> > "leds" state, and also permits to fix #7063 from userland by using a
+> > modifier to implement proper CapsLock behavior and have the keyboard
+> > caps lock led show that caps lock state.
+> > 
+> 
+> I am aunsure about this patch. It ties all LEDs together whereas
+> currently it is possible to operate keyboards and their leds
+> independently (as long as legacy keyboard driver is out of picture, i.e.
+> in X or otherwise when we have console in raw mode).
 
-nmi_watchdog: Clean up various small details
+I know what you mean, I'm wary too.
 
-Mostly copy/paste whitespace damage with a couple of nitpicks by
-the checkpatch script. Fix the struct definition as requested by Ingo too.
+Looking at the patch I think it might make sense to split the patch into
+two parts under separate kconfig options. The first would be the
+triggers themselves which are independent in their own right and
+shouldn't be too controversial.
 
-Signed-off-by: Don Zickus <dzickus@redhat.com>
-Cc: peterz@infradead.org
-Cc: gorcunov@gmail.com
-Cc: aris@redhat.com
-LKML-Reference: <1266880143-24943-1-git-send-email-dzickus@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
---
- arch/x86/kernel/apic/hw_nmi.c |   14 +++++------
- arch/x86/kernel/traps.c       |    6 ++--
- include/linux/nmi.h           |    2 -
- kernel/nmi_watchdog.c         |   51 ++++++++++++++++++++----------------------
- 4 files changed, 36 insertions(+), 37 deletions(-)
----
- arch/x86/kernel/apic/hw_nmi.c |   14 +++++-----
- arch/x86/kernel/traps.c       |    6 ++--
- include/linux/nmi.h           |    2 +-
- kernel/nmi_watchdog.c         |   51 ++++++++++++++++++++---------------------
- 4 files changed, 36 insertions(+), 37 deletions(-)
+The second part would be the input LEDs themselves. My input susbsystem
+memory is fuzzy, I assume this sets a set of LEDs per input device and
+attaches the appropriate default triggers?
 
-diff --git a/arch/x86/kernel/apic/hw_nmi.c b/arch/x86/kernel/apic/hw_nmi.c
-index 0b4d205..e8b78a0 100644
---- a/arch/x86/kernel/apic/hw_nmi.c
-+++ b/arch/x86/kernel/apic/hw_nmi.c
-@@ -38,15 +38,15 @@ static inline unsigned int get_timer_irqs(int cpu)
- 	irqs += per_cpu(irq_stat, cpu).apic_timer_irqs;
- #endif
- 
--        return irqs;
-+	return irqs;
- }
- 
- static inline int mce_in_progress(void)
- {
- #if defined(CONFIG_X86_MCE)
--        return atomic_read(&mce_entry) > 0;
-+	return atomic_read(&mce_entry) > 0;
- #endif
--        return 0;
-+	return 0;
- }
- 
- int hw_nmi_is_cpu_stuck(struct pt_regs *regs)
-@@ -69,9 +69,9 @@ int hw_nmi_is_cpu_stuck(struct pt_regs *regs)
- 	}
- 
- 	/* if we are doing an mce, just assume the cpu is not stuck */
--        /* Could check oops_in_progress here too, but it's safer not to */
--        if (mce_in_progress())
--                return 0;
-+	/* Could check oops_in_progress here too, but it's safer not to */
-+	if (mce_in_progress())
-+		return 0;
- 
- 	/* We determine if the cpu is stuck by checking whether any
- 	 * interrupts have happened since we last checked.  Of course
-@@ -89,7 +89,7 @@ int hw_nmi_is_cpu_stuck(struct pt_regs *regs)
- 
- u64 hw_nmi_get_sample_period(void)
- {
--        return cpu_khz * 1000;
-+	return cpu_khz * 1000;
- }
- 
- #ifdef ARCH_HAS_NMI_WATCHDOG
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 973cbc4..bdc7fab 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -402,9 +402,9 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 			return;
- 
- #ifdef CONFIG_X86_LOCAL_APIC
--	        if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
--	        			                == NOTIFY_STOP)
--	                return;
-+		if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
-+							== NOTIFY_STOP)
-+			return;
- 
- #ifndef CONFIG_NMI_WATCHDOG
- 		/*
-diff --git a/include/linux/nmi.h b/include/linux/nmi.h
-index 794e735..22cc796 100644
---- a/include/linux/nmi.h
-+++ b/include/linux/nmi.h
-@@ -57,7 +57,7 @@ u64 hw_nmi_get_sample_period(void);
- extern int nmi_watchdog_enabled;
- struct ctl_table;
- extern int proc_nmi_enabled(struct ctl_table *, int ,
--                        void __user *, size_t *, loff_t *);
-+			void __user *, size_t *, loff_t *);
- #endif
- 
- #endif
-diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
-index 3c75cbf..0a6f57f 100644
---- a/kernel/nmi_watchdog.c
-+++ b/kernel/nmi_watchdog.c
-@@ -50,31 +50,31 @@ void touch_all_nmi_watchdog(void)
- 
- static int __init setup_nmi_watchdog(char *str)
- {
--        if (!strncmp(str, "panic", 5)) {
--                panic_on_timeout = 1;
--                str = strchr(str, ',');
--                if (!str)
--                        return 1;
--                ++str;
--        }
--        return 1;
-+	if (!strncmp(str, "panic", 5)) {
-+		panic_on_timeout = 1;
-+		str = strchr(str, ',');
-+		if (!str)
-+			return 1;
-+		++str;
-+	}
-+	return 1;
- }
- __setup("nmi_watchdog=", setup_nmi_watchdog);
- 
- struct perf_event_attr wd_hw_attr = {
--	.type = PERF_TYPE_HARDWARE,
--	.config = PERF_COUNT_HW_CPU_CYCLES,
--	.size = sizeof(struct perf_event_attr),
--	.pinned = 1,
--	.disabled = 1,
-+	.type		= PERF_TYPE_HARDWARE,
-+	.config		= PERF_COUNT_HW_CPU_CYCLES,
-+	.size		= sizeof(struct perf_event_attr),
-+	.pinned		= 1,
-+	.disabled	= 1,
- };
- 
- struct perf_event_attr wd_sw_attr = {
--	.type = PERF_TYPE_SOFTWARE,
--	.config = PERF_COUNT_SW_CPU_CLOCK,
--	.size = sizeof(struct perf_event_attr),
--	.pinned = 1,
--	.disabled = 1,
-+	.type		= PERF_TYPE_SOFTWARE,
-+	.config		= PERF_COUNT_SW_CPU_CLOCK,
-+	.size		= sizeof(struct perf_event_attr),
-+	.pinned		= 1,
-+	.disabled	= 1,
- };
- 
- void wd_overflow(struct perf_event *event, int nmi,
-@@ -95,16 +95,15 @@ void wd_overflow(struct perf_event *event, int nmi,
- 		 * Ayiee, looks like this CPU is stuck ...
- 		 * wait a few IRQs (5 seconds) before doing the oops ...
- 		 */
--		per_cpu(alert_counter,cpu) += 1;
--		if (per_cpu(alert_counter,cpu) == 5) {
--			if (panic_on_timeout) {
-+		per_cpu(alert_counter, cpu) += 1;
-+		if (per_cpu(alert_counter, cpu) == 5) {
-+			if (panic_on_timeout)
- 				panic("NMI Watchdog detected LOCKUP on cpu %d", cpu);
--			} else {
-+			else
- 				WARN(1, "NMI Watchdog detected LOCKUP on cpu %d", cpu);
--			}
- 		}
- 	} else {
--		per_cpu(alert_counter,cpu) = 0;
-+		per_cpu(alert_counter, cpu) = 0;
- 	}
- 
- 	return;
-@@ -126,7 +125,7 @@ static int enable_nmi_watchdog(int cpu)
- 		event = perf_event_create_kernel_counter(wd_attr, cpu, -1, wd_overflow);
- 		if (IS_ERR(event)) {
- 			/* hardware doesn't exist or not supported, fallback to software events */
--			printk("nmi_watchdog: hardware not available, trying software events\n");
-+			printk(KERN_INFO "nmi_watchdog: hardware not available, trying software events\n");
- 			wd_attr = &wd_sw_attr;
- 			wd_attr->sample_period = NSEC_PER_SEC;
- 			event = perf_event_create_kernel_counter(wd_attr, cpu, -1, wd_overflow);
-@@ -182,7 +181,7 @@ int proc_nmi_enabled(struct ctl_table *table, int write,
- 	if (nmi_watchdog_enabled) {
- 		for_each_online_cpu(cpu)
- 			if (enable_nmi_watchdog(cpu)) {
--				printk("NMI watchdog failed configuration, "
-+				printk(KERN_ERR "NMI watchdog failed configuration, "
- 					" can not be enabled\n");
- 			}
- 	} else {
+Is there a set of states we can detect (like raw mode) when we could
+just know to disconnect the default triggers?
+
+
+> > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> > ---
+> > 
+> > Hello,
+> > 
+> > Here is a third version of the patch and should now be fine for
+> > inclusion e.g. in the mm tree and eventually pushed to 2.6.34. The main
+> > difference with the first version is that now only input leds actually
+> > available on some device are registered. The difference with the second
+> > version is a refresh against 2.6.33 and a locking fix.
+> > 
+> > The first version was acked by Pavel Machek.
+> > 
+> > Samuel
+> > 
+> > diff -ur linux-2.6.33-orig/Documentation/leds-class.txt linux-2.6.33-perso/Documentation/leds-class.txt
+> > --- linux-2.6.33-orig/Documentation/leds-class.txt	2009-12-03 13:41:42.000000000 +0100
+> > +++ linux-2.6.33-perso/Documentation/leds-class.txt	2010-02-25 01:45:28.000000000 +0100
+> > @@ -2,9 +2,6 @@
+> >  LED handling under Linux
+> >  ========================
+> >  
+> > -If you're reading this and thinking about keyboard leds, these are
+> > -handled by the input subsystem and the led class is *not* needed.
+> > -
+> >  In its simplest form, the LED class just allows control of LEDs from
+> >  userspace. LEDs appear in /sys/class/leds/. The maximum brightness of the
+> >  LED is defined in max_brightness file. The brightness file will set the brightness
+> > diff -ur linux-2.6.33-orig/drivers/char/keyboard.c linux-2.6.33-perso/drivers/char/keyboard.c
+> > --- linux-2.6.33-orig/drivers/char/keyboard.c	2010-02-25 01:41:19.000000000 +0100
+> > +++ linux-2.6.33-perso/drivers/char/keyboard.c	2010-02-25 01:52:11.000000000 +0100
+> > @@ -34,6 +34,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/irq.h>
+> > +#include <linux/leds.h>
+> >  
+> >  #include <linux/kbd_kern.h>
+> >  #include <linux/kbd_diacr.h>
+> > @@ -139,6 +140,9 @@
+> >  static char rep;					/* flag telling character repeat */
+> >  
+> >  static unsigned char ledstate = 0xff;			/* undefined */
+> > +#ifdef CONFIG_LEDS_INPUT
+> > +static unsigned char lockstate = 0xff;			/* undefined */
+> > +#endif
+> >  static unsigned char ledioctl;
+> >  
+> >  static struct ledptr {
+> > @@ -971,6 +975,23 @@
+> >  	}
+> >  }
+> >  
+> > +#ifdef CONFIG_LEDS_INPUT
+> > +/* When input-based leds are enabled, we route keyboard "leds" through triggers
+> > + */
+> > +DEFINE_LED_TRIGGER(ledtrig_scrolllock);
+> > +DEFINE_LED_TRIGGER(ledtrig_numlock);
+> > +DEFINE_LED_TRIGGER(ledtrig_capslock);
+> > +DEFINE_LED_TRIGGER(ledtrig_kanalock);
+> > +DEFINE_LED_TRIGGER(ledtrig_shiftlock);
+> > +DEFINE_LED_TRIGGER(ledtrig_altgrlock);
+> > +DEFINE_LED_TRIGGER(ledtrig_ctrllock);
+> > +DEFINE_LED_TRIGGER(ledtrig_altlock);
+> > +DEFINE_LED_TRIGGER(ledtrig_shiftllock);
+> > +DEFINE_LED_TRIGGER(ledtrig_shiftrlock);
+> > +DEFINE_LED_TRIGGER(ledtrig_ctrlllock);
+> > +DEFINE_LED_TRIGGER(ledtrig_ctrlrlock);
+> > +#endif
+> > +
+> >  /*
+> >   * The leds display either (i) the status of NumLock, CapsLock, ScrollLock,
+> >   * or (ii) whatever pattern of lights people want to show using KDSETLED,
+> > @@ -1019,9 +1040,12 @@
+> >  	unsigned char leds = *(unsigned char *)data;
+> >  
+> >  	if (test_bit(EV_LED, handle->dev->evbit)) {
+> > -		input_inject_event(handle, EV_LED, LED_SCROLLL, !!(leds & 0x01));
+> > -		input_inject_event(handle, EV_LED, LED_NUML,    !!(leds & 0x02));
+> > -		input_inject_event(handle, EV_LED, LED_CAPSL,   !!(leds & 0x04));
+> > +		input_inject_event(handle, EV_LED, LED_SCROLLL,
+> > +				!!(leds & VC_SCROLLOCK));
+> > +		input_inject_event(handle, EV_LED, LED_NUML,
+> > +				!!(leds & VC_NUMLOCK));
+> > +		input_inject_event(handle, EV_LED, LED_CAPSL,
+> > +				!!(leds & VC_CAPSLOCK));
+> >  		input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
+> >  	}
+> >  
+> > @@ -1040,10 +1064,51 @@
+> >  	unsigned char leds = getleds();
+> >  
+> >  	if (leds != ledstate) {
+> > +#ifdef CONFIG_LEDS_INPUT
+> > +		led_trigger_event(ledtrig_scrolllock,
+> > +				leds & (1 << VC_SCROLLOCK) ? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_numlock,
+> > +				leds & (1 << VC_NUMLOCK)   ? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_capslock,
+> > +				leds & (1 << VC_CAPSLOCK)  ? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_kanalock,
+> > +				leds & (1 << VC_KANALOCK)  ? INT_MAX : LED_OFF);
+> > +#else
+> >  		input_handler_for_each_handle(&kbd_handler, &leds,
+> >  					      kbd_update_leds_helper);
+> > +#endif
+> >  		ledstate = leds;
+> >  	}
+> > +
+> > +#ifdef CONFIG_LEDS_INPUT
+> > +	if (kbd->lockstate != lockstate) {
+> > +		led_trigger_event(ledtrig_shiftlock,
+> > +			kbd->lockstate & (1<<VC_SHIFTLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_altgrlock,
+> > +			kbd->lockstate & (1<<VC_ALTGRLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_ctrllock,
+> > +			kbd->lockstate & (1<<VC_CTRLLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_altlock,
+> > +			kbd->lockstate & (1<<VC_ALTLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_shiftllock,
+> > +			kbd->lockstate & (1<<VC_SHIFTLLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_shiftrlock,
+> > +			kbd->lockstate & (1<<VC_SHIFTRLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_ctrlllock,
+> > +			kbd->lockstate & (1<<VC_CTRLLLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		led_trigger_event(ledtrig_ctrlrlock,
+> > +			kbd->lockstate & (1<<VC_CTRLRLOCK)
+> > +				? INT_MAX : LED_OFF);
+> > +		lockstate = kbd->lockstate;
+> > +	}
+> > +#endif
+> >  }
+> >  
+> >  DECLARE_TASKLET_DISABLED(keyboard_tasklet, kbd_bh, 0);
+> > @@ -1380,6 +1445,7 @@
+> >  	kfree(handle);
+> >  }
+> >  
+> > +#ifndef CONFIG_LEDS_INPUT
+> >  /*
+> >   * Start keyboard handler on the new keyboard by refreshing LED state to
+> >   * match the rest of the system.
+> > @@ -1393,6 +1459,7 @@
+> >  
+> >  	tasklet_enable(&keyboard_tasklet);
+> >  }
+> > +#endif
+> >  
+> >  static const struct input_device_id kbd_ids[] = {
+> >  	{
+> > @@ -1414,7 +1481,9 @@
+> >  	.event		= kbd_event,
+> >  	.connect	= kbd_connect,
+> >  	.disconnect	= kbd_disconnect,
+> > +#ifndef CONFIG_LEDS_INPUT
+> >  	.start		= kbd_start,
+> > +#endif
+> >  	.name		= "kbd",
+> >  	.id_table	= kbd_ids,
+> >  };
+> > @@ -1438,6 +1507,21 @@
+> >  	if (error)
+> >  		return error;
+> >  
+> > +#ifdef CONFIG_LEDS_INPUT
+> > +	led_trigger_register_simple("scrolllock", &ledtrig_scrolllock);
+> > +	led_trigger_register_simple("numlock", &ledtrig_numlock);
+> > +	led_trigger_register_simple("capslock", &ledtrig_capslock);
+> > +	led_trigger_register_simple("kanalock", &ledtrig_kanalock);
+> > +	led_trigger_register_simple("shiftlock", &ledtrig_shiftlock);
+> > +	led_trigger_register_simple("altgrlock", &ledtrig_altgrlock);
+> > +	led_trigger_register_simple("ctrllock", &ledtrig_ctrllock);
+> > +	led_trigger_register_simple("altlock", &ledtrig_altlock);
+> > +	led_trigger_register_simple("shiftllock", &ledtrig_shiftllock);
+> > +	led_trigger_register_simple("shiftrlock", &ledtrig_shiftrlock);
+> > +	led_trigger_register_simple("ctrlllock", &ledtrig_ctrlllock);
+> > +	led_trigger_register_simple("ctrlrlock", &ledtrig_ctrlrlock);
+> > +#endif
+> > +
+> >  	tasklet_enable(&keyboard_tasklet);
+> >  	tasklet_schedule(&keyboard_tasklet);
+> >  
+> > diff -ur linux-2.6.33-orig/drivers/leds/Kconfig linux-2.6.33-perso/drivers/leds/Kconfig
+> > --- linux-2.6.33-orig/drivers/leds/Kconfig	2010-02-25 01:41:27.000000000 +0100
+> > +++ linux-2.6.33-perso/drivers/leds/Kconfig	2010-02-25 01:45:28.000000000 +0100
+> > @@ -4,9 +4,6 @@
+> >  	  Say Y to enable Linux LED support.  This allows control of supported
+> >  	  LEDs from both userspace and optionally, by kernel events (triggers).
+> >  
+> > -	  This is not related to standard keyboard LEDs which are controlled
+> > -	  via the input system.
+> > -
+> >  if NEW_LEDS
+> >  
+> >  config LEDS_CLASS
+> > @@ -17,6 +14,13 @@
+> >  
+> >  comment "LED drivers"
+> >  
+> > +config LEDS_INPUT
+> > +	tristate "LED Support using input keyboards"
+> > +	depends on LEDS_CLASS
+> > +	help
+> > +	  This option enables support for the LEDs on keyboard managed
+> > +	  by the input layer.
+> > +
+> >  config LEDS_ATMEL_PWM
+> >  	tristate "LED Support using Atmel PWM outputs"
+> >  	depends on LEDS_CLASS && ATMEL_PWM
+> > diff -ur linux-2.6.33-orig/drivers/leds/leds-input.c linux-2.6.33-perso/drivers/leds/leds-input.c
+> > --- linux-2.6.33-orig/drivers/leds/leds-input.c	2010-02-21 04:13:41.000000000 +0100
+> > +++ linux-2.6.33-perso/drivers/leds/leds-input.c	2010-02-25 01:45:28.000000000 +0100
+> > @@ -0,0 +1,195 @@
+> > +/*
+> > + * LED support for the input layer
+> > + *
+> > + * Copyright 2010 Samuel Thibault <samuel.thibault@ens-lyon.org>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + */
+> > +
+> > +#include <linux/kernel.h>
+> > +#include <linux/init.h>
+> > +#include <linux/leds.h>
+> > +#include <linux/input.h>
+> > +
+> > +/* Protects concurrency of led state */
+> > +static DEFINE_SPINLOCK(input_leds_lock);
+> > +/* Current state */
+> > +static unsigned long input_led_leds[BITS_TO_LONGS(LED_CNT)];
+> > +/* array of all led classes */
+> > +static struct led_classdev input_leds[LED_CNT];
+> > +/* Protects concurrency of led registration */
+> > +static DEFINE_SPINLOCK(input_led_registered_lock);
+> > +/* which led classes are registered */
+> > +static unsigned long input_led_registered[BITS_TO_LONGS(LED_CNT)];
+> > +/* our handler */
+> > +static struct input_handler input_led_handler;
+> > +
+> > +/* Led state change, update all keyboards */
+> > +static void input_led_set(struct led_classdev *cdev,
+> > +			  enum led_brightness brightness)
+> > +{
+> > +	int led = cdev - input_leds;
+> > +	unsigned long flags;
+> > +	struct input_handle *handle;
+> > +
+> > +	spin_lock_irqsave(&input_leds_lock, flags);
+> > +	list_for_each_entry(handle, &input_led_handler.h_list, h_node) {
+> > +		input_inject_event(handle, EV_LED, led, !!brightness);
+> > +		input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
+> > +	}
+> > +	if (brightness)
+> > +		set_bit(led, input_led_leds);
+> > +	else
+> > +		clear_bit(led, input_led_leds);
+> > +	spin_unlock_irqrestore(&input_leds_lock, flags);
+> > +}
+> > +
+> > +static struct led_classdev input_leds[LED_CNT] = {
+> > +#define DEFINE_INPUT_LED(input_led, nam, deftrig) \
+> > +	[input_led] = { \
+> > +		.name = "input::"nam, \
+> > +		.max_brightness = 1, \
+> > +		.brightness_set = input_led_set, \
+> > +		.default_trigger = deftrig, \
+> > +	}
+> > +DEFINE_INPUT_LED(LED_NUML, "numlock", "numlock"),
+> > +DEFINE_INPUT_LED(LED_CAPSL, "capslock", "capslock"),
+> > +DEFINE_INPUT_LED(LED_SCROLLL, "scrolllock", "scrolllock"),
+> > +DEFINE_INPUT_LED(LED_COMPOSE, "compose", NULL),
+> > +DEFINE_INPUT_LED(LED_KANA, "kana", "kanalock"),
+> > +DEFINE_INPUT_LED(LED_SLEEP, "sleep", NULL),
+> > +DEFINE_INPUT_LED(LED_SUSPEND, "suspend", NULL),
+> > +DEFINE_INPUT_LED(LED_MUTE, "mute", NULL),
+> > +DEFINE_INPUT_LED(LED_MISC, "misc", NULL),
+> > +DEFINE_INPUT_LED(LED_MAIL, "mail", NULL),
+> > +DEFINE_INPUT_LED(LED_CHARGING, "charging", NULL),
+> > +};
+> > +
+> > +static int input_led_connect(struct input_handler *handler,
+> > +			      struct input_dev *dev,
+> > +			      const struct input_device_id *id)
+> > +{
+> > +	struct input_handle *handle;
+> > +	int i, error;
+> > +	unsigned long flags;
+> > +
+> > +	if (!test_bit(EV_LED, dev->keybit))
+> > +		return -ENODEV;
+> > +
+> > +	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
+> > +	if (!handle)
+> > +		return -ENOMEM;
+> > +
+> > +	handle->dev = dev;
+> > +	handle->handler = handler;
+> > +	handle->name = "input leds";
+> > +
+> > +	error = input_register_handle(handle);
+> > +	if (error) {
+> > +		kfree(handle);
+> > +		return error;
+> > +	}
+> > +
+> > +	spin_lock_irqsave(&input_led_registered_lock, flags);
+> > +	for (i = 0; i < LED_CNT; i++)
+> > +		if (input_leds[i].name
+> > +				&& !test_bit(i, input_led_registered)
+> > +				&& test_bit(i, dev->ledbit))
+> > +			/* This keyboard has led i, try to register it */
+> > +			if (!led_classdev_register(NULL, &input_leds[i]))
+> > +				set_bit(i, input_led_registered);
+> > +	spin_unlock_irqrestore(&input_led_registered_lock, flags);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void input_led_disconnect(struct input_handle *handle)
+> > +{
+> > +	int unregister, i;
+> > +	unsigned long flags;
+> > +
+> > +	input_unregister_handle(handle);
+> > +	kfree(handle);
+> > +
+> > +	spin_lock_irqsave(&input_led_registered_lock, flags);
+> > +	for (i = 0; i < LED_CNT; i++) {
+> > +		if (!test_bit(i, input_led_registered))
+> > +			continue;
+> > +
+> > +		unregister = 1;
+> > +		list_for_each_entry(handle, &input_led_handler.h_list, h_node) {
+> > +			if (test_bit(i, handle->dev->ledbit)) {
+> > +				unregister = 0;
+> > +				break;
+> > +			}
+> > +		}
+> > +		if (!unregister)
+> > +			continue;
+> > +
+> > +		led_classdev_unregister(&input_leds[i]);
+> > +		clear_bit(i, input_led_registered);
+> > +	}
+> > +	spin_unlock_irqrestore(&input_led_registered_lock, flags);
+> > +}
+> > +
+> > +/* New keyboard, update its leds */
+> > +static void input_led_start(struct input_handle *handle)
+> > +{
+> > +	unsigned long flags;
+> > +	int i;
+> > +
+> > +	spin_lock_irqsave(&input_leds_lock, flags);
+> > +	for (i = 0; i < LED_CNT; i++)
+> > +		if (input_leds[i].name && test_bit(i, handle->dev->ledbit))
+> > +			input_inject_event(handle, EV_LED, i,
+> > +					test_bit(i, input_led_leds));
+> > +	input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
+> > +	spin_unlock_irqrestore(&input_leds_lock, flags);
+> > +}
+> > +
+> > +static const struct input_device_id input_led_ids[] = {
+> > +	{
+> > +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
+> > +		.evbit = { BIT_MASK(EV_LED) },
+> > +	},
+> > +
+> > +	{ },	/* Terminating entry */
+> > +};
+> > +
+> > +static struct input_handler input_led_handler = {
+> > +	.connect	= input_led_connect,
+> > +	.disconnect	= input_led_disconnect,
+> > +	.start		= input_led_start,
+> > +	.name		= "input leds",
+> > +	.id_table	= input_led_ids,
+> > +};
+> > +
+> > +static int __init input_led_init(void)
+> > +{
+> > +	return input_register_handler(&input_led_handler);
+> > +}
+> > +
+> > +static void __exit input_led_exit(void)
+> > +{
+> > +	int i;
+> > +	unsigned long flags;
+> > +
+> > +	input_unregister_handler(&input_led_handler);
+> > +
+> > +	spin_lock_irqsave(&input_leds_lock, flags);
+> > +	for (i = 0; i < LED_CNT; i++)
+> > +		if (test_bit(i, input_led_registered)) {
+> > +			led_classdev_unregister(&input_leds[i]);
+> > +			clear_bit(i, input_led_registered);
+> > +		}
+> > +	spin_unlock_irqrestore(&input_leds_lock, flags);
+> > +}
+> > +
+> > +module_init(input_led_init);
+> > +module_exit(input_led_exit);
+> > +
+> > +MODULE_LICENSE("GPL");
+> > +MODULE_DESCRIPTION("User LED support for input layer");
+> > +MODULE_AUTHOR("Samuel Thibault <samuel.thibault@ens-lyon.org>");
+> > diff -ur linux-2.6.33-orig/drivers/leds/Makefile linux-2.6.33-perso/drivers/leds/Makefile
+> > --- linux-2.6.33-orig/drivers/leds/Makefile	2010-02-25 01:41:27.000000000 +0100
+> > +++ linux-2.6.33-perso/drivers/leds/Makefile	2010-02-25 01:45:28.000000000 +0100
+> > @@ -5,6 +5,7 @@
+> >  obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
+> >  
+> >  # LED Platform Drivers
+> > +obj-$(CONFIG_LEDS_INPUT)		+= leds-input.o
+> >  obj-$(CONFIG_LEDS_ATMEL_PWM)		+= leds-atmel-pwm.o
+> >  obj-$(CONFIG_LEDS_BD2802)		+= leds-bd2802.o
+> >  obj-$(CONFIG_LEDS_LOCOMO)		+= leds-locomo.o
+> 
+
+
