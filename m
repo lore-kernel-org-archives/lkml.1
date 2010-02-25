@@ -1,128 +1,416 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932977Ab0BYQxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:53:11 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:54041 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932939Ab0BYQxH (ORCPT
+	id S1759450Ab0BYQ6H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:58:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65246 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759333Ab0BYQ6B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:53:07 -0500
-Date: Thu, 25 Feb 2010 11:53:01 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100225165301.GF24052@Krystal>
-References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com> <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop> <20100224152251.GA16295@Krystal> <20100225053310.GA9738@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100225053310.GA9738@laptop>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 11:48:43 up 33 days, 19:26,  4 users,  load average: 0.91, 0.37,
-	0.43
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 25 Feb 2010 11:58:01 -0500
+X-Authority-Analysis: v=1.0 c=1 a=6UnHDKZUNiIA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=QX54vVqaAAAA:8 a=meVymXHHAAAA:8 a=7gkXJVJtAAAA:8 a=68eEZQRoAAAA:8 a=e5Ur3VOtznb4dtM7F3wA:9 a=hLorRF5YUZig4gjtUfcA:7 a=yHCJ0aICk_2gaayvNOt6zuQ5X-oA:4 a=xshquSfHhhQA:10 a=jeBq3FmKZ4MA:10 a=JmBWkid0h3cA:10 a=7YLhZ6jOsBkA:10 a=v6RDQCMOps8TYKgu:21 a=hg2OD42Ub2MJib-7:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: [GIT PULL] kconfig: simplification of scripts/extract-ikconfig
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dick Streefland <dick@streefland.net>, linux-kbuild@vger.kernel.org,
+       Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 25 Feb 2010 11:57:58 -0500
+Message-ID: <1267117078.6328.15.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin (npiggin@suse.de) wrote:
-> On Wed, Feb 24, 2010 at 10:22:52AM -0500, Mathieu Desnoyers wrote:
-> > * Nick Piggin (npiggin@suse.de) wrote:
-> > > On Mon, Feb 22, 2010 at 04:23:21PM -0500, Mathieu Desnoyers wrote:
-> > > > * Chris Friesen (cfriesen@nortel.com) wrote:
-> > > > > On 02/12/2010 04:46 PM, Mathieu Desnoyers wrote:
-> > > > > 
-> > > > > > Editorial question: 
-> > > > > > 
-> > > > > > This synchronization only takes care of threads using the current process memory
-> > > > > > map. It should not be used to synchronize accesses performed on memory maps
-> > > > > > shared between different processes. Is that a limitation we can live with ?
-> > > > > 
-> > > > > It makes sense for an initial version.  It would be unfortunate if this
-> > > > > were a permanent limitation, since using separate processes with
-> > > > > explicit shared memory is a useful way to mitigate memory trampler issues.
-> > > > > 
-> > > > > If we were going to allow that, it might make sense to add an address
-> > > > > range such that only those processes which have mapped that range would
-> > > > > execute the barrier.  Come to think of it, it might be possible to use
-> > > > > this somehow to avoid having to execute the barrier on *all* threads
-> > > > > within a process.
-> > > > 
-> > > > The extensible system call mandatory and optional flags will allow this kind of
-> > > > improvement later on if this appears to be needed. It will also allow user-space
-> > > > to detect if later kernels support these new features or not. But meanwhile I
-> > > > think it's good to start with this implementation that covers 99.99% of
-> > > > use-cases I can currently think of (ok, well, maybe I'm just unimaginative) ;)
-> > > 
-> > > It's a good point, I think having at least the ability to do
-> > > process-shared or process-private in the first version of the API might
-> > > be a good idea. That matches glibc's synchronisation routines so it
-> > > would probably be a desirable feature even if you don't implement it in
-> > > your library initially.
-> > 
-> > I am tempted to say that we should probably wait for users of this API feature
-> > to manifest themselves before we go on and implement it. This will ensure that
-> > we don't end up maintaining an unused feature and this provides a minimum
-> > testability. For now, returning -EINVAL seems like an appropriate response for
-> > this system call feature.
-> 
-> It would be very trivial compared to the process-private case. Just IPI
-> all CPUs. It would allow older kernels to work with newer process based
-> apps as they get implemented. But... not a really big deal I suppose.
 
-This is actually what I did in v1 of the patch, but this implementation met
-resistance from the RT people, who were concerned about the impact on RT tasks
-of a lower priority process doing lots of sys_membarrier() calls. So if we want
-to do other-process-aware sys_membarrier(), we would have to iterate on all
-cpus, for every running process shared memory maps and see if there is something
-shared with all shm of the current process. This is clearly not as trivial as
-just broadcasting the IPI to all cpus.
+Linus,
 
-> 
-> 
-> > As I said above, given the exensible nature of the sys_membarrier flags, we can
-> > assign a MEMBARRIER_SHARED_MEM or something like that to a mandatory flag bit
-> > later on. So when userspace start using this flag on old kernels that do not
-> > support it, -EINVAL will be returned, and then the application will know it must
-> > use a fallback. So, basically, we don't even need to define this flag now.
-> > 
-> > > 
-> > > When writing multiprocessor scalable software, threads should often be
-> > > avoided. They share so much state that it is easy to run into
-> > > scalability issues in the kernel. So yes it would be really nice to
-> > > have userspace RCU available in a process-shared mode.
-> > > 
-> > 
-> > Agreed, although some major modifications would also be needed in the userspace
-> > RCU library to do that, because it currently rely on being able to access other
-> > thread's TLS.
-> 
-> OK. It would be a good feature to keep in mind, I believe.
-> 
+This was suppose to be for the 2.6.33 merge window, but I forgot about
+it and missed sending it out. It has been in linux-next since 2.6.32.
 
-Sure.
+I have more kconfig updates, but I'll wait a little before sending them
+out.
 
-Thanks,
+Please pull the latest for-linus-1 tree, which can be found at:
 
-Mathieu
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.git
+for-linus-1
 
 
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Dick Streefland (1):
+      kconfig: simplification of scripts/extract-ikconfig
+
+----
+ Documentation/dontdiff   |    1 -
+ scripts/.gitignore       |    1 -
+ scripts/binoffset.c      |  163 ----------------------------------------------
+ scripts/extract-ikconfig |  127 ++++++++++++-----------------------
+ 4 files changed, 44 insertions(+), 248 deletions(-)
+---------------------------
+commit 7b76bfc86757ca5e7b0a62f50003752da77c115b
+Author: Dick Streefland <dick@streefland.net>
+Date:   Tue Oct 6 22:35:40 2009 +0200
+
+    kconfig: simplification of scripts/extract-ikconfig
+    
+    I've rewritten the extract-ikconfig script to extract the kernel
+    configuration from a kernel compiled with CONFIG_IKCONFIG. The main
+    motivation for the rewrite was to remove the dependency on the
+    external C program binoffset.c, which is compiled on the initial run.
+    
+    The binoffset executable is invoked with a relative path, which means
+    that the old script can only be run from the top of the kernel tree,
+    and only when you have write permission in the scripts directory.
+    
+    The new script uses tr/grep/tail/zcat only, and can be invoked from
+    anywhere. The binoffset.c program has been removed. This script
+    requires GNU grep 2.5 (released 2002-03-13) or higher, because the -o
+    option was introduced in that version.
+    
+    Signed-off-by: Dick Streefland <dick@streefland.net>
+    LKML-Reference: <20091006203540.GA14634@streefland.net>
+    Tested-by: Steven Rostedt <rostedt@goodmis.org>
+    Cc: Sam Ravnborg <sam@ravnborg.org>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/Documentation/dontdiff b/Documentation/dontdiff
+index e1efc40..bc01a5a 100644
+--- a/Documentation/dontdiff
++++ b/Documentation/dontdiff
+@@ -68,7 +68,6 @@ autoconf.h*
+ bbootsect
+ bin2c
+ binkernel.spec
+-binoffset
+ bootsect
+ bounds.h
+ bsetup
+diff --git a/scripts/.gitignore b/scripts/.gitignore
+index 52cab46..c5d5db5 100644
+--- a/scripts/.gitignore
++++ b/scripts/.gitignore
+@@ -6,5 +6,4 @@ kallsyms
+ pnmtologo
+ bin2c
+ unifdef
+-binoffset
+ ihex2fw
+diff --git a/scripts/binoffset.c b/scripts/binoffset.c
+deleted file mode 100644
+index 1a2e39b..0000000
+--- a/scripts/binoffset.c
++++ /dev/null
+@@ -1,163 +0,0 @@
+-/***************************************************************************
+- * binoffset.c
+- * (C) 2002 Randy Dunlap <rdunlap@xenotime.net>
+-
+-#   This program is free software; you can redistribute it and/or modify
+-#   it under the terms of the GNU General Public License as published by
+-#   the Free Software Foundation; either version 2 of the License, or
+-#   (at your option) any later version.
+-#
+-#   This program is distributed in the hope that it will be useful,
+-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-#   GNU General Public License for more details.
+-#
+-#   You should have received a copy of the GNU General Public License
+-#   along with this program; if not, write to the Free Software
+-#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+-
+-# binoffset.c:
+-# - searches a (binary) file for a specified (binary) pattern
+-# - returns the offset of the located pattern or ~0 if not found
+-# - exits with exit status 0 normally or non-0 if pattern is not found
+-#   or any other error occurs.
+-
+-****************************************************************/
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <errno.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/mman.h>
+-
+-#define VERSION		"0.1"
+-#define BUF_SIZE	(16 * 1024)
+-#define PAT_SIZE	100
+-
+-char		*progname;
+-char		*inputname;
+-int		inputfd;
+-unsigned int	bix;			/* buf index */
+-unsigned char	patterns [PAT_SIZE] = {0}; /* byte-sized pattern array */
+-int		pat_len;		/* actual number of pattern bytes */
+-unsigned char	*madr;			/* mmap address */
+-size_t		filesize;
+-int		num_matches = 0;
+-off_t		firstloc = 0;
+-
+-void usage (void)
+-{
+-	fprintf (stderr, "%s ver. %s\n", progname, VERSION);
+-	fprintf (stderr, "usage:  %s filename pattern_bytes\n",
+-			progname);
+-	fprintf (stderr, "        [prints location of pattern_bytes in file]\n");
+-	exit (1);
+-}
+-
+-void get_pattern (int pat_count, char *pats [])
+-{
+-	int ix, err, tmp;
+-
+-#ifdef DEBUG
+-	fprintf (stderr,"get_pattern: count = %d\n", pat_count);
+-	for (ix = 0; ix < pat_count; ix++)
+-		fprintf (stderr, "  pat # %d:  [%s]\n", ix, pats[ix]);
+-#endif
+-
+-	for (ix = 0; ix < pat_count; ix++) {
+-		tmp = 0;
+-		err = sscanf (pats[ix], "%5i", &tmp);
+-		if (err != 1 || tmp > 0xff) {
+-			fprintf (stderr, "pattern or value error in pattern # %d [%s]\n",
+-					ix, pats[ix]);
+-			usage ();
+-		}
+-		patterns [ix] = tmp;
+-	}
+-	pat_len = pat_count;
+-}
+-
+-void search_pattern (void)
+-{
+-	for (bix = 0; bix < filesize; bix++) {
+-		if (madr[bix] == patterns[0]) {
+-			if (memcmp (&madr[bix], patterns, pat_len) == 0) {
+-				if (num_matches == 0)
+-					firstloc = bix;
+-				num_matches++;
+-			}
+-		}
+-	}
+-}
+-
+-#ifdef NOTDEF
+-size_t get_filesize (int fd)
+-{
+-	off_t end_off = lseek (fd, 0, SEEK_END);
+-	lseek (fd, 0, SEEK_SET);
+-	return (size_t) end_off;
+-}
+-#endif
+-
+-size_t get_filesize (int fd)
+-{
+-	int err;
+-	struct stat stat;
+-
+-	err = fstat (fd, &stat);
+-	fprintf (stderr, "filesize: %ld\n", err < 0 ? (long)err : stat.st_size);
+-	if (err < 0)
+-		return err;
+-	return (size_t) stat.st_size;
+-}
+-
+-int main (int argc, char *argv [])
+-{
+-	progname = argv[0];
+-
+-	if (argc < 3)
+-		usage ();
+-
+-	get_pattern (argc - 2, argv + 2);
+-
+-	inputname = argv[1];
+-
+-	inputfd = open (inputname, O_RDONLY);
+-	if (inputfd == -1) {
+-		fprintf (stderr, "%s: cannot open '%s'\n",
+-				progname, inputname);
+-		exit (3);
+-	}
+-
+-	filesize = get_filesize (inputfd);
+-
+-	madr = mmap (0, filesize, PROT_READ, MAP_PRIVATE, inputfd, 0);
+-	if (madr == MAP_FAILED) {
+-		fprintf (stderr, "mmap error = %d\n", errno);
+-		close (inputfd);
+-		exit (4);
+-	}
+-
+-	search_pattern ();
+-
+-	if (munmap (madr, filesize))
+-		fprintf (stderr, "munmap error = %d\n", errno);
+-
+-	if (close (inputfd))
+-		fprintf (stderr, "%s: error %d closing '%s'\n",
+-				progname, errno, inputname);
+-
+-	fprintf (stderr, "number of pattern matches = %d\n", num_matches);
+-	if (num_matches == 0)
+-		firstloc = ~0;
+-	printf ("%ld\n", firstloc);
+-	fprintf (stderr, "%ld\n", firstloc);
+-
+-	exit (num_matches ? 0 : 2);
+-}
+-
+-/* end binoffset.c */
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index de233ff..37f30d3 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -1,92 +1,53 @@
+ #!/bin/sh
+-# extracts .config info from a [b]zImage file
+-# uses: binoffset (new), dd, zcat, strings, grep
+-# $arg1 is [b]zImage filename
+-
+-binoffset="./scripts/binoffset"
+-test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
+-
+-IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
+-IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
+-dump_config() {
+-    file="$1"
+-
+-    start=`$binoffset $file $IKCFG_ST 2>/dev/null`
+-    [ "$?" != "0" ] && start="-1"
+-    if [ "$start" -eq "-1" ]; then
+-	return
+-    fi
+-    end=`$binoffset $file $IKCFG_ED 2>/dev/null`
+-    [ "$?" != "0" ] && end="-1"
+-    if [ "$end" -eq "-1" ]; then
+-	return
+-    fi
+-
+-    start=`expr $start + 8`
+-    size=`expr $end - $start`
+-
+-    dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
+-
+-    clean_up
+-    exit 0
+-}
+-
+-
+-usage()
+-{
+-	echo "  usage: extract-ikconfig [b]zImage_filename"
+-}
+-
+-clean_up()
++# ----------------------------------------------------------------------
++# extract-ikconfig - Extract the .config file from a kernel image
++#
++# This will only work when the kernel was compiled with CONFIG_IKCONFIG.
++#
++# The obscure use of the "tr" filter is to work around older versions of
++# "grep" that report the byte offset of the line instead of the pattern.
++#
++# (c) 2009, Dick Streefland <dick@streefland.net>
++# Licensed under the terms of the GNU General Public License.
++# ----------------------------------------------------------------------
++
++gz1='\037\213\010'
++gz2='01'
++cf1='IKCFG_ST\037\213\010'
++cf2='0123456789'
++
++dump_config()
+ {
+-	if [ "$TMPFILE" != "" ]; then
+-		rm -f $TMPFILE
++	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
++	then
++		pos=${pos%%:*}
++		tail -c+$(($pos+8)) "$1" | zcat -q
++		exit 0
+ 	fi
+ }
+ 
+-if [ $# -lt 1 ]
++# Check invocation:
++me=${0##*/}
++img=$1
++if	[ $# -ne 1 -o ! -s "$img" ]
+ then
+-	usage
+-	exit 1
++	echo "Usage: $me <kernel-image>" >&2
++	exit 2
+ fi
+ 
+-TMPFILE=`mktemp -t ikconfig-XXXXXX` || exit 1
+-image="$1"
+-
+-# vmlinux: Attempt to dump the configuration from the file directly
+-dump_config "$image"
+-
+-GZHDR1="0x1f 0x8b 0x08 0x00"
+-GZHDR2="0x1f 0x8b 0x08 0x08"
+-
+-ELFHDR="0x7f 0x45 0x4c 0x46"
+-
+-# vmlinux.gz: Check for a compressed images
+-off=`$binoffset "$image" $GZHDR1 2>/dev/null`
+-[ "$?" != "0" ] && off="-1"
+-if [ "$off" -eq "-1" ]; then
+-	off=`$binoffset "$image" $GZHDR2 2>/dev/null`
+-	[ "$?" != "0" ] && off="-1"
+-fi
+-if [ "$off" -eq "0" ]; then
+-	zcat <"$image" >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-elif [ "$off" -ne "-1" ]; then
+-	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
+-		zcat >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-
+-# check if this is simply an ELF file
+-else
+-	off=`$binoffset "$image" $ELFHDR 2>/dev/null`
+-	[ "$?" != "0" ] && off="-1"
+-	if [ "$off" -eq "0" ]; then
+-		dump_config "$image"
+-	fi
+-fi
+-
+-echo "ERROR: Unable to extract kernel configuration information."
+-echo "       This kernel image may not have the config info."
+-
+-clean_up
++# Initial attempt for uncompressed images or objects:
++dump_config "$img"
++
++# That didn't work, so decompress and try again:
++tmp=/tmp/ikconfig$$
++trap "rm -f $tmp" 0
++for	pos in `tr "$gz1\n$gz2" "\n$gz2=" < "$img" | grep -abo "^$gz2"`
++do
++	pos=${pos%%:*}
++	tail -c+$pos "$img" | zcat 2> /dev/null > $tmp
++	dump_config $tmp
++done
++
++# Bail out:
++echo "$me: Cannot find kernel config." >&2
+ exit 1
+
+
