@@ -1,76 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855Ab0BYClR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 21:41:17 -0500
-Received: from 64.mail-out.ovh.net ([91.121.185.65]:40077 "HELO
-	64.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758809Ab0BYClQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 21:41:16 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Feb 2010 21:41:16 EST
-Message-ID: <4B85E1B6.4000705@free.fr>
-Date: Thu, 25 Feb 2010 03:34:30 +0100
-From: Benoit PAPILLAULT <benoit.papillault@free.fr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1758867Ab0BYClo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 21:41:44 -0500
+Received: from snt0-omc3-s8.snt0.hotmail.com ([65.55.90.147]:58395 "EHLO
+	snt0-omc3-s8.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758809Ab0BYClm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 21:41:42 -0500
+Message-ID: <SNT125-W228B049D3934AC288355D8C3400@phx.gbl>
+X-Originating-IP: [96.253.143.208]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <tj@kernel.org>, <hancockrwd@gmail.com>
+CC: <david-b@pacbell.net>, <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: RE: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+Date: Wed, 24 Feb 2010 18:41:41 -0800
+Importance: Normal
+In-Reply-To: <4B85E038.20905@kernel.org>
+References: <4B7CAF95.6020306@gmail.com> <20100218052223.GA13254@kroah.com>
+	 <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
+	 <201002192139.46189.david-b@pacbell.net>
+	 <51f3faa71002192315ia84786eo1138bf9ab3417f2d@mail.gmail.com>
+	 <SNT125-W457447CBE941D2703E98D0C3420@phx.gbl>
+ <51f3faa71002231626q1eb62adeo660c282418f0e01@mail.gmail.com>,<4B85E038.20905@kernel.org>
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 802.11 development process - extended documentation
-References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com> 	<4B85C59C.3010602@free.fr> <43e72e891002241643o3ba0b0bp5c7b90a6ae6680ec@mail.gmail.com> <43e72e891002241705w4a8c7029le4d1118ee7a68bb9@mail.gmail.com>
-In-Reply-To: <43e72e891002241705w4a8c7029le4d1118ee7a68bb9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 16264468579363803126
-X-Ovh-Remote: 93.158.10.43 (93-158-10-43.subs.ibrowse.com)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|U 0.5/N
+X-OriginalArrivalTime: 25 Feb 2010 02:41:41.0787 (UTC) FILETIME=[0FDD76B0:01CAB5C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez a écrit :
-> On Wed, Feb 24, 2010 at 4:43 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->   
->> On Wed, Feb 24, 2010 at 4:34 PM, Benoit PAPILLAULT
->> <benoit.papillault@free.fr> wrote:
->>     
->>> Luis R. Rodriguez a écrit :
->>>       
->>>> I've extended our 802.11 development process into a new section on our
->>>> 802.11 wiki. I often get asked how this works from different parts of
->>>> the company here at Atheros so figured it'd be easier to illustrate
->>>> this as best as possible and share it.
->>>>
->>>> http://wireless.kernel.org/en/developers/process
->>>>
->>>> Hope it does justice, John if you see any mistakes feel free to edit.
->>>> If the diagram seems fishy let me know what I can fix.
->>>>
->>>>  Luis
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-wireless"
->>>> in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>
->>>>
->>>>         
->>> Nice (especially the picture)! However, Johannes has its picture in the
->>> text, but not in the diagram and the opposite for ... you I guess (picture
->>> on the left hand).
->>>       
->> I figured I'd throw in the compat-wireless stuff while at it as I have
->> to explain that as well often. I didn't yet get to add text for the
->> compat stuff.
->>     
->
-> OK done. Anything else?
->
->   Luis
->
->   
-That's fine for me. Very good document.
 
-Regards,
-Benoit
+> gained. There just isn't much point in trying to enable a shiny new
+> feature on an aging platform or technology. 
+You mean we should focus on enabling 64-bit DMA for USB 3.0 (xHCI)?
+
+Yuhong Bao
+ 		 	   		  
+_________________________________________________________________
+Hotmail: Trusted email with Microsoft�s powerful SPAM protection.
+http://clk.atdmt.com/GBL/go/201469226/direct/01/
