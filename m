@@ -1,209 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300Ab0BYE0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 23:26:38 -0500
-Received: from mailout1.samsung.com ([203.254.224.24]:49130 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932274Ab0BYE0h (ORCPT
+	id S932294Ab0BYEcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 23:32:33 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46460 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932253Ab0BYEcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 23:26:37 -0500
-Date: Thu, 25 Feb 2010 13:26:32 +0900
-From: =?ks_c_5601-1987?B?waTA58jG?= <jh80.chung@samsung.com>
-Subject: [PATCH] rfkill bug fixed in rfkill_set_sw_state
-To: linux-kernel@vger.kernel.org
-Message-id: <000901cab5d2$b59aa150$20cfe3f0$%chung@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_LSFwyGXjrpI37gvYN1I3bQ)"
-Content-language: ko
-Thread-index: Acq10rVj9JpktUnyQLKue7N7Mji3ZA==
-X-MS-TNEF-Correlator: 00000000FF1F5486CA626E4AB002C6DF6C72BE73040F2B00
-X-OriginalArrivalTime: 25 Feb 2010 04:26:32.0726 (UTC)
- FILETIME=[B58E9360:01CAB5D2]
+	Wed, 24 Feb 2010 23:32:32 -0500
+X-Authority-Analysis: v=1.0 c=1 a=iNyT7PDJ8TAA:10 a=7U3hwN5JcxgA:10 a=DACuU3PIAAAA:8 a=20KFwNOVAAAA:8 a=07d9gI8wAAAA:8 a=VwQbUJbxAAAA:8 a=NRbO9-L34F8402KJVRgA:9 a=BxtjLD2YTu8iQ4fB4IgA:7 a=Key-0P1T020cnS8SVscrBpcCVUUA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: RE: [linuxtools-dev] Standard protocols/interfaces/formats
+ forperformance tools (TCF, LTTng, ...)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: "Spear, Aaron" <aaron_spear@mentor.com>
+Cc: Linux Tools developer discussions <linuxtools-dev@eclipse.org>,
+       dsdp-tcf-dev@eclipse.org, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org,
+       Tasneem Brutch - SISA <t.brutch@sisa.samsung.com>
+In-Reply-To: <D86DB60C62D82A4792CAEC7F58CA04E706C13E65@NA1-MAIL.mgc.mentorg.com>
+References: <D86DB60C62D82A4792CAEC7F58CA04E706C13BB6@NA1-MAIL.mgc.mentorg.com>
+	 <20100224154021.GA9692@Krystal>
+	 <D86DB60C62D82A4792CAEC7F58CA04E706C13E65@NA1-MAIL.mgc.mentorg.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 24 Feb 2010 23:32:29 -0500
+Message-ID: <1267072349.24271.8209.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-?)7/ :N:P@87N 18<:5H MIME G|=D@G 8^=CAv@T4O4Y.
+On Wed, 2010-02-24 at 14:47 -0800, Spear, Aaron wrote:
+> Hi Mathieu, 
+> 
 
---Boundary_(ID_LSFwyGXjrpI37gvYN1I3bQ)
-Content-type: text/plain; charset=ks_c_5601-1987
-Content-transfer-encoding: quoted-printable
+Mathieu, thanks for Cc'ing me.
 
-Don=A1=AFt work expected operation in __rfkill_set_sw_state.=20
-when rfkill initialized. Rfkill=A1=AFs blocked & unblocked is operating =
-on the
-contrary.
+> > > So, as an FYI, I am planning to participate in a new tools 
+> > > infrastructure working group under the auspices of the Multi-core 
+> > > association (http://www.multicore-association.org).  The 
+> > working group 
+> > > aims to:
+> > > 
+> > > 1.  Identify common needs, functionality, and opportunities for 
+> > > information sharing between performance analysis tools.
+> > > 2.  Discussion on identifying sharable components between 
+> > performance 
+> > > analysis tools.
+> > > 3.  Discussion on metadata dimensions of interest for 
+> > standardization 
+> > > (e.g., code, space, metric, time, state)
 
-Signed-off-by: Jaehoon Chung <jh80.chung@samsung.com>
+I would most definitely like to be apart of this.
 
----
- net/rfkill/core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > Along those lines, we (Mentor) have a need for a protocol 
+> > to connect 
+> > > to remote trace collectors and configure trace 
+> > triggering/collection, 
+> > > and then efficiently download lots of binary trace data.  
+> > Sound familiar?
+> > > 
+> > > TCF is an obvious choice for this as various companies are already 
+> > > using it for this purpose from what I have observed.
+> > > 
+> > > So, to my point:
+> > > -What protocols are currently in use that we might consider as a 
+> > > starting point?  I see that the linuxtools project 
+> > apparently has one 
+> > > for transferring LTTng event data.  Are there any docs for this 
+> > > protocol?
+> > > 
+> > > -Is there any other company with a proprietary protocol that would 
+> > > consider donating it to a standardization effort? (some one 
+> > else who 
+> > > also desires to end the insanity :-)
+> > > 
+> > > -file formats: event log file formats is another obvious 
+> > candidate for 
+> > > standardization.  Mentor has a file format we use that was 
+> > inspired by 
+> > > LTTng's format but is optimized for extremely large real-time trace 
+> > > logs.  I intend to throw this into the mix.  Any others we should 
+> > > think about? (The LTTng format obviously...)
+> > 
+> > Hi Aaron,
+> > 
+> > I would be glad to provide insight into the LTTng file format 
+> > as needed.
+> 
+> Great! Insight and experience gleaned from your work is certainly
+> desired.
+> 
+> > 
+> > It would be good to ask if the Ftrace team is interested to 
+> > participate in this standardization effort. Proposing 
+> > modifications to the Ftrace file format is on my roadmap.
+> 
+> I must confess that I know nothing about Ftrace.
 
-diff --git a/net/rfkill/core.c b/net/rfkill/core.c
-index c224cb2..dcc2d38 100644
---- a/net/rfkill/core.c
-+++ b/net/rfkill/core.c
-@@ -488,7 +488,7 @@ static void __rfkill_set_sw_state(struct rfkill
-*rfkill, bool blocked)
- 	if (rfkill->state & RFKILL_BLOCK_SW_SETCALL)
- 		bit =3D RFKILL_BLOCK_SW_PREV;
-=20
--	if (blocked)
-+	if (!blocked)
- 		rfkill->state |=3D bit;
- 	else
- 		rfkill->state &=3D ~bit;
---=20
-1.6.0.4
+Here's a bunch of quick pointers:
+
+http://people.redhat.com/srostedt/ftrace-tutorial-linux-con-2009.odp
+http://lwn.net/Articles/365835/
+http://lwn.net/Articles/366796/
+http://lwn.net/Articles/370423/
+http://lwn.net/Articles/343766/
+
+>   That said, any prior
+> art in the space of file formats and protocols for exchanging profiling
+> and trace data should be considered, and input from existing communities
+> is warmly welcomed.  The charter of this multi-core working group is to
+> help forge some interoperability standards between different tools as a
+> start.  We believe that the future will be heavily multi-core, and it is
+> a difficult problem to solve figuring out graceful ways to partition a
+> complex "application" across these cores effectively.  E.g. a system
+> with SMP Linux on a couple of cores, a low level RTOS on another core,
+> and then some DSP's as well.  Today you often use totally different
+> tools for all of those cores.  How do you understand what the heck is
+> happening in this system, never mind figuring out how to optimize the
+> system as a whole...   I think a good first step is some level of
+> interoperability in data formats so that event data collected from
+> different sources and technologies (e.g. LTTng for Linux and real-time
+> trace for the DSP's) can be correlated and analyzed side by side. 
+
+Aaron,
+
+Let me introduce myself. I'm the author and current maintainer of
+Ftrace. Ftrace was accepted in the mainline kernel in 2.6.27 and has
+grown tremendously. It has a rich array of features to trace the inner
+workings of the kernel.
+
+Lately I've been working hard on a userspace tool to read from ftrace.
+It uses the linux syscall splice, that allows recording of the trace
+buffer into disk storage or the network with zero copy overhead (splice
+lets userspace tell the kernel to move one page from one file descriptor
+to another).
+
+I'll be debuting this tool at the CELF conference this April in San
+Francisco. It's called trace-cmd and you can down load the latest code
+from:
+
+$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git
+
+I also have a gui tool that I will be debuting at the Linux
+Collaboration Conference that takes place immediately after CELF.
+
+-- Steve
 
 
-
---Boundary_(ID_LSFwyGXjrpI37gvYN1I3bQ)
-Content-type: application/ms-tnef; name=winmail.dat
-Content-transfer-encoding: base64
-Content-disposition: attachment; filename=winmail.dat
-
-eJ8+IiAEAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAAtQMAAAAAAAC4AAEIgAcAGAAAAElQTS5NaWNy
-b3NvZnQgTWFpbC5Ob3RlADEIAQOQBgDMHgAAMgAAAAsAAgABAAAAAwAmAAAAAAALACkAAAAAAB4A
-cAABAAAAMAAAAFtQQVRDSF0gcmZraWxsIGJ1ZyBmaXhlZCBpbiByZmtpbGxfc2V0X3N3X3N0YXRl
-AAIBcQABAAAAFgAAAAHKtdK1Y/SaZLVJ8kCyrnuzezI4t2QAAAsAAQ4AAAAAAgEKDgEAAAAYAAAA
-AAAAAP8fVIbKYm5KsALG32xyvnPCgAAAAwAUDgEAAAAeACgOAQAAADcAAAAwMDAwMDAwMgFqaDgw
-LmNodW5nQHNhbXN1bmcuY29tAWpoODAuY2h1bmdAc2Ftc3VuZy5jb20AAB4AKQ4BAAAANwAAADAw
-MDAwMDAyAWpoODAuY2h1bmdAc2Ftc3VuZy5jb20Bamg4MC5jaHVuZ0BzYW1zdW5nLmNvbQAAAgEJ
-EAEAAAAyGQAALhkAAINnAABMWkZ1XAzk1gcABgEBC2BuZzEwMgY1AGQAcmNwZzk0EjkMYGMyDVNm
-MzEINTA3APVzdHNo8QVwYmNoD8IOEBCDCQA1EPQ2EHRoDrAR+mJpkw/HDaQzMxQWZmUN4OI0D1B0
-aGUHgBRXFcc5FV5jcwHoAqQToGRpjwM2AgAQ8ArAc2V0AtFQcHJxMgAAKgqhbtpvGnAgDfAbwTYU
-oBFAzxWAHEEB0BwwNH0HbQKDfDM0GT8aTxtWIQ8hMH3cQ2EG0AchBdBhFcACgD8KgB4iEkAehgRk
-H1cxMvcPECAPAdBiHEEcMAHQITLDJvIc8FwnYjgnsQDg/CdjAUAnwCKwJ7EoYQmA+yexDhAnAEAe
-BCVBI88k3/sl7yb6QCe/KM8jJQ/RGS//H38bTxxfHW4P0QBQKk8rX/8sbybvLp8vrzC0D1A2rze/
-/zjPOd867ykPD8IUwDE/Mk//M180bx2IMIceb0U/Rk9HX/81XxEyPY8+nz+vQL9Bzzv//zC0I59Q
-P1FPUl9Tb0K/MLS/EABJ30rvS/9NDx2LNDaIWV1sMjNaUF5jIAdtIPxDRSMVFZFiL2M0SaJj37lk
-43lyYaRJv1cmNjaB62efA4JHCdFrYaRPKGoe9z1ha08DglQIcGGkVghqHY43XMFvHwOCKEhlIoD9
-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
-hV8uITdJOkSUVC9wTjaibN8aEjl/Oo87nzejOT0LZKBzK7CdwjE7QG9Bf0KLMndDb0R/QnwzRn9H
-j0J8NO8+NUnfSu9CxzVJj03PQnzuNk/PUN9CfDdS31PvQnxuOFXvVv9CfDk+NTx2M/9anCuA0UBD
-VFx/XYhGZF6P/12ISXRgn12ITIBib11MT7T/ZL9diFLEZs9diFXQXB9dLv9Y5GsPXYhb8FkPbReA
-kT0p/mO20NZibtM+rz+/b08yAPvioD0LVLaw1SBsyzwUPVZSRCpUIFC3IWcrAWj8IEam0T4/cs9z
-33Tod4z4U3Vi1mB2hno/e098X98yAOGgfawsAMDwZ37/gA+ngR+CJjz8RW15UGEwIK5zec+E3zwr
-NVqcVPmg6dUgIEcsEGRu04U+PVZuUCNwORDA0GzhUB2AVP/hYBoAiS+Nn4Yfdy89o35gvSdQY53B
-iP+RPzwrNjz8/kwsIn5g1XBDApBPlp+Xqv93jJlEmUAr8Jofmy+XqoKsX5lEjTOVf59/l5szPQtN
-8QygaXVtmZZDRaNPpF/9l/U0pe+m+UZkqA+pH5f1/3CMprWeMkNBou+tf5eb2xD/r3+whaxvsi+X
-my6ytE+NMv+nn7avl4zJsrjfueNGYLEf/7tPl5tanLl6SXS/T8BfPJTqNzz8RCnQa54vxE/FX+13
-jEP14D3gZiqAmZe+7//I38WbgqzLl8efzY/FbqXcP8uXjTfRn9Kvl/+ZDyBB/+IwMcGw79avm//Y
-z54U2mj/2y/cP6Cvob8n4N+P4J/hr/+lr6a+2m/lX+Zvqj/oj76w/+Rv6u/r/68fsCzvLI3PPWX4
-UmV2iNBxoupf8L+SX/9tF+1MsKN45++/+F/5b4Im8cHcUXVvMbD8v/3P/t/7bSbGbEkx0AJgFRAB
-Nfc//wKfsz/y37VU7y8HnwivuF//uWwLrwy/Dc+877386b8Rv/8Sz8F/wo4QzxcfGC/GL8c4/xsv
-HD8dT8p/y48V7yD/Ig//zz/QTiAPJo8nn9Pv1Pwqn/8rryy/2H/ZjyWDvs8xL90P/zNPKku1rzaP
-4h/jLy+JOm//O3/nDxm/6S81X0BP7F9Cb//ufz8/Rb/xr0ff885KH0sv/wkvTU8LTESvUC8OL1JP
-EE7/Tz9VjxNvV68VjFmfWq8Yr/9czxrMVF9frx2vHr85r2RP/2VfIv8kDzScaP9qDyg/bC//aBxj
-/28/LT9xXy9cbi90f/8yXzNvJPzDf3mfN584rypp/32gc29+vzyPPZ8viX2vg8//QX9h70Ofh6+I
-v0bvit9JD/+Cn43vTB+QD/POjP+Tf1Ff/5WfC0yXj5ifVp+avxBskk//nZ9bn5+/FW6cr6L/YN+l
-H/8azKcPqB9mH2cvgf+sf62P/2tPbF9877F/so9wn3GvsHn/tp+3r3Wvuc+G7LEvvK96r/t7vyT8
-NLuvwf9/34DvKnj/xf/HD4Tfhe8vicrgwN/L//+Jz6o/i+/K79EPjx/TL5E//9VP1l+Uj9h/8+zP
-39uPmY//3a8LLtqf4O+ez+MPEGzk///mD6QP6C8VjN+/6w+pD+0v/xqu6h/wb65Pr1/KT/Tv9f//
-s7+0z8Va71/6b7if/I8qPP/5X//fvb8B/y9cA+8E/8L/+8QPJPw1/r8KD8gPDC8qWv8OIA5vD3/N
-L84/L6cTPxRP/9If8o/UPw4vGR/XTxs/2W//GA8ej9yfIK9OPiLvI//h//8mH1N8HX8o/+b/Kx9Y
-nigP/y5f7D8wf13cMm8zf/F/NZ//YvwtLzh/9n/3jxJ/PR8+L//7z/zfDWxBz0LfAQ9E/0Ds/zzP
-SA8GD0ovd6xG/01PCy/7DD9tTDZRb1J/EH8Rj3Ko/1ZwTD9XjxVfFm932VZ/XJ//Gk86vxxvYH9h
-jx+/Y68h3/9bb2a/JO9o35aOZc9sTyov/25vm8xwX3FvL29zj6Dsax//dm80b3iPpg51f3vPOa99
-7/+rTH/fgO8+7z//Ws+FT4Zf/0QfRS9Vv4pPi19Jb0p/iUn/j2+Qf05/kp9fvIn/lX+XcsRxZphg
-bWF0jORTtgIxgsxTdWJ0bGXQIEVtcNRAc97glH/Xms+b31PFMozsScCAoAC/ljCeqJmvoD+hT1O2
-M4zswZ5FUmVmZXKlsMBg/58/pf+nD6gWkjyjxqnopN+Pq3+sj6gHl1xCb2/4cD5UVACegKpzqAd4
-bEJpRGJsU9BncmGe0HkPqnOyj6hDgsxUT0MgBEhl1FM7fX17XNgqXGScUJ7wdJhgnpCgMDEwNTC8
-cjK8c028MDi81LAgNGSXQDcgODZkNmOuEDJlwDUzNDE1OL7wvdDwNGM1Mm4QWVBooG4Q+5IgvpAz
-v3DAQLzUwP5UMAO9g5LgY2YxMWUwyGExYsKwYWW8QMN/PcRsM8LQxVG8cKoAZmb8MDnB1sbPvRHH
-ncd9xfL/yhLG9sn+ynfMf82Pzp/Pr//Qv8oUsCDRL9Nf1G/Vf9aP/9ef2K/Zv9rP29/c793/3w//
-4B/RX+I/40/kX+Vv5n/nj//on+mv6r/rz+zf7e/u//AP/+FP8i/zP/RP9V/2b/d/+I//+Z/6r/u/
-/M/93/7v///xP/0B/GQB9coFA+8E/wYPBx//CC8JPwpPC18Mbw1/Do8Pn/8A3wHvEs8T3xTvFf8X
-Dxgf/xkvGj8bTxxfHW8efx+PEM//II8ivyPPJN8l7yb/KA8pH/8qLys/LE8tXy5vL38gvzGf/zKv
-M780zzXfNu83/zkPOh//Oy88Pz1PPl8/bzCvQY9Ca0+/cMHhymFDsjc0vKQ0/bxhNsWBRDKSIEQR
-xkJF//9HD0gfSS9KP70RwgK8YUJvRQMWY4KwZDk4TdBirU3wM79BvwA5usBmvlD6ZL7hYsLQy29P
-5sLQfZBDsCBZUGI1ZDJRcGP+Ybwwyv9TH1QvVT9WT1df/1hvWX9aj8wPXIxbD16fX6//vWVgD2I/
-Y09kX2VvZn9nj/9on2mvar9bv1zPbe9u/2A//3Efci9zP3RPdV92b3d/eI//eZ96r2uvbL99337v
-cC+BD1+CH8jNvGSC9bswAIUgAAADAN4/tQMAAAMA8T8SBAAAAwAJWQMAAAADABCAAyAGAAAAAADA
-AAAAAAAARgAAAAABgQAAAAAAAAUAEYADIAYAAAAAAMAAAAAAAABGAAAAAAKBAAAAAAAAAAAAAAMA
-EoADIAYAAAAAAMAAAAAAAABGAAAAABOBAAABAAAACwAUgAMgBgAAAAAAwAAAAAAAAEYAAAAAHIEA
-AAAAAAALAB2ACCAGAAAAAADAAAAAAAAARgAAAAADhQAAAAAAAAMAHoAIIAYAAAAAAMAAAAAAAABG
-AAAAABCFAAAAAAAAAwApgAMgBgAAAAAAwAAAAAAAAEYAAAAAI4EAAP///38DADuACCAGAAAAAADA
-AAAAAAAARgAAAAABhQAAAAAAAAMAS4ADIAYAAAAAAMAAAAAAAABGAAAAABCBAAAAAAAAAwBMgAMg
-BgAAAAAAwAAAAAAAAEYAAAAAEYEAAAAAAAALAE2AAyAGAAAAAADAAAAAAAAARgAAAAAkgQAAAAAA
-AAsAToADIAYAAAAAAMAAAAAAAABGAAAAACyBAAAAAAAAAwBPgAMgBgAAAAAAwAAAAAAAAEYAAAAA
-KYEAAAAAAAADAFCAAyAGAAAAAADAAAAAAAAARgAAAAAqgQAAAAAAAB4AUYADIAYAAAAAAMAAAAAA
-AABGAAAAACeBAAABAAAAAQAAAAAAAAADAFKAAyAGAAAAAADAAAAAAAAARgAAAAASgQAAAQAAAB4A
-U4ADIAYAAAAAAMAAAAAAAABGAAAAACGBAAABAAAAAQAAAAAAAAALAFSAAyAGAAAAAADAAAAAAAAA
-RgAAAAADgQAAAAAAAAsAVYADIAYAAAAAAMAAAAAAAABGAAAAACaBAAAAAAAACwBWgAggBgAAAAAA
-wAAAAAAAAEYAAAAABoUAAAAAAAALAFeACCAGAAAAAADAAAAAAAAARgAAAAAOhQAAAAAAAAMAWIAI
-IAYAAAAAAMAAAAAAAABGAAAAABiFAAAAAAAACwBZgAggBgAAAAAAwAAAAAAAAEYAAAAAgoUAAAAA
-AAALAB8OAQAAAAIB+A8BAAAAEAAAAP8fVIbKYm5KsALG32xyvnMCAfoPAQAAABAAAAD/H1SGymJu
-SrACxt9scr5zAwD+DwUAAAADAA00/T+lBgMADzT9P6UGAgEUNAEAAAAQAAAATklUQfm/uAEAqgA3
-2W4AAAIBfwABAAAAMQAAADAwMDAwMDAwRkYxRjU0ODZDQTYyNkU0QUIwMDJDNkRGNkM3MkJFNzMw
-NDBGMkIwMAAAAAADAAYQ/htXGAMABxAeAgAAAwAQEAAAAAADABEQAAAAAB4ACBABAAAAZQAAAERP
-TqGvVFdPUktFWFBFQ1RFRE9QRVJBVElPTklOUkZLSUxMU0VUU1dTVEFURVdIRU5SRktJTExJTklU
-SUFMSVpFRFJGS0lMTKGvU0JMT0NLRUQmVU5CTE9DS0VESVNPUEVSQVQAAAAAXBY=
-
---Boundary_(ID_LSFwyGXjrpI37gvYN1I3bQ)--
