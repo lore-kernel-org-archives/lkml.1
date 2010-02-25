@@ -1,79 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352Ab0BYPgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:36:18 -0500
-Received: from mail-px0-f204.google.com ([209.85.216.204]:43256 "EHLO
-	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759190Ab0BYPgQ convert rfc822-to-8bit (ORCPT
+	id S1759362Ab0BYPhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:37:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60674
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759190Ab0BYPhL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:36:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vLidE8Xtagb9pt1xbsg9VnltQTxLiYgBRctC7ECy5EFIaoqB9Lc6ZrOXDOsOIa6Y75
-         M1EtbZ3drqACIu2CWtpK1+mKnxEpPaCWRUoMqCj/yFArQ/vTGrasYUqdWY4nVEcjvy0b
-         wbbKuiPwZ8GTqk4PfPBMvqPe5Il17vr4eBZPw=
-MIME-Version: 1.0
-In-Reply-To: <20100223115846.GI1882@linux>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
-	 <1266765525-30890-2-git-send-email-arighi@develer.com>
-	 <alpine.DEB.2.00.1002211321010.22858@chino.kir.corp.google.com>
-	 <20100221221700.GA5233@linux> <20100222180732.GC3096@redhat.com>
-	 <20100223115846.GI1882@linux>
-Date: Fri, 26 Feb 2010 00:36:15 +0900
-Message-ID: <28c262361002250736k57543379j8291e0dfb8df194e@mail.gmail.com>
-Subject: Re: [PATCH 1/2] memcg: dirty pages accounting and limiting 
-	infrastructure
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Feb 2010 10:37:11 -0500
+Date: Thu, 25 Feb 2010 07:37:29 -0800 (PST)
+Message-Id: <20100225.073729.174987294.davem@davemloft.net>
+To: roel.kluin@gmail.com
+Cc: herbert@gondor.apana.org.au, mikpe@it.uu.se, linux-crypto@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in
+ sha1_update()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
+References: <4B8692E3.9030509@gmail.com>
+	<20100225.071759.98314060.davem@davemloft.net>
+	<25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+From: roel kluin <roel.kluin@gmail.com>
+Date: Thu, 25 Feb 2010 16:31:36 +0100
 
-On Tue, Feb 23, 2010 at 8:58 PM, Andrea Righi <arighi@develer.com> wrote:
-> On Mon, Feb 22, 2010 at 01:07:32PM -0500, Vivek Goyal wrote:
->> > > > +unsigned long mem_cgroup_dirty_bytes(void)
->> > > > +{
->> > > > +       struct mem_cgroup *memcg;
->> > > > +       unsigned long dirty_bytes;
->> > > > +
->> > > > +       if (mem_cgroup_disabled())
->> > > > +               return vm_dirty_bytes;
->> > > > +
->> > > > +       rcu_read_lock();
->> > > > +       memcg = mem_cgroup_from_task(current);
->> > > > +       if (memcg == NULL)
->> > > > +               dirty_bytes = vm_dirty_bytes;
->> > > > +       else
->> > > > +               dirty_bytes = get_dirty_bytes(memcg);
->> > > > +       rcu_read_unlock();
->> > >
->> > > The rcu_read_lock() isn't protecting anything here.
->> >
->> > Right!
+> On Thu, Feb 25, 2010 at 4:17 PM, David Miller <davem@davemloft.net> wrote:
+>> From: Roel Kluin <roel.kluin@gmail.com>
+>> Date: Thu, 25 Feb 2010 16:10:27 +0100
 >>
->> Are we not protecting "memcg" pointer using rcu here?
->
-> Vivek, you are right:
->
->  mem_cgroup_from_task() -> task_subsys_state() -> rcu_dereference()
->
-> So, this *must* be RCU protected.
+>>> Due to optimization A call to memset() may be removed as a dead store when
+>>> the buffer is not used after its value is overwritten.
+>>>
+>>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>>
+>> Solution is wrong and overkill in my mind.
+>>
+>> It's overkill because the whole reason it's using a stack buffer is to
+>> avoid the overhead of a kmalloc() call.
+>>
+>> And it's wrong because the reason the memset() is there seems to be
+>> to clear out key information that might exist kernel stack so that
+>> it's more difficult for rogue code to get at things.
+> 
+> If the memset is optimized away then the clear out does not occur. Do you
+> know a different way to fix this?
 
-So, Doesn't mem_cgroup_from_task in mem_cgroup_can_attach need RCU, too?
+Not offhand.  Maybe we can make some external helper function for the
+crypto layer that just does the memset, but is not visible from any of
+the call sites.  GCC doesn't know the side effects, so it can't
+elide the call to that helper function.
 
-
--- 
-Kind regards,
-Minchan Kim
+That could be subverted by whole-program-optimizations but
+currently that really isn't something to worry about.
