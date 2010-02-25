@@ -1,58 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933059Ab0BYRRM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:17:12 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:42256
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933055Ab0BYRQ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:16:59 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i87h6bh43h62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYEQML-01-QHQ-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 5/5] KVM: SVM: Ignore lower 12 bit of nested msrpm_pa
-Date: Thu, 25 Feb 2010 18:15:49 +0100
-Message-ID: <1267118149-15737-6-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com>
-References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 25 Feb 2010 17:15:52.0614 (UTC) FILETIME=[2EFE8460:01CAB63E]
+	id S933063Ab0BYRR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:17:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11028 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933024Ab0BYRRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 12:17:09 -0500
+Date: Thu, 25 Feb 2010 19:13:41 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       Anthony Liguori <aliguori@us.ibm.com>, Shirley Ma <xma@us.ibm.com>,
+       Amit Shah <amit.shah@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] virtio: fix out of range array access
+Message-ID: <20100225171340.GA16141@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These bits are ignored by the hardware. Implement this
-for nested svm too.
+I have observed the following error on virtio-net module unload:
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+------------[ cut here ]------------
+WARNING: at kernel/irq/manage.c:858 __free_irq+0xa0/0x14c()
+Hardware name: Bochs
+Trying to free already-free IRQ 0
+Modules linked in: virtio_net(-) virtio_blk virtio_pci virtio_ring
+virtio af_packet e1000 shpchp aacraid uhci_hcd ohci_hcd ehci_hcd [last
+unloaded: scsi_wait_scan]
+Pid: 1957, comm: rmmod Not tainted 2.6.33-rc8-vhost #24
+Call Trace:
+ [<ffffffff8103e195>] warn_slowpath_common+0x7c/0x94
+ [<ffffffff8103e204>] warn_slowpath_fmt+0x41/0x43
+ [<ffffffff810a7a36>] ? __free_pages+0x5a/0x70
+ [<ffffffff8107cc00>] __free_irq+0xa0/0x14c
+ [<ffffffff8107cceb>] free_irq+0x3f/0x65
+ [<ffffffffa0081424>] vp_del_vqs+0x81/0xb1 [virtio_pci]
+ [<ffffffffa0091d29>] virtnet_remove+0xda/0x10b [virtio_net]
+ [<ffffffffa0075200>] virtio_dev_remove+0x22/0x4a [virtio]
+ [<ffffffff812709ee>] __device_release_driver+0x66/0xac
+ [<ffffffff81270ab7>] driver_detach+0x83/0xa9
+ [<ffffffff8126fc66>] bus_remove_driver+0x91/0xb4
+ [<ffffffff81270fcf>] driver_unregister+0x6c/0x74
+ [<ffffffffa0075418>] unregister_virtio_driver+0xe/0x10 [virtio]
+ [<ffffffffa0091c4d>] fini+0x15/0x17 [virtio_net]
+ [<ffffffff8106997b>] sys_delete_module+0x1c3/0x230
+ [<ffffffff81007465>] ? old_ich_force_enable_hpet+0x117/0x164
+ [<ffffffff813bb720>] ? do_page_fault+0x29c/0x2cc
+ [<ffffffff81028e58>] sysenter_dispatch+0x7/0x27
+---[ end trace 15e88e4c576cc62b ]---
+
+The bug is in virtio-pci: we use msix_vector as array index to get irq
+entry, but some vqs do not have a dedicated vector so this causes an out
+of bounds access.  By chance, we seem to often get 0 value, which
+results in this error.
+
+Fix by verifying that vector is legal before using it as index.
+
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/x86/kvm/svm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Shirley, Amit, with Rusty on vacation, need other reviewers.  Could you
+please review the following patch and ack on list if appropriate?
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 3859e2c..cfc8a90 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -2012,7 +2012,7 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
- 	svm->vmcb->save.dr6 = nested_vmcb->save.dr6;
- 	svm->vmcb->save.cpl = nested_vmcb->save.cpl;
+ drivers/virtio/virtio_pci.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 28d9cf7..7127bfe 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -473,7 +473,8 @@ static void vp_del_vqs(struct virtio_device *vdev)
  
--	svm->nested.vmcb_msrpm = nested_vmcb->control.msrpm_base_pa;
-+	svm->nested.vmcb_msrpm = nested_vmcb->control.msrpm_base_pa & ~0x0fffULL;
- 	svm->nested.vmcb_iopm  = nested_vmcb->control.iopm_base_pa  & ~0x0fffULL;
- 
- 	/* cache intercepts */
+ 	list_for_each_entry_safe(vq, n, &vdev->vqs, list) {
+ 		info = vq->priv;
+-		if (vp_dev->per_vq_vectors)
++		if (vp_dev->per_vq_vectors &&
++			info->msix_vector != VIRTIO_MSI_NO_VECTOR)
+ 			free_irq(vp_dev->msix_entries[info->msix_vector].vector,
+ 				 vq);
+ 		vp_del_vq(vq);
 -- 
-1.7.0
-
-
+1.7.0.18.g0d53a5
