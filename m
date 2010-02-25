@@ -1,63 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933499Ab0BYTju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:39:50 -0500
-Received: from mail.digidescorp.com ([66.244.163.200]:10364 "EHLO
-	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933490Ab0BYTjr (ORCPT
+	id S933492Ab0BYTls (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:41:48 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:51163 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932931Ab0BYTlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:39:47 -0500
-X-Spam-Processed: digidescorp.com, Thu, 25 Feb 2010 13:39:46 -0600
-X-Authenticated-Sender: steve@digidescorp.com
-X-Return-Path: prvs=1672ac1db0=steve@digidescorp.com
-X-Envelope-From: steve@digidescorp.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-From: "Steven J. Magnani" <steve@digidescorp.com>
-To: Li Yang <leoli@freescale.com>
-Cc: Zhang Wei <zw@zh-kernel.org>, Dan Williams <dan.j.williams@intel.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Steven J. Magnani" <steve@digidescorp.com>
-Subject: [async_tx-next PATCH v2 2/2] fsldma: Fix cookie issues
-Date: Thu, 25 Feb 2010 13:39:37 -0600
-Message-Id: <1267126777-21520-1-git-send-email-steve@digidescorp.com>
-X-Mailer: git-send-email 1.6.0.6
+	Thu, 25 Feb 2010 14:41:47 -0500
+Date: Thu, 25 Feb 2010 20:41:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@codeaurora.org>
+Cc: Greg KH <greg@kroah.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH] staging/dream: add missing include files/fix
+ compilation
+Message-ID: <20100225194125.GA7645@elf.ucw.cz>
+References: <20091225205917.GA25761@elf.ucw.cz>
+ <20100115002419.GA25643@kroah.com>
+ <20100119054516.GB22153@elf.ucw.cz>
+ <1263914079.1951.43.camel@m0nster>
+ <20100131084421.GG2238@elf.ucw.cz>
+ <20100131092829.GJ2238@elf.ucw.cz>
+ <1264953492.2059.5.camel@m0nster>
+ <20100225193027.GA7391@elf.ucw.cz>
+ <1267126586.5439.56.camel@c-dwalke-linux.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267126586.5439.56.camel@c-dwalke-linux.qualcomm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fsl_dma_update_completed_cookie() appears to calculate the last completed
-cookie incorrectly in the corner case where DMA on cookie 1 is in progress
-just following a cookie wrap.
+Hi!
 
-Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
----
-diff -uprN a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
---- a/drivers/dma/fsldma.c	2010-02-22 11:16:36.000000000 -0600
-+++ b/drivers/dma/fsldma.c	2010-02-22 11:08:41.000000000 -0600
-@@ -819,8 +819,11 @@ static void fsl_dma_update_completed_coo
- 	desc = to_fsl_desc(chan->ld_running.prev);
- 	if (dma_is_idle(chan))
- 		cookie = desc->async_tx.cookie;
--	else
-+	else {
- 		cookie = desc->async_tx.cookie - 1;
-+		if (unlikely(cookie < DMA_MIN_COOKIE))
-+			cookie = DMA_MAX_COOKIE;
-+	}
- 
- 	chan->completed_cookie = cookie;
- 
-diff -uprN a/include/linux/dmaengine.h b/include/linux/dmaengine.h
---- a/include/linux/dmaengine.h	2010-02-22 11:18:11.000000000 -0600
-+++ b/include/linux/dmaengine.h	2010-02-22 11:18:30.000000000 -0600
-@@ -31,6 +31,8 @@
-  * if dma_cookie_t is >0 it's a DMA request cookie, <0 it's an error code
-  */
- typedef s32 dma_cookie_t;
-+#define DMA_MIN_COOKIE	1
-+#define DMA_MAX_COOKIE	((1 << 31) - 1)
- 
- #define dma_submit_error(cookie) ((cookie) < 0 ? 1 : 0)
- 
+> > > /home/dwalker/linux-2.6/drivers/video/msm/msm_fb.c:24: fatal error: linux/msm_mdp.h: No such file or directory
+> > > compilation terminated.
+> > > make[4]: *** [drivers/video/msm/msm_fb.o] Error 1
+> > > make[3]: *** [drivers/video/msm] Error 2
+> > > make[3]: *** Waiting for unfinished jobs....
+> > > make[2]: *** [drivers/video] Error 2
+> > > make[1]: *** [drivers] Error 2
+> > > make: *** [sub-make] Error 2
+> > 
+> > Yes, framebuffer has problems.
+> > 
+> > > Even with the framebuffer off I still don't get any serial output on a
+> > > plain 2.6.33-rc6 .. I'm using a config that you sent me when you first
+> > > tested my -next tree .
+> > 
+> > 2.6.33 boots here, with attached config. I'll try -next next.
+> 
+> My -next tree hasn't changed much since you last looked at it .. I
+> wouldn't bother testing it. I might take some small fixes from that tree
+> to merge, but what's there is still too much of a mess to merge.
 
+Ok, so your -next tree will not be merged for 2.6.34?
+
+> I just pushed another tree called "working-mmc" which still needs some
+> clean up but should have working mmc if you want to test that.
+
+Do you have git url? Yes, I'd like to play.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
