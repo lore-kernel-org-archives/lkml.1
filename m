@@ -1,44 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019Ab0BYH05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 02:26:57 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50039 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804Ab0BYH04 (ORCPT
+	id S1753151Ab0BYH1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 02:27:23 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:48953 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753089Ab0BYH1U convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 02:26:56 -0500
-Message-ID: <4B862623.5090608@cs.helsinki.fi>
-Date: Thu, 25 Feb 2010 09:26:27 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 25 Feb 2010 02:27:20 -0500
+From: <samu.p.onkalo@nokia.com>
+To: <eric.piel@tremplin-utc.net>
+CC: <pavel@ucw.cz>, <daniel@caiaq.de>, <lm-sensors@lm-sensors.org>,
+       <linux-kernel@vger.kernel.org>
+Date: Thu, 25 Feb 2010 08:26:13 +0100
+Subject: RE: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts 
+Thread-Topic: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts 
+Thread-Index: Acqu+I0WwBptQ4UnTLyPKg22YtLWKgG8iuGw
+Message-ID: <62697B07E9803846BC582181BD6FB6B8266706E432@NOK-EUMSG-02.mgdnok.nokia.com>
+References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
+In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       rientjes@google.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home>
-In-Reply-To: <alpine.DEB.2.00.1002240949140.26771@router.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Feb 2010 07:26:18.0595 (UTC) FILETIME=[D26F9330:01CAB5EB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Sat, 20 Feb 2010, Andi Kleen wrote:
-> 
->> On Fri, Feb 19, 2010 at 12:22:58PM -0600, Christoph Lameter wrote:
->>> On Mon, 15 Feb 2010, Nick Piggin wrote:
->>>
->>>> I'm just worried there is still an underlying problem here.
->>> So am I. What caused the breakage that requires this patchset?
->> Memory hotadd with a new node being onlined.
-> 
-> That used to work fine.
 
-OK, can we get this issue resolved? The merge window is open and 
-Christoph seems to be unhappy with the whole patch queue. I'd hate this 
-bug fix to miss .34...
+Hi
 
-			Pekka
+>-----Original Message-----
+>From: Onkalo Samu.P (Nokia-D/Tampere)
+>Sent: 16 February, 2010 13:09
+>To: eric.piel@tremplin-utc.net
+>Cc: pavel@ucw.cz; daniel@caiaq.de; lm-sensors@lm-sensors.org; linux-
+>kernel@vger.kernel.org; Onkalo Samu.P (Nokia-D/Tampere)
+>Subject: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts
+>
+>This patch set replaces my previous one.
+>(see http://www.spinics.net/lists/kernel/msg994446.html)
+>
+>Power control of the chip is dropped out since it requires more work.
+>Runtime-pm support was requested and that takes some time to implement
+>and test. I'll send it as a separate patch.
+>
+>patches 1 - 3 are not touched compared to patch set 1 and they
+>are marked as tested-by Daniel Mack <daniel@caiaq.de> and
+>acked-by Éric Piel <eric.piel@tremplin-utc.net>.
+>Patch 4 is marked as tested-by Daniel Mack <daniel@caiaq.de>.
+>
+>  lis3: Add skeletons for interrupt handlers
+>No functional changes. Changed due to rebasing and power control
+>removal.
+>
+>  lis3: Interrupt handlers for 8bit wakeup and click events
+>As requested, BTN_ events are enabled only for 8 bit device and
+>when click event is configured to the HW.
+>Remapping of the BTN_ axis done according to platform data.
+>
+>  lis3: Setup poll interval limits
+>Poll interval can now be set from 1 - 2000 ms and also to stopped state
+>via input-dev sysfs.
+>
+>Tested in 2.6.32 based environment. Applies to 2.6.33-RC8
+>
+>
+>Samu Onkalo (6):
+>  lis3: Add missing constants for 8bit device
+>  lis3: Separate configuration function for 8 bit device
+>  lis3: Introduce platform data for second ff / wu unit
+>  lis3: Add skeletons for interrupt handlers
+>  lis3: Interrupt handlers for 8bit wakeup and click events
+>  lis3: Setup poll interval limits
+>
+> drivers/hwmon/lis3lv02d.c |  245 +++++++++++++++++++++++++++++++++++---
+>-------
+> drivers/hwmon/lis3lv02d.h |   11 ++
+> include/linux/lis3lv02d.h |   12 ++
+> 3 files changed, 213 insertions(+), 55 deletions(-)
+
+Any comments to these ones?
+
+One thing which I just noticed. Now interrupts are configured all the time
+so even if there is no device file open, interrupts are handled by the CPU.
+However, there should not be that much interrupts that it causes problems.
+This would be corrected by the power management patch (which I dropped), 
+but is not using runtime PM feature. I'm not sure if I have possibility to
+implement and test runtime PM version in our environment.
+
+-Samu
+
+
+
+
