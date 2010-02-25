@@ -1,62 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934562Ab0BYXpy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 18:45:54 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43184 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934514Ab0BYXpw (ORCPT
+	id S934568Ab0BYXq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 18:46:58 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:29221 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934553Ab0BYXq5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 18:45:52 -0500
-X-Greylist: delayed 632 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 18:45:52 EST
-X-Sasl-enc: ACznfi6OVwZMHRiXaGxoiWyfdL+UpRqXemu1neHQqVIR 1267140918
-Date: Thu, 25 Feb 2010 20:35:16 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: florian@mickler.org
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH v2 2/2] enhance sysfs rfkill interface
-Message-ID: <20100225233516.GD5218@khazad-dum.debian.net>
-References: <1266704345.32739.0.camel@jlt3.sipsolutions.net>
- <1267009517-5017-3-git-send-email-florian@mickler.org>
+	Thu, 25 Feb 2010 18:46:57 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=F1qiVwxkmA/wSfOLste/CQsYCfc0cSt2LqPf7VU3xnlUGh9NxB0f6aYexEKlm2o5A
+	kDtY7r5Gj8BDIzQ1xvOhQ==
+Date: Thu, 25 Feb 2010 15:46:48 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Steven J. Magnani" <steve@digidescorp.com>
+cc: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+       dan.j.williams@intel.com, Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: Buggy variable-length array code...or compiler?
+In-Reply-To: <1267139849.3079.68.camel@iscandar.digidescorp.com>
+Message-ID: <alpine.DEB.2.00.1002251544120.25189@chino.kir.corp.google.com>
+References: <1267139849.3079.68.camel@iscandar.digidescorp.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267009517-5017-3-git-send-email-florian@mickler.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Feb 2010, florian@mickler.org wrote:
-> /sys/class/rfkill/rfkill[0-9]+/hw: (ro)
-> 	hardblock kill state
-> /sys/class/rfkill/rfkill[0-9]+/sw: (rw)
-> 	softblock kill state
+On Thu, 25 Feb 2010, Steven J. Magnani wrote:
+
+> When I run a memcpy dmatest with a Microblaze 2.6.33 noMMU kernel, the
+> system crashes after about 400 iterations. After much head scratching, I
+> believe I've narrowed the problem to this fragment of code in
+> drivers/dma/dmatest.c:
 > 
-> Signed-off-by: Florian Mickler <florian@mickler.org>
-> ---
+> static int dmatest_func(void *data)
+> {
+> 	struct dmatest_thread	*thread = data;
+> ...
+> 	unsigned int		total_tests = 0;
+> 	int			src_cnt;
+> 	int			dst_cnt;
 > 
-> I am not shure about those names.
+> ...
+> 	if (thread->type == DMA_MEMCPY)
+> 		src_cnt = dst_cnt = 1;
+> ...
+> 
+> 	while (!kthread_should_stop()
+> 	       && !(iterations && total_tests >= iterations)) {
+> 		struct dma_device *dev = chan->device;
+> 		struct dma_async_tx_descriptor *tx = NULL;
+> 		dma_addr_t dma_srcs[src_cnt];
+> 		dma_addr_t dma_dsts[dst_cnt];
+> 
+> 		...
+> 		total_tests++;
+> 
+> 		/* CODE ADDED BY ME FOR DEBUG */
+> 		printk("dmatest: Iteration %d, dma_srcs = %p\n",
+> 		       total_tests, dma_srcs);
+> 
+> 		...
+> 	}
+> 
+> With this code I get output like this:
+> 
+> dmatest: Iteration 1, dma_srcs = 2c963ee8
+> dmatest: Iteration 2, dma_srcs = 2c963ed8
+> dmatest: Iteration 3, dma_srcs = 2c963ec8
+> dmatest: Iteration 4, dma_srcs = 2c963eb8
+> ...
+> dmatest: Iteration 420, dma_srcs = 2c9624b8
+> 
+> ...and then the stack detonates and the kernel crashes with some strange
+> error or other.
+> 
 
-I don't like them.  IMHO, you don't gain anything by being this terse, and
-it is difficult to understand what they mean at first glance.
-
-> Other alternatives: 
-> [hs]w_block
-> block_[hs]w
-
-Any of those would be good, IMHO.  As would be more verbose variants like:
-hardware_blocked, software_blocked, etc.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+This could probably become the first kernel user of the flexible array 
+library (see Documentation/flexible-arrays.txt).  Dan?
