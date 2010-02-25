@@ -1,104 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711Ab0BYGvk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 01:51:40 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:54191 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126Ab0BYGvj (ORCPT
+	id S1755970Ab0BYGwQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 01:52:16 -0500
+Received: from relay02.digicable.hu ([92.249.128.188]:42879 "EHLO
+	relay02.digicable.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424Ab0BYGwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 01:51:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=itFz+O/cnYfAL1p6xJsWdqLcgaPjRogn+MvnqO+66v0nhCLdMgWjRnykfcnZr8Xe1m
-         LmRhiYrkaiuSjkHr53SxNsuOVrmoeeBKooUzQMq2vCqqXUS5Rt9nZgi2ep+Vo+0JTEev
-         xOvCNrl4pyjQVBIK/+XcdNnGaNPMzDvwf52Ww=
-Subject: Re: [PATCH 08/12] perf: export some syscall metadata
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       k-keiichi@bx.jp.nec.com
-In-Reply-To: <20100225024259.GD7491@nowhere>
-References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
-	 <1264580883-15324-9-git-send-email-tzanussi@gmail.com>
-	 <20100223214445.GF5357@nowhere> <1266991243.6427.44.camel@tropicana>
-	 <20100225024259.GD7491@nowhere>
-Content-Type: text/plain
-Date: Thu, 25 Feb 2010 00:51:35 -0600
-Message-Id: <1267080695.6611.188.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 01:52:13 -0500
+X-Greylist: delayed 1277 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 01:52:13 EST
+Message-ID: <4B86191E.4010706@freemail.hu>
+Date: Thu, 25 Feb 2010 07:30:54 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: V4L Mailing List <linux-media@vger.kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Linux testers wanted for Genius iSlim 310
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Original: 94.21.49.190
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-25 at 03:43 +0100, Frederic Weisbecker wrote:
-> On Wed, Feb 24, 2010 at 12:00:43AM -0600, Tom Zanussi wrote:
-> > Re event injection - I don't know that much about it, but if it can be
-> > used for this, could it also be applied to the rest of the trace and
-> > header data too?  If so, that would enable 'live mode' tracing.  I
-> > already have a working prototype that does it by converting all those
-> > things into synthesized pseudo-events, but it would be nicer to use the
-> > event injection framework instead, if I understand it correctly...
-> 
-> 
-> I'm not sure what you mean about live mode tracing. But yeah this
-> about synthetizing pseudo-events. The purpose is to catchup with
-> "past events" or "dead events".
-> 
-> The first trial was for lock_init events. Lock init events send
-> the address of the lock plus its name, so that subsequent lock
-> events (lock acquire, lock_release) can just send the address
-> in the event and not the name which can then be retrieved
-> from past lock_init events.
-> 
-> One problem though: when we enable the lock_init event, we
-> only catch the new locks created. So we need the previously
-> registered locks. There may be severals ways to do that: using
-> a perf ioctl or so, it's still in discussion.
-> 
-> But then for syscalls we would have a kind of dead events
-> catching up by asking the kernel to send us the nr:name
-> pairs.
-> 
+Hi,
 
-By 'live mode' tracing, I mean feeding the trace stream continuously to
-the script rather than writing it to disk and then later running the
-script on the file data.  Basically something like this:
+based on the information from installing the Windows driver the
+Genius iSlim 310 is a potential candidate that the gspca_pac7302 driver under
+Linux may handle, see
+http://linuxtv.org/wiki/index.php/PixArt_PAC7301/PAC7302#Identification .
 
-$ perf record -e event1 -e event2 -o - | perf trace -s myscript.py -i -
+If you have access to Genius iSlim 310 and would like to give a try please
+apply the patch in this email, compile and install the patched kernel,
+check "dmesg" for messages and try whether the webcam is working for
+example with cheese.
 
-where the output of perf record is streamed to stdout and piped to the
-the script, which continuously reads and processes events from stdin,
-until the user hits ctrl-c or the script detects some arbitrary pattern
-or condition in the trace stream and stops and prints out the results.
+Regards,
 
-This would allow a whole new class of use cases e.g. you could easily
-convert any of the current scripts into 'top' versions by adding a timer
-that would display and clear the current results on each tick, say every
-5 seconds.  Or just actively scan the trace data for some arbitrarily
-complex condition, while also saving the last n trace records and
-dumping them when the condition is found, etc...
+	Márton Németh
 
-The main obstacle to doing this with the current perf is the header
-data, which in my prototype I've converted into 4 pseudo events - attrs,
-event_types, tracing_data and build_ids, basically getting rid of
-everything than uses a seek, so I can shove it all over a pipe.
+---
+From: Márton Németh <nm127@freemail.hu>
 
-It does seem to me that event injection could be used for this instead
-e.g. similar to the case of lock_init/subsequent lock events, for the
-script to be able to process an event it needs the event information
-contained in the trace_data, which could be sent as an injected event,
-for that subsequent event.  My prototype just sends it all as one huge
-event right now, but if it were broken down into individual events, that
-would also allow new events to be added and removed dynamically.  So in
-addition to 'live mode' we could add 'dynamic' mode as well. :-)
+On the schematics in PixArt PAC7301/PAC7302 datasheet
+(http://www.pixart.com.tw/upload/PAC7301_7302%20%20Spec%20V1_20091228174030.pdf)
+pages 19, 20, 21 and 22 there is a note titled "PID IO_TRAP" which describes
+the possible product ID range 0x2620..0x262f. In this range there are some
+known webcams, however, there are some PIDs with unknown or future devices.
+Because PixArt PAC7301/PAC7302 is a System on a Chip (SoC) device is is
+probable that this driver will work correctly independent of the used PID.
 
-So yeah, it looks like it would be useful for the syscall names, but
-hopefully much more than that...
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -r dfa82cf98a85 linux/drivers/media/video/gspca/pac7302.c
+--- a/linux/drivers/media/video/gspca/pac7302.c	Sat Jan 30 20:03:02 2010 +0100
++++ b/linux/drivers/media/video/gspca/pac7302.c	Sun Jan 31 11:08:21 2010 +0100
+@@ -96,6 +96,7 @@
+ 	u8 flags;
+ #define FL_HFLIP 0x01		/* mirrored by default */
+ #define FL_VFLIP 0x02		/* vertical flipped by default */
++#define FL_EXPERIMENTAL 0x80	/* USB IDs based on heuristic without any known product */
 
+ 	u8 sof_read;
+ 	u8 autogain_ignore_frames;
+@@ -1220,17 +1221,33 @@
+ };
 
-
+ /* -- module initialisation -- */
++/* Note on FL_EXPERIMENTAL:
++ * On the schematics in PixArt PAC7301/PAC7302 datasheet
++ * (http://www.pixart.com.tw/upload/PAC7301_7302%20%20Spec%20V1_20091228174030.pdf)
++ * pages 19, 20, 21 and 22 there is a note titled "PID IO_TRAP" which describes
++ * the possible product ID range 0x2620..0x262f. In this range there are some
++ * known webcams, however, there are some PIDs with unknown or future devices.
++ * Because PixArt PAC7301/PAC7302 is a System on a Chip (SoC) device is is
++ * probable that this driver will work correctly independent of the used PID.
++ */
+ static const struct usb_device_id device_table[] __devinitconst = {
+ 	{USB_DEVICE(0x06f8, 0x3009)},
+ 	{USB_DEVICE(0x093a, 0x2620)},
+ 	{USB_DEVICE(0x093a, 0x2621)},
+ 	{USB_DEVICE(0x093a, 0x2622), .driver_info = FL_VFLIP},
++	{USB_DEVICE(0x093a, 0x2623), .driver_info = FL_EXPERIMENTAL },
+ 	{USB_DEVICE(0x093a, 0x2624), .driver_info = FL_VFLIP},
++	{USB_DEVICE(0x093a, 0x2625), .driver_info = FL_EXPERIMENTAL },
+ 	{USB_DEVICE(0x093a, 0x2626)},
++	{USB_DEVICE(0x093a, 0x2627), .driver_info = FL_EXPERIMENTAL },
+ 	{USB_DEVICE(0x093a, 0x2628)},
+ 	{USB_DEVICE(0x093a, 0x2629), .driver_info = FL_VFLIP},
+ 	{USB_DEVICE(0x093a, 0x262a)},
++	{USB_DEVICE(0x093a, 0x262b), .driver_info = FL_EXPERIMENTAL },
+ 	{USB_DEVICE(0x093a, 0x262c)},
++	{USB_DEVICE(0x093a, 0x262d), .driver_info = FL_EXPERIMENTAL },
++	{USB_DEVICE(0x093a, 0x262e), .driver_info = FL_EXPERIMENTAL },
++	{USB_DEVICE(0x093a, 0x262f), .driver_info = FL_EXPERIMENTAL },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(usb, device_table);
+@@ -1239,6 +1256,17 @@
+ static int __devinit sd_probe(struct usb_interface *intf,
+ 			const struct usb_device_id *id)
+ {
++	if ((u8)id->driver_info & FL_EXPERIMENTAL) {
++		PDEBUG(D_ERR | D_PROBE, "WARNING: USB device ID %04x:%04x is "
++			"not known, but based on some heuristics this driver "
++			"tries to handle it.",
++			id->idVendor, id->idProduct);
++		PDEBUG(D_ERR | D_PROBE, "WARNING: Plase send an email to "
++			"linux-media@vger.kernel.org with 'lsusb -v' output, "
++			"the vendor and name of the product and whether the "
++			"device is working or not.");
++	}
++
+ 	return gspca_dev_probe(intf, id, &sd_desc, sizeof(struct sd),
+ 				THIS_MODULE);
+ }
 
