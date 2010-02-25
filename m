@@ -1,289 +1,189 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933123Ab0BYRrG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:47:06 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:42378 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933099Ab0BYRrE (ORCPT
+	id S933131Ab0BYRsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:48:33 -0500
+Received: from smail.sisa.samsung.com ([63.166.156.252]:53487 "EHLO
+	SMAIL.sisa.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933082Ab0BYRsc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:47:04 -0500
-Date: Thu, 25 Feb 2010 12:46:59 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
-cc: Sarah Sharp <sarah.a.sharp@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device
- 8087:0020
-In-Reply-To: <4B86A8AB.2050604@maroy.hu>
-Message-ID: <Pine.LNX.4.44L0.1002251239140.1686-100000@iolanthe.rowland.org>
+	Thu, 25 Feb 2010 12:48:32 -0500
+X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 12:48:31 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [linuxtools-dev] Standard protocols/interfaces/formats forperformance tools (TCF, LTTng, ...)
+Date: Thu, 25 Feb 2010 09:28:20 -0800
+Message-ID: <D75C33A4DAF4F347A09A09B97BF978B00D783231@SMAIL.sisa.samsung.com>
+In-Reply-To: <1267072349.24271.8209.camel@gandalf.stny.rr.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linuxtools-dev] Standard protocols/interfaces/formats forperformance tools (TCF, LTTng, ...)
+Thread-Index: Acq1044BflAbI0jxT82f5LDGWJilpwAa8W6g
+References: <D86DB60C62D82A4792CAEC7F58CA04E706C13BB6@NA1-MAIL.mgc.mentorg.com> <20100224154021.GA9692@Krystal> <D86DB60C62D82A4792CAEC7F58CA04E706C13E65@NA1-MAIL.mgc.mentorg.com> <1267072349.24271.8209.camel@gandalf.stny.rr.com>
+From: "Tasneem Brutch - SISA" <t.brutch@sisa.samsung.com>
+To: <rostedt@goodmis.org>, "Spear, Aaron" <aaron_spear@mentor.com>
+Cc: "Linux Tools developer discussions" <linuxtools-dev@eclipse.org>,
+       <dsdp-tcf-dev@eclipse.org>, <ltt-dev@lists.casi.polymtl.ca>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, Ákos Maróy wrote:
+Hello,
+I proposed, and currently chair the newly formed Multicore Association,
+Tool Infrastructure work group (TIWG).  The work group welcomes
+opportunities to better understand other efforts, that TIWG can
+leverage, and learn from.  I will be at the Multicore Expo, where I am
+presenting, and I also plan on attending the EclipseCon.  
+I would very much appreciate an opportunity to talk face to face, and to
+get a better understanding of other efforts.
 
-> > By the way, I noticed above that you have xhci-hcd installed.  As far 
-> > as I know, that driver does not yet support system suspend.  You should 
-> > try unloading xhci-hcd before doing the suspend (both with and without 
-> > CONFIG_USB_DEBUG).
-> 
-> wow, rmmod xhci - and the suspend goes through fine!
-> 
-> what is this xhci thing anyway?
+Regards,
+Tasneem Brutch, Ph.D.
+Samsung Electronics US R&D Center
+75 W. Plumeria Drive
+San Jose, CA. 95134
+Work: 408-544-5626
+Cell: 408-712-7858
 
-It is the driver for USB-3.0 controllers.  It's relatively new and not 
-as mature as the USB-2.0 drivers.
+-----Original Message-----
+From: Steven Rostedt [mailto:rostedt@goodmis.org] 
+Sent: Wednesday, February 24, 2010 8:32 PM
+To: Spear, Aaron
+Cc: Linux Tools developer discussions; dsdp-tcf-dev@eclipse.org;
+ltt-dev@lists.casi.polymtl.ca; linux-kernel@vger.kernel.org; Tasneem
+Brutch - SISA
+Subject: RE: [linuxtools-dev] Standard protocols/interfaces/formats
+forperformance tools (TCF, LTTng, ...)
 
-I'm a little surprised that it is running on your system.  Why would 
-you have USB-3.0 hardware?
+On Wed, 2010-02-24 at 14:47 -0800, Spear, Aaron wrote:
+> Hi Mathieu, 
+> 
 
-> > These separate issues deserve to be investigated more closely.  The USB 
-> > stack is not supposed to be that fragile.  Describe your environment 
-> > more fully and provide the dmesg log from a kernel with 
-> > CONFIG_USB_DEBUG enabled showing what happens during the experiments.
-> 
-> indeed. interestingly, xhci may be the culprit, as without xhci, the
-> external DVD doesn't even register at all.
-> 
-> loadind xhci, I get:
-> 
-> Feb 25 17:33:50 tonkachi kernel: [  168.203418] xhci_hcd 0000:02:00.0:
-> PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> Feb 25 17:33:50 tonkachi kernel: [  168.203568] xhci_hcd 0000:02:00.0:
-> xHCI Host Controller
-> Feb 25 17:33:50 tonkachi kernel: [  168.203689] xhci_hcd 0000:02:00.0:
-> new USB bus registered, assigned bus number 2
-> Feb 25 17:33:50 tonkachi kernel: [  168.203832] xhci_hcd 0000:02:00.0:
-> irq 16, io mem 0xd4000000
-> Feb 25 17:33:50 tonkachi kernel: [  168.203875] usb usb2: config 1
-> interface 0 altsetting 0 endpoint 0x81 has no SuperSpeed companion
-> descriptor
-> Feb 25 17:33:50 tonkachi kernel: [  168.203912] usb usb2: New USB device
-> found, idVendor=1d6b, idProduct=0002
-> Feb 25 17:33:50 tonkachi kernel: [  168.203919] usb usb2: New USB device
-> strings: Mfr=3, Product=2, SerialNumber=1
-> Feb 25 17:33:50 tonkachi kernel: [  168.203925] usb usb2: Product: xHCI
-> Host Controller
-> Feb 25 17:33:50 tonkachi kernel: [  168.203931] usb usb2: Manufacturer:
-> Linux 2.6.32.8-usb-debug xhci_hcd
-> Feb 25 17:33:50 tonkachi kernel: [  168.203937] usb usb2: SerialNumber:
-> 0000:02:00.0
-> Feb 25 17:33:50 tonkachi kernel: [  168.204089] usb usb2: configuration
-> #1 chosen from 1 choice
-> Feb 25 17:33:50 tonkachi kernel: [  168.204198] hub 2-0:1.0: USB hub found
-> Feb 25 17:33:50 tonkachi kernel: [  168.204213] hub 2-0:1.0: 4 ports
-> detected
-> 
-> 
-> plugging in the USB DVD drive, there's a system 'freeze' for about 5
-> seconds (nothing is responding, not even caps lock), then I get in syslog:
-> 
-> Feb 25 17:34:39 tonkachi kernel: [  217.433960] Registered led device:
-> iwl-phy0::radio
-> Feb 25 17:34:39 tonkachi kernel: [  217.433990] Registered led device:
-> iwl-phy0::assoc
-> Feb 25 17:34:39 tonkachi kernel: [  217.434020] Registered led device:
-> iwl-phy0::RX
-> Feb 25 17:34:39 tonkachi kernel: [  217.434045] Registered led device:
-> iwl-phy0::TX
-> Feb 25 17:34:39 tonkachi kernel: [  217.463366] usb 2-4: new high speed
-> USB device using xhci_hcd and address 0
-> Feb 25 17:34:39 tonkachi kernel: [  217.485828] usb 2-4: New USB device
-> found, idVendor=058f, idProduct=6254
-> Feb 25 17:34:39 tonkachi kernel: [  217.485834] usb 2-4: New USB device
-> strings: Mfr=0, Product=0, SerialNumber=0
-> Feb 25 17:34:39 tonkachi kernel: [  217.485949] usb 2-4: configuration
-> #1 chosen from 1 choice
-> Feb 25 17:34:39 tonkachi kernel: [  217.485963] usb 2-4: ep 0x81 -
-> rounding interval to 2048 microframes
-> Feb 25 17:34:39 tonkachi kernel: [  217.487002] hub 2-4:1.0: USB hub found
-> Feb 25 17:34:39 tonkachi kernel: [  217.487502] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:39 tonkachi kernel: [  217.487533] hub 2-4:1.0: 3 ports
-> detected
-> Feb 25 17:34:40 tonkachi kernel: [  217.782947] usb 2-4.1: new high
-> speed USB device using xhci_hcd and address 0
-> Feb 25 17:34:40 tonkachi kernel: [  217.806372] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.807238] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.808106] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.808996] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.809420] usb 2-4.1: New USB
-> device found, idVendor=152d, idProduct=2339
-> Feb 25 17:34:40 tonkachi kernel: [  217.809425] usb 2-4.1: New USB
-> device strings: Mfr=1, Product=2, SerialNumber=5
-> Feb 25 17:34:40 tonkachi kernel: [  217.809430] usb 2-4.1: Product: USB
-> to ATA/ATAPI Bridge
-> Feb 25 17:34:40 tonkachi kernel: [  217.809434] usb 2-4.1: Manufacturer:
-> JMicron
-> Feb 25 17:34:40 tonkachi kernel: [  217.809437] usb 2-4.1: SerialNumber:
-> 6A1713351FFF
-> Feb 25 17:34:40 tonkachi kernel: [  217.809574] usb 2-4.1: configuration
-> #1 chosen from 1 choice
-> Feb 25 17:34:40 tonkachi kernel: [  217.811213] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.812078] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:34:40 tonkachi kernel: [  217.840485] Initializing USB Mass
-> Storage driver...
-> Feb 25 17:34:40 tonkachi kernel: [  217.840664] scsi6 : SCSI emulation
-> for USB Mass Storage devices
-> Feb 25 17:34:40 tonkachi kernel: [  217.840795] usbcore: registered new
-> interface driver usb-storage
-> Feb 25 17:34:40 tonkachi kernel: [  217.840800] USB Mass Storage support
-> registered.
-> Feb 25 17:34:45 tonkachi kernel: [  222.833493] scsi 6:0:0:0: CD-ROM
->         hp       DVDRAM GT20L     DC05 PQ: 0 ANSI: 0
-> Feb 25 17:34:45 tonkachi kernel: [  222.846361] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:34:45 tonkachi kernel: [  222.847589] sr0: scsi3-mmc drive:
-> 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
-> Feb 25 17:34:45 tonkachi kernel: [  222.847597] Uniform CD-ROM driver
-> Revision: 3.20
-> Feb 25 17:34:45 tonkachi kernel: [  222.849281] sr 6:0:0:0: Attached
-> scsi generic sg2 type 5
-> Feb 25 17:34:45 tonkachi kernel: [  222.958589] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> 
-> 
-> now, I unplug the USB DVD drive:
-> 
-> Feb 25 17:35:38 tonkachi kernel: [  276.374282] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> Feb 25 17:35:39 tonkachi kernel: [  276.728151] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> Feb 25 17:35:39 tonkachi kernel: [  276.728819] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> 
-> 
-> I plug it back in, with a DVD in the drive:
-> 
-> Feb 25 17:41:21 tonkachi kernel: [  618.701586] Registered led device:
-> iwl-phy0::radio
-> Feb 25 17:41:21 tonkachi kernel: [  618.701619] Registered led device:
-> iwl-phy0::assoc
-> Feb 25 17:41:21 tonkachi kernel: [  618.701649] Registered led device:
-> iwl-phy0::RX
-> Feb 25 17:41:21 tonkachi kernel: [  618.701674] Registered led device:
-> iwl-phy0::TX
-> Feb 25 17:41:21 tonkachi kernel: [  618.719536] usb 2-3: new high speed
-> USB device using xhci_hcd and address 0
-> Feb 25 17:41:21 tonkachi kernel: [  618.742028] usb 2-3: New USB device
-> found, idVendor=058f, idProduct=6254
-> Feb 25 17:41:21 tonkachi kernel: [  618.742034] usb 2-3: New USB device
-> strings: Mfr=0, Product=0, SerialNumber=0
-> Feb 25 17:41:21 tonkachi kernel: [  618.742155] usb 2-3: configuration
-> #1 chosen from 1 choice
-> Feb 25 17:41:21 tonkachi kernel: [  618.742168] usb 2-3: ep 0x81 -
-> rounding interval to 2048 microframes
-> Feb 25 17:41:21 tonkachi kernel: [  618.743316] hub 2-3:1.0: USB hub found
-> Feb 25 17:41:21 tonkachi kernel: [  618.743794] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  618.743830] hub 2-3:1.0: 3 ports
-> detected
-> Feb 25 17:41:21 tonkachi kernel: [  619.045944] usb 2-3.1: new high
-> speed USB device using xhci_hcd and address 0
-> Feb 25 17:41:21 tonkachi kernel: [  619.069424] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.070295] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.071173] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.072042] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.072398] usb 2-3.1: New USB
-> device found, idVendor=152d, idProduct=2339
-> Feb 25 17:41:21 tonkachi kernel: [  619.072404] usb 2-3.1: New USB
-> device strings: Mfr=1, Product=2, SerialNumber=5
-> Feb 25 17:41:21 tonkachi kernel: [  619.072408] usb 2-3.1: Product: USB
-> to ATA/ATAPI Bridge
-> Feb 25 17:41:21 tonkachi kernel: [  619.072412] usb 2-3.1: Manufacturer:
-> JMicron
-> Feb 25 17:41:21 tonkachi kernel: [  619.072416] usb 2-3.1: SerialNumber:
-> 6A1713351FFF
-> Feb 25 17:41:21 tonkachi kernel: [  619.072530] usb 2-3.1: configuration
-> #1 chosen from 1 choice
-> Feb 25 17:41:21 tonkachi kernel: [  619.074124] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.074999] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 25 17:41:21 tonkachi kernel: [  619.075559] scsi7 : SCSI emulation
-> for USB Mass Storage devices
-> 
-> 
-> 
-> Feb 25 17:41:26 tonkachi kernel: [  624.073472] scsi 7:0:0:0: CD-ROM
->         hp       DVDRAM GT20L     DC05 PQ: 0 ANSI: 0
-> Feb 25 17:41:26 tonkachi kernel: [  624.086041] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:41:26 tonkachi kernel: [  624.087393] sr0: scsi3-mmc drive:
-> 62x/62x writer dvd-ram cd/rw xa/form2 cdda tray
-> Feb 25 17:41:26 tonkachi kernel: [  624.088377] sr 7:0:0:0: Attached
-> scsi generic sg2 type 5
-> Feb 25 17:41:26 tonkachi kernel: [  624.118679] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:41:29 tonkachi kernel: [  626.883451] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:41:29 tonkachi kernel: [  626.915739] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:41:29 tonkachi kernel: [  627.147000] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> Feb 25 17:41:29 tonkachi kernel: [  627.270741] xhci_hcd 0000:02:00.0:
-> WARN: Stalled endpoint
-> 
-> 
-> unplug:
-> 
-> Feb 25 17:42:05 tonkachi kernel: [  663.327552] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> Feb 25 17:42:06 tonkachi kernel: [  663.364546] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> Feb 25 17:42:06 tonkachi kernel: [  663.365228] xhci_hcd 0000:02:00.0:
-> WARN: transfer error on endpoint
-> Feb 25 17:42:10 tonkachi kernel: [  667.360714] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.360956] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.361101] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.362264] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.363730] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.377669] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.377910] VFS: busy inodes on
-> changed media or resized disk sr0
-> Feb 25 17:42:10 tonkachi kernel: [  667.378158] VFS: busy inodes on
-> changed media or resized disk sr0
-> 
-> 
-> 
-> plug back in:
-> 
-> Feb 25 17:42:50 tonkachi kernel: [  707.759089] Registered led device:
-> iwl-phy0::radio
-> Feb 25 17:42:50 tonkachi kernel: [  707.759179] Registered led device:
-> iwl-phy0::assoc
-> Feb 25 17:42:50 tonkachi kernel: [  707.759412] Registered led device:
-> iwl-phy0::RX
-> Feb 25 17:42:50 tonkachi kernel: [  707.759572] Registered led device:
-> iwl-phy0::TX
-> 
-> 
-> 
-> but the disk does not register anymore :(
+Mathieu, thanks for Cc'ing me.
 
-This is something Sarah should look into.  She's the main developer 
-behind xhci-hcd.
+> > > So, as an FYI, I am planning to participate in a new tools 
+> > > infrastructure working group under the auspices of the Multi-core 
+> > > association (http://www.multicore-association.org).  The 
+> > working group 
+> > > aims to:
+> > > 
+> > > 1.  Identify common needs, functionality, and opportunities for 
+> > > information sharing between performance analysis tools.
+> > > 2.  Discussion on identifying sharable components between 
+> > performance 
+> > > analysis tools.
+> > > 3.  Discussion on metadata dimensions of interest for 
+> > standardization 
+> > > (e.g., code, space, metric, time, state)
 
-Alan Stern
+I would most definitely like to be apart of this.
+
+> > > 
+> > > Along those lines, we (Mentor) have a need for a protocol 
+> > to connect 
+> > > to remote trace collectors and configure trace 
+> > triggering/collection, 
+> > > and then efficiently download lots of binary trace data.  
+> > Sound familiar?
+> > > 
+> > > TCF is an obvious choice for this as various companies are already
+
+> > > using it for this purpose from what I have observed.
+> > > 
+> > > So, to my point:
+> > > -What protocols are currently in use that we might consider as a 
+> > > starting point?  I see that the linuxtools project 
+> > apparently has one 
+> > > for transferring LTTng event data.  Are there any docs for this 
+> > > protocol?
+> > > 
+> > > -Is there any other company with a proprietary protocol that would
+
+> > > consider donating it to a standardization effort? (some one 
+> > else who 
+> > > also desires to end the insanity :-)
+> > > 
+> > > -file formats: event log file formats is another obvious 
+> > candidate for 
+> > > standardization.  Mentor has a file format we use that was 
+> > inspired by 
+> > > LTTng's format but is optimized for extremely large real-time
+trace 
+> > > logs.  I intend to throw this into the mix.  Any others we should 
+> > > think about? (The LTTng format obviously...)
+> > 
+> > Hi Aaron,
+> > 
+> > I would be glad to provide insight into the LTTng file format 
+> > as needed.
+> 
+> Great! Insight and experience gleaned from your work is certainly
+> desired.
+> 
+> > 
+> > It would be good to ask if the Ftrace team is interested to 
+> > participate in this standardization effort. Proposing 
+> > modifications to the Ftrace file format is on my roadmap.
+> 
+> I must confess that I know nothing about Ftrace.
+
+Here's a bunch of quick pointers:
+
+http://people.redhat.com/srostedt/ftrace-tutorial-linux-con-2009.odp
+http://lwn.net/Articles/365835/
+http://lwn.net/Articles/366796/
+http://lwn.net/Articles/370423/
+http://lwn.net/Articles/343766/
+
+>   That said, any prior
+> art in the space of file formats and protocols for exchanging
+profiling
+> and trace data should be considered, and input from existing
+communities
+> is warmly welcomed.  The charter of this multi-core working group is
+to
+> help forge some interoperability standards between different tools as
+a
+> start.  We believe that the future will be heavily multi-core, and it
+is
+> a difficult problem to solve figuring out graceful ways to partition a
+> complex "application" across these cores effectively.  E.g. a system
+> with SMP Linux on a couple of cores, a low level RTOS on another core,
+> and then some DSP's as well.  Today you often use totally different
+> tools for all of those cores.  How do you understand what the heck is
+> happening in this system, never mind figuring out how to optimize the
+> system as a whole...   I think a good first step is some level of
+> interoperability in data formats so that event data collected from
+> different sources and technologies (e.g. LTTng for Linux and real-time
+> trace for the DSP's) can be correlated and analyzed side by side. 
+
+Aaron,
+
+Let me introduce myself. I'm the author and current maintainer of
+Ftrace. Ftrace was accepted in the mainline kernel in 2.6.27 and has
+grown tremendously. It has a rich array of features to trace the inner
+workings of the kernel.
+
+Lately I've been working hard on a userspace tool to read from ftrace.
+It uses the linux syscall splice, that allows recording of the trace
+buffer into disk storage or the network with zero copy overhead (splice
+lets userspace tell the kernel to move one page from one file descriptor
+to another).
+
+I'll be debuting this tool at the CELF conference this April in San
+Francisco. It's called trace-cmd and you can down load the latest code
+from:
+
+$ git clone
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git
+
+I also have a gui tool that I will be debuting at the Linux
+Collaboration Conference that takes place immediately after CELF.
+
+-- Steve
+
 
