@@ -1,59 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596Ab0BYQFB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:05:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:65239 "EHLO mx1.redhat.com"
+	id S932751Ab0BYQGU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:06:20 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:51762 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759413Ab0BYQFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:05:00 -0500
-Message-ID: <4B869CBC.5070501@redhat.com>
-Date: Thu, 25 Feb 2010 10:52:28 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S932559Ab0BYQGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 11:06:17 -0500
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/15] readahead: replace ra->mmap_miss with ra->ra_flags
-References: <20100224031001.026464755@intel.com> <20100224031054.449606633@intel.com>
-In-Reply-To: <20100224031054.449606633@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19334.40943.479593.304961@pilspetsen.it.uu.se>
+Date: Thu, 25 Feb 2010 17:06:07 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, lkml <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
+Subject: Re: Is kernel optimized with dead store removal?
+In-Reply-To: <4B8693B9.3060102@gmail.com>
+References: <4B85A49E.6000803@gmail.com>
+	<19334.22971.970220.245930@pilspetsen.it.uu.se>
+	<4B8693B9.3060102@gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Introduce a readahead flags field and embed the existing mmap_miss in it
-> (mainly to save space).
->
-> It also changes the mmap_miss upper bound from LONG_MAX to 4096.
-> This is to help adapt properly for changing mmap access patterns.
->
-> It will be possible to lose the flags in race conditions, however the
-> impact should be limited.  For the race to happen, there must be two
-> threads sharing the same file descriptor to be in page fault or
-> readahead at the same time.
->
-> Note that it has always been racy for "page faults" at the same time.
->
-> And if ever the race happen, we'll lose one mmap_miss++ or mmap_miss--.
-> Which may change some concrete readahead behavior, but won't really
-> impact overall I/O performance.
->
-> CC: Nick Piggin<npiggin@suse.de>
-> CC: Andi Kleen<andi@firstfloor.org>
-> CC: Steven Whitehouse<swhiteho@redhat.com>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
+Roel Kluin writes:
+ > 
+ > >  >  Does this optimization also occur during compilation of the Linux
+ > >  >  kernel?
+ > 
+ > > Any such dead store removal is up to the compiler and the lifetime
+ > > of the object being clobbered. For 'auto' objects the optimization
+ > > is certainly likely.
+ > > 
+ > > This is only a problem if the memory (a thread stack, say) is recycled
+ > > and leaked uninitialized to user-space, but such bugs are squashed
+ > > fairly quickly upon discovery.
+ > 
+ > Thanks for comments,
+ > 
+ > In the sha1_update() case I don't know whether the stack is recycled and
+ > leaked - it may be dependent on the calling function, but isn't it
+ > vulnerable?
 
-Acked-by: Rik van Riel <riel@redhat.com>
+It's only vulnerable if the data leaks to a less trusted domain.
+There is no domain crossing in your user-space example.
+In the kernel case, the domain crossing would be as I wrote: leaking
+recycled and uninitialized memory to user-space (and those leaks of
+uninitialized memory are frowned upon and quickly fixed when discovered).
