@@ -1,103 +1,310 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299Ab0BYPT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:19:27 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:64581 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759037Ab0BYPTZ (ORCPT
+	id S1759311Ab0BYPVe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:21:34 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35610 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753492Ab0BYPVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:19:25 -0500
-X-Greylist: delayed 320 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 10:19:25 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=q+ACQvCd7aEwz6YncKRX6k9azzLHSQneaGKrmcnK9Ds0kzNO5NEdjtPv0rN8nkRoSP
-         Jqe725coTTymWyTCLqaCuwajLTHm6nyXEiuFcBhnLzMJCVc3OS5gIoubHStCkUn98EAW
-         HsZMi6YJKtO6PkZ+gAQ3Dbg2mI9Y0nhv2kXGs=
-Message-ID: <4B8693B9.3060102@gmail.com>
-Date: Thu, 25 Feb 2010 16:14:01 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
-Subject: Re: Is kernel optimized with dead store removal?
-References: <4B85A49E.6000803@gmail.com> <19334.22971.970220.245930@pilspetsen.it.uu.se>
-In-Reply-To: <19334.22971.970220.245930@pilspetsen.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Feb 2010 10:21:33 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAB8hhktGGOM5/2dsb2JhbACbFnS8b4R1BIMX
+Date: Thu, 25 Feb 2010 10:21:30 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
+	framework
+Message-ID: <20100225152130.GB12635@Krystal>
+References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20100225133358.6725.82430.stgit@localhost6.localdomain6>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:17:34 up 70 days, 23:36,  4 users,  load average: 0.17, 0.21,
+	0.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Make insn_slot framework support various size slots.
+> Current insn_slot just supports one-size instruction buffer slot. However,
+> kprobes jump optimization needs larger size buffers.
 
->  >  Does this optimization also occur during compilation of the Linux
->  >  kernel?
+OK, so you end up having one insn slot cache for kprobes and one insn
+slot (eventually) for the static jump patching (which needs larger
+instruction slots than kprobes). That seems like a good way to ensure
+you do not use more memory than necessary.
 
-> Any such dead store removal is up to the compiler and the lifetime
-> of the object being clobbered. For 'auto' objects the optimization
-> is certainly likely.
+We could possibly go even further and automatically use the right insn
+slot cache given the size of the instruction entry that must be added (a
+bit like the memory allocator which have different pools for each
+allocation order).
+
+Possibly that using the terminology of "memory pools" rather than
+"cache" could be a better fit too. So what this really becomes is an
+instruction slot allocator and garbage collector.
+
+Thanks,
+
+Mathieu
+
 > 
-> This is only a problem if the memory (a thread stack, say) is recycled
-> and leaked uninitialized to user-space, but such bugs are squashed
-> fairly quickly upon discovery.
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Anders Kaseorg <andersk@ksplice.com>
+> Cc: Tim Abbott <tabbott@ksplice.com>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: Jason Baron <jbaron@redhat.com>
+> Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+> ---
+> 
+>  kernel/kprobes.c |  104 ++++++++++++++++++++++++++++++++++--------------------
+>  1 files changed, 65 insertions(+), 39 deletions(-)
+> 
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index ccec774..7810562 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -105,57 +105,74 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+>   * stepping on the instruction on a vmalloced/kmalloced/data page
+>   * is a recipe for disaster
+>   */
+> -#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+> -
+>  struct kprobe_insn_page {
+>  	struct list_head list;
+>  	kprobe_opcode_t *insns;		/* Page of instruction slots */
+> -	char slot_used[INSNS_PER_PAGE];
+>  	int nused;
+>  	int ngarbage;
+> +	char slot_used[];
+> +};
+> +
+> +#define KPROBE_INSN_PAGE_SIZE(slots)			\
+> +	(offsetof(struct kprobe_insn_page, slot_used) +	\
+> +	 (sizeof(char) * (slots)))
+> +
+> +struct kprobe_insn_cache {
+> +	struct list_head pages;	/* list of kprobe_insn_page */
+> +	size_t insn_size;	/* size of instruction slot */
+> +	int nr_garbage;
+>  };
+>  
+> +static int slots_per_page(struct kprobe_insn_cache *c)
+> +{
+> +	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
+> +}
+> +
+>  enum kprobe_slot_state {
+>  	SLOT_CLEAN = 0,
+>  	SLOT_DIRTY = 1,
+>  	SLOT_USED = 2,
+>  };
+>  
+> -static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
+> -static LIST_HEAD(kprobe_insn_pages);
+> -static int kprobe_garbage_slots;
+> -static int collect_garbage_slots(void);
+> +static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
+> +static struct kprobe_insn_cache kprobe_insn_slots = {
+> +	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
+> +	.insn_size = MAX_INSN_SIZE,
+> +	.nr_garbage = 0,
+> +};
+> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
+>  
+>  /**
+>   * __get_insn_slot() - Find a slot on an executable page for an instruction.
+>   * We allocate an executable page if there's no room on existing ones.
+>   */
+> -static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+> +static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
+>  {
+>  	struct kprobe_insn_page *kip;
+>  
+>   retry:
+> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+> -		if (kip->nused < INSNS_PER_PAGE) {
+> +	list_for_each_entry(kip, &c->pages, list) {
+> +		if (kip->nused < slots_per_page(c)) {
+>  			int i;
+> -			for (i = 0; i < INSNS_PER_PAGE; i++) {
+> +			for (i = 0; i < slots_per_page(c); i++) {
+>  				if (kip->slot_used[i] == SLOT_CLEAN) {
+>  					kip->slot_used[i] = SLOT_USED;
+>  					kip->nused++;
+> -					return kip->insns + (i * MAX_INSN_SIZE);
+> +					return kip->insns + (i * c->insn_size);
+>  				}
+>  			}
+> -			/* Surprise!  No unused slots.  Fix kip->nused. */
+> -			kip->nused = INSNS_PER_PAGE;
+> +			/* kip->nused is broken. Fix it. */
+> +			kip->nused = slots_per_page(c);
+> +			WARN_ON(1);
+>  		}
+>  	}
+>  
+>  	/* If there are any garbage slots, collect it and try again. */
+> -	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
+> +	if (c->nr_garbage && collect_garbage_slots(c) == 0)
+>  		goto retry;
+> -	}
+> -	/* All out of space.  Need to allocate a new page. Use slot 0. */
+> -	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+> +
+> +	/* All out of space.  Need to allocate a new page. */
+> +	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
+>  	if (!kip)
+>  		return NULL;
+>  
+> @@ -170,20 +187,23 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+>  		return NULL;
+>  	}
+>  	INIT_LIST_HEAD(&kip->list);
+> -	list_add(&kip->list, &kprobe_insn_pages);
+> -	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
+> +	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
+>  	kip->slot_used[0] = SLOT_USED;
+>  	kip->nused = 1;
+>  	kip->ngarbage = 0;
+> +	list_add(&kip->list, &c->pages);
+>  	return kip->insns;
+>  }
+>  
+> +
+>  kprobe_opcode_t __kprobes *get_insn_slot(void)
+>  {
+> -	kprobe_opcode_t *ret;
+> +	kprobe_opcode_t *ret = NULL;
+> +
+>  	mutex_lock(&kprobe_insn_mutex);
+> -	ret = __get_insn_slot();
+> +	ret = __get_insn_slot(&kprobe_insn_slots);
+>  	mutex_unlock(&kprobe_insn_mutex);
+> +
+>  	return ret;
+>  }
+>  
+> @@ -199,7 +219,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+>  		 * so as not to have to set it up again the
+>  		 * next time somebody inserts a probe.
+>  		 */
+> -		if (!list_is_singular(&kprobe_insn_pages)) {
+> +		if (!list_is_singular(&kip->list)) {
+>  			list_del(&kip->list);
+>  			module_free(NULL, kip->insns);
+>  			kfree(kip);
+> @@ -209,49 +229,55 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+>  	return 0;
+>  }
+>  
+> -static int __kprobes collect_garbage_slots(void)
+> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
+>  {
+>  	struct kprobe_insn_page *kip, *next;
+>  
+>  	/* Ensure no-one is interrupted on the garbages */
+>  	synchronize_sched();
+>  
+> -	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
+> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
+>  		int i;
+>  		if (kip->ngarbage == 0)
+>  			continue;
+>  		kip->ngarbage = 0;	/* we will collect all garbages */
+> -		for (i = 0; i < INSNS_PER_PAGE; i++) {
+> +		for (i = 0; i < slots_per_page(c); i++) {
+>  			if (kip->slot_used[i] == SLOT_DIRTY &&
+>  			    collect_one_slot(kip, i))
+>  				break;
+>  		}
+>  	}
+> -	kprobe_garbage_slots = 0;
+> +	c->nr_garbage = 0;
+>  	return 0;
+>  }
+>  
+> -void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
+> +static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
+> +				       kprobe_opcode_t *slot, int dirty)
+>  {
+>  	struct kprobe_insn_page *kip;
+>  
+> -	mutex_lock(&kprobe_insn_mutex);
+> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+> -		if (kip->insns <= slot &&
+> -		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+> -			int i = (slot - kip->insns) / MAX_INSN_SIZE;
+> +	list_for_each_entry(kip, &c->pages, list) {
+> +		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
+> +		if (idx >= 0 && idx < slots_per_page(c)) {
+> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+>  			if (dirty) {
+> -				kip->slot_used[i] = SLOT_DIRTY;
+> +				kip->slot_used[idx] = SLOT_DIRTY;
+>  				kip->ngarbage++;
+> +				if (++c->nr_garbage > slots_per_page(c))
+> +					collect_garbage_slots(c);
+>  			} else
+> -				collect_one_slot(kip, i);
+> -			break;
+> +				collect_one_slot(kip, idx);
+> +			return;
+>  		}
+>  	}
+> +	/* Could not free this slot. */
+> +	WARN_ON(1);
+> +}
+>  
+> -	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+> -		collect_garbage_slots();
+> -
+> +void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
+> +{
+> +	mutex_lock(&kprobe_insn_mutex);
+> +	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
+>  	mutex_unlock(&kprobe_insn_mutex);
+>  }
+>  #endif
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
-Thanks for comments,
-
-In the sha1_update() case I don't know whether the stack is recycled and
-leaked - it may be dependent on the calling function, but isn't it
-vulnerable?
-
-I tested this with the snippet below. If compiled with -O1 or -O2 and
-ON_STACK defined 1, I can read "Secret" a second time. With ON_STACK
-defined 0 I do not.
-
-Roel
-
----
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#define ON_STACK 1
-
-void foo()
-{
-        char password[] = "secret";
-        password[0]='S';
-        printf ("Don't show again: %s\n", password);
-        memset(password, 0, sizeof(password));
-}
-
-void foo2()
-{
-        char* password = malloc(7);
-        strncpy (password, "secret" , 7);
-        password[6] = '\0';
-        password[0] = 'S';
-        printf ("Don't show again: %s\n", password);
-        memset(password, 0, 7);
-        free(password);
-
-}
-
-int main(int argc, char* argv[])
-{
-
-#if ON_STACK == 1
-        foo();
-#else
-        foo2();
-#endif
-        int i;
-        char foo3[] = "hoi";
-        printf ("foo1:%s\n", foo3);
-        char* bar = &foo3[0];
-        for (i = -50; i < 50; i++)
-                printf ("%c.", bar[i]);
-        printf("\n");
-        return 0;
-}
+-- 
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
