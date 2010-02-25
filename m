@@ -1,61 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932849Ab0BYQRH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:17:07 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:51233 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932810Ab0BYQRE convert rfc822-to-8bit (ORCPT
+	id S932857Ab0BYQRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:17:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54412 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932810Ab0BYQRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:17:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pFbmgbTVZ7hH0dJBdprMux4GqHVghQH7exuwXMD/iLWs3vsnkhw0lNQ9TMapUcfjia
-         EdIwAYo5wNCYqbPkVRhmP0Hjtn5+uASMlEdLVlLaYdGCVJ+VUQMSIDGCBzY6+v9W+sxD
-         BUCtgM3MqxqNuRtO0LgGDhbpyydwvapGTXXUY=
-MIME-Version: 1.0
-In-Reply-To: <19334.40337.651079.440912@pilspetsen.it.uu.se>
-References: <4B8692E3.9030509@gmail.com>
-	 <19334.40337.651079.440912@pilspetsen.it.uu.se>
-Date: Thu, 25 Feb 2010 18:16:59 +0200
-X-Google-Sender-Auth: 9cbee3a0ee9930f6
-Message-ID: <84144f021002250816o2c2cef0fke484c7e43256dba4@mail.gmail.com>
-Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
-	sha1_update()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Roel Kluin <roel.kluin@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+	Thu, 25 Feb 2010 11:17:49 -0500
+Subject: Re: [PATCH 07/07] printk delay per multi lines
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       Jiri Kosina <jkosina@suse.cz>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Hans-Joachim Picht <hans@de.ibm.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-doc@vger.kernel.org
+In-Reply-To: <20100225154549.GA2710@darkstar>
+References: <20100225154549.GA2710@darkstar>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Feb 2010 17:17:14 +0100
+Message-ID: <1267114634.22519.0.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 5:56 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
-> I fear that the only portable (across compiler versions) and safe
-> solution is to invoke an assembly-coded dummy function with prototype
->
->        void use(void *p);
->
-> and rewrite the code above as
->
->        {
->                u32 temp[...];
->                ...
->                memset(temp, 0, sizeof temp);
->                use(temp);
->        }
->
-> This forces the compiler to consider the buffer live after the
-> memset, so the memset cannot be eliminated.
+On Thu, 2010-02-25 at 23:45 +0800, Dave Young wrote:
+> +               if (!atomic_read(&l))
+> +                       atomic_set(&l, printk_delay_lines);
 
-So is there some "do not optimize" GCC magic that we could use for a
-memzero_secret() helper function?
+That's racy, use atomic_cmpxchg()
 
-                        Pekka
+> +               smp_mb__before_atomic_dec();
+> +               if (atomic_dec_return(&l))
+> +                       return; 
+
+What's that barrier for?
+
