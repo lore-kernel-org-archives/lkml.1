@@ -1,63 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186Ab0BYDwK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:52:10 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:51010 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932113Ab0BYDwI convert rfc822-to-8bit (ORCPT
+	id S932198Ab0BYEAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 23:00:40 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:58960 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932075Ab0BYEAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:52:08 -0500
+	Wed, 24 Feb 2010 23:00:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DAUcVKveAjSuJD8+ENsMn5v7pqSwfi6ywk8vGkUu9+GE03lkbGINX0wKMEI7heufnk
-         Mkvt+5MEbc2Tb9TRmX3jNTnbq++BLLx77Q+G+bwBbNTi6t7Dj8m20HJcqO6kuTjd6xLr
-         3aEis0BCbmdJVTmc69UDzf0uawyq3BHBc5mWc=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DrWsNN0ZeHHdlCECWiWDyhtrs6/xoUE2bkqcGr5FsNeTSb61hcQQ37vG98YixjtqyJ
+         e6sLWBh+Ss+dUMtdi4ve3brXDvT5Gru1tArEvFOkL7PODkMvrrdCev/DAiE+h33hGXiB
+         9m5TZNxB4XBDdAPzzHNWUle742PNL2UIKRsv8=
+Date: Thu, 25 Feb 2010 05:00:37 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: Remove CONFIG_TRACE_POWER from kernel config
+Message-ID: <20100225040035.GE7491@nowhere>
+References: <4B84D50E.4070806@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20100224145822.803e86ed.akpm@linux-foundation.org>
-References: <808c8e9d1002231455q379b26acq4b4a50188c5d73be@mail.gmail.com>
-	 <20100224145822.803e86ed.akpm@linux-foundation.org>
-Date: Wed, 24 Feb 2010 21:52:07 -0600
-Message-ID: <808c8e9d1002241952s63633da3m471b6fb170558789@mail.gmail.com>
-Subject: Re: [PATCH] cs5535_gpio: gpio_chip.get should return the input value
-From: Ben Gardner <gardner.ben@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andres Salomon <dilinger@collabora.co.uk>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B84D50E.4070806@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> --- linux-2.6.33-rc8.orig/drivers/gpio/cs5535-gpio.c
->> +++ linux-2.6.33-rc8/drivers/gpio/cs5535-gpio.c
->> @@ -154,7 +154,7 @@
->>
->>  static int chip_gpio_get(struct gpio_chip *chip, unsigned offset)
->>  {
->> -     return cs5535_gpio_isset(offset, GPIO_OUTPUT_VAL);
->> +     return cs5535_gpio_isset(offset, GPIO_READ_BACK);
->>  }
->>
->>  static void chip_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
->
-> <presses F10>
->
-> What were the user-visible effects of this bug?
+On Wed, Feb 24, 2010 at 03:28:14PM +0800, Li Zefan wrote:
+> The power tracer has been converted to power trace events.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-The user-visible effects were that the input didn't work.
-I use the CS5535 chip in a custom board that uses GPIO 25 and 26 as
-voltage monitoring inputs (external voltage comparators).
-Since the char-based cs5535-gpio is now deprecated, I'm trying out the
-gpio driver.
-I export the GPIO pins via sysfs to access them from user-space.
-Reading the 'value' member didn't reflect the input.
 
-Personally, I would prefer a separate sysfs entry for the output and
-the input, since the GPIO pins can be both outputs and inputs, but
-that would require a gpiolib change.
-Since there doesn't appear to be a gpio maintainer, any change to that
-might be tricky.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Ben
+
+> ---
+>  kernel/trace/Kconfig |    9 ---------
+>  1 files changed, 0 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 928b289..745d01c 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -341,15 +341,6 @@ config BRANCH_TRACER
+>  
+>  	  Say N if unsure.
+>  
+> -config POWER_TRACER
+> -	bool "Trace power consumption behavior"
+> -	depends on X86
+> -	select GENERIC_TRACER
+> -	help
+> -	  This tracer helps developers to analyze and optimize the kernel's
+> -	  power management decisions, specifically the C-state and P-state
+> -	  behavior.
+> -
+>  config KSYM_TRACER
+>  	bool "Trace read and write access on kernel memory locations"
+>  	depends on HAVE_HW_BREAKPOINT
+> -- 
+> 1.6.3
+> 
+
