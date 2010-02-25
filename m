@@ -1,41 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932897Ab0BYQdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:33:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50072 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932186Ab0BYQdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:33:18 -0500
-Message-ID: <4B86A445.5000807@redhat.com>
-Date: Thu, 25 Feb 2010 11:24:37 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S932913Ab0BYQd2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:33:28 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:48166 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932899Ab0BYQdZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 11:33:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=RdvpWOjAl4wAUgMLiQglYtGF131iKOxQfCoYQZgWD4p0waWfhN4cS5GrEXlc2SXYoy
+         l/JOygUEQysWI1Q/8MAlo+mXr2gQeTpwlGHiwkqZDsHJL42wjQKjbyrO5L0twhHA/4Sp
+         mbVReQnvY21QPdP8PXuqOWRkwb/r9EykcvPCw=
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/15] readahead: thrashing safe context readahead
-References: <20100224031001.026464755@intel.com> <20100224031054.588144188@intel.com>
-In-Reply-To: <20100224031054.588144188@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <84144f021002250816o2c2cef0fke484c7e43256dba4@mail.gmail.com>
+References: <4B8692E3.9030509@gmail.com> <19334.40337.651079.440912@pilspetsen.it.uu.se> 
+	<84144f021002250816o2c2cef0fke484c7e43256dba4@mail.gmail.com>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Thu, 25 Feb 2010 17:33:03 +0100
+Message-ID: <25e057c01002250833n1e13391drfcc806df369c5a55@mail.gmail.com>
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
+	sha1_update()
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Introduce a more complete version of context readahead, which is a
-> full-fledged readahead algorithm by itself. It replaces some of the
-> existing cases.
+On Thu, Feb 25, 2010 at 5:16 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On Thu, Feb 25, 2010 at 5:56 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
+>> I fear that the only portable (across compiler versions) and safe
+>> solution is to invoke an assembly-coded dummy function with prototype
+>>
+>>        void use(void *p);
+>>
+>> and rewrite the code above as
+>>
+>>        {
+>>                u32 temp[...];
+>>                ...
+>>                memset(temp, 0, sizeof temp);
+>>                use(temp);
+>>        }
+>>
+>> This forces the compiler to consider the buffer live after the
+>> memset, so the memset cannot be eliminated.
+>
+> So is there some "do not optimize" GCC magic that we could use for a
+> memzero_secret() helper function?
+>
+>                        Pekka
+>
 
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
+        *(volatile char *)p = *(volatile char *)p;
 
-Acked-by: Rik van Riel <riel@redhat.com>
+appears to work when called after the memset:
+
+---
+inline void ensure_memset(void* p)
+{
+        *(volatile char *)p = *(volatile char *)p;
+}
+
+void foo()
+{
+        char password[] = "secret";
+        password[0]='S';
+        printf ("Don't show again: %s\n", password);
+        memset(password, 0, sizeof(password));
+        ensure_memset(password);
+}
+
+int main(int argc, char* argv[])
+{
+
+        foo();
+        int i;
+        char foo3[] = "";
+        char* bar = &foo3[0];
+        for (i = -50; i < 50; i++)
+                printf ("%c.", bar[i]);
+        printf("\n");
+        return 0;
+}
