@@ -1,103 +1,225 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806Ab0BYFdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 00:33:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43849 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882Ab0BYFdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 00:33:18 -0500
-Date: Thu, 25 Feb 2010 16:33:10 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
- barrier (v9)
-Message-ID: <20100225053310.GA9738@laptop>
-References: <20100212224606.GA30280@Krystal>
- <4B82CF1A.3010501@nortel.com>
- <20100222212321.GA2573@Krystal>
- <20100224091052.GY9738@laptop>
- <20100224152251.GA16295@Krystal>
+	id S1753096Ab0BYFuW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 00:50:22 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:51259 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913Ab0BYFuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 00:50:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=EIwW7SqUT9JgSP6K/7j4473SfM0V8CxZBIjgfZuwk29i2vdjZrUl4NO4KUkMy2xFMk
+         wA5ol0DUfoFHiLGlaCWNH7Ow1h2P2Q44zXbMbKMUMMpjo3zXf17FjIdR15ajTBzGf/Ko
+         Hs1TqIQpBG2mVFw8O2zKn4UwruT5UrdwbF8i8=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
+Subject: Re: [PATCH] failslab: add ability to filter slab caches
+References: <1266931960-9779-1-git-send-email-dmonakhov@openvz.org>
+	<alpine.DEB.2.00.1002231432530.8693@chino.kir.corp.google.com>
+	<87bpfe8ooj.fsf_-_@openvz.org>
+	<alpine.DEB.2.00.1002241312250.6379@chino.kir.corp.google.com>
+Date: Thu, 25 Feb 2010 08:50:15 +0300
+In-Reply-To: <alpine.DEB.2.00.1002241312250.6379@chino.kir.corp.google.com>
+	(David Rientjes's message of "Wed, 24 Feb 2010 13:21:00 -0800 (PST)")
+Message-ID: <87r5o9yico.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224152251.GA16295@Krystal>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 10:22:52AM -0500, Mathieu Desnoyers wrote:
-> * Nick Piggin (npiggin@suse.de) wrote:
-> > On Mon, Feb 22, 2010 at 04:23:21PM -0500, Mathieu Desnoyers wrote:
-> > > * Chris Friesen (cfriesen@nortel.com) wrote:
-> > > > On 02/12/2010 04:46 PM, Mathieu Desnoyers wrote:
-> > > > 
-> > > > > Editorial question: 
-> > > > > 
-> > > > > This synchronization only takes care of threads using the current process memory
-> > > > > map. It should not be used to synchronize accesses performed on memory maps
-> > > > > shared between different processes. Is that a limitation we can live with ?
-> > > > 
-> > > > It makes sense for an initial version.  It would be unfortunate if this
-> > > > were a permanent limitation, since using separate processes with
-> > > > explicit shared memory is a useful way to mitigate memory trampler issues.
-> > > > 
-> > > > If we were going to allow that, it might make sense to add an address
-> > > > range such that only those processes which have mapped that range would
-> > > > execute the barrier.  Come to think of it, it might be possible to use
-> > > > this somehow to avoid having to execute the barrier on *all* threads
-> > > > within a process.
-> > > 
-> > > The extensible system call mandatory and optional flags will allow this kind of
-> > > improvement later on if this appears to be needed. It will also allow user-space
-> > > to detect if later kernels support these new features or not. But meanwhile I
-> > > think it's good to start with this implementation that covers 99.99% of
-> > > use-cases I can currently think of (ok, well, maybe I'm just unimaginative) ;)
-> > 
-> > It's a good point, I think having at least the ability to do
-> > process-shared or process-private in the first version of the API might
-> > be a good idea. That matches glibc's synchronisation routines so it
-> > would probably be a desirable feature even if you don't implement it in
-> > your library initially.
-> 
-> I am tempted to say that we should probably wait for users of this API feature
-> to manifest themselves before we go on and implement it. This will ensure that
-> we don't end up maintaining an unused feature and this provides a minimum
-> testability. For now, returning -EINVAL seems like an appropriate response for
-> this system call feature.
+David Rientjes <rientjes@google.com> writes:
 
-It would be very trivial compared to the process-private case. Just IPI
-all CPUs. It would allow older kernels to work with newer process based
-apps as they get implemented. But... not a really big deal I suppose.
-
-
-> As I said above, given the exensible nature of the sys_membarrier flags, we can
-> assign a MEMBARRIER_SHARED_MEM or something like that to a mandatory flag bit
-> later on. So when userspace start using this flag on old kernels that do not
-> support it, -EINVAL will be returned, and then the application will know it must
-> use a fallback. So, basically, we don't even need to define this flag now.
-> 
-> > 
-> > When writing multiprocessor scalable software, threads should often be
-> > avoided. They share so much state that it is easy to run into
-> > scalability issues in the kernel. So yes it would be really nice to
-> > have userspace RCU available in a process-shared mode.
-> > 
-> 
-> Agreed, although some major modifications would also be needed in the userspace
-> RCU library to do that, because it currently rely on being able to access other
-> thread's TLS.
-
-OK. It would be a good feature to keep in mind, I believe.
-
+> On Wed, 24 Feb 2010, Dmitry Monakhov wrote:
+>
+>> >> Example:
+>> >> echo 1 > /sys/kernel/slab/skbuff_head_cache/failslab
+>> >> echo 1 > /sys/kernel/debug/failslab/cache-filter
+>> >> 
+>> >
+>> > Where's the changelog?
+>> I've hoped than subject is enough. But if you want more verbose
+>> changelog, take following version.
+>> 
+Ohh... i'm sorry i've missed other comments in your previous review.
+It will be fixed in second version. Also see major note about
+slab flags later in the text.
+>
+> Please do not attach patches to emails when sending to LKML, they are 
+> preferred to be inline.  See Documentation/SubmittingPatches.
+Yeah, In fact i've chose inline option but my mailer by unknown reason
+change it.
+>
+>> This patch allow to inject faults only for specific slabs.
+>> In order to preserve default behavior cache filter is off by
+>> default (all caches are faulty).
+>> 
+>> One may define specific set of slabs like this:
+>> # mark skbuff_head_cache as faulty
+>> echo 1 > /sys/kernel/slab/skbuff_head_cache/failslab
+>> # Turn on cache filter (off by default)
+>> echo 1 > /sys/kernel/debug/failslab/cache-filter
+>> # Turn on fault injection
+>> echo 1 > /sys/kernel/debug/failslab/times
+>> echo 1 > /sys/kernel/debug/failslab/probability
+>> 
+>
+> Please describe your new slub_debug=a option here as well as in an update 
+> to Documentation/vm/slub.txt.
+Done
+>
+>> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+>> ---
+>>  include/linux/fault-inject.h |    4 ++--
+>>  include/linux/slab.h         |    4 +++-
+>>  mm/failslab.c                |   18 +++++++++++++++---
+>>  mm/slab.c                    |    2 +-
+>>  mm/slub.c                    |   31 +++++++++++++++++++++++++++++--
+>>  5 files changed, 50 insertions(+), 9 deletions(-)
+>> 
+>> diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
+>> index 06ca9b2..d935647 100644
+>> --- a/include/linux/fault-inject.h
+>> +++ b/include/linux/fault-inject.h
+>> @@ -82,9 +82,9 @@ static inline void cleanup_fault_attr_dentries(struct fault_attr *attr)
+>>  #endif /* CONFIG_FAULT_INJECTION */
+>>  
+>>  #ifdef CONFIG_FAILSLAB
+>> -extern bool should_failslab(size_t size, gfp_t gfpflags);
+>> +extern bool should_failslab(size_t size, gfp_t gfpflags, unsigned long c_flags);
+>>  #else
+>> -static inline bool should_failslab(size_t size, gfp_t gfpflags)
+>> +static inline bool should_failslab(size_t size, gfp_t gfpflags, unsigned long f)
+>>  {
+>>  	return false;
+>>  }
+>
+> As I said in the first review, these need to be more descriptive: 'flags' 
+> would be better.
+done
+>
+>> diff --git a/include/linux/slab.h b/include/linux/slab.h
+>> index 2da8372..9e03a81 100644
+>> --- a/include/linux/slab.h
+>> +++ b/include/linux/slab.h
+>> @@ -70,7 +70,9 @@
+>>  #else
+>>  # define SLAB_NOTRACK		0x00000000UL
+>>  #endif
+>> -
+>> +#ifdef CONFIG_FAILSLAB
+>> +# define SLAB_FAILSLAB	0x02000000UL	/* Fault injection filter mark */
+>> +#endif 
+>
+> Trailing whitespace on your #endif.
+Sorry. fixed
+>
+>>  /* The following flags affect the page allocator grouping pages by mobility */
+>>  #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
+>>  #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
+>> diff --git a/mm/failslab.c b/mm/failslab.c
+>> index 9339de5..bb41f98 100644
+>> --- a/mm/failslab.c
+>> +++ b/mm/failslab.c
+>> @@ -1,18 +1,22 @@
+>>  #include <linux/fault-inject.h>
+>>  #include <linux/gfp.h>
+>> +#include <linux/slab.h>
+>>  
+>>  static struct {
+>>  	struct fault_attr attr;
+>>  	u32 ignore_gfp_wait;
+>> +	int cache_filter;
+>>  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
+>>  	struct dentry *ignore_gfp_wait_file;
+>> +	struct dentry *cache_filter_file;
+>>  #endif
+>>  } failslab = {
+>>  	.attr = FAULT_ATTR_INITIALIZER,
+>>  	.ignore_gfp_wait = 1,
+>> +	.cache_filter = 0,
+>>  };
+>>  
+>> -bool should_failslab(size_t size, gfp_t gfpflags)
+>> +bool should_failslab(size_t size, gfp_t gfpflags, unsigned long cache_flags)
+>>  {
+>>  	if (gfpflags & __GFP_NOFAIL)
+>>  		return false;
+>> @@ -20,6 +24,9 @@ bool should_failslab(size_t size, gfp_t gfpflags)
+>>          if (failslab.ignore_gfp_wait && (gfpflags & __GFP_WAIT))
+>>  		return false;
+>>  
+>> +	if (failslab.cache_filter && !(cache_flags & SLAB_FAILSLAB))
+>> +		return false;
+>> +
+>>  	return should_fail(&failslab.attr, size);
+>>  }
+>>  
+>> @@ -30,7 +37,6 @@ static int __init setup_failslab(char *str)
+>>  __setup("failslab=", setup_failslab);
+>>  
+>>  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
+>> -
+>>  static int __init failslab_debugfs_init(void)
+>>  {
+>>  	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
+>> @@ -46,8 +52,14 @@ static int __init failslab_debugfs_init(void)
+>>  		debugfs_create_bool("ignore-gfp-wait", mode, dir,
+>>  				      &failslab.ignore_gfp_wait);
+>>  
+>> -	if (!failslab.ignore_gfp_wait_file) {
+>> +	failslab.cache_filter_file =
+>> +		debugfs_create_bool("cache-filter", mode, dir,
+>> +				      &failslab.cache_filter);
+>> +
+>> +	if (!failslab.ignore_gfp_wait_file ||
+>> +	    !failslab.cache_filter_file) {
+>>  		err = -ENOMEM;
+>> +		debugfs_remove(failslab.cache_filter_file);
+>>  		debugfs_remove(failslab.ignore_gfp_wait_file);
+>>  		cleanup_fault_attr_dentries(&failslab.attr);
+>>  	}
+>> diff --git a/mm/slab.c b/mm/slab.c
+>> index 7451bda..33496b7 100644
+>> --- a/mm/slab.c
+>> +++ b/mm/slab.c
+>> @@ -3101,7 +3101,7 @@ static bool slab_should_failslab(struct kmem_cache *cachep, gfp_t flags)
+>>  	if (cachep == &cache_cache)
+>>  		return false;
+>>  
+>> -	return should_failslab(obj_size(cachep), flags);
+>> +	return should_failslab(obj_size(cachep), flags, cachep->flags);
+>>  }
+>>  
+>
+> cachep->flags for CONFIG_SLAB is of type unsigned int and 
+> should_failslab() takes an unsigned long.
+Strange story, seems that flag definition in slab_def.h is differ
+from slub_def.h and slob_def.h (unsigned long long)
+Need to be fixed. Will send as separate patch.
+>
+>>  static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>> diff --git a/mm/slub.c b/mm/slub.c
+>> index 8d71aaf..64114fa 100644
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -151,7 +151,8 @@
+>>   * Set of flags that will prevent slab merging
+>>   */
+>>  #define SLUB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
+>> -		SLAB_TRACE | SLAB_DESTROY_BY_RCU | SLAB_NOLEAKTRACE)
+>> +		SLAB_TRACE | SLAB_DESTROY_BY_RCU | SLAB_NOLEAKTRACE | \
+>> +		SLAB_FAILSLAB)
+>>  
+>>  #define SLUB_MERGE_SAME (SLAB_DEBUG_FREE | SLAB_RECLAIM_ACCOUNT | \
+>>  		SLAB_CACHE_DMA | SLAB_NOTRACK)
+>
+> As I mentioned in my first review of your patch, this breaks for 
+> CONFIG_FAILSLAB=n.  Please make sure your patch compiles for the 
+> defconfig.
+fixed.
