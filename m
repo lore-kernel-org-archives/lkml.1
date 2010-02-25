@@ -1,43 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304Ab0BYSqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:46:39 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55190 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759034Ab0BYSqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:46:38 -0500
-Message-ID: <4B86C58B.5040906@cs.helsinki.fi>
-Date: Thu, 25 Feb 2010 20:46:35 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       rientjes@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002251232550.18861@router.home>
-In-Reply-To: <alpine.DEB.2.00.1002251232550.18861@router.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S932579Ab0BYSxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:53:51 -0500
+Received: from mga09.intel.com ([134.134.136.24]:60191 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759354Ab0BYSxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 13:53:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,540,1262592000"; 
+   d="scan'208";a="495670355"
+Date: Thu, 25 Feb 2010 10:53:48 -0800
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80
+Message-ID: <20100225185348.GA9674@linux-os.sc.intel.com>
+References: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
-
-Christoph Lameter wrote:
->> OK, can we get this issue resolved? The merge window is open and Christoph
->> seems to be unhappy with the whole patch queue. I'd hate this bug fix to miss
->> .34...
+On Wed, Feb 24, 2010 at 03:37:04PM -0800, Justin Piszcz wrote:
+> Hello,
 > 
-> Merge window? These are bugs that have to be fixed independently from a
-> merge window. The question is if this is the right approach or if there is
-> other stuff still lurking because we are not yet seeing the full picture.
+> Again, on the Intel DP55KG board:
+> 
+> # uname -a
+> Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
+> 
+> [    1.237600] ------------[ cut here ]------------
+> [    1.237890] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80()
+> [    1.238221] Hardware name:
+> [    1.238504] hpet: compare register read back failed.
+> [    1.238793] Modules linked in:
+> [    1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
+> [    1.239605] Call Trace:
+> [    1.239886]  <IRQ>  [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
+> [    1.240409]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [    1.240699]  [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
+> [    1.240992]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [    1.241281]  [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
+> [    1.241573]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [    1.241859]  [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
+> [    1.246533]  [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
+> [    1.246826]  [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
+> [    1.247118]  [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
+> [    1.247407]  [<ffffffff81029f55>] ? handle_irq+0x15/0x20
+> [    1.247689]  [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
+> [    1.247976]  [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
+> [    1.248262]  <EOI>  [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
+> [    1.248796]  [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
+> [    1.249080] ---[ end trace db7f668fb6fef4e1 ]---
+> 
+> Is this something Intel has to fix or is it a bug in the kernel?
 
-The first set of patches from Andi are almost one month old. If this 
-issue progresses as swiftly as it has to this day, I foresee a rocky 
-road for any of them getting merged to .34 through slab.git, that's all.
+This is a chipset erratum.
 
-			Pekka
+Thomas: You mentioned we can retain this check only for known-buggy and
+hpet debug kind of options. But here is the simple workaround patch for
+this particular erratum.
+
+x86: Erratum workaround for read after write of HPET comparator
+
+Some chipsets have a erratum due to which read immediately following a
+write of HPET comparator returns old comparator value instead of most
+recently written value.
+
+Erratum 15 in
+"Intel I/O Controller Hub 9 (ICH9) Family Specification Update"
+(http://www.intel.com/assets/pdf/specupdate/316973.pdf)
+
+Workaround for the errata is to read the comparator twice if the first
+one fails.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/kernel/hpet.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index ad80a1c..7b0dd63 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -399,9 +399,15 @@ static int hpet_next_event(unsigned long delta,
+ 	 * then we might have a real hardware problem. We can not do
+ 	 * much about it here, but at least alert the user/admin with
+ 	 * a prominent warning.
++	 * An erratum on some chipsets (ICH9,..), results in comparator read
++	 * immediately following a write returning old value. Workaround
++	 * for this is to read this value second time, when first
++	 * read returns old value.
+ 	 */
+-	WARN_ONCE(hpet_readl(HPET_Tn_CMP(timer)) != cnt,
++	if (unlikely((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt)) {
++		WARN_ONCE(hpet_readl(HPET_Tn_CMP(timer)) != cnt,
+ 		  KERN_WARNING "hpet: compare register read back failed.\n");
++	}
+ 
+ 	return (s32)(hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
+ }
+-- 
+1.6.0.6
+
