@@ -1,52 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933216Ab0BYSAy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:00:54 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:54238 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933000Ab0BYSAv (ORCPT
+	id S933226Ab0BYSJD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:09:03 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54968 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933195Ab0BYSI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:00:51 -0500
-Message-ID: <4B86B977.6040303@oracle.com>
-Date: Thu, 25 Feb 2010 09:55:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       devel@driverdev.osuosl.org, Greg KH <gregkh@suse.de>
-Subject: [PATCH -next]  staging: fix wlan-ng printk format warning
-References: <20100225183523.80361261.sfr@canb.auug.org.au>
-In-Reply-To: <20100225183523.80361261.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Feb 2010 13:08:59 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=CnwW8vW4s0VK1dusUhsA:9 a=_eVUYWHN81EhtQgdjae6_49AZrYA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
+ barrier (v9)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Nick Piggin <npiggin@suse.de>, Chris Friesen <cfriesen@nortel.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com
+In-Reply-To: <20100225175121.GA6658@Krystal>
+References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com>
+	 <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop>
+	 <20100224152251.GA16295@Krystal> <20100225053310.GA9738@laptop>
+	 <20100225165301.GF24052@Krystal>
+	 <1267118726.6328.20.camel@gandalf.stny.rr.com>
+	 <20100225175121.GA6658@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 25 Feb 2010 13:08:51 -0500
+Message-ID: <1267121331.6328.30.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B86B997.003B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, 2010-02-25 at 12:51 -0500, Mathieu Desnoyers wrote:
 
-Fix prism2fw.c printk format warning:
+> But... either way we chose, we can extend the system call flags and parameters
+> as needed, so I think it really should not be part of this initial
+> implementation.
 
-drivers/staging/wlan-ng/prism2fw.c:209: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
+I agree here too.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/wlan-ng/prism2fw.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If you have two different tasks doing lockless RCU or what not on shared
+memory, it's best to stick with the mb() on the reader side. Yeah, it
+makes the performance go down, but heck, I'm really worried about the
+crazy complexity that wound need to go into the kernel to prevent this.
 
---- linux-next-20100225.orig/drivers/staging/wlan-ng/prism2fw.c
-+++ linux-next-20100225/drivers/staging/wlan-ng/prism2fw.c
-@@ -205,7 +205,7 @@ int prism2_fwtry(struct usb_device *udev
- 		return 1;
- 	}
- 
--	printk(KERN_INFO "prism2_usb: %s will be processed, size %d\n",
-+	printk(KERN_INFO "prism2_usb: %s will be processed, size %zu\n",
- 	       PRISM2_USB_FWFILE, fw_entry->size);
- 	prism2_fwapply((const struct ihex_binrec *)fw_entry->data, wlandev);
- 
+-- Steve
+
+
