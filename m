@@ -1,99 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962Ab0BYJjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 04:39:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56210 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753538Ab0BYJjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 04:39:31 -0500
-X-Authenticated: #5115406
-X-Provags-ID: V01U2FsdGVkX19njAtvJKZnADiepB4OdAcqNvdymgKZunF34uLKob
-	10olyDSfKb14Cj
-From: Thomas Weber <swirl@gmx.li>
-To: linux-omap@vger.kernel.org
-Cc: Thomas Weber <swirl@gmx.li>, Russell King <linux@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Vikram Pandita <vikram.pandita@ti.com>,
-       Syed Rafiuddin <rafiuddin.syed@ti.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Thomas Weber <weber@corscience.de>
-Subject: [RESEND][PATCH/RFC] OMAP2: serial.c: Fix number of uarts in early_init
-Date: Thu, 25 Feb 2010 10:40:19 +0100
-Message-Id: <1267090819-17796-1-git-send-email-swirl@gmx.li>
-X-Mailer: git-send-email 1.6.4.4
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	id S1754180Ab0BYJou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 04:44:50 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:24241 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753920Ab0BYJos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 04:44:48 -0500
+From: "Octavian Purdila" <opurdila@ixiacom.com>
+Reply-To: <opurdila@ixiacom.com>
+To: "Cong Wang" <amwang@redhat.com>
+Cc: "David Miller" <davem@davemloft.net>,
+       "Linux Kernel Network Developers" <netdev@vger.kernel.org>,
+       "Linux Kernel Developers" <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+X-Mailer: Modest 3.1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="utf-8"
+Content-ID: <1267091194.12391.1.camel@Nokia-N900-42-11>
+X-MSMail-Priority: Normal
+Thread-Topic: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+Thread-Index: Acq1/ypX1VeHBGkDT/i5LxbGMiVSqQ==
+X-Priority: 3
+Date: Thu, 25 Feb 2010 11:46:35 +0200
+Message-ID: <1267091195.12391.2.camel@Nokia-N900-42-11>
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>
+> Hi,
+>
+> Still a small problem, if I do write(fd, "50000,50100", 12) I will
+> get a return value of 11, which should mean 11 bytes are written,
+> however, actually only the first 6 bytes are accepted.
+>
+> The rest looks better now.
+>
+> Or am I missing something here? :)
+>
 
-The omap_serial_early_init prints the following errors:
+Will take a look at this a bit later today, thanks for testing.
 
-Could not get uart4_ick
-Could not get uart4_fck
-
-because all the uarts available in omap_uart[] will be initialized.
-Only omap4430 and omap3630 have 4 uarts at the moment.
-This patch reduces the number of uarts when cpu is not omap4430 or
-omap3630.
-
-Signed-off-by: Thomas Weber <weber@corscience.de>
----
- arch/arm/mach-omap2/serial.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
-index b79bc89..da77930 100644
---- a/arch/arm/mach-omap2/serial.c
-+++ b/arch/arm/mach-omap2/serial.c
-@@ -644,16 +644,21 @@ static void serial_out_override(struct uart_port *up, int offset, int value)
- }
- void __init omap_serial_early_init(void)
- {
--	int i;
-+	int i, nr_ports;
- 	char name[16];
- 
-+	if (!(cpu_is_omap3630() || cpu_is_omap4430()))
-+		nr_ports = 3;
-+	else
-+		nr_ports = ARRAY_SIZE(omap_uart);
-+
- 	/*
- 	 * Make sure the serial ports are muxed on at this point.
- 	 * You have to mux them off in device drivers later on
- 	 * if not needed.
- 	 */
- 
--	for (i = 0; i < ARRAY_SIZE(omap_uart); i++) {
-+	for (i = 0; i < nr_ports; i++) {
- 		struct omap_uart_state *uart = &omap_uart[i];
- 		struct platform_device *pdev = &uart->pdev;
- 		struct device *dev = &pdev->dev;
-@@ -669,17 +674,17 @@ void __init omap_serial_early_init(void)
- 			continue;
- 		}
- 
--		sprintf(name, "uart%d_ick", i+1);
-+		sprintf(name, "uart%d_ick", i + 1);
- 		uart->ick = clk_get(NULL, name);
- 		if (IS_ERR(uart->ick)) {
--			printk(KERN_ERR "Could not get uart%d_ick\n", i+1);
-+			printk(KERN_ERR "Could not get uart%d_ick\n", i + 1);
- 			uart->ick = NULL;
- 		}
- 
- 		sprintf(name, "uart%d_fck", i+1);
- 		uart->fck = clk_get(NULL, name);
- 		if (IS_ERR(uart->fck)) {
--			printk(KERN_ERR "Could not get uart%d_fck\n", i+1);
-+			printk(KERN_ERR "Could not get uart%d_fck\n", i + 1);
- 			uart->fck = NULL;
- 		}
- 
--- 
-1.6.4.4
-
+In the meanwhile what are your thougths on the "1 2 3" issue, are you OK with accepting spaces as well as commas as separators?
