@@ -1,138 +1,162 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664Ab0BYNg6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 08:36:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60531 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932653Ab0BYNgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 08:36:55 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v3&10 13/18] perf probe: Rename probe finder functions
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Date: Thu, 25 Feb 2010 08:35:34 -0500
-Message-ID: <20100225133534.6725.52615.stgit@localhost6.localdomain6>
-In-Reply-To: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
-User-Agent: StGIT/0.14.3
+	id S932660Ab0BYNhh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 08:37:37 -0500
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:42731 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932611Ab0BYNhf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 08:37:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=I5B2+Vnh8aDFmxYmpU16uoxWFZStrswsWyM1NG+pjb3eInq5SdBSri3hdJPxU1UYSE
+         VS3W+uZTHJaG9wygPAu+U3pe8/lMuYMkNSBy0LdohMIb79JODOPvRktsETkpdsyGYn5O
+         8cZF8Bu7A/GUVPeYXM7XuC5NhEwA0VTfmdKy8=
+Date: Thu, 25 Feb 2010 21:40:23 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       =?utf-8?B?QW5kcsOp?= Goddard Rosa <andre.goddard@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E . Hallyn" <serue@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Xiaotian Feng <xtfeng@gmail.com>
+Subject: [Patch] mqueue: fix the bad code in sys_mq_open()
+Message-ID: <20100225134023.GB3842@hack>
+References: <cover.1266907495.git.andre.goddard@gmail.com> <a3a62a6cd7cc0ba011949396a1f2c7f9c32aa4b9.1266907496.git.andre.goddard@gmail.com> <2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com> <7b6bb4a51002242000x49f0b3bdncb40912bf18f90bb@mail.gmail.com> <2375c9f91002242025n1ab73e18i5950aa4f14ea36db@mail.gmail.com> <2375c9f91002242259n2fabb190ic77d6ca603bd1df7@mail.gmail.com> <7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename *_probepoint to *_probe_point, for nothing
-but a cosmetic reason.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Fix bad code in ipc/mqueue.c.
+
+Inspired by André Goddard Rosa's  patch.
+
+a) do_create() and do_open() should not release the resources which
+   are not acquired within themselves, it's their caller's work;
+
+b) Fix an fd leak;
+
+c) The goto label 'out_upsem' doesn't make any sense, rename to
+   'out_unlock';
+
+d) mntget() should be called before looking up dentry within
+   ->mnt->mnt_root;
+
+e) When dealing with failure case, we should release the resources
+   in a reversed order of acquiring, so reorder the goto labels;
+
+f) Remove some unused labels due to reorder.
+
+Also, this shrinks the binary by 60 bytes:
+
+   text	      data     bss       dec	    hex	filename
+   7674       1684        8      9366      2496	ipc/mqueue.o.BEFORE
+   7614	      1684        8      9306      245a	ipc/mqueue.o.AFTER
+
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: André Goddard Rosa <andre.goddard@gmail.com>
+
 ---
-
- tools/perf/builtin-probe.c     |    2 +-
- tools/perf/util/probe-finder.c |   12 ++++++------
- tools/perf/util/probe-finder.h |    2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index c7e14d0..c3e6119 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -314,7 +314,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 			continue;
- 
- 		lseek(fd, SEEK_SET, 0);
--		ret = find_probepoint(fd, pp);
-+		ret = find_probe_point(fd, pp);
- 		if (ret > 0)
- 			continue;
- 		if (ret == 0) {	/* No error but failed to find probe point. */
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index 3e10dbe..c819fd5 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -524,8 +524,8 @@ static void free_current_frame_base(struct probe_finder *pf)
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index c79bd57..fdd09da 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -650,8 +650,6 @@ static struct file *do_create(struct ipc_namespace *ipc_ns, struct dentry *dir,
+ out_drop_write:
+ 	mnt_drop_write(ipc_ns->mq_mnt);
+ out:
+-	dput(dentry);
+-	mntput(ipc_ns->mq_mnt);
+ 	return ERR_PTR(ret);
  }
  
- /* Show a probe point to output buffer */
--static void show_probepoint(Dwarf_Die sp_die, Dwarf_Signed offs,
--			    struct probe_finder *pf)
-+static void show_probe_point(Dwarf_Die sp_die, Dwarf_Signed offs,
-+			     struct probe_finder *pf)
- {
- 	struct probe_point *pp = pf->pp;
+@@ -664,17 +662,11 @@ static struct file *do_open(struct ipc_namespace *ipc_ns,
+ 	static const int oflag2acc[O_ACCMODE] = { MAY_READ, MAY_WRITE,
+ 						  MAY_READ | MAY_WRITE };
+ 
+-	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY)) {
+-		dput(dentry);
+-		mntput(ipc_ns->mq_mnt);
++	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY))
+ 		return ERR_PTR(-EINVAL);
+-	}
+ 
+-	if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE])) {
+-		dput(dentry);
+-		mntput(ipc_ns->mq_mnt);
++	if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE]))
+ 		return ERR_PTR(-EACCES);
+-	}
+ 
+ 	return dentry_open(dentry, ipc_ns->mq_mnt, oflag, cred);
+ }
+@@ -686,7 +678,7 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
+ 	struct file *filp;
  	char *name;
-@@ -585,7 +585,7 @@ static int probeaddr_callback(struct die_link *dlink, void *data)
- 	/* Check the address is in this subprogram */
- 	if (tag == DW_TAG_subprogram &&
- 	    die_within_subprogram(dlink->die, pf->addr, &offs)) {
--		show_probepoint(dlink->die, offs, pf);
-+		show_probe_point(dlink->die, offs, pf);
- 		return 1;
+ 	struct mq_attr attr;
+-	int fd, error;
++	int fd, error = 0;
+ 	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
+ 
+ 	if (u_attr && copy_from_user(&attr, u_attr, sizeof(struct mq_attr)))
+@@ -701,13 +693,13 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
+ 	if (fd < 0)
+ 		goto out_putname;
+ 
++	mntget(ipc_ns->mq_mnt);
+ 	mutex_lock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
+ 	dentry = lookup_one_len(name, ipc_ns->mq_mnt->mnt_root, strlen(name));
+ 	if (IS_ERR(dentry)) {
+ 		error = PTR_ERR(dentry);
+-		goto out_err;
++		goto out_unlock;
  	}
- 	return 0;
-@@ -668,7 +668,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 			pf->addr = die_get_entrypc(dlink->die);
- 			pf->addr += pp->offset;
- 			/* TODO: Check the address in this function */
--			show_probepoint(dlink->die, pp->offset, pf);
-+			show_probe_point(dlink->die, pp->offset, pf);
- 			return 1; /* Exit; no same symbol in this CU. */
- 		}
- 	} else if (tag == DW_TAG_inlined_subroutine && pf->inl_offs) {
-@@ -691,7 +691,7 @@ found:
- 			/* Get offset from subprogram */
- 			ret = die_within_subprogram(lk->die, pf->addr, &offs);
- 			DIE_IF(!ret);
--			show_probepoint(lk->die, offs, pf);
-+			show_probe_point(lk->die, offs, pf);
- 			/* Continue to search */
- 		}
+-	mntget(ipc_ns->mq_mnt);
+ 
+ 	if (oflag & O_CREAT) {
+ 		if (dentry->d_inode) {	/* entry already exists */
+@@ -731,24 +723,23 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
+ 
+ 	if (IS_ERR(filp)) {
+ 		error = PTR_ERR(filp);
+-		goto out_putfd;
++		goto out;
  	}
-@@ -704,7 +704,7 @@ static void find_probe_point_by_func(struct probe_finder *pf)
+ 
+ 	fd_install(fd, filp);
+-	goto out_upsem;
++	goto out_unlock;
+ 
+ out:
+ 	dput(dentry);
+-	mntput(ipc_ns->mq_mnt);
+-out_putfd:
+-	put_unused_fd(fd);
+-out_err:
+-	fd = error;
+-out_upsem:
++out_unlock:
+ 	mutex_unlock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
++	if (error) {
++		mntput(ipc_ns->mq_mnt);
++		put_unused_fd(fd);
++	}
+ out_putname:
+ 	putname(name);
+-	return fd;
++	return error;
  }
  
- /* Find a probe point */
--int find_probepoint(int fd, struct probe_point *pp)
-+int find_probe_point(int fd, struct probe_point *pp)
- {
- 	Dwarf_Half addr_size = 0;
- 	Dwarf_Unsigned next_cuh = 0;
-diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
-index 972b386..b2a2524 100644
---- a/tools/perf/util/probe-finder.h
-+++ b/tools/perf/util/probe-finder.h
-@@ -52,7 +52,7 @@ struct line_range {
- };
- 
- #ifndef NO_LIBDWARF
--extern int find_probepoint(int fd, struct probe_point *pp);
-+extern int find_probe_point(int fd, struct probe_point *pp);
- extern int find_line_range(int fd, struct line_range *lr);
- 
- /* Workaround for undefined _MIPS_SZLONG bug in libdwarf.h: */
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+ SYSCALL_DEFINE1(mq_unlink, const char __user *, u_name)
