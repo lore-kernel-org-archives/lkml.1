@@ -1,70 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723Ab0BYBON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 20:14:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31311 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758591Ab0BYBOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 20:14:11 -0500
-Message-ID: <4B85CFB4.5030908@redhat.com>
-Date: Thu, 25 Feb 2010 09:17:40 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1758718Ab0BYBSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 20:18:38 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57468 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758572Ab0BYBSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 20:18:36 -0500
+Message-ID: <4B85CFD6.6010904@cn.fujitsu.com>
+Date: Thu, 25 Feb 2010 09:18:14 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
-References: <1266752533.3428.28.camel@Nokia-N900-42-11> <201002221829.13987.opurdila@ixiacom.com> <4B84B7F0.7090709@redhat.com> <201002241402.54122.opurdila@ixiacom.com>
-In-Reply-To: <201002241402.54122.opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Rientjes <rientjes@google.com>
+CC: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time (58568d2)
+References: <20100218134921.GF9738@laptop> <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com> <20100219033126.GI9738@laptop> <alpine.DEB.2.00.1002190143040.6293@chino.kir.corp.google.com> <4B827043.3060305@cn.fujitsu.com> <alpine.DEB.2.00.1002221339160.14426@chino.kir.corp.google.com> <4B838490.1050908@cn.fujitsu.com> <alpine.DEB.2.00.1002230046160.12015@chino.kir.corp.google.com> <4B839E9D.8020604@cn.fujitsu.com> <alpine.DEB.2.00.1002231427190.8693@chino.kir.corp.google.com> <4B84F2FD.6030605@cn.fujitsu.com> <alpine.DEB.2.00.1002241307040.30870@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002241307040.30870@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> On Wednesday 24 February 2010 07:24:00 you wrote:
->> Octavian Purdila wrote:
->>> Here is a new version of this patch which fixes both the comma and
->>> invalid value issues, please give it a try.
->> Sorry, it is even worse. :(
->>
->>> [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
->>>
->>> The new function can be used to read/write large bitmaps via /proc. A
->>> comma separated range format is used for compact output and input
->>> (e.g. 1,3-4,10-10).
->> Writing "50000-50100" gets EINVAL, it should be success.
->> Writing "50000,50100" fails too.
->>
+on 2010-2-25 5:08, David Rientjes wrote:
+> On Wed, 24 Feb 2010, Miao Xie wrote:
 > 
-> Hmm, they don't fail for me :-/
+>> I think it is not a big deal because it is safe and doesn't cause any problem.
+>> Beside that, task->cpus_allowed is initialized to cpu_possible_mask on the no-cpuset
+>> kernel, so using cpu_possible_mask to initialize task->cpus_allowed is reasonable.
+>> (top cpuset is a special cpuset, isn't it?)
+>>  
 > 
->> Please, at least, do some basic testing.
->>
-> 
-> I do test them, I've attached the current test batch I was using.
-> 
-> Anyways, today I've noticed that "1,2 3" does not fail and even more 
-> importantly the final value is "3". 
-> 
-> Being that I don't see a way of fixing this without not acknowledging 1,2 even 
-> though we will do set these values, I revisited the "1 2 3" issue. And I don't 
-> understand why this is actually an issue, we are just being more permissive 
-> (i.e. we are allowing as separators both whitespaces and ,).
-> 
+> I'm suprised that I can create a descendant cpuset of top_cpuset that 
+> cannot include all of its parents' cpus and that the root cpuset's cpus 
+> mask doesn't change when cpus are onlined/offlined.
 > 
 
-Oops, after rechecking my test case, it is actually my test case's
-fault. Sorry for this. I will fix my test case and run it again.
+top cpuset's cpus is consistent with cpu_online_mask because the kernel changes it
+when doing cpu hotplug. So the problem which you said doesn't exist.
 
+Just cpus_allowed of all tasks in the top cpuset is initialized to cpu_possible_mask
+in order to avoid updating them when doing cpu hotplug.
 
-> 
-> I will resend the whole patch series once we get this formatting issue 
-> resolved.
-> 
-
-Thanks much!
