@@ -1,46 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751471Ab0BYFPl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 00:15:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34641 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747Ab0BYFPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 00:15:40 -0500
-Message-ID: <4B8609CE.5000705@kernel.org>
-Date: Thu, 25 Feb 2010 14:25:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752293Ab0BYFUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 00:20:06 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:62367 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061Ab0BYFUB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 00:20:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=LJY+Wjke8Pm7AET6duF/Qi6Q4V/X8CbGZwisn6paBLCro32LZXlT0mKKPATcgMUkmf
+         ti5vWxv6VNW7PxHq1og+npw6IYasTcL+wld7pOkrTxcUftyOAVbEtazN4Yg0ly6fHEo/
+         N5WSDM5g2QiWjEeRFMP0CjGy3nECgYS74y8mU=
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Yuhong Bao <yuhongbao_386@hotmail.com>, hancockrwd@gmail.com,
-       david-b@pacbell.net, greg@kroah.com, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
-References: <4B7CAF95.6020306@gmail.com> <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl> <4B85EE88.5050506@kernel.org> <201002250503.09327.oliver@neukum.org>
-In-Reply-To: <201002250503.09327.oliver@neukum.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 05:15:33 +0000 (UTC)
+In-Reply-To: <3f9a31f41002242053r169255d2hf2585aeb55174a92@mail.gmail.com>
+References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com> 
+	<3f9a31f41002242053r169255d2hf2585aeb55174a92@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 24 Feb 2010 21:19:41 -0800
+Message-ID: <43e72e891002242119u77fdfd30m2d17a1e48fe2e712@mail.gmail.com>
+Subject: Re: 802.11 development process - extended documentation
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25/2010 01:03 PM, Oliver Neukum wrote:
-> Am Donnerstag, 25. Februar 2010 04:29:12 schrieb Tejun Heo:
->> Arghhh.... I hate when intel pulls this type of 'product
->> differentiation' stunts.  At any rate, I'm doubtful swiotlb'ing for
->> usb2.0 would be noticeable at all.
-> 
-> That can and should be tested.
+On Wed, Feb 24, 2010 at 8:53 PM, Jaswinder Singh Rajput
+<jaswinderlinux@gmail.com> wrote:
+> Hello Luis,
+>
+> On Thu, Feb 25, 2010 at 5:48 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> I've extended our 802.11 development process into a new section on our
+>> 802.11 wiki. I often get asked how this works from different parts of
+>> the company here at Atheros so figured it'd be easier to illustrate
+>> this as best as possible and share it.
+>>
+>> http://wireless.kernel.org/en/developers/process
+>>
+>> Hope it does justice, John if you see any mistakes feel free to edit.
+>> If the diagram seems fishy let me know what I can fix.
+>>
+>
+> Thanks for the beautiful documentation.
 
-Robert did already.  Given that USB2.0 devices aren't usually used for
-high-perf storage subsystem, the benefit looks marginal to me but
-everyone is entitled to own opinion.
+Thanks :)
 
-Thanks.
+> Is this also applicable for Linux 2.4
 
-Thanks.
+Not at all.
 
--- 
-tejun
+> What is the status of Wireless in Linux 2.4
+
+Heh, umm, I have no clue. Dead?
+
+  Luis
