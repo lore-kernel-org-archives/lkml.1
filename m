@@ -1,31 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579Ab0BYNbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 08:31:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28402 "EHLO mx1.redhat.com"
+	id S932604Ab0BYNcG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 08:32:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932533Ab0BYNbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 08:31:15 -0500
+	id S932629Ab0BYNcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 08:32:00 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v3&10 04/18] kprobes: Jump optimization sysctl interface
+Subject: [PATCH -tip v3&10 16/18] perf probe: Check function address range
+	strictly in line finder
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Date: Thu, 25 Feb 2010 08:34:15 -0500
-Message-ID: <20100225133415.6725.8274.stgit@localhost6.localdomain6>
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>
+Date: Thu, 25 Feb 2010 08:35:57 -0500
+Message-ID: <20100225133557.6725.20697.stgit@localhost6.localdomain6>
 In-Reply-To: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
 References: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
 User-Agent: StGIT/0.14.3
@@ -36,223 +33,185 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
-kprobes jump optimization on the fly for debugging.
+Check (inlined) function address range strictly for
+improving output of probe-able lines of inline functions.
 
-Changes in v7:
- - Remove ctl_name = CTL_UNNUMBERED for upstream compatibility.
-
-Changes in v6:
-- Update comments and coding style.
-
+Without this change, perf probe --line <function> sometimes
+showed other inline function bodies too, because it didn't
+filter out inlined functions.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>
 ---
 
- include/linux/kprobes.h |    8 ++++
- kernel/kprobes.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++--
- kernel/sysctl.c         |   12 ++++++
- 3 files changed, 105 insertions(+), 3 deletions(-)
+ tools/perf/util/probe-finder.c |   74 +++++++++++++++++++++++++++++-----------
+ tools/perf/util/probe-finder.h |    2 -
+ 2 files changed, 53 insertions(+), 23 deletions(-)
 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index aed1f95..e7d1b2e 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
- 					unsigned long addr);
- 
- extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+
-+#ifdef CONFIG_SYSCTL
-+extern int sysctl_kprobes_optimization;
-+extern int proc_kprobes_optimization_handler(struct ctl_table *table,
-+					     int write, void __user *buffer,
-+					     size_t *length, loff_t *ppos);
-+#endif
-+
- #endif /* CONFIG_OPTPROBES */
- 
- /* Get the kprobe at this addr (if any) - called with preemption disabled */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 612af2d..fa034d2 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -42,6 +42,7 @@
- #include <linux/freezer.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/sysctl.h>
- #include <linux/kdebug.h>
- #include <linux/memory.h>
- #include <linux/ftrace.h>
-@@ -360,6 +361,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 6305f34..a410356 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -161,6 +161,31 @@ static Dwarf_Die *die_get_real_subprogram(Dwarf_Die *cu_die, Dwarf_Addr addr,
+ 		return die_mem;
  }
  
- #ifdef CONFIG_OPTPROBES
-+/* NOTE: change this value only with kprobe_mutex held */
-+static bool kprobes_allow_optimization;
-+
- /*
-  * Call all pre_handler on the list, but ignores its return value.
-  * This must be called from arch-dep optimized caller.
-@@ -428,7 +432,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
- 	/* Lock modules while optimizing kprobes */
- 	mutex_lock(&module_mutex);
- 	mutex_lock(&kprobe_mutex);
--	if (kprobes_all_disarmed)
-+	if (kprobes_all_disarmed || !kprobes_allow_optimization)
- 		goto end;
- 
- 	/*
-@@ -471,7 +475,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
- 	struct optimized_kprobe *op;
- 
- 	/* Check if the kprobe is disabled or not ready for optimization. */
--	if (!kprobe_optready(p) ||
-+	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
- 	    (kprobe_disabled(p) || kprobes_all_disarmed))
- 		return;
- 
-@@ -588,6 +592,80 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
- 	optimize_kprobe(ap);
- }
- 
-+#ifdef CONFIG_SYSCTL
-+static void __kprobes optimize_all_kprobes(void)
++/* Similar to dwarf_getfuncs, but returns inlined_subroutine if exists. */
++static Dwarf_Die *die_get_inlinefunc(Dwarf_Die *sp_die, Dwarf_Addr addr,
++				     Dwarf_Die *die_mem)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already allowed, just return */
-+	if (kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = true;
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist)
-+			if (!kprobe_disabled(p))
-+				optimize_kprobe(p);
-+	}
-+	mutex_unlock(&text_mutex);
-+	printk(KERN_INFO "Kprobes globally optimized\n");
-+}
-+
-+static void __kprobes unoptimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already prohibited, just return */
-+	if (!kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = false;
-+	printk(KERN_INFO "Kprobes globally unoptimized\n");
-+	get_online_cpus();	/* For avoiding text_mutex deadlock */
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist) {
-+			if (!kprobe_disabled(p))
-+				unoptimize_kprobe(p);
-+		}
-+	}
-+
-+	mutex_unlock(&text_mutex);
-+	put_online_cpus();
-+	/* Allow all currently running kprobes to complete */
-+	synchronize_sched();
-+}
-+
-+int sysctl_kprobes_optimization;
-+int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
-+				      void __user *buffer, size_t *length,
-+				      loff_t *ppos)
-+{
++	Dwarf_Die child_die;
 +	int ret;
 +
-+	mutex_lock(&kprobe_mutex);
-+	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
-+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
++	ret = dwarf_child(sp_die, die_mem);
++	if (ret != 0)
++		return NULL;
 +
-+	if (sysctl_kprobes_optimization)
-+		optimize_all_kprobes();
-+	else
-+		unoptimize_all_kprobes();
-+	mutex_unlock(&kprobe_mutex);
++	do {
++		if (dwarf_tag(die_mem) == DW_TAG_inlined_subroutine &&
++		    dwarf_haspc(die_mem, addr))
++			return die_mem;
 +
-+	return ret;
++		if (die_get_inlinefunc(die_mem, addr, &child_die)) {
++			memcpy(die_mem, &child_die, sizeof(Dwarf_Die));
++			return die_mem;
++		}
++	} while (dwarf_siblingof(die_mem, die_mem) == 0);
++
++	return NULL;
 +}
-+#endif /* CONFIG_SYSCTL */
 +
- static void __kprobes __arm_kprobe(struct kprobe *p)
+ /* Compare diename and tname */
+ static bool die_compare_name(Dwarf_Die *dw_die, const char *tname)
  {
- 	struct kprobe *old_p;
-@@ -1610,10 +1688,14 @@ static int __init init_kprobes(void)
- 		}
+@@ -534,7 +559,7 @@ found:
+ }
+ 
+ /* Find line range from its line number */
+-static void find_line_range_by_line(struct line_finder *lf)
++static void find_line_range_by_line(Dwarf_Die *sp_die, struct line_finder *lf)
+ {
+ 	Dwarf_Lines *lines;
+ 	Dwarf_Line *line;
+@@ -543,6 +568,7 @@ static void find_line_range_by_line(struct line_finder *lf)
+ 	int lineno;
+ 	int ret;
+ 	const char *src;
++	Dwarf_Die die_mem;
+ 
+ 	INIT_LIST_HEAD(&lf->lr->line_list);
+ 	ret = dwarf_getsrclines(&lf->cu_die, &lines, &nlines);
+@@ -550,22 +576,28 @@ static void find_line_range_by_line(struct line_finder *lf)
+ 
+ 	for (i = 0; i < nlines; i++) {
+ 		line = dwarf_onesrcline(lines, i);
+-		dwarf_lineno(line, &lineno);
++		ret = dwarf_lineno(line, &lineno);
++		DIE_IF(ret != 0);
+ 		if (lf->lno_s > lineno || lf->lno_e < lineno)
+ 			continue;
+ 
++		if (sp_die) {
++			/* Address filtering 1: does sp_die include addr? */
++			ret = dwarf_lineaddr(line, &addr);
++			DIE_IF(ret != 0);
++			if (!dwarf_haspc(sp_die, addr))
++				continue;
++
++			/* Address filtering 2: No child include addr? */
++			if (die_get_inlinefunc(sp_die, addr, &die_mem))
++				continue;
++		}
++
+ 		/* TODO: Get fileno from line, but how? */
+ 		src = dwarf_linesrc(line, NULL, NULL);
+ 		if (strtailcmp(src, lf->fname) != 0)
+ 			continue;
+ 
+-		/* Filter line in the function address range */
+-		if (lf->addr_s && lf->addr_e) {
+-			ret = dwarf_lineaddr(line, &addr);
+-			DIE_IF(ret != 0);
+-			if (lf->addr_s > addr || lf->addr_e <= addr)
+-				continue;
+-		}
+ 		/* Copy real path */
+ 		if (!lf->lr->path)
+ 			lf->lr->path = strdup(src);
+@@ -580,24 +612,20 @@ static void find_line_range_by_line(struct line_finder *lf)
  	}
+ }
  
--#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-+#if defined(CONFIG_OPTPROBES)
-+#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
- 	/* Init kprobe_optinsn_slots */
- 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
- #endif
-+	/* By default, kprobes can be optimized */
-+	kprobes_allow_optimization = true;
-+#endif
++static int line_range_inline_cb(Dwarf_Die *in_die, void *data)
++{
++	find_line_range_by_line(in_die, (struct line_finder *)data);
++	return DWARF_CB_ABORT;	/* No need to find other instances */
++}
++
+ /* Search function from function name */
+ static int line_range_search_cb(Dwarf_Die *sp_die, void *data)
+ {
+ 	struct line_finder *lf = (struct line_finder *)data;
+ 	struct line_range *lr = lf->lr;
+-	int ret;
  
- 	/* By default, kprobes are armed */
- 	kprobes_all_disarmed = false;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index ac72c9e..809e67a 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -50,6 +50,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -1463,6 +1464,17 @@ static struct ctl_table debug_table[] = {
- 		.proc_handler	= proc_dointvec
- 	},
- #endif
-+#if defined(CONFIG_OPTPROBES)
-+	{
-+		.procname	= "kprobes-optimization",
-+		.data		= &sysctl_kprobes_optimization,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_kprobes_optimization_handler,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
-+#endif
- 	{ }
+ 	if (dwarf_tag(sp_die) == DW_TAG_subprogram &&
+ 	    die_compare_name(sp_die, lr->function) == 0) {
+-		/* Get the address range of this function */
+-		ret = dwarf_highpc(sp_die, &lf->addr_e);
+-		if (ret == 0)
+-			ret = dwarf_lowpc(sp_die, &lf->addr_s);
+-		if (ret != 0) {
+-			lf->addr_s = 0;
+-			lf->addr_e = 0;
+-		}
+-
+ 		lf->fname = dwarf_decl_file(sp_die);
+ 		dwarf_decl_line(sp_die, &lr->offset);
+ 		pr_debug("fname: %s, lineno:%d\n", lf->fname, lr->offset);
+@@ -608,7 +636,11 @@ static int line_range_search_cb(Dwarf_Die *sp_die, void *data)
+ 			lf->lno_e = lr->offset + lr->end;
+ 		lr->start = lf->lno_s;
+ 		lr->end = lf->lno_e;
+-		find_line_range_by_line(lf);
++		if (dwarf_func_inline(sp_die))
++			dwarf_func_inline_instances(sp_die,
++						    line_range_inline_cb, lf);
++		else
++			find_line_range_by_line(sp_die, lf);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -660,7 +692,7 @@ int find_line_range(int fd, struct line_range *lr)
+ 					lf.lno_e = INT_MAX;
+ 				else
+ 					lf.lno_e = lr->end;
+-				find_line_range_by_line(&lf);
++				find_line_range_by_line(NULL, &lf);
+ 			}
+ 		}
+ 		off = noff;
+diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
+index 74525ae..75a660d 100644
+--- a/tools/perf/util/probe-finder.h
++++ b/tools/perf/util/probe-finder.h
+@@ -82,8 +82,6 @@ struct line_finder {
+ 	const char		*fname;		/* File name */
+ 	int			lno_s;		/* Start line number */
+ 	int			lno_e;		/* End line number */
+-	Dwarf_Addr		addr_s;		/* Start address */
+-	Dwarf_Addr		addr_e;		/* End address */
+ 	Dwarf_Die		cu_die;		/* Current CU */
+ 	int			found;
  };
- 
 
 
 -- 
