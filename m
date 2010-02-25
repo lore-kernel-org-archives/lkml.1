@@ -1,62 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343Ab0BYPaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:30:10 -0500
-Received: from legolas.restena.lu ([158.64.1.34]:57414 "EHLO
-	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759013Ab0BYPaH convert rfc822-to-8bit (ORCPT
+	id S1759348Ab0BYPcB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:32:01 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:64567 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759013Ab0BYPb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:30:07 -0500
-Date: Thu, 25 Feb 2010 16:29:32 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
-       Nicu Pavel <npavel@ituner.com>
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-Message-ID: <20100225162932.43ee42a8@neptune.home>
-In-Reply-To: <alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
-References: <20100221002001.0a7e05a7@neptune.home>
-	<20100224170049.0d04af3c@neptune.home>
-	<alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
-	<20100225123214.0523a310@neptune.home>
-	<alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 25 Feb 2010 10:31:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Rv6L9lG0G0Yjcu/Vfxyu9HooC0l/hl+yIV8W8hEsLMnFK2b0V98G8lbacgE7KLXzs+
+         lUZ2gsrnQDs8K00VcipbjLSfuVzBPxOAY75Kpq8YgQpl7QvgNSJic6HZjqG9aDngwcWD
+         V0cpUyAbbnIEfQV1rSymwj2zPlCN11L1HVVcw=
+MIME-Version: 1.0
+In-Reply-To: <20100225.071759.98314060.davem@davemloft.net>
+References: <4B8692E3.9030509@gmail.com> <20100225.071759.98314060.davem@davemloft.net>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Thu, 25 Feb 2010 16:31:36 +0100
+Message-ID: <25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
+	sha1_update()
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, mikpe@it.uu.se, linux-crypto@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 February 2010 Jiri Kosina <jkosina@suse.cz> wrote:
+On Thu, Feb 25, 2010 at 4:17 PM, David Miller <davem@davemloft.net> wrote:
+> From: Roel Kluin <roel.kluin@gmail.com>
+> Date: Thu, 25 Feb 2010 16:10:27 +0100
 >
-> On Thu, 25 Feb 2010, Bruno Prémont wrote:
-> 
-> > For the two sysfs attributes I currently use, the 'reset' one shall 
-> > probably be moved to debugfs (I would like to place it under 
-> > /sys/kernel/debug/hid/$device/ next to rdesc and event).
-> 
-> Yes, that would make sense.
+>> Due to optimization A call to memset() may be removed as a dead store when
+>> the buffer is not used after its value is overwritten.
+>>
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>
+> Solution is wrong and overkill in my mind.
+>
+> It's overkill because the whole reason it's using a stack buffer is to
+> avoid the overhead of a kmalloc() call.
+>
+> And it's wrong because the reason the memset() is there seems to be
+> to clear out key information that might exist kernel stack so that
+> it's more difficult for rogue code to get at things.
 
-So I will move it.
+If the memset is optimized away then the clear out does not occur. Do you
+know a different way to fix this? I observed this with:
 
-> ( ... which reminds me to finally to the Documentation/ABI part in
-> sync with respect to current HID code again ... )
-> 
-> > By the way, I'm wondering why event does not list any of the
-> > reports coming from my device though as I understand the code it
-> > should be doing that before my raw_event function gets called...
-> 
-> Sorry, what 'event' do you mean in 'event does not list any of the 
-> reports'?
+$ gcc -O2 test.c;./a.out
+and It shows (on my box) "...S.e.c.r.e.t..."
 
-Sorry, one 's' that got eaten between my brain and mail client. I
-mean events file in debugfs.
-For USB HID keyboard each key press generates "report dump" under
-/sys/kernel/debug/hid/$device/events but for my PicoLCD I don't get
-any entry in there. I'm wondering why.
+$ cat test.c
 
-Thanks,
-Bruno
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define ON_STACK 1
+
+void foo()
+{
+        char password[] = "secret";
+        password[0]='S';
+        printf ("Don't show again: %s\n", password);
+        memset(password, 0, sizeof(password));
+}
+
+void foo2()
+{
+        char* password = malloc(7);
+        strncpy (password, "secret" , 7);
+        password[6] = '\0';
+        password[0] = 'S';
+        printf ("Don't show again: %s\n", password);
+        //memset(password, 0, 7);
+        free(password);
+
+}
+
+int main(int argc, char* argv[])
+{
+
+#if ON_STACK == 1
+        foo();
+#else
+        foo2();
+#endif
+        int i;
+        char foo3[] = "hoi";
+        printf ("foo1:%s\n", foo3);
+        char* bar = &foo3[0];
+        for (i = -50; i < 50; i++)
+                printf ("%c.", bar[i]);
+        printf("\n");
+        return 0;
+}
