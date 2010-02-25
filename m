@@ -1,67 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932105Ab0BYDK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:10:27 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37312 "EHLO smtps.tip.net.au"
+	id S1758816Ab0BYDMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:12:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43430 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932093Ab0BYDK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:10:26 -0500
-Date: Thu, 25 Feb 2010 14:10:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Subject: linux-next: manual merge of the block tree with Linus' tree
-Message-Id: <20100225141022.c5b3b7ce.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1758762Ab0BYDMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:12:23 -0500
+Message-ID: <4B85EA46.5090607@redhat.com>
+Date: Wed, 24 Feb 2010 22:11:02 -0500
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Li Shaohua <shaohua.li@intel.com>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/15] readahead: limit readahead size for small devices
+References: <20100224031001.026464755@intel.com> <20100224031053.737437080@intel.com>
+In-Reply-To: <20100224031053.737437080@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On 02/23/2010 10:10 PM, Wu Fengguang wrote:
+> Linus reports a _really_ small&  slow (505kB, 15kB/s) USB device,
+> on which blkid runs unpleasantly slow. He manages to optimize the blkid
+> reads down to 1kB+16kB, but still kernel read-ahead turns it into 48kB.
 
-Today's linux-next merge of the block tree got a conflict in
-include/linux/blkdev.h between commit
-79da0644a8e0838522828f106e4049639eea6baf ("Revert "block: improve
-queue_should_plug() by looking at IO depths"") from Linus' tree and
-commit 488991e28e55b4fbca8067edf0259f69d1a6f92c ("block: Added in
-stricter no merge semantics for block I/O") from the block tree.
+> CC: Li Shaohua<shaohua.li@intel.com>
+> CC: Clemens Ladisch<clemens@ladisch.de>
+> Acked-by: Jens Axboe<jens.axboe@oracle.com>
+> Tested-by: Vivek Goyal<vgoyal@redhat.com>
+> Tested-by: Linus Torvalds<torvalds@linux-foundation.org>
+> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
 
-Context changes - I have fixed it up (see below) and can carry the fix
-for a while.  I suspect that you were expecting this. :-)
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc include/linux/blkdev.h
-index 1896e86,f71f5c5..0000000
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@@ -461,7 -461,9 +461,8 @@@ struct request_queu
-  #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
-  #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
-  #define QUEUE_FLAG_IO_STAT     15	/* do IO stats */
- -#define QUEUE_FLAG_CQ	       16	/* hardware does queuing */
- -#define QUEUE_FLAG_DISCARD     17	/* supports DISCARD */
- -#define QUEUE_FLAG_NOXMERGES   18	/* No extended merges */
- +#define QUEUE_FLAG_DISCARD     16	/* supports DISCARD */
-++#define QUEUE_FLAG_NOXMERGES   17	/* No extended merges */
-  
-  #define QUEUE_FLAG_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
-  				 (1 << QUEUE_FLAG_CLUSTER) |		\
-@@@ -585,8 -587,11 +586,10 @@@ enum 
-  
-  #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
-  #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
- -#define blk_queue_queuing(q)	test_bit(QUEUE_FLAG_CQ, &(q)->queue_flags)
-  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
-  #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
-+ #define blk_queue_noxmerges(q)	\
-+ 	test_bit(QUEUE_FLAG_NOXMERGES, &(q)->queue_flags)
-  #define blk_queue_nonrot(q)	test_bit(QUEUE_FLAG_NONROT, &(q)->queue_flags)
-  #define blk_queue_io_stat(q)	test_bit(QUEUE_FLAG_IO_STAT, &(q)->queue_flags)
-  #define blk_queue_flushing(q)	((q)->ordseq)
+Acked-by: Rik van Riel <riel@redhat.com>
