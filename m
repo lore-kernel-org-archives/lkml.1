@@ -1,55 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932173Ab0BYEDZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 23:03:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20311 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932075Ab0BYEDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 23:03:24 -0500
-Message-ID: <4B85F648.1080607@redhat.com>
-Date: Wed, 24 Feb 2010 23:02:16 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S932230Ab0BYEDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 23:03:35 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:34169 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932193Ab0BYEDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 23:03:32 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+Date: Thu, 25 Feb 2010 05:03:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Yuhong Bao <yuhongbao_386@hotmail.com>, hancockrwd@gmail.com,
+       david-b@pacbell.net, greg@kroah.com, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+References: <4B7CAF95.6020306@gmail.com> <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl> <4B85EE88.5050506@kernel.org>
+In-Reply-To: <4B85EE88.5050506@kernel.org>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       Matt Mackall <mpm@selenic.com>, David Woodhouse <dwmw2@infradead.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/15] readahead: bump up the default readahead size
-References: <20100224031001.026464755@intel.com> <20100224031054.032435626@intel.com>
-In-Reply-To: <20100224031054.032435626@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002250503.09327.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Use 512kb max readahead size, and 32kb min readahead size.
->
-> The former helps io performance for common workloads.
-> The latter will be used in the thrashing safe context readahead.
+Am Donnerstag, 25. Februar 2010 04:29:12 schrieb Tejun Heo:
+> Arghhh.... I hate when intel pulls this type of 'product
+> differentiation' stunts.  At any rate, I'm doubtful swiotlb'ing for
+> usb2.0 would be noticeable at all.
 
-> CC: Jens Axboe<jens.axboe@oracle.com>
-> CC: Chris Mason<chris.mason@oracle.com>
-> CC: Peter Zijlstra<a.p.zijlstra@chello.nl>
-> CC: Martin Schwidefsky<schwidefsky@de.ibm.com>
-> CC: Paul Gortmaker<paul.gortmaker@windriver.com>
-> CC: Matt Mackall<mpm@selenic.com>
-> CC: David Woodhouse<dwmw2@infradead.org>
-> Tested-by: Vivek Goyal<vgoyal@redhat.com>
-> Tested-by: Christian Ehrhardt<ehrhardt@linux.vnet.ibm.com>
-> Acked-by:  Christian Ehrhardt<ehrhardt@linux.vnet.ibm.com>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
+That can and should be tested.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+	Regards
+		Oliver
