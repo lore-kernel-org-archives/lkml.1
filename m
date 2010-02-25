@@ -1,139 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838Ab0BYKRP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:17:15 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:48033 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200Ab0BYKRM (ORCPT
+	id S1758975Ab0BYKR7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:17:59 -0500
+Received: from mailout1.zih.tu-dresden.de ([141.30.67.72]:37645 "EHLO
+	mailout1.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756652Ab0BYKR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:17:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=vs2nrqneLbk3lZbJ+BFOD0VWxfS+h3TPhDDlpd1P9GcpOHxXeXoZiKcaJCyCnn94tm
-         3PJpwb2gdEO8KpIDmA8Bn4D9h1UF2bfE1ielc25EQzMuAkpeRixOfnSaBTtlTpEOS4ok
-         fW5jF0pVL4Qo8BqWDLj+WH88KzPNajP4jeN7E=
-Date: Thu, 25 Feb 2010 02:17:05 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Michael Thayer <Michael.Thayer@Sun.COM>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
- emulation to the Lifebook driver
-Message-ID: <20100225101705.GF10823@core.coreip.homeip.net>
-References: <1266923615.3602.85.camel@michael-laptop>
- <20100223175852.GA11301@core.coreip.homeip.net>
- <1266958533.3602.128.camel@michael-laptop>
- <20100224100206.GA5598@core.coreip.homeip.net>
- <1267011989.2831.30.camel@michael-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1267011989.2831.30.camel@michael-laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Thu, 25 Feb 2010 05:17:56 -0500
+Subject: [PATCH] tracing: add event power_frequency to powernow-k8 driver
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Feb 2010 11:17:55 +0100
+Message-ID: <1267093075.3369.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-TUD-Virus-Scanned: mailout1.zih.tu-dresden.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 12:46:29PM +0100, Michael Thayer wrote:
-> Le mercredi 24 février 2010 à 02:02 -0800, Dmitry Torokhov a écrit :
-> > On Tue, Feb 23, 2010 at 09:55:33PM +0100, Michael Thayer wrote:
-> > > I'm not sure, if we ended up doing a completely new device, how different it
-> > > would end up being.  Emulating a touchscreen or a tablet makes sense for us as
-> > > these are both something known, which will work with existing systems without
-> > > too much tweaking
-> > > [snip]
-> > But the virtual mouse is not a touchscreen or a tablet, it behaves
-> > differently.
-> What would you suggest emulating that exists in the real world?
+This patch adds frequency tracing to the powernow-k8 cpufreq driver
 
-There are not many real devices that have teh same characteristics as
-virtual mouse generating absolute coordinates. Umm, the closest would be
-a wacom tablet when used with its own mouse.
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index 6e44519..99034e7 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -37,6 +37,10 @@
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ 
++#ifdef CONFIG_POWER_TRACER
++#include <trace/events/power.h> /* tracing power events */
++# endif /* CONFIG_POWER_TRACER */
++
+ #include <asm/msr.h>
+ 
+ #include <linux/acpi.h>
+@@ -54,6 +58,25 @@ static DEFINE_PER_CPU(struct powernow_k8_data *,
+powernow_data);
+ 
+ static int cpu_family = CPU_OPTERON;
+ 
++
++/* only trace power if it is selected */
++#ifdef CONFIG_POWER_TRACER
++       /* trace power event on a specific cpu/core */
++       static void trace_power_event(unsigned int *freq){
++               trace_power_frequency(POWER_PSTATE, *freq);
++       }
++
++       #define TRACE_POWER_FREQUENCY_EVENT(i,avail_cores, frequency)
+\
++        for_each_cpu(i,avail_cores)
+\
++               smp_call_function_single(i, trace_power_event,
+&frequency, 1);
++
++#else /* !CONFIG_POWER_TRACER */
++
++       #define TRACE_POWER_FREQUENCY_EVENT(i,avail_cores, frequency) ;
++
++# endif /* end CONFIG_POWER_TRACER */
++
++
+ #ifndef CONFIG_SMP
+ static inline const struct cpumask *cpu_core_mask(int cpu)
+ {
+@@ -1074,6 +1097,8 @@ static int transition_frequency_fidvid(struct
+powernow_k8_data *data,
+        res = transition_fid_vid(data, fid, vid);
+        freqs.new = find_khz_freq_from_fid(data->currfid);
+ 
++       TRACE_POWER_FREQUENCY_EVENT(i,data->available_cores, freqs.new);
++
+        for_each_cpu(i, data->available_cores) {
+                freqs.cpu = i;
+                cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+@@ -1107,6 +1132,8 @@ static int transition_frequency_pstate(struct
+powernow_k8_data *data,
+        res = transition_pstate(data, pstate);
+        freqs.new = find_khz_freq_from_pstate(data->powernow_table,
+pstate);
+ 
++       TRACE_POWER_FREQUENCY_EVENT(i,data->available_cores, freqs.new);
++
+        for_each_cpu(i, data->available_cores) {
+                freqs.cpu = i;
+                cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
 
->  And might a
-> tablet not be better than a touchscreen, given that it doesn't just have a
-> binary concept of "touch or not", but a pressure axis as well?  We could report
-> "pen on but zero pressure".
 
-No, tablet still has the property that movement ceases when you remove
-object touching the device from proximity. In your case you will be
-always sending coordinates and expect userspace react to them regardless
-of button/tool/etc state.
 
->  I take your point (below) about not relying on
-> behaviour that doesn't correspond to real devices like being able to send
-> position data without BTN_TOUCH being held down.
-
-I think the cleaniest would be to send ABS_X/ABS_Y nad buttons. Xen does
-this so I'd expect evdev being able to handle it.
-
-> 
-> > > The two devices also make sense for us on the one hand because xf86-input-evdev
-> > > currently only understands absolute devices without mouse buttons
-> > 
-> > Hmm, I scanned through it and I did not see anything specifically
-> > removing mouse buttons from absolute devices there... Is it still valid
-> > for the recent version of evdev driver?
-> Sorry, I have to correct myself there.  It assumes that an absolute device with
-> a "BTN_TOUCH" and mouse buttons and no pen is a touchpad and not a touchscreen.
-> Function "EvdevProbe()", search for "Found absolute touchpad".
-
-And if you remove BTN_TOUCH (which does not make sense in your case)
-then it won't be saying that.
-
-> 
-> > > (yes I know,
-> > > we could send them patches too if we had too, but we would rather not patch the
-> > > whole world :) ) and on the other because it makes it easy for us to switch
-> > > between absolute and relative event reporting, which is a big plus.
-> > 
-> > Why is this a big plus? Also, can't evdev handle devices reporting both
-> > relative and absolute events?
-> We sometimes want to switch to relative event reporting to e.g. let people play
-> games which are controlled using the mouse.  Don't ask :)  I can check again,
-> but I think that xf86-input-evdev ignores relative axes if a device supports
-> absolute ones.
-
-I don't think so, could you please re-test it?
-
-> I do feel that having two devices from it's point of view is
-> a safer bet here, rather than trying something fancier.
-> 
-> > You are relying on the fact that currently userspace components rely on
-> > drivers not sending coordinates data without touch; as soon as userspace
-> > (evdev) starts validating it and ignoring coordinate events without
-> > ABS_PRESSURE or BTN_TOUCH you'll be toast.
-> Point taken.  See above.
-> 
-> > > > I think it would be better if we had separate protocol module for that.
-> > [snip]
-> > First, create a separate protocol handler (module similar to
-> > lifebook.c), allocate protocol number, something like PSMOUSE_VBPS, and
-> > plumb it into psmouse-base.c in the same fashion othe protocol handlers
-> > do it.
-> Sure, I can copy lifebook.c and make the necessary modifications.  I will wait
-> for your answers/comments on the above though (particularly the first bit)
-> before starting.
-> 
-> Thanks again.
-> 
-> Regards,
-> 
-> Michael
-> -- 
-> Sun Microsystems GmbH        Michael Thayer
-> Werkstrasse 24               VirtualBox engineer
-> 71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
-> 
-> Sitz der Gesellschaft:
-> Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
-> Amtsgericht Muenchen: HRB 161028
-> Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
-> Vorsitzender des Aufsichtsrates: Martin Haering
-> 
 
 -- 
-Dmitry
+Robert Schoene
+Technische Universitaet Dresden
+Zentrum fuer Informationsdienste und Hochleistungsrechnen
+01062 Dresden
+
+Tel.: (0351) 463-42483, Fax: (0351) 463-37773
+E-Mail: Robert.Schoene@tu-dresden.de
+
