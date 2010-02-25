@@ -1,57 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933993Ab0BYV3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:29:45 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63538 "EHLO
+	id S934163Ab0BYV3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:29:51 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63536 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933826Ab0BYVWb (ORCPT
+	with ESMTP id S933824Ab0BYVWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 25 Feb 2010 16:22:31 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 11/28] sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
-Date: Thu, 25 Feb 2010 15:21:16 -0600
-Message-Id: <1267132893-23624-12-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 12/28] sparc,sunzilog: Add console polling support for sunzilog serial driver
+Date: Thu, 25 Feb 2010 15:21:17 -0600
+Message-Id: <1267132893-23624-13-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:49.0367 (UTC) FILETIME=[8AB45470:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:21:50.0086 (UTC) FILETIME=[8B220A60:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sci_poll_get_char() needs to return immediately if there is no
-input from the chip to process, and must return a value of
-NO_POLL_CHAR.
-
-This allows kgdboc to process multiple polled devices while kgdb is
-active.
+Allow kgdboc to work on sparc hardware with the Zilog serial chips.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: David S. Miller <davem@davemloft.net>
 ---
- drivers/serial/sh-sci.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ drivers/serial/sunzilog.c |   50 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 50 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
-index 42f3333..2cf3b6d 100644
---- a/drivers/serial/sh-sci.c
-+++ b/drivers/serial/sh-sci.c
-@@ -126,7 +126,11 @@ static int sci_poll_get_char(struct uart_port *port)
- 			handle_error(port);
- 			continue;
- 		}
--	} while (!(status & SCxSR_RDxF(port)));
-+		break;
-+	} while (1);
+diff --git a/drivers/serial/sunzilog.c b/drivers/serial/sunzilog.c
+index 2c7a66a..978b3ce 100644
+--- a/drivers/serial/sunzilog.c
++++ b/drivers/serial/sunzilog.c
+@@ -102,6 +102,8 @@ struct uart_sunzilog_port {
+ #endif
+ };
+ 
++static void sunzilog_putchar(struct uart_port *port, int ch);
 +
-+	if (!(status & SCxSR_RDxF(port)))
+ #define ZILOG_CHANNEL_FROM_PORT(PORT)	((struct zilog_channel __iomem *)((PORT)->membase))
+ #define UART_ZILOG(PORT)		((struct uart_sunzilog_port *)(PORT))
+ 
+@@ -996,6 +998,50 @@ static int sunzilog_verify_port(struct uart_port *port, struct serial_struct *se
+ 	return -EINVAL;
+ }
+ 
++#ifdef CONFIG_CONSOLE_POLL
++static int sunzilog_get_poll_char(struct uart_port *port)
++{
++	unsigned char ch, r1;
++	struct uart_sunzilog_port *up = (struct uart_sunzilog_port *) port;
++	struct zilog_channel __iomem *channel
++		= ZILOG_CHANNEL_FROM_PORT(&up->port);
++
++
++	r1 = read_zsreg(channel, R1);
++	if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR)) {
++		writeb(ERR_RES, &channel->control);
++		ZSDELAY();
++		ZS_WSYNC(channel);
++	}
++
++	ch = readb(&channel->control);
++	ZSDELAY();
++
++	/* This funny hack depends upon BRK_ABRT not interfering
++	 * with the other bits we care about in R1.
++	 */
++	if (ch & BRK_ABRT)
++		r1 |= BRK_ABRT;
++
++	if (!(ch & Rx_CH_AV))
 +		return NO_POLL_CHAR;
++
++	ch = readb(&channel->data);
++	ZSDELAY();
++
++	ch &= up->parity_mask;
++	return ch;
++}
++
++static void sunzilog_put_poll_char(struct uart_port *port,
++			unsigned char ch)
++{
++	struct uart_sunzilog_port *up = (struct uart_sunzilog_port *)port;
++
++	sunzilog_putchar(&up->port, ch);
++}
++#endif /* CONFIG_CONSOLE_POLL */
++
+ static struct uart_ops sunzilog_pops = {
+ 	.tx_empty	=	sunzilog_tx_empty,
+ 	.set_mctrl	=	sunzilog_set_mctrl,
+@@ -1013,6 +1059,10 @@ static struct uart_ops sunzilog_pops = {
+ 	.request_port	=	sunzilog_request_port,
+ 	.config_port	=	sunzilog_config_port,
+ 	.verify_port	=	sunzilog_verify_port,
++#ifdef CONFIG_CONSOLE_POLL
++	.poll_get_char	=	sunzilog_get_poll_char,
++	.poll_put_char	=	sunzilog_put_poll_char,
++#endif
+ };
  
- 	c = sci_in(port, SCxRDR);
- 
+ static int uart_chip_count;
 -- 
 1.6.4.rc1
 
