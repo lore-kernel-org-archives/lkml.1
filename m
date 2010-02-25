@@ -1,85 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933662Ab0BYUij (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:38:39 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12921 "EHLO mx1.redhat.com"
+	id S933671Ab0BYUjX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:39:23 -0500
+Received: from www.tglx.de ([62.245.132.106]:60676 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933362Ab0BYUih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:38:37 -0500
-Date: Thu, 25 Feb 2010 15:38:35 -0500
-From: Josef Bacik <josef@redhat.com>
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: Josef Bacik <josef@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
-Message-ID: <20100225203834.GD10960@localhost.localdomain>
-References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com> <20100225202358.GC10960@localhost.localdomain> <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
+	id S933362Ab0BYUjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:39:22 -0500
+Date: Thu, 25 Feb 2010 21:38:31 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404
+ hpet_next_event+0x70/0x80
+In-Reply-To: <20100225185348.GA9674@linux-os.sc.intel.com>
+Message-ID: <alpine.LFD.2.00.1002252133530.4245@localhost.localdomain>
+References: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan> <20100225185348.GA9674@linux-os.sc.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 03:29:34PM -0500, Andrew Lutomirski wrote:
-> On Thu, Feb 25, 2010 at 3:23 PM, Josef Bacik <josef@redhat.com> wrote:
-> > On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
-> >> Mounting btrfs corrupts memory and causes nasty crashes within a few
-> >> seconds.  This seems to happen even if the mount fails (note the
-> >> unrecognized mount option).  This is a regression from 2.6.32, and
-> >> I've attached an example.
-> >>
-> >
-> > And it only happens when you mount a btrfs fs?  Can you show me a trace of when
-> > you mount a btrfs fs with valid mount options?  I'd like to see if we're not
-> > cleaning up something properly or what.  Thanks,
+On Thu, 25 Feb 2010, Pallipadi, Venkatesh wrote:
+
+> On Wed, Feb 24, 2010 at 03:37:04PM -0800, Justin Piszcz wrote:
+> > Hello,
+> > 
+> > Again, on the Intel DP55KG board:
+> > 
+> > # uname -a
+> > Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
+> > 
+> > [    1.237600] ------------[ cut here ]------------
+> > [    1.237890] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80()
+> > [    1.238221] Hardware name:
+> > [    1.238504] hpet: compare register read back failed.
+> > [    1.238793] Modules linked in:
+> > [    1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
+> > [    1.239605] Call Trace:
+> > [    1.239886]  <IRQ>  [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
+> > [    1.240409]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> > [    1.240699]  [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
+> > [    1.240992]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> > [    1.241281]  [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
+> > [    1.241573]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> > [    1.241859]  [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
+> > [    1.246533]  [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
+> > [    1.246826]  [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
+> > [    1.247118]  [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
+> > [    1.247407]  [<ffffffff81029f55>] ? handle_irq+0x15/0x20
+> > [    1.247689]  [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
+> > [    1.247976]  [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
+> > [    1.248262]  <EOI>  [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
+> > [    1.248796]  [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
+> > [    1.249080] ---[ end trace db7f668fb6fef4e1 ]---
+> > 
+> > Is this something Intel has to fix or is it a bug in the kernel?
 > 
-> Seems OK.  Or maybe I just got lucky, but it's crashed every time I
-> tried to mount with 'acl' before.
+> This is a chipset erratum.
 > 
-> I even went through a couple iterations of trying to mount with
-> 'xattr' and 'user_xattr', both of which failed.
-> 
+> Thomas: You mentioned we can retain this check only for known-buggy and
+> hpet debug kind of options. But here is the simple workaround patch for
+> this particular erratum.
 
-Ok it looks like we have a problem kfree'ing the wrong stuff.  we kstrdup the
-options string, but then strsep screws with the pointer, so when we kfree() it,
-we're not giving it the right pointer.  Please try this patch, and mount with -o
-acl and other such garbage to make sure it actually worked (acl isn't a valid
-mount option btw).  Let me know if it works.  Thanks,
+Yes, that'd be the preferred way. I need to find the box which had the
+problem (ATI chipset) and force the readback for that one. That saves
+all other machines the extra hardware access.
 
-Josef
+Thanks,
 
-
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 8a1ea6e..f8b4521 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -128,7 +128,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
- {
- 	struct btrfs_fs_info *info = root->fs_info;
- 	substring_t args[MAX_OPT_ARGS];
--	char *p, *num;
-+	char *p, *num, *orig;
- 	int intarg;
- 	int ret = 0;
- 
-@@ -143,6 +143,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
- 	if (!options)
- 		return -ENOMEM;
- 
-+	orig = options;
- 
- 	while ((p = strsep(&options, ",")) != NULL) {
- 		int token;
-@@ -280,7 +281,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
- 		}
- 	}
- out:
--	kfree(options);
-+	kfree(orig);
- 	return ret;
- }
- 
+	tglx
