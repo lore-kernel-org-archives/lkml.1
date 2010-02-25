@@ -1,61 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758862Ab0BYCnF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 21:43:05 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:64746 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758782Ab0BYCnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 21:43:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=R7dBcJcdWy7TS/ASbblJLk6Q1HyAfsqEzBW+BX6hmdBTmdGQJOdmy+qpg/8AmC++BH
-         J0KBE9CzKKajI4Sv2UZ7RNTawGqxT4Ypg3HIJqPVlzFIXErdLMFn0Gu4SUhpRStrqdcZ
-         F/n1b8vcGkEKV5IjFFs5U2CyiP/Y3D/X1xIiw=
-Date: Thu, 25 Feb 2010 03:43:00 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       k-keiichi@bx.jp.nec.com
-Subject: Re: [PATCH 08/12] perf: export some syscall metadata
-Message-ID: <20100225024259.GD7491@nowhere>
-References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com> <1264580883-15324-9-git-send-email-tzanussi@gmail.com> <20100223214445.GF5357@nowhere> <1266991243.6427.44.camel@tropicana>
+	id S1758870Ab0BYCsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 21:48:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55697 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758840Ab0BYCsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 21:48:18 -0500
+Message-ID: <4B85E745.2000904@kernel.org>
+Date: Thu, 25 Feb 2010 11:58:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266991243.6427.44.camel@tropicana>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yuhong Bao <yuhongbao_386@hotmail.com>
+CC: hancockrwd@gmail.com, david-b@pacbell.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+References: <4B7CAF95.6020306@gmail.com> <20100218052223.GA13254@kroah.com>	 <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>	 <201002192139.46189.david-b@pacbell.net>	 <51f3faa71002192315ia84786eo1138bf9ab3417f2d@mail.gmail.com>	 <SNT125-W457447CBE941D2703E98D0C3420@phx.gbl> <51f3faa71002231626q1eb62adeo660c282418f0e01@mail.gmail.com>,<4B85E038.20905@kernel.org> <SNT125-W228B049D3934AC288355D8C3400@phx.gbl>
+In-Reply-To: <SNT125-W228B049D3934AC288355D8C3400@phx.gbl>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 02:48:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 12:00:43AM -0600, Tom Zanussi wrote:
-> Re event injection - I don't know that much about it, but if it can be
-> used for this, could it also be applied to the rest of the trace and
-> header data too?  If so, that would enable 'live mode' tracing.  I
-> already have a working prototype that does it by converting all those
-> things into synthesized pseudo-events, but it would be nicer to use the
-> event injection framework instead, if I understand it correctly...
+Hello,
 
+On 02/25/2010 11:41 AM, Yuhong Bao wrote:
+> 
+>> gained. There just isn't much point in trying to enable a shiny new
+>> feature on an aging platform or technology. 
+> You mean we should focus on enabling 64-bit DMA for USB 3.0 (xHCI)?
 
-I'm not sure what you mean about live mode tracing. But yeah this
-about synthetizing pseudo-events. The purpose is to catchup with
-"past events" or "dead events".
+Yeah, probably, in this context, but I was just making a general
+statement.  Trying out a new feature which hasn't been used widely on
+old things doesn't go too well in many cases - the hw vendor and BIOS
+writer already moved on, people end up experiencing regressions on
+configurations which used to work fine and when that happens, new
+comers try out and find out it's broken in strange ways and when that
+happens they're much less likely to bother reporting and trying to get
+the problem fixed.  And, most importantly, when things aren't used
+widely, that usually is for a reason - it just doesn't make that much
+of a difference.
 
-The first trial was for lock_init events. Lock init events send
-the address of the lock plus its name, so that subsequent lock
-events (lock acquire, lock_release) can just send the address
-in the event and not the name which can then be retrieved
-from past lock_init events.
+Thanks.
 
-One problem though: when we enable the lock_init event, we
-only catch the new locks created. So we need the previously
-registered locks. There may be severals ways to do that: using
-a perf ioctl or so, it's still in discussion.
-
-But then for syscalls we would have a kind of dead events
-catching up by asking the kernel to send us the nr:name
-pairs.
-
+-- 
+tejun
