@@ -1,162 +1,164 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932660Ab0BYNhh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 08:37:37 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:42731 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932611Ab0BYNhf (ORCPT
+	id S932619Ab0BYNpo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 08:45:44 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:63077 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932508Ab0BYNpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 08:37:35 -0500
+	Thu, 25 Feb 2010 08:45:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=I5B2+Vnh8aDFmxYmpU16uoxWFZStrswsWyM1NG+pjb3eInq5SdBSri3hdJPxU1UYSE
-         VS3W+uZTHJaG9wygPAu+U3pe8/lMuYMkNSBy0LdohMIb79JODOPvRktsETkpdsyGYn5O
-         8cZF8Bu7A/GUVPeYXM7XuC5NhEwA0VTfmdKy8=
-Date: Thu, 25 Feb 2010 21:40:23 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       =?utf-8?B?QW5kcsOp?= Goddard Rosa <andre.goddard@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E . Hallyn" <serue@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Xiaotian Feng <xtfeng@gmail.com>
-Subject: [Patch] mqueue: fix the bad code in sys_mq_open()
-Message-ID: <20100225134023.GB3842@hack>
-References: <cover.1266907495.git.andre.goddard@gmail.com> <a3a62a6cd7cc0ba011949396a1f2c7f9c32aa4b9.1266907496.git.andre.goddard@gmail.com> <2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com> <7b6bb4a51002242000x49f0b3bdncb40912bf18f90bb@mail.gmail.com> <2375c9f91002242025n1ab73e18i5950aa4f14ea36db@mail.gmail.com> <2375c9f91002242259n2fabb190ic77d6ca603bd1df7@mail.gmail.com> <7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com>
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=EpZUQeUn6BGcBgjaR08kPGzBUaYN1bKZKrW2laq/VPcdbAV2Ijk+2zxzuYDwEYyCLC
+         ieekx3DevRW6fp34ckt6kVVnlLGx5eXqXWJOkB5MRpAcHxUGGf6ipGf/zqHRzHAj6aKU
+         JLLS6O0rbpHhl4z/G7fxgUXZ6lhopZP3ZYMbA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Date: Thu, 25 Feb 2010 19:15:42 +0530
+Message-ID: <f5a7b3811002250545x3d5288cfqd114d3bcd79581f2@mail.gmail.com>
+Subject: [PATCH] Synchronization required before release the lock: 
+	sem_post/8-1.c
+From: naresh kamboju <naresh.kernel@gmail.com>
+To: ltp-list <ltp-list@lists.sourceforge.net>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Garrett Cooper <yanegomi@gmail.com>,
+       Masatake YAMATO <yamato@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd116f0c695b804806cffab
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--000e0cd116f0c695b804806cffab
+Content-Type: text/plain; charset=ISO-8859-1
 
-Fix bad code in ipc/mqueue.c.
+Hi,
 
-Inspired by André Goddard Rosa's  patch.
+I have found abnormal behavior of sem_post/8-1.c test case under posix.
+This test case passes in some times and failed in many times :-(
 
-a) do_create() and do_open() should not release the resources which
-   are not acquired within themselves, it's their caller's work;
+After my investigation found synchronization is missing between the
+child processes.
+Made a patch to fix this issue.
 
-b) Fix an fd leak;
-
-c) The goto label 'out_upsem' doesn't make any sense, rename to
-   'out_unlock';
-
-d) mntget() should be called before looking up dentry within
-   ->mnt->mnt_root;
-
-e) When dealing with failure case, we should release the resources
-   in a reversed order of acquiring, so reorder the goto labels;
-
-f) Remove some unused labels due to reorder.
-
-Also, this shrinks the binary by 60 bytes:
-
-   text	      data     bss       dec	    hex	filename
-   7674       1684        8      9366      2496	ipc/mqueue.o.BEFORE
-   7614	      1684        8      9306      245a	ipc/mqueue.o.AFTER
+Patch includes
+1.	Reverting back changes made by mreed on Sep 25 2006. Making sure
+child has been waiting for the lock (below Refs).
+2.	using sleep in while loop is not a good idea, so sleep is removed
+from while loop
+3.	For the synchronization I have added sleep before releasing the lock.
 
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: André Goddard Rosa <andre.goddard@gmail.com>
+After applying this patch I have tested this test case 1000 times continuously.
+All the times test case reported as Test Pass :-)
 
+
+Signed-off-by: Naresh Kamboju < naresh.kernel@gmail.com >
 ---
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index c79bd57..fdd09da 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -650,8 +650,6 @@ static struct file *do_create(struct ipc_namespace *ipc_ns, struct dentry *dir,
- out_drop_write:
- 	mnt_drop_write(ipc_ns->mq_mnt);
- out:
--	dput(dentry);
--	mntput(ipc_ns->mq_mnt);
- 	return ERR_PTR(ret);
- }
- 
-@@ -664,17 +662,11 @@ static struct file *do_open(struct ipc_namespace *ipc_ns,
- 	static const int oflag2acc[O_ACCMODE] = { MAY_READ, MAY_WRITE,
- 						  MAY_READ | MAY_WRITE };
- 
--	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY)) {
--		dput(dentry);
--		mntput(ipc_ns->mq_mnt);
-+	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY))
- 		return ERR_PTR(-EINVAL);
--	}
- 
--	if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE])) {
--		dput(dentry);
--		mntput(ipc_ns->mq_mnt);
-+	if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE]))
- 		return ERR_PTR(-EACCES);
--	}
- 
- 	return dentry_open(dentry, ipc_ns->mq_mnt, oflag, cred);
- }
-@@ -686,7 +678,7 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
- 	struct file *filp;
- 	char *name;
- 	struct mq_attr attr;
--	int fd, error;
-+	int fd, error = 0;
- 	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
- 
- 	if (u_attr && copy_from_user(&attr, u_attr, sizeof(struct mq_attr)))
-@@ -701,13 +693,13 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
- 	if (fd < 0)
- 		goto out_putname;
- 
-+	mntget(ipc_ns->mq_mnt);
- 	mutex_lock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
- 	dentry = lookup_one_len(name, ipc_ns->mq_mnt->mnt_root, strlen(name));
- 	if (IS_ERR(dentry)) {
- 		error = PTR_ERR(dentry);
--		goto out_err;
-+		goto out_unlock;
- 	}
--	mntget(ipc_ns->mq_mnt);
- 
- 	if (oflag & O_CREAT) {
- 		if (dentry->d_inode) {	/* entry already exists */
-@@ -731,24 +723,23 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
- 
- 	if (IS_ERR(filp)) {
- 		error = PTR_ERR(filp);
--		goto out_putfd;
-+		goto out;
- 	}
- 
- 	fd_install(fd, filp);
--	goto out_upsem;
-+	goto out_unlock;
- 
- out:
- 	dput(dentry);
--	mntput(ipc_ns->mq_mnt);
--out_putfd:
--	put_unused_fd(fd);
--out_err:
--	fd = error;
--out_upsem:
-+out_unlock:
- 	mutex_unlock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
-+	if (error) {
-+		mntput(ipc_ns->mq_mnt);
-+		put_unused_fd(fd);
-+	}
- out_putname:
- 	putname(name);
--	return fd;
-+	return error;
- }
- 
- SYSCALL_DEFINE1(mq_unlink, const char __user *, u_name)
+ testcases/open_posix_testsuite/conformance/interfaces/sem_post/8-1.c
+|   15    8 +     7 -     0 !
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+Index: b/testcases/open_posix_testsuite/conformance/interfaces/sem_post/8-1.c
+===================================================================
+--- a/testcases/open_posix_testsuite/conformance/interfaces/sem_post/8-1.c
++++ b/testcases/open_posix_testsuite/conformance/interfaces/sem_post/8-1.c
+@@ -161,7 +161,6 @@ int main()
+        }
+        fprintf(stderr, "P: child_1:%d forked\n", c_1);
+
+-       sleep(1);
+        c_2 = fork();
+        if (c_2 == 0)
+        {
+@@ -176,13 +175,13 @@ int main()
+        }
+        fprintf(stderr, "P: child_2: %d forked\n", c_2);
+
++        /* Step 3 Implementation */
+        /* Make sure the two children has been waiting */
+-       /*do {
+-               sleep(1);
++       do {
+                sem_getvalue(sem_1, &val);
+                //printf("val = %d\n", val);
+        } while (val != 1);
+-       */
++
+        c_3 = fork();
+        if (c_3 == 0)
+        {
+@@ -191,13 +190,15 @@ int main()
+        }
+        fprintf(stderr, "P: child_3: %d forked\n", c_3);
+
++        /* Step 3 Implementation */
+        /* Make sure child 3 has been waiting for the lock */
+-       /*do {
+-               sleep(1);
++       do {
+                sem_getvalue(sem_1, &val);
+                //printf("val = %d\n", val);
+        } while (val != 0);
+-       */
++
++       /* Synchronization required before release the lock */
++       sleep(1);
+        /* Ok, let's release the lock */
+        fprintf(stderr, "P: release lock\n");
+        sem_post(sem);
+
+
+Test script to test 1000 times:
+/*****************************************************/
+#!/bin/sh
+
+for ((  i = 0 ;  i < 1000;  i++  ))
+
+do
+
+./8-1.test >> /tmp/sem-post-8-1.log
+done
+/*****************************************************/
+
+Refs:
+http://ltp.cvs.sourceforge.net/viewvc/ltp/ltp/testcases/open_posix_testsuite/conformance/interfaces/sem_post/8-1.c?view=log
+
+Please review this patch and let me know if you have any issues.
+
+Best regards
+Naresh Kamboju
+
+--000e0cd116f0c695b804806cffab
+Content-Type: application/octet-stream; 
+	name="posix-sem-post-unstable-fix.patch"
+Content-Disposition: attachment; 
+	filename="posix-sem-post-unstable-fix.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g63lfu7i0
+
+LS0tCiB0ZXN0Y2FzZXMvb3Blbl9wb3NpeF90ZXN0c3VpdGUvY29uZm9ybWFuY2UvaW50ZXJmYWNl
+cy9zZW1fcG9zdC84LTEuYyB8ICAgMTUgCTggKwk3IC0JMCAhCiAxIGZpbGUgY2hhbmdlZCwgOCBp
+bnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQoKSW5kZXg6IGIvdGVzdGNhc2VzL29wZW5fcG9z
+aXhfdGVzdHN1aXRlL2NvbmZvcm1hbmNlL2ludGVyZmFjZXMvc2VtX3Bvc3QvOC0xLmMKPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PQotLS0gYS90ZXN0Y2FzZXMvb3Blbl9wb3NpeF90ZXN0c3VpdGUvY29uZm9ybWFuY2UvaW50
+ZXJmYWNlcy9zZW1fcG9zdC84LTEuYworKysgYi90ZXN0Y2FzZXMvb3Blbl9wb3NpeF90ZXN0c3Vp
+dGUvY29uZm9ybWFuY2UvaW50ZXJmYWNlcy9zZW1fcG9zdC84LTEuYwpAQCAtMTYxLDcgKzE2MSw2
+IEBAIGludCBtYWluKCkgCiAJfQogCWZwcmludGYoc3RkZXJyLCAiUDogY2hpbGRfMTolZCBmb3Jr
+ZWRcbiIsIGNfMSk7CiAJCi0Jc2xlZXAoMSk7CiAJY18yID0gZm9yaygpOwogCWlmIChjXzIgPT0g
+MCkKIAl7CkBAIC0xNzYsMTMgKzE3NSwxMyBAQCBpbnQgbWFpbigpIAogCX0KIAlmcHJpbnRmKHN0
+ZGVyciwgIlA6IGNoaWxkXzI6ICVkIGZvcmtlZFxuIiwgY18yKTsKIAorICAgICAgICAvKiBTdGVw
+IDMgSW1wbGVtZW50YXRpb24gKi8KIAkvKiBNYWtlIHN1cmUgdGhlIHR3byBjaGlsZHJlbiBoYXMg
+YmVlbiB3YWl0aW5nICovCQotCS8qZG8geyAKLQkJc2xlZXAoMSk7CisJZG8gewogCQlzZW1fZ2V0
+dmFsdWUoc2VtXzEsICZ2YWwpOwogCQkvL3ByaW50ZigidmFsID0gJWRcbiIsIHZhbCk7CiAJfSB3
+aGlsZSAodmFsICE9IDEpOwotCSovCisKIAljXzMgPSBmb3JrKCk7CiAJaWYgKGNfMyA9PSAwKQog
+CXsKQEAgLTE5MSwxMyArMTkwLDE1IEBAIGludCBtYWluKCkgCiAJfQogCWZwcmludGYoc3RkZXJy
+LCAiUDogY2hpbGRfMzogJWQgZm9ya2VkXG4iLCBjXzMpOwogCQorICAgICAgICAvKiBTdGVwIDMg
+SW1wbGVtZW50YXRpb24gKi8KIAkvKiBNYWtlIHN1cmUgY2hpbGQgMyBoYXMgYmVlbiB3YWl0aW5n
+IGZvciB0aGUgbG9jayAqLwkKLQkvKmRvIHsgCi0JCXNsZWVwKDEpOworCWRvIHsKIAkJc2VtX2dl
+dHZhbHVlKHNlbV8xLCAmdmFsKTsKIAkJLy9wcmludGYoInZhbCA9ICVkXG4iLCB2YWwpOwogCX0g
+d2hpbGUgKHZhbCAhPSAwKTsKLQkqLworCisJLyogU3luY2hyb25pemF0aW9uIHJlcXVpcmVkIGJl
+Zm9yZSByZWxlYXNlIHRoZSBsb2NrICovCisJc2xlZXAoMSk7CiAJLyogT2ssIGxldCdzIHJlbGVh
+c2UgdGhlIGxvY2sgKi8KIAlmcHJpbnRmKHN0ZGVyciwgIlA6IHJlbGVhc2UgbG9ja1xuIik7CiAJ
+c2VtX3Bvc3Qoc2VtKTsK
+--000e0cd116f0c695b804806cffab--
