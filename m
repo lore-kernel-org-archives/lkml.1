@@ -1,77 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932757Ab0BYTJF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:09:05 -0500
-Received: from mail.ipom.com ([74.207.225.167]:48114 "EHLO mail.ipom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932353Ab0BYTJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:09:00 -0500
-X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 14:09:00 EST
-Message-ID: <4B86C96B.7060508@ipom.com>
-Date: Thu, 25 Feb 2010 20:03:07 +0100
-From: Phil Dibowitz <phil@ipom.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Ondrej Zary <linux@rainbow-software.org>
-CC: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [resend] unusual_devs.h: Fix capacity for SL11R-IDE 2.6c
-References: <201002241141.10103.linux@rainbow-software.org>
-In-Reply-To: <201002241141.10103.linux@rainbow-software.org>
-X-Enigmail-Version: 1.0.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDA9EC9A728076E808FCB0E6D"
+	id S933102Ab0BYTT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:19:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38235 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932890Ab0BYTT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 14:19:56 -0500
+X-Authority-Analysis: v=1.0 c=1 a=81-ZCrrXXpwA:10 a=20KFwNOVAAAA:8 a=meVymXHHAAAA:8 a=HGNNirQh7TFNGZ8RDJoA:9 a=3h8Eo5CmbHGZZfNPhdkA:7 a=37uurf8JyXwKI_q8jxQqGHwM8nAA:4 a=jEp0ucaQiEUA:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100225191954.735993275@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 25 Feb 2010 14:17:59 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Marek <mmarek@suse.cz>, linux-kbuild@vger.kernel.org
+Subject: [PATCH 4/5] kconfig: Add LSMOD=file to override the lsmod for localmodconfig
+References: <20100225191755.483925025@goodmis.org>
+Content-Disposition: inline; filename=0004-kconfig-Add-LSMOD-file-to-override-the-lsmod-for-loc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDA9EC9A728076E808FCB0E6D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Steven Rostedt <srostedt@redhat.com>
 
-On 02/24/2010 11:41 AM, Ondrej Zary wrote:
-> SL11R-IDE 2.6c (at least) reports wrong capacity (one sector more).
-> Reading that last sector causes the device not to work anymore (and loo=
-ks
-> like HAL or something does that automatically after plugging in):
-> sd 5:0:0:0: [sdc] Device not ready
-> sd 5:0:0:0: [sdc] Result: hostbyte=3D0x00 driverbyte=3D0x08
-> sd 5:0:0:0: [sdc] Sense Key : 0x2 [current]
-> sd 5:0:0:0: [sdc] ASC=3D0x0 ASCQ=3D0x0
-> sd 5:0:0:0: [sdc] CDB: cdb[0]=3D0x28: 28 00 04 a8 b5 70 00 00 01 00
+Doing the following:
 
-Ondrej,
+	make LSMOD=file localmodconfig
 
-I got both of your emails, but I was in LA for the SCALE conference. Give=
- me
-a day or two to catch up.
+Will make the streamline-config code use the given file instead of
+lsmod. If the file is an executable, it will execute it, otherwise
+it will read it as text.
 
---=20
-Phil Dibowitz                             phil@ipom.com
-Open Source software and tech docs        Insanity Palace of Metallica
-http://www.phildev.net/                   http://www.ipom.com/
+	make LSMOD=/my/local/path/lsmod localmodconfig
 
-"Be who you are and say what you feel, because those who mind don't matte=
-r
- and those who matter don't mind."
- - Dr. Seuss
+The above will execute the lsmod in /my/local/path instead of the
+lsmods that may be located elsewhere.
+
+	make LSMOD=embedded_board_lsmod localmodconfig
+
+The above will read the "embedded_board_lsmod" as a text file. This
+is useful if you are doing a cross compile and need to run the
+config against modules that exist on an embedded device.
+
+Note, if the LSMOD= file does is not a path, it will add the
+path to the object directory. That is, the above example will look
+for "embedded_board_lsmod" in the directory that the binary will
+be built in (the O=dir directory).
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+ On branch config/linus
+---
+ scripts/kconfig/Makefile             |   13 +++++++++-
+ scripts/kconfig/streamline_config.pl |   38 ++++++++++++++++++++++++---------
+ 2 files changed, 38 insertions(+), 13 deletions(-)
+
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 006c96f..85b9065 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -30,9 +30,18 @@ silentoldconfig: $(obj)/conf
+ 	$(Q)mkdir -p include/generated
+ 	$< -s $(Kconfig)
+ 
++# if no path is given, then use src directory to find file
++ifdef LSMOD
++LSMOD_F = $(shell if [ `basename $(LSMOD)` == $(LSMOD) ]; then \
++		echo $(objtree)/$(LSMOD);			\
++	else							\
++		echo $(LSMOD);					\
++	fi)
++endif
++
+ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
+ 	$(Q)mkdir -p include/generated
+-	$(Q)perl $< $(srctree) $(Kconfig) > .tmp.config
++	$(Q)perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config
+ 	$(Q)if [ -f .config ]; then 				\
+ 			cmp -s .tmp.config .config ||		\
+ 			(mv -f .config .config.old.1;		\
+@@ -47,7 +56,7 @@ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
+ 
+ localyesconfig: $(obj)/streamline_config.pl $(obj)/conf
+ 	$(Q)mkdir -p include/generated
+-	$(Q)perl $< $(srctree) $(Kconfig) > .tmp.config
++	$(Q)perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config
+ 	$(Q)sed -i s/=m/=y/ .tmp.config
+ 	$(Q)if [ -f .config ]; then 				\
+ 			cmp -s .tmp.config .config ||		\
+diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+index d7f7db7..afbd54a 100644
+--- a/scripts/kconfig/streamline_config.pl
++++ b/scripts/kconfig/streamline_config.pl
+@@ -113,6 +113,7 @@ find_config;
+ # Get the build source and top level Kconfig file (passed in)
+ my $ksource = $ARGV[0];
+ my $kconfig = $ARGV[1];
++my $lsmod_file = $ARGV[2];
+ 
+ my @makefiles = `find $ksource -name Makefile`;
+ my %depends;
+@@ -263,21 +264,36 @@ foreach my $makefile (@makefiles) {
+ 
+ my %modules;
+ 
+-# see what modules are loaded on this system
+-my $lsmod;
+-
+-foreach $dir ( ("/sbin", "/bin", "/usr/sbin", "/usr/bin") ) {
+-    if ( -x "$dir/lsmod" ) {
+-	$lsmod = "$dir/lsmod";
+-	last;
++if (defined($lsmod_file)) {
++    if ( ! -f $lsmod_file) {
++	die "$lsmod_file not found";
++    }
++    if ( -x $lsmod_file) {
++	# the file is executable, run it
++	open(LIN, "$lsmod_file|");
++    } else {
++	# Just read the contents
++	open(LIN, "$lsmod_file");
+     }
++} else {
++
++    # see what modules are loaded on this system
++    my $lsmod;
++
++    foreach $dir ( ("/sbin", "/bin", "/usr/sbin", "/usr/bin") ) {
++	if ( -x "$dir/lsmod" ) {
++	    $lsmod = "$dir/lsmod";
++	    last;
++	}
+ }
+-if (!defined($lsmod)) {
+-    # try just the path
+-    $lsmod = "lsmod";
++    if (!defined($lsmod)) {
++	# try just the path
++	$lsmod = "lsmod";
++    }
++
++    open(LIN,"$lsmod|") || die "Can not call lsmod with $lsmod";
+ }
+ 
+-open(LIN,"$lsmod|") || die "Can not call lsmod with $lsmod";
+ while (<LIN>) {
+ 	next if (/^Module/);  # Skip the first line.
+ 	if (/^(\S+)/) {
+-- 
+1.6.5
 
 
-
---------------enigDA9EC9A728076E808FCB0E6D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkuGyWsACgkQN5XoxaHnMrsUmgCeOs0Rmqnp8axBZv7VL/lSGg1V
-bZ4An2/2JiLK1rSakBwQeI62TPoJspKx
-=gFzQ
------END PGP SIGNATURE-----
-
---------------enigDA9EC9A728076E808FCB0E6D--
