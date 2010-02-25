@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932589Ab0BYNbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 08:31:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52265 "EHLO mx1.redhat.com"
+	id S932627Ab0BYNbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 08:31:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62357 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932519Ab0BYNbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 08:31:17 -0500
+	id S932611Ab0BYNbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 08:31:46 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v3&10 11/18] perf probe: Update perf probe document
+Subject: [PATCH -tip v3&10 17/18] perf probe: show more lines after last line
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -19,8 +19,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Date: Thu, 25 Feb 2010 08:35:19 -0500
-Message-ID: <20100225133519.6725.58816.stgit@localhost6.localdomain6>
+Date: Thu, 25 Feb 2010 08:36:04 -0500
+Message-ID: <20100225133604.6725.76820.stgit@localhost6.localdomain6>
 In-Reply-To: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
 References: <20100225133342.6725.26971.stgit@localhost6.localdomain6>
 User-Agent: StGIT/0.14.3
@@ -31,8 +31,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update perf-probe.txt to suit to current perf-probe command
-and add some examples.
+Show 2 more lines after the last probe-able line.
+This will clearly show the last closed-brace of
+inline functions.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -44,62 +45,33 @@ Cc: Mike Galbraith <efault@gmx.de>
 Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
 
- tools/perf/Documentation/perf-probe.txt |   28 ++++++++++++++++++++++++++--
- 1 files changed, 26 insertions(+), 2 deletions(-)
+ tools/perf/util/probe-event.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
-index 2de3407..5fe63c0 100644
---- a/tools/perf/Documentation/perf-probe.txt
-+++ b/tools/perf/Documentation/perf-probe.txt
-@@ -41,7 +41,8 @@ OPTIONS
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 01c229b..e7918e2 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -718,6 +718,7 @@ void del_trace_kprobe_events(struct strlist *dellist)
+ }
  
- -d::
- --del=::
--	Delete a probe event.
-+	Delete probe events. This accepts glob wildcards('*', '?') and character
-+	classes(e.g. [a-z], [!A-Z]).
+ #define LINEBUF_SIZE 256
++#define NR_ADDITIONAL_LINES 2
  
- -l::
- --list::
-@@ -50,7 +51,11 @@ OPTIONS
- -L::
- --line=::
- 	Show source code lines which can be probed. This needs an argument
--	which specifies a range of the source code.
-+	which specifies a range of the source code. (see LINE SYNTAX for detail)
+ static void show_one_line(FILE *fp, unsigned int l, bool skip, bool show_num)
+ {
+@@ -778,5 +779,11 @@ void show_line_range(struct line_range *lr)
+ 			show_one_line(fp, (l++) - lr->offset, false, false);
+ 		show_one_line(fp, (l++) - lr->offset, false, true);
+ 	}
 +
-+-f::
-+--force::
-+	Forcibly add events with existing name.
- 
- PROBE SYNTAX
- ------------
-@@ -76,6 +81,25 @@ and 'ALN2' is end line number in the file. It is also possible to specify how
- many lines to show by using 'NUM'.
- So, "source.c:100-120" shows lines between 100th to l20th in source.c file. And "func:10+20" shows 20 lines from 10th line of func function.
- 
-+EXAMPLES
-+--------
-+Display which lines in schedule() can be probed:
++	if (lr->end == INT_MAX)
++		lr->end = l + NR_ADDITIONAL_LINES;
++	while (l < lr->end && !feof(fp))
++		show_one_line(fp, (l++) - lr->offset, false, false);
 +
-+ ./perf probe --line schedule
-+
-+Add a probe on schedule() function 12th line with recording cpu local variable:
-+
-+ ./perf probe schedule:12 cpu
-+ or
-+ ./perf probe --add='schedule:12 cpu'
-+
-+ this will add one or more probes which has the name start with "schedule".
-+
-+Delete all probes on schedule().
-+
-+ ./perf probe --del='schedule*'
-+
-+
- SEE ALSO
- --------
- linkperf:perf-trace[1], linkperf:perf-record[1]
+ 	fclose(fp);
+ }
 
 
 -- 
