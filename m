@@ -1,46 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932829Ab0BYQNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:13:51 -0500
-Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:55402 "EHLO
-	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932782Ab0BYQNu (ORCPT
+	id S932825Ab0BYQO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:14:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53750 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932705Ab0BYQO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:13:50 -0500
-Date: Thu, 25 Feb 2010 16:14:54 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: phillip.lougher@gmail.com
-Subject: [PATCH 2/3] Squashfs: get rid of obsolete definition in header
- file
-Message-ID: <4b86a1fe.tXQ8/ElGI6AXgLb2%phillip@lougher.demon.co.uk>
-User-Agent: Heirloom mailx 12.4 7/29/08
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Feb 2010 11:14:58 -0500
+X-Authority-Analysis: v=1.0 c=1 a=eNVLYnTlQjUA:10 a=7U3hwN5JcxgA:10 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=kOU8fZ8KLaskL6z07L0A:9 a=jexw9V_xGMvIL7zq5QtybfKvmOYA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 05/07] kernel.h trace cleanup
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100225154322.GA2686@darkstar>
+References: <20100225154322.GA2686@darkstar>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 25 Feb 2010 11:14:56 -0500
+Message-ID: <1267114496.6328.3.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2010-02-25 at 23:43 +0800, Dave Young wrote:
+> Cleanup kernel.h trace related stuff, move to linux/trace.h
+> 
+> As Steven Rostedt said, trace stuff should be as convenient as printk,
+> so include trace.h in kernel.h for convinience.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> ---
+>  include/linux/kernel.h |  137 -----------------------------------------------
+>  include/linux/trace.h  |  141 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 142 insertions(+), 136 deletions(-)
+> 
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/squashfs_fs.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-diff --git a/fs/squashfs/squashfs_fs.h b/fs/squashfs/squashfs_fs.h
-index 36e1604..7902424 100644
---- a/fs/squashfs/squashfs_fs.h
-+++ b/fs/squashfs/squashfs_fs.h
-@@ -183,8 +183,6 @@
- #define SQUASHFS_MAX_FILE_SIZE		(1LL << \
- 					(SQUASHFS_MAX_FILE_SIZE_LOG - 2))
- 
--#define SQUASHFS_MARKER_BYTE		0xff
--
- /* meta index cache */
- #define SQUASHFS_META_INDEXES	(SQUASHFS_METADATA_SIZE / sizeof(unsigned int))
- #define SQUASHFS_META_ENTRIES	127
--- 
-1.6.3.3
+-- Steve
+
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+
 
