@@ -1,164 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933925Ab0BYVWv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:22:51 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63531 "EHLO
+	id S933917Ab0BYVXK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:23:10 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63592 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933805Ab0BYVWa (ORCPT
+	with ESMTP id S933841Ab0BYVWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:30 -0500
+	Thu, 25 Feb 2010 16:22:35 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 13/28] kgdb: gdb "monitor" -> kdb passthrough
-Date: Thu, 25 Feb 2010 15:21:18 -0600
-Message-Id: <1267132893-23624-14-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 28/28] debug_core: Turn off tracing while in the debugger
+Date: Thu, 25 Feb 2010 15:21:33 -0600
+Message-Id: <1267132893-23624-29-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:51.0039 (UTC) FILETIME=[8BB374F0:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:22:05.0133 (UTC) FILETIME=[941A07D0:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the driving forces behind integrating another front end (kdb)
-to the debug core is to allow front end commands to be accessible via
-gdb's monitor command.  It is true that you could write gdb macros to
-get certain data, but you may want to just use gdb to access the
-commands that are available in the kdb front end.
+The kernel debugger should turn off kernel tracing any time the
+debugger is active and restore it on resume.
 
-This patch implements the Rcmd gdb stub packet.  In gdb you access
-this with the "monitor" command.  For instance you could type "monitor
-help", "monitor lsmod" or "monitor ps A" etc...
-
-There is no error checking or command restrictions on what you can and
-cannot access at this point.  Doing something like trying to set
-breakpoints with the monitor command is going to cause nothing but
-problems.  Perhaps in the future only the commands that are actually
-known to work with the gdb monitor command will be available.
-
+CC: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- kernel/debug/debug_core.c      |    2 +-
- kernel/debug/debug_core.h      |    2 ++
- kernel/debug/gdbstub.c         |   22 ++++++++++++++++++++++
- kernel/debug/kdb/kdb_io.c      |   13 +++++++++----
- kernel/debug/kdb/kdb_private.h |    1 -
- 5 files changed, 34 insertions(+), 6 deletions(-)
+ kernel/debug/debug_core.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 5bd2670..dbf81aa 100644
+index ed42d9e..3d36d9e 100644
 --- a/kernel/debug/debug_core.c
 +++ b/kernel/debug/debug_core.c
-@@ -82,7 +82,7 @@ static int kgdb_use_con;
- int dbg_switch_cpu;
+@@ -474,6 +474,7 @@ static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs)
+ 	int sstep_tries = 100;
+ 	int error;
+ 	int i, cpu;
++	int trace_on = 0;
+ acquirelock:
+ 	/*
+ 	 * Interrupts will be restored by the 'trap return' code, except when
+@@ -518,6 +519,8 @@ return_normal:
+ 			 */
+ 			if (arch_kgdb_ops.correct_hw_break)
+ 				arch_kgdb_ops.correct_hw_break();
++			if (trace_on)
++				tracing_on();
+ 			atomic_set(&cpu_in_kgdb[cpu], 0);
+ 			touch_softlockup_watchdog_sync();
+ 			clocksource_touch_watchdog();
+@@ -592,6 +595,9 @@ return_normal:
+ 	kgdb_single_step = 0;
+ 	kgdb_contthread = current;
+ 	exception_level = 0;
++	trace_on = tracing_is_on();
++	if (trace_on)
++		tracing_off();
  
- /* Use kdb or gdbserver mode */
--static int dbg_kdb_mode = 1;
-+int dbg_kdb_mode = 1;
- 
- static int __init opt_kgdb_con(char *str)
- {
-diff --git a/kernel/debug/debug_core.h b/kernel/debug/debug_core.h
-index a7051fa..888cc4e 100644
---- a/kernel/debug/debug_core.h
-+++ b/kernel/debug/debug_core.h
-@@ -66,9 +66,11 @@ extern void gdbstub_msg_write(const char *s, int len);
- 
- /* gdbstub functions used for kdb <-> gdbstub transition */
- extern int gdbstub_state(struct kgdb_state *ks, char *cmd);
-+extern int dbg_kdb_mode;
- 
- #ifdef CONFIG_KGDB_KDB
- extern int kdb_stub(struct kgdb_state *ks);
-+extern int kdb_parse(const char *cmdstr);
- #else /* ! CONFIG_KGDB_KDB */
- static inline int kdb_stub(struct kgdb_state *ks)
- {
-diff --git a/kernel/debug/gdbstub.c b/kernel/debug/gdbstub.c
-index 6965b5c..cee2c0e 100644
---- a/kernel/debug/gdbstub.c
-+++ b/kernel/debug/gdbstub.c
-@@ -201,6 +201,9 @@ void gdbstub_msg_write(const char *s, int len)
- 	int wcount;
- 	int i;
- 
-+	if (len == 0)
-+		len = strlen(s);
-+
- 	/* 'O'utput */
- 	gdbmsgbuf[0] = 'O';
- 
-@@ -690,6 +693,25 @@ static void gdb_cmd_query(struct kgdb_state *ks)
- 			kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
- 		}
- 		break;
-+#ifdef CONFIG_KGDB_KDB
-+	case 'R':
-+		if (strncmp(remcom_in_buffer, "qRcmd,", 6) == 0) {
-+			int len = strlen(remcom_in_buffer + 6);
-+
-+			if ((len % 2) != 0) {
-+				strcpy(remcom_out_buffer, "E01");
-+				break;
-+			}
-+			kgdb_hex2mem(remcom_in_buffer + 6,
-+				     remcom_out_buffer, len);
-+			len = len / 2;
-+			remcom_out_buffer[len++] = 0;
-+
-+			kdb_parse(remcom_out_buffer);
-+			strcpy(remcom_out_buffer, "OK");
-+		}
-+		break;
-+#endif
+ 	while (1) {
+ cpu_master_loop:
+@@ -645,6 +651,8 @@ kgdb_restore:
+ 		else
+ 			kgdb_sstep_pid = 0;
  	}
- }
- 
-diff --git a/kernel/debug/kdb/kdb_io.c b/kernel/debug/kdb/kdb_io.c
-index 9e3cec7..8339b29 100644
---- a/kernel/debug/kdb/kdb_io.c
-+++ b/kernel/debug/kdb/kdb_io.c
-@@ -21,6 +21,7 @@
- #include <linux/smp.h>
- #include <linux/nmi.h>
- #include <linux/delay.h>
-+#include <linux/kgdb.h>
- #include <linux/kdb.h>
- #include <linux/kallsyms.h>
- #include "kdb_private.h"
-@@ -669,10 +670,14 @@ kdb_printit:
- 	 * Write to all consoles.
- 	 */
- 	retlen = strlen(kdb_buffer);
--	while (c) {
--		c->write(c, kdb_buffer, retlen);
--		touch_nmi_watchdog();
--		c = c->next;
-+	if (!dbg_kdb_mode && kgdb_connected) {
-+		gdbstub_msg_write(kdb_buffer, retlen);
-+	} else {
-+		while (c) {
-+			c->write(c, kdb_buffer, retlen);
-+			touch_nmi_watchdog();
-+			c = c->next;
-+		}
- 	}
- 	if (logging) {
- 		saved_loglevel = console_loglevel;
-diff --git a/kernel/debug/kdb/kdb_private.h b/kernel/debug/kdb/kdb_private.h
-index 69ed2ef..97d3ba6 100644
---- a/kernel/debug/kdb/kdb_private.h
-+++ b/kernel/debug/kdb/kdb_private.h
-@@ -254,7 +254,6 @@ extern unsigned long kdb_task_state(const struct task_struct *p,
- 				    unsigned long mask);
- extern void kdb_ps_suppressed(void);
- extern void kdb_ps1(const struct task_struct *p);
--extern int kdb_parse(const char *cmdstr);
- extern void kdb_print_nameval(const char *name, unsigned long val);
- extern void kdb_send_sig_info(struct task_struct *p, struct siginfo *info);
- extern void kdb_meminfo_proc_show(void);
++	if (trace_on)
++		tracing_on();
+ 	/* Free kgdb_active */
+ 	atomic_set(&kgdb_active, -1);
+ 	touch_softlockup_watchdog_sync();
 -- 
 1.6.4.rc1
 
