@@ -1,71 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933269Ab0BYTVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:21:43 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38252 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932870Ab0BYTT4 (ORCPT
+	id S933321Ab0BYTWL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:22:11 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:52631 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933315Ab0BYTWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:19:56 -0500
-X-Authority-Analysis: v=1.0 c=1 a=AB_-z3S8Ij8A:10 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=x6C2UzhSFb6Sx6bTZhwA:9 a=rzzK0JazwLDo2KmUSIUA:7 a=QZaVOT6wBCyAb0KN1K7FaKBWR_sA:4 a=jEp0ucaQiEUA:10 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Message-Id: <20100225191954.372597723@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 25 Feb 2010 14:17:58 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Marek <mmarek@suse.cz>, linux-kbuild@vger.kernel.org,
-       Xavier Chantry <shiningxc@gmail.com>
-Subject: [PATCH 3/5] kconfig: Look in both /bin and /sbin for lsmod in streamline_config.pl
-References: <20100225191755.483925025@goodmis.org>
-Content-Disposition: inline; filename=0003-kconfig-Look-in-both-bin-and-sbin-for-lsmod-in-strea.patch
+	Thu, 25 Feb 2010 14:22:06 -0500
+Date: Thu, 25 Feb 2010 11:21:59 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: "Steven J. Magnani" <steve@digidescorp.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, Zhang Wei <zw@zh-kernel.org>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [async_tx-next PATCH 1/2] fsldma: Fix cookie issues
+Message-ID: <20100225192159.GA32092@ovro.caltech.edu>
+References: <1266860431-17310-1-git-send-email-steve@digidescorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266860431-17310-1-git-send-email-steve@digidescorp.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 25 Feb 2010 11:22:00 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Mon, Feb 22, 2010 at 11:40:31AM -0600, Steven J. Magnani wrote:
+> fsl_dma_tx_submit() only sets the cookie on the first descriptor of a
+> transaction. It should set the cookie on all.
+> 
+> Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+> ---
+> diff -uprN a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> --- a/drivers/dma/fsldma.c	2010-02-22 11:16:36.000000000 -0600
+> +++ b/drivers/dma/fsldma.c	2010-02-22 11:24:01.000000000 -0600
+> @@ -362,7 +362,7 @@ static dma_cookie_t fsl_dma_tx_submit(st
+>  		if (cookie < 0)
+>  			cookie = 1;
+>  
+> -		desc->async_tx.cookie = cookie;
+> +		child->async_tx.cookie = cookie;
+>  	}
+>  
+>  	chan->common.cookie = cookie;
+> 
 
-Distributions now have lsmod in /bin instead of /sbin. But to handle
-both cases, we look for it in /sbin /bin /usr/bin and /usr/sbin.
-If lsmod is not found in any of those paths, it defaults to use
-just lsmod and hopes that it lies in the path of the user.
+This looks correct to me. I'm not sure I ever tested the driver with a
+chained struct dma_async_tx_descriptor.
 
-Tested-by: Xavier Chantry <shiningxc@gmail.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- scripts/kconfig/streamline_config.pl |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 9e66fa8..d7f7db7 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -264,7 +264,20 @@ foreach my $makefile (@makefiles) {
- my %modules;
- 
- # see what modules are loaded on this system
--open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
-+my $lsmod;
-+
-+foreach $dir ( ("/sbin", "/bin", "/usr/sbin", "/usr/bin") ) {
-+    if ( -x "$dir/lsmod" ) {
-+	$lsmod = "$dir/lsmod";
-+	last;
-+    }
-+}
-+if (!defined($lsmod)) {
-+    # try just the path
-+    $lsmod = "lsmod";
-+}
-+
-+open(LIN,"$lsmod|") || die "Can not call lsmod with $lsmod";
- while (<LIN>) {
- 	next if (/^Module/);  # Skip the first line.
- 	if (/^(\S+)/) {
--- 
-1.6.5
-
-
+Ira
