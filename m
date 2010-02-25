@@ -1,59 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934335Ab0BYWry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 17:47:54 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:44520 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934287Ab0BYWrx (ORCPT
+	id S934355Ab0BYWsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 17:48:12 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:34366 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934287Ab0BYWsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 17:47:53 -0500
-Date: Thu, 25 Feb 2010 23:33:44 +0100
-From: Jens Seidel <jensseidel@users.sf.net>
-To: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Cc: Jens Seidel <jensseidel@users.sf.net>
-Subject: Re: CE: xen increasing min_delta_ns to 7651397591976463850 nsec /
-	pvops domU
-Message-ID: <20100225223342.GA2230@merkur.sol.de>
-Mail-Followup-To: Jens Seidel <jensseidel@users.sf.net>,
-	linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-References: <20100222082657.GA26436@merkur.sol.de> <20100225214442.GG2761@reaktio.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100225214442.GG2761@reaktio.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Provags-ID: V01U2FsdGVkX18uVPMmPeEu37dTcQa68uUK6e7zGxYSC3RWZvOF
-	FkxAiiQtXzfDfBeSdjyBMegHANwPwd+uzG8uoMUuw9XRDeEWAY
-	qXZQy7XLU=
+	Thu, 25 Feb 2010 17:48:09 -0500
+Date: Thu, 25 Feb 2010 14:41:22 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       gregkh@suse.de, Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [PATCH -next] staging/pohmelfs: fix write_inode parameter warning
+Message-Id: <20100225144122.d9ba8810.randy.dunlap@oracle.com>
+In-Reply-To: <20100225183523.80361261.sfr@canb.auug.org.au>
+References: <20100225183523.80361261.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B86FCEF.013E:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 11:44:42PM +0200, Pasi Kärkkäinen wrote:
-> CCing to xen-devel..
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-thanks Pasi ...
+sparse warns that:
+drivers/staging/pohmelfs/inode.c:1797: warning: initialization from incompatible pointer type
 
-I have more information:
+so fix pohmelfs_write_inode() to have the expected parameters.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/pohmelfs/inode.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-next-20100225.orig/drivers/staging/pohmelfs/inode.c
++++ linux-next-20100225/drivers/staging/pohmelfs/inode.c
+@@ -396,7 +396,8 @@ int pohmelfs_remove_child(struct pohmelf
+ /*
+  * Writeback for given inode.
+  */
+-static int pohmelfs_write_inode(struct inode *inode, int sync)
++static int pohmelfs_write_inode(struct inode *inode,
++				struct writeback_control *wbc)
+ {
+ 	struct pohmelfs_inode *pi = POHMELFS_I(inode);
  
-> On Mon, Feb 22, 2010 at 09:26:59AM +0100, Jens Seidel wrote:
-> > I'm using vanilla 2.6.32.7 domU kernel with Xen 3.2 and get very often a
-> > unresponsible system after approximately one or two days with messages such as
-
-The problem seems to occur between 10h - 11.5h (verified three times).
-
-Using the options "hpet=disable clocksource=jiffies nolapic acpi=off" the
-problem vanished but I get a minor time drift between dom0 and domU (and
-missed at least once my bus :-()
-
-> > [43616.674502] CE: xen increasing min_delta_ns to 16086592372704132408 nsec
-> > 
-> > on the console. I fail to login via ssh and even to cleanly shutdown this
-> > system via xm <id> shutdown. sysrq requests still work.
-
-Oops, forget about sysrq. Now I think it didn't worked.
-
-> > PS: Please CC: me.
-
-Jens
