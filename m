@@ -1,45 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992Ab0BYKN7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:13:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40927 "EHLO hera.kernel.org"
+	id S1759025Ab0BYKPX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:15:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41059 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726Ab0BYKNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:13:55 -0500
-Date: Thu, 25 Feb 2010 10:12:58 GMT
+	id S1752442Ab0BYKPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 05:15:17 -0500
+Date: Thu, 25 Feb 2010 10:14:17 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1266887105-1528-13-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <1266887105-1528-13-git-send-email-paulmck@linux.vnet.ibm.com>
+In-Reply-To: <1266887105-1528-18-git-send-email-paulmck@linux.vnet.ibm.com>
+References: <1266887105-1528-18-git-send-email-paulmck@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Documentation update for CONFIG_PROVE_RCU
-Message-ID: <tip-c598a070bc581aea8a518b460dae8c0cf8e74344@git.kernel.org>
-Git-Commit-ID: c598a070bc581aea8a518b460dae8c0cf8e74344
+Subject: [tip:core/rcu] rcu: Convert to raw_spinlocks
+Message-ID: <tip-1304afb225288a2e250d6a7495462c28e5509cbb@git.kernel.org>
+Git-Commit-ID: 1304afb225288a2e250d6a7495462c28e5509cbb
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 10:12:58 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 10:14:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c598a070bc581aea8a518b460dae8c0cf8e74344
-Gitweb:     http://git.kernel.org/tip/c598a070bc581aea8a518b460dae8c0cf8e74344
+Commit-ID:  1304afb225288a2e250d6a7495462c28e5509cbb
+Gitweb:     http://git.kernel.org/tip/1304afb225288a2e250d6a7495462c28e5509cbb
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 22 Feb 2010 17:04:57 -0800
+AuthorDate: Mon, 22 Feb 2010 17:05:02 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 10:34:53 +0100
+CommitDate: Thu, 25 Feb 2010 10:34:58 +0100
 
-rcu: Documentation update for CONFIG_PROVE_RCU
+rcu: Convert to raw_spinlocks
 
-Adds a lockdep.txt file and updates checklist.txt and
-whatisRCU.txt to reflect the new lockdep-enabled capabilities of
-RCU.
+The spinlocks in rcutree need to be real spinlocks in
+preempt-rt. Convert them to raw_spinlocks.
 
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: laijs@cn.fujitsu.com
 Cc: dipankar@in.ibm.com
@@ -51,224 +51,689 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: Valdis.Kletnieks@vt.edu
 Cc: dhowells@redhat.com
-LKML-Reference: <1266887105-1528-13-git-send-email-paulmck@linux.vnet.ibm.com>
+LKML-Reference: <1266887105-1528-18-git-send-email-paulmck@linux.vnet.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/RCU/00-INDEX      |    2 +
- Documentation/RCU/checklist.txt |   34 +++++++++++--------
- Documentation/RCU/lockdep.txt   |   67 +++++++++++++++++++++++++++++++++++++++
- Documentation/RCU/whatisRCU.txt |   13 +++++---
- 4 files changed, 97 insertions(+), 19 deletions(-)
+ kernel/rcutree.c        |  132 +++++++++++++++++++++++-----------------------
+ kernel/rcutree.h        |    6 +-
+ kernel/rcutree_plugin.h |   46 ++++++++--------
+ 3 files changed, 92 insertions(+), 92 deletions(-)
 
-diff --git a/Documentation/RCU/00-INDEX b/Documentation/RCU/00-INDEX
-index 0a27ea9..71b6f50 100644
---- a/Documentation/RCU/00-INDEX
-+++ b/Documentation/RCU/00-INDEX
-@@ -6,6 +6,8 @@ checklist.txt
- 	- Review Checklist for RCU Patches
- listRCU.txt
- 	- Using RCU to Protect Read-Mostly Linked Lists
-+lockdep.txt
-+	- RCU and lockdep checking
- NMI-RCU.txt
- 	- Using RCU to Protect Dynamic NMI Handlers
- rcubarrier.txt
-diff --git a/Documentation/RCU/checklist.txt b/Documentation/RCU/checklist.txt
-index 767cf06..cbc180f 100644
---- a/Documentation/RCU/checklist.txt
-+++ b/Documentation/RCU/checklist.txt
-@@ -127,10 +127,14 @@ over a rather long period of time, but improvements are always welcome!
- 		perfectly legal (if redundant) for update-side code to
- 		use rcu_dereference() and the "_rcu()" list-traversal
- 		primitives.  This is particularly useful in code that
--		is common to readers and updaters.  However, neither
--		rcu_dereference() nor the "_rcu()" list-traversal
--		primitives can substitute for a good concurrency design
--		coordinating among multiple updaters.
-+		is common to readers and updaters.  However, lockdep
-+		will complain if you access rcu_dereference() outside
-+		of an RCU read-side critical section.  See lockdep.txt
-+		to learn what to do about this.
-+
-+		Of course, neither rcu_dereference() nor the "_rcu()"
-+		list-traversal primitives can substitute for a good
-+		concurrency design coordinating among multiple updaters.
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index dd0d31d..65a807b 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -66,11 +66,11 @@ static struct lock_class_key rcu_node_class[NUM_RCU_LVLS];
+ 	.signaled = RCU_GP_IDLE, \
+ 	.gpnum = -300, \
+ 	.completed = -300, \
+-	.onofflock = __SPIN_LOCK_UNLOCKED(&name.onofflock), \
++	.onofflock = __RAW_SPIN_LOCK_UNLOCKED(&name.onofflock), \
+ 	.orphan_cbs_list = NULL, \
+ 	.orphan_cbs_tail = &name.orphan_cbs_list, \
+ 	.orphan_qlen = 0, \
+-	.fqslock = __SPIN_LOCK_UNLOCKED(&name.fqslock), \
++	.fqslock = __RAW_SPIN_LOCK_UNLOCKED(&name.fqslock), \
+ 	.n_force_qs = 0, \
+ 	.n_force_qs_ngp = 0, \
+ }
+@@ -457,10 +457,10 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
  
- 	b.	If the list macros are being used, the list_add_tail_rcu()
- 		and list_add_rcu() primitives must be used in order
-@@ -249,7 +253,9 @@ over a rather long period of time, but improvements are always welcome!
- 	must be protected by appropriate update-side locks.  RCU
- 	read-side critical sections are delimited by rcu_read_lock()
- 	and rcu_read_unlock(), or by similar primitives such as
--	rcu_read_lock_bh() and rcu_read_unlock_bh().
-+	rcu_read_lock_bh() and rcu_read_unlock_bh(), in which case
-+	the matching rcu_dereference() primitive must be used in order
-+	to keep lockdep happy, in this case, rcu_dereference_bh().
+ 	/* Only let one CPU complain about others per time interval. */
  
- 	The reason that it is permissible to use RCU list-traversal
- 	primitives when the update-side lock is held is that doing so
-@@ -302,15 +308,15 @@ over a rather long period of time, but improvements are always welcome!
- 	not the case, a self-spawning RCU callback would prevent the
- 	victim CPU from ever going offline.)
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	delta = jiffies - rsp->jiffies_stall;
+ 	if (delta < RCU_STALL_RAT_DELAY || !rcu_gp_in_progress(rsp)) {
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;
+ 	}
+ 	rsp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
+@@ -470,7 +470,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
+ 	 * due to CPU offlining.
+ 	 */
+ 	rcu_print_task_stall(rnp);
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
  
--14.	SRCU (srcu_read_lock(), srcu_read_unlock(), synchronize_srcu(),
--	and synchronize_srcu_expedited()) may only be invoked from
--	process context.  Unlike other forms of RCU, it -is- permissible
--	to block in an SRCU read-side critical section (demarked by
--	srcu_read_lock() and srcu_read_unlock()), hence the "SRCU":
--	"sleepable RCU".  Please note that if you don't need to sleep
--	in read-side critical sections, you should be using RCU rather
--	than SRCU, because RCU is almost always faster and easier to
--	use than is SRCU.
-+14.	SRCU (srcu_read_lock(), srcu_read_unlock(), srcu_dereference(),
-+	synchronize_srcu(), and synchronize_srcu_expedited()) may only
-+	be invoked from process context.  Unlike other forms of RCU, it
-+	-is- permissible to block in an SRCU read-side critical section
-+	(demarked by srcu_read_lock() and srcu_read_unlock()), hence the
-+	"SRCU": "sleepable RCU".  Please note that if you don't need
-+	to sleep in read-side critical sections, you should be using
-+	RCU rather than SRCU, because RCU is almost always faster and
-+	easier to use than is SRCU.
+ 	/* OK, time to rat on our buddy... */
  
- 	Also unlike other forms of RCU, explicit initialization
- 	and cleanup is required via init_srcu_struct() and
-diff --git a/Documentation/RCU/lockdep.txt b/Documentation/RCU/lockdep.txt
-new file mode 100644
-index 0000000..fe24b58
---- /dev/null
-+++ b/Documentation/RCU/lockdep.txt
-@@ -0,0 +1,67 @@
-+RCU and lockdep checking
-+
-+All flavors of RCU have lockdep checking available, so that lockdep is
-+aware of when each task enters and leaves any flavor of RCU read-side
-+critical section.  Each flavor of RCU is tracked separately (but note
-+that this is not the case in 2.6.32 and earlier).  This allows lockdep's
-+tracking to include RCU state, which can sometimes help when debugging
-+deadlocks and the like.
-+
-+In addition, RCU provides the following primitives that check lockdep's
-+state:
-+
-+	rcu_read_lock_held() for normal RCU.
-+	rcu_read_lock_bh_held() for RCU-bh.
-+	rcu_read_lock_sched_held() for RCU-sched.
-+	srcu_read_lock_held() for SRCU.
-+
-+These functions are conservative, and will therefore return 1 if they
-+aren't certain (for example, if CONFIG_DEBUG_LOCK_ALLOC is not set).
-+This prevents things like WARN_ON(!rcu_read_lock_held()) from giving false
-+positives when lockdep is disabled.
-+
-+In addition, a separate kernel config parameter CONFIG_PROVE_RCU enables
-+checking of rcu_dereference() primitives:
-+
-+	rcu_dereference(p):
-+		Check for RCU read-side critical section.
-+	rcu_dereference_bh(p):
-+		Check for RCU-bh read-side critical section.
-+	rcu_dereference_sched(p):
-+		Check for RCU-sched read-side critical section.
-+	srcu_dereference(p, sp):
-+		Check for SRCU read-side critical section.
-+	rcu_dereference_check(p, c):
-+		Use explicit check expression "c".
-+	rcu_dereference_raw(p)
-+		Don't check.  (Use sparingly, if at all.)
-+
-+The rcu_dereference_check() check expression can be any boolean
-+expression, but would normally include one of the rcu_read_lock_held()
-+family of functions and a lockdep expression.  However, any boolean
-+expression can be used.  For a moderately ornate example, consider
-+the following:
-+
-+	file = rcu_dereference_check(fdt->fd[fd],
-+				     rcu_read_lock_held() ||
-+				     lockdep_is_held(&files->file_lock) ||
-+				     atomic_read(&files->count) == 1);
-+
-+This expression picks up the pointer "fdt->fd[fd]" in an RCU-safe manner,
-+and, if CONFIG_PROVE_RCU is configured, verifies that this expression
-+is used in:
-+
-+1.	An RCU read-side critical section, or
-+2.	with files->file_lock held, or
-+3.	on an unshared files_struct.
-+
-+In case (1), the pointer is picked up in an RCU-safe manner for vanilla
-+RCU read-side critical sections, in case (2) the ->file_lock prevents
-+any change from taking place, and finally, in case (3) the current task
-+is the only task accessing the file_struct, again preventing any change
-+from taking place.
-+
-+There are currently only "universal" versions of the rcu_assign_pointer()
-+and RCU list-/tree-traversal primitives, which do not (yet) check for
-+being in an RCU read-side critical section.  In the future, separate
-+versions of these primitives might be created.
-diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
-index 469a58b..1dc00ee 100644
---- a/Documentation/RCU/whatisRCU.txt
-+++ b/Documentation/RCU/whatisRCU.txt
-@@ -323,15 +323,17 @@ used as follows:
- 	Defer			Protect
+@@ -499,11 +499,11 @@ static void print_cpu_stall(struct rcu_state *rsp)
+ 			smp_processor_id(), jiffies - rsp->gp_start);
+ 	trigger_all_cpu_backtrace();
  
- a.	synchronize_rcu()	rcu_read_lock() / rcu_read_unlock()
--	call_rcu()
-+	call_rcu()		rcu_dereference()
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	if (ULONG_CMP_GE(jiffies, rsp->jiffies_stall))
+ 		rsp->jiffies_stall =
+ 			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
  
- b.	call_rcu_bh()		rcu_read_lock_bh() / rcu_read_unlock_bh()
-+				rcu_dereference_bh()
+ 	set_need_resched();  /* kick ourselves to get things going. */
+ }
+@@ -563,12 +563,12 @@ static void note_new_gpnum(struct rcu_state *rsp, struct rcu_data *rdp)
+ 	local_irq_save(flags);
+ 	rnp = rdp->mynode;
+ 	if (rdp->gpnum == ACCESS_ONCE(rnp->gpnum) || /* outside lock. */
+-	    !spin_trylock(&rnp->lock)) { /* irqs already off, retry later. */
++	    !raw_spin_trylock(&rnp->lock)) { /* irqs already off, so later. */
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
+ 	__note_new_gpnum(rsp, rnp, rdp);
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ }
  
- c.	synchronize_sched()	rcu_read_lock_sched() / rcu_read_unlock_sched()
- 				preempt_disable() / preempt_enable()
- 				local_irq_save() / local_irq_restore()
- 				hardirq enter / hardirq exit
- 				NMI enter / NMI exit
-+				rcu_dereference_sched()
+ /*
+@@ -627,12 +627,12 @@ rcu_process_gp_end(struct rcu_state *rsp, struct rcu_data *rdp)
+ 	local_irq_save(flags);
+ 	rnp = rdp->mynode;
+ 	if (rdp->completed == ACCESS_ONCE(rnp->completed) || /* outside lock. */
+-	    !spin_trylock(&rnp->lock)) { /* irqs already off, retry later. */
++	    !raw_spin_trylock(&rnp->lock)) { /* irqs already off, so later. */
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
+ 	__rcu_process_gp_end(rsp, rnp, rdp);
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ }
  
- These three mechanisms are used as follows:
+ /*
+@@ -681,10 +681,10 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 		if (cpu_needs_another_gp(rsp, rdp))
+ 			rsp->fqs_need_gp = 1;
+ 		if (rnp->completed == rsp->completed) {
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+ 		}
+-		spin_unlock(&rnp->lock);	 /* irqs remain disabled. */
++		raw_spin_unlock(&rnp->lock);	 /* irqs remain disabled. */
  
-@@ -781,9 +783,8 @@ Linux-kernel source code, but it helps to have a full list of the
- APIs, since there does not appear to be a way to categorize them
- in docbook.  Here is the list, by category.
+ 		/*
+ 		 * Propagate new ->completed value to rcu_node structures
+@@ -692,9 +692,9 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 		 * of the next grace period to process their callbacks.
+ 		 */
+ 		rcu_for_each_node_breadth_first(rsp, rnp) {
+-			spin_lock(&rnp->lock);	 /* irqs already disabled. */
++			raw_spin_lock(&rnp->lock); /* irqs already disabled. */
+ 			rnp->completed = rsp->completed;
+-			spin_unlock(&rnp->lock); /* irqs remain disabled. */
++			raw_spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 		}
+ 		local_irq_restore(flags);
+ 		return;
+@@ -715,15 +715,15 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 		rnp->completed = rsp->completed;
+ 		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
+ 		rcu_start_gp_per_cpu(rsp, rnp, rdp);
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;
+ 	}
  
--RCU pointer/list traversal:
-+RCU list traversal:
- 
--	rcu_dereference
- 	list_for_each_entry_rcu
- 	hlist_for_each_entry_rcu
- 	hlist_nulls_for_each_entry_rcu
-@@ -809,7 +810,7 @@ RCU:	Critical sections	Grace period		Barrier
- 
- 	rcu_read_lock		synchronize_net		rcu_barrier
- 	rcu_read_unlock		synchronize_rcu
--				synchronize_rcu_expedited
-+	rcu_dereference		synchronize_rcu_expedited
- 				call_rcu
+-	spin_unlock(&rnp->lock);  /* leave irqs disabled. */
++	raw_spin_unlock(&rnp->lock);  /* leave irqs disabled. */
  
  
-@@ -817,7 +818,7 @@ bh:	Critical sections	Grace period		Barrier
+ 	/* Exclude any concurrent CPU-hotplug operations. */
+-	spin_lock(&rsp->onofflock);  /* irqs already disabled. */
++	raw_spin_lock(&rsp->onofflock);  /* irqs already disabled. */
  
- 	rcu_read_lock_bh	call_rcu_bh		rcu_barrier_bh
- 	rcu_read_unlock_bh	synchronize_rcu_bh
--				synchronize_rcu_bh_expedited
-+	rcu_dereference_bh	synchronize_rcu_bh_expedited
+ 	/*
+ 	 * Set the quiescent-state-needed bits in all the rcu_node
+@@ -743,21 +743,21 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	 * irqs disabled.
+ 	 */
+ 	rcu_for_each_node_breadth_first(rsp, rnp) {
+-		spin_lock(&rnp->lock);		/* irqs already disabled. */
++		raw_spin_lock(&rnp->lock);	/* irqs already disabled. */
+ 		rcu_preempt_check_blocked_tasks(rnp);
+ 		rnp->qsmask = rnp->qsmaskinit;
+ 		rnp->gpnum = rsp->gpnum;
+ 		rnp->completed = rsp->completed;
+ 		if (rnp == rdp->mynode)
+ 			rcu_start_gp_per_cpu(rsp, rnp, rdp);
+-		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
++		raw_spin_unlock(&rnp->lock);	/* irqs remain disabled. */
+ 	}
  
+ 	rnp = rcu_get_root(rsp);
+-	spin_lock(&rnp->lock);			/* irqs already disabled. */
++	raw_spin_lock(&rnp->lock);		/* irqs already disabled. */
+ 	rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state now OK. */
+-	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+-	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	raw_spin_unlock(&rnp->lock);		/* irqs remain disabled. */
++	raw_spin_unlock_irqrestore(&rsp->onofflock, flags);
+ }
  
- sched:	Critical sections	Grace period		Barrier
-@@ -826,12 +827,14 @@ sched:	Critical sections	Grace period		Barrier
- 	rcu_read_unlock_sched	call_rcu_sched
- 	[preempt_disable]	synchronize_sched_expedited
- 	[and friends]
-+	rcu_dereference_sched
+ /*
+@@ -796,14 +796,14 @@ rcu_report_qs_rnp(unsigned long mask, struct rcu_state *rsp,
+ 		if (!(rnp->qsmask & mask)) {
  
+ 			/* Our bit has already been cleared, so done. */
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+ 		}
+ 		rnp->qsmask &= ~mask;
+ 		if (rnp->qsmask != 0 || rcu_preempted_readers(rnp)) {
  
- SRCU:	Critical sections	Grace period		Barrier
+ 			/* Other bits still set at this level, so done. */
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+ 		}
+ 		mask = rnp->grpmask;
+@@ -813,10 +813,10 @@ rcu_report_qs_rnp(unsigned long mask, struct rcu_state *rsp,
  
- 	srcu_read_lock		synchronize_srcu	N/A
- 	srcu_read_unlock	synchronize_srcu_expedited
-+	srcu_dereference
+ 			break;
+ 		}
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		rnp_c = rnp;
+ 		rnp = rnp->parent;
+-		spin_lock_irqsave(&rnp->lock, flags);
++		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		WARN_ON_ONCE(rnp_c->qsmask);
+ 	}
  
- SRCU:	Initialization/cleanup
- 	init_srcu_struct
+@@ -845,7 +845,7 @@ rcu_report_qs_rdp(int cpu, struct rcu_state *rsp, struct rcu_data *rdp, long las
+ 	struct rcu_node *rnp;
+ 
+ 	rnp = rdp->mynode;
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	if (lastcomp != rnp->completed) {
+ 
+ 		/*
+@@ -857,12 +857,12 @@ rcu_report_qs_rdp(int cpu, struct rcu_state *rsp, struct rcu_data *rdp, long las
+ 		 * race occurred.
+ 		 */
+ 		rdp->passed_quiesc = 0;	/* try again later! */
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;
+ 	}
+ 	mask = rdp->grpmask;
+ 	if ((rnp->qsmask & mask) == 0) {
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 	} else {
+ 		rdp->qs_pending = 0;
+ 
+@@ -926,7 +926,7 @@ static void rcu_send_cbs_to_orphanage(struct rcu_state *rsp)
+ 
+ 	if (rdp->nxtlist == NULL)
+ 		return;  /* irqs disabled, so comparison is stable. */
+-	spin_lock(&rsp->onofflock);  /* irqs already disabled. */
++	raw_spin_lock(&rsp->onofflock);  /* irqs already disabled. */
+ 	*rsp->orphan_cbs_tail = rdp->nxtlist;
+ 	rsp->orphan_cbs_tail = rdp->nxttail[RCU_NEXT_TAIL];
+ 	rdp->nxtlist = NULL;
+@@ -934,7 +934,7 @@ static void rcu_send_cbs_to_orphanage(struct rcu_state *rsp)
+ 		rdp->nxttail[i] = &rdp->nxtlist;
+ 	rsp->orphan_qlen += rdp->qlen;
+ 	rdp->qlen = 0;
+-	spin_unlock(&rsp->onofflock);  /* irqs remain disabled. */
++	raw_spin_unlock(&rsp->onofflock);  /* irqs remain disabled. */
+ }
+ 
+ /*
+@@ -945,10 +945,10 @@ static void rcu_adopt_orphan_cbs(struct rcu_state *rsp)
+ 	unsigned long flags;
+ 	struct rcu_data *rdp;
+ 
+-	spin_lock_irqsave(&rsp->onofflock, flags);
++	raw_spin_lock_irqsave(&rsp->onofflock, flags);
+ 	rdp = rsp->rda[smp_processor_id()];
+ 	if (rsp->orphan_cbs_list == NULL) {
+-		spin_unlock_irqrestore(&rsp->onofflock, flags);
++		raw_spin_unlock_irqrestore(&rsp->onofflock, flags);
+ 		return;
+ 	}
+ 	*rdp->nxttail[RCU_NEXT_TAIL] = rsp->orphan_cbs_list;
+@@ -957,7 +957,7 @@ static void rcu_adopt_orphan_cbs(struct rcu_state *rsp)
+ 	rsp->orphan_cbs_list = NULL;
+ 	rsp->orphan_cbs_tail = &rsp->orphan_cbs_list;
+ 	rsp->orphan_qlen = 0;
+-	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	raw_spin_unlock_irqrestore(&rsp->onofflock, flags);
+ }
+ 
+ /*
+@@ -973,23 +973,23 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	struct rcu_node *rnp;
+ 
+ 	/* Exclude any attempts to start a new grace period. */
+-	spin_lock_irqsave(&rsp->onofflock, flags);
++	raw_spin_lock_irqsave(&rsp->onofflock, flags);
+ 
+ 	/* Remove the outgoing CPU from the masks in the rcu_node hierarchy. */
+ 	rnp = rdp->mynode;	/* this is the outgoing CPU's rnp. */
+ 	mask = rdp->grpmask;	/* rnp->grplo is constant. */
+ 	do {
+-		spin_lock(&rnp->lock);		/* irqs already disabled. */
++		raw_spin_lock(&rnp->lock);	/* irqs already disabled. */
+ 		rnp->qsmaskinit &= ~mask;
+ 		if (rnp->qsmaskinit != 0) {
+ 			if (rnp != rdp->mynode)
+-				spin_unlock(&rnp->lock); /* irqs remain disabled. */
++				raw_spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 			break;
+ 		}
+ 		if (rnp == rdp->mynode)
+ 			need_report = rcu_preempt_offline_tasks(rsp, rnp, rdp);
+ 		else
+-			spin_unlock(&rnp->lock); /* irqs remain disabled. */
++			raw_spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 		mask = rnp->grpmask;
+ 		rnp = rnp->parent;
+ 	} while (rnp != NULL);
+@@ -1000,12 +1000,12 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	 * because invoking rcu_report_unblock_qs_rnp() with ->onofflock
+ 	 * held leads to deadlock.
+ 	 */
+-	spin_unlock(&rsp->onofflock); /* irqs remain disabled. */
++	raw_spin_unlock(&rsp->onofflock); /* irqs remain disabled. */
+ 	rnp = rdp->mynode;
+ 	if (need_report & RCU_OFL_TASKS_NORM_GP)
+ 		rcu_report_unblock_qs_rnp(rnp, flags);
+ 	else
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 	if (need_report & RCU_OFL_TASKS_EXP_GP)
+ 		rcu_report_exp_rnp(rsp, rnp);
+ 
+@@ -1176,13 +1176,13 @@ static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
+ 
+ 	rcu_for_each_leaf_node(rsp, rnp) {
+ 		mask = 0;
+-		spin_lock_irqsave(&rnp->lock, flags);
++		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		if (!rcu_gp_in_progress(rsp)) {
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+ 		}
+ 		if (rnp->qsmask == 0) {
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 			continue;
+ 		}
+ 		cpu = rnp->grplo;
+@@ -1197,7 +1197,7 @@ static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
+ 			rcu_report_qs_rnp(mask, rsp, rnp, flags);
+ 			continue;
+ 		}
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 	}
+ }
+ 
+@@ -1212,18 +1212,18 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
+ 	if (!rcu_gp_in_progress(rsp))
+ 		return;  /* No grace period in progress, nothing to force. */
+-	if (!spin_trylock_irqsave(&rsp->fqslock, flags)) {
++	if (!raw_spin_trylock_irqsave(&rsp->fqslock, flags)) {
+ 		rsp->n_force_qs_lh++; /* Inexact, can lose counts.  Tough! */
+ 		return;	/* Someone else is already on the job. */
+ 	}
+ 	if (relaxed && ULONG_CMP_GE(rsp->jiffies_force_qs, jiffies))
+ 		goto unlock_fqs_ret; /* no emergency and done recently. */
+ 	rsp->n_force_qs++;
+-	spin_lock(&rnp->lock);  /* irqs already disabled */
++	raw_spin_lock(&rnp->lock);  /* irqs already disabled */
+ 	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
+ 	if(!rcu_gp_in_progress(rsp)) {
+ 		rsp->n_force_qs_ngp++;
+-		spin_unlock(&rnp->lock);  /* irqs remain disabled */
++		raw_spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ 		goto unlock_fqs_ret;  /* no GP in progress, time updated. */
+ 	}
+ 	rsp->fqs_active = 1;
+@@ -1235,13 +1235,13 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
+ 	case RCU_SAVE_DYNTICK:
+ 
+-		spin_unlock(&rnp->lock);  /* irqs remain disabled */
++		raw_spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ 		if (RCU_SIGNAL_INIT != RCU_SAVE_DYNTICK)
+ 			break; /* So gcc recognizes the dead code. */
+ 
+ 		/* Record dyntick-idle state. */
+ 		force_qs_rnp(rsp, dyntick_save_progress_counter);
+-		spin_lock(&rnp->lock);  /* irqs already disabled */
++		raw_spin_lock(&rnp->lock);  /* irqs already disabled */
+ 		if (rcu_gp_in_progress(rsp))
+ 			rsp->signaled = RCU_FORCE_QS;
+ 		break;
+@@ -1249,24 +1249,24 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	case RCU_FORCE_QS:
+ 
+ 		/* Check dyntick-idle state, send IPI to laggarts. */
+-		spin_unlock(&rnp->lock);  /* irqs remain disabled */
++		raw_spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ 		force_qs_rnp(rsp, rcu_implicit_dynticks_qs);
+ 
+ 		/* Leave state in case more forcing is required. */
+ 
+-		spin_lock(&rnp->lock);  /* irqs already disabled */
++		raw_spin_lock(&rnp->lock);  /* irqs already disabled */
+ 		break;
+ 	}
+ 	rsp->fqs_active = 0;
+ 	if (rsp->fqs_need_gp) {
+-		spin_unlock(&rsp->fqslock); /* irqs remain disabled */
++		raw_spin_unlock(&rsp->fqslock); /* irqs remain disabled */
+ 		rsp->fqs_need_gp = 0;
+ 		rcu_start_gp(rsp, flags); /* releases rnp->lock */
+ 		return;
+ 	}
+-	spin_unlock(&rnp->lock);  /* irqs remain disabled */
++	raw_spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ unlock_fqs_ret:
+-	spin_unlock_irqrestore(&rsp->fqslock, flags);
++	raw_spin_unlock_irqrestore(&rsp->fqslock, flags);
+ }
+ 
+ #else /* #ifdef CONFIG_SMP */
+@@ -1308,7 +1308,7 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+ 
+ 	/* Does this CPU require a not-yet-started grace period? */
+ 	if (cpu_needs_another_gp(rsp, rdp)) {
+-		spin_lock_irqsave(&rcu_get_root(rsp)->lock, flags);
++		raw_spin_lock_irqsave(&rcu_get_root(rsp)->lock, flags);
+ 		rcu_start_gp(rsp, flags);  /* releases above lock */
+ 	}
+ 
+@@ -1373,7 +1373,7 @@ __call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu),
+ 		unsigned long nestflag;
+ 		struct rcu_node *rnp_root = rcu_get_root(rsp);
+ 
+-		spin_lock_irqsave(&rnp_root->lock, nestflag);
++		raw_spin_lock_irqsave(&rnp_root->lock, nestflag);
+ 		rcu_start_gp(rsp, nestflag);  /* releases rnp_root->lock. */
+ 	}
+ 
+@@ -1662,7 +1662,7 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+ 
+ 	/* Set up local state, ensuring consistent view of global state. */
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	rdp->grpmask = 1UL << (cpu - rdp->mynode->grplo);
+ 	rdp->nxtlist = NULL;
+ 	for (i = 0; i < RCU_NEXT_SIZE; i++)
+@@ -1672,7 +1672,7 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
+ 	rdp->dynticks = &per_cpu(rcu_dynticks, cpu);
+ #endif /* #ifdef CONFIG_NO_HZ */
+ 	rdp->cpu = cpu;
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ }
+ 
+ /*
+@@ -1690,7 +1690,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+ 
+ 	/* Set up local state, ensuring consistent view of global state. */
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	rdp->passed_quiesc = 0;  /* We could be racing with new GP, */
+ 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
+ 	rdp->beenonline = 1;	 /* We have now been online. */
+@@ -1698,7 +1698,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+ 	rdp->qlen_last_fqs_check = 0;
+ 	rdp->n_force_qs_snap = rsp->n_force_qs;
+ 	rdp->blimit = blimit;
+-	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
++	raw_spin_unlock(&rnp->lock);		/* irqs remain disabled. */
+ 
+ 	/*
+ 	 * A new grace period might start here.  If so, we won't be part
+@@ -1706,14 +1706,14 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+ 	 */
+ 
+ 	/* Exclude any attempts to start a new GP on large systems. */
+-	spin_lock(&rsp->onofflock);		/* irqs already disabled. */
++	raw_spin_lock(&rsp->onofflock);		/* irqs already disabled. */
+ 
+ 	/* Add CPU to rcu_node bitmasks. */
+ 	rnp = rdp->mynode;
+ 	mask = rdp->grpmask;
+ 	do {
+ 		/* Exclude any attempts to start a new GP on small systems. */
+-		spin_lock(&rnp->lock);	/* irqs already disabled. */
++		raw_spin_lock(&rnp->lock);	/* irqs already disabled. */
+ 		rnp->qsmaskinit |= mask;
+ 		mask = rnp->grpmask;
+ 		if (rnp == rdp->mynode) {
+@@ -1721,11 +1721,11 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+ 			rdp->completed = rnp->completed;
+ 			rdp->passed_quiesc_completed = rnp->completed - 1;
+ 		}
+-		spin_unlock(&rnp->lock); /* irqs already disabled. */
++		raw_spin_unlock(&rnp->lock); /* irqs already disabled. */
+ 		rnp = rnp->parent;
+ 	} while (rnp != NULL && !(rnp->qsmaskinit & mask));
+ 
+-	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	raw_spin_unlock_irqrestore(&rsp->onofflock, flags);
+ }
+ 
+ static void __cpuinit rcu_online_cpu(int cpu)
+@@ -1832,7 +1832,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 		cpustride *= rsp->levelspread[i];
+ 		rnp = rsp->level[i];
+ 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+-			spin_lock_init(&rnp->lock);
++			raw_spin_lock_init(&rnp->lock);
+ 			lockdep_set_class_and_name(&rnp->lock,
+ 						   &rcu_node_class[i], buf[i]);
+ 			rnp->gpnum = 0;
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 7495fed..6a82c34 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -90,7 +90,7 @@ struct rcu_dynticks {
+  * Definition for node within the RCU grace-period-detection hierarchy.
+  */
+ struct rcu_node {
+-	spinlock_t lock;	/* Root rcu_node's lock protects some */
++	raw_spinlock_t lock;	/* Root rcu_node's lock protects some */
+ 				/*  rcu_state fields as well as following. */
+ 	unsigned long gpnum;	/* Current grace period for this node. */
+ 				/*  This will either be equal to or one */
+@@ -291,7 +291,7 @@ struct rcu_state {
+ 
+ 	/* End of fields guarded by root rcu_node's lock. */
+ 
+-	spinlock_t onofflock;			/* exclude on/offline and */
++	raw_spinlock_t onofflock;		/* exclude on/offline and */
+ 						/*  starting new GP.  Also */
+ 						/*  protects the following */
+ 						/*  orphan_cbs fields. */
+@@ -301,7 +301,7 @@ struct rcu_state {
+ 						/*  going offline. */
+ 	struct rcu_head **orphan_cbs_tail;	/* And tail pointer. */
+ 	long orphan_qlen;			/* Number of orphaned cbs. */
+-	spinlock_t fqslock;			/* Only one task forcing */
++	raw_spinlock_t fqslock;			/* Only one task forcing */
+ 						/*  quiescent states. */
+ 	unsigned long jiffies_force_qs;		/* Time at which to invoke */
+ 						/*  force_quiescent_state(). */
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index a825666..a8b2e83 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -111,7 +111,7 @@ static void rcu_preempt_note_context_switch(int cpu)
+ 		/* Possibly blocking in an RCU read-side critical section. */
+ 		rdp = rcu_preempt_state.rda[cpu];
+ 		rnp = rdp->mynode;
+-		spin_lock_irqsave(&rnp->lock, flags);
++		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
+ 		t->rcu_blocked_node = rnp;
+ 
+@@ -132,7 +132,7 @@ static void rcu_preempt_note_context_switch(int cpu)
+ 		WARN_ON_ONCE(!list_empty(&t->rcu_node_entry));
+ 		phase = (rnp->gpnum + !(rnp->qsmask & rdp->grpmask)) & 0x1;
+ 		list_add(&t->rcu_node_entry, &rnp->blocked_tasks[phase]);
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 	}
+ 
+ 	/*
+@@ -189,7 +189,7 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
+ 	struct rcu_node *rnp_p;
+ 
+ 	if (rnp->qsmask != 0 || rcu_preempted_readers(rnp)) {
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;  /* Still need more quiescent states! */
+ 	}
+ 
+@@ -206,8 +206,8 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
+ 
+ 	/* Report up the rest of the hierarchy. */
+ 	mask = rnp->grpmask;
+-	spin_unlock(&rnp->lock);	/* irqs remain disabled. */
+-	spin_lock(&rnp_p->lock);	/* irqs already disabled. */
++	raw_spin_unlock(&rnp->lock);	/* irqs remain disabled. */
++	raw_spin_lock(&rnp_p->lock);	/* irqs already disabled. */
+ 	rcu_report_qs_rnp(mask, &rcu_preempt_state, rnp_p, flags);
+ }
+ 
+@@ -257,10 +257,10 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 		 */
+ 		for (;;) {
+ 			rnp = t->rcu_blocked_node;
+-			spin_lock(&rnp->lock);  /* irqs already disabled. */
++			raw_spin_lock(&rnp->lock);  /* irqs already disabled. */
+ 			if (rnp == t->rcu_blocked_node)
+ 				break;
+-			spin_unlock(&rnp->lock);  /* irqs remain disabled. */
++			raw_spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 		}
+ 		empty = !rcu_preempted_readers(rnp);
+ 		empty_exp = !rcu_preempted_readers_exp(rnp);
+@@ -274,7 +274,7 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 		 * Note that rcu_report_unblock_qs_rnp() releases rnp->lock.
+ 		 */
+ 		if (empty)
+-			spin_unlock_irqrestore(&rnp->lock, flags);
++			raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 		else
+ 			rcu_report_unblock_qs_rnp(rnp, flags);
+ 
+@@ -324,12 +324,12 @@ static void rcu_print_task_stall(struct rcu_node *rnp)
+ 	struct task_struct *t;
+ 
+ 	if (rcu_preempted_readers(rnp)) {
+-		spin_lock_irqsave(&rnp->lock, flags);
++		raw_spin_lock_irqsave(&rnp->lock, flags);
+ 		phase = rnp->gpnum & 0x1;
+ 		lp = &rnp->blocked_tasks[phase];
+ 		list_for_each_entry(t, lp, rcu_node_entry)
+ 			printk(" P%d", t->pid);
+-		spin_unlock_irqrestore(&rnp->lock, flags);
++		raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ 	}
+ }
+ 
+@@ -400,11 +400,11 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 		lp_root = &rnp_root->blocked_tasks[i];
+ 		while (!list_empty(lp)) {
+ 			tp = list_entry(lp->next, typeof(*tp), rcu_node_entry);
+-			spin_lock(&rnp_root->lock); /* irqs already disabled */
++			raw_spin_lock(&rnp_root->lock); /* irqs already disabled */
+ 			list_del(&tp->rcu_node_entry);
+ 			tp->rcu_blocked_node = rnp_root;
+ 			list_add(&tp->rcu_node_entry, lp_root);
+-			spin_unlock(&rnp_root->lock); /* irqs remain disabled */
++			raw_spin_unlock(&rnp_root->lock); /* irqs remain disabled */
+ 		}
+ 	}
+ 	return retval;
+@@ -528,7 +528,7 @@ static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp)
+ 	unsigned long flags;
+ 	unsigned long mask;
+ 
+-	spin_lock_irqsave(&rnp->lock, flags);
++	raw_spin_lock_irqsave(&rnp->lock, flags);
+ 	for (;;) {
+ 		if (!sync_rcu_preempt_exp_done(rnp))
+ 			break;
+@@ -537,12 +537,12 @@ static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp)
+ 			break;
+ 		}
+ 		mask = rnp->grpmask;
+-		spin_unlock(&rnp->lock); /* irqs remain disabled */
++		raw_spin_unlock(&rnp->lock); /* irqs remain disabled */
+ 		rnp = rnp->parent;
+-		spin_lock(&rnp->lock); /* irqs already disabled */
++		raw_spin_lock(&rnp->lock); /* irqs already disabled */
+ 		rnp->expmask &= ~mask;
+ 	}
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ }
+ 
+ /*
+@@ -557,11 +557,11 @@ sync_rcu_preempt_exp_init(struct rcu_state *rsp, struct rcu_node *rnp)
+ {
+ 	int must_wait;
+ 
+-	spin_lock(&rnp->lock); /* irqs already disabled */
++	raw_spin_lock(&rnp->lock); /* irqs already disabled */
+ 	list_splice_init(&rnp->blocked_tasks[0], &rnp->blocked_tasks[2]);
+ 	list_splice_init(&rnp->blocked_tasks[1], &rnp->blocked_tasks[3]);
+ 	must_wait = rcu_preempted_readers_exp(rnp);
+-	spin_unlock(&rnp->lock); /* irqs remain disabled */
++	raw_spin_unlock(&rnp->lock); /* irqs remain disabled */
+ 	if (!must_wait)
+ 		rcu_report_exp_rnp(rsp, rnp);
+ }
+@@ -606,13 +606,13 @@ void synchronize_rcu_expedited(void)
+ 	/* force all RCU readers onto blocked_tasks[]. */
+ 	synchronize_sched_expedited();
+ 
+-	spin_lock_irqsave(&rsp->onofflock, flags);
++	raw_spin_lock_irqsave(&rsp->onofflock, flags);
+ 
+ 	/* Initialize ->expmask for all non-leaf rcu_node structures. */
+ 	rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) {
+-		spin_lock(&rnp->lock); /* irqs already disabled. */
++		raw_spin_lock(&rnp->lock); /* irqs already disabled. */
+ 		rnp->expmask = rnp->qsmaskinit;
+-		spin_unlock(&rnp->lock); /* irqs remain disabled. */
++		raw_spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 	}
+ 
+ 	/* Snapshot current state of ->blocked_tasks[] lists. */
+@@ -621,7 +621,7 @@ void synchronize_rcu_expedited(void)
+ 	if (NUM_RCU_NODES > 1)
+ 		sync_rcu_preempt_exp_init(rsp, rcu_get_root(rsp));
+ 
+-	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	raw_spin_unlock_irqrestore(&rsp->onofflock, flags);
+ 
+ 	/* Wait for snapshotted ->blocked_tasks[] lists to drain. */
+ 	rnp = rcu_get_root(rsp);
+@@ -756,7 +756,7 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
+ /* Because preemptible RCU does not exist, no quieting of tasks. */
+ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
+ {
+-	spin_unlock_irqrestore(&rnp->lock, flags);
++	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+ }
+ 
+ #endif /* #ifdef CONFIG_HOTPLUG_CPU */
