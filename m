@@ -1,121 +1,192 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064Ab0BYVZK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:25:10 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63744 "EHLO
+	id S934093Ab0BYVXw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:23:52 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63864 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933992Ab0BYVXK (ORCPT
+	with ESMTP id S934076Ab0BYVXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:23:10 -0500
+	Thu, 25 Feb 2010 16:23:38 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
-Subject: [GIT PULL] kdb / early debug (2 of 2)
-Date: Thu, 25 Feb 2010 15:21:58 -0600
-Message-Id: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, linux-usb@vger.kernel.org
+Subject: [PATCH 7/8] ehci-dbgp: split PID register updates for IN and OUT pipes
+Date: Thu, 25 Feb 2010 15:22:05 -0600
+Message-Id: <1267132926-23685-8-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-X-OriginalArrivalTime: 25 Feb 2010 21:22:44.0632 (UTC) FILETIME=[ABA51980:01CAB660]
+In-Reply-To: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+References: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 25 Feb 2010 21:22:51.0507 (UTC) FILETIME=[AFBE2430:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus please pull the dbg-early-merge tree which merges in the
-capability for early debugging for the x86 architecture.
+This patch addresses two problems:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git dbg-early-merge
+1) Bulk reads should always use the DATA0 for the pid, and the write
+   PID should toggle between DATA0 and DATA1.  The fix is using
+   dbgp_pid_write_update() and dbgp_pid_read_update().
 
---- Notes for Linus ---
+2) The delay loop for waiting for a transaction was not long enough to
+   always complete the initial handshake inside dbgp_wait_until_done().
+   After the initial handshake the maximum delay length is never reached.
 
-I did not receive acks or feedback from any x86 maintainers at this
-point for the early trap changes.  These changes came from the
-archives from 2 years back, before the time the mainline kernel I/O
-drivers supported early debugger access.
+The combined result of these two changes allows for the removal of the
+forced resynchronization where a bulk write was issued with a dummy
+data payload only to get the device to start accepting data writes
+again.
 
-I did not receive acks or feedback on the changes to
-arch/x86/kernel/cpu/common.c which covers the initial setup of the
-debug registers.  This change is a fix vs a feature.
-
---- End Notes for Linus ---
-
-This patch set stacks on top of the kgdb / kdb patches and focuses on
-allowing the kernel debugger to activate at the same time earlyprintk
-becomes available.  Right now early debugging is only available on
-x86, but the API in the debug core is generic.  The only thing lacking
-for other architecture support is appropriate atomic safe polled I/O
-drivers.
-
-The first few patches address the problems in kdb and the architecture
-specific x86 kgdb implementation which rely on services which are not
-available before the kernel memory allocators are setup.
-
-The patch set includes early debug support for vga + non-USB keyboard
-and dbgp devices.  For the vga case, it only works with kdb. For
-example, you could boot your kernel and optionally include kgdbwait as
-follows:
-
-     earlyprintk=vga ekgboc=kbd kgdbwait
-
-That will stop the kernel somewhere inside setup_arch() and you can
-plant breakpoints, modify memory and backtrace.  If you omit the
-kgdbwait, the kgdb shell prompt will appear on the vga console only if
-there is a kernel fault.
-
-The final 2 patches in the series add support for the EHCI usb debug
-port when using a dbgp device.  You have the choice of using
-earlyprintk= or using only the kernel debugger on the debug port.  You
-can also use either kgdb or kdb with this connection.  Here are two
-example kernel boot argument lines:
-
-1) Used in conjunction with earlyprintk on usb debug port 1
-
-   	earlyprintk=dbgp1,keep kgdbdbgp=1 kgdbwait
-
-2) Allow for the capability to break into the kernel with control-c on
-   usb debug port 0
-
-        kgdbdbp=0,1 kgdbwait
-
-A patch to add formal documentation to the kgdb docbook for these new
-features will be available for the 2.6.34 cycle, because there are a
-number of other ways you can make use of these features not described
-here.
-
-Thanks,
-Jason.
-
+CC: Eric Biederman <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: linux-usb@vger.kernel.org
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ drivers/usb/early/ehci-dbgp.c |   68 +++++++++++++++++------------------------
+ 1 files changed, 28 insertions(+), 40 deletions(-)
 
-The following changes since commit 1bcdae1065c6f01cf2d24a99a6d47b154bab4dfe:
-  Jason Wessel (1):
-        debug_core: Turn off tracing while in the debugger
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git dbg-early-merge
-
-Jan Kiszka (1):
-      x86, kgdb: early trap init for early debug
-
-Jason Wessel (7):
-      x86, kgdb, init: Add early and late debug states
-      x86,kgdb: Implement early hardware breakpoint debugging
-      x86,early dr regs,kgdb: Allow kernel debugger early dr register access
-      kgdboc: Add ekgdboc for early use of the kernel debugger
-      earlyprintk,vga,kdb: Fix \b and \r for earlyprintk=vga with kdb
-      ehci-dbgp: split PID register updates for IN and OUT pipes
-      echi-dbgp: Add kernel debugger support for the usb debug port
-
- Documentation/kernel-parameters.txt |   17 +++
- arch/x86/include/asm/processor.h    |    2 +
- arch/x86/kernel/cpu/common.c        |   29 +++---
- arch/x86/kernel/early_printk.c      |    8 ++
- arch/x86/kernel/kgdb.c              |   47 +++++++--
- arch/x86/kernel/setup.c             |    1 +
- arch/x86/kernel/traps.c             |   14 ++-
- drivers/serial/kgdboc.c             |   19 ++++
- drivers/usb/early/ehci-dbgp.c       |  184 ++++++++++++++++++++++++++---------
- include/linux/kgdb.h                |   14 +++
- init/main.c                         |    4 +-
- kernel/debug/debug_core.c           |   16 +++
- 12 files changed, 281 insertions(+), 74 deletions(-)
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index 2958a12..6e98a36 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -66,8 +66,6 @@ static struct ehci_dev ehci_dev;
+ 
+ #define USB_DEBUG_DEVNUM 127
+ 
+-#define DBGP_DATA_TOGGLE	0x8800
+-
+ #ifdef DBGP_DEBUG
+ #define dbgp_printk printk
+ static void dbgp_ehci_status(char *str)
+@@ -88,11 +86,6 @@ static inline void dbgp_ehci_status(char *str) { }
+ static inline void dbgp_printk(const char *fmt, ...) { }
+ #endif
+ 
+-static inline u32 dbgp_pid_update(u32 x, u32 tok)
+-{
+-	return ((x ^ DBGP_DATA_TOGGLE) & 0xffff00) | (tok & 0xff);
+-}
+-
+ static inline u32 dbgp_len_update(u32 x, u32 len)
+ {
+ 	return (x & ~0x0f) | (len & 0x0f);
+@@ -136,6 +129,19 @@ static inline u32 dbgp_len_update(u32 x, u32 len)
+ 
+ #define DBGP_MAX_PACKET		8
+ #define DBGP_TIMEOUT		(250 * 1000)
++#define DBGP_LOOPS		1000
++
++static inline u32 dbgp_pid_write_update(u32 x, u32 tok)
++{
++	static int data0 = USB_PID_DATA1;
++	data0 ^= USB_PID_DATA_TOGGLE;
++	return (x & 0xffff0000) | (data0 << 8) | (tok & 0xff);
++}
++
++static inline u32 dbgp_pid_read_update(u32 x, u32 tok)
++{
++	return (x & 0xffff0000) | (USB_PID_DATA0 << 8) | (tok & 0xff);
++}
+ 
+ static int dbgp_wait_until_complete(void)
+ {
+@@ -180,7 +186,7 @@ static int dbgp_wait_until_done(unsigned ctrl)
+ {
+ 	u32 pids, lpid;
+ 	int ret;
+-	int loop = 3;
++	int loop = DBGP_LOOPS;
+ 
+ retry:
+ 	writel(ctrl | DBGP_GO, &ehci_debug->control);
+@@ -197,6 +203,8 @@ retry:
+ 		 */
+ 		if (ret == -DBGP_TIMEOUT && !dbgp_not_safe)
+ 			dbgp_not_safe = 1;
++		if (ret == -DBGP_ERR_BAD && --loop > 0)
++			goto retry;
+ 		return ret;
+ 	}
+ 
+@@ -245,12 +253,20 @@ static inline void dbgp_get_data(void *buf, int size)
+ 		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
+ }
+ 
+-static int dbgp_out(u32 addr, const char *bytes, int size)
++static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
++			 const char *bytes, int size)
+ {
++	int ret;
++	u32 addr;
+ 	u32 pids, ctrl;
+ 
++	if (size > DBGP_MAX_PACKET)
++		return -1;
++
++	addr = DBGP_EPADDR(devnum, endpoint);
++
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_OUT);
++	pids = dbgp_pid_write_update(pids, USB_PID_OUT);
+ 
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -260,34 +276,7 @@ static int dbgp_out(u32 addr, const char *bytes, int size)
+ 	dbgp_set_data(bytes, size);
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	return dbgp_wait_until_done(ctrl);
+-}
+-
+-static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+-			 const char *bytes, int size)
+-{
+-	int ret;
+-	int loops = 5;
+-	u32 addr;
+-	if (size > DBGP_MAX_PACKET)
+-		return -1;
+-
+-	addr = DBGP_EPADDR(devnum, endpoint);
+-try_again:
+-	if (loops--) {
+-		ret = dbgp_out(addr, bytes, size);
+-		if (ret == -DBGP_ERR_BAD) {
+-			int try_loops = 3;
+-			do {
+-				/* Emit a dummy packet to re-sync communication
+-				 * with the debug device */
+-				if (dbgp_out(addr, "12345678", 8) >= 0) {
+-					udelay(2);
+-					goto try_again;
+-				}
+-			} while (try_loops--);
+-		}
+-	}
++	ret = dbgp_wait_until_done(ctrl);
+ 
+ 	return ret;
+ }
+@@ -304,7 +293,7 @@ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
+ 	addr = DBGP_EPADDR(devnum, endpoint);
+ 
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_IN);
++	pids = dbgp_pid_read_update(pids, USB_PID_IN);
+ 
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -362,7 +351,6 @@ static int dbgp_control_msg(unsigned devnum, int requesttype,
+ 	return dbgp_bulk_read(devnum, 0, data, size);
+ }
+ 
+-
+ /* Find a PCI capability */
+ static u32 __init find_cap(u32 num, u32 slot, u32 func, int cap)
+ {
+-- 
+1.6.4.rc1
 
