@@ -1,191 +1,289 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083Ab0BYKLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:11:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47760 "EHLO hera.kernel.org"
+	id S1758650Ab0BYKLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:11:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40785 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757248Ab0BYKLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:11:12 -0500
-Date: Thu, 25 Feb 2010 10:10:51 GMT
-From: tip-bot for Ian Campbell <ian.campbell@citrix.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       ian.campbell@citrix.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ian.campbell@citrix.com, tglx@linutronix.de
-In-Reply-To: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
-References: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
+	id S1754498Ab0BYKLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 05:11:52 -0500
+Date: Thu, 25 Feb 2010 10:11:08 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
+References: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86, mm: Allow highmem user page tables to be disabled at boot time
-Message-ID: <tip-14315592009c17035cac81f4954d5a1f4d71e489@git.kernel.org>
-Git-Commit-ID: 14315592009c17035cac81f4954d5a1f4d71e489
+Subject: [tip:core/rcu] sched: Use lockdep-based checking on rcu_dereference()
+Message-ID: <tip-d11c563dd20ff35da5652c3e1c989d9e10e1d6d0@git.kernel.org>
+Git-Commit-ID: d11c563dd20ff35da5652c3e1c989d9e10e1d6d0
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 10:10:52 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 10:11:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  14315592009c17035cac81f4954d5a1f4d71e489
-Gitweb:     http://git.kernel.org/tip/14315592009c17035cac81f4954d5a1f4d71e489
-Author:     Ian Campbell <ian.campbell@citrix.com>
-AuthorDate: Wed, 17 Feb 2010 10:38:10 +0000
+Commit-ID:  d11c563dd20ff35da5652c3e1c989d9e10e1d6d0
+Gitweb:     http://git.kernel.org/tip/d11c563dd20ff35da5652c3e1c989d9e10e1d6d0
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Mon, 22 Feb 2010 17:04:50 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 10:28:19 +0100
+CommitDate: Thu, 25 Feb 2010 10:34:26 +0100
 
-x86, mm: Allow highmem user page tables to be disabled at boot time
+sched: Use lockdep-based checking on rcu_dereference()
 
-Distros generally (I looked at Debian, RHEL5 and SLES11) seem to
-enable CONFIG_HIGHPTE for any x86 configuration which has highmem
-enabled. This means that the overhead applies even to machines which
-have a fairly modest amount of high memory and which therefore do not
-really benefit from allocating PTEs in high memory but still pay the
-price of the additional mapping operations.
+Update the rcu_dereference() usages to take advantage of the new
+lockdep-based checking.
 
-Running kernbench on a 4G box I found that with CONFIG_HIGHPTE=y but
-no actual highptes being allocated there was a reduction in system
-time used from 59.737s to 55.9s.
-
-With CONFIG_HIGHPTE=y and highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 175.396 (0.238914)
-  User Time 515.983 (5.85019)
-  System Time 59.737 (1.26727)
-  Percent CPU 263.8 (71.6796)
-  Context Switches 39989.7 (4672.64)
-  Sleeps 42617.7 (246.307)
-
-With CONFIG_HIGHPTE=y but with no highmem PTEs being allocated:
-  Average Optimal load -j 4 Run (std deviation):
-  Elapsed Time 174.278 (0.831968)
-  User Time 515.659 (6.07012)
-  System Time 55.9 (1.07799)
-  Percent CPU 263.8 (71.266)
-  Context Switches 39929.6 (4485.13)
-  Sleeps 42583.7 (373.039)
-
-This patch allows the user to control the allocation of PTEs in
-highmem from the command line ("userpte=nohigh") but retains the
-status-quo as the default.
-
-It is possible that some simple heuristic could be developed which
-allows auto-tuning of this option however I don't have a sufficiently
-large machine available to me to perform any particularly meaningful
-experiments. We could probably handwave up an argument for a threshold
-at 16G of total RAM.
-
-Assuming 768M of lowmem we have 196608 potential lowmem PTE
-pages. Each page can map 2M of RAM in a PAE-enabled configuration,
-meaning a maximum of 384G of RAM could potentially be mapped using
-lowmem PTEs.
-
-Even allowing generous factor of 10 to account for other required
-lowmem allocations, generous slop to account for page sharing (which
-reduces the total amount of RAM mappable by a given number of PT
-pages) and other innacuracies in the estimations it would seem that
-even a 32G machine would not have a particularly pressing need for
-highmem PTEs. I think 32G could be considered to be at the upper bound
-of what might be sensible on a 32 bit machine (although I think in
-practice 64G is still supported).
-
-It's seems questionable if HIGHPTE is even a win for any amount of RAM
-you would sensibly run a 32 bit kernel on rather than going 64 bit.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-LKML-Reference: <1266403090-20162-1-git-send-email-ian.campbell@citrix.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
+[ -v2: fix allmodconfig missing symbol export build failure on x86 ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/kernel-parameters.txt |    7 +++++++
- arch/x86/include/asm/pgalloc.h      |    5 +++++
- arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++++-----
- 3 files changed, 38 insertions(+), 5 deletions(-)
+ include/linux/cgroup.h |    5 ++++-
+ include/linux/cred.h   |    2 +-
+ init/main.c            |    2 ++
+ kernel/cgroup.c        |   14 ++++++++++++++
+ kernel/exit.c          |   14 +++++++++++---
+ kernel/fork.c          |    1 +
+ kernel/notifier.c      |    6 +++---
+ kernel/pid.c           |    2 +-
+ kernel/sched.c         |   11 ++++++++---
+ 9 files changed, 45 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 736d456..67c69ff 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2694,6 +2694,13 @@ and is between 256 and 4096 characters. It is defined in the file
- 					medium is write-protected).
- 			Example: quirks=0419:aaf5:rl,0421:0433:rc
- 
-+	userpte=
-+			[X86] Flags controlling user PTE allocations.
-+
-+				nohigh = do not allocate PTE pages in
-+					HIGHMEM regardless of setting
-+					of CONFIG_HIGHPTE.
-+
- 	vdso=		[X86,SH]
- 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso=1: enable VDSO (default)
-diff --git a/arch/x86/include/asm/pgalloc.h b/arch/x86/include/asm/pgalloc.h
-index 0e8c2a0..271de94 100644
---- a/arch/x86/include/asm/pgalloc.h
-+++ b/arch/x86/include/asm/pgalloc.h
-@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(unsigned long pfn) {}
- #endif
- 
- /*
-+ * Flags to use when allocating a user page table page.
-+ */
-+extern gfp_t __userpte_alloc_gfp;
-+
-+/*
-  * Allocate and free page tables.
-  */
- extern pgd_t *pgd_alloc(struct mm_struct *);
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index ed34f5e..c9ba9de 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -6,6 +6,14 @@
- 
- #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
- 
-+#ifdef CONFIG_HIGHPTE
-+#define PGALLOC_USER_GFP __GFP_HIGHMEM
-+#else
-+#define PGALLOC_USER_GFP 0
-+#endif
-+
-+gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
-+
- pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 0008dee..c9bbcb2 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -28,6 +28,7 @@ struct css_id;
+ extern int cgroup_init_early(void);
+ extern int cgroup_init(void);
+ extern void cgroup_lock(void);
++extern int cgroup_lock_is_held(void);
+ extern bool cgroup_lock_live_group(struct cgroup *cgrp);
+ extern void cgroup_unlock(void);
+ extern void cgroup_fork(struct task_struct *p);
+@@ -486,7 +487,9 @@ static inline struct cgroup_subsys_state *cgroup_subsys_state(
+ static inline struct cgroup_subsys_state *task_subsys_state(
+ 	struct task_struct *task, int subsys_id)
  {
- 	return (pte_t *)__get_free_page(PGALLOC_GFP);
-@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
- {
- 	struct page *pte;
- 
--#ifdef CONFIG_HIGHPTE
--	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
--#else
--	pte = alloc_pages(PGALLOC_GFP, 0);
--#endif
-+	pte = alloc_pages(__userpte_alloc_gfp, 0);
- 	if (pte)
- 		pgtable_page_ctor(pte);
- 	return pte;
+-	return rcu_dereference(task->cgroups->subsys[subsys_id]);
++	return rcu_dereference_check(task->cgroups->subsys[subsys_id],
++				     rcu_read_lock_held() ||
++				     cgroup_lock_is_held());
  }
  
-+static int __init setup_userpte(char *arg)
+ static inline struct cgroup* task_cgroup(struct task_struct *task,
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 4e3387a..4db09f8 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -280,7 +280,7 @@ static inline void put_cred(const struct cred *_cred)
+  * task or by holding tasklist_lock to prevent it from being unlinked.
+  */
+ #define __task_cred(task) \
+-	((const struct cred *)(rcu_dereference((task)->real_cred)))
++	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock))))
+ 
+ /**
+  * get_task_cred - Get another task's objective credentials
+diff --git a/init/main.c b/init/main.c
+index 4cb47a1..c75dcd6 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -416,7 +416,9 @@ static noinline void __init_refok rest_init(void)
+ 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
++	rcu_read_lock();
+ 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
++	rcu_read_unlock();
+ 	unlock_kernel();
+ 
+ 	/*
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index aa3bee5..b1a0f5a 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -166,6 +166,20 @@ static DEFINE_SPINLOCK(hierarchy_id_lock);
+  */
+ static int need_forkexit_callback __read_mostly;
+ 
++#ifdef CONFIG_PROVE_LOCKING
++int cgroup_lock_is_held(void)
 +{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	/*
-+	 * "userpte=nohigh" disables allocation of user pagetables in
-+	 * high memory.
-+	 */
-+	if (strcmp(arg, "nohigh") == 0)
-+		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
-+	else
-+		return -EINVAL;
-+	return 0;
++	return lockdep_is_held(&cgroup_mutex);
 +}
-+early_param("userpte", setup_userpte);
++#else /* #ifdef CONFIG_PROVE_LOCKING */
++int cgroup_lock_is_held(void)
++{
++	return mutex_is_locked(&cgroup_mutex);
++}
++#endif /* #else #ifdef CONFIG_PROVE_LOCKING */
 +
- void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
++EXPORT_SYMBOL_GPL(cgroup_lock_is_held);
++
+ /* convenient tests for these bits */
+ inline int cgroup_is_removed(const struct cgroup *cgrp)
  {
- 	pgtable_page_dtor(pte);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 546774a..45ed043 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -85,7 +85,9 @@ static void __exit_signal(struct task_struct *tsk)
+ 	BUG_ON(!sig);
+ 	BUG_ON(!atomic_read(&sig->count));
+ 
+-	sighand = rcu_dereference(tsk->sighand);
++	sighand = rcu_dereference_check(tsk->sighand,
++					rcu_read_lock_held() ||
++					lockdep_is_held(&tasklist_lock));
+ 	spin_lock(&sighand->siglock);
+ 
+ 	posix_cpu_timers_exit(tsk);
+@@ -170,8 +172,10 @@ void release_task(struct task_struct * p)
+ repeat:
+ 	tracehook_prepare_release_task(p);
+ 	/* don't need to get the RCU readlock here - the process is dead and
+-	 * can't be modifying its own credentials */
++	 * can't be modifying its own credentials. But shut RCU-lockdep up */
++	rcu_read_lock();
+ 	atomic_dec(&__task_cred(p)->user->processes);
++	rcu_read_unlock();
+ 
+ 	proc_flush_task(p);
+ 
+@@ -473,9 +477,11 @@ static void close_files(struct files_struct * files)
+ 	/*
+ 	 * It is safe to dereference the fd table without RCU or
+ 	 * ->file_lock because this is the last reference to the
+-	 * files structure.
++	 * files structure.  But use RCU to shut RCU-lockdep up.
+ 	 */
++	rcu_read_lock();
+ 	fdt = files_fdtable(files);
++	rcu_read_unlock();
+ 	for (;;) {
+ 		unsigned long set;
+ 		i = j * __NFDBITS;
+@@ -521,10 +527,12 @@ void put_files_struct(struct files_struct *files)
+ 		 * at the end of the RCU grace period. Otherwise,
+ 		 * you can free files immediately.
+ 		 */
++		rcu_read_lock();
+ 		fdt = files_fdtable(files);
+ 		if (fdt != &files->fdtab)
+ 			kmem_cache_free(files_cachep, files);
+ 		free_fdtable(fdt);
++		rcu_read_unlock();
+ 	}
+ }
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index f88bd98..17bbf09 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -86,6 +86,7 @@ int max_threads;		/* tunable limit on nr_threads */
+ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
+ 
+ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
++EXPORT_SYMBOL_GPL(tasklist_lock);
+ 
+ int nr_processes(void)
+ {
+diff --git a/kernel/notifier.c b/kernel/notifier.c
+index acd24e7..2488ba7 100644
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -78,10 +78,10 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
+ 	int ret = NOTIFY_DONE;
+ 	struct notifier_block *nb, *next_nb;
+ 
+-	nb = rcu_dereference(*nl);
++	nb = rcu_dereference_raw(*nl);
+ 
+ 	while (nb && nr_to_call) {
+-		next_nb = rcu_dereference(nb->next);
++		next_nb = rcu_dereference_raw(nb->next);
+ 
+ #ifdef CONFIG_DEBUG_NOTIFIERS
+ 		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
+@@ -309,7 +309,7 @@ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 	 * racy then it does not matter what the result of the test
+ 	 * is, we re-check the list after having taken the lock anyway:
+ 	 */
+-	if (rcu_dereference(nh->head)) {
++	if (rcu_dereference_raw(nh->head)) {
+ 		down_read(&nh->rwsem);
+ 		ret = notifier_call_chain(&nh->head, val, v, nr_to_call,
+ 					nr_calls);
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 2e17c9c..b08e697 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -367,7 +367,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+ 	struct task_struct *result = NULL;
+ 	if (pid) {
+ 		struct hlist_node *first;
+-		first = rcu_dereference(pid->tasks[type].first);
++		first = rcu_dereference_check(pid->tasks[type].first, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock));
+ 		if (first)
+ 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
+ 	}
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3a8fb30..70ae686 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -645,6 +645,11 @@ static inline int cpu_of(struct rq *rq)
+ #endif
+ }
+ 
++#define for_each_domain_rd(p) \
++	rcu_dereference_check((p), \
++			      rcu_read_lock_sched_held() || \
++			      lockdep_is_held(&sched_domains_mutex))
++
+ /*
+  * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
+  * See detach_destroy_domains: synchronize_sched for details.
+@@ -653,7 +658,7 @@ static inline int cpu_of(struct rq *rq)
+  * preempt-disabled sections.
+  */
+ #define for_each_domain(cpu, __sd) \
+-	for (__sd = rcu_dereference(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
++	for (__sd = for_each_domain_rd(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
+ 
+ #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
+ #define this_rq()		(&__get_cpu_var(runqueues))
+@@ -1531,7 +1536,7 @@ static unsigned long target_load(int cpu, int type)
+ 
+ static struct sched_group *group_of(int cpu)
+ {
+-	struct sched_domain *sd = rcu_dereference(cpu_rq(cpu)->sd);
++	struct sched_domain *sd = rcu_dereference_sched(cpu_rq(cpu)->sd);
+ 
+ 	if (!sd)
+ 		return NULL;
+@@ -4888,7 +4893,7 @@ static void run_rebalance_domains(struct softirq_action *h)
+ 
+ static inline int on_null_domain(int cpu)
+ {
+-	return !rcu_dereference(cpu_rq(cpu)->sd);
++	return !rcu_dereference_sched(cpu_rq(cpu)->sd);
+ }
+ 
+ /*
