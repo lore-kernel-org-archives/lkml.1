@@ -1,220 +1,340 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387Ab0BYPmK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:42:10 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:40337 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759315Ab0BYPmH convert rfc822-to-8bit (ORCPT
+	id S1759396Ab0BYPn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:43:28 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:58813 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759315Ab0BYPn1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:42:07 -0500
+	Thu, 25 Feb 2010 10:43:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ezhUNj487nbIUq59K4YY3fwVUsdCy81xK6Rln+N7nGfXokAjaZj/SRVxwaQXqynXq1
-         dQFHLe+ul0zbIR3glo3E14xYCzBJ10EvruzBbbcDdmxkPRWL5vHVaiJg7gtbY4ryahUS
-         8k2C6cdCh7yN18gABEdvwHdD3KFdH5pLt/abI=
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=G+GjcB+skieDWTZYitL4sSV10ly53gqKVpKHSM0GaAc32s3Hai9wquCHQAaqNJVnKD
+         vwLWyovzHhGdoNclJks8m3WP9G+mPZZDxKnkaFggj98qXD9g2ssauGwCfxHTWaCDdepg
+         Ov0P7hqZHjPe72biPgEfnRvPKRA+QA8LZt0hc=
+Date: Thu, 25 Feb 2010 23:43:22 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 05/07] kernel.h trace cleanup
+Message-ID: <20100225154322.GA2686@darkstar>
 MIME-Version: 1.0
-In-Reply-To: <20100225134023.GB3842@hack>
-References: <cover.1266907495.git.andre.goddard@gmail.com> 
-	<a3a62a6cd7cc0ba011949396a1f2c7f9c32aa4b9.1266907496.git.andre.goddard@gmail.com> 
-	<2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com> 
-	<7b6bb4a51002242000x49f0b3bdncb40912bf18f90bb@mail.gmail.com> 
-	<2375c9f91002242025n1ab73e18i5950aa4f14ea36db@mail.gmail.com> 
-	<2375c9f91002242259n2fabb190ic77d6ca603bd1df7@mail.gmail.com> 
-	<7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com> 
-	<20100225134023.GB3842@hack>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Thu, 25 Feb 2010 12:41:47 -0300
-Message-ID: <b8bf37781002250741r3836a1calec3441ced7afb863@mail.gmail.com>
-Subject: Re: [Patch] mqueue: fix the bad code in sys_mq_open()
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E . Hallyn" <serue@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Xiaotian Feng <xtfeng@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Américo!
+Cleanup kernel.h trace related stuff, move to linux/trace.h
 
-On Thu, Feb 25, 2010 at 10:40 AM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
->
-> Fix bad code in ipc/mqueue.c.
->
-> Inspired by André Goddard Rosa's  patch.
->
-> a) do_create() and do_open() should not release the resources which
->   are not acquired within themselves, it's their caller's work;
->
-> b) Fix an fd leak;
->
-> c) The goto label 'out_upsem' doesn't make any sense, rename to
->   'out_unlock';
->
-> d) mntget() should be called before looking up dentry within
->   ->mnt->mnt_root;
->
-> e) When dealing with failure case, we should release the resources
->   in a reversed order of acquiring, so reorder the goto labels;
->
-> f) Remove some unused labels due to reorder.
->
-> Also, this shrinks the binary by 60 bytes:
->
->   text       data     bss       dec        hex filename
->   7674       1684        8      9366      2496 ipc/mqueue.o.BEFORE
->   7614       1684        8      9306      245a ipc/mqueue.o.AFTER
->
->
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Cc: André Goddard Rosa <andre.goddard@gmail.com>
->
-> ---
-> diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-> index c79bd57..fdd09da 100644
-> --- a/ipc/mqueue.c
-> +++ b/ipc/mqueue.c
-> @@ -650,8 +650,6 @@ static struct file *do_create(struct ipc_namespace *ipc_ns, struct dentry *dir,
->  out_drop_write:
->        mnt_drop_write(ipc_ns->mq_mnt);
->  out:
-> -       dput(dentry);
-> -       mntput(ipc_ns->mq_mnt);
->        return ERR_PTR(ret);
->  }
->
-> @@ -664,17 +662,11 @@ static struct file *do_open(struct ipc_namespace *ipc_ns,
->        static const int oflag2acc[O_ACCMODE] = { MAY_READ, MAY_WRITE,
->                                                  MAY_READ | MAY_WRITE };
->
-> -       if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY)) {
-> -               dput(dentry);
-> -               mntput(ipc_ns->mq_mnt);
-> +       if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY))
->                return ERR_PTR(-EINVAL);
-> -       }
->
-> -       if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE])) {
-> -               dput(dentry);
-> -               mntput(ipc_ns->mq_mnt);
-> +       if (inode_permission(dentry->d_inode, oflag2acc[oflag & O_ACCMODE]))
->                return ERR_PTR(-EACCES);
-> -       }
->
->        return dentry_open(dentry, ipc_ns->mq_mnt, oflag, cred);
->  }
-> @@ -686,7 +678,7 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
->        struct file *filp;
->        char *name;
->        struct mq_attr attr;
-> -       int fd, error;
-> +       int fd, error = 0;
->        struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
->
->        if (u_attr && copy_from_user(&attr, u_attr, sizeof(struct mq_attr)))
-> @@ -701,13 +693,13 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
->        if (fd < 0)
->                goto out_putname;
->
-> +       mntget(ipc_ns->mq_mnt);
->        mutex_lock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
->        dentry = lookup_one_len(name, ipc_ns->mq_mnt->mnt_root, strlen(name));
->        if (IS_ERR(dentry)) {
->                error = PTR_ERR(dentry);
-> -               goto out_err;
-> +               goto out_unlock;
->        }
-> -       mntget(ipc_ns->mq_mnt);
->
->        if (oflag & O_CREAT) {
->                if (dentry->d_inode) {  /* entry already exists */
-> @@ -731,24 +723,23 @@ SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
->
->        if (IS_ERR(filp)) {
->                error = PTR_ERR(filp);
-> -               goto out_putfd;
-> +               goto out;
->        }
->
->        fd_install(fd, filp);
-> -       goto out_upsem;
-> +       goto out_unlock;
->
->  out:
->        dput(dentry);
-> -       mntput(ipc_ns->mq_mnt);
-> -out_putfd:
-> -       put_unused_fd(fd);
-> -out_err:
-> -       fd = error;
-> -out_upsem:
-> +out_unlock:
->        mutex_unlock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
-> +       if (error) {
-> +               mntput(ipc_ns->mq_mnt);
-> +               put_unused_fd(fd);
-> +       }
->  out_putname:
->        putname(name);
-> -       return fd;
-> +       return error;
->  }
->
->  SYSCALL_DEFINE1(mq_unlink, const char __user *, u_name)
+As Steven Rostedt said, trace stuff should be as convenient as printk,
+so include trace.h in kernel.h for convinience.
 
-I have some questions below:
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+ include/linux/kernel.h |  137 -----------------------------------------------
+ include/linux/trace.h  |  141 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 142 insertions(+), 136 deletions(-)
 
-Inside do_open() and do_create() on mqueue.c, we call
-dentry_open()/__dentry_open().
-
-If dentry_open() fails, it'll automatically call:
-        dput(dentry);
-        mntput(mnt);
-
-Then we'll go here and set "error":
-
->        if (IS_ERR(filp)) {
->                error = PTR_ERR(filp);
-> -               goto out_putfd;
-> +               goto out;
->        }
->
-
-And finally here:
-
->  out:
->        dput(dentry);
-> -       mntput(ipc_ns->mq_mnt);
-> -out_putfd:
-> -       put_unused_fd(fd);
-> -out_err:
-> -       fd = error;
-> -out_upsem:
-> +out_unlock:
->        mutex_unlock(&ipc_ns->mq_mnt->mnt_root->d_inode->i_mutex);
-> +       if (error) {
-> +               mntput(ipc_ns->mq_mnt);
-> +               put_unused_fd(fd);
-> +       }
-
-Is it ok to call:
-        dput(dentry);
-        mntput(ipc_ns->mq_mnt);
-
-multiple times?
-
-I also do not see where you set "error" to "fd":
-> -       return fd;
-> +       return error;
-
-Am I missing something?
-
-Could you please base your patch on top of mine?
-
-Thank you,
-André
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/linux/trace.h	2010-02-25 17:50:56.761570109 +0800
+@@ -0,0 +1,141 @@
++#ifndef _LINUX_TRACE_H
++#define _LINUX_TRACE_H
++
++#include <stdarg.h>
++/*
++ * General tracing related utility functions - trace_printk(),
++ * tracing_on/tracing_off and tracing_start()/tracing_stop
++ *
++ * Use tracing_on/tracing_off when you want to quickly turn on or off
++ * tracing. It simply enables or disables the recording of the trace events.
++ * This also corresponds to the user space /sys/kernel/debug/tracing/tracing_on
++ * file, which gives a means for the kernel and userspace to interact.
++ * Place a tracing_off() in the kernel where you want tracing to end.
++ * From user space, examine the trace, and then echo 1 > tracing_on
++ * to continue tracing.
++ *
++ * tracing_stop/tracing_start has slightly more overhead. It is used
++ * by things like suspend to ram where disabling the recording of the
++ * trace is not enough, but tracing must actually stop because things
++ * like calling smp_processor_id() may crash the system.
++ *
++ * Most likely, you want to use tracing_on/tracing_off.
++ */
++#ifdef CONFIG_RING_BUFFER
++void tracing_on(void);
++void tracing_off(void);
++/* trace_off_permanent stops recording with no way to bring it back */
++void tracing_off_permanent(void);
++int tracing_is_on(void);
++#else
++static inline void tracing_on(void) { }
++static inline void tracing_off(void) { }
++static inline void tracing_off_permanent(void) { }
++static inline int tracing_is_on(void) { return 0; }
++#endif
++#ifdef CONFIG_TRACING
++extern void tracing_start(void);
++extern void tracing_stop(void);
++extern void ftrace_off_permanent(void);
++
++extern void
++ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
++
++static inline void __attribute__ ((format (printf, 1, 2)))
++____trace_printk_check_format(const char *fmt, ...)
++{
++}
++#define __trace_printk_check_format(fmt, args...)			\
++do {									\
++	if (0)								\
++		____trace_printk_check_format(fmt, ##args);		\
++} while (0)
++
++/**
++ * trace_printk - printf formatting in the ftrace buffer
++ * @fmt: the printf format for printing
++ *
++ * Note: __trace_printk is an internal function for trace_printk and
++ *       the @ip is passed in via the trace_printk macro.
++ *
++ * This function allows a kernel developer to debug fast path sections
++ * that printk is not appropriate for. By scattering in various
++ * printk like tracing in the code, a developer can quickly see
++ * where problems are occurring.
++ *
++ * This is intended as a debugging tool for the developer only.
++ * Please refrain from leaving trace_printks scattered around in
++ * your code.
++ */
++
++#define trace_printk(fmt, args...)					\
++do {									\
++	__trace_printk_check_format(fmt, ##args);			\
++	if (__builtin_constant_p(fmt)) {				\
++		static const char *trace_printk_fmt			\
++		  __attribute__((section("__trace_printk_fmt"))) =	\
++			__builtin_constant_p(fmt) ? fmt : NULL;		\
++									\
++		__trace_bprintk(_THIS_IP_, trace_printk_fmt, ##args);	\
++	} else								\
++		__trace_printk(_THIS_IP_, fmt, ##args);		\
++} while (0)
++
++extern int
++__trace_bprintk(unsigned long ip, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++
++extern int
++__trace_printk(unsigned long ip, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++
++extern void trace_dump_stack(void);
++
++/*
++ * The double __builtin_constant_p is because gcc will give us an error
++ * if we try to allocate the static variable to fmt if it is not a
++ * constant. Even with the outer if statement.
++ */
++#define ftrace_vprintk(fmt, vargs)					\
++do {									\
++	if (__builtin_constant_p(fmt)) {				\
++		static const char *trace_printk_fmt			\
++		  __attribute__((section("__trace_printk_fmt"))) =	\
++			__builtin_constant_p(fmt) ? fmt : NULL;		\
++									\
++		__ftrace_vbprintk(_THIS_IP_, trace_printk_fmt, vargs);	\
++	} else								\
++		__ftrace_vprintk(_THIS_IP_, fmt, vargs);		\
++} while (0)
++
++extern int
++__ftrace_vbprintk(unsigned long ip, const char *fmt, va_list ap);
++
++extern int
++__ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
++
++extern void ftrace_dump(void);
++#else
++static inline void
++ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
++static inline int
++trace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
++
++static inline void tracing_start(void) { }
++static inline void tracing_stop(void) { }
++static inline void ftrace_off_permanent(void) { }
++static inline void trace_dump_stack(void) { }
++static inline int
++trace_printk(const char *fmt, ...)
++{
++	return 0;
++}
++static inline int
++ftrace_vprintk(const char *fmt, va_list ap)
++{
++	return 0;
++}
++static inline void ftrace_dump(void) { }
++#endif /* CONFIG_TRACING */
++
++#endif /* _LINUX_TRACE_H */
+--- linux-2.6.orig/include/linux/kernel.h	2010-02-25 17:39:46.872470838 +0800
++++ linux-2.6/include/linux/kernel.h	2010-02-25 17:39:47.758301987 +0800
+@@ -16,6 +16,7 @@
+ #include <linux/printk.h>
+ #include <linux/panic.h>
+ #include <linux/string.h>
++#include <linux/trace.h>
+ #include <asm/byteorder.h>
+ #include <asm/bug.h>
+ 
+@@ -168,142 +169,6 @@ extern enum system_states {
+ extern void dump_stack(void) __cold;
+ 
+ /*
+- * General tracing related utility functions - trace_printk(),
+- * tracing_on/tracing_off and tracing_start()/tracing_stop
+- *
+- * Use tracing_on/tracing_off when you want to quickly turn on or off
+- * tracing. It simply enables or disables the recording of the trace events.
+- * This also corresponds to the user space /sys/kernel/debug/tracing/tracing_on
+- * file, which gives a means for the kernel and userspace to interact.
+- * Place a tracing_off() in the kernel where you want tracing to end.
+- * From user space, examine the trace, and then echo 1 > tracing_on
+- * to continue tracing.
+- *
+- * tracing_stop/tracing_start has slightly more overhead. It is used
+- * by things like suspend to ram where disabling the recording of the
+- * trace is not enough, but tracing must actually stop because things
+- * like calling smp_processor_id() may crash the system.
+- *
+- * Most likely, you want to use tracing_on/tracing_off.
+- */
+-#ifdef CONFIG_RING_BUFFER
+-void tracing_on(void);
+-void tracing_off(void);
+-/* trace_off_permanent stops recording with no way to bring it back */
+-void tracing_off_permanent(void);
+-int tracing_is_on(void);
+-#else
+-static inline void tracing_on(void) { }
+-static inline void tracing_off(void) { }
+-static inline void tracing_off_permanent(void) { }
+-static inline int tracing_is_on(void) { return 0; }
+-#endif
+-#ifdef CONFIG_TRACING
+-extern void tracing_start(void);
+-extern void tracing_stop(void);
+-extern void ftrace_off_permanent(void);
+-
+-extern void
+-ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
+-
+-static inline void __attribute__ ((format (printf, 1, 2)))
+-____trace_printk_check_format(const char *fmt, ...)
+-{
+-}
+-#define __trace_printk_check_format(fmt, args...)			\
+-do {									\
+-	if (0)								\
+-		____trace_printk_check_format(fmt, ##args);		\
+-} while (0)
+-
+-/**
+- * trace_printk - printf formatting in the ftrace buffer
+- * @fmt: the printf format for printing
+- *
+- * Note: __trace_printk is an internal function for trace_printk and
+- *       the @ip is passed in via the trace_printk macro.
+- *
+- * This function allows a kernel developer to debug fast path sections
+- * that printk is not appropriate for. By scattering in various
+- * printk like tracing in the code, a developer can quickly see
+- * where problems are occurring.
+- *
+- * This is intended as a debugging tool for the developer only.
+- * Please refrain from leaving trace_printks scattered around in
+- * your code.
+- */
+-
+-#define trace_printk(fmt, args...)					\
+-do {									\
+-	__trace_printk_check_format(fmt, ##args);			\
+-	if (__builtin_constant_p(fmt)) {				\
+-		static const char *trace_printk_fmt			\
+-		  __attribute__((section("__trace_printk_fmt"))) =	\
+-			__builtin_constant_p(fmt) ? fmt : NULL;		\
+-									\
+-		__trace_bprintk(_THIS_IP_, trace_printk_fmt, ##args);	\
+-	} else								\
+-		__trace_printk(_THIS_IP_, fmt, ##args);		\
+-} while (0)
+-
+-extern int
+-__trace_bprintk(unsigned long ip, const char *fmt, ...)
+-	__attribute__ ((format (printf, 2, 3)));
+-
+-extern int
+-__trace_printk(unsigned long ip, const char *fmt, ...)
+-	__attribute__ ((format (printf, 2, 3)));
+-
+-extern void trace_dump_stack(void);
+-
+-/*
+- * The double __builtin_constant_p is because gcc will give us an error
+- * if we try to allocate the static variable to fmt if it is not a
+- * constant. Even with the outer if statement.
+- */
+-#define ftrace_vprintk(fmt, vargs)					\
+-do {									\
+-	if (__builtin_constant_p(fmt)) {				\
+-		static const char *trace_printk_fmt			\
+-		  __attribute__((section("__trace_printk_fmt"))) =	\
+-			__builtin_constant_p(fmt) ? fmt : NULL;		\
+-									\
+-		__ftrace_vbprintk(_THIS_IP_, trace_printk_fmt, vargs);	\
+-	} else								\
+-		__ftrace_vprintk(_THIS_IP_, fmt, vargs);		\
+-} while (0)
+-
+-extern int
+-__ftrace_vbprintk(unsigned long ip, const char *fmt, va_list ap);
+-
+-extern int
+-__ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
+-
+-extern void ftrace_dump(void);
+-#else
+-static inline void
+-ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3) { }
+-static inline int
+-trace_printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+-
+-static inline void tracing_start(void) { }
+-static inline void tracing_stop(void) { }
+-static inline void ftrace_off_permanent(void) { }
+-static inline void trace_dump_stack(void) { }
+-static inline int
+-trace_printk(const char *fmt, ...)
+-{
+-	return 0;
+-}
+-static inline int
+-ftrace_vprintk(const char *fmt, va_list ap)
+-{
+-	return 0;
+-}
+-static inline void ftrace_dump(void) { }
+-#endif /* CONFIG_TRACING */
+-
+-/*
+  * min()/max()/clamp() macros that also do
+  * strict type-checking.. See the
+  * "unnecessary" pointer comparison.
