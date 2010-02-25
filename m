@@ -1,58 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792Ab0BYBwu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 20:52:50 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:40118 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758774Ab0BYBws (ORCPT
+	id S1758802Ab0BYBwz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 20:52:55 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:36264 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758790Ab0BYBwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 20:52:48 -0500
+	Wed, 24 Feb 2010 20:52:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hYI8RtjH5+pvHPw+786qtI7qMIYKexG5X++g8Onu9xbxRYKb9mKtYk4FIib6sfKeV+
-         dTxm52QatTW1u6Y2qVpJ0qAXTa6TFoZpo9sMoJdlNdap3lwrdIHnsViOGb10Qo4tN4mY
-         B6ZIWqKOOVz05WL61JNhaWYJxSzLUoiJYH0Jw=
-Date: Thu, 25 Feb 2010 02:52:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       k-keiichi@bx.jp.nec.com
-Subject: Re: [PATCH 08/12] perf: export some syscall metadata
-Message-ID: <20100225015244.GC7491@nowhere>
-References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com> <1264580883-15324-9-git-send-email-tzanussi@gmail.com> <20100223214445.GF5357@nowhere> <1266991243.6427.44.camel@tropicana>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=v04ZrhzXK9iStX549/1a8RUmGs5LgUb7HShcXSmNeRFw8itjlTbgPAhdCq/7I/XoWs
+         S27Jh/HOosEZ7BFhdrjRimK4ktxb3EeuqNiFz+g2krJwHlC+C4UXuFyuMhrSjDsdPUNn
+         C9dkxdGBRBDZ9iYcYCzdxgvhuXGmkyBHvkkMY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266991243.6427.44.camel@tropicana>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1266867811.10646.196.camel@Joe-Laptop.home>
+References: <20100222141934.GA9030@darkstar>
+	 <1266867811.10646.196.camel@Joe-Laptop.home>
+Date: Thu, 25 Feb 2010 09:52:49 +0800
+Message-ID: <a8e1da1002241752u637f7debi2ff46f50ac5edcd8@mail.gmail.com>
+Subject: Re: [PATCH 03/06] kernel.h hexdump cleanup
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, Li Zefan <lizf@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 12:00:43AM -0600, Tom Zanussi wrote:
-> You can skip the syscall metadata patches (7-11) and things will still
-> work - you'll just get syscall numbers in the output instead of the
-> nicer syscall names.
-> 
-> When the event injection stuff is ready, I can re-implement those
-> patches on top of it - it shouldn't be a big deal.
+On Tue, Feb 23, 2010 at 3:43 AM, Joe Perches <joe@perches.com> wrote:
+> On Mon, 2010-02-22 at 22:19 +0800, Dave Young wrote:
+>> hexdump stuff in kernel.h should be put into a standalone head file
+>
+> I think it'd be clearer to have logging functions
+> in kernel.h split into a separate header or grouped
+> a bit better in kernel.h.
+>
+> I would have kernel.h #include that header though
+> rather than splitting out things like hexdump functions
+> into a separate file requiring yet another #include in
+> source files.
+
+Andrew, what do you think about this?
+
+Actually I hesitate to send this patch as well, too many recipients
+needed from get_maintainer.pl.
+
+>
+> http://lkml.org/lkml/2009/12/16/77
+> http://lkml.org/lkml/2007/11/29/507
+>
+>
+>
 
 
-Yeah, this looks more reasonable I think. The 7th patch can still
-go on though, as it deals with syscall numbers, not yet names, so
-it's fine.
 
-Ah and I'm keeping the 12th patch too (documentation) with some
-few modifications, just to tell people syscall names are not yet
-supported.
-
-I've tested the set and played with it. It works very well.
-
-Actually this work is just amazing. It's so easy to generate
-a script for any perf.data, with the right things inside, easy
-to modify as the callbacks are intuitive.
-
-I'm pushing that right away so happily...
-
+-- 
+Regards
+dave
