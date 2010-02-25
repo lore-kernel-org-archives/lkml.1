@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439Ab0BYMlq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 07:41:46 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59965 "EHLO
+	id S932406Ab0BYMlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 07:41:40 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59961 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932370Ab0BYMlh (ORCPT
+	with ESMTP id S932364Ab0BYMlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 07:41:37 -0500
+	Thu, 25 Feb 2010 07:41:36 -0500
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -19,68 +19,66 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>,
        Alexander Gordeev <lasaine@lvk.cs.msu.su>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Thu, 25 Feb 2010 13:41:07 +0100
-Message-Id: <1267101671-23575-3-git-send-email-giometti@linux.it>
+Date: Thu, 25 Feb 2010 13:41:10 +0100
+Message-Id: <1267101671-23575-6-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267101671-23575-2-git-send-email-giometti@linux.it>
+In-Reply-To: <1267101671-23575-5-git-send-email-giometti@linux.it>
 References: <1267101671-23575-1-git-send-email-giometti@linux.it>
  <1267101671-23575-2-git-send-email-giometti@linux.it>
+ <1267101671-23575-3-git-send-email-giometti@linux.it>
+ <1267101671-23575-4-git-send-email-giometti@linux.it>
+ <1267101671-23575-5-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.37
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 2/6] ldisc: new dcd_change() method for line disciplines.
+Subject: [PATCH 5/6] serial 8250: enable PPS support.
 X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Automagically function serial8250_enable_ms() is called when PPS ldisc
+is selected.
+
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- Documentation/serial/tty.txt |    4 ++++
- include/linux/tty_ldisc.h    |    8 ++++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/serial/8250.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/serial/tty.txt b/Documentation/serial/tty.txt
-index 5e5349a..7c90050 100644
---- a/Documentation/serial/tty.txt
-+++ b/Documentation/serial/tty.txt
-@@ -105,6 +105,10 @@ write_wakeup()	-	May be called at any point between open and close.
- 			is permitted to call the driver write method from
- 			this function. In such a situation defer it.
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index c3e37c8..48aa0b4 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2413,6 +2413,21 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+ }
  
-+dcd_change()	-	Report to the tty line the current DCD pin status
-+			changes and the relative timestamp. The timestamp
-+			can be NULL.
+ static void
++serial8250_set_ldisc(struct uart_port *port)
++{
++	int line = port->line;
 +
- 
- Driver Access
- 
-diff --git a/include/linux/tty_ldisc.h b/include/linux/tty_ldisc.h
-index 0c4ee9b..526d66f 100644
---- a/include/linux/tty_ldisc.h
-+++ b/include/linux/tty_ldisc.h
-@@ -99,6 +99,12 @@
-  *	cease I/O to the tty driver. Can sleep. The driver should
-  *	seek to perform this action quickly but should wait until
-  *	any pending driver I/O is completed.
-+ *
-+ * void (*dcd_change)(struct tty_struct *tty, unsigned int status,
-+ * 			struct timespec *ts)
-+ *
-+ *	Tells the discipline that the DCD pin has changed its status and
-+ *	the relative timestamp. Pointer ts can be NULL.
-  */
- 
- #include <linux/fs.h>
-@@ -136,6 +142,8 @@ struct tty_ldisc_ops {
- 	void	(*receive_buf)(struct tty_struct *, const unsigned char *cp,
- 			       char *fp, int count);
- 	void	(*write_wakeup)(struct tty_struct *);
-+	void	(*dcd_change)(struct tty_struct *, unsigned int,
-+				struct timespec *);
- 
- 	struct  module *owner;
- 	
++	if (line >= port->state->port.tty->driver->num)
++		return;
++
++	if (port->state->port.tty->ldisc->ops->num == N_PPS) {
++		port->flags |= UPF_HARDPPS_CD;
++		serial8250_enable_ms(port);
++	} else
++		port->flags &= ~UPF_HARDPPS_CD;
++}
++
++static void
+ serial8250_pm(struct uart_port *port, unsigned int state,
+ 	      unsigned int oldstate)
+ {
+@@ -2626,6 +2641,7 @@ static struct uart_ops serial8250_pops = {
+ 	.startup	= serial8250_startup,
+ 	.shutdown	= serial8250_shutdown,
+ 	.set_termios	= serial8250_set_termios,
++	.set_ldisc	= serial8250_set_ldisc,
+ 	.pm		= serial8250_pm,
+ 	.type		= serial8250_type,
+ 	.release_port	= serial8250_release_port,
 -- 
 1.6.3.3
 
