@@ -1,75 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797Ab0BYB4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 20:56:39 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:35799 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758752Ab0BYB4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 20:56:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=wKHf43o4MYFdg+jCslCrvlNooKibfoO6siZaCjG0PrgTpYtWXqnfYj/coj0FkO2t6V
-         /ZoEjkwjOGqeL4+c2FFYKPIeU86xeWyoD27wsOV7ka916S6uAKJPnfjaDtR3FWxVEkgl
-         ATLakd9D4bAlKOkOe5sl4Yhpf9GGueuAREIOE=
+	id S1758805Ab0BYB7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 20:59:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45755 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758759Ab0BYB7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 20:59:16 -0500
+Message-ID: <4B85DB79.4010708@kernel.org>
+Date: Thu, 25 Feb 2010 11:07:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <1267050119.24271.7820.camel@gandalf.stny.rr.com>
-References: <201002242107.o1OL7F6v020376@imap1.linux-foundation.org>
-	 <20100224213406.GA7491@nowhere>
-	 <1267050119.24271.7820.camel@gandalf.stny.rr.com>
-Date: Thu, 25 Feb 2010 09:56:36 +0800
-Message-ID: <a8e1da1002241756x6aa1a2fcqfb42d0fdd6962418@mail.gmail.com>
-Subject: Re: + kernelh-printk-panic-string-cleanup.patch added to -mm tree
-From: Dave Young <hidave.darkstar@gmail.com>
-To: rostedt@goodmis.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, gregkh@suse.de,
-       kosaki.motohiro@jp.fujitsu.com, lizf@cn.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 16/35] x86: make 64 bit use early_res instead of bootmem
+ before slab
+References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	 <1265793639-15071-17-git-send-email-yinghai@kernel.org>	 <20100215010833.15f9e09a.sfr@canb.auug.org.au>	 <4B7B4378.1070206@kernel.org> <1267052387.12790.10.camel@laptop> <4B85B65E.503@kernel.org> <4B85B724.9050304@kernel.org>
+In-Reply-To: <4B85B724.9050304@kernel.org>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 01:57:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 6:21 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Wed, 2010-02-24 at 22:34 +0100, Frederic Weisbecker wrote:
->> On Wed, Feb 24, 2010 at 01:07:15PM -0800, akpm@linux-foundation.org wrote:
->> >
->
->> That said, it's probably sane to think about a new header to put
->> these tracing prototypes, if it's included by kernel.h,
->> linux/ftrace.h is already filled with non-general purpose things.
->> So may be linux/trace.h ? Yeah this could be confusing, Steve what
->> do you think?
+Hello, Yinghai.
+
+On 02/25/2010 08:32 AM, Yinghai Lu wrote:
+>>> Kernel panic - not syncing: free_early on not reserved area: 2f80000-2f9ffff!
+>>> Pid: 0, comm: swapper Not tainted 2.6.33-rc8-tip-00918-gb34d361 #159
+>>> Call Trace:	
+>>>  [<ffffffff815d12e2>] panic+0x84/0x147
+>>>  [<ffffffff81cceecb>] free_early+0x64/0x6d
+>>>  [<ffffffff81cd2231>] free_bootmem+0xc/0xe
+>>>  [<ffffffff81cc1cd6>] pcpu_fc_free+0x1d/0x1f
+>>>  [<ffffffff81cd6056>] pcpu_embed_first_chunk+0x13a/0x27f
+>>>  [<ffffffff81cc1cd8>] ? pcpu_fc_alloc+0x0/0xac
+>>>  [<ffffffff81cc1cb9>] ? pcpu_fc_free+0x0/0x1f
+>>>  [<ffffffff81cc1af7>] setup_per_cpu_areas+0x82/0x239
+>>>  [<ffffffff81cb5b3c>] start_kernel+0x1b8/0x43b
+>>>  [<ffffffff81cb52bc>] x86_64_start_reservations+0xa7/0xab
+>>>  [<ffffffff81cb53b8>] x86_64_start_kernel+0xf8/0x107
+>>>
 >>
->> And all in one, it would probably better to split this in three
->> patches: one that moves printk helpers out of kernel.h to printk.h,
->> another following the same pattern for panic things and another one
->> for tracing things.
->
-> Yeah, I'm fine with moving the tracing related stuff in kernel.h into a
-> trace.h file and keep ftrace.h specific to ftrace in general.
->
-> But I still find it necessary that trace.h gets included by kernel.h.
+>> we can not handle partial free, and current only user for that is pcpu_setup...
+> 
+> any plan to pcpu_setup to use slab allocation instead of bootmem?
+> that code is only one user that do partial bootmem free.
 
-Thanks, will do
+The problem is that the pcpu_embed_first_chunk() allocator depends on
+having a large contiguous slab of memory to overlay the percpu
+variables and then giving back the unused parts (due to layout and
+cpu_possible_mask not being contiguous).  There's no way to do partial
+alloc/free anymore?
 
->
-> I can just imaging Thomas yelling at me more when he adds a
-> tracing_off() or trace_printk() somewhere and then gets a warning about
-> it not being declared.
->
-> I also gave that patch a NAK, in case that carries any weight.
->
-> -- Steve
->
->
->
-
-
+Thanks.
 
 -- 
-Regards
-dave
+tejun
