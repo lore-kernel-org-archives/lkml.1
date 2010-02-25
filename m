@@ -1,87 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356Ab0BYPfH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:35:07 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:41008 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759190Ab0BYPfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:35:05 -0500
-Message-ID: <7316226fbd1cb53b7f90965c54acd343.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <alpine.LNX.2.00.1002251157500.30967@pobox.suse.cz>
-References: <20100221002001.0a7e05a7@neptune.home>
-    <20100224170049.0d04af3c@neptune.home>
-    <201002241927.53532.oliver@neukum.org>
-    <ffb352764fc5a0da5cca6f3da7fc2603.squirrel@intranet.cs.nmsu.edu>
-    <alpine.LNX.2.00.1002251157500.30967@pobox.suse.cz>
-Date: Thu, 25 Feb 2010 08:34:42 -0700
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Cc: "Oliver Neukum" <oliver@neukum.org>,
-       Bruno =?iso-8859-1?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Nicu Pavel" <npavel@ituner.com>
-User-Agent: SquirrelMail/1.4.19
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	id S1759367Ab0BYPf2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:35:28 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63688 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759358Ab0BYPfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 10:35:25 -0500
+X-Authority-Analysis: v=1.0 c=1 a=ghyrhsaLHwwA:10 a=7U3hwN5JcxgA:10 a=yPCof4ZbAAAA:8 a=IM5Gmz4YiYqMR86kU1sA:9 a=EO5BD_GzD8xoevj9m40ah7qZNO0A:4 a=7DSvI1NPTFQA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH -tip 4/5] tracing: return accurate value for
+ print_graph_prologue
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Wenji Huang <wenji.huang@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100225041835.GF7491@nowhere>
+References: <1266997226-6833-1-git-send-email-wenji.huang@oracle.com>
+	 <1266997226-6833-2-git-send-email-wenji.huang@oracle.com>
+	 <1266997226-6833-3-git-send-email-wenji.huang@oracle.com>
+	 <1266997226-6833-4-git-send-email-wenji.huang@oracle.com>
+	 <20100225041835.GF7491@nowhere>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 25 Feb 2010 10:35:21 -0500
+Message-ID: <1267112121.6328.1.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Wed, 24 Feb 2010, Rick L. Vinyard, Jr. wrote:
->
->> The key difference is the replacement of spin_lock() with spin_trylock()
->> such that if the non-interrupt code has already obtained the lock, the
->> interrupt will not deadlock but instead take the else path and schedule
->> a
->> framebuffer update at the next interval.
->
-> Why is _irqsave() and/or deferred work not enough? The aproach with
-> _trylock() seems to be overly complicated for no good reason (I personally
-> become very suspicious every time I see code that is using _trylock()).
->
+On Thu, 2010-02-25 at 05:18 +0100, Frederic Weisbecker wrote:
+> On Wed, Feb 24, 2010 at 03:40:25PM +0800, Wenji Huang wrote:
+> > Return TRACE_TYPE_HANDLED instead of zero to avoid confusion.
+> > 
+> > Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> > ---
 
-I was concerned about _irqsave() because the lock is split across two
-functions to protect the urb after it is handed off to the usb subsystem
-with usb_submit_urb(). It's locked in g13_fb_send() and unlocked in the
-urb completion callback.
 
-As for deferred work, the g13_fb_send() is the I/O portion of the deferred
-framebuffer callback. I was concerned that without a lock one deferred
-update could hand the urb off to the usb subsystem and a second could try
-to access it before it was handed back to the driver.
+> It's not a big deal because there will always be something
+> else to print after the prologue, and this will fail too
+> and then return the error.
 
-In this case the _trylock() would fail and in the else patch we would
-defer yet again until the next update cycle.
+I'll apply the rest of the series and leave this patch out.
 
-I took this approach because usb_interrupt_msg() couldn't be used from an
-interrupt context, such as a resume hook because eventually down the chain
-it does a wait_for_completion_timeout().
+-- Steve
 
-It has the added benefit of reusing the urb instead of creating a new one
-for each framebuffer sent out, but that wasn't a reason... just a side
-effect.
-
-The downside is that I had to manage the urb.
-
-One thing I could do is forget about directly calling g13_fb_send() from
-any context and instead use the deferred framebuffer workqueue.
-
-That's probably a simpler approach anyway.
-
-> [ by the way, Rick, are you planning to resubmit the G13 driver with
-> incorporated feedback from the last review round? ]
->
-
-Yes. I just wanted to get the details of suspend/resume worked out before
-resubmitting.
-
--- 
-
-Rick
 
