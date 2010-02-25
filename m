@@ -1,61 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293Ab0BYFUG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 00:20:06 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:62367 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061Ab0BYFUB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 00:20:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=LJY+Wjke8Pm7AET6duF/Qi6Q4V/X8CbGZwisn6paBLCro32LZXlT0mKKPATcgMUkmf
-         ti5vWxv6VNW7PxHq1og+npw6IYasTcL+wld7pOkrTxcUftyOAVbEtazN4Yg0ly6fHEo/
-         N5WSDM5g2QiWjEeRFMP0CjGy3nECgYS74y8mU=
+	id S1752739Ab0BYFXK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 00:23:10 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45891 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750Ab0BYFXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 00:23:06 -0500
+Date: Thu, 25 Feb 2010 16:22:54 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+       Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
+ barrier (v9)
+Message-ID: <20100225052254.GZ9738@laptop>
+References: <20100212224606.GA30280@Krystal>
+ <4B82CF1A.3010501@nortel.com>
+ <20100222212321.GA2573@Krystal>
+ <20100224091052.GY9738@laptop>
+ <4B85620A.7000901@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <3f9a31f41002242053r169255d2hf2585aeb55174a92@mail.gmail.com>
-References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com> 
-	<3f9a31f41002242053r169255d2hf2585aeb55174a92@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 24 Feb 2010 21:19:41 -0800
-Message-ID: <43e72e891002242119u77fdfd30m2d17a1e48fe2e712@mail.gmail.com>
-Subject: Re: 802.11 development process - extended documentation
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: Willy Tarreau <w@1wt.eu>, linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B85620A.7000901@us.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 8:53 PM, Jaswinder Singh Rajput
-<jaswinderlinux@gmail.com> wrote:
-> Hello Luis,
->
-> On Thu, Feb 25, 2010 at 5:48 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->> I've extended our 802.11 development process into a new section on our
->> 802.11 wiki. I often get asked how this works from different parts of
->> the company here at Atheros so figured it'd be easier to illustrate
->> this as best as possible and share it.
->>
->> http://wireless.kernel.org/en/developers/process
->>
->> Hope it does justice, John if you see any mistakes feel free to edit.
->> If the diagram seems fishy let me know what I can fix.
->>
->
-> Thanks for the beautiful documentation.
+On Wed, Feb 24, 2010 at 09:29:46AM -0800, Darren Hart wrote:
+> Nick Piggin wrote:
+> 
+> >When writing multiprocessor scalable software, threads should often be
+> >avoided. They share so much state that it is easy to run into
+> >scalability issues in the kernel. So yes it would be really nice to
+> >have userspace RCU available in a process-shared mode.
+> 
+> A bit off topic, but I'm interested in what you feel some of these
+> scalability issues are. Is it mostly bouncing this shared context
+> from one CPU to the next and the related cache effects, or is there
+> something more you are referring to?
 
-Thanks :)
+Just in general shared state is almost always going to be more costly in
+SMP than non-shared.
 
-> Is this also applicable for Linux 2.4
+>From VM to files and fs state to signals and timers and process
+accounting. And this also carries up to libc, and critical user code
+like the heap allocator.
 
-Not at all.
+Linux is usually pretty good, a lot due to RCU, but there are still
+contention points.
 
-> What is the status of Wireless in Linux 2.4
+Andrew had investigated this a lot (in relation to samba) and had a good
+talk on it, but the slides don't really do it justice.
+http://www.samba.org/~tridge/talks/threads.pdf
 
-Heh, umm, I have no clue. Dead?
-
-  Luis
