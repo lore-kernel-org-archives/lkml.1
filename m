@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932216Ab0BYDnd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:43:33 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:49649 "EHLO
+	id S932222Ab0BYDnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:43:50 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:37233 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932187Ab0BYDmy (ORCPT
+	with ESMTP id S932163Ab0BYDmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:42:54 -0500
+	Wed, 24 Feb 2010 22:42:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rBrWO/n0B3hyx1/+JjrfVKI/N3j3zj50GI4onchTrVK+muCaHkM9hbRRBnW1OmAKJu
-         poTHV3aAC7H4dxyggVWYsLrRJbgNV2skUspfcvXkXCDmiePCVrqS+Zu1hKcVsH6WXqIS
-         BVGMJmfwWKxm0M4GY4d6O/1LTCcOaJo3m3LK4=
+        b=MbFUH4nJQPTOy42lp1ZzjucbgKCbDJTTGM65sVy218G+a+KznZJVyGktYqHf02+nJJ
+         G2L5s6bLFen9U7BQ1FALV1t2lGNSmxjEUg9DaIeYdtKCjiT54IscPDdmG0XdjgQV0rCg
+         qWjeucJG7sitcQ55uTZ+vk6TDredUUSA/+8Vc=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
@@ -22,9 +22,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
        Paul Mackerras <paulus@samba.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 09/10] perf/scripts: Add perf-trace-python Documentation
-Date: Thu, 25 Feb 2010 04:42:40 +0100
-Message-Id: <1267069361-10909-10-git-send-regression-fweisbec@gmail.com>
+Subject: [PATCH 06/10] perf/scripts: Add Python scripting engine
+Date: Thu, 25 Feb 2010 04:42:37 +0100
+Message-Id: <1267069361-10909-7-git-send-regression-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1267069361-10909-1-git-send-regression-fweisbec@gmail.com>
 References: <1267069361-10909-1-git-send-regression-fweisbec@gmail.com>
@@ -34,7 +34,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tom Zanussi <tzanussi@gmail.com>
 
-Also small update to perf-trace-perl and perf-trace docs.
+Add base support for Python scripting to perf trace.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -43,699 +43,969 @@ Cc: Keiichi KII <k-keiichi@bx.jp.nec.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1264580883-15324-13-git-send-email-tzanussi@gmail.com>
+LKML-Reference: <1264580883-15324-6-git-send-email-tzanussi@gmail.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- tools/perf/Documentation/perf-trace-perl.txt   |    3 +-
- tools/perf/Documentation/perf-trace-python.txt |  624 ++++++++++++++++++++++++
- tools/perf/Documentation/perf-trace.txt        |   11 +-
- 3 files changed, 636 insertions(+), 2 deletions(-)
- create mode 100644 tools/perf/Documentation/perf-trace-python.txt
+ tools/perf/Makefile                                |   21 +
+ tools/perf/builtin-trace.c                         |    1 +
+ .../perf/scripts/python/Perf-Trace-Util/Context.c  |   88 +++
+ .../python/Perf-Trace-Util/lib/Perf/Trace/Core.py  |   91 +++
+ .../python/Perf-Trace-Util/lib/Perf/Trace/Util.py  |   25 +
+ .../util/scripting-engines/trace-event-python.c    |  576 ++++++++++++++++++++
+ tools/perf/util/trace-event-scripting.c            |   61 ++
+ tools/perf/util/trace-event.h                      |    1 +
+ 8 files changed, 864 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/scripts/python/Perf-Trace-Util/Context.c
+ create mode 100644 tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Core.py
+ create mode 100644 tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+ create mode 100644 tools/perf/util/scripting-engines/trace-event-python.c
 
-diff --git a/tools/perf/Documentation/perf-trace-perl.txt b/tools/perf/Documentation/perf-trace-perl.txt
-index c5f55f4..d2206c3 100644
---- a/tools/perf/Documentation/perf-trace-perl.txt
-+++ b/tools/perf/Documentation/perf-trace-perl.txt
-@@ -8,7 +8,7 @@ perf-trace-perl - Process trace data with a Perl script
- SYNOPSIS
- --------
- [verse]
--'perf trace' [-s [lang]:script[.ext] ]
-+'perf trace' [-s [Perl]:script[.pl] ]
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 0a3c0c8..1427316 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -522,6 +522,19 @@ else
+ 	LIB_OBJS += scripts/perl/Perf-Trace-Util/Context.o
+ endif
  
- DESCRIPTION
- -----------
-@@ -213,6 +213,7 @@ Various utility functions for use with perf trace:
-   nsecs_nsecs($nsecs) - returns nsecs remainder given nsecs
-   nsecs_str($nsecs) - returns printable string in the form secs.nsecs
-   avg($total, $n) - returns average given a sum and a total number of values
-+  syscall_name($id) - returns the syscall name for the specified syscall_nr
++ifndef NO_LIBPYTHON
++PYTHON_EMBED_LDOPTS = `python-config --ldflags 2>/dev/null`
++PYTHON_EMBED_CCOPTS = `python-config --cflags 2>/dev/null`
++endif
++
++ifneq ($(shell sh -c "(echo '\#include <Python.h>'; echo 'int main(void) { Py_Initialize(); return 0; }') | $(CC) -x c - $(PYTHON_EMBED_CCOPTS) -o /dev/null $(PYTHON_EMBED_LDOPTS) > /dev/null 2>&1 && echo y"), y)
++	BASIC_CFLAGS += -DNO_LIBPYTHON
++else
++	ALL_LDFLAGS += $(PYTHON_EMBED_LDOPTS)
++	LIB_OBJS += util/scripting-engines/trace-event-python.o
++	LIB_OBJS += scripts/python/Perf-Trace-Util/Context.o
++endif
++
+ ifdef NO_DEMANGLE
+ 	BASIC_CFLAGS += -DNO_DEMANGLE
+ else
+@@ -899,6 +912,12 @@ util/scripting-engines/trace-event-perl.o: util/scripting-engines/trace-event-pe
+ scripts/perl/Perf-Trace-Util/Context.o: scripts/perl/Perf-Trace-Util/Context.c PERF-CFLAGS
+ 	$(QUIET_CC)$(CC) -o scripts/perl/Perf-Trace-Util/Context.o -c $(ALL_CFLAGS) $(PERL_EMBED_CCOPTS) -Wno-redundant-decls -Wno-strict-prototypes -Wno-unused-parameter -Wno-nested-externs $<
  
- SEE ALSO
- --------
-diff --git a/tools/perf/Documentation/perf-trace-python.txt b/tools/perf/Documentation/perf-trace-python.txt
++util/scripting-engines/trace-event-python.o: util/scripting-engines/trace-event-python.c PERF-CFLAGS
++	$(QUIET_CC)$(CC) -o util/scripting-engines/trace-event-python.o -c $(ALL_CFLAGS) $(PYTHON_EMBED_CCOPTS) -Wno-redundant-decls -Wno-strict-prototypes -Wno-unused-parameter -Wno-shadow $<
++
++scripts/python/Perf-Trace-Util/Context.o: scripts/python/Perf-Trace-Util/Context.c PERF-CFLAGS
++	$(QUIET_CC)$(CC) -o scripts/python/Perf-Trace-Util/Context.o -c $(ALL_CFLAGS) $(PYTHON_EMBED_CCOPTS) -Wno-redundant-decls -Wno-strict-prototypes -Wno-unused-parameter -Wno-nested-externs $<
++
+ perf-%$X: %.o $(PERFLIBS)
+ 	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) $(LIBS)
+ 
+@@ -1012,6 +1031,8 @@ install: all
+ 	$(INSTALL) scripts/perl/Perf-Trace-Util/lib/Perf/Trace/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/Perf-Trace-Util/lib/Perf/Trace'
+ 	$(INSTALL) scripts/perl/*.pl -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl'
+ 	$(INSTALL) scripts/perl/bin/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/bin'
++	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/Perf-Trace-Util/lib/Perf/Trace'
++	$(INSTALL) scripts/python/Perf-Trace-Util/lib/Perf/Trace/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/python/Perf-Trace-Util/lib/Perf/Trace'
+ 
+ ifdef BUILT_INS
+ 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index d5d20c3..5db687f 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -44,6 +44,7 @@ static void setup_scripting(void)
+ 	perf_set_argv_exec_path(perf_exec_path());
+ 
+ 	setup_perl_scripting();
++	setup_python_scripting();
+ 
+ 	scripting_ops = &default_scripting_ops;
+ }
+diff --git a/tools/perf/scripts/python/Perf-Trace-Util/Context.c b/tools/perf/scripts/python/Perf-Trace-Util/Context.c
 new file mode 100644
-index 0000000..119d5de
+index 0000000..957085d
 --- /dev/null
-+++ b/tools/perf/Documentation/perf-trace-python.txt
-@@ -0,0 +1,624 @@
-+perf-trace-python(1)
-+==================
++++ b/tools/perf/scripts/python/Perf-Trace-Util/Context.c
+@@ -0,0 +1,88 @@
++/*
++ * Context.c.  Python interfaces for perf trace.
++ *
++ * Copyright (C) 2010 Tom Zanussi <tzanussi@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
++#include <Python.h>
++#include "../../../perf.h"
++#include "../../../util/trace-event.h"
++
++PyMODINIT_FUNC initperf_trace_context(void);
++
++static PyObject *perf_trace_context_common_pc(PyObject *self, PyObject *args)
++{
++	static struct scripting_context *scripting_context;
++	PyObject *context;
++	int retval;
++
++	if (!PyArg_ParseTuple(args, "O", &context))
++		return NULL;
++
++	scripting_context = PyCObject_AsVoidPtr(context);
++	retval = common_pc(scripting_context);
++
++	return Py_BuildValue("i", retval);
++}
++
++static PyObject *perf_trace_context_common_flags(PyObject *self,
++						 PyObject *args)
++{
++	static struct scripting_context *scripting_context;
++	PyObject *context;
++	int retval;
++
++	if (!PyArg_ParseTuple(args, "O", &context))
++		return NULL;
++
++	scripting_context = PyCObject_AsVoidPtr(context);
++	retval = common_flags(scripting_context);
++
++	return Py_BuildValue("i", retval);
++}
++
++static PyObject *perf_trace_context_common_lock_depth(PyObject *self,
++						      PyObject *args)
++{
++	static struct scripting_context *scripting_context;
++	PyObject *context;
++	int retval;
++
++	if (!PyArg_ParseTuple(args, "O", &context))
++		return NULL;
++
++	scripting_context = PyCObject_AsVoidPtr(context);
++	retval = common_lock_depth(scripting_context);
++
++	return Py_BuildValue("i", retval);
++}
++
++static PyMethodDef ContextMethods[] = {
++	{ "common_pc", perf_trace_context_common_pc, METH_VARARGS,
++	  "Get the common preempt count event field value."},
++	{ "common_flags", perf_trace_context_common_flags, METH_VARARGS,
++	  "Get the common flags event field value."},
++	{ "common_lock_depth", perf_trace_context_common_lock_depth,
++	  METH_VARARGS,	"Get the common lock depth event field value."},
++	{ NULL, NULL, 0, NULL}
++};
++
++PyMODINIT_FUNC initperf_trace_context(void)
++{
++	(void) Py_InitModule("perf_trace_context", ContextMethods);
++}
+diff --git a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Core.py b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Core.py
+new file mode 100644
+index 0000000..1dc464e
+--- /dev/null
++++ b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Core.py
+@@ -0,0 +1,91 @@
++# Core.py - Python extension for perf trace, core functions
++#
++# Copyright (C) 2010 by Tom Zanussi <tzanussi@gmail.com>
++#
++# This software may be distributed under the terms of the GNU General
++# Public License ("GPL") version 2 as published by the Free Software
++# Foundation.
 +
-+NAME
-+----
-+perf-trace-python - Process trace data with a Python script
++from collections import defaultdict
 +
-+SYNOPSIS
-+--------
-+[verse]
-+'perf trace' [-s [Python]:script[.py] ]
++def autodict():
++    return defaultdict(autodict)
 +
-+DESCRIPTION
-+-----------
++flag_fields = autodict()
++symbolic_fields = autodict()
 +
-+This perf trace option is used to process perf trace data using perf's
-+built-in Python interpreter.  It reads and processes the input file and
-+displays the results of the trace analysis implemented in the given
-+Python script, if any.
++def define_flag_field(event_name, field_name, delim):
++    flag_fields[event_name][field_name]['delim'] = delim
 +
-+A QUICK EXAMPLE
-+---------------
++def define_flag_value(event_name, field_name, value, field_str):
++    flag_fields[event_name][field_name]['values'][value] = field_str
 +
-+This section shows the process, start to finish, of creating a working
-+Python script that aggregates and extracts useful information from a
-+raw perf trace stream.  You can avoid reading the rest of this
-+document if an example is enough for you; the rest of the document
-+provides more details on each step and lists the library functions
-+available to script writers.
-+
-+This example actually details the steps that were used to create the
-+'syscall-counts' script you see when you list the available perf trace
-+scripts via 'perf trace -l'.  As such, this script also shows how to
-+integrate your script into the list of general-purpose 'perf trace'
-+scripts listed by that command.
-+
-+The syscall-counts script is a simple script, but demonstrates all the
-+basic ideas necessary to create a useful script.  Here's an example
-+of its output:
-+
-+----
-+syscall events:
-+
-+event                                          count
-+----------------------------------------  -----------
-+sys_write                                     455067
-+sys_getdents                                    4072
-+sys_close                                       3037
-+sys_swapoff                                     1769
-+sys_read                                         923
-+sys_sched_setparam                               826
-+sys_open                                         331
-+sys_newfstat                                     326
-+sys_mmap                                         217
-+sys_munmap                                       216
-+sys_futex                                        141
-+sys_select                                       102
-+sys_poll                                          84
-+sys_setitimer                                     12
-+sys_writev                                         8
-+15                                                 8
-+sys_lseek                                          7
-+sys_rt_sigprocmask                                 6
-+sys_wait4                                          3
-+sys_ioctl                                          3
-+sys_set_robust_list                                1
-+sys_exit                                           1
-+56                                                 1
-+sys_access                                         1
-+----
-+
-+Basically our task is to keep a per-syscall tally that gets updated
-+every time a system call occurs in the system.  Our script will do
-+that, but first we need to record the data that will be processed by
-+that script.  Theoretically, there are a couple of ways we could do
-+that:
-+
-+- we could enable every event under the tracing/events/syscalls
-+  directory, but this is over 600 syscalls, well beyond the number
-+  allowable by perf.  These individual syscall events will however be
-+  useful if we want to later use the guidance we get from the
-+  general-purpose scripts to drill down and get more detail about
-+  individual syscalls of interest.
-+
-+- we can enable the sys_enter and/or sys_exit syscalls found under
-+  tracing/events/raw_syscalls.  These are called for all syscalls; the
-+  'id' field can be used to distinguish between individual syscall
-+  numbers.
-+
-+For this script, we only need to know that a syscall was entered; we
-+don't care how it exited, so we'll use 'perf record' to record only
-+the sys_enter events:
-+
-+----
-+# perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
-+
-+^C[ perf record: Woken up 1 times to write data ]
-+[ perf record: Captured and wrote 56.545 MB perf.data (~2470503 samples) ]
-+----
-+
-+The options basically say to collect data for every syscall event
-+system-wide and multiplex the per-cpu output into a single stream.
-+That single stream will be recorded in a file in the current directory
-+called perf.data.
-+
-+Once we have a perf.data file containing our data, we can use the -g
-+'perf trace' option to generate a Python script that will contain a
-+callback handler for each event type found in the perf.data trace
-+stream (for more details, see the STARTER SCRIPTS section).
-+
-+----
-+# perf trace -g python
-+generated Python script: perf-trace.py
-+
-+The output file created also in the current directory is named
-+perf-trace.py.  Here's the file in its entirety:
-+
-+# perf trace event handlers, generated by perf trace -g python
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# The common_* event handler fields are the most useful fields common to
-+# all events.  They don't necessarily correspond to the 'common_*' fields
-+# in the format files.  Those fields not available as handler params can
-+# be retrieved using Python functions of the form common_*(context).
-+# See the perf-trace-python Documentation for the list of available functions.
-+
-+import os
-+import sys
-+
-+sys.path.append(os.environ['PERF_EXEC_PATH'] + \
-+	'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
-+
-+from perf_trace_context import *
-+from Core import *
-+
-+def trace_begin():
-+	print "in trace_begin"
-+
-+def trace_end():
-+	print "in trace_end"
-+
-+def raw_syscalls__sys_enter(event_name, context, common_cpu,
-+	common_secs, common_nsecs, common_pid, common_comm,
-+	id, args):
-+		print_header(event_name, common_cpu, common_secs, common_nsecs,
-+			common_pid, common_comm)
-+
-+		print "id=%d, args=%s\n" % \
-+		(id, args),
-+
-+def trace_unhandled(event_name, context, common_cpu, common_secs, common_nsecs,
-+		common_pid, common_comm):
-+		print_header(event_name, common_cpu, common_secs, common_nsecs,
-+		common_pid, common_comm)
-+
-+def print_header(event_name, cpu, secs, nsecs, pid, comm):
-+	print "%-20s %5u %05u.%09u %8u %-20s " % \
-+	(event_name, cpu, secs, nsecs, pid, comm),
-+----
-+
-+At the top is a comment block followed by some import statements and a
-+path append which every perf trace script should include.
-+
-+Following that are a couple generated functions, trace_begin() and
-+trace_end(), which are called at the beginning and the end of the
-+script respectively (for more details, see the SCRIPT_LAYOUT section
-+below).
-+
-+Following those are the 'event handler' functions generated one for
-+every event in the 'perf record' output.  The handler functions take
-+the form subsystem__event_name, and contain named parameters, one for
-+each field in the event; in this case, there's only one event,
-+raw_syscalls__sys_enter().  (see the EVENT HANDLERS section below for
-+more info on event handlers).
-+
-+The final couple of functions are, like the begin and end functions,
-+generated for every script.  The first, trace_unhandled(), is called
-+every time the script finds an event in the perf.data file that
-+doesn't correspond to any event handler in the script.  This could
-+mean either that the record step recorded event types that it wasn't
-+really interested in, or the script was run against a trace file that
-+doesn't correspond to the script.
-+
-+The script generated by -g option option simply prints a line for each
-+event found in the trace stream i.e. it basically just dumps the event
-+and its parameter values to stdout.  The print_header() function is
-+simply a utility function used for that purpose.  Let's rename the
-+script and run it to see the default output:
-+
-+----
-+# mv perf-trace.py syscall-counts.py
-+# perf trace -s syscall-counts.py
-+
-+raw_syscalls__sys_enter     1 00840.847582083     7506 perf                  id=1, args=
-+raw_syscalls__sys_enter     1 00840.847595764     7506 perf                  id=1, args=
-+raw_syscalls__sys_enter     1 00840.847620860     7506 perf                  id=1, args=
-+raw_syscalls__sys_enter     1 00840.847710478     6533 npviewer.bin          id=78, args=
-+raw_syscalls__sys_enter     1 00840.847719204     6533 npviewer.bin          id=142, args=
-+raw_syscalls__sys_enter     1 00840.847755445     6533 npviewer.bin          id=3, args=
-+raw_syscalls__sys_enter     1 00840.847775601     6533 npviewer.bin          id=3, args=
-+raw_syscalls__sys_enter     1 00840.847781820     6533 npviewer.bin          id=3, args=
-+.
-+.
-+.
-+----
-+
-+Of course, for this script, we're not interested in printing every
-+trace event, but rather aggregating it in a useful way.  So we'll get
-+rid of everything to do with printing as well as the trace_begin() and
-+trace_unhandled() functions, which we won't be using.  That leaves us
-+with this minimalistic skeleton:
-+
-+----
-+import os
-+import sys
-+
-+sys.path.append(os.environ['PERF_EXEC_PATH'] + \
-+	'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
-+
-+from perf_trace_context import *
-+from Core import *
-+
-+def trace_end():
-+	print "in trace_end"
-+
-+def raw_syscalls__sys_enter(event_name, context, common_cpu,
-+	common_secs, common_nsecs, common_pid, common_comm,
-+	id, args):
-+----
-+
-+In trace_end(), we'll simply print the results, but first we need to
-+generate some results to print.  To do that we need to have our
-+sys_enter() handler do the necessary tallying until all events have
-+been counted.  A hash table indexed by syscall id is a good way to
-+store that information; every time the sys_enter() handler is called,
-+we simply increment a count associated with that hash entry indexed by
-+that syscall id:
-+
-+----
-+  syscalls = autodict()
-+
-+  try:
-+    syscalls[id] += 1
-+  except TypeError:
-+    syscalls[id] = 1
-+----
-+
-+The syscalls 'autodict' object is a special kind of Python dictionary
-+(implemented in Core.py) that implements Perl's 'autovivifying' hashes
-+in Python i.e. with autovivifying hashes, you can assign nested hash
-+values without having to go to the trouble of creating intermediate
-+levels if they don't exist e.g syscalls[comm][pid][id] = 1 will create
-+the intermediate hash levels and finally assign the value 1 to the
-+hash entry for 'id' (because the value being assigned isn't a hash
-+object itself, the initial value is assigned in the TypeError
-+exception.  Well, there may be a better way to do this in Python but
-+that's what works for now).
-+
-+Putting that code into the raw_syscalls__sys_enter() handler, we
-+effectively end up with a single-level dictionary keyed on syscall id
-+and having the counts we've tallied as values.
-+
-+The print_syscall_totals() function iterates over the entries in the
-+dictionary and displays a line for each entry containing the syscall
-+name (the dictonary keys contain the syscall ids, which are passed to
-+the Util function syscall_name(), which translates the raw syscall
-+numbers to the corresponding syscall name strings).  The output is
-+displayed after all the events in the trace have been processed, by
-+calling the print_syscall_totals() function from the trace_end()
-+handler called at the end of script processing.
-+
-+The final script producing the output shown above is shown in its
-+entirety below:
-+
-+----
-+import os
-+import sys
-+
-+sys.path.append(os.environ['PERF_EXEC_PATH'] + \
-+	'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
-+
-+from perf_trace_context import *
-+from Core import *
-+from Util import *
-+
-+syscalls = autodict()
-+
-+def trace_end():
-+	print_syscall_totals()
-+
-+def raw_syscalls__sys_enter(event_name, context, common_cpu,
-+	common_secs, common_nsecs, common_pid, common_comm,
-+	id, args):
-+	try:
-+		syscalls[id] += 1
-+	except TypeError:
-+		syscalls[id] = 1
-+
-+def print_syscall_totals():
-+    if for_comm is not None:
-+	    print "\nsyscall events for %s:\n\n" % (for_comm),
-+    else:
-+	    print "\nsyscall events:\n\n",
-+
-+    print "%-40s  %10s\n" % ("event", "count"),
-+    print "%-40s  %10s\n" % ("----------------------------------------", \
-+                                 "-----------"),
-+
-+    for id, val in sorted(syscalls.iteritems(), key = lambda(k, v): (v, k), \
-+				  reverse = True):
-+	    print "%-40s  %10d\n" % (syscall_name(id), val),
-+----
-+
-+The script can be run just as before:
-+
-+  # perf trace -s syscall-counts.py
-+
-+So those are the essential steps in writing and running a script.  The
-+process can be generalized to any tracepoint or set of tracepoints
-+you're interested in - basically find the tracepoint(s) you're
-+interested in by looking at the list of available events shown by
-+'perf list' and/or look in /sys/kernel/debug/tracing events for
-+detailed event and field info, record the corresponding trace data
-+using 'perf record', passing it the list of interesting events,
-+generate a skeleton script using 'perf trace -g python' and modify the
-+code to aggregate and display it for your particular needs.
-+
-+After you've done that you may end up with a general-purpose script
-+that you want to keep around and have available for future use.  By
-+writing a couple of very simple shell scripts and putting them in the
-+right place, you can have your script listed alongside the other
-+scripts listed by the 'perf trace -l' command e.g.:
-+
-+----
-+root@tropicana:~# perf trace -l
-+List of available trace scripts:
-+  workqueue-stats                      workqueue stats (ins/exe/create/destroy)
-+  wakeup-latency                       system-wide min/max/avg wakeup latency
-+  rw-by-file <comm>                    r/w activity for a program, by file
-+  rw-by-pid                            system-wide r/w activity
-+----
-+
-+A nice side effect of doing this is that you also then capture the
-+probably lengthy 'perf record' command needed to record the events for
-+the script.
-+
-+To have the script appear as a 'built-in' script, you write two simple
-+scripts, one for recording and one for 'reporting'.
-+
-+The 'record' script is a shell script with the same base name as your
-+script, but with -record appended.  The shell script should be put
-+into the perf/scripts/python/bin directory in the kernel source tree.
-+In that script, you write the 'perf record' command-line needed for
-+your script:
-+
-+----
-+# cat kernel-source/tools/perf/scripts/python/bin/syscall-counts-record
-+
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e raw_syscalls:sys_enter
-+----
-+
-+The 'report' script is also a shell script with the same base name as
-+your script, but with -report appended.  It should also be located in
-+the perf/scripts/python/bin directory.  In that script, you write the
-+'perf trace -s' command-line needed for running your script:
-+
-+----
-+# cat kernel-source/tools/perf/scripts/python/bin/syscall-counts-report
-+
-+#!/bin/bash
-+# description: system-wide syscall counts
-+perf trace -s ~/libexec/perf-core/scripts/python/syscall-counts.py
-+----
-+
-+Note that the location of the Python script given in the shell script
-+is in the libexec/perf-core/scripts/python directory - this is where
-+the script will be copied by 'make install' when you install perf.
-+For the installation to install your script there, your script needs
-+to be located in the perf/scripts/python directory in the kernel
-+source tree:
-+
-+----
-+# ls -al kernel-source/tools/perf/scripts/python
-+
-+root@tropicana:/home/trz/src/tip# ls -al tools/perf/scripts/python
-+total 32
-+drwxr-xr-x 4 trz trz 4096 2010-01-26 22:30 .
-+drwxr-xr-x 4 trz trz 4096 2010-01-26 22:29 ..
-+drwxr-xr-x 2 trz trz 4096 2010-01-26 22:29 bin
-+-rw-r--r-- 1 trz trz 2548 2010-01-26 22:29 check-perf-trace.py
-+drwxr-xr-x 3 trz trz 4096 2010-01-26 22:49 Perf-Trace-Util
-+-rw-r--r-- 1 trz trz 1462 2010-01-26 22:30 syscall-counts.py
-+----
-+
-+Once you've done that (don't forget to do a new 'make install',
-+otherwise your script won't show up at run-time), 'perf trace -l'
-+should show a new entry for your script:
-+
-+----
-+root@tropicana:~# perf trace -l
-+List of available trace scripts:
-+  workqueue-stats                      workqueue stats (ins/exe/create/destroy)
-+  wakeup-latency                       system-wide min/max/avg wakeup latency
-+  rw-by-file <comm>                    r/w activity for a program, by file
-+  rw-by-pid                            system-wide r/w activity
-+  syscall-counts                       system-wide syscall counts
-+----
-+
-+You can now perform the record step via 'perf trace record':
-+
-+  # perf trace record syscall-counts
-+
-+and display the output using 'perf trace report':
-+
-+  # perf trace report syscall-counts
-+
-+STARTER SCRIPTS
-+---------------
-+
-+You can quickly get started writing a script for a particular set of
-+trace data by generating a skeleton script using 'perf trace -g
-+python' in the same directory as an existing perf.data trace file.
-+That will generate a starter script containing a handler for each of
-+the event types in the trace file; it simply prints every available
-+field for each event in the trace file.
-+
-+You can also look at the existing scripts in
-+~/libexec/perf-core/scripts/python for typical examples showing how to
-+do basic things like aggregate event data, print results, etc.  Also,
-+the check-perf-trace.py script, while not interesting for its results,
-+attempts to exercise all of the main scripting features.
-+
-+EVENT HANDLERS
-+--------------
-+
-+When perf trace is invoked using a trace script, a user-defined
-+'handler function' is called for each event in the trace.  If there's
-+no handler function defined for a given event type, the event is
-+ignored (or passed to a 'trace_handled' function, see below) and the
-+next event is processed.
-+
-+Most of the event's field values are passed as arguments to the
-+handler function; some of the less common ones aren't - those are
-+available as calls back into the perf executable (see below).
-+
-+As an example, the following perf record command can be used to record
-+all sched_wakeup events in the system:
-+
-+ # perf record -c 1 -f -a -M -R -e sched:sched_wakeup
-+
-+Traces meant to be processed using a script should be recorded with
-+the above options: -c 1 says to sample every event, -a to enable
-+system-wide collection, -M to multiplex the output, and -R to collect
-+raw samples.
-+
-+The format file for the sched_wakep event defines the following fields
-+(see /sys/kernel/debug/tracing/events/sched/sched_wakeup/format):
-+
-+----
-+ format:
-+        field:unsigned short common_type;
-+        field:unsigned char common_flags;
-+        field:unsigned char common_preempt_count;
-+        field:int common_pid;
-+        field:int common_lock_depth;
-+
-+        field:char comm[TASK_COMM_LEN];
-+        field:pid_t pid;
-+        field:int prio;
-+        field:int success;
-+        field:int target_cpu;
-+----
-+
-+The handler function for this event would be defined as:
-+
-+----
-+def sched__sched_wakeup(event_name, context, common_cpu, common_secs,
-+       common_nsecs, common_pid, common_comm,
-+       comm, pid, prio, success, target_cpu):
-+       pass
-+----
-+
-+The handler function takes the form subsystem__event_name.
-+
-+The common_* arguments in the handler's argument list are the set of
-+arguments passed to all event handlers; some of the fields correspond
-+to the common_* fields in the format file, but some are synthesized,
-+and some of the common_* fields aren't common enough to to be passed
-+to every event as arguments but are available as library functions.
-+
-+Here's a brief description of each of the invariant event args:
-+
-+ event_name 	  	    the name of the event as text
-+ context		    an opaque 'cookie' used in calls back into perf
-+ common_cpu		    the cpu the event occurred on
-+ common_secs		    the secs portion of the event timestamp
-+ common_nsecs		    the nsecs portion of the event timestamp
-+ common_pid		    the pid of the current task
-+ common_comm		    the name of the current process
-+
-+All of the remaining fields in the event's format file have
-+counterparts as handler function arguments of the same name, as can be
-+seen in the example above.
-+
-+The above provides the basics needed to directly access every field of
-+every event in a trace, which covers 90% of what you need to know to
-+write a useful trace script.  The sections below cover the rest.
-+
-+SCRIPT LAYOUT
-+-------------
-+
-+Every perf trace Python script should start by setting up a Python
-+module search path and 'import'ing a few support modules (see module
-+descriptions below):
-+
-+----
-+ import os
-+ import sys
-+
-+ sys.path.append(os.environ['PERF_EXEC_PATH'] + \
-+	      '/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
-+
-+ from perf_trace_context import *
-+ from Core import *
-+----
-+
-+The rest of the script can contain handler functions and support
-+functions in any order.
-+
-+Aside from the event handler functions discussed above, every script
-+can implement a set of optional functions:
-+
-+*trace_begin*, if defined, is called before any event is processed and
-+gives scripts a chance to do setup tasks:
-+
-+----
-+def trace_begin:
++def define_symbolic_field(event_name, field_name):
++    # nothing to do, really
 +    pass
-+----
 +
-+*trace_end*, if defined, is called after all events have been
-+ processed and gives scripts a chance to do end-of-script tasks, such
-+ as display results:
++def define_symbolic_value(event_name, field_name, value, field_str):
++    symbolic_fields[event_name][field_name]['values'][value] = field_str
 +
-+----
-+def trace_end:
-+    pass
-+----
++def flag_str(event_name, field_name, value):
++    string = ""
 +
-+*trace_unhandled*, if defined, is called after for any event that
-+ doesn't have a handler explicitly defined for it.  The standard set
-+ of common arguments are passed into it:
++    if flag_fields[event_name][field_name]:
++	print_delim = 0
++        keys = flag_fields[event_name][field_name]['values'].keys()
++        keys.sort()
++        for idx in keys:
++            if not value and not idx:
++                string += flag_fields[event_name][field_name]['values'][idx]
++                break
++            if idx and (value & idx) == idx:
++                if print_delim and flag_fields[event_name][field_name]['delim']:
++                    string += " " + flag_fields[event_name][field_name]['delim'] + " "
++                string += flag_fields[event_name][field_name]['values'][idx]
++                print_delim = 1
++                value &= ~idx
 +
-+----
-+def trace_unhandled(event_name, context, common_cpu, common_secs,
-+        common_nsecs, common_pid, common_comm):
-+    pass
-+----
++    return string
 +
-+The remaining sections provide descriptions of each of the available
-+built-in perf trace Python modules and their associated functions.
++def symbol_str(event_name, field_name, value):
++    string = ""
 +
-+AVAILABLE MODULES AND FUNCTIONS
-+-------------------------------
++    if symbolic_fields[event_name][field_name]:
++        keys = symbolic_fields[event_name][field_name]['values'].keys()
++        keys.sort()
++        for idx in keys:
++            if not value and not idx:
++		string = symbolic_fields[event_name][field_name]['values'][idx]
++                break
++	    if (value == idx):
++		string = symbolic_fields[event_name][field_name]['values'][idx]
++                break
 +
-+The following sections describe the functions and variables available
-+via the various perf trace Python modules.  To use the functions and
-+variables from the given module, add the corresponding 'from XXXX
-+import' line to your perf trace script.
++    return string
 +
-+Core.py Module
-+~~~~~~~~~~~~~~
++trace_flags = { 0x00: "NONE", \
++                    0x01: "IRQS_OFF", \
++                    0x02: "IRQS_NOSUPPORT", \
++                    0x04: "NEED_RESCHED", \
++                    0x08: "HARDIRQ", \
++                    0x10: "SOFTIRQ" }
 +
-+These functions provide some essential functions to user scripts.
++def trace_flag_str(value):
++    string = ""
++    print_delim = 0
 +
-+The *flag_str* and *symbol_str* functions provide human-readable
-+strings for flag and symbolic fields.  These correspond to the strings
-+and values parsed from the 'print fmt' fields of the event format
-+files:
++    keys = trace_flags.keys()
 +
-+  flag_str(event_name, field_name, field_value) - returns the string represention corresponding to field_value for the flag field field_name of event event_name
-+  symbol_str(event_name, field_name, field_value) - returns the string represention corresponding to field_value for the symbolic field field_name of event event_name
++    for idx in keys:
++	if not value and not idx:
++	    string += "NONE"
++	    break
 +
-+The *autodict* function returns a special special kind of Python
-+dictionary that implements Perl's 'autovivifying' hashes in Python
-+i.e. with autovivifying hashes, you can assign nested hash values
-+without having to go to the trouble of creating intermediate levels if
-+they don't exist.
++	if idx and (value & idx) == idx:
++	    if print_delim:
++		string += " | ";
++	    string += trace_flags[idx]
++	    print_delim = 1
++	    value &= ~idx
 +
-+  autodict() - returns an autovivifying dictionary instance
++    return string
+diff --git a/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+new file mode 100644
+index 0000000..83e9143
+--- /dev/null
++++ b/tools/perf/scripts/python/Perf-Trace-Util/lib/Perf/Trace/Util.py
+@@ -0,0 +1,25 @@
++# Util.py - Python extension for perf trace, miscellaneous utility code
++#
++# Copyright (C) 2010 by Tom Zanussi <tzanussi@gmail.com>
++#
++# This software may be distributed under the terms of the GNU General
++# Public License ("GPL") version 2 as published by the Free Software
++# Foundation.
 +
++NSECS_PER_SEC    = 1000000000
 +
-+perf_trace_context Module
-+~~~~~~~~~~~~~~~~~~~~~~~~~
++def avg(total, n):
++    return total / n
 +
-+Some of the 'common' fields in the event format file aren't all that
-+common, but need to be made accessible to user scripts nonetheless.
++def nsecs(secs, nsecs):
++    return secs * NSECS_PER_SEC + nsecs
 +
-+perf_trace_context defines a set of functions that can be used to
-+access this data in the context of the current event.  Each of these
-+functions expects a context variable, which is the same as the
-+context variable passed into every event handler as the second
-+argument.
++def nsecs_secs(nsecs):
++    return nsecs / NSECS_PER_SEC
 +
-+ common_pc(context) - returns common_preempt count for the current event
-+ common_flags(context) - returns common_flags for the current event
-+ common_lock_depth(context) - returns common_lock_depth for the current event
++def nsecs_nsecs(nsecs):
++    return nsecs % NSECS_PER_SEC
 +
-+Util.py Module
-+~~~~~~~~~~~~~~
++def nsecs_str(nsecs):
++    str = "%5u.%09u" % (nsecs_secs(nsecs), nsecs_nsecs(nsecs)),
++    return str
+diff --git a/tools/perf/util/scripting-engines/trace-event-python.c b/tools/perf/util/scripting-engines/trace-event-python.c
+new file mode 100644
+index 0000000..d402f64
+--- /dev/null
++++ b/tools/perf/util/scripting-engines/trace-event-python.c
+@@ -0,0 +1,576 @@
++/*
++ * trace-event-python.  Feed trace events to an embedded Python interpreter.
++ *
++ * Copyright (C) 2010 Tom Zanussi <tzanussi@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
 +
-+Various utility functions for use with perf trace:
++#include <Python.h>
 +
-+  nsecs(secs, nsecs) - returns total nsecs given secs/nsecs pair
-+  nsecs_secs(nsecs) - returns whole secs portion given nsecs
-+  nsecs_nsecs(nsecs) - returns nsecs remainder given nsecs
-+  nsecs_str(nsecs) - returns printable string in the form secs.nsecs
-+  avg(total, n) - returns average given a sum and a total number of values
-+  syscall_name(id) - returns the syscall name for the specified syscall_nr
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <ctype.h>
++#include <errno.h>
 +
-+SEE ALSO
-+--------
-+linkperf:perf-trace[1]
-diff --git a/tools/perf/Documentation/perf-trace.txt b/tools/perf/Documentation/perf-trace.txt
-index c00a76f..8879299 100644
---- a/tools/perf/Documentation/perf-trace.txt
-+++ b/tools/perf/Documentation/perf-trace.txt
-@@ -19,6 +19,11 @@ There are several variants of perf trace:
-   'perf trace' to see a detailed trace of the workload that was
-   recorded.
++#include "../../perf.h"
++#include "../util.h"
++#include "../trace-event.h"
++
++PyMODINIT_FUNC initperf_trace_context(void);
++
++#define FTRACE_MAX_EVENT				\
++	((1 << (sizeof(unsigned short) * 8)) - 1)
++
++struct event *events[FTRACE_MAX_EVENT];
++
++#define MAX_FIELDS	64
++#define N_COMMON_FIELDS	7
++
++extern struct scripting_context *scripting_context;
++
++static char *cur_field_name;
++static int zero_flag_atom;
++
++static PyObject *main_module, *main_dict;
++
++static void handler_call_die(const char *handler_name)
++{
++	PyErr_Print();
++	Py_FatalError("problem in Python trace event handler");
++}
++
++static void define_value(enum print_arg_type field_type,
++			 const char *ev_name,
++			 const char *field_name,
++			 const char *field_value,
++			 const char *field_str)
++{
++	const char *handler_name = "define_flag_value";
++	PyObject *handler, *t, *retval;
++	unsigned long long value;
++	unsigned n = 0;
++
++	if (field_type == PRINT_SYMBOL)
++		handler_name = "define_symbolic_value";
++
++	t = PyTuple_New(MAX_FIELDS);
++	if (!t)
++		Py_FatalError("couldn't create Python tuple");
++
++	value = eval_flag(field_value);
++
++	PyTuple_SetItem(t, n++, PyString_FromString(ev_name));
++	PyTuple_SetItem(t, n++, PyString_FromString(field_name));
++	PyTuple_SetItem(t, n++, PyInt_FromLong(value));
++	PyTuple_SetItem(t, n++, PyString_FromString(field_str));
++
++	if (_PyTuple_Resize(&t, n) == -1)
++		Py_FatalError("error resizing Python tuple");
++
++	handler = PyDict_GetItemString(main_dict, handler_name);
++	if (handler && PyCallable_Check(handler)) {
++		retval = PyObject_CallObject(handler, t);
++		if (retval == NULL)
++			handler_call_die(handler_name);
++	}
++
++	Py_DECREF(t);
++}
++
++static void define_values(enum print_arg_type field_type,
++			  struct print_flag_sym *field,
++			  const char *ev_name,
++			  const char *field_name)
++{
++	define_value(field_type, ev_name, field_name, field->value,
++		     field->str);
++
++	if (field->next)
++		define_values(field_type, field->next, ev_name, field_name);
++}
++
++static void define_field(enum print_arg_type field_type,
++			 const char *ev_name,
++			 const char *field_name,
++			 const char *delim)
++{
++	const char *handler_name = "define_flag_field";
++	PyObject *handler, *t, *retval;
++	unsigned n = 0;
++
++	if (field_type == PRINT_SYMBOL)
++		handler_name = "define_symbolic_field";
++
++	t = PyTuple_New(MAX_FIELDS);
++	if (!t)
++		Py_FatalError("couldn't create Python tuple");
++
++	PyTuple_SetItem(t, n++, PyString_FromString(ev_name));
++	PyTuple_SetItem(t, n++, PyString_FromString(field_name));
++	if (field_type == PRINT_FLAGS)
++		PyTuple_SetItem(t, n++, PyString_FromString(delim));
++
++	if (_PyTuple_Resize(&t, n) == -1)
++		Py_FatalError("error resizing Python tuple");
++
++	handler = PyDict_GetItemString(main_dict, handler_name);
++	if (handler && PyCallable_Check(handler)) {
++		retval = PyObject_CallObject(handler, t);
++		if (retval == NULL)
++			handler_call_die(handler_name);
++	}
++
++	Py_DECREF(t);
++}
++
++static void define_event_symbols(struct event *event,
++				 const char *ev_name,
++				 struct print_arg *args)
++{
++	switch (args->type) {
++	case PRINT_NULL:
++		break;
++	case PRINT_ATOM:
++		define_value(PRINT_FLAGS, ev_name, cur_field_name, "0",
++			     args->atom.atom);
++		zero_flag_atom = 0;
++		break;
++	case PRINT_FIELD:
++		if (cur_field_name)
++			free(cur_field_name);
++		cur_field_name = strdup(args->field.name);
++		break;
++	case PRINT_FLAGS:
++		define_event_symbols(event, ev_name, args->flags.field);
++		define_field(PRINT_FLAGS, ev_name, cur_field_name,
++			     args->flags.delim);
++		define_values(PRINT_FLAGS, args->flags.flags, ev_name,
++			      cur_field_name);
++		break;
++	case PRINT_SYMBOL:
++		define_event_symbols(event, ev_name, args->symbol.field);
++		define_field(PRINT_SYMBOL, ev_name, cur_field_name, NULL);
++		define_values(PRINT_SYMBOL, args->symbol.symbols, ev_name,
++			      cur_field_name);
++		break;
++	case PRINT_STRING:
++		break;
++	case PRINT_TYPE:
++		define_event_symbols(event, ev_name, args->typecast.item);
++		break;
++	case PRINT_OP:
++		if (strcmp(args->op.op, ":") == 0)
++			zero_flag_atom = 1;
++		define_event_symbols(event, ev_name, args->op.left);
++		define_event_symbols(event, ev_name, args->op.right);
++		break;
++	default:
++		/* we should warn... */
++		return;
++	}
++
++	if (args->next)
++		define_event_symbols(event, ev_name, args->next);
++}
++
++static inline struct event *find_cache_event(int type)
++{
++	static char ev_name[256];
++	struct event *event;
++
++	if (events[type])
++		return events[type];
++
++	events[type] = event = trace_find_event(type);
++	if (!event)
++		return NULL;
++
++	sprintf(ev_name, "%s__%s", event->system, event->name);
++
++	define_event_symbols(event, ev_name, event->print_fmt.args);
++
++	return event;
++}
++
++static void python_process_event(int cpu, void *data,
++				 int size __unused,
++				 unsigned long long nsecs, char *comm)
++{
++	PyObject *handler, *retval, *context, *t;
++	static char handler_name[256];
++	struct format_field *field;
++	unsigned long long val;
++	unsigned long s, ns;
++	struct event *event;
++	unsigned n = 0;
++	int type;
++	int pid;
++
++	t = PyTuple_New(MAX_FIELDS);
++	if (!t)
++		Py_FatalError("couldn't create Python tuple");
++
++	type = trace_parse_common_type(data);
++
++	event = find_cache_event(type);
++	if (!event)
++		die("ug! no event found for type %d", type);
++
++	pid = trace_parse_common_pid(data);
++
++	sprintf(handler_name, "%s__%s", event->system, event->name);
++
++	s = nsecs / NSECS_PER_SEC;
++	ns = nsecs - s * NSECS_PER_SEC;
++
++	scripting_context->event_data = data;
++
++	context = PyCObject_FromVoidPtr(scripting_context, NULL);
++
++	PyTuple_SetItem(t, n++, PyString_FromString(handler_name));
++	PyTuple_SetItem(t, n++,
++			PyCObject_FromVoidPtr(scripting_context, NULL));
++	PyTuple_SetItem(t, n++, PyInt_FromLong(cpu));
++	PyTuple_SetItem(t, n++, PyInt_FromLong(s));
++	PyTuple_SetItem(t, n++, PyInt_FromLong(ns));
++	PyTuple_SetItem(t, n++, PyInt_FromLong(pid));
++	PyTuple_SetItem(t, n++, PyString_FromString(comm));
++
++	for (field = event->format.fields; field; field = field->next) {
++		if (field->flags & FIELD_IS_STRING) {
++			int offset;
++			if (field->flags & FIELD_IS_DYNAMIC) {
++				offset = *(int *)(data + field->offset);
++				offset &= 0xffff;
++			} else
++				offset = field->offset;
++			PyTuple_SetItem(t, n++,
++				PyString_FromString((char *)data + offset));
++		} else { /* FIELD_IS_NUMERIC */
++			val = read_size(data + field->offset, field->size);
++			if (field->flags & FIELD_IS_SIGNED) {
++				PyTuple_SetItem(t, n++, PyInt_FromLong(val));
++			} else {
++				PyTuple_SetItem(t, n++, PyInt_FromLong(val));
++			}
++		}
++	}
++
++	if (_PyTuple_Resize(&t, n) == -1)
++		Py_FatalError("error resizing Python tuple");
++
++	handler = PyDict_GetItemString(main_dict, handler_name);
++	if (handler && PyCallable_Check(handler)) {
++		retval = PyObject_CallObject(handler, t);
++		if (retval == NULL)
++			handler_call_die(handler_name);
++	} else {
++		handler = PyDict_GetItemString(main_dict, "trace_unhandled");
++		if (handler && PyCallable_Check(handler)) {
++			if (_PyTuple_Resize(&t, N_COMMON_FIELDS) == -1)
++				Py_FatalError("error resizing Python tuple");
++
++			retval = PyObject_CallObject(handler, t);
++			if (retval == NULL)
++				handler_call_die("trace_unhandled");
++		}
++	}
++
++	Py_DECREF(t);
++}
++
++static int run_start_sub(void)
++{
++	PyObject *handler, *retval;
++	int err = 0;
++
++	main_module = PyImport_AddModule("__main__");
++	if (main_module == NULL)
++		return -1;
++	Py_INCREF(main_module);
++
++	main_dict = PyModule_GetDict(main_module);
++	if (main_dict == NULL) {
++		err = -1;
++		goto error;
++	}
++	Py_INCREF(main_dict);
++
++	handler = PyDict_GetItemString(main_dict, "trace_begin");
++	if (handler == NULL || !PyCallable_Check(handler))
++		goto out;
++
++	retval = PyObject_CallObject(handler, NULL);
++	if (retval == NULL)
++		handler_call_die("trace_begin");
++
++	Py_DECREF(retval);
++	return err;
++error:
++	Py_XDECREF(main_dict);
++	Py_XDECREF(main_module);
++out:
++	return err;
++}
++
++/*
++ * Start trace script
++ */
++static int python_start_script(const char *script, int argc, const char **argv)
++{
++	const char **command_line;
++	char buf[PATH_MAX];
++	int i, err = 0;
++	FILE *fp;
++
++	command_line = malloc((argc + 1) * sizeof(const char *));
++	command_line[0] = script;
++	for (i = 1; i < argc + 1; i++)
++		command_line[i] = argv[i - 1];
++
++	Py_Initialize();
++
++	initperf_trace_context();
++
++	PySys_SetArgv(argc + 1, (char **)command_line);
++
++	fp = fopen(script, "r");
++	if (!fp) {
++		sprintf(buf, "Can't open python script \"%s\"", script);
++		perror(buf);
++		err = -1;
++		goto error;
++	}
++
++	err = PyRun_SimpleFile(fp, script);
++	if (err) {
++		fprintf(stderr, "Error running python script %s\n", script);
++		goto error;
++	}
++
++	err = run_start_sub();
++	if (err) {
++		fprintf(stderr, "Error starting python script %s\n", script);
++		goto error;
++	}
++
++	free(command_line);
++	fprintf(stderr, "perf trace started with Python script %s\n\n",
++		script);
++
++	return err;
++error:
++	Py_Finalize();
++	free(command_line);
++
++	return err;
++}
++
++/*
++ * Stop trace script
++ */
++static int python_stop_script(void)
++{
++	PyObject *handler, *retval;
++	int err = 0;
++
++	handler = PyDict_GetItemString(main_dict, "trace_end");
++	if (handler == NULL || !PyCallable_Check(handler))
++		goto out;
++
++	retval = PyObject_CallObject(handler, NULL);
++	if (retval == NULL)
++		handler_call_die("trace_end");
++	else
++		Py_DECREF(retval);
++out:
++	Py_XDECREF(main_dict);
++	Py_XDECREF(main_module);
++	Py_Finalize();
++
++	fprintf(stderr, "\nperf trace Python script stopped\n");
++
++	return err;
++}
++
++static int python_generate_script(const char *outfile)
++{
++	struct event *event = NULL;
++	struct format_field *f;
++	char fname[PATH_MAX];
++	int not_first, count;
++	FILE *ofp;
++
++	sprintf(fname, "%s.py", outfile);
++	ofp = fopen(fname, "w");
++	if (ofp == NULL) {
++		fprintf(stderr, "couldn't open %s\n", fname);
++		return -1;
++	}
++	fprintf(ofp, "# perf trace event handlers, "
++		"generated by perf trace -g python\n");
++
++	fprintf(ofp, "# Licensed under the terms of the GNU GPL"
++		" License version 2\n\n");
++
++	fprintf(ofp, "# The common_* event handler fields are the most useful "
++		"fields common to\n");
++
++	fprintf(ofp, "# all events.  They don't necessarily correspond to "
++		"the 'common_*' fields\n");
++
++	fprintf(ofp, "# in the format files.  Those fields not available as "
++		"handler params can\n");
++
++	fprintf(ofp, "# be retrieved using Python functions of the form "
++		"common_*(context).\n");
++
++	fprintf(ofp, "# See the perf-trace-python Documentation for the list "
++		"of available functions.\n\n");
++
++	fprintf(ofp, "import os\n");
++	fprintf(ofp, "import sys\n\n");
++
++	fprintf(ofp, "sys.path.append(os.environ['PERF_EXEC_PATH'] + \\\n");
++	fprintf(ofp, "\t'/scripts/python/Perf-Trace-Util/lib/Perf/Trace')\n");
++	fprintf(ofp, "\nfrom perf_trace_context import *\n");
++	fprintf(ofp, "from Core import *\n\n\n");
++
++	fprintf(ofp, "def trace_begin():\n");
++	fprintf(ofp, "\tprint \"in trace_begin\"\n\n");
++
++	fprintf(ofp, "def trace_end():\n");
++	fprintf(ofp, "\tprint \"in trace_end\"\n\n");
++
++	while ((event = trace_find_next_event(event))) {
++		fprintf(ofp, "def %s__%s(", event->system, event->name);
++		fprintf(ofp, "event_name, ");
++		fprintf(ofp, "context, ");
++		fprintf(ofp, "common_cpu,\n");
++		fprintf(ofp, "\tcommon_secs, ");
++		fprintf(ofp, "common_nsecs, ");
++		fprintf(ofp, "common_pid, ");
++		fprintf(ofp, "common_comm,\n\t");
++
++		not_first = 0;
++		count = 0;
++
++		for (f = event->format.fields; f; f = f->next) {
++			if (not_first++)
++				fprintf(ofp, ", ");
++			if (++count % 5 == 0)
++				fprintf(ofp, "\n\t");
++
++			fprintf(ofp, "%s", f->name);
++		}
++		fprintf(ofp, "):\n");
++
++		fprintf(ofp, "\t\tprint_header(event_name, common_cpu, "
++			"common_secs, common_nsecs,\n\t\t\t"
++			"common_pid, common_comm)\n\n");
++
++		fprintf(ofp, "\t\tprint \"");
++
++		not_first = 0;
++		count = 0;
++
++		for (f = event->format.fields; f; f = f->next) {
++			if (not_first++)
++				fprintf(ofp, ", ");
++			if (count && count % 3 == 0) {
++				fprintf(ofp, "\" \\\n\t\t\"");
++			}
++			count++;
++
++			fprintf(ofp, "%s=", f->name);
++			if (f->flags & FIELD_IS_STRING ||
++			    f->flags & FIELD_IS_FLAG ||
++			    f->flags & FIELD_IS_SYMBOLIC)
++				fprintf(ofp, "%%s");
++			else if (f->flags & FIELD_IS_SIGNED)
++				fprintf(ofp, "%%d");
++			else
++				fprintf(ofp, "%%u");
++		}
++
++		fprintf(ofp, "\\n\" %% \\\n\t\t(");
++
++		not_first = 0;
++		count = 0;
++
++		for (f = event->format.fields; f; f = f->next) {
++			if (not_first++)
++				fprintf(ofp, ", ");
++
++			if (++count % 5 == 0)
++				fprintf(ofp, "\n\t\t");
++
++			if (f->flags & FIELD_IS_FLAG) {
++				if ((count - 1) % 5 != 0) {
++					fprintf(ofp, "\n\t\t");
++					count = 4;
++				}
++				fprintf(ofp, "flag_str(\"");
++				fprintf(ofp, "%s__%s\", ", event->system,
++					event->name);
++				fprintf(ofp, "\"%s\", %s)", f->name,
++					f->name);
++			} else if (f->flags & FIELD_IS_SYMBOLIC) {
++				if ((count - 1) % 5 != 0) {
++					fprintf(ofp, "\n\t\t");
++					count = 4;
++				}
++				fprintf(ofp, "symbol_str(\"");
++				fprintf(ofp, "%s__%s\", ", event->system,
++					event->name);
++				fprintf(ofp, "\"%s\", %s)", f->name,
++					f->name);
++			} else
++				fprintf(ofp, "%s", f->name);
++		}
++
++		fprintf(ofp, "),\n\n");
++	}
++
++	fprintf(ofp, "def trace_unhandled(event_name, context, "
++		"common_cpu, common_secs, common_nsecs,\n\t\t"
++		"common_pid, common_comm):\n");
++
++	fprintf(ofp, "\t\tprint_header(event_name, common_cpu, "
++		"common_secs, common_nsecs,\n\t\tcommon_pid, "
++		"common_comm)\n\n");
++
++	fprintf(ofp, "def print_header("
++		"event_name, cpu, secs, nsecs, pid, comm):\n"
++		"\tprint \"%%-20s %%5u %%05u.%%09u %%8u %%-20s \" %% \\\n\t"
++		"(event_name, cpu, secs, nsecs, pid, comm),\n");
++
++	fclose(ofp);
++
++	fprintf(stderr, "generated Python script: %s\n", fname);
++
++	return 0;
++}
++
++struct scripting_ops python_scripting_ops = {
++	.name = "Python",
++	.start_script = python_start_script,
++	.stop_script = python_stop_script,
++	.process_event = python_process_event,
++	.generate_script = python_generate_script,
++};
+diff --git a/tools/perf/util/trace-event-scripting.c b/tools/perf/util/trace-event-scripting.c
+index 9e37196..7ea983a 100644
+--- a/tools/perf/util/trace-event-scripting.c
++++ b/tools/perf/util/trace-event-scripting.c
+@@ -44,6 +44,67 @@ static void process_event_unsupported(int cpu __unused,
+ {
+ }
  
-+  You can also run a set of pre-canned scripts that aggregate and
-+  summarize the raw trace data in various ways (the list of scripts is
-+  available via 'perf trace -l').  The following variants allow you to
-+  record and run those scripts:
++static void print_python_unsupported_msg(void)
++{
++	fprintf(stderr, "Python scripting not supported."
++		"  Install libpython and rebuild perf to enable it.\n"
++		"For example:\n  # apt-get install python-dev (ubuntu)"
++		"\n  # yum install python-devel (Fedora)"
++		"\n  etc.\n");
++}
 +
-   'perf trace record <script>' to record the events required for 'perf
-   trace report'.  <script> is the name displayed in the output of
-   'perf trace --list' i.e. the actual script name minus any language
-@@ -31,6 +36,9 @@ There are several variants of perf trace:
-   record <script>' is used and should be present for this command to
-   succeed.
- 
-+  See the 'SEE ALSO' section for links to language-specific
-+  information on how to write and run your own trace scripts.
++static int python_start_script_unsupported(const char *script __unused,
++					   int argc __unused,
++					   const char **argv __unused)
++{
++	print_python_unsupported_msg();
 +
- OPTIONS
- -------
- -D::
-@@ -58,4 +66,5 @@ OPTIONS
++	return -1;
++}
++
++static int python_generate_script_unsupported(const char *outfile __unused)
++{
++	print_python_unsupported_msg();
++
++	return -1;
++}
++
++struct scripting_ops python_scripting_unsupported_ops = {
++	.name = "Python",
++	.start_script = python_start_script_unsupported,
++	.stop_script = stop_script_unsupported,
++	.process_event = process_event_unsupported,
++	.generate_script = python_generate_script_unsupported,
++};
++
++static void register_python_scripting(struct scripting_ops *scripting_ops)
++{
++	int err;
++	err = script_spec_register("Python", scripting_ops);
++	if (err)
++		die("error registering Python script extension");
++
++	err = script_spec_register("py", scripting_ops);
++	if (err)
++		die("error registering py script extension");
++
++	scripting_context = malloc(sizeof(struct scripting_context));
++}
++
++#ifdef NO_LIBPYTHON
++void setup_python_scripting(void)
++{
++	register_python_scripting(&python_scripting_unsupported_ops);
++}
++#else
++struct scripting_ops python_scripting_ops;
++
++void setup_python_scripting(void)
++{
++	register_python_scripting(&python_scripting_ops);
++}
++#endif
++
+ static void print_perl_unsupported_msg(void)
+ {
+ 	fprintf(stderr, "Perl scripting not supported."
+diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
+index aaf2da2..c3269b9 100644
+--- a/tools/perf/util/trace-event.h
++++ b/tools/perf/util/trace-event.h
+@@ -280,6 +280,7 @@ struct scripting_ops {
+ int script_spec_register(const char *spec, struct scripting_ops *ops);
  
- SEE ALSO
- --------
--linkperf:perf-record[1], linkperf:perf-trace-perl[1]
-+linkperf:perf-record[1], linkperf:perf-trace-perl[1],
-+linkperf:perf-trace-python[1]
+ void setup_perl_scripting(void);
++void setup_python_scripting(void);
+ 
+ struct scripting_context {
+ 	void *event_data;
 -- 
 1.6.2.3
 
