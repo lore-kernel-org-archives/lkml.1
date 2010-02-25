@@ -1,78 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381Ab0BYPxI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:53:08 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:59828 "EHLO
+	id S1759411Ab0BYPyI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:54:08 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:35392 "EHLO
 	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759092Ab0BYPxG convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1759092Ab0BYPyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:53:06 -0500
+	Thu, 25 Feb 2010 10:54:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=XKByK52CqKM+pAGLUnwSHk2+d7ic3Fm28zxufFqZmfczZG0YE7dWlVXab3u/WQaVRS
-         zfVZ0OpRw0MRNSqogCf1pbg1dj0ol0DBjvddS0fREp5IT8UxwAhPCcXO9aH+VB0RatDe
-         kQHJ8yXtKBcWgivvG54iTjrql0CwBvWoYNn2o=
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=rZtQ3ayspTnibXdGD+SUAmivTV+FNe7QgQ0HyH4LX34qUhnCoY+RKK4MVc5VIVpeIH
+         DkHnsruwhBxqMnjUqRfH8uoG/CLtYUKGpiRXff8Dd8eQy56FSsIsHogUjkZijxu5lYQT
+         +PWqBaOZGPXPkUEQYRMwyylFzRiqTlXBjCEOg=
+Date: Thu, 25 Feb 2010 23:53:59 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 03/07] kernel.h string cleanup
+Message-ID: <20100225155359.GA2722@darkstar>
 MIME-Version: 1.0
-In-Reply-To: <20100224140158.4f4dba78.akpm@linux-foundation.org>
-References: <cover.1266907495.git.andre.goddard@gmail.com> 
-	<20100224140158.4f4dba78.akpm@linux-foundation.org>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Thu, 25 Feb 2010 12:52:45 -0300
-Message-ID: <b8bf37781002250752r53c8cb9ao8b8d6d09a3e67817@mail.gmail.com>
-Subject: Re: [PATCH 0/6] Fix file descriptor leak on user-space processes and 
-	cleanup
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Serge E . Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andrew!
+Cleanup kernel.h string related stuff, move to linux/string.h
 
-On Wed, Feb 24, 2010 at 7:01 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 23 Feb 2010 04:04:22 -0300 Andr__ Goddard Rosa <andre.goddard@gmail.com> wrote:
->
->> Fix a file descriptor leak on user-space processes and perform a cleanup,
->> reducing the code size:
->> text    data     bss     dec     hex filename
->> 9949      72      16   10037    2735 ipc/mqueue-BEFORE.o
->> 9885      72      16    9973    26f5 ipc/mqueue-AFTER.o
->>
->> Andr__ Goddard Rosa (6):
->>   mqueue: remove unneeded info->messages initialization
->>   mqueue: apply mathematics distributivity on mq_bytes calculation
->>   mqueue: simplify do_open() error handling
->>   mqueue: only set error codes if they are really necessary
->>   mqueue: fix typo "failues" -> "failures"
->>   mqueue: fix mq_open() file descriptor leak on user-space processes
->
-> Fixing the leak is far more important than the other five patches, and
-> we'll want to backport the leak fix into earlier kernels.  So the
-> bugfix patch should have been the first in the series!
+Due to lots of files need them, include string.h in kernel.h just
+for convinience. It can be thought as the first step of further cleanup. 
 
-Sure, thank you for that, I'll consider your good advice.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+ include/linux/kernel.h |   29 +----------------------------
+ include/linux/string.h |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 28 deletions(-)
 
-> So I've reordered the patches in that fashion and shall tag "mqueue:
-> fix mq_open() file descriptor leak on user-space processes" as needing
-> -stable backporting.
->
-> The patches apply and build OK with that reordering, but please do
-> double-check it, thanks.
->
-
-I have double checked and they look good; thanks for the follow-up
-patch pleasing checkpatch.
-:)
-
-Do I need to send another patch adding the Acked-by's or is it done by
-email system automatically?
-
-Best regards,
-André
+--- linux-2.6.orig/include/linux/kernel.h	2010-02-25 20:45:26.000000000 +0800
++++ linux-2.6/include/linux/kernel.h	2010-02-25 20:46:11.000000000 +0800
+@@ -15,6 +15,7 @@
+ #include <linux/typecheck.h>
+ #include <linux/printk.h>
+ #include <linux/panic.h>
++#include <linux/string.h>
+ #include <asm/byteorder.h>
+ #include <asm/bug.h>
+ 
+@@ -136,34 +137,6 @@ NORET_TYPE void do_exit(long error_code)
+ 	ATTRIB_NORET;
+ NORET_TYPE void complete_and_exit(struct completion *, long)
+ 	ATTRIB_NORET;
+-extern unsigned long simple_strtoul(const char *,char **,unsigned int);
+-extern long simple_strtol(const char *,char **,unsigned int);
+-extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
+-extern long long simple_strtoll(const char *,char **,unsigned int);
+-extern int strict_strtoul(const char *, unsigned int, unsigned long *);
+-extern int strict_strtol(const char *, unsigned int, long *);
+-extern int strict_strtoull(const char *, unsigned int, unsigned long long *);
+-extern int strict_strtoll(const char *, unsigned int, long long *);
+-extern int sprintf(char * buf, const char * fmt, ...)
+-	__attribute__ ((format (printf, 2, 3)));
+-extern int vsprintf(char *buf, const char *, va_list)
+-	__attribute__ ((format (printf, 2, 0)));
+-extern int snprintf(char * buf, size_t size, const char * fmt, ...)
+-	__attribute__ ((format (printf, 3, 4)));
+-extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+-	__attribute__ ((format (printf, 3, 0)));
+-extern int scnprintf(char * buf, size_t size, const char * fmt, ...)
+-	__attribute__ ((format (printf, 3, 4)));
+-extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
+-	__attribute__ ((format (printf, 3, 0)));
+-extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
+-	__attribute__ ((format (printf, 2, 3)));
+-extern char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
+-
+-extern int sscanf(const char *, const char *, ...)
+-	__attribute__ ((format (scanf, 2, 3)));
+-extern int vsscanf(const char *, const char *, va_list)
+-	__attribute__ ((format (scanf, 2, 0)));
+ 
+ extern int get_option(char **str, int *pint);
+ extern char *get_options(const char *str, int nints, int *ints);
+--- linux-2.6.orig/include/linux/string.h	2010-02-25 20:43:06.000000000 +0800
++++ linux-2.6/include/linux/string.h	2010-02-25 20:49:16.000000000 +0800
+@@ -142,5 +142,35 @@ static inline bool strstarts(const char 
+ {
+ 	return strncmp(str, prefix, strlen(prefix)) == 0;
+ }
++
++extern unsigned long simple_strtoul(const char *, char **, unsigned int);
++extern long simple_strtol(const char *, char **, unsigned int);
++extern unsigned long long simple_strtoull(const char *, char **, unsigned int);
++extern long long simple_strtoll(const char *, char **, unsigned int);
++extern int strict_strtoul(const char *, unsigned int, unsigned long *);
++extern int strict_strtol(const char *, unsigned int, long *);
++extern int strict_strtoull(const char *, unsigned int, unsigned long long *);
++extern int strict_strtoll(const char *, unsigned int, long long *);
++extern int sprintf(char *buf, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern int vsprintf(char *buf, const char *, va_list)
++	__attribute__ ((format (printf, 2, 0)));
++extern int snprintf(char *buf, size_t size, const char *fmt, ...)
++	__attribute__ ((format (printf, 3, 4)));
++extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
++	__attribute__ ((format (printf, 3, 0)));
++extern int scnprintf(char *buf, size_t size, const char *fmt, ...)
++	__attribute__ ((format (printf, 3, 4)));
++extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
++	__attribute__ ((format (printf, 3, 0)));
++extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
++	__attribute__ ((format (printf, 2, 3)));
++extern char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
++
++extern int sscanf(const char *, const char *, ...)
++	__attribute__ ((format (scanf, 2, 3)));
++extern int vsscanf(const char *, const char *, va_list)
++	__attribute__ ((format (scanf, 2, 0)));
+ #endif
++
+ #endif /* _LINUX_STRING_H_ */
