@@ -1,79 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751250Ab0BYFLp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 00:11:45 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:38362 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747Ab0BYFLo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 00:11:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=PxzE0BLHelirNGTGe+0PzUSPUYHBydsETxIMW2y318jyyF9i7Gtw0OTNtJefulX+Xo
-         VNrvJF76Vo7YUC1cZZVkcLN5rIKej2C0pLh4mqWlH4QculhVP3lOZqg3r25xR+E6p4Bf
-         wIYsOhwt4G5w05V5PHa+A7pYlHnxLKP471WE0=
+	id S1751471Ab0BYFPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 00:15:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34641 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747Ab0BYFPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 00:15:40 -0500
+Message-ID: <4B8609CE.5000705@kernel.org>
+Date: Thu, 25 Feb 2010 14:25:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <20100224183744.52732c77@nehalam>
-References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com> 
-	<4B85C59C.3010602@free.fr> <43e72e891002241643o3ba0b0bp5c7b90a6ae6680ec@mail.gmail.com> 
-	<43e72e891002241705w4a8c7029le4d1118ee7a68bb9@mail.gmail.com> 
-	<4B85E1B6.4000705@free.fr> <20100224183744.52732c77@nehalam>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 24 Feb 2010 21:11:23 -0800
-Message-ID: <43e72e891002242111x74f15f67y491ea7351d9c7b67@mail.gmail.com>
-Subject: Re: 802.11 development process - extended documentation
-To: Stephen Hemminger <shemminger@vyatta.com>, Greg KH <greg@kroah.com>,
-       "H. Peter Anvin" <hpa@kernel.org>
-Cc: Benoit PAPILLAULT <benoit.papillault@free.fr>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Oliver Neukum <oliver@neukum.org>
+CC: Yuhong Bao <yuhongbao_386@hotmail.com>, hancockrwd@gmail.com,
+       david-b@pacbell.net, greg@kroah.com, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
+References: <4B7CAF95.6020306@gmail.com> <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl> <4B85EE88.5050506@kernel.org> <201002250503.09327.oliver@neukum.org>
+In-Reply-To: <201002250503.09327.oliver@neukum.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 05:15:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 6:37 PM, Stephen Hemminger
-<shemminger@vyatta.com> wrote:
-> On Thu, 25 Feb 2010 03:34:30 +0100
-> Benoit PAPILLAULT <benoit.papillault@free.fr> wrote:
->
->> Luis R. Rodriguez a écrit :
->> > On Wed, Feb 24, 2010 at 4:43 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->> >
->> >> On Wed, Feb 24, 2010 at 4:34 PM, Benoit PAPILLAULT
->> >> <benoit.papillault@free.fr> wrote:
->> >>
->> >>> Luis R. Rodriguez a écrit :
->> >>>
->> >>>> I've extended our 802.11 development process into a new section on our
->> >>>> 802.11 wiki. I often get asked how this works from different parts of
->> >>>> the company here at Atheros so figured it'd be easier to illustrate
->> >>>> this as best as possible and share it.
->> >>>>
->> >>>> http://wireless.kernel.org/en/developers/process
->> >>>>
->> >>>> Hope it does justice, John if you see any mistakes feel free to edit.
->> >>>> If the diagram seems fishy let me know what I can fix.
->> >>>>
->> >>>>  Luis
->
-> The part that is missing is the -stable kernel tree (Greg KH).
+On 02/25/2010 01:03 PM, Oliver Neukum wrote:
+> Am Donnerstag, 25. Februar 2010 04:29:12 schrieb Tejun Heo:
+>> Arghhh.... I hate when intel pulls this type of 'product
+>> differentiation' stunts.  At any rate, I'm doubtful swiotlb'ing for
+>> usb2.0 would be noticeable at all.
+> 
+> That can and should be tested.
 
-Indeed, so I was unsure how the the linux-2.6-allstable gets
-maintained yet, what that pulls from, and how linux-2.6-stable.git
-gets put together. If someone has time to explain how that to works to
-me I'd gladly add that.
+Robert did already.  Given that USB2.0 devices aren't usually used for
+high-perf storage subsystem, the benefit looks marginal to me but
+everyone is entitled to own opinion.
 
-> As a distro maintainer, I find the stable kernel tree the most important of all!
+Thanks.
 
-Sure.
+Thanks.
 
-> More important than the compat-wireless tree (sorry Luis).
-
-Heh, no offense taken, remember this is for 802.11, that's why I added
-that stuff. I often have to explain how that stuff works too.
-
-  Luis
+-- 
+tejun
