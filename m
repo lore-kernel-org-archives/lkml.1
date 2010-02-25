@@ -1,42 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308Ab0BYJra (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 04:47:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62543 "EHLO mx1.redhat.com"
+	id S1754430Ab0BYJuj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 04:50:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753927Ab0BYJr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 04:47:28 -0500
-Date: Thu, 25 Feb 2010 10:42:41 +0100
-From: Jerome Glisse <jglisse@redhat.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] git ignore *.builtin generated file
-Message-ID: <20100225094241.GM11509@localhost.localdomain>
-References: <1266582790-11506-1-git-send-email-jglisse@redhat.com>
- <2375c9f91002191831y10918541mb5e2463d97c8f3ae@mail.gmail.com>
+	id S1753604Ab0BYJui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 04:50:38 -0500
+Message-ID: <4B8648BF.5070606@redhat.com>
+Date: Thu, 25 Feb 2010 17:54:07 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f91002191831y10918541mb5e2463d97c8f3ae@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: opurdila@ixiacom.com
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+References: <1267091195.12391.2.camel@Nokia-N900-42-11>
+In-Reply-To: <1267091195.12391.2.camel@Nokia-N900-42-11>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 20, 2010 at 10:31:18AM +0800, Américo Wang wrote:
-> On Fri, Feb 19, 2010 at 8:33 PM, Jerome Glisse <jglisse@redhat.com> wrote:
-> > This patch makes git ignore any *.builtin file (best patch of the year)
-> >
-> > Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+Octavian Purdila wrote:
+>> Hi,
+>>
+>> Still a small problem, if I do write(fd, "50000,50100", 12) I will
+>> get a return value of 11, which should mean 11 bytes are written,
+>> however, actually only the first 6 bytes are accepted.
+>>
+>> The rest looks better now.
+>>
+>> Or am I missing something here? :)
+>>
 > 
+> Will take a look at this a bit later today, thanks for testing.
 > 
-> Sorry, besides "modules.builtin", what other builtin files did you see?
-> We already exclude "modules.builtin".
-> 
+> In the meanwhile what are your thougths on the "1 2 3" issue, are you OK with accepting spaces as well as commas as separators?
 
-Sorry my tree didn't have the updated .gitignore dunno why maybe a conflict
-in one of my merge.
+I think one of them is enough, since we already chose commas, why
+do we need to add spaces? If you have some strong reason to add it,
+I have no objections.
 
-Cheers,
-Jerome
+
+Thanks.
