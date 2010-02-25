@@ -1,53 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933461Ab0BYU35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:29:57 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:52939 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932792Ab0BYU3z convert rfc822-to-8bit (ORCPT
+	id S933619Ab0BYUaR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:30:17 -0500
+Received: from mail-iw0-f177.google.com ([209.85.223.177]:50054 "EHLO
+	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933525Ab0BYUaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:29:55 -0500
+	Thu, 25 Feb 2010 15:30:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=FFXLyfKDitIzhvIbKvbJSMvf8UM20XfYinOtTMD1XBeraP4UIsdaFFJcWJi4h99/LO
-         DjbV3hdR8mJPLYYCOF550R43nxF2qrkpwje7wyuK5wUg4XmBTVG+qLfwyq1YX4TuOODh
-         pNZNAAE1YHSkWaToSSZCi8hT9uMbtsLF1lAAA=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=HqK2lfJkhgb7UiAX8zn2xkgkotrhtvv3R+onD65Pfu3NUHYg5SYdXtS1z1ajjZPh5G
+         T50pM06sZTQ3BhzmPDmOhq+sixxD8h7b8QX3pTRZQauiFrxNUfcO6l2ZjN/8ozbOjGVi
+         kUL8p0pgzl2iYirny9Ed9ghBFTmXWwCGexrSk=
+Message-ID: <4B86DDCB.50608@gmail.com>
+Date: Thu, 25 Feb 2010 15:30:03 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-In-Reply-To: <20100225202358.GC10960@localhost.localdomain>
-References: <cb0375e11002251201v7969b891n687f928e2402f7c9@mail.gmail.com> 
-	<20100225202358.GC10960@localhost.localdomain>
-From: Andrew Lutomirski <luto@mit.edu>
-Date: Thu, 25 Feb 2010 15:29:34 -0500
-X-Google-Sender-Auth: a57ffc2320c89c84
-Message-ID: <cb0375e11002251229q2a6989c5n64d739dec4f8de44@mail.gmail.com>
-Subject: Re: [2.6.33 regression] btrfs mount causes memory corruption
-To: Josef Bacik <josef@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 0/7] tcp: bugs and cleanup for 2.6.33
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 3:23 PM, Josef Bacik <josef@redhat.com> wrote:
-> On Thu, Feb 25, 2010 at 03:01:08PM -0500, Andrew Lutomirski wrote:
->> Mounting btrfs corrupts memory and causes nasty crashes within a few
->> seconds.  This seems to happen even if the mount fails (note the
->> unrecognized mount option).  This is a regression from 2.6.32, and
->> I've attached an example.
->>
->
-> And it only happens when you mount a btrfs fs?  Can you show me a trace of when
-> you mount a btrfs fs with valid mount options?  I'd like to see if we're not
-> cleaning up something properly or what.  Thanks,
+I'd have thought that there would be greater interest about patching
+crashing bugs, signed versus unsigned (underflow) bugs, TCP DoS bugs,
+TCP data corruption, and TCP performance problems....
 
-Seems OK.  Or maybe I just got lucky, but it's crashed every time I
-tried to mount with 'acl' before.
+Combination of patches reported in October, November, December, January,
+and February, for 2.6.32 and now 2.6.33.
 
-I even went through a couple iterations of trying to mount with
-'xattr' and 'user_xattr', both of which failed.
+This code has had previous review and several months of limited testing.
 
---Andy
+Some portions were removed during the various TCPCT part 1 patch splits,
+then were cut off by the sudden unexpected end of that merge window.
+[03 Dec 2009]  I've restarted the sub-numbering (again).
+
+Of particular interest are the TCPCT header extensions that already
+appear in the next phase of testing with other platforms.  These patches
+allow correct reception without data corruption.
+
+The remainder of the original TCPCT part 2 will be merged with part 3.
+
+[Updated to 2010 Feb 24 2.6.33 release.]
