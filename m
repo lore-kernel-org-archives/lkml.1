@@ -1,82 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934028Ab0BYVXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:23:18 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63604 "EHLO
+	id S934104Ab0BYVYB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:24:01 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63891 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933857Ab0BYVWh (ORCPT
+	with ESMTP id S934022Ab0BYVXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:37 -0500
+	Thu, 25 Feb 2010 16:23:49 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 26/28] kdb,debug_core: Allow the debug core to receive a panic notification
-Date: Thu, 25 Feb 2010 15:21:31 -0600
-Message-Id: <1267132893-23624-27-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 3/8] x86,kgdb: Implement early hardware breakpoint debugging
+Date: Thu, 25 Feb 2010 15:22:01 -0600
+Message-Id: <1267132926-23685-4-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:22:03.0602 (UTC) FILETIME=[93306B20:01CAB660]
+In-Reply-To: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+References: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 25 Feb 2010 21:22:47.0382 (UTC) FILETIME=[AD48B760:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is highly desirable to trap into kdb on panic.  The debug core will
-attempt to register as the first in line for the panic notifier.
+It is not possible to use the hw_breakpoint.c API prior to mm_init(),
+but it is possible to use hardware breakpoints with the kernel
+debugger.
 
+Prior to smp_init() it is possible to simply write to the dr registers
+of the boot cpu directly.  This can be used up until the
+kgdb_arch_late() is invoked, at which point the standard hw_breakpoint.c
+API will get used.
+
+CC: Frederic Weisbecker <fweisbec@gmail.com>
 CC: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- kernel/debug/debug_core.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ arch/x86/kernel/kgdb.c |   30 ++++++++++++++++++++++++++++--
+ 1 files changed, 28 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index bfdba97..ed42d9e 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -754,11 +754,28 @@ static struct sysrq_key_op sysrq_dbg_op = {
- };
- #endif
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 896874a..8e79fea 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -199,6 +199,8 @@ static struct hw_breakpoint {
+ 	struct perf_event	**pev;
+ } breakinfo[4];
  
-+static int kgdb_panic_event(struct notifier_block *self,
-+			    unsigned long val,
-+			    void *data)
-+{
-+	if (dbg_kdb_mode)
-+		kdb_printf("PANIC: %s\n", (char *)data);
-+	kgdb_breakpoint();
-+	return NOTIFY_DONE;
-+}
++static unsigned long early_dr7;
 +
-+static struct notifier_block kgdb_panic_event_nb = {
-+       .notifier_call	= kgdb_panic_event,
-+       .priority	= INT_MAX,
-+};
-+
- static void kgdb_register_callbacks(void)
+ static void kgdb_correct_hw_break(void)
  {
- 	if (!kgdb_io_module_registered) {
- 		kgdb_io_module_registered = 1;
- 		kgdb_arch_init();
-+		atomic_notifier_chain_register(&panic_notifier_list,
-+					       &kgdb_panic_event_nb);
- #ifdef CONFIG_MAGIC_SYSRQ
- 		register_sysrq_key('g', &sysrq_dbg_op);
- #endif
-@@ -778,6 +795,8 @@ static void kgdb_unregister_callbacks(void)
- 	 */
- 	if (kgdb_io_module_registered) {
- 		kgdb_io_module_registered = 0;
-+		atomic_notifier_chain_unregister(&panic_notifier_list,
-+					       &kgdb_panic_event_nb);
- 		kgdb_arch_exit();
- #ifdef CONFIG_MAGIC_SYSRQ
- 		unregister_sysrq_key('g', &sysrq_dbg_op);
+ 	int breakno;
+@@ -210,6 +212,14 @@ static void kgdb_correct_hw_break(void)
+ 		int cpu = raw_smp_processor_id();
+ 		if (!breakinfo[breakno].enabled)
+ 			continue;
++		if (dbg_is_early) {
++			set_debugreg(breakinfo[breakno].addr, breakno);
++			early_dr7 |= encode_dr7(breakno,
++						breakinfo[breakno].len,
++						breakinfo[breakno].type);
++			set_debugreg(early_dr7, 7);
++			continue;
++		}
+ 		bp = *per_cpu_ptr(breakinfo[breakno].pev, cpu);
+ 		info = counter_arch_bp(bp);
+ 		if (bp->attr.disabled != 1)
+@@ -224,7 +234,8 @@ static void kgdb_correct_hw_break(void)
+ 		if (!val)
+ 			bp->attr.disabled = 0;
+ 	}
+-	hw_breakpoint_restore();
++	if (!dbg_is_early)
++		hw_breakpoint_restore();
+ }
+ 
+ static int hw_break_reserve_slot(int breakno)
+@@ -233,6 +244,9 @@ static int hw_break_reserve_slot(int breakno)
+ 	int cnt = 0;
+ 	struct perf_event **pevent;
+ 
++	if (dbg_is_early)
++		return 0;
++
+ 	for_each_online_cpu(cpu) {
+ 		cnt++;
+ 		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+@@ -258,6 +272,9 @@ static int hw_break_release_slot(int breakno)
+ 	struct perf_event **pevent;
+ 	int cpu;
+ 
++	if (dbg_is_early)
++		return 0;
++
+ 	for_each_online_cpu(cpu) {
+ 		pevent = per_cpu_ptr(breakinfo[breakno].pev, cpu);
+ 		if (dbg_release_bp_slot(*pevent))
+@@ -302,7 +319,11 @@ static void kgdb_remove_all_hw_break(void)
+ 		bp = *per_cpu_ptr(breakinfo[i].pev, cpu);
+ 		if (bp->attr.disabled == 1)
+ 			continue;
+-		arch_uninstall_hw_breakpoint(bp);
++		if (dbg_is_early)
++			early_dr7 &= ~encode_dr7(i, breakinfo[i].len,
++						 breakinfo[i].type);
++		else
++			arch_uninstall_hw_breakpoint(bp);
+ 		bp->attr.disabled = 1;
+ 	}
+ }
+@@ -379,6 +400,11 @@ void kgdb_disable_hw_debug(struct pt_regs *regs)
+ 	for (i = 0; i < 4; i++) {
+ 		if (!breakinfo[i].enabled)
+ 			continue;
++		if (dbg_is_early) {
++			early_dr7 &= ~encode_dr7(i, breakinfo[i].len,
++						 breakinfo[i].type);
++			continue;
++		}
+ 		bp = *per_cpu_ptr(breakinfo[i].pev, cpu);
+ 		if (bp->attr.disabled == 1)
+ 			continue;
 -- 
 1.6.4.rc1
 
