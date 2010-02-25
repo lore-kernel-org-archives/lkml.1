@@ -1,52 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932633Ab0BYOBc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 09:01:32 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:45883 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932357Ab0BYOBa (ORCPT
+	id S932683Ab0BYOHt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 09:07:49 -0500
+Received: from mail.yrkesakademin.fi ([85.134.44.20]:1331 "EHLO
+	mail.yrkesakademin.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932629Ab0BYOHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 09:01:30 -0500
-Date: Thu, 25 Feb 2010 15:01:21 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu
-Subject: Re: [PATCH 19/28] mips,kgdb: kdb low level trap catch and stack trace
-Message-ID: <20100225140121.GA5616@linux-mips.org>
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
- <1266014143-29444-20-git-send-email-jason.wessel@windriver.com>
+	Thu, 25 Feb 2010 09:07:48 -0500
+Message-ID: <4B86832F.70706@mandriva.org>
+Date: Thu, 25 Feb 2010 16:03:27 +0200
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; sv-SE; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266014143-29444-20-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404
+ hpet_next_event+0x70/0x80
+References: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 04:35:34PM -0600, Jason Wessel wrote:
+Justin Piszcz skrev 25.2.2010 01:37:
+> Hello,
+>
+> Again, on the Intel DP55KG board:
+>
+> # uname -a
+> Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
+>
+> [ 1.237600] ------------[ cut here ]------------
+> [ 1.237890] WARNING: at arch/x86/kernel/hpet.c:404
+> hpet_next_event+0x70/0x80()
+> [ 1.238221] Hardware name:
+> [ 1.238504] hpet: compare register read back failed.
+> [ 1.238793] Modules linked in:
+> [ 1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
+> [ 1.239605] Call Trace:
+> [ 1.239886] <IRQ> [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
+> [ 1.240409] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [ 1.240699] [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
+> [ 1.240992] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [ 1.241281] [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
+> [ 1.241573] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
+> [ 1.241859] [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
+> [ 1.246533] [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
+> [ 1.246826] [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
+> [ 1.247118] [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
+> [ 1.247407] [<ffffffff81029f55>] ? handle_irq+0x15/0x20
+> [ 1.247689] [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
+> [ 1.247976] [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
+> [ 1.248262] <EOI> [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
+> [ 1.248796] [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
+> [ 1.249080] ---[ end trace db7f668fb6fef4e1 ]---
+>
+> Is this something Intel has to fix or is it a bug in the kernel?
+>
 
-> The only way the debugger can handle a trap in inside rcu_lock,
-> notify_die, or atomic_notifier_call_chain without a recursive fault is
-> to have a low level "first opportunity handler" do_trap_or_bp() handler.
-> 
-> Generally this will be something the vast majority of folks will not
-> need, but for those who need it, it is added as a kernel .config
-> option called KGDB_LOW_LEVEL_TRAP.
-> 
-> Also added was a die notification for oops such that kdb can catch an
-> oops for analysis.
-> 
-> There appeared to be no obvious way to pass the struct pt_regs from
-> the original exception back to the stack back tracer, so a special
-> case was added to show_stack() for when kdb is active because you
-> generally desire to generally look at the back trace of the original
-> exception.
-> 
-> CC: Ralf Baechle <ralf@linux-mips.org>
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Here is a suggested fix:
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+http://marc.info/?l=linux-kernel&m=126531123524059&w=2
 
-  Ralf
+--
+Thomas
