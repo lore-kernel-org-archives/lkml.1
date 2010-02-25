@@ -1,110 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579Ab0BYSxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:53:51 -0500
-Received: from mga09.intel.com ([134.134.136.24]:60191 "EHLO mga09.intel.com"
+	id S1759416Ab0BYSx6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:53:58 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:60711 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759354Ab0BYSxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:53:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,540,1262592000"; 
-   d="scan'208";a="495670355"
-Date: Thu, 25 Feb 2010 10:53:48 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80
-Message-ID: <20100225185348.GA9674@linux-os.sc.intel.com>
-References: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan>
-User-Agent: Mutt/1.4.1i
+	id S1759356Ab0BYSxz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 13:53:55 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Tony Lindgren <tony@atomide.com>, Thomas Weber <swirl@gmx.li>,
+       "Aguirre, Sergio" <saaguirre@ti.com>
+CC: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Russell King <linux@arm.linux.org.uk>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       "Pandita, Vikram" <vikram.pandita@ti.com>,
+       "Syed, Rafiuddin" <rafiuddin.syed@ti.com>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Weber <weber@corscience.de>
+Date: Fri, 26 Feb 2010 00:23:30 +0530
+Subject: RE: [RESEND][PATCH/RFC] OMAP2: serial.c: Fix number of uarts in
+ early_init
+Thread-Topic: [RESEND][PATCH/RFC] OMAP2: serial.c: Fix number of uarts in
+ early_init
+Thread-Index: Acq2SmCutHQ58pUlSdCS62ooI7Cv8QAAN4jQ
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C43BF5EC@dbde02.ent.ti.com>
+References: <1267090819-17796-1-git-send-email-swirl@gmx.li>
+ <20100225184355.GF28173@atomide.com>
+In-Reply-To: <20100225184355.GF28173@atomide.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 03:37:04PM -0800, Justin Piszcz wrote:
-> Hello,
+
+> -----Original Message-----
+> From: Tony Lindgren [mailto:tony@atomide.com]
+> Sent: Friday, February 26, 2010 12:14 AM
+> To: Thomas Weber; Aguirre, Sergio
+> Cc: linux-omap@vger.kernel.org; Russell King; Kevin Hilman; Shilimkar, Santosh; Pandita, Vikram;
+> Syed, Rafiuddin; linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org; Thomas Weber
+> Subject: Re: [RESEND][PATCH/RFC] OMAP2: serial.c: Fix number of uarts in early_init
 > 
-> Again, on the Intel DP55KG board:
+> * Thomas Weber <swirl@gmx.li> [100225 01:36]:
+> >
+> > The omap_serial_early_init prints the following errors:
+> >
+> > Could not get uart4_ick
+> > Could not get uart4_fck
+> >
+> > because all the uarts available in omap_uart[] will be initialized.
+> > Only omap4430 and omap3630 have 4 uarts at the moment.
+> > This patch reduces the number of uarts when cpu is not omap4430 or
+> > omap3630.
 > 
-> # uname -a
-> Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
+> ..and I only patched omap_serial_init and forgot about
+> the omap_serial_early_init..
 > 
-> [    1.237600] ------------[ cut here ]------------
-> [    1.237890] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x70/0x80()
-> [    1.238221] Hardware name:
-> [    1.238504] hpet: compare register read back failed.
-> [    1.238793] Modules linked in:
-> [    1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
-> [    1.239605] Call Trace:
-> [    1.239886]  <IRQ>  [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
-> [    1.240409]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
-> [    1.240699]  [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
-> [    1.240992]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
-> [    1.241281]  [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
-> [    1.241573]  [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
-> [    1.241859]  [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
-> [    1.246533]  [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
-> [    1.246826]  [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
-> [    1.247118]  [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
-> [    1.247407]  [<ffffffff81029f55>] ? handle_irq+0x15/0x20
-> [    1.247689]  [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
-> [    1.247976]  [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
-> [    1.248262]  <EOI>  [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
-> [    1.248796]  [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
-> [    1.249080] ---[ end trace db7f668fb6fef4e1 ]---
+> Looks good to me, Sergio, care to test and Ack this? Also, sounds
+> like we still need to patch omap4 for uart4 for the clocks.
 > 
-> Is this something Intel has to fix or is it a bug in the kernel?
+Clocks will be take care automatically by "nr_ports" for omap4 too
+with this patch. Below clock changes are just cosmetic ones, isn't it ?
 
-This is a chipset erratum.
+Am I missing something?
 
-Thomas: You mentioned we can retain this check only for known-buggy and
-hpet debug kind of options. But here is the simple workaround patch for
-this particular erratum.
-
-x86: Erratum workaround for read after write of HPET comparator
-
-Some chipsets have a erratum due to which read immediately following a
-write of HPET comparator returns old comparator value instead of most
-recently written value.
-
-Erratum 15 in
-"Intel I/O Controller Hub 9 (ICH9) Family Specification Update"
-(http://www.intel.com/assets/pdf/specupdate/316973.pdf)
-
-Workaround for the errata is to read the comparator twice if the first
-one fails.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
- arch/x86/kernel/hpet.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index ad80a1c..7b0dd63 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -399,9 +399,15 @@ static int hpet_next_event(unsigned long delta,
- 	 * then we might have a real hardware problem. We can not do
- 	 * much about it here, but at least alert the user/admin with
- 	 * a prominent warning.
-+	 * An erratum on some chipsets (ICH9,..), results in comparator read
-+	 * immediately following a write returning old value. Workaround
-+	 * for this is to read this value second time, when first
-+	 * read returns old value.
- 	 */
--	WARN_ONCE(hpet_readl(HPET_Tn_CMP(timer)) != cnt,
-+	if (unlikely((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt)) {
-+		WARN_ONCE(hpet_readl(HPET_Tn_CMP(timer)) != cnt,
- 		  KERN_WARNING "hpet: compare register read back failed.\n");
-+	}
- 
- 	return (s32)(hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
- }
--- 
-1.6.0.6
-
+> Regards,
+> 
+> Tony
+> 
+> > Signed-off-by: Thomas Weber <weber@corscience.de>
+> > ---
+> >  arch/arm/mach-omap2/serial.c |   15 ++++++++++-----
+> >  1 files changed, 10 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+> > index b79bc89..da77930 100644
+> > --- a/arch/arm/mach-omap2/serial.c
+> > +++ b/arch/arm/mach-omap2/serial.c
+> > @@ -644,16 +644,21 @@ static void serial_out_override(struct uart_port *up, int offset, int value)
+> >  }
+> >  void __init omap_serial_early_init(void)
+> >  {
+> > -	int i;
+> > +	int i, nr_ports;
+> >  	char name[16];
+> >
+> > +	if (!(cpu_is_omap3630() || cpu_is_omap4430()))
+> > +		nr_ports = 3;
+> > +	else
+> > +		nr_ports = ARRAY_SIZE(omap_uart);
+> > +
+> >  	/*
+> >  	 * Make sure the serial ports are muxed on at this point.
+> >  	 * You have to mux them off in device drivers later on
+> >  	 * if not needed.
+> >  	 */
+> >
+> > -	for (i = 0; i < ARRAY_SIZE(omap_uart); i++) {
+> > +	for (i = 0; i < nr_ports; i++) {
+> >  		struct omap_uart_state *uart = &omap_uart[i];
+> >  		struct platform_device *pdev = &uart->pdev;
+> >  		struct device *dev = &pdev->dev;
+> > @@ -669,17 +674,17 @@ void __init omap_serial_early_init(void)
+> >  			continue;
+> >  		}
+> >
+> > -		sprintf(name, "uart%d_ick", i+1);
+> > +		sprintf(name, "uart%d_ick", i + 1);
+> >  		uart->ick = clk_get(NULL, name);
+> >  		if (IS_ERR(uart->ick)) {
+> > -			printk(KERN_ERR "Could not get uart%d_ick\n", i+1);
+> > +			printk(KERN_ERR "Could not get uart%d_ick\n", i + 1);
+> >  			uart->ick = NULL;
+> >  		}
+> >
+> >  		sprintf(name, "uart%d_fck", i+1);
+> >  		uart->fck = clk_get(NULL, name);
+> >  		if (IS_ERR(uart->fck)) {
+> > -			printk(KERN_ERR "Could not get uart%d_fck\n", i+1);
+> > +			printk(KERN_ERR "Could not get uart%d_fck\n", i + 1);
+> >  			uart->fck = NULL;
+> >  		}
+> >
+> > --
+> > 1.6.4.4
+> >
