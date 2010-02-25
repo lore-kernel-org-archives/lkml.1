@@ -1,64 +1,130 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933692Ab0BYUnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:43:16 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:30913 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933640Ab0BYUnP (ORCPT
+	id S933640Ab0BYUn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:43:29 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:48534 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933694Ab0BYUnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:43:15 -0500
-Subject: Re: [PATCH 0/7] tcp: bugs and cleanup for 2.6.33
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 25 Feb 2010 15:43:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=m5Vtfax+Ii7TyZRYclHEJyNwZCFs/Vxbms3Zb7LKgfwg+JO/pUrlDqxxH0jUeCSJcg
+         e1ZBUeDY0zwEpFfKQ5Vm2sErZdKGd6PIi17pNzLyexmZUR8QbFAa97CSe29w1ABm84QI
+         JrmIHGxaUz8yVa+/F8U6zr4OkV7QZQ7OLUIuI=
+Message-ID: <4B86E0EA.5080102@gmail.com>
+Date: Thu, 25 Feb 2010 21:43:22 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Brian Gerst <brgerst@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <4B86DEC6.1090307@gmail.com>
-References: <4B86DDCB.50608@gmail.com>  <4B86DEC6.1090307@gmail.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Thu, 25 Feb 2010 20:43:11 +0000
-Message-Id: <1267130591.2107.16.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 	sha1_update()
+References: <4B8692E3.9030509@gmail.com>	 <19334.40337.651079.440912@pilspetsen.it.uu.se>	 <73c1f2161002250833n120cda05s9371e5ce13cc0aac@mail.gmail.com>	 <19334.44752.357207.382349@pilspetsen.it.uu.se> <73c1f2161002250932j5167e2fan51dc11970df00f7@mail.gmail.com> <4B86D3E4.4000205@gmail.com>
+In-Reply-To: <4B86D3E4.4000205@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Feb 2010 20:43:19.0351 (UTC) FILETIME=[29D3DC70:01CAB65B]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17214.005
-X-TM-AS-Result: No--24.534700-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-25 at 15:34 -0500, William Allen Simpson wrote:
-> Redefine two TCP header functions to accept TCP header pointer.
-> When subtracting, return signed int to allow error checking.
+> Also from that document:
+> 
+> If you know how large the accessed memory is, you can add it as input or
+> output but if this is not known, you should add memory. As an example, if
+> you access ten bytes of a string, you can use a memory input like:
+> 
+>      {"m"( ({ struct { char x[10]; } *p = (void *)ptr ; *p; }) )}.
+> 
+> does this mean we could use something like:
+> 
+> #define SECURE_BZERO(x) do {                                            \
+>         memset(x, 0, sizeof(x));                                        \
+>         asm("" : :"m"( ({ struct { char __y[ARRAY_SIZE(x)]; } *__z =    \
+>                                         (void *)x ; *__z; }) ));        \
+> } while(0)
 
-This patch only adds functions, so why do you say 'redefine'?
+or rather for not just char arrays:
 
-> These functions will be used in subsequent patches that implement
-> additional features.
-[...]
-> +/* Length of standard options only.  This could be negative. */
-> +static inline int tcp_option_len_th(const struct tcphdr *th)
-> +{
-> +       return (int)(th->doff * 4) - sizeof(*th);
-> +}
+#define SECURE_BZERO(x) do {                                    \
+        memset(x, 0, sizeof(x));                                \
+        asm("" :: "m" ( ({                                      \
+                        struct {                                \
+                                typeof(x[0]) __y[ARRAY_SIZE(x)];\
+                        } *__z = (void *)x;                     \
+                        *__z;                                   \
+                }) ));                                          \
+} while(0)
 
-I don't see  the point of this cast; the left operand of the subtraction
-will in any case be promoted to size_t to match the right operand.
+This appears to work in my testcase:
+---
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-Did you mean
-	return (int)(th->doff * 4 - sizeof(*th));
-?
+#define SECURE 1
 
-Ben.
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+#define SECURE_BZERO(x) do {					\
+	memset(x, 0, sizeof(x));				\
+	asm("" :: "m" ( ({					\
+			struct {				\
+				typeof(x[0]) __y[ARRAY_SIZE(x)];\
+			} *__z = (void *)x;			\
+			*__z;					\
+		}) ));						\
+} while(0)
 
+void foo()
+{
+	char password[] = "secret";
+	password[0]='S';
+	printf ("Don't show again: %s\n", password);
+#if SECURE == 1
+	SECURE_BZERO(password);
+#else
+	memset(password, 0, sizeof(password));
+#endif
+}
+
+void foo1()
+{
+	int nrs[] = {1,1,2,3,4,5,6,7};
+	nrs[0] = 0;
+	int i = 8;
+	printf ("Don't show again:\n");
+	while (i--)
+		printf ("%u\n", nrs[i]);
+#if SECURE == 1
+	SECURE_BZERO(nrs);
+#else
+	memset(nrs, 0, sizeof(nrs));
+#endif
+}
+
+int main(int argc, char* argv[])
+{
+
+	foo();
+	int i;
+	char foo3[] = "";
+	char* bar = &foo3[0];
+	for (i = -50; i < 50; i++)
+		printf ("%c.", bar[i]);
+	printf("\n\n");
+
+	foo1();
+	int foo4 = 20;
+	int* ber = &foo4;
+	for (i = -50; i < 50; i++)
+		printf ("%u_", ber[i]);
+	printf("\n");
+	return 0;
+}
