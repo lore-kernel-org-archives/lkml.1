@@ -1,68 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690Ab0BYOJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 09:09:29 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57489 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932629Ab0BYOJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 09:09:28 -0500
-X-Authority-Analysis: v=1.0 c=1 a=wyP15y6EwVoA:10 a=7U3hwN5JcxgA:10 a=1nSz6Ew-AAAA:8 a=QUYj05VZHuikCgi2vaUA:9 a=pVVhXaEHSxsmMa3kSUQA:7 a=eC5Gj6oq1uMKpoYkXCaHkBJZGFkA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH] ftrace: fix ftrace_event_call alignment for use with
- gcc 4.5
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B857F00.10005@suse.com>
-References: <4B85770B.6010901@suse.com>  <4B857F00.10005@suse.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 25 Feb 2010 09:09:25 -0500
-Message-ID: <1267106965.24271.8788.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S932699Ab0BYOOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 09:14:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61969 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932629Ab0BYOOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 09:14:16 -0500
+Date: Thu, 25 Feb 2010 11:13:51 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl,
+       paulus@samba.org, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: perf per-symbol histogram causes memory corruption
+Message-ID: <20100225141351.GA8553@ghostprotocols.net>
+References: <20100225.022618.256301798.davem@davemloft.net> <20100225111148.GA5754@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100225111148.GA5754@elte.hu>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 14:33 -0500, Jeff Mahoney wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Em Thu, Feb 25, 2010 at 12:11:48PM +0100, Ingo Molnar escreveu:
 > 
-> On 02/24/2010 01:59 PM, Jeff Mahoney wrote:
-> >  GCC 4.5 introduces behavior that forces the alignment of structures to
-> >  use the largest possible value. The default value is 32 bytes, so if
-> >  some structures are defined with a 4-byte alignment and others aren't
-> >  declared with an alignment constraint at all - it will align at 32-bytes.
-> > 
-> >  For things like the ftrace events, this results in a non-standard array.
-> >  When initializing the ftrace subsystem, we traverse the _ftrace_events
-> >  section and call the initialization callback for each event. When the
-> >  structures are misaligned, we could be treating another part of the
-> >  structure (or the zeroed out space between them) as a function pointer.
-> > 
-> >  This patch forces the alignment for all the ftrace_event_call structures
-> >  to 4 bytes.
-> > 
-> >  Without this patch, the kernel fails to boot very early when built with
-> >  gcc 4.5.
-> > 
-> >  It's trivial to check the alignment of the members of the array, so it
-> >  might be worthwhile to add something to the build system to do that
-> >  automatically. Unfortunately, that only covers this case. I've asked one
-> >  of the gcc developers about adding a warning when this condition is seen.
+> (Added Arnaldo to the Cc: - he's maintaining the symbol lookup bits of perf.)
 > 
-> BTW, the analysis for this is available here:
+> * David Miller <davem@davemloft.net> wrote:
 > 
-> https://bugzilla.novell.com/show_bug.cgi?id=582222
-> 
+> > When builtin-annotate.c processes sample events via
+> > process_sample_event() it uses 'sample_filter'
+> > 
+> > sample_filter() sizes the histogram object for a symbol based upon the
+> > size, calculated as "sym->end - sym->start", to determine the number
+> > of IP sample slots to allocate.
+> > 
+> > The problem is, the sym->end value is not stable at this point.
+> > 
+> > For example, dso__load_sym() first loads all of the symbols, then it
+> > makes another pass over the symbols by calling symbols__fixup_end()
+> > which will adjust the sym->end values of various symbols.
+> > 
+> > At this point, the histogram IP sample array allocated by
+> > sample_filter() can become too small, and hits recorded can thus
+> > access past the end of the array corrupting memory.
+> > 
+> > I get this very reliably on sparc64, and it took me a few days to root
+> > cause this. :-)
+> > 
+> > I don't see an immediate way to fix this, any ideas?
 
-Thanks! I'll apply this and push it forward (as well as to stable)
+This was reported by Anton as well, I guess the right way to fix this is
+to first load all symbols and then iterate thru them allocating the
+resources that need to have ->end fixed up.
 
--- Steve
+As we already fix up the symbols when we finish loading them, annotate
+would have meaningful ->end members.
 
+I.e. 'perf annotate' is not using this mechanism as a filter. Its a post
+processing phase.
+
+I'll provide a patch.
+
+- Arnaldo
