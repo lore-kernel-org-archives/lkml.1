@@ -1,64 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933065Ab0BYRZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:25:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47430 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933011Ab0BYRZi (ORCPT
+	id S933057Ab0BYRaK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:30:10 -0500
+Received: from smtp.microsoft.com ([131.107.115.215]:30878 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932994Ab0BYRaI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:25:38 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=uL_z7Zi1cfH8U8xzjz0A:9 a=s9VoDLb1cgqNKo7i0SAQkMX1HVcA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory
- barrier (v9)
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Nick Piggin <npiggin@suse.de>, Chris Friesen <cfriesen@nortel.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com
-In-Reply-To: <20100225165301.GF24052@Krystal>
-References: <20100212224606.GA30280@Krystal> <4B82CF1A.3010501@nortel.com>
-	 <20100222212321.GA2573@Krystal> <20100224091052.GY9738@laptop>
-	 <20100224152251.GA16295@Krystal> <20100225053310.GA9738@laptop>
-	 <20100225165301.GF24052@Krystal>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 25 Feb 2010 12:25:26 -0500
-Message-ID: <1267118726.6328.20.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 12:30:08 -0500
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <greg@kroah.com>, Hank Janssen <hjanssen@microsoft.com>
+CC: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: Problem with auto-detecting a HV environment from within Linux
+Thread-Topic: Problem with auto-detecting a HV environment from within Linux
+Thread-Index: AQHKtjnpPG+DB1+VDUmGCDmANJRAY5HXEhsA
+Date: Thu, 25 Feb 2010 17:30:29 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
+References: <20100225164436.GA3310@kroah.com>
+In-Reply-To: <20100225164436.GA3310@kroah.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-25 at 11:53 -0500, Mathieu Desnoyers wrote:
+> From: Greg KH [mailto:greg@kroah.com]
+> So, is there a way to "know" ahead of time if we are in a HV guest
+> environment?
 
-> > It would be very trivial compared to the process-private case. Just IPI
-> > all CPUs. It would allow older kernels to work with newer process based
-> > apps as they get implemented. But... not a really big deal I suppose.
-> 
-> This is actually what I did in v1 of the patch, but this implementation met
-> resistance from the RT people, who were concerned about the impact on RT tasks
-> of a lower priority process doing lots of sys_membarrier() calls. So if we want
-> to do other-process-aware sys_membarrier(), we would have to iterate on all
-> cpus, for every running process shared memory maps and see if there is something
-> shared with all shm of the current process. This is clearly not as trivial as
-> just broadcasting the IPI to all cpus.
+Here is some info from dmesg, which shows "VRTUAL MICROSFT".
+ACPI: RSDT (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0000
+ACPI: FADT (v002 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0200
+ACPI: WAET (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0b00
+ACPI: SLIC (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0b40
+ACPI: OEM0 (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0d40
+ACPI: SRAT (v002 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0600
+ACPI: MADT (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001fff0300
+ACPI: OEMB (v001 VRTUAL MICROSFT 0x03000919 MSFT 0x00000097) @ 0x000000001ffff240
+ACPI: DSDT (v001 MSFTVM MSFTVM02 0x00000002 INTL 0x02002026) @ 0x0000000000000000
 
-Right, it may require another syscall or parameter to let the tasks
-register a shared page. Then have some mechanism to find a way to
-quickly check if a CPU is running a process with that page.
+Thanks,
 
--- Steve
-
+- Haiyang
 
