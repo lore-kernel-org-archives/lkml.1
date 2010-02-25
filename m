@@ -1,68 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934683Ab0BZALI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:11:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59593 "EHLO hera.kernel.org"
+	id S934697Ab0BZANW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:13:22 -0500
+Received: from kroah.org ([198.145.64.141]:43471 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934593Ab0BZALE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:11:04 -0500
-Message-ID: <4B87114C.5020503@kernel.org>
-Date: Thu, 25 Feb 2010 16:09:48 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S934593Ab0BZANV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:13:21 -0500
+Date: Thu, 25 Feb 2010 15:25:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, Oliver Neukum <oliver@neukum.org>,
+       Yuhong Bao <yuhongbao_386@hotmail.com>, david-b@pacbell.net,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA
+ support
+Message-ID: <20100225232528.GA24155@kroah.com>
+References: <4B7CAF95.6020306@gmail.com>
+ <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl>
+ <4B85EE88.5050506@kernel.org>
+ <201002250503.09327.oliver@neukum.org>
+ <4B8609CE.5000705@kernel.org>
+ <20100225161413.GA1229@kroah.com>
+ <51f3faa71002251515k51354eb6y3e2cfd1558dba2f1@mail.gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH -v2] x86: set nr_irqs_gsi only in probe_nr_irqs_gsi
-References: <4B84E09D.4090600@kernel.org>
-In-Reply-To: <4B84E09D.4090600@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <51f3faa71002251515k51354eb6y3e2cfd1558dba2f1@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 25, 2010 at 05:15:49PM -0600, Robert Hancock wrote:
+> > For now, I'd like to not enable this, given the huge risks and no known
+> > benifit.
+> 
+> "Huge risks" is likely a bit melodramatic
 
+No it is not.  This has the ability to break USB functionality that
+currently works just fine for a user.  That's not acceptable.
 
-don't clear that in arch_early_irq_init
+And yes, we can fix things after-the-fact with blacklists, but as Tejun
+so aptly described, it is a major pain to do so, and lots of users just
+get frustrated and never tell us that problems happen.
 
-probe_nr_irqs_gsi is always called when ioapic is selected in config.
+thanks,
 
-so even for mrst, print out from probe_nr_irqs_gsi is report correct
-nr_irqs_gsi
-
--v2: remove io_apic_irqs assignement, setup_IO_APIC will do that.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/apic/io_apic.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -151,11 +151,6 @@ int __init arch_early_irq_init(void)
- 	int node;
- 	int i;
- 
--	if (!legacy_pic->nr_legacy_irqs) {
--		nr_irqs_gsi = 0;
--		io_apic_irqs = ~0UL;
--	}
--
- 	cfg = irq_cfgx;
- 	count = ARRAY_SIZE(irq_cfgx);
- 	node= cpu_to_node(boot_cpu_id);
-@@ -3857,6 +3852,8 @@ void __init probe_nr_irqs_gsi(void)
- {
- 	int nr = 0;
- 
-+	nr_irqs_gsi = legacy_pic->nr_legacy_irqs;
-+
- 	nr = acpi_probe_gsi();
- 	if (nr > nr_irqs_gsi) {
- 		nr_irqs_gsi = nr;
+greg k-h
