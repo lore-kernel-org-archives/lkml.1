@@ -1,193 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934095Ab0BYVZh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:25:37 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63734 "EHLO
+	id S933911Ab0BYVWs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:22:48 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63530 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933848Ab0BYVXI (ORCPT
+	with ESMTP id S933803Ab0BYVW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:23:08 -0500
+	Thu, 25 Feb 2010 16:22:29 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 2/8] x86, kgdb, init: Add early and late debug states
-Date: Thu, 25 Feb 2010 15:22:00 -0600
-Message-Id: <1267132926-23685-3-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 18/28] powerpc,kgdb: Introduce low level trap catching
+Date: Thu, 25 Feb 2010 15:21:23 -0600
+Message-Id: <1267132893-23624-19-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
-References: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:22:46.0476 (UTC) FILETIME=[ACBE78C0:01CAB660]
+In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
+References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 25 Feb 2010 21:21:56.0008 (UTC) FILETIME=[8EA9AA80:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel debugger can operate well before mm_init(), but the x86
-hardware breakpoint code which uses the perf api requires that the
-kernel allocators are initialized.
+The only way the debugger can handle a trap in inside rcu_lock,
+notify_die, or atomic_notifier_call_chain without a recursive fault is
+to allow the kernel debugger to handle the exception first in
+program_check_exception().
 
-This means the kernel debug core needs to provide an optional arch
-specific call back to allow the initialization functions to run after
-the kernel has been further initialized.
+The other change here is to make sure that kgdb_handle_exception() is
+called with correct parameters when catching an oops, because kdb
+needs to know if the entry was an oops, single step, or breakpoint
+exception.
 
-The kdb shell already had a similar restriction with an early
-initialization and late initialization.  The kdb_init() was moved into
-the debug core's version of the late init which is called
-dbg_late_init();
+[benh@kernel.crashing.org: move debugger_bpt instead of #ifdef]
 
-CC: kgdb-bugreport@lists.sourceforge.net
+CC: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/x86/kernel/kgdb.c    |   17 ++++++++++-------
- include/linux/kgdb.h      |   14 ++++++++++++++
- init/main.c               |    4 ++--
- kernel/debug/debug_core.c |   16 ++++++++++++++++
- 4 files changed, 42 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/kgdb.c  |    6 ++++--
+ arch/powerpc/kernel/traps.c |    7 +++++--
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index 3b762bc..896874a 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -596,14 +596,15 @@ static struct notifier_block kgdb_notifier = {
-  */
- int kgdb_arch_init(void)
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 7aafcc5..8ee7b6e 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -20,6 +20,7 @@
+ #include <linux/smp.h>
+ #include <linux/signal.h>
+ #include <linux/ptrace.h>
++#include <linux/kdebug.h>
+ #include <asm/current.h>
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
+@@ -115,7 +116,8 @@ void kgdb_roundup_cpus(unsigned long flags)
+ /* KGDB functions to use existing PowerPC64 hooks. */
+ static int kgdb_debugger(struct pt_regs *regs)
  {
-+	return register_die_notifier(&kgdb_notifier);
-+}
-+
-+void kgdb_arch_late(void)
-+{
- 	int i, cpu;
--	int ret;
- 	struct perf_event_attr attr;
- 	struct perf_event **pevent;
- 
--	ret = register_die_notifier(&kgdb_notifier);
--	if (ret != 0)
--		return ret;
- 	/*
- 	 * Pre-allocate the hw breakpoint structions in the non-atomic
- 	 * portion of kgdb because this operation requires mutexs to
-@@ -615,12 +616,15 @@ int kgdb_arch_init(void)
- 	attr.bp_type = HW_BREAKPOINT_W;
- 	attr.disabled = 1;
- 	for (i = 0; i < 4; i++) {
-+		if (breakinfo[i].pev)
-+			continue;
- 		breakinfo[i].pev = register_wide_hw_breakpoint(&attr, NULL);
- 		if (IS_ERR(breakinfo[i].pev)) {
--			printk(KERN_ERR "kgdb: Could not allocate hw breakpoints\n");
-+			printk(KERN_ERR "kgdb: Could not allocate hw"
-+			       "breakpoints\nDisabling the kernel debugger\n");
- 			breakinfo[i].pev = NULL;
- 			kgdb_arch_exit();
--			return -1;
-+			return;
- 		}
- 		for_each_online_cpu(cpu) {
- 			pevent = per_cpu_ptr(breakinfo[i].pev, cpu);
-@@ -631,7 +635,6 @@ int kgdb_arch_init(void)
- 			}
- 		}
- 	}
--	return ret;
+-	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
++	return !kgdb_handle_exception(1, computeSignal(TRAP(regs)),
++				      DIE_OOPS, regs);
  }
  
- /**
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 6c784ab..9340f34 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -208,6 +208,17 @@ extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
- extern int kgdb_arch_remove_breakpoint(unsigned long addr, char *bundle);
+ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+@@ -123,7 +125,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 	if (user_mode(regs))
+ 		return 0;
  
- /**
-+ *	kgdb_arch_late - Perform any architecture specific initalization.
-+ *
-+ *	This function will handle the late initalization of any
-+ *	architecture specific callbacks.  This is an optional function for
-+ *	handling things like late initialization of hw breakpoints.  The
-+ *	default implementation does nothing.
-+ */
-+extern void kgdb_arch_late(void);
-+
-+
-+/**
-  * struct kgdb_arch - Describe architecture specific values.
-  * @gdb_bpt_instr: The instruction to trigger a breakpoint.
-  * @flags: Flags for the breakpoint, currently just %KGDB_HW_BREAKPOINT.
-@@ -285,7 +296,10 @@ extern int			kgdb_single_step;
- extern atomic_t			kgdb_active;
- #define in_dbg_master() \
- 	(raw_smp_processor_id() == atomic_read(&kgdb_active))
-+extern bool dbg_is_early;
-+extern void __init dbg_late_init(void);
- #else /* ! CONFIG_KGDB */
- #define in_dbg_master() (0)
-+#define dbg_late_init()
- #endif /* ! CONFIG_KGDB */
- #endif /* _KGDB_H_ */
-diff --git a/init/main.c b/init/main.c
-index 9d415a1..1839e3f 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -63,7 +63,7 @@
- #include <linux/sched.h>
- #include <linux/signal.h>
- #include <linux/idr.h>
--#include <linux/kdb.h>
-+#include <linux/kgdb.h>
- #include <linux/ftrace.h>
- #include <linux/async.h>
- #include <linux/kmemcheck.h>
-@@ -660,7 +660,7 @@ asmlinkage void __init start_kernel(void)
- 	key_init();
- 	radix_tree_init();
- 	security_init();
--	kdb_init(KDB_INIT_FULL);
-+	dbg_late_init();
- 	vfs_caches_init(totalram_pages);
- 	signals_init();
- 	/* rootfs populating might need page-writeback */
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 3d36d9e..e7a4d9b 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -78,6 +78,8 @@ static DEFINE_SPINLOCK(kgdb_registration_lock);
- static int kgdb_con_registered;
- /* determine if kgdb console output should be used */
- static int kgdb_use_con;
-+/* Flag for alternate operations for early debugging */
-+bool dbg_is_early = true;
- /* Next cpu to become the master debug core */
- int dbg_switch_cpu;
+-	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
++	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
+ 		return 0;
  
-@@ -777,11 +779,25 @@ static struct notifier_block kgdb_panic_event_nb = {
-        .priority	= INT_MAX,
- };
+ 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index d069ff8..9b72f08 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -809,12 +809,15 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		return;
+ 	}
+ 	if (reason & REASON_TRAP) {
++		/* Debugger is first in line to stop recursive faults in
++		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
++		if (debugger_bpt(regs))
++			return;
++
+ 		/* trap exception */
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+ 			return;
+-		if (debugger_bpt(regs))
+-			return;
  
-+void __weak kgdb_arch_late(void)
-+{
-+}
-+
-+void __init dbg_late_init(void)
-+{
-+	dbg_is_early = false;
-+	if (kgdb_io_module_registered)
-+		kgdb_arch_late();
-+	kdb_init(KDB_INIT_FULL);
-+}
-+
- static void kgdb_register_callbacks(void)
- {
- 	if (!kgdb_io_module_registered) {
- 		kgdb_io_module_registered = 1;
- 		kgdb_arch_init();
-+		if (!dbg_is_early)
-+			kgdb_arch_late();
- 		atomic_notifier_chain_register(&panic_notifier_list,
- 					       &kgdb_panic_event_nb);
- #ifdef CONFIG_MAGIC_SYSRQ
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
 -- 
 1.6.4.rc1
 
