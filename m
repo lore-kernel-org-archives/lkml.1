@@ -1,99 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758762Ab0BYBsZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 20:48:25 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:41439 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199Ab0BYBsY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 20:48:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O65X5WioibdbP/i25pQ7cGqOvMPCKfETgccZiuGl/Abt/k2X7LgxU0F8yveySukG8e
-         M0AWO3AdZxqM+H6LfeEF2024a907azmLpurRTJwAN3K3qF7Uk1mSlSXKr0j7fe42c8Tt
-         2l0illKJCAQH/ZGJves2gC8UL51r+enEtSJA4=
-MIME-Version: 1.0
-In-Reply-To: <201002241131.16766.rusty@rustcorp.com.au>
-References: <1266835251-15457-1-git-send-email-dongdong.deng@windriver.com>
-	 <201002231426.45886.rusty@rustcorp.com.au>
-	 <20100223154519.GA4779@hack>
-	 <201002241131.16766.rusty@rustcorp.com.au>
-Date: Thu, 25 Feb 2010 09:48:22 +0800
-Message-ID: <2375c9f91002241748h151b9592y246ccb0bcdb3a7b5@mail.gmail.com>
-Subject: Re: [RESEND PATCH] module param_call: fix potential NULL pointer 
-	dereference
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Dongdong Deng <dongdong.deng@windriver.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1758765Ab0BYBw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 20:52:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60953 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753386Ab0BYBw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 20:52:26 -0500
+Date: Thu, 25 Feb 2010 12:52:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Roland Dreier <rdreier@cisco.com>, linux-rmda@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: linux-next: manual merge of the infiniband tree with the vfs tree
+Message-Id: <20100225125224.af78cc78.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 9:01 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Wed, 24 Feb 2010 02:15:19 am Américo Wang wrote:
->> On Tue, Feb 23, 2010 at 02:26:45PM +1030, Rusty Russell wrote:
->> >On Mon, 22 Feb 2010 09:10:51 pm Dongdong Deng wrote:
->> >> The param_set_fn() function will get a parameter which is a NULL
->> >> pointer when insmod module via bare params as following method:
->> >>
->> >> $insmod foo.ko foo
->> >>
->> >> If the param_set_fn() function didn't check that parameter and used
->> >> it directly, it could caused an OOPS due to NULL pointer dereference.
->> >>
->> >> The solution is simple:
->> >> Using "" to replace NULL parameter, thereby the param_set_fn()
->> >> function will never get a NULL pointer.
->> >
->> >This changes the value of booleans, and loses checking for int params, etc.
->> >
->> >I liked Americo's approach; I've combined the two approaches below.
->> >
->> >Since I'm going away, can Andrew take this?
->> >
->> >Subject: params: don't hand NULL values to param.set callbacks.
->> >
->> >An audit by Dongdong Deng revealed that most driver-author-written param
->> >calls don't handle val == NULL (which happens when parameters are specified
->> >with no =, eg "foo" instead of "foo=1").
->> >
->> >The only real case to use this is boolean, so handle it specially for that
->> >case and remove a source of bugs for everyone else as suggested by Americo.
->> >
->> >Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->> >Cc: Dongdong Deng <dongdong.deng@windriver.com>
->> >Cc: Américo Wang <xiyou.wangcong@gmail.com>
->> >
->> >diff --git a/kernel/params.c b/kernel/params.c
->> >--- a/kernel/params.c
->> >+++ b/kernel/params.c
->> >@@ -59,6 +59,9 @@ static int parse_one(char *param,
->> >     /* Find parameter */
->> >     for (i = 0; i < num_params; i++) {
->> >             if (parameq(param, params[i].name)) {
->> >+                    /* Noone handled NULL, so do it here. */
->> >+                    if (!val && params[i].set != param_set_bool)
->> >+                            return -EINVAL;
->>
->> Sorry, after rethinking about this, I think it might be wrong.
->>
->> With this patch, when I use non-standard bool functions, I will not
->> have a chance to use '!val' which should be valid for all bool
->> functions. Or am I missing something?
->
-> Sure, at that point we'd need something more sophisticated.  But to
-> fix this properly we want a flags word, and thus something like this
-> which I worked on earlier:
->
-> http://ozlabs.org/~rusty/kernel/rr-latest/param:param_ops.patch
->
+Hi all,
 
-Thanks, Rusty!
+Today's linux-next merge of the infiniband tree got a conflict in
+drivers/infiniband/core/uverbs_main.c between commit
+ce916e2b935f8b3402da1457ff23b9f9f786c09b ("switch infiniband uverbs to
+anon_inodes") from the vfs tree and commit
+055422ddbb0a7610c5f57a056743d7336a39e90f ("IB/uverbs: Convert *cdev to
+cdev in struct ib_uverbs_device") from the infiniband tree.
 
-I love that patch, but since 2.6.33 is already out, can we try to get it
-merged for 2.6.34?
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/infiniband/core/uverbs_main.c
+index 810f277,dbf0451..0000000
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@@ -41,9 -41,8 +41,8 @@@
+  #include <linux/fs.h>
+  #include <linux/poll.h>
+  #include <linux/sched.h>
+ +#include <linux/anon_inodes.h>
+  #include <linux/file.h>
+- #include <linux/cdev.h>
+ -#include <linux/mount.h>
+  
+  #include <asm/uaccess.h>
+  
+@@@ -79,36 -79,38 +77,36 @@@ static DECLARE_BITMAP(dev_map, IB_UVERB
+  static ssize_t (*uverbs_cmd_table[])(struct ib_uverbs_file *file,
+  				     const char __user *buf, int in_len,
+  				     int out_len) = {
+- 	[IB_USER_VERBS_CMD_GET_CONTEXT]   	= ib_uverbs_get_context,
+- 	[IB_USER_VERBS_CMD_QUERY_DEVICE]  	= ib_uverbs_query_device,
+- 	[IB_USER_VERBS_CMD_QUERY_PORT]    	= ib_uverbs_query_port,
+- 	[IB_USER_VERBS_CMD_ALLOC_PD]      	= ib_uverbs_alloc_pd,
+- 	[IB_USER_VERBS_CMD_DEALLOC_PD]    	= ib_uverbs_dealloc_pd,
+- 	[IB_USER_VERBS_CMD_REG_MR]        	= ib_uverbs_reg_mr,
+- 	[IB_USER_VERBS_CMD_DEREG_MR]      	= ib_uverbs_dereg_mr,
++ 	[IB_USER_VERBS_CMD_GET_CONTEXT]		= ib_uverbs_get_context,
++ 	[IB_USER_VERBS_CMD_QUERY_DEVICE]	= ib_uverbs_query_device,
++ 	[IB_USER_VERBS_CMD_QUERY_PORT]		= ib_uverbs_query_port,
++ 	[IB_USER_VERBS_CMD_ALLOC_PD]		= ib_uverbs_alloc_pd,
++ 	[IB_USER_VERBS_CMD_DEALLOC_PD]		= ib_uverbs_dealloc_pd,
++ 	[IB_USER_VERBS_CMD_REG_MR]		= ib_uverbs_reg_mr,
++ 	[IB_USER_VERBS_CMD_DEREG_MR]		= ib_uverbs_dereg_mr,
+  	[IB_USER_VERBS_CMD_CREATE_COMP_CHANNEL] = ib_uverbs_create_comp_channel,
+- 	[IB_USER_VERBS_CMD_CREATE_CQ]     	= ib_uverbs_create_cq,
+- 	[IB_USER_VERBS_CMD_RESIZE_CQ]     	= ib_uverbs_resize_cq,
+- 	[IB_USER_VERBS_CMD_POLL_CQ]     	= ib_uverbs_poll_cq,
+- 	[IB_USER_VERBS_CMD_REQ_NOTIFY_CQ]     	= ib_uverbs_req_notify_cq,
+- 	[IB_USER_VERBS_CMD_DESTROY_CQ]    	= ib_uverbs_destroy_cq,
+- 	[IB_USER_VERBS_CMD_CREATE_QP]     	= ib_uverbs_create_qp,
+- 	[IB_USER_VERBS_CMD_QUERY_QP]     	= ib_uverbs_query_qp,
+- 	[IB_USER_VERBS_CMD_MODIFY_QP]     	= ib_uverbs_modify_qp,
+- 	[IB_USER_VERBS_CMD_DESTROY_QP]    	= ib_uverbs_destroy_qp,
+- 	[IB_USER_VERBS_CMD_POST_SEND]    	= ib_uverbs_post_send,
+- 	[IB_USER_VERBS_CMD_POST_RECV]    	= ib_uverbs_post_recv,
+- 	[IB_USER_VERBS_CMD_POST_SRQ_RECV]    	= ib_uverbs_post_srq_recv,
+- 	[IB_USER_VERBS_CMD_CREATE_AH]    	= ib_uverbs_create_ah,
+- 	[IB_USER_VERBS_CMD_DESTROY_AH]    	= ib_uverbs_destroy_ah,
+- 	[IB_USER_VERBS_CMD_ATTACH_MCAST]  	= ib_uverbs_attach_mcast,
+- 	[IB_USER_VERBS_CMD_DETACH_MCAST]  	= ib_uverbs_detach_mcast,
+- 	[IB_USER_VERBS_CMD_CREATE_SRQ]    	= ib_uverbs_create_srq,
+- 	[IB_USER_VERBS_CMD_MODIFY_SRQ]    	= ib_uverbs_modify_srq,
+- 	[IB_USER_VERBS_CMD_QUERY_SRQ]     	= ib_uverbs_query_srq,
+- 	[IB_USER_VERBS_CMD_DESTROY_SRQ]   	= ib_uverbs_destroy_srq,
++ 	[IB_USER_VERBS_CMD_CREATE_CQ]		= ib_uverbs_create_cq,
++ 	[IB_USER_VERBS_CMD_RESIZE_CQ]		= ib_uverbs_resize_cq,
++ 	[IB_USER_VERBS_CMD_POLL_CQ]		= ib_uverbs_poll_cq,
++ 	[IB_USER_VERBS_CMD_REQ_NOTIFY_CQ]	= ib_uverbs_req_notify_cq,
++ 	[IB_USER_VERBS_CMD_DESTROY_CQ]		= ib_uverbs_destroy_cq,
++ 	[IB_USER_VERBS_CMD_CREATE_QP]		= ib_uverbs_create_qp,
++ 	[IB_USER_VERBS_CMD_QUERY_QP]		= ib_uverbs_query_qp,
++ 	[IB_USER_VERBS_CMD_MODIFY_QP]		= ib_uverbs_modify_qp,
++ 	[IB_USER_VERBS_CMD_DESTROY_QP]		= ib_uverbs_destroy_qp,
++ 	[IB_USER_VERBS_CMD_POST_SEND]		= ib_uverbs_post_send,
++ 	[IB_USER_VERBS_CMD_POST_RECV]		= ib_uverbs_post_recv,
++ 	[IB_USER_VERBS_CMD_POST_SRQ_RECV]	= ib_uverbs_post_srq_recv,
++ 	[IB_USER_VERBS_CMD_CREATE_AH]		= ib_uverbs_create_ah,
++ 	[IB_USER_VERBS_CMD_DESTROY_AH]		= ib_uverbs_destroy_ah,
++ 	[IB_USER_VERBS_CMD_ATTACH_MCAST]	= ib_uverbs_attach_mcast,
++ 	[IB_USER_VERBS_CMD_DETACH_MCAST]	= ib_uverbs_detach_mcast,
++ 	[IB_USER_VERBS_CMD_CREATE_SRQ]		= ib_uverbs_create_srq,
++ 	[IB_USER_VERBS_CMD_MODIFY_SRQ]		= ib_uverbs_modify_srq,
++ 	[IB_USER_VERBS_CMD_QUERY_SRQ]		= ib_uverbs_query_srq,
++ 	[IB_USER_VERBS_CMD_DESTROY_SRQ]		= ib_uverbs_destroy_srq,
+  };
+  
+ -static struct vfsmount *uverbs_event_mnt;
+ -
+  static void ib_uverbs_add_one(struct ib_device *device);
+  static void ib_uverbs_remove_one(struct ib_device *device);
+  
+@@@ -838,8 -933,12 +867,10 @@@ out
+  static void __exit ib_uverbs_cleanup(void)
+  {
+  	ib_unregister_client(&uverbs_client);
+ -	mntput(uverbs_event_mnt);
+ -	unregister_filesystem(&uverbs_event_fs);
+  	class_destroy(uverbs_class);
+  	unregister_chrdev_region(IB_UVERBS_BASE_DEV, IB_UVERBS_MAX_DEVICES);
++ 	if (overflow_maj)
++ 		unregister_chrdev_region(overflow_maj, IB_UVERBS_MAX_DEVICES);
+  	idr_destroy(&ib_uverbs_pd_idr);
+  	idr_destroy(&ib_uverbs_mr_idr);
+  	idr_destroy(&ib_uverbs_mw_idr);
