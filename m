@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133Ab0BYKib (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:38:31 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56994 "EHLO
+	id S932172Ab0BYKjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:39:13 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:49997 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759182Ab0BYKi3 (ORCPT
+	with ESMTP id S1759179Ab0BYKjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:38:29 -0500
-Subject: Re: [PATCH 11/14] Regulators: wm831x-xxx - clean up driver data
- after removal
+	Thu, 25 Feb 2010 05:39:06 -0500
+Subject: Re: [PATCH 12/14] Regulators: wm8994 - clean up driver data after
+ removal
 From: Liam Girdwood <lrg@slimlogic.co.uk>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20100224073839.15964.19386.stgit@localhost.localdomain>
+In-Reply-To: <20100224073844.15964.61692.stgit@localhost.localdomain>
 References: <20100224073342.15964.8863.stgit@localhost.localdomain>
-	 <20100224073839.15964.19386.stgit@localhost.localdomain>
+	 <20100224073844.15964.61692.stgit@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 25 Feb 2010 10:38:25 +0000
-Message-ID: <1267094305.4037.133.camel@odin>
+Date: Thu, 25 Feb 2010 10:39:02 +0000
+Message-ID: <1267094342.4037.134.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -28,10 +28,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tue, 2010-02-23 at 23:38 -0800, Dmitry Torokhov wrote:
 > It is a good tone to reset driver data after unbinding the device.
-> Also set up drivers owner.
 > 
 > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 > ---
+> 
 
 Applied.
 
