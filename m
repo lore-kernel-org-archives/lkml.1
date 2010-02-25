@@ -1,35 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950Ab0BYJfc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 04:35:32 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35648 "HELO mail.gmx.net"
+	id S1753962Ab0BYJjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 04:39:33 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56210 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753604Ab0BYJfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 04:35:30 -0500
+	id S1753538Ab0BYJjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 04:39:31 -0500
 X-Authenticated: #5115406
-X-Provags-ID: V01U2FsdGVkX1+LtaQXCkOLiUMg+axTamk1LGYeFj5pi03afunPoK
-	JBdKjhI7MaYzdF
+X-Provags-ID: V01U2FsdGVkX19njAtvJKZnADiepB4OdAcqNvdymgKZunF34uLKob
+	10olyDSfKb14Cj
 From: Thomas Weber <swirl@gmx.li>
 To: linux-omap@vger.kernel.org
-Cc: Thomas Weber <swirl@gmx.li>, Tony Lindgren <tony@atomide.com>,
-       Russell King <linux@arm.linux.org.uk>,
+Cc: Thomas Weber <swirl@gmx.li>, Russell King <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>,
        Kevin Hilman <khilman@deeprootsystems.com>,
        Santosh Shilimkar <santosh.shilimkar@ti.com>,
        Vikram Pandita <vikram.pandita@ti.com>,
        Syed Rafiuddin <rafiuddin.syed@ti.com>,
        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
        Thomas Weber <weber@corscience.de>
-Subject: 
-Date: Thu, 25 Feb 2010 10:36:13 +0100
-Message-Id: <1267090573-17708-1-git-send-email-swirl@gmx.li>
+Subject: [RESEND][PATCH/RFC] OMAP2: serial.c: Fix number of uarts in early_init
+Date: Thu, 25 Feb 2010 10:40:19 +0100
+Message-Id: <1267090819-17796-1-git-send-email-swirl@gmx.li>
 X-Mailer: git-send-email 1.6.4.4
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46000000000000002
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH/RFC] OMAP2: serial.c: Fix number of uarts in early_init
 
 The omap_serial_early_init prints the following errors:
 
