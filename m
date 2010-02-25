@@ -1,46 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932242Ab0BYEMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 23:12:19 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46675 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932077Ab0BYEMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 23:12:16 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-Date: Thu, 25 Feb 2010 05:11:52 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Bruno =?iso-8859-1?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
-       "Jiri Kosina" <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Nicu Pavel" <npavel@ituner.com>
-References: <20100221002001.0a7e05a7@neptune.home> <201002241927.53532.oliver@neukum.org> <ffb352764fc5a0da5cca6f3da7fc2603.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <ffb352764fc5a0da5cca6f3da7fc2603.squirrel@intranet.cs.nmsu.edu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S932257Ab0BYEN6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 23:13:58 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:41882 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932077Ab0BYEN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 23:13:56 -0500
+Date: Wed, 24 Feb 2010 20:13:41 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] iproute2-2.6.33 version
+Message-ID: <20100224201341.338dd71f@nehalam>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002250511.52284.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 24. Februar 2010 22:44:53 schrieb Rick L. Vinyard, Jr.:
-> The issue, as I understand it is that non-interrupt code may obtain the
-> lock and then the interrupt code is executed... hence the deadlock and the
-> need to use spin_lock_irqsave() and spin_unlock_irqrestore().
+New version of iproute2 utilities that includes bug fixes and
+support for all the new features in kernel 2.6.33. This integrates
+a number of minor bug fixes from Debian as well.
 
-Yes.
+Source: (note old developer.osdl.org address works as well)
+	http://devresources.linux-foundation.org/dev/iproute2/download/iproute2-2.6.33.tar.bz2
 
-> If that is correct, is there any problem with the following approach?
+Git tree:
+	git://git.kernel.org/pub/scm/network/iproute2/iproute2.git
 
-Why not always a workqueue or alternatively spin_lock_irq() when
-you are not in interrupt? This approach seems needlessly complicated.
+Changes since v.2.6.31:
 
-Secondly, when you hold a spinlock, you must use GFP_ATOMIC.
-GFP_NOIO is insufficient.
+Alex Badea (2):
+      ip xfrm state: parse and print "icmp" and "af-unspec" flags
+      ip xfrm policy: allow different tmpl family
 
-	Regards
-		Oliver
+Alexandre Cassen (1):
+      IPv6: 6rd iproute2 support
+
+Andreas Henriksson (2):
+      iproute2: avoid using bashisms in configure script.
+      iproute2: drop equalize support
+
+Arnd Bergmann (1):
+      iproute2/iplink: add macvlan options for bridge mode
+
+Brian Haley (2):
+      Add dadfailed option to ip command
+      ip: print "temporary" for IPv6 temp addresses
+
+Florian Westphal (5):
+      tc: man: add limit parameter to tc-sfq man page
+      tc: man: SO_PRIORITY is described in socket documentation, not tc one
+      tc: red, gred, tbf: more helpful error messages
+      tc: remove stale code
+      tc: man: add man page for drr scheduler
+
+Jamal Hadi Salim (1):
+      skbedit: Add support to mark packets
+
+Mike Frysinger (1):
+      tc: respect LDFLAGS for %.so targets
+
+Patrick McHardy (2):
+      iplink_vlan: add support for VLAN loose binding flag
+      iprule: add oif classification support
+
+Stephen Hemminger (3):
+      Update exported kernel headers
+      iproute2-100205
+      iproute2-10224
+
