@@ -1,76 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758882Ab0BYDPT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:15:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2645 "EHLO mx1.redhat.com"
+	id S1758891Ab0BYDQw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:16:52 -0500
+Received: from tundra.namei.org ([65.99.196.166]:36935 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758723Ab0BYDPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:15:16 -0500
-Message-ID: <4B85EC11.5030304@redhat.com>
-Date: Thu, 25 Feb 2010 11:18:41 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1758780Ab0BYDQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:16:50 -0500
+Date: Thu, 25 Feb 2010 14:15:58 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: linux-security-module@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] TOMOYO: Protect find_task_by_vpid() with RCU.
+In-Reply-To: <201002250013.o1P0DHml057484@www262.sakura.ne.jp>
+Message-ID: <alpine.LRH.2.00.1002251413160.14411@tundra.namei.org>
+References: <201002240034.o1O0YoMd068517@www262.sakura.ne.jp> <alpine.LRH.2.00.1002251056240.13762@tundra.namei.org> <201002250013.o1P0DHml057484@www262.sakura.ne.jp>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
-References: <1266752533.3428.28.camel@Nokia-N900-42-11> <201002221829.13987.opurdila@ixiacom.com> <4B84B7F0.7090709@redhat.com> <201002241402.54122.opurdila@ixiacom.com> <4B85CFB4.5030908@redhat.com>
-In-Reply-To: <4B85CFB4.5030908@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cong Wang wrote:
-> Octavian Purdila wrote:
->> On Wednesday 24 February 2010 07:24:00 you wrote:
->>> Octavian Purdila wrote:
->>>> Here is a new version of this patch which fixes both the comma and
->>>> invalid value issues, please give it a try.
->>> Sorry, it is even worse. :(
->>>
->>>> [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
->>>>
->>>> The new function can be used to read/write large bitmaps via /proc. A
->>>> comma separated range format is used for compact output and input
->>>> (e.g. 1,3-4,10-10).
->>> Writing "50000-50100" gets EINVAL, it should be success.
->>> Writing "50000,50100" fails too.
->>>
->>
->> Hmm, they don't fail for me :-/
->>
->>> Please, at least, do some basic testing.
->>>
->>
->> I do test them, I've attached the current test batch I was using.
->>
->> Anyways, today I've noticed that "1,2 3" does not fail and even more 
->> importantly the final value is "3".
->> Being that I don't see a way of fixing this without not acknowledging 
->> 1,2 even though we will do set these values, I revisited the "1 2 3" 
->> issue. And I don't understand why this is actually an issue, we are 
->> just being more permissive (i.e. we are allowing as separators both 
->> whitespaces and ,).
->>
->>
+On Thu, 25 Feb 2010, Tetsuo Handa wrote:
+
+> James Morris wrote:
+> > On Wed, 24 Feb 2010, Tetsuo Handa wrote:
+> > 
+> > > Caller of find_task_by_vpid() must use rcu_read_lock().
+> > 
+> > The comment for the function says:
+> > 
+> >   Must be called under rcu_read_lock() or with tasklist_lock read-held.
+> > 
+> > In the cases below, you have taken tasklist_lock.
 > 
-> Oops, after rechecking my test case, it is actually my test case's
-> fault. Sorry for this. I will fix my test case and run it again.
-> 
+> That comment will be updated to
+> "Must be called under rcu_read_lock()." in 2.6.34 .
+> Please see http://lkml.org/lkml/2009/12/10/180 and http://lkml.org/lkml/2009/12/9/472 .
 
-Hi,
+Ok, please fix the comment as well.
 
-Still a small problem, if I do write(fd, "50000,50100", 12) I will
-get a return value of 11, which should mean 11 bytes are written,
-however, actually only the first 6 bytes are accepted.
+Thomas: wasn't Tetsuo correct that we need both the rcu lock and 
+tasklist_lock held to call this?
 
-The rest looks better now.
+Also, I think the audit code needs fixing.
 
-Or am I missing something here? :)
 
-Thanks!
+-- 
+James Morris
+<jmorris@namei.org>
