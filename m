@@ -1,52 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932751Ab0BYQGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:06:20 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:51762 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932559Ab0BYQGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:06:17 -0500
+	id S932795Ab0BYQLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:11:21 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:58127 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932726Ab0BYQLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 11:11:19 -0500
+Date: Thu, 25 Feb 2010 16:12:24 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: phillip.lougher@gmail.com
+Subject: [PATCH 0/3] Squashfs: Some trivial tidy-ups and tweaks
+Message-ID: <4b86a168.dvCdsR29XktjK2v6%phillip@lougher.demon.co.uk>
+User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <19334.40943.479593.304961@pilspetsen.it.uu.se>
-Date: Thu, 25 Feb 2010 17:06:07 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, lkml <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
-Subject: Re: Is kernel optimized with dead store removal?
-In-Reply-To: <4B8693B9.3060102@gmail.com>
-References: <4B85A49E.6000803@gmail.com>
-	<19334.22971.970220.245930@pilspetsen.it.uu.se>
-	<4B8693B9.3060102@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin writes:
- > 
- > >  >  Does this optimization also occur during compilation of the Linux
- > >  >  kernel?
- > 
- > > Any such dead store removal is up to the compiler and the lifetime
- > > of the object being clobbered. For 'auto' objects the optimization
- > > is certainly likely.
- > > 
- > > This is only a problem if the memory (a thread stack, say) is recycled
- > > and leaked uninitialized to user-space, but such bugs are squashed
- > > fairly quickly upon discovery.
- > 
- > Thanks for comments,
- > 
- > In the sha1_update() case I don't know whether the stack is recycled and
- > leaked - it may be dependent on the calling function, but isn't it
- > vulnerable?
 
-It's only vulnerable if the data leaks to a less trusted domain.
-There is no domain crossing in your user-space example.
-In the kernel case, the domain crossing would be as I wrote: leaking
-recycled and uninitialized memory to user-space (and those leaks of
-uninitialized memory are frowned upon and quickly fixed when discovered).
+Just a couple of trivial fixes to be added to the LZMA stuff
+for the merge window ...
+
+Phillip Lougher (3):
+      Squashfs: get rid of obsolete variable in struct squashfs_sb_info
+      Squashfs: get rid of obsolete definition in header file
+      Squashfs: update Kconfig help to include lzma support
+
+Thanks
+
+Phillip
+
