@@ -1,118 +1,179 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926Ab0BYTb4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:31:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33975 "EHLO hera.kernel.org"
+	id S933423Ab0BYTbd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:31:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33926 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933400Ab0BYTbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:31:49 -0500
-Date: Thu, 25 Feb 2010 19:30:36 GMT
+	id S932825Ab0BYTbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 14:31:09 -0500
+Date: Thu, 25 Feb 2010 19:29:32 GMT
 From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
-       fweisbec@gmail.com, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu, prasad@linux.vnet.ibm.com, systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, efault@gmx.de,
-       ananth@in.ibm.com, fweisbec@gmail.com,
-       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
+Cc: mingo@redhat.com, andersk@ksplice.com, fweisbec@gmail.com,
+       dle-develop@lists.sourceforge.net, rostedt@goodmis.org,
+       compudj@krystal.dyndns.org, jbaron@redhat.com, tglx@linutronix.de,
        mhiramat@redhat.com, systemtap@sources.redhat.com,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20100225133519.6725.58816.stgit@localhost6.localdomain6>
-References: <20100225133519.6725.58816.stgit@localhost6.localdomain6>
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jkenisto@us.ibm.com,
+       andi@firstfloor.org, tabbott@ksplice.com, hch@infradead.org,
+       ananth@in.ibm.com, srikar@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, andersk@ksplice.com, fweisbec@gmail.com,
+       dle-develop@lists.sourceforge.net, rostedt@goodmis.org,
+       compudj@krystal.dyndns.org, jbaron@redhat.com, tglx@linutronix.de,
+       mhiramat@redhat.com, systemtap@sources.redhat.com,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jkenisto@us.ibm.com,
+       andi@firstfloor.org, tabbott@ksplice.com, hch@infradead.org,
+       ananth@in.ibm.com, srikar@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20100225133438.6725.80273.stgit@localhost6.localdomain6>
+References: <20100225133438.6725.80273.stgit@localhost6.localdomain6>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] perf probe: Update perf probe document
-Message-ID: <tip-ee391de876ae4272926b8632be04ed4a460321e3@git.kernel.org>
-Git-Commit-ID: ee391de876ae4272926b8632be04ed4a460321e3
+Subject: [tip:perf/probes] x86: Add text_poke_smp for SMP cross modifying code
+Message-ID: <tip-3d55cc8a058ee96291d6d45b1e35121b9920eca3@git.kernel.org>
+Git-Commit-ID: 3d55cc8a058ee96291d6d45b1e35121b9920eca3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 19:30:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 19:29:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ee391de876ae4272926b8632be04ed4a460321e3
-Gitweb:     http://git.kernel.org/tip/ee391de876ae4272926b8632be04ed4a460321e3
+Commit-ID:  3d55cc8a058ee96291d6d45b1e35121b9920eca3
+Gitweb:     http://git.kernel.org/tip/3d55cc8a058ee96291d6d45b1e35121b9920eca3
 Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Thu, 25 Feb 2010 08:35:19 -0500
+AuthorDate: Thu, 25 Feb 2010 08:34:38 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 17:49:27 +0100
+CommitDate: Thu, 25 Feb 2010 17:49:26 +0100
 
-perf probe: Update perf probe document
+x86: Add text_poke_smp for SMP cross modifying code
 
-Update perf-probe.txt to suit to current perf-probe command
-and add some examples.
+Add generic text_poke_smp for SMP which uses stop_machine()
+to synchronize modifying code.
+This stop_machine() method is officially described at "7.1.3
+Handling Self- and Cross-Modifying Code" on the intel's
+software developer's manual 3A.
+
+Since stop_machine() can't protect code against NMI/MCE, this
+function can not modify those handlers. And also, this function
+is basically for modifying multibyte-single-instruction. For
+modifying multibyte-multi-instructions, we need another special
+trap & detour code.
+
+This code originaly comes from immediate values with
+stop_machine() version. Thanks Jason and Mathieu!
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: systemtap <systemtap@sources.redhat.com>
 Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Anders Kaseorg <andersk@ksplice.com>
+Cc: Tim Abbott <tabbott@ksplice.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Jason Baron <jbaron@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-LKML-Reference: <20100225133519.6725.58816.stgit@localhost6.localdomain6>
+LKML-Reference: <20100225133438.6725.80273.stgit@localhost6.localdomain6>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/Documentation/perf-probe.txt |   28 ++++++++++++++++++++++++++--
- 1 files changed, 26 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/alternative.h |    4 ++-
+ arch/x86/kernel/alternative.c      |   60 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
-index 2de3407..5fe63c0 100644
---- a/tools/perf/Documentation/perf-probe.txt
-+++ b/tools/perf/Documentation/perf-probe.txt
-@@ -41,7 +41,8 @@ OPTIONS
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index ac80b7d..643d6ab 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -160,10 +160,12 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+  * invalid instruction possible) or if the instructions are changed from a
+  * consistent state to another consistent state atomically.
+  * More care must be taken when modifying code in the SMP case because of
+- * Intel's errata.
++ * Intel's errata. text_poke_smp() takes care that errata, but still
++ * doesn't support NMI/MCE handler code modifying.
+  * On the local CPU you need to be protected again NMI or MCE handlers seeing an
+  * inconsistent instruction while you patch.
+  */
+ extern void *text_poke(void *addr, const void *opcode, size_t len);
++extern void *text_poke_smp(void *addr, const void *opcode, size_t len);
  
- -d::
- --del=::
--	Delete a probe event.
-+	Delete probe events. This accepts glob wildcards('*', '?') and character
-+	classes(e.g. [a-z], [!A-Z]).
- 
- -l::
- --list::
-@@ -50,7 +51,11 @@ OPTIONS
- -L::
- --line=::
- 	Show source code lines which can be probed. This needs an argument
--	which specifies a range of the source code.
-+	which specifies a range of the source code. (see LINE SYNTAX for detail)
+ #endif /* _ASM_X86_ALTERNATIVE_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index e63b80e..c41f13c 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -7,6 +7,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmalloc.h>
+ #include <linux/memory.h>
++#include <linux/stop_machine.h>
+ #include <asm/alternative.h>
+ #include <asm/sections.h>
+ #include <asm/pgtable.h>
+@@ -570,3 +571,62 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ 	local_irq_restore(flags);
+ 	return addr;
+ }
 +
-+-f::
-+--force::
-+	Forcibly add events with existing name.
- 
- PROBE SYNTAX
- ------------
-@@ -76,6 +81,25 @@ and 'ALN2' is end line number in the file. It is also possible to specify how
- many lines to show by using 'NUM'.
- So, "source.c:100-120" shows lines between 100th to l20th in source.c file. And "func:10+20" shows 20 lines from 10th line of func function.
- 
-+EXAMPLES
-+--------
-+Display which lines in schedule() can be probed:
++/*
++ * Cross-modifying kernel text with stop_machine().
++ * This code originally comes from immediate value.
++ */
++static atomic_t stop_machine_first;
++static int wrote_text;
 +
-+ ./perf probe --line schedule
++struct text_poke_params {
++	void *addr;
++	const void *opcode;
++	size_t len;
++};
 +
-+Add a probe on schedule() function 12th line with recording cpu local variable:
++static int __kprobes stop_machine_text_poke(void *data)
++{
++	struct text_poke_params *tpp = data;
 +
-+ ./perf probe schedule:12 cpu
-+ or
-+ ./perf probe --add='schedule:12 cpu'
++	if (atomic_dec_and_test(&stop_machine_first)) {
++		text_poke(tpp->addr, tpp->opcode, tpp->len);
++		smp_wmb();	/* Make sure other cpus see that this has run */
++		wrote_text = 1;
++	} else {
++		while (!wrote_text)
++			smp_rmb();
++		sync_core();
++	}
 +
-+ this will add one or more probes which has the name start with "schedule".
++	flush_icache_range((unsigned long)tpp->addr,
++			   (unsigned long)tpp->addr + tpp->len);
++	return 0;
++}
 +
-+Delete all probes on schedule().
++/**
++ * text_poke_smp - Update instructions on a live kernel on SMP
++ * @addr: address to modify
++ * @opcode: source of the copy
++ * @len: length to copy
++ *
++ * Modify multi-byte instruction by using stop_machine() on SMP. This allows
++ * user to poke/set multi-byte text on SMP. Only non-NMI/MCE code modifying
++ * should be allowed, since stop_machine() does _not_ protect code against
++ * NMI and MCE.
++ *
++ * Note: Must be called under get_online_cpus() and text_mutex.
++ */
++void *__kprobes text_poke_smp(void *addr, const void *opcode, size_t len)
++{
++	struct text_poke_params tpp;
 +
-+ ./perf probe --del='schedule*'
++	tpp.addr = addr;
++	tpp.opcode = opcode;
++	tpp.len = len;
++	atomic_set(&stop_machine_first, 1);
++	wrote_text = 0;
++	stop_machine(stop_machine_text_poke, (void *)&tpp, NULL);
++	return addr;
++}
 +
-+
- SEE ALSO
- --------
- linkperf:perf-trace[1], linkperf:perf-record[1]
