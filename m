@@ -1,53 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933756Ab0BYUzV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:55:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:33907 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933525Ab0BYUzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:55:20 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       linux-usb@vger.kernel.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "Mankad,Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       Oliver Neukum <oliver@neukum.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <Pine.LNX.4.44L0.1002241641370.1253-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002241641370.1253-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Feb 2010 07:52:58 +1100
-Message-ID: <1267131178.23523.1729.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S933768Ab0BYU4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:56:46 -0500
+Received: from mail-iw0-f177.google.com ([209.85.223.177]:45386 "EHLO
+	mail-iw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933525Ab0BYU4o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 15:56:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=uKiDpbYIE5GOS0gbfZBI/xyBhhRVO41K4ZAEflY+Y9KpAF+WyfNUMdz7jOD7hdP++L
+         l7VX3iGlgNlhiarxL4JtlDKN4Nw5sVRelKcEVXmaOHKgGNPqDObF+qWsxjGD7IBJsJvr
+         f2FWcUmgVuc9Oa0XOzBVoBSKNV9UhU4lnN+sg=
+Message-ID: <4B86E405.1090503@gmail.com>
+Date: Thu, 25 Feb 2010 15:56:37 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
+References: <4B86DDCB.50608@gmail.com>
+In-Reply-To: <4B86DDCB.50608@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------020400010902070303060606"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 16:50 -0500, Alan Stern wrote:
-> The main issue here is that the same host controller will use PIO
-> sometimes and DMA sometimes, depending on the details of the
-> transfer.  
-> The USB core didn't expect this and consequently we violated the rules
-> for DMA mapping.  The question is: If the core is fixed so that the
-> rules aren't violated, will everything work correctly? 
+This is a multi-part message in MIME format.
+--------------020400010902070303060606
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-As long as the only issue is that one (ie, doing PIO while dma-map'ed),
-then yes, I'd say things should work. If not, then there is -another-
-problem to be fixed :-)
+When accompanied by cookie option, Initiator (client) queues incoming
+SYNACK transaction data.
 
-Cheers,
-Ben.
+This is a straightforward re-implementation of an earlier (year-old)
+patch that no longer applies cleanly, with permission of the original
+author (Adam Langley).  The patch was previously reviewed:
 
+    http://thread.gmane.org/gmane.linux.network/102586
 
+This function will also be used in subsequent patches that implement
+additional features.
+
+Requires:
+   TCPCT part 1g: Responder Cookie => Initiator
+   net: tcp_header_len_th and tcp_option_len_th
+
+Signed-off-by: William.Allen.Simpson@gmail.com
+---
+  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
+  1 files changed, 25 insertions(+), 1 deletions(-)
+
+--------------020400010902070303060606
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="TCPCT+2e3+2.6.33.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="TCPCT+2e3+2.6.33.patch"
+
+ZGlmZiAtLWdpdCBhL25ldC9pcHY0L3RjcF9pbnB1dC5jIGIvbmV0L2lwdjQvdGNwX2lucHV0
+LmMKaW5kZXggZThmOWUzYi4uMDhhMWJiNCAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvdGNwX2lu
+cHV0LmMKKysrIGIvbmV0L2lwdjQvdGNwX2lucHV0LmMKQEAgLTUzOTcsNiArNTM5NywxMiBA
+QCBkaXNjYXJkOgogCXJldHVybiAwOwogfQogCisvKgorICogUmV0dXJuczoKKyAqCSsxIG9u
+IHJlc2V0LAorICoJMCBzdWNjZXNzIGFuZC9vciBTWU5BQ0sgZGF0YSwKKyAqCS0xIG9uIGRp
+c2NhcmQuCisgKi8KIHN0YXRpYyBpbnQgdGNwX3Jjdl9zeW5zZW50X3N0YXRlX3Byb2Nlc3Mo
+c3RydWN0IHNvY2sgKnNrLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkgc3RydWN0IHRj
+cGhkciAqdGgpCiB7CkBAIC01NDA1LDYgKzU0MTEsNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zf
+c3luc2VudF9zdGF0ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYg
+KnNrYiwKIAlzdHJ1Y3QgdGNwX3NvY2sgKnRwID0gdGNwX3NrKHNrKTsKIAlzdHJ1Y3QgdGNw
+X2Nvb2tpZV92YWx1ZXMgKmN2cCA9IHRwLT5jb29raWVfdmFsdWVzOwogCWludCBzYXZlZF9j
+bGFtcCA9IHRwLT5yeF9vcHQubXNzX2NsYW1wOworCWludCBxdWV1ZWQgPSAwOwogCiAJdGNw
+X3BhcnNlX29wdGlvbnMoc2tiLCAmdHAtPnJ4X29wdCwgJmhhc2hfbG9jYXRpb24sIDApOwog
+CkBAIC01NTExLDYgKzU1MTgsNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0
+ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJ
+LSBUQ1BPTEVOX0NPT0tJRV9CQVNFOwogCQkJaW50IGNvb2tpZV9wYWlyX3NpemUgPSBjb29r
+aWVfc2l6ZQogCQkJCQkgICAgICsgY3ZwLT5jb29raWVfZGVzaXJlZDsKKwkJCWludCB0Y3Bf
+aGVhZGVyX2xlbiA9IHRjcF9oZWFkZXJfbGVuX3RoKHRoKTsKIAogCQkJLyogQSBjb29raWUg
+ZXh0ZW5zaW9uIG9wdGlvbiB3YXMgc2VudCBhbmQgcmV0dXJuZWQuCiAJCQkgKiBOb3RlIHRo
+YXQgZWFjaCBpbmNvbWluZyBTWU5BQ0sgcmVwbGFjZXMgdGhlCkBAIC01NTI2LDYgKzU1MzQs
+MTkgQEAgc3RhdGljIGludCB0Y3BfcmN2X3N5bnNlbnRfc3RhdGVfcHJvY2VzcyhzdHJ1Y3Qg
+c29jayAqc2ssIHN0cnVjdCBza19idWZmICpza2IsCiAJCQkJICAgICAgIGhhc2hfbG9jYXRp
+b24sIGNvb2tpZV9zaXplKTsKIAkJCQljdnAtPmNvb2tpZV9wYWlyX3NpemUgPSBjb29raWVf
+cGFpcl9zaXplOwogCQkJfQorCisJCQlxdWV1ZWQgPSBza2ItPmxlbiAtIHRjcF9oZWFkZXJf
+bGVuOworCQkJaWYgKHF1ZXVlZCA+IDApIHsKKwkJCQkvKiBRdWV1ZSBpbmNvbWluZyB0cmFu
+c2FjdGlvbiBkYXRhLiAqLworCQkJCV9fc2tiX3B1bGwoc2tiLCB0Y3BfaGVhZGVyX2xlbik7
+CisJCQkJX19za2JfcXVldWVfdGFpbCgmc2stPnNrX3JlY2VpdmVfcXVldWUsIHNrYik7CisJ
+CQkJc2tiX3NldF9vd25lcl9yKHNrYiwgc2spOworCQkJCXNrLT5za19kYXRhX3JlYWR5KHNr
+LCAwKTsKKwkJCQljdnAtPnNfZGF0YV9pbiA9IDE7IC8qIHRydWUgKi8KKwkJCQl0cC0+cmN2
+X254dCA9IFRDUF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+cmN2X3d1cCA9IFRD
+UF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+Y29waWVkX3NlcSA9IFRDUF9TS0Jf
+Q0Ioc2tiKS0+c2VxICsgMTsKKwkJCX0KIAkJfQogCiAJCXNtcF9tYigpOwpAQCAtNTU3OSwx
+MSArNTYwMCwxNCBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0ZV9wcm9jZXNz
+KHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJCSAgVENQX0RF
+TEFDS19NQVgsIFRDUF9SVE9fTUFYKTsKIAogZGlzY2FyZDoKLQkJCV9fa2ZyZWVfc2tiKHNr
+Yik7CisJCQlpZiAocXVldWVkIDw9IDApCisJCQkJX19rZnJlZV9za2Ioc2tiKTsKIAkJCXJl
+dHVybiAwOwogCQl9IGVsc2UgewogCQkJdGNwX3NlbmRfYWNrKHNrKTsKIAkJfQorCQlpZiAo
+cXVldWVkID4gMCkKKwkJCXJldHVybiAwOwogCQlyZXR1cm4gLTE7CiAJfQogCi0tIAoxLjYu
+My4zCgo=
+--------------020400010902070303060606--
