@@ -1,310 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311Ab0BYPVe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:21:34 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35610 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753492Ab0BYPVd (ORCPT
+	id S1759320Ab0BYPWw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:22:52 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33157 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759202Ab0BYPWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:21:33 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAB8hhktGGOM5/2dsb2JhbACbFnS8b4R1BIMX
-Date: Thu, 25 Feb 2010 10:21:30 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
-	framework
-Message-ID: <20100225152130.GB12635@Krystal>
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6>
+	Thu, 25 Feb 2010 10:22:50 -0500
+Date: Thu, 25 Feb 2010 15:26:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tobias Klauser <tklauser@distanz.ch>
+Cc: linux-serial@vger.kernel.org, nios2-dev@sopc.et.ntust.edu.tw,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] serial: Add driver for the Altera JTAG UART
+Message-ID: <20100225152622.7eb479aa@lxorguk.ukuu.org.uk>
+In-Reply-To: <1267108523-32767-1-git-send-email-tklauser@distanz.ch>
+References: <1267108523-32767-1-git-send-email-tklauser@distanz.ch>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100225133358.6725.82430.stgit@localhost6.localdomain6>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:17:34 up 70 days, 23:36,  4 users,  load average: 0.17, 0.21,
-	0.11
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Make insn_slot framework support various size slots.
-> Current insn_slot just supports one-size instruction buffer slot. However,
-> kprobes jump optimization needs larger size buffers.
-
-OK, so you end up having one insn slot cache for kprobes and one insn
-slot (eventually) for the static jump patching (which needs larger
-instruction slots than kprobes). That seems like a good way to ensure
-you do not use more memory than necessary.
-
-We could possibly go even further and automatically use the right insn
-slot cache given the size of the instruction entry that must be added (a
-bit like the memory allocator which have different pools for each
-allocation order).
-
-Possibly that using the terminology of "memory pools" rather than
-"cache" could be a better fit too. So what this really becomes is an
-instruction slot allocator and garbage collector.
-
-Thanks,
-
-Mathieu
-
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Anders Kaseorg <andersk@ksplice.com>
-> Cc: Tim Abbott <tabbott@ksplice.com>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: Jason Baron <jbaron@redhat.com>
-> Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-> ---
-> 
->  kernel/kprobes.c |  104 ++++++++++++++++++++++++++++++++++--------------------
->  1 files changed, 65 insertions(+), 39 deletions(-)
-> 
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index ccec774..7810562 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -105,57 +105,74 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
->   * stepping on the instruction on a vmalloced/kmalloced/data page
->   * is a recipe for disaster
->   */
-> -#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
-> -
->  struct kprobe_insn_page {
->  	struct list_head list;
->  	kprobe_opcode_t *insns;		/* Page of instruction slots */
-> -	char slot_used[INSNS_PER_PAGE];
->  	int nused;
->  	int ngarbage;
-> +	char slot_used[];
-> +};
-> +
-> +#define KPROBE_INSN_PAGE_SIZE(slots)			\
-> +	(offsetof(struct kprobe_insn_page, slot_used) +	\
-> +	 (sizeof(char) * (slots)))
-> +
-> +struct kprobe_insn_cache {
-> +	struct list_head pages;	/* list of kprobe_insn_page */
-> +	size_t insn_size;	/* size of instruction slot */
-> +	int nr_garbage;
->  };
->  
-> +static int slots_per_page(struct kprobe_insn_cache *c)
+> +static void altera_jtaguart_set_termios(struct uart_port *port,
+> +					struct ktermios *termios,
+> +					struct ktermios *old)
 > +{
-> +	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
 > +}
-> +
->  enum kprobe_slot_state {
->  	SLOT_CLEAN = 0,
->  	SLOT_DIRTY = 1,
->  	SLOT_USED = 2,
->  };
->  
-> -static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
-> -static LIST_HEAD(kprobe_insn_pages);
-> -static int kprobe_garbage_slots;
-> -static int collect_garbage_slots(void);
-> +static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
-> +static struct kprobe_insn_cache kprobe_insn_slots = {
-> +	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
-> +	.insn_size = MAX_INSN_SIZE,
-> +	.nr_garbage = 0,
-> +};
-> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
->  
->  /**
->   * __get_insn_slot() - Find a slot on an executable page for an instruction.
->   * We allocate an executable page if there's no room on existing ones.
->   */
-> -static kprobe_opcode_t __kprobes *__get_insn_slot(void)
-> +static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
->  {
->  	struct kprobe_insn_page *kip;
->  
->   retry:
-> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
-> -		if (kip->nused < INSNS_PER_PAGE) {
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		if (kip->nused < slots_per_page(c)) {
->  			int i;
-> -			for (i = 0; i < INSNS_PER_PAGE; i++) {
-> +			for (i = 0; i < slots_per_page(c); i++) {
->  				if (kip->slot_used[i] == SLOT_CLEAN) {
->  					kip->slot_used[i] = SLOT_USED;
->  					kip->nused++;
-> -					return kip->insns + (i * MAX_INSN_SIZE);
-> +					return kip->insns + (i * c->insn_size);
->  				}
->  			}
-> -			/* Surprise!  No unused slots.  Fix kip->nused. */
-> -			kip->nused = INSNS_PER_PAGE;
-> +			/* kip->nused is broken. Fix it. */
-> +			kip->nused = slots_per_page(c);
-> +			WARN_ON(1);
->  		}
->  	}
->  
->  	/* If there are any garbage slots, collect it and try again. */
-> -	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
-> +	if (c->nr_garbage && collect_garbage_slots(c) == 0)
->  		goto retry;
-> -	}
-> -	/* All out of space.  Need to allocate a new page. Use slot 0. */
-> -	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
-> +
-> +	/* All out of space.  Need to allocate a new page. */
-> +	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
->  	if (!kip)
->  		return NULL;
->  
-> @@ -170,20 +187,23 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
->  		return NULL;
->  	}
->  	INIT_LIST_HEAD(&kip->list);
-> -	list_add(&kip->list, &kprobe_insn_pages);
-> -	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
-> +	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
->  	kip->slot_used[0] = SLOT_USED;
->  	kip->nused = 1;
->  	kip->ngarbage = 0;
-> +	list_add(&kip->list, &c->pages);
->  	return kip->insns;
->  }
->  
-> +
->  kprobe_opcode_t __kprobes *get_insn_slot(void)
->  {
-> -	kprobe_opcode_t *ret;
-> +	kprobe_opcode_t *ret = NULL;
-> +
->  	mutex_lock(&kprobe_insn_mutex);
-> -	ret = __get_insn_slot();
-> +	ret = __get_insn_slot(&kprobe_insn_slots);
->  	mutex_unlock(&kprobe_insn_mutex);
-> +
->  	return ret;
->  }
->  
-> @@ -199,7 +219,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
->  		 * so as not to have to set it up again the
->  		 * next time somebody inserts a probe.
->  		 */
-> -		if (!list_is_singular(&kprobe_insn_pages)) {
-> +		if (!list_is_singular(&kip->list)) {
->  			list_del(&kip->list);
->  			module_free(NULL, kip->insns);
->  			kfree(kip);
-> @@ -209,49 +229,55 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
->  	return 0;
->  }
->  
-> -static int __kprobes collect_garbage_slots(void)
-> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
->  {
->  	struct kprobe_insn_page *kip, *next;
->  
->  	/* Ensure no-one is interrupted on the garbages */
->  	synchronize_sched();
->  
-> -	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
-> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
->  		int i;
->  		if (kip->ngarbage == 0)
->  			continue;
->  		kip->ngarbage = 0;	/* we will collect all garbages */
-> -		for (i = 0; i < INSNS_PER_PAGE; i++) {
-> +		for (i = 0; i < slots_per_page(c); i++) {
->  			if (kip->slot_used[i] == SLOT_DIRTY &&
->  			    collect_one_slot(kip, i))
->  				break;
->  		}
->  	}
-> -	kprobe_garbage_slots = 0;
-> +	c->nr_garbage = 0;
->  	return 0;
->  }
->  
-> -void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-> +static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
-> +				       kprobe_opcode_t *slot, int dirty)
->  {
->  	struct kprobe_insn_page *kip;
->  
-> -	mutex_lock(&kprobe_insn_mutex);
-> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
-> -		if (kip->insns <= slot &&
-> -		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
-> -			int i = (slot - kip->insns) / MAX_INSN_SIZE;
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
-> +		if (idx >= 0 && idx < slots_per_page(c)) {
-> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
->  			if (dirty) {
-> -				kip->slot_used[i] = SLOT_DIRTY;
-> +				kip->slot_used[idx] = SLOT_DIRTY;
->  				kip->ngarbage++;
-> +				if (++c->nr_garbage > slots_per_page(c))
-> +					collect_garbage_slots(c);
->  			} else
-> -				collect_one_slot(kip, i);
-> -			break;
-> +				collect_one_slot(kip, idx);
-> +			return;
->  		}
->  	}
-> +	/* Could not free this slot. */
-> +	WARN_ON(1);
-> +}
->  
-> -	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
-> -		collect_garbage_slots();
-> -
-> +void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-> +{
-> +	mutex_lock(&kprobe_insn_mutex);
-> +	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
->  	mutex_unlock(&kprobe_insn_mutex);
->  }
->  #endif
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
 
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Erm no .. it may be wrong in the code you are copying but please don't
+further that. The requirement is that the termios handed back reflects
+the actual settings not the requested ones.
+
+Use tty_termios_copy_hw() to copy the old termios hardware settings back
+so that the caller sees it cannot set them.
+
+> +
+> +static void altera_jtaguart_rx_chars(struct altera_jtaguart *pp)
+> +{
+> +	struct uart_port *port = &pp->port;
+> +	unsigned char ch, flag;
+> +	unsigned long status;
+> +
+> +	while ((status = readl(port->membase + ALTERA_JTAGUART_DATA_REG)) &
+> +	       ALTERA_JTAGUART_DATA_RVALID_MSK) {
+> +		ch = status & ALTERA_JTAGUART_DATA_DATA_MSK;
+> +		flag = TTY_NORMAL;
+> +		port->icount.rx++;
+> +
+> +		if (uart_handle_sysrq_char(port, ch))
+> +			continue;
+> +		uart_insert_char(port, 0, 0, ch, flag);
+> +	}
+> +
+> +	tty_flip_buffer_push(port->state->port.tty);
+
+port.tty needs to be protected here - you might race an unplug/hangup as
+far as I can see - I think you need to take the lock over a bigger area
+
+[I'm working on switching this to krefs in all the drivers currently so
+that will end up cleaner]
+
+Basically fine other than that. The proposed UART number clashes with
+some other pending patches but that will get sorted out when they get
+merged
