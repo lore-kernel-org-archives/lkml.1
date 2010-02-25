@@ -1,294 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933906Ab0BYV3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:29:19 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63594 "EHLO
+	id S933993Ab0BYV3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:29:45 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63538 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933842Ab0BYVWf (ORCPT
+	with ESMTP id S933826Ab0BYVWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:35 -0500
+	Thu, 25 Feb 2010 16:22:31 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 03/28] kgdb: eliminate kgdb_wait(), all cpus enter the same way
-Date: Thu, 25 Feb 2010 15:21:08 -0600
-Message-Id: <1267132893-23624-4-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 11/28] sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
+Date: Thu, 25 Feb 2010 15:21:16 -0600
+Message-Id: <1267132893-23624-12-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:42.0149 (UTC) FILETIME=[8666F350:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:21:49.0367 (UTC) FILETIME=[8AB45470:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a kgdb architectural change to have all the cpus (master or
-slave) enter the same function.
+The sci_poll_get_char() needs to return immediately if there is no
+input from the chip to process, and must return a value of
+NO_POLL_CHAR.
 
-A cpu that hits an exception (wants to be the master cpu) will call
-kgdb_handle_exception() from the trap handler and then invoke a
-kgdb_roundup_cpu() to synchronize the other cpus and bring them into
-the kgdb_handle_exception() as well.
-
-A slave cpu will enter kgdb_handle_exception() from the
-kgdb_nmicallback() and set the exception state to note that the
-processor is a slave.
-
-Previously the salve cpu would have called kgdb_wait().  This change
-allows the debug core to change cpus without resuming the system in
-order to inspect arch specific cpu information.
+This allows kgdboc to process multiple polled devices while kgdb is
+active.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 ---
- kernel/debug/debug_core.c |  158 +++++++++++++++++++++-----------------------
- kernel/debug/debug_core.h |    7 ++
- 2 files changed, 82 insertions(+), 83 deletions(-)
+ drivers/serial/sh-sci.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index ad3caaa..91286e8 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -215,49 +215,6 @@ void __weak kgdb_disable_hw_debug(struct pt_regs *regs)
- }
- 
- /*
-- * CPU debug state control:
-- */
--
--#ifdef CONFIG_SMP
--static void kgdb_wait(struct pt_regs *regs)
--{
--	unsigned long flags;
--	int cpu;
--
--	local_irq_save(flags);
--	cpu = raw_smp_processor_id();
--	kgdb_info[cpu].debuggerinfo = regs;
--	kgdb_info[cpu].task = current;
--	/*
--	 * Make sure the above info reaches the primary CPU before
--	 * our cpu_in_kgdb[] flag setting does:
--	 */
--	smp_wmb();
--	atomic_set(&cpu_in_kgdb[cpu], 1);
--
--	/* Disable any cpu specific hw breakpoints */
--	kgdb_disable_hw_debug(regs);
--
--	/* Wait till primary CPU is done with debugging */
--	while (atomic_read(&passive_cpu_wait[cpu]))
--		cpu_relax();
--
--	kgdb_info[cpu].debuggerinfo = NULL;
--	kgdb_info[cpu].task = NULL;
--
--	/* fix up hardware debug registers on local cpu */
--	if (arch_kgdb_ops.correct_hw_break)
--		arch_kgdb_ops.correct_hw_break();
--
--	/* Signal the primary CPU that we are done: */
--	atomic_set(&cpu_in_kgdb[cpu], 0);
--	touch_softlockup_watchdog_sync();
--	clocksource_touch_watchdog();
--	local_irq_restore(flags);
--}
--#endif
--
--/*
-  * Some architectures need cache flushes when we set/clear a
-  * breakpoint:
-  */
-@@ -486,34 +443,12 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
- 	return 1;
- }
- 
--/*
-- * kgdb_handle_exception() - main entry point from a kernel exception
-- *
-- * Locking hierarchy:
-- *	interface locks, if any (begin_session)
-- *	kgdb lock (kgdb_active)
-- */
--int
--kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
-+static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs)
- {
--	struct kgdb_state kgdb_var;
--	struct kgdb_state *ks = &kgdb_var;
- 	unsigned long flags;
- 	int sstep_tries = 100;
- 	int error = 0;
- 	int i, cpu;
--
--	ks->cpu			= raw_smp_processor_id();
--	ks->ex_vector		= evector;
--	ks->signo		= signo;
--	ks->ex_vector		= evector;
--	ks->err_code		= ecode;
--	ks->kgdb_usethreadid	= 0;
--	ks->linux_regs		= regs;
--
--	if (kgdb_reenter_check(ks))
--		return 0; /* Ouch, double exception ! */
--
- acquirelock:
- 	/*
- 	 * Interrupts will be restored by the 'trap return' code, except when
-@@ -521,13 +456,42 @@ acquirelock:
- 	 */
- 	local_irq_save(flags);
- 
--	cpu = raw_smp_processor_id();
-+	cpu = ks->cpu;
-+	kgdb_info[cpu].debuggerinfo = regs;
-+	kgdb_info[cpu].task = current;
-+	/*
-+	 * Make sure the above info reaches the primary CPU before
-+	 * our cpu_in_kgdb[] flag setting does:
-+	 */
-+	smp_wmb();
-+	atomic_set(&cpu_in_kgdb[cpu], 1);
- 
- 	/*
--	 * Acquire the kgdb_active lock:
-+	 * CPU will loop if it is a slave or request to become a kgdb
-+	 * master cpu and acquire the kgdb_active lock:
- 	 */
--	while (atomic_cmpxchg(&kgdb_active, -1, cpu) != -1)
-+	while (1) {
-+		if (kgdb_info[cpu].exception_state & DCPU_WANT_MASTER) {
-+			if (atomic_cmpxchg(&kgdb_active, -1, cpu) == cpu)
-+				break;
-+		} else if (kgdb_info[cpu].exception_state & DCPU_IS_SLAVE) {
-+			if (!atomic_read(&passive_cpu_wait[cpu]))
-+				goto return_normal;
-+		} else {
-+return_normal:
-+			/* Return to normal operation by executing any
-+			 * hw breakpoint fixup.
-+			 */
-+			if (arch_kgdb_ops.correct_hw_break)
-+				arch_kgdb_ops.correct_hw_break();
-+			atomic_set(&cpu_in_kgdb[cpu], 0);
-+			touch_softlockup_watchdog_sync();
-+			clocksource_touch_watchdog();
-+			local_irq_restore(flags);
-+			return 0;
-+		}
- 		cpu_relax();
-+	}
- 
- 	/*
- 	 * For single stepping, try to only enter on the processor
-@@ -561,9 +525,6 @@ acquirelock:
- 	if (dbg_io_ops->pre_exception)
- 		dbg_io_ops->pre_exception();
- 
--	kgdb_info[ks->cpu].debuggerinfo = ks->linux_regs;
--	kgdb_info[ks->cpu].task = current;
--
- 	kgdb_disable_hw_debug(ks->linux_regs);
- 
- 	/*
-@@ -575,12 +536,6 @@ acquirelock:
- 			atomic_set(&passive_cpu_wait[i], 1);
- 	}
- 
--	/*
--	 * spin_lock code is good enough as a barrier so we don't
--	 * need one here:
--	 */
--	atomic_set(&cpu_in_kgdb[ks->cpu], 1);
--
- #ifdef CONFIG_SMP
- 	/* Signal the other CPUs to enter kgdb_wait() */
- 	if ((!kgdb_single_step) && kgdb_do_roundup)
-@@ -612,8 +567,6 @@ acquirelock:
- 	if (dbg_io_ops->post_exception)
- 		dbg_io_ops->post_exception();
- 
--	kgdb_info[ks->cpu].debuggerinfo = NULL;
--	kgdb_info[ks->cpu].task = NULL;
- 	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
- 
- 	if (!kgdb_single_step) {
-@@ -646,13 +599,52 @@ kgdb_restore:
- 	return error;
- }
- 
-+/*
-+ * kgdb_handle_exception() - main entry point from a kernel exception
-+ *
-+ * Locking hierarchy:
-+ *	interface locks, if any (begin_session)
-+ *	kgdb lock (kgdb_active)
-+ */
-+int
-+kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
-+{
-+	struct kgdb_state kgdb_var;
-+	struct kgdb_state *ks = &kgdb_var;
-+	int ret;
+diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
+index 42f3333..2cf3b6d 100644
+--- a/drivers/serial/sh-sci.c
++++ b/drivers/serial/sh-sci.c
+@@ -126,7 +126,11 @@ static int sci_poll_get_char(struct uart_port *port)
+ 			handle_error(port);
+ 			continue;
+ 		}
+-	} while (!(status & SCxSR_RDxF(port)));
++		break;
++	} while (1);
 +
-+	ks->cpu			= raw_smp_processor_id();
-+	ks->ex_vector		= evector;
-+	ks->signo		= signo;
-+	ks->ex_vector		= evector;
-+	ks->err_code		= ecode;
-+	ks->kgdb_usethreadid	= 0;
-+	ks->linux_regs		= regs;
-+
-+	if (kgdb_reenter_check(ks))
-+		return 0; /* Ouch, double exception ! */
-+	kgdb_info[ks->cpu].exception_state |= DCPU_WANT_MASTER;
-+	ret = kgdb_cpu_enter(ks, regs);
-+	kgdb_info[ks->cpu].exception_state &= ~DCPU_WANT_MASTER;
-+	return ret;
-+}
-+
- int kgdb_nmicallback(int cpu, void *regs)
- {
- #ifdef CONFIG_SMP
-+	struct kgdb_state kgdb_var;
-+	struct kgdb_state *ks = &kgdb_var;
-+
-+	memset(ks, 0, sizeof(struct kgdb_state));
-+	ks->cpu			= cpu;
-+	ks->linux_regs		= regs;
-+
- 	if (!atomic_read(&cpu_in_kgdb[cpu]) &&
--			atomic_read(&kgdb_active) != cpu &&
--			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
--		kgdb_wait((struct pt_regs *)regs);
-+	    atomic_read(&kgdb_active) != -1 &&
-+	    atomic_read(&kgdb_active) != cpu) {
-+		kgdb_info[cpu].exception_state |= DCPU_IS_SLAVE;
-+		kgdb_cpu_enter(ks, regs);
-+		kgdb_info[cpu].exception_state &= ~DCPU_IS_SLAVE;
- 		return 0;
- 	}
- #endif
-diff --git a/kernel/debug/debug_core.h b/kernel/debug/debug_core.h
-index 4b9d512..9825c5e 100644
---- a/kernel/debug/debug_core.h
-+++ b/kernel/debug/debug_core.h
-@@ -28,9 +28,16 @@ struct kgdb_state {
- 	struct pt_regs		*linux_regs;
- };
++	if (!(status & SCxSR_RDxF(port)))
++		return NO_POLL_CHAR;
  
-+/* Exception state values */
-+#define DCPU_WANT_MASTER 0x1 /* Waiting to become a master kgdb cpu */
-+#define DCPU_NEXT_MASTER 0x2 /* Transition from one master cpu to another */
-+#define DCPU_IS_SLAVE    0x4 /* Slave cpu enter exception */
-+#define DCPU_SSTEP       0x8 /* CPU is single stepping */
-+
- struct debuggerinfo_struct {
- 	void			*debuggerinfo;
- 	struct task_struct	*task;
-+	int exception_state;
- };
+ 	c = sci_in(port, SCxRDR);
  
- extern struct debuggerinfo_struct kgdb_info[];
 -- 
 1.6.4.rc1
 
