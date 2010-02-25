@@ -1,322 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759367Ab0BYTFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:05:31 -0500
-Received: from mga09.intel.com ([134.134.136.24]:44047 "EHLO mga09.intel.com"
+	id S932757Ab0BYTJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:09:05 -0500
+Received: from mail.ipom.com ([74.207.225.167]:48114 "EHLO mail.ipom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171Ab0BYTF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:05:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,541,1262592000"; 
-   d="scan'208";a="495674431"
-Date: Thu, 25 Feb 2010 11:04:52 -0800
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: =?iso-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>,
-       Sarah Sharp <sarah.a.sharp@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device
- 8087:0020
-Message-ID: <20100225190452.GA4184@xanatos>
-References: <4B86A8AB.2050604@maroy.hu>
- <Pine.LNX.4.44L0.1002251239140.1686-100000@iolanthe.rowland.org>
+	id S932353Ab0BYTJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 14:09:00 -0500
+X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 14:09:00 EST
+Message-ID: <4B86C96B.7060508@ipom.com>
+Date: Thu, 25 Feb 2010 20:03:07 +0100
+From: Phil Dibowitz <phil@ipom.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.1002251239140.1686-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [resend] unusual_devs.h: Fix capacity for SL11R-IDE 2.6c
+References: <201002241141.10103.linux@rainbow-software.org>
+In-Reply-To: <201002241141.10103.linux@rainbow-software.org>
+X-Enigmail-Version: 1.0.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDA9EC9A728076E808FCB0E6D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 12:46:59PM -0500, Alan Stern wrote:
-> On Thu, 25 Feb 2010, Ákos Maróy wrote:
-> 
-> > > By the way, I noticed above that you have xhci-hcd installed.  As far 
-> > > as I know, that driver does not yet support system suspend.  You should 
-> > > try unloading xhci-hcd before doing the suspend (both with and without 
-> > > CONFIG_USB_DEBUG).
-> > 
-> > wow, rmmod xhci - and the suspend goes through fine!
-> > 
-> > what is this xhci thing anyway?
-> 
-> It is the driver for USB-3.0 controllers.  It's relatively new and not 
-> as mature as the USB-2.0 drivers.
-> 
-> I'm a little surprised that it is running on your system.  Why would 
-> you have USB-3.0 hardware?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDA9EC9A728076E808FCB0E6D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-USB 3.0 hosts and devices are now available commercially.  I think the
-HP envy laptop has an integrated USB 3.0 host.  Ákos, which host
-controller do you have?  Is it a PCIe add-in card, a PCI express card,
-or a port on a laptop?
+On 02/24/2010 11:41 AM, Ondrej Zary wrote:
+> SL11R-IDE 2.6c (at least) reports wrong capacity (one sector more).
+> Reading that last sector causes the device not to work anymore (and loo=
+ks
+> like HAL or something does that automatically after plugging in):
+> sd 5:0:0:0: [sdc] Device not ready
+> sd 5:0:0:0: [sdc] Result: hostbyte=3D0x00 driverbyte=3D0x08
+> sd 5:0:0:0: [sdc] Sense Key : 0x2 [current]
+> sd 5:0:0:0: [sdc] ASC=3D0x0 ASCQ=3D0x0
+> sd 5:0:0:0: [sdc] CDB: cdb[0]=3D0x28: 28 00 04 a8 b5 70 00 00 01 00
 
-The xHCI driver doesn't support PCI suspend, and it also doesn't support
-suspending devices under the xHCI host.  The xHCI hardware needs to do
-some extra work when a device is suspended, and I haven't added that API
-to the USB core yet.  In short, power management sucks under xHCI. :-/
+Ondrej,
 
-> > > These separate issues deserve to be investigated more closely.  The USB 
-> > > stack is not supposed to be that fragile.  Describe your environment 
-> > > more fully and provide the dmesg log from a kernel with 
-> > > CONFIG_USB_DEBUG enabled showing what happens during the experiments.
-> > 
-> > indeed. interestingly, xhci may be the culprit, as without xhci, the
-> > external DVD doesn't even register at all.
-> > 
-> > loadind xhci, I get:
-> > 
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203418] xhci_hcd 0000:02:00.0:
-> > PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203568] xhci_hcd 0000:02:00.0:
-> > xHCI Host Controller
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203689] xhci_hcd 0000:02:00.0:
-> > new USB bus registered, assigned bus number 2
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203832] xhci_hcd 0000:02:00.0:
-> > irq 16, io mem 0xd4000000
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203875] usb usb2: config 1
-> > interface 0 altsetting 0 endpoint 0x81 has no SuperSpeed companion
-> > descriptor
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203912] usb usb2: New USB device
-> > found, idVendor=1d6b, idProduct=0002
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203919] usb usb2: New USB device
-> > strings: Mfr=3, Product=2, SerialNumber=1
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203925] usb usb2: Product: xHCI
-> > Host Controller
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203931] usb usb2: Manufacturer:
-> > Linux 2.6.32.8-usb-debug xhci_hcd
-> > Feb 25 17:33:50 tonkachi kernel: [  168.203937] usb usb2: SerialNumber:
-> > 0000:02:00.0
-> > Feb 25 17:33:50 tonkachi kernel: [  168.204089] usb usb2: configuration
-> > #1 chosen from 1 choice
-> > Feb 25 17:33:50 tonkachi kernel: [  168.204198] hub 2-0:1.0: USB hub found
-> > Feb 25 17:33:50 tonkachi kernel: [  168.204213] hub 2-0:1.0: 4 ports
-> > detected
-> > 
-> > 
-> > plugging in the USB DVD drive, there's a system 'freeze' for about 5
-> > seconds (nothing is responding, not even caps lock), then I get in syslog:
+I got both of your emails, but I was in LA for the SCALE conference. Give=
+ me
+a day or two to catch up.
 
-Oh, freezes are not good.  I wonder if the xHCI host is taking a long
-time to respond to a hardware command?  Can you turn on
-CONFIG_USB_XHCI_HCD_DEBUGGING and send me the dmesg when you plug in the
-device?
+--=20
+Phil Dibowitz                             phil@ipom.com
+Open Source software and tech docs        Insanity Palace of Metallica
+http://www.phildev.net/                   http://www.ipom.com/
 
-> > Feb 25 17:34:39 tonkachi kernel: [  217.433960] Registered led device:
-> > iwl-phy0::radio
-> > Feb 25 17:34:39 tonkachi kernel: [  217.433990] Registered led device:
-> > iwl-phy0::assoc
-> > Feb 25 17:34:39 tonkachi kernel: [  217.434020] Registered led device:
-> > iwl-phy0::RX
-> > Feb 25 17:34:39 tonkachi kernel: [  217.434045] Registered led device:
-> > iwl-phy0::TX
-> > Feb 25 17:34:39 tonkachi kernel: [  217.463366] usb 2-4: new high speed
-> > USB device using xhci_hcd and address 0
-> > Feb 25 17:34:39 tonkachi kernel: [  217.485828] usb 2-4: New USB device
-> > found, idVendor=058f, idProduct=6254
-> > Feb 25 17:34:39 tonkachi kernel: [  217.485834] usb 2-4: New USB device
-> > strings: Mfr=0, Product=0, SerialNumber=0
-> > Feb 25 17:34:39 tonkachi kernel: [  217.485949] usb 2-4: configuration
-> > #1 chosen from 1 choice
-> > Feb 25 17:34:39 tonkachi kernel: [  217.485963] usb 2-4: ep 0x81 -
-> > rounding interval to 2048 microframes
-> > Feb 25 17:34:39 tonkachi kernel: [  217.487002] hub 2-4:1.0: USB hub found
+"Be who you are and say what you feel, because those who mind don't matte=
+r
+ and those who matter don't mind."
+ - Dr. Seuss
 
-Did you plug in the DVD device behind a USB hub?  Or is the hub a part
-of the device?
 
-> > Feb 25 17:34:39 tonkachi kernel: [  217.487502] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:39 tonkachi kernel: [  217.487533] hub 2-4:1.0: 3 ports
-> > detected
-> > Feb 25 17:34:40 tonkachi kernel: [  217.782947] usb 2-4.1: new high
-> > speed USB device using xhci_hcd and address 0
-> > Feb 25 17:34:40 tonkachi kernel: [  217.806372] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.807238] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.808106] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.808996] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809420] usb 2-4.1: New USB
-> > device found, idVendor=152d, idProduct=2339
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809425] usb 2-4.1: New USB
-> > device strings: Mfr=1, Product=2, SerialNumber=5
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809430] usb 2-4.1: Product: USB
-> > to ATA/ATAPI Bridge
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809434] usb 2-4.1: Manufacturer:
-> > JMicron
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809437] usb 2-4.1: SerialNumber:
-> > 6A1713351FFF
-> > Feb 25 17:34:40 tonkachi kernel: [  217.809574] usb 2-4.1: configuration
-> > #1 chosen from 1 choice
-> > Feb 25 17:34:40 tonkachi kernel: [  217.811213] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.812078] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:34:40 tonkachi kernel: [  217.840485] Initializing USB Mass
-> > Storage driver...
-> > Feb 25 17:34:40 tonkachi kernel: [  217.840664] scsi6 : SCSI emulation
-> > for USB Mass Storage devices
-> > Feb 25 17:34:40 tonkachi kernel: [  217.840795] usbcore: registered new
-> > interface driver usb-storage
-> > Feb 25 17:34:40 tonkachi kernel: [  217.840800] USB Mass Storage support
-> > registered.
-> > Feb 25 17:34:45 tonkachi kernel: [  222.833493] scsi 6:0:0:0: CD-ROM
-> >         hp       DVDRAM GT20L     DC05 PQ: 0 ANSI: 0
-> > Feb 25 17:34:45 tonkachi kernel: [  222.846361] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:34:45 tonkachi kernel: [  222.847589] sr0: scsi3-mmc drive:
-> > 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
-> > Feb 25 17:34:45 tonkachi kernel: [  222.847597] Uniform CD-ROM driver
-> > Revision: 3.20
-> > Feb 25 17:34:45 tonkachi kernel: [  222.849281] sr 6:0:0:0: Attached
-> > scsi generic sg2 type 5
-> > Feb 25 17:34:45 tonkachi kernel: [  222.958589] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> >
-> >
-> > now, I unplug the USB DVD drive:
-> > 
-> > Feb 25 17:35:38 tonkachi kernel: [  276.374282] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > Feb 25 17:35:39 tonkachi kernel: [  276.728151] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > Feb 25 17:35:39 tonkachi kernel: [  276.728819] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > 
-> > 
-> > I plug it back in, with a DVD in the drive:
-> > 
-> > Feb 25 17:41:21 tonkachi kernel: [  618.701586] Registered led device:
-> > iwl-phy0::radio
-> > Feb 25 17:41:21 tonkachi kernel: [  618.701619] Registered led device:
-> > iwl-phy0::assoc
-> > Feb 25 17:41:21 tonkachi kernel: [  618.701649] Registered led device:
-> > iwl-phy0::RX
-> > Feb 25 17:41:21 tonkachi kernel: [  618.701674] Registered led device:
-> > iwl-phy0::TX
-> > Feb 25 17:41:21 tonkachi kernel: [  618.719536] usb 2-3: new high speed
-> > USB device using xhci_hcd and address 0
-> > Feb 25 17:41:21 tonkachi kernel: [  618.742028] usb 2-3: New USB device
-> > found, idVendor=058f, idProduct=6254
-> > Feb 25 17:41:21 tonkachi kernel: [  618.742034] usb 2-3: New USB device
-> > strings: Mfr=0, Product=0, SerialNumber=0
-> > Feb 25 17:41:21 tonkachi kernel: [  618.742155] usb 2-3: configuration
-> > #1 chosen from 1 choice
-> > Feb 25 17:41:21 tonkachi kernel: [  618.742168] usb 2-3: ep 0x81 -
-> > rounding interval to 2048 microframes
 
-That looks like a rather long polling interval.  Can you post the output
-of `lsusb -vvv -d 058f:6254`?
+--------------enigDA9EC9A728076E808FCB0E6D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> > Feb 25 17:41:21 tonkachi kernel: [  618.743316] hub 2-3:1.0: USB hub found
-> > Feb 25 17:41:21 tonkachi kernel: [  618.743794] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  618.743830] hub 2-3:1.0: 3 ports
-> > detected
-> > Feb 25 17:41:21 tonkachi kernel: [  619.045944] usb 2-3.1: new high
-> > speed USB device using xhci_hcd and address 0
-> > Feb 25 17:41:21 tonkachi kernel: [  619.069424] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.070295] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.071173] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072042] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072398] usb 2-3.1: New USB
-> > device found, idVendor=152d, idProduct=2339
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072404] usb 2-3.1: New USB
-> > device strings: Mfr=1, Product=2, SerialNumber=5
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072408] usb 2-3.1: Product: USB
-> > to ATA/ATAPI Bridge
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072412] usb 2-3.1: Manufacturer:
-> > JMicron
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072416] usb 2-3.1: SerialNumber:
-> > 6A1713351FFF
-> > Feb 25 17:41:21 tonkachi kernel: [  619.072530] usb 2-3.1: configuration
-> > #1 chosen from 1 choice
-> > Feb 25 17:41:21 tonkachi kernel: [  619.074124] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.074999] xhci_hcd 0000:02:00.0:
-> > WARN: short transfer on control ep
-> > Feb 25 17:41:21 tonkachi kernel: [  619.075559] scsi7 : SCSI emulation
-> > for USB Mass Storage devices
-> > 
-> > 
-> > 
-> > Feb 25 17:41:26 tonkachi kernel: [  624.073472] scsi 7:0:0:0: CD-ROM
-> >         hp       DVDRAM GT20L     DC05 PQ: 0 ANSI: 0
-> > Feb 25 17:41:26 tonkachi kernel: [  624.086041] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:41:26 tonkachi kernel: [  624.087393] sr0: scsi3-mmc drive:
-> > 62x/62x writer dvd-ram cd/rw xa/form2 cdda tray
-> > Feb 25 17:41:26 tonkachi kernel: [  624.088377] sr 7:0:0:0: Attached
-> > scsi generic sg2 type 5
-> > Feb 25 17:41:26 tonkachi kernel: [  624.118679] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:41:29 tonkachi kernel: [  626.883451] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:41:29 tonkachi kernel: [  626.915739] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:41:29 tonkachi kernel: [  627.147000] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
-> > Feb 25 17:41:29 tonkachi kernel: [  627.270741] xhci_hcd 0000:02:00.0:
-> > WARN: Stalled endpoint
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-Can you read the DVD at this point?
+iEYEARECAAYFAkuGyWsACgkQN5XoxaHnMrsUmgCeOs0Rmqnp8axBZv7VL/lSGg1V
+bZ4An2/2JiLK1rSakBwQeI62TPoJspKx
+=gFzQ
+-----END PGP SIGNATURE-----
 
-> > unplug:
-> > 
-> > Feb 25 17:42:05 tonkachi kernel: [  663.327552] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > Feb 25 17:42:06 tonkachi kernel: [  663.364546] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > Feb 25 17:42:06 tonkachi kernel: [  663.365228] xhci_hcd 0000:02:00.0:
-> > WARN: transfer error on endpoint
-> > Feb 25 17:42:10 tonkachi kernel: [  667.360714] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.360956] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.361101] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.362264] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.363730] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.377669] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.377910] VFS: busy inodes on
-> > changed media or resized disk sr0
-> > Feb 25 17:42:10 tonkachi kernel: [  667.378158] VFS: busy inodes on
-> > changed media or resized disk sr0
-
-Did you unmount the DVD before you removed it?  I'm not sure what the
-VFS errors are, but it looks like VFS doesn't like you removing the
-disk.
-
-> > plug back in:
-> > 
-> > Feb 25 17:42:50 tonkachi kernel: [  707.759089] Registered led device:
-> > iwl-phy0::radio
-> > Feb 25 17:42:50 tonkachi kernel: [  707.759179] Registered led device:
-> > iwl-phy0::assoc
-> > Feb 25 17:42:50 tonkachi kernel: [  707.759412] Registered led device:
-> > iwl-phy0::RX
-> > Feb 25 17:42:50 tonkachi kernel: [  707.759572] Registered led device:
-> > iwl-phy0::TX
-> > 
-> > 
-> > 
-> > but the disk does not register anymore :(
-> 
-> This is something Sarah should look into.  She's the main developer 
-> behind xhci-hcd.
-
-Sarah Sharp
+--------------enigDA9EC9A728076E808FCB0E6D--
