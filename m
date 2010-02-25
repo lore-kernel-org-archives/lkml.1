@@ -1,248 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457Ab0BYMmu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 07:42:50 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:59964 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932379Ab0BYMlh (ORCPT
+	id S932400Ab0BYMqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 07:46:07 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:60559 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932365Ab0BYMqD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 07:41:37 -0500
-From: Rodolfo Giometti <giometti@linux.it>
+	Thu, 25 Feb 2010 07:46:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:cc:date:message-id:user-agent:mime-version
+         :content-type;
+        b=Q7TshT4HBzC1uaY8WiY+SPIfKr3xxILphKkxGd6E7A6fzrDnnp3eXXadsMUHAUjnNR
+         kJm6gMvWBQsyOs8Y7Jy8CUvkmwZ0kvyltIfLdzyLmz+TCjDImML4r0tzwzBnseCPL038
+         gIHa9CRhdQOmlvNGcd+kfqb+bb+8ny90k+TIU=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alexander Gordeev <lasaine@lvk.cs.msu.su>,
-       Rodolfo Giometti <giometti@linux.it>
-Date: Thu, 25 Feb 2010 13:41:06 +0100
-Message-Id: <1267101671-23575-2-git-send-email-giometti@linux.it>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267101671-23575-1-git-send-email-giometti@linux.it>
-References: <1267101671-23575-1-git-send-email-giometti@linux.it>
-X-SA-Exim-Connect-IP: 192.168.32.37
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 1/6] pps: LinuxPPS clients support.
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Subject: [patch] RFC directio: partial writes support
+CC: linux-fsdevel@vger.kernel.org
+Date: Thu, 25 Feb 2010 15:45:58 +0300
+Message-ID: <87iq9lxz3t.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Each PPS source can be registered/deregistered into the system by
-using special modules called "clients". They simply define the PPS
-sources' attributes and implement the time signal registartion
-mechanism.
+--=-=-=
 
-This patch adds a special directory for such clients and adds a dummy
-client that can be useful to test system integrity on real systems.
+Can someone please describe me why directio deny partial writes.
+For example if someone try to write 100Mb but file system has less
+data it return ENOSPC in the middle of block allocation.
+All allocated blocks will be truncated (it may be 100Mb -4k) end
+ENOSPC will be returned. As far as i remember direct_io always act
+like this, but i never asked why?
+Why do we have to give up all the progress we made?
+In fact partial writes are possible in case of holes, when we 
+fall back to buffered write. XFS implemented partial writes.
 
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+I've done trivial changes and it works like charm. 
+Let's enable partial writes support and allow caller to define
+this behavior.
+
+
+--=-=-=
+Content-Disposition: inline;
+ filename=0001-direct_io-Allow-partial-writes.patch
+
+>From 4a72c4a61e133140750d05853b8dafecd8ef5d87 Mon Sep 17 00:00:00 2001
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+Date: Thu, 25 Feb 2010 15:14:48 +0300
+Subject: [PATCH] direct_io: Allow partial writes
+
+Current direct io allocation behavior is inconvenient. Partial writes
+are not supported. If we try to issue 10Mb chunk, but only 5Mb is
+available then we will allocate thees 5Mb until ENOSPC, and then
+drop such space and return ENOSPC.
+But in fact partial writes are possible in case of holes.
+Seems that there is no enough reason to deny partial writes.
+
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/pps/Kconfig              |    2 +
- drivers/pps/Makefile             |    1 +
- drivers/pps/clients/Kconfig      |   18 ++++++
- drivers/pps/clients/Makefile     |    9 +++
- drivers/pps/clients/pps-ktimer.c |  123 ++++++++++++++++++++++++++++++++++++++
- 5 files changed, 153 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pps/clients/Kconfig
- create mode 100644 drivers/pps/clients/Makefile
- create mode 100644 drivers/pps/clients/pps-ktimer.c
+ fs/direct-io.c     |    4 ++++
+ fs/ext4/inode.c    |   11 +++++++----
+ include/linux/fs.h |    2 ++
+ 3 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-index cc2eb8e..1afe4e0 100644
---- a/drivers/pps/Kconfig
-+++ b/drivers/pps/Kconfig
-@@ -30,4 +30,6 @@ config PPS_DEBUG
- 	  messages to the system log.  Select this if you are having a
- 	  problem with PPS support and want to see more of what is going on.
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index e82adc2..250a041 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -229,6 +229,10 @@ static int dio_complete(struct dio *dio, loff_t offset, int ret)
+ 		ret = 0;
  
-+source drivers/pps/clients/Kconfig
+ 	if (dio->result) {
++		/* Ignore error if we have written some data */
++		if (dio->flags & DIO_PARTIAL_WRITE)
++			ret = 0;
 +
- endmenu
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-index 19ea582..98960dd 100644
---- a/drivers/pps/Makefile
-+++ b/drivers/pps/Makefile
-@@ -4,5 +4,6 @@
+ 		transferred = dio->result;
  
- pps_core-y			:= pps.o kapi.o sysfs.o
- obj-$(CONFIG_PPS)		:= pps_core.o
-+obj-y				+= clients/
+ 		/* Check for short read case */
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 218ea0b..8c00127 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -3447,10 +3447,13 @@ retry:
+ 				 offset, nr_segs,
+ 				 ext4_get_block, NULL);
+ 	else
+-		ret = blockdev_direct_IO(rw, iocb, inode,
+-				 inode->i_sb->s_bdev, iov,
+-				 offset, nr_segs,
+-				 ext4_get_block, NULL);
++		ret = __blockdev_direct_IO(rw, iocb, inode,
++					inode->i_sb->s_bdev, iov,
++					offset, nr_segs,
++					ext4_get_block, NULL,
++					DIO_LOCKING | DIO_SKIP_HOLES |
++					DIO_PARTIAL_WRITE);
++
+ 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+ 		goto retry;
  
- ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-new file mode 100644
-index 0000000..43ccd3b
---- /dev/null
-+++ b/drivers/pps/clients/Kconfig
-@@ -0,0 +1,18 @@
-+#
-+# PPS clients configuration
-+#
-+
-+if PPS
-+
-+comment "PPS clients support"
-+
-+config PPS_CLIENT_KTIMER
-+	tristate "Kernel timer client (Testing client, use for debug)"
-+	help
-+	  If you say yes here you get support for a PPS debugging client
-+	  which uses a kernel timer to generate the PPS signal.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called pps-ktimer.
-+
-+endif
-diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
-new file mode 100644
-index 0000000..115572a
---- /dev/null
-+++ b/drivers/pps/clients/Makefile
-@@ -0,0 +1,9 @@
-+#
-+# Makefile for PPS clients.
-+#
-+
-+obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= pps-ktimer.o
-+
-+ifeq ($(CONFIG_PPS_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-diff --git a/drivers/pps/clients/pps-ktimer.c b/drivers/pps/clients/pps-ktimer.c
-new file mode 100644
-index 0000000..bd09253
---- /dev/null
-+++ b/drivers/pps/clients/pps-ktimer.c
-@@ -0,0 +1,123 @@
-+/*
-+ * pps-ktimer.c -- kernel timer test client
-+ *
-+ *
-+ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/time.h>
-+#include <linux/timer.h>
-+#include <linux/pps_kernel.h>
-+
-+/*
-+ * Global variables
-+ */
-+
-+static int source;
-+static struct timer_list ktimer;
-+
-+/*
-+ * The kernel timer
-+ */
-+
-+static void pps_ktimer_event(unsigned long ptr)
-+{
-+	struct timespec __ts;
-+	struct pps_ktime ts;
-+
-+	/* First of all we get the time stamp... */
-+	getnstimeofday(&__ts);
-+
-+	pr_info("PPS event at %lu\n", jiffies);
-+
-+	/* ... and translate it to PPS time data struct */
-+	ts.sec = __ts.tv_sec;
-+	ts.nsec = __ts.tv_nsec;
-+
-+	pps_event(source, &ts, PPS_CAPTUREASSERT, NULL);
-+
-+	mod_timer(&ktimer, jiffies + HZ);
-+}
-+
-+/*
-+ * The echo function
-+ */
-+
-+static void pps_ktimer_echo(int source, int event, void *data)
-+{
-+	pr_info("echo %s %s for source %d\n",
-+		event & PPS_CAPTUREASSERT ? "assert" : "",
-+		event & PPS_CAPTURECLEAR ? "clear" : "",
-+		source);
-+}
-+
-+/*
-+ * The PPS info struct
-+ */
-+
-+static struct pps_source_info pps_ktimer_info = {
-+	.name		= "ktimer",
-+	.path		= "",
-+	.mode		= PPS_CAPTUREASSERT | PPS_OFFSETASSERT |
-+			  PPS_ECHOASSERT |
-+			  PPS_CANWAIT | PPS_TSFMT_TSPEC,
-+	.echo 		= pps_ktimer_echo,
-+	.owner		= THIS_MODULE,
-+};
-+
-+/*
-+ * Module staff
-+ */
-+
-+static void __exit pps_ktimer_exit(void)
-+{
-+	del_timer_sync(&ktimer);
-+	pps_unregister_source(source);
-+
-+	pr_info("ktimer PPS source unregistered\n");
-+}
-+
-+static int __init pps_ktimer_init(void)
-+{
-+	int ret;
-+
-+	ret = pps_register_source(&pps_ktimer_info,
-+				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
-+	if (ret < 0) {
-+		printk(KERN_ERR "cannot register ktimer source\n");
-+		return ret;
-+	}
-+	source = ret;
-+
-+	setup_timer(&ktimer, pps_ktimer_event, 0);
-+	mod_timer(&ktimer, jiffies + HZ);
-+
-+	pr_info("ktimer PPS source registered at %d\n", source);
-+
-+	return  0;
-+}
-+
-+module_init(pps_ktimer_init);
-+module_exit(pps_ktimer_exit);
-+
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("dummy PPS source by using a kernel timer (just for debug)");
-+MODULE_LICENSE("GPL");
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 9147ca8..d887685 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2259,6 +2259,8 @@ enum {
+ 
+ 	/* filesystem does not support filling holes */
+ 	DIO_SKIP_HOLES	= 0x02,
++	/* allow partial writes */
++	DIO_PARTIAL_WRITE = 0x04,
+ };
+ 
+ static inline ssize_t blockdev_direct_IO(int rw, struct kiocb *iocb,
 -- 
-1.6.3.3
+1.6.6
 
+
+--=-=-=--
