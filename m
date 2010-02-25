@@ -1,37 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933256Ab0BYTVC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 14:21:02 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:54369 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932913Ab0BYTUx (ORCPT
+	id S933269Ab0BYTVn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 14:21:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38252 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932870Ab0BYTT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 14:20:53 -0500
-Date: Thu, 25 Feb 2010 13:19:35 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       rientjes@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-In-Reply-To: <4B86C58B.5040906@cs.helsinki.fi>
-Message-ID: <alpine.DEB.2.00.1002251319090.18861@router.home>
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org>
- <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002251232550.18861@router.home>
- <4B86C58B.5040906@cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Feb 2010 14:19:56 -0500
+X-Authority-Analysis: v=1.0 c=1 a=AB_-z3S8Ij8A:10 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=x6C2UzhSFb6Sx6bTZhwA:9 a=rzzK0JazwLDo2KmUSIUA:7 a=QZaVOT6wBCyAb0KN1K7FaKBWR_sA:4 a=jEp0ucaQiEUA:10 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100225191954.372597723@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 25 Feb 2010 14:17:58 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Marek <mmarek@suse.cz>, linux-kbuild@vger.kernel.org,
+       Xavier Chantry <shiningxc@gmail.com>
+Subject: [PATCH 3/5] kconfig: Look in both /bin and /sbin for lsmod in streamline_config.pl
+References: <20100225191755.483925025@goodmis.org>
+Content-Disposition: inline; filename=0003-kconfig-Look-in-both-bin-and-sbin-for-lsmod-in-strea.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010, Pekka Enberg wrote:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> The first set of patches from Andi are almost one month old. If this issue
-> progresses as swiftly as it has to this day, I foresee a rocky road for any of
-> them getting merged to .34 through slab.git, that's all.
+Distributions now have lsmod in /bin instead of /sbin. But to handle
+both cases, we look for it in /sbin /bin /usr/bin and /usr/sbin.
+If lsmod is not found in any of those paths, it defaults to use
+just lsmod and hopes that it lies in the path of the user.
 
-Onlining and offlining memory is not that frequently used.
+Tested-by: Xavier Chantry <shiningxc@gmail.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ scripts/kconfig/streamline_config.pl |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+index 9e66fa8..d7f7db7 100644
+--- a/scripts/kconfig/streamline_config.pl
++++ b/scripts/kconfig/streamline_config.pl
+@@ -264,7 +264,20 @@ foreach my $makefile (@makefiles) {
+ my %modules;
+ 
+ # see what modules are loaded on this system
+-open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
++my $lsmod;
++
++foreach $dir ( ("/sbin", "/bin", "/usr/sbin", "/usr/bin") ) {
++    if ( -x "$dir/lsmod" ) {
++	$lsmod = "$dir/lsmod";
++	last;
++    }
++}
++if (!defined($lsmod)) {
++    # try just the path
++    $lsmod = "lsmod";
++}
++
++open(LIN,"$lsmod|") || die "Can not call lsmod with $lsmod";
+ while (<LIN>) {
+ 	next if (/^Module/);  # Skip the first line.
+ 	if (/^(\S+)/) {
+-- 
+1.6.5
+
 
