@@ -1,59 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933975Ab0BYV2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:28:39 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63598 "EHLO
+	id S933985Ab0BYV1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:27:17 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63616 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933847Ab0BYVWf (ORCPT
+	with ESMTP id S933874Ab0BYVWk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:35 -0500
+	Thu, 25 Feb 2010 16:22:40 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 25/28] MAINTAINERS: update kgdb, kdb, and debug_core info
-Date: Thu, 25 Feb 2010 15:21:30 -0600
-Message-Id: <1267132893-23624-26-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 06/28] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+Date: Thu, 25 Feb 2010 15:21:11 -0600
+Message-Id: <1267132893-23624-7-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:22:02.0602 (UTC) FILETIME=[9297D4A0:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:21:44.0508 (UTC) FILETIME=[87CEE7C0:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the maintained files sections.
+The new debug core api requires all architectures that use to debug
+core to implement a function to set the program counter.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Acked-by: Sonic Zhang <sonic.zhang@analog.com>
+Acked-by: Mike Frysinger <vapier@gentoo.org>
 ---
- MAINTAINERS |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ arch/blackfin/kernel/kgdb.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2533fc4..fcdc701 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3171,15 +3171,18 @@ S:	Maintained
- F:	include/linux/kexec.h
- F:	kernel/kexec.c
+diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
+index 34c7c3e..8cb6204 100644
+--- a/arch/blackfin/kernel/kgdb.c
++++ b/arch/blackfin/kernel/kgdb.c
+@@ -439,6 +439,11 @@ int kgdb_validate_break_address(unsigned long addr)
+ 	return -EFAULT;
+ }
  
--KGDB
-+KGDB / KDB / debug_core
- M:	Jason Wessel <jason.wessel@windriver.com>
-+W:	http://kgdb.wiki.kernel.org/
- L:	kgdb-bugreport@lists.sourceforge.net
- S:	Maintained
- F:	Documentation/DocBook/kgdb.tmpl
-+F:	drivers/char/kdb_keyboard.*
- F:	drivers/misc/kgdbts.c
- F:	drivers/serial/kgdboc.c
- F:	include/linux/kgdb.h
--F:	kernel/kgdb.c
-+F:	include/linux/kdb.h
-+F:	kernel/debug/
- 
- KMEMCHECK
- M:	Vegard Nossum <vegardno@ifi.uio.no>
++void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
++{
++	regs->retx = ip;
++}
++
+ int kgdb_arch_init(void)
+ {
+ 	kgdb_single_step = 0;
 -- 
 1.6.4.rc1
 
