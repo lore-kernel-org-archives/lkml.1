@@ -1,50 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175Ab0BYRyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 12:54:46 -0500
-Received: from kroah.org ([198.145.64.141]:39041 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933137Ab0BYRyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 12:54:45 -0500
-Date: Thu, 25 Feb 2010 09:54:30 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: import of usb series failed
-Message-ID: <20100225175421.GA23662@kroah.com>
-References: <20100218105500.898ece5e.sfr@canb.auug.org.au>
- <20100218002144.GA17850@kroah.com>
- <20100218132221.b15d151f.sfr@canb.auug.org.au>
- <20100219175218.10025a7a.sfr@canb.auug.org.au>
- <20100219155343.GA3946@kroah.com>
- <20100220120207.1d765147.sfr@canb.auug.org.au>
- <20100224021624.GB14159@kroah.com>
- <20100224150156.d7449bc7.sfr@canb.auug.org.au>
+	id S933180Ab0BYRzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 12:55:42 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:43729 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933098Ab0BYRzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 12:55:40 -0500
+Message-ID: <4B86B97D.6030208@oracle.com>
+Date: Thu, 25 Feb 2010 09:55:09 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100224150156.d7449bc7.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH -next] fs: fix compat_ioctl when CONFIG_BLOCK=n
+References: <20100225183523.80361261.sfr@canb.auug.org.au>
+In-Reply-To: <20100225183523.80361261.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B86B990.0234:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 03:01:56PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> On Tue, 23 Feb 2010 18:16:24 -0800 Greg KH <greg@kroah.com> wrote:
-> >
-> > Yes, that seems to be the problem here.
-> > 
-> > I have been doing the BASE tag as a -rc level tag (or rc-gitX tag), can
-> > I use a SHA1 of Linus's tree to base this against instead?  Would that
-> > work ok with your scripts?
-> 
-> What ever "git describe" gives you is OK as a BASE.  A SHA1 will work as
-> well, as does a ...-gitx name.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Ok, I'll work on changing my scripts to use a SHA1 or at least a more
-"close" version of what the patches should be against.  Sorry for the
-problem.
+fs/compat_ioctl.c should omit pktcdvd.h and its ioctl when CONFIG_BLOCK
+is not enabled.  This fixes these build errors:
 
-greg k-h
+In file included from fs/compat_ioctl.c:105:
+include/linux/pktcdvd.h:166: error: field 'read_queue' has incomplete type
+include/linux/pktcdvd.h:167: error: field 'write_queue' has incomplete type
+include/linux/pktcdvd.h:207: error: field 'orig_bios' has incomplete type
+make[2]: *** [fs/compat_ioctl.o] Error 1
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+---
+ fs/compat_ioctl.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- linux-next-20100225.orig/fs/compat_ioctl.c
++++ linux-next-20100225/fs/compat_ioctl.c
+@@ -102,7 +102,9 @@
+ #include <linux/nbd.h>
+ #include <linux/random.h>
+ #include <linux/filter.h>
++#ifdef CONFIG_BLOCK
+ #include <linux/pktcdvd.h>
++#endif
+ 
+ #include <linux/hiddev.h>
+ 
+@@ -1126,8 +1128,10 @@ COMPATIBLE_IOCTL(PPGETMODE)
+ COMPATIBLE_IOCTL(PPGETPHASE)
+ COMPATIBLE_IOCTL(PPGETFLAGS)
+ COMPATIBLE_IOCTL(PPSETFLAGS)
++#ifdef CONFIG_BLOCK
+ /* pktcdvd */
+ COMPATIBLE_IOCTL(PACKET_CTRL_CMD)
++#endif
+ /* Big A */
+ /* sparc only */
+ /* Big Q for sound/OSS */
