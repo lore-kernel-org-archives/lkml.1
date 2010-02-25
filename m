@@ -1,67 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219Ab0BYHpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 02:45:42 -0500
-Received: from ernst.netinsight.se ([194.16.221.21]:10155 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752908Ab0BYHpl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 02:45:41 -0500
-Date: Thu, 25 Feb 2010 08:45:35 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: =?ISO-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] iTCO_wdt: Don't double the requested timeout
-Message-ID: <20100225084535.4658cbf9@marrow.netinsight.se>
-In-Reply-To: <4B854F58.4050907@draigBrady.com>
-References: <20100223164019.60a6de1a@marrow.netinsight.se>
-	<4B840154.1010501@draigBrady.com>
-	<4B840BC6.9090809@draigBrady.com>
-	<20100224101618.39c3468b@marrow.netinsight.se>
-	<4B84FD15.9020803@draigBrady.com>
-	<20100224124730.6958b2c0@marrow.netinsight.se>
-	<4B8545D1.8000302@draigBrady.com>
-	<20100224165526.61cdd169@marrow.netinsight.se>
-	<4B854F58.4050907@draigBrady.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1753304Ab0BYHsA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 02:48:00 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:58999 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753114Ab0BYHr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 02:47:59 -0500
+Date: Thu, 25 Feb 2010 08:47:57 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Subject: Re: linux-next: manual merge of the block tree with Linus' tree
+Message-ID: <20100225074757.GN1025@kernel.dk>
+References: <20100225141022.c5b3b7ce.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100225141022.c5b3b7ce.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(taking back lkml on CC. The discussion is about stopping watchdogs
-before rebooting).
+On Thu, Feb 25 2010, Stephen Rothwell wrote:
+> Hi Jens,
+> 
+> Today's linux-next merge of the block tree got a conflict in
+> include/linux/blkdev.h between commit
+> 79da0644a8e0838522828f106e4049639eea6baf ("Revert "block: improve
+> queue_should_plug() by looking at IO depths"") from Linus' tree and
+> commit 488991e28e55b4fbca8067edf0259f69d1a6f92c ("block: Added in
+> stricter no merge semantics for block I/O") from the block tree.
+> 
+> Context changes - I have fixed it up (see below) and can carry the fix
+> for a while.  I suspect that you were expecting this. :-)
 
-On Wed, 24 Feb 2010 16:10:00 +0000
-Pádraig Brady <P@draigBrady.com> wrote:
-> > Returning to the initial issue (my patch to avoid stopping the watchdog
-> > before reboot): What is the preferred behavior? I've looked in other
-> > drivers, and see multiple ways being used. Some do as in my patch, some
-> > leave it on unconditionally and some stop it unconditionally.
-> >
-> Well nowayout to me means userspace should have no way out,
-> but when rebooting the system the watchdog should be reset.
-> But in saying that I'm not sure what to do. At least there
-> should be some way to select the operation you want above,
-> so as to protect the reboot process itself.
+I was, unfortunately I forgot to resolve the conflict yesterday. Your
+fix confuses me a bit - I was expecting the first hunk, but what is the
+second hunk doing? Conceptually good though, perhaps there are more
+conflicts than I was expecting :-)
 
-Well, from the drives I saw that had this behavior (not that I checked
-all of them), they did look at nowayout to determine whether to stop it
-or not.
+I'll update here as well so it disappears next time you pull.
 
-> In general, I wonder could an order be specified so that
-> the watchdog is disabled as the very last thing by the kernel,
-> right before it does the reboot?
+-- 
+Jens Axboe
 
-Many other drivers use reboot notifiers, but unfortunately it seems
-that these are called before device shutdown (kernel/sys.c), so it
-wouldn't help here.
-
-
-I guess it would be good to have defined and uniform behavior across
-different watchdogs, and at least an option to specify
-nowayout-also-when-rebooting.
-
-// Simon
