@@ -1,101 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933911Ab0BYVWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:22:48 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63530 "EHLO
+	id S933937Ab0BYVWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:22:53 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63532 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933803Ab0BYVW3 (ORCPT
+	with ESMTP id S933819Ab0BYVWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:29 -0500
+	Thu, 25 Feb 2010 16:22:30 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 18/28] powerpc,kgdb: Introduce low level trap catching
-Date: Thu, 25 Feb 2010 15:21:23 -0600
-Message-Id: <1267132893-23624-19-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 20/28] kgdb: Add the ability to schedule a breakpoint via a tasklet
+Date: Thu, 25 Feb 2010 15:21:25 -0600
+Message-Id: <1267132893-23624-21-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:56.0008 (UTC) FILETIME=[8EA9AA80:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:21:57.0805 (UTC) FILETIME=[8FBBDDD0:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a recursive fault is
-to allow the kernel debugger to handle the exception first in
-program_check_exception().
+Some kgdb I/O modules require the ability to create a breakpoint
+tasklet, such as kgdboc and external modules such as kgdboe.  The
+breakpoint tasklet is used as an asynchronous entry point into the
+debugger which will have a different function scope than the current
+execution path where it might not be safe to have an inline
+breakpoint.  This is true of some of the kgdb I/O drivers which share
+code with kgdb and rest of the kernel users.
 
-The other change here is to make sure that kgdb_handle_exception() is
-called with correct parameters when catching an oops, because kdb
-needs to know if the entry was an oops, single step, or breakpoint
-exception.
-
-[benh@kernel.crashing.org: move debugger_bpt instead of #ifdef]
-
-CC: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/kgdb.c  |    6 ++++--
- arch/powerpc/kernel/traps.c |    7 +++++--
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ include/linux/kgdb.h      |    1 +
+ kernel/debug/debug_core.c |   26 ++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 7aafcc5..8ee7b6e 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -20,6 +20,7 @@
- #include <linux/smp.h>
- #include <linux/signal.h>
- #include <linux/ptrace.h>
-+#include <linux/kdebug.h>
- #include <asm/current.h>
- #include <asm/processor.h>
- #include <asm/machdep.h>
-@@ -115,7 +116,8 @@ void kgdb_roundup_cpus(unsigned long flags)
- /* KGDB functions to use existing PowerPC64 hooks. */
- static int kgdb_debugger(struct pt_regs *regs)
- {
--	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
-+	return !kgdb_handle_exception(1, computeSignal(TRAP(regs)),
-+				      DIE_OOPS, regs);
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 19d1b29..ee007ea 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -271,6 +271,7 @@ extern int kgdb_mem2hex(char *mem, char *buf, int count);
+ extern int kgdb_hex2mem(char *buf, char *mem, int count);
+ 
+ extern int kgdb_isremovedbreak(unsigned long addr);
++extern void kgdb_schedule_breakpoint(void);
+ 
+ extern int
+ kgdb_handle_exception(int ex_vector, int signo, int err_code,
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 8db8e40..ef46af3 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -114,6 +114,7 @@ EXPORT_SYMBOL_GPL(kgdb_active);
+  */
+ static atomic_t			passive_cpu_wait[NR_CPUS];
+ static atomic_t			cpu_in_kgdb[NR_CPUS];
++static atomic_t			kgdb_break_tasklet_var;
+ atomic_t			kgdb_setting_breakpoint;
+ 
+ struct task_struct		*kgdb_usethread;
+@@ -781,6 +782,31 @@ static void kgdb_unregister_callbacks(void)
+ 	}
  }
  
- static int kgdb_handle_breakpoint(struct pt_regs *regs)
-@@ -123,7 +125,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 	if (user_mode(regs))
- 		return 0;
- 
--	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
-+	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
- 		return 0;
- 
- 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d069ff8..9b72f08 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -809,12 +809,15 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 		return;
- 	}
- 	if (reason & REASON_TRAP) {
-+		/* Debugger is first in line to stop recursive faults in
-+		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
-+		if (debugger_bpt(regs))
-+			return;
++/*
++ * There are times a tasklet needs to be used vs a compiled in
++ * break point so as to cause an exception outside a kgdb I/O module,
++ * such as is the case with kgdboe, where calling a breakpoint in the
++ * I/O driver itself would be fatal.
++ */
++static void kgdb_tasklet_bpt(unsigned long ing)
++{
++	kgdb_breakpoint();
++	atomic_set(&kgdb_break_tasklet_var, 0);
++}
 +
- 		/* trap exception */
- 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
- 				== NOTIFY_STOP)
- 			return;
--		if (debugger_bpt(regs))
--			return;
- 
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
- 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
++static DECLARE_TASKLET(kgdb_tasklet_breakpoint, kgdb_tasklet_bpt, 0);
++
++void kgdb_schedule_breakpoint(void)
++{
++	if (atomic_read(&kgdb_break_tasklet_var) ||
++		atomic_read(&kgdb_active) != -1 ||
++		atomic_read(&kgdb_setting_breakpoint))
++		return;
++	atomic_inc(&kgdb_break_tasklet_var);
++	tasklet_schedule(&kgdb_tasklet_breakpoint);
++}
++EXPORT_SYMBOL_GPL(kgdb_schedule_breakpoint);
++
+ static void kgdb_initial_breakpoint(void)
+ {
+ 	kgdb_break_asap = 0;
 -- 
 1.6.4.rc1
 
