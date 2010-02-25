@@ -1,109 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473Ab0BYJx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 04:53:57 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:52236 "EHLO
+	id S1754517Ab0BYJzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 04:55:43 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:53172 "EHLO
 	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083Ab0BYJxz (ORCPT
+	with ESMTP id S1754267Ab0BYJzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 04:53:55 -0500
+	Thu, 25 Feb 2010 04:55:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=uueZBiDKna9+tslXzlaGmbbD3IrhXy444baFOWb/XXW3Pv+GvZwOzY8Vs/D0Dig/Cc
-         ukIdhwMk3E+voz/n0HLhmPXpwdmvIl4aWht2qWk/AAjpsjrWkWZblQB8lvbd2lmgOa8Y
-         yKgFvrc8MV9+fsQTK9q5QH54LZhY2PVDMxYi0=
-Date: Thu, 25 Feb 2010 01:53:49 -0800
+        b=t7GLK1tnNgrNdOPP+5l2isMAc4cdwxq0BedyxuAZRe/RvlzqTZ3kbpQt3mN6c1lbKQ
+         MPvC3u0iT/boLVxdzCxJCT6m8ADCocw5TvZWWEreZKRvN+tfDIMS5ecUitFV7owzG91S
+         +CMO52AkfiH3o2/wdul/UuH/2IASnLvamjRZI=
+Date: Thu, 25 Feb 2010 01:55:37 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Samu Onkalo <samu.p.onkalo@nokia.com>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] workqueues: change cancel_work_sync() to clear
- work->data
-Message-ID: <20100225095349.GB10823@core.coreip.homeip.net>
-References: <20100224202031.GA26987@redhat.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/14] Regulators: wm8400 - cleanup platform driver data
+ handling
+Message-ID: <20100225095536.GC10823@core.coreip.homeip.net>
+References: <20100224073342.15964.8863.stgit@localhost.localdomain>
+ <20100224073849.15964.62321.stgit@localhost.localdomain>
+ <20100224102548.GG18896@rakim.wolfsonmicro.main>
+ <20100224190234.GD25304@core.coreip.homeip.net>
+ <20100224191402.GA8316@rakim.wolfsonmicro.main>
+ <20100224192126.GE25304@core.coreip.homeip.net>
+ <20100224204056.GA6824@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100224202031.GA26987@redhat.com>
+In-Reply-To: <20100224204056.GA6824@rakim.wolfsonmicro.main>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 09:20:31PM +0100, Oleg Nesterov wrote:
-> In short: change cancel_work_sync(work) to mark this work as "never
-> queued" upon return.
+On Wed, Feb 24, 2010 at 08:40:56PM +0000, Mark Brown wrote:
+> On Wed, Feb 24, 2010 at 11:21:26AM -0800, Dmitry Torokhov wrote:
+> > On Wed, Feb 24, 2010 at 07:14:03PM +0000, Mark Brown wrote:
 > 
-> When cancel_work_sync(work) succeeds, we know that this work can't be
-> queued or running, and since we own WORK_STRUCT_PENDING nobody can change
-> the bits in work->data under us. This means we can also clear the "cwq"
-> part along with _PENDING bit lockless before return, unless the work is
-> queued nobody can assume get_wq_data() is stable even under cwq->lock.
+> > > This doesn't help unless you also provide a way for users to obtain a
+> > > struct wm8400.
 > 
-> This change can speedup the subsequent cancel/flush requests, and as
-> Dmitry pointed out this simplifies the usage of work_struct's which
-> can be queued on different workqueues. Consider this pseudo code from
-> the input subsystem:
+> > Why would they need it? Only code that creates instances of wm8400 needs
+> > to know the definition of the sturcture, the rest can simply pass the
+> > pointer around.
 > 
-> 	struct workqueue_struct *WQ;
-> 	struct work_struct *WORK;
+> > I guess there is disconnect between us and I do not see any users of
+> > wm8400_register_regulator() in linux-next... Is there another tree I
+> > could peek at?
 > 
-> 	for (;;) {
-> 		WQ = create_workqueue();
-> 		...
-> 		if (condition())
-> 			queue_work(WQ, WORK);
-> 		...
-> 		cancel_work_sync(WORK);
-> 		destroy_workqueue(WQ);
-> 	}
+> There are no users in mainline.  This would be called by board specific
+> code from the init callback of the wm8400 - you'd need to pass that
+> callback the struct wm8400.
 > 
-> If condition() returns T and then F, cancel_work_sync() will crash the
-> kernel because WORK->data still points to the already destroyed workqueue.
-> With this patch the code like above becomes correct.
-> 
+> In any case, this is clearly an unrelated change to whatever else you
+> were doing to the driver so should be split off into a separate patch,
+> but if this is being changed at all then it'd be much more sensible to
+> change it to use a more modern pattern which completely removes the
+> wm8400_register_regulator() function and just uses platform data.
 
-Very nice, thank you for making the change.
-
-> Suggested-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-> ---
-> 
->  kernel/workqueue.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-> --- wq/kernel/workqueue.c~1_CANCEL_CLEAR_WQ	2010-02-24 20:43:32.000000000 +0100
-> +++ wq/kernel/workqueue.c	2010-02-24 20:55:53.000000000 +0100
-> @@ -229,6 +229,16 @@ static inline void set_wq_data(struct wo
->  	atomic_long_set(&work->data, new);
->  }
->  
-> +/*
-> + * Clear WORK_STRUCT_PENDING and the workqueue on which it was queued.
-> + */
-> +static inline void clear_wq_data(struct work_struct *work)
-> +{
-> +	unsigned long flags = *work_data_bits(work) &
-> +				(1UL << WORK_STRUCT_STATIC);
-> +	atomic_long_set(&work->data, flags);
-> +}
-> +
->  static inline
->  struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
->  {
-> @@ -671,7 +681,7 @@ static int __cancel_work_timer(struct wo
->  		wait_on_work(work);
->  	} while (unlikely(ret < 0));
->  
-> -	work_clear_pending(work);
-> +	clear_wq_data(work);
->  	return ret;
->  }
->  
-> 
+Fair enough, I removed the offending part, updated patch below.
 
 -- 
 Dmitry
+
+regulator: wm8400 - cleanup platform driver data handling
+
+Driver data set by platform_set_drvdata() is for private use of
+the driver currently bound to teh device and not for use by parent,
+subsystem and anyone else.
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/regulator/wm8400-regulator.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+
+diff --git a/drivers/regulator/wm8400-regulator.c b/drivers/regulator/wm8400-regulator.c
+index d9a2c98..924c7eb 100644
+--- a/drivers/regulator/wm8400-regulator.c
++++ b/drivers/regulator/wm8400-regulator.c
+@@ -317,14 +317,17 @@ static struct regulator_desc regulators[] = {
+ 
+ static int __devinit wm8400_regulator_probe(struct platform_device *pdev)
+ {
++	struct wm8400 *wm8400 = container_of(pdev, struct wm8400, regulators[pdev->id]);
+ 	struct regulator_dev *rdev;
+ 
+ 	rdev = regulator_register(&regulators[pdev->id], &pdev->dev,
+-		pdev->dev.platform_data, dev_get_drvdata(&pdev->dev));
++				  pdev->dev.platform_data, wm8400);
+ 
+ 	if (IS_ERR(rdev))
+ 		return PTR_ERR(rdev);
+ 
++	platform_set_drvdata(pdev, rdev);
++
+ 	return 0;
+ }
+ 
+@@ -332,6 +335,7 @@ static int __devexit wm8400_regulator_remove(struct platform_device *pdev)
+ {
+ 	struct regulator_dev *rdev = platform_get_drvdata(pdev);
+ 
++	platform_set_drvdata(pdev, NULL);
+ 	regulator_unregister(rdev);
+ 
+ 	return 0;
+@@ -370,7 +374,6 @@ int wm8400_register_regulator(struct device *dev, int reg,
+ 	wm8400->regulators[reg].id = reg;
+ 	wm8400->regulators[reg].dev.parent = dev;
+ 	wm8400->regulators[reg].dev.platform_data = initdata;
+-	dev_set_drvdata(&wm8400->regulators[reg].dev, wm8400);
+ 
+ 	return platform_device_register(&wm8400->regulators[reg]);
+ }
