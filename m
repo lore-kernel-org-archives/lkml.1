@@ -1,92 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934480Ab0BYXG5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 18:06:57 -0500
-Received: from kroah.org ([198.145.64.141]:52876 "EHLO coco.kroah.org"
+	id S934482Ab0BYXLL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 18:11:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48295 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934466Ab0BYXGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 18:06:50 -0500
-Date: Thu, 25 Feb 2010 15:06:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with auto-detecting a HV environment from within Linux
-Message-ID: <20100225230639.GB20900@kroah.com>
-References: <20100225164436.GA3310@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20100225173611.GA14124@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S934453Ab0BYXLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 18:11:09 -0500
+Date: Fri, 26 Feb 2010 10:11:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Subject: Re: linux-next: manual merge of the block tree with Linus' tree
+Message-Id: <20100226101101.136af742.sfr@canb.auug.org.au>
+In-Reply-To: <20100225074757.GN1025@kernel.dk>
+References: <20100225141022.c5b3b7ce.sfr@canb.auug.org.au>
+	<20100225074757.GN1025@kernel.dk>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Feb_2010_10_11_01_+1100_=rTTqY6SNipC+2T="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 06:37:05PM +0000, Haiyang Zhang wrote:
-> > From: Greg KH [mailto:greg@kroah.com]
-> > Sent: Thursday, February 25, 2010 12:36 PM
-> > What does the following command output in a HV virtual system:
-> > 	grep . /sys/bus/acpi/devices/*/modalias
-> 
-> /sys/bus/acpi/devices/VMBus:00/modalias:acpi:VMBus:
-> 
-> > How about DMI data?  Does the Host export any info there?  Is there
-> > anything in the /sys/class/dmi/id/ directory?  If so, can you send the
-> > output of:
-> > 	cat /sys/class/dmi/id/modalias
-> 
-> dmi:bvnAmericanMegatrendsInc.:bvr090004:bd03/19/2009:svnMicrosoftCorporation:pnVirtualMachine:pvr7.0:rvnMicrosoftCorporation:rnVirtualMachine:rvr7.0:cvnMicrosoftCorporation:ct3:cvr7.0:
+--Signature=_Fri__26_Feb_2010_10_11_01_+1100_=rTTqY6SNipC+2T=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Nice, can we rely on this to be static?  Will the following structure always
-match properly?
+Hi Jens,
 
-static struct dmi_system_id __initdata microsoft_hyperv_table[] = {
-	{
-		.ident = "hyperv",
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "MicrosoftCorporation"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "VirtualMachine"),
-			DMI_MATCH(DMI_BOARD_NAME, "VirtualMachine"),
-		},
-	},
-};
+On Thu, 25 Feb 2010 08:47:57 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> I was, unfortunately I forgot to resolve the conflict yesterday. Your
+> fix confuses me a bit - I was expecting the first hunk, but what is the
+> second hunk doing? Conceptually good though, perhaps there are more
+> conflicts than I was expecting :-)
 
-That would be good to match with, but I don't know if all distro tools
-can properly handle DMI module stuff just yet.
+The second hunk was not part of the conflict, but "git diff" gives us more
+than just the conflicted bit of the file.
 
-> > And you are sure no PCI devices are present to key off of that are
-> > never going to show up in a "physical" machine?
-> 
-> There is also a pci device as you said:
-> 00:08.0 VGA compatible controller: Microsoft Corporation Device 5353 (prog-if 00 [VGA controller])
->         Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 0
->         Interrupt: pin A routed to IRQ 11
->         Region 0: Memory at f8000000 (32-bit, non-prefetchable) [size=64M]
+> I'll update here as well so it disappears next time you pull.
 
-Ah, nice.  Can we rely on this always being present?
+Thanks.
 
-If so, what is the vendor and product id of this device?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Is it:
-	Vendor id 0x1414
-or:
-	Vendor id 0x045e
+--Signature=_Fri__26_Feb_2010_10_11_01_+1100_=rTTqY6SNipC+2T=
+Content-Type: application/pgp-signature
 
-Microsoft has both assigned to them, and probably others.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Is the device id 0x5353?
+iEYEARECAAYFAkuHA4UACgkQjjKRsyhoI8wqMQCfWDdZKat8w83QhL2lKMSUAaH+
+fCQAoI538OmFRIFPtIaulSWtkXHPvR63
+=4tSU
+-----END PGP SIGNATURE-----
 
-You can see this by doing the following:
-	lspci -n | grep 08\\.0
-what is the output of that?
-
-thanks,
-
-greg k-h
+--Signature=_Fri__26_Feb_2010_10_11_01_+1100_=rTTqY6SNipC+2T=--
