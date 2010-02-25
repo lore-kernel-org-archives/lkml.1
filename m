@@ -1,78 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934328Ab0BYWlg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 17:41:36 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:44460 "EHLO mail.cs.nmsu.edu"
+	id S934345Ab0BYWlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 17:41:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9133 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934167Ab0BYWlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 17:41:35 -0500
-Message-ID: <49e34e8ba40c44c622171868798f9919.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20100225233250.241e7d6d@neptune.home>
-References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
-    <20100225233250.241e7d6d@neptune.home>
-Date: Thu, 25 Feb 2010 15:41:21 -0700
-Subject: Re: [PATCH] Add sysfs support for fbdefio delay
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: Bruno =?iso-8859-1?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com,
-       tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl,
-       akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz
-User-Agent: SquirrelMail/1.4.19
+	id S934316Ab0BYWlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 17:41:36 -0500
+Message-ID: <4B86FC51.80903@redhat.com>
+Date: Thu, 25 Feb 2010 17:40:17 -0500
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Chris Mason <chris.mason@oracle.com>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10/15] readahead: add /debug/readahead/stats
+References: <20100224031001.026464755@intel.com> <20100224031055.024165020@intel.com>
+In-Reply-To: <20100224031055.024165020@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/23/2010 10:10 PM, Wu Fengguang wrote:
+> Collect readahead stats when CONFIG_READAHEAD_STATS=y.
+>
+> This is enabled by default because the added overheads are trivial:
+> two readahead_stats() calls per readahead.
+>
+> Example output:
+> (taken from a fresh booted NFS-ROOT box with rsize=16k)
+>
+> $ cat /debug/readahead/stats
+> pattern     readahead    eof_hit  cache_hit         io    sync_io    mmap_io       size async_size    io_size
+> initial           524        216         26        498        498         18          7          4          4
+> subsequent        181         80          1        130         13         60         25         25         24
+> context            94         28          3         85         64          8          7          2          5
+> thrash              0          0          0          0          0          0          0          0          0
+> around            162        121         33        162        162        162         60          0         21
+> fadvise             0          0          0          0          0          0          0          0          0
+> random            137          0          0        137        137          0          1          0          1
+> all              1098        445         63       1012        874          0         17          6          9
+>
+> The two most important columns are
+> - io		number of readahead IO
+> - io_size	average readahead IO size
+>
+> CC: Ingo Molnar<mingo@elte.hu>
+> CC: Jens Axboe<jens.axboe@oracle.com>
+> CC: Peter Zijlstra<a.p.zijlstra@chello.nl>
+> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
 
-Bruno Prémont wrote:
-> On Thu, 25 February 2010 "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
-> wrote:
->> This patch adds support for examining and modifying the fbdefio delay
->> parameter through sysfs. It also adds two driver definable minimum
->> and maximum bounds.
->>
->> The default behavior is to not permit modifications if delay_max is 0,
->> thus preventing modification of the delay if the driver does not
->> explicitly permit modification.
->>
->
-> ...
->
->> @@ -503,6 +584,12 @@ static struct device_attribute device_attrs[] = {
->>  #ifdef CONFIG_FB_BACKLIGHT
->>  	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
->>  #endif
->> +#ifdef CONFIG_FB_DEFERRED_IO
->> +	__ATTR(defio_delay, S_IRUGO|S_IWUSR,
->> +	       show_defio_delay, store_defio_delay),
->> +	__ATTR(defio_delay_min, S_IRUGO, show_defio_delay_min, NULL),
->> +	__ATTR(defio_delay_max, S_IRUGO, show_defio_delay_max, NULL),
->> +#endif
->>  };
->>
->>  int fb_init_device(struct fb_info *fb_info)
->
-> Would it be reasonable to add these attributes in
-> fb_deferred_io_init() and remove them in fb_deferred_io_cleanup()?
-> This would also make it possible to add write permission to delay
-> attribute only when it effectively can be modified.
->
-> IMHO having only attributes pertinent to the features supported by the
-> framebuffer is better than having all the possible ones and those of
-> unsupported features returning -ENODEV.
->
-> Bruno
->
-
-I looked at that, but it seems like all the sysfs stuff has been
-co-located in fbsysfs.c, so I tried to just follow the pattern of the
-backlight code which takes the same approach.
-
--- 
-
-Rick
-
+Acked-by: Rik van Riel <riel@redhat.com>
