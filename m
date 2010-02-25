@@ -1,69 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932843Ab0BYQPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:15:47 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:60700 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932705Ab0BYQPq (ORCPT
+	id S932849Ab0BYQRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:17:07 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:51233 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932810Ab0BYQRE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:15:46 -0500
-Date: Thu, 25 Feb 2010 16:16:50 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: phillip.lougher@gmail.com
-Subject: [PATCH 3/3] Squashfs: update Kconfig help to include lzma support
-Message-ID: <4b86a272.w0VvRKh/v4WG+UlQ%phillip@lougher.demon.co.uk>
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Thu, 25 Feb 2010 11:17:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pFbmgbTVZ7hH0dJBdprMux4GqHVghQH7exuwXMD/iLWs3vsnkhw0lNQ9TMapUcfjia
+         EdIwAYo5wNCYqbPkVRhmP0Hjtn5+uASMlEdLVlLaYdGCVJ+VUQMSIDGCBzY6+v9W+sxD
+         BUCtgM3MqxqNuRtO0LgGDhbpyydwvapGTXXUY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <19334.40337.651079.440912@pilspetsen.it.uu.se>
+References: <4B8692E3.9030509@gmail.com>
+	 <19334.40337.651079.440912@pilspetsen.it.uu.se>
+Date: Thu, 25 Feb 2010 18:16:59 +0200
+X-Google-Sender-Auth: 9cbee3a0ee9930f6
+Message-ID: <84144f021002250816o2c2cef0fke484c7e43256dba4@mail.gmail.com>
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
+	sha1_update()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 25, 2010 at 5:56 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
+> I fear that the only portable (across compiler versions) and safe
+> solution is to invoke an assembly-coded dummy function with prototype
+>
+>        void use(void *p);
+>
+> and rewrite the code above as
+>
+>        {
+>                u32 temp[...];
+>                ...
+>                memset(temp, 0, sizeof temp);
+>                use(temp);
+>        }
+>
+> This forces the compiler to consider the buffer live after the
+> memset, so the memset cannot be eliminated.
 
-Also cleanup some whitespace.
+So is there some "do not optimize" GCC magic that we could use for a
+memzero_secret() helper function?
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/Kconfig |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/fs/squashfs/Kconfig b/fs/squashfs/Kconfig
-index 7ec5d7e..d7070ed 100644
---- a/fs/squashfs/Kconfig
-+++ b/fs/squashfs/Kconfig
-@@ -5,13 +5,13 @@ config SQUASHFS
- 	help
- 	  Saying Y here includes support for SquashFS 4.0 (a Compressed
- 	  Read-Only File System).  Squashfs is a highly compressed read-only
--	  filesystem for Linux.  It uses zlib compression to compress both
--	  files, inodes and directories.  Inodes in the system are very small
--	  and all blocks are packed to minimise data overhead. Block sizes
--	  greater than 4K are supported up to a maximum of 1 Mbytes (default
--	  block size 128K).  SquashFS 4.0 supports 64 bit filesystems and files
--	  (larger than 4GB), full uid/gid information, hard links and
--	  timestamps.  
-+	  filesystem for Linux.  It uses zlib or lzma compression to compress
-+	  both files, inodes and directories.  Inodes in the system are very
-+	  small and all blocks are packed to minimise data overhead. Block
-+	  sizes greater than 4K are supported up to a maximum of 1 Mbytes
-+	  (default block size 128K).  SquashFS 4.0 supports 64 bit filesystems
-+	  and files (larger than 4GB), full uid/gid information, hard links and
-+	  timestamps.
- 
- 	  Squashfs is intended for general read-only filesystem use, for
- 	  archival use (i.e. in cases where a .tar.gz file may be used), and in
-@@ -33,8 +33,7 @@ config SQUASHFS_LZMA
- 	select DECOMPRESS_LZMA_NEEDED
- 
- config SQUASHFS_EMBEDDED
--
--	bool "Additional option for memory-constrained systems" 
-+	bool "Additional option for memory-constrained systems"
- 	depends on SQUASHFS
- 	default n
- 	help
--- 
-1.6.3.3
-
+                        Pekka
