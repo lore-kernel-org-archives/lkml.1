@@ -1,82 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165Ab0BYPMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:12:17 -0500
-Received: from trinity.develer.com ([83.149.158.210]:43696 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759190Ab0BYPMP (ORCPT
+	id S932306Ab0BYPNY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:13:24 -0500
+Received: from mail-px0-f204.google.com ([209.85.216.204]:52907 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759103Ab0BYPNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:12:15 -0500
-Date: Thu, 25 Feb 2010 16:12:11 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
-Message-ID: <20100225151211.GC3964@linux>
-References: <1266765525-30890-1-git-send-email-arighi@develer.com>
- <1266765525-30890-3-git-send-email-arighi@develer.com>
- <20100223212943.GF11930@redhat.com>
+	Thu, 25 Feb 2010 10:13:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=h6+sFRyJM/HUm1QrVKALRgYAm1fOmiEKlUsmGJ1stSsYWthzMVkOwLSzucdPI7vWuQ
+         2bFSy1Pg4JgPZJNeE/IRgEjCPP3ng72Gmcs3/qW2krV5Gv4pbuQJd3v5Qmu3cQ/BjLgB
+         6ujPXTx2+lypOyMJVn68ehgqIcWMVD/4oQv2Q=
+Message-ID: <4B869438.502@gmail.com>
+Date: Fri, 26 Feb 2010 00:16:08 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100223212943.GF11930@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Samu Onkalo <samu.p.onkalo@nokia.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] workqueues: microoptimize set_wq_data()
+References: <20100224202035.GA26991@redhat.com> <4B85EA24.5020409@kernel.org> <4B8650A2.9060803@gmail.com> <20100225135547.GA6062@redhat.com>
+In-Reply-To: <20100225135547.GA6062@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 04:29:43PM -0500, Vivek Goyal wrote:
-> On Sun, Feb 21, 2010 at 04:18:45PM +0100, Andrea Righi wrote:
-> 
-> [..]
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 0b19943..c9ff1cd 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
-> >   */
-> >  static int calc_period_shift(void)
-> >  {
-> > -	unsigned long dirty_total;
-> > +	unsigned long dirty_total, dirty_bytes;
-> >  
-> > -	if (vm_dirty_bytes)
-> > -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> > +	dirty_bytes = mem_cgroup_dirty_bytes();
-> > +	if (dirty_bytes)
-> > +		dirty_total = dirty_bytes / PAGE_SIZE;
-> >  	else
-> >  		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
-> >  				100;
-> 
-> Ok, I don't understand this so I better ask. Can you explain a bit how memory
-> cgroup dirty ratio is going to play with per BDI dirty proportion thing.
-> 
-> Currently we seem to be calculating per BDI proportion (based on recently
-> completed events), of system wide dirty ratio and decide whether a process
-> should be throttled or not.
-> 
-> Because throttling decision is also based on BDI and its proportion, how
-> are we going to fit it with mem cgroup? Is it going to be BDI proportion
-> of dirty memory with-in memory cgroup (and not system wide)?
+Hello,
 
-IMHO we need to calculate the BDI dirty threshold as a function of the
-cgroup's dirty memory, and keep BDI statistics system wide.
+On 02/25/2010 10:55 PM, Oleg Nesterov wrote:
+>> Turns out I already have a patch which kills the second
+>> work_data_bits() dereferencing in the series.  The first one is now in
+>> the cmwq series which is about to be posted again.
+> 
+> OK, good.
+> 
+> Tejun, where can I find your cmwq patches? I'd like to take a look.
 
-So, if a task is generating some writes, the threshold to start itself
-the writeback will be calculated as a function of the cgroup's dirty
-memory. If the BDI dirty memory is greater than this threshold, the task
-must start to writeback dirty pages until it reaches the expected dirty
-limit.
+The third take was about a month ago.
 
-OK, in this way a cgroup with a small dirty limit may be forced to
-writeback a lot of pages dirtied by other cgroups on the same device.
-But this is always related to the fact that tasks are forced to
-writeback dirty inodes randomly, and not the inodes they've actually
-dirtied.
+  http://thread.gmane.org/gmane.linux.kernel/939353
 
--Andrea
+The fourth take is just around the corner.
+
+Thanks.
+
+-- 
+tejun
