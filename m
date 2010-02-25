@@ -1,53 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933985Ab0BYV1R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:27:17 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63616 "EHLO
+	id S934050Ab0BYV2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:28:42 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63596 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933874Ab0BYVWk (ORCPT
+	with ESMTP id S933846Ab0BYVWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:40 -0500
+	Thu, 25 Feb 2010 16:22:35 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 06/28] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-Date: Thu, 25 Feb 2010 15:21:11 -0600
-Message-Id: <1267132893-23624-7-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 24/28] debug_core,kdb: Allow the debug core to process a recursive debug entry
+Date: Thu, 25 Feb 2010 15:21:29 -0600
+Message-Id: <1267132893-23624-25-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
 References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:44.0508 (UTC) FILETIME=[87CEE7C0:01CAB660]
+X-OriginalArrivalTime: 25 Feb 2010 21:22:01.0899 (UTC) FILETIME=[922C8FB0:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new debug core api requires all architectures that use to debug
-core to implement a function to set the program counter.
+This allows kdb to debug a crash with in the kms code with a
+single level recursive re-entry.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Acked-by: Sonic Zhang <sonic.zhang@analog.com>
-Acked-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/kernel/kgdb.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ kernel/debug/debug_core.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
-index 34c7c3e..8cb6204 100644
---- a/arch/blackfin/kernel/kgdb.c
-+++ b/arch/blackfin/kernel/kgdb.c
-@@ -439,6 +439,11 @@ int kgdb_validate_break_address(unsigned long addr)
- 	return -EFAULT;
- }
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index ef46af3..bfdba97 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -445,6 +445,10 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
+ 	}
  
-+void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
-+{
-+	regs->retx = ip;
-+}
+ 	printk(KERN_CRIT "KGDB: re-enter exception: ALL breakpoints killed\n");
++#ifdef CONFIG_KGDB_KDB
++	/* Allow kdb to debug itself one level */
++	return 0;
++#endif
+ 	dump_stack();
+ 	panic("Recursive entry to debugger");
+ 
+@@ -489,6 +493,9 @@ acquirelock:
+ 	smp_wmb();
+ 	atomic_set(&cpu_in_kgdb[cpu], 1);
+ 
++	if (exception_level == 1)
++		goto cpu_master_loop;
 +
- int kgdb_arch_init(void)
- {
- 	kgdb_single_step = 0;
+ 	/*
+ 	 * CPU will loop if it is a slave or request to become a kgdb
+ 	 * master cpu and acquire the kgdb_active lock:
 -- 
 1.6.4.rc1
 
