@@ -1,61 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759111Ab0BYKZD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:25:03 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:49496 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759011Ab0BYKZA (ORCPT
+	id S1759066Ab0BYKYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:24:25 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:45996 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759010Ab0BYKYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:25:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=EVbXxkPwr7ywOFdEMSzWnAFbgzR+tbHtxoqNDLZXKlhqTLawGsd4qKundWWJCZJ1QJ
-         VWyVK3uKaLmjK6zGRbO4gfE8o6aFNHTjt/7NVA+N1/QN7jNXwqXc4j+MNGvzeYTfSNoX
-         V7EAqp4kShWtD6ZlSIUcQo8sxwbeXHVybgXVE=
-Message-ID: <4B8650A2.9060803@gmail.com>
-Date: Thu, 25 Feb 2010 19:27:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Samu Onkalo <samu.p.onkalo@nokia.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] workqueues: microoptimize set_wq_data()
-References: <20100224202035.GA26991@redhat.com> <4B85EA24.5020409@kernel.org>
-In-Reply-To: <4B85EA24.5020409@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 05:24:23 -0500
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: [PATCH] cgroup: do not use dprintf in cgroup_event_listener
+Date: Thu, 25 Feb 2010 12:24:07 +0200
+Message-Id: <1267093447-2607-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.6.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, again.
+glibc's dprintf(3) is buggy:
+http://sourceware.org/bugzilla/show_bug.cgi?id=11319
 
-On 02/25/2010 12:10 PM, Tejun Heo wrote:
->> @@ -220,12 +220,9 @@ struct cpu_workqueue_struct *wq_per_cpu(
->>  static inline void set_wq_data(struct work_struct *work,
->>  				struct cpu_workqueue_struct *cwq)
->>  {
->> -	unsigned long new;
->> -
->> -	BUG_ON(!work_pending(work));
->> -
->> -	new = (unsigned long) cwq | (1UL << WORK_STRUCT_PENDING);
->> +	unsigned long new = (unsigned long)cwq;
->>  	new |= WORK_STRUCT_FLAG_MASK & *work_data_bits(work);
->> +	BUG_ON(!(new & (1UL << WORK_STRUCT_PENDING)));
->>  	atomic_long_set(&work->data, new);
-> 
-> Will apply under cmwq patches for the next merge window.
+Let's not to use it in the example.
 
-Turns out I already have a patch which kills the second
-work_data_bits() dereferencing in the series.  The first one is now in
-the cmwq series which is about to be posted again.
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+---
+ Documentation/cgroups/cgroup_event_listener.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-Thanks.
-
+diff --git a/Documentation/cgroups/cgroup_event_listener.c b/Documentation/cgroups/cgroup_event_listener.c
+index 8c2d7aa..8c2bfc4 100644
+--- a/Documentation/cgroups/cgroup_event_listener.c
++++ b/Documentation/cgroups/cgroup_event_listener.c
+@@ -23,6 +23,7 @@ int main(int argc, char **argv)
+ 	int cfd = -1;
+ 	int event_control = -1;
+ 	char event_control_path[PATH_MAX];
++	char line[LINE_MAX];
+ 	int ret;
+ 
+ 	if (argc != 3) {
+@@ -39,7 +40,7 @@ int main(int argc, char **argv)
+ 
+ 	ret = snprintf(event_control_path, PATH_MAX, "%s/cgroup.event_control",
+ 			dirname(argv[1]));
+-	if (ret > PATH_MAX) {
++	if (ret >= PATH_MAX) {
+ 		fputs("Path to cgroup.event_control is too long\n", stderr);
+ 		goto out;
+ 	}
+@@ -57,7 +58,13 @@ int main(int argc, char **argv)
+ 		goto out;
+ 	}
+ 
+-	ret = dprintf(event_control, "%d %d %s", efd, cfd, argv[2]);
++	ret = snprintf(line, LINE_MAX, "%d %d %s", efd, cfd, argv[2]);
++	if (ret >= LINE_MAX) {
++		fputs("Arguments string is too long\n", stderr);
++		goto out;
++	}
++
++	ret = write(event_control, line, strlen(line) + 1);
+ 	if (ret == -1) {
+ 		perror("Cannot write to cgroup.event_control");
+ 		goto out;
 -- 
-tejun
+1.6.6.2
+
