@@ -1,68 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045Ab0BYSg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:36:56 -0500
-Received: from mailb.microsoft.com ([131.107.115.215]:37548 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932978Ab0BYSgy convert rfc822-to-8bit (ORCPT
+	id S933022Ab0BYShs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:37:48 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:56963 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932838Ab0BYShr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:36:54 -0500
-From: Haiyang Zhang <haiyangz@microsoft.com>
-To: Greg KH <greg@kroah.com>
-CC: Hank Janssen <hjanssen@microsoft.com>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: Problem with auto-detecting a HV environment from within Linux
-Thread-Topic: Problem with auto-detecting a HV environment from within Linux
-Thread-Index: AQHKtjnpPG+DB1+VDUmGCDmANJRAY5HXEhsAgACJl4D//4hyAA==
-Date: Thu, 25 Feb 2010 18:37:05 +0000
-Message-ID: <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
-References: <20100225164436.GA3310@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20100225173611.GA14124@kroah.com>
-In-Reply-To: <20100225173611.GA14124@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Feb 2010 13:37:47 -0500
+Date: Thu, 25 Feb 2010 12:34:22 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       rientjes@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
+In-Reply-To: <4B862623.5090608@cs.helsinki.fi>
+Message-ID: <alpine.DEB.2.00.1002251232550.18861@router.home>
+References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org> <20100215061535.GI5723@laptop> <20100215103250.GD21783@one.firstfloor.org> <20100215104135.GM5723@laptop> <20100215105253.GE21783@one.firstfloor.org>
+ <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Greg KH [mailto:greg@kroah.com]
-> Sent: Thursday, February 25, 2010 12:36 PM
-> What does the following command output in a HV virtual system:
-> 	grep . /sys/bus/acpi/devices/*/modalias
+On Thu, 25 Feb 2010, Pekka Enberg wrote:
 
-/sys/bus/acpi/devices/VMBus:00/modalias:acpi:VMBus:
+> OK, can we get this issue resolved? The merge window is open and Christoph
+> seems to be unhappy with the whole patch queue. I'd hate this bug fix to miss
+> .34...
 
-> How about DMI data?  Does the Host export any info there?  Is there
-> anything in the /sys/class/dmi/id/ directory?  If so, can you send the
-> output of:
-> 	cat /sys/class/dmi/id/modalias
+Merge window? These are bugs that have to be fixed independently from a
+merge window. The question is if this is the right approach or if there is
+other stuff still lurking because we are not yet seeing the full picture.
 
-dmi:bvnAmericanMegatrendsInc.:bvr090004:bd03/19/2009:svnMicrosoftCorporation:pnVirtualMachine:pvr7.0:rvnMicrosoftCorporation:rnVirtualMachine:rvr7.0:cvnMicrosoftCorporation:ct3:cvr7.0:
+Can we get some of the hotplug authors involved in the discussion?
 
-> And you are sure no PCI devices are present to key off of that are
-> never going to show up in a "physical" machine?
 
-There is also a pci device as you said:
-00:08.0 VGA compatible controller: Microsoft Corporation Device 5353 (prog-if 00 [VGA controller])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 11
-        Region 0: Memory at f8000000 (32-bit, non-prefetchable) [size=64M]
-
-> 
-> What do you recommend doing here?
-
-I think any of the above can be used.
-
-Thanks,
-
-- Haiyang
 
