@@ -1,72 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932974Ab0BYSgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 13:36:45 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:50476 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932838Ab0BYSgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 13:36:44 -0500
-Date: Thu, 25 Feb 2010 12:36:43 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: venkatesh.pallipadi@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Fix sched_clock_cpu for systems with unsynchronized TSC
-Message-ID: <20100225183643.GA21302@sgi.com>
+	id S933045Ab0BYSg4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 13:36:56 -0500
+Received: from mailb.microsoft.com ([131.107.115.215]:37548 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932978Ab0BYSgy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 13:36:54 -0500
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <greg@kroah.com>
+CC: Hank Janssen <hjanssen@microsoft.com>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: Problem with auto-detecting a HV environment from within Linux
+Thread-Topic: Problem with auto-detecting a HV environment from within Linux
+Thread-Index: AQHKtjnpPG+DB1+VDUmGCDmANJRAY5HXEhsAgACJl4D//4hyAA==
+Date: Thu, 25 Feb 2010 18:37:05 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
+References: <20100225164436.GA3310@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100225173611.GA14124@kroah.com>
+In-Reply-To: <20100225173611.GA14124@kroah.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On UV systems, the TSC is not synchronized across blades.  The
-sched_clock_cpu() function is returning values that can go backwards 
-(I've seen as much as 8 seconds) when switching between cpus.
+> From: Greg KH [mailto:greg@kroah.com]
+> Sent: Thursday, February 25, 2010 12:36 PM
+> What does the following command output in a HV virtual system:
+> 	grep . /sys/bus/acpi/devices/*/modalias
 
-As each cpu comes up, early_init_intel() will currently set the
-sched_clock_stable flag true.  When mark_tsc_unstable() runs, it clears
-the flag, but this only occurs once (the first time a cpu comes up whose
-TSC is not synchronized with cpu 0).  After this, early_init_intel() will
-set the flag again as the next cpu comes up.
+/sys/bus/acpi/devices/VMBus:00/modalias:acpi:VMBus:
 
-This patch changes the logic to assume that the sched_clock is stable at
-first.  From then on it is only cleared.
+> How about DMI data?  Does the Host export any info there?  Is there
+> anything in the /sys/class/dmi/id/ directory?  If so, can you send the
+> output of:
+> 	cat /sys/class/dmi/id/modalias
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+dmi:bvnAmericanMegatrendsInc.:bvr090004:bd03/19/2009:svnMicrosoftCorporation:pnVirtualMachine:pvr7.0:rvnMicrosoftCorporation:rnVirtualMachine:rvr7.0:cvnMicrosoftCorporation:ct3:cvr7.0:
 
----
+> And you are sure no PCI devices are present to key off of that are
+> never going to show up in a "physical" machine?
 
- arch/x86/kernel/cpu/intel.c |    4 ++--
- kernel/sched_clock.c        |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+There is also a pci device as you said:
+00:08.0 VGA compatible controller: Microsoft Corporation Device 5353 (prog-if 00 [VGA controller])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 11
+        Region 0: Memory at f8000000 (32-bit, non-prefetchable) [size=64M]
 
-Index: linux/arch/x86/kernel/cpu/intel.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/intel.c
-+++ linux/arch/x86/kernel/cpu/intel.c
-@@ -70,8 +70,8 @@ static void __cpuinit early_init_intel(s
- 	if (c->x86_power & (1 << 8)) {
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
--		sched_clock_stable = 1;
--	}
-+	} else
-+		sched_clock_stable = 0;
- 
- 	/*
- 	 * There is a known erratum on Pentium III and Core Solo
-Index: linux/kernel/sched_clock.c
-===================================================================
---- linux.orig/kernel/sched_clock.c
-+++ linux/kernel/sched_clock.c
-@@ -45,7 +45,7 @@ unsigned long long __attribute__((weak))
- static __read_mostly int sched_clock_running;
- 
- #ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
--__read_mostly int sched_clock_stable;
-+__read_mostly int sched_clock_stable = 1;
- 
- struct sched_clock_data {
- 	u64			tick_raw;
+> 
+> What do you recommend doing here?
+
+I think any of the above can be used.
+
+Thanks,
+
+- Haiyang
+
