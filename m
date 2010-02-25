@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898Ab0BYVnl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:43:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47914 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933698Ab0BYVnk (ORCPT
+	id S934108Ab0BYVnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:43:49 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50432 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933698Ab0BYVnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:43:40 -0500
-Subject: Re: [PATCH 0/3] sched: use EDF to throttle RT task groups v2
+	Thu, 25 Feb 2010 16:43:43 -0500
+Subject: Re: [PATCH 1/3] sched: use EDF to schedule groups
 From: Peter Zijlstra <peterz@infradead.org>
 To: Fabio Checconi <fchecconi@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -15,12 +15,14 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Dario Faggioli <faggioli@gandalf.sssup.it>,
        Michael Trimarchi <michael@evidence.eu.com>,
        Dhaval Giani <dhaval@retis.sssup.it>,
-       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org
-In-Reply-To: <cover.1266931410.git.fabio@helm.retis>
+       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org,
+       Fabio Checconi <fabio@gandalf.sssup.it>
+In-Reply-To: <4aed689fbdd9a7e4c625d4dd4f85533ec61722ef.1266931410.git.fabio@helm.retis>
 References: <cover.1266931410.git.fabio@helm.retis>
+	 <4aed689fbdd9a7e4c625d4dd4f85533ec61722ef.1266931410.git.fabio@helm.retis>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 25 Feb 2010 21:28:16 +0100
-Message-ID: <1267129696.22519.556.camel@laptop>
+Date: Thu, 25 Feb 2010 21:28:20 +0100
+Message-ID: <1267129700.22519.557.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -29,47 +31,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tue, 2010-02-23 at 19:56 +0100, Fabio Checconi wrote:
-> This patchset introduces a group level EDF scheduler extending the
-> throttling mechanism, in order to make it support generic period
-> assignments.  With this patch, the runtime and period parameters
-> can be used to specify arbitrary CPU reservations for RT tasks.
-> 
-> From the previous post [1] I've integrated Peter's suggestions, using
-> a multi-level hierarchy to do admission control, but a one-level only
-> equivalent hierarchy for scheduling, and I've not removed the bandwidth
-> migration mechanism, trying to adapt it to EDF scheduling.  In this
-> version tasks are still inserted into priority arrays and only groups
-> are kept in a per-rq edf tree.
-> 
-> The main design issues involved:
-> 
->   - Since it is not easy to mix tasks and groups on the same scheduler
->     queue (tasks have no deadlines), the bandwidth reserved to the tasks
->     in a group is controlled with two additional cgroup attributes:
->     rt_task_runtime_us and rt_task_period_us.  These attributes control,
->     within a cgroup, how much bandwidth is reserved to the tasks it
->     contains.  The old attributes, rt_runtime_us and rt_period_us, are
->     still there, and control the bandwidth assigned to the cgroup.  They
->     are used only for admission control.
-> 
->   - Shared resources are still handled using boosting.  When a group
->     contains a task inside a critical section it is scheduled according
->     the highest priority among the ones of the tasks it contains.
->     In this way, the same group has two modes: when it is not boosted
->     it is scheduled according to its deadline; when it is boosted, it
->     is scheduled according its priority.  Boosted groups are always
->     favored over non-boosted ones.
-> 
->   - Given that the various rt_rq's belonging to the same task group
->     are activated independently, there is the need of a timer per
->     each rt_rq.
-> 
->   - While balancing the bandwidth assigned to a cgroup on various cpus
->     we have to make sure that utilization for the rt_rq's on each cpu
->     does not exceed the global utilization limit for RT tasks.  
-> 
+> @@ -36,7 +29,8 @@ static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
+>  
+>  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
+>  {
+> -       return container_of(rt_rq, struct rq, rt);
+> +       struct rt_root_rq *rt = container_of(rt_rq, struct rt_root_rq, rt_rq);
+> +       return container_of(rt, struct rq, rt);
+>  } 
 
-> As usual, feedback welcome.
+I think you can write that double container_of() as a single:
 
-Looks very nice, good work! comments in individual replies.
+ return container_of(rt_rq, struct rq, rt.rt_rq);
+
+
 
