@@ -1,49 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857Ab0BYQRv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 11:17:51 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54412 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932810Ab0BYQRt (ORCPT
+	id S932868Ab0BYQVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 11:21:17 -0500
+Received: from mail07.astraglobal.com ([203.197.231.25]:48092 "EHLO
+	mail07.astraglobal.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932851Ab0BYQVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 11:17:49 -0500
-Subject: Re: [PATCH 07/07] printk delay per multi lines
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hans-Joachim Picht <hans@de.ibm.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-doc@vger.kernel.org
-In-Reply-To: <20100225154549.GA2710@darkstar>
-References: <20100225154549.GA2710@darkstar>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 25 Feb 2010 17:17:14 +0100
-Message-ID: <1267114634.22519.0.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 11:21:16 -0500
+X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 11:21:15 EST
+To: mahebert@juno.com, lvogler@umd.edu, johng@phmc.org
+Subject: We have lists of doctors, dentist and health clinics
+Reply-To: ciel47ej@gmail.com
+From: "Marylou Anaya" <foutwirnd93@gmail.com>
+Message-ID: <MAIL07h0UyvzrBLzoIN0001cdae@mail07.astraglobal.com>
+X-OriginalArrivalTime: 25 Feb 2010 16:07:13.0682 (UTC) FILETIME=[97EB5F20:01CAB634]
+Date: 25 Feb 2010 11:07:13 -0500
+X-NAI-Spam-Flag: NO
+X-NAI-Spam-Level: *
+X-NAI-Spam-Threshold: 5
+X-NAI-Spam-Score: 1.5
+X-NAI-Spam-Version: 2.2.0.9149 : core <3478> : streams <396619> : uri <53921
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-25 at 23:45 +0800, Dave Young wrote:
-> +               if (!atomic_read(&l))
-> +                       atomic_set(&l, printk_delay_lines);
+For details, samples and counts on our US listings please
+email me at my other email address  Jonah.Putnam@data40.Co.CC
 
-That's racy, use atomic_cmpxchg()
+  
 
-> +               smp_mb__before_atomic_dec();
-> +               if (atomic_dec_return(&l))
-> +                       return; 
 
-What's that barrier for?
 
+
+To invoke no further correspondence status please send an email to rembox@data40.Co.CC
