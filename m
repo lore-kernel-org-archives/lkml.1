@@ -1,46 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918Ab0BYDj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:39:28 -0500
-Received: from mail.perches.com ([173.55.12.10]:1201 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758899Ab0BYDj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:39:27 -0500
-Subject: Re: [PATCH 03/06] kernel.h hexdump cleanup
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, Li Zefan <lizf@cn.fujitsu.com>
-In-Reply-To: <20100224181646.bde9c183.akpm@linux-foundation.org>
-References: <20100222141934.GA9030@darkstar>
-	 <1266867811.10646.196.camel@Joe-Laptop.home>
-	 <a8e1da1002241752u637f7debi2ff46f50ac5edcd8@mail.gmail.com>
-	 <20100224181646.bde9c183.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Feb 2010 19:39:24 -0800
-Message-ID: <1267069164.30508.7.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S932178Ab0BYDmv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:42:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:32868 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758914Ab0BYDmp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:42:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=pglEJfiXlywRopvcrknxnJUL08flHVhQJBr0fAPdgi+LW3BVxWrpc1RU1vOvDqawI3
+         MOkXv0DMLZIYXHnXZ9KzbA8qkmebAYab9M4BC78MTP6vza557uzmkZ3KxN+d2FnJmfGO
+         S+8hDZg+mhWAv41K5JXKav1a5whosDPllTsPY=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Keiichi KII <k-keiichi@bx.jp.nec.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 02/10] perf/scripts: Fix bug in Util.pm
+Date: Thu, 25 Feb 2010 04:42:33 +0100
+Message-Id: <1267069361-10909-3-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1267069361-10909-1-git-send-regression-fweisbec@gmail.com>
+References: <1267069361-10909-1-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-24 at 18:16 -0800, Andrew Morton wrote: 
-> Avoiding bisection-bustage is hardly a priority any more, but
-> let's not break bisection this time if we can avoid it.
+From: Tom Zanussi <tzanussi@gmail.com>
 
-I think that kernel.h could use a lot more cleaning than this.
+Fix bogus calculation.
 
-Separating it into multiple pieces is OK, but moving
-stuff around to categorize it a bit better is also useful.
-I've tried both ways.
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1264580883-15324-3-git-send-email-tzanussi@gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ .../perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm    |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Doing it all as one patchset / git commit would be best.
-
-Here's a link to the last time I tried as a 14 patch block
-
-http://patchwork.kernel.org/patch/67829/
-http://lkml.org/lkml/2009/12/16/77
-
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
+index 052f132..f869c48 100644
+--- a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
+@@ -44,7 +44,7 @@ sub nsecs_secs {
+ sub nsecs_nsecs {
+     my ($nsecs) = @_;
+ 
+-    return $nsecs - nsecs_secs($nsecs);
++    return $nsecs % $NSECS_PER_SEC;
+ }
+ 
+ sub nsecs_str {
+-- 
+1.6.2.3
 
