@@ -1,86 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933632Ab0BYUeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 15:34:20 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:38214 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932934Ab0BYUeS (ORCPT
+	id S933652Ab0BYUei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 15:34:38 -0500
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1122 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933375Ab0BYUef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 15:34:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=WNJKrOsYZumMd4+ZgHtKYCKV2AgDHVsjUEdIZCH1JTkp+n21ZPmp+PQ8yRP69fljC/
-         +V69YVemdftJzobhcqTrxHhIK4U9nUsYiCET0d01EESYBidfBJpSJIjVUce0W5EexqwB
-         Aor7KeqvR+IR+2zHWNdxBLaukBrwy10GH7ia8=
-Message-ID: <4B86DEC6.1090307@gmail.com>
-Date: Thu, 25 Feb 2010 15:34:14 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 25 Feb 2010 15:34:35 -0500
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for February 22 (media/video/tvp7002)
+Date: Thu, 25 Feb 2010 21:34:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32.5-durdane; KDE/4.3.1; i686; ; )
+Cc: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       "Santiago Nunez-Corrales" <santiago.nunez@ridgerun.com>
+References: <20100222172218.4fd82a45.sfr@canb.auug.org.au> <4B82AF18.3030107@oracle.com> <20100225085205.9cf68ce9.randy.dunlap@oracle.com>
+In-Reply-To: <20100225085205.9cf68ce9.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/7] tcp: bugs and cleanup for 2.6.33
-References: <4B86DDCB.50608@gmail.com>
-In-Reply-To: <4B86DDCB.50608@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------040003010600050603030607"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002252134.10071.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040003010600050603030607
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thursday 25 February 2010 17:52:05 Randy Dunlap wrote:
+> On Mon, 22 Feb 2010 08:21:44 -0800 Randy Dunlap wrote:
+> 
+> > On 02/21/10 22:22, Stephen Rothwell wrote:
+> > > Hi all,
+> > > 
+> > > Changes since 20100219:
+> > 
+> > 
+> > drivers/media/video/tvp7002.c:896: error: 'struct tvp7002' has no member named 'registers'
+> 
+> same problem in linux-next-20100225.
+> 
+> so where are these registers??
 
-Redefine two TCP header functions to accept TCP header pointer.
-When subtracting, return signed int to allow error checking.
+Hmm, that code is a remnant from older revisions of this driver. Unfortunately,
+when I compiled this driver before creating my pull request I forgot to turn on
+the CONFIG_VIDEO_ADV_DEBUG option and so I never saw it.
 
-These functions will be used in subsequent patches that implement
-additional features.
+Anyway, below is a patch that fixes this. Please apply.
 
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  include/linux/tcp.h |   12 ++++++++++++
-  1 files changed, 12 insertions(+), 0 deletions(-)
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
 
---------------040003010600050603030607
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="len_th+2a3+2.6.33.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="len_th+2a3+2.6.33.patch"
+Santiago, I've also fixed the g_register function: it never returned a register
+value in the original code.
 
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 7fee8a4..d0133cf 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -223,6 +223,18 @@ static inline unsigned int tcp_optlen(const struct sk_buff *skb)
- 	return (tcp_hdr(skb)->doff - 5) * 4;
+Regards,
+
+	Hans
+
+diff --git a/drivers/media/video/tvp7002.c b/drivers/media/video/tvp7002.c
+index 0f0270b..5a878bc 100644
+--- a/drivers/media/video/tvp7002.c
++++ b/drivers/media/video/tvp7002.c
+@@ -859,13 +859,17 @@ static int tvp7002_g_register(struct v4l2_subdev *sd,
+ 						struct v4l2_dbg_register *reg)
+ {
+ 	struct i2c_client *client = v4l2_get_subdevdata(sd);
++	u8 val;
++	int ret;
+ 
+ 	if (!v4l2_chip_match_i2c_client(client, &reg->match))
+ 		return -EINVAL;
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	return reg->val < 0 ? -EINVAL : 0;
++	ret = tvp7002_read(sd, reg->reg & 0xff, &val);
++	reg->val = val;
++	return ret;
  }
  
-+/* Length of fixed header plus standard options. */
-+static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
-+{
-+	return th->doff * 4;
-+}
-+
-+/* Length of standard options only.  This could be negative. */
-+static inline int tcp_option_len_th(const struct tcphdr *th)
-+{
-+	return (int)(th->doff * 4) - sizeof(*th);
-+}
-+
- /* This defines a selective acknowledgement block. */
- struct tcp_sack_block_wire {
- 	__be32	start_seq;
+ /*
+@@ -881,21 +885,13 @@ static int tvp7002_s_register(struct v4l2_subdev *sd,
+ 						struct v4l2_dbg_register *reg)
+ {
+ 	struct i2c_client *client = v4l2_get_subdevdata(sd);
+-	struct tvp7002 *device = to_tvp7002(sd);
+-	int wres;
+ 
+ 	if (!v4l2_chip_match_i2c_client(client, &reg->match))
+ 		return -EINVAL;
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	wres = tvp7002_write(sd, reg->reg & 0xff, reg->val & 0xff);
+-
+-	/* Update the register value in device's table */
+-	if (!wres)
+-		device->registers[reg->reg].value = reg->val;
+-
+-	return wres < 0 ? -EINVAL : 0;
++	return tvp7002_write(sd, reg->reg & 0xff, reg->val & 0xff);
+ }
+ #endif
+ 
+
+
+> 
+> thanks,
+> ---
+> ~Randy
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+
 -- 
-1.6.3.3
-
-
---------------040003010600050603030607--
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
