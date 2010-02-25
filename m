@@ -1,54 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896Ab0BYDPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:15:21 -0500
-Received: from snt0-omc3-s25.snt0.hotmail.com ([65.55.90.164]:6194 "EHLO
-	snt0-omc3-s25.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758780Ab0BYDPR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:15:17 -0500
-Message-ID: <SNT125-W36AFF0BF953EABAC9A0432C3400@phx.gbl>
-X-Originating-IP: [96.253.143.208]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <tj@kernel.org>, <hancockrwd@gmail.com>
-CC: <david-b@pacbell.net>, <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: RE: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
-Date: Wed, 24 Feb 2010 19:15:16 -0800
-Importance: Normal
-In-Reply-To: <4B85E038.20905@kernel.org>
-References: <4B7CAF95.6020306@gmail.com> <20100218052223.GA13254@kroah.com>
-	 <51f3faa71002181633w1649a648s37ae73da342d0c3f@mail.gmail.com>
-	 <201002192139.46189.david-b@pacbell.net>
-	 <51f3faa71002192315ia84786eo1138bf9ab3417f2d@mail.gmail.com>
-	 <SNT125-W457447CBE941D2703E98D0C3420@phx.gbl>
- <51f3faa71002231626q1eb62adeo660c282418f0e01@mail.gmail.com>,<4B85E038.20905@kernel.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S1758882Ab0BYDPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:15:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758723Ab0BYDPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:15:16 -0500
+Message-ID: <4B85EC11.5030304@redhat.com>
+Date: Thu, 25 Feb 2010 11:18:41 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-X-OriginalArrivalTime: 25 Feb 2010 03:15:16.0700 (UTC) FILETIME=[C0D8C9C0:01CAB5C8]
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+References: <1266752533.3428.28.camel@Nokia-N900-42-11> <201002221829.13987.opurdila@ixiacom.com> <4B84B7F0.7090709@redhat.com> <201002241402.54122.opurdila@ixiacom.com> <4B85CFB4.5030908@redhat.com>
+In-Reply-To: <4B85CFB4.5030908@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cong Wang wrote:
+> Octavian Purdila wrote:
+>> On Wednesday 24 February 2010 07:24:00 you wrote:
+>>> Octavian Purdila wrote:
+>>>> Here is a new version of this patch which fixes both the comma and
+>>>> invalid value issues, please give it a try.
+>>> Sorry, it is even worse. :(
+>>>
+>>>> [net-next PATCH v5 2/3] sysctl: add proc_do_large_bitmap
+>>>>
+>>>> The new function can be used to read/write large bitmaps via /proc. A
+>>>> comma separated range format is used for compact output and input
+>>>> (e.g. 1,3-4,10-10).
+>>> Writing "50000-50100" gets EINVAL, it should be success.
+>>> Writing "50000,50100" fails too.
+>>>
+>>
+>> Hmm, they don't fail for me :-/
+>>
+>>> Please, at least, do some basic testing.
+>>>
+>>
+>> I do test them, I've attached the current test batch I was using.
+>>
+>> Anyways, today I've noticed that "1,2 3" does not fail and even more 
+>> importantly the final value is "3".
+>> Being that I don't see a way of fixing this without not acknowledging 
+>> 1,2 even though we will do set these values, I revisited the "1 2 3" 
+>> issue. And I don't understand why this is actually an issue, we are 
+>> just being more permissive (i.e. we are allowing as separators both 
+>> whitespaces and ,).
+>>
+>>
+> 
+> Oops, after rechecking my test case, it is actually my test case's
+> fault. Sorry for this. I will fix my test case and run it again.
+> 
 
+Hi,
 
-> (following thread from the ATA side) I'm with Greg on this. USB2.0 is
-> quite slow on today's standard and most 64bit machines now have IOMMU
-> of some kind anyway. 
+Still a small problem, if I do write(fd, "50000,50100", 12) I will
+get a return value of 11, which should mean 11 bytes are written,
+however, actually only the first 6 bytes are accepted.
 
-Except that unfortunately, Intel with Lynnfield and Clarkdale decided 
-to do market segmentation on the VT-d feature. 
-This could be done because both have an integrated northbridge.
-With Lynnfield, the very common Core i5 750 CPU do not support VT-d,
-but the Core i7 800 series does.
-With Clarkdale, the very common Core i3 500 series do not support VT-d,
-but the Core i5 600 series does, except the 661.
-Not to mention that in the Core 2 generation, VT-d was available only
-on Q35/Q45/X38/X48 chipsets.
+The rest looks better now.
 
-Yuhong Bao
- 		 	   		  
-_________________________________________________________________
-Hotmail: Trusted email with powerful SPAM protection.
-http://clk.atdmt.com/GBL/go/201469227/direct/01/
+Or am I missing something here? :)
+
+Thanks!
