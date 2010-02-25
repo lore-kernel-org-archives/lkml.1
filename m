@@ -1,133 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933928Ab0BYVdO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:33:14 -0500
-Received: from lucidpixels.com ([75.144.35.66]:44047 "EHLO lucidpixels.com"
+	id S933907Ab0BYVgl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:36:41 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37557 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933838Ab0BYVdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:33:11 -0500
-Date: Thu, 25 Feb 2010 16:33:09 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-net@vger.kernel.org
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: Pushing desktop boards to the MAX: Intel 10GbE AT2 Server
- Adapters!
-Message-ID: <alpine.DEB.2.00.1002251610060.8769@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S933759Ab0BYVgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 16:36:38 -0500
+Date: Thu, 25 Feb 2010 13:36:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/21] v6 add lockdep-based diagnostics to
+	rcu_dereference()
+Message-ID: <20100225213633.GA5936@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100223010435.GA666@linux.vnet.ibm.com> <20100225100022.GA25261@elte.hu> <20100225100147.GA28060@elte.hu> <20100225120444.GA17623@elte.hu> <20100225181830.GC6771@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100225181830.GC6771@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Feb 25, 2010 at 10:18:30AM -0800, Paul E. McKenney wrote:
+> On Thu, Feb 25, 2010 at 01:04:44PM +0100, Ingo Molnar wrote:
+> > 
+> > another, different warning is:
+> > 
+> > PM: Adding info for No Bus:vcsa6
+> > ------------[ cut here ]------------
+> > WARNING: at kernel/softirq.c:143 local_bh_enable_ip+0xba/0xf0()
+> > Hardware name: System Product Name
+> > Modules linked in:
+> > Pid: 0, comm: swapper Not tainted 2.6.33-tip-00730-gacec70d-dirty #18737
+> > Call Trace:
+> >  [<ffffffff8104e0eb>] warn_slowpath_common+0x7b/0xc0
+> >  [<ffffffff8166cd60>] ? __dst_free+0x60/0xd0
+> >  [<ffffffff8104e144>] warn_slowpath_null+0x14/0x20
+> >  [<ffffffff81055c7a>] local_bh_enable_ip+0xba/0xf0
+> >  [<ffffffff817c16d9>] _raw_spin_unlock_bh+0x19/0x20
+> >  [<ffffffff8166cd60>] __dst_free+0x60/0xd0
+> >  [<ffffffff8169de14>] dst_rcu_free+0x34/0x40
+> >  [<ffffffff8109c80d>] rcu_do_batch+0xcd/0x290
+> >  [<ffffffff8109ca3e>] __rcu_process_callbacks+0x6e/0xe0
+> >  [<ffffffff8109cbca>] rcu_needs_cpu+0x11a/0x170
+> >  [<ffffffff8107c14e>] tick_nohz_stop_sched_tick+0x15e/0x440
+> >  [<ffffffff81001dc9>] cpu_idle+0x79/0x120
+> >  [<ffffffff817bb627>] start_secondary+0xa0/0xa2
+> > ---[ end trace 155c62ea9b561096 ]---
+> > 
+> > Config attached.
+> 
+> Color me confused!
+> 
+> rcu_needs_cpu() is supposed to be called with irqs disabled, and
+> tick_nohz_stop_sched_tick() does in fact disable them with
+> local_irq_save() near the beginning of the function.  Doing a quick
+> inspection, starting at that point in tick_nohz_stop_sched_tick():
+> 
+> o	smp_processor_id() does not mess with irq, nor does per_cpu().
+> 
+> o	tick_nohz_start_idle() calls a bunch of things.
+> 	sched_clock_cpu() checks for irqs being disabled, but
+> 	only if CONFIG_HAVE_UNSTABLE_SCHED_CLOCK.  Which you have
+> 	set.  So we know irqs remained disabled at this point.
+> 	
+> 	And I don't see anything re-enabling irqs in the subsequent
+> 	code path in this function.
+> 
+> o	need_resched() just checks the TIF_NEED_RESCHED flag.
+> 
+> o	Neither local_softirq_pending() and cpu_online() mess
+> 	with irq enabling.
+> 
+> o	The code path containing the printk() was apparently not
+> 	taken, as there is no message in your log.
+> 
+> o	read_seqbegin() and read_seqretry() leave irqs alone, as
+> 	does timekeeping_max_deferment().
+> 
+> And that puts us at the call to rcu_needs_cpu().  You have the
+> new CONFIG_RCU_FAST_NO_HZ config variable set, and are not running
+> preemptible RCU, so we are in the one at line 993 of rcutree_plugin.c.
+> The fact that __rcu_process_callbacks() is on the stack means that all
+> other CPUs were in dyntick-idle mode, so we went through the loop.
+> 
+> o	rcu_sched_qs() doesn't mess with irqs.
+> 
+> o	force_quiescent_state() does mess with irqs, but puts them
+> 	back the way it found them.
+> 
+> o	Ditto for __rcu_process_callbacks().
+> 
+> So I am reduced to putting together a diagnostic patch for you.  :-/
 
-Both are running 2.6.33 x86_64:
+-EICANTREAD
 
-I have two desktop motheboards:
-1. Intel DP55KG
-2. A Gigabyte P35-DS4
+Commit 8bd93a2c ("Accelerate grace period...") is busted.  I will work
+out how to fix it.
 
-I have two 10GbE AT2 server adapters, configuration:
-1. Intel DP55KG (15 Drive RAID-6) w/3ware 9650SE-16PML
-2. Gigabyte P35-DS4 (softare RAID-5 across 8 disks)
-
-When I use iperf, I get ~9-10Gbps:
-
-Device eth3 [10.0.0.253] (1/1):
-================================================================================
-Incoming:                               Outgoing:
-Curr: 1.10 MByte/s                      Curr: 1120.57 MByte/s
-Avg: 0.07 MByte/s                       Avg: 66.20 MByte/s
-Min: 0.66 MByte/s                       Min: 666.95 MByte/s
-Max: 1.10 MByte/s                       Max: 1120.57 MByte/s
-Ttl: 4.40 MByte                         Ttl: 4474.84 MByte
-
-p34:~# iperf -c 10.0.0.254
-------------------------------------------------------------
-Client connecting to 10.0.0.254, TCP port 5001
-TCP window size: 27.4 KByte (default)
-------------------------------------------------------------
-[  3] local 10.0.0.253 port 52791 connected with 10.0.0.254 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec  10.9 GBytes  9.39 Gbits/sec
-p34:~#
-
-When I copy a large file over NFS from Gigabyte (SW) raid to the Intel
-motherboard, I get what the SW raid can read at, approximately: 560MiB/s.
-
-Here is the file: (49GB)
--rw-r--r-- 1 abc users 52046502432 2010-02-25 16:01 data.bkf
-
->From Gigabyte/SW RAID-5 => Intel/HW RAID-6 (9650SE-16PML):
-$ /usr/bin/time cp /nfs/data.bkf .
-0.04user 45.51system 1:47.07elapsed 42%CPU (0avgtext+0avgdata 7008maxresident)k
-0inputs+0outputs (1major+489minor)pagefaults 0swaps
-=> Downloading 49000MB for 1.47 minutes is: 568889KB/s.
-
-However, from Intel/HW RAID-6 (9650SE-16PML) => Gigabyte/SW RAID-5
-$ /usr/bin/time cp data.bkf /nfs
-0.02user 31.54system 4:33.29elapsed 11%CPU (0avgtext+0avgdata 7008maxresident)k
-0inputs+0outputs (0major+490minor)pagefaults 0swaps
-=> Downloading 49000MB for 4.33 minutes is: 193133KB/s.
-
-When running top, I could see md raid 5 and pdflush at or near 100% CPU.
-Is the problem scaling with mdadm/raid-5 on the Gigabyte motherboard?
-
-Gigabyte: 8GB Memory & Q6600
-Intel DP55KG: 8GB Memory & Core i7 870
-
->From the kernel:
-[   80.291618] ixgbe: eth3 NIC Link is Up 10 Gbps, Flow Control: RX/TX
-
-With XFS, it used to get > 400MiB/s for writes.
-With EXT4, only 200-300MiB/s:
-
-(On Gigabyte board)
-$ dd if=/dev/zero of=bigfile bs=1M count=10240
-10240+0 records in
-10240+0 records out
-10737418240 bytes (11 GB) copied, 38.6415 s, 278 MB/s
-
-Some more benchmarks (Gigabyte->Intel)
-
----- Connecting data socket to (10.0.0.254) port 51421
----- Data connection established
----> RETR CentOS-5.1-x86_64-bin-DVD.iso
-<--- 150-Accepted data connection
-<--- 150 4338530.0 kbytes to download
----- Got EOF on data connection
----- Closing data socket
-4442654720 bytes transferred in 8 seconds (502.77M/s)
-lftp abc@10.0.0.254:/r/1/iso>
-
-CentOS DVD image in 8 seconds!
-
-rsync is much slower:
-$ rsync -avu --stats --progress /nfs/CentOS-5.1-x86_64-bin-DVD.iso  .
-sending incremental file list
-CentOS-5.1-x86_64-bin-DVD.iso
-   4442654720 100%  234.90MB/s    0:00:18 (xfer#1, to-check=0/1)
-
-I am using nobarrier, guess some more tweaking is required on the Gigabyte
-motherboard with software raid.
-
-For the future if anyone is wondering, the only tweak for the network 
-configuration is setting the MTU to 9000 (jumbo frames, here is my entry 
-for /etc/network/interfaces)
-
-# Intel 10GbE (PCI-e)
-auto eth3
-iface eth3 inet static
-address 10.0.0.253
-network 10.0.0.0
-netmask 255.255.255.0
-mtu 9000
-
-Congrats Intel for making a nice 10GbE CAT6a card without a fan!
-
-Thank you!
-
-Justin.
-
+							Thanx, Paul
