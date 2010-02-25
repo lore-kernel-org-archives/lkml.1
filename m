@@ -1,114 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296Ab0BYPLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:11:00 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:34936 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759103Ab0BYPK6 (ORCPT
+	id S932165Ab0BYPMR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:12:17 -0500
+Received: from trinity.develer.com ([83.149.158.210]:43696 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759190Ab0BYPMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:10:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAJchhktGGOM5/2dsb2JhbACbFnS8a4R1BIMX
-Date: Thu, 25 Feb 2010 10:10:56 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 01/18] kprobes/x86: Cleanup
-	RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
-Message-ID: <20100225151055.GA12635@Krystal>
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133349.6725.99302.stgit@localhost6.localdomain6>
-Mime-Version: 1.0
+	Thu, 25 Feb 2010 10:12:15 -0500
+Date: Thu, 25 Feb 2010 16:12:11 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
+Message-ID: <20100225151211.GC3964@linux>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+ <1266765525-30890-3-git-send-email-arighi@develer.com>
+ <20100223212943.GF11930@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100225133349.6725.99302.stgit@localhost6.localdomain6>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:10:29 up 70 days, 23:28,  4 users,  load average: 0.10, 0.08,
-	0.03
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100223212943.GF11930@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Change RELATIVEJUMP_INSTRUCTION macro to RELATIVEJUMP_OPCODE since it
-> represents just the opcode byte.
+On Tue, Feb 23, 2010 at 04:29:43PM -0500, Vivek Goyal wrote:
+> On Sun, Feb 21, 2010 at 04:18:45PM +0100, Andrea Righi wrote:
+> 
+> [..]
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index 0b19943..c9ff1cd 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -137,10 +137,11 @@ static struct prop_descriptor vm_dirties;
+> >   */
+> >  static int calc_period_shift(void)
+> >  {
+> > -	unsigned long dirty_total;
+> > +	unsigned long dirty_total, dirty_bytes;
+> >  
+> > -	if (vm_dirty_bytes)
+> > -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
+> > +	dirty_bytes = mem_cgroup_dirty_bytes();
+> > +	if (dirty_bytes)
+> > +		dirty_total = dirty_bytes / PAGE_SIZE;
+> >  	else
+> >  		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
+> >  				100;
+> 
+> Ok, I don't understand this so I better ask. Can you explain a bit how memory
+> cgroup dirty ratio is going to play with per BDI dirty proportion thing.
+> 
+> Currently we seem to be calculating per BDI proportion (based on recently
+> completed events), of system wide dirty ratio and decide whether a process
+> should be throttled or not.
+> 
+> Because throttling decision is also based on BDI and its proportion, how
+> are we going to fit it with mem cgroup? Is it going to be BDI proportion
+> of dirty memory with-in memory cgroup (and not system wide)?
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+IMHO we need to calculate the BDI dirty threshold as a function of the
+cgroup's dirty memory, and keep BDI statistics system wide.
 
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Anders Kaseorg <andersk@ksplice.com>
-> Cc: Tim Abbott <tabbott@ksplice.com>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: Jason Baron <jbaron@redhat.com>
-> Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-> ---
-> 
->  arch/x86/include/asm/kprobes.h |    2 +-
->  arch/x86/kernel/kprobes.c      |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/kprobes.h b/arch/x86/include/asm/kprobes.h
-> index 4fe681d..eaec8ea 100644
-> --- a/arch/x86/include/asm/kprobes.h
-> +++ b/arch/x86/include/asm/kprobes.h
-> @@ -32,7 +32,7 @@ struct kprobe;
->  
->  typedef u8 kprobe_opcode_t;
->  #define BREAKPOINT_INSTRUCTION	0xcc
-> -#define RELATIVEJUMP_INSTRUCTION 0xe9
-> +#define RELATIVEJUMP_OPCODE 0xe9
->  #define MAX_INSN_SIZE 16
->  #define MAX_STACK_SIZE 64
->  #define MIN_STACK_SIZE(ADDR)					       \
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-> index 5de9f4a..15177cd 100644
-> --- a/arch/x86/kernel/kprobes.c
-> +++ b/arch/x86/kernel/kprobes.c
-> @@ -115,7 +115,7 @@ static void __kprobes set_jmp_op(void *from, void *to)
->  	} __attribute__((packed)) * jop;
->  	jop = (struct __arch_jmp_op *)from;
->  	jop->raddr = (s32)((long)(to) - ((long)(from) + 5));
-> -	jop->op = RELATIVEJUMP_INSTRUCTION;
-> +	jop->op = RELATIVEJUMP_OPCODE;
->  }
->  
->  /*
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+So, if a task is generating some writes, the threshold to start itself
+the writeback will be calculated as a function of the cgroup's dirty
+memory. If the BDI dirty memory is greater than this threshold, the task
+must start to writeback dirty pages until it reaches the expected dirty
+limit.
 
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+OK, in this way a cgroup with a small dirty limit may be forced to
+writeback a lot of pages dirtied by other cgroups on the same device.
+But this is always related to the fact that tasks are forced to
+writeback dirty inodes randomly, and not the inodes they've actually
+dirtied.
+
+-Andrea
