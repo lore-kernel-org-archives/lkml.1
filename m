@@ -1,74 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084Ab0BYDEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:04:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54898 "EHLO hera.kernel.org"
+	id S932105Ab0BYDK1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:10:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37312 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758718Ab0BYDEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:04:43 -0500
-Message-ID: <4B85EAE8.8040104@kernel.org>
-Date: Thu, 25 Feb 2010 12:13:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Samu Onkalo <samu.p.onkalo@nokia.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] workqueues: change cancel_work_sync() to clear	work->data
-References: <20100224202031.GA26987@redhat.com>
-In-Reply-To: <20100224202031.GA26987@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S932093Ab0BYDK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:10:26 -0500
+Date: Thu, 25 Feb 2010 14:10:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Subject: linux-next: manual merge of the block tree with Linus' tree
+Message-Id: <20100225141022.c5b3b7ce.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 03:03:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Jens,
 
-On 02/25/2010 05:20 AM, Oleg Nesterov wrote:
-> In short: change cancel_work_sync(work) to mark this work as "never
-> queued" upon return.
-> 
-> When cancel_work_sync(work) succeeds, we know that this work can't be
-> queued or running, and since we own WORK_STRUCT_PENDING nobody can change
-> the bits in work->data under us. This means we can also clear the "cwq"
-> part along with _PENDING bit lockless before return, unless the work is
-> queued nobody can assume get_wq_data() is stable even under cwq->lock.
-> 
-> This change can speedup the subsequent cancel/flush requests, and as
-> Dmitry pointed out this simplifies the usage of work_struct's which
-> can be queued on different workqueues. Consider this pseudo code from
-> the input subsystem:
-> 
-> 	struct workqueue_struct *WQ;
-> 	struct work_struct *WORK;
-> 
-> 	for (;;) {
-> 		WQ = create_workqueue();
-> 		...
-> 		if (condition())
-> 			queue_work(WQ, WORK);
-> 		...
-> 		cancel_work_sync(WORK);
-> 		destroy_workqueue(WQ);
-> 	}
-> 
-> If condition() returns T and then F, cancel_work_sync() will crash the
-> kernel because WORK->data still points to the already destroyed workqueue.
-> With this patch the code like above becomes correct.
-> 
-> Suggested-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Today's linux-next merge of the block tree got a conflict in
+include/linux/blkdev.h between commit
+79da0644a8e0838522828f106e4049639eea6baf ("Revert "block: improve
+queue_should_plug() by looking at IO depths"") from Linus' tree and
+commit 488991e28e55b4fbca8067edf0259f69d1a6f92c ("block: Added in
+stricter no merge semantics for block I/O") from the block tree.
 
-Yeap, generally looks good to me and I've been doing similar things to
-implement non-reentrant workqueues (records the last cpu a work was on
-in work->dataa after the work is dispatched to a worker thread).  I'll
-add this to the series.
-
-Thank you.
+Context changes - I have fixed it up (see below) and can carry the fix
+for a while.  I suspect that you were expecting this. :-)
 
 -- 
-tejun
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc include/linux/blkdev.h
+index 1896e86,f71f5c5..0000000
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@@ -461,7 -461,9 +461,8 @@@ struct request_queu
+  #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
+  #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
+  #define QUEUE_FLAG_IO_STAT     15	/* do IO stats */
+ -#define QUEUE_FLAG_CQ	       16	/* hardware does queuing */
+ -#define QUEUE_FLAG_DISCARD     17	/* supports DISCARD */
+ -#define QUEUE_FLAG_NOXMERGES   18	/* No extended merges */
+ +#define QUEUE_FLAG_DISCARD     16	/* supports DISCARD */
+++#define QUEUE_FLAG_NOXMERGES   17	/* No extended merges */
+  
+  #define QUEUE_FLAG_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
+  				 (1 << QUEUE_FLAG_CLUSTER) |		\
+@@@ -585,8 -587,11 +586,10 @@@ enum 
+  
+  #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
+  #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+ -#define blk_queue_queuing(q)	test_bit(QUEUE_FLAG_CQ, &(q)->queue_flags)
+  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
+  #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
++ #define blk_queue_noxmerges(q)	\
++ 	test_bit(QUEUE_FLAG_NOXMERGES, &(q)->queue_flags)
+  #define blk_queue_nonrot(q)	test_bit(QUEUE_FLAG_NONROT, &(q)->queue_flags)
+  #define blk_queue_io_stat(q)	test_bit(QUEUE_FLAG_IO_STAT, &(q)->queue_flags)
+  #define blk_queue_flushing(q)	((q)->ordseq)
