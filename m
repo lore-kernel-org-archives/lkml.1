@@ -1,86 +1,200 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933795Ab0BYVMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:12:53 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59764 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932635Ab0BYVMw convert rfc822-to-8bit (ORCPT
+	id S933817Ab0BYVNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:13:33 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:44504 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933645Ab0BYVNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:12:52 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 25 Feb 2010 22:12:37 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: What's in linux1394-2.6.git?
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.2cce8c26bac5aa03@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+	Thu, 25 Feb 2010 16:13:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=hxBzz1oQj/l9yiZi2SwjYME8ydrJmJz8D4JrMlMoPu/6FUK++16XPlf6gn3e/iVjPe
+         qeW8ODORcIsNnln9Aeq6nep1Dl4cTmoICg2/GRgMBcLjoIMvYBOTTKwd1jYVIaNI3ffV
+         USMRek6cw+WSNst0o3KvMAZUmxr61gKKuEwLg=
+From: Chihau Chau <chihau@gmail.com>
+To: gregkh@suse.de
+Cc: pavel@ucw.cz, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Chihau Chau <chihau@gmail.com>
+Subject: [PATCH] Staging: dream: camera: msm_camera: fix some code style issues
+Date: Thu, 25 Feb 2010 18:13:00 -0300
+Message-Id: <1267132380-14916-1-git-send-email-chihau@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+From: Chihau Chau <chihau@gmail.com>
 
-if there are no objections, I will see to get the following pulled into
-the mainline early next week:
+This fixes some code style issues like else staments after the close
+braces '}' and to use __func__ instead of __FUNCTION__.
 
-  - three cycle timer related enhancements (hence mostly audio related):
-    hardware quirk fix for reliable cycle timer register access,
-    "quirks" module parameter for firewire-ohci, choice of clock for
-    local time in the read-cycle-timer ioctl,
+Signed-off-by: Chihau Chau <chihau@gmail.com>
+---
+ drivers/staging/dream/camera/msm_camera.c |   37 ++++++++++++++---------------
+ 1 files changed, 18 insertions(+), 19 deletions(-)
 
-  - a few fixes (minor ones as far as I can tell),
-
-  - some refactoring like the config ROM text leaf accessor and dead
-    code removal.
-
-Clemens Ladisch (2):
-      firewire: add fw_csr_string() helper function
-      firewire: ohci: work around cycle timer bugs on VIA controllers
-
-Németh Márton (1):
-      firewire: make PCI device id constant
-
-Stefan Richter (21):
-      firewire: core: fw_csr_string addendum
-      firewire: qualify config ROM cache pointers as const pointers
-      firewire: ohci: enable cycle timer fix on ALi and NEC controllers
-      firewire: get_cycle_timer optimization and cleanup
-      firewire: remove incomplete Bus_Time CSR support
-      Merge tag 'v2.6.33' for its firewire changes since last branch point
-      firewire: core: fix "giving up on config rom" with Panasonic AG-DV2500
-      firewire: core: don't fail device creation in case of too large config ROM blocks
-      firewire: core: increase stack size of config ROM reader
-      firewire: core: fix an information leak
-      firewire: core: rename an internal function
-      firewire: cdev: add more flexible cycle timer ioctl
-      firewire: cdev: increment ABI version number
-      firewire: core: change type of a data buffer
-      firewire: core: combine a bit of repeated code
-      firewire: ohci: remove unused dualbuffer IR code
-      firewire: ohci: reorder struct fw_ohci for better cache efficiency
-      firewire: ohci: use an ID table for quirks detection
-      firewire: ohci: add module parameter to activate quirk fixes
-      firewire: ohci: fix IR/IT context mask mixup
-      firewire: ohci: extend initialization log message
-
- drivers/firewire/core-cdev.c            |  368 +++++++++++++++----------------
- drivers/firewire/core-device.c          |  198 +++++++++++------
- drivers/firewire/core-transaction.c     |   17 +-
- drivers/firewire/core.h                 |    2 +-
- drivers/firewire/ohci.c                 |  364 ++++++++++--------------------
- drivers/firewire/sbp2.c                 |    5 +-
- drivers/media/dvb/firewire/firedtv-fw.c |   39 +---
- include/linux/firewire-cdev.h           |   40 +++-
- include/linux/firewire.h                |   11 +-
- include/linux/pci_ids.h                 |    1 -
- 10 files changed, 493 insertions(+), 552 deletions(-)
-
+diff --git a/drivers/staging/dream/camera/msm_camera.c b/drivers/staging/dream/camera/msm_camera.c
+index 4f808dc..925e16c 100644
+--- a/drivers/staging/dream/camera/msm_camera.c
++++ b/drivers/staging/dream/camera/msm_camera.c
+@@ -670,7 +670,7 @@ static int msm_get_stats(struct msm_sync *sync, void __user *arg)
+ 					&(stats.fd));
+ 			if (!stats.buffer) {
+ 				pr_err("%s: msm_pmem_stats_ptov_lookup error\n",
+-					__FUNCTION__);
++					__func__);
+ 				rc = -EINVAL;
+ 				goto failure;
+ 			}
+@@ -718,8 +718,7 @@ static int msm_get_stats(struct msm_sync *sync, void __user *arg)
+ 					buf.fmain.buffer =
+ 						(unsigned long)region.vaddr;
+ 					buf.fmain.fd = region.fd;
+-				}
+-				else {
++				} else {
+ 					pr_err("%s: pmem lookup failed\n",
+ 						__func__);
+ 					rc = -EINVAL;
+@@ -838,8 +837,8 @@ static int msm_ctrl_cmd_done(struct msm_control_device *ctrl_pmsm,
+ 			kfree(qcmd);
+ 			goto end;
+ 		}
+-	}
+-	else ctrlcmd->value = NULL;
++	} else
++		ctrlcmd->value = NULL;
+ 
+ end:
+ 	CDBG("msm_ctrl_cmd_done: end rc = %d\n", rc);
+@@ -876,7 +875,7 @@ static int msm_config_vfe(struct msm_sync *sync, void __user *arg)
+ 					MSM_PMEM_AEC_AWB, &region[0],
+ 					NUM_WB_EXP_STAT_OUTPUT_BUFFERS);
+ 		if (!axi_data.bufnum1) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		axi_data.region = &region[0];
+@@ -888,7 +887,7 @@ static int msm_config_vfe(struct msm_sync *sync, void __user *arg)
+ 					MSM_PMEM_AF, &region[0],
+ 					NUM_AF_STAT_OUTPUT_BUFFERS);
+ 		if (!axi_data.bufnum1) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		axi_data.region = &region[0];
+@@ -899,7 +898,7 @@ static int msm_config_vfe(struct msm_sync *sync, void __user *arg)
+ 		break;
+ 	default:
+ 		pr_err("%s: unknown command type %d\n",
+-			__FUNCTION__, cfgcmd.cmd_type);
++			__func__, cfgcmd.cmd_type);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -928,7 +927,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->frame, pmem_type,
+ 				&region[0], 8);
+ 		if (!axi_data.bufnum1) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		break;
+@@ -939,7 +938,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->frame, pmem_type,
+ 				&region[0], 8);
+ 		if (!axi_data.bufnum2) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		break;
+@@ -950,7 +949,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->frame, pmem_type,
+ 				&region[0], 8);
+ 		if (!axi_data.bufnum1) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -959,7 +958,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->frame, pmem_type,
+ 				&region[axi_data.bufnum1], 8);
+ 		if (!axi_data.bufnum2) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		break;
+@@ -970,7 +969,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->frame, pmem_type,
+ 				&region[0], 8);
+ 		if (!axi_data.bufnum2) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		break;
+@@ -981,7 +980,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
+ 
+ 	default:
+ 		pr_err("%s: unknown command type %d\n",
+-			__FUNCTION__, cfgcmd->cmd_type);
++			__func__, cfgcmd->cmd_type);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1047,7 +1046,7 @@ static int __msm_put_frame_buf(struct msm_sync *sync,
+ 			rc = sync->vfefn.vfe_config(&cfgcmd, &pphy);
+ 	} else {
+ 		pr_err("%s: msm_pmem_frame_vtop_lookup failed\n",
+-			__FUNCTION__);
++			__func__);
+ 		rc = -EINVAL;
+ 	}
+ 
+@@ -1131,7 +1130,7 @@ static int msm_stats_axi_cfg(struct msm_sync *sync,
+ 		break;
+ 	default:
+ 		pr_err("%s: unknown command type %d\n",
+-			__FUNCTION__, cfgcmd->cmd_type);
++			__func__, cfgcmd->cmd_type);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1140,7 +1139,7 @@ static int msm_stats_axi_cfg(struct msm_sync *sync,
+ 			msm_pmem_region_lookup(&sync->stats, pmem_type,
+ 				&region[0], NUM_WB_EXP_STAT_OUTPUT_BUFFERS);
+ 		if (!axi_data.bufnum1) {
+-			pr_err("%s: pmem region lookup error\n", __FUNCTION__);
++			pr_err("%s: pmem region lookup error\n", __func__);
+ 			return -EINVAL;
+ 		}
+ 		axi_data.region = &region[0];
+@@ -1177,7 +1176,7 @@ static int msm_put_stats_buffer(struct msm_sync *sync, void __user *arg)
+ 			cfgcmd.cmd_type = CMD_STATS_AF_BUF_RELEASE;
+ 		else {
+ 			pr_err("%s: invalid buf type %d\n",
+-				__FUNCTION__,
++				__func__,
+ 				buf.type);
+ 			rc = -EINVAL;
+ 			goto put_done;
+@@ -1223,7 +1222,7 @@ static int msm_axi_config(struct msm_sync *sync, void __user *arg)
+ 
+ 	default:
+ 		pr_err("%s: unknown command type %d\n",
+-			__FUNCTION__,
++			__func__,
+ 			cfgcmd.cmd_type);
+ 		return -EINVAL;
+ 	}
 -- 
-Stefan Richter
--=====-==-=- --=- ==--=
-http://arcgraph.de/sr/
+1.5.6.3
 
