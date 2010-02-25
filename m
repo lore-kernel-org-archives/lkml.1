@@ -1,138 +1,193 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933949Ab0BYVW4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 16:22:56 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63533 "EHLO
+	id S934095Ab0BYVZh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 16:25:37 -0500
+Received: from mail.windriver.com ([147.11.1.11]:63734 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933821Ab0BYVWa (ORCPT
+	with ESMTP id S933848Ab0BYVXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 16:22:30 -0500
+	Thu, 25 Feb 2010 16:23:08 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 21/28] kgdboc,kdb: Allow kdb to work on a non open console port
-Date: Thu, 25 Feb 2010 15:21:26 -0600
-Message-Id: <1267132893-23624-22-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 2/8] x86, kgdb, init: Add early and late debug states
+Date: Thu, 25 Feb 2010 15:22:00 -0600
+Message-Id: <1267132926-23685-3-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 25 Feb 2010 21:21:58.0680 (UTC) FILETIME=[90416180:01CAB660]
+In-Reply-To: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+References: <1267132926-23685-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 25 Feb 2010 21:22:46.0476 (UTC) FILETIME=[ACBE78C0:01CAB660]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If kdb is open on a serial port that is not actually a console make
-sure to call the poll routines to emit and receive characters.
+The kernel debugger can operate well before mm_init(), but the x86
+hardware breakpoint code which uses the perf api requires that the
+kernel allocators are initialized.
 
+This means the kernel debug core needs to provide an optional arch
+specific call back to allow the initialization functions to run after
+the kernel has been further initialized.
+
+The kdb shell already had a similar restriction with an early
+initialization and late initialization.  The kdb_init() was moved into
+the debug core's version of the late init which is called
+dbg_late_init();
+
+CC: kgdb-bugreport@lists.sourceforge.net
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Acked-by: Martin Hicks <mort@sgi.com>
 ---
- drivers/serial/kgdboc.c   |   14 ++++++++++++++
- include/linux/kgdb.h      |    3 +++
- kernel/debug/kdb/kdb_io.c |   16 ++++++++++++++++
- 3 files changed, 33 insertions(+), 0 deletions(-)
+ arch/x86/kernel/kgdb.c    |   17 ++++++++++-------
+ include/linux/kgdb.h      |   14 ++++++++++++++
+ init/main.c               |    4 ++--
+ kernel/debug/debug_core.c |   16 ++++++++++++++++
+ 4 files changed, 42 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index ecef6e1..b765ab4 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -16,6 +16,7 @@
- #include <linux/kgdb.h>
- #include <linux/kdb.h>
- #include <linux/tty.h>
-+#include <linux/console.h>
- 
- #define MAX_CONFIG_LEN		40
- 
-@@ -93,12 +94,14 @@ static int configure_kgdboc(void)
- 	int tty_line = 0;
- 	int err;
- 	char *cptr = config;
-+	struct console *cons;
- 
- 	err = kgdboc_option_setup(config);
- 	if (err || !strlen(config) || isspace(config[0]))
- 		goto noconfig;
- 
- 	err = -ENODEV;
-+	kgdboc_io_ops.is_console = 0;
- 	kgdb_tty_driver = NULL;
- 
- 	if (kgdboc_register_kbd(&cptr))
-@@ -108,6 +111,17 @@ static int configure_kgdboc(void)
- 	if (!p)
- 		goto noconfig;
- 
-+	cons = console_drivers;
-+	while (cons) {
-+		int idx;
-+		if (cons->device && cons->device(cons, &idx) == p &&
-+		    idx == tty_line) {
-+			kgdboc_io_ops.is_console = 1;
-+			break;
-+		}
-+		cons = cons->next;
-+	}
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 3b762bc..896874a 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -596,14 +596,15 @@ static struct notifier_block kgdb_notifier = {
+  */
+ int kgdb_arch_init(void)
+ {
++	return register_die_notifier(&kgdb_notifier);
++}
 +
- 	kgdb_tty_driver = p;
- 	kgdb_tty_line = tty_line;
++void kgdb_arch_late(void)
++{
+ 	int i, cpu;
+-	int ret;
+ 	struct perf_event_attr attr;
+ 	struct perf_event **pevent;
  
+-	ret = register_die_notifier(&kgdb_notifier);
+-	if (ret != 0)
+-		return ret;
+ 	/*
+ 	 * Pre-allocate the hw breakpoint structions in the non-atomic
+ 	 * portion of kgdb because this operation requires mutexs to
+@@ -615,12 +616,15 @@ int kgdb_arch_init(void)
+ 	attr.bp_type = HW_BREAKPOINT_W;
+ 	attr.disabled = 1;
+ 	for (i = 0; i < 4; i++) {
++		if (breakinfo[i].pev)
++			continue;
+ 		breakinfo[i].pev = register_wide_hw_breakpoint(&attr, NULL);
+ 		if (IS_ERR(breakinfo[i].pev)) {
+-			printk(KERN_ERR "kgdb: Could not allocate hw breakpoints\n");
++			printk(KERN_ERR "kgdb: Could not allocate hw"
++			       "breakpoints\nDisabling the kernel debugger\n");
+ 			breakinfo[i].pev = NULL;
+ 			kgdb_arch_exit();
+-			return -1;
++			return;
+ 		}
+ 		for_each_online_cpu(cpu) {
+ 			pevent = per_cpu_ptr(breakinfo[i].pev, cpu);
+@@ -631,7 +635,6 @@ int kgdb_arch_init(void)
+ 			}
+ 		}
+ 	}
+-	return ret;
+ }
+ 
+ /**
 diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index ee007ea..6c784ab 100644
+index 6c784ab..9340f34 100644
 --- a/include/linux/kgdb.h
 +++ b/include/linux/kgdb.h
-@@ -247,6 +247,8 @@ struct kgdb_arch {
-  * the I/O driver.
-  * @post_exception: Pointer to a function that will do any cleanup work
-  * for the I/O driver.
-+ * @is_console: 1 if the end device is a console 0 if the I/O device is
-+ * not a console
-  */
- struct kgdb_io {
- 	const char		*name;
-@@ -256,6 +258,7 @@ struct kgdb_io {
- 	int			(*init) (void);
- 	void			(*pre_exception) (void);
- 	void			(*post_exception) (void);
-+	int			is_console;
+@@ -208,6 +208,17 @@ extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
+ extern int kgdb_arch_remove_breakpoint(unsigned long addr, char *bundle);
+ 
+ /**
++ *	kgdb_arch_late - Perform any architecture specific initalization.
++ *
++ *	This function will handle the late initalization of any
++ *	architecture specific callbacks.  This is an optional function for
++ *	handling things like late initialization of hw breakpoints.  The
++ *	default implementation does nothing.
++ */
++extern void kgdb_arch_late(void);
++
++
++/**
+  * struct kgdb_arch - Describe architecture specific values.
+  * @gdb_bpt_instr: The instruction to trigger a breakpoint.
+  * @flags: Flags for the breakpoint, currently just %KGDB_HW_BREAKPOINT.
+@@ -285,7 +296,10 @@ extern int			kgdb_single_step;
+ extern atomic_t			kgdb_active;
+ #define in_dbg_master() \
+ 	(raw_smp_processor_id() == atomic_read(&kgdb_active))
++extern bool dbg_is_early;
++extern void __init dbg_late_init(void);
+ #else /* ! CONFIG_KGDB */
+ #define in_dbg_master() (0)
++#define dbg_late_init()
+ #endif /* ! CONFIG_KGDB */
+ #endif /* _KGDB_H_ */
+diff --git a/init/main.c b/init/main.c
+index 9d415a1..1839e3f 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -63,7 +63,7 @@
+ #include <linux/sched.h>
+ #include <linux/signal.h>
+ #include <linux/idr.h>
+-#include <linux/kdb.h>
++#include <linux/kgdb.h>
+ #include <linux/ftrace.h>
+ #include <linux/async.h>
+ #include <linux/kmemcheck.h>
+@@ -660,7 +660,7 @@ asmlinkage void __init start_kernel(void)
+ 	key_init();
+ 	radix_tree_init();
+ 	security_init();
+-	kdb_init(KDB_INIT_FULL);
++	dbg_late_init();
+ 	vfs_caches_init(totalram_pages);
+ 	signals_init();
+ 	/* rootfs populating might need page-writeback */
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 3d36d9e..e7a4d9b 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -78,6 +78,8 @@ static DEFINE_SPINLOCK(kgdb_registration_lock);
+ static int kgdb_con_registered;
+ /* determine if kgdb console output should be used */
+ static int kgdb_use_con;
++/* Flag for alternate operations for early debugging */
++bool dbg_is_early = true;
+ /* Next cpu to become the master debug core */
+ int dbg_switch_cpu;
+ 
+@@ -777,11 +779,25 @@ static struct notifier_block kgdb_panic_event_nb = {
+        .priority	= INT_MAX,
  };
  
- extern struct kgdb_arch		arch_kgdb_ops;
-diff --git a/kernel/debug/kdb/kdb_io.c b/kernel/debug/kdb/kdb_io.c
-index 8339b29..58be7e9 100644
---- a/kernel/debug/kdb/kdb_io.c
-+++ b/kernel/debug/kdb/kdb_io.c
-@@ -673,6 +673,14 @@ kdb_printit:
- 	if (!dbg_kdb_mode && kgdb_connected) {
- 		gdbstub_msg_write(kdb_buffer, retlen);
- 	} else {
-+		if (!dbg_io_ops->is_console) {
-+			len = strlen(kdb_buffer);
-+			cp = kdb_buffer;
-+			while (len--) {
-+				dbg_io_ops->write_char(*cp);
-+				cp++;
-+			}
-+		}
- 		while (c) {
- 			c->write(c, kdb_buffer, retlen);
- 			touch_nmi_watchdog();
-@@ -719,6 +727,14 @@ kdb_printit:
- 		kdb_input_flush();
- 		c = console_drivers;
- 
-+		if (!dbg_io_ops->is_console) {
-+			len = strlen(moreprompt);
-+			cp = moreprompt;
-+			while (len--) {
-+				dbg_io_ops->write_char(*cp);
-+				cp++;
-+			}
-+		}
- 		while (c) {
- 			c->write(c, moreprompt, strlen(moreprompt));
- 			touch_nmi_watchdog();
++void __weak kgdb_arch_late(void)
++{
++}
++
++void __init dbg_late_init(void)
++{
++	dbg_is_early = false;
++	if (kgdb_io_module_registered)
++		kgdb_arch_late();
++	kdb_init(KDB_INIT_FULL);
++}
++
+ static void kgdb_register_callbacks(void)
+ {
+ 	if (!kgdb_io_module_registered) {
+ 		kgdb_io_module_registered = 1;
+ 		kgdb_arch_init();
++		if (!dbg_is_early)
++			kgdb_arch_late();
+ 		atomic_notifier_chain_register(&panic_notifier_list,
+ 					       &kgdb_panic_event_nb);
+ #ifdef CONFIG_MAGIC_SYSRQ
 -- 
 1.6.4.rc1
 
