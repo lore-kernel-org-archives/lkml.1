@@ -1,55 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758902Ab0BYDTG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Feb 2010 22:19:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13895 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758829Ab0BYDTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Feb 2010 22:19:02 -0500
-Message-ID: <4B85EBD5.2050006@redhat.com>
-Date: Wed, 24 Feb 2010 22:17:41 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S932117Ab0BYDVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Feb 2010 22:21:25 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43051 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932096Ab0BYDVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Feb 2010 22:21:24 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-kernel@vger.kernel.org
+Subject: question on bisecting with an additional patch needed
+Date: Thu, 25 Feb 2010 04:21:01 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc8-0.1-default; KDE/4.3.1; x86_64; ; )
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Chris Frost <frost@cs.ucla.edu>,
-       Steve VanDeBogart <vandebo@cs.ucla.edu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/15] readahead: retain inactive lru pages to be accessed
- soon
-References: <20100224031001.026464755@intel.com> <20100224031053.886603916@intel.com>
-In-Reply-To: <20100224031053.886603916@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002250421.01550.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> From: Chris Frost<frost@cs.ucla.edu>
->
-> Ensure that cached pages in the inactive list are not prematurely evicted;
-> move such pages to lru head when they are covered by
-> - in-kernel heuristic readahead
-> - an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+Hi,
 
-> Signed-off-by: Chris Frost<frost@cs.ucla.edu>
-> Signed-off-by: Steve VanDeBogart<vandebo@cs.ucla.edu>
-> Signed-off-by: KAMEZAWA Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
+I am debugging an issue that shows up only with a modified driver
+but is caused in another subsystem. Can git be told that the trees
+resulting from each step in a bisection should have a patch applied?
 
-Acked-by: Rik van Riel <riel@redhat.com>
-
-When we get into the situation where readahead thrashing
-would occur, we will end up evicting other stuff more
-quickly from the inactive file list.  However, that will
-be the case either with or without this code...
+	Regards
+		Oliver
