@@ -1,58 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924Ab0BYGEK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 01:04:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42250 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568Ab0BYGEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 01:04:08 -0500
-Message-ID: <4B86122C.10102@kernel.org>
-Date: Wed, 24 Feb 2010 22:01:16 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Du, Alek" <alek.du@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86/mrst: add dependencies for Moorestown
-References: <43F901BD926A4E43B106BF17856F07559FB80D01@orsmsx508.amr.corp.intel.com> <tip-d39f6495f66616b637260405d0b5dc2656bc490e@git.kernel.org> <4B8493A0.6080501@kernel.org> <4B84A846.1000805@kernel.org> <4B84AAC4.2020204@kernel.org> <4B858E89.7040807@kernel.org> <43F901BD926A4E43B106BF17856F0755A321EB54@orsmsx508.amr.corp.intel.com> <4B859DD1.601@zytor.com> <4B85A3C1.3030903@kernel.org> <4B85A8B8.3000608@zytor.com> <4B85AB6C.8000500@kernel.org> <43F901BD926A4E43B106BF17856F0755A321EDE5@orsmsx508.amr.corp.intel.com>
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755A321EDE5@orsmsx508.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753903Ab0BYGGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 01:06:45 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:50214 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753326Ab0BYGGo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 01:06:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=gxmzXozlmyYshckjWc7uwNP7xhQcsPTbLoDlghH+ZTU1Pp1NUntcc7SjrJ1EXKmmG2
+         5PkxWRaW1/q6KHLPrneUuGu3P0i6KE7ro9EUpQ6ysVGjK8ECMqiXOSdCAFeuPcC2NJ5A
+         X7B6dLofpEqQSQ4HJDqP2439+AQxONsqegu+Y=
+Subject: Re: [PATCH 12/12] perf trace/scripting: add perf-trace-python
+ Documentation
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
+       k-keiichi@bx.jp.nec.com
+In-Reply-To: <20100225013720.GB7491@nowhere>
+References: <1264580883-15324-1-git-send-email-tzanussi@gmail.com>
+	 <1264580883-15324-13-git-send-email-tzanussi@gmail.com>
+	 <20100225013720.GB7491@nowhere>
+Content-Type: text/plain
+Date: Thu, 25 Feb 2010 00:06:38 -0600
+Message-Id: <1267077998.6611.137.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2010 04:41 PM, Pan, Jacob jun wrote:
-> Moorestown platform depends on IOAPIC, specify dependency correctly.
+On Thu, 2010-02-25 at 02:37 +0100, Frederic Weisbecker wrote:
+> On Wed, Jan 27, 2010 at 02:28:03AM -0600, Tom Zanussi wrote:
+> > +from perf_trace_context import *
+> > +from Core import *
+> > +
+> > +def trace_end():
+> > +	print "in trace_end"
+> > +
+> > +def raw_syscalls__sys_enter(event_name, context, common_cpu,
+> > +	common_secs, common_nsecs, common_pid, common_comm,
+> > +	id, args):
+> > +----
+> > +
+> > +In trace_end(), we'll simply print the results, but first we need to
+> > +generate some results to print.  To do that we need to have our
+> > +sys_enter() handler do the necessary tallying until all events have
+> > +been counted.  A hash table indexed by syscall id is a good way to
+> > +store that information; every time the sys_enter() handler is called,
+> > +we simply increment a count associated with that hash entry indexed by
+> > +that syscall id:
+> > +
+> > +----
+> > +  syscalls = autodict()
+> > +
+> > +  try:
+> > +    syscalls[id] += 1
+> > +  except TypeError:
+> > +    syscalls[id] = 1
+> > +----
+> > +
+> > +The syscalls 'autodict' object is a special kind of Python dictionary
+> > +(implemented in Core.py) that implements Perl's 'autovivifying' hashes
+> > +in Python i.e. with autovivifying hashes, you can assign nested hash
+> > +values without having to go to the trouble of creating intermediate
+> > +levels if they don't exist e.g syscalls[comm][pid][id] = 1 will create
+> > +the intermediate hash levels and finally assign the value 1 to the
+> > +hash entry for 'id' (because the value being assigned isn't a hash
+> > +object itself, the initial value is assigned in the TypeError
+> > +exception.  Well, there may be a better way to do this in Python but
+> > +that's what works for now).
 > 
-> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
-> ---
->  arch/x86/Kconfig |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 0ab2dce..b50788d 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -388,8 +388,10 @@ config X86_ELAN
->  
->  config X86_MRST
->         bool "Moorestown MID platform"
-> +	depends on PCI_IOAPIC
->  	depends on X86_32
->  	depends on X86_EXTENDED_PLATFORM
-> +	depends on X86_IO_APIC
->  	select APB_TIMER
->  	---help---
->  	  Moorestown is Intel's Low Power Intel Architecture (LPIA) based Moblin
+> That's smart. I wish python had a native type for that.
+> 
+> And looking how you made it easily....
+> 
+> def autodict():
+>     return defaultdict(autodict)
+> 
 
-so mrst is
-1) SMP or not?
-2) if is not SMP, does it still have MADT?
+Yeah, being used to Perl hashes, I was surprised that Python dicts
+didn't also allow that, or at least have an 'autovivify' option.
 
-YH
+I guess defaultdicts, added later, are Python's answer to that
+shortcoming (depending on how you look at it - I know a lot of people
+hate them, but it sure makes aggregating trace data a lot easier).
+
+
