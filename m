@@ -1,69 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135Ab0BYLHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 06:07:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52084 "EHLO hera.kernel.org"
+	id S1758977Ab0BYLHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 06:07:42 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52790 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755436Ab0BYLHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 06:07:20 -0500
-Date: Thu, 25 Feb 2010 11:06:35 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] sched, cgroups: Fix module export
-Message-ID: <tip-c50cc75271759373bd89a036eec4d4269b291616@git.kernel.org>
-Git-Commit-ID: c50cc75271759373bd89a036eec4d4269b291616
-X-Mailer: tip-git-log-daemon
+	id S1755834Ab0BYLHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 06:07:39 -0500
+Date: Thu, 25 Feb 2010 12:07:38 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
+       Nicu Pavel <npavel@ituner.com>
+Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
+In-Reply-To: <20100224170049.0d04af3c@neptune.home>
+Message-ID: <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+References: <20100221002001.0a7e05a7@neptune.home> <20100224170049.0d04af3c@neptune.home>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 25 Feb 2010 11:06:36 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c50cc75271759373bd89a036eec4d4269b291616
-Gitweb:     http://git.kernel.org/tip/c50cc75271759373bd89a036eec4d4269b291616
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 25 Feb 2010 12:02:13 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Feb 2010 12:02:13 +0100
+On Wed, 24 Feb 2010, Bruno Prémont wrote:
 
-sched, cgroups: Fix module export
+> +config HID_PICOLCD
+> +	tristate "Minibox PicoLCD (graphic version)"
+> +	depends on FB
+> +	select FB_DEFERRED_IO
+> +	select FB_SYS_FILLRECT
+> +	select FB_SYS_COPYAREA
+> +	select FB_SYS_IMAGEBLIT
+> +	select FB_SYS_FOPS
+> +	select BACKLIGHT_LCD_SUPPORT
+> +	select BACKLIGHT_CLASS_DEVICE
+> +	select LCD_CLASS_DEVICE
 
-I have exported it in d11c563 - but cgroups.c did not have module.h included ...
+I guess you need dependency on USB_HID as well, right?
 
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <1266887105-1528-6-git-send-email-paulmck@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/cgroup.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> --- a/drivers/hid/hid-picolcd.c
+> +++ b/drivers/hid/hid-picolcd.c
+> @@ -0,0 +1,1075 @@
+> +/***************************************************************************
+> + *   Copyright (C) 2010 by Bruno Prémont <bonbons@linux-vserver.org>       *
+> + *                                                                         *
+> + *   Based on Logitech G13 driver (v0.4)                                   *
+> + *     Copyright (C) 2009 by Rick L. Vinyard, Jr. <rvinyard@cs.nmsu.edu>   *
+> + *                                                                         *
+> + *   This program is free software: you can redistribute it and/or modify  *
+> + *   it under the terms of the GNU General Public License as published by  *
+> + *   the Free Software Foundation, either version 2 of the License.        *
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index b1a0f5a..4fd90e1 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -23,6 +23,7 @@
-  */
- 
- #include <linux/cgroup.h>
-+#include <linux/module.h>
- #include <linux/ctype.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
+I support removing the 'or any later' clause, but I think your version has 
+the grammar wrong :)
+
+
+> +/* Update fb_vbitmap from the screen_base and send changed tiles to device */
+> +static void picolcd_fb_update(struct picolcd_data *data)
+> +{
+> +	int chip, tile;
+> +
+> +	spin_lock(&data->lock);
+> +	if (!(data->status & PICOLCD_READY_FB)) {
+> +		spin_unlock(&data->lock);
+> +		picolcd_fb_reset(data->hdev, 0);
+> +	} else
+> +		spin_unlock(&data->lock);
+
+Please put the brackets to the else branch as well.
+
+Also, it'd be great if the framebuffer part would get Ack from someone 
+more familiar with framebuffer code than me.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
