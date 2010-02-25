@@ -1,101 +1,221 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348Ab0BYPcB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 10:32:01 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:64567 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759013Ab0BYPb7 (ORCPT
+	id S932369Ab0BYPdM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 10:33:12 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:53055 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754634Ab0BYPdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 10:31:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=Rv6L9lG0G0Yjcu/Vfxyu9HooC0l/hl+yIV8W8hEsLMnFK2b0V98G8lbacgE7KLXzs+
-         lUZ2gsrnQDs8K00VcipbjLSfuVzBPxOAY75Kpq8YgQpl7QvgNSJic6HZjqG9aDngwcWD
-         V0cpUyAbbnIEfQV1rSymwj2zPlCN11L1HVVcw=
-MIME-Version: 1.0
-In-Reply-To: <20100225.071759.98314060.davem@davemloft.net>
-References: <4B8692E3.9030509@gmail.com> <20100225.071759.98314060.davem@davemloft.net>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Thu, 25 Feb 2010 16:31:36 +0100
-Message-ID: <25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
-Subject: Re: [PATCH] sha: prevent removal of memset as dead store in 
-	sha1_update()
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, mikpe@it.uu.se, linux-crypto@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 25 Feb 2010 10:33:10 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAAInhktGGOM5/2dsb2JhbACbFnS9A4R1BIMX
+Date: Thu, 25 Feb 2010 10:33:05 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip v3&10 07/18] x86: Add text_poke_smp for SMP cross
+	modifying code
+Message-ID: <20100225153305.GC12635@Krystal>
+References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133438.6725.80273.stgit@localhost6.localdomain6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20100225133438.6725.80273.stgit@localhost6.localdomain6>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:25:11 up 70 days, 23:43,  4 users,  load average: 0.15, 0.10,
+	0.09
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 4:17 PM, David Miller <davem@davemloft.net> wrote:
-> From: Roel Kluin <roel.kluin@gmail.com>
-> Date: Thu, 25 Feb 2010 16:10:27 +0100
->
->> Due to optimization A call to memset() may be removed as a dead store when
->> the buffer is not used after its value is overwritten.
->>
->> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
->
-> Solution is wrong and overkill in my mind.
->
-> It's overkill because the whole reason it's using a stack buffer is to
-> avoid the overhead of a kmalloc() call.
->
-> And it's wrong because the reason the memset() is there seems to be
-> to clear out key information that might exist kernel stack so that
-> it's more difficult for rogue code to get at things.
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Add generic text_poke_smp for SMP which uses stop_machine()
+> to synchronize modifying code.
+> This stop_machine() method is officially described at "7.1.3
+> Handling Self- and Cross-Modifying Code" on the intel's
+> software developer's manual 3A.
+> 
+> Since stop_machine() can't protect code against NMI/MCE, this
+> function can not modify those handlers. And also, this function
+> is basically for modifying multibyte-single-instruction. For
+> modifying multibyte-multi-instructions, we need another special
+> trap & detour code.
+> 
+> This code originaly comes from immediate values with stop_machine()
+> version. Thanks Jason and Mathieu!
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Anders Kaseorg <andersk@ksplice.com>
+> Cc: Tim Abbott <tabbott@ksplice.com>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: Jason Baron <jbaron@redhat.com>
+> ---
+> 
+>  arch/x86/include/asm/alternative.h |    4 ++
+>  arch/x86/kernel/alternative.c      |   60 ++++++++++++++++++++++++++++++++++++
+>  2 files changed, 63 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+> index f1e253c..b09ec55 100644
+> --- a/arch/x86/include/asm/alternative.h
+> +++ b/arch/x86/include/asm/alternative.h
+> @@ -165,10 +165,12 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+>   * invalid instruction possible) or if the instructions are changed from a
+>   * consistent state to another consistent state atomically.
+>   * More care must be taken when modifying code in the SMP case because of
+> - * Intel's errata.
+> + * Intel's errata. text_poke_smp() takes care that errata, but still
+> + * doesn't support NMI/MCE handler code modifying.
+>   * On the local CPU you need to be protected again NMI or MCE handlers seeing an
+>   * inconsistent instruction while you patch.
+>   */
+>  extern void *text_poke(void *addr, const void *opcode, size_t len);
+> +extern void *text_poke_smp(void *addr, const void *opcode, size_t len);
+>  
+>  #endif /* _ASM_X86_ALTERNATIVE_H */
+> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+> index e6ea034..635e4f4 100644
+> --- a/arch/x86/kernel/alternative.c
+> +++ b/arch/x86/kernel/alternative.c
+> @@ -7,6 +7,7 @@
+>  #include <linux/mm.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/memory.h>
+> +#include <linux/stop_machine.h>
+>  #include <asm/alternative.h>
+>  #include <asm/sections.h>
+>  #include <asm/pgtable.h>
+> @@ -572,3 +573,62 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+>  	local_irq_restore(flags);
+>  	return addr;
+>  }
+> +
+> +/*
+> + * Cross-modifying kernel text with stop_machine().
+> + * This code originally comes from immediate value.
+> + */
+> +static atomic_t stop_machine_first;
+> +static int wrote_text;
+> +
+> +struct text_poke_params {
+> +	void *addr;
+> +	const void *opcode;
+> +	size_t len;
+> +};
+> +
+> +static int __kprobes stop_machine_text_poke(void *data)
+> +{
+> +	struct text_poke_params *tpp = data;
+> +
+> +	if (atomic_dec_and_test(&stop_machine_first)) {
+> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+> +		smp_wmb();	/* Make sure other cpus see that this has run */
+> +		wrote_text = 1;
+> +	} else {
+> +		while (!wrote_text)
+> +			smp_rmb();
+> +		sync_core();
 
-If the memset is optimized away then the clear out does not occur. Do you
-know a different way to fix this? I observed this with:
+Hrm, there is a problem in there. The last loop, when wrote_text becomes
+true, does not perform any smp_mb(), so you end up in a situation where
+cpus in the "else" branch may never issue any memory barrier. I'd rather
+do:
 
-$ gcc -O2 test.c;./a.out
-and It shows (on my box) "...S.e.c.r.e.t..."
++static volatile int wrote_text;
 
-$ cat test.c
+...
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
++static int __kprobes stop_machine_text_poke(void *data)
++{
++	struct text_poke_params *tpp = data;
++
++	if (atomic_dec_and_test(&stop_machine_first)) {
++		text_poke(tpp->addr, tpp->opcode, tpp->len);
++		smp_wmb();	/* order text_poke stores before store to wrote_text */
++		wrote_text = 1;
++	} else {
++		while (!wrote_text)
++			cpu_relax();
++		smp_mb();	/* order wrote_text load before following execution */
++	}
 
-#define ON_STACK 1
+If you don't like the "volatile int" definition of wrote_text, then we
+should probably use the ACCESS_ONCE() macro instead.
 
-void foo()
-{
-        char password[] = "secret";
-        password[0]='S';
-        printf ("Don't show again: %s\n", password);
-        memset(password, 0, sizeof(password));
-}
+Thanks,
 
-void foo2()
-{
-        char* password = malloc(7);
-        strncpy (password, "secret" , 7);
-        password[6] = '\0';
-        password[0] = 'S';
-        printf ("Don't show again: %s\n", password);
-        //memset(password, 0, 7);
-        free(password);
+Mathieu
 
-}
+> +	}
+> +
+> +	flush_icache_range((unsigned long)tpp->addr,
+> +			   (unsigned long)tpp->addr + tpp->len);
+> +	return 0;
+> +}
+> +
+> +/**
+> + * text_poke_smp - Update instructions on a live kernel on SMP
+> + * @addr: address to modify
+> + * @opcode: source of the copy
+> + * @len: length to copy
+> + *
+> + * Modify multi-byte instruction by using stop_machine() on SMP. This allows
+> + * user to poke/set multi-byte text on SMP. Only non-NMI/MCE code modifying
+> + * should be allowed, since stop_machine() does _not_ protect code against
+> + * NMI and MCE.
+> + *
+> + * Note: Must be called under get_online_cpus() and text_mutex.
+> + */
+> +void *__kprobes text_poke_smp(void *addr, const void *opcode, size_t len)
+> +{
+> +	struct text_poke_params tpp;
+> +
+> +	tpp.addr = addr;
+> +	tpp.opcode = opcode;
+> +	tpp.len = len;
+> +	atomic_set(&stop_machine_first, 1);
+> +	wrote_text = 0;
+> +	stop_machine(stop_machine_text_poke, (void *)&tpp, NULL);
+> +	return addr;
+> +}
+> +
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
-int main(int argc, char* argv[])
-{
-
-#if ON_STACK == 1
-        foo();
-#else
-        foo2();
-#endif
-        int i;
-        char foo3[] = "hoi";
-        printf ("foo1:%s\n", foo3);
-        char* bar = &foo3[0];
-        for (i = -50; i < 50; i++)
-                printf ("%c.", bar[i]);
-        printf("\n");
-        return 0;
-}
+-- 
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
