@@ -1,77 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714Ab0BYOWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 09:22:24 -0500
-Received: from lucidpixels.com ([75.144.35.66]:43552 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932680Ab0BYOWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 09:22:22 -0500
-Date: Thu, 25 Feb 2010 09:22:19 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Thomas Backlund <tmb@mandriva.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33: Problem continues: WARNING: at arch/x86/kernel/hpet.c:404
- hpet_next_event+0x70/0x80
-In-Reply-To: <4B86832F.70706@mandriva.org>
-Message-ID: <alpine.DEB.2.00.1002250921530.7133@p34.internal.lan>
-References: <alpine.DEB.2.00.1002241835120.4716@p34.internal.lan> <4B86832F.70706@mandriva.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S932737Ab0BYObm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 09:31:42 -0500
+Received: from mxout.mainstreet.net ([207.5.0.25]:62749 "EHLO
+	mxout1.mainstreet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932722Ab0BYObl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 09:31:41 -0500
+X-Greylist: delayed 731 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 09:31:41 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/7] RapidIO: Add IDT CPS/TSI switches
+Date: Thu, 25 Feb 2010 06:18:49 -0800
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552A54E7A@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4B8585DE.50701@neli.hopto.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/7] RapidIO: Add IDT CPS/TSI switches
+thread-index: Acq1jF/s4OLjUPyhTUaNe598e6iZ+gAlMa5Q
+References: <20100224151447.GA13661@kaneng01.tundra.com> <4B8585DE.50701@neli.hopto.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@IDT.COM>
+To: "Micha Nelissen" <micha@neli.hopto.org>,
+       "Alexandre Bounine" <alexb@tundra.com>
+Cc: <mporter@kernel.crashing.org>, <alexandreb@tundra.com>,
+       <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+       <thomas.moll.ext@nsn.com>, <thomas.moll@sysgo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Micha Nelissen wrote:
+> Alexandre Bounine wrote:
+> > @@ -369,6 +380,10 @@ static struct rio_dev __devinit *rio_set
+> >  			     rdev->rswitch->switchid);
+> >  		rio_route_set_ops(rdev);
+> >
+> > +		if (do_enum && rdev->rswitch->clr_table)
+> > +			rdev->rswitch->clr_table(port, destid, hopcount,
+> > +						 RIO_GLOBAL_TABLE);
+> > +
+> >  		list_add_tail(&rswitch->node, &rio_switches);
+> >
+> >  	} else
+> 
+> Why clear the tables here, why not in rio_enum_peer?
 
+I prefer to keep it together with route table image initialization. 
 
-On Thu, 25 Feb 2010, Thomas Backlund wrote:
+> 
+> > +DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI572,
+tsi57x_route_add_entry,
+> tsi57x_route_get_entry, tsi57x_route_clr_table);
+> > +DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI574,
+tsi57x_route_add_entry,
+> tsi57x_route_get_entry, tsi57x_route_clr_table);
+> > +DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI577,
+tsi57x_route_add_entry,
+> tsi57x_route_get_entry, tsi57x_route_clr_table);
+> > +DECLARE_RIO_ROUTE_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578,
+tsi57x_route_add_entry,
+> tsi57x_route_get_entry, tsi57x_route_clr_table);
+> 
+> Can the 568 and 578 driver be shared? Have a 5xx driver?
 
-> Justin Piszcz skrev 25.2.2010 01:37:
->> Hello,
->> 
->> Again, on the Intel DP55KG board:
->> 
->> # uname -a
->> Linux host 2.6.33 #1 SMP Wed Feb 24 18:31:00 EST 2010 x86_64 GNU/Linux
->> 
->> [ 1.237600] ------------[ cut here ]------------
->> [ 1.237890] WARNING: at arch/x86/kernel/hpet.c:404
->> hpet_next_event+0x70/0x80()
->> [ 1.238221] Hardware name:
->> [ 1.238504] hpet: compare register read back failed.
->> [ 1.238793] Modules linked in:
->> [ 1.239315] Pid: 0, comm: swapper Not tainted 2.6.33 #1
->> [ 1.239605] Call Trace:
->> [ 1.239886] <IRQ> [<ffffffff81056c13>] ? warn_slowpath_common+0x73/0xb0
->> [ 1.240409] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
->> [ 1.240699] [<ffffffff81056cb0>] ? warn_slowpath_fmt+0x40/0x50
->> [ 1.240992] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
->> [ 1.241281] [<ffffffff81041ad0>] ? hpet_next_event+0x70/0x80
->> [ 1.241573] [<ffffffff81079608>] ? tick_dev_program_event+0x38/0xc0
->> [ 1.241859] [<ffffffff81078e32>] ? tick_handle_oneshot_broadcast+0xe2/0x100
->> [ 1.246533] [<ffffffff8102a67a>] ? timer_interrupt+0x1a/0x30
->> [ 1.246826] [<ffffffff81085499>] ? handle_IRQ_event+0x39/0xd0
->> [ 1.247118] [<ffffffff81087368>] ? handle_edge_irq+0xb8/0x160
->> [ 1.247407] [<ffffffff81029f55>] ? handle_irq+0x15/0x20
->> [ 1.247689] [<ffffffff810294a2>] ? do_IRQ+0x62/0xe0
->> [ 1.247976] [<ffffffff8146be53>] ? ret_from_intr+0x0/0xa
->> [ 1.248262] <EOI> [<ffffffff8102f277>] ? mwait_idle+0x57/0x80
->> [ 1.248796] [<ffffffff8102645c>] ? cpu_idle+0x5c/0xb0
->> [ 1.249080] ---[ end trace db7f668fb6fef4e1 ]---
->> 
->> Is this something Intel has to fix or is it a bug in the kernel?
->> 
->
-> Here is a suggested fix:
->
-> http://marc.info/?l=linux-kernel&m=126531123524059&w=2
->
-> --
-> Thomas
->
+For route table operations this will work. But there are Error
+Management functions added in follow-up patches, which are different for
+Tsi568. I prefer to keep them in different files to avoid hiding the
+differences. Plus, it makes easier for end-user to remove from the build
+drivers for switches that are not used in their system. I do not want to
+add new configuration options for switch selection at this moment but we
+may consider it later. 
 
-Hi,
-
-This looks like what I want, will it be included in 2.6.33.1 or 2.6.34?
-
-Justin.
+Alex.
+  
