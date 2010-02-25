@@ -1,55 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934332Ab0BYWjv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 17:39:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4570 "EHLO mx1.redhat.com"
+	id S934328Ab0BYWlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 17:41:36 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:44460 "EHLO mail.cs.nmsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934306Ab0BYWjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 17:39:47 -0500
-Message-ID: <4B86FBE7.9050304@redhat.com>
-Date: Thu, 25 Feb 2010 17:38:31 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S934167Ab0BYWlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 17:41:35 -0500
+Message-ID: <49e34e8ba40c44c622171868798f9919.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <20100225233250.241e7d6d@neptune.home>
+References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
+    <20100225233250.241e7d6d@neptune.home>
+Date: Thu, 25 Feb 2010 15:41:21 -0700
+Subject: Re: [PATCH] Add sysfs support for fbdefio delay
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: Bruno =?iso-8859-1?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com,
+       tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Chris Mason <chris.mason@oracle.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 09/15] readahead: add tracing event
-References: <20100224031001.026464755@intel.com> <20100224031054.876156496@intel.com>
-In-Reply-To: <20100224031054.876156496@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Example output:
->
-> # echo 1>  /debug/tracing/events/readahead/enable
-> # cp test-file /dev/null
-> # cat /debug/tracing/trace  # trimmed output
-> readahead-initial(dev=0:15, ino=100177, req=0+2, ra=0+4-2, async=0) = 4
-> readahead-subsequent(dev=0:15, ino=100177, req=2+2, ra=4+8-8, async=1) = 8
-> readahead-subsequent(dev=0:15, ino=100177, req=4+2, ra=12+16-16, async=1) = 16
-> readahead-subsequent(dev=0:15, ino=100177, req=12+2, ra=28+32-32, async=1) = 32
-> readahead-subsequent(dev=0:15, ino=100177, req=28+2, ra=60+60-60, async=1) = 24
-> readahead-subsequent(dev=0:15, ino=100177, req=60+2, ra=120+60-60, async=1) = 0
->
-> CC: Ingo Molnar<mingo@elte.hu>
-> CC: Jens Axboe<jens.axboe@oracle.com>
-> CC: Steven Rostedt<rostedt@goodmis.org>
-> CC: Peter Zijlstra<a.p.zijlstra@chello.nl>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Bruno Prémont wrote:
+> On Thu, 25 February 2010 "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+> wrote:
+>> This patch adds support for examining and modifying the fbdefio delay
+>> parameter through sysfs. It also adds two driver definable minimum
+>> and maximum bounds.
+>>
+>> The default behavior is to not permit modifications if delay_max is 0,
+>> thus preventing modification of the delay if the driver does not
+>> explicitly permit modification.
+>>
+>
+> ...
+>
+>> @@ -503,6 +584,12 @@ static struct device_attribute device_attrs[] = {
+>>  #ifdef CONFIG_FB_BACKLIGHT
+>>  	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
+>>  #endif
+>> +#ifdef CONFIG_FB_DEFERRED_IO
+>> +	__ATTR(defio_delay, S_IRUGO|S_IWUSR,
+>> +	       show_defio_delay, store_defio_delay),
+>> +	__ATTR(defio_delay_min, S_IRUGO, show_defio_delay_min, NULL),
+>> +	__ATTR(defio_delay_max, S_IRUGO, show_defio_delay_max, NULL),
+>> +#endif
+>>  };
+>>
+>>  int fb_init_device(struct fb_info *fb_info)
+>
+> Would it be reasonable to add these attributes in
+> fb_deferred_io_init() and remove them in fb_deferred_io_cleanup()?
+> This would also make it possible to add write permission to delay
+> attribute only when it effectively can be modified.
+>
+> IMHO having only attributes pertinent to the features supported by the
+> framebuffer is better than having all the possible ones and those of
+> unsupported features returning -ENODEV.
+>
+> Bruno
+>
+
+I looked at that, but it seems like all the sysfs stuff has been
+co-located in fbsysfs.c, so I tried to just follow the pattern of the
+backlight code which takes the same approach.
+
+-- 
+
+Rick
 
