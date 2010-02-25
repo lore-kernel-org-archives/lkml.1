@@ -1,118 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970Ab0BYGwQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 01:52:16 -0500
-Received: from relay02.digicable.hu ([92.249.128.188]:42879 "EHLO
-	relay02.digicable.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755424Ab0BYGwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 01:52:13 -0500
-X-Greylist: delayed 1277 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 01:52:13 EST
-Message-ID: <4B86191E.4010706@freemail.hu>
-Date: Thu, 25 Feb 2010 07:30:54 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: V4L Mailing List <linux-media@vger.kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Linux testers wanted for Genius iSlim 310
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Original: 94.21.49.190
+	id S1756135Ab0BYGyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 01:54:53 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39636 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755424Ab0BYGyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 01:54:51 -0500
+Date: Thu, 25 Feb 2010 15:53:20 +0900
+To: konrad.wilk@oracle.com
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       chrisw@sous-sol.org, iommu@lists.linux-foundation.org,
+       dwmw2@infradead.org, alex.williamson@hp.com, jeremy@goop.org,
+       Ian.Campbell@eu.citrix.com
+Subject: Re: [PATCH 02/10] swiotlb: Make 'setup_io_tlb_npages' accept new
+ 'swiotlb=' syntax.
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1266510426-6815-3-git-send-email-konrad.wilk@oracle.com>
+References: <1266510426-6815-1-git-send-email-konrad.wilk@oracle.com>
+	<1266510426-6815-2-git-send-email-konrad.wilk@oracle.com>
+	<1266510426-6815-3-git-send-email-konrad.wilk@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100225155242F.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 25 Feb 2010 15:53:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 18 Feb 2010 11:26:58 -0500
+Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> wrote:
 
-based on the information from installing the Windows driver the
-Genius iSlim 310 is a potential candidate that the gspca_pac7302 driver under
-Linux may handle, see
-http://linuxtv.org/wiki/index.php/PixArt_PAC7301/PAC7302#Identification .
+> The old syntax for 'swiotlb' is still in effect, and we extend it
+> now to include the overflow buffer size. The syntax is now:
+> 
+> swiotlb=[force,][nslabs=<pages>,][overflow=<size>] or more
+> commonly know as:
+> 
+> swiotlb=[force]
+> swiotlb=[nslabs=<pages>]
+> swiotlb=[overflow=<size>]
+> 
+> Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+> ---
+>  Documentation/x86/x86_64/boot-options.txt |    6 ++++-
+>  lib/swiotlb.c                             |   36 +++++++++++++++++++++++++---
+>  2 files changed, 37 insertions(+), 5 deletions(-)
 
-If you have access to Genius iSlim 310 and would like to give a try please
-apply the patch in this email, compile and install the patched kernel,
-check "dmesg" for messages and try whether the webcam is working for
-example with cheese.
-
-Regards,
-
-	Márton Németh
-
----
-From: Márton Németh <nm127@freemail.hu>
-
-On the schematics in PixArt PAC7301/PAC7302 datasheet
-(http://www.pixart.com.tw/upload/PAC7301_7302%20%20Spec%20V1_20091228174030.pdf)
-pages 19, 20, 21 and 22 there is a note titled "PID IO_TRAP" which describes
-the possible product ID range 0x2620..0x262f. In this range there are some
-known webcams, however, there are some PIDs with unknown or future devices.
-Because PixArt PAC7301/PAC7302 is a System on a Chip (SoC) device is is
-probable that this driver will work correctly independent of the used PID.
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -r dfa82cf98a85 linux/drivers/media/video/gspca/pac7302.c
---- a/linux/drivers/media/video/gspca/pac7302.c	Sat Jan 30 20:03:02 2010 +0100
-+++ b/linux/drivers/media/video/gspca/pac7302.c	Sun Jan 31 11:08:21 2010 +0100
-@@ -96,6 +96,7 @@
- 	u8 flags;
- #define FL_HFLIP 0x01		/* mirrored by default */
- #define FL_VFLIP 0x02		/* vertical flipped by default */
-+#define FL_EXPERIMENTAL 0x80	/* USB IDs based on heuristic without any known product */
-
- 	u8 sof_read;
- 	u8 autogain_ignore_frames;
-@@ -1220,17 +1221,33 @@
- };
-
- /* -- module initialisation -- */
-+/* Note on FL_EXPERIMENTAL:
-+ * On the schematics in PixArt PAC7301/PAC7302 datasheet
-+ * (http://www.pixart.com.tw/upload/PAC7301_7302%20%20Spec%20V1_20091228174030.pdf)
-+ * pages 19, 20, 21 and 22 there is a note titled "PID IO_TRAP" which describes
-+ * the possible product ID range 0x2620..0x262f. In this range there are some
-+ * known webcams, however, there are some PIDs with unknown or future devices.
-+ * Because PixArt PAC7301/PAC7302 is a System on a Chip (SoC) device is is
-+ * probable that this driver will work correctly independent of the used PID.
-+ */
- static const struct usb_device_id device_table[] __devinitconst = {
- 	{USB_DEVICE(0x06f8, 0x3009)},
- 	{USB_DEVICE(0x093a, 0x2620)},
- 	{USB_DEVICE(0x093a, 0x2621)},
- 	{USB_DEVICE(0x093a, 0x2622), .driver_info = FL_VFLIP},
-+	{USB_DEVICE(0x093a, 0x2623), .driver_info = FL_EXPERIMENTAL },
- 	{USB_DEVICE(0x093a, 0x2624), .driver_info = FL_VFLIP},
-+	{USB_DEVICE(0x093a, 0x2625), .driver_info = FL_EXPERIMENTAL },
- 	{USB_DEVICE(0x093a, 0x2626)},
-+	{USB_DEVICE(0x093a, 0x2627), .driver_info = FL_EXPERIMENTAL },
- 	{USB_DEVICE(0x093a, 0x2628)},
- 	{USB_DEVICE(0x093a, 0x2629), .driver_info = FL_VFLIP},
- 	{USB_DEVICE(0x093a, 0x262a)},
-+	{USB_DEVICE(0x093a, 0x262b), .driver_info = FL_EXPERIMENTAL },
- 	{USB_DEVICE(0x093a, 0x262c)},
-+	{USB_DEVICE(0x093a, 0x262d), .driver_info = FL_EXPERIMENTAL },
-+	{USB_DEVICE(0x093a, 0x262e), .driver_info = FL_EXPERIMENTAL },
-+	{USB_DEVICE(0x093a, 0x262f), .driver_info = FL_EXPERIMENTAL },
- 	{}
- };
- MODULE_DEVICE_TABLE(usb, device_table);
-@@ -1239,6 +1256,17 @@
- static int __devinit sd_probe(struct usb_interface *intf,
- 			const struct usb_device_id *id)
- {
-+	if ((u8)id->driver_info & FL_EXPERIMENTAL) {
-+		PDEBUG(D_ERR | D_PROBE, "WARNING: USB device ID %04x:%04x is "
-+			"not known, but based on some heuristics this driver "
-+			"tries to handle it.",
-+			id->idVendor, id->idProduct);
-+		PDEBUG(D_ERR | D_PROBE, "WARNING: Plase send an email to "
-+			"linux-media@vger.kernel.org with 'lsusb -v' output, "
-+			"the vendor and name of the product and whether the "
-+			"device is working or not.");
-+	}
-+
- 	return gspca_dev_probe(intf, id, &sd_desc, sizeof(struct sd),
- 				THIS_MODULE);
- }
-
+'overflow' is a workaround for broken drivers (that ignores DMA
+mapping errors). We have fixed such drivers and other hardware IOMMU
+implementations don't have such workaround. So please don't extend
+it. We should remove it instead.
