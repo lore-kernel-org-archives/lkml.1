@@ -1,48 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250Ab0BYKna (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 05:43:30 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60037 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759215Ab0BYKn2 (ORCPT
+	id S1759256Ab0BYKtM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 05:49:12 -0500
+Received: from mail-pv0-f174.google.com ([74.125.83.174]:34857 "EHLO
+	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759058Ab0BYKtK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 05:43:28 -0500
-Date: Thu, 25 Feb 2010 10:43:26 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/14] Regulators: wm8400 - cleanup platform driver
- data handling
-Message-ID: <20100225104326.GA11071@rakim.wolfsonmicro.main>
-References: <20100224073342.15964.8863.stgit@localhost.localdomain>
- <20100224073849.15964.62321.stgit@localhost.localdomain>
- <20100224102548.GG18896@rakim.wolfsonmicro.main>
- <20100224190234.GD25304@core.coreip.homeip.net>
- <20100224191402.GA8316@rakim.wolfsonmicro.main>
- <20100224192126.GE25304@core.coreip.homeip.net>
- <20100224204056.GA6824@rakim.wolfsonmicro.main>
- <20100225095536.GC10823@core.coreip.homeip.net>
+	Thu, 25 Feb 2010 05:49:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fnaKc4+bOyZ6ufFmjGYGBoV9jzxz70u6c5/NLF0BLKE7oVsYUQ1W+Xj8q+7c8owrK2
+         5Muv6SvHhEtOtg4fBJ2hJcDsue+lxNI2W9maFB7IK1pYLOeN+sATsW9axIlsoDM13itz
+         g6VzNFEnOCoQt0OtQJJ4SYckXwBpbnU7ZHzmI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100225095536.GC10823@core.coreip.homeip.net>
-X-Cookie: f u cn rd ths, u r prbbly a lsy spllr.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <2375c9f91002242259n2fabb190ic77d6ca603bd1df7@mail.gmail.com>
+References: <cover.1266907495.git.andre.goddard@gmail.com>
+	 <a3a62a6cd7cc0ba011949396a1f2c7f9c32aa4b9.1266907496.git.andre.goddard@gmail.com>
+	 <2375c9f91002241935k56dff805q57582d998b660889@mail.gmail.com>
+	 <7b6bb4a51002242000x49f0b3bdncb40912bf18f90bb@mail.gmail.com>
+	 <2375c9f91002242025n1ab73e18i5950aa4f14ea36db@mail.gmail.com>
+	 <2375c9f91002242259n2fabb190ic77d6ca603bd1df7@mail.gmail.com>
+Date: Thu, 25 Feb 2010 18:49:09 +0800
+Message-ID: <7b6bb4a51002250249t7e4f03c9r6b2b9a8f348a29aa@mail.gmail.com>
+Subject: Re: [PATCH 6/6] mqueue: fix mq_open() file descriptor leak on 
+	user-space processes
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: =?UTF-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E . Hallyn" <serue@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 01:55:37AM -0800, Dmitry Torokhov wrote:
+On Thu, Feb 25, 2010 at 2:59 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Thu, Feb 25, 2010 at 12:25 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> On Thu, Feb 25, 2010 at 12:00 PM, Xiaotian Feng <xtfeng@gmail.com> wrote:
+>>> 2010/2/25 Américo Wang <xiyou.wangcong@gmail.com>:
+>>>> On Tue, Feb 23, 2010 at 3:04 PM, André Goddard Rosa
+>>>> <andre.goddard@gmail.com> wrote:
+>>>>> It can be triggered by the following test program:
+>>>>>
+>>>>
+>>>> <snip>
+>>>>
+>>>>>
+>>>>> When not running valgrind, user-space program segfaults trying to execute
+>>>>> strerror(errno). With valgrind, it executes successfully and prints the
+>>>>> 5 open files: stdin, stdout, stderr, pipe[0] and pipe[1].
+>>>>>
+>>>>> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+>>>>> ---
+>>>>
+>>>> The code has more than just this problem, could you please try
+>>>> my patch below?
+>>>>
+>>>> Thanks.
+>>>>
+>>>> ---------------------------->
+>>>>
+>>>> Clean up the failure path of sys_mq_open().
+>>>>
+>>>> Reorder the goto labels;
+>>>> Rename 'upsem' to 'upunlock';
+>>>> Remove some unused labels;
+>>>> Fix some wrong goto path.
+>>>>
+>>>
+>>> I think it's wrong to move dput after mntput
+>>
+>> Oh, this is to say mntget() should be called before lookup_one_len(),
+>> the original code seems wrong again...
+>>
+>
+> How about the one below?
 
-> Fair enough, I removed the offending part, updated patch below.
+This is definitely wrong,
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+ 	if (IS_ERR(filp)) {
+ 		error = PTR_ERR(filp);
+-		goto out_putfd;
++		goto out;
+ 	}
 
-> -- 
-> Dmitry
-> 
-> regulator: wm8400 - cleanup platform driver data handling
+filp is assigned by do_open or do_create in mqueue.c, take a look at
+the code, if do_open/do_create is failed, kernel is already dput &
+mntput...
 
-but note that including the patch after your sig separator means that a
-lot of MUAs will hide the patch from users which makes it a bit hard to
-read.
+So I think original patch from André is enough....
+
+> ---------
+>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
