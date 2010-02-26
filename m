@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936196Ab0BZMYp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:24:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43311 "EHLO hera.kernel.org"
+	id S936160Ab0BZMXQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:23:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43343 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935887Ab0BZMOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:23 -0500
+	id S935909Ab0BZMO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:29 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -14,9 +14,9 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
 Cc: Tejun Heo <tj@kernel.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 06/43] sched: add wakeup/sleep sched_notifiers and allow NULL notifier ops
-Date: Fri, 26 Feb 2010 21:22:43 +0900
-Message-Id: <1267187000-18791-7-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/43] sched: implement try_to_wake_up_local()
+Date: Fri, 26 Feb 2010 21:22:44 +0900
+Message-Id: <1267187000-18791-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
@@ -25,81 +25,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add wakeup and sleep notifiers to sched_notifiers and allow omitting
-some of the notifiers in the ops table.  These will be used by
-concurrency managed workqueue.
+Implement try_to_wake_up_local().  try_to_wake_up_local() is similar
+to try_to_wake_up() but it assumes the caller has this_rq() locked and
+the target task is bound to this_rq().  try_to_wake_up_local() can be
+called from wakeup and sleep scheduler notifiers.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/sched.h |    6 ++++++
- kernel/sched.c        |   11 ++++++++---
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ include/linux/sched.h |    2 +
+ kernel/sched.c        |   56 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4a1e368..401d746 100644
+index 401d746..b9247e6 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1231,6 +1231,10 @@ struct sched_notifier;
+@@ -2103,6 +2103,8 @@ extern void release_uids(struct user_namespace *ns);
  
- /**
-  * sched_notifier_ops - notifiers called for scheduling events
-+ * @wakeup: we're waking up
-+ *    notifier: struct sched_notifier for the task being woken up
-+ * @sleep: we're going to bed
-+ *    notifier: struct sched_notifier for the task sleeping
-  * @in: we're about to be rescheduled:
-  *    notifier: struct sched_notifier for the task being scheduled
-  *    cpu:  cpu we're scheduled on
-@@ -1244,6 +1248,8 @@ struct sched_notifier;
-  * and depended upon by its users.
-  */
- struct sched_notifier_ops {
-+	void (*wakeup)(struct sched_notifier *notifier);
-+	void (*sleep)(struct sched_notifier *notifier);
- 	void (*in)(struct sched_notifier *notifier, int cpu);
- 	void (*out)(struct sched_notifier *notifier, struct task_struct *next);
- };
+ extern void do_timer(unsigned long ticks);
+ 
++extern bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
++				 int wake_flags);
+ extern int wake_up_state(struct task_struct *tsk, unsigned int state);
+ extern int wake_up_process(struct task_struct *tsk);
+ extern void wake_up_new_task(struct task_struct *tsk,
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 8c2dfb3..c371b8f 100644
+index c371b8f..439ab59 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1439,7 +1439,8 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
- 	struct hlist_node *__pos;					\
- 									\
- 	hlist_for_each_entry(__sn, __pos, &(p)->sched_notifiers, link)	\
--		__sn->ops->callback(__sn , ##args);			\
-+		if (__sn->ops->callback)				\
-+			__sn->ops->callback(__sn , ##args);		\
- } while (0)
- 
- /**
-@@ -2437,6 +2438,8 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
+@@ -2438,6 +2438,10 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
  		rq->idle_stamp = 0;
  	}
  #endif
-+	if (success)
-+		fire_sched_notifiers(p, wakeup);
++	/*
++	 * Wake up is complete, fire wake up notifier.  This allows
++	 * try_to_wake_up_local() to be called from wake up notifiers.
++	 */
+ 	if (success)
+ 		fire_sched_notifiers(p, wakeup);
+ }
+@@ -2540,6 +2544,53 @@ out:
  }
  
  /**
-@@ -5492,10 +5495,12 @@ need_resched_nonpreemptible:
- 	clear_tsk_need_resched(prev);
- 
- 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
--		if (unlikely(signal_pending_state(prev->state, prev)))
-+		if (unlikely(signal_pending_state(prev->state, prev))) {
- 			prev->state = TASK_RUNNING;
--		else
-+		} else {
-+			fire_sched_notifiers(prev, sleep);
- 			deactivate_task(rq, prev, 1);
++ * try_to_wake_up_local - try to wake up a local task with rq lock held
++ * @p: the thread to be awakened
++ * @state: the mask of task states that can be woken
++ * @wake_flags: wake modifier flags (WF_*)
++ *
++ * Put @p on the run-queue if it's not alredy there.  The caller must
++ * ensure that this_rq() is locked, @p is bound to this_rq() and @p is
++ * not the current task.  this_rq() stays locked over invocation.
++ *
++ * This function can be called from wakeup and sleep scheduler
++ * notifiers.  Be careful not to create deep recursion by chaining
++ * wakeup notifiers.
++ *
++ * Returns %true if @p was woken up, %false if it was already running
++ * or @state didn't match @p's state.
++ */
++bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
++			  int wake_flags)
++{
++	struct rq *rq = task_rq(p);
++	bool success = false;
++
++	BUG_ON(rq != this_rq());
++	BUG_ON(p == current);
++	lockdep_assert_held(&rq->lock);
++
++	if (!sched_feat(SYNC_WAKEUPS))
++		wake_flags &= ~WF_SYNC;
++
++	if (!(p->state & state))
++		return false;
++
++	if (!p->se.on_rq) {
++		if (likely(!task_running(rq, p))) {
++			schedstat_inc(rq, ttwu_count);
++			schedstat_inc(rq, ttwu_local);
 +		}
- 		switch_count = &prev->nvcsw;
- 	}
- 
++		ttwu_activate(p, rq, wake_flags & WF_SYNC, false, true);
++		success = true;
++	}
++
++	ttwu_post_activation(p, rq, wake_flags, success);
++
++	return success;
++}
++
++/**
+  * wake_up_process - Wake up a specific process
+  * @p: The process to be woken up.
+  *
+@@ -5498,6 +5549,11 @@ need_resched_nonpreemptible:
+ 		if (unlikely(signal_pending_state(prev->state, prev))) {
+ 			prev->state = TASK_RUNNING;
+ 		} else {
++			/*
++			 * Fire sleep notifier before changing any scheduler
++			 * state.  This allows try_to_wake_up_local() to be
++			 * called from sleep notifiers.
++			 */
+ 			fire_sched_notifiers(prev, sleep);
+ 			deactivate_task(rq, prev, 1);
+ 		}
 -- 
 1.6.4.2
 
