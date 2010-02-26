@@ -1,124 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964877Ab0BZOcy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 09:32:54 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:46706 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964839Ab0BZOcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 09:32:53 -0500
-Date: Fri, 26 Feb 2010 15:32:32 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: mm: used-once mapped file page detection
-Message-ID: <20100226143232.GA13001@cmpxchg.org>
-References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org> <20100224133946.a5092804.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S964890Ab0BZOfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 09:35:36 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:60017 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S964865Ab0BZOfe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 09:35:34 -0500
+Date: Fri, 26 Feb 2010 17:35:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Martyn Welch <martyn.welch@ge.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
+Subject: Re: Gianfar driver failing on MPC8641D based board
+Message-ID: <20100226143532.GA31622@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <4B6C2488.3060403@ge.com>
+ <4B865176.7080806@ge.com>
+ <4B86A97E.6050509@ge.com>
+ <20100225165141.GA9686@oksana.dev.rtsoft.ru>
+ <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+ <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+ <20100226031452.GA11319@oksana.dev.rtsoft.ru>
+ <4B87B937.6010204@ge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20100224133946.a5092804.akpm@linux-foundation.org>
+In-Reply-To: <4B87B937.6010204@ge.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 01:39:46PM -0800, Andrew Morton wrote:
-> On Mon, 22 Feb 2010 20:49:07 +0100 Johannes Weiner <hannes@cmpxchg.org> wrote:
+On Fri, Feb 26, 2010 at 12:06:15PM +0000, Martyn Welch wrote:
+> Anton Vorontsov wrote:
+> > On Thu, Feb 25, 2010 at 07:53:30PM -0500, Paul Gortmaker wrote:
+> > [...]
+> >   
+> >> I was able to reproduce it on an 8641D and bisected it down to this:
+> >>
+> >> -----------
+> >> commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
+> >> Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >> Date:   Tue Nov 10 14:11:10 2009 +0000
+> >>
+> >>     gianfar: Revive SKB recycling
+> >>     
+> >
+> > Thanks for the bisect. I have a guess why tx hangs in
+> > SMP case. Could anyone try the patch down below?
+> >   
 > 
-> > This patch makes the VM be more careful about activating mapped file
-> > pages in the first place.  The minimum granted lifetime without
-> > another memory access becomes an inactive list cycle instead of the
-> > full memory cycle, which is more natural given the mentioned loads.
-> 
-> iirc from a long time ago, the insta-activation of mapped pages was
-> done because people were getting peeved about having their interactive
-> applications (X, browser, etc) getting paged out, and bumping the pages
-> immediately was found to help with this subjective problem.
-> 
-> So it was a latency issue more than a throughput issue.  I wouldn't be
-> surprised if we get some complaints from people for the same reasons as
-> a result of this patch.
+> Yup, no problem. I'm afraid it doesn't resolve the problem for me.
 
-Agreed.  Although we now have other things in place to protect them once
-they are active (VM_EXEC protection, lazy active list scanning).
+Hm.. I found a p2020 board and I was able to reproduce the issue.
+The patch down below fixed it completely for me... hm.
 
-> I guess that during the evaluation period of this change, it would be
-> useful to have a /proc knob which people can toggle to revert to the
-> old behaviour.  So they can verify that this patchset was indeed the
-> cause of the deterioration, and so they can easily quantify any
-> deterioration?
+I'll look further, thanks!
 
-Sounds like a good idea.  By evaluation period, do you mean -mm?  Or
-would this knob make it upstream as well?
+> > [...]
+> >   
+> >> ...which probably explains why you weren't seeing it on non-SMP.
+> >> I'd imagine it would show up on any of the e500mc boards too.
+> >>     
+> >
+> > Yeah.. Pity, I don't have SMP boards anymore. I'll try
+> > to get one though.
+> >
+> >
+> > diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> > index 8bd3c9f..3ff3bd0 100644
+> > --- a/drivers/net/gianfar.c
+> > +++ b/drivers/net/gianfar.c
+> > @@ -2614,6 +2614,8 @@ static int gfar_poll(struct napi_struct *napi, int budget)
+> >  			tx_queue = priv->tx_queue[rx_queue->qindex];
+> >  
+> >  			tx_cleaned += gfar_clean_tx_ring(tx_queue);
+> > +			if (!tx_cleaned && !tx_queue->num_txbdfree)
+> > +				tx_cleaned += 1; /* don't complete napi */
+> >  			rx_cleaned_per_queue = gfar_clean_rx_ring(rx_queue,
+> >  							budget_per_queue);
+> >  			rx_cleaned += rx_cleaned_per_queue;
+> >   
 
-	Hannes
-
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: vmscan: add sysctl to revert mapped file heuristics
-
-During the evaluation period of the used-once mapped file detection,
-provide a sysctl to disable the heuristics at runtime, allowing users
-to verify it as a source of problems.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- include/linux/swap.h |    1 +
- kernel/sysctl.c      |    7 +++++++
- mm/vmscan.c          |    4 +++-
- 3 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index a2602a8..0c1e724 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -254,6 +254,7 @@ extern unsigned long shrink_all_memory(unsigned long nr_pages);
- extern int vm_swappiness;
- extern int remove_mapping(struct address_space *mapping, struct page *page);
- extern long vm_total_pages;
-+extern int vm_rigid_filemap_protection;
- 
- #ifdef CONFIG_NUMA
- extern int zone_reclaim_mode;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8a68b24..9fa46fb 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1050,6 +1050,13 @@ static struct ctl_table vm_table[] = {
- 		.extra1		= &zero,
- 		.extra2		= &one_hundred,
- 	},
-+	{
-+		.procname	= "rigid_filemap_protection",
-+		.data		= &vm_rigid_filemap_protection,
-+		.maxlen		= sizeof(vm_rigid_filemap_protection),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec,
-+	},
- #ifdef CONFIG_HUGETLB_PAGE
- 	{
- 		.procname	= "nr_hugepages",
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 819fff7..d494153 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -565,6 +565,8 @@ enum page_references {
- 	PAGEREF_ACTIVATE,
- };
- 
-+int vm_rigid_filemap_protection __read_mostly;
-+
- static enum page_references page_check_references(struct page *page,
- 						  struct scan_control *sc)
- {
-@@ -586,7 +588,7 @@ static enum page_references page_check_references(struct page *page,
- 		return PAGEREF_RECLAIM;
- 
- 	if (referenced_ptes) {
--		if (PageAnon(page))
-+		if (PageAnon(page) || vm_rigid_filemap_protection)
- 			return PAGEREF_ACTIVATE;
- 		/*
- 		 * All mapped pages start out with page table
 -- 
-1.6.6.1
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
