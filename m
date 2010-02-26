@@ -1,71 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964873Ab0BZO13 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 09:27:29 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62006 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964862Ab0BZO12 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 09:27:28 -0500
-X-Authority-Analysis: v=1.0 c=1 a=Dc0c8BHHdu8A:10 a=7U3hwN5JcxgA:10 a=F26ntxO4aZN8g-8PDTMA:9 a=bvVWbgY7JJNmjheOc0kA:7 a=St3NF5Bog7MRLoiO-dfO6gOTyE4A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 03/07] kernel.h string cleanup
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Joe Perches <joe@perches.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da1002260155l5e75a473oca5649ab33cce124@mail.gmail.com>
-References: <20100225155359.GA2722@darkstar> <20100225185515.GB3305@core2>
-	 <a8e1da1002251714l55ccbd44ibc1119770667c62b@mail.gmail.com>
-	 <b6fcc0a1002252315k1fd5360ehf5ea33566c19515d@mail.gmail.com>
-	 <a8e1da1002252333g6e8bf94crba465c59c0cbc07a@mail.gmail.com>
-	 <1267170179.12041.4.camel@Joe-Laptop.home>
-	 <a8e1da1002260155l5e75a473oca5649ab33cce124@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 26 Feb 2010 09:27:24 -0500
-Message-ID: <1267194445.6328.111.camel@gandalf.stny.rr.com>
+	id S964877Ab0BZOcy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 09:32:54 -0500
+Received: from f0.cmpxchg.org ([85.214.51.133]:46706 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964839Ab0BZOcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 09:32:53 -0500
+Date: Fri, 26 Feb 2010 15:32:32 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: mm: used-once mapped file page detection
+Message-ID: <20100226143232.GA13001@cmpxchg.org>
+References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org> <20100224133946.a5092804.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100224133946.a5092804.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 17:55 +0800, Dave Young wrote:
-
-> Spliting is necessary from my point of view.
-
-> with the patches applied:
+On Wed, Feb 24, 2010 at 01:39:46PM -0800, Andrew Morton wrote:
+> On Mon, 22 Feb 2010 20:49:07 +0100 Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> time:
-> real 15m16.504s
-> user 12m51.866s
-> sys 1m39.700s
+> > This patch makes the VM be more careful about activating mapped file
+> > pages in the first place.  The minimum granted lifetime without
+> > another memory access becomes an inactive list cycle instead of the
+> > full memory cycle, which is more natural given the mentioned loads.
 > 
-> vmlinux .text size: 003bfcd2
+> iirc from a long time ago, the insta-activation of mapped pages was
+> done because people were getting peeved about having their interactive
+> applications (X, browser, etc) getting paged out, and bumping the pages
+> immediately was found to help with this subjective problem.
 > 
-> without the patches applied*
-> time:
-> real 15m20.518s
-> user 12m54.120s
-> sys 1m40.190s
-> 
-> vmlinux .text size: 003bfcea
+> So it was a latency issue more than a throughput issue.  I wouldn't be
+> surprised if we get some complaints from people for the same reasons as
+> a result of this patch.
 
-Why the change in text size? If moving stuff around in headers affects
-the final result, I'm thinking that you did something wrong.
+Agreed.  Although we now have other things in place to protect them once
+they are active (VM_EXEC protection, lazy active list scanning).
 
-The merge for x86 did a lot of file manipulation, but Thomas and Ingo
-would always test that the binary result was the same. If the binary
-result is different, then something went wrong with the file
-manipulations.
+> I guess that during the evaluation period of this change, it would be
+> useful to have a /proc knob which people can toggle to revert to the
+> old behaviour.  So they can verify that this patchset was indeed the
+> cause of the deterioration, and so they can easily quantify any
+> deterioration?
 
--- Steve
+Sounds like a good idea.  By evaluation period, do you mean -mm?  Or
+would this knob make it upstream as well?
 
+	Hannes
 
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: vmscan: add sysctl to revert mapped file heuristics
 
+During the evaluation period of the used-once mapped file detection,
+provide a sysctl to disable the heuristics at runtime, allowing users
+to verify it as a source of problems.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ include/linux/swap.h |    1 +
+ kernel/sysctl.c      |    7 +++++++
+ mm/vmscan.c          |    4 +++-
+ 3 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index a2602a8..0c1e724 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -254,6 +254,7 @@ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+ extern long vm_total_pages;
++extern int vm_rigid_filemap_protection;
+ 
+ #ifdef CONFIG_NUMA
+ extern int zone_reclaim_mode;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8a68b24..9fa46fb 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1050,6 +1050,13 @@ static struct ctl_table vm_table[] = {
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
++	{
++		.procname	= "rigid_filemap_protection",
++		.data		= &vm_rigid_filemap_protection,
++		.maxlen		= sizeof(vm_rigid_filemap_protection),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec,
++	},
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	{
+ 		.procname	= "nr_hugepages",
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 819fff7..d494153 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -565,6 +565,8 @@ enum page_references {
+ 	PAGEREF_ACTIVATE,
+ };
+ 
++int vm_rigid_filemap_protection __read_mostly;
++
+ static enum page_references page_check_references(struct page *page,
+ 						  struct scan_control *sc)
+ {
+@@ -586,7 +588,7 @@ static enum page_references page_check_references(struct page *page,
+ 		return PAGEREF_RECLAIM;
+ 
+ 	if (referenced_ptes) {
+-		if (PageAnon(page))
++		if (PageAnon(page) || vm_rigid_filemap_protection)
+ 			return PAGEREF_ACTIVATE;
+ 		/*
+ 		 * All mapped pages start out with page table
+-- 
+1.6.6.1
