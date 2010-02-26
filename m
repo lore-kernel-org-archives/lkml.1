@@ -1,17 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965097Ab0BZPXM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 10:23:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12847 "EHLO mx1.redhat.com"
+	id S965069Ab0BZPXL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 10:23:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10239 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965030Ab0BZPXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 10:23:06 -0500
+	id S965022Ab0BZPXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 10:23:04 -0500
 From: Matthew Garrett <mjg@redhat.com>
 To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH 10/14] dell-laptop: Pay attention to which devices the hardware switch controls
-Date: Fri, 26 Feb 2010 10:18:43 -0500
-Message-Id: <1267197527-18062-11-git-send-email-mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 11/14] classmate-laptop: use a single MODULE_DEVICE_TABLE to get correct aliases
+Date: Fri, 26 Feb 2010 10:18:44 -0500
+Message-Id: <1267197527-18062-12-git-send-email-mjg@redhat.com>
 In-Reply-To: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 X-SA-Do-Not-Run: Yes
@@ -22,105 +23,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right now, we assume that the hardware rfkill switch on Dells toggles all
-radio devices. In fact, this can be configured in the BIOS and so right
-now we may mark a device as hardware killed even when it isn't. Add code
-to query the devices controlled by the switch, and use this when
-determining the hardware kill state of a radio.
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Instead of a MODULE_DEVICE_TABLE for every acpi_driver ids table, we
+create a table containing all ids to export to get a module alias for
+each one.
+
+This will fix automatic loading of the driver when one of the ACPI
+devices is not present (like the accelerometer, which is not present in
+some models).
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 ---
- drivers/platform/x86/dell-laptop.c |   31 +++++++++++++++++++++++++++++--
- 1 files changed, 29 insertions(+), 2 deletions(-)
+ drivers/platform/x86/classmate-laptop.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell-laptop.c
-index 1a0bfd4..04b2ddb 100644
---- a/drivers/platform/x86/dell-laptop.c
-+++ b/drivers/platform/x86/dell-laptop.c
-@@ -128,6 +128,8 @@ static struct calling_interface_buffer *buffer;
- struct page *bufferpage;
- DEFINE_MUTEX(buffer_mutex);
+diff --git a/drivers/platform/x86/classmate-laptop.c b/drivers/platform/x86/classmate-laptop.c
+index ed90082..8cb20e4 100644
+--- a/drivers/platform/x86/classmate-laptop.c
++++ b/drivers/platform/x86/classmate-laptop.c
+@@ -34,6 +34,11 @@ struct cmpc_accel {
+ #define CMPC_ACCEL_SENSITIVITY_DEFAULT		5
  
-+static int hwswitch_state;
+ 
++#define CMPC_ACCEL_HID		"ACCE0000"
++#define CMPC_TABLET_HID		"TBLT0000"
++#define CMPC_BL_HID		"IPML200"
++#define CMPC_KEYS_HID		"FnBT0000"
 +
- static void get_buffer(void)
- {
- 	mutex_lock(&buffer_mutex);
-@@ -217,6 +219,8 @@ dell_send_request(struct calling_interface_buffer *buffer, int class,
- /* Derived from information in DellWirelessCtl.cpp:
-    Class 17, select 11 is radio control. It returns an array of 32-bit values.
- 
-+   Input byte 0 = 0: Wireless information
-+
-    result[0]: return code
-    result[1]:
-      Bit 0:      Hardware switch supported
-@@ -237,18 +241,35 @@ dell_send_request(struct calling_interface_buffer *buffer, int class,
-      Bits 20-31: Reserved
-    result[2]: NVRAM size in bytes
-    result[3]: NVRAM format version number
-+
-+   Input byte 0 = 2: Wireless switch configuration
-+   result[0]: return code
-+   result[1]:
-+     Bit 0:      Wifi controlled by switch
-+     Bit 1:      Bluetooth controlled by switch
-+     Bit 2:      WWAN controlled by switch
-+     Bits 3-6:   Reserved
-+     Bit 7:      Wireless switch config locked
-+     Bit 8:      Wifi locator enabled
-+     Bits 9-14:  Reserved
-+     Bit 15:     Wifi locator setting locked
-+     Bits 16-31: Reserved
- */
- 
- static int dell_rfkill_set(void *data, bool blocked)
- {
- 	int disable = blocked ? 1 : 0;
- 	unsigned long radio = (unsigned long)data;
-+	int hwswitch_bit = (unsigned long)data - 1;
- 	int ret = 0;
- 
- 	get_buffer();
- 	dell_send_request(buffer, 17, 11);
- 
--	if (!(buffer->output[1] & BIT(16))) {
-+	/* If the hardware switch controls this radio, and the hardware
-+	   switch is disabled, don't allow changing the software state */
-+	if ((hwswitch_state & BIT(hwswitch_bit)) &&
-+	    !(buffer->output[1] & BIT(16))) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
-@@ -265,6 +286,7 @@ static void dell_rfkill_query(struct rfkill *rfkill, void *data)
- {
- 	int status;
- 	int bit = (unsigned long)data + 16;
-+	int hwswitch_bit = (unsigned long)data - 1;
- 
- 	get_buffer();
- 	dell_send_request(buffer, 17, 11);
-@@ -272,7 +294,9 @@ static void dell_rfkill_query(struct rfkill *rfkill, void *data)
- 	release_buffer();
- 
- 	rfkill_set_sw_state(rfkill, !!(status & BIT(bit)));
--	rfkill_set_hw_state(rfkill, !(status & BIT(16)));
-+
-+	if (hwswitch_state & (BIT(hwswitch_bit)))
-+		rfkill_set_hw_state(rfkill, !(status & BIT(16)));
+ /*
+  * Generic input device code.
+  */
+@@ -282,10 +287,9 @@ static int cmpc_accel_remove(struct acpi_device *acpi, int type)
  }
  
- static const struct rfkill_ops dell_rfkill_ops = {
-@@ -306,6 +330,9 @@ static int __init dell_setup_rfkill(void)
- 	get_buffer();
- 	dell_send_request(buffer, 17, 11);
- 	status = buffer->output[1];
-+	buffer->input[0] = 0x2;
-+	dell_send_request(buffer, 17, 11);
-+	hwswitch_state = buffer->output[1];
- 	release_buffer();
+ static const struct acpi_device_id cmpc_accel_device_ids[] = {
+-	{"ACCE0000", 0},
++	{CMPC_ACCEL_HID, 0},
+ 	{"", 0}
+ };
+-MODULE_DEVICE_TABLE(acpi, cmpc_accel_device_ids);
  
- 	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
+ static struct acpi_driver cmpc_accel_acpi_driver = {
+ 	.owner = THIS_MODULE,
+@@ -366,10 +370,9 @@ static int cmpc_tablet_resume(struct acpi_device *acpi)
+ }
+ 
+ static const struct acpi_device_id cmpc_tablet_device_ids[] = {
+-	{"TBLT0000", 0},
++	{CMPC_TABLET_HID, 0},
+ 	{"", 0}
+ };
+-MODULE_DEVICE_TABLE(acpi, cmpc_tablet_device_ids);
+ 
+ static struct acpi_driver cmpc_tablet_acpi_driver = {
+ 	.owner = THIS_MODULE,
+@@ -477,17 +480,16 @@ static int cmpc_bl_remove(struct acpi_device *acpi, int type)
+ 	return 0;
+ }
+ 
+-static const struct acpi_device_id cmpc_device_ids[] = {
+-	{"IPML200", 0},
++static const struct acpi_device_id cmpc_bl_device_ids[] = {
++	{CMPC_BL_HID, 0},
+ 	{"", 0}
+ };
+-MODULE_DEVICE_TABLE(acpi, cmpc_device_ids);
+ 
+ static struct acpi_driver cmpc_bl_acpi_driver = {
+ 	.owner = THIS_MODULE,
+ 	.name = "cmpc",
+ 	.class = "cmpc",
+-	.ids = cmpc_device_ids,
++	.ids = cmpc_bl_device_ids,
+ 	.ops = {
+ 		.add = cmpc_bl_add,
+ 		.remove = cmpc_bl_remove
+@@ -540,10 +542,9 @@ static int cmpc_keys_remove(struct acpi_device *acpi, int type)
+ }
+ 
+ static const struct acpi_device_id cmpc_keys_device_ids[] = {
+-	{"FnBT0000", 0},
++	{CMPC_KEYS_HID, 0},
+ 	{"", 0}
+ };
+-MODULE_DEVICE_TABLE(acpi, cmpc_keys_device_ids);
+ 
+ static struct acpi_driver cmpc_keys_acpi_driver = {
+ 	.owner = THIS_MODULE,
+@@ -607,3 +608,13 @@ static void cmpc_exit(void)
+ 
+ module_init(cmpc_init);
+ module_exit(cmpc_exit);
++
++static const struct acpi_device_id cmpc_device_ids[] = {
++	{CMPC_ACCEL_HID, 0},
++	{CMPC_TABLET_HID, 0},
++	{CMPC_BL_HID, 0},
++	{CMPC_KEYS_HID, 0},
++	{"", 0}
++};
++
++MODULE_DEVICE_TABLE(acpi, cmpc_device_ids);
 -- 
 1.6.6.1
 
