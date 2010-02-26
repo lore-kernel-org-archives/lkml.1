@@ -1,65 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965319Ab0BZQ2d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 11:28:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33392 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965054Ab0BZQ2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 11:28:32 -0500
-Date: Fri, 26 Feb 2010 16:27:34 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, stable@kernel.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1267198583.22519.684.camel@laptop>
-References: <1267198583.22519.684.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: Fix preempt warning in perf_clock()
-Message-ID: <tip-24691ea964cc0123e386b661e03a86a481c6ee79@git.kernel.org>
-Git-Commit-ID: 24691ea964cc0123e386b661e03a86a481c6ee79
-X-Mailer: tip-git-log-daemon
+	id S965343Ab0BZQcu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 11:32:50 -0500
+Received: from mga10.intel.com ([192.55.52.92]:30811 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965330Ab0BZQcq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 11:32:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,546,1262592000"; 
+   d="scan'208";a="776230471"
+Date: Fri, 26 Feb 2010 08:32:31 -0800
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: =?iso-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
+Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device
+ 8087:0020
+Message-ID: <20100226163231.GB4903@xanatos>
+References: <20100226001621.GA6060@xanatos>
+ <Pine.LNX.4.44L0.1002261111330.2029-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 16:27:38 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.44L0.1002261111330.2029-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  24691ea964cc0123e386b661e03a86a481c6ee79
-Gitweb:     http://git.kernel.org/tip/24691ea964cc0123e386b661e03a86a481c6ee79
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Fri, 26 Feb 2010 16:36:23 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 26 Feb 2010 17:25:00 +0100
+On Fri, Feb 26, 2010 at 11:12:50AM -0500, Alan Stern wrote:
+> On Thu, 25 Feb 2010, Sarah Sharp wrote:
+> 
+> > > at this point, rmmod xhci doesn't even work anymore, I get stuff during
+> > > / around the rmmod like:
+> > > 
+> > > Feb 25 23:34:24 tonkachi kernel: [  230.133711] xhci_hcd 0000:02:00.0:
+> > > remove, state 1
+> > 
+> > Aw, man, it looks like your xHCI disconnected from the bus.  Something
+> > was seriously wrong with the hardware.
+> 
+> Why do you say that?  Isn't this exactly the sort of thing you expect 
+> to see in the log when xhci-hcd is unloaded?
 
-perf_event: Fix preempt warning in perf_clock()
+Yes, I forgot he was unloading the driver.  That's normal then.
 
-A recent commit introduced a preemption warning for
-perf_clock(), use raw_smp_processor_id() to avoid this, it
-really doesn't matter which cpu we use here.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1267198583.22519.684.camel@laptop>
-Cc: <stable@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/perf_event.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 05b6c6b..aa6155b 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -249,7 +249,7 @@ static void perf_unpin_context(struct perf_event_context *ctx)
- 
- static inline u64 perf_clock(void)
- {
--	return cpu_clock(smp_processor_id());
-+	return cpu_clock(raw_smp_processor_id());
- }
- 
- /*
+Sarah Sharp
