@@ -1,36 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965734Ab0BZSyF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 13:54:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10840 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965700Ab0BZSyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 13:54:01 -0500
-Date: Fri, 26 Feb 2010 19:52:32 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/2] umh && creds: convert
-	call_usermodehelper_keys() to use subprocess_info->init()
-Message-ID: <20100226185232.GA430@redhat.com>
-References: <20100226182325.GA31674@redhat.com> <20100225181500.GA18008@redhat.com> <16951.1267207238@redhat.com> <17603.1267209668@redhat.com>
+	id S965790Ab0BZTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 14:07:28 -0500
+Received: from mail2.microsoft.com ([131.107.115.215]:30205 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965726Ab0BZTH1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 14:07:27 -0500
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <greg@kroah.com>, Hank Janssen <hjanssen@microsoft.com>
+CC: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: Problem with auto-detecting a HV environment from within Linux
+Thread-Topic: Problem with auto-detecting a HV environment from within Linux
+Thread-Index: AQHKtjnpPG+DB1+VDUmGCDmANJRAY5HXEhsAgACJl4D//4hyAIAA0+OA//+Bz6CAAJoqAIAAGKGAgAAL24CAAITkQA==
+Date: Fri, 26 Feb 2010 19:07:14 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF725B6A6D15@TK5EX14MBXC130.redmond.corp.microsoft.com>
+References: <20100225164436.GA3310@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100225173611.GA14124@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100225230639.GB20900@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A5806@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100226004646.GA31483@kroah.com>
+ <8AFC7968D54FB448A30D8F38F259C56212EDCD14@TK5EX14MBXC116.redmond.corp.microsoft.com>
+ <20100226025721.GA10310@kroah.com>
+In-Reply-To: <20100226025721.GA10310@kroah.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17603.1267209668@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, David Howells wrote:
->
-> In which case, you should be calling install_session_keyring_to_cred(), just
-> so that the credentials installation is always done by the same piece of code.
+> From: Greg KH [mailto:greg@kroah.com]
+> Sent: Thursday, February 25, 2010 9:57 PM
+> In looking at the second patch again, I think you will need to put some
+> spaces in the DMI strings to get it to match up properly.  Look at what
+> the files in:
+> 	/sys/class/dmi/id/
+> look like exactly to get it to line up.  The module id stuff strips
+> spaces out, so I can't get the real value there.
 
-OK, will redo and resend tomorrow, thanks.
+Thanks for your help! I have applied the two patches -- auto loading of hv_vmbus works fine after a space was inserted into the DMI strings ("Microsoft Corporation", "Virtual Machine").
 
-Oleg.
+Also, according to our Hyper-V team, we have no plan to change the virtual VGA card id and DMI info.
 
+Thanks,
+
+- Haiyang
