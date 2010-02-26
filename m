@@ -1,52 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935071Ab0BZDCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 22:02:37 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:39492 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935031Ab0BZDCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 22:02:35 -0500
-Date: Thu, 25 Feb 2010 19:02:30 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH tip/core/rcu] rcu: export rcu_scheduler_active
-Message-ID: <20100226030230.GA7743@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100225220624.GA7013@linux.vnet.ibm.com>
+	id S935086Ab0BZDOz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 22:14:55 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51911 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935073Ab0BZDOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 22:14:53 -0500
+Date: Fri, 26 Feb 2010 06:14:52 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: Martyn Welch <martyn.welch@ge.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net,
+       Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Gianfar driver failing on MPC8641D based board
+Message-ID: <20100226031452.GA11319@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <4B6C2488.3060403@ge.com>
+ <4B865176.7080806@ge.com>
+ <4B86A97E.6050509@ge.com>
+ <20100225165141.GA9686@oksana.dev.rtsoft.ru>
+ <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+ <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20100225220624.GA7013@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel modules using rcu_read_lock_sched_held() must now have access
-to rcu_scheduler_active, so it must be exported.
+On Thu, Feb 25, 2010 at 07:53:30PM -0500, Paul Gortmaker wrote:
+[...]
+> I was able to reproduce it on an 8641D and bisected it down to this:
+> 
+> -----------
+> commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
+> Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Date:   Tue Nov 10 14:11:10 2009 +0000
+> 
+>     gianfar: Revive SKB recycling
 
-This should fix the fix for the boot-time RCU-lockdep splat.
+Thanks for the bisect. I have a guess why tx hangs in
+SMP case. Could anyone try the patch down below?
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+[...]
+> ...which probably explains why you weren't seeing it on non-SMP.
+> I'd imagine it would show up on any of the e500mc boards too.
 
- rcupdate.c |    1 +
- 1 file changed, 1 insertion(+)
+Yeah.. Pity, I don't have SMP boards anymore. I'll try
+to get one though.
 
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 7bfa004..f1125c1 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -64,6 +64,7 @@ EXPORT_SYMBOL_GPL(rcu_sched_lock_map);
- #endif
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 8bd3c9f..3ff3bd0 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -2614,6 +2614,8 @@ static int gfar_poll(struct napi_struct *napi, int budget)
+ 			tx_queue = priv->tx_queue[rx_queue->qindex];
  
- int rcu_scheduler_active __read_mostly;
-+EXPORT_SYMBOL_GPL(rcu_scheduler_active);
- 
- /*
-  * This function is invoked towards the end of the scheduler's initialization
+ 			tx_cleaned += gfar_clean_tx_ring(tx_queue);
++			if (!tx_cleaned && !tx_queue->num_txbdfree)
++				tx_cleaned += 1; /* don't complete napi */
+ 			rx_cleaned_per_queue = gfar_clean_rx_ring(rx_queue,
+ 							budget_per_queue);
+ 			rx_cleaned += rx_cleaned_per_queue;
