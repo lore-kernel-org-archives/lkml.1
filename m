@@ -1,59 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966330Ab0BZVx6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:53:58 -0500
-Received: from gate.crashing.org ([63.228.1.57]:58371 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966217Ab0BZVx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:53:57 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Greg KH <greg@kroah.com>, "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Pavel Machek <pavel@ucw.cz>, Ming Lei <tom.leiming@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002261150370.2029-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002261150370.2029-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 27 Feb 2010 08:51:22 +1100
-Message-ID: <1267221082.23523.1822.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S966335Ab0BZV57 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:57:59 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:33477 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966217Ab0BZV55 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 16:57:57 -0500
+Subject: [PATCH 0/9] cciss driver SCSI updates 
+To: axboe@kernel.dk, akpm@linux-foundation.org, james.bottomley@suse.de
+From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
+Cc: linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com,
+       linux-scsi@vger.kernel.org, brace@beardog.cce.hp.com
+Date: Fri, 26 Feb 2010 16:01:06 -0600
+Message-ID: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
+User-Agent: StGit/0.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 11:52 -0500, Alan Stern wrote:
-> > For mmap'ed pages (and present in the page cache), is it guaranteed that
-> > the HCD driver won't write to it once it has been mapped into user
-> > space? If that's the case, it may solve the problem by just reversing
-> > the meaning of PG_arch_1 on ARM and assume that a newly allocated page
-> > has dirty D-cache by default.
-> 
-> Nothing is guaranteed.  The HCD will write to wherever it is asked.  If 
-> a driver does input to an mmap'ed page, the HCD won't even know that 
-> the page is mmap'ed.
+The following series mainly fixes the scsi tape code in the cciss
+driver to take advantage of more scatter gather elements, enabling
+larger transfer sizes.  The first eight patches are mainly cleaning
+things up and getting ready for the 9th patch, which enables the
+SCSI half of the driver to use more than 31 scatter gather elements.
 
-Right but that won't happen unless somebody explicitely caused that
-input to happen, typically, a userspace read(). I$/D$ coherency isn't
-implicit in that case.
+I've tested on 32-bit and 64-bit systems, and written out tapes
+with block sizes up to 2Mb.
 
-The question is more when the kernel itself moves a page in/out from
-underneath the application (mmap'ed executable pages). One it's mapped
-in, it won't be written to by the HCD unless something explicitely does
-something to cause that write. If it's swapped out and back in, it will
-have been unmapped. 
+These patches are vs. Jens's linux-2.6-block tree.
 
-Cheers,
-Ben.
+Stephen M. Cameron (9):
+      cciss: clarify command list padding calculation
+      cciss: detect bad alignment of scsi commands at build time
+      cciss: factor out scatter gather chain block allocation and freeing
+      cciss: simplify scatter gather code
+      cciss: fix scatter gather chain block dma direction kludge
+      cciss: factor out scatter gather chain block mapping code
+      cciss: do not use void pointer for scsi hba data
+      cciss: eliminate unnecessary pointer use in cciss scsi code
+      cciss: Fix problem with scatter gather elements in the scsi half of the driver
+
+
+ drivers/block/cciss.c      |  174 ++++++++++++++++++++++----------------------
+ drivers/block/cciss.h      |   12 +--
+ drivers/block/cciss_cmd.h  |   14 +++-
+ drivers/block/cciss_scsi.c |  145 +++++++++++++++++++++++--------------
+ 4 files changed, 188 insertions(+), 157 deletions(-)
+
+-- 
+-- steve
 
