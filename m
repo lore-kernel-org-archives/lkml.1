@@ -1,177 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935033Ab0BZC0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 21:26:25 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35081 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935018Ab0BZC0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 21:26:24 -0500
-X-Authority-Analysis: v=1.0 c=1 a=EPSL5sjMBdAA:10 a=7U3hwN5JcxgA:10 a=GlTInNEu9KYYm3fdAy0A:9 a=jWEM9ER8RJJ6XGEPmYMA:7 a=oHsizBTfpo_Hx0xZ2UiFciRhG6QA:4 a=TdF0ip4hniml00nv:21 a=C5DAESpADrM0BiAF:21
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 2/2][RFC] tracing: Add extract out softirq names used
- by irq trace events
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20100225234806.GD5592@nowhere>
-References: <20100212190907.954438555@goodmis.org>
-	 <20100212191037.283998401@goodmis.org> <1266057549.557.59605.camel@twins>
-	 <1266059470.24271.116.camel@gandalf.stny.rr.com>
-	 <20100225234806.GD5592@nowhere>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 25 Feb 2010 21:26:19 -0500
-Message-ID: <1267151179.6328.86.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S935043Ab0BZC3N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 21:29:13 -0500
+Received: from mga02.intel.com ([134.134.136.20]:39462 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935018Ab0BZC3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 21:29:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,543,1262592000"; 
+   d="scan'208";a="599321389"
+Date: Fri, 26 Feb 2010 10:29:07 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Matt Mackall <mpm@selenic.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 05/15] readahead: limit readahead size for small memory
+	systems
+Message-ID: <20100226022907.GA22226@localhost>
+References: <20100224031001.026464755@intel.com> <20100224031054.307027163@intel.com> <4B869682.9010709@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B869682.9010709@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 00:48 +0100, Frederic Weisbecker wrote:
-
-> 
-> And what about a kind of macro that could have two effects:
-> 
-> - define the enum
-> - define the nr -> name pairs for resolution
-> 
-> This could be something like:
-> 
-> define_trace_enum(softirq)
-> 	enum_entry(TASKLET, 4), //don't know if it's 4, just an example
-> 	enum_entry(HRTIMER, 5),
-> end_trace_enum()
-
-That wont work. Unless it is in a separate file that can be included
-over and over again. That is we would need:
-
-** include/linux/softirq_names.h:
-
-define_trace_enum(softirq)
-	enum_entry(HI, 0),
-	enum_entry(TIMER, 1),
-	[...]
-end_trace_enum();
-
-
-
-** include/trace/define_enum.h:
-
-#define define_trace_enum(name)  enum name {
-#define enum_entry(a, b)  a = b
-#define end_trace_enum()  }
-
-
-** include/linux/interrupt.h
-
-/* instead of declaring an enum we have */
-
-#include <trace/define_enum.h>
-#include <linux/softirq_names.h>
-
-Here we could do something special with that file.
-
-> 
-> (My naming sucks, as usual).
-> 
-> In normal headers, it would define an enum:
-> 
-> enum softirq {
-> 	TASKLET = 4,
-> 	HRTIMER = 5,
-> };
-> 
-> And in the file that has DEFINE_TRACEPOINT:
-> 
-> /* can be in ftrace_event.h */
-> struct resolve_enum {
-> 	const char *name;
-> 	int val;
-> };
-> 
-> struct resolve_enum softirq = { //come from define_trace_enum()
-> 	{"TASKLET", 4}, //come from enum_entry()
-> 	{"HRTIMER", 5},
-> 	{ NULL, 0}, /* end */
-> };
-> 
-> /* This can be used from the trace_event macro */
-> const char *softirq_name(int nr)
-> {
-> 	return resolve_enum[nr];
-> }
+On Thu, Feb 25, 2010 at 11:25:54PM +0800, Christian Ehrhardt wrote:
 > 
 > 
-> And then you can get back the struct resolve_enum softirq
-> to export the values to debugfs, may be by storing such
-> structures in a section (and adding the name of the enum)
+> Wu Fengguang wrote:
+>  > When lifting the default readahead size from 128KB to 512KB,
+>  > make sure it won't add memory pressure to small memory systems.
+>  >
+>  > For read-ahead, the memory pressure is mainly readahead buffers consumed
+>  > by too many concurrent streams. The context readahead can adapt
+>  > readahead size to thrashing threshold well.  So in principle we don't
+>  > need to adapt the default _max_ read-ahead size to memory pressure.
+>  >
+>  > For read-around, the memory pressure is mainly read-around misses on
+>  > executables/libraries. Which could be reduced by scaling down
+>  > read-around size on fast "reclaim passes".
+>  >
+>  > This patch presents a straightforward solution: to limit default
+>  > readahead size proportional to available system memory, ie.
+>  >                 512MB mem => 512KB readahead size
+>  >                 128MB mem => 128KB readahead size
+>  >                  32MB mem =>  32KB readahead size (minimal)
+>  >
+>  > Strictly speaking, only read-around size has to be limited.  However we
+>  > don't bother to seperate read-around size from read-ahead size for now.
+>  >
+>  > CC: Matt Mackall <mpm@selenic.com>
+>  > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 > 
-> This has the advantage of beeing sync with core header
-> changes, but this has the drawback of beeing less readable
-> to define an enum usable from a TRACE_EVENT (especially
-> if I define the naming personally).
-> 
+> What I state here is for read ahead in a "multi iozone sequential" 
+> setup, I can't speak for real "read around" workloads.
+> So probably your table is fine to cover read-around+read-ahead in one 
+> number.
 
+OK.
 
-This just gets ugly and I'm not sure people would like doing this. It
-also requires that you number the enums specifically.
+> I have tested 256MB mem systems with 512kb readahead quite a lot.
+> On those 512kb is still by far superior to smaller readaheads and I 
+> didn't see major trashing or memory pressure impact.
 
-A better way could be this:
+In fact I'd expect a 64MB box to also benefit from 512kb readahead :)
 
-** include/linux/interrupt.h
+> Therefore I would recommend a table like:
+>                 >=256MB mem => 512KB readahead size
+>                   128MB mem => 128KB readahead size
+>                    32MB mem =>  32KB readahead size (minimal)
 
-#define SOFTIRQ_NAMES 	\
-	C(HI),		\
-	C(TIMER),	\
-	[...]		\
-	C(RCU)
+So, I'm fed up with compromising the read-ahead size with read-around
+size.
 
-#define C(name)		name##_SOFTIRQ
+There is no good to introduce a read-around size to confuse the user
+though.  Instead, I'll introduce a read-around size limit _on top of_
+the readahead size. This will allow power users to adjust
+read-ahead/read-around size at the same time, while saving the low end
+from unnecessary memory pressure :) I made the assumption that low end
+users have no need to request a large read-around size.
 
-enum { SOFTIRQ_NAMES, NR_SOFTIRQS };
+Thanks,
+Fengguang
+---
+readahead: limit read-ahead size for small memory systems
 
-#undef C
+When lifting the default readahead size from 128KB to 512KB,
+make sure it won't add memory pressure to small memory systems.
 
-And in the trace file we could do:
+For read-ahead, the memory pressure is mainly readahead buffers consumed
+by too many concurrent streams. The context readahead can adapt
+readahead size to thrashing threshold well.  So in principle we don't
+need to adapt the default _max_ read-ahead size to memory pressure.
 
-#define C(name)  { #name, name##_SOFTIRQ, sizeof(name##_SOFTIRQ) }
+For read-around, the memory pressure is mainly read-around misses on
+executables/libraries. Which could be reduced by scaling down
+read-around size on fast "reclaim passes".
 
-struct {
-	char *name;
-	int val;
-	int size;
-} softirq_names[] __attribute__((section("trace_syms"))) =
-  { SOFTIRQ_NAMES };
+This patch presents a straightforward solution: to limit default
+read-ahead size proportional to available system memory, ie.
+                512MB mem => 512KB readahead size
+                128MB mem => 128KB readahead size
+                 32MB mem =>  32KB readahead size
 
-#undef C
+CC: Matt Mackall <mpm@selenic.com>
+CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/filemap.c   |    2 +-
+ mm/readahead.c |   22 ++++++++++++++++++++++
+ 2 files changed, 23 insertions(+), 1 deletion(-)
 
-
-This way we don't need to number every enum, or have to move the enum
-into another file. My question is...
-
-Would the following be acceptable in normal headers?
-
-#define ENUM_NAMES  	\
-	C(a),		\
-	C(b),		\
-	...
-
-#define C(name) name
-
-enum { ENUM_NAMES };
-
-#undef C
-
--- Steve
-
-
+--- linux.orig/mm/filemap.c	2010-02-26 10:04:28.000000000 +0800
++++ linux/mm/filemap.c	2010-02-26 10:08:33.000000000 +0800
+@@ -1431,7 +1431,7 @@ static void do_sync_mmap_readahead(struc
+ 	/*
+ 	 * mmap read-around
+ 	 */
+-	ra_pages = max_sane_readahead(ra->ra_pages);
++	ra_pages = min(ra->ra_pages, roundup_pow_of_two(totalram_pages / 1024));
+ 	if (ra_pages) {
+ 		ra->start = max_t(long, 0, offset - ra_pages/2);
+ 		ra->size = ra_pages;
