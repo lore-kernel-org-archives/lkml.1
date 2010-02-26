@@ -1,80 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936248Ab0BZNgp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 08:36:45 -0500
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:51098 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936110Ab0BZNgo (ORCPT
+	id S936258Ab0BZNh1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 08:37:27 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42146 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936110Ab0BZNh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 08:36:44 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B87CEE4.9090104@jic23.retrosnub.co.uk>
-Date: Fri, 26 Feb 2010 13:38:44 +0000
-From: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+	Fri, 26 Feb 2010 08:37:26 -0500
+Message-ID: <4B87CE94.9050200@cs.helsinki.fi>
+Date: Fri, 26 Feb 2010 15:37:24 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Nitin Shah <Nitin.Shah@kpitcummins.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Liam Girdwood <lrg@kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: Touch Screen Drivers for Dialog da9052
-References: <F56EA673D3E56E48804FE2B0D23EFD2D21346D8A9D@KCINPUNHJCMS01.kpit.com>
-In-Reply-To: <F56EA673D3E56E48804FE2B0D23EFD2D21346D8A9D@KCINPUNHJCMS01.kpit.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org
+Subject: Re: [RFT/PATCH] x86: Unify kernel_physical_mapping_init() API
+References: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi> <20100226094639.0a106466.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100226094639.0a106466.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/10 12:36, Nitin Shah wrote:
-> Hi,
+Hi Hiroyuki-san,
+
+KAMEZAWA Hiroyuki kirjoitti:
+> On Wed, 24 Feb 2010 17:04:47 +0200 (EET)
+> Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
 > 
-> We have developed Touch Screen (TSI) Drivers for Dialog da9052 Power
-> Management IC.
+>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>>
+>> This patch changes the 32-bit version of kernel_physical_mapping_init() to
+>> return the last mapped address like the 64-bit one so that we can unify the
+>> call-site in init_memory_mapping().
+>>
 > 
-> We have tested this driver on Samsung SMDK-6410 board. If any one
-> needs test application tor testing this driver, we will provide the
-> same which we have used for testing.
+> I'm sorry if I can't track the logic correctly..
+
+OK. I tried to make it match what x86-64 does.
+
+>> Cc: Yinghai Lu <yinghai@kernel.org>
+>> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>> ---
+>> Note: I have only tested this on VirtualBox which is why I tagged the patch as
+>> RFT.
+>>
+>>   arch/x86/mm/init.c    |    7 -------
+>>   arch/x86/mm/init_32.c |    8 +++++---
+>>   2 files changed, 5 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+>> index d406c52..e71c5cb 100644
+>> --- a/arch/x86/mm/init.c
+>> +++ b/arch/x86/mm/init.c
+>> @@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+>>   	if (!after_bootmem)
+>>   		find_early_table_space(end, use_pse, use_gbpages);
+>>
+>> -#ifdef CONFIG_X86_32
+>> -	for (i = 0; i < nr_range; i++)
+>> -		kernel_physical_mapping_init(mr[i].start, mr[i].end,
+>> -					     mr[i].page_size_mask);
+>> -	ret = end;
+>> -#else /* CONFIG_X86_64 */
+>>   	for (i = 0; i < nr_range; i++)
+>>   		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
+>>   						   mr[i].page_size_mask);
+>> -#endif
+>>
+>>   #ifdef CONFIG_X86_32
+>>   	early_ioremap_page_table_range_init();
+>> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+>> index 9a0c258..2226f2c 100644
+>> --- a/arch/x86/mm/init_32.c
+>> +++ b/arch/x86/mm/init_32.c
+>> @@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
+>>   			     unsigned long page_size_mask)
+>>   {
+>>   	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
+>> +	unsigned long last_map_addr = end;
+>>   	unsigned long start_pfn, end_pfn;
+>>   	pgd_t *pgd_base = swapper_pg_dir;
+>>   	int pgd_idx, pmd_idx, pte_ofs;
+>> @@ -341,9 +342,10 @@ repeat:
+>>   					prot = PAGE_KERNEL_EXEC;
+>>
+>>   				pages_4k++;
+>> -				if (mapping_iter == 1)
+>> +				if (mapping_iter == 1) {
+>>   					set_pte(pte, pfn_pte(pfn, init_prot));
+>> -				else
+>> +					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
+>> +				} else
+>>   					set_pte(pte, pfn_pte(pfn, prot));
+>>   			}
+>>   		}
 > 
-> For more details about the attached drives please refer the README
-> file inside "da9052_drivers.zip".
+> Don't we need to update last_map_addr after pages_2m++; ?
+
+Yeah, I missed that part. It probably works fine because we return "end" 
+for 2M pages. However, to fix that, I'm not completely sure what 
+"last_map_addr" would be. I am thinking
+
+   last_map_addr = (addr & PMD_MASK) + PMD_SIZE;
+
+might do the trick but I'm not that familiar with the code. Ideas?
+
+> And...from the logic,
+>   unsigned long last_map_addr = end;
+> seems to be always true.
 > 
-> We would like to incorporate this driver into Linux mainline kernel.
-> 
-> Please test the driver and provide your valuable comments and
-> feedback.
-> 
-> Thanks & Regards, Nitin Shah
-Hi Nitin,
+> So, just returning "end" is not good ?
 
-Couple of initial points.  Please take a look at the guidance on
-Submitting patches in the Documentation directory of the linux
-kernel source tree. To get more eyes on code you need to make it
-as simple as possible for people to take a look!
+Might be but like I said, I tried to make it match x86-64 so that we 
+could eventually try to unify those bits as well.
 
-To move this driver set towards merging, take a look at how the other
-da90xx chips are handled in the current kernel.  Given the chips have
-a lot of different functionality fitting into numerous corners of the
-kernel, that a given user may or may not want to use, they are implemented
-as multifunction devices (drivers/mfd) with children in a number of other
-subsystems.
-
-Whilst the code you have sent is pretty clear and well commented etc, it
-is going to need a lot of changes to interface with the relevant kernel
-subsystems.
-
-Perhaps this is one for staging? 
-
-I've cc'd in a few other relevant people to bring it to their attention.
-Note all, while the email only mentioned touch screen drivers, this a pretty
-comprehensive pmic driver with tsi, adc, gpio, regulator control and various
-other bits and bobs.
-
-Jonathan
-
-
-
-
+			Pekka
