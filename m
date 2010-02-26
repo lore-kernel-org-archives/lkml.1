@@ -1,70 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935555Ab0BZIPY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 03:15:24 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:65141 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935455Ab0BZIPV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 03:15:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=kQ3htwSyR5/gVs+9rFdEArTumDQvHFmE3MnJNpUC3HowhiiGpN3i8mjNb79Mes/OYg
-         ERixteQjuH7e2/3qRjdZU6LwBzYTRISM7IzJRqHlDw6/MGGHzozLSQbYE3phqHZn3Wb4
-         xDKMNs37o/RTh8TAF9KF5+cjCPhWDOYDIR0XQ=
-Date: Fri, 26 Feb 2010 00:15:15 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>,
-       Nicu Pavel <npavel@ituner.com>
-Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-Message-ID: <20100226081514.GB17444@core.coreip.homeip.net>
-References: <20100221002001.0a7e05a7@neptune.home>
- <20100224170049.0d04af3c@neptune.home>
- <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+	id S935552Ab0BZIVc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 03:21:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54980 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935522Ab0BZIVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 03:21:31 -0500
+Date: Fri, 26 Feb 2010 09:21:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/7][GIT PULL] tracing: updates
+Message-ID: <20100226082118.GB15885@elte.hu>
+References: <20100225194355.707261669@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+In-Reply-To: <20100225194355.707261669@goodmis.org>
 User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 12:07:38PM +0100, Jiri Kosina wrote:
-> On Wed, 24 Feb 2010, Bruno Prémont wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> > +/* Update fb_vbitmap from the screen_base and send changed tiles to device */
-> > +static void picolcd_fb_update(struct picolcd_data *data)
-> > +{
-> > +	int chip, tile;
-> > +
-> > +	spin_lock(&data->lock);
-> > +	if (!(data->status & PICOLCD_READY_FB)) {
-> > +		spin_unlock(&data->lock);
-> > +		picolcd_fb_reset(data->hdev, 0);
-> > +	} else
-> > +		spin_unlock(&data->lock);
+> Please pull the latest tip/tracing/core tree, which can be found at:
 > 
-> Please put the brackets to the else branch as well.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core
 > 
-Well, it looks like it can be rewritten as:
+> 
+> Jeff Mahoney (1):
+>       tracing: Fix ftrace_event_call alignment for use with gcc 4.5
+> 
+> Li Zefan (1):
+>       tracing: Remove CONFIG_TRACE_POWER from kernel config
+> 
+> Steven Rostedt (1):
+>       ftrace: Remove memory barriers from NMI code when not needed
+> 
+> Wenji Huang (4):
+>       tracing: Fix typo in prof_sysexit_enable()
+>       tracing: Fix typo of info text in trace_kprobe.c
+>       tracing: Remove unnecessary variable in print_graph_return
+>       tracing: Simplify memory recycle of trace_define_field
+> 
+> ----
+>  arch/x86/kernel/ftrace.c             |   26 ++++++++++++++++++++++++++
+>  include/linux/syscalls.h             |    6 ++++--
+>  include/trace/ftrace.h               |    3 ++-
+>  kernel/trace/Kconfig                 |    9 ---------
+>  kernel/trace/trace.h                 |    3 ++-
+>  kernel/trace/trace_events.c          |    4 +---
+>  kernel/trace/trace_functions_graph.c |    1 -
+>  kernel/trace/trace_kprobe.c          |    4 ++--
+>  kernel/trace/trace_syscalls.c        |    2 +-
+>  9 files changed, 38 insertions(+), 20 deletions(-)
 
-	spin_lock(&data->lock);
-	need_reset = !(data->status & PICOLCD_READY_FB);
-	spin_unlock(&data->lock);
+Pulled, thanks a lot Steve!
 
-	if (need_reset)
-		picolcd_fb_reset(data->hdev, 0);
-
-Which plainly shows that the locking here is bogus.
-
--- 
-Dmitry
+	Ingo
