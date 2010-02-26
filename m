@@ -1,47 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965178Ab0BZPg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 10:36:29 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52735 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965128Ab0BZPg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 10:36:27 -0500
-Subject: [PATCH] perf_event: Fix preempt warning in perf_clock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Feb 2010 16:36:23 +0100
-Message-ID: <1267198583.22519.684.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S965192Ab0BZPqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 10:46:48 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:55477 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965085Ab0BZPqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 10:46:46 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19335.60634.75667.480609@pilspetsen.it.uu.se>
+Date: Fri, 26 Feb 2010 16:46:34 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Andi Kleen <andi@firstfloor.org>, roel kluin <roel.kluin@gmail.com>,
+       David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in  sha1_update()
+In-Reply-To: <19335.55478.733896.68829@pilspetsen.it.uu.se>
+References: <4B8692E3.9030509@gmail.com>
+	<20100225.071759.98314060.davem@davemloft.net>
+	<25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
+	<87sk8oqkil.fsf@basil.nowhere.org>
+	<19335.55478.733896.68829@pilspetsen.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mikael Pettersson writes:
+ > Andi Kleen writes:
+ >  > roel kluin <roel.kluin@gmail.com> writes:
+ >  > 
+ >  > >> And it's wrong because the reason the memset() is there seems to be
+ >  > >> to clear out key information that might exist kernel stack so that
+ >  > >> it's more difficult for rogue code to get at things.
+ >  > >
+ >  > > If the memset is optimized away then the clear out does not occur. Do you
+ >  > > know a different way to fix this? I observed this with:
+ >  > 
+ >  > You could always cast to volatile before memsetting?
+ > 
+ > I tried that and it doesn't work. Furthermore passing a volatile void *
+ > to a function expecting a void * provokes a compiler warning.
+ > 
+ > I currently think that defining and using
+ > 
+ > void secure_bzero(void *p, size_t n)
+ > {
+ > 	memset(p, 0, n);
+ > 	/* We need for this memset() to be performed even if *p
+ > 	 * is about to disappear (a local auto variable going out
+ > 	 * of scope or some dynamic memory being kfreed()).
+ > 	 * Thus we need to fake a "use" of *p here.
+ > 	 * barrier() achieves that effect, and much more.
+ > 	 * TODO: find a better alternative to barrier() here.
+ > 	 */
+ > 	barrier();
 
-A recent commit introduced a preemption warning for perf_clock(), use
-raw_smp_processor_id() to avoid this, it really doesn't matter which cpu
-we use here.
+Instead of barrier(), this works with gcc-3.2.3 up to gcc-4.4.3
+for the purpose of making the memset() not disappear:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: stable@kernel.org
-LKML-Reference: <new-submission>
----
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -249,7 +249,7 @@ static void perf_unpin_context(struct pe
- 
- static inline u64 perf_clock(void)
- {
--	return cpu_clock(smp_processor_id());
-+	return cpu_clock(raw_smp_processor_id());
- }
- 
- /*
+	{
+		struct s { char c[n]; };
+		asm("" : : "m"(*(struct s *)p));
+	}
 
+Every byte in the [p,p+n[ range must be used. If you only use the
+first byte, via e.g. asm("" :: "m"(*(char*)p)), then the compiler
+_will_ skip scrubbing bytes beyond the first.
 
+An explicit loop that uses each byte individually also works, but
+results in awful code with older compilers.
+
+ > }
