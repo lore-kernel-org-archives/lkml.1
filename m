@@ -1,108 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935121Ab0BZDdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 22:33:17 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53555 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S935056Ab0BZDdP convert rfc822-to-8bit (ORCPT
+	id S935148Ab0BZDri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 22:47:38 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:65487 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935124Ab0BZDrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 22:33:15 -0500
-Message-ID: <4B874125.7040003@cn.fujitsu.com>
-Date: Fri, 26 Feb 2010 11:33:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 25 Feb 2010 22:47:37 -0500
+Message-Id: <201002260346.o1Q3kUmg005596@www262.sakura.ne.jp>
+Subject: [PATCH] audit: Protect find_task_by_vpid() with RCU.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, viro@ftp.linux.org.uk,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, tglx@linutronix.de,
+       akpm@linux-foundation.org, eparis@redhat.com
 MIME-Version: 1.0
-To: =?UTF-8?B?Um9iZXJ0IFNjaMO2bmU=?= <robert.schoene@tu-dresden.de>
-CC: "Langsdorf, Mark" <mark.langsdorf@amd.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing: add event power_frequency to powernow-k8 driver
-References: <1267093075.3369.5.camel@localhost>
-In-Reply-To: <1267093075.3369.5.camel@localhost>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Date: Fri, 26 Feb 2010 12:46:30 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 25022010 #3421183, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Schöne wrote:
-> This patch adds frequency tracing to the powernow-k8 cpufreq driver
-> 
-> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> index 6e44519..99034e7 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> @@ -37,6 +37,10 @@
->  #include <linux/io.h>
->  #include <linux/delay.h>
->  
-> +#ifdef CONFIG_POWER_TRACER
-> +#include <trace/events/power.h> /* tracing power events */
-> +# endif /* CONFIG_POWER_TRACER */
-> +
->  #include <asm/msr.h>
->  
->  #include <linux/acpi.h>
-> @@ -54,6 +58,25 @@ static DEFINE_PER_CPU(struct powernow_k8_data *,
-> powernow_data);
->  
->  static int cpu_family = CPU_OPTERON;
->  
-> +
-> +/* only trace power if it is selected */
-> +#ifdef CONFIG_POWER_TRACER
-> +       /* trace power event on a specific cpu/core */
-> +       static void trace_power_event(unsigned int *freq){
-> +               trace_power_frequency(POWER_PSTATE, *freq);
-> +       }
-> +
-> +       #define TRACE_POWER_FREQUENCY_EVENT(i,avail_cores, frequency)
+[PATCH] audit: Protect find_task_by_vpid() with RCU.
 
-ERROR: space required after that ','
+Holding tasklist_lock is no longer sufficient for find_task_by_vpid().
+Explicit rcu_read_lock() is required.
 
-> \
-> +        for_each_cpu(i,avail_cores)
-> \
-> +               smp_call_function_single(i, trace_power_event,
-> &frequency, 1);
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> 
+---
+ kernel/audit.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-CONFIG_POWER_TRACER has gone. I don't know if smp_call_function_single()
-is necessary, if not necessary, those #ifs are not needed, otherwise
-you can use CONFIG_TRACING instead of CONFIG_POWER_TRACER.
-
-> +
-> +#else /* !CONFIG_POWER_TRACER */
-> +
-> +       #define TRACE_POWER_FREQUENCY_EVENT(i,avail_cores, frequency) ;
-> +
-> +# endif /* end CONFIG_POWER_TRACER */
-> +
-> +
->  #ifndef CONFIG_SMP
->  static inline const struct cpumask *cpu_core_mask(int cpu)
->  {
-> @@ -1074,6 +1097,8 @@ static int transition_frequency_fidvid(struct
-> powernow_k8_data *data,
->         res = transition_fid_vid(data, fid, vid);
->         freqs.new = find_khz_freq_from_fid(data->currfid);
->  
-> +       TRACE_POWER_FREQUENCY_EVENT(i,data->available_cores, freqs.new);
-> +
->         for_each_cpu(i, data->available_cores) {
->                 freqs.cpu = i;
->                 cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> @@ -1107,6 +1132,8 @@ static int transition_frequency_pstate(struct
-> powernow_k8_data *data,
->         res = transition_pstate(data, pstate);
->         freqs.new = find_khz_freq_from_pstate(data->powernow_table,
-> pstate);
->  
-> +       TRACE_POWER_FREQUENCY_EVENT(i,data->available_cores, freqs.new);
-> +
->         for_each_cpu(i, data->available_cores) {
->                 freqs.cpu = i;
->                 cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> 
-> 
-> 
-> 
+--- linux-2.6.33.orig/kernel/audit.c
++++ linux-2.6.33/kernel/audit.c
+@@ -468,7 +468,9 @@ static int audit_prepare_user_tty(pid_t 
+ 	int err;
+ 
+ 	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	tsk = find_task_by_vpid(pid);
++	rcu_read_unlock();
+ 	err = -ESRCH;
+ 	if (!tsk)
+ 		goto out;
+@@ -882,7 +884,9 @@ static int audit_receive_msg(struct sk_b
+ 		struct task_struct *tsk;
+ 
+ 		read_lock(&tasklist_lock);
++		rcu_read_lock();
+ 		tsk = find_task_by_vpid(pid);
++		rcu_read_unlock();
+ 		if (!tsk)
+ 			err = -ESRCH;
+ 		else {
+@@ -905,7 +909,9 @@ static int audit_receive_msg(struct sk_b
+ 		if (s->enabled != 0 && s->enabled != 1)
+ 			return -EINVAL;
+ 		read_lock(&tasklist_lock);
++		rcu_read_lock();
+ 		tsk = find_task_by_vpid(pid);
++		rcu_read_unlock();
+ 		if (!tsk)
+ 			err = -ESRCH;
+ 		else {
