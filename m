@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934332Ab0BZLCP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 06:02:15 -0500
-Received: from ist.d-labs.de ([213.239.218.44]:33364 "EHLO mx01.d-labs.de"
+	id S934214Ab0BZLBy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 06:01:54 -0500
+Received: from ist.d-labs.de ([213.239.218.44]:33357 "EHLO mx01.d-labs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934028Ab0BZLBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 06:01:53 -0500
+	id S933907Ab0BZLBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 06:01:52 -0500
 From: florian@mickler.org
 To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
 Cc: "Marcel Holtmann" <marcel@holtmann.org>,
@@ -16,141 +16,37 @@ Cc: "Marcel Holtmann" <marcel@holtmann.org>,
        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
        "Greg Kroah-Hartman" <gregkh@suse.de>,
        Florian Mickler <florian@mickler.org>
-Subject: [PATCH v3] enhance sysfs rfkill interface
-Date: Fri, 26 Feb 2010 12:01:34 +0100
-Message-Id: <1267182094-15469-2-git-send-email-florian@mickler.org>
+Subject: Re: [PATCH v2 2/2] enhance sysfs rfkill interface
+Date: Fri, 26 Feb 2010 12:01:33 +0100
+Message-Id: <1267182094-15469-1-git-send-email-florian@mickler.org>
 X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1267182094-15469-1-git-send-email-florian@mickler.org>
+In-Reply-To: <20100225233516.GD5218@khazad-dum.debian.net>
 References: <20100225233516.GD5218@khazad-dum.debian.net>
- <1267182094-15469-1-git-send-email-florian@mickler.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This commit introduces two new sysfs knobs.
+Hi,
 
-/sys/class/rfkill/rfkill[0-9]+/blocked_hw: (ro)
-	hardblock kill state
-/sys/class/rfkill/rfkill[0-9]+/blocked_sw: (rw)
-	softblock kill state
+On Thu, 25 Feb 2010 20:35:16 -0300
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
 
-Signed-off-by: Florian Mickler <florian@mickler.org>
----
- Documentation/ABI/stable/sysfs-class-rfkill |   25 +++++++++++
- net/rfkill/core.c                           |   58 +++++++++++++++++++++++++++
- 2 files changed, 83 insertions(+), 0 deletions(-)
+> On Wed, 24 Feb 2010, florian@mickler.org wrote:  
+> > I am not shure about those names.  
+> 
+> I don't like them.  IMHO, you don't gain anything by being this terse, and
+> it is difficult to understand what they mean at first glance.
+>   
+> > Other alternatives: 
+> > [hs]w_block
+> > block_[hs]w  
+> 
 
-this depends on the first patch: "[PATCH v2 1/2] Document the rfkill sysfs ABI"
+I made that blocked_sw and blocked_hw, so that they are
+lexicographically nearby and that they also give more information about
+their content.
 
-diff --git a/Documentation/ABI/stable/sysfs-class-rfkill b/Documentation/ABI/stable/sysfs-class-rfkill
-index 97d5064..b91c3f3 100644
---- a/Documentation/ABI/stable/sysfs-class-rfkill
-+++ b/Documentation/ABI/stable/sysfs-class-rfkill
-@@ -40,3 +40,28 @@ Description: 	Whether the soft blocked state is initialised from non-volatile
- Values: 	A numeric value.
- 		0: false
- 		1: true
-+
-+
-+What:		/sys/class/rfkill/rfkill[0-9]+/blocked_hw
-+Date:		23-Feb-2010
-+KernelVersion	v2.6.34
-+Contact:	linux-wireless@vger.kernel.org
-+Description: 	Current hardblock state. This file is read only.
-+Values: 	A numeric value.
-+		0: inactive
-+			The transmitter is (potentially) active.
-+		1: active
-+			The transmitter is forced off by something outside of
-+			the driver's control.
-+
-+
-+What:		/sys/class/rfkill/rfkill[0-9]+/blocked_sw
-+Date:		23-Feb-2010
-+KernelVersion	v2.6.34
-+Contact:	linux-wireless@vger.kernel.org
-+Description:	Current softblock state. This file is read and write.
-+Values: 	A numeric value.
-+		0: inactive
-+			The transmitter is (potentially) active.
-+		1: active
-+			The transmitter is turned off by software.
-diff --git a/net/rfkill/core.c b/net/rfkill/core.c
-index c218e07..5f33151 100644
---- a/net/rfkill/core.c
-+++ b/net/rfkill/core.c
-@@ -628,6 +628,61 @@ static ssize_t rfkill_persistent_show(struct device *dev,
- 	return sprintf(buf, "%d\n", rfkill->persistent);
- }
- 
-+static ssize_t rfkill_blocked_hw_show(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	struct rfkill *rfkill = to_rfkill(dev);
-+	unsigned long flags;
-+	u32 state;
-+
-+	spin_lock_irqsave(&rfkill->lock, flags);
-+	state = rfkill->state;
-+	spin_unlock_irqrestore(&rfkill->lock, flags);
-+
-+	return sprintf(buf, "%d\n", (state & RFKILL_BLOCK_HW) ? 1 : 0 );
-+}
-+
-+static ssize_t rfkill_blocked_sw_show(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	struct rfkill *rfkill = to_rfkill(dev);
-+	unsigned long flags;
-+	u32 state;
-+
-+	spin_lock_irqsave(&rfkill->lock, flags);
-+	state = rfkill->state;
-+	spin_unlock_irqrestore(&rfkill->lock, flags);
-+
-+	return sprintf(buf, "%d\n", (state & RFKILL_BLOCK_SW) ? 1 : 0 );
-+}
-+
-+static ssize_t rfkill_blocked_sw_store(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct rfkill *rfkill = to_rfkill(dev);
-+	unsigned long state;
-+	int err;
-+
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
-+	err = strict_strtoul(buf, 0, &state);
-+	if (err)
-+		return err;
-+
-+	if (state > 1 )
-+		return -EINVAL;
-+
-+	mutex_lock(&rfkill_global_mutex);
-+	rfkill_set_block(rfkill, state);
-+	mutex_unlock(&rfkill_global_mutex);
-+
-+	return err ?: count;
-+}
-+
- static u8 user_state_from_blocked(unsigned long state)
- {
- 	if (state & RFKILL_BLOCK_HW)
-@@ -700,6 +755,9 @@ static struct device_attribute rfkill_dev_attrs[] = {
- 	__ATTR(persistent, S_IRUGO, rfkill_persistent_show, NULL),
- 	__ATTR(state, S_IRUGO|S_IWUSR, rfkill_state_show, rfkill_state_store),
- 	__ATTR(claim, S_IRUGO|S_IWUSR, rfkill_claim_show, rfkill_claim_store),
-+	__ATTR(sw, S_IRUGO|S_IWUSR, rfkill_blocked_sw_show,
-+			rfkill_blocked_sw_store),
-+	__ATTR(hw, S_IRUGO, rfkill_blocked_hw_show, NULL),
- 	__ATTR_NULL
- };
- 
--- 
-1.6.6.1
+blocked_[hs]w -> 0/1 makes IMO kind of sense.
 
+cheers,
+Flo
