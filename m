@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966283Ab0BZViX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:38:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14862 "EHLO mx1.redhat.com"
+	id S966286Ab0BZVj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:39:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12370 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966274Ab0BZViP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:38:15 -0500
-Date: Fri, 26 Feb 2010 16:37:46 -0500
+	id S966257Ab0BZViH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 16:38:07 -0500
+Date: Fri, 26 Feb 2010 16:37:42 -0500
 From: Jason Baron <jbaron@redhat.com>
 To: fweisbec@gmail.com, mingo@elte.hu, rostedt@goodmis.org
 Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
@@ -14,68 +14,50 @@ Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
        heiko.carstens@de.ibm.com, benh@kernel.crashing.org,
        davem@davemloft.net, lethal@linux-sh.org, schwidefsky@de.ibm.com,
        brueckner@linux.vnet.ibm.com, tony.luck@intel.com
-Message-Id: <6c4c31456251dfc95cbe81573f7bd46db4bfd7e1.1267214187.git.jbaron@redhat.com>
+Message-Id: <f13e52e38e2bccd52f9c5959530b88ddfe73de42.1267214187.git.jbaron@redhat.com>
 In-Reply-To: <cover.1267214186.git.jbaron@redhat.com>
 References: <cover.1267214186.git.jbaron@redhat.com>
-Subject: [PATCH 12/12] cleanup: remove arg from TRACE_SYS_ENTER_PROFILE_INIT() macro
+Subject: [PATCH 11/12] tags: recognize syscalls
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since TRACE_SYS_ENTER_PROFILE_INIT() and TRACE_SYS_EXIT_PROFILE_INIT() don't do
-anything with their arguments, remove them. Also, TRACE_SYS_ENTER_PROFILE() and
-TRACE_SYS_EXIT_PROFILE() don't appear to be used. remove them.
+make tags.sh recognize the new syscall macros:
+
+COMPAT_SYSCALL_DEFINE#N()
+ARCH_COMPAT_SYSCALL_DEFINE#N()
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 ---
- include/linux/syscalls.h |   14 ++++++--------
- 1 files changed, 6 insertions(+), 8 deletions(-)
+ scripts/tags.sh |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 241a19c..611a411 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -101,18 +101,16 @@ struct perf_event_attr;
+diff --git a/scripts/tags.sh b/scripts/tags.sh
+index 1a0c44d..d9c703d 100755
+--- a/scripts/tags.sh
++++ b/scripts/tags.sh
+@@ -110,7 +110,9 @@ exuberant()
+ 	-I DEFINE_TRACE,EXPORT_TRACEPOINT_SYMBOL,EXPORT_TRACEPOINT_SYMBOL_GPL \
+ 	--extra=+f --c-kinds=-px                                \
+ 	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'                  \
+-	--regex-c='/^SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/sys_\1/'
++	--regex-c='/^SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/sys_\1/' \
++	--regex-c='/^COMPAT_SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/compat_sys_\1/' \
++	--regex-c='/^ARCH_COMPAT_SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/arch_compat_sys_\1/'
  
- #ifdef CONFIG_PERF_EVENTS
+ 	all_kconfigs | xargs $1 -a                              \
+ 	--langdef=kconfig --language-force=kconfig              \
+@@ -130,7 +132,9 @@ emacs()
+ {
+ 	all_sources | xargs $1 -a                               \
+ 	--regex='/^ENTRY(\([^)]*\)).*/\1/'                      \
+-	--regex='/^SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/sys_\1/'
++	--regex='/^SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/sys_\1/'   \
++	--regex='/^COMPAT_SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/compat_sys_\1/' \
++	--regex='/^ARCH_COMPAT_SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/arch_compat_sys_\1/'
  
--#define TRACE_SYS_ENTER_PROFILE_INIT(sname)				       \
-+#define TRACE_SYS_ENTER_PROFILE_INIT					       \
- 	.profile_enable = prof_sysenter_enable,				       \
- 	.profile_disable = prof_sysenter_disable,
- 
--#define TRACE_SYS_EXIT_PROFILE_INIT(sname)				       \
-+#define TRACE_SYS_EXIT_PROFILE_INIT					       \
- 	.profile_enable = prof_sysexit_enable,				       \
- 	.profile_disable = prof_sysexit_disable,
- #else
--#define TRACE_SYS_ENTER_PROFILE(sname)
--#define TRACE_SYS_ENTER_PROFILE_INIT(sname)
--#define TRACE_SYS_EXIT_PROFILE(sname)
--#define TRACE_SYS_EXIT_PROFILE_INIT(sname)
-+#define TRACE_SYS_ENTER_PROFILE_INIT
-+#define TRACE_SYS_EXIT_PROFILE_INIT
- #endif /* CONFIG_PERF_EVENTS */
- 
- #ifdef CONFIG_FTRACE_SYSCALLS
-@@ -149,7 +147,7 @@ struct perf_event_attr;
- 		.regfunc		= reg_event_syscall_enter,	\
- 		.unregfunc		= unreg_event_syscall_enter,	\
- 		.data			= (void *)&__syscall_meta_##sname,\
--		TRACE_SYS_ENTER_PROFILE_INIT(sname)			\
-+		TRACE_SYS_ENTER_PROFILE_INIT				\
- 	}
- 
- #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
-@@ -171,7 +169,7 @@ struct perf_event_attr;
- 		.regfunc		= reg_event_syscall_exit,	\
- 		.unregfunc		= unreg_event_syscall_exit,	\
- 		.data			= (void *)&__syscall_meta_##sname,\
--		TRACE_SYS_EXIT_PROFILE_INIT(sname)			\
-+		TRACE_SYS_EXIT_PROFILE_INIT				\
- 	}
- 
- #define SYSCALL_METADATA(sname, nb)				\
+ 	all_kconfigs | xargs $1 -a                              \
+ 	--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'
 -- 
 1.6.5.1
 
