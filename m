@@ -1,115 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626Ab0BZRid (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 12:38:33 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:39718 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965531Ab0BZRi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 12:38:29 -0500
-X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Feb 2010 12:37:45 EST
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: akpm@linux-foundation.org, linux-mmc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       wolfgang.mues@auerswald.de, avictor.za@gmail.com,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 7/7] mmc: at91_mci: introduce per-mci-revision conditional code
-Date: Fri, 26 Feb 2010 19:39:35 +0100
-Message-Id: <b0448f44ec87aec433ef0c2240a4b2fd05a5b605.1267209149.git.nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
-References: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
-In-Reply-To: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
-References: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
+	id S965569Ab0BZRhZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 12:37:25 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:41863
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965512Ab0BZRgG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 12:36:06 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i87h6bh43h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYGM7M-01-R68-02
+X-M-MSG: 
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Robert Richter <robert.richter@amd.com>, stable@kernel.org
+Subject: [PATCH 01/15] oprofile: remove tracing build dependency
+Date: Fri, 26 Feb 2010 18:29:53 +0100
+Message-ID: <1267205407-6523-2-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
+References: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
+X-OriginalArrivalTime: 26 Feb 2010 17:35:47.0085 (UTC) FILETIME=[215E13D0:01CAB70A]
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used to manage features and differences on a per-cpu basis. As several cpus
-share the same mci revision, this patch aggregates cpus that have the same IP
-revision in one defined constant.
-We use the at91mci_is_mci1rev2xx() funtion name not to mess with newer Atmel
-sd/mmc IP called "MCI2". _rev2 naming could have been confusing...
+The commit
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+ 1155de4 ring-buffer: Make it generally available
+
+already made ring-buffer available without the TRACING option
+enabled. This patch removes the TRACING dependency from oprofile.
+
+Fixes also oprofile configuration on ia64.
+
+The patch also applies to the 2.6.32-stable kernel.
+
+Reported-by: Tony Jones <tonyj@suse.de>
+Cc: stable@kernel.org
+Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- drivers/mmc/host/at91_mci.c |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
+ arch/Kconfig |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index e78cdc8..07fed42 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -78,6 +78,17 @@
- 
- #define DRIVER_NAME "at91_mci"
- 
-+static inline int at91mci_is_mci1rev2xx(void)
-+{
-+	return (   cpu_is_at91sam9260()
-+		|| cpu_is_at91sam9263()
-+		|| cpu_is_at91cap9()
-+		|| cpu_is_at91sam9rl()
-+		|| cpu_is_at91sam9g10()
-+		|| cpu_is_at91sam9g20()
-+		);
-+}
-+
- #define FL_SENT_COMMAND	(1 << 0)
- #define FL_SENT_STOP	(1 << 1)
- 
-@@ -204,8 +215,8 @@ static inline void at91_mci_sg_to_dma(struct at91mci_host *host, struct mmc_data
- 	size = data->blksz * data->blocks;
- 	len = data->sg_len;
- 
--	/* AT91SAM926[0/3] Data Write Operation and number of bytes erratum */
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+	/* MCI1 rev2xx Data Write Operation and number of bytes erratum */
-+	if (at91mci_is_mci1rev2xx())
- 		if (host->total_length == 12)
- 			memset(dmabuf, 0, 12);
- 
-@@ -398,7 +409,7 @@ static void at91_mci_enable(struct at91mci_host *host)
- 	at91_mci_write(host, AT91_MCI_DTOR, AT91_MCI_DTOMUL_1M | AT91_MCI_DTOCYC);
- 	mr = AT91_MCI_PDCMODE | 0x34a;
- 
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+	if (at91mci_is_mci1rev2xx())
- 		mr |= AT91_MCI_RDPROOF | AT91_MCI_WRPROOF;
- 
- 	at91_mci_write(host, AT91_MCI_MR, mr);
-@@ -555,10 +566,10 @@ static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command
- 				 */
- 				host->total_length = block_length * blocks;
- 				/*
--				 * AT91SAM926[0/3] Data Write Operation and
-+				 * MCI1 rev2xx Data Write Operation and
- 				 * number of bytes erratum
- 				 */
--				if (cpu_is_at91sam9260 () || cpu_is_at91sam9263())
-+				if (at91mci_is_mci1rev2xx())
- 					if (host->total_length < 12)
- 						host->total_length = 12;
- 
-@@ -943,7 +954,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	host->bus_mode = 0;
- 	host->board = pdev->dev.platform_data;
- 	if (host->board->wire4) {
--		if (cpu_is_at91sam9260() || cpu_is_at91sam9263())
-+		if (at91mci_is_mci1rev2xx())
- 			mmc->caps |= MMC_CAP_4_BIT_DATA;
- 		else
- 			dev_warn(&pdev->dev, "4 wire bus mode not supported"
-@@ -959,8 +970,8 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Add SDIO capability when available */
--	if (cpu_is_at91sam9260() || cpu_is_at91sam9263()) {
--		/* AT91SAM9260/9263 erratum */
-+	if (at91mci_is_mci1rev2xx()) {
-+		/* at91mci MCI1 rev2xx sdio interrupt erratum */
- 		if (host->board->wire4 || !host->board->slot_b)
- 			mmc->caps |= MMC_CAP_SDIO_IRQ;
- 	}
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 9d055b4..25e69f7 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -6,8 +6,6 @@ config OPROFILE
+ 	tristate "OProfile system profiling (EXPERIMENTAL)"
+ 	depends on PROFILING
+ 	depends on HAVE_OPROFILE
+-	depends on TRACING_SUPPORT
+-	select TRACING
+ 	select RING_BUFFER
+ 	select RING_BUFFER_ALLOW_SWAP
+ 	help
 -- 
-1.5.6.5
+1.6.6
+
 
