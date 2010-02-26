@@ -1,589 +1,206 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935251Ab0BZEyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 23:54:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49947 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935221Ab0BZEyU (ORCPT
+	id S935261Ab0BZEzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 23:55:35 -0500
+Received: from mailout3.samsung.com ([203.254.224.33]:48133 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935233Ab0BZEze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 23:54:20 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 26 Feb 2010 13:50:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com
-Subject: Re: [RFC][PATCH 1/2] memcg: oom kill handling improvement
-Message-Id: <20100226135045.d04b429a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100226131552.07475f9c.nishimura@mxp.nes.nec.co.jp>
-References: <20100224165921.cb091a4f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100226131552.07475f9c.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 23:55:34 -0500
+Date: Fri, 26 Feb 2010 13:55:31 +0900
+From: =?ks_c_5601-1987?B?waTA58jG?= <jh80.chung@samsung.com>
+Subject: [PATCH] rfkill bug fixed in rfkill_set_sw_state
+To: linux-kernel@vger.kernel.org
+Message-id: <000301cab69f$ec61ad00$c5250700$%chung@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_DNz1WrX+VWi1FUqdy8AW7g)"
+Content-language: ko
+Thread-index: Acq2n+wj3vvwKgZ6R3KvaT69bPQGDA==
+X-MS-TNEF-Correlator: 00000000FF1F5486CA626E4AB002C6DF6C72BE7324242B00
+X-OriginalArrivalTime: 26 Feb 2010 04:55:31.0525 (UTC)
+ FILETIME=[EC5FFF50:01CAB69F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Feb 2010 13:15:52 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+?)7/ :N:P@87N 18<:5H MIME G|=D@G 8^=CAv@T4O4Y.
 
-> On Wed, 24 Feb 2010 16:59:21 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > These are dump of patches just for showing concept, what I want to do.
-> > But not tested. please see if you have free time. (you can ignore ;)
-> > 
-> > Anyway, this will HUNK to the latest mmotm, Kirill's work is merged.
-> > 
-> > This is not related to David's work. I don't hesitate to rebase mine
-> > to the mmotm if his one is merged, it's easy.
-> > But I'm not sure his one goes to mm soon. 
-> > 
-> > 1st patch is for better handling oom-kill under memcg.
-> It's bigger than I expected, but it basically looks good to me.
-> 
-> > 2nd patch is oom-notifier and oom-kill-disable for memcg knob.
-> > 
-> This feature is very atractive.
-> 
-> 
-> One comment to this patch for now.
-> 
-> > +/*
-> > + * Check there are ongoing oom-kill in this hierarchy or not.
-> > + * If now under oom-kill, wait for some event to restart job.
-> > + */
-> > +static bool memcg_handle_oom(struct mem_cgroup *mem, gfp_t mask)
-> > +{
-> > +	int oom_count = 0;
-> > +	DEFINE_WAIT(wait);
-> > +	/*
-> > +	 * Considering hierarchy (below)
-> > +	 * /A
-> > +	 *   /01
-> > +	 *   /02
-> > +	 * If 01 or 02 is under oom-kill, oom-kill in A should wait.
-> > +	 * If "A" is under oom-kill, oom-kill in 01 and 02 should wait.
-> > +	 * (task in 01/02 can be killed.)
-> > +	 * But if 01 is under oom-kill, 02's oom-kill is independent from it.
-> > +	 */
-> > +	prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> > +	mem_cgroup_walk_tree(mem, &oom_count, set_memcg_oom_cb);
-> > +	/* Am I the 1st oom killer in this sub hierarchy ? */
-> > +	if (oom_count == 1) {
-> > +		finish_wait(&memcg_oom_waitq, &wait);
-> > +		mem_cgroup_out_of_memory(mem, mask);
-> > +		mem_cgroup_walk_tree(mem, NULL, unset_memcg_oom_cb);
-> I think we need call memcg_oom_wake() here. Some contexts might have slept already,
-> but other callers of memcg_oom_wake() calle it after checking memcg_under_oom(),
-> so if we don't wake them up here, they continue to sleep, IIUC.
-> 
-Yes, it's problem.
+--Boundary_(ID_DNz1WrX+VWi1FUqdy8AW7g)
+Content-type: text/plain; charset=ks_c_5601-1987
+Content-transfer-encoding: quoted-printable
 
-My 1st expectation is "If some process is killed, uncharge will be called."
-So, I didn't add memcg_oom_wake() here.
+Don=A1=AFt work expected operation in __rfkill_set_sw_state.=20
+when rfkill initialized. Rfkill=A1=AFs blocked & unblocked is operating =
+on the
+contrary.
 
-But in this patch, it's broken because I clear flag.
-Maybe it's better to have 2 flags as
-	- a flag for "there are waiters".
-	- a flag for "in OOM"
+Signed-off-by: Jaehoon Chung <jh80.chung@samsung.com>
 
-Or clear "there are waiters" flag when we really call wakeup.
+---
+ net/rfkill/core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Please let me 2nd trial.
+diff --git a/net/rfkill/core.c b/net/rfkill/core.c
+index c224cb2..dcc2d38 100644
+--- a/net/rfkill/core.c
++++ b/net/rfkill/core.c
+@@ -488,7 +488,7 @@ static void __rfkill_set_sw_state(struct rfkill
+*rfkill, bool blocked)
+ 	if (rfkill->state & RFKILL_BLOCK_SW_SETCALL)
+ 		bit =3D RFKILL_BLOCK_SW_PREV;
+=20
+-	if (blocked)
++	if (!blocked)
+ 		rfkill->state |=3D bit;
+ 	else
+ 		rfkill->state &=3D ~bit;
+--=20
+1.6.0.4
 
-Thanks,
--Kame
 
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
-> > I'm sorry that I'll be absent tomorrow.
-> > ==
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > This is updated version of oom handling improvement om memcg.
-> > But all codes are totaly renewed. This may not be sophisiticated well but
-> > enough for showing idea.
-> > 
-> > This patch does following things.
-> >   * set "memcg is under OOM" if somone gets into OOM under a memcg.
-> >     like zone's OOM lock, tree-of-memcg is marked as under OOM.
-> >     By this. simlutabeous OOM kill in a tree will not happen.
-> > 
-> >   * When other threads try to reclaim memory or call oom-kill, it
-> >     checks its own target memcg is under oom or not. If someone
-> >     calls oom-killer already, the thread will be queued to waitq.
-> > 
-> >   * At some event which makes room for new memory, threads on waitq
-> >     are waken up.
-> >     ** A page (or chunk of pages) are unchraged.
-> >     ** A task is moved.
-> >     ** limit is enlarged.
-> > 
-> > And this patch also allows to check "current's memcg is changed or not"
-> > while charging.
-> > 
-> > Considering what admin/daemon can do when it notice OOM,
-> >   * kill a process
-> >   * move a process (to other cgroup which has free area)
-> >   * remove a file (on tmpfs or some)
-> >   * enlarge limit
-> > I think all chances for wakeing up waiters are covered by these.
-> > 
-> > After this patch, memcg's accounting will not fail in usual path.
-> > If all tasks are OOM_DISABLE, memcg may hang. But admin can have
-> > several options described in above. So, oom notifier+freeze should be
-> > implemented.
-> > 
-> > TODO: maybe not difficult.
-> >   * Add oom notifier. (can reuse memory.threashold ?)
-> >   * Add a switch for oom-freeze rather than oom-kill.
-> > 
-> > Cc: David Rientjes <rientjes@google.com>
-> > Cc: Balbir Singh <balbir@in.ibm.com>
-> > Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  include/linux/memcontrol.h |    6 -
-> >  mm/memcontrol.c            |  208 +++++++++++++++++++++++++++++++++++----------
-> >  mm/oom_kill.c              |   11 --
-> >  3 files changed, 167 insertions(+), 58 deletions(-)
-> > 
-> > Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
-> > ===================================================================
-> > --- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
-> > +++ mmotm-2.6.33-Feb11/mm/memcontrol.c
-> > @@ -200,7 +200,6 @@ struct mem_cgroup {
-> >  	 * Should the accounting and control be hierarchical, per subtree?
-> >  	 */
-> >  	bool use_hierarchy;
-> > -	unsigned long	last_oom_jiffies;
-> >  	atomic_t	refcnt;
-> >  
-> >  	unsigned int	swappiness;
-> > @@ -223,6 +222,8 @@ struct mem_cgroup {
-> >  	 */
-> >  	unsigned long 	move_charge_at_immigrate;
-> >  
-> > +	/* counting ongoing OOM requests under sub hierarchy */
-> > +	atomic_t oom_count;
-> >  	/*
-> >  	 * percpu counter.
-> >  	 */
-> > @@ -1096,6 +1097,89 @@ done:
-> >  }
-> >  
-> >  /*
-> > + * set/under memcg_oom counting is done under mutex.
-> > + */
-> > +static DEFINE_MUTEX(memcg_oom_mutex);
-> > +static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
-> > +
-> > +static int set_memcg_oom_cb(struct mem_cgroup *mem, void *data)
-> > +{
-> > +	int *max_count = (int*)data;
-> > +	int count = atomic_inc_return(&mem->oom_count);
-> > +	if (*max_count < count)
-> > +		*max_count = count;
-> > +	return 0;
-> > +}
-> > +
-> > +static int unset_memcg_oom_cb(struct mem_cgroup *mem, void *data)
-> > +{
-> > +	atomic_set(&mem->oom_count, 0);
-> > +	return 0;
-> > +}
-> > +
-> > +static bool memcg_under_oom(struct mem_cgroup *mem)
-> > +{
-> > +	if (atomic_read(&mem->oom_count))
-> > +		return true;
-> > +	return false;
-> > +}
-> > +
-> > +static void memcg_oom_wait(struct mem_cgroup *mem)
-> > +{
-> > +	DEFINE_WAIT(wait);
-> > +
-> > +	prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> > +	if (memcg_under_oom(mem))
-> > +		schedule();
-> > +	finish_wait(&memcg_oom_waitq, &wait);
-> > +}
-> > +
-> > +static void memcg_oom_wake(void)
-> > +{
-> > +	/* This may wake up unnecessary tasks..but it's not big problem */
-> > +	wake_up_all(&memcg_oom_waitq);
-> > +}
-> > +/*
-> > + * Check there are ongoing oom-kill in this hierarchy or not.
-> > + * If now under oom-kill, wait for some event to restart job.
-> > + */
-> > +static bool memcg_handle_oom(struct mem_cgroup *mem, gfp_t mask)
-> > +{
-> > +	int oom_count = 0;
-> > +	DEFINE_WAIT(wait);
-> > +	/*
-> > +	 * Considering hierarchy (below)
-> > +	 * /A
-> > +	 *   /01
-> > +	 *   /02
-> > +	 * If 01 or 02 is under oom-kill, oom-kill in A should wait.
-> > +	 * If "A" is under oom-kill, oom-kill in 01 and 02 should wait.
-> > +	 * (task in 01/02 can be killed.)
-> > +	 * But if 01 is under oom-kill, 02's oom-kill is independent from it.
-> > +	 */
-> > +	prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> > +	mem_cgroup_walk_tree(mem, &oom_count, set_memcg_oom_cb);
-> > +	/* Am I the 1st oom killer in this sub hierarchy ? */
-> > +	if (oom_count == 1) {
-> > +		finish_wait(&memcg_oom_waitq, &wait);
-> > +		mem_cgroup_out_of_memory(mem, mask);
-> > +		mem_cgroup_walk_tree(mem, NULL, unset_memcg_oom_cb);
-> > +	} else {
-> > +		/*
-> > +		 * Wakeup is called when
-> > +		 * 1. pages are uncharged. (by killed, or removal of a file)
-> > +		 * 2. limit is enlarged.
-> > +		 * 3. a task is moved.
-> > +		 */
-> > +		schedule();
-> > +		finish_wait(&memcg_oom_waitq, &wait);
-> > +	}
-> > +	if (test_thread_flag(TIF_MEMDIE))
-> > +		return false;
-> > +	return true;
-> > +}
-> > +
-> > +/*
-> >   * This function returns the number of memcg under hierarchy tree. Returns
-> >   * 1(self count) if no children.
-> >   */
-> > @@ -1234,34 +1318,6 @@ static int mem_cgroup_hierarchical_recla
-> >  	return total;
-> >  }
-> >  
-> > -bool mem_cgroup_oom_called(struct task_struct *task)
-> > -{
-> > -	bool ret = false;
-> > -	struct mem_cgroup *mem;
-> > -	struct mm_struct *mm;
-> > -
-> > -	rcu_read_lock();
-> > -	mm = task->mm;
-> > -	if (!mm)
-> > -		mm = &init_mm;
-> > -	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-> > -	if (mem && time_before(jiffies, mem->last_oom_jiffies + HZ/10))
-> > -		ret = true;
-> > -	rcu_read_unlock();
-> > -	return ret;
-> > -}
-> > -
-> > -static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
-> > -{
-> > -	mem->last_oom_jiffies = jiffies;
-> > -	return 0;
-> > -}
-> > -
-> > -static void record_last_oom(struct mem_cgroup *mem)
-> > -{
-> > -	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-> > -}
-> > -
-> >  /*
-> >   * Currently used to update mapped file statistics, but the routine can be
-> >   * generalized to update other statistics as well.
-> > @@ -1419,6 +1475,7 @@ static int __cpuinit memcg_stock_cpu_cal
-> >  	return NOTIFY_OK;
-> >  }
-> >  
-> > +
-> >  /*
-> >   * Unlike exported interface, "oom" parameter is added. if oom==true,
-> >   * oom-killer can be invoked.
-> > @@ -1427,17 +1484,21 @@ static int __mem_cgroup_try_charge(struc
-> >  			gfp_t gfp_mask, struct mem_cgroup **memcg,
-> >  			bool oom, struct page *page)
-> >  {
-> > -	struct mem_cgroup *mem, *mem_over_limit;
-> > -	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> > +	struct mem_cgroup *mem, *mem_over_limit, *recorded;
-> > +	int nr_retries, csize;
-> >  	struct res_counter *fail_res;
-> > -	int csize = CHARGE_SIZE;
-> > +
-> > +start:
-> > +	nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> > +	recorded = *memcg;
-> > +	csize = CHARGE_SIZE;
-> > +	mem = NULL;
-> >  
-> >  	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
-> >  		/* Don't account this! */
-> >  		*memcg = NULL;
-> >  		return 0;
-> >  	}
-> > -
-> >  	/*
-> >  	 * We always charge the cgroup the mm_struct belongs to.
-> >  	 * The mm_struct's mem_cgroup changes on task migration if the
-> > @@ -1489,6 +1550,12 @@ static int __mem_cgroup_try_charge(struc
-> >  		}
-> >  		if (!(gfp_mask & __GFP_WAIT))
-> >  			goto nomem;
-> > +		/* already in OOM ? */
-> > +		if (memcg_under_oom(mem_over_limit)) {
-> > +			/* Don't add too much pressure to the host */
-> > +			memcg_oom_wait(mem_over_limit);
-> > +			goto retry;
-> > +		}
-> >  
-> >  		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, NULL,
-> >  						gfp_mask, flags);
-> > @@ -1549,11 +1616,15 @@ static int __mem_cgroup_try_charge(struc
-> >  		}
-> >  
-> >  		if (!nr_retries--) {
-> > -			if (oom) {
-> > -				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
-> > -				record_last_oom(mem_over_limit);
-> > -			}
-> > -			goto nomem;
-> > +
-> > +			if (!oom)
-> > +				goto nomem;
-> > +			/* returnes false if current is killed */
-> > +			if (memcg_handle_oom(mem_over_limit, gfp_mask))
-> > +				goto retry;
-> > +			/* For smooth oom-kill of current, return 0 */
-> > +			css_put(&mem->css);
-> > +			return 0;
-> >  		}
-> >  	}
-> >  	if (csize > PAGE_SIZE)
-> > @@ -1572,6 +1643,15 @@ done:
-> >  nomem:
-> >  	css_put(&mem->css);
-> >  	return -ENOMEM;
-> > +
-> > +retry:
-> > +	/*
-> > +	 * current's mem_cgroup can be moved while we're waiting for
-> > +	 * memory reclaim or OOM-Kill.
-> > +	 */
-> > +	*memcg = recorded;
-> > +	css_put(&mem->css);
-> > +	goto start;
-> >  }
-> >  
-> >  /*
-> > @@ -1589,6 +1669,9 @@ static void __mem_cgroup_cancel_charge(s
-> >  		VM_BUG_ON(test_bit(CSS_ROOT, &mem->css.flags));
-> >  		WARN_ON_ONCE(count > INT_MAX);
-> >  		__css_put(&mem->css, (int)count);
-> > +
-> > +		if (memcg_under_oom(mem))
-> > +			memcg_oom_wake();
-> >  	}
-> >  	/* we don't need css_put for root */
-> >  }
-> > @@ -2061,6 +2144,10 @@ direct_uncharge:
-> >  	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> >  	if (uncharge_memsw)
-> >  		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
-> > +	/* Slow path to check OOM waiters */
-> > +	if (!current->memcg_batch.do_batch || batch->memcg != mem)
-> > +		if (memcg_under_oom(mem))
-> > +			memcg_oom_wake();
-> >  	return;
-> >  }
-> >  
-> > @@ -2200,6 +2287,9 @@ void mem_cgroup_uncharge_end(void)
-> >  		res_counter_uncharge(&batch->memcg->res, batch->bytes);
-> >  	if (batch->memsw_bytes)
-> >  		res_counter_uncharge(&batch->memcg->memsw, batch->memsw_bytes);
-> > +
-> > +	if (memcg_under_oom(batch->memcg))
-> > +		memcg_oom_wake();
-> >  	/* forget this pointer (for sanity check) */
-> >  	batch->memcg = NULL;
-> >  }
-> > @@ -2408,8 +2498,7 @@ void mem_cgroup_end_migration(struct mem
-> >  
-> >  /*
-> >   * A call to try to shrink memory usage on charge failure at shmem's swapin.
-> > - * Calling hierarchical_reclaim is not enough because we should update
-> > - * last_oom_jiffies to prevent pagefault_out_of_memory from invoking global OOM.
-> > + * Calling hierarchical_reclaim is not enough because we have to hand oom-kill.
-> >   * Moreover considering hierarchy, we should reclaim from the mem_over_limit,
-> >   * not from the memcg which this page would be charged to.
-> >   * try_charge_swapin does all of these works properly.
-> > @@ -2440,7 +2529,8 @@ static int mem_cgroup_resize_limit(struc
-> >  	u64 memswlimit;
-> >  	int ret = 0;
-> >  	int children = mem_cgroup_count_children(memcg);
-> > -	u64 curusage, oldusage;
-> > +	u64 curusage, oldusage, curlimit;
-> > +	int enlarge = 0;
-> >  
-> >  	/*
-> >  	 * For keeping hierarchical_reclaim simple, how long we should retry
-> > @@ -2451,6 +2541,7 @@ static int mem_cgroup_resize_limit(struc
-> >  
-> >  	oldusage = res_counter_read_u64(&memcg->res, RES_USAGE);
-> >  
-> > +
-> >  	while (retry_count) {
-> >  		if (signal_pending(current)) {
-> >  			ret = -EINTR;
-> > @@ -2468,6 +2559,9 @@ static int mem_cgroup_resize_limit(struc
-> >  			mutex_unlock(&set_limit_mutex);
-> >  			break;
-> >  		}
-> > +		curlimit = res_counter_read_u64(&memcg->res, RES_LIMIT);
-> > +		if (curlimit < val)
-> > +			enlarge = 1;
-> >  		ret = res_counter_set_limit(&memcg->res, val);
-> >  		if (!ret) {
-> >  			if (memswlimit == val)
-> > @@ -2477,8 +2571,20 @@ static int mem_cgroup_resize_limit(struc
-> >  		}
-> >  		mutex_unlock(&set_limit_mutex);
-> >  
-> > -		if (!ret)
-> > +		if (!ret) {
-> > +			/*
-> > +			 * If we enlarge limit of memcg under OOM,
-> > +			 * wake up waiters.
-> > +			 */
-> > +			if (enlarge && memcg_under_oom(memcg))
-> > +				memcg_oom_wake();
-> > +			break;
-> > +		}
-> > +		/* Under OOM ? If so, don't add more pressure. */
-> > +		if (memcg_under_oom(memcg)) {
-> > +			ret = -EBUSY;
-> >  			break;
-> > +		}
-> >  
-> >  		mem_cgroup_hierarchical_reclaim(memcg, NULL, GFP_KERNEL,
-> >  						MEM_CGROUP_RECLAIM_SHRINK);
-> > @@ -2497,9 +2603,10 @@ static int mem_cgroup_resize_memsw_limit
-> >  					unsigned long long val)
-> >  {
-> >  	int retry_count;
-> > -	u64 memlimit, oldusage, curusage;
-> > +	u64 memlimit, oldusage, curusage, curlimit;
-> >  	int children = mem_cgroup_count_children(memcg);
-> >  	int ret = -EBUSY;
-> > +	int enlarge;
-> >  
-> >  	/* see mem_cgroup_resize_res_limit */
-> >   	retry_count = children * MEM_CGROUP_RECLAIM_RETRIES;
-> > @@ -2521,6 +2628,9 @@ static int mem_cgroup_resize_memsw_limit
-> >  			mutex_unlock(&set_limit_mutex);
-> >  			break;
-> >  		}
-> > +		curlimit = res_counter_read_u64(&memcg->res, RES_LIMIT);
-> > +		if (curlimit < val)
-> > +			enlarge = 1;
-> >  		ret = res_counter_set_limit(&memcg->memsw, val);
-> >  		if (!ret) {
-> >  			if (memlimit == val)
-> > @@ -2530,8 +2640,15 @@ static int mem_cgroup_resize_memsw_limit
-> >  		}
-> >  		mutex_unlock(&set_limit_mutex);
-> >  
-> > -		if (!ret)
-> > +		if (!ret) {
-> > +			if (enlarge && memcg_under_oom(memcg))
-> > +				memcg_oom_wake();
-> >  			break;
-> > +		}
-> > +		if (memcg_under_oom(memcg)) {
-> > +			ret = -EBUSY;
-> > +			continue;
-> > +		}
-> >  
-> >  		mem_cgroup_hierarchical_reclaim(memcg, NULL, GFP_KERNEL,
-> >  						MEM_CGROUP_RECLAIM_NOSWAP |
-> > @@ -3859,6 +3976,9 @@ one_by_one:
-> >  			ret = -EINTR;
-> >  			break;
-> >  		}
-> > +		/* Undo precharges if there is ongoing OOM */
-> > +		if (memcg_under_oom(mem))
-> > +			return -ENOMEM;
-> >  		if (!batch_count--) {
-> >  			batch_count = PRECHARGE_COUNT_AT_ONCE;
-> >  			cond_resched();
-> > Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
-> > ===================================================================
-> > --- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
-> > +++ mmotm-2.6.33-Feb11/mm/oom_kill.c
-> > @@ -487,6 +487,9 @@ retry:
-> >  		goto retry;
-> >  out:
-> >  	read_unlock(&tasklist_lock);
-> > +	/* give a chance to die for selected process */
-> > +	if (!test_thread_flag(TIF_MEMDIE))
-> > +		schedule_timeout_uninterruptible(1);
-> >  }
-> >  #endif
-> >  
-> > @@ -601,13 +604,6 @@ void pagefault_out_of_memory(void)
-> >  		/* Got some memory back in the last second. */
-> >  		return;
-> >  
-> > -	/*
-> > -	 * If this is from memcg, oom-killer is already invoked.
-> > -	 * and not worth to go system-wide-oom.
-> > -	 */
-> > -	if (mem_cgroup_oom_called(current))
-> > -		goto rest_and_return;
-> > -
-> >  	if (sysctl_panic_on_oom)
-> >  		panic("out of memory from page fault. panic_on_oom is selected.\n");
-> >  
-> > @@ -619,7 +615,6 @@ void pagefault_out_of_memory(void)
-> >  	 * Give "p" a good chance of killing itself before we
-> >  	 * retry to allocate memory.
-> >  	 */
-> > -rest_and_return:
-> >  	if (!test_thread_flag(TIF_MEMDIE))
-> >  		schedule_timeout_uninterruptible(1);
-> >  }
-> > Index: mmotm-2.6.33-Feb11/include/linux/memcontrol.h
-> > ===================================================================
-> > --- mmotm-2.6.33-Feb11.orig/include/linux/memcontrol.h
-> > +++ mmotm-2.6.33-Feb11/include/linux/memcontrol.h
-> > @@ -124,7 +124,6 @@ static inline bool mem_cgroup_disabled(v
-> >  	return false;
-> >  }
-> >  
-> > -extern bool mem_cgroup_oom_called(struct task_struct *task);
-> >  void mem_cgroup_update_file_mapped(struct page *page, int val);
-> >  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
-> >  						gfp_t gfp_mask, int nid,
-> > @@ -258,11 +257,6 @@ static inline bool mem_cgroup_disabled(v
-> >  	return true;
-> >  }
-> >  
-> > -static inline bool mem_cgroup_oom_called(struct task_struct *task)
-> > -{
-> > -	return false;
-> > -}
-> > -
-> >  static inline int
-> >  mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
-> >  {
-> > 
-> 
+--Boundary_(ID_DNz1WrX+VWi1FUqdy8AW7g)
+Content-type: application/ms-tnef; name=winmail.dat
+Content-transfer-encoding: base64
+Content-disposition: attachment; filename=winmail.dat
 
+eJ8+Ih8EAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAAtQMAAAAAAAC4AAEIgAcAGAAAAElQTS5NaWNy
+b3NvZnQgTWFpbC5Ob3RlADEIAQOQBgBcHgAAMgAAAAsAAgABAAAAAwAmAAAAAAALACkAAAAAAB4A
+cAABAAAAMAAAAFtQQVRDSF0gcmZraWxsIGJ1ZyBmaXhlZCBpbiByZmtpbGxfc2V0X3N3X3N0YXRl
+AAIBcQABAAAAFgAAAAHKtp/sI9778CoGekdyr2k+vWz0BgwAAAsAAQ4AAAAAAgEKDgEAAAAYAAAA
+AAAAAP8fVIbKYm5KsALG32xyvnPCgAAAAwAUDgEAAAAeACgOAQAAADcAAAAwMDAwMDAwMgFqaDgw
+LmNodW5nQHNhbXN1bmcuY29tAWpoODAuY2h1bmdAc2Ftc3VuZy5jb20AAB4AKQ4BAAAANwAAADAw
+MDAwMDAyAWpoODAuY2h1bmdAc2Ftc3VuZy5jb20Bamg4MC5jaHVuZ0BzYW1zdW5nLmNvbQAAAgEJ
+EAEAAADCGAAAvhgAAGViAABMWkZ18/QK2AcABgEBC2BuZzEwMgY1AGQAcmNwZzk0cjkMYGMyDVMB
+NAExcwh0c2gFcGJjaDN4MTUwDhAQQwkAELQ2TRA0aA6wEbpiaRDSN5MA8g2kMzMT1mZlDeDiNA9Q
+dGhlB4AUFxWHORUeY3MB6AKkE2BkaY8DNgIAELAKwHNldALRUHBycTIAACoKoW7abxowIA3wG4E2
+FGARAM8VQBwBAdAb8DR9B20Cg/wzNBj/Gg8bGBwyG/Qb0nEg0X1DYQbQByEF0GH/FYACgAqAHeIS
+AB5GBGQfF9wxMg8QH88B0GIhAwHQhybCJrIcsFwnYjgncfkA4CdjAUAngCJwJ3EoIfcJgCdxDhAn
+AEAdxCegI3/3JI8lnyarQCd/KI8i5RDh/xjvHz8bDxwfHS4Q4QBQKg//Kx8sLyavLl8vbzB0D1A2
+b/83fziPOZ86ryjPENIUgDD//zIPMx80Lx1IMEceL0T/Rg//Rx81HxDyPU8+Xz9vQH9Bj/87vzB0
+I19P/1EPUh9TL0J/fzB0E8BJn0qvS79Mzx1LNFtO6F0sMinSXjIgB20g9ENFItU0VchibUliY585
+ZKN5cmFkKehdLDE21zZBZ18DgkcJ0WthZFdx32lvanQ9IWsPA4JUCHACg3cQ8G0fVvU3XIFu3wOC
+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
+HgBTgAMgBgAAAAAAwAAAAAAAAEYAAAAAIYEAAAEAAAABAAAAAAAAAAsAVIADIAYAAAAAAMAAAAAA
+AABGAAAAAAOBAAAAAAAACwBVgAMgBgAAAAAAwAAAAAAAAEYAAAAAJoEAAAAAAAALAFaACCAGAAAA
+AADAAAAAAAAARgAAAAAGhQAAAAAAAAsAV4AIIAYAAAAAAMAAAAAAAABGAAAAAA6FAAAAAAAAAwBY
+gAggBgAAAAAAwAAAAAAAAEYAAAAAGIUAAAAAAAALAFmACCAGAAAAAADAAAAAAAAARgAAAACChQAA
+AAAAAAsAHw4BAAAAAgH4DwEAAAAQAAAA/x9UhspibkqwAsbfbHK+cwIB+g8BAAAAEAAAAP8fVIbK
+Ym5KsALG32xyvnMDAP4PBQAAAAMADTT9P6UGAwAPNP0/pQYCARQ0AQAAABAAAABOSVRB+b+4AQCq
+ADfZbgAAAgF/AAEAAAAxAAAAMDAwMDAwMDBGRjFGNTQ4NkNBNjI2RTRBQjAwMkM2REY2QzcyQkU3
+MzI0MjQyQjAwAAAAAAMABhD+G1cYAwAHEB4CAAADABAQAAAAAAMAERAAAAAAHgAIEAEAAABlAAAA
+RE9Ooa9UV09SS0VYUEVDVEVET1BFUkFUSU9OSU5SRktJTExTRVRTV1NUQVRFV0hFTlJGS0lMTElO
+SVRJQUxJWkVEUkZLSUxMoa9TQkxPQ0tFRCZVTkJMT0NLRURJU09QRVJBVAAAAADesA==
+
+--Boundary_(ID_DNz1WrX+VWi1FUqdy8AW7g)--
