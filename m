@@ -1,44 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965260Ab0BZQLF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 11:11:05 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:60575 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965245Ab0BZQLA (ORCPT
+	id S965265Ab0BZQMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 11:12:10 -0500
+Received: from mail-iw0-f196.google.com ([209.85.223.196]:49375 "EHLO
+	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965238Ab0BZQMH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 11:11:00 -0500
-Date: Fri, 26 Feb 2010 19:10:59 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Martyn Welch <martyn.welch@ge.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
-Subject: Re: Gianfar driver failing on MPC8641D based board
-Message-ID: <20100226161058.GA22954@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <4B86A97E.6050509@ge.com>
- <20100225165141.GA9686@oksana.dev.rtsoft.ru>
- <20100225174935.GA32370@oksana.dev.rtsoft.ru>
- <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
- <20100226031452.GA11319@oksana.dev.rtsoft.ru>
- <4B87B937.6010204@ge.com>
- <20100226143532.GA31622@oksana.dev.rtsoft.ru>
- <4B87E01E.4070704@windriver.com>
- <4B87E662.3080106@ge.com>
- <4B87E9EF.3010604@ge.com>
+	Fri, 26 Feb 2010 11:12:07 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4B87E9EF.3010604@ge.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100226.015420.66646406.davem@davemloft.net>
+References: <20100226094941.GE4912@bicker> <20100226.015420.66646406.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 26 Feb 2010 09:11:46 -0700
+X-Google-Sender-Auth: 43d6424c8c63bc5d
+Message-ID: <fa686aa41002260811p23c86396wcbcd4a32daf504b5@mail.gmail.com>
+Subject: Re: [patch] of: check for IS_ERR()
+To: David Miller <davem@davemloft.net>
+Cc: error27@gmail.com, jeremy.kerr@canonical.com, afleming@freescale.com,
+       jezz@sysmic.org, devicetree-discuss@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 03:34:07PM +0000, Martyn Welch wrote:
-[...]
-> Out of 10 boot attempts, 7 failed.
+On Fri, Feb 26, 2010 at 2:54 AM, David Miller <davem@davemloft.net> wrote:
+> From: Dan Carpenter <error27@gmail.com>
+> Date: Fri, 26 Feb 2010 12:49:41 +0300
+>
+>> get_phy_device() can return an ERR_PTR()
+>>
+>> Signed-off-by: Dan Carpenter <error27@gmail.com>
+>> ---
+>> I don't have a cross compile environment set up so I can't even compile
+>> test this.  :/  But err.h is included so it should be OK.
+>
+> It should return ERR_PTR() consistently.  Checking for both
+> NULL and ERR_PTR() is undesirable.
 
-OK, I see why. With ip=on (dhcp boot) it's much harder to trigger
-it. With static ip config can I see the same.
+Ugh.  This is why I dislike the ERR_PTR() pattern so much.  The
+compiler cannot do any type checking and it is implemented
+inconsistently.  You have to go look at the calling function to find
+out what you're allowed to do with the return value.  ie. which test
+do I use? (!ptr) or IS_ERR(ptr)?
+
+It would be better if ERR_PTR() returned a structure or a union.  At
+least that way the compiler would yell at you if the an ERR_PTR was
+being returned.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
