@@ -1,19 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966335Ab0BZV57 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:57:59 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:33477 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966217Ab0BZV55 (ORCPT
+	id S966362Ab0BZV6L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:58:11 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:38195 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966349Ab0BZV6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:57:57 -0500
-Subject: [PATCH 0/9] cciss driver SCSI updates 
+	Fri, 26 Feb 2010 16:58:07 -0500
+Subject: [PATCH 2/9] cciss: detect bad alignment of scsi commands at build time
 To: axboe@kernel.dk, akpm@linux-foundation.org, james.bottomley@suse.de
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com,
        linux-scsi@vger.kernel.org, brace@beardog.cce.hp.com
-Date: Fri, 26 Feb 2010 16:01:06 -0600
-Message-ID: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
+Date: Fri, 26 Feb 2010 16:01:17 -0600
+Message-ID: <20100226220117.11979.13484.stgit@beardog.cce.hp.com>
+In-Reply-To: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
+References: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -22,35 +24,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following series mainly fixes the scsi tape code in the cciss
-driver to take advantage of more scatter gather elements, enabling
-larger transfer sizes.  The first eight patches are mainly cleaning
-things up and getting ready for the 9th patch, which enables the
-SCSI half of the driver to use more than 31 scatter gather elements.
+From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-I've tested on 32-bit and 64-bit systems, and written out tapes
-with block sizes up to 2Mb.
+cciss: detect bad alignment of scsi commands at build time
+Incidentally fix some nearby c++ style comments.
 
-These patches are vs. Jens's linux-2.6-block tree.
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+---
+ drivers/block/cciss.c      |    2 +-
+ drivers/block/cciss_cmd.h  |    9 ++++++---
+ drivers/block/cciss_scsi.c |   12 ++++++++----
+ 3 files changed, 15 insertions(+), 8 deletions(-)
 
-Stephen M. Cameron (9):
-      cciss: clarify command list padding calculation
-      cciss: detect bad alignment of scsi commands at build time
-      cciss: factor out scatter gather chain block allocation and freeing
-      cciss: simplify scatter gather code
-      cciss: fix scatter gather chain block dma direction kludge
-      cciss: factor out scatter gather chain block mapping code
-      cciss: do not use void pointer for scsi hba data
-      cciss: eliminate unnecessary pointer use in cciss scsi code
-      cciss: Fix problem with scatter gather elements in the scsi half of the driver
-
-
- drivers/block/cciss.c      |  174 ++++++++++++++++++++++----------------------
- drivers/block/cciss.h      |   12 +--
- drivers/block/cciss_cmd.h  |   14 +++-
- drivers/block/cciss_scsi.c |  145 +++++++++++++++++++++++--------------
- 4 files changed, 188 insertions(+), 157 deletions(-)
-
--- 
--- steve
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index a29e694..cd8c7c2 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -4496,7 +4496,7 @@ static int __init cciss_init(void)
+ 	 * boundary. Given that we use pci_alloc_consistent() to allocate an
+ 	 * array of them, the size must be a multiple of 8 bytes.
+ 	 */
+-	BUILD_BUG_ON(sizeof(CommandList_struct) % 8);
++	BUILD_BUG_ON(sizeof(CommandList_struct) % COMMANDLIST_ALIGNMENT);
+ 
+ 	printk(KERN_INFO DRIVER_NAME "\n");
+ 
+diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
+index 515c9f0..e624ff9 100644
+--- a/drivers/block/cciss_cmd.h
++++ b/drivers/block/cciss_cmd.h
+@@ -167,10 +167,13 @@ typedef struct _SGDescriptor_struct {
+ #define CMD_MSG_TIMEOUT 0x05
+ #define CMD_MSG_STALE	0xff
+ 
+-/* This structure needs to be divisible by 8 for new
+- * indexing method.  PAD_32 and PAD_64 can be adjusted
+- * independently as needed for 32-bit and 64-bits systems.
++/* This structure needs to be divisible by COMMANDLIST_ALIGNMENT
++ * because low bits of the address are used to to indicate that
++ * whether the tag contains an index or an address.  PAD_32 and
++ * PAD_64 can be adjusted independently as needed for 32-bit
++ * and 64-bits systems.
+  */
++#define COMMANDLIST_ALIGNMENT (8)
+ #define IS_64_BIT ((sizeof(long) - 4)/4)
+ #define IS_32_BIT (!IS_64_BIT)
+ #define PAD_32 (0)
+diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
+index 5d0e46d..f203606 100644
+--- a/drivers/block/cciss_scsi.c
++++ b/drivers/block/cciss_scsi.c
+@@ -93,11 +93,15 @@ static struct scsi_host_template cciss_driver_template = {
+ };
+ 
+ #pragma pack(1)
++
++#define SCSI_PAD_32 4
++#define SCSI_PAD_64 4
++
+ struct cciss_scsi_cmd_stack_elem_t {
+ 	CommandList_struct cmd;
+ 	ErrorInfo_struct Err;
+ 	__u32 busaddr;
+-	__u32 pad;
++	u8 pad[IS_32_BIT * SCSI_PAD_32 + IS_64_BIT * SCSI_PAD_64];
+ };
+ 
+ #pragma pack()
+@@ -202,9 +206,9 @@ scsi_cmd_stack_setup(int ctlr, struct cciss_scsi_adapter_data_t *sa)
+ 	stk = &sa->cmd_stack; 
+ 	size = sizeof(struct cciss_scsi_cmd_stack_elem_t) * CMD_STACK_SIZE;
+ 
+-	// pci_alloc_consistent guarantees 32-bit DMA address will
+-	// be used
+-
++	/* Check alignment, see cciss_cmd.h near CommandList_struct def. */
++	BUILD_BUG_ON((sizeof(*stk->pool) % COMMANDLIST_ALIGNMENT) != 0);
++	/* pci_alloc_consistent guarantees 32-bit DMA address will be used */
+ 	stk->pool = (struct cciss_scsi_cmd_stack_elem_t *)
+ 		pci_alloc_consistent(hba[ctlr]->pdev, size, &stk->cmd_pool_handle);
+ 
 
