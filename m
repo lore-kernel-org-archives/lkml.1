@@ -1,71 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965689Ab0BZSUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 13:20:54 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:58563 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965631Ab0BZSUx (ORCPT
+	id S965683Ab0BZSXL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 13:23:11 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:46901 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965631Ab0BZSXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 13:20:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=tv72qUGLO4NezCASQCaQDcUEzVHO8KON869akPtO+5i/GP9x2EdEj7lujfH1tOTWbd
-         yQzYZVKUfUu69MK3Ixpa2sJ7wIBLQ6r3syCKBc/Yong9fz+ZcSc2/rnr55uKZdI8DeJD
-         QPDkNKAgkZyy2u0z2JfJUbC9Qdp0UINtUjBI8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S . Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [GIT PULL][RESEND] tracing/core updates 
-Date: Fri, 26 Feb 2010 19:20:45 +0100
-Message-Id: <1267208445-8110-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Fri, 26 Feb 2010 13:23:09 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [RFC][PATCH] mm: Remove ZERO_SIZE_PTR.
+Date: Fri, 26 Feb 2010 18:23:06 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hm93ia$15p$1@taverner.cs.berkeley.edu>
+References: <201002260635.o1Q6ZYET040848@www262.sakura.ne.jp> <20100226155618.8D9E.A69D9226@jp.fujitsu.com> <201002260838.o1Q8cfr2068194@www262.sakura.ne.jp>
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1267208586 1209 128.32.153.193 (26 Feb 2010 18:23:06 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Fri, 26 Feb 2010 18:23:06 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+Tetsuo Handa  wrote:
+>This patch simplifies error checks of both callers/callees from
+>
+>	((unsigned long)(x) <= (unsigned long) 16)
+>
+>to
+>
+>	!(x)
 
-Please pull the tracing/core branch that can be found at:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/core
-
-Thanks,
-	Frederic
----
-
-Heiko Carstens (3):
-      tracing/kprobes: Make Kconfig dependencies generic
-      s390: Add pt_regs register and stack access API
-      tracing/kprobes: Add short documentation for HAVE_REGS_AND_STACK_ACCESS_API
-
-Mike Frysinger (1):
-      tracing: Unify arch_syscall_addr() implementations
-
-
- Documentation/trace/ftrace-design.txt |    5 +--
- arch/Kconfig                          |    8 ++++
- arch/s390/Kconfig                     |    1 +
- arch/s390/include/asm/ptrace.h        |   13 +++++++-
- arch/s390/include/asm/syscall.h       |    7 ++++
- arch/s390/kernel/ftrace.c             |   10 ------
- arch/s390/kernel/ptrace.c             |   58 +++++++++++++++++++++++++++++++++
- arch/sh/include/asm/syscall.h         |    2 +
- arch/sh/kernel/ftrace.c               |    9 -----
- arch/sparc/include/asm/syscall.h      |    7 ++++
- arch/sparc/kernel/ftrace.c            |   11 ------
- arch/x86/Kconfig                      |    1 +
- arch/x86/include/asm/syscall.h        |    2 +
- arch/x86/kernel/ftrace.c              |   10 ------
- include/linux/ftrace.h                |    6 +++
- kernel/trace/Kconfig                  |    2 +-
- kernel/trace/trace_syscalls.c         |    5 +++
- 17 files changed, 112 insertions(+), 45 deletions(-)
+I don't follow.  If you want to avoid integer overflow, the caller
+of kmalloc() must check to make sure that the arithmetic operations
+it performs do not overflow.  That's true whether or not your patch
+is accepted.  An integer overflow in an arithmetic operation can yield
+a non-zero value, so checking "!(x)" does not guarantee that there was
+no integer overflow involved in the computation of x.
