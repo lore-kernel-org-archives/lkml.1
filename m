@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936043Ab0BZMSw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:18:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43425 "EHLO hera.kernel.org"
+	id S935971Ab0BZMOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:14:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43368 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935995Ab0BZMOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:50 -0500
+	id S935940Ab0BZMOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:33 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -14,9 +14,9 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 35/43] workqueue: implement several utility APIs
-Date: Fri, 26 Feb 2010 21:23:12 +0900
-Message-Id: <1267187000-18791-36-git-send-email-tj@kernel.org>
+Subject: [PATCH 27/43] workqueue: add find_worker_executing_work() and track current_cwq
+Date: Fri, 26 Feb 2010 21:23:04 +0900
+Message-Id: <1267187000-18791-28-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
@@ -25,176 +25,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the following utility APIs.
-
-* workqueue_set_max_active()	: adjust max_active of a wq
-* workqueue_congested()		: test whether a wq is contested
-* work_cpu()			: determine the last / current cpu of a work
-* work_busy()			: query whether a work is busy
+Now that all the workers are tracked by gcwq, we can find which worker
+is executing a work from gcwq.  Implement find_worker_executing_work()
+and make worker track its current_cwq so that we can find things the
+other way around.  This will be used to implement non-reentrant wqs.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |   11 ++++-
- kernel/workqueue.c        |  108 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 117 insertions(+), 2 deletions(-)
+ kernel/workqueue.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 56 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 6a3a1e5..66573b8 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -64,6 +64,10 @@ enum {
- 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
- 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
- 	WORK_STRUCT_NO_CPU	= NR_CPUS << WORK_STRUCT_FLAG_BITS,
-+
-+	/* bit mask for work_busy() return values */
-+	WORK_BUSY_PENDING	= 1 << 0,
-+	WORK_BUSY_RUNNING	= 1 << 1,
- };
- 
- struct work_struct {
-@@ -319,9 +323,14 @@ extern void init_workqueues(void);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
- 
- extern int flush_work(struct work_struct *work);
--
- extern int cancel_work_sync(struct work_struct *work);
- 
-+extern void workqueue_set_max_active(struct workqueue_struct *wq,
-+				     int max_active);
-+extern bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq);
-+extern unsigned int work_cpu(struct work_struct *work);
-+extern unsigned int work_busy(struct work_struct *work);
-+
- /*
-  * Kill off a pending schedule_delayed_work().  Note that the work callback
-  * function may still be running on return from cancel_delayed_work(), unless
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 15d3369..5871708 100644
+index 9993055..d1a7aaf 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -205,7 +205,7 @@ struct workqueue_struct {
- 	cpumask_var_t		mayday_mask;	/* cpus requesting rescue */
- 	struct worker		*rescuer;	/* I: rescue worker */
+@@ -82,6 +82,7 @@ struct worker {
+ 	};
  
--	int			saved_max_active; /* I: saved cwq max_active */
-+	int			saved_max_active; /* W: saved cwq max_active */
- 	const char		*name;		/* I: workqueue name */
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map	lockdep_map;
-@@ -2594,6 +2594,112 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 	struct work_struct	*current_work;	/* L: work being processed */
++	struct cpu_workqueue_struct *current_cwq; /* L: current_work's cwq */
+ 	struct list_head	scheduled;	/* L: scheduled works */
+ 	struct task_struct	*task;		/* I: worker task */
+ 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
+@@ -373,6 +374,59 @@ static struct hlist_head *busy_worker_head(struct global_cwq *gcwq,
  }
- EXPORT_SYMBOL_GPL(destroy_workqueue);
  
-+/**
-+ * workqueue_set_max_active - adjust max_active of a workqueue
-+ * @wq: target workqueue
-+ * @max_active: new max_active value.
+ /**
++ * __find_worker_executing_work - find worker which is executing a work
++ * @gcwq: gcwq of interest
++ * @bwh: hash head as returned by busy_worker_head()
++ * @work: work to find worker for
 + *
-+ * Set max_active of @wq to @max_active.
++ * Find a worker which is executing @work on @gcwq.  @bwh should be
++ * the hash head obtained by calling busy_worker_head() with the same
++ * work.
 + *
 + * CONTEXT:
-+ * Don't call from IRQ context.
-+ */
-+void workqueue_set_max_active(struct workqueue_struct *wq, int max_active)
-+{
-+	unsigned int cpu;
-+
-+	max_active = wq_clamp_max_active(max_active, wq->name);
-+
-+	spin_lock(&workqueue_lock);
-+
-+	wq->saved_max_active = max_active;
-+
-+	for_each_possible_cpu(cpu) {
-+		struct global_cwq *gcwq = get_gcwq(cpu);
-+
-+		spin_lock_irq(&gcwq->lock);
-+
-+		if (!(wq->flags & WQ_FREEZEABLE) ||
-+		    !(gcwq->flags & GCWQ_FREEZING))
-+			get_cwq(gcwq->cpu, wq)->max_active = max_active;
-+
-+		spin_unlock_irq(&gcwq->lock);
-+	}
-+
-+	spin_unlock(&workqueue_lock);
-+}
-+EXPORT_SYMBOL_GPL(workqueue_set_max_active);
-+
-+/**
-+ * workqueue_congested - test whether a workqueue is congested
-+ * @cpu: CPU in question
-+ * @wq: target workqueue
-+ *
-+ * Test whether @wq's cpu workqueue for @cpu is congested.  There is
-+ * no synchronization around this function and the test result is
-+ * unreliable and only useful as advisory hints or for debugging.
++ * spin_lock_irq(gcwq->lock).
 + *
 + * RETURNS:
-+ * %true if congested, %false otherwise.
++ * Pointer to worker which is executing @work if found, NULL
++ * otherwise.
 + */
-+bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq)
++static struct worker *__find_worker_executing_work(struct global_cwq *gcwq,
++						   struct hlist_head *bwh,
++						   struct work_struct *work)
 +{
-+	struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
++	struct worker *worker;
++	struct hlist_node *tmp;
 +
-+	return !list_empty(&cwq->delayed_works);
++	hlist_for_each_entry(worker, tmp, bwh, hentry)
++		if (worker->current_work == work)
++			return worker;
++	return NULL;
 +}
-+EXPORT_SYMBOL_GPL(workqueue_congested);
 +
 +/**
-+ * work_cpu - return the last known associated cpu for @work
-+ * @work: the work of interest
++ * find_worker_executing_work - find worker which is executing a work
++ * @gcwq: gcwq of interest
++ * @work: work to find worker for
++ *
++ * Find a worker which is executing @work on @gcwq.  This function is
++ * identical to __find_worker_executing_work() except that this
++ * function calculates @bwh itself.
++ *
++ * CONTEXT:
++ * spin_lock_irq(gcwq->lock).
 + *
 + * RETURNS:
-+ * CPU number if @work was ever queued.  NR_CPUS otherwise.
++ * Pointer to worker which is executing @work if found, NULL
++ * otherwise.
 + */
-+unsigned int work_cpu(struct work_struct *work)
++static struct worker *find_worker_executing_work(struct global_cwq *gcwq,
++						 struct work_struct *work)
 +{
-+	struct global_cwq *gcwq = get_work_gcwq(work);
-+
-+	return gcwq ? gcwq->cpu : NR_CPUS;
++	return __find_worker_executing_work(gcwq, busy_worker_head(gcwq, work),
++					    work);
 +}
-+EXPORT_SYMBOL_GPL(work_cpu);
 +
 +/**
-+ * work_busy - test whether a work is currently pending or running
-+ * @work: the work to be tested
-+ *
-+ * Test whether @work is currently pending or running.  There is no
-+ * synchronization around this function and the test result is
-+ * unreliable and only useful as advisory hints or for debugging.
-+ * Especially for reentrant wqs, the pending state might hide the
-+ * running state.
-+ *
-+ * RETURNS:
-+ * OR'd bitmask of WORK_BUSY_* bits.
-+ */
-+unsigned int work_busy(struct work_struct *work)
-+{
-+	struct global_cwq *gcwq = get_work_gcwq(work);
-+	unsigned long flags;
-+	unsigned int ret;
-+
-+	if (!gcwq)
-+		return false;
-+
-+	spin_lock_irqsave(&gcwq->lock, flags);
-+
-+	if (work_pending(work))
-+		ret |= WORK_BUSY_PENDING;
-+	if (find_worker_executing_work(gcwq, work))
-+		ret |= WORK_BUSY_RUNNING;
-+
-+	spin_unlock_irqrestore(&gcwq->lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(work_busy);
-+
- /*
-  * CPU hotplug.
-  *
+  * insert_work - insert a work into cwq
+  * @cwq: cwq @work belongs to
+  * @work: work to insert
+@@ -915,6 +969,7 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 	debug_work_deactivate(work);
+ 	hlist_add_head(&worker->hentry, bwh);
+ 	worker->current_work = work;
++	worker->current_cwq = cwq;
+ 	work_color = work_flags_to_color(*work_data_bits(work));
+ 	list_del_init(&work->entry);
+ 
+@@ -943,6 +998,7 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 	/* we're done with it, release */
+ 	hlist_del_init(&worker->hentry);
+ 	worker->current_work = NULL;
++	worker->current_cwq = NULL;
+ 	cwq_dec_nr_in_flight(cwq, work_color);
+ }
+ 
 -- 
 1.6.4.2
 
