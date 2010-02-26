@@ -1,62 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966400Ab0BZWDC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 17:03:02 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:60427 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966337Ab0BZWDA (ORCPT
+	id S1759492Ab0BZWEk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 17:04:40 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47071 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754243Ab0BZWEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 17:03:00 -0500
-Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAO7Th0urRN+K/2dsb2JhbACbH3Ojapg3hHkEgxg
-X-IronPort-AV: E=Sophos;i="4.49,548,1262563200"; 
-   d="scan'208";a="157651528"
-From: Roland Dreier <rdreier@cisco.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-rdma@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: linux-next: manual merge of the infiniband tree with the vfs tree
-References: <20100226130518.94c5a5f8.sfr@canb.auug.org.au>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 26 Feb 2010 14:02:55 -0800
-In-Reply-To: <20100226130518.94c5a5f8.sfr@canb.auug.org.au> (Stephen
-	Rothwell's message of "Fri, 26 Feb 2010 13:05:18 +1100")
-Message-ID: <adazl2vvenk.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 26 Feb 2010 17:04:39 -0500
+Date: Fri, 26 Feb 2010 22:03:52 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org, "Mankad, Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100226220351.GE23933@n2100.arm.linux.org.uk>
+References: <1266445892.16346.306.camel@pasglop> <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com> <1266979170.23523.1660.camel@pasglop> <1267202674.14703.70.camel@e102109-lin.cambridge.arm.com> <1267220980.23523.1820.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267220980.23523.1820.camel@pasglop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Today's linux-next merge of the infiniband tree got a conflict in
- > drivers/infiniband/core/uverbs_main.c between commit
- > ce916e2b935f8b3402da1457ff23b9f9f786c09b ("switch infiniband uverbs to
- > anon_inodes") from the vfs tree and commit
- > 4169c4a9735d6434c9e39fa81ae5517e3afd4cd8 ("IB/uverbs: Use anon_inodes
- > instead of private infinibandeventfs") from the infiniband tree.
- > 
- > These two commits purport to do something similar.  Someone should look
- > at them both and decide which one is right.  For now I have used the
- > version from the vfs tree - with the addition of the part from the
- > infiniband tree version that selects ANON_INODES in the Kconfig file.
+On Sat, Feb 27, 2010 at 08:49:40AM +1100, Benjamin Herrenschmidt wrote:
+> It will deadlock if you use normal IRQs. I don't see a good way around
+> that other than using a higher-level type of IRQs. I though ARM has
+> something like that (FIQs ?). Can you use those guys for IPIs ?
 
-Huh, I didn't see that vfs commit and as far as I can tell it was never
-posted anywhere.  Which I guess is why we have linux-next :)
+If the hardware did support using FIQs for IPIs, this would not be
+desirable because then it takes it away from the SoC folk to do what
+they will with it.
 
-Anyway, both commits look essentially equivalent -- Al's moves the fd
-allocation to callers, which is OK with me (a bit of duplicated code but
-maybe a bit better layering of functions).  I would like to see the
-Kconfig part go in as part of the patch, although I guess it's not such
-a terrible bit of breakage to fix up a bit after the fact.  (Not a real
-bisection killer)
+In the past, it's been used as a fast CPU-driven "DMA" interface -
+some SoCs have been wired up in such a way that's the only use
+available for the FIQ.
 
-Al, let me know what you want to do -- I can pick up your patch or drop
-the patch from my tree, either way is fine.
+The other problem we'd encounter using FIQs for IPIs is that some IPIs
+need to take locks - and in order to make that safe, we'd either need
+another class of locks which disable IRQs and FIQs together, or we'd
+need to disable FIQs everywhere we disable IRQs - at which point FIQs
+become utterly pointless.
 
- - R.
--- 
-Roland Dreier  <rolandd@cisco.com>
-For corporate legal information go to:
-http://www.cisco.com/web/about/doing_business/legal/cri/index.html
+(There only differences between FIQ and IRQ are:
+ - on simultaneous raising of both, the FIQ will be called before the IRQ.
+ - each has its own (single) vector.
+ - invocation of FIQ masks IRQ.
+
+What I'm saying is that what gives FIQ an advantage for SoC people is
+that it's bare bones light weight and therefore extremely fast - as soon
+as you load it up with additional complexity, it becomes less useful.)
+
