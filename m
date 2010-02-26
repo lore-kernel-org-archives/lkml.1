@@ -1,112 +1,170 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934808Ab0BZAq3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:46:29 -0500
-Received: from smtp12.ono.com ([62.42.230.20]:5604 "EHLO resmaa12.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934798Ab0BZAq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:46:26 -0500
-Date: Fri, 26 Feb 2010 01:46:23 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Buggy variable-length array code...or compiler?
-Message-ID: <20100226014623.11d8d79f@werewolf.home>
-In-Reply-To: <1267139849.3079.68.camel@iscandar.digidescorp.com>
-References: <1267139849.3079.68.camel@iscandar.digidescorp.com>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.19.6; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S934815Ab0BZAqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:46:54 -0500
+Received: from kroah.org ([198.145.64.141]:39809 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934783Ab0BZAqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:46:52 -0500
+Date: Thu, 25 Feb 2010 16:46:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with auto-detecting a HV environment from within Linux
+Message-ID: <20100226004646.GA31483@kroah.com>
+References: <20100225164436.GA3310@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100225173611.GA14124@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20100225230639.GB20900@kroah.com>
+ <1FB5E1D5CA062146B38059374562DF725B6A5806@TK5EX14MBXC130.redmond.corp.microsoft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1FB5E1D5CA062146B38059374562DF725B6A5806@TK5EX14MBXC130.redmond.corp.microsoft.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010 17:17:29 -0600, "Steven J. Magnani" <steve@digidescorp.com> wrote:
+On Thu, Feb 25, 2010 at 11:40:52PM +0000, Haiyang Zhang wrote:
+> > -----Original Message-----
+> > From: Greg KH [mailto:greg@kroah.com]
+> > Sent: Thursday, February 25, 2010 6:07 PM
+> > If so, what is the vendor and product id of this device?
+> 
+> The Vendor:Device Id is: 1414:5353
+> 00:08.0 VGA compatible controller [0300]: Microsoft Corporation Device [1414:5353]
+> 
+> This hasn't been changed since the first release of HyperV. I will ask
+> around about the future stability of the VGA card (and the DMI).
 
-> When I run a memcpy dmatest with a Microblaze 2.6.33 noMMU kernel, the
-> system crashes after about 400 iterations. After much head scratching, I
-> believe I've narrowed the problem to this fragment of code in
-> drivers/dma/dmatest.c:
-> 
-> static int dmatest_func(void *data)
-> {
-> 	struct dmatest_thread	*thread = data;
-> ...
-> 	unsigned int		total_tests = 0;
-> 	int			src_cnt;
-> 	int			dst_cnt;
-> 
-> ...
-> 	if (thread->type == DMA_MEMCPY)
-> 		src_cnt = dst_cnt = 1;
-> ...
-> 
-> 	while (!kthread_should_stop()
-> 	       && !(iterations && total_tests >= iterations)) {
-> 		struct dma_device *dev = chan->device;
-> 		struct dma_async_tx_descriptor *tx = NULL;
-> 		dma_addr_t dma_srcs[src_cnt];
-> 		dma_addr_t dma_dsts[dst_cnt];
-> 
-> 		...
-> 		total_tests++;
-> 
-> 		/* CODE ADDED BY ME FOR DEBUG */
-> 		printk("dmatest: Iteration %d, dma_srcs = %p\n",
-> 		       total_tests, dma_srcs);
-> 
-> 		...
-> 	}
-> 
-> With this code I get output like this:
-> 
-> dmatest: Iteration 1, dma_srcs = 2c963ee8
-> dmatest: Iteration 2, dma_srcs = 2c963ed8
-> dmatest: Iteration 3, dma_srcs = 2c963ec8
-> dmatest: Iteration 4, dma_srcs = 2c963eb8
-> ...
-> dmatest: Iteration 420, dma_srcs = 2c9624b8
-> 
-> ...and then the stack detonates and the kernel crashes with some strange
-> error or other.
-> 
-> Are there any language lawyers in the house who'd care to weigh in on
-> which of these possibilities is the right one?
-> 
-> 1. There is a coding error in dmatest
-> 2. There is a bug specific to Microblaze gcc compiler(s) [mine is 4.1.2]
-> 3. There is a bug generic to specific versions of gcc compilers
-> 4. There is a bug generic to all gcc compilers
-> 
-> Obviously, the options get more disturbing the higher you go. I don't
-> know if VLAs are used elsewhere in the kernel; a 'smatch' search might
-> be helpful.
+Ok, below are 2 patches that I will queue up in my tree.
 
-Can you try this in userspace ? I compiled in CentOS gcc 4.1.2 (just the
-same), and the addresses are always the same:
+Can you test them to verify that they work properly?
 
-#include <stdio.h>
+thanks,
 
-int main()
-{
-    int c = 2;
-    while (1)
-    {
-        int a[c];
-        int b[c];
-        a[0] = b[0];
-        printf("%p %p\n",a,b);
-    }
-}
+greg k-h
 
-Could you post the full contents of the while loop ? Perhaps there's a
-buglet in other piece of code that leaves something on the stack.
-Which is the size of dma_addr_t ? Does it match the difference of 16 bytes
-on each iteration ? cnt's are always 1, isn't it ?
-Can you switch the size to a fixed '1' to see if this hangs again ?
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Staging: hv: add a pci device table
 
-TIA
+This allows the HV core to be properly found and autoloaded
+by the system tools.
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
+It uses the Microsoft virtual VGA device to trigger this.
+
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/hv/vmbus_drv.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -24,6 +24,7 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/sysctl.h>
++#include <linux/pci.h>
+ #include "VersionInfo.h"
+ #include "osd.h"
+ #include "logging.h"
+@@ -974,6 +975,22 @@ static void __exit vmbus_exit(void)
+ 	return;
+ }
+ 
++/*
++ * We use a PCI table to determine if we should autoload this driver  This is
++ * needed by distro tools to determine if the hyperv drivers should be
++ * installed and/or configured.  We don't do anything else with the table, but
++ * it needs to be present.
++ *
++ * We might consider triggering off of DMI table info as well, as that does
++ * decribe the virtual machine being run on, but not all configuration tools
++ * seem to be able to handle DMI device ids properly.
++ */
++const static struct pci_device_id microsoft_hv_pci_table[] = {
++	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
++	{ 0 }
++};
++MODULE_DEVICE_TABLE(pci, microsoft_hv_pci_table);
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(HV_DRV_VERSION);
+ module_param(vmbus_irq, int, S_IRUGO);
+
+
+
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Staging: hv: match on DMI values to know if we should run.
+
+The HV core mucks around with specific irqs and other low-level stuff
+and takes forever to determine that it really shouldn't be running on a
+machine.  So instead, trigger off of the DMI system information and
+error out much sooner.  This also allows the module loading tools to
+recognize that this code should be loaded on this type of system.
+
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/hv/vmbus_drv.c |   21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
+
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sysctl.h>
+ #include <linux/pci.h>
++#include <linux/dmi.h>
+ #include "VersionInfo.h"
+ #include "osd.h"
+ #include "logging.h"
+@@ -948,6 +949,19 @@ static irqreturn_t vmbus_isr(int irq, vo
+ 	}
+ }
+ 
++static struct dmi_system_id __initdata microsoft_hv_dmi_table[] = {
++	{
++		.ident = "Hyper-V",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "MicrosoftCorporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "VirtualMachine"),
++			DMI_MATCH(DMI_BOARD_NAME, "VirtualMachine"),
++		},
++	},
++	{ },
++};
++MODULE_DEVICE_TABLE(dmi, microsoft_hv_dmi_table);
++
+ static int __init vmbus_init(void)
+ {
+ 	int ret = 0;
+@@ -959,6 +973,9 @@ static int __init vmbus_init(void)
+ 		vmbus_loglevel, HIWORD(vmbus_loglevel), LOWORD(vmbus_loglevel));
+ 	/* Todo: it is used for loglevel, to be ported to new kernel. */
+ 
++	if (!dmi_check_system(microsoft_hv_dmi_table))
++		return -ENODEV;
++
+ 	ret = vmbus_bus_init(VmbusInitialize);
+ 
+ 	DPRINT_EXIT(VMBUS_DRV);
+@@ -980,10 +997,6 @@ static void __exit vmbus_exit(void)
+  * needed by distro tools to determine if the hyperv drivers should be
+  * installed and/or configured.  We don't do anything else with the table, but
+  * it needs to be present.
+- *
+- * We might consider triggering off of DMI table info as well, as that does
+- * decribe the virtual machine being run on, but not all configuration tools
+- * seem to be able to handle DMI device ids properly.
+  */
+ const static struct pci_device_id microsoft_hv_pci_table[] = {
+ 	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
