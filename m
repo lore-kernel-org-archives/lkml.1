@@ -1,52 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935302Ab0BZLnO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 06:43:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34032 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934718Ab0BZLnN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 06:43:13 -0500
-Date: Fri, 26 Feb 2010 12:43:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-Message-ID: <20100226114312.GB16335@basil.fritz.box>
-References: <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <alpine.DEB.2.00.1002251315010.3501@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251627040.18861@router.home> <4B87A62E.5030307@cs.helsinki.fi>
+	id S935363Ab0BZLoy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 06:44:54 -0500
+Received: from home.kolivas.org ([59.167.196.135]:59853 "EHLO home.kolivas.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935157Ab0BZLow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 06:44:52 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: 2.6.33-ck1
+Date: Fri, 26 Feb 2010 22:20:26 +1100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-ck1; KDE/4.3.4; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B87A62E.5030307@cs.helsinki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002262220.26534.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 12:45:02PM +0200, Pekka Enberg wrote:
-> Christoph Lameter kirjoitti:
->>> kmalloc_node() in generic kernel code.  All that is done under
->>> MEM_GOING_ONLINE and not MEM_ONLINE, which is why I suggest the first and
->>> fourth patch in this series may not be necessary if we prevent setting the
->>> bit in the nodemask or building the zonelists until the slab nodelists are
->>> ready.
->>
->> That sounds good.
->
-> Andi?
+These are patches designed to improve system responsiveness and interactivity 
+with specific emphasis on the desktop, but suitable to any workload.
 
-Well if Christoph wants to submit a better patch that is tested and solves
-the problems he can do that.
 
-if he doesn't then I think my patch kit which has been tested
-is the best alternative currently.
+Apply to 2.6.33:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.33/2.6.33-
+ck1/patch-2.6.33-ck1.bz2
 
--Andi
+Broken out tarball:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.33/2.6.33-
+ck1/2.6.33-ck1-broken-out.tar.bz2
 
+Web:
+http://kernel.kolivas.org
+
+all patches:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/
+
+
+Full patch list:
+
+2.6.33-sched-bfs-315.patch
+sched-add-above-background-load-function.patch
+mm-make_swappiness_really_mean_it.patch
+mm-kswapd_inherit_prio.patch
+mm-background_scan.patch
+mm-idleprio_prio.patch
+mm-lru_cache_add_lru_tail.patch
+kconfig-expose_vmsplit_option.patch
+hz-default_1000.patch
+hz-no_default_250.patch
+hz-raise_max.patch
+preempt-desktop-tune.patch
+ck-version.patch
+
+Each separate patch has a brief summary of its purpose in the patch itself.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+-ck
