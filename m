@@ -1,135 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935043Ab0BZC3N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 21:29:13 -0500
-Received: from mga02.intel.com ([134.134.136.20]:39462 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935018Ab0BZC3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 21:29:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,543,1262592000"; 
-   d="scan'208";a="599321389"
-Date: Fri, 26 Feb 2010 10:29:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Matt Mackall <mpm@selenic.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 05/15] readahead: limit readahead size for small memory
-	systems
-Message-ID: <20100226022907.GA22226@localhost>
-References: <20100224031001.026464755@intel.com> <20100224031054.307027163@intel.com> <4B869682.9010709@linux.vnet.ibm.com>
+	id S935049Ab0BZCag (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 21:30:36 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:58973 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935018Ab0BZCae convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 21:30:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QxbKqflBruzeNNGjvbiJgzMHOJDxX+MSJ364xiMS8kuDEPW3K/6/yu8UEEn8Csjib3
+         cbyX2CzQ4DEAUQ2San6uOabiLRM7YfaRVRFaF3MuQuUeFDp7s05fzN2ZM0oGDcJREy7u
+         WiRmZUABln5vxr97cZduve6GcGmCx+5b2QjjU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B869682.9010709@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
+References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
+Date: Fri, 26 Feb 2010 10:30:32 +0800
+Message-ID: <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
+Subject: Re: [PATCH] Add sysfs support for fbdefio delay
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com,
+       tony@atomide.com, FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz,
+       bonbons@linux-vserver.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 11:25:54PM +0800, Christian Ehrhardt wrote:
-> 
-> 
-> Wu Fengguang wrote:
->  > When lifting the default readahead size from 128KB to 512KB,
->  > make sure it won't add memory pressure to small memory systems.
->  >
->  > For read-ahead, the memory pressure is mainly readahead buffers consumed
->  > by too many concurrent streams. The context readahead can adapt
->  > readahead size to thrashing threshold well.  So in principle we don't
->  > need to adapt the default _max_ read-ahead size to memory pressure.
->  >
->  > For read-around, the memory pressure is mainly read-around misses on
->  > executables/libraries. Which could be reduced by scaling down
->  > read-around size on fast "reclaim passes".
->  >
->  > This patch presents a straightforward solution: to limit default
->  > readahead size proportional to available system memory, ie.
->  >                 512MB mem => 512KB readahead size
->  >                 128MB mem => 128KB readahead size
->  >                  32MB mem =>  32KB readahead size (minimal)
->  >
->  > Strictly speaking, only read-around size has to be limited.  However we
->  > don't bother to seperate read-around size from read-ahead size for now.
->  >
->  > CC: Matt Mackall <mpm@selenic.com>
->  > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> What I state here is for read ahead in a "multi iozone sequential" 
-> setup, I can't speak for real "read around" workloads.
-> So probably your table is fine to cover read-around+read-ahead in one 
-> number.
+Hi Rick,
 
-OK.
+On Fri, Feb 26, 2010 at 6:15 AM, Rick L. Vinyard Jr.
+<rvinyard@cs.nmsu.edu> wrote:
+> This patch adds support for examining and modifying the fbdefio delay
+> parameter through sysfs. It also adds two driver definable minimum
+> and maximum bounds.
 
-> I have tested 256MB mem systems with 512kb readahead quite a lot.
-> On those 512kb is still by far superior to smaller readaheads and I 
-> didn't see major trashing or memory pressure impact.
+Thanks for posting this. I've now read through this patch and your
+past patches, but I couldn't get a good understanding of how this
+userspace exposed defio delay would interact with most existing
+systems.
 
-In fact I'd expect a 64MB box to also benefit from 512kb readahead :)
+> +               Set the deferred I/O delay of the framebuffer in ms.
+> +               This value can be used to throttle deferred I/O updates.
 
-> Therefore I would recommend a table like:
->                 >=256MB mem => 512KB readahead size
->                   128MB mem => 128KB readahead size
->                    32MB mem =>  32KB readahead size (minimal)
+Please help us understand how userspace should use the ability to set
+this delay. Who in userspace is intended to use it? Would this be the
+X server, cairo, or papyrus? A separate daemon? Human interaction?
+When should said userspace entity throttle updates? How would this
+entity know when throttling is needed? Could this throttling possibly
+or should this possibly be done automatically by the driver itself?
 
-So, I'm fed up with compromising the read-ahead size with read-around
-size.
+> +               Most framebuffer devices do not have or need support for
+> +               deferred I/O. Accessing a framebuffer without deferred I/O
+> +               support will return -ENODEV. Can be read but not modified if
+> +               /sys/class/graphics/<fb>/defio_delay_max is 0. When modifying,
+> +               the value must be greater than or equal to
+> +               /sys/class/graphics/<fb>/defio_delay_min and less than or equal
+> +               to /sys/class/graphics/<fb>/defio_delay_max.
 
-There is no good to introduce a read-around size to confuse the user
-though.  Instead, I'll introduce a read-around size limit _on top of_
-the readahead size. This will allow power users to adjust
-read-ahead/read-around size at the same time, while saving the low end
-from unnecessary memory pressure :) I made the assumption that low end
-users have no need to request a large read-around size.
+Please help the reader of above understand the sequence of userspace
+changing the defio delay, and how and when that would affect the
+associated drivers. Will the delay behaviour be standard for all defio
+client drivers? What happens in all the various timing scenarios, eg:
+if a defio delay is changed in the middle of a display update or a
+defio page clean or before? The sysfs parameter description mentioning
+min/max above could use some elaboration as reading it doesn't make
+clear if userspace can also affect min/max or if it is completely
+owned by the driver.
 
 Thanks,
-Fengguang
----
-readahead: limit read-ahead size for small memory systems
+jaya
 
-When lifting the default readahead size from 128KB to 512KB,
-make sure it won't add memory pressure to small memory systems.
-
-For read-ahead, the memory pressure is mainly readahead buffers consumed
-by too many concurrent streams. The context readahead can adapt
-readahead size to thrashing threshold well.  So in principle we don't
-need to adapt the default _max_ read-ahead size to memory pressure.
-
-For read-around, the memory pressure is mainly read-around misses on
-executables/libraries. Which could be reduced by scaling down
-read-around size on fast "reclaim passes".
-
-This patch presents a straightforward solution: to limit default
-read-ahead size proportional to available system memory, ie.
-                512MB mem => 512KB readahead size
-                128MB mem => 128KB readahead size
-                 32MB mem =>  32KB readahead size
-
-CC: Matt Mackall <mpm@selenic.com>
-CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/filemap.c   |    2 +-
- mm/readahead.c |   22 ++++++++++++++++++++++
- 2 files changed, 23 insertions(+), 1 deletion(-)
-
---- linux.orig/mm/filemap.c	2010-02-26 10:04:28.000000000 +0800
-+++ linux/mm/filemap.c	2010-02-26 10:08:33.000000000 +0800
-@@ -1431,7 +1431,7 @@ static void do_sync_mmap_readahead(struc
- 	/*
- 	 * mmap read-around
- 	 */
--	ra_pages = max_sane_readahead(ra->ra_pages);
-+	ra_pages = min(ra->ra_pages, roundup_pow_of_two(totalram_pages / 1024));
- 	if (ra_pages) {
- 		ra->start = max_t(long, 0, offset - ra_pages/2);
- 		ra->size = ra_pages;
+ps: I only found your patches by accident when reading through the
+fbdev mailing list. I'm very interested in defio (I happen to be the
+author of it) and also drivers that use defio so I would appreciate
+being CCed on such changes. Thanks a bunch.
