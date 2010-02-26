@@ -1,79 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933907Ab0BZKdb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:33:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55148 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933791Ab0BZKd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:33:29 -0500
-Message-ID: <4B87A373.9000808@redhat.com>
-Date: Fri, 26 Feb 2010 12:33:23 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S933799Ab0BZKfN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:35:13 -0500
+Received: from toccata.ens-lyon.fr ([140.77.166.68]:37457 "EHLO
+	toccata.ens-lyon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933334Ab0BZKfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 05:35:10 -0500
+Date: Fri, 26 Feb 2010 11:35:05 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, mgarski@post.pl,
+       linux-input@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Route kbd leds through the generic leds layer (3rd version)
+Message-ID: <20100226103505.GB3992@const.homenet.telecomitalia.it>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	mgarski@post.pl, linux-input@vger.kernel.org,
+	Vojtech Pavlik <vojtech@suse.cz>,
+	Richard Purdie <rpurdie@rpsys.net>
+References: <20100224012010.GA4062@const> <20100225013840.GA5519@const.homenet.telecomitalia.it> <20100225102056.GG10823@core.coreip.homeip.net> <20100225214403.GB9378@const.homenet.telecomitalia.it> <20100226035448.GA16797@core.coreip.homeip.net>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] KVM: SVM: Add correct handling of nested iopm
-References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com> <1267118149-15737-5-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1267118149-15737-5-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100226035448.GA16797@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25/2010 07:15 PM, Joerg Roedel wrote:
-> This patch adds the correct handling of the nested io
-> permission bitmap. Old behavior was to not lookup the port
-> in the iopm but only reinject an io intercept to the guest.
->
-> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
-> ---
->   arch/x86/kvm/svm.c |   25 +++++++++++++++++++++++++
->   1 files changed, 25 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index bb75a44..3859e2c 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -78,6 +78,7 @@ struct nested_state {
->
->   	/* gpa pointers to the real vectors */
->   	u64 vmcb_msrpm;
-> +	u64 vmcb_iopm;
->
->   	/* A VMEXIT is required but not yet emulated */
->   	bool exit_required;
-> @@ -1603,6 +1604,26 @@ static void nested_svm_unmap(struct page *page)
->   	kvm_release_page_dirty(page);
->   }
->
-> +static int nested_svm_intercept_ioio(struct vcpu_svm *svm)
-> +{
-> +	unsigned port;
-> +	u8 val, bit;
-> +	u64 gpa;
-> +
-> +	if (!(svm->nested.intercept&  (1ULL<<  INTERCEPT_IOIO_PROT)))
-> +		return NESTED_EXIT_HOST;
-> +
-> +	port = svm->vmcb->control.exit_info_1>>  16;
-> +	gpa  = svm->nested.vmcb_iopm + (port / 8);
-> +	bit  = port % 8;
-> +	val  = 0;
-> +
-> +	if (kvm_read_guest(svm->vcpu.kvm, gpa,&val, 1))
-> +		val&= (1<<  bit);
-> +
-> +	return val ? NESTED_EXIT_DONE : NESTED_EXIT_HOST;
-> +}
-> +
->    
+Dmitry Torokhov, le Thu 25 Feb 2010 19:54:48 -0800, a écrit :
+> Right now on .33, if you write LED event to one event device while
+> legacy keyboard driver is inactive (in raw mode) then that write will
+> only affect that particular event device, not the rest of them. Your
+> patch changes that.
 
-A kvm_{test,set,clear}_guest_bit() would be useful, we have several 
-users already (not a requirement for this patchset).
+Errr, I don't think so.  My patch just puts a trigger layer between
+keyboard and the loop over devices that keyboard used to do.  When the
+legacy keyboard driver is inactive, it doesn't trigger anything any
+more, and my patch becomes actually inactive, and other sources of LED
+events can send them to various input event devices independently.  I've
+just tried it with Xorg (telling it to use only one keyboard) and it
+works.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> Whether LED state should be shared between all input devices or should
+> be kept separate is a matter of policy and we try to keep policy in
+> userspace.
 
+Sure.
+
+> >  On the contrary,
+> > it fixes the problem of proper caps lock with led feedback.
+> 
+> I am unaware of such issue, any pointers?
+
+In the very changelog of my patch :) #7063
+And also please see the thread “make CapsLock work as expected even
+for non-ASCII” on lkml.
+
+> > Being able to assign only some of the devices to the linux console
+> > would indeed probably be good, but to me it's just a refinement. Users
+> > a priori assume all keyboards get their leds updated, so my patch
+> > makes sense.  And it won't prevent a further patch that, in addition
+> > to input::<led> leds, adds per-device leds, which the user could use
+> > instead of input::<led>.
+> 
+> I think that if we want to go LED route we shoudl start with adding led
+> devices to individual keyboard drivers first
+
+Mmm, thinking again, I think my patch could be rather easily converted
+into creating led instances for each device, with proper trigger
+defaults.  Something like input-devicename::numlock? (devicename::numlock
+might get conflicts with non-input devices I guess?)
+
+That being said, usermode tools which want to set up the modifiers and
+connect the input LEDs to them need an easy and proper way to do so.
+Having central input::numlock and such still seems a good thing.
+
+> and then convert legacy
+> keyboard to use trigger instead of talking to input devices directly.
+
+This part is already done by my patch.
+
+Samuel
