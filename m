@@ -1,80 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965434Ab0BZRHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 12:07:52 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:56458 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965207Ab0BZRHv (ORCPT
+	id S965454Ab0BZRPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 12:15:54 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:50527 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965152Ab0BZRPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 12:07:51 -0500
-Message-ID: <4B87FFE1.7040001@canonical.com>
-Date: Fri, 26 Feb 2010 09:07:45 -0800
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100222 Thunderbird/3.0.1
+	Fri, 26 Feb 2010 12:15:52 -0500
+X-IronPort-AV: E=Sophos;i="4.49,547,1262581200"; 
+   d="scan'208";a="85874801"
+Subject: [GIT 0/3] x86: remove kmap_atomic_pte paravirt op
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Fri, 26 Feb 2010 17:15:47 +0000
+Message-ID: <1267204547.11737.12659.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Fix __d_path for lazy unmounts
-References: <1266668858-15253-1-git-send-email-john.johansen@canonical.com> <E1NkyyX-0000l1-01@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NkyyX-0000l1-01@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/2010 04:07 AM, Miklos Szeredi wrote:
-> On Sat, 20 Feb 2010, john.johansen@canonical.co wrote:
->> From: John Johansen<john.johansen@canonical.com>
->>
->> When __d_path() hits a lazily unmounted mount point, it tries to prepend
->> the name of the lazily unmounted dentry to the path name.  It gets this wrong,
->> and also overwrites the slash that separates the name from the following
->> pathname component. This patch fixes that; if a process was in directory
->> /foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
->> missing slash), while the new result with this patch is ``/foo/bar''.
->
-> Example:
->
-> # mkdir -p /tmp/foo/bar
-> # mkdir /tmp/mnt
-> # mount --bind /tmp/foo /tmp/mnt
-> # cd /tmp/mnt/bar
-> # /bin/pwd
-> /tmp/mnt/bar
-> # umount -l /tmp/mnt
-> # /bin/pwd
-> foobar
->
-> After the patch it will be /foo/bar.
->
-> Why is the path starting with "/foo"?  Does that make any sense?
->
-not a lot except, connecting disconnected paths to root is what
-is currently done for paths that aren't reachable but have an fs
-as their root (ie the last dentry is / so it looks connected to
-root).
+The following changes since commit c1fd1b43831fa20c91cdd461342af8edf2e87c2f:
+  Pekka Enberg (1):
+        x86, mm: Unify kernel_physical_mapping_init() API
 
-I would be happy in this case to leave bind mounts disconnected
-(no leading /) and just fix the overwriting of the internal /.
+are available in the git repository at:
 
-I'll make the change.
+  git://xenbits.xensource.com/people/ianc/linux-2.6.git for-x86/mm
 
-> Last time this was discussed the proposals which are halfway sane
-> were:
->
->   a) "(unreachable)/bar" or something along those lines
->   b) ENOENT
->
-right, I actually have another couple of __d_path patches I need
-to kick out for discussion.  Last time we rolled 3 different
-changes into a single patch.  This time I wanted to isolate the
-changes per patch.  I'll kick them all out today.
+Ian Campbell (3):
+      xen: disable highmem PTE allocation even when CONFIG_HIGHPTE=y
+      vmi: disable highmem PTE allocation even when CONFIG_HIGHPTE=y
+      x86: remove kmap_atomic_pte paravirt op.
 
-> And with either one care needs to be taken to limit this change to
-> interfaces (both internal and userspace) where it's not likely to
-> cause breakage.
->
-agreed.
+ arch/x86/include/asm/highmem.h        |    4 ---
+ arch/x86/include/asm/paravirt.h       |    9 --------
+ arch/x86/include/asm/paravirt_types.h |    4 ---
+ arch/x86/include/asm/pgtable_32.h     |    4 +-
+ arch/x86/kernel/paravirt.c            |    4 ---
+ arch/x86/kernel/vmi_32.c              |   35 ++++++--------------------------
+ arch/x86/xen/enlighten.c              |    7 ++++++
+ arch/x86/xen/mmu.c                    |   21 -------------------
+ 8 files changed, 16 insertions(+), 72 deletions(-)
+
 
