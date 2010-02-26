@@ -1,106 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931Ab0BZOrF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 09:47:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34858 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964921Ab0BZOq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 09:46:59 -0500
-Date: Fri, 26 Feb 2010 15:46:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/2] rcu: fixes for RCU lockdep
-Message-ID: <20100226144619.GA4327@elte.hu>
-References: <20100225220624.GA7013@linux.vnet.ibm.com>
- <20100226115018.GA4519@elte.hu>
- <20100226131931.GA19695@elte.hu>
+	id S964927Ab0BZOvM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 09:51:12 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44799 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964907Ab0BZOvJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 09:51:09 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
+From: Andi Kleen <andi@firstfloor.org>
+References: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
+	<20090803112220.GA22936@elte.hu>
+	<20090803072522.1d90f15c@infradead.org>
+	<20090804201109.GA21386@elte.hu> <20090805123501.GF14610@erda.amd.com>
+	<84144f020908060031vb48b983m6e6b1b521e01d6aa@mail.gmail.com>
+	<20090806105134.GD11236__37984.4768475325$1249556453$gmane$org@elte.hu>
+Date: Fri, 26 Feb 2010 15:51:04 +0100
+In-Reply-To: <20090806105134.GD11236__37984.4768475325$1249556453$gmane$org@elte.hu> (Ingo Molnar's message of "Thu, 6 Aug 2009 12:51:34 +0200")
+Message-ID: <87ocjcqcdj.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100226131931.GA19695@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> As you note it below, in terms of development it's quite a 
+> distraction to have active development in both facilities, when 
+> oprofile is arguably on the to-be-obsoleted side of the equation. 
 
-plus:
+I don't see how it is distracting (for whom anyways?) at all to develop both.
+It's just like two ethernet/SCSI/... drivers being developed in parallel
+by different people. Happens all the time. The Linux development model
+can handle it.
 
-skge eth0: Link is up at 1000 Mbps, full duplex, flow control both
+That said the biggest problem with oprofile right now that the
+new buffer it's using is quite a lot less reliable and drops
+events left and right on any non trivial load. That makes
+oprofile very unreliable, especially in call graph mode.
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.33-tip+ #10436
----------------------------------
-inconsistent {IN-SOFTIRQ-W} -> {SOFTIRQ-ON-W} usage.
-swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
- (&(&base->lock)->rlock){+.?.-.}, at: [<ffffffff8107c688>] get_next_timer_interrupt+0x35/0x214
-{IN-SOFTIRQ-W} state was registered at:
-  [<ffffffff81099096>] mark_irqflags+0x75/0x125
-  [<ffffffff8109a749>] __lock_acquire+0x207/0x368
-  [<ffffffff8109a986>] lock_acquire+0xdc/0x102
-  [<ffffffff81ee928c>] _raw_spin_lock_irq+0x42/0x77
-  [<ffffffff8107bdaa>] run_timer_softirq+0x4f/0x2c1
-  [<ffffffff81077716>] __do_softirq+0xf8/0x1cd
-  [<ffffffff81029bbc>] call_softirq+0x1c/0x28
-  [<ffffffff8102b6ab>] do_softirq+0x4b/0x92
-  [<ffffffff8107735c>] irq_exit+0x4a/0x8c
-  [<ffffffff81eea4f4>] do_IRQ+0xac/0xc3
-  [<ffffffff81ee9d53>] ret_from_intr+0x0/0x16
-  [<ffffffff81ee9b23>] _raw_spin_unlock_irqrestore+0x51/0x56
-  [<ffffffff810b782a>] __setup_irq+0x220/0x2c6
-  [<ffffffff810b7a1a>] setup_irq+0x23/0x28
-  [<ffffffff82b99220>] setup_default_timer_irq+0x12/0x14
-  [<ffffffff82b99239>] hpet_time_init+0x17/0x19
-  [<ffffffff82b99207>] x86_late_time_init+0xa/0x11
-  [<ffffffff82b95cfe>] start_kernel+0x2c1/0x34e
-  [<ffffffff82b952a0>] x86_64_start_reservations+0xa7/0xab
-  [<ffffffff82b9539c>] x86_64_start_kernel+0xf8/0x107
-irq event stamp: 342029
-hardirqs last  enabled at (342029): [<ffffffff810ba87b>] rcu_do_batch+0x1e4/0x20f
-hardirqs last disabled at (342028): [<ffffffff810ba7a2>] rcu_do_batch+0x10b/0x20f
-softirqs last  enabled at (342026): [<ffffffff81d26ade>] __dst_free+0xb4/0xb8
-softirqs last disabled at (342025): [<ffffffff81ee945f>] _raw_spin_lock_bh+0x1c/0x6e
+So if there was a "legacy oprofile" it would be better to have
+one that does not use the ring buffer, but using the old buffer which
+at least worked. This would drop IBS support unfortunately,
+but perhaps that could be just done in perf only (depends on 
+how big the IBS user base for current oprofile is)
 
-other info that might help us debug this:
-no locks held by swapper/0.
+> And yes, AFAIK oprofile user-space is pretty much the only 
+> user-space app that relies on the oprofile ABI - at least in the OSS 
+> space. Robert, is there perhaps some bin-only oprofile based tool 
+> that you implied before? Which one is it?
 
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.33-tip+ #10436
-Call Trace:
- [<ffffffff81098d80>] print_usage_bug+0x154/0x165
- [<ffffffff810997fb>] ? check_usage_backwards+0x0/0x81
- [<ffffffff81098de0>] valid_state+0x4f/0x5a
- [<ffffffff81098e34>] mark_lock_irq+0x49/0xef
- [<ffffffff81098fbd>] mark_lock+0xe3/0x147
- [<ffffffff810990fc>] mark_irqflags+0xdb/0x125
- [<ffffffff8109a749>] __lock_acquire+0x207/0x368
- [<ffffffff81077573>] ? _local_bh_enable_ip+0xbc/0xc5
- [<ffffffff81077573>] ? _local_bh_enable_ip+0xbc/0xc5
- [<ffffffff8109a986>] lock_acquire+0xdc/0x102
- [<ffffffff8107c688>] ? get_next_timer_interrupt+0x35/0x214
- [<ffffffff810ba87b>] ? rcu_do_batch+0x1e4/0x20f
- [<ffffffff81ee918b>] _raw_spin_lock+0x36/0x69
- [<ffffffff8107c688>] ? get_next_timer_interrupt+0x35/0x214
- [<ffffffff8107c688>] get_next_timer_interrupt+0x35/0x214
- [<ffffffff810ba940>] ? __rcu_process_callbacks+0x9a/0x9f
- [<ffffffff8109623b>] tick_nohz_stop_sched_tick+0x38f/0x3b8
- [<ffffffff81027d57>] cpu_idle+0x2f/0xbf
- [<ffffffff81e61bef>] rest_init+0xc3/0xca
- [<ffffffff81e61b2c>] ? rest_init+0x0/0xca
- [<ffffffff82b95d83>] start_kernel+0x346/0x34e
- [<ffffffff82b952a0>] x86_64_start_reservations+0xa7/0xab
- [<ffffffff82b9539c>] x86_64_start_kernel+0xf8/0x107
+There are multiple, e.g. Zoom or the old HP tool whose name
+escapes me now. Also I think there are a couple of minor forks around
+in various distro trees.
 
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
