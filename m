@@ -1,82 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934751Ab0BZA1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:27:12 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39437 "EHLO gate.crashing.org"
+	id S934759Ab0BZA2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:28:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54519 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934672Ab0BZA1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:27:11 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Ming Lei <tom.leiming@gmail.com>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <201002250448.17866.oliver@neukum.org>
-References: <1266445892.16346.306.camel@pasglop>
-	 <201002240816.10178.oliver@neukum.org>
-	 <1267045954.23523.1692.camel@pasglop>
-	 <201002250448.17866.oliver@neukum.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Feb 2010 11:22:50 +1100
-Message-ID: <1267143770.23523.1763.camel@pasglop>
+	id S934727Ab0BZA2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:28:09 -0500
+Date: Fri, 26 Feb 2010 11:27:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: import of usb series failed
+Message-Id: <20100226112756.06f3036c.sfr@canb.auug.org.au>
+In-Reply-To: <20100225175421.GA23662@kroah.com>
+References: <20100218105500.898ece5e.sfr@canb.auug.org.au>
+	<20100218002144.GA17850@kroah.com>
+	<20100218132221.b15d151f.sfr@canb.auug.org.au>
+	<20100219175218.10025a7a.sfr@canb.auug.org.au>
+	<20100219155343.GA3946@kroah.com>
+	<20100220120207.1d765147.sfr@canb.auug.org.au>
+	<20100224021624.GB14159@kroah.com>
+	<20100224150156.d7449bc7.sfr@canb.auug.org.au>
+	<20100225175421.GA23662@kroah.com>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Feb_2010_11_27_56_+1100_psUPhfAftlpvw9x3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-25 at 04:48 +0100, Oliver Neukum wrote:
-> Am Mittwoch, 24. Februar 2010 22:12:34 schrieb Benjamin Herrenschmidt:
-> > On Wed, 2010-02-24 at 08:16 +0100, Oliver Neukum wrote:
-> > > I don't know. The issue seems quite complex. It would seem better to
-> > > centralize it as far as practical. Do you have a wrapper drivers could
-> > > call?
-> > 
-> > flush_dcache_page() ? :-)
-> 
-> Will this do anything on arches that don't need it?
+--Signature=_Fri__26_Feb_2010_11_27_56_+1100_psUPhfAftlpvw9x3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, it's going to be an empty inline:
+Hi Greg,
 
-arch/x86/include/asm/cacheflush.h:static inline void flush_dcache_page(struct page *page) { }
+On Thu, 25 Feb 2010 09:54:30 -0800 Greg KH <greg@kroah.com> wrote:
+>
+> Ok, I'll work on changing my scripts to use a SHA1 or at least a more
+> "close" version of what the patches should be against.  Sorry for the
+> problem.
 
-> Secondly, can we have a wrapper that you can pass a pointer and an
-> offset?
+OK, thanks.  It all looks good today.
 
-I'm sure you can make one :-) Use virt_to_page() though that will not
-work for vmap/vmalloc space of course.
- 
-> > Now, the subsystem might be the one to know whether something is mapped
-> > into userspace or not (v4l in our case) in which case a wrapper could be
-> > created.
-> 
-> If possible, I'd like to centralize this. Drivers are likely to get this wrong.
 
-Right. In the case of v4l, it's probably something that should go into
-the subsystem. IE. That's how it works for block too, it's done at the
-BIO and/or filesystem layer (though individual filesystems do have their
-hand in the pudding). 
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> 	Regards
-> 		Oliver
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--Signature=_Fri__26_Feb_2010_11_27_56_+1100_psUPhfAftlpvw9x3
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEUEARECAAYFAkuHFYwACgkQjjKRsyhoI8xwDwCeJcSdcG4rP6F/+txBCTEx+cwa
+L9oAl0pUmurc53rzQoI+imYQBdGUxDI=
+=tFWm
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Feb_2010_11_27_56_+1100_psUPhfAftlpvw9x3--
