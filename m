@@ -1,140 +1,164 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965561Ab0BZRjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 12:39:45 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:10482
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965510Ab0BZRgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 12:36:05 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh87h43h61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYGM7T-02-2LW-02
-X-M-MSG: 
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Robert Richter <robert.richter@amd.com>, stable@kernel.org
-Subject: [PATCH 11/15] oprofile/x86: use kzalloc() instead of kmalloc()
-Date: Fri, 26 Feb 2010 18:30:03 +0100
-Message-ID: <1267205407-6523-12-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
-References: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 26 Feb 2010 17:35:47.0492 (UTC) FILETIME=[219C2E40:01CAB70A]
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+	id S965608Ab0BZRiw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 12:38:52 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:39718 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965594Ab0BZRib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 12:38:31 -0500
+X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Feb 2010 12:37:45 EST
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: akpm@linux-foundation.org, linux-mmc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       wolfgang.mues@auerswald.de, avictor.za@gmail.com
+Subject: [PATCH 3/7] mmc: at91_mci: use one coherent DMA buffer
+Date: Fri, 26 Feb 2010 19:39:31 +0100
+Message-Id: <eea8ec66963d07c87f4a50c211f7f8b7c2af1df3.1267209149.git.nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
+References: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
+In-Reply-To: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
+References: <9535dc8dfe4476a0314b9513fb9d37862faa731d.1267209149.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: stable@kernel.org
-Signed-off-by: Robert Richter <robert.richter@amd.com>
+From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+
+The TX DMA buffer is allocated only once, because the allocation/deallocation
+of the buffer for EACH chunk of data is time-consuming and prone to memory
+fragmentation.
+
+Using a coherent DMA buffer avoids extra data cache calls.
+
+Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+[nicolas.ferre@atmel.com: coding style modifications]
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- arch/x86/oprofile/nmi_int.c       |    6 +++---
- arch/x86/oprofile/op_model_amd.c  |    4 ----
- arch/x86/oprofile/op_model_p4.c   |    6 ------
- arch/x86/oprofile/op_model_ppro.c |    6 +-----
- 4 files changed, 4 insertions(+), 18 deletions(-)
+ drivers/mmc/host/at91_mci.c |   49 +++++++++++++++++++++----------------------
+ 1 files changed, 24 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 7170d1e..2c505ee 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -159,7 +159,7 @@ static int nmi_setup_mux(void)
+diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
+index f2cb716..fd01195 100644
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -88,6 +88,10 @@
+ #define at91_mci_read(host, reg)	__raw_readl((host)->baseaddr + (reg))
+ #define at91_mci_write(host, reg, val)	__raw_writel((val), (host)->baseaddr + (reg))
  
- 	for_each_possible_cpu(i) {
- 		per_cpu(cpu_msrs, i).multiplex =
--			kmalloc(multiplex_size, GFP_KERNEL);
-+			kzalloc(multiplex_size, GFP_KERNEL);
- 		if (!per_cpu(cpu_msrs, i).multiplex)
- 			return 0;
- 	}
-@@ -304,11 +304,11 @@ static int allocate_msrs(void)
++#define MCI_BLKSIZE 		512
++#define MCI_MAXBLKSIZE 		4095
++#define MCI_BLKATONCE 		256
++#define MCI_BUFSIZE 		(MCI_BLKSIZE * MCI_BLKATONCE)
  
- 	int i;
- 	for_each_possible_cpu(i) {
--		per_cpu(cpu_msrs, i).counters = kmalloc(counters_size,
-+		per_cpu(cpu_msrs, i).counters = kzalloc(counters_size,
- 							GFP_KERNEL);
- 		if (!per_cpu(cpu_msrs, i).counters)
- 			return 0;
--		per_cpu(cpu_msrs, i).controls = kmalloc(controls_size,
-+		per_cpu(cpu_msrs, i).controls = kzalloc(controls_size,
- 							GFP_KERNEL);
- 		if (!per_cpu(cpu_msrs, i).controls)
- 			return 0;
-diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index 2aab018..f4ebc45 100644
---- a/arch/x86/oprofile/op_model_amd.c
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -147,15 +147,11 @@ static void op_amd_fill_in_addresses(struct op_msrs * const msrs)
- 	for (i = 0; i < NUM_COUNTERS; i++) {
- 		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i))
- 			msrs->counters[i].addr = MSR_K7_PERFCTR0 + i;
--		else
--			msrs->counters[i].addr = 0;
- 	}
+ /*
+  * Low level type for this driver
+@@ -604,7 +608,6 @@ static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command
+ 				/*
+ 				 * Handle a read
+ 				 */
+-				host->buffer = NULL;
+ 				host->total_length = 0;
  
- 	for (i = 0; i < NUM_CONTROLS; i++) {
- 		if (reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i))
- 			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + i;
--		else
--			msrs->controls[i].addr = 0;
- 	}
- }
+ 				at91_mci_pre_dma_read(host);
+@@ -623,20 +626,8 @@ static void at91_mci_send_command(struct at91mci_host *host, struct mmc_command
+ 					if (host->total_length < 12)
+ 						host->total_length = 12;
  
-diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
-index ac6b354..e6a160a 100644
---- a/arch/x86/oprofile/op_model_p4.c
-+++ b/arch/x86/oprofile/op_model_p4.c
-@@ -394,12 +394,6 @@ static void p4_fill_in_addresses(struct op_msrs * const msrs)
- 	setup_num_counters();
- 	stag = get_stagger();
- 
--	/* initialize some registers */
--	for (i = 0; i < num_counters; ++i)
--		msrs->counters[i].addr = 0;
--	for (i = 0; i < num_controls; ++i)
--		msrs->controls[i].addr = 0;
+-				host->buffer = kmalloc(host->total_length, GFP_KERNEL);
+-				if (!host->buffer) {
+-					pr_debug("Can't alloc tx buffer\n");
+-					cmd->error = -ENOMEM;
+-					mmc_request_done(host->mmc, host->request);
+-					return;
+-				}
 -
- 	/* the counter & cccr registers we pay attention to */
- 	for (i = 0; i < num_counters; ++i) {
- 		addr = p4_counters[VIRT_CTR(stag, i)].counter_address;
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index c344525..5d1727b 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -37,15 +37,11 @@ static void ppro_fill_in_addresses(struct op_msrs * const msrs)
- 	for (i = 0; i < num_counters; i++) {
- 		if (reserve_perfctr_nmi(MSR_P6_PERFCTR0 + i))
- 			msrs->counters[i].addr = MSR_P6_PERFCTR0 + i;
--		else
--			msrs->counters[i].addr = 0;
+ 				at91_mci_sg_to_dma(host, data);
+ 
+-				host->physical_address = dma_map_single(NULL,
+-						host->buffer, host->total_length,
+-						DMA_TO_DEVICE);
+-
+ 				pr_debug("Transmitting %d bytes\n", host->total_length);
+ 
+ 				at91_mci_write(host, ATMEL_PDC_TPR, host->physical_address);
+@@ -703,14 +694,6 @@ static void at91_mci_completed_command(struct at91mci_host *host, unsigned int s
+ 	cmd->resp[2] = at91_mci_read(host, AT91_MCI_RSPR(2));
+ 	cmd->resp[3] = at91_mci_read(host, AT91_MCI_RSPR(3));
+ 
+-	if (host->buffer) {
+-		dma_unmap_single(NULL,
+-				host->physical_address, host->total_length,
+-				DMA_TO_DEVICE);
+-		kfree(host->buffer);
+-		host->buffer = NULL;
+-	}
+-
+ 	pr_debug("Status = %08X/%08x [%08X %08X %08X %08X]\n",
+ 		 status, at91_mci_read(host, AT91_MCI_SR),
+ 		 cmd->resp[0], cmd->resp[1], cmd->resp[2], cmd->resp[3]);
+@@ -1012,12 +995,12 @@ static int __init at91_mci_probe(struct platform_device *pdev)
+ 	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
+ 	mmc->caps = MMC_CAP_SDIO_IRQ;
+ 
+-	mmc->max_blk_size = 4095;
+-	mmc->max_blk_count = mmc->max_req_size;
++	mmc->max_blk_size  = MCI_MAXBLKSIZE;
++	mmc->max_blk_count = MCI_BLKATONCE;
++	mmc->max_req_size  = MCI_BUFSIZE;
+ 
+ 	host = mmc_priv(mmc);
+ 	host->mmc = mmc;
+-	host->buffer = NULL;
+ 	host->bus_mode = 0;
+ 	host->board = pdev->dev.platform_data;
+ 	if (host->board->wire4) {
+@@ -1028,6 +1011,14 @@ static int __init at91_mci_probe(struct platform_device *pdev)
+ 				" - using 1 wire\n");
  	}
  
- 	for (i = 0; i < num_counters; i++) {
- 		if (reserve_evntsel_nmi(MSR_P6_EVNTSEL0 + i))
- 			msrs->controls[i].addr = MSR_P6_EVNTSEL0 + i;
--		else
--			msrs->controls[i].addr = 0;
++	host->buffer = dma_alloc_coherent(&pdev->dev, MCI_BUFSIZE,
++					&host->physical_address, GFP_KERNEL);
++	if (!host->buffer) {
++		ret = -ENOMEM;
++		dev_err(&pdev->dev, "Can't allocate transmit buffer\n");
++		goto fail5;
++	}
++
+ 	/*
+ 	 * Reserve GPIOs ... board init code makes sure these pins are set
+ 	 * up as GPIOs with the right direction (input, except for vcc)
+@@ -1036,7 +1027,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
+ 		ret = gpio_request(host->board->det_pin, "mmc_detect");
+ 		if (ret < 0) {
+ 			dev_dbg(&pdev->dev, "couldn't claim card detect pin\n");
+-			goto fail5;
++			goto fail4b;
+ 		}
  	}
- }
+ 	if (host->board->wp_pin) {
+@@ -1136,6 +1127,10 @@ fail3:
+ fail4:
+ 	if (host->board->det_pin)
+ 		gpio_free(host->board->det_pin);
++fail4b:
++	if (host->buffer)
++		dma_free_coherent(&pdev->dev, MCI_BUFSIZE,
++				host->buffer, host->physical_address);
+ fail5:
+ 	mmc_free_host(mmc);
+ fail6:
+@@ -1158,6 +1153,10 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
  
-@@ -57,7 +53,7 @@ static void ppro_setup_ctrs(struct op_x86_model_spec const *model,
- 	int i;
+ 	host = mmc_priv(mmc);
  
- 	if (!reset_value) {
--		reset_value = kmalloc(sizeof(reset_value[0]) * num_counters,
-+		reset_value = kzalloc(sizeof(reset_value[0]) * num_counters,
- 					GFP_ATOMIC);
- 		if (!reset_value)
- 			return;
++	if (host->buffer)
++		dma_free_coherent(&pdev->dev, MCI_BUFSIZE,
++				host->buffer, host->physical_address);
++
+ 	if (host->board->det_pin) {
+ 		if (device_can_wakeup(&pdev->dev))
+ 			free_irq(gpio_to_irq(host->board->det_pin), host);
 -- 
-1.6.6
-
+1.5.6.5
 
