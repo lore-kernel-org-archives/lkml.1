@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935925Ab0BZMOb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:14:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43309 "EHLO hera.kernel.org"
+	id S935966Ab0BZMU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:20:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43362 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935850Ab0BZMOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:23 -0500
+	id S935884Ab0BZMOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:32 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -14,420 +14,587 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 24/43] workqueue: implement worker states
-Date: Fri, 26 Feb 2010 21:23:01 +0900
-Message-Id: <1267187000-18791-25-git-send-email-tj@kernel.org>
+Subject: [PATCH 18/43] workqueue: reimplement workqueue flushing using color coded works
+Date: Fri, 26 Feb 2010 21:22:55 +0900
+Message-Id: <1267187000-18791-19-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement worker states.  After created, a worker is STARTED.  While a
-worker isn't processing a work, it's IDLE and chained on
-gcwq->idle_list.  While processing a work, a worker is BUSY and
-chained on gcwq->busy_hash.  Also, gcwq now counts the number of all
-workers and idle ones.
+Reimplement workqueue flushing using color coded works.  wq has the
+current work color which is painted on the works being issued via
+cwqs.  Flushing a workqueue is achieved by advancing the current work
+colors of cwqs and waiting for all the works which have any of the
+previous colors to drain.
 
-worker_thread() is restructured to reflect state transitions.
-cwq->more_work is removed and waking up a worker makes it check for
-events.  A worker is killed by setting DIE flag while it's IDLE and
-waking it up.
+Currently there are 16 possible colors, one is reserved for no color
+and 15 colors are useable allowing 14 concurrent flushes.  When color
+space gets full, flush attempts are batched up and processed together
+when color frees up, so even with many concurrent flushers, the new
+implementation won't build up huge queue of flushers which has to be
+processed one after another.
 
-This gives gcwq better visibility of what's going on and allows it to
-find out whether a work is executing quickly which is necessary to
-have multiple workers processing the same cwq.
+Only works which are queued via __queue_work() are colored.  Works
+which are directly put on queue using insert_work() use NO_COLOR and
+don't participate in workqueue flushing.  Currently only works used
+for work-specific flush fall in this category.
+
+This new implementation leaves only cleanup_workqueue_thread() as the
+user of flush_cpu_workqueue().  Just make its users use
+flush_workqueue() and kthread_stop() directly and kill
+cleanup_workqueue_thread().  As workqueue flushing doesn't use barrier
+request anymore, the comment describing the complex synchronization
+around it in cleanup_workqueue_thread() is removed together with the
+function.
+
+This new implementation is to allow having and sharing multiple
+workers per cpu.
+
+Please note that one more bit is reserved for a future work flag by
+this patch.  This is to avoid shifting bits and updating comments
+later.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- kernel/workqueue.c |  207 ++++++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 170 insertions(+), 37 deletions(-)
+ include/linux/workqueue.h |   21 +++-
+ kernel/workqueue.c        |  351 ++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 318 insertions(+), 54 deletions(-)
 
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index b90958a..8762f62 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -26,11 +26,13 @@ enum {
+ 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+ #ifdef CONFIG_DEBUG_OBJECTS_WORK
+ 	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
+-	WORK_STRUCT_FLAG_BITS	= 2,
++	WORK_STRUCT_COLOR_SHIFT	= 3,	/* color for workqueue flushing */
+ #else
+-	WORK_STRUCT_FLAG_BITS	= 1,
++	WORK_STRUCT_COLOR_SHIFT	= 2,	/* color for workqueue flushing */
+ #endif
+ 
++	WORK_STRUCT_COLOR_BITS	= 4,
++
+ 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
+ #ifdef CONFIG_DEBUG_OBJECTS_WORK
+ 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
+@@ -38,6 +40,21 @@ enum {
+ 	WORK_STRUCT_STATIC	= 0,
+ #endif
+ 
++	/*
++	 * The last color is no color used for works which don't
++	 * participate in workqueue flushing.
++	 */
++	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS) - 1,
++	WORK_NO_COLOR		= WORK_NR_COLORS,
++
++	/*
++	 * Reserve 6 bits off of cwq pointer w/ debugobjects turned
++	 * off.  This makes cwqs aligned to 64 bytes which isn't too
++	 * excessive while allowing 15 workqueue flush colors.
++	 */
++	WORK_STRUCT_FLAG_BITS	= WORK_STRUCT_COLOR_SHIFT +
++				  WORK_STRUCT_COLOR_BITS,
++
+ 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
+ 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+ };
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 0b00722..fe1f3a8 100644
+index 6c11892..63ec65e 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -35,6 +35,17 @@
- #include <linux/lockdep.h>
- #include <linux/idr.h>
- 
-+enum {
-+	/* worker flags */
-+	WORKER_STARTED		= 1 << 0,	/* started */
-+	WORKER_DIE		= 1 << 1,	/* die die die */
-+	WORKER_IDLE		= 1 << 2,	/* is idle */
-+
-+	BUSY_WORKER_HASH_ORDER	= 6,		/* 64 pointers */
-+	BUSY_WORKER_HASH_SIZE	= 1 << BUSY_WORKER_HASH_ORDER,
-+	BUSY_WORKER_HASH_MASK	= BUSY_WORKER_HASH_SIZE - 1,
-+};
-+
- /*
-  * Structure fields follow one of the following exclusion rules.
+@@ -41,6 +41,8 @@
   *
-@@ -51,11 +62,18 @@ struct global_cwq;
- struct cpu_workqueue_struct;
+  * L: cwq->lock protected.  Access with cwq->lock held.
+  *
++ * F: wq->flush_mutex protected.
++ *
+  * W: workqueue_lock protected.
+  */
  
- struct worker {
-+	/* on idle list while idle, on busy hash table while busy */
-+	union {
-+		struct list_head	entry;	/* L: while idle */
-+		struct hlist_node	hentry;	/* L: while busy */
-+	};
-+
- 	struct work_struct	*current_work;	/* L: work being processed */
- 	struct list_head	scheduled;	/* L: scheduled works */
- 	struct task_struct	*task;		/* I: worker task */
- 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
- 	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
-+	unsigned int		flags;		/* L: flags */
- 	int			id;		/* I: worker id */
+@@ -59,10 +61,23 @@ struct cpu_workqueue_struct {
+ 	struct work_struct *current_work;
+ 
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
++	int			work_color;	/* L: current color */
++	int			flush_color;	/* L: flushing color */
++	int			nr_in_flight[WORK_NR_COLORS];
++						/* L: nr of in_flight works */
+ 	struct task_struct	*thread;
  };
  
-@@ -65,6 +83,15 @@ struct worker {
- struct global_cwq {
- 	spinlock_t		lock;		/* the gcwq lock */
- 	unsigned int		cpu;		/* I: the associated cpu */
+ /*
++ * Structure used to wait for workqueue flush.
++ */
++struct wq_flusher {
++	struct list_head	list;		/* F: list of flushers */
++	int			flush_color;	/* F: flush color waiting for */
++	struct completion	done;		/* flush completion */
++};
 +
-+	int			nr_workers;	/* L: total number of workers */
-+	int			nr_idle;	/* L: currently idle ones */
++/*
+  * The externally visible workqueue abstraction is an array of
+  * per-CPU workqueues:
+  */
+@@ -70,6 +85,15 @@ struct workqueue_struct {
+ 	unsigned int		flags;		/* I: WQ_* flags */
+ 	struct cpu_workqueue_struct *cpu_wq;	/* I: cwq's */
+ 	struct list_head	list;		/* W: list of all workqueues */
 +
-+	/* workers are chained either in the idle_list or busy_hash */
-+	struct list_head	idle_list;	/* L: list of idle workers */
-+	struct hlist_head	busy_hash[BUSY_WORKER_HASH_SIZE];
-+						/* L: hash of busy workers */
++	struct mutex		flush_mutex;	/* protects wq flushing */
++	int			work_color;	/* F: current work color */
++	int			flush_color;	/* F: current flush color */
++	atomic_t		nr_cwqs_to_flush; /* flush in progress */
++	struct wq_flusher	*first_flusher;	/* F: first flusher */
++	struct list_head	flusher_queue;	/* F: flush waiters */
++	struct list_head	flusher_overflow; /* F: flush overflow list */
 +
- 	struct ida		worker_ida;	/* L: for worker IDs */
- } ____cacheline_aligned_in_smp;
- 
-@@ -77,7 +104,6 @@ struct global_cwq {
- struct cpu_workqueue_struct {
- 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
- 	struct list_head worklist;
--	wait_queue_head_t more_work;
- 	struct worker		*worker;
- 	struct workqueue_struct *wq;		/* I: the owning workqueue */
- 	int			work_color;	/* L: current color */
-@@ -307,6 +333,33 @@ static inline struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
+ 	const char		*name;		/* I: workqueue name */
+ #ifdef CONFIG_LOCKDEP
+ 	struct lockdep_map	lockdep_map;
+@@ -206,6 +230,22 @@ static struct cpu_workqueue_struct *target_cwq(unsigned int cpu,
+ 	return get_cwq(cpu, wq);
  }
  
- /**
-+ * busy_worker_head - return the busy hash head for a work
-+ * @gcwq: gcwq of interest
-+ * @work: work to be hashed
-+ *
-+ * Return hash head of @gcwq for @work.
-+ *
-+ * CONTEXT:
-+ * spin_lock_irq(gcwq->lock).
-+ *
-+ * RETURNS:
-+ * Pointer to the hash head.
-+ */
-+static struct hlist_head *busy_worker_head(struct global_cwq *gcwq,
-+					   struct work_struct *work)
++static unsigned int work_color_to_flags(int color)
 +{
-+	const int base_shift = ilog2(sizeof(struct work_struct));
-+	unsigned long v = (unsigned long)work;
-+
-+	/* simple shift and fold hash, do we need something better? */
-+	v >>= base_shift;
-+	v += v >> BUSY_WORKER_HASH_ORDER;
-+	v &= BUSY_WORKER_HASH_MASK;
-+
-+	return &gcwq->busy_hash[v];
++	return color << WORK_STRUCT_COLOR_SHIFT;
 +}
 +
-+/**
-  * insert_work - insert a work into cwq
-  * @cwq: cwq @work belongs to
-  * @work: work to insert
-@@ -332,7 +385,7 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
- 	smp_wmb();
- 
- 	list_add_tail(&work->entry, head);
--	wake_up(&cwq->more_work);
-+	wake_up_process(cwq->worker->task);
++static int work_flags_to_color(unsigned int flags)
++{
++	return (flags >> WORK_STRUCT_COLOR_SHIFT) &
++		((1 << WORK_STRUCT_COLOR_BITS) - 1);
++}
++
++static int work_next_color(int color)
++{
++	return (color + 1) % WORK_NR_COLORS;
++}
++
+ /*
+  * Set the workqueue on which a work item is to be run
+  * - Must *only* be called if the pending flag is set
+@@ -272,7 +312,9 @@ static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
+ 	debug_work_activate(work);
+ 	spin_lock_irqsave(&cwq->lock, flags);
+ 	BUG_ON(!list_empty(&work->entry));
+-	insert_work(cwq, work, &cwq->worklist, 0);
++	cwq->nr_in_flight[cwq->work_color]++;
++	insert_work(cwq, work, &cwq->worklist,
++		    work_color_to_flags(cwq->work_color));
+ 	spin_unlock_irqrestore(&cwq->lock, flags);
  }
  
- static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
-@@ -470,13 +523,59 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- }
+@@ -386,6 +428,44 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
  EXPORT_SYMBOL_GPL(queue_delayed_work_on);
  
-+/**
-+ * worker_enter_idle - enter idle state
-+ * @worker: worker which is entering idle state
+ /**
++ * cwq_dec_nr_in_flight - decrement cwq's nr_in_flight
++ * @cwq: cwq of interest
++ * @color: color of work which left the queue
 + *
-+ * @worker is entering idle state.  Update stats and idle timer if
-+ * necessary.
-+ *
-+ * LOCKING:
-+ * spin_lock_irq(gcwq->lock).
-+ */
-+static void worker_enter_idle(struct worker *worker)
-+{
-+	struct global_cwq *gcwq = worker->gcwq;
-+
-+	BUG_ON(worker->flags & WORKER_IDLE);
-+	BUG_ON(!list_empty(&worker->entry) &&
-+	       (worker->hentry.next || worker->hentry.pprev));
-+
-+	worker->flags |= WORKER_IDLE;
-+	gcwq->nr_idle++;
-+
-+	/* idle_list is LIFO */
-+	list_add(&worker->entry, &gcwq->idle_list);
-+}
-+
-+/**
-+ * worker_leave_idle - leave idle state
-+ * @worker: worker which is leaving idle state
-+ *
-+ * @worker is leaving idle state.  Update stats.
-+ *
-+ * LOCKING:
-+ * spin_lock_irq(gcwq->lock).
-+ */
-+static void worker_leave_idle(struct worker *worker)
-+{
-+	struct global_cwq *gcwq = worker->gcwq;
-+
-+	BUG_ON(!(worker->flags & WORKER_IDLE));
-+	worker->flags &= ~WORKER_IDLE;
-+	gcwq->nr_idle--;
-+	list_del_init(&worker->entry);
-+}
-+
- static struct worker *alloc_worker(void)
- {
- 	struct worker *worker;
- 
- 	worker = kzalloc(sizeof(*worker), GFP_KERNEL);
--	if (worker)
-+	if (worker) {
-+		INIT_LIST_HEAD(&worker->entry);
- 		INIT_LIST_HEAD(&worker->scheduled);
-+	}
- 	return worker;
- }
- 
-@@ -541,13 +640,16 @@ fail:
-  * start_worker - start a newly created worker
-  * @worker: worker to start
-  *
-- * Start @worker.
-+ * Make the gcwq aware of @worker and start it.
-  *
-  * CONTEXT:
-  * spin_lock_irq(gcwq->lock).
-  */
- static void start_worker(struct worker *worker)
- {
-+	worker->flags |= WORKER_STARTED;
-+	worker->gcwq->nr_workers++;
-+	worker_enter_idle(worker);
- 	wake_up_process(worker->task);
- }
- 
-@@ -555,7 +657,10 @@ static void start_worker(struct worker *worker)
-  * destroy_worker - destroy a workqueue worker
-  * @worker: worker to be destroyed
-  *
-- * Destroy @worker.
-+ * Destroy @worker and adjust @gcwq stats accordingly.
++ * A work either has completed or is removed from pending queue,
++ * decrement nr_in_flight of its cwq and handle workqueue flushing.
 + *
 + * CONTEXT:
-+ * spin_lock_irq(gcwq->lock) which is released and regrabbed.
-  */
- static void destroy_worker(struct worker *worker)
++ * spin_lock_irq(cwq->lock).
++ */
++static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
++{
++	/* ignore uncolored works */
++	if (color == WORK_NO_COLOR)
++		return;
++
++	cwq->nr_in_flight[color]--;
++
++	/* is flush in progress and are we at the flushing tip? */
++	if (likely(cwq->flush_color != color))
++		return;
++
++	/* are there still in-flight works? */
++	if (cwq->nr_in_flight[color])
++		return;
++
++	/* this cwq is done, clear flush_color */
++	cwq->flush_color = -1;
++
++	/*
++	 * If this was the last cwq, wake up the first flusher.  It
++	 * will handle the rest.
++	 */
++	if (atomic_dec_and_test(&cwq->wq->nr_cwqs_to_flush))
++		complete(&cwq->wq->first_flusher->done);
++}
++
++/**
+  * process_one_work - process single work
+  * @cwq: cwq to process work for
+  * @work: work to process
+@@ -403,6 +483,7 @@ static void process_one_work(struct cpu_workqueue_struct *cwq,
+ 			     struct work_struct *work)
  {
-@@ -566,12 +671,21 @@ static void destroy_worker(struct worker *worker)
- 	BUG_ON(worker->current_work);
- 	BUG_ON(!list_empty(&worker->scheduled));
+ 	work_func_t f = work->func;
++	int work_color;
+ #ifdef CONFIG_LOCKDEP
+ 	/*
+ 	 * It is permissible to free the struct work_struct from
+@@ -416,6 +497,7 @@ static void process_one_work(struct cpu_workqueue_struct *cwq,
+ 	/* claim and process */
+ 	debug_work_deactivate(work);
+ 	cwq->current_work = work;
++	work_color = work_flags_to_color(*work_data_bits(work));
+ 	list_del_init(&work->entry);
  
-+	if (worker->flags & WORKER_STARTED)
-+		gcwq->nr_workers--;
-+	if (worker->flags & WORKER_IDLE)
-+		gcwq->nr_idle--;
-+
-+	list_del_init(&worker->entry);
-+	worker->flags |= WORKER_DIE;
-+
-+	spin_unlock_irq(&gcwq->lock);
-+
- 	kthread_stop(worker->task);
- 	kfree(worker);
+ 	spin_unlock_irq(&cwq->lock);
+@@ -442,6 +524,7 @@ static void process_one_work(struct cpu_workqueue_struct *cwq,
  
- 	spin_lock_irq(&gcwq->lock);
- 	ida_remove(&gcwq->worker_ida, id);
--	spin_unlock_irq(&gcwq->lock);
+ 	/* we're done with it, release */
+ 	cwq->current_work = NULL;
++	cwq_dec_nr_in_flight(cwq, work_color);
+ }
+ 
+ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+@@ -524,29 +607,72 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 	init_completion(&barr->done);
+ 
+ 	debug_work_activate(&barr->work);
+-	insert_work(cwq, &barr->work, head, 0);
++	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
+ }
+ 
+-static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
++/**
++ * flush_workqueue_prep_cwqs - prepare cwqs for workqueue flushing
++ * @wq: workqueue being flushed
++ * @flush_color: new flush color, < 0 for no-op
++ * @work_color: new work color, < 0 for no-op
++ *
++ * Prepare cwqs for workqueue flushing.
++ *
++ * If @flush_color is non-negative, flush_color on all cwqs should be
++ * -1.  If no cwq has in-flight commands at the specified color, all
++ * cwq->flush_color's stay at -1 and %false is returned.  If any cwq
++ * has in flight commands, its cwq->flush_color is set to
++ * @flush_color, @wq->nr_cwqs_to_flush is updated accordingly, cwq
++ * wakeup logic is armed and %true is returned.
++ *
++ * The caller should have initialized @wq->first_flusher prior to
++ * calling this function with non-negative @flush_color.  If
++ * @flush_color is negative, no flush color update is done and %false
++ * is returned.
++ *
++ * If @work_color is non-negative, all cwqs should have the same
++ * work_color which is previous to @work_color and all will be
++ * advanced to @work_color.
++ *
++ * CONTEXT:
++ * mutex_lock(wq->flush_mutex).
++ *
++ * RETURNS:
++ * %true if @flush_color >= 0 and wakeup logic is armed.  %false
++ * otherwise.
++ */
++static bool flush_workqueue_prep_cwqs(struct workqueue_struct *wq,
++				      int flush_color, int work_color)
+ {
+-	int active = 0;
+-	struct wq_barrier barr;
++	bool wait = false;
++	unsigned int cpu;
+ 
+-	WARN_ON(cwq->thread == current);
++	BUG_ON(flush_color >= 0 && atomic_read(&wq->nr_cwqs_to_flush));
+ 
+-	spin_lock_irq(&cwq->lock);
+-	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-		insert_wq_barrier(cwq, &barr, &cwq->worklist);
+-		active = 1;
+-	}
+-	spin_unlock_irq(&cwq->lock);
++	for_each_possible_cpu(cpu) {
++		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
+ 
+-	if (active) {
+-		wait_for_completion(&barr.done);
+-		destroy_work_on_stack(&barr.work);
++		spin_lock_irq(&cwq->lock);
++
++		if (flush_color >= 0) {
++			BUG_ON(cwq->flush_color != -1);
++
++			if (cwq->nr_in_flight[flush_color]) {
++				cwq->flush_color = flush_color;
++				atomic_inc(&wq->nr_cwqs_to_flush);
++				wait = true;
++			}
++		}
++
++		if (work_color >= 0) {
++			BUG_ON(work_color != work_next_color(cwq->work_color));
++			cwq->work_color = work_color;
++		}
++
++		spin_unlock_irq(&cwq->lock);
+ 	}
+ 
+-	return active;
++	return wait;
  }
  
  /**
-@@ -687,6 +801,7 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
- {
- 	struct cpu_workqueue_struct *cwq = worker->cwq;
- 	struct global_cwq *gcwq = cwq->gcwq;
-+	struct hlist_head *bwh = busy_worker_head(gcwq, work);
- 	work_func_t f = work->func;
- 	int work_color;
- #ifdef CONFIG_LOCKDEP
-@@ -701,6 +816,7 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
- #endif
- 	/* claim and process */
- 	debug_work_deactivate(work);
-+	hlist_add_head(&worker->hentry, bwh);
- 	worker->current_work = work;
- 	work_color = work_flags_to_color(*work_data_bits(work));
- 	list_del_init(&work->entry);
-@@ -728,6 +844,7 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
- 	spin_lock_irq(&gcwq->lock);
- 
- 	/* we're done with it, release */
-+	hlist_del_init(&worker->hentry);
- 	worker->current_work = NULL;
- 	cwq_dec_nr_in_flight(cwq, work_color);
- }
-@@ -764,42 +881,52 @@ static int worker_thread(void *__worker)
- 	struct worker *worker = __worker;
- 	struct global_cwq *gcwq = worker->gcwq;
- 	struct cpu_workqueue_struct *cwq = worker->cwq;
--	DEFINE_WAIT(wait);
- 
--	for (;;) {
--		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
--		if (!kthread_should_stop() &&
--		    list_empty(&cwq->worklist))
--			schedule();
--		finish_wait(&cwq->more_work, &wait);
-+woke_up:
-+	spin_lock_irq(&gcwq->lock);
- 
--		if (kthread_should_stop())
--			break;
-+	/* DIE can be set only while we're idle, checking here is enough */
-+	if (worker->flags & WORKER_DIE) {
-+		spin_unlock_irq(&gcwq->lock);
-+		return 0;
-+	}
- 
--		spin_lock_irq(&gcwq->lock);
-+	worker_leave_idle(worker);
- 
--		while (!list_empty(&cwq->worklist)) {
--			struct work_struct *work =
--				list_first_entry(&cwq->worklist,
--						 struct work_struct, entry);
--
--			if (likely(!(*work_data_bits(work) &
--				     WORK_STRUCT_LINKED))) {
--				/* optimization path, not strictly necessary */
--				process_one_work(worker, work);
--				if (unlikely(!list_empty(&worker->scheduled)))
--					process_scheduled_works(worker);
--			} else {
--				move_linked_works(work, &worker->scheduled,
--						  NULL);
-+	/*
-+	 * ->scheduled list can only be filled while a worker is
-+	 * preparing to process a work or actually processing it.
-+	 * Make sure nobody diddled with it while I was sleeping.
-+	 */
-+	BUG_ON(!list_empty(&worker->scheduled));
-+
-+	while (!list_empty(&cwq->worklist)) {
-+		struct work_struct *work =
-+			list_first_entry(&cwq->worklist,
-+					 struct work_struct, entry);
-+
-+		if (likely(!(*work_data_bits(work) & WORK_STRUCT_LINKED))) {
-+			/* optimization path, not strictly necessary */
-+			process_one_work(worker, work);
-+			if (unlikely(!list_empty(&worker->scheduled)))
- 				process_scheduled_works(worker);
--			}
-+		} else {
-+			move_linked_works(work, &worker->scheduled, NULL);
-+			process_scheduled_works(worker);
- 		}
--
--		spin_unlock_irq(&gcwq->lock);
- 	}
- 
--	return 0;
-+	/*
-+	 * gcwq->lock is held and there's no work to process, sleep.
-+	 * Workers are woken up only while holding gcwq->lock, so
-+	 * setting the current state before releasing gcwq->lock is
-+	 * enough to prevent losing any event.
-+	 */
-+	worker_enter_idle(worker);
-+	__set_current_state(TASK_INTERRUPTIBLE);
-+	spin_unlock_irq(&gcwq->lock);
-+	schedule();
-+	goto woke_up;
- }
- 
- struct wq_barrier {
-@@ -1558,7 +1685,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 		cwq->max_active = max_active;
- 		INIT_LIST_HEAD(&cwq->worklist);
- 		INIT_LIST_HEAD(&cwq->delayed_works);
--		init_waitqueue_head(&cwq->more_work);
- 
- 		if (failed)
- 			continue;
-@@ -1609,7 +1735,7 @@ EXPORT_SYMBOL_GPL(__create_workqueue_key);
+@@ -561,13 +687,144 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
   */
- void destroy_workqueue(struct workqueue_struct *wq)
+ void flush_workqueue(struct workqueue_struct *wq)
  {
 -	int cpu;
-+	unsigned int cpu;
++	struct wq_flusher this_flusher = {
++		.list = LIST_HEAD_INIT(this_flusher.list),
++		.flush_color = -1,
++		.done = COMPLETION_INITIALIZER_ONSTACK(this_flusher.done),
++	};
++	int next_color;
  
- 	flush_workqueue(wq);
- 
-@@ -1626,8 +1752,10 @@ void destroy_workqueue(struct workqueue_struct *wq)
- 		int i;
- 
- 		if (cwq->worker) {
-+			spin_lock_irq(&cwq->gcwq->lock);
- 			destroy_worker(cwq->worker);
- 			cwq->worker = NULL;
-+			spin_unlock_irq(&cwq->gcwq->lock);
- 		}
- 
- 		for (i = 0; i < WORK_NR_COLORS; i++)
-@@ -1842,7 +1970,7 @@ void thaw_workqueues(void)
- 			       cwq->nr_active < cwq->max_active)
- 				cwq_activate_first_delayed(cwq);
- 
--			wake_up(&cwq->more_work);
-+			wake_up_process(cwq->worker->task);
- 		}
- 
- 		spin_unlock_irq(&gcwq->lock);
-@@ -1857,6 +1985,7 @@ out_unlock:
- void __init init_workqueues(void)
- {
- 	unsigned int cpu;
-+	int i;
- 
- 	/*
- 	 * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
-@@ -1876,6 +2005,10 @@ void __init init_workqueues(void)
- 		spin_lock_init(&gcwq->lock);
- 		gcwq->cpu = cpu;
- 
-+		INIT_LIST_HEAD(&gcwq->idle_list);
-+		for (i = 0; i < BUSY_WORKER_HASH_SIZE; i++)
-+			INIT_HLIST_HEAD(&gcwq->busy_hash[i]);
+-	might_sleep();
+ 	lock_map_acquire(&wq->lockdep_map);
+ 	lock_map_release(&wq->lockdep_map);
+-	for_each_possible_cpu(cpu)
+-		flush_cpu_workqueue(get_cwq(cpu, wq));
 +
- 		ida_init(&gcwq->worker_ida);
- 	}
++	mutex_lock(&wq->flush_mutex);
++
++	/*
++	 * Start-to-wait phase
++	 */
++	next_color = work_next_color(wq->work_color);
++
++	if (next_color != wq->flush_color) {
++		/*
++		 * Color space is not full.  The current work_color
++		 * becomes our flush_color and work_color is advanced
++		 * by one.
++		 */
++		BUG_ON(!list_empty(&wq->flusher_overflow));
++		this_flusher.flush_color = wq->work_color;
++		wq->work_color = next_color;
++
++		if (!wq->first_flusher) {
++			/* no flush in progress, become the first flusher */
++			BUG_ON(wq->flush_color != this_flusher.flush_color);
++
++			wq->first_flusher = &this_flusher;
++
++			if (!flush_workqueue_prep_cwqs(wq, wq->flush_color,
++						       wq->work_color)) {
++				/* nothing to flush, done */
++				wq->flush_color = next_color;
++				wq->first_flusher = NULL;
++				goto out_unlock;
++			}
++		} else {
++			/* wait in queue */
++			BUG_ON(wq->flush_color == this_flusher.flush_color);
++			list_add_tail(&this_flusher.list, &wq->flusher_queue);
++			flush_workqueue_prep_cwqs(wq, -1, wq->work_color);
++		}
++	} else {
++		/*
++		 * Oops, color space is full, wait on overflow queue.
++		 * The next flush completion will assign us
++		 * flush_color and transfer to flusher_queue.
++		 */
++		list_add_tail(&this_flusher.list, &wq->flusher_overflow);
++	}
++
++	mutex_unlock(&wq->flush_mutex);
++
++	wait_for_completion(&this_flusher.done);
++
++	/*
++	 * Wake-up-and-cascade phase
++	 *
++	 * First flushers are responsible for cascading flushes and
++	 * handling overflow.  Non-first flushers can simply return.
++	 */
++	if (wq->first_flusher != &this_flusher)
++		return;
++
++	mutex_lock(&wq->flush_mutex);
++
++	wq->first_flusher = NULL;
++
++	BUG_ON(!list_empty(&this_flusher.list));
++	BUG_ON(wq->flush_color != this_flusher.flush_color);
++
++	while (true) {
++		struct wq_flusher *next, *tmp;
++
++		/* complete all the flushers sharing the current flush color */
++		list_for_each_entry_safe(next, tmp, &wq->flusher_queue, list) {
++			if (next->flush_color != wq->flush_color)
++				break;
++			list_del_init(&next->list);
++			complete(&next->done);
++		}
++
++		BUG_ON(!list_empty(&wq->flusher_overflow) &&
++		       wq->flush_color != work_next_color(wq->work_color));
++
++		/* this flush_color is finished, advance by one */
++		wq->flush_color = work_next_color(wq->flush_color);
++
++		/* one color has been freed, handle overflow queue */
++		if (!list_empty(&wq->flusher_overflow)) {
++			/*
++			 * Assign the same color to all overflowed
++			 * flushers, advance work_color and append to
++			 * flusher_queue.  This is the start-to-wait
++			 * phase for these overflowed flushers.
++			 */
++			list_for_each_entry(tmp, &wq->flusher_overflow, list)
++				tmp->flush_color = wq->work_color;
++
++			wq->work_color = work_next_color(wq->work_color);
++
++			list_splice_tail_init(&wq->flusher_overflow,
++					      &wq->flusher_queue);
++			flush_workqueue_prep_cwqs(wq, -1, wq->work_color);
++		}
++
++		if (list_empty(&wq->flusher_queue)) {
++			BUG_ON(wq->flush_color != wq->work_color);
++			break;
++		}
++
++		/*
++		 * Need to flush more colors.  Make the next flusher
++		 * the new first flusher and arm cwqs.
++		 */
++		BUG_ON(wq->flush_color == wq->work_color);
++		BUG_ON(wq->flush_color != next->flush_color);
++
++		list_del_init(&next->list);
++		wq->first_flusher = next;
++
++		if (flush_workqueue_prep_cwqs(wq, wq->flush_color, -1))
++			break;
++
++		/*
++		 * Meh... this color is already done, clear first
++		 * flusher and repeat cascading.
++		 */
++		wq->first_flusher = NULL;
++		complete(&next->done);
++	}
++
++out_unlock:
++	mutex_unlock(&wq->flush_mutex);
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
  
+@@ -654,6 +911,8 @@ static int try_to_grab_pending(struct work_struct *work)
+ 		if (cwq == get_wq_data(work)) {
+ 			debug_work_deactivate(work);
+ 			list_del_init(&work->entry);
++			cwq_dec_nr_in_flight(cwq,
++				work_flags_to_color(*work_data_bits(work)));
+ 			ret = 1;
+ 		}
+ 	}
+@@ -1027,6 +1286,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 		goto err;
+ 
+ 	wq->flags = flags;
++	mutex_init(&wq->flush_mutex);
++	atomic_set(&wq->nr_cwqs_to_flush, 0);
++	INIT_LIST_HEAD(&wq->flusher_queue);
++	INIT_LIST_HEAD(&wq->flusher_overflow);
+ 	wq->name = name;
+ 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
+ 	INIT_LIST_HEAD(&wq->list);
+@@ -1043,6 +1306,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 
+ 		BUG_ON((unsigned long)cwq & WORK_STRUCT_FLAG_MASK);
+ 		cwq->wq = wq;
++		cwq->flush_color = -1;
+ 		spin_lock_init(&cwq->lock);
+ 		INIT_LIST_HEAD(&cwq->worklist);
+ 		init_waitqueue_head(&cwq->more_work);
+@@ -1076,33 +1340,6 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(__create_workqueue_key);
+ 
+-static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
+-{
+-	/*
+-	 * Our caller is either destroy_workqueue() or CPU_POST_DEAD,
+-	 * cpu_add_remove_lock protects cwq->thread.
+-	 */
+-	if (cwq->thread == NULL)
+-		return;
+-
+-	lock_map_acquire(&cwq->wq->lockdep_map);
+-	lock_map_release(&cwq->wq->lockdep_map);
+-
+-	flush_cpu_workqueue(cwq);
+-	/*
+-	 * If the caller is CPU_POST_DEAD and cwq->worklist was not empty,
+-	 * a concurrent flush_workqueue() can insert a barrier after us.
+-	 * However, in that case run_workqueue() won't return and check
+-	 * kthread_should_stop() until it flushes all work_struct's.
+-	 * When ->worklist becomes empty it is safe to exit because no
+-	 * more work_structs can be queued on this cwq: flush_workqueue
+-	 * checks list_empty(), and a "normal" queue_work() can't use
+-	 * a dead CPU.
+-	 */
+-	kthread_stop(cwq->thread);
+-	cwq->thread = NULL;
+-}
+-
+ /**
+  * destroy_workqueue - safely terminate a workqueue
+  * @wq: target workqueue
+@@ -1117,8 +1354,20 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 	list_del(&wq->list);
+ 	spin_unlock(&workqueue_lock);
+ 
+-	for_each_possible_cpu(cpu)
+-		cleanup_workqueue_thread(get_cwq(cpu, wq));
++	flush_workqueue(wq);
++
++	for_each_possible_cpu(cpu) {
++		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
++		int i;
++
++		if (cwq->thread) {
++			kthread_stop(cwq->thread);
++			cwq->thread = NULL;
++		}
++
++		for (i = 0; i < WORK_NR_COLORS; i++)
++			BUG_ON(cwq->nr_in_flight[i]);
++	}
+ 
+ 	free_cwqs(wq->cpu_wq);
+ 	kfree(wq);
+@@ -1148,9 +1397,7 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
+ 			break;
+ 
+ 		case CPU_POST_DEAD:
+-			lock_map_acquire(&cwq->wq->lockdep_map);
+-			lock_map_release(&cwq->wq->lockdep_map);
+-			flush_cpu_workqueue(cwq);
++			flush_workqueue(wq);
+ 			break;
+ 		}
+ 	}
 -- 
 1.6.4.2
 
