@@ -1,67 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966573Ab0BZXkT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 18:40:19 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:39861 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966545Ab0BZXkR (ORCPT
+	id S966608Ab0BZXn5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 18:43:57 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:60226 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S966595Ab0BZXn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 18:40:17 -0500
-Date: Fri, 26 Feb 2010 18:39:44 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Ben Gardner <gardner.ben@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: [PATCH 1/3] gpiolib: add gpio_set_direction()
-Message-ID: <20100226183944.56bfee13@droptest.queued.net>
-In-Reply-To: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
-References: <cover.1267225701.git.gardner.ben@gmail.com>
-	<14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	Fri, 26 Feb 2010 18:43:56 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=maL9/JSctNpTRbMtlHHm/rF0DrI5+l8Ugl0ZRBdMZCuFhrs6JrNegHBNcQTx4w2cxdTW8SXKnsWEIklKKfl/x6L2AvdGpOCvQ2ggSlX7u4pyhugQrS8t9XnQfibR8wH2;
+Date: Fri, 26 Feb 2010 15:44:25 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: John Linn <John.Linn@xilinx.com>
+Cc: <linux-kernel@vger.kernel.org>, <devicetree-discuss@ozlabs.org>,
+       <linuxppc-dev@ozlabs.org>, <microblaze-uclinux@itee.uq.edu.au>,
+       <grant.likely@secretlab.ca>,
+       "John Williams" <john.williams@petalogix.com>,
+       <michal.simek@petalogix.com>, <benh@kernel.crashing.org>
+Subject: Re: Proposal to move PCI out of arch/powerpc and into drivers/of
+Message-ID: <20100226154425.00dde291@jbarnes-piketon>
+In-Reply-To: <27bab769-0788-4b48-96a7-ced65e40144c@SG2EHSMHS007.ehs.local>
+References: <27bab769-0788-4b48-96a7-ced65e40144c@SG2EHSMHS007.ehs.local>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Feb 2010 17:26:24 -0600
-Ben Gardner <gardner.ben@gmail.com> wrote:
+On Fri, 26 Feb 2010 16:07:59 -0700
+John Linn <John.Linn@xilinx.com> wrote:
 
-> Combine gpio_direction_input() and gpio_direction_output() into
-> gpio_set_direction().
-> Add 'none' and 'inout' directions to the sysfs interface.
+> Hi all,
 > 
-> Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
-> CC: Andres Salomon <dilinger@collabora.co.uk>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: David Brownell <dbrownell@users.sourceforge.net>
-> CC: Jani Nikula <ext-jani.1.nikula@nokia.com>
-> ---
->  drivers/gpio/gpiolib.c     |  123 ++++++++++++++++++++++----------------------
->  include/asm-generic/gpio.h |    6 ++
->  include/linux/gpio.h       |    5 ++
->  3 files changed, 73 insertions(+), 61 deletions(-)
+> We are in the process of putting PCI/PCIe into the microblaze
+> architecture.  
 > 
-[...]
-> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-> index 485eeb6..17c7642 100644
-> --- a/include/asm-generic/gpio.h
-> +++ b/include/asm-generic/gpio.h
-> @@ -41,6 +41,8 @@ struct module;
->   *	enabling module power and clock; may sleep
->   * @free: optional hook for chip-specific deactivation, such as
->   *	disabling module power and clock; may sleep
-> + * @set_direction: configures signal "offset" as "direction" (0-3, bit0=input,
-> + *	bit1=output) or returns error
+> In order to not duplicate/fork the PCI code in Powerpc, we're
+> proposing to move the PCI code from arch/powerpc into drivers/of such
+> that it would be common code for Powerpc and MicroBlaze.
+> 
+> This would be the 1st part of a refactoring that would occur with the
+> PCI code.
+> 
+> Ben H., would you mind if that happened (move arch/powerpc/kernel/pci*
+> to drivers/of/*)?
 
+Dave and Ben have been talking about this for awhile; seems like a good
+excuse to do it.  IIRC they had even thought about just dumping the
+code directly into drivers/pci so that API updates won't get missed...
 
-How about something like the following for set_direction, so we're not
-comparing magic bits?
-
-/* gpio direction flags */
-#define GPIO_DIR_NONE 0 
-#define	GPIO_DIR_INPUT (1 << 0)
-#define	GPIO_DIR_OUTPUT (1 << 1)
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
