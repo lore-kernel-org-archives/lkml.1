@@ -1,55 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936267Ab0BZNje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 08:39:34 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:51097 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936237Ab0BZNjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 08:39:33 -0500
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-mm@kvack.org
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH] memcg: fix typos in memcg_test.txt
-Date: Fri, 26 Feb 2010 15:39:16 +0200
-Message-Id: <1267191557-23444-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.6.2
+	id S964802Ab0BZN7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 08:59:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28188 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936288Ab0BZN7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 08:59:46 -0500
+Message-ID: <4B87D3BA.4070507@redhat.com>
+Date: Fri, 26 Feb 2010 15:59:22 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Alexander Graf <agraf@suse.de>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] KVM: SVM: Optimize nested svm msrpm merging
+References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com> <1267118149-15737-3-git-send-email-joerg.roedel@amd.com> <4B87A248.1050300@redhat.com> <20100226122502.GC12689@amd.com> <4E7D93ED-E5FC-4A64-B9B0-E2F644CD2B68@suse.de> <20100226130401.GD12689@amd.com> <4B87C835.4080409@redhat.com> <20100226132118.GF12689@amd.com> <5E91C233-4FE1-43DB-A155-03F14FCEF919@suse.de> <20100226133049.GG12689@amd.com>
+In-Reply-To: <20100226133049.GG12689@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- Documentation/cgroups/memcg_test.txt |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On 02/26/2010 03:30 PM, Joerg Roedel wrote:
+>
+>> So the msrpm bitmap changes dynamically for each vcpu? Great, make it
+>> fully dynamic then, changing the vcpu->arch.msrpm only from within its
+>> vcpu context. No need for atomic ops.
+>>      
+> The msrpm_offsets table is global. But I think I will follow Avis
+> suggestions and create a static direct_access_msrs list and generate the
+> msrpm_offsets at module_init. This solves the problem of two independent
+> lists too.
+>
+>    
 
-diff --git a/Documentation/cgroups/memcg_test.txt b/Documentation/cgroups/memcg_test.txt
-index 4d32e0e..f7f68b2 100644
---- a/Documentation/cgroups/memcg_test.txt
-+++ b/Documentation/cgroups/memcg_test.txt
-@@ -337,7 +337,7 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
- 	race and lock dependency with other cgroup subsystems.
- 
- 	example)
--	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
-+	# mount -t cgroup none /cgroup -o cpuset,memory,cpu,devices
- 
- 	and do task move, mkdir, rmdir etc...under this.
- 
-@@ -348,7 +348,7 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
- 
- 	For example, test like following is good.
- 	(Shell-A)
--	# mount -t cgroup none /cgroup -t memory
-+	# mount -t cgroup none /cgroup -o memory
- 	# mkdir /cgroup/test
- 	# echo 40M > /cgroup/test/memory.limit_in_bytes
- 	# echo 0 > /cgroup/test/tasks
+But with LBR virt, maybe a fully dynamic approach is better.  Just have 
+static lists for updating the msrpm and offset table dynamically.
+
 -- 
-1.6.6.2
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
