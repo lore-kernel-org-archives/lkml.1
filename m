@@ -1,126 +1,313 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935334Ab0BZGbd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 01:31:33 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:51180 "EHLO
+	id S935350Ab0BZGfj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 01:35:39 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:57872 "EHLO
 	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935284Ab0BZGbc (ORCPT
+	with ESMTP id S935284Ab0BZGfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 01:31:32 -0500
-Message-Id: <201002260631.o1Q6VPJR039909@www262.sakura.ne.jp>
-Subject: Re: [AppArmor #4 0/12] AppArmor security module
+	Fri, 26 Feb 2010 01:35:37 -0500
+Message-Id: <201002260635.o1Q6ZYET040848@www262.sakura.ne.jp>
+Subject: [RFC][PATCH] mm: Remove ZERO_SIZE_PTR.
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: john.johansen@canonical.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Feb 2010 15:31:25 +0900
-References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>   
+Date: Fri, 26 Feb 2010 15:35:34 +0900
 Content-Type: text/plain; charset="ISO-2022-JP"
 X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 25022010 #3421183, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regarding match.c
+[RFC][PATCH] mm: Remove ZERO_SIZE_PTR.
 
- 33 static struct table_header *unpack_table(void *blob, size_t bsize)
-(...snipped...)
- 48         blob += sizeof(struct table_header);
-Adding against "void *" is gcc specific.
+kmalloc() and friends are sometimes used in a way
 
- 54         tsize = table_size(th.td_lolen, th.td_flags);
-Is tsize != 0 (i.e. integer overflow never happen) guaranteed?
+	struct foo *ptr = kmalloc(size + sizeof(struct foo), GFP_KERNEL);
+	if (!ptr)
+		return -ENOMEM;
+	ptr->size = size;
+	...
+	return 0;
 
+Everybody should check for ptr != NULL, and most callers are actually checking
+for ptr != NULL. But nobody is checking for ptr != ZERO_SIZE_PTR.
 
+If caller passed 0 as size argument by error (e.g. integer overflow bug),
+the caller will start writing against address starting from ZERO_SIZE_PTR
+because the caller assumes that "size + sizeof(struct foo)" bytes of memory is
+successfully allocated. (kstrdup() is an example, although it will be
+impossible to pass s where strlen(s) == (size_t) -1 .)
 
+Yes, this is the fault of caller. But ZERO_SIZE_PTR is too small value to
+distinguish "NULL pointer dereference" and "ZERO_SIZE_PTR dereference" because
+address printed by oops message can easily exceed ZERO_SIZE_PTR when
+"struct foo" is large.
 
+Therefore, at the cost of being unable to distinguish "NULL pointer
+dereference" and "ZERO_SIZE_PTR dereference" in some cases, removing
+ZERO_SIZE_PTR could reduce the risk of "ZERO_SIZE_PTR dereference" in many
+cases.
 
-188 struct aa_dfa *aa_dfa_unpack(void *blob, size_t size, int flags)
-(...snipped...)
-215         while (size > 0) {
-216                 struct table_header *table;
-217                 table = unpack_table(blob, size);
-218                 if (!table)
-219                         goto fail;
-220 
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ include/linux/slab.h     |   12 ------------
+ include/linux/slab_def.h |    4 ++--
+ include/linux/slub_def.h |    4 ++--
+ mm/slab.c                |   12 +++++-------
+ mm/slob.c                |    8 +++-----
+ mm/slub.c                |   15 ++++++---------
+ mm/util.c                |    6 +++---
+ 7 files changed, 21 insertions(+), 40 deletions(-)
 
-You need to do
-
-		if (table->td_id < YYTD_ID_TSIZE)
-			dfa->tables[table->td_id] = table;
-
-now in order to let aa_dfa_free(dfa) to free_table().
-You might rather want to do
-
-		if (table->td_id < YYTD_ID_TSIZE && !dfa->tables[table->td_id])
-			dfa->tables[table->td_id] = table;
-		else
-			goto fail;
-
-in case duplicated entries are found.
-
-221                 switch (table->td_id) {
-222                 case YYTD_ID_ACCEPT:
-223                         if (!(table->td_flags & ACCEPT1_FLAGS(flags)))
-224                                 goto fail;
-225                         break;
-226                 case YYTD_ID_ACCEPT2:
-227                         if (!(table->td_flags & ACCEPT2_FLAGS(flags)))
-228                                 goto fail;
-229                         break;
-230                 case YYTD_ID_BASE:
-231                         if (table->td_flags != YYTD_DATA32)
-232                                 goto fail;
-233                         break;
-234                 case YYTD_ID_DEF:
-235                 case YYTD_ID_NXT:
-236                 case YYTD_ID_CHK:
-237                         if (table->td_flags != YYTD_DATA16)
-238                                 goto fail;
-239                         break;
-240                 case YYTD_ID_EC:
-241                         if (table->td_flags != YYTD_DATA8)
-242                                 goto fail;
-243                         break;
-244                 default:
-245                         free_table(table);
-
-This "free_table(table);" is not needed as aa_dfa_free(dfa) will do it.
-
-246                         goto fail;
-247                 }
-248                 dfa->tables[table->td_id] = table;
-
-This "dfa->tables[table->td_id] = table;" is too late.
-
-249                 blob += table_size(table->td_lolen, table->td_flags);
-250                 size -= table_size(table->td_lolen, table->td_flags);
-251         }
-
-
-
-
-
-Regarding policy.c
-
-606 struct aa_profile *aa_new_null_profile(struct aa_profile *parent, int hat)
-607 {
-608         struct aa_profile *profile = NULL;
-609         char *name;
-610         u32 sid = aa_alloc_sid(AA_ALLOC_SYS_SID);
-611 
-612         /* freed below */
-613         name = kmalloc(strlen(parent->base.hname) + 2 + 7 + 8, GFP_KERNEL);
-614         if (!name)
-615                 goto fail;
-616         sprintf(name, "%s//null-%x", parent->base.hname, sid);
-617 
-618         profile = aa_alloc_profile(name);
-619         kfree(name);
-620         if (!profile)
-621                 goto fail;
-622 
-623         profile->sid = aa_alloc_sid(AA_ALLOC_SYS_SID);
-
-Why calling aa_alloc_sid(AA_ALLOC_SYS_SID) again rather than using sid?
+--- linux-2.6.33.orig/include/linux/slab.h
++++ linux-2.6.33/include/linux/slab.h
+@@ -74,18 +74,6 @@
+ /* The following flags affect the page allocator grouping pages by mobility */
+ #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
+ #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
+-/*
+- * ZERO_SIZE_PTR will be returned for zero sized kmalloc requests.
+- *
+- * Dereferencing ZERO_SIZE_PTR will lead to a distinct access fault.
+- *
+- * ZERO_SIZE_PTR can be passed to kfree though in the same way that NULL can.
+- * Both make kfree a no-op.
+- */
+-#define ZERO_SIZE_PTR ((void *)16)
+-
+-#define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
+-				(unsigned long)ZERO_SIZE_PTR)
+ 
+ /*
+  * struct kmem_cache related prototypes
+--- linux-2.6.33.orig/include/linux/slab_def.h
++++ linux-2.6.33/include/linux/slab_def.h
+@@ -134,7 +134,7 @@ static __always_inline void *kmalloc(siz
+ 		int i = 0;
+ 
+ 		if (!size)
+-			return ZERO_SIZE_PTR;
++			return NULL;
+ 
+ #define CACHE(x) \
+ 		if (size <= x) \
+@@ -189,7 +189,7 @@ static __always_inline void *kmalloc_nod
+ 		int i = 0;
+ 
+ 		if (!size)
+-			return ZERO_SIZE_PTR;
++			return NULL;
+ 
+ #define CACHE(x) \
+ 		if (size <= x) \
+--- linux-2.6.33.orig/include/linux/slub_def.h
++++ linux-2.6.33/include/linux/slub_def.h
+@@ -250,7 +250,7 @@ static __always_inline void *kmalloc(siz
+ 			struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 			if (!s)
+-				return ZERO_SIZE_PTR;
++				return NULL;
+ 
+ 			ret = kmem_cache_alloc_notrace(s, flags);
+ 
+@@ -289,7 +289,7 @@ static __always_inline void *kmalloc_nod
+ 			struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return ZERO_SIZE_PTR;
++			return NULL;
+ 
+ 		ret = kmem_cache_alloc_node_notrace(s, flags, node);
+ 
+--- linux-2.6.33.orig/mm/slab.c
++++ linux-2.6.33/mm/slab.c
+@@ -717,7 +717,7 @@ static inline struct kmem_cache *__find_
+ 	BUG_ON(malloc_sizes[INDEX_AC].cs_cachep == NULL);
+ #endif
+ 	if (!size)
+-		return ZERO_SIZE_PTR;
++		return NULL;
+ 
+ 	while (size > csizep->cs_size)
+ 		csizep++;
+@@ -2346,7 +2346,7 @@ kmem_cache_create (const char *name, siz
+ 		 * this should not happen at all.
+ 		 * But leave a BUG_ON for some lucky dude.
+ 		 */
+-		BUG_ON(ZERO_OR_NULL_PTR(cachep->slabp_cache));
++		BUG_ON(!cachep->slabp_cache);
+ 	}
+ 	cachep->ctor = ctor;
+ 	cachep->name = name;
+@@ -3661,7 +3661,7 @@ __do_kmalloc_node(size_t size, gfp_t fla
+ 	void *ret;
+ 
+ 	cachep = kmem_find_general_cachep(size, flags);
+-	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
++	if (unlikely(!cachep))
+ 		return cachep;
+ 	ret = kmem_cache_alloc_node_notrace(cachep, flags, node);
+ 
+@@ -3712,7 +3712,7 @@ static __always_inline void *__do_kmallo
+ 	 * functions.
+ 	 */
+ 	cachep = __find_general_cachep(size, flags);
+-	if (unlikely(ZERO_OR_NULL_PTR(cachep)))
++	if (unlikely(!cachep))
+ 		return cachep;
+ 	ret = __cache_alloc(cachep, flags, caller);
+ 
+@@ -3783,7 +3783,7 @@ void kfree(const void *objp)
+ 
+ 	trace_kfree(_RET_IP_, objp);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(objp)))
++	if (unlikely(!objp))
+ 		return;
+ 	local_irq_save(flags);
+ 	kfree_debugcheck(objp);
+@@ -4519,8 +4519,6 @@ module_init(slab_proc_init);
+ size_t ksize(const void *objp)
+ {
+ 	BUG_ON(!objp);
+-	if (unlikely(objp == ZERO_SIZE_PTR))
+-		return 0;
+ 
+ 	return obj_size(virt_to_cache(objp));
+ }
+--- linux-2.6.33.orig/mm/slob.c
++++ linux-2.6.33/mm/slob.c
+@@ -395,7 +395,7 @@ static void slob_free(void *block, int s
+ 	slobidx_t units;
+ 	unsigned long flags;
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(block)))
++	if (unlikely(!block))
+ 		return;
+ 	BUG_ON(!size);
+ 
+@@ -485,7 +485,7 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 
+ 	if (size < PAGE_SIZE - align) {
+ 		if (!size)
+-			return ZERO_SIZE_PTR;
++			return NULL;
+ 
+ 		m = slob_alloc(size + align, gfp, align, node);
+ 
+@@ -521,7 +521,7 @@ void kfree(const void *block)
+ 
+ 	trace_kfree(_RET_IP_, block);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(block)))
++	if (unlikely(!block))
+ 		return;
+ 	kmemleak_free(block);
+ 
+@@ -541,8 +541,6 @@ size_t ksize(const void *block)
+ 	struct slob_page *sp;
+ 
+ 	BUG_ON(!block);
+-	if (unlikely(block == ZERO_SIZE_PTR))
+-		return 0;
+ 
+ 	sp = slob_page(block);
+ 	if (is_slob_page(sp)) {
+--- linux-2.6.33.orig/mm/slub.c
++++ linux-2.6.33/mm/slub.c
+@@ -2836,7 +2836,7 @@ static struct kmem_cache *get_slab(size_
+ 
+ 	if (size <= 192) {
+ 		if (!size)
+-			return ZERO_SIZE_PTR;
++			return NULL;
+ 
+ 		index = size_index[size_index_elem(size)];
+ 	} else
+@@ -2860,7 +2860,7 @@ void *__kmalloc(size_t size, gfp_t flags
+ 
+ 	s = get_slab(size, flags);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(s)))
++	if (unlikely(!s))
+ 		return s;
+ 
+ 	ret = slab_alloc(s, flags, -1, _RET_IP_);
+@@ -2903,7 +2903,7 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 
+ 	s = get_slab(size, flags);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(s)))
++	if (unlikely(!s))
+ 		return s;
+ 
+ 	ret = slab_alloc(s, flags, node, _RET_IP_);
+@@ -2920,9 +2920,6 @@ size_t ksize(const void *object)
+ 	struct page *page;
+ 	struct kmem_cache *s;
+ 
+-	if (unlikely(object == ZERO_SIZE_PTR))
+-		return 0;
+-
+ 	page = virt_to_head_page(object);
+ 
+ 	if (unlikely(!PageSlab(page))) {
+@@ -2961,7 +2958,7 @@ void kfree(const void *x)
+ 
+ 	trace_kfree(_RET_IP_, x);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(x)))
++	if (unlikely(!x))
+ 		return;
+ 
+ 	page = virt_to_head_page(x);
+@@ -3468,7 +3465,7 @@ void *__kmalloc_track_caller(size_t size
+ 
+ 	s = get_slab(size, gfpflags);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(s)))
++	if (unlikely(!s))
+ 		return s;
+ 
+ 	ret = slab_alloc(s, gfpflags, -1, caller);
+@@ -3490,7 +3487,7 @@ void *__kmalloc_node_track_caller(size_t
+ 
+ 	s = get_slab(size, gfpflags);
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(s)))
++	if (unlikely(!s))
+ 		return s;
+ 
+ 	ret = slab_alloc(s, gfpflags, node, caller);
+--- linux-2.6.33.orig/mm/util.c
++++ linux-2.6.33/mm/util.c
+@@ -118,7 +118,7 @@ void *__krealloc(const void *p, size_t n
+ 	size_t ks = 0;
+ 
+ 	if (unlikely(!new_size))
+-		return ZERO_SIZE_PTR;
++		return NULL;
+ 
+ 	if (p)
+ 		ks = ksize(p);
+@@ -151,7 +151,7 @@ void *krealloc(const void *p, size_t new
+ 
+ 	if (unlikely(!new_size)) {
+ 		kfree(p);
+-		return ZERO_SIZE_PTR;
++		return NULL;
+ 	}
+ 
+ 	ret = __krealloc(p, new_size, flags);
+@@ -178,7 +178,7 @@ void kzfree(const void *p)
+ 	size_t ks;
+ 	void *mem = (void *)p;
+ 
+-	if (unlikely(ZERO_OR_NULL_PTR(mem)))
++	if (unlikely(!mem))
+ 		return;
+ 	ks = ksize(mem);
+ 	memset(mem, 0, ks);
