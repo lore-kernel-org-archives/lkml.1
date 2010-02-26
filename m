@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935938Ab0BZMOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:14:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43347 "EHLO hera.kernel.org"
+	id S935898Ab0BZMO1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:14:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43302 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935915Ab0BZMOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:30 -0500
+	id S935885Ab0BZMOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:22 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -14,190 +14,90 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 21/43] workqueue: implement per-cwq active work limit
-Date: Fri, 26 Feb 2010 21:22:58 +0900
-Message-Id: <1267187000-18791-22-git-send-email-tj@kernel.org>
+Subject: [PATCH 09/43] acpi: use queue_work_on() instead of binding workqueue worker to cpu0
+Date: Fri, 26 Feb 2010 21:22:46 +0900
+Message-Id: <1267187000-18791-10-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add cwq->nr_active, cwq->max_active and cwq->delayed_work.  nr_active
-counts the number of active works per cwq.  A work is active if it's
-flushable (colored) and is on cwq's worklist.  If nr_active reaches
-max_active, new works are queued on cwq->delayed_work and activated
-later as works on the cwq complete and decrement nr_active.
-
-cwq->max_active can be specified via the new @max_active parameter to
-__create_workqueue() and is set to 1 for all workqueues for now.  As
-each cwq has only single worker now, this double queueing doesn't
-cause any behavior difference visible to its users.
-
-This will be used to reimplement freeze/thaw and implement shared
-worker pool.
+ACPI works need to be executed on cpu0 and acpi/osl.c achieves this by
+creating singlethread workqueue and then binding it to cpu0 from a
+work which is quite unorthodox.  Make it create regular workqueues and
+use queue_work_on() instead.  This is in preparation of concurrency
+managed workqueue and the extra workers won't be a problem after it's
+implemented.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |   18 +++++++++---------
- kernel/workqueue.c        |   39 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 46 insertions(+), 11 deletions(-)
+ drivers/acpi/osl.c |   41 ++++++++++++-----------------------------
+ 1 files changed, 12 insertions(+), 29 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 4f4fdba..eb753b7 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -225,11 +225,11 @@ enum {
- };
- 
- extern struct workqueue_struct *
--__create_workqueue_key(const char *name, unsigned int flags,
-+__create_workqueue_key(const char *name, unsigned int flags, int max_active,
- 		       struct lock_class_key *key, const char *lock_name);
- 
- #ifdef CONFIG_LOCKDEP
--#define __create_workqueue(name, flags)				\
-+#define __create_workqueue(name, flags, max_active)		\
- ({								\
- 	static struct lock_class_key __key;			\
- 	const char *__lock_name;				\
-@@ -239,20 +239,20 @@ __create_workqueue_key(const char *name, unsigned int flags,
- 	else							\
- 		__lock_name = #name;				\
- 								\
--	__create_workqueue_key((name), (flags), &__key,		\
--			       __lock_name);			\
-+	__create_workqueue_key((name), (flags), (max_active),	\
-+				&__key, __lock_name);		\
- })
- #else
--#define __create_workqueue(name, flags)				\
--	__create_workqueue_key((name), (flags), NULL, NULL)
-+#define __create_workqueue(name, flags, max_active)		\
-+	__create_workqueue_key((name), (flags), (max_active), NULL, NULL)
- #endif
- 
- #define create_workqueue(name)					\
--	__create_workqueue((name), 0)
-+	__create_workqueue((name), 0, 1)
- #define create_freezeable_workqueue(name)			\
--	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD)
-+	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD, 1)
- #define create_singlethread_workqueue(name)			\
--	__create_workqueue((name), WQ_SINGLE_THREAD)
-+	__create_workqueue((name), WQ_SINGLE_THREAD, 1)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index b8ff9af..98bd465 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -77,6 +77,9 @@ struct cpu_workqueue_struct {
- 	int			flush_color;	/* L: flushing color */
- 	int			nr_in_flight[WORK_NR_COLORS];
- 						/* L: nr of in_flight works */
-+	int			nr_active;	/* L: nr of active works */
-+	int			max_active;	/* I: max active works */
-+	struct list_head	delayed_works;	/* L: delayed works */
- };
- 
- /*
-@@ -321,14 +324,24 @@ static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
- 			 struct work_struct *work)
- {
- 	struct cpu_workqueue_struct *cwq = target_cwq(cpu, wq);
-+	struct list_head *worklist;
- 	unsigned long flags;
- 
- 	debug_work_activate(work);
-+
- 	spin_lock_irqsave(&cwq->lock, flags);
- 	BUG_ON(!list_empty(&work->entry));
-+
- 	cwq->nr_in_flight[cwq->work_color]++;
--	insert_work(cwq, work, &cwq->worklist,
--		    work_color_to_flags(cwq->work_color));
-+
-+	if (likely(cwq->nr_active < cwq->max_active)) {
-+		cwq->nr_active++;
-+		worklist = &cwq->worklist;
-+	} else
-+		worklist = &cwq->delayed_works;
-+
-+	insert_work(cwq, work, worklist, work_color_to_flags(cwq->work_color));
-+
- 	spin_unlock_irqrestore(&cwq->lock, flags);
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 02e8464..93f6647 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -191,36 +191,11 @@ acpi_status __init acpi_os_initialize(void)
+ 	return AE_OK;
  }
  
-@@ -585,6 +598,15 @@ static void move_linked_works(struct work_struct *work, struct list_head *head,
- 		*nextp = n;
- }
- 
-+static void cwq_activate_first_delayed(struct cpu_workqueue_struct *cwq)
-+{
-+	struct work_struct *work = list_first_entry(&cwq->delayed_works,
-+						    struct work_struct, entry);
-+
-+	move_linked_works(work, &cwq->worklist, NULL);
-+	cwq->nr_active++;
-+}
-+
- /**
-  * cwq_dec_nr_in_flight - decrement cwq's nr_in_flight
-  * @cwq: cwq of interest
-@@ -603,6 +625,12 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
- 		return;
- 
- 	cwq->nr_in_flight[color]--;
-+	cwq->nr_active--;
-+
-+	/* one down, submit a delayed one */
-+	if (!list_empty(&cwq->delayed_works) &&
-+	    cwq->nr_active < cwq->max_active)
-+		cwq_activate_first_delayed(cwq);
- 
- 	/* is flush in progress and are we at the flushing tip? */
- 	if (likely(cwq->flush_color != color))
-@@ -1463,6 +1491,7 @@ static void free_cwqs(struct cpu_workqueue_struct *cwqs)
- 
- struct workqueue_struct *__create_workqueue_key(const char *name,
- 						unsigned int flags,
-+						int max_active,
- 						struct lock_class_key *key,
- 						const char *lock_name)
+-static void bind_to_cpu0(struct work_struct *work)
+-{
+-	set_cpus_allowed_ptr(current, cpumask_of(0));
+-	kfree(work);
+-}
+-
+-static void bind_workqueue(struct workqueue_struct *wq)
+-{
+-	struct work_struct *work;
+-
+-	work = kzalloc(sizeof(struct work_struct), GFP_KERNEL);
+-	INIT_WORK(work, bind_to_cpu0);
+-	queue_work(wq, work);
+-}
+-
+ acpi_status acpi_os_initialize1(void)
  {
-@@ -1471,6 +1500,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	bool failed = false;
- 	unsigned int cpu;
- 
-+	max_active = clamp_val(max_active, 1, INT_MAX);
+-	/*
+-	 * On some machines, a software-initiated SMI causes corruption unless
+-	 * the SMI runs on CPU 0.  An SMI can be initiated by any AML, but
+-	 * typically it's done in GPE-related methods that are run via
+-	 * workqueues, so we can avoid the known corruption cases by binding
+-	 * the workqueues to CPU 0.
+-	 */
+-	kacpid_wq = create_singlethread_workqueue("kacpid");
+-	bind_workqueue(kacpid_wq);
+-	kacpi_notify_wq = create_singlethread_workqueue("kacpi_notify");
+-	bind_workqueue(kacpi_notify_wq);
+-	kacpi_hotplug_wq = create_singlethread_workqueue("kacpi_hotplug");
+-	bind_workqueue(kacpi_hotplug_wq);
++	kacpid_wq = create_workqueue("kacpid");
++	kacpi_notify_wq = create_workqueue("kacpi_notify");
++	kacpi_hotplug_wq = create_workqueue("kacpi_hotplug");
+ 	BUG_ON(!kacpid_wq);
+ 	BUG_ON(!kacpi_notify_wq);
+ 	BUG_ON(!kacpi_hotplug_wq);
+@@ -759,7 +734,15 @@ static acpi_status __acpi_os_execute(acpi_execute_type type,
+ 		(type == OSL_NOTIFY_HANDLER ? kacpi_notify_wq : kacpid_wq);
+ 	dpc->wait = hp ? 1 : 0;
+ 	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+-	ret = queue_work(queue, &dpc->work);
 +
- 	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
- 	if (!wq)
- 		goto err;
-@@ -1502,8 +1533,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 		cwq->cpu = cpu;
- 		cwq->wq = wq;
- 		cwq->flush_color = -1;
-+		cwq->max_active = max_active;
- 		spin_lock_init(&cwq->lock);
- 		INIT_LIST_HEAD(&cwq->worklist);
-+		INIT_LIST_HEAD(&cwq->delayed_works);
- 		init_waitqueue_head(&cwq->more_work);
++	/*
++	 * On some machines, a software-initiated SMI causes corruption unless
++	 * the SMI runs on CPU 0.  An SMI can be initiated by any AML, but
++	 * typically it's done in GPE-related methods that are run via
++	 * workqueues, so we can avoid the known corruption cases by always
++	 * queueing on CPU 0.
++	 */
++	ret = queue_work_on(0, queue, &dpc->work);
  
- 		if (failed)
-@@ -1563,6 +1596,8 @@ void destroy_workqueue(struct workqueue_struct *wq)
- 
- 		for (i = 0; i < WORK_NR_COLORS; i++)
- 			BUG_ON(cwq->nr_in_flight[i]);
-+		BUG_ON(cwq->nr_active);
-+		BUG_ON(!list_empty(&cwq->delayed_works));
- 	}
- 
- 	free_cwqs(wq->cpu_wq);
+ 	if (!ret) {
+ 		printk(KERN_ERR PREFIX
 -- 
 1.6.4.2
 
