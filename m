@@ -1,274 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966269Ab0BZVk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:40:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24825 "EHLO mx1.redhat.com"
+	id S966278Ab0BZVmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:42:55 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35047 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966212Ab0BZVhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:37:47 -0500
-Date: Fri, 26 Feb 2010 16:37:17 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: fweisbec@gmail.com, mingo@elte.hu, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       hpa@zytor.com, tglx@linutronix.de, mhiramat@redhat.com,
-       heiko.carstens@de.ibm.com, benh@kernel.crashing.org,
-       davem@davemloft.net, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-       brueckner@linux.vnet.ibm.com, tony.luck@intel.com
-Message-Id: <8d19ada6cdc7d034f34a8b603a1fad11de2cb029.1267214186.git.jbaron@redhat.com>
-In-Reply-To: <cover.1267214186.git.jbaron@redhat.com>
-References: <cover.1267214186.git.jbaron@redhat.com>
-Subject: [PATCH 05/12] tracing: add tracing support for compat syscalls
+	id S966239Ab0BZVmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 16:42:53 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1267201521.14703.50.camel@e102109-lin.cambridge.arm.com>
+References: <1266979632.23523.1668.camel@pasglop>
+	 <1267201521.14703.50.camel@e102109-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 27 Feb 2010 08:40:29 +1100
+Message-ID: <1267220429.23523.1811.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add core support to event tracing for compat syscalls. The basic idea is that we
-check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
-new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
-check syscall arguments and whether or not we are enabled.
+On Fri, 2010-02-26 at 16:25 +0000, Catalin Marinas wrote:
+> 
+> For mmap'ed pages (and present in the page cache), is it guaranteed that
+> the HCD driver won't write to it once it has been mapped into user
+> space? If that's the case, it may solve the problem by just reversing
+> the meaning of PG_arch_1 on ARM and assume that a newly allocated page
+> has dirty D-cache by default.
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
----
- include/linux/compat.h        |    2 +
- include/trace/syscall.h       |    4 ++
- kernel/trace/trace.h          |    2 +
- kernel/trace/trace_syscalls.c |   63 +++++++++++++++++++++++++++++++++++-----
- 4 files changed, 63 insertions(+), 8 deletions(-)
+Well, I don't see why the HCD would write to it unless it's swapped out,
+and thus unmapped or read() to or similar.
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 2fca741..5f2600f 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -355,6 +355,8 @@ asmlinkage long compat_sys_openat(unsigned int dfd, const char __user *filename,
- 
- #else /* CONFIG_COMPAT */
- 
-+#define NR_syscalls_compat 0
-+
- static inline int is_compat_task(void)
- {
- 	return 0;
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 8f5ac38..1cc1d1e 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -22,6 +22,7 @@
- struct syscall_metadata {
- 	const char	*name;
- 	int		syscall_nr;
-+	int		compat_syscall_nr;
- 	int		nb_args;
- 	const char	**types;
- 	const char	**args;
-@@ -36,6 +37,9 @@ struct syscall_metadata {
- 
- #ifdef CONFIG_FTRACE_SYSCALLS
- extern unsigned long arch_syscall_addr(int nr);
-+#ifdef CONFIG_COMPAT
-+extern unsigned long arch_compat_syscall_addr(int nr);
-+#endif
- extern int init_syscall_trace(struct ftrace_event_call *call);
- 
- extern int syscall_enter_define_fields(struct ftrace_event_call *call);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index fd05bca..2992ee1 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -94,12 +94,14 @@ extern struct tracer boot_tracer;
- struct syscall_trace_enter {
- 	struct trace_entry	ent;
- 	int			nr;
-+	int			compat;
- 	unsigned long		args[];
- };
- 
- struct syscall_trace_exit {
- 	struct trace_entry	ent;
- 	int			nr;
-+	int			compat;
- 	long			ret;
- };
- 
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 9cb814b..a2ab3b1 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -3,6 +3,7 @@
- #include <linux/kernel.h>
- #include <linux/ftrace.h>
- #include <linux/perf_event.h>
-+#include <linux/compat.h>
- #include <asm/syscall.h>
- 
- #include "trace_output.h"
-@@ -16,6 +17,7 @@ extern unsigned long __start_syscalls_metadata[];
- extern unsigned long __stop_syscalls_metadata[];
- 
- static struct syscall_metadata **syscalls_metadata;
-+static struct syscall_metadata **compat_syscalls_metadata;
- 
- static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- {
-@@ -41,8 +43,14 @@ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- 	return NULL;
- }
- 
--static struct syscall_metadata *syscall_nr_to_meta(int nr)
-+static struct syscall_metadata *syscall_nr_to_meta(int nr, int compat)
- {
-+	if (compat) {
-+		if (!compat_syscalls_metadata || nr >= NR_syscalls_compat ||
-+									nr < 0)
-+			return NULL;
-+		return compat_syscalls_metadata[nr];
-+	}
- 	if (!syscalls_metadata || nr >= NR_syscalls || nr < 0)
- 		return NULL;
- 
-@@ -60,7 +68,7 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
- 
- 	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--	entry = syscall_nr_to_meta(syscall);
-+	entry = syscall_nr_to_meta(syscall, trace->compat);
- 
- 	if (!entry)
- 		goto end;
-@@ -113,7 +121,7 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
- 
- 	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--	entry = syscall_nr_to_meta(syscall);
-+	entry = syscall_nr_to_meta(syscall, trace->compat);
- 
- 	if (!entry) {
- 		trace_seq_printf(s, "\n");
-@@ -248,12 +256,16 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
- 	struct ring_buffer *buffer;
- 	int size;
- 	int syscall_nr;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (syscall_nr < 0)
- 		return;
- 
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -269,6 +281,7 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nr = syscall_nr;
-+	entry->compat = compat;
- 	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
- 
- 	if (!filter_current_check_discard(buffer, sys_data->enter_event,
-@@ -283,12 +296,16 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
- 	struct ring_buffer_event *event;
- 	struct ring_buffer *buffer;
- 	int syscall_nr;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (syscall_nr < 0)
- 		return;
- 
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -302,6 +319,7 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nr = syscall_nr;
-+	entry->compat = compat;
- 	entry->ret = syscall_get_return_value(current, regs);
- 
- 	if (!filter_current_check_discard(buffer, sys_data->exit_event,
-@@ -421,7 +439,26 @@ int __init init_ftrace_syscalls(void)
- 		meta->syscall_nr = i;
- 		syscalls_metadata[i] = meta;
- 	}
--
-+#ifdef CONFIG_COMPAT
-+	if (NR_syscalls_compat) {
-+		compat_syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) *
-+						NR_syscalls_compat, GFP_KERNEL);
-+		if (!compat_syscalls_metadata) {
-+			WARN_ON(1);
-+			kfree(syscalls_metadata);
-+			return -ENOMEM;
-+		}
-+		for (i = 0; i < NR_syscalls_compat; i++) {
-+			addr = arch_compat_syscall_addr(i);
-+			meta = find_syscall_meta(addr);
-+			if (!meta)
-+				continue;
-+
-+			meta->compat_syscall_nr = i;
-+			compat_syscalls_metadata[i] = meta;
-+		}
-+	}
-+#endif
- 	return 0;
- }
- core_initcall(init_ftrace_syscalls);
-@@ -439,9 +476,13 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
- 	int syscall_nr;
- 	int rctx;
- 	int size;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -463,6 +504,7 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
- 		return;
- 
- 	rec->nr = syscall_nr;
-+	rec->compat = compat;
- 	syscall_get_arguments(current, regs, 0, sys_data->nb_args,
- 			       (unsigned long *)&rec->args);
- 	ftrace_perf_buf_submit(rec, size, rctx, 0, 1, flags);
-@@ -511,9 +553,13 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
- 	int syscall_nr;
- 	int rctx;
- 	int size;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -538,6 +584,7 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
- 		return;
- 
- 	rec->nr = syscall_nr;
-+	rec->compat = compat;
- 	rec->ret = syscall_get_return_value(current, regs);
- 
- 	ftrace_perf_buf_submit(rec, size, rctx, 0, 1, flags);
--- 
-1.6.5.1
+> The filesystem layer does it only if it needs to touch the data written
+> by the block device (e.g. cramfs, jffs). Some block devices call
+> flush_dcache_page (like mmci.c) while some others don't (and those that
+> use DMA actually don't since the DMA API handles the flushing). 
+
+Hrm, the DMA API certainly doesn't handle the I$/D$ coherency on
+powerpc.. I'm afraid that whole cache handling stuff is totally
+inconsistent since different archs have different expectations here.
+
+Maybe we need to revisit things in that area, though it might require to
+be done properly to have not one but two bits in struct page to
+separately track the D$ and I$ state ...
+
+Cheers,
+Ben.
+
 
