@@ -1,170 +1,144 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934815Ab0BZAqy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:46:54 -0500
-Received: from kroah.org ([198.145.64.141]:39809 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934783Ab0BZAqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:46:52 -0500
-Date: Thu, 25 Feb 2010 16:46:46 -0800
-From: Greg KH <greg@kroah.com>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with auto-detecting a HV environment from within Linux
-Message-ID: <20100226004646.GA31483@kroah.com>
-References: <20100225164436.GA3310@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A4277@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20100225173611.GA14124@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A5633@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20100225230639.GB20900@kroah.com>
- <1FB5E1D5CA062146B38059374562DF725B6A5806@TK5EX14MBXC130.redmond.corp.microsoft.com>
+	id S934801Ab0BZAtZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:49:25 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:48968 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934755Ab0BZAtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:49:23 -0500
+Date: Fri, 26 Feb 2010 08:49:14 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Crypto Update for 2.6.34
+Message-ID: <20100226004914.GA20812@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20091204135530.GA29371@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF725B6A5806@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091204135530.GA29371@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 11:40:52PM +0000, Haiyang Zhang wrote:
-> > -----Original Message-----
-> > From: Greg KH [mailto:greg@kroah.com]
-> > Sent: Thursday, February 25, 2010 6:07 PM
-> > If so, what is the vendor and product id of this device?
-> 
-> The Vendor:Device Id is: 1414:5353
-> 00:08.0 VGA compatible controller [0300]: Microsoft Corporation Device [1414:5353]
-> 
-> This hasn't been changed since the first release of HyperV. I will ask
-> around about the future stability of the VGA card (and the DMI).
+Hi Linus:
 
-Ok, below are 2 patches that I will queue up in my tree.
+Here is the crypto update for 2.6.34:
 
-Can you test them to verify that they work properly?
-
-thanks,
-
-greg k-h
-
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Staging: hv: add a pci device table
-
-This allows the HV core to be properly found and autoloaded
-by the system tools.
-
-It uses the Microsoft virtual VGA device to trigger this.
-
-Cc: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/staging/hv/vmbus_drv.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
---- a/drivers/staging/hv/vmbus_drv.c
-+++ b/drivers/staging/hv/vmbus_drv.c
-@@ -24,6 +24,7 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- #include <linux/sysctl.h>
-+#include <linux/pci.h>
- #include "VersionInfo.h"
- #include "osd.h"
- #include "logging.h"
-@@ -974,6 +975,22 @@ static void __exit vmbus_exit(void)
- 	return;
- }
- 
-+/*
-+ * We use a PCI table to determine if we should autoload this driver  This is
-+ * needed by distro tools to determine if the hyperv drivers should be
-+ * installed and/or configured.  We don't do anything else with the table, but
-+ * it needs to be present.
-+ *
-+ * We might consider triggering off of DMI table info as well, as that does
-+ * decribe the virtual machine being run on, but not all configuration tools
-+ * seem to be able to handle DMI device ids properly.
-+ */
-+const static struct pci_device_id microsoft_hv_pci_table[] = {
-+	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
-+	{ 0 }
-+};
-+MODULE_DEVICE_TABLE(pci, microsoft_hv_pci_table);
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(HV_DRV_VERSION);
- module_param(vmbus_irq, int, S_IRUGO);
+* New pcrypt module to spread crypto work across CPUs.
+* Added RFC4543 GCM support.
+* Added nomadik RNG driver.
+* MD5 export/import support.
+* Random fixes.
 
 
+Please pull from
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Staging: hv: match on DMI values to know if we should run.
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-The HV core mucks around with specific irqs and other low-level stuff
-and takes forever to determine that it really shouldn't be running on a
-machine.  So instead, trigger off of the DMI system information and
-error out much sooner.  This also allows the module loading tools to
-recognize that this code should be loaded on this type of system.
+or
 
-Cc: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
----
- drivers/staging/hv/vmbus_drv.c |   21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
 
---- a/drivers/staging/hv/vmbus_drv.c
-+++ b/drivers/staging/hv/vmbus_drv.c
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/sysctl.h>
- #include <linux/pci.h>
-+#include <linux/dmi.h>
- #include "VersionInfo.h"
- #include "osd.h"
- #include "logging.h"
-@@ -948,6 +949,19 @@ static irqreturn_t vmbus_isr(int irq, vo
- 	}
- }
- 
-+static struct dmi_system_id __initdata microsoft_hv_dmi_table[] = {
-+	{
-+		.ident = "Hyper-V",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "MicrosoftCorporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "VirtualMachine"),
-+			DMI_MATCH(DMI_BOARD_NAME, "VirtualMachine"),
-+		},
-+	},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(dmi, microsoft_hv_dmi_table);
-+
- static int __init vmbus_init(void)
- {
- 	int ret = 0;
-@@ -959,6 +973,9 @@ static int __init vmbus_init(void)
- 		vmbus_loglevel, HIWORD(vmbus_loglevel), LOWORD(vmbus_loglevel));
- 	/* Todo: it is used for loglevel, to be ported to new kernel. */
- 
-+	if (!dmi_check_system(microsoft_hv_dmi_table))
-+		return -ENODEV;
-+
- 	ret = vmbus_bus_init(VmbusInitialize);
- 
- 	DPRINT_EXIT(VMBUS_DRV);
-@@ -980,10 +997,6 @@ static void __exit vmbus_exit(void)
-  * needed by distro tools to determine if the hyperv drivers should be
-  * installed and/or configured.  We don't do anything else with the table, but
-  * it needs to be present.
-- *
-- * We might consider triggering off of DMI table info as well, as that does
-- * decribe the virtual machine being run on, but not all configuration tools
-- * seem to be able to handle DMI device ids properly.
-  */
- const static struct pci_device_id microsoft_hv_pci_table[] = {
- 	{ PCI_DEVICE(0x1414, 0x5353) },	/* VGA compatible controller */
+Alessandro Rubini (2):
+      hwrng: nomadik - Add hardware RNG driver
+      hwrng: nomadik - Add platform device for rng in cpu-8815
+
+Max Vozeler (1):
+      crypto: md5 - Add export support
+
+Márton Németh (1):
+      crypto: Make Open Firmware device id constant
+
+Richard Hartmann (19):
+      crypto: ablkcipher - Fix checkpatch errors
+      crypto: aead - Fix checkpatch errors
+      crypto: blowfish - Fix checkpatch errors
+      crypto: algapi - Fix checkpatch errors
+      crypto: anubis - Fix checkpatch errors
+      crypto: api - Fix checkpatch errors
+      crypto: authenc - Fix checkpatch errors
+      crypto: camellia - Fix checkpatch errors
+      crypto: cast5 - Fix checkpatch errors
+      crypto: cast6 - Fix checkpatch errors
+      crypto: compress - Fix checkpatch errors
+      crypto: crc32 - Fix checkpatch errors
+      crypto: cipher - Fix checkpatch errors
+      crypto: crypto_null - Fix checkpatch errors
+      crypto: deflate - Fix checkpatch errors
+      crypto: des_generic - Fix checkpatch errors
+      crypto: ecb - Fix checkpatch errors
+      crypto: fcrypt - Fix checkpatch errors
+      crypto: aes_generic - Fix checkpatch errors
+
+Roel Kluin (3):
+      crypto: aes_s390 - access .cip instead of .blk in cipher mode
+      crypto: geode-aes - access .cip instead of .blk in cipher mode
+      crypto: geode-aes - Fix cip/blk confusion
+
+Steffen Klassert (3):
+      padata: Generic parallelization/serialization interface
+      crypto: pcrypt - Add pcrypt crypto parallelization wrapper
+      crypto: pcrypt - call the complete function on error
+
+Tobias Brunner (1):
+      crypto: gcm - Add RFC4543 wrapper for GCM
+
+Youquan, Song (1):
+      crypto: testmgr - Fix complain about lack test for internal used algorithm
+
+ arch/arm/mach-nomadik/cpu-8815.c     |    8 +
+ arch/s390/crypto/aes_s390.c          |    6 +-
+ crypto/Kconfig                       |   10 +
+ crypto/Makefile                      |    1 +
+ crypto/ablkcipher.c                  |    4 +-
+ crypto/aead.c                        |    4 +-
+ crypto/aes_generic.c                 |    4 +-
+ crypto/algapi.c                      |    4 +-
+ crypto/anubis.c                      |   22 +-
+ crypto/api.c                         |   13 +-
+ crypto/authenc.c                     |   10 +-
+ crypto/blowfish.c                    |   18 +-
+ crypto/camellia.c                    |  616 +++++++++++++++---------------
+ crypto/cast5.c                       |   14 +-
+ crypto/cast6.c                       |  122 +++---
+ crypto/cipher.c                      |    2 +-
+ crypto/compress.c                    |    4 +-
+ crypto/crc32c.c                      |    6 +-
+ crypto/crypto_null.c                 |    8 +-
+ crypto/deflate.c                     |   20 +-
+ crypto/des_generic.c                 |    3 +-
+ crypto/ecb.c                         |    2 +-
+ crypto/fcrypt.c                      |    6 +-
+ crypto/gcm.c                         |  287 ++++++++++++++
+ crypto/md5.c                         |   40 ++-
+ crypto/pcrypt.c                      |  445 ++++++++++++++++++++++
+ crypto/testmgr.c                     |   84 ++++
+ drivers/char/hw_random/Kconfig       |   12 +
+ drivers/char/hw_random/Makefile      |    1 +
+ drivers/char/hw_random/nomadik-rng.c |  103 +++++
+ drivers/crypto/amcc/crypto4xx_core.c |    2 +-
+ drivers/crypto/geode-aes.c           |    8 +-
+ drivers/crypto/talitos.c             |    2 +-
+ include/crypto/md5.h                 |   17 +
+ include/crypto/pcrypt.h              |   51 +++
+ include/linux/padata.h               |   88 +++++
+ include/linux/pfkeyv2.h              |    1 +
+ init/Kconfig                         |    4 +
+ kernel/Makefile                      |    1 +
+ kernel/padata.c                      |  690 ++++++++++++++++++++++++++++++++++
+ net/xfrm/xfrm_algo.c                 |   16 +
+ 41 files changed, 2293 insertions(+), 466 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
