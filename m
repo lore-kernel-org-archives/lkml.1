@@ -1,121 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936258Ab0BZNh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 08:37:27 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42146 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936110Ab0BZNh0 (ORCPT
+	id S936267Ab0BZNje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 08:39:34 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:51097 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936237Ab0BZNjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 08:37:26 -0500
-Message-ID: <4B87CE94.9050200@cs.helsinki.fi>
-Date: Fri, 26 Feb 2010 15:37:24 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org
-Subject: Re: [RFT/PATCH] x86: Unify kernel_physical_mapping_init() API
-References: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi> <20100226094639.0a106466.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100226094639.0a106466.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Feb 2010 08:39:33 -0500
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-mm@kvack.org
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: [PATCH] memcg: fix typos in memcg_test.txt
+Date: Fri, 26 Feb 2010 15:39:16 +0200
+Message-Id: <1267191557-23444-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.6.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hiroyuki-san,
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+---
+ Documentation/cgroups/memcg_test.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-KAMEZAWA Hiroyuki kirjoitti:
-> On Wed, 24 Feb 2010 17:04:47 +0200 (EET)
-> Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> 
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> This patch changes the 32-bit version of kernel_physical_mapping_init() to
->> return the last mapped address like the 64-bit one so that we can unify the
->> call-site in init_memory_mapping().
->>
-> 
-> I'm sorry if I can't track the logic correctly..
+diff --git a/Documentation/cgroups/memcg_test.txt b/Documentation/cgroups/memcg_test.txt
+index 4d32e0e..f7f68b2 100644
+--- a/Documentation/cgroups/memcg_test.txt
++++ b/Documentation/cgroups/memcg_test.txt
+@@ -337,7 +337,7 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
+ 	race and lock dependency with other cgroup subsystems.
+ 
+ 	example)
+-	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
++	# mount -t cgroup none /cgroup -o cpuset,memory,cpu,devices
+ 
+ 	and do task move, mkdir, rmdir etc...under this.
+ 
+@@ -348,7 +348,7 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
+ 
+ 	For example, test like following is good.
+ 	(Shell-A)
+-	# mount -t cgroup none /cgroup -t memory
++	# mount -t cgroup none /cgroup -o memory
+ 	# mkdir /cgroup/test
+ 	# echo 40M > /cgroup/test/memory.limit_in_bytes
+ 	# echo 0 > /cgroup/test/tasks
+-- 
+1.6.6.2
 
-OK. I tried to make it match what x86-64 does.
-
->> Cc: Yinghai Lu <yinghai@kernel.org>
->> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
->> ---
->> Note: I have only tested this on VirtualBox which is why I tagged the patch as
->> RFT.
->>
->>   arch/x86/mm/init.c    |    7 -------
->>   arch/x86/mm/init_32.c |    8 +++++---
->>   2 files changed, 5 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
->> index d406c52..e71c5cb 100644
->> --- a/arch/x86/mm/init.c
->> +++ b/arch/x86/mm/init.c
->> @@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
->>   	if (!after_bootmem)
->>   		find_early_table_space(end, use_pse, use_gbpages);
->>
->> -#ifdef CONFIG_X86_32
->> -	for (i = 0; i < nr_range; i++)
->> -		kernel_physical_mapping_init(mr[i].start, mr[i].end,
->> -					     mr[i].page_size_mask);
->> -	ret = end;
->> -#else /* CONFIG_X86_64 */
->>   	for (i = 0; i < nr_range; i++)
->>   		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
->>   						   mr[i].page_size_mask);
->> -#endif
->>
->>   #ifdef CONFIG_X86_32
->>   	early_ioremap_page_table_range_init();
->> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
->> index 9a0c258..2226f2c 100644
->> --- a/arch/x86/mm/init_32.c
->> +++ b/arch/x86/mm/init_32.c
->> @@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
->>   			     unsigned long page_size_mask)
->>   {
->>   	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
->> +	unsigned long last_map_addr = end;
->>   	unsigned long start_pfn, end_pfn;
->>   	pgd_t *pgd_base = swapper_pg_dir;
->>   	int pgd_idx, pmd_idx, pte_ofs;
->> @@ -341,9 +342,10 @@ repeat:
->>   					prot = PAGE_KERNEL_EXEC;
->>
->>   				pages_4k++;
->> -				if (mapping_iter == 1)
->> +				if (mapping_iter == 1) {
->>   					set_pte(pte, pfn_pte(pfn, init_prot));
->> -				else
->> +					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
->> +				} else
->>   					set_pte(pte, pfn_pte(pfn, prot));
->>   			}
->>   		}
-> 
-> Don't we need to update last_map_addr after pages_2m++; ?
-
-Yeah, I missed that part. It probably works fine because we return "end" 
-for 2M pages. However, to fix that, I'm not completely sure what 
-"last_map_addr" would be. I am thinking
-
-   last_map_addr = (addr & PMD_MASK) + PMD_SIZE;
-
-might do the trick but I'm not that familiar with the code. Ideas?
-
-> And...from the logic,
->   unsigned long last_map_addr = end;
-> seems to be always true.
-> 
-> So, just returning "end" is not good ?
-
-Might be but like I said, I tried to make it match x86-64 so that we 
-could eventually try to unify those bits as well.
-
-			Pekka
