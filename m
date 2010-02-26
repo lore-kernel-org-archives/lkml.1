@@ -1,144 +1,207 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935421Ab0BZHXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 02:23:52 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:38289 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935398Ab0BZHXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 02:23:50 -0500
-Message-ID: <4B8776FC.30409@linux.vnet.ibm.com>
-Date: Fri, 26 Feb 2010 08:23:40 +0100
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Matt Mackall <mpm@selenic.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 05/15] readahead: limit readahead size for small memory
- systems
-References: <20100224031001.026464755@intel.com> <20100224031054.307027163@intel.com> <4B869682.9010709@linux.vnet.ibm.com> <20100226022907.GA22226@localhost>
-In-Reply-To: <20100226022907.GA22226@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S935428Ab0BZHZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 02:25:49 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42856 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935405Ab0BZHZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 02:25:47 -0500
+Date: Fri, 26 Feb 2010 18:25:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Martin Fuzzey <mfuzzey@gmail.com>,
+       =?UTF-8?B?IlV3ZSBLbGVpbmUtS8O2bmlnIg==?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Sascha Hauer <s.hauer@pengutronix.de>
+Subject: linux-next: manual merge of the usb tree with the i.MX tree
+Message-Id: <20100226182545.b4d5b6c7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unfortunately without a chance to measure this atm, this patch now looks 
-really good to me.
-Thanks for adapting it to a read-ahead only per mem limit.
-Acked-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Hi Greg,
 
+Today's linux-next merge of the usb tree got a conflict in
+arch/arm/mach-mx2/devices.c between various commits from the i.MX tree
+and commits 304ae32ac8ac68ac5a091a67187645dc84b6067c ("USB: MXC: use
+DMA_BIT_MASK macro rather than hardcoded constants") and
+3f1c5d0f4c64f5e9e4ac329a935b3da67593691f ("USB: MXC: add platform
+resources for i.MX21 USB host controller") from the usb tree.
 
-Wu Fengguang wrote:
-> On Thu, Feb 25, 2010 at 11:25:54PM +0800, Christian Ehrhardt wrote:
->>
->> Wu Fengguang wrote:
->>  > When lifting the default readahead size from 128KB to 512KB,
->>  > make sure it won't add memory pressure to small memory systems.
->>  >
->>  > For read-ahead, the memory pressure is mainly readahead buffers consumed
->>  > by too many concurrent streams. The context readahead can adapt
->>  > readahead size to thrashing threshold well.  So in principle we don't
->>  > need to adapt the default _max_ read-ahead size to memory pressure.
->>  >
->>  > For read-around, the memory pressure is mainly read-around misses on
->>  > executables/libraries. Which could be reduced by scaling down
->>  > read-around size on fast "reclaim passes".
->>  >
->>  > This patch presents a straightforward solution: to limit default
->>  > readahead size proportional to available system memory, ie.
->>  >                 512MB mem => 512KB readahead size
->>  >                 128MB mem => 128KB readahead size
->>  >                  32MB mem =>  32KB readahead size (minimal)
->>  >
->>  > Strictly speaking, only read-around size has to be limited.  However we
->>  > don't bother to seperate read-around size from read-ahead size for now.
->>  >
->>  > CC: Matt Mackall <mpm@selenic.com>
->>  > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->>
->> What I state here is for read ahead in a "multi iozone sequential" 
->> setup, I can't speak for real "read around" workloads.
->> So probably your table is fine to cover read-around+read-ahead in one 
->> number.
-> 
-> OK.
-> 
->> I have tested 256MB mem systems with 512kb readahead quite a lot.
->> On those 512kb is still by far superior to smaller readaheads and I 
->> didn't see major trashing or memory pressure impact.
-> 
-> In fact I'd expect a 64MB box to also benefit from 512kb readahead :)
-> 
->> Therefore I would recommend a table like:
->>                 >=256MB mem => 512KB readahead size
->>                   128MB mem => 128KB readahead size
->>                    32MB mem =>  32KB readahead size (minimal)
-> 
-> So, I'm fed up with compromising the read-ahead size with read-around
-> size.
-> 
-> There is no good to introduce a read-around size to confuse the user
-> though.  Instead, I'll introduce a read-around size limit _on top of_
-> the readahead size. This will allow power users to adjust
-> read-ahead/read-around size at the same time, while saving the low end
-> from unnecessary memory pressure :) I made the assumption that low end
-> users have no need to request a large read-around size.
-> 
-> Thanks,
-> Fengguang
-> ---
-> readahead: limit read-ahead size for small memory systems
-> 
-> When lifting the default readahead size from 128KB to 512KB,
-> make sure it won't add memory pressure to small memory systems.
-> 
-> For read-ahead, the memory pressure is mainly readahead buffers consumed
-> by too many concurrent streams. The context readahead can adapt
-> readahead size to thrashing threshold well.  So in principle we don't
-> need to adapt the default _max_ read-ahead size to memory pressure.
-> 
-> For read-around, the memory pressure is mainly read-around misses on
-> executables/libraries. Which could be reduced by scaling down
-> read-around size on fast "reclaim passes".
-> 
-> This patch presents a straightforward solution: to limit default
-> read-ahead size proportional to available system memory, ie.
->                 512MB mem => 512KB readahead size
->                 128MB mem => 128KB readahead size
->                  32MB mem =>  32KB readahead size
-> 
-> CC: Matt Mackall <mpm@selenic.com>
-> CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/filemap.c   |    2 +-
->  mm/readahead.c |   22 ++++++++++++++++++++++
->  2 files changed, 23 insertions(+), 1 deletion(-)
-> 
-> --- linux.orig/mm/filemap.c	2010-02-26 10:04:28.000000000 +0800
-> +++ linux/mm/filemap.c	2010-02-26 10:08:33.000000000 +0800
-> @@ -1431,7 +1431,7 @@ static void do_sync_mmap_readahead(struc
->  	/*
->  	 * mmap read-around
->  	 */
-> -	ra_pages = max_sane_readahead(ra->ra_pages);
-> +	ra_pages = min(ra->ra_pages, roundup_pow_of_two(totalram_pages / 1024));
->  	if (ra_pages) {
->  		ra->start = max_t(long, 0, offset - ra_pages/2);
->  		ra->size = ra_pages;
-
+I fixed it up (I think - see below) and cam carry the fixes as necessary.
 -- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Grüsse / regards, Christian Ehrhardt
-IBM Linux Technology Center, System z Linux Performance
+diff --cc arch/arm/mach-mx2/devices.c
+index a4b809b,3956d82..0000000
+--- a/arch/arm/mach-mx2/devices.c
++++ b/arch/arm/mach-mx2/devices.c
+@@@ -270,38 -380,63 +271,38 @@@ struct platform_device mxc_pwm_device 
+  /*
+   * Resource definition for the MXC SDHC
+   */
+ -static struct resource mxc_sdhc1_resources[] = {
+ -	{
+ -		.start = SDHC1_BASE_ADDR,
+ -		.end   = SDHC1_BASE_ADDR + SZ_4K - 1,
+ -		.flags = IORESOURCE_MEM,
+ -	}, {
+ -		.start = MXC_INT_SDHC1,
+ -		.end   = MXC_INT_SDHC1,
+ -		.flags = IORESOURCE_IRQ,
+ -	}, {
+ -		.start  = DMA_REQ_SDHC1,
+ -		.end    = DMA_REQ_SDHC1,
+ -		.flags  = IORESOURCE_DMA,
+ -	},
+ -};
+ -
+ -static u64 mxc_sdhc1_dmamask = DMA_BIT_MASK(32);
+ -
+ -struct platform_device mxc_sdhc_device0 = {
+ -	.name           = "mxc-mmc",
+ -	.id             = 0,
+ -	.dev            = {
+ -		.dma_mask = &mxc_sdhc1_dmamask,
+ -		.coherent_dma_mask = DMA_BIT_MASK(32),
+ -	},
+ -	.num_resources  = ARRAY_SIZE(mxc_sdhc1_resources),
+ -	.resource       = mxc_sdhc1_resources,
+ -};
+ -
+ -static struct resource mxc_sdhc2_resources[] = {
+ -	{
+ -		.start = SDHC2_BASE_ADDR,
+ -		.end   = SDHC2_BASE_ADDR + SZ_4K - 1,
+ -		.flags = IORESOURCE_MEM,
+ -	}, {
+ -		.start = MXC_INT_SDHC2,
+ -		.end   = MXC_INT_SDHC2,
+ -		.flags = IORESOURCE_IRQ,
+ -	}, {
+ -		.start  = DMA_REQ_SDHC2,
+ -		.end    = DMA_REQ_SDHC2,
+ -		.flags  = IORESOURCE_DMA,
+ -	},
+ -};
+ -
+ -static u64 mxc_sdhc2_dmamask = DMA_BIT_MASK(32);
+ +#define DEFINE_MXC_MMC_DEVICE(n, baseaddr, irq, dmareq)			\
+ +	static struct resource mxc_sdhc_resources ## n[] = {		\
+ +		{							\
+ +			.start = baseaddr,				\
+ +			.end = baseaddr + SZ_4K - 1,			\
+ +			.flags = IORESOURCE_MEM,			\
+ +		}, {							\
+ +			.start = irq,					\
+ +			.end = irq,					\
+ +			.flags = IORESOURCE_IRQ,			\
+ +		}, {							\
+ +			.start = dmareq,				\
+ +			.end = dmareq,					\
+ +			.flags = IORESOURCE_DMA,			\
+ +		},							\
+ +	};								\
+ +									\
+- 	static u64 mxc_sdhc ## n ## _dmamask = 0xffffffffUL;		\
+++	static u64 mxc_sdhc ## n ## _dmamask = DMA_BIT_MASK(32);	\
+ +									\
+ +	struct platform_device mxc_sdhc_device ## n = {			\
+ +		.name = "mxc-mmc",					\
+ +		.id = n,						\
+ +		.dev = {						\
+ +			.dma_mask = &mxc_sdhc ## n ## _dmamask,		\
+- 			.coherent_dma_mask = 0xffffffff,		\
+++			.coherent_dma_mask = DMA_BIT_MASK(32),		\
+ +		},							\
+ +		.num_resources = ARRAY_SIZE(mxc_sdhc_resources ## n),	\
+ +		.resource = mxc_sdhc_resources ## n,		\
+ +	}
+  
+ -struct platform_device mxc_sdhc_device1 = {
+ -	.name           = "mxc-mmc",
+ -	.id             = 1,
+ -	.dev            = {
+ -		.dma_mask = &mxc_sdhc2_dmamask,
+ -		.coherent_dma_mask = DMA_BIT_MASK(32),
+ -	},
+ -	.num_resources  = ARRAY_SIZE(mxc_sdhc2_resources),
+ -	.resource       = mxc_sdhc2_resources,
+ -};
+ +DEFINE_MXC_MMC_DEVICE(0, MX2x_SDHC1_BASE_ADDR, MX2x_INT_SDHC1, MX2x_DMA_REQ_SDHC1);
+ +DEFINE_MXC_MMC_DEVICE(1, MX2x_SDHC2_BASE_ADDR, MX2x_INT_SDHC2, MX2x_DMA_REQ_SDHC2);
+  
+  #ifdef CONFIG_MACH_MX27
+  static struct resource otg_resources[] = {
+@@@ -320,14 -455,14 +321,14 @@@ static u64 otg_dmamask = DMA_BIT_MASK(3
+  
+  /* OTG gadget device */
+  struct platform_device mxc_otg_udc_device = {
+- 	.name = "fsl-usb2-udc",
+- 	.id = -1,
+- 	.dev = {
+- 		.dma_mask = &otg_dmamask,
+- 		.coherent_dma_mask = 0xffffffffUL,
++ 	.name		= "fsl-usb2-udc",
++ 	.id		= -1,
++ 	.dev		= {
++ 		.dma_mask		= &otg_dmamask,
++ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+  	},
+ -	.resource	= otg_resources,
+ -	.num_resources	= ARRAY_SIZE(otg_resources),
+ +	.resource = otg_resources,
+ +	.num_resources = ARRAY_SIZE(otg_resources),
+  };
+  
+  /* OTG host */
+@@@ -469,15 -641,32 +470,42 @@@ DEFINE_MXC_GPIO_PORTS(MX27, imx27)
+  
+  int __init mxc_register_gpios(void)
+  {
+ -	return mxc_gpio_init(imx_gpio_ports, ARRAY_SIZE(imx_gpio_ports));
+ +#ifdef CONFIG_MACH_MX21
+ +	if (cpu_is_mx21())
+ +		return mxc_gpio_init(imx21_gpio_ports, ARRAY_SIZE(imx21_gpio_ports));
+ +	else
+ +#endif
+ +#ifdef CONFIG_MACH_MX27
+ +	if (cpu_is_mx27())
+ +		return mxc_gpio_init(imx27_gpio_ports, ARRAY_SIZE(imx27_gpio_ports));
+ +	else
+ +#endif
+ +		return 0;
+  }
++ 
++ #ifdef CONFIG_MACH_MX21
++ static struct resource mx21_usbhc_resources[] = {
++ 	{
++ 		.start	= USBOTG_BASE_ADDR,
++ 		.end	= USBOTG_BASE_ADDR + 0x1FFF,
++ 		.flags	= IORESOURCE_MEM,
++ 	},
++ 	{
++ 		.start		= MXC_INT_USBHOST,
++ 		.end		= MXC_INT_USBHOST,
++ 		.flags		= IORESOURCE_IRQ,
++ 	},
++ };
++ 
++ struct platform_device mx21_usbhc_device = {
++ 	.name		= "imx21-hcd",
++ 	.id		= 0,
++ 	.dev		= {
++ 		.dma_mask = &mx21_usbhc_device.dev.coherent_dma_mask,
++ 		.coherent_dma_mask = DMA_BIT_MASK(32),
++ 	},
++ 	.num_resources	= ARRAY_SIZE(mx21_usbhc_resources),
++ 	.resource	= mx21_usbhc_resources,
++ };
++ #endif
++ 
