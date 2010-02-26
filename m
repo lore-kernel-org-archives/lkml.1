@@ -1,70 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934746Ab0BZATH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:19:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50654 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934672Ab0BZATC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:19:02 -0500
-Date: Fri, 26 Feb 2010 00:18:37 GMT
-From: tip-bot for Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, jacob.jun.pan@linux.intel.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, jacob.jun.pan@linux.intel.com
-In-Reply-To: <1267120934-9505-1-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1267120934-9505-1-git-send-email-jacob.jun.pan@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mrst] x86, mrst: Add Kconfig dependencies for Moorestown
-Message-ID: <tip-4b2f3f7d0fe97ad312fb572c8f8d88836ae8fb1e@git.kernel.org>
-Git-Commit-ID: 4b2f3f7d0fe97ad312fb572c8f8d88836ae8fb1e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 00:18:37 +0000 (UTC)
+	id S934725Ab0BZASe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:18:34 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46734 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934672Ab0BZASc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:18:32 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 26 Feb 2010 09:14:21 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: David Rientjes <rientjes@google.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] memcg: dirty pages instrumentation
+Message-Id: <20100226091421.8c15c210.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100225143444.GB3964@linux>
+References: <1266765525-30890-1-git-send-email-arighi@develer.com>
+	<1266765525-30890-3-git-send-email-arighi@develer.com>
+	<20100222165215.GA3096@redhat.com>
+	<20100223094040.GC1882@linux>
+	<20100223195606.GD11930@redhat.com>
+	<alpine.DEB.2.00.1002231419450.8693@chino.kir.corp.google.com>
+	<20100225143444.GB3964@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4b2f3f7d0fe97ad312fb572c8f8d88836ae8fb1e
-Gitweb:     http://git.kernel.org/tip/4b2f3f7d0fe97ad312fb572c8f8d88836ae8fb1e
-Author:     Jacob Pan <jacob.jun.pan@linux.intel.com>
-AuthorDate: Thu, 25 Feb 2010 10:02:14 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 25 Feb 2010 16:16:26 -0800
+On Thu, 25 Feb 2010 15:34:44 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
-x86, mrst: Add Kconfig dependencies for Moorestown
+> On Tue, Feb 23, 2010 at 02:22:12PM -0800, David Rientjes wrote:
+> > On Tue, 23 Feb 2010, Vivek Goyal wrote:
+> > 
+> > > > > Because you have modified dirtyable_memory() and made it per cgroup, I
+> > > > > think it automatically takes care of the cases of per cgroup dirty ratio,
+> > > > > I mentioned in my previous mail. So we will use system wide dirty ratio
+> > > > > to calculate the allowed dirty pages in this cgroup (dirty_ratio *
+> > > > > available_memory()) and if this cgroup wrote too many pages start
+> > > > > writeout? 
+> > > > 
+> > > > OK, if I've understood well, you're proposing to use per-cgroup
+> > > > dirty_ratio interface and do something like:
+> > > 
+> > > I think we can use system wide dirty_ratio for per cgroup (instead of
+> > > providing configurable dirty_ratio for each cgroup where each memory
+> > > cgroup can have different dirty ratio. Can't think of a use case
+> > > immediately).
+> > 
+> > I think each memcg should have both dirty_bytes and dirty_ratio, 
+> > dirty_bytes defaults to 0 (disabled) while dirty_ratio is inherited from 
+> > the global vm_dirty_ratio.  Changing vm_dirty_ratio would not change 
+> > memcgs already using their own dirty_ratio, but new memcgs would get the 
+> > new value by default.  The ratio would act over the amount of available 
+> > memory to the cgroup as though it were its own "virtual system" operating 
+> > with a subset of the system's RAM and the same global ratio.
+> 
+> Agreed.
+> 
+BTW, please add background_dirty_ratio in the same series of patches.
+(or something other to kick background-writeback in proper manner.)
 
-The Moorestown platform requires IOAPIC for all interrupts from the
-south complex, since there is no legacy PIC.
+If not, we can't kick background write-back until we're caught by dirty_ratio.
 
-Furthermore, Moorestown I/O requires PCI.  Moorestown PCI depends on PCI MMCONFIG
-and DIRECT method to perform device enumeration, as there is no PCI BIOS.
+Thanks,
+-Kame
 
-[ hpa: rewrote commit message ]
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-LKML-Reference: <1267120934-9505-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/Kconfig |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f032294..2697fdb 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -388,8 +388,12 @@ config X86_ELAN
- 
- config X86_MRST
-        bool "Moorestown MID platform"
-+	depends on PCI
-+	depends on PCI_GOANY
-+	depends on PCI_IOAPIC
- 	depends on X86_32
- 	depends on X86_EXTENDED_PLATFORM
-+	depends on X86_IO_APIC
- 	select APB_TIMER
- 	---help---
- 	  Moorestown is Intel's Low Power Intel Architecture (LPIA) based Moblin
+
+
