@@ -1,45 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965488Ab0BZRbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 12:31:22 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57124 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965461Ab0BZRbV (ORCPT
+	id S965496Ab0BZReA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 12:34:00 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:59650 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965461Ab0BZRd7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 12:31:21 -0500
-Date: Fri, 26 Feb 2010 18:31:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-Message-ID: <20100226173115.GG16335@basil.fritz.box>
-References: <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home>
+	Fri, 26 Feb 2010 12:33:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GIe98yN9SoXwd/hYZuTAkTW4WYF+UCjTwmYeo+2GkI5gbbIfM9Yk0+izCVp8qzdTSS
+         QtvTmMzQCylCWvGrJjPwUUs5XK/+OlvOvZPjluKw/h852Lz/tpQbA8g2nSKcwB5BRA4I
+         qExcRvZJzxmHl13Ejz03as+Zz7wYWs3gdi7dY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002261123520.7719@router.home>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20100226081418.5902446f.akpm@linux-foundation.org>
+References: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
+	 <b170af451002260238p29c7db97nd50154bf7288ef42@mail.gmail.com>
+	 <20100226081418.5902446f.akpm@linux-foundation.org>
+Date: Fri, 26 Feb 2010 18:33:57 +0100
+Message-ID: <b170af451002260933i6a7a5e1el619f8e71c3ae0bc8@mail.gmail.com>
+Subject: Re: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep 
+	(w. timeout) until wake_up
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 11:24:50AM -0600, Christoph Lameter wrote:
-> On Fri, 26 Feb 2010, Andi Kleen wrote:
-> 
-> > > > Memory hotplug with node add never quite worked on x86 before,
-> > > > for various reasons not related to slab.
-> > >
-> > > Ok but why did things break in such a big way?
-> >
-> > 1) numa memory hotadd never worked
-> 
-> Well Kamesan indicated that this worked if a cpu became online.
+W dniu 26 lutego 2010 17:14 użytkownik Andrew Morton
+<akpm@linux-foundation.org> napisał:
+> On Fri, 26 Feb 2010 11:38:59 +0100 Rafa Miecki <zajec5@gmail.com> wrote:
+>
+>> +#define wait_interruptible_timeout(wq, timeout)
+>>     \
+>> +({                                   \
+>> +    long ret = timeout;                      \
+>> +                                    \
+>> +    DEFINE_WAIT(wait);                      \
+>> +    prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);       \
+>> +    if (!signal_pending(current))                  \
+>> +        ret = schedule_timeout(ret);            \
+>> +    finish_wait(&wq, &wait);                   \
+>> +                                    \
+>> +    ret;                             \
+>> +})
+>
+> It's often a mistake to use signals in-kernel.  Signals are more a
+> userspace thing and it's better to use the lower-level kernel-specific
+> messaging tools in-kernel.  Bear in mind that userspace can
+> independently and asynchronously send, accept and block signals.
 
-I mean in the general case. There were tons of problems all over.
+Can you point me to something kernel-level please?
 
--Andi
+
+> Can KMS use wait_event_interruptible_timeout()?
+
+No. Please check definition of this:
+
+#define wait_event_interruptible_timeout(wq, condition, timeout)	\
+({									\
+	long __ret = timeout;						\
+	if (!(condition))						\
+		__wait_event_interruptible_timeout(wq, condition, __ret); \
+	__ret;								\
+})
+
+It uses condition there, but that's not a big issue. We just need to
+pass 0 (false) there and it will work so far.
+
+But then check __wait_event_interruptible_timeout definition, please.
+It goes into sleep and after waking up it checks for value returned by
+schedule_timeout. That's what breaks our (needed by radeon) sleeping.
+If timeout didn't expire it does into sleep again!
+
+What we need is continue reclocking after waking up. If this has
+happend before timeout expired, that means we was woken up by VBLANK
+interrupt handler. We love that situation and we do not want to go
+sleep again.
+
+On the other hand we need to have some timeout in case VBLANK
+interrupt won't come.
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Rafał
