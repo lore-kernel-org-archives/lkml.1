@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935753Ab0BZJjx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 04:39:53 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40471
+	id S935778Ab0BZJkB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 04:40:01 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40477
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935695Ab0BZJjw (ORCPT
+	by vger.kernel.org with ESMTP id S935755Ab0BZJj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 04:39:52 -0500
-Date: Fri, 26 Feb 2010 01:40:10 -0800 (PST)
-Message-Id: <20100226.014010.239722623.davem@davemloft.net>
+	Fri, 26 Feb 2010 04:39:58 -0500
+Date: Fri, 26 Feb 2010 01:40:16 -0800 (PST)
+Message-Id: <20100226.014016.200109230.davem@davemloft.net>
 To: joe@perches.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-next 1/7] drivers/net/chelsio: Use pr_<level>,
- netif_msg_<type>
+Cc: netdev@vger.kernel.org, gallatin@myri.com, brice@myri.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net-next 2/7] drivers/net/myri10ge: Use pr_<level> and
+ netdev_<level>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <819e937a3feefb278c2816db2947eff95dd6740a.1266893507.git.joe@perches.com>
+In-Reply-To: <0a98bb59c8ba36ea37bac53137e2b594bbc984d8.1266893507.git.joe@perches.com>
 References: <cover.1266893507.git.joe@perches.com>
-	<819e937a3feefb278c2816db2947eff95dd6740a.1266893507.git.joe@perches.com>
+	<0a98bb59c8ba36ea37bac53137e2b594bbc984d8.1266893507.git.joe@perches.com>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,26 +27,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joe Perches <joe@perches.com>
-Date: Mon, 22 Feb 2010 18:56:57 -0800
+Date: Mon, 22 Feb 2010 18:56:58 -0800
 
-> Convert CH_<level> and CH_DBG uses to pr_<level> and netif equivalents
-> Remove CH_<level> and CH_DBG macro definitions
+> Add #define pr_fmt(fmt)
+> Convert logging messages to pr_<level> and netdev_<level>
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
 
-Applied, thanks Joe.
-
-BTW:
-
-> @@ -734,8 +734,9 @@ int t1_elmer0_ext_intr_handler(adapter_t *adapter)
->  		break;
->  	case CHBT_BOARD_8000:
->  	case CHBT_BOARD_CHT110:
-> -		CH_DBG(adapter, INTR, "External interrupt cause 0x%x\n",
-> -		       cause);
-> +		if (netif_msg_intr(adapter))
-> +			dev_dbg(&adapter->pdev->dev, 
-
-Trailing whitespace on that last line.  I fixed it up when
-adding the patch to my tree.
-
+Applied.
