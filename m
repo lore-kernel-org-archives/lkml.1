@@ -1,142 +1,129 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966308Ab0BZVie (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:38:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38680 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966285Ab0BZVi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:38:26 -0500
-Date: Fri, 26 Feb 2010 16:37:21 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: fweisbec@gmail.com, mingo@elte.hu, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       hpa@zytor.com, tglx@linutronix.de, mhiramat@redhat.com,
-       heiko.carstens@de.ibm.com, benh@kernel.crashing.org,
-       davem@davemloft.net, lethal@linux-sh.org, schwidefsky@de.ibm.com,
-       brueckner@linux.vnet.ibm.com, tony.luck@intel.com
-Message-Id: <8ff782d3c759a6577faf9bf92027cdc40f624712.1267214186.git.jbaron@redhat.com>
-In-Reply-To: <cover.1267214186.git.jbaron@redhat.com>
-References: <cover.1267214186.git.jbaron@redhat.com>
-Subject: [PATCH 06/12] syscalls: add ARCH_COMPAT_SYSCALL_DEFINE()
+	id S966298Ab0BZVic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:38:32 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:34697 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S966287Ab0BZVi2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 16:38:28 -0500
+Date: Sat, 27 Feb 2010 00:38:25 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: Martyn Welch <martyn.welch@ge.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
+Subject: Re: Gianfar driver failing on MPC8641D based board
+Message-ID: <20100226213825.GA32363@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+ <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+ <20100226031452.GA11319@oksana.dev.rtsoft.ru>
+ <4B87B937.6010204@ge.com>
+ <20100226143532.GA31622@oksana.dev.rtsoft.ru>
+ <4B87E01E.4070704@windriver.com>
+ <4B87E662.3080106@ge.com>
+ <4B87E9EF.3010604@ge.com>
+ <20100226161058.GA22954@oksana.dev.rtsoft.ru>
+ <4B87F67E.5070601@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4B87F67E.5070601@windriver.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ARCH_COMPAT_SYSCALL_DEFINE#N() macro which prepends "arch_compat_sys" to
-arch specific compat syscall names. Identifies the 'compat' syscalls.
+On Fri, Feb 26, 2010 at 11:27:42AM -0500, Paul Gortmaker wrote:
+> On 10-02-26 11:10 AM, Anton Vorontsov wrote:
+> > On Fri, Feb 26, 2010 at 03:34:07PM +0000, Martyn Welch wrote:
+> > [...]
+> >> Out of 10 boot attempts, 7 failed.
+> > 
+> > OK, I see why. With ip=on (dhcp boot) it's much harder to trigger
+> > it. With static ip config can I see the same.
+> 
+> I'd kind of expected to see us stuck in gianfar on that lock, but
+> the SysRQ-T doesn't show us hung up anywhere in gianfar itself.
+> [This was on a base 2.6.33, with just a small sysrq fix patch]
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
----
- include/linux/syscalls.h |   41 ++++++++++++++++++++++++-----------------
- 1 files changed, 24 insertions(+), 17 deletions(-)
+> [df841a30] [c0009fc4] __switch_to+0x8c/0xf8                                     
+> [df841a50] [c0350160] schedule+0x354/0x92c                                      
+> [df841ae0] [c0331394] rpc_wait_bit_killable+0x2c/0x54                           
+> [df841af0] [c0350eb0] __wait_on_bit+0x9c/0x108                                  
+> [df841b10] [c0350fc0] out_of_line_wait_on_bit+0xa4/0xb4                         
+> [df841b40] [c0331cf0] __rpc_execute+0x16c/0x398                                 
+> [df841b90] [c0329abc] rpc_run_task+0x48/0x9c                                    
+> [df841ba0] [c0329c40] rpc_call_sync+0x54/0x88                                   
+> [df841bd0] [c015e780] nfs_proc_lookup+0x94/0xe8                                 
+> [df841c20] [c014eb60] nfs_lookup+0x12c/0x230                                    
+> [df841d50] [c00b9680] do_lookup+0x118/0x288                                     
+> [df841d80] [c00bb904] link_path_walk+0x194/0x1118                               
+> [df841df0] [c00bcb08] path_walk+0x8c/0x168                                      
+> [df841e20] [c00bcd6c] do_path_lookup+0x74/0x7c                                  
+> [df841e40] [c00be148] do_filp_open+0x5d4/0xba4                                  
+> [df841f10] [c00abe94] do_sys_open+0xac/0x190                                    
 
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index e601985..cd7b959 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -141,7 +141,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))				\
- 	  __attribute__((section("_ftrace_events")))			\
- 	  event_enter_##sname = {					\
--		.name                   = "sys_enter"#sname,		\
-+		.name                   = "enter_"#sname,		\
- 		.system                 = "syscalls",			\
- 		.event                  = &enter_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
-@@ -163,7 +163,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))				\
- 	  __attribute__((section("_ftrace_events")))			\
- 	  event_exit_##sname = {					\
--		.name                   = "sys_exit"#sname,		\
-+		.name                   = "exit_"#sname,		\
- 		.system                 = "syscalls",			\
- 		.event                  = &exit_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
-@@ -181,7 +181,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))			\
- 	  __attribute__((section("__syscalls_metadata")))	\
- 	  __syscall_meta_##sname = {				\
--		.name 		= "sys"#sname,			\
-+		.name 		= #sname,			\
- 		.nb_args 	= nb,				\
- 		.types		= types_##sname,		\
- 		.args		= args_##sname,			\
-@@ -194,32 +194,39 @@ struct perf_event_attr;
- 	};
+Yeah, I don't think this is gianfar-related. It must be something
+else triggered by the fact that gianfar no longer sends stuff.
+
+OK, I think I found what's happening in gianfar.
+
+Some background...
+
+start_xmit() prepares new skb for transmitting, generally it does
+three things:
+
+1. sets up all BDs (marks them ready to send), except the first one.
+2. stores skb into tx_queue->tx_skbuff so that clean_tx_ring()
+   would cleanup it later.
+3. sets up the first BD, i.e. marks it ready.
+
+Here is what clean_tx_ring() does:
+
+1. reads skbs from tx_queue->tx_skbuff
+2. Checks if the *last* BD is ready. If it's still ready [to send]
+   then it it isn't transmitted, so clean_tx_ring() returns.
+   Otherwise it actually cleanups BDs. All is OK.
+
+Now, if there is just one BD, code flow:
+
+- start_xmit(): stores skb into tx_skbuff. Note that the first BD
+  (which is also the last one) isn't marked as ready, yet.
+- clean_tx_ring(): sees that skb is not null, *and* its lstatus
+  says that it is NOT ready (like if BD was sent), so it cleans
+  it up (bad!)
+- start_xmit(): marks BD as ready [to send], but it's too late.
+
+We can fix this simply by reordering lstatus/tx_skbuff writes.
+
+It works flawlessly on my p2020, please try it.
+
+Thanks!
+
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 8bd3c9f..cccb409 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	}
  
- #define SYSCALL_DEFINE0(sname)					\
--	SYSCALL_TRACE_ENTER_EVENT(_##sname);			\
--	SYSCALL_TRACE_EXIT_EVENT(_##sname);			\
-+	SYSCALL_TRACE_ENTER_EVENT(sys_##sname);			\
-+	SYSCALL_TRACE_EXIT_EVENT(sys_##sname);			\
- 	static const struct syscall_metadata __used		\
- 	  __attribute__((__aligned__(4)))			\
- 	  __attribute__((section("__syscalls_metadata")))	\
--	  __syscall_meta__##sname = {				\
-+	  __syscall_meta_sys_##sname = {			\
- 		.name 		= "sys_"#sname,			\
- 		.nb_args 	= 0,				\
- 		.ftrace_enter	= 0,				\
- 		.ftrace_exit	= 0,				\
- 		.perf_enter	= 0,				\
- 		.perf_exit	= 0,				\
--		.enter_event	= &event_enter__##sname,	\
--		.exit_event	= &event_exit__##sname,		\
-+		.enter_event	= &event_enter_sys_##sname,	\
-+		.exit_event	= &event_exit_sys_##sname,	\
- 	};							\
- 	asmlinkage long sys_##sname(void)
- #else
- #define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
- #endif
+ 	/* setup the TxBD length and buffer pointer for the first BD */
+-	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+ 	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+ 			skb_headlen(skb), DMA_TO_DEVICE);
  
--#define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
--#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
--#define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
--#define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
--#define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
--#define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, sys_##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, sys_##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, sys_##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, sys_##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, sys_##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, sys_##name, __VA_ARGS__)
+@@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	txbdp_start->lstatus = lstatus;
+ 
++	eieio(); /* force lstatus write before tx_skbuff */
 +
-+#define ARCH_COMPAT_SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, arch_compat_sys_##name, __VA_ARGS__)
- 
- #ifdef CONFIG_PPC64
- #define SYSCALL_ALIAS(alias, name)					\
-@@ -255,21 +262,21 @@ struct perf_event_attr;
- #define SYSCALL_DEFINE(name) static inline long SYSC_##name
- 
- #define __SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));		\
-+	asmlinkage long name(__SC_DECL##x(__VA_ARGS__));		\
- 	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));	\
- 	asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))		\
- 	{								\
- 		__SC_TEST##x(__VA_ARGS__);				\
- 		return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));	\
- 	}								\
--	SYSCALL_ALIAS(sys##name, SyS##name);				\
-+	SYSCALL_ALIAS(name, SyS##name);				\
- 	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
- 
- #else /* CONFIG_HAVE_SYSCALL_WRAPPERS */
- 
- #define SYSCALL_DEFINE(name) asmlinkage long sys_##name
- #define __SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
-+	asmlinkage long name(__SC_DECL##x(__VA_ARGS__))
- 
- #endif /* CONFIG_HAVE_SYSCALL_WRAPPERS */
- 
--- 
-1.6.5.1
-
++	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
++
+ 	/* Update the current skb pointer to the next entry we will use
+ 	 * (wrapping if necessary) */
+ 	tx_queue->skb_curtx = (tx_queue->skb_curtx + 1) &
