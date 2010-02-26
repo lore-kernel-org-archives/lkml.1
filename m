@@ -1,111 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936110Ab0BZMVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:21:42 -0500
-Received: from legolas.restena.lu ([158.64.1.34]:58882 "EHLO
-	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935877Ab0BZMVh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:21:37 -0500
-Date: Fri, 26 Feb 2010 13:04:54 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Richard Purdie <rpurdie@linux.intel.com>,
-       Mike Frysinger <vapier@gentoo.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH] backlight, blackfin: fix missing registration failure
- handling
-Message-ID: <20100226130454.228af99a@neptune.home>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
-References: <20100221002831.689bace8@neptune.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S935913Ab0BZMO3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:14:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43301 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935884Ab0BZMOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:22 -0500
+From: Tejun Heo <tj@kernel.org>
+To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       oleg@redhat.com
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 13/43] workqueue: define masks for work flags and conditionalize STATIC flags
+Date: Fri, 26 Feb 2010 21:22:50 +0900
+Message-Id: <1267187000-18791-14-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check newly registered backlight_device for error and properly
-return error to parent
-Mark struct backlight_ops as const.
+Work flags are about to see more traditional mask handling.  Define
+WORK_STRUCT_*_BIT as the bit position constant and redefine
+WORK_STRUCT_* as bit masks.  Also, make WORK_STRUCT_STATIC_* flags
+conditional
 
-Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-Acked-by: Mike Frysinger <vapier@gentoo.org> (constify struct backlight_ops)
+While at it, re-define these constants as enums and use
+WORK_STRUCT_STATIC instead of hard-coding 2 in
+WORK_DATA_STATIC_INIT().
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- drivers/video/bf54x-lq043fb.c           |   10 +++++++++-
- drivers/video/bfin-t350mcqb-fb.c        |   10 +++++++++-
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ include/linux/workqueue.h |   29 +++++++++++++++++++++--------
+ kernel/workqueue.c        |   12 ++++++------
+ 2 files changed, 27 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index db4e6f7..a589216 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -463,7 +463,7 @@ static int bl_get_brightness(struct backlight_device *bd)
- 	return 0;
- }
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index d89cfc1..d60c570 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -22,12 +22,25 @@ typedef void (*work_func_t)(struct work_struct *work);
+  */
+ #define work_data_bits(work) ((unsigned long *)(&(work)->data))
  
--static struct backlight_ops bfin_lq043fb_bl_ops = {
-+static const struct backlight_ops bfin_lq043fb_bl_ops = {
- 	.get_brightness = bl_get_brightness,
++enum {
++	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
++#ifdef CONFIG_DEBUG_OBJECTS_WORK
++	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
++#endif
++
++	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
++#ifdef CONFIG_DEBUG_OBJECTS_WORK
++	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
++#else
++	WORK_STRUCT_STATIC	= 0,
++#endif
++
++	WORK_STRUCT_FLAG_MASK	= 3UL,
++	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
++};
++
+ struct work_struct {
+ 	atomic_long_t data;
+-#define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
+-#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
+-#define WORK_STRUCT_FLAG_MASK (3UL)
+-#define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+ 	struct list_head entry;
+ 	work_func_t func;
+ #ifdef CONFIG_LOCKDEP
+@@ -36,7 +49,7 @@ struct work_struct {
  };
  
-@@ -678,6 +678,12 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
- 	bl_dev =
- 	    backlight_device_register("bf54x-bl", NULL, NULL,
- 				      &bfin_lq043fb_bl_ops);
-+	if (IS_ERR(bl_dev)) {
-+		printk(KERN_ERR DRIVER_NAME
-+		       ": unable to register backlight.\n");
-+		ret = -EINVAL;
-+		goto out9;
-+	}
- 	bl_dev->props.max_brightness = 255;
+ #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
+-#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(2)
++#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(WORK_STRUCT_STATIC)
  
- 	lcd_dev = lcd_device_register(DRIVER_NAME, &pdev->dev, NULL, &bfin_lcd_ops);
-@@ -686,6 +692,8 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
+ struct delayed_work {
+ 	struct work_struct work;
+@@ -98,7 +111,7 @@ extern void __init_work(struct work_struct *work, int onstack);
+ extern void destroy_work_on_stack(struct work_struct *work);
+ static inline unsigned int work_static(struct work_struct *work)
+ {
+-	return *work_data_bits(work) & (1 << WORK_STRUCT_STATIC);
++	return *work_data_bits(work) & WORK_STRUCT_STATIC;
+ }
+ #else
+ static inline void __init_work(struct work_struct *work, int onstack) { }
+@@ -167,7 +180,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
+  * @work: The work item in question
+  */
+ #define work_pending(work) \
+-	test_bit(WORK_STRUCT_PENDING, work_data_bits(work))
++	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
  
- 	return 0;
+ /**
+  * delayed_work_pending - Find out whether a delayable work item is currently
+@@ -182,7 +195,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
+  * @work: The work item in question
+  */
+ #define work_clear_pending(work) \
+-	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
++	clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
  
-+out9:
-+	unregister_framebuffer(fbinfo);
- out8:
- 	free_irq(info->irq, info);
- out7:
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index bc204c6..fe1492b 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -381,7 +381,7 @@ static int bl_get_brightness(struct backlight_device *bd)
- 	return 0;
+ enum {
+ 	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 79fd183..c73d5e3 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -115,7 +115,7 @@ static int work_fixup_activate(void *addr, enum debug_obj_state state)
+ 		 * statically initialized. We just make sure that it
+ 		 * is tracked in the object tracker.
+ 		 */
+-		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
++		if (test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work))) {
+ 			debug_object_init(work, &work_debug_descr);
+ 			debug_object_activate(work, &work_debug_descr);
+ 			return 0;
+@@ -232,7 +232,7 @@ static inline void set_wq_data(struct work_struct *work,
+ 	BUG_ON(!work_pending(work));
+ 
+ 	atomic_long_set(&work->data, (unsigned long)cwq | work_static(work) |
+-			(1UL << WORK_STRUCT_PENDING) | extra_flags);
++			WORK_STRUCT_PENDING | extra_flags);
  }
  
--static struct backlight_ops bfin_lq043fb_bl_ops = {
-+static const struct backlight_ops bfin_lq043fb_bl_ops = {
- 	.get_brightness = bl_get_brightness,
- };
+ /*
+@@ -330,7 +330,7 @@ queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
+ {
+ 	int ret = 0;
  
-@@ -572,6 +572,12 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
- 	bl_dev =
- 	    backlight_device_register("bf52x-bl", NULL, NULL,
- 				      &bfin_lq043fb_bl_ops);
-+	if (IS_ERR(bl_dev)) {
-+		printk(KERN_ERR DRIVER_NAME
-+		       ": unable to register backlight.\n");
-+		ret = -EINVAL;
-+		goto out9;
-+	}
- 	bl_dev->props.max_brightness = 255;
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+ 		__queue_work(cpu, wq, work);
+ 		ret = 1;
+ 	}
+@@ -380,7 +380,7 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+ 	struct timer_list *timer = &dwork->timer;
+ 	struct work_struct *work = &dwork->work;
  
- 	lcd_dev = lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
-@@ -580,6 +586,8 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+ 		BUG_ON(timer_pending(timer));
+ 		BUG_ON(!list_empty(&work->entry));
  
- 	return 0;
+@@ -516,7 +516,7 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 	 * might deadlock.
+ 	 */
+ 	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
+-	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
++	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
+ 	init_completion(&barr->done);
  
-+out9:
-+	unregister_framebuffer(fbinfo);
- out8:
- 	free_irq(info->irq, info);
- out7:
+ 	debug_work_activate(&barr->work);
+@@ -628,7 +628,7 @@ static int try_to_grab_pending(struct work_struct *work)
+ 	struct cpu_workqueue_struct *cwq;
+ 	int ret = -1;
+ 
+-	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
+ 		return 0;
+ 
+ 	/*
 -- 
-1.6.4.4
+1.6.4.2
 
