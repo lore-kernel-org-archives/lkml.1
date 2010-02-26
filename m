@@ -1,19 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965130Ab0BZPX0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 10:23:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43402 "EHLO mx1.redhat.com"
+	id S965120Ab0BZPXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 10:23:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38605 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965036Ab0BZPXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 10:23:18 -0500
+	id S965110Ab0BZPXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 10:23:22 -0500
 From: Matthew Garrett <mjg@redhat.com>
 To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH 14/14] toshiba_acpi: Add full hotkey support
-Date: Fri, 26 Feb 2010 10:18:47 -0500
-Message-Id: <1267197527-18062-15-git-send-email-mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Erik Andren <erik.andren@gmail.com>
+Subject: [PATCH 12/14] dell-laptop: Add another Dell laptop to the DMI whitelist
+Date: Fri, 26 Feb 2010 10:18:45 -0500
+Message-Id: <1267197527-18062-13-git-send-email-mjg@redhat.com>
 In-Reply-To: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 X-SA-Do-Not-Run: Yes
@@ -24,279 +22,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Calling the ENAB method on Toshiba laptops results in notifications being
-sent when laptop hotkeys are pressed.  This patch simply calls that method
-and sets up an input device if it's successful.
+From: Erik Andren <erik.andren@gmail.com>
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+The Latitude C640 has another variation of dell in its DMI vendor entry.
+Add it to the whitelist in order to enjoy the sweet fruits of software
+backlight toggling.
+
+Signed-off-by: Erik Andren <erik.andren@gmail.com>
 ---
- drivers/platform/x86/toshiba_acpi.c |  206 +++++++++++++++++++++++++++++++++-
- 1 files changed, 199 insertions(+), 7 deletions(-)
+ drivers/platform/x86/dell-laptop.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index 77bf5d8..26c2117 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -46,6 +46,7 @@
- #include <linux/backlight.h>
- #include <linux/platform_device.h>
- #include <linux/rfkill.h>
-+#include <linux/input.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -62,9 +63,10 @@ MODULE_LICENSE("GPL");
- 
- /* Toshiba ACPI method paths */
- #define METHOD_LCD_BRIGHTNESS	"\\_SB_.PCI0.VGA_.LCD_._BCM"
--#define METHOD_HCI_1		"\\_SB_.VALD.GHCI"
--#define METHOD_HCI_2		"\\_SB_.VALZ.GHCI"
-+#define TOSH_INTERFACE_1	"\\_SB_.VALD"
-+#define TOSH_INTERFACE_2	"\\_SB_.VALZ"
- #define METHOD_VIDEO_OUT	"\\_SB_.VALX.DSSX"
-+#define GHCI_METHOD		".GHCI"
- 
- /* Toshiba HCI interface definitions
-  *
-@@ -116,6 +118,36 @@ static const struct acpi_device_id toshiba_device_ids[] = {
- };
- MODULE_DEVICE_TABLE(acpi, toshiba_device_ids);
- 
-+struct key_entry {
-+	char type;
-+	u16 code;
-+	u16 keycode;
-+};
-+
-+enum {KE_KEY, KE_END};
-+
-+static struct key_entry toshiba_acpi_keymap[]  = {
-+	{KE_KEY, 0x101, KEY_MUTE},
-+	{KE_KEY, 0x13b, KEY_COFFEE},
-+	{KE_KEY, 0x13c, KEY_BATTERY},
-+	{KE_KEY, 0x13d, KEY_SLEEP},
-+	{KE_KEY, 0x13e, KEY_SUSPEND},
-+	{KE_KEY, 0x13f, KEY_SWITCHVIDEOMODE},
-+	{KE_KEY, 0x140, KEY_BRIGHTNESSDOWN},
-+	{KE_KEY, 0x141, KEY_BRIGHTNESSUP},
-+	{KE_KEY, 0x142, KEY_WLAN},
-+	{KE_KEY, 0x143, KEY_PROG1},
-+	{KE_KEY, 0xb05, KEY_PROG2},
-+	{KE_KEY, 0xb06, KEY_WWW},
-+	{KE_KEY, 0xb07, KEY_MAIL},
-+	{KE_KEY, 0xb30, KEY_STOP},
-+	{KE_KEY, 0xb31, KEY_PREVIOUSSONG},
-+	{KE_KEY, 0xb32, KEY_NEXTSONG},
-+	{KE_KEY, 0xb33, KEY_PLAYPAUSE},
-+	{KE_KEY, 0xb5a, KEY_MEDIA},
-+	{KE_END, 0, 0},
-+};
-+
- /* utility
-  */
- 
-@@ -251,6 +283,8 @@ static acpi_status hci_read2(u32 reg, u32 *out1, u32 *out2, u32 *result)
- struct toshiba_acpi_dev {
- 	struct platform_device *p_dev;
- 	struct rfkill *bt_rfk;
-+	struct input_dev *hotkey_dev;
-+	acpi_handle handle;
- 
- 	const char *bt_name;
- 
-@@ -711,8 +745,159 @@ static struct backlight_ops toshiba_backlight_data = {
-         .update_status  = set_lcd_status,
+diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell-laptop.c
+index 04b2ddb..b7f4d27 100644
+--- a/drivers/platform/x86/dell-laptop.c
++++ b/drivers/platform/x86/dell-laptop.c
+@@ -81,6 +81,13 @@ static const struct dmi_system_id __initdata dell_device_table[] = {
+ 			DMI_MATCH(DMI_CHASSIS_TYPE, "8"),
+ 		},
+ 	},
++	{
++		.ident = "Dell Computer Corporation",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer Corporation"),
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"),
++		},
++	},
+ 	{ }
  };
  
-+static struct key_entry *toshiba_acpi_get_entry_by_scancode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = toshiba_acpi_keymap; key->type != KE_END; key++)
-+		if (code == key->code)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static struct key_entry *toshiba_acpi_get_entry_by_keycode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = toshiba_acpi_keymap; key->type != KE_END; key++)
-+		if (code == key->keycode && key->type == KE_KEY)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static int toshiba_acpi_getkeycode(struct input_dev *dev, int scancode,
-+				   int *keycode)
-+{
-+	struct key_entry *key = toshiba_acpi_get_entry_by_scancode(scancode);
-+
-+	if (key && key->type == KE_KEY) {
-+		*keycode = key->keycode;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int toshiba_acpi_setkeycode(struct input_dev *dev, int scancode,
-+				   int keycode)
-+{
-+	struct key_entry *key;
-+	int old_keycode;
-+
-+	if (keycode < 0 || keycode > KEY_MAX)
-+		return -EINVAL;
-+
-+	key = toshiba_acpi_get_entry_by_scancode(scancode);
-+	if (key && key->type == KE_KEY) {
-+		old_keycode = key->keycode;
-+		key->keycode = keycode;
-+		set_bit(keycode, dev->keybit);
-+		if (!toshiba_acpi_get_entry_by_keycode(old_keycode))
-+			clear_bit(old_keycode, dev->keybit);
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static void toshiba_acpi_notify(acpi_handle handle, u32 event, void *context)
-+{
-+	u32 hci_result, value;
-+	struct key_entry *key;
-+
-+	if (event != 0x80)
-+		return;
-+	do {
-+		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
-+		if (hci_result == HCI_SUCCESS) {
-+			if (value == 0x100)
-+				continue;
-+			else if (value & 0x80) {
-+				key = toshiba_acpi_get_entry_by_scancode
-+					(value & ~0x80);
-+				if (!key) {
-+					printk(MY_INFO "Unknown key %x\n",
-+					       value & ~0x80);
-+					continue;
-+				}
-+				input_report_key(toshiba_acpi.hotkey_dev,
-+						 key->keycode, 1);
-+				input_sync(toshiba_acpi.hotkey_dev);
-+				input_report_key(toshiba_acpi.hotkey_dev,
-+						 key->keycode, 0);
-+				input_sync(toshiba_acpi.hotkey_dev);
-+			}
-+		} else if (hci_result == HCI_NOT_SUPPORTED) {
-+			/* This is a workaround for an unresolved issue on
-+			 * some machines where system events sporadically
-+			 * become disabled. */
-+			hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
-+			printk(MY_NOTICE "Re-enabled hotkeys\n");
-+		}
-+	} while (hci_result != HCI_EMPTY);
-+}
-+
-+static int toshiba_acpi_setup_keyboard(char *device)
-+{
-+	acpi_status status;
-+	acpi_handle handle;
-+	int result;
-+	const struct key_entry *key;
-+
-+	status = acpi_get_handle(NULL, device, &handle);
-+	if (ACPI_FAILURE(status)) {
-+		printk(MY_INFO "Unable to get notification device\n");
-+		return -ENODEV;
-+	}
-+
-+	toshiba_acpi.handle = handle;
-+
-+	status = acpi_evaluate_object(handle, "ENAB", NULL, NULL);
-+	if (ACPI_FAILURE(status)) {
-+		printk(MY_INFO "Unable to enable hotkeys\n");
-+		return -ENODEV;
-+	}
-+
-+	status = acpi_install_notify_handler(handle, ACPI_DEVICE_NOTIFY,
-+					      toshiba_acpi_notify, NULL);
-+	if (ACPI_FAILURE(status)) {
-+		printk(MY_INFO "Unable to install hotkey notification\n");
-+		return -ENODEV;
-+	}
-+
-+	toshiba_acpi.hotkey_dev = input_allocate_device();
-+	if (!toshiba_acpi.hotkey_dev) {
-+		printk(MY_INFO "Unable to register input device\n");
-+		return -ENOMEM;
-+	}
-+
-+	toshiba_acpi.hotkey_dev->name = "Toshiba input device";
-+	toshiba_acpi.hotkey_dev->phys = device;
-+	toshiba_acpi.hotkey_dev->id.bustype = BUS_HOST;
-+	toshiba_acpi.hotkey_dev->getkeycode = toshiba_acpi_getkeycode;
-+	toshiba_acpi.hotkey_dev->setkeycode = toshiba_acpi_setkeycode;
-+
-+	for (key = toshiba_acpi_keymap; key->type != KE_END; key++) {
-+		set_bit(EV_KEY, toshiba_acpi.hotkey_dev->evbit);
-+		set_bit(key->keycode, toshiba_acpi.hotkey_dev->keybit);
-+	}
-+
-+	result = input_register_device(toshiba_acpi.hotkey_dev);
-+	if (result) {
-+		printk(MY_INFO "Unable to register input device\n");
-+		return result;
-+	}
-+
-+	return 0;
-+}
-+
- static void toshiba_acpi_exit(void)
- {
-+	if (toshiba_acpi.hotkey_dev)
-+		input_unregister_device(toshiba_acpi.hotkey_dev);
-+
- 	if (toshiba_acpi.bt_rfk) {
- 		rfkill_unregister(toshiba_acpi.bt_rfk);
- 		rfkill_destroy(toshiba_acpi.bt_rfk);
-@@ -726,6 +911,9 @@ static void toshiba_acpi_exit(void)
- 	if (toshiba_proc_dir)
- 		remove_proc_entry(PROC_TOSHIBA, acpi_root_dir);
- 
-+	acpi_remove_notify_handler(toshiba_acpi.handle, ACPI_DEVICE_NOTIFY,
-+				   toshiba_acpi_notify);
-+
- 	platform_device_unregister(toshiba_acpi.p_dev);
- 
- 	return;
-@@ -742,11 +930,15 @@ static int __init toshiba_acpi_init(void)
- 		return -ENODEV;
- 
- 	/* simple device detection: look for HCI method */
--	if (is_valid_acpi_path(METHOD_HCI_1))
--		method_hci = METHOD_HCI_1;
--	else if (is_valid_acpi_path(METHOD_HCI_2))
--		method_hci = METHOD_HCI_2;
--	else
-+	if (is_valid_acpi_path(TOSH_INTERFACE_1 GHCI_METHOD)) {
-+		method_hci = TOSH_INTERFACE_1 GHCI_METHOD;
-+		if (toshiba_acpi_setup_keyboard(TOSH_INTERFACE_1))
-+			printk(MY_INFO "Unable to activate hotkeys\n");
-+	} else if (is_valid_acpi_path(TOSH_INTERFACE_2 GHCI_METHOD)) {
-+		method_hci = TOSH_INTERFACE_2 GHCI_METHOD;
-+		if (toshiba_acpi_setup_keyboard(TOSH_INTERFACE_2))
-+			printk(MY_INFO "Unable to activate hotkeys\n");
-+	} else
- 		return -ENODEV;
- 
- 	printk(MY_INFO "Toshiba Laptop ACPI Extras version %s\n",
+@@ -609,3 +616,4 @@ MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
+ MODULE_DESCRIPTION("Dell laptop driver");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("dmi:*svnDellInc.:*:ct8:*");
++MODULE_ALIAS("dmi:*svnDellComputerCorporation.:*:ct8:*");
 -- 
 1.6.6.1
 
