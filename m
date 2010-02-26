@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936171Ab0BZMYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:24:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43310 "EHLO hera.kernel.org"
+	id S935911Ab0BZMZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:25:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43284 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935886Ab0BZMOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:23 -0500
+	id S935860Ab0BZMOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:18 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -14,405 +14,370 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 10/43] stop_machine: reimplement without using workqueue
-Date: Fri, 26 Feb 2010 21:22:47 +0900
-Message-Id: <1267187000-18791-11-git-send-email-tj@kernel.org>
+Subject: [PATCH 30/43] workqueue: use shared worklist and pool all workers per cpu
+Date: Fri, 26 Feb 2010 21:23:07 +0900
+Message-Id: <1267187000-18791-31-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:27 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stop_machine() is the only user of RT workqueue.  Reimplement it using
-kthreads directly and rip RT support from workqueue.  This is in
-preparation of concurrency managed workqueue.
+Use gcwq->worklist instead of cwq->worklist and break the strict
+association between a cwq and its worker.  All works queued on a cpu
+are queued on gcwq->worklist and processed by any available worker on
+the gcwq.
+
+As there no longer is strict association between a cwq and its worker,
+whether a work is executing can now only be determined by calling
+[__]find_worker_executing_work().
+
+After this change, the only association between a cwq and its worker
+is that a cwq puts a worker into shared worker pool on creation and
+kills it on destruction.  As all workqueues are still limited to
+max_active of one, this means that there are always at least as many
+workers as active works and thus there's no danger for deadlock.
+
+The break of strong association between cwqs and workers requires
+somewhat clumsy changes to current_is_keventd() and
+destroy_workqueue().  Dynamic worker pool management will remove both
+clumsy changes.  current_is_keventd() won't be necessary at all as the
+only reason it exists is to avoid queueing a work from a work which
+will be allowed just fine.  The clumsy part of destroy_workqueue() is
+added because a worker can only be destroyed while idle and there's no
+guarantee a worker is idle when its wq is going down.  With dynamic
+pool management, workers are not associated with workqueues at all and
+only idle ones will be submitted to destroy_workqueue() so the code
+won't be necessary anymore.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/stop_machine.h |    6 ++
- include/linux/workqueue.h    |   20 +++---
- init/main.c                  |    2 +
- kernel/stop_machine.c        |  151 ++++++++++++++++++++++++++++++++++-------
- kernel/workqueue.c           |    6 --
- 5 files changed, 142 insertions(+), 43 deletions(-)
+ kernel/workqueue.c |  130 +++++++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 98 insertions(+), 32 deletions(-)
 
-diff --git a/include/linux/stop_machine.h b/include/linux/stop_machine.h
-index baba3a2..2d32e06 100644
---- a/include/linux/stop_machine.h
-+++ b/include/linux/stop_machine.h
-@@ -53,6 +53,11 @@ int stop_machine_create(void);
-  */
- void stop_machine_destroy(void);
- 
-+/**
-+ * init_stop_machine: initialize stop_machine during boot
-+ */
-+void init_stop_machine(void);
-+
- #else
- 
- static inline int stop_machine(int (*fn)(void *), void *data,
-@@ -67,6 +72,7 @@ static inline int stop_machine(int (*fn)(void *), void *data,
- 
- static inline int stop_machine_create(void) { return 0; }
- static inline void stop_machine_destroy(void) { }
-+static inline void init_stop_machine(void) { }
- 
- #endif /* CONFIG_SMP */
- #endif /* _LINUX_STOP_MACHINE */
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 9466e86..0697946 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -181,12 +181,11 @@ static inline void destroy_work_on_stack(struct work_struct *work) { }
- 
- 
- extern struct workqueue_struct *
--__create_workqueue_key(const char *name, int singlethread,
--		       int freezeable, int rt, struct lock_class_key *key,
--		       const char *lock_name);
-+__create_workqueue_key(const char *name, int singlethread, int freezeable,
-+		       struct lock_class_key *key, const char *lock_name);
- 
- #ifdef CONFIG_LOCKDEP
--#define __create_workqueue(name, singlethread, freezeable, rt)	\
-+#define __create_workqueue(name, singlethread, freezeable)	\
- ({								\
- 	static struct lock_class_key __key;			\
- 	const char *__lock_name;				\
-@@ -197,19 +196,18 @@ __create_workqueue_key(const char *name, int singlethread,
- 		__lock_name = #name;				\
- 								\
- 	__create_workqueue_key((name), (singlethread),		\
--			       (freezeable), (rt), &__key,	\
-+			       (freezeable), &__key,		\
- 			       __lock_name);			\
- })
- #else
--#define __create_workqueue(name, singlethread, freezeable, rt)	\
--	__create_workqueue_key((name), (singlethread), (freezeable), (rt), \
-+#define __create_workqueue(name, singlethread, freezeable)	\
-+	__create_workqueue_key((name), (singlethread), (freezeable), \
- 			       NULL, NULL)
- #endif
- 
--#define create_workqueue(name) __create_workqueue((name), 0, 0, 0)
--#define create_rt_workqueue(name) __create_workqueue((name), 0, 0, 1)
--#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1, 0)
--#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0, 0)
-+#define create_workqueue(name) __create_workqueue((name), 0, 0)
-+#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
-+#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
-diff --git a/init/main.c b/init/main.c
-index 4cb47a1..8cf7543 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -34,6 +34,7 @@
- #include <linux/security.h>
- #include <linux/smp.h>
- #include <linux/workqueue.h>
-+#include <linux/stop_machine.h>
- #include <linux/profile.h>
- #include <linux/rcupdate.h>
- #include <linux/moduleparam.h>
-@@ -769,6 +770,7 @@ static void __init do_initcalls(void)
- static void __init do_basic_setup(void)
- {
- 	init_workqueues();
-+	init_stop_machine();
- 	cpuset_init_smp();
- 	usermodehelper_init();
- 	init_tmpfs();
-diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
-index 912823e..671a4ac 100644
---- a/kernel/stop_machine.c
-+++ b/kernel/stop_machine.c
-@@ -25,6 +25,8 @@ enum stopmachine_state {
- 	STOPMACHINE_RUN,
- 	/* Exit */
- 	STOPMACHINE_EXIT,
-+	/* Done */
-+	STOPMACHINE_DONE,
- };
- static enum stopmachine_state state;
- 
-@@ -42,10 +44,9 @@ static DEFINE_MUTEX(lock);
- static DEFINE_MUTEX(setup_lock);
- /* Users of stop_machine. */
- static int refcount;
--static struct workqueue_struct *stop_machine_wq;
-+static struct task_struct **stop_machine_threads;
- static struct stop_machine_data active, idle;
- static const struct cpumask *active_cpus;
--static void *stop_machine_work;
- 
- static void set_state(enum stopmachine_state newstate)
- {
-@@ -63,14 +64,31 @@ static void ack_state(void)
- }
- 
- /* This is the actual function which stops the CPU. It runs
-- * in the context of a dedicated stopmachine workqueue. */
--static void stop_cpu(struct work_struct *unused)
-+ * on dedicated per-cpu kthreads. */
-+static int stop_cpu(void *unused)
- {
- 	enum stopmachine_state curstate = STOPMACHINE_NONE;
--	struct stop_machine_data *smdata = &idle;
-+	struct stop_machine_data *smdata;
- 	int cpu = smp_processor_id();
- 	int err;
- 
-+repeat:
-+	/* Wait for __stop_machine() to initiate */
-+	while (true) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		/* <- kthread_stop() and __stop_machine()::smp_wmb() */
-+		if (kthread_should_stop()) {
-+			__set_current_state(TASK_RUNNING);
-+			return 0;
-+		}
-+		if (state == STOPMACHINE_PREPARE)
-+			break;
-+		schedule();
-+	}
-+	smp_rmb();	/* <- __stop_machine()::set_state() */
-+
-+	/* Okay, let's go */
-+	smdata = &idle;
- 	if (!active_cpus) {
- 		if (cpu == cpumask_first(cpu_online_mask))
- 			smdata = &active;
-@@ -104,6 +122,7 @@ static void stop_cpu(struct work_struct *unused)
- 	} while (curstate != STOPMACHINE_EXIT);
- 
- 	local_irq_enable();
-+	goto repeat;
- }
- 
- /* Callback for CPUs which aren't supposed to do anything. */
-@@ -112,46 +131,122 @@ static int chill(void *unused)
- 	return 0;
- }
- 
-+static int create_stop_machine_thread(unsigned int cpu)
-+{
-+	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
-+	struct task_struct **pp = per_cpu_ptr(stop_machine_threads, cpu);
-+	struct task_struct *p;
-+
-+	if (*pp)
-+		return -EBUSY;
-+
-+	p = kthread_create(stop_cpu, NULL, "kstop/%u", cpu);
-+	if (IS_ERR(p))
-+		return PTR_ERR(p);
-+
-+	sched_setscheduler_nocheck(p, SCHED_FIFO, &param);
-+	*pp = p;
-+	return 0;
-+}
-+
-+/* Should be called with cpu hotplug disabled and setup_lock held */
-+static void kill_stop_machine_threads(void)
-+{
-+	unsigned int cpu;
-+
-+	if (!stop_machine_threads)
-+		return;
-+
-+	for_each_online_cpu(cpu) {
-+		struct task_struct *p = *per_cpu_ptr(stop_machine_threads, cpu);
-+		if (p)
-+			kthread_stop(p);
-+	}
-+	free_percpu(stop_machine_threads);
-+	stop_machine_threads = NULL;
-+}
-+
- int stop_machine_create(void)
- {
-+	unsigned int cpu;
-+
-+	get_online_cpus();
- 	mutex_lock(&setup_lock);
- 	if (refcount)
- 		goto done;
--	stop_machine_wq = create_rt_workqueue("kstop");
--	if (!stop_machine_wq)
--		goto err_out;
--	stop_machine_work = alloc_percpu(struct work_struct);
--	if (!stop_machine_work)
-+
-+	stop_machine_threads = alloc_percpu(struct task_struct *);
-+	if (!stop_machine_threads)
- 		goto err_out;
-+
-+	/*
-+	 * cpu hotplug is disabled, create only for online cpus,
-+	 * cpu_callback() will handle cpu hot [un]plugs.
-+	 */
-+	for_each_online_cpu(cpu) {
-+		if (create_stop_machine_thread(cpu))
-+			goto err_out;
-+		kthread_bind(*per_cpu_ptr(stop_machine_threads, cpu), cpu);
-+	}
- done:
- 	refcount++;
- 	mutex_unlock(&setup_lock);
-+	put_online_cpus();
- 	return 0;
- 
- err_out:
--	if (stop_machine_wq)
--		destroy_workqueue(stop_machine_wq);
-+	kill_stop_machine_threads();
- 	mutex_unlock(&setup_lock);
-+	put_online_cpus();
- 	return -ENOMEM;
- }
- EXPORT_SYMBOL_GPL(stop_machine_create);
- 
- void stop_machine_destroy(void)
- {
-+	get_online_cpus();
- 	mutex_lock(&setup_lock);
--	refcount--;
--	if (refcount)
--		goto done;
--	destroy_workqueue(stop_machine_wq);
--	free_percpu(stop_machine_work);
--done:
-+	if (!--refcount)
-+		kill_stop_machine_threads();
- 	mutex_unlock(&setup_lock);
-+	put_online_cpus();
- }
- EXPORT_SYMBOL_GPL(stop_machine_destroy);
- 
-+static int __cpuinit stop_machine_cpu_callback(struct notifier_block *nfb,
-+					       unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+	struct task_struct **pp = per_cpu_ptr(stop_machine_threads, cpu);
-+
-+	/* Hotplug exclusion is enough, no need to worry about setup_lock */
-+	if (!stop_machine_threads)
-+		return NOTIFY_OK;
-+
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_UP_PREPARE:
-+		if (create_stop_machine_thread(cpu)) {
-+			printk(KERN_ERR "failed to create stop machine "
-+			       "thread for %u\n", cpu);
-+			return NOTIFY_BAD;
-+		}
-+		break;
-+
-+	case CPU_ONLINE:
-+		kthread_bind(*pp, cpu);
-+		break;
-+
-+	case CPU_UP_CANCELED:
-+	case CPU_POST_DEAD:
-+		kthread_stop(*pp);
-+		*pp = NULL;
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
- {
--	struct work_struct *sm_work;
- 	int i, ret;
- 
- 	/* Set up initial state. */
-@@ -164,19 +259,18 @@ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
- 	idle.fn = chill;
- 	idle.data = NULL;
- 
--	set_state(STOPMACHINE_PREPARE);
-+	set_state(STOPMACHINE_PREPARE);	/* -> stop_cpu()::smp_rmb() */
-+	smp_wmb();			/* -> stop_cpu()::set_current_state() */
- 
- 	/* Schedule the stop_cpu work on all cpus: hold this CPU so one
- 	 * doesn't hit this CPU until we're ready. */
- 	get_cpu();
--	for_each_online_cpu(i) {
--		sm_work = per_cpu_ptr(stop_machine_work, i);
--		INIT_WORK(sm_work, stop_cpu);
--		queue_work_on(i, stop_machine_wq, sm_work);
--	}
-+	for_each_online_cpu(i)
-+		wake_up_process(*per_cpu_ptr(stop_machine_threads, i));
- 	/* This will release the thread on our CPU. */
- 	put_cpu();
--	flush_workqueue(stop_machine_wq);
-+	while (state < STOPMACHINE_DONE)
-+		yield();
- 	ret = active.fnret;
- 	mutex_unlock(&lock);
- 	return ret;
-@@ -197,3 +291,8 @@ int stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(stop_machine);
-+
-+void __init init_stop_machine(void)
-+{
-+	hotcpu_notifier(stop_machine_cpu_callback, 0);
-+}
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index f7a914f..115f30b 100644
+index c150a01..b0311b1 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -62,7 +62,6 @@ struct workqueue_struct {
- 	const char *name;
- 	int singlethread;
- 	int freezeable;		/* Freeze threads during suspend */
--	int rt;
+@@ -72,7 +72,6 @@ enum {
+  */
+ 
+ struct global_cwq;
+-struct cpu_workqueue_struct;
+ 
+ struct worker {
+ 	/* on idle list while idle, on busy hash table while busy */
+@@ -86,7 +85,6 @@ struct worker {
+ 	struct list_head	scheduled;	/* L: scheduled works */
+ 	struct task_struct	*task;		/* I: worker task */
+ 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
+-	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
+ 	unsigned int		flags;		/* L: flags */
+ 	int			id;		/* I: worker id */
+ };
+@@ -96,6 +94,7 @@ struct worker {
+  */
+ struct global_cwq {
+ 	spinlock_t		lock;		/* the gcwq lock */
++	struct list_head	worklist;	/* L: list of pending works */
+ 	unsigned int		cpu;		/* I: the associated cpu */
+ 	unsigned int		flags;		/* L: GCWQ_* flags */
+ 
+@@ -121,7 +120,6 @@ struct global_cwq {
+  */
+ struct cpu_workqueue_struct {
+ 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
+-	struct list_head worklist;
+ 	struct worker		*worker;
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+ 	int			work_color;	/* L: current color */
+@@ -386,6 +384,32 @@ static struct global_cwq *get_work_gcwq(struct work_struct *work)
+ 	return get_gcwq(cpu);
+ }
+ 
++/* Return the first worker.  Safe with preemption disabled */
++static struct worker *first_worker(struct global_cwq *gcwq)
++{
++	if (unlikely(list_empty(&gcwq->idle_list)))
++		return NULL;
++
++	return list_first_entry(&gcwq->idle_list, struct worker, entry);
++}
++
++/**
++ * wake_up_worker - wake up an idle worker
++ * @gcwq: gcwq to wake worker for
++ *
++ * Wake up the first idle worker of @gcwq.
++ *
++ * CONTEXT:
++ * spin_lock_irq(gcwq->lock).
++ */
++static void wake_up_worker(struct global_cwq *gcwq)
++{
++	struct worker *worker = first_worker(gcwq);
++
++	if (likely(worker))
++		wake_up_process(worker->task);
++}
++
+ /**
+  * busy_worker_head - return the busy hash head for a work
+  * @gcwq: gcwq of interest
+@@ -467,13 +491,14 @@ static struct worker *find_worker_executing_work(struct global_cwq *gcwq,
+ }
+ 
+ /**
+- * insert_work - insert a work into cwq
++ * insert_work - insert a work into gcwq
+  * @cwq: cwq @work belongs to
+  * @work: work to insert
+  * @head: insertion point
+  * @extra_flags: extra WORK_STRUCT_* flags to set
+  *
+- * Insert @work into @cwq after @head.
++ * Insert @work which belongs to @cwq into @gcwq after @head.
++ * @extra_flags is or'd to work_struct flags.
+  *
+  * CONTEXT:
+  * spin_lock_irq(gcwq->lock).
+@@ -492,7 +517,7 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
+ 	smp_wmb();
+ 
+ 	list_add_tail(&work->entry, head);
+-	wake_up_process(cwq->worker->task);
++	wake_up_worker(cwq->gcwq);
+ }
+ 
+ /**
+@@ -608,7 +633,7 @@ static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
+ 
+ 	if (likely(cwq->nr_active < cwq->max_active)) {
+ 		cwq->nr_active++;
+-		worklist = &cwq->worklist;
++		worklist = &gcwq->worklist;
+ 	} else
+ 		worklist = &cwq->delayed_works;
+ 
+@@ -793,10 +818,10 @@ static struct worker *alloc_worker(void)
+ 
+ /**
+  * create_worker - create a new workqueue worker
+- * @cwq: cwq the new worker will belong to
++ * @gcwq: gcwq the new worker will belong to
+  * @bind: whether to set affinity to @cpu or not
+  *
+- * Create a new worker which is bound to @cwq.  The returned worker
++ * Create a new worker which is bound to @gcwq.  The returned worker
+  * can be started by calling start_worker() or destroyed using
+  * destroy_worker().
+  *
+@@ -806,9 +831,8 @@ static struct worker *alloc_worker(void)
+  * RETURNS:
+  * Pointer to the newly created worker.
+  */
+-static struct worker *create_worker(struct cpu_workqueue_struct *cwq, bool bind)
++static struct worker *create_worker(struct global_cwq *gcwq, bool bind)
+ {
+-	struct global_cwq *gcwq = cwq->gcwq;
+ 	int id = -1;
+ 	struct worker *worker = NULL;
+ 
+@@ -826,7 +850,6 @@ static struct worker *create_worker(struct cpu_workqueue_struct *cwq, bool bind)
+ 		goto fail;
+ 
+ 	worker->gcwq = gcwq;
+-	worker->cwq = cwq;
+ 	worker->id = id;
+ 
+ 	worker->task = kthread_create(worker_thread, worker, "kworker/%u:%d",
+@@ -954,7 +977,7 @@ static void cwq_activate_first_delayed(struct cpu_workqueue_struct *cwq)
+ 	struct work_struct *work = list_first_entry(&cwq->delayed_works,
+ 						    struct work_struct, entry);
+ 
+-	move_linked_works(work, &cwq->worklist, NULL);
++	move_linked_works(work, &cwq->gcwq->worklist, NULL);
+ 	cwq->nr_active++;
+ }
+ 
+@@ -1022,11 +1045,12 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
+  */
+ static void process_one_work(struct worker *worker, struct work_struct *work)
+ {
+-	struct cpu_workqueue_struct *cwq = worker->cwq;
++	struct cpu_workqueue_struct *cwq = get_work_cwq(work);
+ 	struct global_cwq *gcwq = cwq->gcwq;
+ 	struct hlist_head *bwh = busy_worker_head(gcwq, work);
+ 	work_func_t f = work->func;
+ 	int work_color;
++	struct worker *collision;
  #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map lockdep_map;
- #endif
-@@ -923,7 +922,6 @@ init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
- 
- static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
- {
--	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
- 	struct workqueue_struct *wq = cwq->wq;
- 	const char *fmt = is_wq_single_threaded(wq) ? "%s" : "%s/%d";
- 	struct task_struct *p;
-@@ -939,8 +937,6 @@ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
+ 	/*
+ 	 * It is permissible to free the struct work_struct from
+@@ -1037,6 +1061,18 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
  	 */
- 	if (IS_ERR(p))
- 		return PTR_ERR(p);
--	if (cwq->wq->rt)
--		sched_setscheduler_nocheck(p, SCHED_FIFO, &param);
- 	cwq->thread = p;
+ 	struct lockdep_map lockdep_map = work->lockdep_map;
+ #endif
++	/*
++	 * A single work shouldn't be executed concurrently by
++	 * multiple workers on a single cpu.  Check whether anyone is
++	 * already processing the work.  If so, defer the work to the
++	 * currently executing one.
++	 */
++	collision = __find_worker_executing_work(gcwq, bwh, work);
++	if (unlikely(collision)) {
++		move_linked_works(work, &collision->scheduled, NULL);
++		return;
++	}
++
+ 	/* claim and process */
+ 	debug_work_deactivate(work);
+ 	hlist_add_head(&worker->hentry, bwh);
+@@ -1044,7 +1080,6 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 	worker->current_cwq = cwq;
+ 	work_color = work_flags_to_color(*work_data_bits(work));
  
- 	trace_workqueue_creation(cwq->thread, cpu);
-@@ -962,7 +958,6 @@ static void start_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
- struct workqueue_struct *__create_workqueue_key(const char *name,
- 						int singlethread,
- 						int freezeable,
--						int rt,
- 						struct lock_class_key *key,
- 						const char *lock_name)
+-	BUG_ON(get_work_cwq(work) != cwq);
+ 	/* record the current cpu number in the work data and dequeue */
+ 	set_work_cpu(work, gcwq->cpu);
+ 	list_del_init(&work->entry);
+@@ -1108,7 +1143,6 @@ static int worker_thread(void *__worker)
  {
-@@ -984,7 +979,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
- 	wq->singlethread = singlethread;
- 	wq->freezeable = freezeable;
--	wq->rt = rt;
- 	INIT_LIST_HEAD(&wq->list);
+ 	struct worker *worker = __worker;
+ 	struct global_cwq *gcwq = worker->gcwq;
+-	struct cpu_workqueue_struct *cwq = worker->cwq;
  
- 	if (singlethread) {
+ woke_up:
+ 	spin_lock_irq(&gcwq->lock);
+@@ -1128,9 +1162,9 @@ woke_up:
+ 	 */
+ 	BUG_ON(!list_empty(&worker->scheduled));
+ 
+-	while (!list_empty(&cwq->worklist)) {
++	while (!list_empty(&gcwq->worklist)) {
+ 		struct work_struct *work =
+-			list_first_entry(&cwq->worklist,
++			list_first_entry(&gcwq->worklist,
+ 					 struct work_struct, entry);
+ 
+ 		if (likely(!(*work_data_bits(work) & WORK_STRUCT_LINKED))) {
+@@ -1800,18 +1834,37 @@ int keventd_up(void)
+ 
+ int current_is_keventd(void)
+ {
+-	struct cpu_workqueue_struct *cwq;
+-	int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
+-	int ret = 0;
++	bool found = false;
++	unsigned int cpu;
+ 
+-	BUG_ON(!keventd_wq);
++	/*
++	 * There no longer is one-to-one relation between worker and
++	 * work queue and a worker task might be unbound from its cpu
++	 * if the cpu was offlined.  Match all busy workers.  This
++	 * function will go away once dynamic pool is implemented.
++	 */
++	for_each_possible_cpu(cpu) {
++		struct global_cwq *gcwq = get_gcwq(cpu);
++		struct worker *worker;
++		struct hlist_node *pos;
++		unsigned long flags;
++		int i;
+ 
+-	cwq = get_cwq(cpu, keventd_wq);
+-	if (current == cwq->worker->task)
+-		ret = 1;
++		spin_lock_irqsave(&gcwq->lock, flags);
+ 
+-	return ret;
++		for_each_busy_worker(worker, i, pos, gcwq) {
++			if (worker->task == current) {
++				found = true;
++				break;
++			}
++		}
++
++		spin_unlock_irqrestore(&gcwq->lock, flags);
++		if (found)
++			break;
++	}
+ 
++	return found;
+ }
+ 
+ static struct cpu_workqueue_struct *alloc_cwqs(void)
+@@ -1900,12 +1953,11 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 		cwq->wq = wq;
+ 		cwq->flush_color = -1;
+ 		cwq->max_active = max_active;
+-		INIT_LIST_HEAD(&cwq->worklist);
+ 		INIT_LIST_HEAD(&cwq->delayed_works);
+ 
+ 		if (failed)
+ 			continue;
+-		cwq->worker = create_worker(cwq, cpu_online(cpu));
++		cwq->worker = create_worker(gcwq, cpu_online(cpu));
+ 		if (cwq->worker)
+ 			start_worker(cwq->worker);
+ 		else
+@@ -1965,13 +2017,26 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
++		struct global_cwq *gcwq = cwq->gcwq;
+ 		int i;
+ 
+ 		if (cwq->worker) {
+-			spin_lock_irq(&cwq->gcwq->lock);
++		retry:
++			spin_lock_irq(&gcwq->lock);
++			/*
++			 * Worker can only be destroyed while idle.
++			 * Wait till it becomes idle.  This is ugly
++			 * and prone to starvation.  It will go away
++			 * once dynamic worker pool is implemented.
++			 */
++			if (!(cwq->worker->flags & WORKER_IDLE)) {
++				spin_unlock_irq(&gcwq->lock);
++				msleep(100);
++				goto retry;
++			}
+ 			destroy_worker(cwq->worker);
+ 			cwq->worker = NULL;
+-			spin_unlock_irq(&cwq->gcwq->lock);
++			spin_unlock_irq(&gcwq->lock);
+ 		}
+ 
+ 		for (i = 0; i < WORK_NR_COLORS; i++)
+@@ -2290,7 +2355,7 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
+  *
+  * Start freezing workqueues.  After this function returns, all
+  * freezeable workqueues will queue new works to their frozen_works
+- * list instead of the cwq ones.
++ * list instead of gcwq->worklist.
+  *
+  * CONTEXT:
+  * Grabs and releases workqueue_lock and gcwq->lock's.
+@@ -2376,7 +2441,7 @@ out_unlock:
+  * thaw_workqueues - thaw workqueues
+  *
+  * Thaw workqueues.  Normal queueing is restored and all collected
+- * frozen works are transferred to their respective cwq worklists.
++ * frozen works are transferred to their respective gcwq worklists.
+  *
+  * CONTEXT:
+  * Grabs and releases workqueue_lock and gcwq->lock's.
+@@ -2457,6 +2522,7 @@ void __init init_workqueues(void)
+ 		struct global_cwq *gcwq = get_gcwq(cpu);
+ 
+ 		spin_lock_init(&gcwq->lock);
++		INIT_LIST_HEAD(&gcwq->worklist);
+ 		gcwq->cpu = cpu;
+ 
+ 		INIT_LIST_HEAD(&gcwq->idle_list);
 -- 
 1.6.4.2
 
