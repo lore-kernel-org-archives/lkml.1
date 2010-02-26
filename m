@@ -1,96 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964837Ab0BZOSs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 09:18:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63998 "EHLO mx1.redhat.com"
+	id S964844Ab0BZOUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 09:20:50 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:40681 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964795Ab0BZOSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 09:18:47 -0500
-Date: Fri, 26 Feb 2010 09:17:40 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Matt Mackall <mpm@selenic.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] readahead: add notes on readahead size
-Message-ID: <20100226141740.GB6023@redhat.com>
-References: <20100224031001.026464755@intel.com> <20100224031054.307027163@intel.com> <4B869682.9010709@linux.vnet.ibm.com> <20100226022907.GA22226@localhost> <20100226024837.GA22859@localhost>
+	id S964795Ab0BZOUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 09:20:49 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100226024837.GA22859@localhost>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19335.55478.733896.68829@pilspetsen.it.uu.se>
+Date: Fri, 26 Feb 2010 15:20:38 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: roel kluin <roel.kluin@gmail.com>, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, mikpe@it.uu.se,
+       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sha: prevent removal of memset as dead store in  sha1_update()
+In-Reply-To: <87sk8oqkil.fsf@basil.nowhere.org>
+References: <4B8692E3.9030509@gmail.com>
+	<20100225.071759.98314060.davem@davemloft.net>
+	<25e057c01002250731q68bb9e28ld009163f2a009f48@mail.gmail.com>
+	<87sk8oqkil.fsf@basil.nowhere.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 10:48:37AM +0800, Wu Fengguang wrote:
-> > readahead: limit read-ahead size for small memory systems
-> > 
-> > When lifting the default readahead size from 128KB to 512KB,
-> > make sure it won't add memory pressure to small memory systems.
-> 
-> btw, I wrote some comments to summarize the now complex readahead size
-> rules..
-> 
-> ==
-> readahead: add notes on readahead size
-> 
-> Basically, currently the default max readahead size
-> - is 512k
-> - is boot time configurable with "readahead="
-> and is auto scaled down:
-> - for small devices
-> - for small memory systems (read-around size alone)
-> 
-> CC: Matt Mackall <mpm@selenic.com>
-> CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/readahead.c |   22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
-> 
-> --- linux.orig/mm/readahead.c	2010-02-26 10:11:41.000000000 +0800
-> +++ linux/mm/readahead.c	2010-02-26 10:11:55.000000000 +0800
-> @@ -7,6 +7,28 @@
->   *		Initial version.
->   */
->  
-> +/*
-> + * Notes on readahead size.
-> + *
-> + * The default max readahead size is VM_MAX_READAHEAD=512k,
-> + * which can be changed by user with boot time parameter "readahead="
-> + * or runtime interface "/sys/devices/virtual/bdi/default/read_ahead_kb".
-> + * The latter normally only takes effect in future for hot added devices.
-> + *
-> + * The effective max readahead size for each block device can be accessed with
-> + * 1) the `blockdev` command
-> + * 2) /sys/block/sda/queue/read_ahead_kb
-> + * 3) /sys/devices/virtual/bdi/$(env stat -c '%t:%T' /dev/sda)/read_ahead_kb
-> + *
-> + * They are typically initialized with the global default size, however may be
-> + * auto scaled down for small devices in add_disk(). NFS, software RAID, btrfs
-> + * etc. have special rules to setup their default readahead size.
-> + *
-> + * The mmap read-around size typically equals with readahead size, with an
-> + * extra limit proportional to system memory size.  For example, a 64MB box
-> + * will have a 64KB read-around size limit, 128MB mem => 128KB limit, etc.
-> + */
-> +
+Andi Kleen writes:
+ > roel kluin <roel.kluin@gmail.com> writes:
+ > 
+ > >> And it's wrong because the reason the memset() is there seems to be
+ > >> to clear out key information that might exist kernel stack so that
+ > >> it's more difficult for rogue code to get at things.
+ > >
+ > > If the memset is optimized away then the clear out does not occur. Do you
+ > > know a different way to fix this? I observed this with:
+ > 
+ > You could always cast to volatile before memsetting?
 
-Great. I was confused among so many ways to control read ahead size. This
-documentation helps a lot.
+I tried that and it doesn't work. Furthermore passing a volatile void *
+to a function expecting a void * provokes a compiler warning.
 
-Vivek
+I currently think that defining and using
 
->  #include <linux/kernel.h>
->  #include <linux/fs.h>
->  #include <linux/memcontrol.h>
+void secure_bzero(void *p, size_t n)
+{
+	memset(p, 0, n);
+	/* We need for this memset() to be performed even if *p
+	 * is about to disappear (a local auto variable going out
+	 * of scope or some dynamic memory being kfreed()).
+	 * Thus we need to fake a "use" of *p here.
+	 * barrier() achieves that effect, and much more.
+	 * TODO: find a better alternative to barrier() here.
+	 */
+	barrier();
+}
+
+would be a first good step. We can then ask the gcc folks for
+a weaker alternative to barrier() that's guaranteed to keep the
+object at [p, p+n[ live.
