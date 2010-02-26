@@ -1,124 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934820Ab0BZAuQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:50:16 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42280 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934755Ab0BZAuO (ORCPT
+	id S934813Ab0BZAxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:53:34 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:62954 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759391Ab0BZAxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:50:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 26 Feb 2010 09:46:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org
-Subject: Re: [RFT/PATCH] x86: Unify kernel_physical_mapping_init() API
-Message-Id: <20100226094639.0a106466.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi>
-References: <alpine.DEB.2.00.1002241703570.1180@melkki.cs.helsinki.fi>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Feb 2010 19:53:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=c4ORhfRhYicOS9nNI9LlhlZzfeu3U+Kcl7nqTBaJKFgUqvQrRvGln/5X0bP/LFGpZu
+         zmsxe0y9NxAMbUo15uAHchjMyXzmWSm96K+NlfAW/62js5MBnVFNzZKKuQyMDiVnnMRS
+         L1KYzVbnfxRgI4bS4pKwcmLBQjiqxJriIBuWk=
+MIME-Version: 1.0
+In-Reply-To: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+References: <4B6C2488.3060403@ge.com> <4B865176.7080806@ge.com>
+	 <4B86A97E.6050509@ge.com> <20100225165141.GA9686@oksana.dev.rtsoft.ru>
+	 <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+Date: Thu, 25 Feb 2010 19:53:30 -0500
+X-Google-Sender-Auth: 4ce59d8cf07911cd
+Message-ID: <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+Subject: Re: Gianfar driver failing on MPC8641D based board
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: avorontsov@ru.mvista.com
+Cc: Martyn Welch <martyn.welch@ge.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net,
+       Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Feb 2010 17:04:47 +0200 (EET)
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+On Thu, Feb 25, 2010 at 12:49 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Feb 25, 2010 at 07:51:41PM +0300, Anton Vorontsov wrote:
+>> On Thu, Feb 25, 2010 at 04:46:54PM +0000, Martyn Welch wrote:
+>> [...]
+>> > > nfs: server 192.168.0.1 not responding, still trying
+>> > >
+>> >
+>> > Further testing has shown that this isn't restricted to warm reboots, it
+>> > happens from cold as well. In addition, the exact timing of the failure
+>> > seems to vary, some boots have got further before failing.
+>>
+>> Unfortunately I don't have any 8641 boards near me, so I can't
+>> debug this myself. Though, I tested gianfar on MPC8568E-MDS with
+>> 2.6.33 kernel, and it seems to work just fine.
+>>
+>> I see you use SMP. Can you try to turn it off? If that will fix
+>> the issue, then it'll be a good data point.
+>>
+>> Meanwhile, I'll try SMP kernel on MPC8568 (UP), and let you
+>> know the results.
+>
+> Nope, no luck. Can't trigger the issue. :-/
+> Tested with NFS boot, TCP and UDP netperf tests.
 
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> This patch changes the 32-bit version of kernel_physical_mapping_init() to
-> return the last mapped address like the 64-bit one so that we can unify the
-> call-site in init_memory_mapping().
-> 
+I was able to reproduce it on an 8641D and bisected it down to this:
 
-I'm sorry if I can't track the logic correctly..
+-----------
+commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
+Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date:   Tue Nov 10 14:11:10 2009 +0000
 
+    gianfar: Revive SKB recycling
 
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
-> Note: I have only tested this on VirtualBox which is why I tagged the patch as
-> RFT.
-> 
->   arch/x86/mm/init.c    |    7 -------
->   arch/x86/mm/init_32.c |    8 +++++---
->   2 files changed, 5 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-> index d406c52..e71c5cb 100644
-> --- a/arch/x86/mm/init.c
-> +++ b/arch/x86/mm/init.c
-> @@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
->   	if (!after_bootmem)
->   		find_early_table_space(end, use_pse, use_gbpages);
-> 
-> -#ifdef CONFIG_X86_32
-> -	for (i = 0; i < nr_range; i++)
-> -		kernel_physical_mapping_init(mr[i].start, mr[i].end,
-> -					     mr[i].page_size_mask);
-> -	ret = end;
-> -#else /* CONFIG_X86_64 */
->   	for (i = 0; i < nr_range; i++)
->   		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
->   						   mr[i].page_size_mask);
-> -#endif
-> 
->   #ifdef CONFIG_X86_32
->   	early_ioremap_page_table_range_init();
-> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-> index 9a0c258..2226f2c 100644
-> --- a/arch/x86/mm/init_32.c
-> +++ b/arch/x86/mm/init_32.c
-> @@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
->   			     unsigned long page_size_mask)
->   {
->   	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
-> +	unsigned long last_map_addr = end;
->   	unsigned long start_pfn, end_pfn;
->   	pgd_t *pgd_base = swapper_pg_dir;
->   	int pgd_idx, pmd_idx, pte_ofs;
-> @@ -341,9 +342,10 @@ repeat:
->   					prot = PAGE_KERNEL_EXEC;
-> 
->   				pages_4k++;
-> -				if (mapping_iter == 1)
-> +				if (mapping_iter == 1) {
->   					set_pte(pte, pfn_pte(pfn, init_prot));
-> -				else
-> +					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
-> +				} else
->   					set_pte(pte, pfn_pte(pfn, prot));
->   			}
->   		}
+    Before calling gfar_clean_tx_ring() the driver grabs an irqsave
+    spinlock, and then tries to recycle skbs. But since
+    skb_recycle_check() returns 0 with IRQs disabled, we'll never
+    recycle any skbs.
 
-Don't we need to update last_map_addr after pages_2m++; ?
+    It appears that gfar_clean_tx_ring() and gfar_start_xmit() are
+    mostly idependent and can work in parallel, except when they
+    modify num_txbdfree.
 
-And...from the logic,
-  unsigned long last_map_addr = end;
-seems to be always true.
+    So we can drop the lock from most sections and thus fix the skb
+    recycling.
+-----------
 
-So, just returning "end" is not good ?
+...which probably explains why you weren't seeing it on non-SMP.
+I'd imagine it would show up on any of the e500mc boards too.
 
-Thanks,
--Kame
+I'd done a rev-list on gianfar.[ch] from 32 to 33-rc1, and then
+cherry-picked those onto a 32 baseline to reduce the scale of
+the bisection, but I don't think that should impact the final
+result I got in any meaningful way.
 
-> @@ -368,7 +370,7 @@ repeat:
->   		mapping_iter = 2;
->   		goto repeat;
->   	}
-> -	return 0;
-> +	return last_map_addr;
->   }
-> 
->   pte_t *kmap_pte;
-> -- 
-> 1.5.6.4
-> 
-> 
-
+Paul.
