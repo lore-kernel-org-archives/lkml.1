@@ -1,125 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935457Ab0BZHoc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 02:44:32 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:49804 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935419Ab0BZHoa (ORCPT
+	id S935472Ab0BZHrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 02:47:20 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:59746 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935419Ab0BZHrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 02:44:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kuRoOy75zUdCagxa8Kw6EFig0rygmYxJKfkwYsSDD6WLv04lb1cSZU89jF5W6dukqE
-         3YOPeer7lvRZ8nSWaisLfn8hDBE1SvrSnumjMMAxNvUGaFeVshZpnaSYS/bOQQ6dHO37
-         FriDcm/HLNwIXlzQpH70O1sRHw4DkUCR8M5+8=
-Date: Thu, 25 Feb 2010 23:44:22 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Stefan Achatz <stefan_achatz@web.de>
-Cc: Jiri Kosina <jkosina@suse.cz>, Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       wylda@volny.cz, Pavel Machek <pavel@suse.cz>,
-       Alessandro Guido <ag@alessandroguido.name>,
-       Tomas Hanak <tomas.hanak@gmail.com>, Jason Noble <nobleja@polezero.com>,
-       simon.windows@gmail.com, Sean Hildebrand <silverwraithii@gmail.com>,
-       Sid Boyce <sboyce@blueyonder.co.uk>, Henning Glawe <glaweh@debian.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Adding documentation to sysfs attributes of roccat
- kone driver
-Message-ID: <20100226074422.GA17062@core.coreip.homeip.net>
-References: <201002200911.53900.stefan_achatz@web.de>
- <20100222062916.GA2095@core.coreip.homeip.net>
- <alpine.LNX.2.00.1002221100130.30967@pobox.suse.cz>
- <201002221942.04624.erazor_de@users.sourceforge.net>
- <31758929.1286552.1266912188132.JavaMail.fmail@mwmweb006>
+	Fri, 26 Feb 2010 02:47:18 -0500
+Date: Fri, 26 Feb 2010 08:47:14 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <bp@amd64.org>, Michal Marek <mmarek@suse.cz>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+Message-ID: <20100226074714.GA15310@aftab>
+References: <20100222141737.GB21233@aftab>
+ <4B82BD01.3030008@zytor.com>
+ <20100222184945.GD21233@aftab>
+ <4B82E144.1050007@zytor.com>
+ <20100223155852.GF30382@aftab>
+ <4B84118C.90203@zytor.com>
+ <20100223175457.GA2401@aftab>
+ <4B841BC3.1000908@zytor.com>
+ <20100223190614.GB2401@aftab>
+ <4B875BBD.4060104@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31758929.1286552.1266912188132.JavaMail.fmail@mwmweb006>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <4B875BBD.4060104@zytor.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 23, 2010 at 09:03:08AM +0100, Stefan Achatz wrote:
-> > Thank you for adding documentation for the sysfs attributes. I have one
-> > more request though - the documentation adds a lot of anformation about
-> > whta the fields mean but unfortunately it is silent on _why_ all these
-> > fields are needed.
-> 
-> > For example, why weight is interesting? Is it just shown just because we can?
-> > What woudl yuser do with this information? Why would I need to
-> > manipulate several profiles instead of letting udev configure desired
-> > state for me every time mouse is plugged into the box? Should not TCU
-> > calibration be simply performed during driver binding instead of
-> > on-demand from userspace? And so forth.
-> 
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Thu, Feb 25, 2010 at 09:27:25PM -0800
 
-> I would have done all with libusb in userspace if I had not some
-> problems with it:
-> - devio wouldn't let me access the mouseprofiles because the
-> manufacturer uses a way to access them check_ctrlrecip() forbids.
-> - removing usbhid temporarily would render the mouse not responding
-> for the time the action takes.
-> - readding usbhid is quirky and one needs to replug the mouse if the
-> software fails in some way.
-> 
-> I'm unsure if all this functionality is wanted inside the kernel. This
-> device is Hardware for gamers which i find interesting to be supported
-> by linux also.  In my attempt to raise acceptance for kernel
-> integration i moved all unnecessary functionality like calculating
-> real weight and dpi values into my userland tools to keep only the
-> basic functions in the module.  This driver is available as externally
-> compiled module for some months now, in my eyes its the most elegant
-> (and the only workable) solution and these patches are also an attempt
-> to find out if this project generally has a chance to be integrated in
-> the kernel (but there is also a module for sonys ps3 controller).
-> There are more devices from this manufacturer which have similar
-> functions like a keyboard with a whole bunch of macro keys where the
-> macros are stored in the keyboard which I find useful as (amateur)
-> programmer and admin.
-> 
-> The weight is really just a "because I can" value.
-> 
-> Switching the profiles is done via software or pressing a button on
-> the mouse and is useful if you wan't to play games with high
-> sensitivity and use a low sensitivity profile for detail work in a
-> graphics application. Also different button mappings (the mouse can
-> play macros with can contain keyboard and mouse button events) are
-> useful for different applications. As example some applications
-> (viewers) do pagescroling with "page up/down" some with arrow keys.
-> You are free to change profiles in the mouse or load new profiles as
-> you like.  You can use a script to backup profiles and load a whole
-> set of specific profiles before starting maybe a game and restore the
-> old profiles on exit.
-> 
-> TCU calibration is only needed if you switch the surface the mouse is
-> being used on. Also you can save and restore already aquired
-> calibration data with the settings attribute without the need of
-> recalibration.
-> 
-> Maybe this answers some of the questions. I'm new to this kernel
-> patching stuff and I might benefit from verbatim questions and
-> statements.
+> OK, this patch looks pretty good now, but I'm completely lost as to
+> what the baseline of this patch is supposed to be.
 
-OK, I see. In this case you need to separate "because I can" attributes
-that are not really useful to the users from the ones that actually
-provide useful data and resubmit.
+Yeah, this is based on PeterZ's http://lkml.org/lkml/2010/2/4/119
 
-Version, firmware and weight should go, maybe DPI as well. You should
-use VID/PID already exported in the kernel to locate the devices you are
-interested in.
-
-TCU - you probaly want it write only and block until device is
-calibrated.
-
-Sysfs attributes altering state of the device should not be user
-writable (so 0644 or 0600).
-
-There should be some locking around sysfs methods - will the device
-survive sumiltaneous access from different processes at the same time?
-
-Thanks.
+But I'm not sure which tree has it...
 
 -- 
-Dmitry
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
