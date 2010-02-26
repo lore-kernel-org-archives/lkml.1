@@ -1,80 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933799Ab0BZKvM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:51:12 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:45167 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094Ab0BZKvJ (ORCPT
+	id S934050Ab0BZKxo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:53:44 -0500
+Received: from legolas.restena.lu ([158.64.1.34]:56408 "EHLO
+	legolas.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933370Ab0BZKxm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:51:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=tJFCJ3OhUhgS2t/aGbrlZM+MxJVKCZxugV6rF0lTkpYHKDye5XmlVMgK/OpuckDSMe
-         Wraxbu3YOwuhcFI53LJLocgjIftTTWsnkAoQAgz1sUgY1ur3jJSpg7BYAEYTvdsy1BMd
-         Zc+bmD6ViFtEafdm9uO7zG56sZUjoBnejTrCY=
-MIME-Version: 1.0
-In-Reply-To: <b6fcc0a1002260158k59117d7cib3ed7fc72afff86d@mail.gmail.com>
-References: <20100225155359.GA2722@darkstar> <20100225185515.GB3305@core2>
-	 <a8e1da1002251714l55ccbd44ibc1119770667c62b@mail.gmail.com>
-	 <b6fcc0a1002252315k1fd5360ehf5ea33566c19515d@mail.gmail.com>
-	 <a8e1da1002252333g6e8bf94crba465c59c0cbc07a@mail.gmail.com>
-	 <1267170179.12041.4.camel@Joe-Laptop.home>
-	 <a8e1da1002260155l5e75a473oca5649ab33cce124@mail.gmail.com>
-	 <b6fcc0a1002260158k59117d7cib3ed7fc72afff86d@mail.gmail.com>
-Date: Fri, 26 Feb 2010 18:51:07 +0800
-Message-ID: <a8e1da1002260251l3eafbcc0wab8555a049fb21c7@mail.gmail.com>
-Subject: Re: [PATCH 03/07] kernel.h string cleanup
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+	Fri, 26 Feb 2010 05:53:42 -0500
+Date: Fri, 26 Feb 2010 11:53:05 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, linux-kernel@vger.kernel.org,
+       npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com,
+       FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org,
+       linux-fbdev@vger.kernel.org, jkosina@suse.cz
+Subject: Re: [PATCH] Add sysfs support for fbdefio delay
+Message-ID: <20100226115305.3dcc1f5a@neptune.home>
+In-Reply-To: <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
+References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
+	<45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 5:58 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Fri, Feb 26, 2010 at 11:55 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
->> It will be more clean to put externs/declarations to their own header files.
->> At the same time compiling time benifits as well.
->>
->> printk/panic/string/trace header are splited then included by kernel.h so
->> just hexdump/int_sqrt are actually seperated.
->>
->> fresh boot
->
-> You mean cold-cache compile so results are basically random?
+Hi Jaya,
 
-Yes, roughly test.
-I have to say I will have no time to do more testing.
+On Fri, 26 February 2010 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Fri, Feb 26, 2010 at 6:15 AM, Rick L. Vinyard Jr.
+> <rvinyard@cs.nmsu.edu> wrote:
+> > This patch adds support for examining and modifying the fbdefio
+> > delay parameter through sysfs. It also adds two driver definable
+> > minimum and maximum bounds.
+> 
+> Thanks for posting this. I've now read through this patch and your
+> past patches, but I couldn't get a good understanding of how this
+> userspace exposed defio delay would interact with most existing
+> systems.
 
->
->> and same .config, make without -j, test result as following:
->>
->> with the patches applied:
->>
->> time:
->> real 15m16.504s
->> user 12m51.866s
->> sys 1m39.700s
->>
->> vmlinux .text size: 003bfcd2
->>
->> without the patches applied*
->> time:
->> real 15m20.518s
->> user 12m54.120s
->> sys 1m40.190s
->
-> Not scientific at all.
->
+In the case of my PicoLCD driver, the hardware can barely do 2 full
+redraws of the display per second but in case only a single tile is
+affected it can do more refreshes of such a single tile per second.
 
+> > +               Set the deferred I/O delay of the framebuffer in ms.
+> > +               This value can be used to throttle deferred I/O updates.
+> 
+> Please help us understand how userspace should use the ability to set
+> this delay. Who in userspace is intended to use it? Would this be the
+> X server, cairo, or papyrus? A separate daemon? Human interaction?
+> When should said userspace entity throttle updates? How would this
+> entity know when throttling is needed? Could this throttling possibly
+> or should this possibly be done automatically by the driver itself?
 
+For me the driver would start with a default delay that matches the
+full-redraw throughput of the device but userspace could reduce the
+delay when it knows it will mostly just refresh small parts of the
+display (one or two tiles) and would like those done at a higher rate.
 
--- 
-Regards
-dave
+A sample application would be displaying a media player interface
+like the one of XMMS and clones where Umeter (the part displaying
+volume per frequency range) could be refreshed ten times a second,
+the current position once a second and all the rest only on song
+change.
+
+Knowing the size of the display, probability that it's being used
+directly by X server is very small, it would rather be some application
+using it as a sideport display.
+
+> > +               Most framebuffer devices do not have or need support for
+> > +               deferred I/O. Accessing a framebuffer without deferred I/O
+> > +               support will return -ENODEV. Can be read but not modified if
+> > +               /sys/class/graphics/<fb>/defio_delay_max is 0. When modifying,
+> > +               the value must be greater than or equal to
+> > +               /sys/class/graphics/<fb>/defio_delay_min and less than or equal
+> > +               to /sys/class/graphics/<fb>/defio_delay_max.
+> 
+> Please help the reader of above understand the sequence of userspace
+> changing the defio delay, and how and when that would affect the
+> associated drivers. Will the delay behaviour be standard for all defio
+> client drivers? What happens in all the various timing scenarios, eg:
+> if a defio delay is changed in the middle of a display update or a
+> defio page clean or before? The sysfs parameter description mentioning
+> min/max above could use some elaboration as reading it doesn't make
+> clear if userspace can also affect min/max or if it is completely
+> owned by the driver.
+
+Thanks,
+Bruno
