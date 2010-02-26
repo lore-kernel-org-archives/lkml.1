@@ -1,261 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936179Ab0BZNNo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 08:13:44 -0500
-Received: from mail.windriver.com ([147.11.1.11]:35123 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936095Ab0BZNNm (ORCPT
+	id S936211Ab0BZNUG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 08:20:06 -0500
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:38301 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936134Ab0BZNUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 08:13:42 -0500
-Message-ID: <4B87C8DF.4000805@windriver.com>
-Date: Fri, 26 Feb 2010 07:13:03 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 26 Feb 2010 08:20:04 -0500
+X-SpamScore: -20
+X-BigFish: VPS-20(zz1432R98dN936eMzz1202hzzz32i6bh87h43h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYGAC6-01-AN3-02
+X-M-MSG: 
+Date: Fri, 26 Feb 2010 14:19:18 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Alexander Graf <agraf@suse.de>
+CC: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] KVM: SVM: Optimize nested svm msrpm merging
+Message-ID: <20100226131917.GE12689@amd.com>
+References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com>
+ <1267118149-15737-3-git-send-email-joerg.roedel@amd.com>
+ <4B87A248.1050300@redhat.com>
+ <20100226122502.GC12689@amd.com>
+ <4E7D93ED-E5FC-4A64-B9B0-E2F644CD2B68@suse.de>
+ <20100226130401.GD12689@amd.com>
+ <AEBFF8CD-15D2-4DEA-B441-94F10F6F2849@suse.de>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [PATCH 14/28] kgdboc,keyboard: Keyboard driver for kdb with kgdb
-References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com> <1267132893-23624-15-git-send-email-jason.wessel@windriver.com> <20100226075755.GC17062@core.coreip.homeip.net>
-In-Reply-To: <20100226075755.GC17062@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Feb 2010 13:12:53.0330 (UTC) FILETIME=[677A1320:01CAB6E5]
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <AEBFF8CD-15D2-4DEA-B441-94F10F6F2849@suse.de>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 26 Feb 2010 13:19:18.0380 (UTC) FILETIME=[4CFC0AC0:01CAB6E6]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> Hi Jason,
+On Fri, Feb 26, 2010 at 02:08:25PM +0100, Alexander Graf wrote:
 > 
-> Sorry for not responding earlier.
+> On 26.02.2010, at 14:04, Joerg Roedel wrote:
 > 
-> On Thu, Feb 25, 2010 at 03:21:19PM -0600, Jason Wessel wrote:
->> +++ b/drivers/char/kdb_keyboard.c
+> > On Fri, Feb 26, 2010 at 01:28:29PM +0100, Alexander Graf wrote:
+> >> 
+> >> On 26.02.2010, at 13:25, Joerg Roedel wrote:
+> >> 
+> >>> On Fri, Feb 26, 2010 at 12:28:24PM +0200, Avi Kivity wrote:
+> >>>>> +static void add_msr_offset(u32 offset)
+> >>>>> +{
+> >>>>> +	u32 old;
+> >>>>> +	int i;
+> >>>>> +
+> >>>>> +again:
+> >>>>> +	for (i = 0; i<  MSRPM_OFFSETS; ++i) {
+> >>>>> +		old = msrpm_offsets[i];
+> >>>>> +
+> >>>>> +		if (old == offset)
+> >>>>> +			return;
+> >>>>> +
+> >>>>> +		if (old != MSR_INVALID)
+> >>>>> +			continue;
+> >>>>> +
+> >>>>> +		if (cmpxchg(&msrpm_offsets[i], old, offset) != old)
+> >>>>> +			goto again;
+> >>>>> +
+> >>>>> +		return;
+> >>>>> +	}
+> >>>>> +
+> >>>>> +	/*
+> >>>>> +	 * If this BUG triggers the msrpm_offsets table has an overflow. Just
+> >>>>> +	 * increase MSRPM_OFFSETS in this case.
+> >>>>> +	 */
+> >>>>> +	BUG();
+> >>>>> +}
+> >>>> 
+> >>>> Why all this atomic cleverness?  The possible offsets are all
+> >>>> determined statically.  Even if you do them dynamically (makes sense
+> >>>> when considering pmu passthrough), it's per-vcpu and therefore
+> >>>> single threaded (just move msrpm_offsets into vcpu context).
+> >>> 
+> >>> The msr_offset table is the same for all guests. It doesn't make sense
+> >>> to keep it per vcpu because it will currently look the same for all
+> >>> vcpus. For standard guests this array contains 3 entrys. It is marked
+> >>> with __read_mostly for the same reason.
+> >> 
+> >> I'm still not convinced on this way of doing things. If it's static,
+> >> make it static. If it's dynamic, make it dynamic. Dynamically
+> >> generating a static list just sounds plain wrong to me.
+> > 
+> > Stop. I had a static list in the first version of the patch. This list
+> > was fine except the fact that a developer needs to remember to update
+> > this list if the list of non-intercepted msrs is expanded. The whole
+> > reason for a dynamically built list is to take the task of maintaining
+> > the list away from the developer and remove a possible source of hard to
+> > find bugs. This is what the current approach does.
 > 
-> Does it have to live here? If you are going for completely separate
-> driver maybe it should be buried somewhere like xxx/kdb/kdb_keyboard.c
-> so nobody needs to look at it?
+> I was more thinking of replacing the function calls with a list of
+> MSRs. You can then take that list on module init, generate the MSR
+> bitmap once and be good.
+
+The msr-bitmap is per-vcpu tu support lbr-virtualization. The access to
+the lbr-msrs is only enabled if the guest-vcpu enabled lbr-debugging.
+
+A list of MSRs keeps the problem that the information is maintained at
+two places: the list and the various set_msr_intercept() function calls.
+
+	Joerg
 
 
-I think in the long run we could consider integration with the primary
-keyboard driver via a polling hook.  I am happy to move the driver off
-into kernel/debug/kdb with the other kdb related files until that
-happens.
-
-The original logic for putting next to the keyboard.c was because they
-are both fighting for the same HW.  Please let me know if this changes
-your mind, else I will go ahead and move the keyboard implementation
-into the kernel/debug/kdb.
-
-
->> diff --git a/drivers/char/kdb_keyboard.h b/drivers/char/kdb_keyboard.h
->> new file mode 100644
->> index 0000000..5541668
->> --- /dev/null
->> +++ b/drivers/char/kdb_keyboard.h
->> @@ -0,0 +1,143 @@
->> +/*
->> + *	include/linux/pc_keyb.h
->> + *
->> + *	PC Keyboard And Keyboard Controller
->> + *
->> + *	(c) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
->> + */
-> 
-> The above notwithstanding maybe we should not be bringing 2.4 codebase
-> as is in 2.6 and instead use (and extend as needed) definitions that are
-> already present?
-> 
-
-*ugh*
-
-I admit that I wondered why there was the need for a completely
-separate set of keyboard definitions.  I had consolidated all the kdb
-keyboard code to two files vs the original kdb v4.4.  Based on your
-review, I concluded only 4 definitions are actually needed.
-
-Would you consider acking the patch if I applied the patch below, which
-completely removes kdb_keyboard.h?
-
-I would generate a separate move patch if you still desire
-kdb_keyboard.c to live with the other kdb files.
-
-
-Thanks,
-Jason.
-
-
-
-----
- drivers/char/kdb_keyboard.c |   10 ++-
- drivers/char/kdb_keyboard.h |  143 --------------------------------------------
- 2 files changed, 9 insertions(+), 144 deletions(-)
-
---- a/drivers/char/kdb_keyboard.c
-+++ b/drivers/char/kdb_keyboard.c
-@@ -13,8 +13,16 @@
- #include <linux/ctype.h>
- #include <linux/module.h>
- #include <linux/io.h>
--#include "kdb_keyboard.h"
- 
-+/* Keyboard Controller Registers on normal PCs. */
-+
-+#define KBD_STATUS_REG		0x64	/* Status register (R) */
-+#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
-+
-+/* Status Register Bits */
-+
-+#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
-+#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
- 
- static int kbd_exists;
- 
---- a/drivers/char/kdb_keyboard.h
-+++ /dev/null
-@@ -1,143 +0,0 @@
--/*
-- *	include/linux/pc_keyb.h
-- *
-- *	PC Keyboard And Keyboard Controller
-- *
-- *	(c) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
-- */
--
--/*
-- *	Configuration Switches
-- */
--
--#undef	KBD_REPORT_ERR			/* Report keyboard errors */
--#define	KBD_REPORT_UNKN			/* Report unknown scan codes */
--#define	KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
--#undef	KBD_IS_FOCUS_9000		/* We have the brain-damaged
--					 * FOCUS-9000 keyboard */
--#undef	INITIALIZE_MOUSE		/* Define if your PS/2 mouse
--					 * needs initialization. */
--
--#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the
--					 * keyboard */
--#define KBC_TIMEOUT 250			/* Timeout in ms for sending
--					 * to keyboard controller */
--#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard
--					 * command acknowledge */
--
--/*
-- *	Internal variables of the driver
-- */
--
--extern unsigned char pckbd_read_mask;
--extern unsigned char aux_device_present;
--
--/*
-- *	Keyboard Controller Registers on normal PCs.
-- */
--
--#define KBD_STATUS_REG		0x64	/* Status register (R) */
--#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
--#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
--
--/*
-- *	Keyboard Controller Commands
-- */
--
--#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
--#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
--#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
--#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
--#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
--#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
--#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
--#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
--#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
--#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
--#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
--					   initiated by the auxiliary device */
--#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to
--					 * the mouse */
--
--/*
-- *	Keyboard Commands
-- */
--
--#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
--#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
--#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
--#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
--#define KBD_CMD_RESET		0xFF	/* Reset */
--
--/*
-- *	Keyboard Replies
-- */
--
--#define KBD_REPLY_POR		0xAA	/* Power on reset */
--#define KBD_REPLY_ACK		0xFA	/* Command ACK */
--#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
--
--/*
-- *	Status Register Bits
-- */
--
--#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
--#define KBD_STAT_IBF 		0x02	/* Keyboard input buffer full */
--#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
--#define KBD_STAT_CMD		0x08	/* Last write was a command
--					 * write (0=data) */
--#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
--#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
--#define KBD_STAT_GTO 		0x40	/* General receive/xmit timeout */
--#define KBD_STAT_PERR 		0x80	/* Parity error */
--
--#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
--
--/*
-- *	Controller Mode Register Bits
-- */
--
--#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
--#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
--#define KBD_MODE_SYS 		0x04	/* The system flag (?) */
--#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect
--					 * the keyboard if set */
--#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
--#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
--#define KBD_MODE_KCC 		0x40	/* Scan code conversion to PC format */
--#define KBD_MODE_RFU		0x80
--
--/*
-- *	Mouse Commands
-- */
--
--#define AUX_SET_RES		0xE8	/* Set resolution */
--#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
--#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
--#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
--#define AUX_SET_STREAM		0xEA	/* Set stream mode */
--#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
--#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
--#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
--#define AUX_RESET		0xFF	/* Reset aux device */
--#define AUX_ACK			0xFA	/* Command byte ACK. */
--
--#define AUX_BUF_SIZE		2048	/* This might be better divisible by
--					   three to make overruns stay in sync
--					   but then the read function would need
--					   a lock etc - ick */
--
--struct aux_queue {
--	unsigned long head;
--	unsigned long tail;
--	wait_queue_head_t proc_list;
--	struct fasync_struct *fasync;
--	unsigned char buf[AUX_BUF_SIZE];
--};
--
--
--/* How to access the keyboard macros on this platform.  */
--#define kbd_read_input() inb(KBD_DATA_REG)
--#define kbd_read_status() inb(KBD_STATUS_REG)
--#define kbd_write_output(val) outb(val, KBD_DATA_REG)
--#define kbd_write_command(val) outb(val, KBD_CNTL_REG)
--
