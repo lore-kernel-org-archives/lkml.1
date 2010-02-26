@@ -1,97 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388Ab0BZFWF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 00:22:05 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:50984 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074Ab0BZFWC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 00:22:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=G8jcD27jNgAdhceANxIhzfc8Mo2UMOh0imxm8r0uYxOsZ1Avg9UJxS1FgaYu6WfdCS
-         SjJWj+rsaWC6xev+cl1QgLGe+gxnYdSgJQIZRnXGzoNDP6YwMBdBvV+uYureqmiuLqPr
-         XsaqfnwSpuaEfnlK6KPSZlmTXrZfygFCbT8UM=
+	id S1751481Ab0BZF15 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 00:27:57 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59529 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073Ab0BZF1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 00:27:55 -0500
+Message-ID: <4B875A73.2070103@cn.fujitsu.com>
+Date: Fri, 26 Feb 2010 13:21:55 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4B85A9D3.6060709@maroy.hu>
-References: <Pine.LNX.4.44L0.1002241137030.2436-100000@iolanthe.rowland.org>
-	 <4B85A9D3.6060709@maroy.hu>
-Date: Fri, 26 Feb 2010 13:21:51 +0800
-Message-ID: <ff05f3d01002252121k2a757caexae13a8d919b2a170@mail.gmail.com>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 
-	8087:0020
-From: Edward Shao <laface.tw@gmail.com>
-To: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, Corrado Zoccolo <czoccolo@gmail.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cfq: Remove useless css reference get
+References: <4B289C93.3070603@cn.fujitsu.com> <20091221162850.GB10994@redhat.com>
+In-Reply-To: <20091221162850.GB10994@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ákos~
+Vivek Goyal wrote:
+> On Wed, Dec 16, 2009 at 04:38:43PM +0800, Gui Jianfeng wrote:
+>> There's no need to take css reference here, for the caller
+>> has already called rcu_read_lock() to prevent cgroup from 
+>> being removed.
+>>
+>> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+>> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
-On Thu, Feb 25, 2010 at 6:36 AM, Ákos Maróy <akos@maroy.hu> wrote:
-> Alan,
->
->> You can get more information if you enable CONFIG_USB_DEBUG in your
->> kernel configuration.  The most likely explanation is that the suspend
->> failed because one of the ports on that root hub issued a wakeup
->> request.
->
-> I tried, and this is what I seem to be getting now:
->
->
-> Feb 24 23:28:52 tonkachi kernel: [  348.733460] PM: Syncing filesystems ...
-> Feb 24 23:28:52 tonkachi kernel: [  348.903106] done.
-> Feb 24 23:28:52 tonkachi kernel: [  348.903123] Freezing user space
-> processes ... (elapsed 0.00 seconds) done.
-> Feb 24 23:28:52 tonkachi kernel: [  348.903808] Freezing remaining
-> freezable tasks ... (elapsed 0.00 seconds) done.
-> Feb 24 23:28:52 tonkachi kernel: [  348.903952] Suspending console(s)
-> (use no_console_suspend to debug)
-> Feb 24 23:28:52 tonkachi kernel: [  348.985903] xhci_hcd 0000:02:00.0:
-> WARN: short transfer on control ep
-> Feb 24 23:28:52 tonkachi kernel: [  348.987274] PM: resume devices took
-> 0.060 seconds
-> Feb 24 23:28:52 tonkachi kernel: [  348.987371] Restarting tasks ...
-> Feb 24 23:28:52 tonkachi kernel: [  348.988165] done.
->
->
-> though I don't see the pm_op() error log anymore..
->
-> would this make sense?
->
-> actually, the whole USB susbsystem seems to be very fragile - I plug in
-> a USB device, and the whole system freezes for about 5 seconds or more.
-> then the device is registered (for example, a mouse). but I unplug and
-> re-plug, and the device doesn't work anymore...
+Hi Jens
 
-the whole system freezes for about 5 seconds or more?
-I meet a very similar issue before on HP Envy 15 laptop when I plugged
-usb device on xhci port.
-My problem was BIOS still controlled xhci host controller.
-Maybe you can try this patch.
-http://markmail.org/message/vqcbzks4gnbrlir3
+Would you pick this patch up?
 
->
-> or I plug in an external USB DVD drive - but if I unplug it, it is still
-> listed in lsusb..
->
->
-> Akos
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> 
+> Thanks
+> Vivek
+> 
+>> ---
+>>  block/blk-cgroup.c  |   14 --------------
+>>  block/blk-cgroup.h  |    3 ---
+>>  block/cfq-iosched.c |    5 -----
+>>  3 files changed, 0 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+>> index 1fa2654..cba28f4 100644
+>> --- a/block/blk-cgroup.c
+>> +++ b/block/blk-cgroup.c
+>> @@ -23,20 +23,6 @@ static LIST_HEAD(blkio_list);
+>>  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
+>>  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
+>>  
+>> -bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
+>> -{
+>> -	if (!css_tryget(&blkcg->css))
+>> -		return false;
+>> -	return true;
+>> -}
+>> -EXPORT_SYMBOL_GPL(blkiocg_css_tryget);
+>> -
+>> -void blkiocg_css_put(struct blkio_cgroup *blkcg)
+>> -{
+>> -	css_put(&blkcg->css);
+>> -}
+>> -EXPORT_SYMBOL_GPL(blkiocg_css_put);
+>> -
+>>  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
+>>  {
+>>  	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
+>> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
+>> index 4d316df..84bf745 100644
+>> --- a/block/blk-cgroup.h
+>> +++ b/block/blk-cgroup.h
+>> @@ -43,9 +43,6 @@ struct blkio_group {
+>>  	unsigned long sectors;
+>>  };
+>>  
+>> -extern bool blkiocg_css_tryget(struct blkio_cgroup *blkcg);
+>> -extern void blkiocg_css_put(struct blkio_cgroup *blkcg);
+>> -
+>>  typedef void (blkio_unlink_group_fn) (void *key, struct blkio_group *blkg);
+>>  typedef void (blkio_update_group_weight_fn) (struct blkio_group *blkg,
+>>  						unsigned int weight);
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index e2f8046..5d6b427 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -958,10 +958,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+>>  	struct backing_dev_info *bdi = &cfqd->queue->backing_dev_info;
+>>  	unsigned int major, minor;
+>>  
+>> -	/* Do we need to take this reference */
+>> -	if (!blkiocg_css_tryget(blkcg))
+>> -		return NULL;;
+>> -
+>>  	cfqg = cfqg_of_blkg(blkiocg_lookup_group(blkcg, key));
+>>  	if (cfqg || !create)
+>>  		goto done;
+>> @@ -992,7 +988,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
+>>  	hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
+>>  
+>>  done:
+>> -	blkiocg_css_put(blkcg);
+>>  	return cfqg;
+>>  }
+>>  
+>> -- 
+>> 1.5.4.rc3
+>>
+> 
+> 
+> 
 
--- 
-Best Regards,
-Edward
