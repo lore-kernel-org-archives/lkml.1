@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936004Ab0BZMOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:14:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43402 "EHLO hera.kernel.org"
+	id S936028Ab0BZMT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:19:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43420 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935983Ab0BZMOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:14:43 -0500
+	id S935932Ab0BZMOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:14:48 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -13,61 +13,203 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/43] sched: consult online mask instead of active in select_fallback_rq()
-Date: Fri, 26 Feb 2010 21:22:38 +0900
-Message-Id: <1267187000-18791-2-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Tony Luck <tony.luck@intel.com>, Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH 32/43] workqueue: increase max_active of keventd and kill current_is_keventd()
+Date: Fri, 26 Feb 2010 21:23:09 +0900
+Message-Id: <1267187000-18791-33-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:21 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If called after sched_class chooses a CPU which isn't in a task's
-cpus_allowed mask, select_fallback_rq() can end up migrating a task
-which is bound to a !active but online cpu to an active cpu.  This is
-dangerous because active is cleared before CPU_DOWN_PREPARE is called
-and subsystems expect affinities of kthreads and other tasks to be
-maintained till their CPU_DOWN_PREPARE callbacks are complete.
+Define WQ_MAX_ACTIVE and create keventd with max_active set to half of
+it which means that keventd now can process upto WQ_MAX_ACTIVE / 2 - 1
+works concurrently.  Unless some combination can result in dependency
+loop longer than max_active, deadlock won't happen and thus it's
+unnecessary to check whether current_is_keventd() before trying to
+schedule a work.  Kill current_is_keventd().
 
-Consult cpu_online_mask instead.
+(Lockdep annotations are broken.  We need lock_map_acquire_read_norecurse())
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
+NOT_SIGNED_OFF_YET: Tejun Heo <tj@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
 ---
- kernel/sched.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/ia64/kernel/smpboot.c |    2 +-
+ arch/x86/kernel/smpboot.c  |    2 +-
+ include/linux/workqueue.h  |    4 ++-
+ kernel/workqueue.c         |   63 +++++++++----------------------------------
+ 4 files changed, 18 insertions(+), 53 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3a8fb30..ca32adc 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2288,12 +2288,12 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
- 	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(cpu));
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index de100aa..3a46feb 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -516,7 +516,7 @@ do_boot_cpu (int sapicid, int cpu)
+ 	/*
+ 	 * We can't use kernel_thread since we must avoid to reschedule the child.
+ 	 */
+-	if (!keventd_up() || current_is_keventd())
++	if (!keventd_up())
+ 		c_idle.work.func(&c_idle.work);
+ 	else {
+ 		schedule_work(&c_idle.work);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index b4e870c..399a3a3 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -724,7 +724,7 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ 		goto do_rest;
+ 	}
  
- 	/* Look for allowed, online CPU in same node. */
--	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
-+	for_each_cpu_and(dest_cpu, nodemask, cpu_online_mask)
- 		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
- 			return dest_cpu;
+-	if (!keventd_up() || current_is_keventd())
++	if (!keventd_up())
+ 		c_idle.work.func(&c_idle.work);
+ 	else {
+ 		schedule_work(&c_idle.work);
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 2096373..b13abe0 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -226,6 +226,9 @@ enum {
+ 	WQ_SINGLE_CPU		= 1 << 1, /* only single cpu at a time */
+ 	WQ_NON_REENTRANT	= 1 << 2, /* guarantee non-reentrance */
+ 	WQ_RESCUER		= 1 << 3, /* has an rescue worker */
++
++	WQ_MAX_ACTIVE		= 512,	  /* I like 512, better ideas? */
++	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
+ };
  
- 	/* Any allowed, online CPU? */
--	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
-+	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_online_mask);
- 	if (dest_cpu < nr_cpu_ids)
- 		return dest_cpu;
+ extern struct workqueue_struct *
+@@ -279,7 +282,6 @@ extern int schedule_delayed_work(struct delayed_work *work, unsigned long delay)
+ extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+ 					unsigned long delay);
+ extern int schedule_on_each_cpu(work_func_t func);
+-extern int current_is_keventd(void);
+ extern int keventd_up(void);
  
-@@ -2302,6 +2302,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
- 		rcu_read_lock();
- 		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
- 		rcu_read_unlock();
-+		/* breaking affinity, consider active mask instead */
- 		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
+ extern void init_workqueues(void);
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index a737c3e..1e15b9a 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -2318,7 +2318,6 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
+ int schedule_on_each_cpu(work_func_t func)
+ {
+ 	int cpu;
+-	int orig = -1;
+ 	struct work_struct *works;
  
- 		/*
+ 	works = alloc_percpu(struct work_struct);
+@@ -2327,23 +2326,12 @@ int schedule_on_each_cpu(work_func_t func)
+ 
+ 	get_online_cpus();
+ 
+-	/*
+-	 * When running in keventd don't schedule a work item on
+-	 * itself.  Can just call directly because the work queue is
+-	 * already bound.  This also is faster.
+-	 */
+-	if (current_is_keventd())
+-		orig = raw_smp_processor_id();
+-
+ 	for_each_online_cpu(cpu) {
+ 		struct work_struct *work = per_cpu_ptr(works, cpu);
+ 
+ 		INIT_WORK(work, func);
+-		if (cpu != orig)
+-			schedule_work_on(cpu, work);
++		schedule_work_on(cpu, work);
+ 	}
+-	if (orig >= 0)
+-		func(per_cpu_ptr(works, orig));
+ 
+ 	for_each_online_cpu(cpu)
+ 		flush_work(per_cpu_ptr(works, cpu));
+@@ -2390,41 +2378,6 @@ int keventd_up(void)
+ 	return keventd_wq != NULL;
+ }
+ 
+-int current_is_keventd(void)
+-{
+-	bool found = false;
+-	unsigned int cpu;
+-
+-	/*
+-	 * There no longer is one-to-one relation between worker and
+-	 * work queue and a worker task might be unbound from its cpu
+-	 * if the cpu was offlined.  Match all busy workers.  This
+-	 * function will go away once dynamic pool is implemented.
+-	 */
+-	for_each_possible_cpu(cpu) {
+-		struct global_cwq *gcwq = get_gcwq(cpu);
+-		struct worker *worker;
+-		struct hlist_node *pos;
+-		unsigned long flags;
+-		int i;
+-
+-		spin_lock_irqsave(&gcwq->lock, flags);
+-
+-		for_each_busy_worker(worker, i, pos, gcwq) {
+-			if (worker->task == current) {
+-				found = true;
+-				break;
+-			}
+-		}
+-
+-		spin_unlock_irqrestore(&gcwq->lock, flags);
+-		if (found)
+-			break;
+-	}
+-
+-	return found;
+-}
+-
+ static struct cpu_workqueue_struct *alloc_cwqs(void)
+ {
+ 	const size_t size = sizeof(struct cpu_workqueue_struct);
+@@ -2463,6 +2416,16 @@ static void free_cwqs(struct cpu_workqueue_struct *cwqs)
+ #endif
+ }
+ 
++static int wq_clamp_max_active(int max_active, const char *name)
++{
++	if (max_active < 1 || max_active > WQ_MAX_ACTIVE)
++		printk(KERN_WARNING "workqueue: max_active %d requested for %s "
++		       "is out of range, clamping between %d and %d\n",
++		       max_active, name, 1, WQ_MAX_ACTIVE);
++
++	return clamp_val(max_active, 1, WQ_MAX_ACTIVE);
++}
++
+ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 						unsigned int flags,
+ 						int max_active,
+@@ -2472,7 +2435,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	struct workqueue_struct *wq;
+ 	unsigned int cpu;
+ 
+-	max_active = clamp_val(max_active, 1, INT_MAX);
++	max_active = wq_clamp_max_active(max_active, name);
+ 
+ 	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
+ 	if (!wq)
+@@ -3223,6 +3186,6 @@ void __init init_workqueues(void)
+ 		spin_unlock_irq(&gcwq->lock);
+ 	}
+ 
+-	keventd_wq = create_workqueue("events");
++	keventd_wq = __create_workqueue("events", 0, WQ_DFL_ACTIVE);
+ 	BUG_ON(!keventd_wq);
+ }
 -- 
 1.6.4.2
 
