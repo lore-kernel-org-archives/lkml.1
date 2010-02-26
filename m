@@ -1,59 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934808Ab0BZLW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 06:22:57 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:37561 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934303Ab0BZLWz (ORCPT
+	id S934872Ab0BZLXu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 06:23:50 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57049 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934303Ab0BZLXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 06:22:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=ZZuIkAFiikp1FkF+a/jU3oO9VQhWEzkirffb90tazAcmbaXX2MQ/2/MEj2zcxrBL/X
-         YJSkOx0YQBfIqLUGk32/D/iEjd4H0pw19K3Ye6igW63g8SvW8Sk5RS238vsEg0XU03ce
-         Ef8nm4gXUALWil64Vh1ZbCZKdIlYmrRw2Mexw=
-From: Luca Barbieri <luca@luca-barbieri.com>
-To: mingo@elte.hu
-Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 1/2] lib: only test atomic64_dec_if_positive on archs having it
-Date: Fri, 26 Feb 2010 12:22:40 +0100
-Message-Id: <1267183361-20775-1-git-send-email-luca@luca-barbieri.com>
-X-Mailer: git-send-email 1.6.6.1.476.g01ddb
+	Fri, 26 Feb 2010 06:23:48 -0500
+Date: Fri, 26 Feb 2010 11:27:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tobias Klauser <tklauser@distanz.ch>
+Cc: linux-serial@vger.kernel.org, nios2-dev@sopc.et.ntust.edu.tw,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] serial: Add driver for the Altera JTAG UART
+Message-ID: <20100226112715.207bbd13@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100226090456.GA32296@distanz.ch>
+References: <1267108523-32767-1-git-send-email-tklauser@distanz.ch>
+	<20100225152622.7eb479aa@lxorguk.ukuu.org.uk>
+	<20100226090456.GA32296@distanz.ch>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only supported by ppc, mips and x86-32 with my patchset.
+> > Use tty_termios_copy_hw() to copy the old termios hardware settings back
+> > so that the caller sees it cannot set them.
+> 
+> Would the following be sufficient?
+> 
+>   if (old)
+>           tty_termios_copy_hw(termios, old);
 
-Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
----
- lib/atomic64_test.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+That will do the trick yes.
 
-diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
-index 4ff649e..0effcac 100644
---- a/lib/atomic64_test.c
-+++ b/lib/atomic64_test.c
-@@ -112,6 +112,7 @@ static __init int test_atomic64(void)
- 	r += one;
- 	BUG_ON(v.counter != r);
- 
-+#if defined(CONFIG_X86_32) || defined(CONFIG_MIPS) || defined(CONFIG_PPC) || defined(_ASM_GENERIC_ATOMIC64_H)
- 	INIT(onestwos);
- 	BUG_ON(atomic64_dec_if_positive(&v) != (onestwos - 1));
- 	r -= one;
-@@ -124,6 +125,9 @@ static __init int test_atomic64(void)
- 	INIT(-one);
- 	BUG_ON(atomic64_dec_if_positive(&v) != (-one - one));
- 	BUG_ON(v.counter != r);
-+#else
-+#warning Please implement atomic64_dec_if_positive for your architecture, and add it to the IF above
-+#endif
- 
- 	INIT(onestwos);
- 	BUG_ON(atomic64_inc_not_zero(&v));
--- 
-1.6.6.1.476.g01ddb
+>   spin_lock(&port->lock);
+> 
+>   if (isr & ALTERA_JTAGUART_CONTROL_RE_MSK)
+>           altera_jtaguart_rx_chars(pp);
+>   if (isr & ALTERA_JTAGUART_CONTROL_WE_MSK)
+>           altera_jtaguart_tx_chars(pp);
+> 
+>   spin_unlock(&port->lock);
 
+Yes - that stops ->tty becoming NULL while your handler is running
+
+Alan
