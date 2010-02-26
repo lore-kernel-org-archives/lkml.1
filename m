@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936095Ab0BZMPv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 07:15:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43569 "EHLO hera.kernel.org"
+	id S936064Ab0BZMPX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 07:15:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43549 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936039Ab0BZMPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 07:15:37 -0500
+	id S936025Ab0BZMPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 07:15:18 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
@@ -13,1994 +13,487 @@ To: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
        oleg@redhat.com
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 43/43] slow-work: kill it
-Date: Fri, 26 Feb 2010 21:23:20 +0900
-Message-Id: <1267187000-18791-44-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 02/43] sched: rename preempt_notifiers to sched_notifiers and refactor implementation
+Date: Fri, 26 Feb 2010 21:22:39 +0900
+Message-Id: <1267187000-18791-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
 References: <1267187000-18791-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:36 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 12:13:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-slow-work doesn't have any user left.  Kill it.
+Rename preempt_notifiers to sched_notifiers and move it to sched.h.
+Also, refactor implementation in sched.c such that adding new
+callbacks is easier.
+
+This patch does not introduce any functional change and in fact
+generates the same binary at least with my configuration (x86_64 SMP,
+kvm and some debug options).
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: David Howells <dhowells@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/slow-work.txt |  322 -------------
- include/linux/slow-work.h   |  163 -------
- init/Kconfig                |   24 -
- kernel/Makefile             |    2 -
- kernel/slow-work-debugfs.c  |  227 ---------
- kernel/slow-work.c          | 1068 -------------------------------------------
- kernel/slow-work.h          |   72 ---
- kernel/sysctl.c             |    8 -
- 8 files changed, 0 insertions(+), 1886 deletions(-)
- delete mode 100644 Documentation/slow-work.txt
- delete mode 100644 include/linux/slow-work.h
- delete mode 100644 kernel/slow-work-debugfs.c
- delete mode 100644 kernel/slow-work.c
- delete mode 100644 kernel/slow-work.h
+ arch/ia64/kvm/Kconfig    |    2 +-
+ arch/powerpc/kvm/Kconfig |    2 +-
+ arch/s390/kvm/Kconfig    |    2 +-
+ arch/x86/kvm/Kconfig     |    2 +-
+ include/linux/kvm_host.h |    4 +-
+ include/linux/preempt.h  |   48 --------------------
+ include/linux/sched.h    |   53 +++++++++++++++++++++-
+ init/Kconfig             |    2 +-
+ kernel/sched.c           |  108 +++++++++++++++++++---------------------------
+ virt/kvm/kvm_main.c      |   26 +++++------
+ 10 files changed, 113 insertions(+), 136 deletions(-)
 
-diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
-deleted file mode 100644
-index 9dbf447..0000000
---- a/Documentation/slow-work.txt
-+++ /dev/null
-@@ -1,322 +0,0 @@
--		     ====================================
--		     SLOW WORK ITEM EXECUTION THREAD POOL
--		     ====================================
--
--By: David Howells <dhowells@redhat.com>
--
--The slow work item execution thread pool is a pool of threads for performing
--things that take a relatively long time, such as making mkdir calls.
--Typically, when processing something, these items will spend a lot of time
--blocking a thread on I/O, thus making that thread unavailable for doing other
--work.
--
--The standard workqueue model is unsuitable for this class of work item as that
--limits the owner to a single thread or a single thread per CPU.  For some
--tasks, however, more threads - or fewer - are required.
--
--There is just one pool per system.  It contains no threads unless something
--wants to use it - and that something must register its interest first.  When
--the pool is active, the number of threads it contains is dynamic, varying
--between a maximum and minimum setting, depending on the load.
--
--
--====================
--CLASSES OF WORK ITEM
--====================
--
--This pool support two classes of work items:
--
-- (*) Slow work items.
--
-- (*) Very slow work items.
--
--The former are expected to finish much quicker than the latter.
--
--An operation of the very slow class may do a batch combination of several
--lookups, mkdirs, and a create for instance.
--
--An operation of the ordinarily slow class may, for example, write stuff or
--expand files, provided the time taken to do so isn't too long.
--
--Operations of both types may sleep during execution, thus tying up the thread
--loaned to it.
--
--A further class of work item is available, based on the slow work item class:
--
-- (*) Delayed slow work items.
--
--These are slow work items that have a timer to defer queueing of the item for
--a while.
--
--
--THREAD-TO-CLASS ALLOCATION
----------------------------
--
--Not all the threads in the pool are available to work on very slow work items.
--The number will be between one and one fewer than the number of active threads.
--This is configurable (see the "Pool Configuration" section).
--
--All the threads are available to work on ordinarily slow work items, but a
--percentage of the threads will prefer to work on very slow work items.
--
--The configuration ensures that at least one thread will be available to work on
--very slow work items, and at least one thread will be available that won't work
--on very slow work items at all.
--
--
--=====================
--USING SLOW WORK ITEMS
--=====================
--
--Firstly, a module or subsystem wanting to make use of slow work items must
--register its interest:
--
--	 int ret = slow_work_register_user(struct module *module);
--
--This will return 0 if successful, or a -ve error upon failure.  The module
--pointer should be the module interested in using this facility (almost
--certainly THIS_MODULE).
--
--
--Slow work items may then be set up by:
--
-- (1) Declaring a slow_work struct type variable:
--
--	#include <linux/slow-work.h>
--
--	struct slow_work myitem;
--
-- (2) Declaring the operations to be used for this item:
--
--	struct slow_work_ops myitem_ops = {
--		.get_ref = myitem_get_ref,
--		.put_ref = myitem_put_ref,
--		.execute = myitem_execute,
--	};
--
--     [*] For a description of the ops, see section "Item Operations".
--
-- (3) Initialising the item:
--
--	slow_work_init(&myitem, &myitem_ops);
--
--     or:
--
--	delayed_slow_work_init(&myitem, &myitem_ops);
--
--     or:
--
--	vslow_work_init(&myitem, &myitem_ops);
--
--     depending on its class.
--
--A suitably set up work item can then be enqueued for processing:
--
--	int ret = slow_work_enqueue(&myitem);
--
--This will return a -ve error if the thread pool is unable to gain a reference
--on the item, 0 otherwise, or (for delayed work):
--
--	int ret = delayed_slow_work_enqueue(&myitem, my_jiffy_delay);
--
--
--The items are reference counted, so there ought to be no need for a flush
--operation.  But as the reference counting is optional, means to cancel
--existing work items are also included:
--
--	cancel_slow_work(&myitem);
--	cancel_delayed_slow_work(&myitem);
--
--can be used to cancel pending work.  The above cancel function waits for
--existing work to have been executed (or prevent execution of them, depending
--on timing).
--
--
--When all a module's slow work items have been processed, and the
--module has no further interest in the facility, it should unregister its
--interest:
--
--	slow_work_unregister_user(struct module *module);
--
--The module pointer is used to wait for all outstanding work items for that
--module before completing the unregistration.  This prevents the put_ref() code
--from being taken away before it completes.  module should almost certainly be
--THIS_MODULE.
--
--
--================
--HELPER FUNCTIONS
--================
--
--The slow-work facility provides a function by which it can be determined
--whether or not an item is queued for later execution:
--
--	bool queued = slow_work_is_queued(struct slow_work *work);
--
--If it returns false, then the item is not on the queue (it may be executing
--with a requeue pending).  This can be used to work out whether an item on which
--another depends is on the queue, thus allowing a dependent item to be queued
--after it.
--
--If the above shows an item on which another depends not to be queued, then the
--owner of the dependent item might need to wait.  However, to avoid locking up
--the threads unnecessarily be sleeping in them, it can make sense under some
--circumstances to return the work item to the queue, thus deferring it until
--some other items have had a chance to make use of the yielded thread.
--
--To yield a thread and defer an item, the work function should simply enqueue
--the work item again and return.  However, this doesn't work if there's nothing
--actually on the queue, as the thread just vacated will jump straight back into
--the item's work function, thus busy waiting on a CPU.
--
--Instead, the item should use the thread to wait for the dependency to go away,
--but rather than using schedule() or schedule_timeout() to sleep, it should use
--the following function:
--
--	bool requeue = slow_work_sleep_till_thread_needed(
--			struct slow_work *work,
--			signed long *_timeout);
--
--This will add a second wait and then sleep, such that it will be woken up if
--either something appears on the queue that could usefully make use of the
--thread - and behind which this item can be queued, or if the event the caller
--set up to wait for happens.  True will be returned if something else appeared
--on the queue and this work function should perhaps return, of false if
--something else woke it up.  The timeout is as for schedule_timeout().
--
--For example:
--
--	wq = bit_waitqueue(&my_flags, MY_BIT);
--	init_wait(&wait);
--	requeue = false;
--	do {
--		prepare_to_wait(wq, &wait, TASK_UNINTERRUPTIBLE);
--		if (!test_bit(MY_BIT, &my_flags))
--			break;
--		requeue = slow_work_sleep_till_thread_needed(&my_work,
--							     &timeout);
--	} while (timeout > 0 && !requeue);
--	finish_wait(wq, &wait);
--	if (!test_bit(MY_BIT, &my_flags)
--		goto do_my_thing;
--	if (requeue)
--		return; // to slow_work
--
--
--===============
--ITEM OPERATIONS
--===============
--
--Each work item requires a table of operations of type struct slow_work_ops.
--Only ->execute() is required; the getting and putting of a reference and the
--describing of an item are all optional.
--
-- (*) Get a reference on an item:
--
--	int (*get_ref)(struct slow_work *work);
--
--     This allows the thread pool to attempt to pin an item by getting a
--     reference on it.  This function should return 0 if the reference was
--     granted, or a -ve error otherwise.  If an error is returned,
--     slow_work_enqueue() will fail.
--
--     The reference is held whilst the item is queued and whilst it is being
--     executed.  The item may then be requeued with the same reference held, or
--     the reference will be released.
--
-- (*) Release a reference on an item:
--
--	void (*put_ref)(struct slow_work *work);
--
--     This allows the thread pool to unpin an item by releasing the reference on
--     it.  The thread pool will not touch the item again once this has been
--     called.
--
-- (*) Execute an item:
--
--	void (*execute)(struct slow_work *work);
--
--     This should perform the work required of the item.  It may sleep, it may
--     perform disk I/O and it may wait for locks.
--
-- (*) View an item through /proc:
--
--	void (*desc)(struct slow_work *work, struct seq_file *m);
--
--     If supplied, this should print to 'm' a small string describing the work
--     the item is to do.  This should be no more than about 40 characters, and
--     shouldn't include a newline character.
--
--     See the 'Viewing executing and queued items' section below.
--
--
--==================
--POOL CONFIGURATION
--==================
--
--The slow-work thread pool has a number of configurables:
--
-- (*) /proc/sys/kernel/slow-work/min-threads
--
--     The minimum number of threads that should be in the pool whilst it is in
--     use.  This may be anywhere between 2 and max-threads.
--
-- (*) /proc/sys/kernel/slow-work/max-threads
--
--     The maximum number of threads that should in the pool.  This may be
--     anywhere between min-threads and 255 or NR_CPUS * 2, whichever is greater.
--
-- (*) /proc/sys/kernel/slow-work/vslow-percentage
--
--     The percentage of active threads in the pool that may be used to execute
--     very slow work items.  This may be between 1 and 99.  The resultant number
--     is bounded to between 1 and one fewer than the number of active threads.
--     This ensures there is always at least one thread that can process very
--     slow work items, and always at least one thread that won't.
--
--
--==================================
--VIEWING EXECUTING AND QUEUED ITEMS
--==================================
--
--If CONFIG_SLOW_WORK_DEBUG is enabled, a debugfs file is made available:
--
--	/sys/kernel/debug/slow_work/runqueue
--
--through which the list of work items being executed and the queues of items to
--be executed may be viewed.  The owner of a work item is given the chance to
--add some information of its own.
--
--The contents look something like the following:
--
--    THR PID   ITEM ADDR        FL MARK  DESC
--    === ===== ================ == ===== ==========
--      0  3005 ffff880023f52348  a 952ms FSC: OBJ17d3: LOOK
--      1  3006 ffff880024e33668  2 160ms FSC: OBJ17e5 OP60d3b: Write1/Store fl=2
--      2  3165 ffff8800296dd180  a 424ms FSC: OBJ17e4: LOOK
--      3  4089 ffff8800262c8d78  a 212ms FSC: OBJ17ea: CRTN
--      4  4090 ffff88002792bed8  2 388ms FSC: OBJ17e8 OP60d36: Write1/Store fl=2
--      5  4092 ffff88002a0ef308  2 388ms FSC: OBJ17e7 OP60d2e: Write1/Store fl=2
--      6  4094 ffff88002abaf4b8  2 132ms FSC: OBJ17e2 OP60d4e: Write1/Store fl=2
--      7  4095 ffff88002bb188e0  a 388ms FSC: OBJ17e9: CRTN
--    vsq     - ffff880023d99668  1 308ms FSC: OBJ17e0 OP60f91: Write1/EnQ fl=2
--    vsq     - ffff8800295d1740  1 212ms FSC: OBJ16be OP4d4b6: Write1/EnQ fl=2
--    vsq     - ffff880025ba3308  1 160ms FSC: OBJ179a OP58dec: Write1/EnQ fl=2
--    vsq     - ffff880024ec83e0  1 160ms FSC: OBJ17ae OP599f2: Write1/EnQ fl=2
--    vsq     - ffff880026618e00  1 160ms FSC: OBJ17e6 OP60d33: Write1/EnQ fl=2
--    vsq     - ffff880025a2a4b8  1 132ms FSC: OBJ16a2 OP4d583: Write1/EnQ fl=2
--    vsq     - ffff880023cbe6d8  9 212ms FSC: OBJ17eb: LOOK
--    vsq     - ffff880024d37590  9 212ms FSC: OBJ17ec: LOOK
--    vsq     - ffff880027746cb0  9 212ms FSC: OBJ17ed: LOOK
--    vsq     - ffff880024d37ae8  9 212ms FSC: OBJ17ee: LOOK
--    vsq     - ffff880024d37cb0  9 212ms FSC: OBJ17ef: LOOK
--    vsq     - ffff880025036550  9 212ms FSC: OBJ17f0: LOOK
--    vsq     - ffff8800250368e0  9 212ms FSC: OBJ17f1: LOOK
--    vsq     - ffff880025036aa8  9 212ms FSC: OBJ17f2: LOOK
--
--In the 'THR' column, executing items show the thread they're occupying and
--queued threads indicate which queue they're on.  'PID' shows the process ID of
--a slow-work thread that's executing something.  'FL' shows the work item flags.
--'MARK' indicates how long since an item was queued or began executing.  Lastly,
--the 'DESC' column permits the owner of an item to give some information.
--
-diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
-deleted file mode 100644
-index 13337bf..0000000
---- a/include/linux/slow-work.h
-+++ /dev/null
-@@ -1,163 +0,0 @@
--/* Worker thread pool for slow items, such as filesystem lookups or mkdirs
+diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
+index ef3e7be..a38b72e 100644
+--- a/arch/ia64/kvm/Kconfig
++++ b/arch/ia64/kvm/Kconfig
+@@ -22,7 +22,7 @@ config KVM
+ 	depends on HAVE_KVM && MODULES && EXPERIMENTAL
+ 	# for device assignment:
+ 	depends on PCI
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
+ 	select KVM_APIC_ARCHITECTURE
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 6fb6e8a..607fb26 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -18,7 +18,7 @@ if VIRTUALIZATION
+ 
+ config KVM
+ 	bool
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 
+ config KVM_BOOK3S_64_HANDLER
+diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
+index 6ee55ae..a0adddd 100644
+--- a/arch/s390/kvm/Kconfig
++++ b/arch/s390/kvm/Kconfig
+@@ -18,7 +18,7 @@ if VIRTUALIZATION
+ config KVM
+ 	tristate "Kernel-based Virtual Machine (KVM) support"
+ 	depends on HAVE_KVM && EXPERIMENTAL
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 	---help---
+ 	  Support hosting paravirtualized guest machines using the SIE
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index 4cd4983..fd38f79 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -22,7 +22,7 @@ config KVM
+ 	depends on HAVE_KVM
+ 	# for device assignment:
+ 	depends on PCI
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select MMU_NOTIFIER
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index bd5a616..8079759 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -74,8 +74,8 @@ void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+ 
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	struct preempt_notifier preempt_notifier;
++#ifdef CONFIG_SCHED_NOTIFIERS
++	struct sched_notifier sched_notifier;
+ #endif
+ 	int vcpu_id;
+ 	struct mutex mutex;
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 2e681d9..538c675 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -93,52 +93,4 @@ do { \
+ 
+ #endif
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-
+-struct preempt_notifier;
+-
+-/**
+- * preempt_ops - notifiers called when a task is preempted and rescheduled
+- * @sched_in: we're about to be rescheduled:
+- *    notifier: struct preempt_notifier for the task being scheduled
+- *    cpu:  cpu we're scheduled on
+- * @sched_out: we've just been preempted
+- *    notifier: struct preempt_notifier for the task being preempted
+- *    next: the task that's kicking us out
 - *
-- * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public Licence
-- * as published by the Free Software Foundation; either version
-- * 2 of the Licence, or (at your option) any later version.
-- *
-- * See Documentation/slow-work.txt
+- * Please note that sched_in and out are called under different
+- * contexts.  sched_out is called with rq lock held and irq disabled
+- * while sched_in is called without rq lock and irq enabled.  This
+- * difference is intentional and depended upon by its users.
 - */
--
--#ifndef _LINUX_SLOW_WORK_H
--#define _LINUX_SLOW_WORK_H
--
--#ifdef CONFIG_SLOW_WORK
--
--#include <linux/sysctl.h>
--#include <linux/timer.h>
--
--struct slow_work;
--#ifdef CONFIG_SLOW_WORK_DEBUG
--struct seq_file;
--#endif
--
--/*
-- * The operations used to support slow work items
-- */
--struct slow_work_ops {
--	/* owner */
--	struct module *owner;
--
--	/* get a ref on a work item
--	 * - return 0 if successful, -ve if not
--	 */
--	int (*get_ref)(struct slow_work *work);
--
--	/* discard a ref to a work item */
--	void (*put_ref)(struct slow_work *work);
--
--	/* execute a work item */
--	void (*execute)(struct slow_work *work);
--
--#ifdef CONFIG_SLOW_WORK_DEBUG
--	/* describe a work item for debugfs */
--	void (*desc)(struct slow_work *work, struct seq_file *m);
--#endif
--};
--
--/*
-- * A slow work item
-- * - A reference is held on the parent object by the thread pool when it is
-- *   queued
-- */
--struct slow_work {
--	struct module		*owner;	/* the owning module */
--	unsigned long		flags;
--#define SLOW_WORK_PENDING	0	/* item pending (further) execution */
--#define SLOW_WORK_EXECUTING	1	/* item currently executing */
--#define SLOW_WORK_ENQ_DEFERRED	2	/* item enqueue deferred */
--#define SLOW_WORK_VERY_SLOW	3	/* item is very slow */
--#define SLOW_WORK_CANCELLING	4	/* item is being cancelled, don't enqueue */
--#define SLOW_WORK_DELAYED	5	/* item is struct delayed_slow_work with active timer */
--	const struct slow_work_ops *ops; /* operations table for this item */
--	struct list_head	link;	/* link in queue */
--#ifdef CONFIG_SLOW_WORK_DEBUG
--	struct timespec		mark;	/* jiffies at which queued or exec begun */
--#endif
--};
--
--struct delayed_slow_work {
--	struct slow_work	work;
--	struct timer_list	timer;
+-struct preempt_ops {
+-	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
+-	void (*sched_out)(struct preempt_notifier *notifier,
+-			  struct task_struct *next);
 -};
 -
 -/**
-- * slow_work_init - Initialise a slow work item
-- * @work: The work item to initialise
-- * @ops: The operations to use to handle the slow work item
+- * preempt_notifier - key for installing preemption notifiers
+- * @link: internal use
+- * @ops: defines the notifier functions to be called
 - *
-- * Initialise a slow work item.
+- * Usually used in conjunction with container_of().
 - */
--static inline void slow_work_init(struct slow_work *work,
--				  const struct slow_work_ops *ops)
+-struct preempt_notifier {
+-	struct hlist_node link;
+-	struct preempt_ops *ops;
+-};
+-
+-void preempt_notifier_register(struct preempt_notifier *notifier);
+-void preempt_notifier_unregister(struct preempt_notifier *notifier);
+-
+-static inline void preempt_notifier_init(struct preempt_notifier *notifier,
+-				     struct preempt_ops *ops)
 -{
--	work->flags = 0;
--	work->ops = ops;
--	INIT_LIST_HEAD(&work->link);
+-	INIT_HLIST_NODE(&notifier->link);
+-	notifier->ops = ops;
 -}
 -
--/**
-- * slow_work_init - Initialise a delayed slow work item
-- * @work: The work item to initialise
-- * @ops: The operations to use to handle the slow work item
-- *
-- * Initialise a delayed slow work item.
-- */
--static inline void delayed_slow_work_init(struct delayed_slow_work *dwork,
--					  const struct slow_work_ops *ops)
--{
--	init_timer(&dwork->timer);
--	slow_work_init(&dwork->work, ops);
--}
--
--/**
-- * vslow_work_init - Initialise a very slow work item
-- * @work: The work item to initialise
-- * @ops: The operations to use to handle the slow work item
-- *
-- * Initialise a very slow work item.  This item will be restricted such that
-- * only a certain number of the pool threads will be able to execute items of
-- * this type.
-- */
--static inline void vslow_work_init(struct slow_work *work,
--				   const struct slow_work_ops *ops)
--{
--	work->flags = 1 << SLOW_WORK_VERY_SLOW;
--	work->ops = ops;
--	INIT_LIST_HEAD(&work->link);
--}
--
--/**
-- * slow_work_is_queued - Determine if a slow work item is on the work queue
-- * work: The work item to test
-- *
-- * Determine if the specified slow-work item is on the work queue.  This
-- * returns true if it is actually on the queue.
-- *
-- * If the item is executing and has been marked for requeue when execution
-- * finishes, then false will be returned.
-- *
-- * Anyone wishing to wait for completion of execution can wait on the
-- * SLOW_WORK_EXECUTING bit.
-- */
--static inline bool slow_work_is_queued(struct slow_work *work)
--{
--	unsigned long flags = work->flags;
--	return flags & SLOW_WORK_PENDING && !(flags & SLOW_WORK_EXECUTING);
--}
--
--extern int slow_work_enqueue(struct slow_work *work);
--extern void slow_work_cancel(struct slow_work *work);
--extern int slow_work_register_user(struct module *owner);
--extern void slow_work_unregister_user(struct module *owner);
--
--extern int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
--				     unsigned long delay);
--
--static inline void delayed_slow_work_cancel(struct delayed_slow_work *dwork)
--{
--	slow_work_cancel(&dwork->work);
--}
--
--extern bool slow_work_sleep_till_thread_needed(struct slow_work *work,
--					       signed long *_timeout);
--
--#ifdef CONFIG_SYSCTL
--extern ctl_table slow_work_sysctls[];
 -#endif
 -
--#endif /* CONFIG_SLOW_WORK */
--#endif /* _LINUX_SLOW_WORK_H */
+ #endif /* __LINUX_PREEMPT_H */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 78efe7c..184389d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1227,6 +1227,53 @@ struct sched_rt_entity {
+ #endif
+ };
+ 
++#ifdef CONFIG_SCHED_NOTIFIERS
++
++struct sched_notifier;
++
++/**
++ * sched_notifier_ops - notifiers called for scheduling events
++ * @in: we're about to be rescheduled:
++ *    notifier: struct sched_notifier for the task being scheduled
++ *    cpu:  cpu we're scheduled on
++ * @out: we've just been preempted
++ *    notifier: struct sched_notifier for the task being preempted
++ *    next: the task that's kicking us out
++ *
++ * Please note that in and out are called under different contexts.
++ * out is called with rq lock held and irq disabled while in is called
++ * without rq lock and irq enabled.  This difference is intentional
++ * and depended upon by its users.
++ */
++struct sched_notifier_ops {
++	void (*in)(struct sched_notifier *notifier, int cpu);
++	void (*out)(struct sched_notifier *notifier, struct task_struct *next);
++};
++
++/**
++ * sched_notifier - key for installing scheduler notifiers
++ * @link: internal use
++ * @ops: defines the notifier functions to be called
++ *
++ * Usually used in conjunction with container_of().
++ */
++struct sched_notifier {
++	struct hlist_node link;
++	struct sched_notifier_ops *ops;
++};
++
++void sched_notifier_register(struct sched_notifier *notifier);
++void sched_notifier_unregister(struct sched_notifier *notifier);
++
++static inline void sched_notifier_init(struct sched_notifier *notifier,
++				       struct sched_notifier_ops *ops)
++{
++	INIT_HLIST_NODE(&notifier->link);
++	notifier->ops = ops;
++}
++
++#endif	/* CONFIG_SCHED_NOTIFIERS */
++
+ struct rcu_node;
+ 
+ struct task_struct {
+@@ -1250,9 +1297,9 @@ struct task_struct {
+ 	struct sched_entity se;
+ 	struct sched_rt_entity rt;
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	/* list of struct preempt_notifier: */
+-	struct hlist_head preempt_notifiers;
++#ifdef CONFIG_SCHED_NOTIFIERS
++	/* list of struct sched_notifier: */
++	struct hlist_head sched_notifiers;
+ #endif
+ 
+ 	/*
 diff --git a/init/Kconfig b/init/Kconfig
-index b1b7175..6bd0c83 100644
+index d95ca7c..06644b8 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1126,30 +1126,6 @@ config TRACEPOINTS
+@@ -1259,7 +1259,7 @@ config STOP_MACHINE
  
- source "arch/Kconfig"
+ source "block/Kconfig"
  
--config SLOW_WORK
--	default n
--	bool
--	help
--	  The slow work thread pool provides a number of dynamically allocated
--	  threads that can be used by the kernel to perform operations that
--	  take a relatively long time.
--
--	  An example of this would be CacheFiles doing a path lookup followed
--	  by a series of mkdirs and a create call, all of which have to touch
--	  disk.
--
--	  See Documentation/slow-work.txt.
--
--config SLOW_WORK_DEBUG
--	bool "Slow work debugging through debugfs"
--	default n
--	depends on SLOW_WORK && DEBUG_FS
--	help
--	  Display the contents of the slow work run queue through debugfs,
--	  including items currently executing.
--
--	  See Documentation/slow-work.txt.
--
- endmenu		# General setup
+-config PREEMPT_NOTIFIERS
++config SCHED_NOTIFIERS
+ 	bool
  
- config HAVE_GENERIC_DMA_COHERENT
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 864ff75..99ce6f2 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -95,8 +95,6 @@ obj-$(CONFIG_TRACING) += trace/
- obj-$(CONFIG_X86_DS) += trace/
- obj-$(CONFIG_RING_BUFFER) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
--obj-$(CONFIG_SLOW_WORK) += slow-work.o
--obj-$(CONFIG_SLOW_WORK_DEBUG) += slow-work-debugfs.o
- obj-$(CONFIG_PERF_EVENTS) += perf_event.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
- obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
-diff --git a/kernel/slow-work-debugfs.c b/kernel/slow-work-debugfs.c
-deleted file mode 100644
-index e45c436..0000000
---- a/kernel/slow-work-debugfs.c
-+++ /dev/null
-@@ -1,227 +0,0 @@
--/* Slow work debugging
-- *
-- * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public Licence
-- * as published by the Free Software Foundation; either version
-- * 2 of the Licence, or (at your option) any later version.
-- */
--
--#include <linux/module.h>
--#include <linux/slow-work.h>
--#include <linux/fs.h>
--#include <linux/time.h>
--#include <linux/seq_file.h>
--#include "slow-work.h"
--
--#define ITERATOR_SHIFT		(BITS_PER_LONG - 4)
--#define ITERATOR_SELECTOR	(0xfUL << ITERATOR_SHIFT)
--#define ITERATOR_COUNTER	(~ITERATOR_SELECTOR)
--
--void slow_work_new_thread_desc(struct slow_work *work, struct seq_file *m)
--{
--	seq_puts(m, "Slow-work: New thread");
--}
--
--/*
-- * Render the time mark field on a work item into a 5-char time with units plus
-- * a space
-- */
--static void slow_work_print_mark(struct seq_file *m, struct slow_work *work)
--{
--	struct timespec now, diff;
--
--	now = CURRENT_TIME;
--	diff = timespec_sub(now, work->mark);
--
--	if (diff.tv_sec < 0)
--		seq_puts(m, "  -ve ");
--	else if (diff.tv_sec == 0 && diff.tv_nsec < 1000)
--		seq_printf(m, "%3luns ", diff.tv_nsec);
--	else if (diff.tv_sec == 0 && diff.tv_nsec < 1000000)
--		seq_printf(m, "%3luus ", diff.tv_nsec / 1000);
--	else if (diff.tv_sec == 0 && diff.tv_nsec < 1000000000)
--		seq_printf(m, "%3lums ", diff.tv_nsec / 1000000);
--	else if (diff.tv_sec <= 1)
--		seq_puts(m, "   1s ");
--	else if (diff.tv_sec < 60)
--		seq_printf(m, "%4lus ", diff.tv_sec);
--	else if (diff.tv_sec < 60 * 60)
--		seq_printf(m, "%4lum ", diff.tv_sec / 60);
--	else if (diff.tv_sec < 60 * 60 * 24)
--		seq_printf(m, "%4luh ", diff.tv_sec / 3600);
--	else
--		seq_puts(m, "exces ");
--}
--
--/*
-- * Describe a slow work item for debugfs
-- */
--static int slow_work_runqueue_show(struct seq_file *m, void *v)
--{
--	struct slow_work *work;
--	struct list_head *p = v;
--	unsigned long id;
--
--	switch ((unsigned long) v) {
--	case 1:
--		seq_puts(m, "THR PID   ITEM ADDR        FL MARK  DESC\n");
--		return 0;
--	case 2:
--		seq_puts(m, "=== ===== ================ == ===== ==========\n");
--		return 0;
--
--	case 3 ... 3 + SLOW_WORK_THREAD_LIMIT - 1:
--		id = (unsigned long) v - 3;
--
--		read_lock(&slow_work_execs_lock);
--		work = slow_work_execs[id];
--		if (work) {
--			smp_read_barrier_depends();
--
--			seq_printf(m, "%3lu %5d %16p %2lx ",
--				   id, slow_work_pids[id], work, work->flags);
--			slow_work_print_mark(m, work);
--
--			if (work->ops->desc)
--				work->ops->desc(work, m);
--			seq_putc(m, '\n');
--		}
--		read_unlock(&slow_work_execs_lock);
--		return 0;
--
--	default:
--		work = list_entry(p, struct slow_work, link);
--		seq_printf(m, "%3s     - %16p %2lx ",
--			   work->flags & SLOW_WORK_VERY_SLOW ? "vsq" : "sq",
--			   work, work->flags);
--		slow_work_print_mark(m, work);
--
--		if (work->ops->desc)
--			work->ops->desc(work, m);
--		seq_putc(m, '\n');
--		return 0;
--	}
--}
--
--/*
-- * map the iterator to a work item
-- */
--static void *slow_work_runqueue_index(struct seq_file *m, loff_t *_pos)
--{
--	struct list_head *p;
--	unsigned long count, id;
--
--	switch (*_pos >> ITERATOR_SHIFT) {
--	case 0x0:
--		if (*_pos == 0)
--			*_pos = 1;
--		if (*_pos < 3)
--			return (void *)(unsigned long) *_pos;
--		if (*_pos < 3 + SLOW_WORK_THREAD_LIMIT)
--			for (id = *_pos - 3;
--			     id < SLOW_WORK_THREAD_LIMIT;
--			     id++, (*_pos)++)
--				if (slow_work_execs[id])
--					return (void *)(unsigned long) *_pos;
--		*_pos = 0x1UL << ITERATOR_SHIFT;
--
--	case 0x1:
--		count = *_pos & ITERATOR_COUNTER;
--		list_for_each(p, &slow_work_queue) {
--			if (count == 0)
--				return p;
--			count--;
--		}
--		*_pos = 0x2UL << ITERATOR_SHIFT;
--
--	case 0x2:
--		count = *_pos & ITERATOR_COUNTER;
--		list_for_each(p, &vslow_work_queue) {
--			if (count == 0)
--				return p;
--			count--;
--		}
--		*_pos = 0x3UL << ITERATOR_SHIFT;
--
--	default:
--		return NULL;
--	}
--}
--
--/*
-- * set up the iterator to start reading from the first line
-- */
--static void *slow_work_runqueue_start(struct seq_file *m, loff_t *_pos)
--{
--	spin_lock_irq(&slow_work_queue_lock);
--	return slow_work_runqueue_index(m, _pos);
--}
--
--/*
-- * move to the next line
-- */
--static void *slow_work_runqueue_next(struct seq_file *m, void *v, loff_t *_pos)
--{
--	struct list_head *p = v;
--	unsigned long selector = *_pos >> ITERATOR_SHIFT;
--
--	(*_pos)++;
--	switch (selector) {
--	case 0x0:
--		return slow_work_runqueue_index(m, _pos);
--
--	case 0x1:
--		if (*_pos >> ITERATOR_SHIFT == 0x1) {
--			p = p->next;
--			if (p != &slow_work_queue)
--				return p;
--		}
--		*_pos = 0x2UL << ITERATOR_SHIFT;
--		p = &vslow_work_queue;
--
--	case 0x2:
--		if (*_pos >> ITERATOR_SHIFT == 0x2) {
--			p = p->next;
--			if (p != &vslow_work_queue)
--				return p;
--		}
--		*_pos = 0x3UL << ITERATOR_SHIFT;
--
--	default:
--		return NULL;
--	}
--}
--
--/*
-- * clean up after reading
-- */
--static void slow_work_runqueue_stop(struct seq_file *m, void *v)
--{
--	spin_unlock_irq(&slow_work_queue_lock);
--}
--
--static const struct seq_operations slow_work_runqueue_ops = {
--	.start		= slow_work_runqueue_start,
--	.stop		= slow_work_runqueue_stop,
--	.next		= slow_work_runqueue_next,
--	.show		= slow_work_runqueue_show,
--};
--
--/*
-- * open "/sys/kernel/debug/slow_work/runqueue" to list queue contents
-- */
--static int slow_work_runqueue_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &slow_work_runqueue_ops);
--}
--
--const struct file_operations slow_work_runqueue_fops = {
--	.owner		= THIS_MODULE,
--	.open		= slow_work_runqueue_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= seq_release,
--};
-diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-deleted file mode 100644
-index 7494bbf..0000000
---- a/kernel/slow-work.c
-+++ /dev/null
-@@ -1,1068 +0,0 @@
--/* Worker thread pool for slow items, such as filesystem lookups or mkdirs
-- *
-- * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public Licence
-- * as published by the Free Software Foundation; either version
-- * 2 of the Licence, or (at your option) any later version.
-- *
-- * See Documentation/slow-work.txt
-- */
--
--#include <linux/module.h>
--#include <linux/slow-work.h>
--#include <linux/kthread.h>
--#include <linux/freezer.h>
--#include <linux/wait.h>
--#include <linux/debugfs.h>
--#include "slow-work.h"
--
--static void slow_work_cull_timeout(unsigned long);
--static void slow_work_oom_timeout(unsigned long);
--
--#ifdef CONFIG_SYSCTL
--static int slow_work_min_threads_sysctl(struct ctl_table *, int,
--					void __user *, size_t *, loff_t *);
--
--static int slow_work_max_threads_sysctl(struct ctl_table *, int ,
--					void __user *, size_t *, loff_t *);
--#endif
--
--/*
-- * The pool of threads has at least min threads in it as long as someone is
-- * using the facility, and may have as many as max.
-- *
-- * A portion of the pool may be processing very slow operations.
-- */
--static unsigned slow_work_min_threads = 2;
--static unsigned slow_work_max_threads = 4;
--static unsigned vslow_work_proportion = 50; /* % of threads that may process
--					     * very slow work */
--
--#ifdef CONFIG_SYSCTL
--static const int slow_work_min_min_threads = 2;
--static int slow_work_max_max_threads = SLOW_WORK_THREAD_LIMIT;
--static const int slow_work_min_vslow = 1;
--static const int slow_work_max_vslow = 99;
--
--ctl_table slow_work_sysctls[] = {
--	{
--		.procname	= "min-threads",
--		.data		= &slow_work_min_threads,
--		.maxlen		= sizeof(unsigned),
--		.mode		= 0644,
--		.proc_handler	= slow_work_min_threads_sysctl,
--		.extra1		= (void *) &slow_work_min_min_threads,
--		.extra2		= &slow_work_max_threads,
--	},
--	{
--		.procname	= "max-threads",
--		.data		= &slow_work_max_threads,
--		.maxlen		= sizeof(unsigned),
--		.mode		= 0644,
--		.proc_handler	= slow_work_max_threads_sysctl,
--		.extra1		= &slow_work_min_threads,
--		.extra2		= (void *) &slow_work_max_max_threads,
--	},
--	{
--		.procname	= "vslow-percentage",
--		.data		= &vslow_work_proportion,
--		.maxlen		= sizeof(unsigned),
--		.mode		= 0644,
--		.proc_handler	= proc_dointvec_minmax,
--		.extra1		= (void *) &slow_work_min_vslow,
--		.extra2		= (void *) &slow_work_max_vslow,
--	},
--	{}
--};
--#endif
--
--/*
-- * The active state of the thread pool
-- */
--static atomic_t slow_work_thread_count;
--static atomic_t vslow_work_executing_count;
--
--static bool slow_work_may_not_start_new_thread;
--static bool slow_work_cull; /* cull a thread due to lack of activity */
--static DEFINE_TIMER(slow_work_cull_timer, slow_work_cull_timeout, 0, 0);
--static DEFINE_TIMER(slow_work_oom_timer, slow_work_oom_timeout, 0, 0);
--static struct slow_work slow_work_new_thread; /* new thread starter */
--
--/*
-- * slow work ID allocation (use slow_work_queue_lock)
-- */
--static DECLARE_BITMAP(slow_work_ids, SLOW_WORK_THREAD_LIMIT);
--
--/*
-- * Unregistration tracking to prevent put_ref() from disappearing during module
-- * unload
-- */
--#ifdef CONFIG_MODULES
--static struct module *slow_work_thread_processing[SLOW_WORK_THREAD_LIMIT];
--static struct module *slow_work_unreg_module;
--static struct slow_work *slow_work_unreg_work_item;
--static DECLARE_WAIT_QUEUE_HEAD(slow_work_unreg_wq);
--static DEFINE_MUTEX(slow_work_unreg_sync_lock);
--
--static void slow_work_set_thread_processing(int id, struct slow_work *work)
--{
--	if (work)
--		slow_work_thread_processing[id] = work->owner;
--}
--static void slow_work_done_thread_processing(int id, struct slow_work *work)
--{
--	struct module *module = slow_work_thread_processing[id];
--
--	slow_work_thread_processing[id] = NULL;
--	smp_mb();
--	if (slow_work_unreg_work_item == work ||
--	    slow_work_unreg_module == module)
--		wake_up_all(&slow_work_unreg_wq);
--}
--static void slow_work_clear_thread_processing(int id)
--{
--	slow_work_thread_processing[id] = NULL;
--}
--#else
--static void slow_work_set_thread_processing(int id, struct slow_work *work) {}
--static void slow_work_done_thread_processing(int id, struct slow_work *work) {}
--static void slow_work_clear_thread_processing(int id) {}
--#endif
--
--/*
-- * Data for tracking currently executing items for indication through /proc
-- */
--#ifdef CONFIG_SLOW_WORK_DEBUG
--struct slow_work *slow_work_execs[SLOW_WORK_THREAD_LIMIT];
--pid_t slow_work_pids[SLOW_WORK_THREAD_LIMIT];
--DEFINE_RWLOCK(slow_work_execs_lock);
--#endif
--
--/*
-- * The queues of work items and the lock governing access to them.  These are
-- * shared between all the CPUs.  It doesn't make sense to have per-CPU queues
-- * as the number of threads bears no relation to the number of CPUs.
-- *
-- * There are two queues of work items: one for slow work items, and one for
-- * very slow work items.
-- */
--LIST_HEAD(slow_work_queue);
--LIST_HEAD(vslow_work_queue);
--DEFINE_SPINLOCK(slow_work_queue_lock);
--
--/*
-- * The following are two wait queues that get pinged when a work item is placed
-- * on an empty queue.  These allow work items that are hogging a thread by
-- * sleeping in a way that could be deferred to yield their thread and enqueue
-- * themselves.
-- */
--static DECLARE_WAIT_QUEUE_HEAD(slow_work_queue_waits_for_occupation);
--static DECLARE_WAIT_QUEUE_HEAD(vslow_work_queue_waits_for_occupation);
--
--/*
-- * The thread controls.  A variable used to signal to the threads that they
-- * should exit when the queue is empty, a waitqueue used by the threads to wait
-- * for signals, and a completion set by the last thread to exit.
-- */
--static bool slow_work_threads_should_exit;
--static DECLARE_WAIT_QUEUE_HEAD(slow_work_thread_wq);
--static DECLARE_COMPLETION(slow_work_last_thread_exited);
--
--/*
-- * The number of users of the thread pool and its lock.  Whilst this is zero we
-- * have no threads hanging around, and when this reaches zero, we wait for all
-- * active or queued work items to complete and kill all the threads we do have.
-- */
--static int slow_work_user_count;
--static DEFINE_MUTEX(slow_work_user_lock);
--
--static inline int slow_work_get_ref(struct slow_work *work)
--{
--	if (work->ops->get_ref)
--		return work->ops->get_ref(work);
--
--	return 0;
--}
--
--static inline void slow_work_put_ref(struct slow_work *work)
--{
--	if (work->ops->put_ref)
--		work->ops->put_ref(work);
--}
--
--/*
-- * Calculate the maximum number of active threads in the pool that are
-- * permitted to process very slow work items.
-- *
-- * The answer is rounded up to at least 1, but may not equal or exceed the
-- * maximum number of the threads in the pool.  This means we always have at
-- * least one thread that can process slow work items, and we always have at
-- * least one thread that won't get tied up doing so.
-- */
--static unsigned slow_work_calc_vsmax(void)
--{
--	unsigned vsmax;
--
--	vsmax = atomic_read(&slow_work_thread_count) * vslow_work_proportion;
--	vsmax /= 100;
--	vsmax = max(vsmax, 1U);
--	return min(vsmax, slow_work_max_threads - 1);
--}
--
--/*
-- * Attempt to execute stuff queued on a slow thread.  Return true if we managed
-- * it, false if there was nothing to do.
-- */
--static noinline bool slow_work_execute(int id)
--{
--	struct slow_work *work = NULL;
--	unsigned vsmax;
--	bool very_slow;
--
--	vsmax = slow_work_calc_vsmax();
--
--	/* see if we can schedule a new thread to be started if we're not
--	 * keeping up with the work */
--	if (!waitqueue_active(&slow_work_thread_wq) &&
--	    (!list_empty(&slow_work_queue) || !list_empty(&vslow_work_queue)) &&
--	    atomic_read(&slow_work_thread_count) < slow_work_max_threads &&
--	    !slow_work_may_not_start_new_thread)
--		slow_work_enqueue(&slow_work_new_thread);
--
--	/* find something to execute */
--	spin_lock_irq(&slow_work_queue_lock);
--	if (!list_empty(&vslow_work_queue) &&
--	    atomic_read(&vslow_work_executing_count) < vsmax) {
--		work = list_entry(vslow_work_queue.next,
--				  struct slow_work, link);
--		if (test_and_set_bit_lock(SLOW_WORK_EXECUTING, &work->flags))
--			BUG();
--		list_del_init(&work->link);
--		atomic_inc(&vslow_work_executing_count);
--		very_slow = true;
--	} else if (!list_empty(&slow_work_queue)) {
--		work = list_entry(slow_work_queue.next,
--				  struct slow_work, link);
--		if (test_and_set_bit_lock(SLOW_WORK_EXECUTING, &work->flags))
--			BUG();
--		list_del_init(&work->link);
--		very_slow = false;
--	} else {
--		very_slow = false; /* avoid the compiler warning */
--	}
--
--	slow_work_set_thread_processing(id, work);
--	if (work) {
--		slow_work_mark_time(work);
--		slow_work_begin_exec(id, work);
--	}
--
--	spin_unlock_irq(&slow_work_queue_lock);
--
--	if (!work)
--		return false;
--
--	if (!test_and_clear_bit(SLOW_WORK_PENDING, &work->flags))
--		BUG();
--
--	/* don't execute if the work is in the process of being cancelled */
--	if (!test_bit(SLOW_WORK_CANCELLING, &work->flags))
--		work->ops->execute(work);
--
--	if (very_slow)
--		atomic_dec(&vslow_work_executing_count);
--	clear_bit_unlock(SLOW_WORK_EXECUTING, &work->flags);
--
--	/* wake up anyone waiting for this work to be complete */
--	wake_up_bit(&work->flags, SLOW_WORK_EXECUTING);
--
--	slow_work_end_exec(id, work);
--
--	/* if someone tried to enqueue the item whilst we were executing it,
--	 * then it'll be left unenqueued to avoid multiple threads trying to
--	 * execute it simultaneously
--	 *
--	 * there is, however, a race between us testing the pending flag and
--	 * getting the spinlock, and between the enqueuer setting the pending
--	 * flag and getting the spinlock, so we use a deferral bit to tell us
--	 * if the enqueuer got there first
--	 */
--	if (test_bit(SLOW_WORK_PENDING, &work->flags)) {
--		spin_lock_irq(&slow_work_queue_lock);
--
--		if (!test_bit(SLOW_WORK_EXECUTING, &work->flags) &&
--		    test_and_clear_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags))
--			goto auto_requeue;
--
--		spin_unlock_irq(&slow_work_queue_lock);
--	}
--
--	/* sort out the race between module unloading and put_ref() */
--	slow_work_put_ref(work);
--	slow_work_done_thread_processing(id, work);
--
--	return true;
--
--auto_requeue:
--	/* we must complete the enqueue operation
--	 * - we transfer our ref on the item back to the appropriate queue
--	 * - don't wake another thread up as we're awake already
--	 */
--	slow_work_mark_time(work);
--	if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
--		list_add_tail(&work->link, &vslow_work_queue);
--	else
--		list_add_tail(&work->link, &slow_work_queue);
--	spin_unlock_irq(&slow_work_queue_lock);
--	slow_work_clear_thread_processing(id);
--	return true;
--}
--
--/**
-- * slow_work_sleep_till_thread_needed - Sleep till thread needed by other work
-- * work: The work item under execution that wants to sleep
-- * _timeout: Scheduler sleep timeout
-- *
-- * Allow a requeueable work item to sleep on a slow-work processor thread until
-- * that thread is needed to do some other work or the sleep is interrupted by
-- * some other event.
-- *
-- * The caller must set up a wake up event before calling this and must have set
-- * the appropriate sleep mode (such as TASK_UNINTERRUPTIBLE) and tested its own
-- * condition before calling this function as no test is made here.
-- *
-- * False is returned if there is nothing on the queue; true is returned if the
-- * work item should be requeued
-- */
--bool slow_work_sleep_till_thread_needed(struct slow_work *work,
--					signed long *_timeout)
--{
--	wait_queue_head_t *wfo_wq;
--	struct list_head *queue;
--
--	DEFINE_WAIT(wait);
--
--	if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags)) {
--		wfo_wq = &vslow_work_queue_waits_for_occupation;
--		queue = &vslow_work_queue;
--	} else {
--		wfo_wq = &slow_work_queue_waits_for_occupation;
--		queue = &slow_work_queue;
--	}
--
--	if (!list_empty(queue))
--		return true;
--
--	add_wait_queue_exclusive(wfo_wq, &wait);
--	if (list_empty(queue))
--		*_timeout = schedule_timeout(*_timeout);
--	finish_wait(wfo_wq, &wait);
--
--	return !list_empty(queue);
--}
--EXPORT_SYMBOL(slow_work_sleep_till_thread_needed);
--
--/**
-- * slow_work_enqueue - Schedule a slow work item for processing
-- * @work: The work item to queue
-- *
-- * Schedule a slow work item for processing.  If the item is already undergoing
-- * execution, this guarantees not to re-enter the execution routine until the
-- * first execution finishes.
-- *
-- * The item is pinned by this function as it retains a reference to it, managed
-- * through the item operations.  The item is unpinned once it has been
-- * executed.
-- *
-- * An item may hog the thread that is running it for a relatively large amount
-- * of time, sufficient, for example, to perform several lookup, mkdir, create
-- * and setxattr operations.  It may sleep on I/O and may sleep to obtain locks.
-- *
-- * Conversely, if a number of items are awaiting processing, it may take some
-- * time before any given item is given attention.  The number of threads in the
-- * pool may be increased to deal with demand, but only up to a limit.
-- *
-- * If SLOW_WORK_VERY_SLOW is set on the work item, then it will be placed in
-- * the very slow queue, from which only a portion of the threads will be
-- * allowed to pick items to execute.  This ensures that very slow items won't
-- * overly block ones that are just ordinarily slow.
-- *
-- * Returns 0 if successful, -EAGAIN if not (or -ECANCELED if cancelled work is
-- * attempted queued)
-- */
--int slow_work_enqueue(struct slow_work *work)
--{
--	wait_queue_head_t *wfo_wq;
--	struct list_head *queue;
--	unsigned long flags;
--	int ret;
--
--	if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
--		return -ECANCELED;
--
--	BUG_ON(slow_work_user_count <= 0);
--	BUG_ON(!work);
--	BUG_ON(!work->ops);
--
--	/* when honouring an enqueue request, we only promise that we will run
--	 * the work function in the future; we do not promise to run it once
--	 * per enqueue request
--	 *
--	 * we use the PENDING bit to merge together repeat requests without
--	 * having to disable IRQs and take the spinlock, whilst still
--	 * maintaining our promise
--	 */
--	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
--		if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags)) {
--			wfo_wq = &vslow_work_queue_waits_for_occupation;
--			queue = &vslow_work_queue;
--		} else {
--			wfo_wq = &slow_work_queue_waits_for_occupation;
--			queue = &slow_work_queue;
--		}
--
--		spin_lock_irqsave(&slow_work_queue_lock, flags);
--
--		if (unlikely(test_bit(SLOW_WORK_CANCELLING, &work->flags)))
--			goto cancelled;
--
--		/* we promise that we will not attempt to execute the work
--		 * function in more than one thread simultaneously
--		 *
--		 * this, however, leaves us with a problem if we're asked to
--		 * enqueue the work whilst someone is executing the work
--		 * function as simply queueing the work immediately means that
--		 * another thread may try executing it whilst it is already
--		 * under execution
--		 *
--		 * to deal with this, we set the ENQ_DEFERRED bit instead of
--		 * enqueueing, and the thread currently executing the work
--		 * function will enqueue the work item when the work function
--		 * returns and it has cleared the EXECUTING bit
--		 */
--		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
--			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
--		} else {
--			ret = slow_work_get_ref(work);
--			if (ret < 0)
--				goto failed;
--			slow_work_mark_time(work);
--			list_add_tail(&work->link, queue);
--			wake_up(&slow_work_thread_wq);
--
--			/* if someone who could be requeued is sleeping on a
--			 * thread, then ask them to yield their thread */
--			if (work->link.prev == queue)
--				wake_up(wfo_wq);
--		}
--
--		spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	}
--	return 0;
--
--cancelled:
--	ret = -ECANCELED;
--failed:
--	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	return ret;
--}
--EXPORT_SYMBOL(slow_work_enqueue);
--
--static int slow_work_wait(void *word)
--{
--	schedule();
--	return 0;
--}
--
--/**
-- * slow_work_cancel - Cancel a slow work item
-- * @work: The work item to cancel
-- *
-- * This function will cancel a previously enqueued work item. If we cannot
-- * cancel the work item, it is guarenteed to have run when this function
-- * returns.
-- */
--void slow_work_cancel(struct slow_work *work)
--{
--	bool wait = true, put = false;
--
--	set_bit(SLOW_WORK_CANCELLING, &work->flags);
--	smp_mb();
--
--	/* if the work item is a delayed work item with an active timer, we
--	 * need to wait for the timer to finish _before_ getting the spinlock,
--	 * lest we deadlock against the timer routine
--	 *
--	 * the timer routine will leave DELAYED set if it notices the
--	 * CANCELLING flag in time
--	 */
--	if (test_bit(SLOW_WORK_DELAYED, &work->flags)) {
--		struct delayed_slow_work *dwork =
--			container_of(work, struct delayed_slow_work, work);
--		del_timer_sync(&dwork->timer);
--	}
--
--	spin_lock_irq(&slow_work_queue_lock);
--
--	if (test_bit(SLOW_WORK_DELAYED, &work->flags)) {
--		/* the timer routine aborted or never happened, so we are left
--		 * holding the timer's reference on the item and should just
--		 * drop the pending flag and wait for any ongoing execution to
--		 * finish */
--		struct delayed_slow_work *dwork =
--			container_of(work, struct delayed_slow_work, work);
--
--		BUG_ON(timer_pending(&dwork->timer));
--		BUG_ON(!list_empty(&work->link));
--
--		clear_bit(SLOW_WORK_DELAYED, &work->flags);
--		put = true;
--		clear_bit(SLOW_WORK_PENDING, &work->flags);
--
--	} else if (test_bit(SLOW_WORK_PENDING, &work->flags) &&
--		   !list_empty(&work->link)) {
--		/* the link in the pending queue holds a reference on the item
--		 * that we will need to release */
--		list_del_init(&work->link);
--		wait = false;
--		put = true;
--		clear_bit(SLOW_WORK_PENDING, &work->flags);
--
--	} else if (test_and_clear_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags)) {
--		/* the executor is holding our only reference on the item, so
--		 * we merely need to wait for it to finish executing */
--		clear_bit(SLOW_WORK_PENDING, &work->flags);
--	}
--
--	spin_unlock_irq(&slow_work_queue_lock);
--
--	/* the EXECUTING flag is set by the executor whilst the spinlock is set
--	 * and before the item is dequeued - so assuming the above doesn't
--	 * actually dequeue it, simply waiting for the EXECUTING flag to be
--	 * released here should be sufficient */
--	if (wait)
--		wait_on_bit(&work->flags, SLOW_WORK_EXECUTING, slow_work_wait,
--			    TASK_UNINTERRUPTIBLE);
--
--	clear_bit(SLOW_WORK_CANCELLING, &work->flags);
--	if (put)
--		slow_work_put_ref(work);
--}
--EXPORT_SYMBOL(slow_work_cancel);
--
--/*
-- * Handle expiry of the delay timer, indicating that a delayed slow work item
-- * should now be queued if not cancelled
-- */
--static void delayed_slow_work_timer(unsigned long data)
--{
--	wait_queue_head_t *wfo_wq;
--	struct list_head *queue;
--	struct slow_work *work = (struct slow_work *) data;
--	unsigned long flags;
--	bool queued = false, put = false, first = false;
--
--	if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags)) {
--		wfo_wq = &vslow_work_queue_waits_for_occupation;
--		queue = &vslow_work_queue;
--	} else {
--		wfo_wq = &slow_work_queue_waits_for_occupation;
--		queue = &slow_work_queue;
--	}
--
--	spin_lock_irqsave(&slow_work_queue_lock, flags);
--	if (likely(!test_bit(SLOW_WORK_CANCELLING, &work->flags))) {
--		clear_bit(SLOW_WORK_DELAYED, &work->flags);
--
--		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
--			/* we discard the reference the timer was holding in
--			 * favour of the one the executor holds */
--			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
--			put = true;
--		} else {
--			slow_work_mark_time(work);
--			list_add_tail(&work->link, queue);
--			queued = true;
--			if (work->link.prev == queue)
--				first = true;
--		}
--	}
--
--	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	if (put)
--		slow_work_put_ref(work);
--	if (first)
--		wake_up(wfo_wq);
--	if (queued)
--		wake_up(&slow_work_thread_wq);
--}
--
--/**
-- * delayed_slow_work_enqueue - Schedule a delayed slow work item for processing
-- * @dwork: The delayed work item to queue
-- * @delay: When to start executing the work, in jiffies from now
-- *
-- * This is similar to slow_work_enqueue(), but it adds a delay before the work
-- * is actually queued for processing.
-- *
-- * The item can have delayed processing requested on it whilst it is being
-- * executed.  The delay will begin immediately, and if it expires before the
-- * item finishes executing, the item will be placed back on the queue when it
-- * has done executing.
-- */
--int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
--			      unsigned long delay)
--{
--	struct slow_work *work = &dwork->work;
--	unsigned long flags;
--	int ret;
--
--	if (delay == 0)
--		return slow_work_enqueue(&dwork->work);
--
--	BUG_ON(slow_work_user_count <= 0);
--	BUG_ON(!work);
--	BUG_ON(!work->ops);
--
--	if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
--		return -ECANCELED;
--
--	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
--		spin_lock_irqsave(&slow_work_queue_lock, flags);
--
--		if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
--			goto cancelled;
--
--		/* the timer holds a reference whilst it is pending */
--		ret = work->ops->get_ref(work);
--		if (ret < 0)
--			goto cant_get_ref;
--
--		if (test_and_set_bit(SLOW_WORK_DELAYED, &work->flags))
--			BUG();
--		dwork->timer.expires = jiffies + delay;
--		dwork->timer.data = (unsigned long) work;
--		dwork->timer.function = delayed_slow_work_timer;
--		add_timer(&dwork->timer);
--
--		spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	}
--
--	return 0;
--
--cancelled:
--	ret = -ECANCELED;
--cant_get_ref:
--	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	return ret;
--}
--EXPORT_SYMBOL(delayed_slow_work_enqueue);
--
--/*
-- * Schedule a cull of the thread pool at some time in the near future
-- */
--static void slow_work_schedule_cull(void)
--{
--	mod_timer(&slow_work_cull_timer,
--		  round_jiffies(jiffies + SLOW_WORK_CULL_TIMEOUT));
--}
--
--/*
-- * Worker thread culling algorithm
-- */
--static bool slow_work_cull_thread(void)
--{
--	unsigned long flags;
--	bool do_cull = false;
--
--	spin_lock_irqsave(&slow_work_queue_lock, flags);
--
--	if (slow_work_cull) {
--		slow_work_cull = false;
--
--		if (list_empty(&slow_work_queue) &&
--		    list_empty(&vslow_work_queue) &&
--		    atomic_read(&slow_work_thread_count) >
--		    slow_work_min_threads) {
--			slow_work_schedule_cull();
--			do_cull = true;
--		}
--	}
--
--	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	return do_cull;
--}
--
--/*
-- * Determine if there is slow work available for dispatch
-- */
--static inline bool slow_work_available(int vsmax)
--{
--	return !list_empty(&slow_work_queue) ||
--		(!list_empty(&vslow_work_queue) &&
--		 atomic_read(&vslow_work_executing_count) < vsmax);
--}
--
--/*
-- * Worker thread dispatcher
-- */
--static int slow_work_thread(void *_data)
--{
--	int vsmax, id;
--
--	DEFINE_WAIT(wait);
--
--	set_freezable();
--	set_user_nice(current, -5);
--
--	/* allocate ourselves an ID */
--	spin_lock_irq(&slow_work_queue_lock);
--	id = find_first_zero_bit(slow_work_ids, SLOW_WORK_THREAD_LIMIT);
--	BUG_ON(id < 0 || id >= SLOW_WORK_THREAD_LIMIT);
--	__set_bit(id, slow_work_ids);
--	slow_work_set_thread_pid(id, current->pid);
--	spin_unlock_irq(&slow_work_queue_lock);
--
--	sprintf(current->comm, "kslowd%03u", id);
--
--	for (;;) {
--		vsmax = vslow_work_proportion;
--		vsmax *= atomic_read(&slow_work_thread_count);
--		vsmax /= 100;
--
--		prepare_to_wait_exclusive(&slow_work_thread_wq, &wait,
--					  TASK_INTERRUPTIBLE);
--		if (!freezing(current) &&
--		    !slow_work_threads_should_exit &&
--		    !slow_work_available(vsmax) &&
--		    !slow_work_cull)
--			schedule();
--		finish_wait(&slow_work_thread_wq, &wait);
--
--		try_to_freeze();
--
--		vsmax = vslow_work_proportion;
--		vsmax *= atomic_read(&slow_work_thread_count);
--		vsmax /= 100;
--
--		if (slow_work_available(vsmax) && slow_work_execute(id)) {
--			cond_resched();
--			if (list_empty(&slow_work_queue) &&
--			    list_empty(&vslow_work_queue) &&
--			    atomic_read(&slow_work_thread_count) >
--			    slow_work_min_threads)
--				slow_work_schedule_cull();
--			continue;
--		}
--
--		if (slow_work_threads_should_exit)
--			break;
--
--		if (slow_work_cull && slow_work_cull_thread())
--			break;
--	}
--
--	spin_lock_irq(&slow_work_queue_lock);
--	slow_work_set_thread_pid(id, 0);
--	__clear_bit(id, slow_work_ids);
--	spin_unlock_irq(&slow_work_queue_lock);
--
--	if (atomic_dec_and_test(&slow_work_thread_count))
--		complete_and_exit(&slow_work_last_thread_exited, 0);
--	return 0;
--}
--
--/*
-- * Handle thread cull timer expiration
-- */
--static void slow_work_cull_timeout(unsigned long data)
--{
--	slow_work_cull = true;
--	wake_up(&slow_work_thread_wq);
--}
--
--/*
-- * Start a new slow work thread
-- */
--static void slow_work_new_thread_execute(struct slow_work *work)
--{
--	struct task_struct *p;
--
--	if (slow_work_threads_should_exit)
--		return;
--
--	if (atomic_read(&slow_work_thread_count) >= slow_work_max_threads)
--		return;
--
--	if (!mutex_trylock(&slow_work_user_lock))
--		return;
--
--	slow_work_may_not_start_new_thread = true;
--	atomic_inc(&slow_work_thread_count);
--	p = kthread_run(slow_work_thread, NULL, "kslowd");
--	if (IS_ERR(p)) {
--		printk(KERN_DEBUG "Slow work thread pool: OOM\n");
--		if (atomic_dec_and_test(&slow_work_thread_count))
--			BUG(); /* we're running on a slow work thread... */
--		mod_timer(&slow_work_oom_timer,
--			  round_jiffies(jiffies + SLOW_WORK_OOM_TIMEOUT));
--	} else {
--		/* ratelimit the starting of new threads */
--		mod_timer(&slow_work_oom_timer, jiffies + 1);
--	}
--
--	mutex_unlock(&slow_work_user_lock);
--}
--
--static const struct slow_work_ops slow_work_new_thread_ops = {
--	.owner		= THIS_MODULE,
--	.execute	= slow_work_new_thread_execute,
--#ifdef CONFIG_SLOW_WORK_DEBUG
--	.desc		= slow_work_new_thread_desc,
--#endif
--};
--
--/*
-- * post-OOM new thread start suppression expiration
-- */
--static void slow_work_oom_timeout(unsigned long data)
--{
--	slow_work_may_not_start_new_thread = false;
--}
--
--#ifdef CONFIG_SYSCTL
--/*
-- * Handle adjustment of the minimum number of threads
-- */
--static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
--					void __user *buffer,
--					size_t *lenp, loff_t *ppos)
--{
--	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
--	int n;
--
--	if (ret == 0) {
--		mutex_lock(&slow_work_user_lock);
--		if (slow_work_user_count > 0) {
--			/* see if we need to start or stop threads */
--			n = atomic_read(&slow_work_thread_count) -
--				slow_work_min_threads;
--
--			if (n < 0 && !slow_work_may_not_start_new_thread)
--				slow_work_enqueue(&slow_work_new_thread);
--			else if (n > 0)
--				slow_work_schedule_cull();
--		}
--		mutex_unlock(&slow_work_user_lock);
--	}
--
--	return ret;
--}
--
--/*
-- * Handle adjustment of the maximum number of threads
-- */
--static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
--					void __user *buffer,
--					size_t *lenp, loff_t *ppos)
--{
--	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
--	int n;
--
--	if (ret == 0) {
--		mutex_lock(&slow_work_user_lock);
--		if (slow_work_user_count > 0) {
--			/* see if we need to stop threads */
--			n = slow_work_max_threads -
--				atomic_read(&slow_work_thread_count);
--
--			if (n < 0)
--				slow_work_schedule_cull();
--		}
--		mutex_unlock(&slow_work_user_lock);
--	}
--
--	return ret;
--}
--#endif /* CONFIG_SYSCTL */
--
--/**
-- * slow_work_register_user - Register a user of the facility
-- * @module: The module about to make use of the facility
-- *
-- * Register a user of the facility, starting up the initial threads if there
-- * aren't any other users at this point.  This will return 0 if successful, or
-- * an error if not.
-- */
--int slow_work_register_user(struct module *module)
--{
--	struct task_struct *p;
--	int loop;
--
--	mutex_lock(&slow_work_user_lock);
--
--	if (slow_work_user_count == 0) {
--		printk(KERN_NOTICE "Slow work thread pool: Starting up\n");
--		init_completion(&slow_work_last_thread_exited);
--
--		slow_work_threads_should_exit = false;
--		slow_work_init(&slow_work_new_thread,
--			       &slow_work_new_thread_ops);
--		slow_work_may_not_start_new_thread = false;
--		slow_work_cull = false;
--
--		/* start the minimum number of threads */
--		for (loop = 0; loop < slow_work_min_threads; loop++) {
--			atomic_inc(&slow_work_thread_count);
--			p = kthread_run(slow_work_thread, NULL, "kslowd");
--			if (IS_ERR(p))
--				goto error;
--		}
--		printk(KERN_NOTICE "Slow work thread pool: Ready\n");
--	}
--
--	slow_work_user_count++;
--	mutex_unlock(&slow_work_user_lock);
--	return 0;
--
--error:
--	if (atomic_dec_and_test(&slow_work_thread_count))
--		complete(&slow_work_last_thread_exited);
--	if (loop > 0) {
--		printk(KERN_ERR "Slow work thread pool:"
--		       " Aborting startup on ENOMEM\n");
--		slow_work_threads_should_exit = true;
--		wake_up_all(&slow_work_thread_wq);
--		wait_for_completion(&slow_work_last_thread_exited);
--		printk(KERN_ERR "Slow work thread pool: Aborted\n");
--	}
--	mutex_unlock(&slow_work_user_lock);
--	return PTR_ERR(p);
--}
--EXPORT_SYMBOL(slow_work_register_user);
--
--/*
-- * wait for all outstanding items from the calling module to complete
-- * - note that more items may be queued whilst we're waiting
-- */
--static void slow_work_wait_for_items(struct module *module)
--{
--#ifdef CONFIG_MODULES
--	DECLARE_WAITQUEUE(myself, current);
--	struct slow_work *work;
--	int loop;
--
--	mutex_lock(&slow_work_unreg_sync_lock);
--	add_wait_queue(&slow_work_unreg_wq, &myself);
--
--	for (;;) {
--		spin_lock_irq(&slow_work_queue_lock);
--
--		/* first of all, we wait for the last queued item in each list
--		 * to be processed */
--		list_for_each_entry_reverse(work, &vslow_work_queue, link) {
--			if (work->owner == module) {
--				set_current_state(TASK_UNINTERRUPTIBLE);
--				slow_work_unreg_work_item = work;
--				goto do_wait;
--			}
--		}
--		list_for_each_entry_reverse(work, &slow_work_queue, link) {
--			if (work->owner == module) {
--				set_current_state(TASK_UNINTERRUPTIBLE);
--				slow_work_unreg_work_item = work;
--				goto do_wait;
--			}
--		}
--
--		/* then we wait for the items being processed to finish */
--		slow_work_unreg_module = module;
--		smp_mb();
--		for (loop = 0; loop < SLOW_WORK_THREAD_LIMIT; loop++) {
--			if (slow_work_thread_processing[loop] == module)
--				goto do_wait;
--		}
--		spin_unlock_irq(&slow_work_queue_lock);
--		break; /* okay, we're done */
--
--	do_wait:
--		spin_unlock_irq(&slow_work_queue_lock);
--		schedule();
--		slow_work_unreg_work_item = NULL;
--		slow_work_unreg_module = NULL;
--	}
--
--	remove_wait_queue(&slow_work_unreg_wq, &myself);
--	mutex_unlock(&slow_work_unreg_sync_lock);
--#endif /* CONFIG_MODULES */
--}
--
--/**
-- * slow_work_unregister_user - Unregister a user of the facility
-- * @module: The module whose items should be cleared
-- *
-- * Unregister a user of the facility, killing all the threads if this was the
-- * last one.
-- *
-- * This waits for all the work items belonging to the nominated module to go
-- * away before proceeding.
-- */
--void slow_work_unregister_user(struct module *module)
--{
--	/* first of all, wait for all outstanding items from the calling module
--	 * to complete */
--	if (module)
--		slow_work_wait_for_items(module);
--
--	/* then we can actually go about shutting down the facility if need
--	 * be */
--	mutex_lock(&slow_work_user_lock);
--
--	BUG_ON(slow_work_user_count <= 0);
--
--	slow_work_user_count--;
--	if (slow_work_user_count == 0) {
--		printk(KERN_NOTICE "Slow work thread pool: Shutting down\n");
--		slow_work_threads_should_exit = true;
--		del_timer_sync(&slow_work_cull_timer);
--		del_timer_sync(&slow_work_oom_timer);
--		wake_up_all(&slow_work_thread_wq);
--		wait_for_completion(&slow_work_last_thread_exited);
--		printk(KERN_NOTICE "Slow work thread pool:"
--		       " Shut down complete\n");
--	}
--
--	mutex_unlock(&slow_work_user_lock);
--}
--EXPORT_SYMBOL(slow_work_unregister_user);
--
--/*
-- * Initialise the slow work facility
-- */
--static int __init init_slow_work(void)
--{
--	unsigned nr_cpus = num_possible_cpus();
--
--	if (slow_work_max_threads < nr_cpus)
--		slow_work_max_threads = nr_cpus;
--#ifdef CONFIG_SYSCTL
--	if (slow_work_max_max_threads < nr_cpus * 2)
--		slow_work_max_max_threads = nr_cpus * 2;
--#endif
--#ifdef CONFIG_SLOW_WORK_DEBUG
--	{
--		struct dentry *dbdir;
--
--		dbdir = debugfs_create_dir("slow_work", NULL);
--		if (dbdir && !IS_ERR(dbdir))
--			debugfs_create_file("runqueue", S_IFREG | 0400, dbdir,
--					    NULL, &slow_work_runqueue_fops);
--	}
--#endif
--	return 0;
--}
--
--subsys_initcall(init_slow_work);
-diff --git a/kernel/slow-work.h b/kernel/slow-work.h
-deleted file mode 100644
-index 321f3c5..0000000
---- a/kernel/slow-work.h
-+++ /dev/null
-@@ -1,72 +0,0 @@
--/* Slow work private definitions
-- *
-- * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public Licence
-- * as published by the Free Software Foundation; either version
-- * 2 of the Licence, or (at your option) any later version.
-- */
--
--#define SLOW_WORK_CULL_TIMEOUT (5 * HZ)	/* cull threads 5s after running out of
--					 * things to do */
--#define SLOW_WORK_OOM_TIMEOUT (5 * HZ)	/* can't start new threads for 5s after
--					 * OOM */
--
--#define SLOW_WORK_THREAD_LIMIT	255	/* abs maximum number of slow-work threads */
--
--/*
-- * slow-work.c
-- */
--#ifdef CONFIG_SLOW_WORK_DEBUG
--extern struct slow_work *slow_work_execs[];
--extern pid_t slow_work_pids[];
--extern rwlock_t slow_work_execs_lock;
--#endif
--
--extern struct list_head slow_work_queue;
--extern struct list_head vslow_work_queue;
--extern spinlock_t slow_work_queue_lock;
--
--/*
-- * slow-work-debugfs.c
-- */
--#ifdef CONFIG_SLOW_WORK_DEBUG
--extern const struct file_operations slow_work_runqueue_fops;
--
--extern void slow_work_new_thread_desc(struct slow_work *, struct seq_file *);
--#endif
--
--/*
-- * Helper functions
-- */
--static inline void slow_work_set_thread_pid(int id, pid_t pid)
--{
--#ifdef CONFIG_SLOW_WORK_PROC
--	slow_work_pids[id] = pid;
--#endif
--}
--
--static inline void slow_work_mark_time(struct slow_work *work)
--{
--#ifdef CONFIG_SLOW_WORK_PROC
--	work->mark = CURRENT_TIME;
--#endif
--}
--
--static inline void slow_work_begin_exec(int id, struct slow_work *work)
--{
--#ifdef CONFIG_SLOW_WORK_PROC
--	slow_work_execs[id] = work;
--#endif
--}
--
--static inline void slow_work_end_exec(int id, struct slow_work *work)
--{
--#ifdef CONFIG_SLOW_WORK_PROC
--	write_lock(&slow_work_execs_lock);
--	slow_work_execs[id] = NULL;
--	write_unlock(&slow_work_execs_lock);
--#endif
--}
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8a68b24..dbba676 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -48,7 +48,6 @@
- #include <linux/acpi.h>
- #include <linux/reboot.h>
- #include <linux/ftrace.h>
--#include <linux/slow-work.h>
- #include <linux/perf_event.h>
- 
- #include <asm/uaccess.h>
-@@ -888,13 +887,6 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= proc_dointvec,
- 	},
+ source "kernel/Kconfig.locks"
+diff --git a/kernel/sched.c b/kernel/sched.c
+index ca32adc..65dba66 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1434,6 +1434,44 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
+ 		enum cpuacct_stat_index idx, cputime_t val) {}
  #endif
--#ifdef CONFIG_SLOW_WORK
--	{
--		.procname	= "slow-work",
--		.mode		= 0555,
--		.child		= slow_work_sysctls,
--	},
--#endif
- #ifdef CONFIG_PERF_EVENTS
- 	{
- 		.procname	= "perf_event_paranoid",
+ 
++#ifdef CONFIG_SCHED_NOTIFIERS
++
++#define fire_sched_notifiers(p, callback, args...) do {			\
++	struct sched_notifier *__sn;					\
++	struct hlist_node *__pos;					\
++									\
++	hlist_for_each_entry(__sn, __pos, &(p)->sched_notifiers, link)	\
++		__sn->ops->callback(__sn , ##args);			\
++} while (0)
++
++/**
++ * sched_notifier_register - register scheduler notifier
++ * @notifier: notifier struct to register
++ */
++void sched_notifier_register(struct sched_notifier *notifier)
++{
++	hlist_add_head(&notifier->link, &current->sched_notifiers);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_register);
++
++/**
++ * sched_notifier_unregister - unregister scheduler notifier
++ * @notifier: notifier struct to unregister
++ *
++ * This is safe to call from within a scheduler notifier.
++ */
++void sched_notifier_unregister(struct sched_notifier *notifier)
++{
++	hlist_del(&notifier->link);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_unregister);
++
++#else	/* !CONFIG_SCHED_NOTIFIERS */
++
++#define fire_sched_notifiers(p, callback, args...)	do { } while (0)
++
++#endif	/* CONFIG_SCHED_NOTIFIERS */
++
+ static inline void inc_cpu_load(struct rq *rq, unsigned long load)
+ {
+ 	update_load_add(&rq->load, load);
+@@ -2566,8 +2604,8 @@ static void __sched_fork(struct task_struct *p)
+ 	p->se.on_rq = 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	INIT_HLIST_HEAD(&p->preempt_notifiers);
++#ifdef CONFIG_SCHED_NOTIFIERS
++	INIT_HLIST_HEAD(&p->sched_notifiers);
+ #endif
+ }
+ 
+@@ -2679,64 +2717,6 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+ 	put_cpu();
+ }
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-
+-/**
+- * preempt_notifier_register - tell me when current is being preempted & rescheduled
+- * @notifier: notifier struct to register
+- */
+-void preempt_notifier_register(struct preempt_notifier *notifier)
+-{
+-	hlist_add_head(&notifier->link, &current->preempt_notifiers);
+-}
+-EXPORT_SYMBOL_GPL(preempt_notifier_register);
+-
+-/**
+- * preempt_notifier_unregister - no longer interested in preemption notifications
+- * @notifier: notifier struct to unregister
+- *
+- * This is safe to call from within a preemption notifier.
+- */
+-void preempt_notifier_unregister(struct preempt_notifier *notifier)
+-{
+-	hlist_del(&notifier->link);
+-}
+-EXPORT_SYMBOL_GPL(preempt_notifier_unregister);
+-
+-static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
+-{
+-	struct preempt_notifier *notifier;
+-	struct hlist_node *node;
+-
+-	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
+-		notifier->ops->sched_in(notifier, raw_smp_processor_id());
+-}
+-
+-static void
+-fire_sched_out_preempt_notifiers(struct task_struct *curr,
+-				 struct task_struct *next)
+-{
+-	struct preempt_notifier *notifier;
+-	struct hlist_node *node;
+-
+-	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
+-		notifier->ops->sched_out(notifier, next);
+-}
+-
+-#else /* !CONFIG_PREEMPT_NOTIFIERS */
+-
+-static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
+-{
+-}
+-
+-static void
+-fire_sched_out_preempt_notifiers(struct task_struct *curr,
+-				 struct task_struct *next)
+-{
+-}
+-
+-#endif /* CONFIG_PREEMPT_NOTIFIERS */
+-
+ /**
+  * prepare_task_switch - prepare to switch tasks
+  * @rq: the runqueue preparing to switch
+@@ -2754,7 +2734,7 @@ static inline void
+ prepare_task_switch(struct rq *rq, struct task_struct *prev,
+ 		    struct task_struct *next)
+ {
+-	fire_sched_out_preempt_notifiers(prev, next);
++	fire_sched_notifiers(prev, out, next);
+ 	prepare_lock_switch(rq, next);
+ 	prepare_arch_switch(next);
+ }
+@@ -2798,7 +2778,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	perf_event_task_sched_in(current, cpu_of(rq));
+ 	finish_lock_switch(rq, prev);
+ 
+-	fire_sched_in_preempt_notifiers(current);
++	fire_sched_notifiers(current, in, raw_smp_processor_id());
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
+@@ -9655,8 +9635,8 @@ void __init sched_init(void)
+ 
+ 	set_load_weight(&init_task);
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
++#ifdef CONFIG_SCHED_NOTIFIERS
++	INIT_HLIST_HEAD(&init_task.sched_notifiers);
+ #endif
+ 
+ #ifdef CONFIG_SMP
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a944be3..557d5f9 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -77,7 +77,7 @@ static atomic_t hardware_enable_failed;
+ struct kmem_cache *kvm_vcpu_cache;
+ EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
+ 
+-static __read_mostly struct preempt_ops kvm_preempt_ops;
++static __read_mostly struct sched_notifier_ops kvm_sched_notifier_ops;
+ 
+ struct dentry *kvm_debugfs_dir;
+ 
+@@ -109,7 +109,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 
+ 	mutex_lock(&vcpu->mutex);
+ 	cpu = get_cpu();
+-	preempt_notifier_register(&vcpu->preempt_notifier);
++	sched_notifier_register(&vcpu->sched_notifier);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
+@@ -118,7 +118,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	preempt_disable();
+ 	kvm_arch_vcpu_put(vcpu);
+-	preempt_notifier_unregister(&vcpu->preempt_notifier);
++	sched_notifier_unregister(&vcpu->sched_notifier);
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
+@@ -1195,7 +1195,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ 	if (IS_ERR(vcpu))
+ 		return PTR_ERR(vcpu);
+ 
+-	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
++	sched_notifier_init(&vcpu->sched_notifier, &kvm_sched_notifier_ops);
+ 
+ 	r = kvm_arch_vcpu_setup(vcpu);
+ 	if (r)
+@@ -2029,23 +2029,21 @@ static struct sys_device kvm_sysdev = {
+ struct page *bad_page;
+ pfn_t bad_pfn;
+ 
+-static inline
+-struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
++static inline struct kvm_vcpu *sched_notifier_to_vcpu(struct sched_notifier *sn)
+ {
+-	return container_of(pn, struct kvm_vcpu, preempt_notifier);
++	return container_of(sn, struct kvm_vcpu, sched_notifier);
+ }
+ 
+-static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
++static void kvm_sched_in(struct sched_notifier *sn, int cpu)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
+ 
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ }
+ 
+-static void kvm_sched_out(struct preempt_notifier *pn,
+-			  struct task_struct *next)
++static void kvm_sched_out(struct sched_notifier *sn, struct task_struct *next)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
+ 
+ 	kvm_arch_vcpu_put(vcpu);
+ }
+@@ -2118,8 +2116,8 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
+ 		goto out_free;
+ 	}
+ 
+-	kvm_preempt_ops.sched_in = kvm_sched_in;
+-	kvm_preempt_ops.sched_out = kvm_sched_out;
++	kvm_sched_notifier_ops.in = kvm_sched_in;
++	kvm_sched_notifier_ops.out = kvm_sched_out;
+ 
+ 	kvm_init_debug();
+ 
 -- 
 1.6.4.2
 
