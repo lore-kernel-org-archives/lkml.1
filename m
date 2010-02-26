@@ -1,90 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965094Ab0BZPbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 10:31:11 -0500
-Received: from exprod5og112.obsmtp.com ([64.18.0.24]:54349 "EHLO
-	exprod5og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964852Ab0BZPbJ (ORCPT
+	id S965122Ab0BZPdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 10:33:20 -0500
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:59116 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965046Ab0BZPdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 10:31:09 -0500
-Message-ID: <4B87E9EF.3010604@ge.com>
-Date: Fri, 26 Feb 2010 15:34:07 +0000
-From: Martyn Welch <martyn.welch@ge.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 26 Feb 2010 10:33:19 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: Memory management woes - order 1 allocation failures
+Date: Fri, 26 Feb 2010 16:33:16 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+References: <201002261232.28686.elendil@planet.nl> <84144f021002260601o7ab345fer86b8bec12dbfc31e@mail.gmail.com>
+In-Reply-To: <84144f021002260601o7ab345fer86b8bec12dbfc31e@mail.gmail.com>
 MIME-Version: 1.0
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
-       avorontsov@ru.mvista.com, davem@davemloft.net
-Subject: Re: Gianfar driver failing on MPC8641D based board
-References: <4B6C2488.3060403@ge.com> <4B865176.7080806@ge.com>	<4B86A97E.6050509@ge.com>	<20100225165141.GA9686@oksana.dev.rtsoft.ru>	<20100225174935.GA32370@oksana.dev.rtsoft.ru>	<7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>	<20100226031452.GA11319@oksana.dev.rtsoft.ru>	<4B87B937.6010204@ge.com>	<20100226143532.GA31622@oksana.dev.rtsoft.ru>	<4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com>
-In-Reply-To: <4B87E662.3080106@ge.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002261633.17437.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Feb 2010 15:33:17.0764 (UTC) FILETIME=[04D4B040:01CAB6F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martyn Welch wrote:
-> Paul Gortmaker wrote:
->   
->> On 10-02-26 09:35 AM, Anton Vorontsov wrote:
->>   
->>     
->>> On Fri, Feb 26, 2010 at 12:06:15PM +0000, Martyn Welch wrote:
->>>     
->>>       
->>>> Anton Vorontsov wrote:
->>>>       
->>>>         
->>>>> On Thu, Feb 25, 2010 at 07:53:30PM -0500, Paul Gortmaker wrote:
->>>>> [...]
->>>>>
->>>>>         
->>>>>           
->>>>>> I was able to reproduce it on an 8641D and bisected it down to this:
->>>>>>
->>>>>> -----------
->>>>>> commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
->>>>>> Author: Anton Vorontsov<avorontsov@ru.mvista.com>
->>>>>> Date:   Tue Nov 10 14:11:10 2009 +0000
->>>>>>
->>>>>>      gianfar: Revive SKB recycling
->>>>>>
->>>>>>           
->>>>>>             
->>>>> Thanks for the bisect. I have a guess why tx hangs in
->>>>> SMP case. Could anyone try the patch down below?
->>>>>
->>>>>         
->>>>>           
->>>> Yup, no problem. I'm afraid it doesn't resolve the problem for me.
->>>>       
->>>>         
->>> Hm.. I found a p2020 board and I was able to reproduce the issue.
->>> The patch down below fixed it completely for me... hm.
->>>     
->>>       
->> Interesting. I just tested the patch on the sbc8641d, and it
->> still has the issue with your patch applied.  I'm using NFSroot
->> just like Martyn was and it still appears bound up on that
->> gianfar tx lock.  I'll see if I can get a SysRq backtrace in
->> case that will help you see how it manages to get there...
->>   
->>     
+On Friday 26 February 2010, Pekka Enberg wrote:
+> > Isn't it a bit strange that cache claims so much memory that real
+> > processes get into allocation failures?
 >
-> I've got a p2020ds here as well, so I'll give NFSroot on that a try with
-> your patch.
->   
+> All of the failed allocations seem to be GFP_ATOMIC so it's not _that_
+> strange.
 
-Out of 10 boot attempts, 7 failed.
+It's still very ugly though. And I would say it should be unnecessary.
 
-Martyn
+> Dunno if anything changed recently. What's the last known good kernel for
+> you? 
 
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+I've not used that box very intensively in the past, but I first saw the 
+allocation failure with aptitude with either .31 or .32. I would be 
+extremely surprised if I could reproduce the problem with .30.
+And I have done large rsyncs to the box without any problems in the past, 
+but that must have been with .24 or so kernels.
 
+It seems likely to me that it's related to all the other swap and 
+allocation issues we've been seeing after .30.
+
+Thanks,
+FJP
