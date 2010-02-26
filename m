@@ -1,85 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933652Ab0BZK04 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:26:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34443 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933313Ab0BZK0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:26:51 -0500
-Date: Fri, 26 Feb 2010 10:26:10 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100207210250.GB8256@jenkins.home.ifup.org>
-References: <20100207210250.GB8256@jenkins.home.ifup.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
-Message-ID: <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
-Git-Commit-ID: f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4
-X-Mailer: tip-git-log-daemon
+	id S933581Ab0BZK2D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:28:03 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:61682 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933446Ab0BZK17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 05:27:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=N1wDrNWjMNVlJlj59mlv1U2V3gzCi/MNRciN5vX54KEXaVGlK5awXQ04DSJcsOcu6A
+         U/ixUcTf6BSrqWQ8tQiU+DSoo3uJDPmPiCR8JgrO5uyDznJjo0mbtWea2vavDuaJmGI/
+         Cq/DyyUwvFRqLglCEjRApD1oY8P7VU4TWtaOo=
+Date: Fri, 26 Feb 2010 13:27:45 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: "Steven J. Magnani" <steve@digidescorp.com>, linux-kernel@vger.kernel.org,
+       microblaze-uclinux@itee.uq.edu.au, dan.j.williams@intel.com,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: Buggy variable-length array code...or compiler?
+Message-ID: <20100226102745.GC8417@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	David Rientjes <rientjes@google.com>,
+	"Steven J. Magnani" <steve@digidescorp.com>,
+	linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+	dan.j.williams@intel.com, Dave Hansen <dave@linux.vnet.ibm.com>
+References: <1267139849.3079.68.camel@iscandar.digidescorp.com> <alpine.DEB.2.00.1002251544120.25189@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 10:26:10 +0000 (UTC)
+In-Reply-To: <alpine.DEB.2.00.1002251544120.25189@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4
-Gitweb:     http://git.kernel.org/tip/f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 26 Feb 2010 11:17:16 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 26 Feb 2010 11:17:16 +0100
+On Thu, Feb 25, 2010 at 03:46:48PM -0800, David Rientjes wrote:
+> On Thu, 25 Feb 2010, Steven J. Magnani wrote:
+> 
+> > When I run a memcpy dmatest with a Microblaze 2.6.33 noMMU kernel, the
+> > system crashes after about 400 iterations. After much head scratching, I
+> > believe I've narrowed the problem to this fragment of code in
+> > drivers/dma/dmatest.c:
+> > 
+> > static int dmatest_func(void *data)
+> > {
+> > 	struct dmatest_thread	*thread = data;
+> > ...
+> > 	unsigned int		total_tests = 0;
+> > 	int			src_cnt;
+> > 	int			dst_cnt;
+> > 
+> > ...
+> > 	if (thread->type == DMA_MEMCPY)
+> > 		src_cnt = dst_cnt = 1;
+> > ...
+> > 
+> > 	while (!kthread_should_stop()
+> > 	       && !(iterations && total_tests >= iterations)) {
+> > 		struct dma_device *dev = chan->device;
+> > 		struct dma_async_tx_descriptor *tx = NULL;
+> > 		dma_addr_t dma_srcs[src_cnt];
+> > 		dma_addr_t dma_dsts[dst_cnt];
+> > 
+> > 		...
+> > 		total_tests++;
+> > 
+> > 		/* CODE ADDED BY ME FOR DEBUG */
+> > 		printk("dmatest: Iteration %d, dma_srcs = %p\n",
+> > 		       total_tests, dma_srcs);
+> > 
+> > 		...
+> > 	}
+> > 
+> > With this code I get output like this:
+> > 
+> > dmatest: Iteration 1, dma_srcs = 2c963ee8
+> > dmatest: Iteration 2, dma_srcs = 2c963ed8
+> > dmatest: Iteration 3, dma_srcs = 2c963ec8
+> > dmatest: Iteration 4, dma_srcs = 2c963eb8
+> > ...
+> > dmatest: Iteration 420, dma_srcs = 2c9624b8
+> > 
+> > ...and then the stack detonates and the kernel crashes with some strange
+> > error or other.
+> > 
+> 
+> This could probably become the first kernel user of the flexible array 
+> library (see Documentation/flexible-arrays.txt).  Dan?
+> --
 
-x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
+I think the max that src_cnt can be is 3 and the most dst_cnt can be is 2.  
+We could just put that there.
 
-Merge commit aef55d4922 mis-merged io_apic.c so we lost the
-arch_probe_nr_irqs() method.
+regards,
+dan carpenter
 
-This caused subtle boot breakages (udev confusion likely
-due to missing drivers) with certain configs.
-
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20100207210250.GB8256@jenkins.home.ifup.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/apic/io_apic.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 527390c..c13ab8f 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3874,6 +3874,28 @@ void __init probe_nr_irqs_gsi(void)
- 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
- }
- 
-+#ifdef CONFIG_SPARSE_IRQ
-+int __init arch_probe_nr_irqs(void)
-+{
-+	int nr;
-+
-+	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
-+		nr_irqs = NR_VECTORS * nr_cpu_ids;
-+
-+	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
-+#if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
-+	/*
-+	 * for MSI and HT dyn irq
-+	 */
-+	nr += nr_irqs_gsi * 16;
-+#endif
-+	if (nr < nr_irqs)
-+		nr_irqs = nr;
-+
-+	return 0;
-+}
-+#endif
-+
- static int __io_apic_set_pci_routing(struct device *dev, int irq,
- 				struct io_apic_irq_attr *irq_attr)
- {
