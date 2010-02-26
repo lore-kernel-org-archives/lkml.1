@@ -1,52 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934214Ab0BZLBy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 06:01:54 -0500
-Received: from ist.d-labs.de ([213.239.218.44]:33357 "EHLO mx01.d-labs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933907Ab0BZLBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 06:01:52 -0500
-From: florian@mickler.org
-To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-Cc: "Marcel Holtmann" <marcel@holtmann.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v2 2/2] enhance sysfs rfkill interface
-Date: Fri, 26 Feb 2010 12:01:33 +0100
-Message-Id: <1267182094-15469-1-git-send-email-florian@mickler.org>
-X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <20100225233516.GD5218@khazad-dum.debian.net>
-References: <20100225233516.GD5218@khazad-dum.debian.net>
+	id S934303Ab0BZLIh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 06:08:37 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:46448 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933799Ab0BZLIg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 06:08:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=ECesNUrzLjrRnKhmKkyioiYyKC5zAXRv2PR80UAJ5ccmtzkiR7hoypJENLLVLbCbcF
+         +SqLNmN72ytUGNaohNLAA6LU8Mhw+13YkHuIdK9BRVFcUAZY+B/cIyKOraq0E/uk5imI
+         jjC8QeWaW2S/8tuSxLwm+xuy37SOr+YDZeics=
+MIME-Version: 1.0
+In-Reply-To: <20100226101423.GA25641@elte.hu>
+References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
+	 <4B845AEE.5080604@zytor.com>
+	 <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
+	 <20100226101423.GA25641@elte.hu>
+Date: Fri, 26 Feb 2010 12:08:34 +0100
+X-Google-Sender-Auth: 19d66da4a4e2656a
+Message-ID: <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com>
+Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> FYI, it triggered build failures in -tip testing:
+>
+> lib/atomic64_test.c: In function 'test_atomic64':
+> lib/atomic64_test.c:116: error: implicit declaration of function 'atomic64_dec_if_positive'
 
-On Thu, 25 Feb 2010 20:35:16 -0300
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+This was on x86-64 right?
 
-> On Wed, 24 Feb 2010, florian@mickler.org wrote:  
-> > I am not shure about those names.  
-> 
-> I don't like them.  IMHO, you don't gain anything by being this terse, and
-> it is difficult to understand what they mean at first glance.
->   
-> > Other alternatives: 
-> > [hs]w_block
-> > block_[hs]w  
-> 
+That function is implemented in the generic atomic64 implementation
+and my x86-32 version, but not in the x86-64 implementation.
 
-I made that blocked_sw and blocked_hw, so that they are
-lexicographically nearby and that they also give more information about
-their content.
+There is a similar problem with the 32-bt atomic_dec_if_positive, that
+is implemented by ppc, mips, microblaze and avr32 but not in x86-32
+and asm-generic.
+Currently the 64-bit version seems unused, while the 32-bit one seems
+to be only used by ppc-only drivers (IBM pSeries virtual SCSI and
+PlayStation3 drivers).
 
-blocked_[hs]w -> 0/1 makes IMO kind of sense.
-
-cheers,
-Flo
+I'll send a couple of patches to fix this shortly.
