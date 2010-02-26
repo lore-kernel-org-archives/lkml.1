@@ -1,67 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935148Ab0BZDri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 22:47:38 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:65487 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935124Ab0BZDrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 22:47:37 -0500
-Message-Id: <201002260346.o1Q3kUmg005596@www262.sakura.ne.jp>
-Subject: [PATCH] audit: Protect find_task_by_vpid() with RCU.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, viro@ftp.linux.org.uk,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, tglx@linutronix.de,
-       akpm@linux-foundation.org, eparis@redhat.com
+	id S935153Ab0BZDws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 22:52:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46002 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935056Ab0BZDwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 22:52:47 -0500
+Message-ID: <4B8745AC.2070702@redhat.com>
+Date: Thu, 25 Feb 2010 22:53:16 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip v3&10 07/18] x86: Add text_poke_smp for SMP cross
+ 	modifying code
+References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133438.6725.80273.stgit@localhost6.localdomain6> <20100225153305.GC12635@Krystal>
+In-Reply-To: <20100225153305.GC12635@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Feb 2010 12:46:30 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 25022010 #3421183, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] audit: Protect find_task_by_vpid() with RCU.
+Mathieu Desnoyers wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+[...]
+>> +
+>> +/*
+>> + * Cross-modifying kernel text with stop_machine().
+>> + * This code originally comes from immediate value.
+>> + */
+>> +static atomic_t stop_machine_first;
+>> +static int wrote_text;
+>> +
+>> +struct text_poke_params {
+>> +	void *addr;
+>> +	const void *opcode;
+>> +	size_t len;
+>> +};
+>> +
+>> +static int __kprobes stop_machine_text_poke(void *data)
+>> +{
+>> +	struct text_poke_params *tpp = data;
+>> +
+>> +	if (atomic_dec_and_test(&stop_machine_first)) {
+>> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+>> +		smp_wmb();	/* Make sure other cpus see that this has run */
+>> +		wrote_text = 1;
+>> +	} else {
+>> +		while (!wrote_text)
+>> +			smp_rmb();
+>> +		sync_core();
+>
+> Hrm, there is a problem in there. The last loop, when wrote_text becomes
+> true, does not perform any smp_mb(), so you end up in a situation where
+> cpus in the "else" branch may never issue any memory barrier. I'd rather
+> do:
 
-Holding tasklist_lock is no longer sufficient for find_task_by_vpid().
-Explicit rcu_read_lock() is required.
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> 
+Hmm, so how about this? :)
 ---
- kernel/audit.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+} else {
+	do {
+		smp_rmb();
+	while (!wrote_text);
+	sync_core();
+}
+---
 
---- linux-2.6.33.orig/kernel/audit.c
-+++ linux-2.6.33/kernel/audit.c
-@@ -468,7 +468,9 @@ static int audit_prepare_user_tty(pid_t 
- 	int err;
- 
- 	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	tsk = find_task_by_vpid(pid);
-+	rcu_read_unlock();
- 	err = -ESRCH;
- 	if (!tsk)
- 		goto out;
-@@ -882,7 +884,9 @@ static int audit_receive_msg(struct sk_b
- 		struct task_struct *tsk;
- 
- 		read_lock(&tasklist_lock);
-+		rcu_read_lock();
- 		tsk = find_task_by_vpid(pid);
-+		rcu_read_unlock();
- 		if (!tsk)
- 			err = -ESRCH;
- 		else {
-@@ -905,7 +909,9 @@ static int audit_receive_msg(struct sk_b
- 		if (s->enabled != 0 && s->enabled != 1)
- 			return -EINVAL;
- 		read_lock(&tasklist_lock);
-+		rcu_read_lock();
- 		tsk = find_task_by_vpid(pid);
-+		rcu_read_unlock();
- 		if (!tsk)
- 			err = -ESRCH;
- 		else {
+>
+> +static volatile int wrote_text;
+>
+> ...
+>
+> +static int __kprobes stop_machine_text_poke(void *data)
+> +{
+> +	struct text_poke_params *tpp = data;
+> +
+> +	if (atomic_dec_and_test(&stop_machine_first)) {
+> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+> +		smp_wmb();	/* order text_poke stores before store to wrote_text */
+> +		wrote_text = 1;
+> +	} else {
+> +		while (!wrote_text)
+> +			cpu_relax();
+> +		smp_mb();	/* order wrote_text load before following execution */
+> +	}
+>
+> If you don't like the "volatile int" definition of wrote_text, then we
+> should probably use the ACCESS_ONCE() macro instead.
+
+hm, yeah, volatile will be required.
+
+Thank you,
+
+
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
+
+
+
