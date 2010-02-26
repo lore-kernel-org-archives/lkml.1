@@ -1,47 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046Ab0BZKOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:14:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51090 "EHLO mx2.mail.elte.hu"
+	id S1753330Ab0BZKUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:20:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31320 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199Ab0BZKOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:14:38 -0500
-Date: Fri, 26 Feb 2010 11:14:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Luca Barbieri <luca@luca-barbieri.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
-Message-ID: <20100226101423.GA25641@elte.hu>
-References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
- <4B845AEE.5080604@zytor.com>
- <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
+	id S1751711Ab0BZKUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 05:20:20 -0500
+Message-ID: <4B87A05A.3010600@redhat.com>
+Date: Fri, 26 Feb 2010 12:20:10 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] KVM: SVM: Move msrpm offset calculation to seperate
+ function
+References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com> <1267118149-15737-2-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1267118149-15737-2-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/25/2010 07:15 PM, Joerg Roedel wrote:
+> The algorithm to find the offset in the msrpm for a given
+> msr is needed at other places too. Move that logic to its
+> own function.
+>
+>   #define MAX_INST_SIZE 15
+>
+> @@ -417,23 +439,22 @@ err_1:
+>   static void set_msr_interception(u32 *msrpm, unsigned msr,
+>   				 int read, int write)
+>   {
+> -	int i;
+> +	u8 bit_read, bit_write;
+> +	unsigned long tmp;
+> +	u32 offset;
+>
+> -	for (i = 0; i<  NUM_MSR_MAPS; i++) {
+> -		if (msr>= msrpm_ranges[i]&&
+> -		    msr<  msrpm_ranges[i] + MSRS_IN_RANGE) {
+> -			u32 msr_offset = (i * MSRS_IN_RANGE + msr -
+> -					  msrpm_ranges[i]) * 2;
+> -
+> -			u32 *base = msrpm + (msr_offset / 32);
+> -			u32 msr_shift = msr_offset % 32;
+> -			u32 mask = ((write) ? 0 : 2) | ((read) ? 0 : 1);
+> -			*base = (*base&  ~(0x3<<  msr_shift)) |
+> -				(mask<<  msr_shift);
+> -			return;
+> -		}
+> -	}
+> -	BUG();
+> +	offset    = svm_msrpm_offset(msr);
+> +	bit_read  = 2 * (msr&  0x0f);
+> +	bit_write = 2 * (msr&  0x0f) + 1;
+> +
+> +	BUG_ON(offset == MSR_INVALID);
+> +
+> +	tmp = msrpm[offset];
+> +
+> +	read  ? clear_bit(bit_read,&tmp) : set_bit(bit_read,&tmp);
+> +	write ? clear_bit(bit_write,&tmp) : set_bit(bit_write,&tmp);
+> +
+> +	msrpm[offset] = tmp;
+>   }
+>    
 
-* Luca Barbieri <luca@luca-barbieri.com> wrote:
+This can fault - set_bit() accesses an unsigned long, which can be 8 
+bytes, while offset can point into the last u32 of msrpm.  So this needs 
+either to revert to u32 shift/mask ops or msrpm be changed to a ulong 
+array (actually better, since bitmaps in general are defined as arrays 
+of ulongs).
 
-> > I wonder if I could ask you to recreate your patchset on top of the
-> > x86/asm branch in the -tip tree.
-> 
-> Done, resent.
+btw, the op-level ternary expression is terrible, relying solely on 
+*_bit()'s side effects.  Please convert to an ordinary if.
 
-FYI, it triggered build failures in -tip testing:
+btw2, use __set_bit() which atomic operation is not needed.
 
-lib/atomic64_test.c: In function 'test_atomic64':
-lib/atomic64_test.c:116: error: implicit declaration of function 'atomic64_dec_if_positive'
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-	Ingo
