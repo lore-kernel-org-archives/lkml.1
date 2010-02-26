@@ -1,113 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935153Ab0BZDws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 22:52:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46002 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935056Ab0BZDwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 22:52:47 -0500
-Message-ID: <4B8745AC.2070702@redhat.com>
-Date: Thu, 25 Feb 2010 22:53:16 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S935157Ab0BZDyz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 22:54:55 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:41985 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935056Ab0BZDyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 22:54:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=EA2DeF1/Jw5f3u/9gssSNnxYXqfxIFd/fTdYmn/gsoGiiOil1r/tufc0Ab9t79XZOQ
+         EavzNdTnpdcvZ0wudHTek2FyTeSqpeahjcbd81TOSZ/Q06JuwHLegHdtHZZlhKDyB463
+         VoDETbx2Q2Y4lcuEk0vDYrCizJXfgvpUSEYVk=
+Date: Thu, 25 Feb 2010 19:54:48 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, mgarski@post.pl,
+       linux-input@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Route kbd leds through the generic leds layer (3rd
+ version)
+Message-ID: <20100226035448.GA16797@core.coreip.homeip.net>
+References: <20100224012010.GA4062@const>
+ <20100225013840.GA5519@const.homenet.telecomitalia.it>
+ <20100225102056.GG10823@core.coreip.homeip.net>
+ <20100225214403.GB9378@const.homenet.telecomitalia.it>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 07/18] x86: Add text_poke_smp for SMP cross
- 	modifying code
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133438.6725.80273.stgit@localhost6.localdomain6> <20100225153305.GC12635@Krystal>
-In-Reply-To: <20100225153305.GC12635@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100225214403.GB9378@const.homenet.telecomitalia.it>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-[...]
->> +
->> +/*
->> + * Cross-modifying kernel text with stop_machine().
->> + * This code originally comes from immediate value.
->> + */
->> +static atomic_t stop_machine_first;
->> +static int wrote_text;
->> +
->> +struct text_poke_params {
->> +	void *addr;
->> +	const void *opcode;
->> +	size_t len;
->> +};
->> +
->> +static int __kprobes stop_machine_text_poke(void *data)
->> +{
->> +	struct text_poke_params *tpp = data;
->> +
->> +	if (atomic_dec_and_test(&stop_machine_first)) {
->> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
->> +		smp_wmb();	/* Make sure other cpus see that this has run */
->> +		wrote_text = 1;
->> +	} else {
->> +		while (!wrote_text)
->> +			smp_rmb();
->> +		sync_core();
->
-> Hrm, there is a problem in there. The last loop, when wrote_text becomes
-> true, does not perform any smp_mb(), so you end up in a situation where
-> cpus in the "else" branch may never issue any memory barrier. I'd rather
-> do:
+On Thu, Feb 25, 2010 at 10:44:03PM +0100, Samuel Thibault wrote:
+> Dmitry Torokhov, le Thu 25 Feb 2010 02:20:56 -0800, a écrit :
+> > I am aunsure about this patch. It ties all LEDs together
+> 
+> For now, yes.  There could be an additional per-device layer that the
+> user could select instead, but my patch doesn't prevent that.
+> 
+> > whereas currently it is possible to operate keyboards and their leds
+> > independently
+> 
+> You mean through the input layer?  Technically, yes, but at least my
+> patch is an improvement over what exists right now: at first read of
+> your sentence I thought "of course not! keyboard.c does it for all
+> devices!", so it's not a regression in that concern.
 
-Hmm, so how about this? :)
----
-} else {
-	do {
-		smp_rmb();
-	while (!wrote_text);
-	sync_core();
-}
----
+Right now on .33, if you write LED event to one event device while
+legacy keyboard driver is inactive (in raw mode) then that write will
+only affect that particular event device, not the rest of them. Your
+patch changes that.
 
->
-> +static volatile int wrote_text;
->
-> ...
->
-> +static int __kprobes stop_machine_text_poke(void *data)
-> +{
-> +	struct text_poke_params *tpp = data;
-> +
-> +	if (atomic_dec_and_test(&stop_machine_first)) {
-> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
-> +		smp_wmb();	/* order text_poke stores before store to wrote_text */
-> +		wrote_text = 1;
-> +	} else {
-> +		while (!wrote_text)
-> +			cpu_relax();
-> +		smp_mb();	/* order wrote_text load before following execution */
-> +	}
->
-> If you don't like the "volatile int" definition of wrote_text, then we
-> should probably use the ACCESS_ONCE() macro instead.
+Whether LED state should be shared between all input devices or should
+be kept separate is a matter of policy and we try to keep policy in
+userspace.
 
-hm, yeah, volatile will be required.
+>  On the contrary,
+> it fixes the problem of proper caps lock with led feedback.
+> 
 
-Thank you,
+I am unaware of such issue, any pointers?
 
+> Being able to assign only some of the devices to the linux console
+> would indeed probably be good, but to me it's just a refinement. Users
+> a priori assume all keyboards get their leds updated, so my patch
+> makes sense.  And it won't prevent a further patch that, in addition
+> to input::<led> leds, adds per-device leds, which the user could use
+> instead of input::<led>.
+
+I think that if we want to go LED route we shoudl start with adding led
+devices to individual keyboard drivers first and then convert legacy
+keyboard to use trigger instead of talking to input devices directly.
+
+Thanks.
 
 -- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
-
-
-
+Dmitry
