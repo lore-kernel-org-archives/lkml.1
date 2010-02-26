@@ -1,76 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965372Ab0BZQhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 11:37:13 -0500
-Received: from kroah.org ([198.145.64.141]:46997 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965310Ab0BZQhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 11:37:11 -0500
-Date: Fri, 26 Feb 2010 08:37:02 -0800
-From: Greg KH <greg@kroah.com>
-To: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
-Cc: Nitin Shah <Nitin.Shah@kpitcummins.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Liam Girdwood <lrg@kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: Touch Screen Drivers for Dialog da9052
-Message-ID: <20100226163702.GE16213@kroah.com>
-References: <F56EA673D3E56E48804FE2B0D23EFD2D21346D8A9D@KCINPUNHJCMS01.kpit.com>
- <4B87CEE4.9090104@jic23.retrosnub.co.uk>
+	id S965369Ab0BZQjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 11:39:17 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:44857 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965310Ab0BZQjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 11:39:16 -0500
+Date: Fri, 26 Feb 2010 10:39:12 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: Remove ZERO_SIZE_PTR.
+In-Reply-To: <201002260635.o1Q6ZYET040848@www262.sakura.ne.jp>
+Message-ID: <alpine.DEB.2.00.1002261009320.7719@router.home>
+References: <201002260635.o1Q6ZYET040848@www262.sakura.ne.jp>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B87CEE4.9090104@jic23.retrosnub.co.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 01:38:44PM +0000, Jonathan Cameron wrote:
-> On 02/26/10 12:36, Nitin Shah wrote:
-> > Hi,
-> > 
-> > We have developed Touch Screen (TSI) Drivers for Dialog da9052 Power
-> > Management IC.
-> > 
-> > We have tested this driver on Samsung SMDK-6410 board. If any one
-> > needs test application tor testing this driver, we will provide the
-> > same which we have used for testing.
-> > 
-> > For more details about the attached drives please refer the README
-> > file inside "da9052_drivers.zip".
-> > 
-> > We would like to incorporate this driver into Linux mainline kernel.
-> > 
-> > Please test the driver and provide your valuable comments and
-> > feedback.
-> > 
-> > Thanks & Regards, Nitin Shah
-> Hi Nitin,
-> 
-> Couple of initial points.  Please take a look at the guidance on
-> Submitting patches in the Documentation directory of the linux
-> kernel source tree. To get more eyes on code you need to make it
-> as simple as possible for people to take a look!
-> 
-> To move this driver set towards merging, take a look at how the other
-> da90xx chips are handled in the current kernel.  Given the chips have
-> a lot of different functionality fitting into numerous corners of the
-> kernel, that a given user may or may not want to use, they are implemented
-> as multifunction devices (drivers/mfd) with children in a number of other
-> subsystems.
-> 
-> Whilst the code you have sent is pretty clear and well commented etc, it
-> is going to need a lot of changes to interface with the relevant kernel
-> subsystems.
-> 
-> Perhaps this is one for staging? 
+On Fri, 26 Feb 2010, Tetsuo Handa wrote:
 
-I'll take anything for staging, it just has to build and be
-self-contained and have someone who is working on getting it merged to
-the main kernel tree.
+> Everybody should check for ptr != NULL, and most callers are actually checking
+> for ptr != NULL. But nobody is checking for ptr != ZERO_SIZE_PTR.
 
-thanks,
+That is so intentionally because some kernel subsystem can do a zero size
+allocation.
 
-greg k-h
+> If caller passed 0 as size argument by error (e.g. integer overflow bug),
+> the caller will start writing against address starting from ZERO_SIZE_PTR
+> because the caller assumes that "size + sizeof(struct foo)" bytes of memory is
+> successfully allocated. (kstrdup() is an example, although it will be
+> impossible to pass s where strlen(s) == (size_t) -1 .)
+
+Therefore you will get a NULL deference error since ZERO_SIZE_PTR points
+to the NULL page.
+
+> Yes, this is the fault of caller. But ZERO_SIZE_PTR is too small value to
+> distinguish "NULL pointer dereference" and "ZERO_SIZE_PTR dereference" because
+> address printed by oops message can easily exceed ZERO_SIZE_PTR when
+> "struct foo" is large.
+
+Correct.
+
+But you can check for <= ZERO_SIZE_PTR to check for NULL or ZERO_SIZE_PTR
+in the same comparison if necessary.
+
+
