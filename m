@@ -1,70 +1,177 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935086Ab0BZDOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 22:14:55 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51911 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S935073Ab0BZDOx (ORCPT
+	id S935107Ab0BZDWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 22:22:46 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:57742 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935082Ab0BZDWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 22:14:53 -0500
-Date: Fri, 26 Feb 2010 06:14:52 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Martyn Welch <martyn.welch@ge.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net,
-       Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Gianfar driver failing on MPC8641D based board
-Message-ID: <20100226031452.GA11319@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <4B6C2488.3060403@ge.com>
- <4B865176.7080806@ge.com>
- <4B86A97E.6050509@ge.com>
- <20100225165141.GA9686@oksana.dev.rtsoft.ru>
- <20100225174935.GA32370@oksana.dev.rtsoft.ru>
- <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+	Thu, 25 Feb 2010 22:22:44 -0500
+Message-Id: <201002260322.o1Q3Mc3r000644@www262.sakura.ne.jp>
+Subject: Re: [AppArmor #4 0/12] AppArmor security module
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: john.johansen@canonical.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+Date: Fri, 26 Feb 2010 12:22:38 +0900
+References: <1266572188-26529-1-git-send-email-john.johansen@canonical.com>  
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 25022010 #3418103, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 07:53:30PM -0500, Paul Gortmaker wrote:
-[...]
-> I was able to reproduce it on an 8641D and bisected it down to this:
-> 
-> -----------
-> commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
-> Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Date:   Tue Nov 10 14:11:10 2009 +0000
-> 
->     gianfar: Revive SKB recycling
+Regarding path.c
 
-Thanks for the bisect. I have a guess why tx hangs in
-SMP case. Could anyone try the patch down below?
+"struct task_struct" has "struct fs_struct *fs" and "struct nsproxy *nsproxy".
+The former is used for holding current process's root directory and current
+directory.
+The latter is used for holding current process's namespace information.
 
-[...]
-> ...which probably explains why you weren't seeing it on non-SMP.
-> I'd imagine it would show up on any of the e500mc boards too.
+I'm not sure, but I think we can directly fetch current process's namespace's
+root by dereferencing current->nsproxy->mnt_ns , and therefore simplify
+d_namespace_path() as follows.
 
-Yeah.. Pity, I don't have SMP boards anymore. I'll try
-to get one though.
+ 36 static int d_namespace_path(struct path *path, char *buf, int buflen,
+ 37                             char **name, int flags)
+ 38 {
+ 39         struct path root, tmp, ns_root = { };
 
+	/* Remove "ns_root" as only "root" and "tmp" are used. */
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 8bd3c9f..3ff3bd0 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -2614,6 +2614,8 @@ static int gfar_poll(struct napi_struct *napi, int budget)
- 			tx_queue = priv->tx_queue[rx_queue->qindex];
- 
- 			tx_cleaned += gfar_clean_tx_ring(tx_queue);
-+			if (!tx_cleaned && !tx_queue->num_txbdfree)
-+				tx_cleaned += 1; /* don't complete napi */
- 			rx_cleaned_per_queue = gfar_clean_rx_ring(rx_queue,
- 							budget_per_queue);
- 			rx_cleaned += rx_cleaned_per_queue;
+ 40         char *res;
+ 41         int deleted, connected;
+ 42         int error = 0;
+ 43 
+
+	if (flags & PATH_CHROOT_REL) {
+
+ 44         read_lock(&current->fs->lock);
+ 45         root = current->fs->root;
+ 46         /* released below */
+ 47         path_get(&root);
+ 48         read_unlock(&current->fs->lock);
+ 49 
+
+	} else {
+		root.mnt = current->nsproxy->root;
+		root.dentry = root.mnt->mnt_root;
+		/* released below */
+		path_get(&root);
+	}
+
+	/*
+
+ 50         spin_lock(&vfsmount_lock);
+ 51         if (root.mnt && root.mnt->mnt_ns)
+ 52                 /* released below */
+ 53                 ns_root.mnt = mntget(root.mnt->mnt_ns->root);
+ 54         if (ns_root.mnt)
+ 55                 /* released below */
+ 56                 ns_root.dentry = dget(ns_root.mnt->mnt_root);
+ 57         spin_unlock(&vfsmount_lock);
+ 58 
+
+	*/
+
+ 59         spin_lock(&dcache_lock);
+ 60         /* There is a race window between path lookup here and the
+ 61          * need to strip the " (deleted) string that __d_path applies
+ 62          * Detect the race and relookup the path
+ 63          *
+ 64          * The stripping of (deleted) is a hack that could be removed
+ 65          * with an updated __d_path
+ 66          */
+ 67         do {
+
+		/*
+
+ 68                 if (flags & PATH_CHROOT_REL)
+
+		*/
+
+ 69                         tmp = root;
+
+		/*
+
+ 70                 else
+ 71                         tmp = ns_root;
+
+		*/
+
+ 72                 deleted = d_unlinked(path->dentry);
+ 73                 res = __d_path(path, &tmp, buf, buflen);
+ 74 
+ 75         } while (deleted != d_unlinked(path->dentry));
+ 76         spin_unlock(&dcache_lock);
+ 77 
+ 78         *name = res;
+ 79         /* handle error conditions - and still allow a partial path to
+ 80          * be returned.
+ 81          */
+ 82         if (IS_ERR(res)) {
+ 83                 error = PTR_ERR(res);
+ 84                 *name = buf;
+ 85                 goto out;
+ 86         }
+ 87         if (deleted) {
+ 88                 /* On some filesystems, newly allocated dentries appear to the
+ 89                  * security_path hooks as a deleted dentry except without an
+ 90                  * inode allocated.
+ 91                  *
+ 92                  * Remove the appended deleted text and return as string for
+ 93                  * normal mediation, or auditing.  The (deleted) string is
+ 94                  * guarenteed to be added in this case, so just strip it.
+ 95                  */
+ 96                 buf[buflen - 11] = 0;   /* - (len(" (deleted)") +\0) */
+ 97 
+ 98                 if (path->dentry->d_inode && !(flags & PATH_MEDIATE_DELETED)) {
+ 99                         error = -ENOENT;
+100                         goto out;
+101                 }
+102         }
+103 
+
+	/*
+
+104         if (flags & PATH_CHROOT_REL)
+
+	*/
+
+105                 connected = tmp.dentry == root.dentry && tmp.mnt == root.mnt;
+
+	/*
+
+106         else
+107                 connected = tmp.dentry == ns_root.dentry &&
+108                         tmp.mnt == ns_root.mnt;
+
+	*/
+
+109 
+110         if (!connected && 
+111             !(flags & PATH_CONNECT_PATH) &&
+112             !((flags & PATH_CHROOT_REL) && (flags & PATH_CHROOT_NSCONNECT) &&
+113               (tmp.dentry == ns_root.dentry && tmp.mnt == ns_root.mnt))) {
+
+	/* Change from "ns_root" to "root". */
+
+114                 /* disconnected path, don't return pathname starting with '/' */
+115                 error = -ESTALE;
+116                 if (*res == '/')
+117                         *name = res + 1;
+118         }
+119 
+120 out:
+121         path_put(&root);
+
+	/*
+
+122         path_put(&ns_root);
+
+	*/
+
+123 
+124         return error;
+125 }
