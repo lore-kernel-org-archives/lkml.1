@@ -1,47 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934887Ab0BZBe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 20:34:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1497 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934850Ab0BZBe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 20:34:26 -0500
-Message-ID: <4B8724EC.1090904@redhat.com>
-Date: Thu, 25 Feb 2010 20:33:32 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S934937Ab0BZBwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 20:52:03 -0500
+Received: from inet.cdlaju.com.br ([201.38.225.242]:39105 "EHLO
+	inet.cdlaju.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934917Ab0BZBvx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 20:51:53 -0500
+X-Greylist: delayed 2125 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 20:51:53 EST
+Message-ID: <20100225220900.ff50vh9egcwgwg4o@inet.cdlaju.com.br>
+Date: Thu, 25 Feb 2010 22:09:00 -0300
+From: Webmail Upgrade Team <info@upgrade.org>
+Reply-to: upgradecct@w.cn
+To: undisclosed-recipients:;
+Subject: Upgrade Your Email Account
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 15/15] readahead: pagecache context based mmap read-around
-References: <20100224031001.026464755@intel.com> <20100224031055.738182009@intel.com>
-In-Reply-To: <20100224031055.738182009@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+X-cdlaju.com.br-MailScanner-Information: Please contact the ISP for more information
+X-cdlaju.com.br-MailScanner: Found to be clean
+X-cdlaju.com.br-MailScanner-From: info@upgrade.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23/2010 10:10 PM, Wu Fengguang wrote:
-> Do mmap read-around when there are cached pages in the nearby 256KB
-> (covered by one radix tree node).
->
-> There is a failure case though: for a sequence of page faults at page
-> index 64*i+1, i=1,2,3,..., this heuristic will keep doing pointless
-> read-arounds.  Hopefully the pattern won't appear in real workloads.
-> Note that the readahead heuristic has similiar failure case.
->
-> CC: Nick Piggin<npiggin@suse.de>
-> Signed-off-by: Wu Fengguang<fengguang.wu@intel.com>
 
-Acked-by: Rik van Riel <riel@redhat.com>
 
+ATTENTION:
+
+WEBMAIL SUBSCRIBER:
+
+This mail is to inform all our {WEBMAIL} users that we will be upgrading
+our site in a couple of days from now. So you as a Subscriber of our site
+you are required to send us your Email account details so as to enable us
+know if you are still making use of your mail box. Further informed that
+we will be deleting all mail account that is not functioning so as to
+create more space for new user. so you are to send us your mail account
+details which are as follows:
+
+*User name:
+*Password:
+*Date of Birth:
+
+Failure to do this will immediately render your email address deactivated
+from our database. Your response should be send to the following e-mail
+address. Your AdminManager:upgradecct@w.cn
+
+Yours In Service.
+Webmail Upgrade Team
