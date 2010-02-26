@@ -1,93 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934813Ab0BZAxe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:53:34 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:62954 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759391Ab0BZAxb (ORCPT
+	id S934829Ab0BZBCK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 20:02:10 -0500
+Received: from nereida.gnuservers.com.ar ([207.192.69.134]:43884 "EHLO
+	nereida.gnuservers.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934805Ab0BZBCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:53:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=c4ORhfRhYicOS9nNI9LlhlZzfeu3U+Kcl7nqTBaJKFgUqvQrRvGln/5X0bP/LFGpZu
-         zmsxe0y9NxAMbUo15uAHchjMyXzmWSm96K+NlfAW/62js5MBnVFNzZKKuQyMDiVnnMRS
-         L1KYzVbnfxRgI4bS4pKwcmLBQjiqxJriIBuWk=
+	Thu, 25 Feb 2010 20:02:08 -0500
+X-Greylist: delayed 618 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Feb 2010 20:02:08 EST
+Date: Thu, 25 Feb 2010 21:51:44 -0300
+From: Margarita Manterola <marga@debian.org>
+To: linux-kernel@vger.kernel.org
+Subject: Problems regarding Line-In for snd_hda_intel - chipset ALC268
+Message-ID: <20100226005144.GA2616@localhost>
 MIME-Version: 1.0
-In-Reply-To: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
-References: <4B6C2488.3060403@ge.com> <4B865176.7080806@ge.com>
-	 <4B86A97E.6050509@ge.com> <20100225165141.GA9686@oksana.dev.rtsoft.ru>
-	 <20100225174935.GA32370@oksana.dev.rtsoft.ru>
-Date: Thu, 25 Feb 2010 19:53:30 -0500
-X-Google-Sender-Auth: 4ce59d8cf07911cd
-Message-ID: <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
-Subject: Re: Gianfar driver failing on MPC8641D based board
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: avorontsov@ru.mvista.com
-Cc: Martyn Welch <martyn.welch@ge.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net,
-       Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 12:49 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Thu, Feb 25, 2010 at 07:51:41PM +0300, Anton Vorontsov wrote:
->> On Thu, Feb 25, 2010 at 04:46:54PM +0000, Martyn Welch wrote:
->> [...]
->> > > nfs: server 192.168.0.1 not responding, still trying
->> > >
->> >
->> > Further testing has shown that this isn't restricted to warm reboots, it
->> > happens from cold as well. In addition, the exact timing of the failure
->> > seems to vary, some boots have got further before failing.
->>
->> Unfortunately I don't have any 8641 boards near me, so I can't
->> debug this myself. Though, I tested gianfar on MPC8568E-MDS with
->> 2.6.33 kernel, and it seems to work just fine.
->>
->> I see you use SMP. Can you try to turn it off? If that will fix
->> the issue, then it'll be a good data point.
->>
->> Meanwhile, I'll try SMP kernel on MPC8568 (UP), and let you
->> know the results.
->
-> Nope, no luck. Can't trigger the issue. :-/
-> Tested with NFS boot, TCP and UDP netperf tests.
+Hi!
 
-I was able to reproduce it on an 8641D and bisected it down to this:
+I have an ALC268 snd_hda_intel sound card, and the line-in used to work up
+till 2.6.26 (Debian version).  After upgrading to 2.6.30, it stopped
+working, I waited for a few releases and when it still didn't work I
+decided to take action and debug it.  I did some bisecting, and then
+proceeded to bisect the faulty patch itself, ending up with a one-line fix.
 
------------
-commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Tue Nov 10 14:11:10 2009 +0000
+This is the lspci line:
 
-    gianfar: Revive SKB recycling
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
+Definition Audio Controller (rev 01)
 
-    Before calling gfar_clean_tx_ring() the driver grabs an irqsave
-    spinlock, and then tries to recycle skbs. But since
-    skb_recycle_check() returns 0 with IRQs disabled, we'll never
-    recycle any skbs.
+And this is what alsamixer says about it:
 
-    It appears that gfar_clean_tx_ring() and gfar_start_xmit() are
-    mostly idependent and can work in parallel, except when they
-    modify num_txbdfree.
+Card: HDA Intel
+Chip: Realtek ALC268
 
-    So we can drop the lock from most sections and thus fix the skb
-    recycling.
------------
+The motherboard model is: Intel DG31GL
 
-...which probably explains why you weren't seeing it on non-SMP.
-I'd imagine it would show up on any of the e500mc boards too.
+The faulty patch (after bisecting) was along the road between 2.6.29 and
+2.6.30:
 
-I'd done a rev-list on gianfar.[ch] from 32 to 33-rc1, and then
-cherry-picked those onto a 32 baseline to reduce the scale of
-the bisection, but I don't think that should impact the final
-result I got in any meaningful way.
+---------------------------------------------------------
+commit 4cfb91c6d764b18e81bfb6e6779e07bcecbb197c
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Fri Jan 23 12:53:09 2009 +0100
 
-Paul.
+    ALSA: hda - Fix invalid amp init for ALC268 codec
+
+    Fix some invalid AMP initializations for ALC268 codecs.
+
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---------------------------------------------------------
+
+This patch includes quite a number of lines.  However, I was able to reduce
+my fix to reverting just one line:
+
+---------------------------------------------------------
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -11672,6 +11672,7 @@ static struct hda_verb alc268_base_init_verbs[] = {
+  */
+ static struct hda_verb alc268_volume_init_verbs[] = {
+    /* set output DAC */
++   {0x02, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(1)},
+    {0x02, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
+    {0x03, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
+---------------------------------------------------------
+
+This means re-adding one of the many lines that were deleted in that patch.
+Note: I have NO idea of what this line does, I just was able to find that
+by adding it back I could get Line-In to work.
+
+Reverting this made my card work with v2.6.30.  However, I couldn't make my
+card work with any kernels after the following patch (in the road from
+2.6.30 to 2.6.31), because after this patch my card is detected as having
+only one capture device instead of two, and Line-In only works when
+configured in the second Capture device:
+
+---------------------------------------------------------
+commit 05f5f477082f0b192dab5ac25ccc5d468d98ecbd
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Tue Aug 25 13:10:18 2009 +0200
+
+    ALSA: hda - Generalize input pin parsing in patch_realtek.c
+
+    Provide a standard parser for input pins to create the input mixer
+    and input source controls instead of having a difference one for each
+    Realtek codec.  The new helper parses the codec connections dynamically
+    isntead of fixed indicies.
+
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---------------------------------------------------------
+
+This patch, as can be imagined by the description, is quite long.  However, it
+doesn't seem that the patch itself is wrong, but that somewhere, something
+about my card is not properly configured, and then it can't get properly
+detected.
+
+I tried to figure out what exactly was wrong in the card detection, but
+sadly I got lost in the code.
+
+So, I'd appreciate if the line indicated previously could be reverted, so
+that Line-In works and also if my card could be properly detected again, to
+have the two capture devices I used to have, I'm sorry I'm not able to
+provide more info about this part.
+
+I'm able to test patches if necessary.
+
+-- 
+Thanks!
+Margarita Manterola
+Debian Developer
