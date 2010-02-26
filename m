@@ -1,64 +1,250 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935208Ab0BZE32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 23:29:28 -0500
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:58565 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935198Ab0BZE31 (ORCPT
+	id S935223Ab0BZEh6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 23:37:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63519 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935167Ab0BZEh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 23:29:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=nOqlGwpvK215mPCaAPWJrm2gKHa7OkkXmQTg5KiMkvOGZ0NLquGTeZXuWTpeIR/Vb6
-         aD/akxzMUa9aHwNovksw7zPF6XzSHtnXnrw40J1OFNI+338qbZhoITallKj77LltdEBr
-         UBTDRT/PtFOE9kxmOC29WiZOIJyRM0qCdhYvE=
-MIME-Version: 1.0
-In-Reply-To: <20100225160344.GG30679@trinity.fluff.org>
-References: <22dbbef21002250507s12664df5q36e50a8f9e0bc3b9@mail.gmail.com>
-	 <20100225160344.GG30679@trinity.fluff.org>
-Date: Fri, 26 Feb 2010 09:59:26 +0530
-Message-ID: <22dbbef21002252029k54236940wf51e599a169e360e@mail.gmail.com>
-Subject: Re: QUERY: How to call board specific initialization function before 
-	map_io or timer_init
-From: viresh kumar <viresh.linux@gmail.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       viresh.kumar@st.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Feb 2010 23:37:57 -0500
+X-Authority-Analysis: v=1.0 c=1 a=5NS3NZNjjBUA:10 a=meVymXHHAAAA:8 a=z6gsHLkEAAAA:8 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8 a=EsJTwDb25LbyYwx6uxAA:9 a=kYfTx4BI_2Kn8otxX3MA:7 a=2tPrUCsj-jXFAqQaPIkNK5wXMakA:4 a=DHQQ7jDAcw4A:10 a=x8gzFH9gYPwA:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] ftrace: add tracing_thresh support to function_graph
+ tracer (v3)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B87098B.4040308@am.sony.com>
+References: <4B87098B.4040308@am.sony.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Thu, 25 Feb 2010 23:37:55 -0500
+Message-ID: <1267159075.6328.105.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Situation: I need to register my clock framework with
->> arch/arm/common/clkdev framework
->> before actually initializing timer. So i can't do this in
->> "init_machine" as timer_init is called
->> before that.
->
-> One method would be to use an init call from <linux/init.h> which is
-> called before these are done (you'll have to work out which one is
-> suitable for yourself).
->
-
-I tried few of them but timer_init or map_io are getting called before my
-routine is called.
-
-> Either that or ensure that your boards always call a specific
-> routine in their init sequence to ensure clocks are registered before
-> the timer needs them.
->
-> If I remeber correctly, map_io() is actually called before the timers
-> are initialised, so you could add your clocks there.
-
-I can add my init routine to map_io's implementation, but i think
-map_io is not supposed to be implemented that way. map_io should
-be called to statically map devices memory. It is not for hardware
-specific initializations.
-
-Is my understanding correct?
+Tim, FYI, It's best to email my rostedt@goodmis.org account. Or CC both
+if you want. But I check my redhat mail at most once a day, and maybe
+not event that.
 
 
-regards,
-viresh kumar
+On Thu, 2010-02-25 at 15:36 -0800, Tim Bird wrote:
+> Add support for tracing_thresh to the function_graph tracer.  This
+> version of this feature isolates the checks into new entry and
+> return functions, to avoid adding more conditional code into the
+> main function_graph paths.
+> 
+> Also, add support for specifying tracing_thresh on the kernel
+> command line.  When used like so: "tracing_thresh=200 ftrace=function_graph"
+> this can be used to analyse system startup.  It is important to disable
+> tracing soon after boot, in order to avoid losing the trace data.
+> 
+> Note: the elimination of 'notrace' in the definition of '__init'
+> may be controversial.  This can be removed, or made conditional,
+> if it's a bit too scary, but it worked OK for me.  Tracing during
+> kernel startup still works, just with no visibility of routines
+> declared __init.
+
+It basically is a nop if you have DYNAMIC_FTRACE defined. Remember that
+little bug that caused the killing of e1000e NICs?  One of the
+conditions that made that happen was that there's no way to know when a
+__init function will disappear.
+
+But notrace isn't there to protect against that. The recordmcount.pl
+code wont even look at a function declared with __init. This means that
+the __init functions will always call mcount if you remove this notrace.
+That's not really a big deal because mcount is defined as:
+
+ENTRY(mcount)
+        retq
+END(mcount)
+
+
+So you just made all those init functions call this little mcount
+routine. I bet you wont notice the impact.
+
+At boot up, all mcount callers that recordmcount reported are recorded
+and converted to nops. When we enable function tracing, we don't make
+them call mcount again, but instead we make them call a little heavier
+function "ftrace_caller".
+
+Now, your patch will have an impact if you do not enable DYNAMIC_FTRACE,
+because then all callers to mcount can be traced. But then you have a
+13% overhead in the system.
+
+> 
+> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+> ---
+>  include/linux/init.h                 |    2 +-
+>  kernel/trace/trace.c                 |   20 ++++++++++++++++++--
+>  kernel/trace/trace.h                 |    3 ++-
+>  kernel/trace/trace_functions_graph.c |   32 +++++++++++++++++++++++++++++---
+>  4 files changed, 50 insertions(+), 7 deletions(-)
+> 
+> --- a/include/linux/init.h
+> +++ b/include/linux/init.h
+> @@ -40,7 +40,7 @@
+> 
+>  /* These are for everybody (although not all archs will actually
+>     discard it in modules) */
+> -#define __init		__section(.init.text) __cold notrace
+> +#define __init		__section(.init.text) __cold
+
+This isn't needed as I explained above.
+
+
+>  #define __initdata	__section(.init.data)
+>  #define __initconst	__section(.init.rodata)
+>  #define __exitdata	__section(.exit.data)
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -297,6 +297,21 @@ static int __init set_buf_size(char *str
+>  }
+>  __setup("trace_buf_size=", set_buf_size);
+> 
+> +static int __init set_tracing_thresh(char *str)
+> +{
+> +	unsigned long threshhold;
+> +	int ret;
+> +
+> +	if (!str)
+> +		return 0;
+> +	ret = strict_strtoul(str, 0, &threshhold);
+> +	if (ret < 0)
+> +		return 0;
+> +	tracing_thresh = threshhold * 1000;
+> +	return 1;
+> +}
+> +__setup("tracing_thresh=", set_tracing_thresh);
+> +
+>  unsigned long nsecs_to_usecs(unsigned long nsecs)
+>  {
+>  	return nsecs / 1000;
+> @@ -502,9 +517,10 @@ static ssize_t trace_seq_to_buffer(struc
+>  static arch_spinlock_t ftrace_max_lock =
+>  	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
+> 
+> +unsigned long __read_mostly	tracing_thresh;
+> +
+>  #ifdef CONFIG_TRACER_MAX_TRACE
+>  unsigned long __read_mostly	tracing_max_latency;
+> -unsigned long __read_mostly	tracing_thresh;
+> 
+>  /*
+>   * Copy the new maximum trace into the separate maximum-trace
+> @@ -4181,10 +4197,10 @@ static __init int tracer_init_debugfs(vo
+>  #ifdef CONFIG_TRACER_MAX_TRACE
+>  	trace_create_file("tracing_max_latency", 0644, d_tracer,
+>  			&tracing_max_latency, &tracing_max_lat_fops);
+> +#endif
+> 
+>  	trace_create_file("tracing_thresh", 0644, d_tracer,
+>  			&tracing_thresh, &tracing_max_lat_fops);
+> -#endif
+> 
+>  	trace_create_file("README", 0444, d_tracer,
+>  			NULL, &tracing_readme_fops);
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -396,9 +396,10 @@ extern int process_new_ksym_entry(char *
+> 
+>  extern unsigned long nsecs_to_usecs(unsigned long nsecs);
+> 
+> +extern unsigned long tracing_thresh;
+> +
+>  #ifdef CONFIG_TRACER_MAX_TRACE
+>  extern unsigned long tracing_max_latency;
+> -extern unsigned long tracing_thresh;
+> 
+>  void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
+>  void update_max_tr_single(struct trace_array *tr,
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -241,6 +241,14 @@ int trace_graph_entry(struct ftrace_grap
+>  	return ret;
+>  }
+> 
+> +int trace_graph_thresh_entry(struct ftrace_graph_ent *trace)
+> +{
+> +	if (tracing_thresh)
+> +		return 1;
+> +	else
+> +		return trace_graph_entry(trace);
+> +}
+> +
+>  static void __trace_graph_return(struct trace_array *tr,
+>  				struct ftrace_graph_ret *trace,
+>  				unsigned long flags,
+> @@ -287,13 +295,27 @@ void trace_graph_return(struct ftrace_gr
+>  	local_irq_restore(flags);
+>  }
+> 
+> +void trace_graph_thresh_return(struct ftrace_graph_ret *trace)
+> +{
+> +	if (tracing_thresh &&
+> +		(trace->rettime - trace->calltime < tracing_thresh))
+> +		return;
+> +	else
+> +		trace_graph_return(trace);
+> +}
+> +
+>  static int graph_trace_init(struct trace_array *tr)
+>  {
+>  	int ret;
+> 
+>  	graph_array = tr;
+> -	ret = register_ftrace_graph(&trace_graph_return,
+> -				    &trace_graph_entry);
+> +	if (tracing_thresh)
+> +		ret = register_ftrace_graph(&trace_graph_thresh_return,
+> +			    &trace_graph_thresh_entry);
+> +	else
+> +		ret = register_ftrace_graph(&trace_graph_return,
+> +			    &trace_graph_entry);
+> +
+>  	if (ret)
+>  		return ret;
+>  	tracing_start_cmdline_record();
+> @@ -891,7 +913,11 @@ print_graph_return(struct ftrace_graph_r
+>  			return TRACE_TYPE_PARTIAL_LINE;
+>  	}
+> 
+> -	ret = trace_seq_printf(s, "}\n");
+> +	if (tracing_thresh) {
+> +		ret = trace_seq_printf(s, "} (%ps)\n", (void *)trace->func);
+
+Ah, this isn't what I wanted. I wanted something a bit more complex ;-)
+
+I was thinking of keeping a small stack per cpu that keeps track of
+previous entries. If a exit is called that does not have a matching
+entry (can easily check the depth parameter) then we should print out
+the function name. This way, even without the tracing_thresh tracer, we
+can see what dangling '}'s are. This happens now with the current
+tracer.
+
+I can add this tomorrow. Then I can take this patch and cut out the
+stuff not needed.
+
+-- Steve
+
+> +	} else {
+> +		ret = trace_seq_printf(s, "}\n");
+> +	}
+>  	if (!ret)
+>  		return TRACE_TYPE_PARTIAL_LINE;
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
