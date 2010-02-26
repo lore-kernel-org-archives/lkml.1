@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966424Ab0BZV7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:59:24 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:47117 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966387Ab0BZV6c (ORCPT
+	id S966350Ab0BZV6G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:58:06 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:23405 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966217Ab0BZV6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:58:32 -0500
-Subject: [PATCH 7/9] cciss: do not use void pointer for scsi hba data
+	Fri, 26 Feb 2010 16:58:03 -0500
+Subject: [PATCH 1/9] cciss: clarify command list padding calculation
 To: axboe@kernel.dk, akpm@linux-foundation.org, james.bottomley@suse.de
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com,
        linux-scsi@vger.kernel.org, brace@beardog.cce.hp.com
-Date: Fri, 26 Feb 2010 16:01:42 -0600
-Message-ID: <20100226220142.11979.77215.stgit@beardog.cce.hp.com>
+Date: Fri, 26 Feb 2010 16:01:12 -0600
+Message-ID: <20100226220112.11979.91659.stgit@beardog.cce.hp.com>
 In-Reply-To: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
 References: <20100226220023.11979.4999.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
@@ -26,120 +26,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-cciss: do not use void pointer for scsi hba data
-and get rid of related unnecessary type casting
-and delete some superfluous and misleading comments nearby.
+cciss: clarify command list padding calculation
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- drivers/block/cciss.h      |    4 +---
- drivers/block/cciss_scsi.c |   23 ++++++++++-------------
- 2 files changed, 11 insertions(+), 16 deletions(-)
+ drivers/block/cciss_cmd.h |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index ac454fd..c5d4111 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -131,9 +131,7 @@ struct ctlr_info
- 	/* Disk structures we need to pass back */
- 	struct gendisk   *gendisk[CISS_MAX_LUN];
- #ifdef CONFIG_CISS_SCSI_TAPE
--	void *scsi_ctlr; /* ptr to structure containing scsi related stuff */
--	/* list of block side commands the scsi error handling sucked up */
--	/* and saved for later processing */
-+	struct cciss_scsi_adapter_data_t *scsi_ctlr;
- #endif
- 	unsigned char alive;
- 	struct list_head scan_list;
-diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
-index f203606..c458232 100644
---- a/drivers/block/cciss_scsi.c
-+++ b/drivers/block/cciss_scsi.c
-@@ -127,11 +127,9 @@ struct cciss_scsi_adapter_data_t {
- };
+diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
+index 25f9762..515c9f0 100644
+--- a/drivers/block/cciss_cmd.h
++++ b/drivers/block/cciss_cmd.h
+@@ -168,9 +168,14 @@ typedef struct _SGDescriptor_struct {
+ #define CMD_MSG_STALE	0xff
  
- #define CPQ_TAPE_LOCK(ctlr, flags) spin_lock_irqsave( \
--	&(((struct cciss_scsi_adapter_data_t *) \
--	hba[ctlr]->scsi_ctlr)->lock), flags);
-+	&hba[ctlr]->scsi_ctlr->lock, flags);
- #define CPQ_TAPE_UNLOCK(ctlr, flags) spin_unlock_irqrestore( \
--	&(((struct cciss_scsi_adapter_data_t *) \
--	hba[ctlr]->scsi_ctlr)->lock), flags);
-+	&hba[ctlr]->scsi_ctlr->lock, flags);
- 
- static CommandList_struct *
- scsi_cmd_alloc(ctlr_info_t *h)
-@@ -147,7 +145,7 @@ scsi_cmd_alloc(ctlr_info_t *h)
- 	struct cciss_scsi_cmd_stack_t *stk;
- 	u64bit temp64;
- 
--	sa = (struct cciss_scsi_adapter_data_t *) h->scsi_ctlr;
-+	sa = h->scsi_ctlr;
- 	stk = &sa->cmd_stack; 
- 
- 	if (stk->top < 0) 
-@@ -186,7 +184,7 @@ scsi_cmd_free(ctlr_info_t *h, CommandList_struct *cmd)
- 	struct cciss_scsi_adapter_data_t *sa;
- 	struct cciss_scsi_cmd_stack_t *stk;
- 
--	sa = (struct cciss_scsi_adapter_data_t *) h->scsi_ctlr;
-+	sa = h->scsi_ctlr;
- 	stk = &sa->cmd_stack; 
- 	if (stk->top >= CMD_STACK_SIZE) {
- 		printk("cciss: scsi_cmd_free called too many times.\n");
-@@ -233,7 +231,7 @@ scsi_cmd_stack_free(int ctlr)
- 	struct cciss_scsi_cmd_stack_t *stk;
- 	size_t size;
- 
--	sa = (struct cciss_scsi_adapter_data_t *) hba[ctlr]->scsi_ctlr;
-+	sa = hba[ctlr]->scsi_ctlr;
- 	stk = &sa->cmd_stack; 
- 	if (stk->top != CMD_STACK_SIZE-1) {
- 		printk( "cciss: %d scsi commands are still outstanding.\n",
-@@ -534,8 +532,7 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
- 	CPQ_TAPE_LOCK(ctlr, flags);
- 
- 	if (hostno != -1)  /* if it's not the first time... */
--		sh = ((struct cciss_scsi_adapter_data_t *)
--			hba[ctlr]->scsi_ctlr)->scsi_host;
-+		sh = hba[ctlr]->scsi_ctlr->scsi_host;
- 
- 	/* find any devices in ccissscsi[] that are not in 
- 	   sd[] and remove them from ccissscsi[] */
-@@ -706,7 +703,7 @@ cciss_scsi_setup(int cntl_num)
- 		kfree(shba);
- 		shba = NULL;
- 	}
--	hba[cntl_num]->scsi_ctlr = (void *) shba;
-+	hba[cntl_num]->scsi_ctlr = shba;
- 	return;
- }
- 
-@@ -853,7 +850,7 @@ cciss_scsi_detect(int ctlr)
- 	sh->this_id = SELF_SCSI_ID;  
- 
- 	((struct cciss_scsi_adapter_data_t *) 
--		hba[ctlr]->scsi_ctlr)->scsi_host = (void *) sh;
-+		hba[ctlr]->scsi_ctlr)->scsi_host = sh;
- 	sh->hostdata[0] = (unsigned long) hba[ctlr];
- 	sh->irq = hba[ctlr]->intr[SIMPLE_MODE_INT];
- 	sh->unique_id = sh->irq;
-@@ -1518,7 +1515,7 @@ cciss_unregister_scsi(int ctlr)
- 	/* we are being forcibly unloaded, and may not refuse. */
- 
- 	spin_lock_irqsave(CCISS_LOCK(ctlr), flags);
--	sa = (struct cciss_scsi_adapter_data_t *) hba[ctlr]->scsi_ctlr;
-+	sa = hba[ctlr]->scsi_ctlr;
- 	stk = &sa->cmd_stack; 
- 
- 	/* if we weren't ever actually registered, don't unregister */ 
-@@ -1545,7 +1542,7 @@ cciss_engage_scsi(int ctlr)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(CCISS_LOCK(ctlr), flags);
--	sa = (struct cciss_scsi_adapter_data_t *) hba[ctlr]->scsi_ctlr;
-+	sa = hba[ctlr]->scsi_ctlr;
- 	stk = &sa->cmd_stack; 
- 
- 	if (sa->registered) {
+ /* This structure needs to be divisible by 8 for new
+- * indexing method.
++ * indexing method.  PAD_32 and PAD_64 can be adjusted
++ * independently as needed for 32-bit and 64-bits systems.
+  */
+-#define PADSIZE (sizeof(long) - 4)
++#define IS_64_BIT ((sizeof(long) - 4)/4)
++#define IS_32_BIT (!IS_64_BIT)
++#define PAD_32 (0)
++#define PAD_64 (4)
++#define PADSIZE (IS_32_BIT * PAD_32 + IS_64_BIT * PAD_64)
+ typedef struct _CommandList_struct {
+   CommandListHeader_struct Header;
+   RequestBlock_struct      Request;
 
