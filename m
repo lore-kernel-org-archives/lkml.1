@@ -1,17 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965078Ab0BZPUA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 10:20:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23328 "EHLO mx1.redhat.com"
+	id S965058Ab0BZPVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 10:21:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5983 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965015Ab0BZPTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 10:19:12 -0500
+	id S965022Ab0BZPVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 10:21:50 -0500
 From: Matthew Garrett <mjg@redhat.com>
 To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Stuart Hayes <stuart_hayes@dell.com>
-Subject: [PATCH 09/14] dell-laptop: Use buffer with 32-bit physical address
-Date: Fri, 26 Feb 2010 10:18:42 -0500
-Message-Id: <1267197527-18062-10-git-send-email-mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>,
+       Anisse Astier <anisse@astier.eu>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
+       Corentin Chary <corentincj@iksaif.net>,
+       Daniel Oliveira Nascimento <don@syst.com.br>,
+       Harald Welte <laforge@gnumonks.org>,
+       Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
+       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Karol Kozimor <sziwan@users.sourceforge.net>,
+       Len Brown <lenb@kernel.org>, Lennart Poettering <mzxreary@0pointer.de>,
+       Mattia Dongili <malattia@linux.it>, Peter Feuerer <peter@piie.net>,
+       Sujith Thomas <sujith.thomas@intel.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 01/14] MAINTAINERS: update drivers/platform/x86 information
+Date: Fri, 26 Feb 2010 10:18:34 -0500
+Message-Id: <1267197527-18062-2-git-send-email-mjg@redhat.com>
 In-Reply-To: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
 X-SA-Do-Not-Run: Yes
@@ -22,253 +36,202 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stuart Hayes <stuart_hayes@dell.com>
+Many of the drivers/platform/x86 drivers have nothing to do with ACPI, so
+it's kind of inappropriate for them to be stuck under the ACPI mailing
+list. Add a new mailing list (platform-driver-x86@vger.kernel.org) and,
+with Len's blessing, add myself as subsystem maintainer.
 
-Calls to communicate with system firmware via a SMI (using dcdbas)
-need to use a buffer that has a physical address of 4GB or less.
-Currently the dell-laptop driver does not guarantee this, and when the
-buffer address is higher than 4GB, the address is truncated to 32 bits
-and the SMI handler writes to the wrong memory address.
-
-Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
-Acked-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Cc: Anisse Astier <anisse@astier.eu>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
+Cc: Corentin Chary <corentincj@iksaif.net>
+Cc: Daniel Oliveira Nascimento <don@syst.com.br>
+Cc: Harald Welte <laforge@gnumonks.org>
+Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>
+Cc: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Cc: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: Karol Kozimor <sziwan@users.sourceforge.net>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Lennart Poettering <mzxreary@0pointer.de>
+Cc: Mattia Dongili <malattia@linux.it>
+Cc: Peter Feuerer <peter@piie.net>
+Cc: Sujith Thomas <sujith.thomas@intel.com>
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 ---
- drivers/platform/x86/dell-laptop.c |  122 ++++++++++++++++++++++++-----------
- 1 files changed, 83 insertions(+), 39 deletions(-)
+ MAINTAINERS |   29 +++++++++++++++++++++++++----
+ 1 files changed, 25 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell-laptop.c
-index d8b1b39..1a0bfd4 100644
---- a/drivers/platform/x86/dell-laptop.c
-+++ b/drivers/platform/x86/dell-laptop.c
-@@ -22,6 +22,7 @@
- #include <linux/rfkill.h>
- #include <linux/power_supply.h>
- #include <linux/acpi.h>
-+#include <linux/mm.h>
- #include <linux/i8042.h>
- #include "../../firmware/dcdbas.h"
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2533fc4..f355d11 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -221,6 +221,7 @@ F:	drivers/net/acenic*
  
-@@ -123,6 +124,21 @@ static struct dmi_system_id __devinitdata dell_blacklist[] = {
- 	{}
- };
+ ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER
+ M:	Peter Feuerer <peter@piie.net>
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://piie.net/?section=acerhdf
+ S:	Maintained
+ F:	drivers/platform/x86/acerhdf.c
+@@ -228,6 +229,7 @@ F:	drivers/platform/x86/acerhdf.c
+ ACER WMI LAPTOP EXTRAS
+ M:	Carlos Corbacho <carlos@strangeworlds.co.uk>
+ L:	aceracpi@googlegroups.com (subscribers-only)
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://code.google.com/p/aceracpi
+ S:	Maintained
+ F:	drivers/platform/x86/acer-wmi.c
+@@ -288,7 +290,7 @@ F:	drivers/acpi/video.c
  
-+static struct calling_interface_buffer *buffer;
-+struct page *bufferpage;
-+DEFINE_MUTEX(buffer_mutex);
+ ACPI WMI DRIVER
+ M:	Carlos Corbacho <carlos@strangeworlds.co.uk>
+-L:	linux-acpi@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Maintained
+ F:	drivers/platform/x86/wmi.c
+@@ -968,6 +970,7 @@ ASUS ACPI EXTRAS DRIVER
+ M:	Corentin Chary <corentincj@iksaif.net>
+ M:	Karol Kozimor <sziwan@users.sourceforge.net>
+ L:	acpi4asus-user@lists.sourceforge.net
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://acpi4asus.sf.net
+ S:	Maintained
+ F:	drivers/platform/x86/asus_acpi.c
+@@ -981,6 +984,7 @@ F:	drivers/hwmon/asb100.c
+ ASUS LAPTOP EXTRAS DRIVER
+ M:	Corentin Chary <corentincj@iksaif.net>
+ L:	acpi4asus-user@lists.sourceforge.net
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://acpi4asus.sf.net
+ S:	Maintained
+ F:	drivers/platform/x86/asus-laptop.c
+@@ -1473,6 +1477,7 @@ F:	drivers/scsi/fnic/
+ CMPC ACPI DRIVER
+ M:	Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+ M:	Daniel Oliveira Nascimento <don@syst.com.br>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Supported
+ F:	drivers/platform/x86/classmate-laptop.c
+ 
+@@ -1516,6 +1521,7 @@ F:	drivers/pci/hotplug/cpcihp_generic.c
+ 
+ COMPAL LAPTOP SUPPORT
+ M:	Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/compal-laptop.c
+ 
+@@ -1746,6 +1752,7 @@ F:	drivers/net/defxx.*
+ 
+ DELL LAPTOP DRIVER
+ M:	Matthew Garrett <mjg59@srcf.ucam.org>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/dell-laptop.c
+ 
+@@ -2028,6 +2035,7 @@ F:	drivers/edac/r82600_edac.c
+ EEEPC LAPTOP EXTRAS DRIVER
+ M:	Corentin Chary <corentincj@iksaif.net>
+ L:	acpi4asus-user@lists.sourceforge.net
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://acpi4asus.sf.net
+ S:	Maintained
+ F:	drivers/platform/x86/eeepc-laptop.c
+@@ -2295,7 +2303,7 @@ F:	arch/frv/
+ 
+ FUJITSU LAPTOP EXTRAS
+ M:	Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+-L:	linux-acpi@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/fujitsu-laptop.c
+ 
+@@ -2561,6 +2569,7 @@ F:	drivers/net/wireless/hostap/
+ 
+ HP COMPAQ TC1100 TABLET WMI EXTRAS DRIVER
+ M:	Carlos Corbacho <carlos@strangeworlds.co.uk>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Odd Fixes
+ F:	drivers/platform/x86/tc1100-wmi.c
+ 
+@@ -2771,7 +2780,7 @@ F:	drivers/video/i810/
+ 
+ INTEL MENLOW THERMAL DRIVER
+ M:	Sujith Thomas <sujith.thomas@intel.com>
+-L:	linux-acpi@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
+ F:	drivers/platform/x86/intel_menlow.c
+@@ -3637,6 +3646,7 @@ F:	drivers/char/mxser.*
+ 
+ MSI LAPTOP SUPPORT
+ M:	Lennart Poettering <mzxreary@0pointer.de>
++L:	platform-driver-x86@vger.kernel.org
+ W:	https://tango.0pointer.de/mailman/listinfo/s270-linux
+ W:	http://0pointer.de/lennart/tchibo.html
+ S:	Maintained
+@@ -3644,6 +3654,7 @@ F:	drivers/platform/x86/msi-laptop.c
+ 
+ MSI WMI SUPPORT
+ M:	Anisse Astier <anisse@astier.eu>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Supported
+ F:	drivers/platform/x86/msi-wmi.c
+ 
+@@ -4096,6 +4107,7 @@ F:	drivers/i2c/busses/i2c-pasemi.c
+ 
+ PANASONIC LAPTOP ACPI EXTRAS DRIVER
+ M:	Harald Welte <laforge@gnumonks.org>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/panasonic-laptop.c
+ 
+@@ -5034,7 +5046,7 @@ F:	include/linux/ssb/
+ 
+ SONY VAIO CONTROL DEVICE DRIVER
+ M:	Mattia Dongili <malattia@linux.it>
+-L:	linux-acpi@vger.kernel.org
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://www.linux.it/~malattia/wiki/index.php/Sony_drivers
+ S:	Maintained
+ F:	Documentation/laptops/sony-laptop.txt
+@@ -5240,6 +5252,7 @@ F:	arch/xtensa/
+ THINKPAD ACPI EXTRAS DRIVER
+ M:	Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>
+ L:	ibm-acpi-devel@lists.sourceforge.net
++L:	platform-driver-x86@vger.kernel.org
+ W:	http://ibm-acpi.sourceforge.net
+ W:	http://thinkwiki.org/wiki/Ibm-acpi
+ T:	git git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git
+@@ -5293,10 +5306,12 @@ F:	security/tomoyo/
+ 
+ TOPSTAR LAPTOP EXTRAS DRIVER
+ M:	Herton Ronaldo Krzesinski <herton@mandriva.com.br>
++L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/x86/topstar-laptop.c
+ 
+ TOSHIBA ACPI EXTRAS DRIVER
++L:	platform-driver-x86@vger.kernel.org
+ S:	Orphan
+ F:	drivers/platform/x86/toshiba_acpi.c
+ 
+@@ -6024,6 +6039,12 @@ S:	Maintained
+ F:	Documentation/x86/
+ F:	arch/x86/
+ 
++X86 PLATFORM DRIVERS
++M:	Matthew Garrett <mjg@redhat.com>
++L:	platform-driver-x86@vger.kernel.org
++S:	Maintained
++F:	drivers/platform/x86
 +
-+static void get_buffer(void)
-+{
-+	mutex_lock(&buffer_mutex);
-+	memset(buffer, 0, sizeof(struct calling_interface_buffer));
-+}
-+
-+static void release_buffer(void)
-+{
-+	mutex_unlock(&buffer_mutex);
-+}
-+
- static void __init parse_da_table(const struct dmi_header *dm)
- {
- 	/* Final token is a terminator, so we don't want to copy it */
-@@ -225,30 +241,35 @@ dell_send_request(struct calling_interface_buffer *buffer, int class,
- 
- static int dell_rfkill_set(void *data, bool blocked)
- {
--	struct calling_interface_buffer buffer;
- 	int disable = blocked ? 1 : 0;
- 	unsigned long radio = (unsigned long)data;
-+	int ret = 0;
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	dell_send_request(&buffer, 17, 11);
--	if (!(buffer.output[1] & BIT(16)))
--		return -EINVAL;
-+	get_buffer();
-+	dell_send_request(buffer, 17, 11);
- 
--	buffer.input[0] = (1 | (radio<<8) | (disable << 16));
--	dell_send_request(&buffer, 17, 11);
-+	if (!(buffer->output[1] & BIT(16))) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
- 
--	return 0;
-+	buffer->input[0] = (1 | (radio<<8) | (disable << 16));
-+	dell_send_request(buffer, 17, 11);
-+
-+out:
-+	release_buffer();
-+	return ret;
- }
- 
- static void dell_rfkill_query(struct rfkill *rfkill, void *data)
- {
--	struct calling_interface_buffer buffer;
- 	int status;
- 	int bit = (unsigned long)data + 16;
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	dell_send_request(&buffer, 17, 11);
--	status = buffer.output[1];
-+	get_buffer();
-+	dell_send_request(buffer, 17, 11);
-+	status = buffer->output[1];
-+	release_buffer();
- 
- 	rfkill_set_sw_state(rfkill, !!(status & BIT(bit)));
- 	rfkill_set_hw_state(rfkill, !(status & BIT(16)));
-@@ -273,7 +294,6 @@ static DECLARE_DELAYED_WORK(dell_rfkill_work, dell_update_rfkill);
- 
- static int __init dell_setup_rfkill(void)
- {
--	struct calling_interface_buffer buffer;
- 	int status;
- 	int ret;
- 
-@@ -283,9 +303,10 @@ static int __init dell_setup_rfkill(void)
- 		return 0;
- 	}
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	dell_send_request(&buffer, 17, 11);
--	status = buffer.output[1];
-+	get_buffer();
-+	dell_send_request(buffer, 17, 11);
-+	status = buffer->output[1];
-+	release_buffer();
- 
- 	if ((status & (1<<2|1<<8)) == (1<<2|1<<8)) {
- 		wifi_rfkill = rfkill_alloc("dell-wifi", &platform_device->dev,
-@@ -361,39 +382,49 @@ static void dell_cleanup_rfkill(void)
- 
- static int dell_send_intensity(struct backlight_device *bd)
- {
--	struct calling_interface_buffer buffer;
-+	int ret = 0;
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
--	buffer.input[1] = bd->props.brightness;
-+	get_buffer();
-+	buffer->input[0] = find_token_location(BRIGHTNESS_TOKEN);
-+	buffer->input[1] = bd->props.brightness;
- 
--	if (buffer.input[0] == -1)
--		return -ENODEV;
-+	if (buffer->input[0] == -1) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
- 
- 	if (power_supply_is_system_supplied() > 0)
--		dell_send_request(&buffer, 1, 2);
-+		dell_send_request(buffer, 1, 2);
- 	else
--		dell_send_request(&buffer, 1, 1);
-+		dell_send_request(buffer, 1, 1);
- 
-+out:
-+	release_buffer();
- 	return 0;
- }
- 
- static int dell_get_intensity(struct backlight_device *bd)
- {
--	struct calling_interface_buffer buffer;
-+	int ret = 0;
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
-+	get_buffer();
-+	buffer->input[0] = find_token_location(BRIGHTNESS_TOKEN);
- 
--	if (buffer.input[0] == -1)
--		return -ENODEV;
-+	if (buffer->input[0] == -1) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
- 
- 	if (power_supply_is_system_supplied() > 0)
--		dell_send_request(&buffer, 0, 2);
-+		dell_send_request(buffer, 0, 2);
- 	else
--		dell_send_request(&buffer, 0, 1);
-+		dell_send_request(buffer, 0, 1);
- 
--	return buffer.output[1];
-+out:
-+	release_buffer();
-+	if (ret)
-+		return ret;
-+	return buffer->output[1];
- }
- 
- static struct backlight_ops dell_ops = {
-@@ -427,7 +458,6 @@ bool dell_laptop_i8042_filter(unsigned char data, unsigned char str,
- 
- static int __init dell_init(void)
- {
--	struct calling_interface_buffer buffer;
- 	int max_intensity = 0;
- 	int ret;
- 
-@@ -453,6 +483,17 @@ static int __init dell_init(void)
- 	if (ret)
- 		goto fail_platform_device2;
- 
-+	/*
-+	 * Allocate buffer below 4GB for SMI data--only 32-bit physical addr
-+	 * is passed to SMI handler.
-+	 */
-+	bufferpage = alloc_page(GFP_KERNEL | GFP_DMA32);
-+
-+	if (!bufferpage)
-+		goto fail_buffer;
-+	buffer = page_address(bufferpage);
-+	mutex_init(&buffer_mutex);
-+
- 	ret = dell_setup_rfkill();
- 
- 	if (ret) {
-@@ -475,13 +516,13 @@ static int __init dell_init(void)
- 		return 0;
- #endif
- 
--	memset(&buffer, 0, sizeof(struct calling_interface_buffer));
--	buffer.input[0] = find_token_location(BRIGHTNESS_TOKEN);
--
--	if (buffer.input[0] != -1) {
--		dell_send_request(&buffer, 0, 2);
--		max_intensity = buffer.output[3];
-+	get_buffer();
-+	buffer->input[0] = find_token_location(BRIGHTNESS_TOKEN);
-+	if (buffer->input[0] != -1) {
-+		dell_send_request(buffer, 0, 2);
-+		max_intensity = buffer->output[3];
- 	}
-+	release_buffer();
- 
- 	if (max_intensity) {
- 		dell_backlight_device = backlight_device_register(
-@@ -508,6 +549,8 @@ fail_backlight:
- fail_filter:
- 	dell_cleanup_rfkill();
- fail_rfkill:
-+	free_page((unsigned long)bufferpage);
-+fail_buffer:
- 	platform_device_del(platform_device);
- fail_platform_device2:
- 	platform_device_put(platform_device);
-@@ -529,6 +572,7 @@ static void __exit dell_exit(void)
- 		platform_driver_unregister(&platform_driver);
- 	}
- 	kfree(da_tokens);
-+	free_page((unsigned long)buffer);
- }
- 
- module_init(dell_init);
+ XEN HYPERVISOR INTERFACE
+ M:	Jeremy Fitzhardinge <jeremy@xensource.com>
+ M:	Chris Wright <chrisw@sous-sol.org>
 -- 
 1.6.6.1
 
