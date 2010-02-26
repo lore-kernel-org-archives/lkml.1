@@ -1,83 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965572Ab0BZRri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 12:47:38 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:34758 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965483Ab0BZRrh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 12:47:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SB1zPtTx3yUIviXwHM/vufUqV+MrnkMuJa0pyIbXFWoDKZYt2/dpCcvT3dFjFy297r
-         LDfQa5nlEeFCtSUT9Xx4U00Fhqp/xX6IexjX8+x/CILLeytz/59G40zeMMeiseRIgVeP
-         iY0Jnwoc5AysUFKz1Z6cH5g/hhIn2sr4062iU=
+	id S965570Ab0BZRzQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 12:55:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54655 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965482Ab0BZRzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 12:55:13 -0500
+Message-ID: <4B88097E.7010608@zytor.com>
+Date: Fri, 26 Feb 2010 09:48:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <20100224184505.1d8d3380@droptest.queued.net>
-References: <808c8e9d1002231455q379b26acq4b4a50188c5d73be@mail.gmail.com>
-	 <20100224184505.1d8d3380@droptest.queued.net>
-Date: Fri, 26 Feb 2010 11:47:35 -0600
-Message-ID: <808c8e9d1002260947k281782al889db51e20073648@mail.gmail.com>
-Subject: Re: [PATCH] OLPC: ALSA: fix cs5535audio's MIC GPIO to enable input
-From: Ben Gardner <gardner.ben@gmail.com>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Borislav Petkov <bp@amd64.org>
+CC: Michal Marek <mmarek@suse.cz>, linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: Add optimized popcnt variants
+References: <20100222141737.GB21233@aftab> <4B82BD01.3030008@zytor.com> <20100222184945.GD21233@aftab> <4B82E144.1050007@zytor.com> <20100223155852.GF30382@aftab> <4B84118C.90203@zytor.com> <20100223175457.GA2401@aftab> <4B841BC3.1000908@zytor.com> <20100223190614.GB2401@aftab> <4B875BBD.4060104@zytor.com> <20100226074714.GA15310@aftab>
+In-Reply-To: <20100226074714.GA15310@aftab>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andres,
+On 02/25/2010 11:47 PM, Borislav Petkov wrote:
+> From: "H. Peter Anvin" <hpa@zytor.com>
+> Date: Thu, Feb 25, 2010 at 09:27:25PM -0800
+> 
+>> OK, this patch looks pretty good now, but I'm completely lost as to
+>> what the baseline of this patch is supposed to be.
+> 
+> Yeah, this is based on PeterZ's http://lkml.org/lkml/2010/2/4/119
+> 
+> But I'm not sure which tree has it...
+> 
 
-> Previously the MIC GPIO was set to output mode, and when checking the status
-> after setting it we were checking OUTPUT_VAL.  This worked, though I'm not
-> quite sure why. Instead, if we actually check the READ_BACK value, it
-> doesn't work unless the GPIO is in bidirectional mode.  Thus, enable
-> input mode as well.
+Looks like -mm, which really means that either Andrew has to take your
+patch, too, or we have to wait until that is upstream until we can merge
+your patch.
 
-The cs5535-gpio driver was reading output value, not the sensed input value.
-When that was fixed, this OLPC code failed because the input wasn't
-enabled, so the gpio_get_value() call didn't return anything useful.
-At reset the CS5535/6 GPIOs have both input and output disabled.
+I'm a little nervous about just acking the patch and telling Andrew to
+test it, because I don't know what the fallout would look like.  I'm
+particularly concerned about gcc version dependencies.
 
-> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
-> ---
->  sound/pci/cs5535audio/cs5535audio_olpc.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
-> index 50da49b..f5574f2 100644
-> --- a/sound/pci/cs5535audio/cs5535audio_olpc.c
-> +++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
-> @@ -157,6 +157,7 @@ int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
->                return -EIO;
->        }
->        gpio_direction_output(OLPC_GPIO_MIC_AC, 0);
-> +       gpio_direction_input(OLPC_GPIO_MIC_AC);
->
->        /* drop the original AD1888 HPF control */
->        memset(&elem, 0, sizeof(elem));
+I guess, on the other hand, if it ends up not getting merged until .35
+it's not a huge deal either.
 
-This will only work because the cs5535-gpio driver and gpiolib are
-both 'broken'.
+	-hpa
 
-The problem with gpiolib is that it only allows a GPIO pin to be
-either an input or output, but not both.
-It has two separate functions to configure the direction
-(gpio_direction_input/gpio_direction_output), where one should do (ie,
-gpio_set_direction).
->From what I can tell, when direction_input() is called, the GPIO chip
-is expected to disable the output and enable the input. If that really
-occurred, then the above code would still be broken.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-The cs5535-gpio driver doesn't follow that input-or-output convention.
-It never disables the direction that wasn't requested.
-
-I'm working on a gpiolib patch that will combine gpio_direction_output
-and gpio_direction_input into one function.  That would enable the
-above driver to be 'obviously correct'.
-
-Ben
