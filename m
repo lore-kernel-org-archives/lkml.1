@@ -1,85 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934781Ab0BZAl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 19:41:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36676 "EHLO smtps.tip.net.au"
+	id S934788Ab0BZAn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 19:43:56 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49847 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934756Ab0BZAl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 19:41:26 -0500
-Date: Fri, 26 Feb 2010 11:41:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: devel@driverdev.osuosl.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [PATCH -next] staging/pohmelfs: fix write_inode parameter
- warning
-Message-Id: <20100226114118.097a2470.sfr@canb.auug.org.au>
-In-Reply-To: <20100225144122.d9ba8810.randy.dunlap@oracle.com>
-References: <20100225183523.80361261.sfr@canb.auug.org.au>
-	<20100225144122.d9ba8810.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+	id S934756Ab0BZAnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 19:43:55 -0500
+Date: Fri, 26 Feb 2010 09:43:51 +0900
+To: davem@davemloft.net
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] sparc: use asm-generic/scatterlist.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__26_Feb_2010_11_41_18_+1100_U/_k1ovFM5Z=G9xz"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100226093941C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 26 Feb 2010 09:43:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__26_Feb_2010_11_41_18_+1100_U/_k1ovFM5Z=G9xz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+sparc's scatterlist structure is identical to the generic one.
 
-Hi Randy,
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/sparc/include/asm/scatterlist.h |   21 +--------------------
+ 1 files changed, 1 insertions(+), 20 deletions(-)
 
-On Thu, 25 Feb 2010 14:41:22 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->=20
-> sparse warns that:
-> drivers/staging/pohmelfs/inode.c:1797: warning: initialization from incom=
-patible pointer type
->=20
-> so fix pohmelfs_write_inode() to have the expected parameters.
->=20
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/staging/pohmelfs/inode.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> --- linux-next-20100225.orig/drivers/staging/pohmelfs/inode.c
-> +++ linux-next-20100225/drivers/staging/pohmelfs/inode.c
-> @@ -396,7 +396,8 @@ int pohmelfs_remove_child(struct pohmelf
->  /*
->   * Writeback for given inode.
->   */
-> -static int pohmelfs_write_inode(struct inode *inode, int sync)
-> +static int pohmelfs_write_inode(struct inode *inode,
-> +				struct writeback_control *wbc)
->  {
->  	struct pohmelfs_inode *pi =3D POHMELFS_I(inode);
-> =20
+diff --git a/arch/sparc/include/asm/scatterlist.h b/arch/sparc/include/asm/scatterlist.h
+index e580f55..d112025 100644
+--- a/arch/sparc/include/asm/scatterlist.h
++++ b/arch/sparc/include/asm/scatterlist.h
+@@ -1,27 +1,8 @@
+ #ifndef _SPARC_SCATTERLIST_H
+ #define _SPARC_SCATTERLIST_H
+ 
+-#include <asm/page.h>
+-#include <asm/types.h>
+-
+-struct scatterlist {
+-#ifdef CONFIG_DEBUG_SG
+-	unsigned long	sg_magic;
+-#endif
+-	unsigned long	page_link;
+-	unsigned int	offset;
+-
+-	unsigned int	length;
+-
+-	dma_addr_t	dma_address;
+-	__u32		dma_length;
+-};
+-
+-#define sg_dma_address(sg)	((sg)->dma_address)
+ #define sg_dma_len(sg)     	((sg)->dma_length)
+ 
+-#define ISA_DMA_THRESHOLD	(~0UL)
+-
+-#define ARCH_HAS_SG_CHAIN
++#include <asm-generic/scatterlist.h>
+ 
+ #endif /* !(_SPARC_SCATTERLIST_H) */
+-- 
+1.6.5
 
-This patch is OK, but depends on changes that are in the vfs tree that
-are not in Linus' tree yet.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__26_Feb_2010_11_41_18_+1100_U/_k1ovFM5Z=G9xz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuHGK4ACgkQjjKRsyhoI8wHEACcDXPc7aDTTvfZcniKpdGAzNYy
-ohMAn2cNGWd1MH5sG0VVt+FZuAo42Hh/
-=zpjA
------END PGP SIGNATURE-----
-
---Signature=_Fri__26_Feb_2010_11_41_18_+1100_U/_k1ovFM5Z=G9xz--
