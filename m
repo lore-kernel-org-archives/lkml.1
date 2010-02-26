@@ -1,71 +1,186 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935238Ab0BZEqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Feb 2010 23:46:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42402 "EHLO hera.kernel.org"
+	id S935248Ab0BZEqX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Feb 2010 23:46:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42438 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935190Ab0BZEqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Feb 2010 23:46:06 -0500
-Date: Fri, 26 Feb 2010 04:45:42 GMT
+	id S935190Ab0BZEqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Feb 2010 23:46:21 -0500
+Date: Fri, 26 Feb 2010 04:45:59 GMT
 From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbarnes@virtuousgeek.org, jacob.jun.pan@intel.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, jacob.jun.pan@intel.com, tglx@linutronix.de
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755A318CE84@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F0755A318CE84@orsmsx508.amr.corp.intel.com>
+Cc: linux-kernel@vger.kernel.org, dilinger@collabora.co.uk, hpa@zytor.com,
+       mingo@redhat.com, jbarnes@virtuousgeek.org, jacob.jun.pan@intel.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, dilinger@collabora.co.uk,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       jacob.jun.pan@intel.com, tglx@linutronix.de
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755A318CE89@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F0755A318CE89@orsmsx508.amr.corp.intel.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mrst] x86, pci: Add arch_init to x86_init abstraction
-Message-ID: <tip-4fb6088a5cb3a77123fea1279bf2d5b16cf27648@git.kernel.org>
-Git-Commit-ID: 4fb6088a5cb3a77123fea1279bf2d5b16cf27648
+Subject: [tip:x86/mrst] x86, olpc: Use pci subarch init for OLPC
+Message-ID: <tip-d5d0e88c1e5b069aadb050ff6ec95df312de876a@git.kernel.org>
+Git-Commit-ID: d5d0e88c1e5b069aadb050ff6ec95df312de876a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 04:45:43 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 04:46:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4fb6088a5cb3a77123fea1279bf2d5b16cf27648
-Gitweb:     http://git.kernel.org/tip/4fb6088a5cb3a77123fea1279bf2d5b16cf27648
+Commit-ID:  d5d0e88c1e5b069aadb050ff6ec95df312de876a
+Gitweb:     http://git.kernel.org/tip/d5d0e88c1e5b069aadb050ff6ec95df312de876a
 Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 22 Feb 2010 05:38:38 -0800
+AuthorDate: Mon, 22 Feb 2010 05:42:04 -0800
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 25 Feb 2010 19:24:43 -0800
+CommitDate: Thu, 25 Feb 2010 19:26:23 -0800
 
-x86, pci: Add arch_init to x86_init abstraction
+x86, olpc: Use pci subarch init for OLPC
 
-Added an abstraction function for arch specific init calls.
+Replace the #ifdef'ed OLPC-specific init functions by a conditional
+x86_init function.  If the function returns 0 we leave pci_arch_init,
+otherwise we continue.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-LKML-Reference: <43F901BD926A4E43B106BF17856F0755A318CE84@orsmsx508.amr.corp.intel.com>
+Cc: Andres Salomon <dilinger@collabora.co.uk>
+LKML-Reference: <43F901BD926A4E43B106BF17856F0755A318CE89@orsmsx508.amr.corp.intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/include/asm/x86_init.h |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/olpc.h    |   20 ++------------------
+ arch/x86/include/asm/pci_x86.h |    1 -
+ arch/x86/kernel/olpc.c         |   10 +++++++---
+ arch/x86/pci/init.c            |    8 ++++----
+ arch/x86/pci/olpc.c            |    3 ---
+ 5 files changed, 13 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index 8ef56f2..b1d62bb 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -98,13 +98,15 @@ struct x86_init_iommu {
- 	int (*iommu_init)(void);
- };
+diff --git a/arch/x86/include/asm/olpc.h b/arch/x86/include/asm/olpc.h
+index 3a57385..101229b 100644
+--- a/arch/x86/include/asm/olpc.h
++++ b/arch/x86/include/asm/olpc.h
+@@ -13,7 +13,6 @@ struct olpc_platform_t {
  
-- /*
--  * struct x86_init_pci - platform specific pci init functions
-- * @init:			platform specific pci init
-+/**
-+ * struct x86_init_pci - platform specific pci init functions
-+ * @arch_init:			platform specific pci arch init call
-+ * @init:			platform specific pci subsystem init
-  * @init_irq:			platform specific pci irq init
-  * @fixup_irqs:			platform specific pci irq fixup
-  */
- struct x86_init_pci {
-+	int (*arch_init)(void);
- 	int (*init)(void);
- 	void (*init_irq)(void);
- 	void (*fixup_irqs)(void);
+ #define OLPC_F_PRESENT		0x01
+ #define OLPC_F_DCON		0x02
+-#define OLPC_F_VSA		0x04
+ 
+ #ifdef CONFIG_OLPC
+ 
+@@ -51,18 +50,6 @@ static inline int olpc_has_dcon(void)
+ }
+ 
+ /*
+- * The VSA is software from AMD that typical Geode bioses will include.
+- * It is used to emulate the PCI bus, VGA, etc.  OLPC's Open Firmware does
+- * not include the VSA; instead, PCI is emulated by the kernel.
+- *
+- * The VSA is described further in arch/x86/pci/olpc.c.
+- */
+-static inline int olpc_has_vsa(void)
+-{
+-	return (olpc_platform_info.flags & OLPC_F_VSA) ? 1 : 0;
+-}
+-
+-/*
+  * The "Mass Production" version of OLPC's XO is identified as being model
+  * C2.  During the prototype phase, the following models (in chronological
+  * order) were created: A1, B1, B2, B3, B4, C1.  The A1 through B2 models
+@@ -87,13 +74,10 @@ static inline int olpc_has_dcon(void)
+ 	return 0;
+ }
+ 
+-static inline int olpc_has_vsa(void)
+-{
+-	return 0;
+-}
+-
+ #endif
+ 
++extern int pci_olpc_init(void);
++
+ /* EC related functions */
+ 
+ extern int olpc_ec_cmd(unsigned char cmd, unsigned char *inbuf, size_t inlen,
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index 6e69edf..3608551 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -104,7 +104,6 @@ extern bool port_cf9_safe;
+ extern int pci_direct_probe(void);
+ extern void pci_direct_init(int type);
+ extern void pci_pcbios_init(void);
+-extern int pci_olpc_init(void);
+ extern void __init dmi_check_pciprobe(void);
+ extern void __init dmi_check_skip_isa_align(void);
+ 
+diff --git a/arch/x86/kernel/olpc.c b/arch/x86/kernel/olpc.c
+index 9d1d263..8297160 100644
+--- a/arch/x86/kernel/olpc.c
++++ b/arch/x86/kernel/olpc.c
+@@ -17,7 +17,9 @@
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/string.h>
++
+ #include <asm/geode.h>
++#include <asm/setup.h>
+ #include <asm/olpc.h>
+ 
+ #ifdef CONFIG_OPEN_FIRMWARE
+@@ -243,9 +245,11 @@ static int __init olpc_init(void)
+ 	olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0,
+ 			(unsigned char *) &olpc_platform_info.ecver, 1);
+ 
+-	/* check to see if the VSA exists */
+-	if (cs5535_has_vsa2())
+-		olpc_platform_info.flags |= OLPC_F_VSA;
++#ifdef CONFIG_PCI_OLPC
++	/* If the VSA exists let it emulate PCI, if not emulate in kernel */
++	if (!cs5535_has_vsa2())
++		x86_init.pci.arch_init = pci_olpc_init;
++#endif
+ 
+ 	printk(KERN_INFO "OLPC board revision %s%X (EC=%x)\n",
+ 			((olpc_platform_info.boardrev & 0xf) < 8) ? "pre" : "",
+diff --git a/arch/x86/pci/init.c b/arch/x86/pci/init.c
+index 25a1f8e..adb62aa 100644
+--- a/arch/x86/pci/init.c
++++ b/arch/x86/pci/init.c
+@@ -1,6 +1,7 @@
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <asm/pci_x86.h>
++#include <asm/x86_init.h>
+ 
+ /* arch_initcall has too random ordering, so call the initializers
+    in the right sequence from here. */
+@@ -15,10 +16,9 @@ static __init int pci_arch_init(void)
+ 	if (!(pci_probe & PCI_PROBE_NOEARLY))
+ 		pci_mmcfg_early_init();
+ 
+-#ifdef CONFIG_PCI_OLPC
+-	if (!pci_olpc_init())
+-		return 0;	/* skip additional checks if it's an XO */
+-#endif
++	if (x86_init.pci.arch_init && !x86_init.pci.arch_init())
++		return 0;
++
+ #ifdef CONFIG_PCI_BIOS
+ 	pci_pcbios_init();
+ #endif
+diff --git a/arch/x86/pci/olpc.c b/arch/x86/pci/olpc.c
+index b889d82..b348154 100644
+--- a/arch/x86/pci/olpc.c
++++ b/arch/x86/pci/olpc.c
+@@ -304,9 +304,6 @@ static struct pci_raw_ops pci_olpc_conf = {
+ 
+ int __init pci_olpc_init(void)
+ {
+-	if (!machine_is_olpc() || olpc_has_vsa())
+-		return -ENODEV;
+-
+ 	printk(KERN_INFO "PCI: Using configuration type OLPC\n");
+ 	raw_pci_ops = &pci_olpc_conf;
+ 	is_lx = is_geode_lx();
