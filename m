@@ -1,101 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933581Ab0BZK2D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:28:03 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:61682 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933446Ab0BZK17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:27:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=N1wDrNWjMNVlJlj59mlv1U2V3gzCi/MNRciN5vX54KEXaVGlK5awXQ04DSJcsOcu6A
-         U/ixUcTf6BSrqWQ8tQiU+DSoo3uJDPmPiCR8JgrO5uyDznJjo0mbtWea2vavDuaJmGI/
-         Cq/DyyUwvFRqLglCEjRApD1oY8P7VU4TWtaOo=
-Date: Fri, 26 Feb 2010 13:27:45 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: "Steven J. Magnani" <steve@digidescorp.com>, linux-kernel@vger.kernel.org,
-       microblaze-uclinux@itee.uq.edu.au, dan.j.williams@intel.com,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: Buggy variable-length array code...or compiler?
-Message-ID: <20100226102745.GC8417@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	David Rientjes <rientjes@google.com>,
-	"Steven J. Magnani" <steve@digidescorp.com>,
-	linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
-	dan.j.williams@intel.com, Dave Hansen <dave@linux.vnet.ibm.com>
-References: <1267139849.3079.68.camel@iscandar.digidescorp.com> <alpine.DEB.2.00.1002251544120.25189@chino.kir.corp.google.com>
+	id S933777Ab0BZK2e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:28:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7038 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933446Ab0BZK2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 05:28:31 -0500
+Message-ID: <4B87A248.1050300@redhat.com>
+Date: Fri, 26 Feb 2010 12:28:24 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002251544120.25189@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] KVM: SVM: Optimize nested svm msrpm merging
+References: <1267118149-15737-1-git-send-email-joerg.roedel@amd.com> <1267118149-15737-3-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1267118149-15737-3-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 03:46:48PM -0800, David Rientjes wrote:
-> On Thu, 25 Feb 2010, Steven J. Magnani wrote:
-> 
-> > When I run a memcpy dmatest with a Microblaze 2.6.33 noMMU kernel, the
-> > system crashes after about 400 iterations. After much head scratching, I
-> > believe I've narrowed the problem to this fragment of code in
-> > drivers/dma/dmatest.c:
-> > 
-> > static int dmatest_func(void *data)
-> > {
-> > 	struct dmatest_thread	*thread = data;
-> > ...
-> > 	unsigned int		total_tests = 0;
-> > 	int			src_cnt;
-> > 	int			dst_cnt;
-> > 
-> > ...
-> > 	if (thread->type == DMA_MEMCPY)
-> > 		src_cnt = dst_cnt = 1;
-> > ...
-> > 
-> > 	while (!kthread_should_stop()
-> > 	       && !(iterations && total_tests >= iterations)) {
-> > 		struct dma_device *dev = chan->device;
-> > 		struct dma_async_tx_descriptor *tx = NULL;
-> > 		dma_addr_t dma_srcs[src_cnt];
-> > 		dma_addr_t dma_dsts[dst_cnt];
-> > 
-> > 		...
-> > 		total_tests++;
-> > 
-> > 		/* CODE ADDED BY ME FOR DEBUG */
-> > 		printk("dmatest: Iteration %d, dma_srcs = %p\n",
-> > 		       total_tests, dma_srcs);
-> > 
-> > 		...
-> > 	}
-> > 
-> > With this code I get output like this:
-> > 
-> > dmatest: Iteration 1, dma_srcs = 2c963ee8
-> > dmatest: Iteration 2, dma_srcs = 2c963ed8
-> > dmatest: Iteration 3, dma_srcs = 2c963ec8
-> > dmatest: Iteration 4, dma_srcs = 2c963eb8
-> > ...
-> > dmatest: Iteration 420, dma_srcs = 2c9624b8
-> > 
-> > ...and then the stack detonates and the kernel crashes with some strange
-> > error or other.
-> > 
-> 
-> This could probably become the first kernel user of the flexible array 
-> library (see Documentation/flexible-arrays.txt).  Dan?
-> --
+On 02/25/2010 07:15 PM, Joerg Roedel wrote:
+> This patch optimizes the way the msrpm of the host and the
+> guest are merged. The old code merged the 2 msrpm pages
+> completly. This code needed to touch 24kb of memory for that
+> operation. The optimized variant this patch introduces
+> merges only the parts where the host msrpm may contain zero
+> bits. This reduces the amount of memory which is touched to
+> 48 bytes.
+>
+> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
+> ---
+>   arch/x86/kvm/svm.c |   67 +++++++++++++++++++++++++++++++++++++++++++++-------
+>   1 files changed, 58 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index d8d4e35..d15e0ea 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -92,6 +92,9 @@ struct nested_state {
+>
+>   };
+>
+> +#define MSRPM_OFFSETS	16
+> +static u32 msrpm_offsets[MSRPM_OFFSETS] __read_mostly;
+> +
+>   struct vcpu_svm {
+>   	struct kvm_vcpu vcpu;
+>   	struct vmcb *vmcb;
+> @@ -436,6 +439,34 @@ err_1:
+>
+>   }
+>
+> +static void add_msr_offset(u32 offset)
+> +{
+> +	u32 old;
+> +	int i;
+> +
+> +again:
+> +	for (i = 0; i<  MSRPM_OFFSETS; ++i) {
+> +		old = msrpm_offsets[i];
+> +
+> +		if (old == offset)
+> +			return;
+> +
+> +		if (old != MSR_INVALID)
+> +			continue;
+> +
+> +		if (cmpxchg(&msrpm_offsets[i], old, offset) != old)
+> +			goto again;
+> +
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * If this BUG triggers the msrpm_offsets table has an overflow. Just
+> +	 * increase MSRPM_OFFSETS in this case.
+> +	 */
+> +	BUG();
+> +}
+>    
 
-I think the max that src_cnt can be is 3 and the most dst_cnt can be is 2.  
-We could just put that there.
+Why all this atomic cleverness?  The possible offsets are all determined 
+statically.  Even if you do them dynamically (makes sense when 
+considering pmu passthrough), it's per-vcpu and therefore single 
+threaded (just move msrpm_offsets into vcpu context).
 
-regards,
-dan carpenter
+> @@ -1846,20 +1882,33 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
+>
+>   static bool nested_svm_vmrun_msrpm(struct vcpu_svm *svm)
+>   {
+> -	u32 *nested_msrpm;
+> -	struct page *page;
+> +	/*
+> +	 * This function merges the msr permission bitmaps of kvm and the
+> +	 * nested vmcb. It is omptimized in that it only merges the parts where
+> +	 * the kvm msr permission bitmap may contain zero bits
+> +	 */
+>    
+
+A comment that describes the entire function can be moved above the 
+function, freeing a whole tab stop for contents.
+
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
