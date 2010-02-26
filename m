@@ -1,252 +1,190 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933459Ab0BZKZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 05:25:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34365 "EHLO hera.kernel.org"
+	id S933539Ab0BZKZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 05:25:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34386 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933406Ab0BZKZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 05:25:27 -0500
-Date: Fri, 26 Feb 2010 10:24:34 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, yanmin_zhang@linux.intel.com, ling.ma@intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ling.ma@intel.com, a.p.zijlstra@chello.nl, yanmin_zhang@linux.intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
-References: <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
+	id S933406Ab0BZKZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 05:25:45 -0500
+Date: Fri, 26 Feb 2010 10:25:06 GMT
+From: tip-bot for Stephane Eranian <eranian@google.com>
+Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
+References: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Fix SCHED_MC regression caused by change in sched cpu_power
-Message-ID: <tip-d8462eb81b72ebee011a8adbb9a9a5cd94213af9@git.kernel.org>
-Git-Commit-ID: d8462eb81b72ebee011a8adbb9a9a5cd94213af9
+Subject: [tip:perf/core] perf_events: Add new start/stop PMU callbacks
+Message-ID: <tip-d76a0812ac4139ceb54daab3cc70e1bd8bd9d43a@git.kernel.org>
+Git-Commit-ID: d76a0812ac4139ceb54daab3cc70e1bd8bd9d43a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 10:24:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 26 Feb 2010 10:25:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d8462eb81b72ebee011a8adbb9a9a5cd94213af9
-Gitweb:     http://git.kernel.org/tip/d8462eb81b72ebee011a8adbb9a9a5cd94213af9
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Tue, 23 Feb 2010 16:13:52 -0800
+Commit-ID:  d76a0812ac4139ceb54daab3cc70e1bd8bd9d43a
+Gitweb:     http://git.kernel.org/tip/d76a0812ac4139ceb54daab3cc70e1bd8bd9d43a
+Author:     Stephane Eranian <eranian@google.com>
+AuthorDate: Mon, 8 Feb 2010 17:06:01 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 26 Feb 2010 10:54:27 +0100
+CommitDate: Fri, 26 Feb 2010 10:56:53 +0100
 
-sched: Fix SCHED_MC regression caused by change in sched cpu_power
+perf_events: Add new start/stop PMU callbacks
 
-On platforms like dual socket quad-core platform, the scheduler load
-balancer is not detecting the load imbalances in certain scenarios. This
-is leading to scenarios like where one socket is completely busy (with
-all the 4 cores running with 4 tasks) and leaving another socket
-completely idle. This causes performance issues as those 4 tasks share
-the memory controller, last-level cache bandwidth etc. Also we won't be
-taking advantage of turbo-mode as much as we would like, etc.
+In certain situations, the kernel may need to stop and start the same
+event rapidly. The current PMU callbacks do not distinguish between stop
+and release (i.e., stop + free the resource). Thus, a counter may be
+released, then it will be immediately re-acquired. Event scheduling will
+again take place with no guarantee to assign the same counter. On some
+processors, this may event yield to failure to assign the event back due
+to competion between cores.
 
-Some of the comparisons in the scheduler load balancing code are
-comparing the "weighted cpu load that is scaled wrt sched_group's
-cpu_power" with the "weighted average load per task that is not scaled
-wrt sched_group's cpu_power". While this has probably been broken for a
-longer time (for multi socket numa nodes etc), the problem got aggrevated
-via this recent change:
+This patch is adding a new pair of callback to stop and restart a counter
+without actually release the underlying counter resource. On stop, the
+counter is stopped, its values saved and that's it. On start, the value
+is reloaded and counter is restarted (on x86, actual restart is delayed
+until perf_enable()).
 
- |
- |  commit f93e65c186ab3c05ce2068733ca10e34fd00125e
- |  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
- |  Date:   Tue Sep 1 10:34:32 2009 +0200
- |
- |	sched: Restore __cpu_power to a straight sum of power
- |
-
-Also with this change, the sched group cpu power alone no longer reflects
-the group capacity that is needed to implement MC, MT performance
-(default) and power-savings (user-selectable) policies.
-
-We need to use the computed group capacity (sgs.group_capacity, that is
-computed using the SD_PREFER_SIBLING logic in update_sd_lb_stats()) to
-find out if the group with the max load is above its capacity and how
-much load to move etc.
-
-Reported-by: Ma Ling <ling.ma@intel.com>
-Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Stephane Eranian <eranian@google.com>
+[ added fallback to ->enable/->disable for all other PMUs
+  fixed x86_pmu_start() to call x86_pmu.enable()
+  merged __x86_pmu_disable into x86_pmu_stop() ]
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: <stable@kernel.org> # [2.6.32.x, 2.6.33.x]
-LKML-Reference: <1266970432.11588.22.camel@sbs-t61.sc.intel.com>
+LKML-Reference: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched_fair.c |   76 +++++++++++++++++++++++++++++----------------------
- 1 files changed, 43 insertions(+), 33 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c |   24 ++++++++++++++++++++----
+ include/linux/perf_event.h       |    2 ++
+ kernel/perf_event.c              |   20 ++++++++++++++++++--
+ 3 files changed, 40 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index ff7692c..a3591a7 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -2097,6 +2097,7 @@ struct sd_lb_stats {
- 	unsigned long max_load;
- 	unsigned long busiest_load_per_task;
- 	unsigned long busiest_nr_running;
-+	unsigned long busiest_group_capacity;
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index a920f17..9173ea9 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -1495,7 +1495,7 @@ static inline int match_prev_assignment(struct hw_perf_event *hwc,
+ 		hwc->last_tag == cpuc->tags[i];
+ }
  
- 	int group_imb; /* Is there imbalance in this sd */
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-@@ -2416,14 +2417,12 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	unsigned long load, max_cpu_load, min_cpu_load;
- 	int i;
- 	unsigned int balance_cpu = -1, first_idle_cpu = 0;
--	unsigned long sum_avg_load_per_task;
--	unsigned long avg_load_per_task;
-+	unsigned long avg_load_per_task = 0;
+-static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc);
++static void x86_pmu_stop(struct perf_event *event);
  
- 	if (local_group)
- 		balance_cpu = group_first_cpu(group);
+ void hw_perf_enable(void)
+ {
+@@ -1533,7 +1533,7 @@ void hw_perf_enable(void)
+ 			    match_prev_assignment(hwc, cpuc, i))
+ 				continue;
  
- 	/* Tally up the load of all CPUs in the group */
--	sum_avg_load_per_task = avg_load_per_task = 0;
- 	max_cpu_load = 0;
- 	min_cpu_load = ~0UL;
+-			__x86_pmu_disable(event, cpuc);
++			x86_pmu_stop(event);
  
-@@ -2453,7 +2452,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 		sgs->sum_nr_running += rq->nr_running;
- 		sgs->sum_weighted_load += weighted_cpuload(i);
- 
--		sum_avg_load_per_task += cpu_avg_load_per_task(i);
- 	}
- 
- 	/*
-@@ -2473,7 +2471,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	/* Adjust by relative CPU power of the group */
- 	sgs->avg_load = (sgs->group_load * SCHED_LOAD_SCALE) / group->cpu_power;
- 
--
- 	/*
- 	 * Consider the group unbalanced when the imbalance is larger
- 	 * than the average weight of two tasks.
-@@ -2483,8 +2480,8 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
- 	 *      normalized nr_running number somewhere that negates
- 	 *      the hierarchy?
- 	 */
--	avg_load_per_task = (sum_avg_load_per_task * SCHED_LOAD_SCALE) /
--		group->cpu_power;
-+	if (sgs->sum_nr_running)
-+		avg_load_per_task = sgs->sum_weighted_load / sgs->sum_nr_running;
- 
- 	if ((max_cpu_load - min_cpu_load) > 2*avg_load_per_task)
- 		sgs->group_imb = 1;
-@@ -2553,6 +2550,7 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
- 			sds->max_load = sgs.avg_load;
- 			sds->busiest = group;
- 			sds->busiest_nr_running = sgs.sum_nr_running;
-+			sds->busiest_group_capacity = sgs.group_capacity;
- 			sds->busiest_load_per_task = sgs.sum_weighted_load;
- 			sds->group_imb = sgs.group_imb;
+ 			hwc->idx = -1;
  		}
-@@ -2575,6 +2573,7 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
+@@ -1801,6 +1801,19 @@ static int x86_pmu_enable(struct perf_event *event)
+ 	return 0;
+ }
+ 
++static int x86_pmu_start(struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++
++	if (hwc->idx == -1)
++		return -EAGAIN;
++
++	x86_perf_event_set_period(event, hwc, hwc->idx);
++	x86_pmu.enable(hwc, hwc->idx);
++
++	return 0;
++}
++
+ static void x86_pmu_unthrottle(struct perf_event *event)
  {
- 	unsigned long tmp, pwr_now = 0, pwr_move = 0;
- 	unsigned int imbn = 2;
-+	unsigned long scaled_busy_load_per_task;
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+@@ -1924,8 +1937,9 @@ static void intel_pmu_drain_bts_buffer(struct cpu_hw_events *cpuc)
+ 	event->pending_kill = POLL_IN;
+ }
  
- 	if (sds->this_nr_running) {
- 		sds->this_load_per_task /= sds->this_nr_running;
-@@ -2585,8 +2584,12 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
- 		sds->this_load_per_task =
- 			cpu_avg_load_per_task(this_cpu);
- 
--	if (sds->max_load - sds->this_load + sds->busiest_load_per_task >=
--			sds->busiest_load_per_task * imbn) {
-+	scaled_busy_load_per_task = sds->busiest_load_per_task
-+						 * SCHED_LOAD_SCALE;
-+	scaled_busy_load_per_task /= sds->busiest->cpu_power;
-+
-+	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
-+			(scaled_busy_load_per_task * imbn)) {
- 		*imbalance = sds->busiest_load_per_task;
- 		return;
- 	}
-@@ -2637,7 +2640,14 @@ static inline void fix_small_imbalance(struct sd_lb_stats *sds,
- static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
- 		unsigned long *imbalance)
+-static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc)
++static void x86_pmu_stop(struct perf_event *event)
  {
--	unsigned long max_pull;
-+	unsigned long max_pull, load_above_capacity = ~0UL;
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	struct hw_perf_event *hwc = &event->hw;
+ 	int idx = hwc->idx;
+ 
+@@ -1954,7 +1968,7 @@ static void x86_pmu_disable(struct perf_event *event)
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	int i;
+ 
+-	__x86_pmu_disable(event, cpuc);
++	x86_pmu_stop(event);
+ 
+ 	for (i = 0; i < cpuc->n_events; i++) {
+ 		if (event == cpuc->event_list[i]) {
+@@ -2667,6 +2681,8 @@ static inline void x86_pmu_read(struct perf_event *event)
+ static const struct pmu pmu = {
+ 	.enable		= x86_pmu_enable,
+ 	.disable	= x86_pmu_disable,
++	.start		= x86_pmu_start,
++	.stop		= x86_pmu_stop,
+ 	.read		= x86_pmu_read,
+ 	.unthrottle	= x86_pmu_unthrottle,
+ };
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 071a7db..b08dfda 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -513,6 +513,8 @@ struct perf_event;
+ struct pmu {
+ 	int (*enable)			(struct perf_event *event);
+ 	void (*disable)			(struct perf_event *event);
++	int (*start)			(struct perf_event *event);
++	void (*stop)			(struct perf_event *event);
+ 	void (*read)			(struct perf_event *event);
+ 	void (*unthrottle)		(struct perf_event *event);
+ };
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 5a69abb..74c6002 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1493,6 +1493,22 @@ do {					\
+ 	return div64_u64(dividend, divisor);
+ }
+ 
++static void perf_event_stop(struct perf_event *event)
++{
++	if (!event->pmu->stop)
++		return event->pmu->disable(event);
 +
-+	sds.busiest_load_per_task /= sds.busiest_nr_running;
-+	if (sds.group_imb) {
-+		sds.busiest_load_per_task =
-+			min(sds.busiest_load_per_task, sds.avg_load);
-+	}
++	return event->pmu->stop(event);
++}
 +
- 	/*
- 	 * In the presence of smp nice balancing, certain scenarios can have
- 	 * max load less than avg load(as we skip the groups at or below
-@@ -2648,9 +2658,29 @@ static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
- 		return fix_small_imbalance(sds, this_cpu, imbalance);
++static int perf_event_start(struct perf_event *event)
++{
++	if (!event->pmu->start)
++		return event->pmu->enable(event);
++
++	return event->pmu->start(event);
++}
++
+ static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+@@ -1513,9 +1529,9 @@ static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
+ 
+ 	if (atomic64_read(&hwc->period_left) > 8*sample_period) {
+ 		perf_disable();
+-		event->pmu->disable(event);
++		perf_event_stop(event);
+ 		atomic64_set(&hwc->period_left, 0);
+-		event->pmu->enable(event);
++		perf_event_start(event);
+ 		perf_enable();
  	}
- 
--	/* Don't want to pull so many tasks that a group would go idle */
--	max_pull = min(sds->max_load - sds->avg_load,
--			sds->max_load - sds->busiest_load_per_task);
-+	if (!sds->group_imb) {
-+		/*
-+		 * Don't want to pull so many tasks that a group would go idle.
-+		 */
-+		load_above_capacity = (sds->busiest_nr_running -
-+						sds->busiest_group_capacity);
-+
-+		load_above_capacity *= (SCHED_LOAD_SCALE * SCHED_LOAD_SCALE);
-+
-+		load_above_capacity /= sds->busiest->cpu_power;
-+	}
-+
-+	/*
-+	 * We're trying to get all the cpus to the average_load, so we don't
-+	 * want to push ourselves above the average load, nor do we wish to
-+	 * reduce the max loaded cpu below the average load. At the same time,
-+	 * we also don't want to reduce the group load below the group capacity
-+	 * (so that we can implement power-savings policies etc). Thus we look
-+	 * for the minimum possible imbalance.
-+	 * Be careful of negative numbers as they'll appear as very large values
-+	 * with unsigned longs.
-+	 */
-+	max_pull = min(sds->max_load - sds->avg_load, load_above_capacity);
- 
- 	/* How much load to actually move to equalise the imbalance */
- 	*imbalance = min(max_pull * sds->busiest->cpu_power,
-@@ -2718,7 +2748,6 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 	 * 4) This group is more busy than the avg busieness at this
- 	 *    sched_domain.
- 	 * 5) The imbalance is within the specified limit.
--	 * 6) Any rebalance would lead to ping-pong
- 	 */
- 	if (!(*balance))
- 		goto ret;
-@@ -2737,25 +2766,6 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 	if (100 * sds.max_load <= sd->imbalance_pct * sds.this_load)
- 		goto out_balanced;
- 
--	sds.busiest_load_per_task /= sds.busiest_nr_running;
--	if (sds.group_imb)
--		sds.busiest_load_per_task =
--			min(sds.busiest_load_per_task, sds.avg_load);
--
--	/*
--	 * We're trying to get all the cpus to the average_load, so we don't
--	 * want to push ourselves above the average load, nor do we wish to
--	 * reduce the max loaded cpu below the average load, as either of these
--	 * actions would just result in more rebalancing later, and ping-pong
--	 * tasks around. Thus we look for the minimum possible imbalance.
--	 * Negative imbalances (*we* are more loaded than anyone else) will
--	 * be counted as no imbalance for these purposes -- we can't fix that
--	 * by pulling tasks to us. Be careful of negative numbers as they'll
--	 * appear as very large values with unsigned longs.
--	 */
--	if (sds.max_load <= sds.busiest_load_per_task)
--		goto out_balanced;
--
- 	/* Looks like there is an imbalance. Compute it */
- 	calculate_imbalance(&sds, this_cpu, imbalance);
- 	return sds.busiest;
+ }
