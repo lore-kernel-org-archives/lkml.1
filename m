@@ -1,59 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966306Ab0BZVxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 16:53:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:5649 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759466Ab0BZVxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 16:53:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ULukUWCaHZZ804IZcmYfSzyYSvLPSNhMTDiMAcEZ4K6xfbJO/Z3N10EoRT/zRUSptn
-         1USm9BuXeSjaVX4WCpPckt0TUjqnp51Rnrb2b7LgOIoMUr5Sc0og6bUDs+7WX8LCOHhv
-         uiKCMun05HeL5jiiHQDXvMK5rxTN1Kar8XSCc=
-MIME-Version: 1.0
-In-Reply-To: <1267197527-18062-2-git-send-email-mjg@redhat.com>
-References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
-	 <1267197527-18062-2-git-send-email-mjg@redhat.com>
-Date: Fri, 26 Feb 2010 22:53:01 +0100
-Message-ID: <71cd59b01002261353w53fea6cax146acfd18e87636@mail.gmail.com>
-Subject: Re: [PATCH 01/14] MAINTAINERS: update drivers/platform/x86 
-	information
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Anisse Astier <anisse@astier.eu>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
-       Daniel Oliveira Nascimento <don@syst.com.br>,
-       Harald Welte <laforge@gnumonks.org>,
-       Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Karol Kozimor <sziwan@users.sourceforge.net>,
-       Len Brown <lenb@kernel.org>, Lennart Poettering <mzxreary@0pointer.de>,
-       Mattia Dongili <malattia@linux.it>, Peter Feuerer <peter@piie.net>,
-       Sujith Thomas <sujith.thomas@intel.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S966330Ab0BZVx6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 16:53:58 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58371 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966217Ab0BZVx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 16:53:57 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Oliver Neukum <oliver@neukum.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Greg KH <greg@kroah.com>, "Mankad, Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Ming Lei <tom.leiming@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002261150370.2029-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1002261150370.2029-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 27 Feb 2010 08:51:22 +1100
+Message-ID: <1267221082.23523.1822.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 4:18 PM, Matthew Garrett <mjg@redhat.com> wrote:
-> Many of the drivers/platform/x86 drivers have nothing to do with ACPI, so
-> it's kind of inappropriate for them to be stuck under the ACPI mailing
-> list. Add a new mailing list (platform-driver-x86@vger.kernel.org) and,
-> with Len's blessing, add myself as subsystem maintainer.
+On Fri, 2010-02-26 at 11:52 -0500, Alan Stern wrote:
+> > For mmap'ed pages (and present in the page cache), is it guaranteed that
+> > the HCD driver won't write to it once it has been mapped into user
+> > space? If that's the case, it may solve the problem by just reversing
+> > the meaning of PG_arch_1 on ARM and assume that a newly allocated page
+> > has dirty D-cache by default.
+> 
+> Nothing is guaranteed.  The HCD will write to wherever it is asked.  If 
+> a driver does input to an mmap'ed page, the HCD won't even know that 
+> the page is mmap'ed.
 
-Ok,
-Should I re-send the big asus-laptop series I sent to Len (not already
-in acpi tree)
-and send it back to you so it can be merged in platform-driver-x86 ?
+Right but that won't happen unless somebody explicitely caused that
+input to happen, typically, a userspace read(). I$/D$ coherency isn't
+implicit in that case.
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+The question is more when the kernel itself moves a page in/out from
+underneath the application (mmap'ed executable pages). One it's mapped
+in, it won't be written to by the HCD unless something explicitely does
+something to cause that write. If it's swapped out and back in, it will
+have been unmapped. 
+
+Cheers,
+Ben.
+
