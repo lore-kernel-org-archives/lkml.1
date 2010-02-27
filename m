@@ -1,84 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968610Ab0B0Qr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:47:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47615 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968575Ab0B0Qry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:47:54 -0500
-Date: Sat, 27 Feb 2010 17:47:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86/rlimit change for v2.6.34
-Message-ID: <20100227164741.GA16619@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S968618Ab0B0Qsc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:48:32 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:51993 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S968594Ab0B0Qsa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 11:48:30 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=JX6EDqjeAfovKXMYz6/JooS6HstWKR/c41KFfDLRUOASzrCNspg78fKCaAWSiN9j7AUENSkKvfz45h7e/VEtIlWeO/3J12G86H5Xt7nPccmVvsHkpBy4rGazqnLZomiU;
+Date: Sat, 27 Feb 2010 08:49:06 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Markus Rechberger <mrechberger@gmail.com>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-usb@vger.kernel.org, werner@guyane.dyn-o-saur.com,
+       Marcus Meissner <meissner@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
+Message-ID: <20100227084906.6b05fa5e@jbarnes-piketon>
+In-Reply-To: <84144f021002270417j4d690ad2qf5db26b2b6dad232@mail.gmail.com>
+References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com>
+	<20100227041815.GA12956@kroah.com>
+	<alpine.LFD.2.00.1002262022090.4513@localhost.localdomain>
+	<d9def9db1002262034p55cd569n6c423741c276798d@mail.gmail.com>
+	<20100227051737.GA14976@kroah.com>
+	<20100227052648.GA31418@kroah.com>
+	<d9def9db1002262138q63c410b7ga7c04f35b6f154ff@mail.gmail.com>
+	<20100227054808.GA32225@kroah.com>
+	<d9def9db1002270300g7e256fc6n6fbb4fd08d951fb8@mail.gmail.com>
+	<84144f021002270415r7c61236elb0208cd5d0821ab5@mail.gmail.com>
+	<84144f021002270417j4d690ad2qf5db26b2b6dad232@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat, 27 Feb 2010 14:17:14 +0200
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-Please pull the latest x86-rlimit-for-linus git tree from:
+> On Sat, Feb 27, 2010 at 2:15 PM, Pekka Enberg
+> <penberg@cs.helsinki.fi> wrote:
+> > On Sat, Feb 27, 2010 at 1:00 PM, Markus Rechberger
+> > <mrechberger@gmail.com> wrote:
+> >>> Linus, I know you didn't want to do a kzalloc, but it looks like
+> >>> this is the easiest/simplest thing to do, unless you can think of
+> >>> something else?
+> >>
+> >> do you have any idea what to cherrypick in order to get rid of that
+> >> flickering with the intel GM45?
+> >> The flickering itself occures randomly, it was not there with the
+> >> original Ubuntu kernel (2.6.31 with alot patches)
+> >> This is pretty much a standard graphicchip nowadays....
+> >
+> > Yeah, same here. I tried to bisect the damn thing but didn't find
+> > any single commit. I think the problem was introduced in in the DRM
+> > merge between 2.6.31 and 2.6.32-rc1. Some people suggested
+> > privately that it might be related to frame buffer compression.
+> > Unfortunately I wasn't able to revert that particular patch.
+> 
+> Btw, after I reinstalled Ubuntu 9.10 from scratch for unrelated
+> reasons, I haven't seen the flicker effect. Dunno if that's just a
+> coincidence or if userspace has something to do with the bug.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-rlimit-for-linus
+Some people reported ACPI related flicker due to lid detection taking a
+long time and X periodically probing for it.  Maybe that's what you
+were seeing?
 
- Thanks,
-
-	Ingo
-
------------------->
-Jiri Slaby (1):
-      x86: Use helpers for rlimits
-
-
- arch/x86/ia32/ia32_aout.c |    2 +-
- arch/x86/mm/mmap.c        |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
-index 2a4d073..0647478 100644
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -297,7 +297,7 @@ static int load_aout_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	 * size limits imposed on them by creating programs with large
- 	 * arrays in the data or bss.
- 	 */
--	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-+	rlim = rlimit(RLIMIT_DATA);
- 	if (rlim >= RLIM_INFINITY)
- 		rlim = ~0;
- 	if (ex.a_data + ex.a_bss > rlim)
-diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
-index c8191de..1dab519 100644
---- a/arch/x86/mm/mmap.c
-+++ b/arch/x86/mm/mmap.c
-@@ -71,7 +71,7 @@ static int mmap_is_legacy(void)
- 	if (current->personality & ADDR_COMPAT_LAYOUT)
- 		return 1;
- 
--	if (current->signal->rlim[RLIMIT_STACK].rlim_cur == RLIM_INFINITY)
-+	if (rlimit(RLIMIT_STACK) == RLIM_INFINITY)
- 		return 1;
- 
- 	return sysctl_legacy_va_layout;
-@@ -96,7 +96,7 @@ static unsigned long mmap_rnd(void)
- 
- static unsigned long mmap_base(void)
- {
--	unsigned long gap = current->signal->rlim[RLIMIT_STACK].rlim_cur;
-+	unsigned long gap = rlimit(RLIMIT_STACK);
- 
- 	if (gap < MIN_GAP)
- 		gap = MIN_GAP;
+-- 
+Jesse Barnes, Intel Open Source Technology Center
