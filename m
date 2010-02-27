@@ -1,27 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030254Ab0B0Qwi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:52:38 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:41119 "EHLO
+	id S1030279Ab0B0RG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 12:06:29 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:46242 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030242Ab0B0Qwa (ORCPT
+	with ESMTP id S1030243Ab0B0Qwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:52:30 -0500
+	Sat, 27 Feb 2010 11:52:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=MeJBv0RAbR1Vwc5ZHIC8WtiB09FpONTNPJRsKH9MY/IS2jQqBEY2fZdldcOz8RY4ZK
-         7qD+zi5CXtRNrU8k+ErIuUNIewC8j1P52fxreZbUeEvqn9dD+QwqMMPrjYo+Ls8G/d43
-         HdWZU4Bc4Cb7x4OxjSznQbmeFmv50eTJZqPGU=
+        b=dfEKBWnx2So5D4xsm5gSsP4+HGSKBtIgLSixrsIcpGpv3ps+dcj0UFAvS+f+c4w3nn
+         7BZiV3xT5P04GNB3j9SI/FpkiR9WVY03OXW4DJ4CAadP3OryC5s7O58/KFRwvrTSJ6K8
+         zE8Af0ZEyFBP5Y2mrq5xRIP0XiIvO39o6usr0=
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: linux-kernel@vger.kernel.org
-Cc: Andrea Gelmini <andrea.gelmini@gelma.net>,
-       Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com
-Subject: [PATCH 05/66] arch/cris/include/asm/irq.h: Checkpatch cleanup
-Date: Sat, 27 Feb 2010 17:50:46 +0100
-Message-Id: <1267289508-31031-6-git-send-email-andrea.gelmini@gelma.net>
+Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Jeff Dike <jdike@addtoit.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       WANG Cong <xiyou.wangcong@gmail.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       user-mode-linux-user@lists.sourceforge.net
+Subject: [PATCH 06/66] arch/um/sys-ia64/sysdep/syscalls.h: Checkpatch cleanup
+Date: Sat, 27 Feb 2010 17:50:47 +0100
+Message-Id: <1267289508-31031-7-git-send-email-andrea.gelmini@gelma.net>
 X-Mailer: git-send-email 1.7.0.90.g251a4
 In-Reply-To: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
 References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
@@ -29,31 +31,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/cris/include/asm/irq.h:7: ERROR: trailing whitespace
-arch/cris/include/asm/irq.h:8: ERROR: trailing whitespace
+arch/um/sys-ia64/sysdep/syscalls.h:1: ERROR: trailing whitespace
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- arch/cris/include/asm/irq.h |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ arch/um/sys-ia64/sysdep/syscalls.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/cris/include/asm/irq.h b/arch/cris/include/asm/irq.h
-index ce0fcf5..9e9f231 100644
---- a/arch/cris/include/asm/irq.h
-+++ b/arch/cris/include/asm/irq.h
-@@ -4,10 +4,8 @@
- #include <arch/irq.h>
- 
- static inline int irq_canonicalize(int irq)
--{  
--  return irq; 
-+{
-+  return irq;
- }
- 
- #endif  /* _ASM_IRQ_H */
--
--
+diff --git a/arch/um/sys-ia64/sysdep/syscalls.h b/arch/um/sys-ia64/sysdep/syscalls.h
+index 5f6700c..e6f6994 100644
+--- a/arch/um/sys-ia64/sysdep/syscalls.h
++++ b/arch/um/sys-ia64/sysdep/syscalls.h
+@@ -1,4 +1,4 @@
+-/* 
++/*
+  * Copyright (C) 2000 Jeff Dike (jdike@karaya.com)
+  * Licensed under the GPL
+  */
 -- 
 1.7.0.90.g251a4
 
