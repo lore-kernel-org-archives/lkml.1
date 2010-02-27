@@ -1,17 +1,16 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967884Ab0B0HXN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 02:23:13 -0500
-Received: from bosmailout02.eigbox.net ([66.96.186.2]:47959 "EHLO
-	bosmailout02.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967844Ab0B0HXI (ORCPT
+	id S967882Ab0B0HZW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 02:25:22 -0500
+Received: from bosmailout07.eigbox.net ([66.96.187.7]:35167 "EHLO
+	bosmailout07.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967832Ab0B0HZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 02:23:08 -0500
-X-Greylist: delayed 1874 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Feb 2010 02:23:07 EST
-X-EN-OrigOutIP: 10.20.18.12
-X-EN-IMPSID: murr1d0070FdZ9W01urrC2
-Message-ID: <4B88BCB2.7020702@jaysonking.com>
-Date: Sat, 27 Feb 2010 00:33:22 -0600
+	Sat, 27 Feb 2010 02:25:20 -0500
+X-EN-OrigOutIP: 10.20.18.6
+X-EN-IMPSID: mupt1d00307rX7u01uptyg
+Message-ID: <4B88BA1B.4050500@jaysonking.com>
+Date: Sat, 27 Feb 2010 00:22:19 -0600
 From: "Jayson R. King" <dev@jaysonking.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Thunderbird/3.0.1
 MIME-Version: 1.0
@@ -21,9 +20,7 @@ CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>,
        linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Jayson King <dev@jaysonking.com>
-Subject: [10/11] ext4: Fix file fragmentation during large file write.
-References: <4B88BA1B.4050500@jaysonking.com>
-In-Reply-To: <4B88BA1B.4050500@jaysonking.com>
+Subject: [00/11] fix ext4 deadlock on 2.6.27.y
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
@@ -34,194 +31,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu Oct 16 10:10:36 2008 -0400
-Subject: ext4: Fix file fragmentation during large file write.
+Greetings,
 
-commit 22208dedbd7626e5fc4339c417f8d24cc21f79d7 upstream.
+Using the kernel 2.6.27.45 with an ext4 filesystem, the same deadlock as
+was reported earlier in kernel bugzilla #12579 can occur. Simply running
+"dbench 500" on an ext4 filesystem can cause the deadlock in one to two
+minutes.
 
-The range_cyclic writeback mode uses the address_space writeback_index
-as the start index for writeback.  With delayed allocation we were
-updating writeback_index wrongly resulting in highly fragmented file.
-This patch reduces the number of extents reduced from 4000 to 27 for a
-3GB file.
+In later stable kernels, the deadlock was fixed by commit 2acf2c26
+("ext4: Implement range_cyclic in ext4_da_writepages instead of
+write_cache_pages"). I can confirm that the same commit fixes the
+deadlock on 2.6.27.y. However, as the code in ext4_da_writepages is
+different in 2.6.27.y than in later kernels, it was necessary to add
+some other mainline patches before 2acf2c26.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Theodore Ts'o <tytso@mit.edu>
-[dev@jaysonking.com: Some changed lines from the original version of this patch were dropped, since they were rolled up with another cherry-picked patch applied to 2.6.27.y earlier.]
-Signed-off-by: Jayson R. King <dev@jaysonking.com>
+Alltogether, I've added 11 mainline patches including 2acf2c26 to my
+local 2.6.27.y kernel, and confirmed that the deadlock is fixed only
+when the patch 2acf2c26 is applied.
 
----
- fs/ext4/inode.c |   88 ++++++++++++++++++++++++++++------------------
- 1 file changed, 55 insertions(+), 33 deletions(-)
+The 11 patches are:
 
-diff -urNp linux-2.6.27.orig/fs/ext4/inode.c linux-2.6.27/fs/ext4/inode.c
---- linux-2.6.27.orig/fs/ext4/inode.c	2010-02-26 14:25:37.157252759 -0600
-+++ linux-2.6.27/fs/ext4/inode.c	2010-02-26 14:27:31.342252417 -0600
-@@ -1721,7 +1721,11 @@ static int mpage_da_submit_io(struct mpa
- 
- 			pages_skipped = mpd->wbc->pages_skipped;
- 			err = mapping->a_ops->writepage(page, mpd->wbc);
--			if (!err)
-+			if (!err && (pages_skipped == mpd->wbc->pages_skipped))
-+				/*
-+				 * have successfully written the page
-+				 * without skipping the same
-+				 */
- 				mpd->pages_written++;
- 			/*
- 			 * In error case, we have to continue because
-@@ -2175,7 +2179,6 @@ static int mpage_da_writepages(struct ad
- 			       struct writeback_control *wbc,
- 			       struct mpage_da_data *mpd)
- {
--	long to_write;
- 	int ret;
- 
- 	if (!mpd->get_block)
-@@ -2190,19 +2193,18 @@ static int mpage_da_writepages(struct ad
- 	mpd->pages_written = 0;
- 	mpd->retval = 0;
- 
--	to_write = wbc->nr_to_write;
--
- 	ret = write_cache_pages(mapping, wbc, __mpage_da_writepage, mpd);
--
- 	/*
- 	 * Handle last extent of pages
- 	 */
- 	if (!mpd->io_done && mpd->next_page != mpd->first_page) {
- 		if (mpage_da_map_blocks(mpd) == 0)
- 			mpage_da_submit_io(mpd);
--	}
- 
--	wbc->nr_to_write = to_write - mpd->pages_written;
-+		mpd->io_done = 1;
-+		ret = MPAGE_DA_EXTENT_TAIL;
-+	}
-+	wbc->nr_to_write -= mpd->pages_written;
- 	return ret;
- }
- 
-@@ -2447,11 +2449,14 @@ static int ext4_da_writepages_trans_bloc
- static int ext4_da_writepages(struct address_space *mapping,
- 			      struct writeback_control *wbc)
- {
-+	pgoff_t	index;
-+	int range_whole = 0;
- 	handle_t *handle = NULL;
- 	struct mpage_da_data mpd;
- 	struct inode *inode = mapping->host;
-+	int no_nrwrite_index_update;
-+	long pages_written = 0, pages_skipped;
- 	int needed_blocks, ret = 0, nr_to_writebump = 0;
--	long to_write, pages_skipped = 0;
- 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
- 
- 	/*
-@@ -2485,16 +2490,26 @@ static int ext4_da_writepages(struct add
- 		nr_to_writebump = sbi->s_mb_stream_request - wbc->nr_to_write;
- 		wbc->nr_to_write = sbi->s_mb_stream_request;
- 	}
-+	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
-+		range_whole = 1;
- 
--
--	pages_skipped = wbc->pages_skipped;
-+	if (wbc->range_cyclic)
-+		index = mapping->writeback_index;
-+	else
-+		index = wbc->range_start >> PAGE_CACHE_SHIFT;
- 
- 	mpd.wbc = wbc;
- 	mpd.inode = mapping->host;
- 
--restart_loop:
--	to_write = wbc->nr_to_write;
--	while (!ret && to_write > 0) {
-+	/*
-+	 * we don't want write_cache_pages to update
-+	 * nr_to_write and writeback_index
-+	 */
-+	no_nrwrite_index_update = wbc->no_nrwrite_index_update;
-+	wbc->no_nrwrite_index_update = 1;
-+	pages_skipped = wbc->pages_skipped;
-+
-+	while (!ret && wbc->nr_to_write > 0) {
- 
- 		/*
- 		 * we  insert one extent at a time. So we need
-@@ -2527,46 +2542,53 @@ restart_loop:
- 				goto out_writepages;
- 			}
- 		}
--		to_write -= wbc->nr_to_write;
--
- 		mpd.get_block = ext4_da_get_block_write;
- 		ret = mpage_da_writepages(mapping, wbc, &mpd);
- 
- 		ext4_journal_stop(handle);
- 
--		if (mpd.retval == -ENOSPC)
-+		if (mpd.retval == -ENOSPC) {
-+			/* commit the transaction which would
-+			 * free blocks released in the transaction
-+			 * and try again
-+			 */
- 			jbd2_journal_force_commit_nested(sbi->s_journal);
--
--		/* reset the retry count */
--		if (ret == MPAGE_DA_EXTENT_TAIL) {
-+			wbc->pages_skipped = pages_skipped;
-+			ret = 0;
-+		} else if (ret == MPAGE_DA_EXTENT_TAIL) {
- 			/*
- 			 * got one extent now try with
- 			 * rest of the pages
- 			 */
--			to_write += wbc->nr_to_write;
-+			pages_written += mpd.pages_written;
-+			wbc->pages_skipped = pages_skipped;
- 			ret = 0;
--		} else if (wbc->nr_to_write) {
-+		} else if (wbc->nr_to_write)
- 			/*
- 			 * There is no more writeout needed
- 			 * or we requested for a noblocking writeout
- 			 * and we found the device congested
- 			 */
--			to_write += wbc->nr_to_write;
- 			break;
--		}
--		wbc->nr_to_write = to_write;
--	}
--
--	if (!wbc->range_cyclic && (pages_skipped != wbc->pages_skipped)) {
--		/* We skipped pages in this loop */
--		wbc->nr_to_write = to_write +
--				wbc->pages_skipped - pages_skipped;
--		wbc->pages_skipped = pages_skipped;
--		goto restart_loop;
- 	}
-+	if (pages_skipped != wbc->pages_skipped)
-+		printk(KERN_EMERG "This should not happen leaving %s "
-+				"with nr_to_write = %ld ret = %d\n",
-+				__func__, wbc->nr_to_write, ret);
-+
-+	/* Update index */
-+	index += pages_written;
-+	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
-+		/*
-+		 * set the writeback_index so that range_cyclic
-+		 * mode will write it back later
-+		 */
-+		mapping->writeback_index = index;
- 
- out_writepages:
--	wbc->nr_to_write = to_write - nr_to_writebump;
-+	if (!no_nrwrite_index_update)
-+		wbc->no_nrwrite_index_update = 0;
-+	wbc->nr_to_write -= nr_to_writebump;
- 	return ret;
- }
- 
+Aneesh Kumar K.V (10):
+      ext4: invalidate pages if delalloc block allocation fails.
+      ext4: Make sure all the block allocation paths reserve blocks
+      ext4: Add percpu dirty block accounting.
+      ext4: Retry block reservation
+      ext4: Retry block allocation if we have free blocks left
+      ext4: Use tag dirty lookup during mpage_da_submit_io
+      vfs: Remove the range_cont writeback mode.
+      vfs: Add no_nrwrite_index_update writeback control flag
+      ext4: Fix file fragmentation during large file write.
+      ext4: Implement range_cyclic in ext4_da_writepages instead of write_cache_pages
+
+Mingming Cao (1):
+      percpu counter: clean up percpu_counter_sum_and_set()
+
+All will be posted in a reply to this message, in the order that they apply.
+
+I think these patches should be committed to stable 2.6.27.y.
+
+Most of these patches applied cleanly to 2.6.27.45 with no changes other
+than some context lines, but two of the patches needed some very slight
+modifications. I'll note the changes that I made to them above my
+signed-off line for each.
+
+Jayson
+
