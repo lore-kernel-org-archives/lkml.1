@@ -1,97 +1,130 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966249Ab0B0Lgj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 06:36:39 -0500
-Received: from lucidpixels.com ([75.144.35.66]:58695 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965891Ab0B0Lgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 06:36:38 -0500
-Date: Sat, 27 Feb 2010 06:36:37 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Eric Sandeen <sandeen@redhat.com>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-In-Reply-To: <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan>
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
- <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S966266Ab0B0Ln4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 06:43:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59155 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965569Ab0B0Lnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 06:43:55 -0500
+Subject: Re: [PATCH][RESEND] Export per-tid and per-tgid cputime in
+ nanoseconds.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Divyesh Shah <dpshah@google.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, kenchen@google.com
+In-Reply-To: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
+References: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 27 Feb 2010 12:43:45 +0100
+Message-ID: <1267271025.22519.740.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-02-26 at 18:03 -0800, Divyesh Shah wrote:
+> This can be used by applications to get finer granularity cputime usage on
+> platforms that use timestamp counters or HPET.
 
+I guess the patch looks good, I'm just not sure what HPET got to do with
+anything.. the scheduler certainly doesn't use HPET for timekeeping, its
+terribly slow to read.
 
-On Sat, 27 Feb 2010, Justin Piszcz wrote:
+Also, it would be good to get some more justification than 'some
+applications can use this', which is basically a truism for any patch
+that adds a user interface.
 
+> Signed-off-by: Divyesh Shah<dpshah@google.com>
+> ---
 > 
+>  fs/proc/array.c    |   40 ++++++++++++++++++++++++++++++++++++++++
+>  fs/proc/base.c     |    2 ++
+>  fs/proc/internal.h |    2 ++
+>  3 files changed, 44 insertions(+), 0 deletions(-)
 > 
-> On Sat, 27 Feb 2010, Justin Piszcz wrote:
+> diff --git a/fs/proc/array.c b/fs/proc/array.c
+> index 13b5d07..54604b8 100644
+> --- a/fs/proc/array.c
+> +++ b/fs/proc/array.c
+> @@ -547,3 +547,43 @@ int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
+>  
+>  	return 0;
+>  }
+> +
+> +static int do_task_cputime(struct task_struct *task, char * buffer, int whole)
+> +{
+> +	int res;
+> +	unsigned long flags;
+> +	unsigned long long sum_exec_runtime = 0;
+> +	struct task_struct *t;
+> +
+> +	if (lock_task_sighand(task, &flags)) {
+> +		if (whole) {
+> +			t = task;
+> +			/* 
+> +			 * Add up live thread sum_exec_runtime at the group
+> +			 * level.
+> +			 */
+> +			do {
+> +				sum_exec_runtime += t->se.sum_exec_runtime;
+> +				t = next_thread(t);
+> +			} while (t != task);
+> +			sum_exec_runtime += task->signal->sum_sched_runtime;
+> +		}
+> +		unlock_task_sighand(task, &flags);
+> +	}
+> +
+> +	if (!whole)
+> +		sum_exec_runtime = task->se.sum_exec_runtime;
+> +
+> +	res = sprintf(buffer,"%llu\n", sum_exec_runtime);
+> +	return res;
+> +}
+> +
+> +int proc_tid_cputime(struct task_struct *task, char * buffer)
+> +{
+> +	return do_task_cputime(task, buffer, 0);
+> +}
+> +
+> +int proc_tgid_cputime(struct task_struct *task, char * buffer)
+> +{
+> +	return do_task_cputime(task, buffer, 1);
+> +}
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 58324c2..8fbc785 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -2595,6 +2595,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+>  	REG("numa_maps",  S_IRUGO, proc_numa_maps_operations),
+>  #endif
+>  	REG("mem",        S_IRUSR|S_IWUSR, proc_mem_operations),
+> +	INF("cputime_ns", S_IRUGO, proc_tgid_cputime),
+>  	LNK("cwd",        proc_cwd_link),
+>  	LNK("root",       proc_root_link),
+>  	LNK("exe",        proc_exe_link),
+> @@ -2930,6 +2931,7 @@ static const struct pid_entry tid_base_stuff[] = {
+>  	REG("numa_maps", S_IRUGO, proc_numa_maps_operations),
+>  #endif
+>  	REG("mem",       S_IRUSR|S_IWUSR, proc_mem_operations),
+> +	INF("cputime_ns", S_IRUGO, proc_tid_cputime),
+>  	LNK("cwd",       proc_cwd_link),
+>  	LNK("root",      proc_root_link),
+>  	LNK("exe",       proc_exe_link),
+> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+> index 1f24a3e..f9e9799 100644
+> --- a/fs/proc/internal.h
+> +++ b/fs/proc/internal.h
+> @@ -51,6 +51,8 @@ extern int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+>  				struct pid *pid, struct task_struct *task);
+>  extern int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
+>  				struct pid *pid, struct task_struct *task);
+> +extern int proc_tid_cputime(struct task_struct *, char *);
+> +extern int proc_tgid_cputime(struct task_struct *, char *);
+>  extern loff_t mem_lseek(struct file *file, loff_t offset, int orig);
+>  
+>  extern const struct file_operations proc_maps_operations;
 > 
-> > 
-> > 
-> > On Sat, 27 Feb 2010, Justin Piszcz wrote:
-> > 
-> > > 
-> > > 
-> > > On Fri, 26 Feb 2010, Eric Sandeen wrote:
-> > >
-> 
-> Hi,
-> 
-> I have found the same results on 2 different systems:
-> 
-> It seems to peak at ~350MiB/s performance on mdadm raid, whether
-> a RAID-5 or RAID-0 (two separate machines):
-> 
-> The only option I found that allows it to go from:
-> 10737418240 bytes (11 GB) copied, 48.7335 s, 220 MB/s
-> to
-> 10737418240 bytes (11 GB) copied, 30.5425 s, 352 MB/s
-> 
-> Is the -o nodelalloc option.
-> 
-> How come it is not breaking the 350MiB/s barrier is the question?
-> 
-> Justin.
-> 
->
-
-Besides large sequential I/O, ext4 seems to be MUCH faster than XFS when
-working with many small files.
-
-EXT4
-
-p63:/r1# sync; /usr/bin/time bash -c 'tar xf linux-2.6.33.tar; sync'
-0.18user 2.43system 0:02.86elapsed 91%CPU (0avgtext+0avgdata 5216maxresident)k
-0inputs+0outputs (0major+971minor)pagefaults 0swaps
-linux-2.6.33  linux-2.6.33.tar
-p63:/r1# sync; /usr/bin/time bash -c 'rm -rf linux-2.6.33; sync'
-0.02user 0.98system 0:01.03elapsed 97%CPU (0avgtext+0avgdata 5216maxresident)k
-0inputs+0outputs (0major+865minor)pagefaults 0swaps
-
-XFS
-
-p63:/r1# sync; /usr/bin/time bash -c 'tar xf linux-2.6.33.tar; sync'
-0.20user 2.62system 1:03.90elapsed 4%CPU (0avgtext+0avgdata 5200maxresident)k
-0inputs+0outputs (0major+970minor)pagefaults 0swaps
-p63:/r1# sync; /usr/bin/time bash -c 'rm -rf linux-2.6.33; sync'
-0.03user 2.02system 0:29.04elapsed 7%CPU (0avgtext+0avgdata 5200maxresident)k
-0inputs+0outputs (0major+864minor)pagefaults 0swaps
-
-So I guess that's the tradeoff, for massive I/O you should use XFS, else,
-use EXT4?
-
-I still would like to know however, why 350MiB/s seems to be the maximum
-performance I can get from two different md raids (that easily do 600MiB/s
-with XFS).
-
-Is this a performance issue within ext4 and md-raid?
-The problem does not exist with xfs and md-raid.
-
-Justin.
 
 
