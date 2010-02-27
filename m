@@ -1,174 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966747Ab0B0AjJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 19:39:09 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:33648 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966717Ab0B0AjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 19:39:03 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 1/3] rcu: fixes for accelerated grace periods for last non-dynticked CPU
-Date: Fri, 26 Feb 2010 16:38:56 -0800
-Message-Id: <1267231138-27856-1-git-send-email-paulmck@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100227003831.GA27703@linux.vnet.ibm.com>
-References: <20100227003831.GA27703@linux.vnet.ibm.com>
+	id S966759Ab0B0Aqq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 19:46:46 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:62872 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966740Ab0B0Aqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 19:46:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=v0LzeXQOPLF3kS03nHiLYlTQR9+XNacxF9KxQ3hK8UQQLpM8KvrD9XwaXrH3NAY2KE
+         l+GIQvE9yxxumO3/ntAhLbwrSA/Ujer8oBSSwqrMVplqt3eG18HyFwu30ei/AvNusPmq
+         Mu1KPh1qVZvxGxmg/NgoP4Dgi8WAmWe1nYr98=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: "linux-ext4\@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
+Date: Sat, 27 Feb 2010 03:46:39 +0300
+In-Reply-To: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> (Justin
+	Piszcz's message of "Sat, 27 Feb 2010 03:31:02 +0300")
+Message-ID: <87zl2vsdxs.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is illegal to invoke __rcu_process_callbacks() with irqs disabled,
-so do it indirectly via raise_softirq().  This requires a state-machine
-implementation to cycle through the grace-period machinery the required
-number of times.
+Justin Piszcz <jpiszcz@lucidpixels.com> writes:
 
-Located-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/rcutree.c        |    3 ++
- kernel/rcutree.h        |    1 +
- kernel/rcutree_plugin.h |   73 ++++++++++++++++++++++++++++++++++-------------
- 3 files changed, 57 insertions(+), 20 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 335bfe4..3ec8160 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -1341,6 +1341,9 @@ static void rcu_process_callbacks(struct softirq_action *unused)
- 	 * grace-period manipulations above.
- 	 */
- 	smp_mb(); /* See above block comment. */
-+
-+	/* If we are last CPU on way to dyntick-idle mode, accelerate it. */
-+	rcu_needs_cpu_flush();
- }
- 
- static void
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 2ceb083..1439eb5 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -373,5 +373,6 @@ static int rcu_preempt_needs_cpu(int cpu);
- static void __cpuinit rcu_preempt_init_percpu_data(int cpu);
- static void rcu_preempt_send_cbs_to_orphanage(void);
- static void __init __rcu_init_preempt(void);
-+static void rcu_needs_cpu_flush(void);
- 
- #endif /* #ifndef RCU_TREE_NONCORE */
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 3516de7..ed241fc 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -973,9 +973,19 @@ int rcu_needs_cpu(int cpu)
- 	return rcu_needs_cpu_quick_check(cpu);
- }
- 
-+/*
-+ * Check to see if we need to continue a callback-flush operations to
-+ * allow the last CPU to enter dyntick-idle mode.  But fast dyntick-idle
-+ * entry is not configured, so we never do need to.
-+ */
-+static void rcu_needs_cpu_flush(void)
-+{
-+}
-+
- #else /* #if !defined(CONFIG_RCU_FAST_NO_HZ) */
- 
- #define RCU_NEEDS_CPU_FLUSHES 5
-+static DEFINE_PER_CPU(int, rcu_dyntick_drain);
- 
- /*
-  * Check to see if any future RCU-related work will need to be done
-@@ -988,39 +998,62 @@ int rcu_needs_cpu(int cpu)
-  * only if all other CPUs are already in dynticks-idle mode.  This will
-  * allow the CPU cores to be powered down immediately, as opposed to after
-  * waiting many milliseconds for grace periods to elapse.
-+ *
-+ * Because it is not legal to invoke rcu_process_callbacks() with irqs
-+ * disabled, we do one pass of force_quiescent_state(), then do a
-+ * raise_softirq() to cause rcu_process_callbacks() to be invoked later.
-+ * The per-cpu rcu_dyntick_drain variable controls the sequencing.
-  */
- int rcu_needs_cpu(int cpu)
- {
--	int c = 1;
--	int i;
-+	int c = 0;
- 	int thatcpu;
- 
- 	/* Don't bother unless we are the last non-dyntick-idle CPU. */
- 	for_each_cpu_not(thatcpu, nohz_cpu_mask)
--		if (thatcpu != cpu)
-+		if (thatcpu != cpu) {
-+			per_cpu(rcu_dyntick_drain, cpu) = 0;
- 			return rcu_needs_cpu_quick_check(cpu);
--
--	/* Try to push remaining RCU-sched and RCU-bh callbacks through. */
--	for (i = 0; i < RCU_NEEDS_CPU_FLUSHES && c; i++) {
--		c = 0;
--		if (per_cpu(rcu_sched_data, cpu).nxtlist) {
--			rcu_sched_qs(cpu);
--			force_quiescent_state(&rcu_sched_state, 0);
--			__rcu_process_callbacks(&rcu_sched_state,
--						&per_cpu(rcu_sched_data, cpu));
--			c = !!per_cpu(rcu_sched_data, cpu).nxtlist;
--		}
--		if (per_cpu(rcu_bh_data, cpu).nxtlist) {
--			rcu_bh_qs(cpu);
--			force_quiescent_state(&rcu_bh_state, 0);
--			__rcu_process_callbacks(&rcu_bh_state,
--						&per_cpu(rcu_bh_data, cpu));
--			c = !!per_cpu(rcu_bh_data, cpu).nxtlist;
- 		}
-+
-+	/* Check and update the rcu_dyntick_drain sequencing. */
-+	if (per_cpu(rcu_dyntick_drain, cpu) <= 0) {
-+		/* First time through, initialize the counter. */
-+		per_cpu(rcu_dyntick_drain, cpu) = RCU_NEEDS_CPU_FLUSHES;
-+	} else if (--per_cpu(rcu_dyntick_drain, cpu) <= 0) {
-+		/* We have hit the limit, so time to give up. */
-+		return rcu_needs_cpu_quick_check(cpu);
-+	}
-+
-+	/* Do one step pushing remaining RCU callbacks through. */
-+	if (per_cpu(rcu_sched_data, cpu).nxtlist) {
-+		rcu_sched_qs(cpu);
-+		force_quiescent_state(&rcu_sched_state, 0);
-+		c = c || per_cpu(rcu_sched_data, cpu).nxtlist;
-+	}
-+	if (per_cpu(rcu_bh_data, cpu).nxtlist) {
-+		rcu_bh_qs(cpu);
-+		force_quiescent_state(&rcu_bh_state, 0);
-+		c = c || per_cpu(rcu_bh_data, cpu).nxtlist;
- 	}
- 
- 	/* If RCU callbacks are still pending, RCU still needs this CPU. */
-+	if (c)
-+		raise_softirq(RCU_SOFTIRQ);
- 	return c;
- }
- 
-+/*
-+ * Check to see if we need to continue a callback-flush operations to
-+ * allow the last CPU to enter dyntick-idle mode.
-+ */
-+static void rcu_needs_cpu_flush(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	if (per_cpu(rcu_dyntick_drain, cpu) <= 0)
-+		return;
-+	(void)rcu_needs_cpu(cpu);
-+}
-+
- #endif /* #else #if !defined(CONFIG_RCU_FAST_NO_HZ) */
--- 
-1.6.6
-
+> Hello,
+>
+> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
+> I see about half the performance as XFS for sequential writes.
+>
+> I have checked the doc and tried several options, a few of which are shown
+> below (I have also tried the commit/journal_async/etc options but none of 
+> them get the write speeds anywhere near XFS)?
+>
+> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2 
+> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
+>
+> When it was XFS I used to get 400-600MiB/s for writes for the same RAID 
+> volume.
+>
+> How do I 'speed' up ext4?  Is it possible?
+I don't know how to speedup, but i do know how to slowdown XFS :)
+Seems that you forget to call fsync at the end of file write
+In this case some data may reside in memory cache.
+Please add  "conv=fsync" or "conv=fdatasync" to the dd cmd.
+And redone your measurements.
+>
+> raid0_11 disks: (XFS)
+> # /dev/md0        /r1             xfs     noatime         0       1
+> p63:/r1# dd if=/dev/zero of=bigfile1 bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 18.1021 s, 593 MB/s
+> p63:/r1#
+>
+> raid0_11 disks: (EXT4)
+> # /dev/md0        /r1             ext4     noatime         0       1
+> # dd if=/dev/zero of=file bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 35.3741 s, 304 MB/s
+> p63:/r1#
+>
+> Other tests (ext4)
+> p63:~# mount /dev/md0 /r1 -o data=writeback
+> p63:~# cd /r1
+> p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 39.8746 s, 269 MB/s
+> p63:/r1#
+>
+> p63:~# mount /dev/md0 /r1 -o data=writeback,nobarrier
+> p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 40.0656 s, 268 MB/s
+>
+> Justin.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
