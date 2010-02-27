@@ -1,63 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966770Ab0B0AyB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 19:54:01 -0500
-Received: from mga01.intel.com ([192.55.52.88]:53796 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966750Ab0B0AyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 19:54:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,549,1262592000"; 
-   d="scan'208";a="544405066"
-Subject: Re: [patch 1/1] Replace the memtype_lock spinlock with an rwlock.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20100226174319.537341172@gulag1.americas.sgi.com>
-References: <20100226174256.003433508@gulag1.americas.sgi.com>
-	 <20100226174319.537341172@gulag1.americas.sgi.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 26 Feb 2010 16:52:59 -0800
-Message-Id: <1267231979.2720.25.camel@sbs-t61>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S966776Ab0B0AzK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 19:55:10 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53017 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966750Ab0B0AzI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 19:55:08 -0500
+X-Sasl-enc: SQmVJr3AsnSByXfZ9HEdhBaS2CCpxB8o5hUSUPf6gkZ1 1267232104
+Date: Fri, 26 Feb 2010 21:55:01 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] [PATCH] thinkpad-acpi: fix return value of
+ volume callbacks
+Message-ID: <20100227005501.GA25762@khazad-dum.debian.net>
+References: <4B825228.8050405@ladisch.de>
+ <20100223031220.GI30470@khazad-dum.debian.net>
+ <4B83858C.8010305@ladisch.de>
+ <20100226003056.GF5218@khazad-dum.debian.net>
+ <4B877A81.4030300@ladisch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B877A81.4030300@ladisch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 09:42 -0800, Robin Holt wrote:
-> While testing an application using the xpmem (out of kernel driver), we
-> noticed a significant page fault rate reduction of x86_64 with respect
-> to ia64.  For one test running with 256 cpus, one thread per cpu, it
-> took one minute, eight seconds for each of the threads to vm_insert_pfn
-> 2GB worth of pages.
+On Fri, 26 Feb 2010, Clemens Ladisch wrote:
+> > > ALSA sends notifications to all mixer application when the value of
+> > > any mixer control has changed.  To be able to avoid sending them for
+> > > controls that did not actually change, it uses the return value of the
+> > > .put callback: 0 means the control value did not change; 1 means it has
+> > > changed (or might have changed), and a notification is to be sent.
+> > > <http://www.alsa-project.org/~tiwai/writing-an-alsa-driver/ch06s05.html#control-interface-callbacks-put>
+> > 
+> > I am looking at it.  I think I had it like that on purpose, to trigger an
+> > OSD when a volume-related hotkey is pressed even if it doesn't change the
+> > state (mute when already mute, vol down when already at minimum, etc).
 > 
-> The slowdown was tracked to lookup_memtype which acquires the spinlock
-> memtype_lock.  This heavily contended lock was slowing down fault time.
-> 
-> I quickly converted the spinlock to an rwlock.  This greatly improved
-> vm_insert_pfn time to 4.3 seconds for the above test.
+> This is not about changes initiated by key presses but changes made
+> through the ALSA mixer API.  Or does the hardware generate a hotkey
+> event when software changes the volume?
 
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+The firmware doesn't send events for software changes, mostly because it
+does not want, or, expect any.  These mixers are read-only by default.
 
-> As a theoretical test, I removed the lock around get_page_memtype to see
-> what the full impact of the single shared lock actually was.  With that
-> change, the vm_insert_pfn time dropped to 1.6 seconds.
-> 
-> I do not think the current global lock to protect individual pages is
-> the "correct" method for protecting get/set of the page_memtype flag.
-> It seems like the locking should be located within the function that
-> gets and sets the flags and be locked by a per-page lock or protected
-> with an atomic update.
-
-I agree. Will you be willing to look into this and post a patch? Or else
-I can look at this and post a fix next week.
-
-thanks,
-suresh
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
