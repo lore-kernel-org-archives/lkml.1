@@ -1,40 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967936Ab0B0IDc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 03:03:32 -0500
-Received: from perec.tyrell.hu ([66.197.149.104]:50422 "EHLO perec.tyrell.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967911Ab0B0IDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 03:03:31 -0500
-Message-ID: <4B88D1CF.3040805@maroy.hu>
-Date: Sat, 27 Feb 2010 09:03:27 +0100
-From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S967941Ab0B0IHF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 03:07:05 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:39733 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967911Ab0B0IHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 03:07:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=K0avKlRpNA7eYtiZP0At4D0HL6nf3hhMlIIc7gZwbBynKtyYThXOZEFR2tKDpj9TEx
+         tLI5T2wVUOuQuRWRg/mUyvKG2G0KEHYYMnW7cFu319OKbCS2GTc94bntSkYxjCE9vwbV
+         C1SWyeIDq/0dqv/KpvTGuTy4lWotnQq2qFXpw=
+Date: Sat, 27 Feb 2010 00:06:57 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/14] dell-laptop: Update rfkill state on kill switch
+Message-ID: <20100227080656.GD793@core.coreip.homeip.net>
+References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
+ <1267197527-18062-5-git-send-email-mjg@redhat.com>
 MIME-Version: 1.0
-To: Edward Shao <laface.tw@gmail.com>
-CC: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 	8087:0020
-References: <Pine.LNX.4.44L0.1002241137030.2436-100000@iolanthe.rowland.org>	 <4B85A9D3.6060709@maroy.hu> <ff05f3d01002252121k2a757caexae13a8d919b2a170@mail.gmail.com>
-In-Reply-To: <ff05f3d01002252121k2a757caexae13a8d919b2a170@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267197527-18062-5-git-send-email-mjg@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Edward,
+Hi Matthew,
 
-> the whole system freezes for about 5 seconds or more?
-> I meet a very similar issue before on HP Envy 15 laptop when I plugged
-> usb device on xhci port.
-> My problem was BIOS still controlled xhci host controller.
-> Maybe you can try this patch.
-> http://markmail.org/message/vqcbzks4gnbrlir3
+On Fri, Feb 26, 2010 at 10:18:37AM -0500, Matthew Garrett wrote:
+> +
+>  static int __init dell_init(void)
+>  {
+>  	struct calling_interface_buffer buffer;
+> @@ -373,6 +410,13 @@ static int __init dell_init(void)
+>  		goto fail_rfkill;
+>  	}
+>  
+> +	ret = i8042_install_filter(dell_laptop_i8042_filter);
+> +	if (ret) {
+> +		printk(KERN_WARNING
+> +		       "dell-laptop: Unable to install key filter\n");
+> +		goto fail_filter;
+> +	}
+> +
+>  #ifdef CONFIG_ACPI
+>  	/* In the event of an ACPI backlight being available, don't
+>  	 * register the platform controller.
+> @@ -410,6 +454,8 @@ static int __init dell_init(void)
+>  	return 0;
+>  
+>  fail_backlight:
+> +	i8042_remove_filter(dell_laptop_i8042_filter);
 
-thanks, indeed, this seems to have solved the freezing issue!
+cancel_delayed_work_sync() is missing.
 
+> +fail_filter:
+>  	dell_cleanup_rfkill();
+>  fail_rfkill:
+>  	platform_device_del(platform_device);
+> @@ -424,6 +470,8 @@ fail_platform_driver:
+>  
+>  static void __exit dell_exit(void)
+>  {
+> +	cancel_delayed_work_sync(&dell_rfkill_work);
+> +	i8042_remove_filter(dell_laptop_i8042_filter);
 
-Akos
+Wrong order, you need to unregister filter first.
 
+>  	backlight_device_unregister(dell_backlight_device);
+>  	dell_cleanup_rfkill();
+
+Thanks.
+
+-- 
+Dmitry
