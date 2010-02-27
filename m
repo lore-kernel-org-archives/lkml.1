@@ -1,117 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968109Ab0B0Juj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 04:50:39 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:35207 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968079Ab0B0Juh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 04:50:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MtVror1aNDJLpILnZ50MM6nWiHkpQ4JX03dMLPeVg4kB88utDtiy9ltvLymT2fszPv
-         E3OecPoHxmT99odeNVDuLrhh7T3IpiQBEKNfOm0UtYwbNzr6/eqrCit+PgL+lk2n3hgs
-         gf1cCjDimxMKiUh+b9mRa08A3Ve/A00p9aFjU=
+	id S968115Ab0B0JwG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 04:52:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43493 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968098Ab0B0JwC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 04:52:02 -0500
+Date: Sat, 27 Feb 2010 10:51:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/2] rcu: fixes for RCU lockdep
+Message-ID: <20100227095115.GF31794@elte.hu>
+References: <20100225220624.GA7013@linux.vnet.ibm.com>
+ <20100226115018.GA4519@elte.hu>
+ <20100226174248.GF6733@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1002262041020.4245@localhost.localdomain>
-References: <alpine.LFD.2.00.1002241740410.4245@localhost.localdomain>
-	 <alpine.LFD.2.00.1002262041020.4245@localhost.localdomain>
-Date: Sat, 27 Feb 2010 18:50:36 +0900
-Message-ID: <49b7c2351002270150l1ed375et71821ffdbbe26d13@mail.gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.33-rt3
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>, nando@ccrma.stanford.edu,
-       Carsten Emde <ce@ceag.ch>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100226174248.GF6733@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Thomas,
 
-Thank you for notice about 2.6.33 based -rt3.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-I tested system booting with linux-2.6.33-rt3 on my Q6600 based Desktop.
-For reference, I am using Centos 5.4 rootFS.
-As a result, I booted this version on my desktop successfully.
+> On Fri, Feb 26, 2010 at 12:50:18PM +0100, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > Hello!
+> > > 
+> > > This set fixes a couple of problems with the RCU-based lockdep patches:
+> > > 
+> > > 1.	Make the lockdep_rcu_dereference() message less alarmist
+> > > 
+> > > 2.	Make rcu_read_lock_sched_held() take boot-time lack of
+> > > 	preemption into account.
+> > > 
+> > > 							Thanx, Paul
+> > > 
+> > > ------------------------------------------------------------------------
+> > > 
+> > >  include/linux/rcupdate.h |    4 +++-
+> > >  include/linux/rcutiny.h  |    4 ----
+> > >  include/linux/rcutree.h  |    1 -
+> > >  kernel/lockdep.c         |    7 +++----
+> > >  kernel/rcupdate.c        |   18 ++++++++++++++++++
+> > >  kernel/rcutree.c         |   20 --------------------
+> > >  6 files changed, 24 insertions(+), 30 deletions(-)
+> > 
+> > Applied, thanks Paul!
+> > 
+> > Here's a new warning:
+> > 
+> > [    0.000000] 
+> > [    0.000000] ===================================================
+> > [    0.000000] [ INFO: suspicious rcu_dereference_check() usage. ]
+> > [    0.000000] ---------------------------------------------------
+> > [    0.000000] kernel/sched_fair.c:3469 invoked rcu_dereference_check() without protection!
+> 
+> Hmmm...  Could you please tell me what commit this test ran against?
 
-* Booting result of linux-2.6.33-rt3 on Q6600 PC. --> Passed.
-http://picasaweb.google.com/leemgs/LinuxRelatedScreenshot#5442856195052253634
+One version of tip:master :-/
 
-Regards,
-Geunsik Lim.
+ob'kconfig - i think this header bit of the .config:
 
-On Sat, Feb 27, 2010 at 4:54 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> We are pleased to announce the next update to our new preempt-rt
-> series.
->
->    - Update to 2.6.33
->
->    - rt fixes:
->
->         Peter Zijlstra (1):
->               highmem, -rt: Implement pfn and prot kmaps
->
->        Thomas Gleixner (2):
->               x86: pci: Prevent mmconfig memory corruption
->               mmc: omap_hsmmc: Fix the locking mess
->
-> A note on the development process:
->
->  The rt/2.6.33 branch is now stabilization only. The rt/head branch
->  will follow linus tree from now on, so it will inherit all
->  (mis)features which come in the merge window.
->
-> Download locations:
->
->   http://www.kernel.org/pub/linux/kernel/projects/rt/
->
-> Git development branch:
->   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
->
-> Git release branch:
->   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.33
->
-> Gitweb:
->   http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.33
->
-> Information on the RT patch can be found at:
->
->   http://rt.wiki.kernel.org/index.php/Main_Page
->
-> To build the 2.6.33-rt3 tree, the following patches should be
-> applied:
->
->   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.33.tar.bz2
->   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.33-rt3.bz2
->
-> Enjoy !
->
->      tglx
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> > # Automatically generated make config: don't edit
+> > # Linux kernel version: 2.6.33
+> > # Fri Feb 26 14:51:28 2010
 
+should contain the last-seen kernel Git sha1 as well. It would ease things 
+considerably.
 
+> My guesses thus far either don't have that many lines in kernel/sched_fair.c 
+> or have some unrelated code at line 3469.
 
--- 
-Regards,
-GeunSik Lim ( Samsung Electronics )
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+I'll post the sha1 next time i encounter this warning.
+
+Thanks,
+
+	Ingo
