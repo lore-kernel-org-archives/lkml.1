@@ -1,62 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936244Ab0B0VdU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 16:33:20 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:43197 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933964Ab0B0VdS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 16:33:18 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-media <linux-media@vger.kernel.org>
-In-Reply-To: <1267306076.16186.103.camel@localhost>
-References: <1267306076.16186.103.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 27 Feb 2010 21:33:15 +0000
-Message-ID: <1267306395.16186.110.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH firmware 6/6] Add firmware for lgs8g75
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S936282Ab0B0Vdq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:33:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933964Ab0B0Vdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 16:33:44 -0500
+Date: Sat, 27 Feb 2010 13:33:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Paris <eparis@redhat.com>
+cc: viro@zeniv.linux.org.uk, hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] notification: including fanotify
+In-Reply-To: <alpine.LFD.2.00.1002271323320.4513@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1002271331570.4513@localhost.localdomain>
+References: <1267218869.10582.12.camel@localhost> <alpine.LFD.2.00.1002271323320.4513@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is taken from the lgs8gxx driver as of 2.6.32-rc5.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
-The binary changes are omitted from this message as they are impossible
-to review.
 
-Ben.
+On Sat, 27 Feb 2010, Linus Torvalds wrote:
+>
+>  (b) the compile has obviously never been tested with any modern gcc 
+>      version. I get tons of warnings after the pull, like
 
- WHENCE     |    9 +++++++++
- lgs8g75.fw |  Bin 0 -> 262 bytes
- 2 files changed, 9 insertions(+), 0 deletions(-)
- create mode 100644 lgs8g75.fw
+In fact, this seems to be due to a commit that explicitly says:
 
-diff --git a/WHENCE b/WHENCE
-index d62468e..659e255 100644
---- a/WHENCE
-+++ b/WHENCE
-@@ -1184,3 +1184,12 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
-+Driver: lgs8gxx - Legend Silicon GB20600 demodulator driver
-+
-+File: lgs8g75.fw
-+
-+Licence: Unknown
-+
-+Found in hex form in kernel source.
-+
-+--------------------------------------------------------------------------
+				I do not add -Wpointer-sign to the fsnotify
+    code as there are still issues with kstrdup and strlen which would pop
+    out needless warnings.
 
+but then the patch actually has
+
+	--- a/fs/notify/Makefile
+	+++ b/fs/notify/Makefile
+	@@ -1,3 +1,5 @@
+	+EXTRA_CFLAGS   += -Wpointer-sign
+	+
+
+WTF? Which part of this was tested AT ALL? Clearly there was not even a 
+compile test going on.
+
+			Linus
