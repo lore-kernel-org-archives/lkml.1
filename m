@@ -1,200 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966312Ab0B0Lwo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 06:52:44 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:48093 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966055Ab0B0Lwm (ORCPT
+	id S966360Ab0B0LyF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 06:54:05 -0500
+Received: from mx03.syneticon.net ([78.111.66.105]:50003 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966055Ab0B0LyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 06:52:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ASJv3Qd6dU98Q3InPbktVblvtwweWYAO+R2fl59jq/ofWV6t/f1eFJZ3CIrATOZFyV
-         92mUbJQYPwI4mJN+Ov3qRAvzdTa73pIg5thrXDH5k4OhGmxrZzZTSJb5PeEGJl39qcyd
-         KZPUys9HLShKSfBYWvChPMuS4Ol/rBmEYHbDE=
-Date: Sat, 27 Feb 2010 12:52:36 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 1/2 v2] tracing: Add EXTRACT_TRACE_SYMBOL() macro
-Message-ID: <20100227115234.GG5130@nowhere>
-References: <20100226053831.050130780@goodmis.org> <20100226054125.278472284@goodmis.org>
+	Sat, 27 Feb 2010 06:54:01 -0500
+Message-ID: <4B8907CD.2090604@wpkg.org>
+Date: Sat, 27 Feb 2010 12:53:49 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100226054125.278472284@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.33] KMS radeon oops
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 12:38:32AM -0500, Steven Rostedt wrote:
-> The trace events that are created with the TRACE_EVENT family macros
-> can be read by binary readers, such as perf and trace-cmd. In order
-> to translate the binary data, the events also have a format file
-> associated with them. This format file explains the offset, size and
-> signedness of elements in the raw binary data of an event.
-> 
-> At the end of the format file, there is a description on how to print
-> this data. A helper function is used to map numbers into strings
-> called __print_symbolic(). A problem arises when these numbers are
-> defined as enums in the kernel. The macros that export this data into
-> the format file does not translate the enums into numbers. Thus we
-> have in the irq.h file:
-> 
->  #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
->  #define show_softirq_name(val)				\
-> 	__print_symbolic(val,				\
-> 			 softirq_name(HI),		\
-> 			 softirq_name(TIMER),		\
-> 			 softirq_name(NET_TX),		\
-> 			 softirq_name(NET_RX),		\
-> 			 softirq_name(BLOCK),		\
-> 			 softirq_name(BLOCK_IOPOLL),	\
-> 			 softirq_name(TASKLET),		\
-> 			 softirq_name(SCHED),		\
-> 			 softirq_name(HRTIMER),		\
-> 			 softirq_name(RCU))
-> 
-> 
-> 	TP_printk("vec=%d [action=%s]", __entry->vec,
-> 		  show_softirq_name(__entry->vec))
-> 
-> 
-> Which shows up in the event format file as:
-> 
->   print fmt: "vec=%d [action=%s]", REC->vec, __print_symbolic(REC->vec, { HI_SOFTIRQ, "HI" }, { TIMER_SOFTIRQ, "TIMER" }, { NET_TX_SOFTIRQ, "NET_TX" }, { NET_RX_SOFTIRQ, "NET_RX" }, { BLOCK_SOFTIRQ, "BLOCK" }, { BLOCK_IOPOLL_SOFTIRQ, "BLOCK_IOPOLL" }, { TASKLET_SOFTIRQ, "TASKLET" }, { SCHED_SOFTIRQ, "SCHED" }, { HRTIMER_SOFTIRQ, "HRTIMER" }, { RCU_SOFTIRQ, "RCU" })
-> 
-> 
-> The parser has no idea of how to translate "HI_SOFTIRQ" into a number.
-> 
-> This patch adds an EXTRACT_TRACE_SYMBOLS() macro that lets a trace header
-> define symbols that it uses, and will be converted into numbers.
-> These symbols will be shown in an "event_symbols" file in the event
-> directory.
-> 
-> Enums that use this also need to be converted into the following format:
-> 
->  #define ENUMS 				\
-> 	C(ENUM1)			\
-> 	C(ENUM2)			\
-> 	C(ENUM3)
-> 
->  #define C(name) name
->  enum { ENUMS };
->  #undef C
-> 
-> Then the trace header can do the following:
-> 
->   #define C(name)  TRACE_SYMBOL_PARSE(#name, name, sizeof(name))
->   EXTRACT_TRACE_SYMBOLS(mysyms, ENUMS)
-> 
-> For example, for the softirq names we can now have:
-> 
->  #define C(sirq) \
-> 	TRACE_SYMBOL_PARSE(#sirq, sirq##_SOFTIRQ, sizeof(sirq##_SOFTIRQ))
-> 
->  EXTRACT_TRACE_SYMBOLS(softirqs, SOFTIRQ_NAMES)
-> 
-> where the SOFTIRQ_NAMES are defined as:
-> 
->  #define SOFTIRQ_NAMES			\
-> 	C(HI),				\
-> 	C(TIMER),			\
-> 	C(NET_TX),			\
-> 	[...]
-> 	C(RCU)
->  #define C(name) name##_SOFTIRQ
->  enum { SOFTIRQ_NAMES, NR_SOFTIRQS };
->
-> 
-> This produces:
-> 
->    [tracing/]$ cat events/event_symbols
->    # Symbol:Size:Value
->    # =================
->    HI_SOFTIRQ:4:0
->    TIMER_SOFTIRQ:4:1
->    NET_TX_SOFTIRQ:4:2
->    NET_RX_SOFTIRQ:4:3
->    BLOCK_SOFTIRQ:4:4
->    BLOCK_IOPOLL_SOFTIRQ:4:5
->    TASKLET_SOFTIRQ:4:6
->    SCHED_SOFTIRQ:4:7
->    HRTIMER_SOFTIRQ:4:8
->    RCU_SOFTIRQ:4:9
+Looks like 2.6.33 doesn't like my radeon card after all:
 
-
-There is a risk of having a big mess in this file
-if we have various types of enums inside. I mean,
-it doesn't make the things easy for the tools as they will
-have to iterate through the whole list and sort it out
-using the suffixes (*_SOFTIRQ).
-
-We could perhaps have this per event subsystem?
-
-cat events/irq/event_symbols
-
-
->  	TRACE_PRINTKS()							\
-> Index: linux-trace.git/include/linux/tracepoint.h
-> ===================================================================
-> --- linux-trace.git.orig/include/linux/tracepoint.h	2010-02-12 13:35:15.000000000 -0500
-> +++ linux-trace.git/include/linux/tracepoint.h	2010-02-25 22:47:10.000000000 -0500
-> @@ -292,4 +292,6 @@ static inline void tracepoint_synchroniz
->  		assign, print, reg, unreg)			\
->  	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
->  
-> +#define EXTRACT_TRACE_SYMBOLS(name, symbols)
+[  567.176339] BUG: unable to handle kernel paging request at 00007fffa555cf00
+[  567.176342] IP: [<00007fffa555cf00>] 0x7fffa555cf00
+[  567.176347] PGD 23c383067 PUD 0 
+[  567.176349] Oops: 0010 [#1] SMP 
+[  567.176351] last sysfs file: /sys/devices/system/cpu/cpu7/cache/index2/shared_cpu_map
+[  567.176353] CPU 1 
+[  567.176355] Pid: 13169, comm: X Not tainted 2.6.33-desktop-1mnb #1 DX58SO/        
+[  567.176357] RIP: 0010:[<00007fffa555cf00>]  [<00007fffa555cf00>] 0x7fffa555cf00
+[  567.176360] RSP: 0018:ffff880218d05dc0  EFLAGS: 00010086
+[  567.176361] RAX: ffff88020c339e28 RBX: ffffffff816606f0 RCX: 0000000000000000
+[  567.176362] RDX: 0000000000000000 RSI: 0000000000000003 RDI: ffff88020c339e28
+[  567.176364] RBP: ffff880218d05e08 R08: 0000000000000000 R09: 0000000000000246
+[  567.176365] R10: 0000000000000000 R11: 0000000000003246 R12: 0000000000000000
+[  567.176367] R13: ffffffff81660708 R14: 0000000000000000 R15: 0000000000000000
+[  567.176369] FS:  00007f7d75353700(0000) GS:ffff880008c20000(0000) knlGS:0000000000000000
+[  567.176370] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  567.176372] CR2: 00007fffa555cf00 CR3: 0000000232050000 CR4: 00000000000006e0
+[  567.176373] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  567.176375] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  567.176376] Process X (pid: 13169, threadinfo ffff880218d04000, task ffff880234bd4350)
+[  567.176378] Stack:
+[  567.176378]  ffffffff81041599 0000000200000000 0000000300000000 0000000000000003
+[  567.176381] <0> ffffffff81660700 0000000000000086 0000000000000003 0000000000000000
+[  567.176383] <0> 0000000000000000 ffff880218d05e48 ffffffff810488a8 0000000018d05e78
+[  567.176386] Call Trace:
+[  567.176391]  [<ffffffff81041599>] ? __wake_up_common+0x59/0x90
+[  567.176394]  [<ffffffff810488a8>] __wake_up+0x48/0x70
+[  567.176397]  [<ffffffff812996e0>] __vga_put+0x80/0xe0
+[  567.176399]  [<ffffffff81299c3d>] vga_put+0x7d/0xa0
+[  567.176401]  [<ffffffff8129a6e5>] vga_arb_write+0x3e5/0x510
+[  567.176404]  [<ffffffff811286a8>] vfs_write+0xb8/0x1a0
+[  567.176406]  [<ffffffff811290e1>] sys_write+0x51/0x90
+[  567.176410]  [<ffffffff813b965e>] ? do_device_not_available+0xe/0x10
+[  567.176413]  [<ffffffff8100a042>] system_call_fastpath+0x16/0x1b
+[  567.176415] Code:  Bad RIP value.
+[  567.176416] RIP  [<00007fffa555cf00>] 0x7fffa555cf00
+[  567.176418]  RSP <ffff880218d05dc0>
+[  567.176419] CR2: 00007fffa555cf00
+[  567.176421] ---[ end trace 82f996cc864ef16f ]---
 
 
 
-So this could also take the name of the subsystem.
-
-
-
-> +
->  #endif /* ifdef TRACE_EVENT (see note above) */
-> Index: linux-trace.git/include/trace/define_trace.h
-> ===================================================================
-> --- linux-trace.git.orig/include/trace/define_trace.h	2010-02-12 13:35:15.000000000 -0500
-> +++ linux-trace.git/include/trace/define_trace.h	2010-02-25 23:53:52.000000000 -0500
-> @@ -20,6 +20,7 @@
->  /* Prevent recursion */
->  #undef CREATE_TRACE_POINTS
->  
-> +#include <trace/trace_syms.h>
->  #include <linux/stringify.h>
->  
->  #undef TRACE_EVENT
-> @@ -43,6 +44,20 @@
->  #define DECLARE_TRACE(name, proto, args)	\
->  	DEFINE_TRACE(name)
->  
-> +#undef EXTRACT_TRACE_SYMBOLS
-> +#define EXTRACT_TRACE_SYMBOLS(name, symbols)	\
-> +	struct trace_syms ___trace_sym_##name[]					\
-> +	__attribute__((section("_trace_symbols"), aligned(4)))	= {	\
-> +		symbols							\
-> +	}
-> +
-> +#define TRACE_SYMBOL_PARSE(symbol, value, sym_size)			\
-> +	{								\
-> +		.name = symbol,						\
-> +		.val = (u64)(value),					\
-> +		.size = sym_size					\
-
-
-
-...which could be appended there.
-
-What do you think?
-
+-- 
+Tomasz Chmielewski
+http://wpkg.org
