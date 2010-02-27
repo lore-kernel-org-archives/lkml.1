@@ -1,110 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968077Ab0B0Ja7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 04:30:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52560 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968054Ab0B0Ja5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 04:30:57 -0500
-Subject: [PATCH] DRM: fix headers_check warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@bitplanet.net>,
-       Arnd Bergmann <arnd@arndb.de>, Dave Airlie <airlied@redhat.com>,
-       dri-devel@lists.sourceforge.net, David Airlie <airlied@linux.ie>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 27 Feb 2010 14:57:36 +0530
-Message-Id: <1267262856.26906.12.camel@i7.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 8bit
+	id S968082Ab0B0Jdu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 04:33:50 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:28199 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968054Ab0B0Jds convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 04:33:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=T5t6OtOVaXGoOyAjslqv5q+6D9JEqkssxytcHHU2047806qpjXbdYwEAX6WBWY9W4B
+         W8pLmEqdW3jKb/Amx787nOERLOuvyzPjXuH+OhgNlWBDLOIMdVTN9FLWelduFVr//pyX
+         k7XbXUlnzXomCAJqUE1mVAwdUkgK2ClO2Abqs=
+MIME-Version: 1.0
+In-Reply-To: <20100226190100.GQ10145@sci.fi>
+References: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
+	 <b170af451002260238p29c7db97nd50154bf7288ef42@mail.gmail.com>
+	 <20100226081418.5902446f.akpm@linux-foundation.org>
+	 <b170af451002260933i6a7a5e1el619f8e71c3ae0bc8@mail.gmail.com>
+	 <20100226190100.GQ10145@sci.fi>
+Date: Sat, 27 Feb 2010 10:33:46 +0100
+Message-ID: <b170af451002270133v6c44a6bcnf5751a6338c61a63@mail.gmail.com>
+Subject: Re: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep 
+	(w. timeout) until wake_up
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+W dniu 26 lutego 2010 20:01 użytkownik Ville Syrjälä <syrjala@sci.fi> napisał:
+> Disabling the condition check doesn't make sense.
+>
+> You could use a completion.
+>
+> init_completion(vbl_irq);
+> enable_vbl_irq();
+> wait_for_completion(vbl_irq);
+> disable_vbl_irq();
+> and call complete(vbl_irq) in the interrupt handler.
+>
+> The same would of course work with just some flag or counter
+> and a wait queue.
 
-Fixed following headers_check warnings:
-  CHECK   include/drm (14 files)
- include/drm/drm_mode.h:84: found __[us]{8,16,32,64} type without #include <linux/types.h>
- include/drm/i915_drm.h:119: found __[us]{8,16,32,64} type without #include <linux/types.h>
- include/drm/mga_drm.h:260: found __[us]{8,16,32,64} type without #include <linux/types.h>
- include/drm/radeon_drm.h:758: found __[us]{8,16,32,64} type without #include <linux/types.h>
- include/drm/via_drm.h:117: found __[us]{8,16,32,64} type without #include <linux/types.h>
+Ouch, I can see it gone bad already.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Kristian Høgsberg <krh@bitplanet.net>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Dave Airlie <airlied@redhat.com>
----
- include/drm/drm_mode.h   |    2 ++
- include/drm/i915_drm.h   |    1 +
- include/drm/mga_drm.h    |    1 +
- include/drm/radeon_drm.h |    1 +
- include/drm/via_drm.h    |    1 +
- 5 files changed, 6 insertions(+), 0 deletions(-)
+Firstly I simply just wanted to avoid condition in wait_event_*. It
+looked unnecessary as I got interrupts (signals). So I started playing
+with other solutions (like my wait_interruptible_timeout where I had
+not full understanding of waking up) and finally started analyzing
+over-complex things like completions.
 
-diff --git a/include/drm/drm_mode.h b/include/drm/drm_mode.h
-index c5ba163..c5aa66d 100644
---- a/include/drm/drm_mode.h
-+++ b/include/drm/drm_mode.h
-@@ -27,6 +27,8 @@
- #ifndef _DRM_MODE_H
- #define _DRM_MODE_H
- 
-+#include <linux/types.h>
-+
- #define DRM_DISPLAY_INFO_LEN	32
- #define DRM_CONNECTOR_NAME_LEN	32
- #define DRM_DISPLAY_MODE_LEN	32
-diff --git a/include/drm/i915_drm.h b/include/drm/i915_drm.h
-index b64a8d7..5cf7f5b 100644
---- a/include/drm/i915_drm.h
-+++ b/include/drm/i915_drm.h
-@@ -27,6 +27,7 @@
- #ifndef _I915_DRM_H_
- #define _I915_DRM_H_
- 
-+#include <linux/types.h>
- #include "drm.h"
- 
- /* Please note that modifications to all structs defined here are
-diff --git a/include/drm/mga_drm.h b/include/drm/mga_drm.h
-index 3ffbc47..ae23df9 100644
---- a/include/drm/mga_drm.h
-+++ b/include/drm/mga_drm.h
-@@ -35,6 +35,7 @@
- #ifndef __MGA_DRM_H__
- #define __MGA_DRM_H__
- 
-+#include <linux/types.h>
- #include "drm.h"
- 
- /* WARNING: If you change any of these defines, make sure to change the
-diff --git a/include/drm/radeon_drm.h b/include/drm/radeon_drm.h
-index 39537f3..459ff45 100644
---- a/include/drm/radeon_drm.h
-+++ b/include/drm/radeon_drm.h
-@@ -33,6 +33,7 @@
- #ifndef __RADEON_DRM_H__
- #define __RADEON_DRM_H__
- 
-+#include <linux/types.h>
- #include "drm.h"
- 
- /* WARNING: If you change any of these defines, make sure to change the
-diff --git a/include/drm/via_drm.h b/include/drm/via_drm.h
-index fd11a5b..23880b0 100644
---- a/include/drm/via_drm.h
-+++ b/include/drm/via_drm.h
-@@ -24,6 +24,7 @@
- #ifndef _VIA_DRM_H_
- #define _VIA_DRM_H_
- 
-+#include <linux/types.h>
- #include "drm.h"
- 
- /* WARNING: These defines must be the same as what the Xserver uses.
+I'll just use some one more variable and some more basic solution.
+
+Thanks for help and sorry for taking your time. I hope to provide at
+least some of you dynamic radeon PM in return :)
+
 -- 
-1.6.6
-
-
+Rafał
