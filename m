@@ -1,198 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369Ab0B0Kjp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 05:39:45 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:58799 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754393Ab0B0Kjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 05:39:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=G13mupZAvT3O8pVP8ECgF36U3lphAq4Zq+9fFnMuaZ++a+aBS4rE8Vxw7rGzb5EWTR
-         fRXzbwtJbP6lklo0xhXDRekAp0YheWq0Etq/cRtgF6/MzGI+doH89pQilj1Gs1IsIm40
-         OyIHwzauorAzsYSqXpnMuQo6mo5S7mrrwxZU8=
-Date: Sat, 27 Feb 2010 11:39:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 2/2][RFC] tracing: Add extract out softirq names used
-	by irq trace events
-Message-ID: <20100227103937.GF5130@nowhere>
-References: <20100212190907.954438555@goodmis.org> <20100212191037.283998401@goodmis.org> <1266057549.557.59605.camel@twins> <1266059470.24271.116.camel@gandalf.stny.rr.com> <20100225234806.GD5592@nowhere> <1267151179.6328.86.camel@gandalf.stny.rr.com>
+	id S965434Ab0B0Kod (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:44:33 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:56258 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965301Ab0B0Koa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 05:44:30 -0500
+Date: Sat, 27 Feb 2010 11:39:34 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [git pull] PCMCIA updates for 2.6.34
+Message-ID: <20100227103934.GA4430@comet.dominikbrodowski.net>
+Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1267151179.6328.86.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 09:26:19PM -0500, Steven Rostedt wrote:
-> On Fri, 2010-02-26 at 00:48 +0100, Frederic Weisbecker wrote:
-> 
-> > 
-> > And what about a kind of macro that could have two effects:
-> > 
-> > - define the enum
-> > - define the nr -> name pairs for resolution
-> > 
-> > This could be something like:
-> > 
-> > define_trace_enum(softirq)
-> > 	enum_entry(TASKLET, 4), //don't know if it's 4, just an example
-> > 	enum_entry(HRTIMER, 5),
-> > end_trace_enum()
-> 
-> That wont work. Unless it is in a separate file that can be included
-> over and over again. That is we would need:
-> 
-> ** include/linux/softirq_names.h:
-> 
-> define_trace_enum(softirq)
-> 	enum_entry(HI, 0),
-> 	enum_entry(TIMER, 1),
-> 	[...]
-> end_trace_enum();
-> 
-> 
-> 
-> ** include/trace/define_enum.h:
-> 
-> #define define_trace_enum(name)  enum name {
-> #define enum_entry(a, b)  a = b
-> #define end_trace_enum()  }
-> 
-> 
-> ** include/linux/interrupt.h
-> 
-> /* instead of declaring an enum we have */
-> 
-> #include <trace/define_enum.h>
-> #include <linux/softirq_names.h>
-> 
-> Here we could do something special with that file.
+Linus,
 
+several PCMCIA updates for 2.6.33 are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git master
 
+Please pull from that location. The diffstat and list of changes is below,
+the individual diffs are sent (at least) to the linux-pcmcia list.
 
-Right.
+Thanks,
+        Dominik
 
+Dominik Brodowski (41):
+      pcmcia: make use of pcmcia_dev_resume() return value
+      pcmcia: remove remaining unused IRQ_FIRST_SHARED parameter
+      pcmcia: do not meddle with already assigned resources
+      pcmcia: validate CIS, not CIS cache.
+      pcmcia: cleanup pccard_validate_cis()
+      pcmcia: improve check for same card in slot after resume
+      pcmcia: CardBus doesn't need CIS access
+      pcmcia: call CIS cleanup from ds.c
+      pcmcia: rsrc_nonstatic io memory probe improvements
+      pcmcia: do not lock socket driver module in pcmcia_get_socket()
+      pcmcia: do not lock socket driver module on card insert
+      pcmcia: remove useless indirection
+      pcmcia: remove some rsrc_mgr indirections
+      pcmcia: m32r uses static socket resources
+      pcmcia: m8xx_pcmcia.c should use iodyn resource manager
+      pcmcia: move cistpl.c into pcmcia module
+      pcmcia: remove remaining rsrc_mgr indirections
+      pcmcia: do not use resource manager on !PCMCIA
+      pcmcia: add locking to set_mem_map()
+      pcmcia: also lock fake and cache CIS by ops_mutex
+      pcmcia: lock ops->set_io_map()
+      pcmcia: lock ops->set_socket
+      pcmcia: properly lock skt->irq, skt->irq_mask
+      pcmcia: protect s->device_count
+      pcmcia: add locking to struct pcmcia_socket->pcmcia_state()
+      pcmcia: simplify locking
+      pcmcia: add locking documentation
+      pcmcia: assert locking to struct pcmcia_device
+      pcmcia: use mutex for dynid lock
+      pcmcia: use ops_mutex for rsrc_{mgr,nonstatic} locking
+      pcmcia: use pccardd to handle eject, insert, suspend and resume requests
+      pcmcia: delay re-scanning and re-querying of PCMCIA bus
+      pcmcia: use state machine for extended requery
+      pcmcia: avoid sysfs-related lockup for cardbus
+      pcmcia: avoid prod_id memleak
+      pcmcia: add locking to pcmcia_{read,write}_cis_mem
+      pcmcia: handle error in serial_cs config calls
+      pcmcia: use read_cis_mem return value
+      pcmcia: remove useless msleep in ds.c
+      pcmcia: allow for extension of resource interval
+      pcmcia: validate late-added resources
 
+H Hartley Sweeten (1):
+      cm4000_cs.c: Remove unnecessary cast
 
-> 
-> > 
-> > (My naming sucks, as usual).
-> > 
-> > In normal headers, it would define an enum:
-> > 
-> > enum softirq {
-> > 	TASKLET = 4,
-> > 	HRTIMER = 5,
-> > };
-> > 
-> > And in the file that has DEFINE_TRACEPOINT:
-> > 
-> > /* can be in ftrace_event.h */
-> > struct resolve_enum {
-> > 	const char *name;
-> > 	int val;
-> > };
-> > 
-> > struct resolve_enum softirq = { //come from define_trace_enum()
-> > 	{"TASKLET", 4}, //come from enum_entry()
-> > 	{"HRTIMER", 5},
-> > 	{ NULL, 0}, /* end */
-> > };
-> > 
-> > /* This can be used from the trace_event macro */
-> > const char *softirq_name(int nr)
-> > {
-> > 	return resolve_enum[nr];
-> > }
-> > 
-> > 
-> > And then you can get back the struct resolve_enum softirq
-> > to export the values to debugfs, may be by storing such
-> > structures in a section (and adding the name of the enum)
-> > 
-> > This has the advantage of beeing sync with core header
-> > changes, but this has the drawback of beeing less readable
-> > to define an enum usable from a TRACE_EVENT (especially
-> > if I define the naming personally).
-> > 
-> 
-> 
-> This just gets ugly and I'm not sure people would like doing this. It
-> also requires that you number the enums specifically.
+Michal Marek (1):
+      pcmcia: fix yenta dependency on PCCARD_NONSTATIC
 
+Márton Németh (1):
+      pcmcia: make Open Firmware device id constant
 
-Yeah :-(
+Uwe Kleine-König (3):
+      pcmcia/bfin_cf: don't check platform_get_irq's return value against zero
+      pcmcia/at91_cf: don't redefine SZ_2K
+      pcmcia/omap_cf: don't redefine SZ_2K
 
+Wolfram Sang (2):
+      pcmcia/yenta: add module parameter for O2 speedups
+      pcmcia/i82365: fix typos in comments
 
-
-> 
-> A better way could be this:
-> 
-> ** include/linux/interrupt.h
-> 
-> #define SOFTIRQ_NAMES 	\
-> 	C(HI),		\
-> 	C(TIMER),	\
-> 	[...]		\
-> 	C(RCU)
-> 
-> #define C(name)		name##_SOFTIRQ
-> 
-> enum { SOFTIRQ_NAMES, NR_SOFTIRQS };
-> 
-> #undef C
-> 
-> And in the trace file we could do:
-> 
-> #define C(name)  { #name, name##_SOFTIRQ, sizeof(name##_SOFTIRQ) }
-> 
-> struct {
-> 	char *name;
-> 	int val;
-> 	int size;
-> } softirq_names[] __attribute__((section("trace_syms"))) =
->   { SOFTIRQ_NAMES };
-> 
-> #undef C
-> 
-> 
-> This way we don't need to number every enum, or have to move the enum
-> into another file. My question is...
-> 
-> Would the following be acceptable in normal headers?
-> 
-> #define ENUM_NAMES  	\
-> 	C(a),		\
-> 	C(b),		\
-> 	...
-> 
-> #define C(name) name
-> 
-> enum { ENUM_NAMES };
-> 
-> #undef C
-
-
-
-Could be acceptable, this should only concern rare enums I
-guess.
-
-
-
-> -- Steve
-> 
-> 
-
+ Documentation/pcmcia/locking.txt |  118 ++++++++
+ drivers/char/pcmcia/cm4000_cs.c  |    2 +-
+ drivers/net/pcmcia/smc91c92_cs.c |    6 +-
+ drivers/pcmcia/Kconfig           |    9 +-
+ drivers/pcmcia/Makefile          |    4 +-
+ drivers/pcmcia/at91_cf.c         |    2 -
+ drivers/pcmcia/bfin_cf_pcmcia.c  |    2 +-
+ drivers/pcmcia/cardbus.c         |  175 +----------
+ drivers/pcmcia/cistpl.c          |  606 +++++++++++++++++++++-----------------
+ drivers/pcmcia/cs.c              |  312 +++++++++-----------
+ drivers/pcmcia/cs_internal.h     |   89 ++----
+ drivers/pcmcia/ds.c              |  333 ++++++++++++---------
+ drivers/pcmcia/electra_cf.c      |    2 +-
+ drivers/pcmcia/i82365.h          |    4 +-
+ drivers/pcmcia/m32r_cfc.c        |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c     |    4 +-
+ drivers/pcmcia/o2micro.h         |   45 ++-
+ drivers/pcmcia/omap_cf.c         |    2 -
+ drivers/pcmcia/pcmcia_ioctl.c    |   42 ++--
+ drivers/pcmcia/pcmcia_resource.c |  169 +++++++++---
+ drivers/pcmcia/rsrc_mgr.c        |   48 ---
+ drivers/pcmcia/rsrc_nonstatic.c  |  285 +++++++++++-------
+ drivers/pcmcia/socket_sysfs.c    |  196 ++-----------
+ drivers/pcmcia/yenta_socket.c    |    5 +
+ drivers/serial/serial_cs.c       |    7 +-
+ include/pcmcia/ds.h              |    2 +-
+ include/pcmcia/ss.h              |   40 ++-
+ 27 files changed, 1257 insertions(+), 1254 deletions(-)
+ create mode 100644 Documentation/pcmcia/locking.txt
