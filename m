@@ -1,47 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751089Ab0B0FL3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 00:11:29 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:35336 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831Ab0B0FL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 00:11:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=XrGqRi7QXhnoPoFSCp2mIJ2ZLEwRN0+IofHOFe7WdUs0Ao7JhHCviEI6OHEx3U1/nS
-         Myen1oM1uTGdM+sw23fL8F0uHvu645S1xkUU+73SSWGHs/pDykE7eCwZ+FSsS5W2K2jK
-         8gZFTK9Cg+lmFC3OPAtwlR2NofllzkT2ws0/w=
+	id S1751145Ab0B0FRX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 00:17:23 -0500
+Received: from kroah.org ([198.145.64.141]:54982 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750708Ab0B0FRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 00:17:22 -0500
+Date: Fri, 26 Feb 2010 21:17:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-usb@vger.kernel.org,
+       werner@guyane.dyn-o-saur.com, Marcus Meissner <meissner@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
+Message-ID: <20100227051737.GA14976@kroah.com>
+References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com> <20100227035639.GA11680@kroah.com> <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com> <20100227041815.GA12956@kroah.com> <alpine.LFD.2.00.1002262022090.4513@localhost.localdomain> <d9def9db1002262034p55cd569n6c423741c276798d@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20100226183944.56bfee13@droptest.queued.net>
-References: <cover.1267225701.git.gardner.ben@gmail.com>
-	 <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
-	 <20100226183944.56bfee13@droptest.queued.net>
-Date: Fri, 26 Feb 2010 23:11:26 -0600
-Message-ID: <808c8e9d1002262111i62703fd0t300616bc742deec5@mail.gmail.com>
-Subject: Re: [PATCH 1/3] gpiolib: add gpio_set_direction()
-From: Ben Gardner <gardner.ben@gmail.com>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9def9db1002262034p55cd569n6c423741c276798d@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How about something like the following for set_direction, so we're not
-> comparing magic bits?
->
-> /* gpio direction flags */
-> #define GPIO_DIR_NONE 0
-> #define GPIO_DIR_INPUT (1 << 0)
-> #define GPIO_DIR_OUTPUT (1 << 1)
+On Sat, Feb 27, 2010 at 05:34:27AM +0100, Markus Rechberger wrote:
+> On Sat, Feb 27, 2010 at 5:29 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> >
+> > On Fri, 26 Feb 2010, Greg KH wrote:
+> >>
+> >> Yes, and that patch didn't touch the iso frames. ?That happens later on
+> >> in the functions that were modified. ?The patch should not have had any
+> >> affect on iso transfers. ?Unless I'm missing something?
+> >
+> > Hmm. What seems to happen is that for an isochronous transfer, the buffer
+> > is split for each microframe. No?
+> >
+> 
+> exactly. and each microframe has its own buffer length identifier.
+> 
+> the current behaviour breaks VMware, QEMU and virtualbox .. probably
+> other things too.
+> 
+> 
+> > So the total length may be in 'urb->actual_length', but the actual data in
+> > the buffer may not be contiguous, because it's created from multiple
+> > smaller frames, some of which might not be full length?
+> >
+> 
+> yes, it's only contiguous for BULK.
+> 
+> > I dunno. That would explain the problem - actual_length is correct, but
+> > the 'copy_to_user()' still doesn't copy all the data, because it's
+> > fragmented.
+> >
+> 
+> no you got it, but your patch does not work. The best way would be to
+> revert it if someone wants to speed up BULK it should go down another
+> path, leaving the old working implementation untouched.
 
-Sounds good and it looks like those macros aren't used anywhere else.
-Maybe also add a define for inout?
-#define GPIO_DIR_INOUT (GPIO_DIR_INPUT | GPIO_DIR_OUTPUT)
+Hm, so it's back to the original idea of just doing a kzalloc of the
+initial buffer, that should solve the problem that Marcus found.
 
-Ben
+I'll go dig that back up and if you could test it, that would be most
+appreciated.
+
+thanks,
+
+greg k-h
