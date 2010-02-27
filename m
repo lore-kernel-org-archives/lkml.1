@@ -1,16 +1,16 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967917Ab0B0HXb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 02:23:31 -0500
-Received: from bosmailout16.eigbox.net ([66.96.187.16]:33735 "EHLO
-	bosmailout16.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967906Ab0B0HX0 (ORCPT
+	id S967909Ab0B0HXs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 02:23:48 -0500
+Received: from bosmailout07.eigbox.net ([66.96.187.7]:48415 "EHLO
+	bosmailout07.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967854Ab0B0HXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 02:23:26 -0500
-X-EN-OrigOutIP: 10.20.18.8
-X-EN-IMPSID: mus31d00K0ASroS01us3FD
-Message-ID: <4B88BCBA.5050509@jaysonking.com>
-Date: Sat, 27 Feb 2010 00:33:30 -0600
+	Sat, 27 Feb 2010 02:23:39 -0500
+X-EN-OrigOutIP: 10.20.18.13
+X-EN-IMPSID: murg1d0010GvDVm01urgBY
+Message-ID: <4B88BCAB.7000205@jaysonking.com>
+Date: Sat, 27 Feb 2010 00:33:15 -0600
 From: "Jayson R. King" <dev@jaysonking.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Thunderbird/3.0.1
 MIME-Version: 1.0
@@ -20,8 +20,7 @@ CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>,
        linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Jayson King <dev@jaysonking.com>
-Subject: [11/11] ext4: Implement range_cyclic in ext4_da_writepages instead
- of write_cache_pages
+Subject: [09/11] vfs: Add no_nrwrite_index_update writeback control flag
 References: <4B88BA1B.4050500@jaysonking.com>
 In-Reply-To: <4B88BA1B.4050500@jaysonking.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -35,97 +34,82 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date: Sat Feb 14 10:42:58 2009 -0500
-Subject: ext4: Implement range_cyclic in ext4_da_writepages instead of write_cache_pages
+Date: Thu Oct 16 10:09:17 2008 -0400
+Subject: vfs: Add no_nrwrite_index_update writeback control flag
 
-commit 2acf2c261b823d9d9ed954f348b97620297a36b5 upstream.
+commit 17bc6c30cf6bfffd816bdc53682dd46fc34a2cf4 upstream.
 
-With delayed allocation we lock the page in write_cache_pages() and
-try to build an in memory extent of contiguous blocks.  This is needed
-so that we can get large contiguous blocks request.  If range_cyclic
-mode is enabled, write_cache_pages() will loop back to the 0 index if
-no I/O has been done yet, and try to start writing from the beginning
-of the range.  That causes an attempt to take the page lock of lower
-index page while holding the page lock of higher index page, which can
-cause a dead lock with another writeback thread.
-
-The solution is to implement the range_cyclic behavior in
-ext4_da_writepages() instead.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12579
+If no_nrwrite_index_update is set we don't update nr_to_write and
+address space writeback_index in write_cache_pages.  This change
+enables a file system to skip these updates in write_cache_pages and do
+them in the writepages() callback.  This patch will be followed by an
+ext4 patch that make use of these new flags.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+CC: linux-fsdevel@vger.kernel.org
+[dev@jaysonking.com: Modified the patch to account for subsequent changes in mainline being cherry-picked earlier for 2.6.27.y.]
 Signed-off-by: Jayson R. King <dev@jaysonking.com>
 
 ---
- fs/ext4/inode.c |   21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
+ include/linux/writeback.h |    9 +++++++++
+ mm/page-writeback.c       |   14 +++++++++-----
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-diff -urNp linux-2.6.27.orig/fs/ext4/inode.c linux-2.6.27/fs/ext4/inode.c
---- linux-2.6.27.orig/fs/ext4/inode.c	2010-02-26 14:28:11.222252883 -0600
-+++ linux-2.6.27/fs/ext4/inode.c	2010-02-26 14:28:16.190252556 -0600
-@@ -2456,6 +2456,7 @@ static int ext4_da_writepages(struct add
- 	struct inode *inode = mapping->host;
- 	int no_nrwrite_index_update;
- 	long pages_written = 0, pages_skipped;
-+	int range_cyclic, cycled = 1, io_done = 0;
- 	int needed_blocks, ret = 0, nr_to_writebump = 0;
- 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
+diff -urNp linux-2.6.27.orig/include/linux/writeback.h linux-2.6.27/include/linux/writeback.h
+--- linux-2.6.27.orig/include/linux/writeback.h	2010-02-26 14:26:43.084252730 -0600
++++ linux-2.6.27/include/linux/writeback.h	2010-02-26 14:26:48.468252521 -0600
+@@ -62,6 +62,15 @@ struct writeback_control {
+ 	unsigned for_writepages:1;	/* This is a writepages() call */
+ 	unsigned range_cyclic:1;	/* range_start is cyclic */
+ 	unsigned more_io:1;		/* more io to be dispatched */
++	/*
++	 * write_cache_pages() won't update wbc->nr_to_write and
++	 * mapping->writeback_index if no_nrwrite_index_update
++	 * is set.  write_cache_pages() may write more than we
++	 * requested and we want to make sure nr_to_write and
++	 * writeback_index are updated in a consistent manner
++	 * so we use a single control to update them
++	 */
++	unsigned no_nrwrite_index_update:1;
+ };
  
-@@ -2493,9 +2494,15 @@ static int ext4_da_writepages(struct add
- 	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
- 		range_whole = 1;
+ /*
+diff -urNp linux-2.6.27.orig/mm/page-writeback.c linux-2.6.27/mm/page-writeback.c
+--- linux-2.6.27.orig/mm/page-writeback.c	2010-02-26 14:26:43.085252646 -0600
++++ linux-2.6.27/mm/page-writeback.c	2010-02-26 14:26:48.469252852 -0600
+@@ -878,6 +878,7 @@ int write_cache_pages(struct address_spa
+ 	pgoff_t done_index;
+ 	int cycled;
+ 	int range_whole = 0;
++	long nr_to_write = wbc->nr_to_write;
  
--	if (wbc->range_cyclic)
-+	range_cyclic = wbc->range_cyclic;
-+	if (wbc->range_cyclic) {
- 		index = mapping->writeback_index;
--	else
-+		if (index)
-+			cycled = 0;
-+		wbc->range_start = index << PAGE_CACHE_SHIFT;
-+		wbc->range_end  = LLONG_MAX;
-+		wbc->range_cyclic = 0;
-+	} else
- 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+ 	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 		wbc->encountered_congestion = 1;
+@@ -985,9 +986,9 @@ continue_unlock:
+ 				}
+  			}
  
- 	mpd.wbc = wbc;
-@@ -2509,6 +2516,7 @@ static int ext4_da_writepages(struct add
- 	wbc->no_nrwrite_index_update = 1;
- 	pages_skipped = wbc->pages_skipped;
- 
-+retry:
- 	while (!ret && wbc->nr_to_write > 0) {
- 
- 		/*
-@@ -2563,6 +2571,7 @@ static int ext4_da_writepages(struct add
- 			pages_written += mpd.pages_written;
- 			wbc->pages_skipped = pages_skipped;
- 			ret = 0;
-+			io_done = 1;
- 		} else if (wbc->nr_to_write)
- 			/*
- 			 * There is no more writeout needed
-@@ -2571,6 +2580,13 @@ static int ext4_da_writepages(struct add
- 			 */
- 			break;
+-			if (wbc->nr_to_write > 0) {
+-				wbc->nr_to_write--;
+-				if (wbc->nr_to_write == 0 &&
++			if (nr_to_write > 0) {
++				nr_to_write--;
++				if (nr_to_write == 0 &&
+ 				    wbc->sync_mode == WB_SYNC_NONE) {
+ 					/*
+ 					 * We stop writing back only if we are
+@@ -1024,8 +1025,11 @@ continue_unlock:
+ 		end = writeback_index - 1;
+ 		goto retry;
  	}
-+	if (!io_done && !cycled) {
-+		cycled = 1;
-+		index = 0;
-+		wbc->range_start = index << PAGE_CACHE_SHIFT;
-+		wbc->range_end  = mapping->writeback_index - 1;
-+		goto retry;
+-	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+-		mapping->writeback_index = done_index;
++	if (!wbc->no_nrwrite_index_update) {
++		if (wbc->range_cyclic || (range_whole && nr_to_write > 0))
++			mapping->writeback_index = done_index;
++		wbc->nr_to_write = nr_to_write;
 +	}
- 	if (pages_skipped != wbc->pages_skipped)
- 		printk(KERN_EMERG "This should not happen leaving %s "
- 				"with nr_to_write = %ld ret = %d\n",
-@@ -2578,6 +2594,7 @@ static int ext4_da_writepages(struct add
  
- 	/* Update index */
- 	index += pages_written;
-+	wbc->range_cyclic = range_cyclic;
- 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
- 		/*
- 		 * set the writeback_index so that range_cyclic
+ 	return ret;
+ }
