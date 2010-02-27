@@ -1,116 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964898Ab0B0WdM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 17:33:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:35033 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936341Ab0B0WdK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 17:33:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JbMqudYV6KGN4Ba3Fuu8oDOh8BrdIN+T72ZzpyT2hHXU9UJVtLSiJ/yL8cxbNRBgvo
-         nYae8m4sMa2Aan+vwAqFxrcryVp12gv0LsLV7NKPyK1yo28NOyYlzedUNohZz0fNGpvP
-         B0c+VIMycdiJYcBuG1rqDS+qhn6h76CvonqRQ=
+	id S965988Ab0B0WtD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 17:49:03 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38924 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964920Ab0B0WtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 17:49:00 -0500
+Date: Sat, 27 Feb 2010 14:48:59 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/2] rcu: fixes for RCU lockdep
+Message-ID: <20100227224859.GB6846@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100225220624.GA7013@linux.vnet.ibm.com> <20100226115018.GA4519@elte.hu> <20100226174248.GF6733@linux.vnet.ibm.com> <20100227095115.GF31794@elte.hu> <20100227125953.GA15880@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <d9def9db1002271008j197d9a57md500c1ba44fc81c6@mail.gmail.com>
-References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com>
-	 <20100227051737.GA14976@kroah.com> <20100227052648.GA31418@kroah.com>
-	 <d9def9db1002262138q63c410b7ga7c04f35b6f154ff@mail.gmail.com>
-	 <20100227054808.GA32225@kroah.com>
-	 <d9def9db1002270300g7e256fc6n6fbb4fd08d951fb8@mail.gmail.com>
-	 <84144f021002270415r7c61236elb0208cd5d0821ab5@mail.gmail.com>
-	 <84144f021002270417j4d690ad2qf5db26b2b6dad232@mail.gmail.com>
-	 <20100227084906.6b05fa5e@jbarnes-piketon>
-	 <d9def9db1002271008j197d9a57md500c1ba44fc81c6@mail.gmail.com>
-Date: Sat, 27 Feb 2010 23:33:07 +0100
-Message-ID: <d9def9db1002271433x4cd27afagcf5bc135be50ec22@mail.gmail.com>
-Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
-From: Markus Rechberger <mrechberger@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-usb@vger.kernel.org, werner@guyane.dyn-o-saur.com,
-       Marcus Meissner <meissner@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100227125953.GA15880@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 7:08 PM, Markus Rechberger
-<mrechberger@gmail.com> wrote:
-> On Sat, Feb 27, 2010 at 5:49 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->> On Sat, 27 Feb 2010 14:17:14 +0200
->> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->>
->>> On Sat, Feb 27, 2010 at 2:15 PM, Pekka Enberg
->>> <penberg@cs.helsinki.fi> wrote:
->>> > On Sat, Feb 27, 2010 at 1:00 PM, Markus Rechberger
->>> > <mrechberger@gmail.com> wrote:
->>> >>> Linus, I know you didn't want to do a kzalloc, but it looks like
->>> >>> this is the easiest/simplest thing to do, unless you can think of
->>> >>> something else?
->>> >>
->>> >> do you have any idea what to cherrypick in order to get rid of that
->>> >> flickering with the intel GM45?
->>> >> The flickering itself occures randomly, it was not there with the
->>> >> original Ubuntu kernel (2.6.31 with alot patches)
->>> >> This is pretty much a standard graphicchip nowadays....
->>> >
->>> > Yeah, same here. I tried to bisect the damn thing but didn't find
->>> > any single commit. I think the problem was introduced in in the DRM
->>> > merge between 2.6.31 and 2.6.32-rc1. Some people suggested
->>> > privately that it might be related to frame buffer compression.
->>> > Unfortunately I wasn't able to revert that particular patch.
->>>
->>> Btw, after I reinstalled Ubuntu 9.10 from scratch for unrelated
->>> reasons, I haven't seen the flicker effect. Dunno if that's just a
->>> coincidence or if userspace has something to do with the bug.
->>
->> Some people reported ACPI related flicker due to lid detection taking a
->> long time and X periodically probing for it.  Maybe that's what you
->> were seeing?
->>
->
-> little bit offtopic there's another bug with the intel driver. Seems
-> like there's a memory pool which collects all the memory during the
-> runtime and especially makes the memory usage go up:
-> http://bugs.freedesktop.org/show_bug.cgi?id=26708
-> Maybe someone at Intel can have a closer look at that one...
->
-> another obvious bug seems to be offloading mpeg2 video to the GPU it
-> takes more CPU than decoding mpeg2 with software. Offloading is quite
-> important nowadays due HDTV. The only one which has working linux
-> support is NVidia with their closed source drivers.
->
+On Sat, Feb 27, 2010 at 01:59:53PM +0100, Ingo Molnar wrote:
+> 
+> here's another one:
+> 
+> [    0.000000] Memory: 914996k/1047744k available (15146k kernel code, 452k absent, 131584k reserved, 12516k data, 2552k init)
+> [    0.000000] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+> [    0.000000] 
+> [    0.000000] ===================================================
+> [    0.000000] [ INFO: suspicious rcu_dereference_check() usage. ]
+> [    0.000000] ---------------------------------------------------
+> [    0.000000] include/linux/cgroup.h:492 invoked rcu_dereference_check() without protection!
+> [    0.000000] 
+> [    0.000000] other info that might help us debug this:
+> [    0.000000] 
+> [    0.000000] 1 lock held by swapper/0:
+> [    0.000000]  #0:  (&rq->lock){......}, at: [<ffffffff81ec0bad>] init_idle+0x31/0x1ee
+> [    0.000000] 
+> [    0.000000] stack backtrace:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.33-tip+ #10563
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff810ad1c1>] lockdep_rcu_dereference+0xa1/0xb0
+> [    0.000000]  [<ffffffff81ec0cbd>] init_idle+0x141/0x1ee
+> [    0.000000]  [<ffffffff82ceff40>] sched_init+0x43a/0x4b6
+> [    0.000000]  [<ffffffff82cdcceb>] start_kernel+0x1b3/0x49e
+> [    0.000000]  [<ffffffff82cdc319>] x86_64_start_reservations+0x120/0x124
+> [    0.000000]  [<ffffffff82cdc46b>] x86_64_start_kernel+0x14e/0x15d
+> [    0.000000] Hierarchical RCU implementation.
+> [    0.000000] RCU-based detection of stalled CPUs is enabled.
+> [    0.000000] NR_IRQS:4352
+> 
+> on:
+> 
+> 1bc9767: Merge branch 'tracing/core'
 
-Intel Graphic seems to be the pure chaos with Linux ....
-I booted the old kernel again and did some debugging because the load
-of udevd sometimes goes up.. the netlink interface seems to flood udev
-with following message with ubuntu karmic 2.6.31
-LINE: change@/devices/pci0000:00/0000:00:02.0/drm/card0
-LINE: ACTION=change
-LINE: DEVPATH=/devices/pci0000:00/0000:00:02.0/drm/card0
-LINE: SUBSYSTEM=drm
-LINE: HOTPLUG=1
-LINE: MAJOR=226
-LINE: MINOR=0
-LINE: DEVNAME=dri/card0
-LINE: DEVTYPE=drm_minor
-LINE: SEQNUM=47819
+Thank you very much, found it trivially this time.  ;-)
 
-obviosly this seems to be solved with the newer kernel, but there we
-have that flickering issue and OpenGL support is messy
+> Config attached. This too seems to a sched-init artifact. Could we use 
+> inc_preempt_count() perhaps to make sure we have the preempt count disabled 
+> even on !PREEMPT? Instead of hacking more 'the scheduler is not initialized 
+> yet' checks into various debug checks?
 
-Aside of that some people sent me emails offlist that intel stopped
-working correctly for them starting from 2.6.27 on. Is anyone from
-Intel still working on the graphicdriver?
+This is based on plain RCU rather than RCU-sched, so inc_preempt_count()
+won't help in this case (though I expect that it might work very well
+in other cases).  So I hack another 'the scheduler is not initialized
+yet' check in a separate set of patches. :-(
 
-Some of our business customers are now switching to HDTV compatible
-systems and Intel seems to be a nogo right now, NVidia Tegra seems to
-have potential.
-
-Markus
+							Thanx, Paul
