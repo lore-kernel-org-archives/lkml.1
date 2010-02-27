@@ -1,92 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966764Ab0B0Avy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 19:51:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	id S966770Ab0B0AyB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 19:54:01 -0500
+Received: from mga01.intel.com ([192.55.52.88]:53796 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966734Ab0B0Avx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 19:51:53 -0500
-Message-ID: <4B886CA1.9050906@redhat.com>
-Date: Fri, 26 Feb 2010 18:51:45 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S966750Ab0B0AyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 19:54:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,549,1262592000"; 
+   d="scan'208";a="544405066"
+Subject: Re: [patch 1/1] Replace the memtype_lock spinlock with an rwlock.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20100226174319.537341172@gulag1.americas.sgi.com>
+References: <20100226174256.003433508@gulag1.americas.sgi.com>
+	 <20100226174319.537341172@gulag1.americas.sgi.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 26 Feb 2010 16:52:59 -0800
+Message-Id: <1267231979.2720.25.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Hello,
+On Fri, 2010-02-26 at 09:42 -0800, Robin Holt wrote:
+> While testing an application using the xpmem (out of kernel driver), we
+> noticed a significant page fault rate reduction of x86_64 with respect
+> to ia64.  For one test running with 256 cpus, one thread per cpu, it
+> took one minute, eight seconds for each of the threads to vm_insert_pfn
+> 2GB worth of pages.
 > 
-> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
-> I see about half the performance as XFS for sequential writes.
+> The slowdown was tracked to lookup_memtype which acquires the spinlock
+> memtype_lock.  This heavily contended lock was slowing down fault time.
 > 
-> I have checked the doc and tried several options, a few of which are shown
-> below (I have also tried the commit/journal_async/etc options but none
-> of them get the write speeds anywhere near XFS)?
-> 
-> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2
-> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
-> 
-> When it was XFS I used to get 400-600MiB/s for writes for the same RAID
-> volume.
-> 
-> How do I 'speed' up ext4?  Is it possible?
+> I quickly converted the spinlock to an rwlock.  This greatly improved
+> vm_insert_pfn time to 4.3 seconds for the above test.
 
-Aside from Dmitry's suggestion to time sync as well (although for 10G, you are
-likely not leaving much in cache) I'd ask:
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-What kernel version?  what xfsprogs/e2fsprogs version?
-
-Were the filesystems created to align with raid geometry?
-
-mkfs.xfs has done that forever; mkfs.ext4 only will do so (automatically)
-with recent kernel+e2fsprogs.
-
--Eric
-
-> raid0_11 disks: (XFS)
-> # /dev/md0        /r1             xfs     noatime         0       1
-> p63:/r1# dd if=/dev/zero of=bigfile1 bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 18.1021 s, 593 MB/s
-> p63:/r1#
+> As a theoretical test, I removed the lock around get_page_memtype to see
+> what the full impact of the single shared lock actually was.  With that
+> change, the vm_insert_pfn time dropped to 1.6 seconds.
 > 
-> raid0_11 disks: (EXT4)
-> # /dev/md0        /r1             ext4     noatime         0       1
-> # dd if=/dev/zero of=file bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 35.3741 s, 304 MB/s
-> p63:/r1#
-> 
-> Other tests (ext4)
-> p63:~# mount /dev/md0 /r1 -o data=writeback
-> p63:~# cd /r1
-> p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 39.8746 s, 269 MB/s
-> p63:/r1#
-> 
-> p63:~# mount /dev/md0 /r1 -o data=writeback,nobarrier
-> p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 40.0656 s, 268 MB/s
-> 
-> Justin.
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I do not think the current global lock to protect individual pages is
+> the "correct" method for protecting get/set of the page_memtype flag.
+> It seems like the locking should be located within the function that
+> gets and sets the flags and be locked by a per-page lock or protected
+> with an atomic update.
+
+I agree. Will you be willing to look into this and post a patch? Or else
+I can look at this and post a fix next week.
+
+thanks,
+suresh
 
