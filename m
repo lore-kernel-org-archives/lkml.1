@@ -1,104 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968056Ab0B0JLE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 04:11:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33138 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968044Ab0B0JK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 04:10:59 -0500
-Date: Sat, 27 Feb 2010 10:10:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs()
- again
-Message-ID: <20100227091043.GA31794@elte.hu>
-References: <20100207210250.GB8256@jenkins.home.ifup.org>
- <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
- <4B881097.1050505@kernel.org>
+	id S968063Ab0B0JZM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 04:25:12 -0500
+Received: from mailrelay004.isp.belgacom.be ([195.238.6.170]:18905 "EHLO
+	mailrelay004.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S968038Ab0B0JZJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 04:25:09 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApEBAENziEtR9vav/2dsb2JhbAAHpCKyUYR7BA
+Message-ID: <4B88E4F3.4010308@cauwe.org>
+Date: Sat, 27 Feb 2010 10:25:07 +0100
+From: Xavier Miller <xavier.miller@cauwe.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100205 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B881097.1050505@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>, nando@ccrma.Stanford.EDU,
+       Carsten Emde <ce@ceag.ch>
+Subject: Re: [ANNOUNCE] 2.6.33-rt3
+References: <alpine.LFD.2.00.1002241740410.4245@localhost.localdomain> <alpine.LFD.2.00.1002262041020.4245@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002262041020.4245@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+The name is -rt4, not -rt3
 
-> On 02/26/2010 02:26 AM, tip-bot for Ingo Molnar wrote:
-> > Commit-ID:  f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4
-> > Gitweb:     http://git.kernel.org/tip/f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Fri, 26 Feb 2010 11:17:16 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri, 26 Feb 2010 11:17:16 +0100
-> > 
-> > x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
-> > 
-> > Merge commit aef55d4922 mis-merged io_apic.c so we lost the
-> > arch_probe_nr_irqs() method.
-> > 
-> > This caused subtle boot breakages (udev confusion likely
-> > due to missing drivers) with certain configs.
-> > 
-> > Cc: H. Peter Anvin <hpa@zytor.com>
-> > Cc: Yinghai Lu <yinghai@kernel.org>
-> > LKML-Reference: <20100207210250.GB8256@jenkins.home.ifup.org>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  arch/x86/kernel/apic/io_apic.c |   22 ++++++++++++++++++++++
-> >  1 files changed, 22 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> > index 527390c..c13ab8f 100644
-> > --- a/arch/x86/kernel/apic/io_apic.c
-> > +++ b/arch/x86/kernel/apic/io_apic.c
-> > @@ -3874,6 +3874,28 @@ void __init probe_nr_irqs_gsi(void)
-> >  	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
-> >  }
-> >  
-> > +#ifdef CONFIG_SPARSE_IRQ
-> > +int __init arch_probe_nr_irqs(void)
-> > +{
-> > +	int nr;
-> > +
-> > +	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
-> > +		nr_irqs = NR_VECTORS * nr_cpu_ids;
-> > +
-> > +	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
-> > +#if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
-> > +	/*
-> > +	 * for MSI and HT dyn irq
-> > +	 */
-> > +	nr += nr_irqs_gsi * 16;
-> > +#endif
-> > +	if (nr < nr_irqs)
-> > +		nr_irqs = nr;
-> > +
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> >  static int __io_apic_set_pci_routing(struct device *dev, int irq,
-> >  				struct io_apic_irq_attr *irq_attr)
-> >  {
+Xavier Miller.
+
+Le 26/02/10 20:54, Thomas Gleixner a écrit :
+> We are pleased to announce the next update to our new preempt-rt
+> series.
 > 
-> for x86, with radix tree based irq_to_desc(),
-> removing arch_probe_nr_irqs is intentional. so we get more irq that could be used.
+>     - Update to 2.6.33
 > 
-> wonder if the udev for some of your test system have irq number limitation?
-
-was ancient udev: udev-095-17.fc6.
-
-	Ingo
+>     - rt fixes:
+> 
+>       	 Peter Zijlstra (1):
+>     	       highmem, -rt: Implement pfn and prot kmaps
+> 
+> 	Thomas Gleixner (2):
+>       	       x86: pci: Prevent mmconfig memory corruption
+>       	       mmc: omap_hsmmc: Fix the locking mess
+> 
+> A note on the development process:
+> 
+>   The rt/2.6.33 branch is now stabilization only. The rt/head branch
+>   will follow linus tree from now on, so it will inherit all
+>   (mis)features which come in the merge window.
+> 
+> Download locations:
+>    
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/
+> 
+> Git development branch:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+> 
+> Git release branch:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.33
+> 
+> Gitweb:
+>    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.33
+> 
+> Information on the RT patch can be found at:
+> 
+>    http://rt.wiki.kernel.org/index.php/Main_Page
+>  
+> To build the 2.6.33-rt3 tree, the following patches should be
+> applied:
+> 
+>    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.33.tar.bz2
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.33-rt3.bz2
+> 
+> Enjoy !
+> 
+>       tglx
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
