@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968501Ab0B0PON (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 10:14:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50042 "EHLO mx3.mail.elte.hu"
+	id S968510Ab0B0PQT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 10:16:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54901 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966882Ab0B0POM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 10:14:12 -0500
-Date: Sat, 27 Feb 2010 16:14:06 +0100
+	id S966882Ab0B0PQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 10:16:18 -0500
+Date: Sat, 27 Feb 2010 16:16:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86/debug change for v2.6.34
-Message-ID: <20100227151406.GA9791@elte.hu>
+Subject: [GIT PULL] x86/doc change for v2.6.34
+Message-ID: <20100227151608.GA10370@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,31 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-debug-for-linus git tree from:
+Please pull the latest x86-doc-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-debug-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-doc-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Alexey Dobriyan (1):
-      x86_64: Print modules like i386 does
+Jiri Kosina (1):
+      x86: Put 'nopat' in kernel-parameters
 
 
- arch/x86/kernel/dumpstack_64.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ Documentation/kernel-parameters.txt |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 0ad9597..907a90e 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -291,6 +291,7 @@ void show_registers(struct pt_regs *regs)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..5bf45c0 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1729,6 +1729,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	nomfgpt		[X86-32] Disable Multi-Function General Purpose
+ 			Timer usage (for AMD Geode machines).
  
- 	sp = regs->sp;
- 	printk("CPU %d ", cpu);
-+	print_modules();
- 	__show_regs(regs, 1);
- 	printk("Process %s (pid: %d, threadinfo %p, task %p)\n",
- 		cur->comm, cur->pid, task_thread_info(cur), cur);
++	nopat		[X86] Disable PAT (page attribute table extension of
++			pagetables) support.
++
+ 	norandmaps	Don't use address space randomization.  Equivalent to
+ 			echo 0 > /proc/sys/kernel/randomize_va_space
+ 
