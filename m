@@ -1,71 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968165Ab0B0KMp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 05:12:45 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:53245 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968123Ab0B0KMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 05:12:43 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-References: <20100207210250.GB8256@jenkins.home.ifup.org>
-	<tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
-	<4B881097.1050505@kernel.org> <20100227091043.GA31794@elte.hu>
-	<m1wrxzqarz.fsf@fess.ebiederm.org> <20100227095313.GG31794@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 27 Feb 2010 02:12:34 -0800
-In-Reply-To: <20100227095313.GG31794@elte.hu> (Ingo Molnar's message of "Sat\, 27 Feb 2010 10\:53\:13 +0100")
-Message-ID: <m1zl2voulp.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S968173Ab0B0KOx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:14:53 -0500
+Received: from lucidpixels.com ([75.144.35.66]:35706 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968123Ab0B0KOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 05:14:52 -0500
+Date: Sat, 27 Feb 2010 05:14:50 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Eric Sandeen <sandeen@redhat.com>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+In-Reply-To: <4B887548.50508@redhat.com>
+Message-ID: <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_04 7+ unique symbols in subject
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 T_TooManySym_03 6+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
 
->> Ingo do you have any idea what NR_IRQS or nr_irqs were/are on
->> that failing machine?
+
+On Fri, 26 Feb 2010, Eric Sandeen wrote:
+
+> Eric Sandeen wrote:
 >
-> Sorry, not - and the merge window doesnt leave much time to revisit the 
-> problem right now.
+> Oh, you need very recent util-linux-ng as well, and use libblkid from there
+> with:
 >
-> But the failures were very real and 100% caused by this: they resulted in 
-> non-existent /dev/sda* nodes and resulting fsck failure by rc.
+> [e2fsprogs] # ./configure --disable-libblkid
+>
+> Otherwise you can just feed mkfs.ext4 stripe & stride manually.
+>
+> -Eric
+>
 
-I have looked it over a second time and I have convinced myself
-that arch_probe_nr_irqs will in the worst case reduce nr_irqs,
-and never increase it beyond NR_IRQS.  So this revert (keeping
-arch_probe_nr_irqs) is safe.
+Hi,
 
-It makes little sense that a larger nr_irqs would be a problem,
-but clearly there are assumptions somewhere that we still need
-to remove.
+Even when set, there is still poor performance:
 
-Eric
+http://busybox.net/~aldot/mkfs_stride.html
+Raid Level: 0
+Number of Physical Disks: 11
+RAID chunk size (in KiB): 1024
+number of filesystem blocks (in KiB)
+mkfs.ext4 -b 4096 -E stride=256,stripe-width=2816
+
+p63:~# /usr/bin/time mkfs.ext4 -b 4096 -E stride=256,stripe-width=2816 /dev/md0
+mke2fs 1.41.10 (10-Feb-2009)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=256 blocks, Stripe width=2816 blocks
+335765504 inodes, 1343055824 blocks
+67152791 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=4294967296
+40987 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+         32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+         4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,
+         102400000, 214990848, 512000000, 550731776, 644972544
+
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+This filesystem will be automatically checked every 38 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+p63:~#
+
+p63:~# mount /dev/md0 /r1 -o nobarrier,data=writeback
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 39.3674 s, 273 MB/s
+p63:/r1#
+
+Still very slow?
+
+Let's try with some optimizations:
+p63:/r1#  mount /dev/md0 /r1 -o noatime,barrier=0,data=writeback,nobh,commit=100,nouser_xattr,nodelalloc,max_batch_time=0^C
+
+Still not anywhere near 500-600MiB/s of XFS:
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 30.4824 s, 352 MB/s
+p63:/r1#
+
+Am I doing something wrong/is there a flag I am missing that will speed it
+up?  Or is this performance for sequential writes on EXT4?
+
+Justin.
+
