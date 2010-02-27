@@ -1,72 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030658Ab0B0S43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 13:56:29 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:34730 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030492Ab0B0S42 (ORCPT
+	id S1030674Ab0B0S6c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 13:58:32 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38713 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030492Ab0B0S6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 13:56:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ehTBcqdxzs1kZfIhFrOTUXXGpgzwO/diSlgx7+5Gjzn7rapitpP2E0Fzm9+jNhV9m5
-         +P+/iSy/HTu7UoStcxmCiPksjjiBMZaxEx2a9pmJ7ugqFORs25ClJ7u0Es4OBQeqaxw9
-         Ujx7SaX73m5OPNJraq7d0OEOenkUgLXeTDZXY=
-From: Ben Gardner <gardner.ben@gmail.com>
-To: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       David Brownell <david-b@pacbell.net>
-Cc: Ben Gardner <gardner.ben@gmail.com>,
-       Andres Salomon <dilinger@collabora.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: [PATCH v2] cs5535-gpio: change input/output enable to match gpiolib expectations
-Date: Sat, 27 Feb 2010 12:56:17 -0600
-Message-Id: <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
-References: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
+	Sat, 27 Feb 2010 13:58:31 -0500
+Date: Sat, 27 Feb 2010 19:02:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Cox <alan@linux.intel.com>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 1/5] tty: Add a function to insert a string of
+ characters with the same flag
+Message-ID: <20100227190212.5958a7d5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100226221100.GA22352@kroah.com>
+References: <20100217130604.16008.86393.stgit@localhost.localdomain>
+	<20100226221100.GA22352@kroah.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The intent of the gpiolib set_direction_xxx functions is as follows:
-output: enable both input and output
-input: disable output, enable input
+On Fri, 26 Feb 2010 14:11:00 -0800
+Greg KH <greg@kroah.com> wrote:
 
-Change the cs5535 driver to do that.
+> On Wed, Feb 17, 2010 at 01:06:30PM +0000, Alan Cox wrote:
+> > The USB drivers often want to insert a series of bytes all with the same
+> > flag set - provide a helper for this case.
 
-Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
-CC: Andres Salomon <dilinger@collabora.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: David Brownell <dbrownell@users.sourceforge.net>
-CC: Jani Nikula <ext-jani.1.nikula@nokia.com>
----
- drivers/gpio/cs5535-gpio.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Thats the original set of patches I sent you - there was a second set
+which cleaned up the stuff which leaked from one patch to the next or did
+those vanish into the department of email oblivion somewhere ?
 
-diff --git a/drivers/gpio/cs5535-gpio.c b/drivers/gpio/cs5535-gpio.c
-index 0fdbe94..de064c9 100644
---- a/drivers/gpio/cs5535-gpio.c
-+++ b/drivers/gpio/cs5535-gpio.c
-@@ -171,6 +171,7 @@ static int chip_direction_input(struct gpio_chip *c, unsigned offset)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&chip->lock, flags);
-+	__cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_ENABLE);
- 	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
- 	spin_unlock_irqrestore(&chip->lock, flags);
- 
-@@ -185,6 +186,7 @@ static int chip_direction_output(struct gpio_chip *c, unsigned offset, int val)
- 	spin_lock_irqsave(&chip->lock, flags);
- 
- 	__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_ENABLE);
-+	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
- 	if (val)
- 		__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_VAL);
- 	else
--- 
-1.7.0
+Will take a look at it when I get some time and see whats up.
 
+Alan
