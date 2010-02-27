@@ -1,89 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030328Ab0B0RiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 12:38:18 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:63526 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030261Ab0B0RiR (ORCPT
+	id S1030358Ab0B0RvM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 12:51:12 -0500
+Received: from smtp104.sbc.mail.gq1.yahoo.com ([67.195.15.63]:21684 "HELO
+	smtp104.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030276Ab0B0RvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 12:38:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=MKLNS1Re2OQ1HPyjXTKHPdWvV5BUo8tSslh6EBXbDy77yzGWA29+cb4r4K2vlLQqH8
-         iUoTnRgF2SuL/laQh7CdxM8soQspFp5NJ4a/Euvzt2oEy5juFlAZhNJBhL1fyL/F2s2m
-         hAND8D+zgKQG4DPIsiAXYMqJogZ2ovBjc2Km0=
+	Sat, 27 Feb 2010 12:51:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZJyogkRcjYucLa8Rtvpvg3WQonaR9Uoto55m+RvuO6HhqScP1/ijbyIP4hUaZK1NXqs8PP1wCEmAQ7QQ/IZzXMZbJe094yzNJ4EQ2+q9ojNax5d2Pl2pncAmAOmCpVceujNNeR+T8TgkeYbapTWiRGphNwnpxDB0WuDF1Ejq/AM=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: AN59rR0VM1kcSUmYGEr1HNJnJyvZ_dgnAWBMBaDOlnj053pr868KwRUNVUFwOZ0Alhj0yMMUy_uoEotWP5TiLSnserHQJZMvSLc3bNwFd0Fe_MXBQV6OwMmr46X4BtFg__dcugqYdBCz4EU25UQboahAJ_kXyUtozUAvvvgav6UPobgJLuY5f644vq_sRi3YHg5w5nKOON34_U.5dnO5n74oK_qjjqq03mgke0Uw2RcAyQr6HC19VKTywm9KQxk.JxlfHm1aPFzxO7vxm_Qh.On5rJ2p_pHvjWfK7J4RRRi15j7nHleA8Oc-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/3] gpiolib: add gpio_set_direction()
+Date: Sat, 27 Feb 2010 09:51:08 -0800
+User-Agent: KMail/1.9.10
+Cc: Ben Gardner <gardner.ben@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andres Salomon <dilinger@collabora.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>
+References: <cover.1267225701.git.gardner.ben@gmail.com> <201002270824.14889.david-b@pacbell.net> <A6EC110C-1712-4AC7-B828-D7BB08278996@opensource.wolfsonmicro.com>
+In-Reply-To: <A6EC110C-1712-4AC7-B828-D7BB08278996@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-In-Reply-To: <1263918323.4283.707.camel@laptop>
-References: <1263825158.4283.590.camel@laptop> <20100118161836.GG10364@nowhere>
-	 <1263831973.4283.622.camel@laptop> <20100118165114.GJ10364@nowhere>
-	 <1263834806.4283.625.camel@laptop> <20100118172935.GM10364@nowhere>
-	 <1263903773.4283.657.camel@laptop> <1263907489.4283.663.camel@laptop>
-	 <20100119155508.GE8061@nowhere> <1263918323.4283.707.camel@laptop>
-Date: Sat, 27 Feb 2010 18:38:15 +0100
-Message-ID: <c62985531002270938k472c1292w5b3beb7a59446398@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: improve x86 event scheduling (v5)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <201002270951.09045.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/19 Peter Zijlstra <peterz@infradead.org>:
-> On Tue, 2010-01-19 at 16:55 +0100, Frederic Weisbecker wrote:
->> > Also, I see you set an ->unthrottle, but then don't implement it, but
->> > comment it as todo, which is strange because that implies its broken. If
->> > there's an ->unthrottle method it will throttle, so if its todo, the
->> > safest thing is to not set it.
->>
->>
->> Yeah, that's because I have a too vague idea on what is the purpose
->> of the unthrottle() callback.
->>
->> I've read the concerned codes that call this, several times, and I still
->> can't figure out what happens there, not sure what is meant by throttle
->> or unthrottle there :-/
->
-> OK, so not setting it is relatively safe.
->
-> As to what it does, it has to undo everything you do when
-> perf_event_overflow() returns true, which happens when ->unthrottle is
-> set and we get more than sysctl_perf_event_sample_rate/HZ events in a
-> jiffy.
->
-> If you look at the x86 implementation, you'll see that we simply disable
-> the hardware counter when the overflow call returns true, so the
-> unthrottle() callback simply enables it again.
+On Saturday 27 February 2010, Mark Brown wrote:
+> >>>  "none" ... since it's not even a GPIO, why would it show
+> >>>       up through the GPIO subsystem???
+> >>
+> >> I suspect this is intended to be tristated, which might be useful  
+> >> to add.
+> >
+> > That's what "input" means, as a rule:  no output driver
+> > is active with a GPIO configured as "input".  "Tristate"
+> > is an option that's relevant for outputs ... low, high,
+> > or not-driven.
+> 
+> Indeed, but some devices do implement a distinct tristate state for  
+> input mode pins (disabling interrupt generation logic and so on for  
+> example).
 
+That's a pretty sloppy usage of the term "tristate" ... yeah, there
+are people who take glee in abusing terminology to introduce confusion,
+and some of them write technical manuals with little regard to normal
+usage of terms (or trademarks, which do exist for "tristate").
 
-Ok, I understand better now what mean "throttle" and "unthrottle" here.
+IRQ generation logic should be disabled until request_irq() code paths
+report otherwise.   And regardless, whether a GPIO triggers an IRQ has
+nothing at all to do with its "direction".
 
-But looking at what happens when we reach an event storm point, the
-pending and subsequent
-overflows until the next tick are just cancelled and that's it (as
-it's using the software overflow
-handler, not the x86 one). So we throttle and it's what we would want
-to avoid a hang. If I remove my
-unthrottle stub, it won't throttle anymore.
+- Dave
 
-Theorically, the best would be to implement a true unthrottle
-callback, which would just clear dr7,
-really trivial. But I don't like this as ptrace events must always be
-reported. A userspace app
-could be polling a watchpointed variable, causing a lot of events, may
-be that could trigger
-a storm and then perf would throttle. Sure this is not supposed to
-happen, given the fact ptrace breakpoints
-are signaled to a debugger, which reduces the possible storm windows.
-But just imagine a silly user sets sysctl_perf_event_sample_rate to 1,
-then we would throttle at
-each events, breaking the ptrace determinism rules.
-
-So for now, I guess I need to remove my unthrottle stub, breakpoints
-don't want to throttle because
-of the ptrace determinism requirements.
