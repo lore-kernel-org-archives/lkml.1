@@ -1,50 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966190Ab0B0Lfh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 06:35:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46849 "EHLO mx3.mail.elte.hu"
+	id S966249Ab0B0Lgj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 06:36:39 -0500
+Received: from lucidpixels.com ([75.144.35.66]:58695 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965891Ab0B0Lfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 06:35:36 -0500
-Date: Sat, 27 Feb 2010 12:35:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Russ Anderson <rja@sgi.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Enable NMI on all cpus on UV
-Message-ID: <20100227113529.GA21756@elte.hu>
-References: <20100217165049.GA26331@sgi.com>
- <20100222103853.GA14522@elte.hu>
- <20100225172447.GC27785@sgi.com>
- <20100226092252.GJ15885@elte.hu>
- <20100226164912.GA24439@sgi.com>
+	id S965891Ab0B0Lgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 06:36:38 -0500
+Date: Sat, 27 Feb 2010 06:36:37 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Eric Sandeen <sandeen@redhat.com>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+In-Reply-To: <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan>
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
+ <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100226164912.GA24439@sgi.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Russ Anderson <rja@sgi.com> wrote:
 
-> Attached is a patch that cleans up Ingo's nits.
+On Sat, 27 Feb 2010, Justin Piszcz wrote:
 
-Applied, thanks Russ!
+> 
+> 
+> On Sat, 27 Feb 2010, Justin Piszcz wrote:
+> 
+> > 
+> > 
+> > On Sat, 27 Feb 2010, Justin Piszcz wrote:
+> > 
+> > > 
+> > > 
+> > > On Fri, 26 Feb 2010, Eric Sandeen wrote:
+> > >
+> 
+> Hi,
+> 
+> I have found the same results on 2 different systems:
+> 
+> It seems to peak at ~350MiB/s performance on mdadm raid, whether
+> a RAID-5 or RAID-0 (two separate machines):
+> 
+> The only option I found that allows it to go from:
+> 10737418240 bytes (11 GB) copied, 48.7335 s, 220 MB/s
+> to
+> 10737418240 bytes (11 GB) copied, 30.5425 s, 352 MB/s
+> 
+> Is the -o nodelalloc option.
+> 
+> How come it is not breaking the 350MiB/s barrier is the question?
+> 
+> Justin.
+> 
+>
 
->  		nodeid = early_get_nodeid();
->  		x86_platform.is_untracked_pat_range =  uv_is_untracked_pat_range;
-> +		x86_platform.nmi_init =  uv_nmi_init;
+Besides large sequential I/O, ext4 seems to be MUCH faster than XFS when
+working with many small files.
 
-I did a "s/ / /" here.
+EXT4
 
-	Ingo
+p63:/r1# sync; /usr/bin/time bash -c 'tar xf linux-2.6.33.tar; sync'
+0.18user 2.43system 0:02.86elapsed 91%CPU (0avgtext+0avgdata 5216maxresident)k
+0inputs+0outputs (0major+971minor)pagefaults 0swaps
+linux-2.6.33  linux-2.6.33.tar
+p63:/r1# sync; /usr/bin/time bash -c 'rm -rf linux-2.6.33; sync'
+0.02user 0.98system 0:01.03elapsed 97%CPU (0avgtext+0avgdata 5216maxresident)k
+0inputs+0outputs (0major+865minor)pagefaults 0swaps
+
+XFS
+
+p63:/r1# sync; /usr/bin/time bash -c 'tar xf linux-2.6.33.tar; sync'
+0.20user 2.62system 1:03.90elapsed 4%CPU (0avgtext+0avgdata 5200maxresident)k
+0inputs+0outputs (0major+970minor)pagefaults 0swaps
+p63:/r1# sync; /usr/bin/time bash -c 'rm -rf linux-2.6.33; sync'
+0.03user 2.02system 0:29.04elapsed 7%CPU (0avgtext+0avgdata 5200maxresident)k
+0inputs+0outputs (0major+864minor)pagefaults 0swaps
+
+So I guess that's the tradeoff, for massive I/O you should use XFS, else,
+use EXT4?
+
+I still would like to know however, why 350MiB/s seems to be the maximum
+performance I can get from two different md raids (that easily do 600MiB/s
+with XFS).
+
+Is this a performance issue within ext4 and md-raid?
+The problem does not exist with xfs and md-raid.
+
+Justin.
+
+
