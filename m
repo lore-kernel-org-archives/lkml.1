@@ -1,65 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030358Ab0B0RvM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 12:51:12 -0500
-Received: from smtp104.sbc.mail.gq1.yahoo.com ([67.195.15.63]:21684 "HELO
-	smtp104.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030276Ab0B0RvL (ORCPT
+	id S1030395Ab0B0R7u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 12:59:50 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:53310 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030293Ab0B0R7s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 12:51:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZJyogkRcjYucLa8Rtvpvg3WQonaR9Uoto55m+RvuO6HhqScP1/ijbyIP4hUaZK1NXqs8PP1wCEmAQ7QQ/IZzXMZbJe094yzNJ4EQ2+q9ojNax5d2Pl2pncAmAOmCpVceujNNeR+T8TgkeYbapTWiRGphNwnpxDB0WuDF1Ejq/AM=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: AN59rR0VM1kcSUmYGEr1HNJnJyvZ_dgnAWBMBaDOlnj053pr868KwRUNVUFwOZ0Alhj0yMMUy_uoEotWP5TiLSnserHQJZMvSLc3bNwFd0Fe_MXBQV6OwMmr46X4BtFg__dcugqYdBCz4EU25UQboahAJ_kXyUtozUAvvvgav6UPobgJLuY5f644vq_sRi3YHg5w5nKOON34_U.5dnO5n74oK_qjjqq03mgke0Uw2RcAyQr6HC19VKTywm9KQxk.JxlfHm1aPFzxO7vxm_Qh.On5rJ2p_pHvjWfK7J4RRRi15j7nHleA8Oc-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/3] gpiolib: add gpio_set_direction()
-Date: Sat, 27 Feb 2010 09:51:08 -0800
-User-Agent: KMail/1.9.10
-Cc: Ben Gardner <gardner.ben@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andres Salomon <dilinger@collabora.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-References: <cover.1267225701.git.gardner.ben@gmail.com> <201002270824.14889.david-b@pacbell.net> <A6EC110C-1712-4AC7-B828-D7BB08278996@opensource.wolfsonmicro.com>
-In-Reply-To: <A6EC110C-1712-4AC7-B828-D7BB08278996@opensource.wolfsonmicro.com>
+	Sat, 27 Feb 2010 12:59:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ptm37oPEn3Xew0pSJwaicq5GrYoEv97DmBh3YHcGVyrXNIHlwbLyCkkcIsCTKccO4m
+         t25Nrg49wZQ4x3jdiFhSd5vWNN6BZSPPt6E8PAIJDLw5y40AdkPlbD55jlUaZc944zuC
+         efJs7L0ijmR9zEMWw+k1W+tjNe8F+dFnR19V4=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <201002270951.09045.david-b@pacbell.net>
+In-Reply-To: <20100227.015350.71138134.davem@davemloft.net>
+References: <51f3faa71002260646r705891e8tdbab1f6faeeb4b81@mail.gmail.com>
+	 <201002261625.24523.bzolnier@gmail.com>
+	 <51f3faa71002261908y7cfa62eeicb3e56d5c920887a@mail.gmail.com>
+	 <20100227.015350.71138134.davem@davemloft.net>
+Date: Sat, 27 Feb 2010 11:59:47 -0600
+Message-ID: <51f3faa71002270959o4d1435e3xf67185fccaf50b18@mail.gmail.com>
+Subject: Re: [RFC PATCH] fix problems with NETIF_F_HIGHDMA in networking 
+	drivers
+From: Robert Hancock <hancockrwd@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 February 2010, Mark Brown wrote:
-> >>>  "none" ... since it's not even a GPIO, why would it show
-> >>>       up through the GPIO subsystem???
-> >>
-> >> I suspect this is intended to be tristated, which might be useful  
-> >> to add.
-> >
-> > That's what "input" means, as a rule:  no output driver
-> > is active with a GPIO configured as "input".  "Tristate"
-> > is an option that's relevant for outputs ... low, high,
-> > or not-driven.
-> 
-> Indeed, but some devices do implement a distinct tristate state for  
-> input mode pins (disabling interrupt generation logic and so on for  
-> example).
+On Sat, Feb 27, 2010 at 3:53 AM, David Miller <davem@davemloft.net> wrote:
+> From: Robert Hancock <hancockrwd@gmail.com>
+> Date: Fri, 26 Feb 2010 21:08:04 -0600
+>
+>> That seems like a reasonable approach to me. Only question is how to
+>> implement the check for DMA_64BIT. Can we just check page_to_phys on
+>> each of the pages in the skb to see if it's > 0xffffffff ? Are there
+>> any architectures where it's more complicated than that?
+>
+> On almost every platform it's "more complicated than that".
+>
+> This is the whole issue.  What matters is the final DMA address and
+> since we have IOMMUs and the like, it is absolutely not tenable to
+> solve this by checking physical address attributes.
 
-That's a pretty sloppy usage of the term "tristate" ... yeah, there
-are people who take glee in abusing terminology to introduce confusion,
-and some of them write technical manuals with little regard to normal
-usage of terms (or trademarks, which do exist for "tristate").
+Yeah, physical address isn't quite right. There is a precedent for
+such a check in the block layer though - look at
+blk_queue_bounce_limit in block/blk-settings.c:
 
-IRQ generation logic should be disabled until request_irq() code paths
-report otherwise.   And regardless, whether a GPIO triggers an IRQ has
-nothing at all to do with its "direction".
+void blk_queue_bounce_limit(struct request_queue *q, u64 dma_mask)
+{
+        unsigned long b_pfn = dma_mask >> PAGE_SHIFT;
+        int dma = 0;
 
-- Dave
+        q->bounce_gfp = GFP_NOIO;
+#if BITS_PER_LONG == 64
+        /*
+         * Assume anything <= 4GB can be handled by IOMMU.  Actually
+         * some IOMMUs can handle everything, but I don't know of a
+         * way to test this here.
+         */
+        if (b_pfn < (min_t(u64, 0xffffffffUL, BLK_BOUNCE_HIGH) >> PAGE_SHIFT))
+                dma = 1;
+        q->limits.bounce_pfn = max_low_pfn;
+#else
+        if (b_pfn < blk_max_low_pfn)
+                dma = 1;
+        q->limits.bounce_pfn = b_pfn;
+#endif
+        if (dma) {
+                init_emergency_isa_pool();
+                q->bounce_gfp = GFP_NOIO | GFP_DMA;
+                q->limits.bounce_pfn = b_pfn;
+        }
+}
 
+and then in mm/bounce.c:
+
+static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
+                               mempool_t *pool)
+{
+        struct page *page;
+        struct bio *bio = NULL;
+        int i, rw = bio_data_dir(*bio_orig);
+        struct bio_vec *to, *from;
+
+        bio_for_each_segment(from, *bio_orig, i) {
+                page = from->bv_page;
+
+                /*
+                 * is destination page below bounce pfn?
+                 */
+                if (page_to_pfn(page) <= queue_bounce_pfn(q))
+                        continue;
+
+Following that logic then, it appears that page_to_pfn(page) >
+(0xffffffff >> PAGE_SHIFT) should tell us what we want to know for the
+DMA_64BIT flag.. or am I missing something?
