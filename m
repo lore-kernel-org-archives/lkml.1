@@ -1,52 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030465Ab0B0SSd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 13:18:33 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:56167 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030367Ab0B0SSb convert rfc822-to-8bit (ORCPT
+	id S1030580Ab0B0SZt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 13:25:49 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:42978 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030556Ab0B0SZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 13:18:31 -0500
+	Sat, 27 Feb 2010 13:25:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K8bn/hd9kZmeMf/ALjzn9f4LKd7kOT5XXQnqvWjR3x1C1g3RPgn+1/mFepmCKnCyOw
-         CQqJsYNjheBZD7nP78W94ezi8sw8vtDUAsF9uNomHxjvPn9AL6GQdS9HZ+9v72ApCZ4E
-         6pQBX7cNdhX8v1V8dQV5kg4DPef4RhLTwWnW4=
-MIME-Version: 1.0
-In-Reply-To: <201002262304.49768.david-b@pacbell.net>
-References: <cover.1267225701.git.gardner.ben@gmail.com>
-	 <6787cce8528c344c496724509762b2a11dea4bfb.1267225701.git.gardner.ben@gmail.com>
-	 <201002262304.49768.david-b@pacbell.net>
-Date: Sat, 27 Feb 2010 12:18:29 -0600
-Message-ID: <808c8e9d1002271018w2e767635h8a810153939e622c@mail.gmail.com>
-Subject: Re: [PATCH 2/3] cs5535-gpio: Use set_direction
-From: Ben Gardner <gardner.ben@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=rdSV7fsZwgAuCvxhgpZiqwf3N0tyOQnXly/xF9GKTml5m7CRm30bZjCjmLvgfjV7Nz
+         LHG0YpdJpZQ8OedLEDa0oP984kf2SevBoSBJL/ShKgHFrTvuuXbMJfA+KcHsv9dCnClz
+         nSZRAv/9yiDdWWrCyPMXt25De+ntDXxX3ZpHo=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 4/5] perf: Remove pointless breakpoint union
+Date: Sat, 27 Feb 2010 19:25:32 +0100
+Message-Id: <1267295133-6320-5-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1267295133-6320-1-git-send-regression-fweisbec@gmail.com>
+References: <1267295133-6320-1-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Use the set_direction method instead of direction_input and direction_output
->> to enable use of the bidirectional mode.
->
-> Any reason you aren't making the standard behavior be:
->
->        input ... input enabled
->        output ... both enabled
->
-> That would make this driver behave like most other GPIO hardware, which
-> would help you avoid subtle problems.
->
-> Would there be any technical downside to that approach?
+Remove pointless union in the breakpoint field of hw_perf_event.
 
-That sounds like a good approach.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+ include/linux/perf_event.h |    5 ++---
+ lib/Kconfig.debug          |    8 +++++---
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-Ben
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 7b18b4f..04f06b4 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -487,9 +487,8 @@ struct hw_perf_event {
+ 			struct hrtimer	hrtimer;
+ 		};
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+-		union { /* breakpoint */
+-			struct arch_hw_breakpoint	info;
+-		};
++		/* breakpoint */
++		struct arch_hw_breakpoint	info;
+ #endif
+ 	};
+ 	atomic64_t			prev_count;
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 65f964e..4dc24cc 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -520,11 +520,13 @@ config LOCK_STAT
+ 
+ 	 For more details, see Documentation/lockstat.txt
+ 
+-	 You can analyze lock events with "perf lock", subcommand of perf.
+-	 If you want to use "perf lock", you need to turn on CONFIG_EVENT_TRACING.
++	 This also enables lock events required by "perf lock",
++	 subcommand of perf.
++	 If you want to use "perf lock", you also need to turn on
++	 CONFIG_EVENT_TRACING.
+ 
+ 	 CONFIG_LOCK_STAT defines "contended" and "acquired" lock events.
+- 	 (CONFIG_LOCKDEP defines "acquire" and "release" events.)
++	 (CONFIG_LOCKDEP defines "acquire" and "release" events.)
+ 
+ config DEBUG_LOCKDEP
+ 	bool "Lock dependency engine debugging"
+-- 
+1.6.2.3
+
