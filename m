@@ -1,130 +1,200 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966266Ab0B0Ln4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 06:43:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59155 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965569Ab0B0Lnz (ORCPT
+	id S966312Ab0B0Lwo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 06:52:44 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:48093 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966055Ab0B0Lwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 06:43:55 -0500
-Subject: Re: [PATCH][RESEND] Export per-tid and per-tgid cputime in
- nanoseconds.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Divyesh Shah <dpshah@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, kenchen@google.com
-In-Reply-To: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
-References: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 27 Feb 2010 12:43:45 +0100
-Message-ID: <1267271025.22519.740.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Feb 2010 06:52:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ASJv3Qd6dU98Q3InPbktVblvtwweWYAO+R2fl59jq/ofWV6t/f1eFJZ3CIrATOZFyV
+         92mUbJQYPwI4mJN+Ov3qRAvzdTa73pIg5thrXDH5k4OhGmxrZzZTSJb5PeEGJl39qcyd
+         KZPUys9HLShKSfBYWvChPMuS4Ol/rBmEYHbDE=
+Date: Sat, 27 Feb 2010 12:52:36 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 1/2 v2] tracing: Add EXTRACT_TRACE_SYMBOL() macro
+Message-ID: <20100227115234.GG5130@nowhere>
+References: <20100226053831.050130780@goodmis.org> <20100226054125.278472284@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100226054125.278472284@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 18:03 -0800, Divyesh Shah wrote:
-> This can be used by applications to get finer granularity cputime usage on
-> platforms that use timestamp counters or HPET.
-
-I guess the patch looks good, I'm just not sure what HPET got to do with
-anything.. the scheduler certainly doesn't use HPET for timekeeping, its
-terribly slow to read.
-
-Also, it would be good to get some more justification than 'some
-applications can use this', which is basically a truism for any patch
-that adds a user interface.
-
-> Signed-off-by: Divyesh Shah<dpshah@google.com>
-> ---
+On Fri, Feb 26, 2010 at 12:38:32AM -0500, Steven Rostedt wrote:
+> The trace events that are created with the TRACE_EVENT family macros
+> can be read by binary readers, such as perf and trace-cmd. In order
+> to translate the binary data, the events also have a format file
+> associated with them. This format file explains the offset, size and
+> signedness of elements in the raw binary data of an event.
 > 
->  fs/proc/array.c    |   40 ++++++++++++++++++++++++++++++++++++++++
->  fs/proc/base.c     |    2 ++
->  fs/proc/internal.h |    2 ++
->  3 files changed, 44 insertions(+), 0 deletions(-)
+> At the end of the format file, there is a description on how to print
+> this data. A helper function is used to map numbers into strings
+> called __print_symbolic(). A problem arises when these numbers are
+> defined as enums in the kernel. The macros that export this data into
+> the format file does not translate the enums into numbers. Thus we
+> have in the irq.h file:
 > 
-> diff --git a/fs/proc/array.c b/fs/proc/array.c
-> index 13b5d07..54604b8 100644
-> --- a/fs/proc/array.c
-> +++ b/fs/proc/array.c
-> @@ -547,3 +547,43 @@ int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
+>  #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
+>  #define show_softirq_name(val)				\
+> 	__print_symbolic(val,				\
+> 			 softirq_name(HI),		\
+> 			 softirq_name(TIMER),		\
+> 			 softirq_name(NET_TX),		\
+> 			 softirq_name(NET_RX),		\
+> 			 softirq_name(BLOCK),		\
+> 			 softirq_name(BLOCK_IOPOLL),	\
+> 			 softirq_name(TASKLET),		\
+> 			 softirq_name(SCHED),		\
+> 			 softirq_name(HRTIMER),		\
+> 			 softirq_name(RCU))
+> 
+> 
+> 	TP_printk("vec=%d [action=%s]", __entry->vec,
+> 		  show_softirq_name(__entry->vec))
+> 
+> 
+> Which shows up in the event format file as:
+> 
+>   print fmt: "vec=%d [action=%s]", REC->vec, __print_symbolic(REC->vec, { HI_SOFTIRQ, "HI" }, { TIMER_SOFTIRQ, "TIMER" }, { NET_TX_SOFTIRQ, "NET_TX" }, { NET_RX_SOFTIRQ, "NET_RX" }, { BLOCK_SOFTIRQ, "BLOCK" }, { BLOCK_IOPOLL_SOFTIRQ, "BLOCK_IOPOLL" }, { TASKLET_SOFTIRQ, "TASKLET" }, { SCHED_SOFTIRQ, "SCHED" }, { HRTIMER_SOFTIRQ, "HRTIMER" }, { RCU_SOFTIRQ, "RCU" })
+> 
+> 
+> The parser has no idea of how to translate "HI_SOFTIRQ" into a number.
+> 
+> This patch adds an EXTRACT_TRACE_SYMBOLS() macro that lets a trace header
+> define symbols that it uses, and will be converted into numbers.
+> These symbols will be shown in an "event_symbols" file in the event
+> directory.
+> 
+> Enums that use this also need to be converted into the following format:
+> 
+>  #define ENUMS 				\
+> 	C(ENUM1)			\
+> 	C(ENUM2)			\
+> 	C(ENUM3)
+> 
+>  #define C(name) name
+>  enum { ENUMS };
+>  #undef C
+> 
+> Then the trace header can do the following:
+> 
+>   #define C(name)  TRACE_SYMBOL_PARSE(#name, name, sizeof(name))
+>   EXTRACT_TRACE_SYMBOLS(mysyms, ENUMS)
+> 
+> For example, for the softirq names we can now have:
+> 
+>  #define C(sirq) \
+> 	TRACE_SYMBOL_PARSE(#sirq, sirq##_SOFTIRQ, sizeof(sirq##_SOFTIRQ))
+> 
+>  EXTRACT_TRACE_SYMBOLS(softirqs, SOFTIRQ_NAMES)
+> 
+> where the SOFTIRQ_NAMES are defined as:
+> 
+>  #define SOFTIRQ_NAMES			\
+> 	C(HI),				\
+> 	C(TIMER),			\
+> 	C(NET_TX),			\
+> 	[...]
+> 	C(RCU)
+>  #define C(name) name##_SOFTIRQ
+>  enum { SOFTIRQ_NAMES, NR_SOFTIRQS };
+>
+> 
+> This produces:
+> 
+>    [tracing/]$ cat events/event_symbols
+>    # Symbol:Size:Value
+>    # =================
+>    HI_SOFTIRQ:4:0
+>    TIMER_SOFTIRQ:4:1
+>    NET_TX_SOFTIRQ:4:2
+>    NET_RX_SOFTIRQ:4:3
+>    BLOCK_SOFTIRQ:4:4
+>    BLOCK_IOPOLL_SOFTIRQ:4:5
+>    TASKLET_SOFTIRQ:4:6
+>    SCHED_SOFTIRQ:4:7
+>    HRTIMER_SOFTIRQ:4:8
+>    RCU_SOFTIRQ:4:9
+
+
+There is a risk of having a big mess in this file
+if we have various types of enums inside. I mean,
+it doesn't make the things easy for the tools as they will
+have to iterate through the whole list and sort it out
+using the suffixes (*_SOFTIRQ).
+
+We could perhaps have this per event subsystem?
+
+cat events/irq/event_symbols
+
+
+>  	TRACE_PRINTKS()							\
+> Index: linux-trace.git/include/linux/tracepoint.h
+> ===================================================================
+> --- linux-trace.git.orig/include/linux/tracepoint.h	2010-02-12 13:35:15.000000000 -0500
+> +++ linux-trace.git/include/linux/tracepoint.h	2010-02-25 22:47:10.000000000 -0500
+> @@ -292,4 +292,6 @@ static inline void tracepoint_synchroniz
+>  		assign, print, reg, unreg)			\
+>  	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
 >  
->  	return 0;
->  }
+> +#define EXTRACT_TRACE_SYMBOLS(name, symbols)
+
+
+
+So this could also take the name of the subsystem.
+
+
+
 > +
-> +static int do_task_cputime(struct task_struct *task, char * buffer, int whole)
-> +{
-> +	int res;
-> +	unsigned long flags;
-> +	unsigned long long sum_exec_runtime = 0;
-> +	struct task_struct *t;
-> +
-> +	if (lock_task_sighand(task, &flags)) {
-> +		if (whole) {
-> +			t = task;
-> +			/* 
-> +			 * Add up live thread sum_exec_runtime at the group
-> +			 * level.
-> +			 */
-> +			do {
-> +				sum_exec_runtime += t->se.sum_exec_runtime;
-> +				t = next_thread(t);
-> +			} while (t != task);
-> +			sum_exec_runtime += task->signal->sum_sched_runtime;
-> +		}
-> +		unlock_task_sighand(task, &flags);
+>  #endif /* ifdef TRACE_EVENT (see note above) */
+> Index: linux-trace.git/include/trace/define_trace.h
+> ===================================================================
+> --- linux-trace.git.orig/include/trace/define_trace.h	2010-02-12 13:35:15.000000000 -0500
+> +++ linux-trace.git/include/trace/define_trace.h	2010-02-25 23:53:52.000000000 -0500
+> @@ -20,6 +20,7 @@
+>  /* Prevent recursion */
+>  #undef CREATE_TRACE_POINTS
+>  
+> +#include <trace/trace_syms.h>
+>  #include <linux/stringify.h>
+>  
+>  #undef TRACE_EVENT
+> @@ -43,6 +44,20 @@
+>  #define DECLARE_TRACE(name, proto, args)	\
+>  	DEFINE_TRACE(name)
+>  
+> +#undef EXTRACT_TRACE_SYMBOLS
+> +#define EXTRACT_TRACE_SYMBOLS(name, symbols)	\
+> +	struct trace_syms ___trace_sym_##name[]					\
+> +	__attribute__((section("_trace_symbols"), aligned(4)))	= {	\
+> +		symbols							\
 > +	}
 > +
-> +	if (!whole)
-> +		sum_exec_runtime = task->se.sum_exec_runtime;
-> +
-> +	res = sprintf(buffer,"%llu\n", sum_exec_runtime);
-> +	return res;
-> +}
-> +
-> +int proc_tid_cputime(struct task_struct *task, char * buffer)
-> +{
-> +	return do_task_cputime(task, buffer, 0);
-> +}
-> +
-> +int proc_tgid_cputime(struct task_struct *task, char * buffer)
-> +{
-> +	return do_task_cputime(task, buffer, 1);
-> +}
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index 58324c2..8fbc785 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -2595,6 +2595,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->  	REG("numa_maps",  S_IRUGO, proc_numa_maps_operations),
->  #endif
->  	REG("mem",        S_IRUSR|S_IWUSR, proc_mem_operations),
-> +	INF("cputime_ns", S_IRUGO, proc_tgid_cputime),
->  	LNK("cwd",        proc_cwd_link),
->  	LNK("root",       proc_root_link),
->  	LNK("exe",        proc_exe_link),
-> @@ -2930,6 +2931,7 @@ static const struct pid_entry tid_base_stuff[] = {
->  	REG("numa_maps", S_IRUGO, proc_numa_maps_operations),
->  #endif
->  	REG("mem",       S_IRUSR|S_IWUSR, proc_mem_operations),
-> +	INF("cputime_ns", S_IRUGO, proc_tid_cputime),
->  	LNK("cwd",       proc_cwd_link),
->  	LNK("root",      proc_root_link),
->  	LNK("exe",       proc_exe_link),
-> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-> index 1f24a3e..f9e9799 100644
-> --- a/fs/proc/internal.h
-> +++ b/fs/proc/internal.h
-> @@ -51,6 +51,8 @@ extern int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
->  				struct pid *pid, struct task_struct *task);
->  extern int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
->  				struct pid *pid, struct task_struct *task);
-> +extern int proc_tid_cputime(struct task_struct *, char *);
-> +extern int proc_tgid_cputime(struct task_struct *, char *);
->  extern loff_t mem_lseek(struct file *file, loff_t offset, int orig);
->  
->  extern const struct file_operations proc_maps_operations;
-> 
+> +#define TRACE_SYMBOL_PARSE(symbol, value, sym_size)			\
+> +	{								\
+> +		.name = symbol,						\
+> +		.val = (u64)(value),					\
+> +		.size = sym_size					\
 
+
+
+...which could be appended there.
+
+What do you think?
 
