@@ -1,95 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934230Ab0B0V2B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 16:28:01 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:56279 "EHLO
+	id S934746Ab0B0VaG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:30:06 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:56284 "EHLO
 	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933277Ab0B0V2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 16:28:00 -0500
+	by vger.kernel.org with ESMTP id S933277Ab0B0VaD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 16:30:03 -0500
 From: Ben Hutchings <ben@decadent.org.uk>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-pX7LaaT74zBFAB893/SH"
-Date: Sat, 27 Feb 2010 21:27:56 +0000
-Message-ID: <1267306076.16186.103.camel@localhost>
+In-Reply-To: <1267306076.16186.103.camel@localhost>
+References: <1267306076.16186.103.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sat, 27 Feb 2010 21:29:57 +0000
+Message-ID: <1267306197.16186.104.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 X-SA-Exim-Connect-IP: 192.168.4.185
 X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Please pull 'upstream' branch of
- http://git.decadent.org.uk/git/linux-firmware.git
+Subject: [PATCH firmware 1/6] Correct various filenames
 X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
 X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Filenames should be the names of the installed binary files, without
+the base directory 'firmware'.
 
---=-pX7LaaT74zBFAB893/SH
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Remove mention of absent file 'whiteheat_loader_debug.fw'.
 
-The following changes since commit 764d482304e3b13024184b05d907fe4c291faa07=
-:
-  Reinette Chatre (1):
-        Update copyright year for iwlwifi licence
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ WHENCE |   61 ++++++++++++++++++++++++++++++-------------------------------
+ 1 files changed, 30 insertions(+), 31 deletions(-)
 
-are available in the git repository at:
+diff --git a/WHENCE b/WHENCE
+index 0b99cb1..728b71d 100644
+--- a/WHENCE
++++ b/WHENCE
+@@ -10,7 +10,7 @@ kernel.
+ 
+ Driver: ambassador -- Madge Ambassador (Collage PCI 155 Server) ATM NIC.
+ 
+-File: firmware/atmsar11.fw
++File: atmsar11.fw
+ 
+ Licence: Allegedly GPLv2+, but no source visible. Marked:
+ 
+@@ -271,7 +271,6 @@ File: whiteheat.fw
+ Version: 4.06
+ 
+ File: whiteheat_loader.fw
+-File: whiteheat_loader_debug.fw
+ 
+ Licence: Allegedly GPLv2, but no source visible. Marked:
+ 	 Copyright (C) 2000-2002  ConnectTech Inc
+@@ -507,9 +506,9 @@ Licence: GPLv2 or OpenIB.org BSD license, no source visible
+ 
+ Driver: cxgb3 - Chelsio Terminator 3 1G/10G Ethernet adapter
+ 
+-File: cxgb3/ael2005_opt_edc.bin.ihex
+-File: cxgb3/ael2005_twx_edc.bin.ihex
+-File: cxgb3/ael2020_twx_edc.bin.ihex
++File: cxgb3/ael2005_opt_edc.bin
++File: cxgb3/ael2005_twx_edc.bin
++File: cxgb3/ael2020_twx_edc.bin
+ 
+ Licence:
+  *	Copyright (c) 2007-2009 NetLogic Microsystems, Inc.
+@@ -597,27 +596,27 @@ Also available from http://linuxwimax.org/Download
+ 
+ Driver: libertas - Marvell Libertas fullmac-type 802.11b/g cards
+ 
+-File: cf8385.bin
+-File: cf8385_helper.bin
+-File: gspi8682.bin
+-File: gspi8682_helper.bin
+-File: gspi8686_v9.bin
+-File: gspi8686_v9_helper.bin
+-File: gspi8688.bin
+-File: gspi8688_helper.bin
+-File: sd8385.bin
+-File: sd8385_helper.bin
+-File: sd8682.bin
+-File: sd8682_helper.bin
+-File: sd8686_v8.bin
+-File: sd8686_v8_helper.bin
+-File: sd8686_v9.bin
+-File: sd8686_v9_helper.bin
+-File: sd8688.bin
+-File: sd8688_helper.bin
+-File: usb8388_v5.bin
+-File: usb8388_v9.bin
+-File: usb8682.bin
++File: libertas/cf8385.bin
++File: libertas/cf8385_helper.bin
++File: libertas/gspi8682.bin
++File: libertas/gspi8682_helper.bin
++File: libertas/gspi8686_v9.bin
++File: libertas/gspi8686_v9_helper.bin
++File: libertas/gspi8688.bin
++File: libertas/gspi8688_helper.bin
++File: libertas/sd8385.bin
++File: libertas/sd8385_helper.bin
++File: libertas/sd8682.bin
++File: libertas/sd8682_helper.bin
++File: libertas/sd8686_v8.bin
++File: libertas/sd8686_v8_helper.bin
++File: libertas/sd8686_v9.bin
++File: libertas/sd8686_v9_helper.bin
++File: libertas/sd8688.bin
++File: libertas/sd8688_helper.bin
++File: libertas/usb8388_v5.bin
++File: libertas/usb8388_v9.bin
++File: libertas/usb8682.bin
+ 
+ Licence: Redistributable. See LICENCE.libertas for details.  Extracted from
+ Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
+@@ -626,8 +625,8 @@ Linux driver tarballs downloaded from Marvell's "Extranet" with permission.
+ 
+ Driver: mwl8k - Marvell Libertas softmac-type 802.11b/g cards
+ 
+-File: fmimage_8687.fw
+-File: helper_8687.fw
++File: mwl8k/fmimage_8687.fw
++File: mwl8k/helper_8687.fw
+ 
+ Licence: Redistributable. See LICENCE.mwl8k for details.  Downloaded from
+ Marvell's "Extranet" with permission.
+@@ -907,8 +906,8 @@ Driver: bnx2x: Broadcom Everest
+ 
+ File: bnx2x-e1-4.8.53.0.fw
+ File: bnx2x-e1h-4.8.53.0.fw
+-File: bnx2x-e1-5.2.7.0.fw.ihex
+-File: bnx2x-e1h-5.2.7.0.fw.ihex
++File: bnx2x-e1-5.2.7.0.fw
++File: bnx2x-e1h-5.2.7.0.fw
+ 
+ Licence:
+   Copyright (c) 2007-2009 Broadcom Corporation
+@@ -1014,7 +1013,7 @@ Downloaded from http://www.ralinktech.com/ralink/Home/Support/Linux.html
+ Driver: usbdux/usbduxfast - usbdux data acquisition cards
+ 
+ File: usbdux_firmware.bin
+-File: usbdixfast_firmware.bin
++File: usbduxfast_firmware.bin
+ Source: usbdux/fx2-include.asm
+ Source: usbdux/usbduxfast_firmware.asm
+ Source: usbdux/usbdux_firmware.asm
+-- 
+1.6.6.2
 
-  http://git.decadent.org.uk/git/linux-firmware.git upstream
 
-I will send patches (missing the binary changes) in reply to this message.
 
-Ben.
-
-Ben Hutchings (6):
-      Correct various filenames
-      Use 'File:' field name in front of each filename
-      Specify drivers using firmware by module/object name
-      Update firmware from rt2870sta
-      Add RT3090 firmware from rt2860sta
-      Add firmware for lgs8g75
-
- WHENCE     |  182 +++++++++++++++++++++++++++++++++-----------------------=
-----
- lgs8g75.fw |  Bin 0 -> 262 bytes
- rt2870.bin |  Bin 4096 -> 4096 bytes
- rt3070.bin |  Bin 0 -> 4096 bytes
- rt3071.bin |  Bin 0 -> 4096 bytes
- rt3090.bin |  Bin 0 -> 8192 bytes
- 6 files changed, 101 insertions(+), 81 deletions(-)
- create mode 100644 lgs8g75.fw
- create mode 100644 rt3070.bin
- create mode 100644 rt3071.bin
- create mode 100644 rt3090.bin
-
---=20
-Ben Hutchings
-Horngren's Observation:
-                   Among economists, the real world is often a special case=
-.
-
---=-pX7LaaT74zBFAB893/SH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS4mOVue/yOyVhhEJAQJlVg/+PwqeKThZs38SiiytbaEiLKpqPgq8a/JX
-LnFucd4N42NmeR5zNxda3COpmxLBtw10Q+nFS5Aru9R7cdhQESSHUXyWvS9x7Pvr
-jX46gEhJt+XzK8fpGV7nfQXOMkqdYW2Lg5BjO6Gun7Ah3gg57tv2y8X694EHRejs
-66kTIrfydt5TqnkY6UFtWw6BWSq85OHS+Rf6SCJghpaWApM2Bd+nOqgWpTWuO0zX
-N0eVgs9jGye2PBWT8UdLyTPwRz4pqVAVCGLsr50MPJe/f3O+bcHk+GRWbp/yzOH7
-g0S+6IZrKD6bwVxvk203AvZkLCDqxGne/8VJ+HOWsn4QlQrPX77rIZyLCfyZCWeb
-5oqYiGOx36d1wWLKLIWkXVV5ZqCxOI+43TKsldpo4cBTYlmo/g7GPp46kFxcpY7e
-AbbL6RdioVZYkgEQ0XNbtrdAISdeNfzBWh50LbaQfYdyy5Z4AztaNnpsU3mIlDUd
-Y49GyL3hFLCS5oxIRMVrwuVMxKmeUU2P3eWXyWd8RpAAxSAeeOhaJ0dhDQ9laNu+
-jVLt2oNZo4nmtRyq55xa9jOprTB+i4ucbMu5DoO1l1m/GN+YxL8yXgleaWaTji+O
-OI8KjFIF8TLmvsOeNs5GZPJbqH8tJdnWvkjXr1Awhc9fTKZEuo/nB6sGTSLn1+jj
-QKb48umGQnI=
-=AYrq
------END PGP SIGNATURE-----
-
---=-pX7LaaT74zBFAB893/SH--
