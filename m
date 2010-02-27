@@ -1,50 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030623Ab0B0Si3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 13:38:29 -0500
-Received: from sh.osrg.net ([192.16.179.4]:35065 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030419Ab0B0Si2 convert rfc822-to-8bit (ORCPT
+	id S1030637Ab0B0Skh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 13:40:37 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:60591 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030578Ab0B0Skg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 13:38:28 -0500
-Date: Sun, 28 Feb 2010 03:38:20 +0900
-To: hancockrwd@gmail.com
-Cc: davem@davemloft.net, bzolnier@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [RFC PATCH] fix problems with NETIF_F_HIGHDMA in networking 
-	drivers
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <51f3faa71002270959o4d1435e3xf67185fccaf50b18@mail.gmail.com>
-References: <51f3faa71002261908y7cfa62eeicb3e56d5c920887a@mail.gmail.com>
-	<20100227.015350.71138134.davem@davemloft.net>
-	<51f3faa71002270959o4d1435e3xf67185fccaf50b18@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
+	Sat, 27 Feb 2010 13:40:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uyv3k4byhjC4x512I2Cgp0qmeyyBv1K48uJuP5JObwoWFG7/LLtBOmMu6AQwGLOdLO
+         I/bLWoJVrHUfH0iE/iKmwROuNqAsQ62TQvYJ/ANmApp341V3lDlUi2Dxyd4OmsXhe3r5
+         7mXjPsNO6kVWFqD/F4pFO1UqVSE8rfinHOGsM=
+MIME-Version: 1.0
+In-Reply-To: <1267295795-2831-1-git-send-email-gardner.ben@gmail.com>
+References: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
+	 <1267295795-2831-1-git-send-email-gardner.ben@gmail.com>
+Date: Sat, 27 Feb 2010 12:40:33 -0600
+Message-ID: <808c8e9d1002271040w13b6f32drcb2393dd481e153a@mail.gmail.com>
+Subject: Re: [PATCH] cs5535-gpio: change input/output enable to match gpiolib 
+	expectations
+From: Ben Gardner <gardner.ben@gmail.com>
+To: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       David Brownell <david-b@pacbell.net>
+Cc: Ben Gardner <gardner.ben@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <20100228033800N.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 28 Feb 2010 03:38:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Feb 2010 11:59:47 -0600
-Robert Hancock <hancockrwd@gmail.com> wrote:
+Please ignore this patch.
+It seems you have to 'commit' in git before 'format-patch'...
 
-> On Sat, Feb 27, 2010 at 3:53 AM, David Miller <davem@davemloft.net> wrote:
-> > From: Robert Hancock <hancockrwd@gmail.com>
-> > Date: Fri, 26 Feb 2010 21:08:04 -0600
-> >
-> >> That seems like a reasonable approach to me. Only question is how to
-> >> implement the check for DMA_64BIT. Can we just check page_to_phys on
-> >> each of the pages in the skb to see if it's > 0xffffffff ? Are there
-> >> any architectures where it's more complicated than that?
-> >
-> > On almost every platform it's "more complicated than that".
-> >
-> > This is the whole issue.  What matters is the final DMA address and
-> > since we have IOMMUs and the like, it is absolutely not tenable to
-> > solve this by checking physical address attributes.
-> 
-> Yeah, physical address isn't quite right. There is a precedent for
-
-Probably, you need to check PCI_DMA_BUS_IS_PHYS.
+On Sat, Feb 27, 2010 at 12:36 PM, Ben Gardner <gardner.ben@gmail.com> wrote:
+> The intent of the gpiolib set_direction_xxx functions is as follows:
+> output: enable both input and output
+> input: disable output, enable input
+>
+> Change the cs5535 driver to do that.
+>
+> Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
+> CC: Andres Salomon <dilinger@collabora.co.uk>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: David Brownell <dbrownell@users.sourceforge.net>
+> CC: Jani Nikula <ext-jani.1.nikula@nokia.com>
+> ---
+>  drivers/gpio/cs5535-gpio.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/gpio/cs5535-gpio.c b/drivers/gpio/cs5535-gpio.c
+> index 0fdbe94..59ab30e 100644
+> --- a/drivers/gpio/cs5535-gpio.c
+> +++ b/drivers/gpio/cs5535-gpio.c
+> @@ -171,6 +171,7 @@ static int chip_direction_input(struct gpio_chip *c, unsigned offset)
+>        unsigned long flags;
+>
+>        spin_lock_irqsave(&chip->lock, flags);
+> +       __cs5535_gpio_set(chip, offset, GPIO_OUTPUT_DISABLE);
+>        __cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
+>        spin_unlock_irqrestore(&chip->lock, flags);
+>
+> @@ -185,6 +186,7 @@ static int chip_direction_output(struct gpio_chip *c, unsigned offset, int val)
+>        spin_lock_irqsave(&chip->lock, flags);
+>
+>        __cs5535_gpio_set(chip, offset, GPIO_OUTPUT_ENABLE);
+> +       __cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
+>        if (val)
+>                __cs5535_gpio_set(chip, offset, GPIO_OUTPUT_VAL);
+>        else
+> --
+> 1.7.0
+>
+>
