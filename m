@@ -1,58 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968304Ab0B0NQg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 08:16:36 -0500
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:56998 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968272Ab0B0NQf (ORCPT
+	id S968312Ab0B0NUl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 08:20:41 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45004 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968272Ab0B0NUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 08:16:35 -0500
-X-Greylist: delayed 2460 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Feb 2010 08:16:34 EST
-Date: Sat, 27 Feb 2010 13:35:30 +0100
-From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
-To: linux-kernel@vger.kernel.org
-Cc: stable@kernel.org
-Subject: [PATCH] 2.6.33: deb-pkg: Fix package creation with arbitrary umask
-Message-ID: <20100227123530.GA15985@os.inf.tu-dresden.de>
+	Sat, 27 Feb 2010 08:20:40 -0500
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Alberto Panizzo <maramaopercheseimorto@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: core i7: hang at Booting processor 5 APIC 0x3 ip 0x6000
+From: Andi Kleen <andi@firstfloor.org>
+References: <4B687649.5070204@wpkg.org> <4B687EFF.8000202@gmail.com>
+	<4B687F77.5020409@wpkg.org> <4B6885FA.80509@gmail.com>
+	<1265963139.2484.3.camel@realization> <4B751664.8060603@gmail.com>
+	<4B891621.5070807@wpkg.org>
+Date: Sat, 27 Feb 2010 14:20:34 +0100
+In-Reply-To: <4B891621.5070807@wpkg.org> (Tomasz Chmielewski's message of "Sat, 27 Feb 2010 13:54:57 +0100")
+Message-ID: <87k4tyrf19.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tomasz Chmielewski <mangoo@wpkg.org> writes:
 
-The used umask has influence on the permissions of the created files,
-resulting in errors such as below when the umask is too restrictive:
+> Justin P. Mattock wrote:
+>
+>> but what about 2.6.33*(hot off of the press thing).
+>
+> I found a way to 100% reproduce the kernel "hang" while booting
+> 2.6.33. The symptoms will look like here:
+>
+> http://wpkg.org/files/i7_hang/
+>
+>
+> To hang the kernel while booting, just tap repeatedly on the keyboard
+> as soon as the bootloader starts loading the kernel.
+>
+> The kernel hangs for me every time as I do it.
+>
+> If it matters, I use a USB keyboard (as a matter of fact, two USB
+> keyboards are connected as its a multiseat PC, although I tap the keys
+> on only one of them).
 
-dpkg-deb: building package `linux-image-2.6.33' in `../linux-image-2.6.33_2.6.33-3_i386.deb'.
-dpkg-deb: control directory has bad permissions 700 (must be >=0755 and <=0775)
-make[1]: *** [deb-pkg] Error 2
+Points to USB legacy BIOS code problems. FWIW i've seen the same problem
+occasionally too, but I can't reproduce it reliably.
 
-Signed-off-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
----
- scripts/package/builddeb |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+You could add some printks to the USB handoff code (and see if that appears
+around the hang (drivers/usb/host/pci-quirks.c:quirk_usb_disable_ehci)
 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index 8b357b0..ddca190 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -21,7 +21,7 @@ create_package() {
- 
- 	# Fix ownership and permissions
- 	chown -R root:root "$pdir"
--	chmod -R go-w "$pdir"
-+	chmod -R go=u-w "$pdir"
- 
- 	# Create the package
- 	dpkg-gencontrol -isp -p$pname -P"$pdir"
--- 
-1.5.6.5
-
-
-Adam
--- 
-Adam                 adam@os.inf.tu-dresden.de
-  Lackorzynski         http://os.inf.tu-dresden.de/~adam/
+-Andi
