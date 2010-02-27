@@ -1,66 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966874Ab0B0Boa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 20:44:30 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:56730 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966773Ab0B0Bo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 20:44:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=w36YPyDMkJm82yhUQivUl2kBbOjCYjGhdvfGIME+UCisplZnKwPm9aVougcdWZSVoL
-         PEQGDJKp58eQRZbAX5qjozwMBbbi9FVNvLfRwE3wkuC6Eqb/cMJJdI2g60EGu7r6X1c4
-         oI6Vifn5GUx/+fLX1YD/gEesyaOSHcd1EbZ/Q=
-Message-ID: <4B8878F6.8000809@gmail.com>
-Date: Sat, 27 Feb 2010 09:44:22 +0800
-From: Ang Way Chuang <wcang79@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] dvb-core: Fix DoS bug in ULE decapsulation code that can
- be triggered by an invalid Payload Pointer
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S966882Ab0B0Bwe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 20:52:34 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60213 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966829Ab0B0Bwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 20:52:33 -0500
+To: wzt.wzt@gmail.com, linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
+       jmorris@namei.org
+Subject: Re: [PATCH] Security: Add __init to register_security to disable load a security module on runtime
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20100226144955.GB2778@localhost.localdomain>
+In-Reply-To: <20100226144955.GB2778@localhost.localdomain>
+Message-Id: <201002271052.AHB64003.OOQLJtFOHVFMSF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Sat, 27 Feb 2010 10:52:30 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
-   Sorry, I have to resend this email because I think my email didn't 
-through linux-media, stable or security mailing list.
+Zhitong Wang wrote:
+> LSM framework doesn't allow to load a security module on runtime, it must be loaded on boot time.
+> but in security/security.c:
+> int register_security(struct security_operations *ops)
+> {
+>         ...
+>         if (security_ops != &default_security_ops)
+>                 return -EAGAIN;
+>         ...
+> }
+> if security_ops == &default_security_ops, it can access to register a security module. If selinux is enabled,
+> other security modules can't register, but if selinux is disabled on boot time, the security_ops was set to
+> default_security_ops, LSM allows other kernel modules to use register_security() to register a not trust
+> security module. For example:
+> 
+> disable selinux on boot time(selinux=0).
 
+That won't become a problem unless kernel command line is tampered.
+Giving permissions to tamper kernel command line is the problem.
 
-ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
-has a bug that causes endless loop when Payload Pointer of MPEG2-TS
-frame is 182 or 183. Anyone who sends malicious MPEG2-TS frame will
-cause the receiver of ULE SNDU to go into endless loop.
+There are malicious security modules, but non malicious in-tree security
+modules are bothered by two limitations since register_security() is not
+exported to kernel modules since 2.6.24 .
 
-This patch was generated and tested against linux-2.6.32.9 and should
-apply cleanly to linux-2.6.33 as well because there was only one typo
-fix to dvb_net.c since v2.6.32.
+One is the size of vmlinux. Since all security modules have to be compiled
+into vmlinux, it makes difficult for distributors to include multiple security
+modules into vmlinux when there is vmlinux's size limitation. A well-known
+distributor is now considering including TOMOYO in addition to SELinux, but
+the size limitation of vmlinux seems to be the only problem that prevents
+inclusion.
 
-This bug was brought to you by modern day Santa Claus who decided to
-shower the satellite dish at Keio University with heavy snow causing huge
-burst of errors. We, receiver end, received Santa Claus's gift in the form
-of kernel bug.
+The other is the support provided by distributors. Another well-known
+distributor's support policy is that "We don't provide any support if vmlinux
+or kernel modules provided by us are recompiled. But we provide support if
+kernel modules provided by third party are used without modifying vmlinux and
+kernel modules provided by us." This means that the only way to allow users to
+use TOMOYO with distributor's support is to convince the distributor to include
+TOMOYO into vmlinux. This is a very difficult problem since the distributor
+recommends SELinux.
 
-Care has been taken not to introduce more bug by fixing this bug, but
-please scrutinize the code because I always produces buggy code.
-
-Signed-off-by: Ang Way Chuang <wcang79@gmail.com>
----
---- linux-2.6.32.9/drivers/media/dvb/dvb-core/dvb_net.c	2010-02-23 23:38:51.000000000 +0800
-+++ linux-2.6.32.9.new/drivers/media/dvb/dvb-core/dvb_net.c	2010-02-25 04:09:18.000000000 +0800
-@@ -504,6 +504,7 @@ static void dvb_net_ule( struct net_devi
-				       "bytes left in TS.  Resyncing.\n", ts_remain);
-				priv->ule_sndu_len = 0;
-				priv->need_pusi = 1;
-+				ts += TS_SZ;
-				continue;
-			}
-
-
-
+Honestly speaking, I prefer register_security() being exported to kernel
+modules.
