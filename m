@@ -1,77 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967813Ab0B0ERy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 23:17:54 -0500
-Received: from kroah.org ([198.145.64.141]:52051 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967774Ab0B0ERw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 23:17:52 -0500
-Date: Fri, 26 Feb 2010 20:18:15 -0800
-From: Greg KH <greg@kroah.com>
-To: Markus Rechberger <mrechberger@gmail.com>, linux-usb@vger.kernel.org
-Cc: werner@guyane.dyn-o-saur.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcus Meissner <meissner@suse.de>, linux-kernel@vger.kernel.org
+	id S967821Ab0B0E3i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 23:29:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54488 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S967794Ab0B0E3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 23:29:37 -0500
+Date: Fri, 26 Feb 2010 20:29:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Markus Rechberger <mrechberger@gmail.com>, linux-usb@vger.kernel.org,
+       werner@guyane.dyn-o-saur.com, Marcus Meissner <meissner@suse.de>,
+       linux-kernel@vger.kernel.org
 Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
-Message-ID: <20100227041815.GA12956@kroah.com>
-References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com> <20100227035639.GA11680@kroah.com> <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com>
+In-Reply-To: <20100227041815.GA12956@kroah.com>
+Message-ID: <alpine.LFD.2.00.1002262022090.4513@localhost.localdomain>
+References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com> <20100227035639.GA11680@kroah.com> <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com> <20100227041815.GA12956@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 05:05:41AM +0100, Markus Rechberger wrote:
-> On Sat, Feb 27, 2010 at 4:56 AM, Greg KH <greg@kroah.com> wrote:
-> > On Sat, Feb 27, 2010 at 04:42:53AM +0100, Markus Rechberger wrote:
-> >> * http://lkml.org/lkml/2010/2/19/192
-> >> .6.32-stable review patch. ?If anyone has any objections, please let us know.
-> >>
-> >> ------------------
-> >> From: Greg KH <greg@kroah.com>
-> >>
-> >> commit d4a4683ca054ed9917dfc9e3ff0f7ecf74ad90d6 upstream.
-> >>
-> >> We need to only copy the data received by the device to userspace, not
-> >> the whole kernel buffer, which can contain "stale" data.
-> >>
-> >> Thanks to Marcus Meissner for pointing this out and testing the fix.
-> >>
-> >> Reported-by: Marcus Meissner <meissner@suse.de>
-> >> Tested-by: Marcus Meissner <meissner@suse.de>
-> >> Cc: Alan Stern <stern@rowland.harvard.edu>
-> >> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> >> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> >>
-> >>
-> >> this patch breaks isochronous USBFS support, please revert that patch!
-> >>
-> >> http://sundtek.de/images/tvtime-bildfehler.jpg
-> >>
-> >> with the patch reverted:
-> >> http://sundtek.de/images/tvtime-working.png
-> >>
-> >> * Intel graphic flickers now
-> >
-> > That is very strange. ?What userspace program is using usbfs for video
-> > feeds? ?And why would it be relying on the invalid data on the end of an
-> > urb?
-> >
+
+
+On Fri, 26 Feb 2010, Greg KH wrote:
 > 
-> there are 2 userspace videowrapper available for linux and freebsd
-> which do videoprocessing in userland rather than in kernelspace.
-> Well isochronous works slightly different than BULK transfer (which I
-> guess was tested)
-> urb->iso_frame_desc[i].actual_length
-> each microframe has it's own length field for ISO.
+> Yes, and that patch didn't touch the iso frames.  That happens later on
+> in the functions that were modified.  The patch should not have had any
+> affect on iso transfers.  Unless I'm missing something?
 
-Yes, and that patch didn't touch the iso frames.  That happens later on
-in the functions that were modified.  The patch should not have had any
-affect on iso transfers.  Unless I'm missing something?
+Hmm. What seems to happen is that for an isochronous transfer, the buffer 
+is split for each microframe. No?
 
-confused,
+So the total length may be in 'urb->actual_length', but the actual data in 
+the buffer may not be contiguous, because it's created from multiple 
+smaller frames, some of which might not be full length?
 
-greg k-h
+I dunno. That would explain the problem - actual_length is correct, but 
+the 'copy_to_user()' still doesn't copy all the data, because it's 
+fragmented.
+
+		Linus
