@@ -1,138 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030865Ab0B0Urh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 15:47:37 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:63893 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030834Ab0B0Ure (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 15:47:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Rg+JzkQ7PaNWLVyuuccJkcUJe6XpzZiZzAz6+XjrpzeMHqpelcfGgCmsBJ5FGUHIou
-         o0h++dfP65BlLXFZ/ZDnacmTdo+MmGO9/8Na0WIy8/5vQcwRDWv3a0MDKKtBw/6UYtvg
-         BmZosYd45vfSNBnUxZoZIQFfFAtT6tELKw6aU=
-Message-ID: <4B8984EE.8090605@gmail.com>
-Date: Sat, 27 Feb 2010 21:47:42 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>,
-       Mikael Pettersson <mikpe@it.uu.se>, penberg@cs.helsinki.fi,
-       Brian Gerst <brgerst@gmail.com>, andi@firstfloor.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
-       Herbert@gondor.apana.org.au
-Subject: [PATCH v1] compiler: prevent dead store elimination
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1030872Ab0B0VBK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:01:10 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33219 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030850Ab0B0VBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 16:01:09 -0500
+Date: Sun, 28 Feb 2010 08:01:00 +1100
+From: Neil Brown <neilb@suse.de>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: Re: mdadm software raid + ext4, capped at ~350MiB/s limitation/bug?
+Message-ID: <20100228080100.092c24c2@notabene.brown>
+In-Reply-To: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan>
+References: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to optimization A call to memset() may be removed as a dead store when
-the buffer is not used after its value is overwritten. The new function
-secure_bzero() ensures a section of memory is padded with zeroes.
+On Sat, 27 Feb 2010 08:47:48 -0500 (EST)
+Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 
->From the GCC manual, section 5.37:
-If your assembler instructions access memory in an unpredictable
-fashion, add `memory' to the list of clobbered registers. This will
-cause GCC to not keep memory values cached in registers across the
-assembler instruction and not optimize stores or loads to that memory.
+> Hello,
+> 
+> I have two separate systems and with ext4 I cannot get speeds greater than 
+> ~350MiB/s when using ext4 as the filesystem on top of a raid5 or raid0. 
+> It appears to be a bug with ext4 (or its just that ext4 is slower for this
+> test)?
+> 
+> Each system runs 2.6.33 x86_64.
 
-Every byte in the [p,p+n[ range must be used. If you only use the
-first byte, via e.g. asm("" :: "m"(*(char*)p)), then the compiler
-_will_ skip scrubbing bytes beyond the first. This works with
-gcc-3.2.3 up to gcc-4.4.3.
+Could be related to the recent implementation of IO barriers in md.
+Can you try mounting your filesystem with
+   -o barrier=0
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- include/linux/compiler-gcc.h   |   11 +++++++++++
- include/linux/compiler-intel.h |    2 ++
- include/linux/string.h         |    1 +
- lib/string.c                   |   13 +++++++++++++
- 4 files changed, 27 insertions(+), 0 deletions(-)
+and see how that changes the result.
 
-Thanks all for the required information, checkpatch.pl and compile
-tested. In my (non-kernel) testcase this prevents dead store elimination.
-Comments?
+NeilBrown
 
-Roel
 
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 73dcf80..0799938 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -12,6 +12,17 @@
- #define barrier() __asm__ __volatile__("": : :"memory")
- 
- /*
-+ * Dead store elimination (DSE) is an optimization that may remove a write to
-+ * a buffer that is not used anymore. Use ARRAY_PREVENT_DSE after a write when
-+ * the scrub is required for security reasons.
-+ */
-+#define ARRAY_PREVENT_DSE(p, n)				\
-+	do {						\
-+		struct __scrub { char c[n]; };		\
-+		asm("" : : "m"(*(struct __scrub *)p));	\
-+	} while (0)
-+
-+/*
-  * This macro obfuscates arithmetic on a variable address so that gcc
-  * shouldn't recognize the original var, and make assumptions about it.
-  *
-diff --git a/include/linux/compiler-intel.h b/include/linux/compiler-intel.h
-index d8e636e..e8e11f3 100644
---- a/include/linux/compiler-intel.h
-+++ b/include/linux/compiler-intel.h
-@@ -14,9 +14,11 @@
-  * It uses intrinsics to do the equivalent things.
-  */
- #undef barrier
-+#undef ARRAY_PREVENT_DSE
- #undef RELOC_HIDE
- 
- #define barrier() __memory_barrier()
-+#define ARRAY_PREVENT_DSE(p, n)
- 
- #define RELOC_HIDE(ptr, off)					\
-   ({ unsigned long __ptr;					\
-diff --git a/include/linux/string.h b/include/linux/string.h
-index a716ee2..36213e6 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -118,6 +118,7 @@ extern void * memchr(const void *,int,__kernel_size_t);
- extern char *kstrdup(const char *s, gfp_t gfp);
- extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
- extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
-+extern void secure_bzero(void *, __kernel_size_t);
- 
- extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
- extern void argv_free(char **argv);
-diff --git a/lib/string.c b/lib/string.c
-index a1cdcfc..588ac31 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -559,6 +559,19 @@ void *memset(void *s, int c, size_t count)
- EXPORT_SYMBOL(memset);
- #endif
- 
-+/**
-+ * secure_bzero - Call memset to fill a region of memory with zeroes and
-+ * ensure this memset is not removed due to dead store elimination.
-+ * @p: Pointer to the start of the area.
-+ * @n: The size of the area.
-+ */
-+void secure_bzero(void *p, size_t n)
-+{
-+	memset(p, 0, n);
-+	ARRAY_PREVENT_DSE(p, n);
-+}
-+EXPORT_SYMBOL(secure_bzero);
-+
- #ifndef __HAVE_ARCH_MEMCPY
- /**
-  * memcpy - Copy one area of memory to another
+> 
+> Can someone please confirm?
+> 
+> Here is ext4:
+> 
+> # dd if=/dev/zero of=bigfile bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 29.8556 s, 360 MB/s
+> 
+> The result is the same regardless of the RAID type (RAID-5 or RAID-0)
+> 
+> Note, this is not a bandwidth problem:
+> 
+> # dd if=/dev/zero of=/dev/md0 bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 17.6871 s, 607 MB/s
+> 
+> With XFS:
+> 
+> p63:~# mkfs.xfs -f /dev/md0
+> p63:~# mount /dev/md0 /r1
+> p63:~# cd /r1
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 17.6078 s, 610 MB/s
+> 
+> NOTE: With a HW raid controller (OR using XFS), I can get > 500 MiB/s, 
+> this problem only occurs with SW raid (Linux/mdadm).
+> 
+> Example (3ware 9650SE-16PML RAID-6, 15 drives (using EXT4)
+> $ dd if=/dev/zero of=bigfile bs=1M count=10240
+> 10240+0 records in
+> 10240+0 records out
+> 10737418240 bytes (11 GB) copied, 21.1729 s, 507 MB/s
+> 
+> Justin.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
