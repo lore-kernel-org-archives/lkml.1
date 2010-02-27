@@ -1,86 +1,233 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968142Ab0B0JzF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 04:55:05 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:60396 "EHLO
+	id S968139Ab0B0KCb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:02:31 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:58783 "EHLO
 	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968104Ab0B0JzD (ORCPT
+	with ESMTP id S968104Ab0B0KC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 04:55:03 -0500
+	Sat, 27 Feb 2010 05:02:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=VWikWCcqZOyqFWwU7sSn9IUF0NmWw2kGvGPuMNRG3Px1jJ/djHh3ZA++FKCk+ppG9J
-         ljSV3gZ/HK+62iySy402+pgBxD/dnNMRbezW3zdG8fTBsCvz469s+cMUxYBcQdy2mAJt
-         RXGNSz2MojuhGZxC74Hny40kSGUK+Tsnpmh84=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WkDJ3xVAswKXdgWn91Wy+O5jbjeO2+tG7UMFhly4tw3IL1vMqTkoikw3ulHsk6k8E0
+         gOfupJ6avHUPA9VKFBgwRqWzjBxKIJHYVBjNKEHp7x1tn3UJLrA7qnOsHlv0Qaz3Fzxa
+         1j7JQS/U3D8QE4cr6JGdwnVOvWoCZyRGp4WBw=
+Date: Sat, 27 Feb 2010 11:02:25 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [PATCH][GIT PULL] ftrace: Add function names to dangling } in
+	function graph tracer
+Message-ID: <20100227100223.GB5130@nowhere>
+References: <1267230439.6328.149.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-In-Reply-To: <1267194445.6328.111.camel@gandalf.stny.rr.com>
-References: <20100225155359.GA2722@darkstar> <20100225185515.GB3305@core2>
-	 <a8e1da1002251714l55ccbd44ibc1119770667c62b@mail.gmail.com>
-	 <b6fcc0a1002252315k1fd5360ehf5ea33566c19515d@mail.gmail.com>
-	 <a8e1da1002252333g6e8bf94crba465c59c0cbc07a@mail.gmail.com>
-	 <1267170179.12041.4.camel@Joe-Laptop.home>
-	 <a8e1da1002260155l5e75a473oca5649ab33cce124@mail.gmail.com>
-	 <1267194445.6328.111.camel@gandalf.stny.rr.com>
-Date: Sat, 27 Feb 2010 17:55:00 +0800
-Message-ID: <a8e1da1002270155u1d708399iaacbb5d354a14f40@mail.gmail.com>
-Subject: Re: [PATCH 03/07] kernel.h string cleanup
-From: Dave Young <hidave.darkstar@gmail.com>
-To: rostedt@goodmis.org
-Cc: Joe Perches <joe@perches.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267230439.6328.149.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 10:27 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Fri, 2010-02-26 at 17:55 +0800, Dave Young wrote:
->
->> Spliting is necessary from my point of view.
->
->> with the patches applied:
->>
->> time:
->> real 15m16.504s
->> user 12m51.866s
->> sys 1m39.700s
->>
->> vmlinux .text size: 003bfcd2
->>
->> without the patches applied*
->> time:
->> real 15m20.518s
->> user 12m54.120s
->> sys 1m40.190s
->>
->> vmlinux .text size: 003bfcea
->
-> Why the change in text size? If moving stuff around in headers affects
-> the final result, I'm thinking that you did something wrong.
+On Fri, Feb 26, 2010 at 07:27:19PM -0500, Steven Rostedt wrote:
+> commit f1c7f517a5dc23bce07efa5ed55e2c074ed9d4ba
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Fri Feb 26 17:08:16 2010 -0500
+> 
+>     ftrace: Add function names to dangling } in function graph tracer
+>     
+>     The function graph tracer is currently the most invasive tracer
+>     in the ftrace family. It can easily overflow the buffer even with
+>     10megs per CPU. This means that events can often be lost.
+>     
+>     On start up, or after events are lost, if the function return is
+>     recorded but the function enter was lost, all we get to see is the
+>     exiting '}'.
+>     
+>     Here is how a typical trace output starts:
+>     
+>      [tracing] cat trace
+>      # tracer: function_graph
+>      #
+>      # CPU  DURATION                  FUNCTION CALLS
+>      # |     |   |                     |   |   |   |
+>       0) + 91.897 us   |                  }
+>       0) ! 567.961 us  |                }
+>       0)   <========== |
+>       0) ! 579.083 us  |                _raw_spin_lock_irqsave();
+>       0)   4.694 us    |                _raw_spin_unlock_irqrestore();
+>       0) ! 594.862 us  |              }
+>       0) ! 603.361 us  |            }
+>       0) ! 613.574 us  |          }
+>       0) ! 623.554 us  |        }
+>       0)   3.653 us    |        fget_light();
+>       0)               |        sock_poll() {
+>     
+>     There are a series of '}' with no matching "func() {". There's no information
+>     to what functions these ending brackets belong to.
+>     
+>     This patch adds a stack on the per cpu structure used in outputting
+>     the function graph tracer to keep track of what function was outputted.
+>     Then on a function exit event, it checks the depth to see if the
+>     function exit has a matching entry event. If it does, then it only
+>     prints the '}', otherwise it adds the function name after the '}'.
+>     
+>     This allows function exit events to show what function they belong to
+>     at trace output startup, when the entry was lost due to ring buffer
+>     overflow, or even after a new task is scheduled in.
+>     
+>     Here is what the above trace will look like after this patch:
+>     
+>      [tracing] cat trace
+>      # tracer: function_graph
+>      #
+>      # CPU  DURATION                  FUNCTION CALLS
+>      # |     |   |                     |   |   |   |
+>       0) + 91.897 us   |                  } (irq_exit)
+>       0) ! 567.961 us  |                } (smp_apic_timer_interrupt)
+>       0)   <========== |
+>       0) ! 579.083 us  |                _raw_spin_lock_irqsave();
+>       0)   4.694 us    |                _raw_spin_unlock_irqrestore();
+>       0) ! 594.862 us  |              } (add_wait_queue)
+>       0) ! 603.361 us  |            } (__pollwait)
+>       0) ! 613.574 us  |          } (tcp_poll)
+>       0) ! 623.554 us  |        } (sock_poll)
+>       0)   3.653 us    |        fget_light();
+>       0)               |        sock_poll() {
 
-trace/printk/panic/string stuff just being moved to another head file,
-then included
-in kernel.h, so there shouldn't be difference with before.
 
-So I guess it's the hexdump/int_sqrt head file which are removed from kernel.h?
->
-> The merge for x86 did a lot of file manipulation, but Thomas and Ingo
-> would always test that the binary result was the same. If the binary
-> result is different, then something went wrong with the file
-> manipulations.
->
-> -- Steve
->
->
->
->
+
+That's a good idea.
 
 
 
--- 
-Regards
-dave
+>     
+>     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+> index 112561d..e998a82 100644
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -18,6 +18,7 @@ struct fgraph_cpu_data {
+>  	pid_t		last_pid;
+>  	int		depth;
+>  	int		ignore;
+> +	unsigned long	enter_funcs[FTRACE_RETFUNC_DEPTH];
+>  };
+>  
+>  struct fgraph_data {
+> @@ -670,15 +671,21 @@ print_graph_entry_leaf(struct trace_iterator *iter,
+>  	duration = graph_ret->rettime - graph_ret->calltime;
+>  
+>  	if (data) {
+> +		struct fgraph_cpu_data *cpu_data;
+>  		int cpu = iter->cpu;
+> -		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
+> +
+> +		cpu_data = per_cpu_ptr(data->cpu_data, cpu);
+>  
+>  		/*
+>  		 * Comments display at + 1 to depth. Since
+>  		 * this is a leaf function, keep the comments
+>  		 * equal to this depth.
+>  		 */
+> -		*depth = call->depth - 1;
+> +		cpu_data->depth = call->depth - 1;
+> +
+> +		/* No need to keep this function around for this depth */
+> +		if (call->depth < FTRACE_RETFUNC_DEPTH)
+
+
+
+Do you really need to check that? call->depth >= FTRACE_RETFUNC_DEPTH
+are not recorded.
+
+
+
+> +			cpu_data->enter_funcs[call->depth] = 0;
+>  	}
+>  
+>  	/* Overhead */
+> @@ -718,10 +725,15 @@ print_graph_entry_nested(struct trace_iterator *iter,
+>  	int i;
+>  
+>  	if (data) {
+> +		struct fgraph_cpu_data *cpu_data;
+>  		int cpu = iter->cpu;
+> -		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
+>  
+> -		*depth = call->depth;
+> +		cpu_data = per_cpu_ptr(data->cpu_data, cpu);
+> +		cpu_data->depth = call->depth;
+> +
+> +		/* Save this function pointer to see if the exit matches */
+> +		if (call->depth < FTRACE_RETFUNC_DEPTH)
+> +			cpu_data->enter_funcs[call->depth] = call->func;
+>  	}
+>  
+>  	/* No overhead */
+> @@ -851,18 +863,28 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+>  	struct fgraph_data *data = iter->private;
+>  	pid_t pid = ent->pid;
+>  	int cpu = iter->cpu;
+> +	int func_match = 1;
+>  	int ret;
+>  	int i;
+>  
+>  	if (data) {
+> -		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
+> +		struct fgraph_cpu_data *cpu_data;
+> +		int cpu = iter->cpu;
+> +
+> +		cpu_data = per_cpu_ptr(data->cpu_data, cpu);
+>  
+>  		/*
+>  		 * Comments display at + 1 to depth. This is the
+>  		 * return from a function, we now want the comments
+>  		 * to display at the same level of the bracket.
+>  		 */
+> -		*depth = trace->depth - 1;
+> +		cpu_data->depth = trace->depth - 1;
+> +
+> +		if (trace->depth < FTRACE_RETFUNC_DEPTH) {
+> +			if (cpu_data->enter_funcs[trace->depth] != trace->func)
+> +				func_match = 0;
+> +			cpu_data->enter_funcs[trace->depth] = 0;
+> +		}
+>  	}
+>  
+>  	if (print_graph_prologue(iter, s, 0, 0))
+> @@ -887,9 +909,21 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+>  			return TRACE_TYPE_PARTIAL_LINE;
+>  	}
+>  
+> -	ret = trace_seq_printf(s, "}\n");
+> -	if (!ret)
+> -		return TRACE_TYPE_PARTIAL_LINE;
+> +	/*
+> +	 * If the return function does not have a matching entry,
+> +	 * then the entry was lost. Instead of just printing
+> +	 * the '}' and letting the user guess what function this
+> +	 * belongs to, write out the function name.
+> +	 */
+> +	if (func_match) {
+> +		ret = trace_seq_printf(s, "}\n");
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +	} else {
+> +		ret = trace_seq_printf(s, "} (%ps)\n", (void *)trace->func);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +	}
+>  
+>  	/* Overrun */
+>  	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERRUN) {
+> 
+> 
+
+
+Very nice!
+
