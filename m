@@ -1,76 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030700Ab0B0TMJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 14:12:09 -0500
-Received: from mail.ipom.com ([74.207.225.167]:52136 "EHLO mail.ipom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030688Ab0B0TMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 14:12:07 -0500
-Message-ID: <4B896E79.6090302@ipom.com>
-Date: Sat, 27 Feb 2010 20:11:53 +0100
-From: Phil Dibowitz <phil@ipom.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100216 Thunderbird/3.0.2
+	id S1030698Ab0B0TSy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 14:18:54 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:28004 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030653Ab0B0TSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 14:18:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4GbqZaNEIkXVi/PyyaYFVurML12e6yZrHPbtTl6Fm6QUrsLoaHNQvHmfqhkCcEvuGUGKB6EcArfHnXwN6ohpuou826NbLOI576P5U1KjlgR56y+s/kYb4OvIbQAO9hxtSu7RsuNN3SPchdruMRBhbgaMhMCSe14cbhZleTqKJT8=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: r5fepbwVM1mPWMdr255NKB730frireWlZYLrwSM4gB1Ar2Oo8k9Hru2rQoZjX4XUz3PcotzyuuhDHmRAoqjaJkInxLMqDf4ZMcEf5gN0HCTqfP7875cGlS8Zy9eAVRCKJeXyqPU9511U9ZNvq5p0f7iBMjEoIAuHumjZ2YqiRqtTRakgYox1v_cr1LmpqD34T.F0fIdHS4m5AZvt5XuTIb8N2eBjOm61Cr3.0JyiMmaP6hflTau10H9BU9TdxC7bXTLvSBz6U80793IJbEY-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Gardner <gardner.ben@gmail.com>
+Subject: Re: [PATCH v2] cs5535-gpio: change input/output enable to match gpiolib expectations
+Date: Sat, 27 Feb 2010 11:18:51 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>
+References: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com> <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
+In-Reply-To: <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
 MIME-Version: 1.0
-To: Ondrej Zary <linux@rainbow-software.org>,
-       usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [usb-storage] [PATCH] [resend] unusual_devs.h: Fix capacity for
- SL11R-IDE 2.6c
-References: <201002241141.10103.linux@rainbow-software.org> <20100224192959.GJ20232@one-eyed-alien.net> <201002242222.21008.linux@rainbow-software.org> <20100224224739.GK20232@one-eyed-alien.net>
-In-Reply-To: <20100224224739.GK20232@one-eyed-alien.net>
-X-Enigmail-Version: 1.0.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE69A08CAF5F20AD50FE32287"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002271118.51842.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE69A08CAF5F20AD50FE32287
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Saturday 27 February 2010, Ben Gardner wrote:
 
-On 02/24/2010 11:47 PM, Matthew Dharm wrote:
-> Phil D. --
->=20
-> I recommend circling around with pwaechtler@loewe-komp.de to see if we
-> can't condense these into a single entry.
-
-I'm with Ondrej here, I suspect that entry is completely unneeded now. We=
-'ve
-gotten pretty good at handling bad INQUIRYs.
-
-So unless you object, I'm going to allow Ondrej's patch, and then I'll fi=
-re
-up a patch to remove the other version and fire it off to Peter W. to see=
- if
-his device works without it.
-
---=20
-Phil Dibowitz                             phil@ipom.com
-Open Source software and tech docs        Insanity Palace of Metallica
-http://www.phildev.net/                   http://www.ipom.com/
-
-"Be who you are and say what you feel, because those who mind don't matte=
-r
- and those who matter don't mind."
- - Dr. Seuss
+Patch seems OK, but the comment could stand correction:
 
 
+> The intent of the gpiolib set_direction_xxx functions is as follows:
 
---------------enigE69A08CAF5F20AD50FE32287
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Clarification:  it's not "gpiolib" which expects that; "gpiolib"
+is just an optional implementation infrastructure for the GPIO
+programming interface.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+That behavior is better described as a "weak expectation" than an
+intent.  It comes from the GPIO programming interface, as described
+in Documentation/gpio.txt ...
 
-iEYEARECAAYFAkuJbnsACgkQN5XoxaHnMrsHEgCfZe3+4Pz4MNM3UyJOBQZx31gS
-fOUAoIANFCE4DTdXfxVr1xWCtycbzCGR
-=kYLB
------END PGP SIGNATURE-----
+And the reason it describes that weak expectation is that it's how
+most GPIO hardware behaves ... in particular, how the GPIO banks of
+most System-on-Chip (SoC) processors behave.  (Even on boards with
+external GPIO controllers, the SoC GPIOs generally outnumber the
+external GPIOs by one or more orders of magnitude.)
 
---------------enigE69A08CAF5F20AD50FE32287--
+Since the behavior of reading an "output" GPIO's value needs to
+be specified ... this issue comes up.
+
+
+> output: enable both input and output
+> input: disable output, enable input
+
+... the expectation is "weak" in that output-only is very
+much allowed.  However, if a gpio is going to provide that
+model, (a) it needs to report its value as 0/low/false when
+asked, which (b) may well trigger some odd behavior in
+some other driver code that expects more typical behavior
+
+(You *could* also return 0/low/false for output-only GPIOs.
+But this behavior is more typical, and much more useful.)
+
+So a better explanation of this patch would emphasize that
+it's providing "more typical behavior" to reduce surprises.
+
+
+- Dave
