@@ -1,89 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030796Ab0B0U2O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 15:28:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55610 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030784Ab0B0U2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 15:28:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH] PM / Runtime: Document power.runtime_auto and related functions
-Date: Sat, 27 Feb 2010 21:30:38 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002272130.38639.rjw@sisk.pl>
+	id S1030827Ab0B0Udg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 15:33:36 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:34888
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030814Ab0B0Udf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 15:33:35 -0500
+Date: Sat, 27 Feb 2010 12:33:17 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Phil Dibowitz <phil@ipom.com>
+Cc: Ondrej Zary <linux@rainbow-software.org>,
+       usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [usb-storage] [PATCH] [resend] unusual_devs.h: Fix capacity for SL11R-IDE 2.6c
+Message-ID: <20100227203317.GM20232@one-eyed-alien.net>
+Mail-Followup-To: Phil Dibowitz <phil@ipom.com>,
+	Ondrej Zary <linux@rainbow-software.org>,
+	usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <201002241141.10103.linux@rainbow-software.org> <20100224192959.GJ20232@one-eyed-alien.net> <201002242222.21008.linux@rainbow-software.org> <20100224224739.GK20232@one-eyed-alien.net> <4B896E79.6090302@ipom.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7IgncvKP0CVPV/ZZ"
+Content-Disposition: inline
+In-Reply-To: <4B896E79.6090302@ipom.com>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2010 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Sat, 27 Feb 2010 12:33:18 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The power.runtime_auto device flag and the helper functions
-pm_runtime_allow() and pm_runtime_forbid() used to modify it are a
-part of the run-time power management framework and therefore they
-should be described in Documentation/power/runtime_pm.txt.
+--7IgncvKP0CVPV/ZZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/runtime_pm.txt |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+On Sat, Feb 27, 2010 at 08:11:53PM +0100, Phil Dibowitz wrote:
+> On 02/24/2010 11:47 PM, Matthew Dharm wrote:
+> > Phil D. --
+> >=20
+> > I recommend circling around with pwaechtler@loewe-komp.de to see if we
+> > can't condense these into a single entry.
+>=20
+> I'm with Ondrej here, I suspect that entry is completely unneeded now. We=
+'ve
+> gotten pretty good at handling bad INQUIRYs.
+>=20
+> So unless you object, I'm going to allow Ondrej's patch, and then I'll fi=
+re
+> up a patch to remove the other version and fire it off to Peter W. to see=
+ if
+> his device works without it.
 
-Index: linux-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/runtime_pm.txt
-+++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -224,6 +224,12 @@ defined in include/linux/pm.h:
-       RPM_SUSPENDED, which means that each device is initially regarded by the
-       PM core as 'suspended', regardless of its real hardware status
- 
-+  unsigned int runtime_auto;
-+    - if set, indicates that the user space has allowed the device driver to
-+      power manage the device at run time via the /sys/devices/.../power/control
-+      interface; it may only be modified with the help of the pm_runtime_allow()
-+      and pm_runtime_forbid() helper functions
-+
- All of the above fields are members of the 'power' member of 'struct device'.
- 
- 4. Run-time PM Device Helper Functions
-@@ -329,6 +335,16 @@ drivers/base/power/runtime.c and include
-       'power.runtime_error' is set or 'power.disable_depth' is greater than
-       zero)
- 
-+  void pm_runtime_allow(struct device *dev);
-+    - set the power.runtime_auto flag for the device and decrease its usage
-+      counter (used by the /sys/devices/.../power/control interface to
-+      effectively allow the device to be power managed at run time)
-+
-+  void pm_runtime_forbid(struct device *dev);
-+    - unset the power.runtime_auto flag for the device and increase its usage
-+      counter (used by the /sys/devices/.../power/control interface to
-+      effectively prevent the device from being power managed at run time)
-+
- It is safe to execute the following helper functions from interrupt context:
- 
- pm_request_idle()
-@@ -382,6 +398,18 @@ may be desirable to suspend the device a
- finished, so the PM core uses pm_runtime_idle_sync() to invoke the
- subsystem-level idle callback for the device at that time.
- 
-+The user space can effectively disallow the driver of the device to power manage
-+it at run time by changing the value of its /sys/devices/.../power/control
-+attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
-+this mechanism may also be used by the driver to effectively turn off the
-+run-time power management of the device until the user space turns it on.
-+Namely, during the initialization the driver can make sure that the run-time PM
-+status of the device is 'active' and call pm_runtime_forbid().  It should be
-+noted, however, that if the user space has already intentionally changed the
-+value of /sys/devices/.../power/control to "auto" to allow the driver to power
-+manage the device at run time, the driver may confuse it by using
-+pm_runtime_forbid() this way.
-+
- 6. Run-time PM and System Sleep
- 
- Run-time PM and system sleep (i.e., system suspend and hibernation, also known
+Seems like a reasonable plan.
+
+Matt
+
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+S:  Another stupid question?
+G:  There's no such thing as a stupid question, only stupid people.
+					-- Stef and Greg
+User Friendly, 7/15/1998
+
+--7IgncvKP0CVPV/ZZ
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFLiYGNHL9iwnUZqnkRAl6oAJ9jgjVp17JQH0yatUPIqjyb7oJixQCbBQqs
+WLfgUpoemTdoJo0CCOdh+y0=
+=vB7l
+-----END PGP SIGNATURE-----
+
+--7IgncvKP0CVPV/ZZ--
