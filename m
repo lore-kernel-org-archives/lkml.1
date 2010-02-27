@@ -1,371 +1,180 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812Ab0B0Va4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 16:30:56 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:56290 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934585Ab0B0Val convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 16:30:41 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1267306076.16186.103.camel@localhost>
-References: <1267306076.16186.103.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 27 Feb 2010 21:30:35 +0000
-Message-ID: <1267306235.16186.106.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH firmware 3/6] Specify drivers using firmware by
- module/object name
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S964832Ab0B0VbO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:31:14 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:48023 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934887Ab0B0VbH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 16:31:07 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       garyhade@us.ibm.com, iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, trenn@suse.de
+References: <4B882182.4030205@kernel.org>
+	<tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org>
+	<20100227130113.GA18661@elte.hu> <m1y6ieo5zw.fsf@fess.ebiederm.org>
+	<4B897537.5050406@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 27 Feb 2010 13:30:50 -0800
+In-Reply-To: <4B897537.5050406@kernel.org> (Yinghai Lu's message of "Sat\, 27 Feb 2010 11\:40\:39 -0800")
+Message-ID: <m1zl2ue585.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Yinghai Lu <yinghai@kernel.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 TR_Symld_Words too many words that have symbols inside
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_04 7+ unique symbols in subject
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 T_TooManySym_03 6+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [tip:x86/apic] x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drivers are currently specified by a mixture of module name, config
-option or description, which is not that useful.
+Yinghai Lu <yinghai@kernel.org> writes:
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- WHENCE |   72 ++++++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 36 insertions(+), 36 deletions(-)
+> the x3950 has strange gsi base 
+>
+> ACPI: IOAPIC (id[0x10] address[0xfecff000] gsi_base[0])
+> IOAPIC[0]: apic_id 16, version 0, address 0xfecff000, GSI 0-2
+> ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[3])
+> IOAPIC[1]: apic_id 15, version 0, address 0xfec00000, GSI 3-38
+> ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[39])
+> IOAPIC[2]: apic_id 14, version 0, address 0xfec01000, GSI 39-74
+>
+> and BIOS using INT_SRC_OVR to map back gsi  3 - 18 to irq 0 - 15
+>
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 1 global_irq 4 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 5 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 3 global_irq 6 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 4 global_irq 7 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 6 global_irq 9 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 7 global_irq 10 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 8 global_irq 11 low edge)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 12 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 12 global_irq 15 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 13 global_irq 16 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 17 low edge)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 18 dfl dfl)
+> if we dont have this patch to do the remap (swap some mapping between ioapic), and only assume irq = gsi,
+> the irq from first ioapic controller will be blocked.
 
-diff --git a/WHENCE b/WHENCE
-index c291289..690157d 100644
---- a/WHENCE
-+++ b/WHENCE
-@@ -26,7 +26,7 @@ Licence: Allegedly GPLv2+, but no source visible. Marked:
- 
- --------------------------------------------------------------------------
- 
--Driver: korg1212 -- Korg 1212 IO audio device
-+Driver: snd-korg1212 -- Korg 1212 IO audio device
- 
- File: korg/k1212.dsp
- 
-@@ -36,7 +36,7 @@ Found in alsa-firmware package in hex form; no licensing information.
- 
- --------------------------------------------------------------------------
- 
--Driver: maestro3 -- ESS Allegro Maestro3 audio device
-+Driver: snd-maestro3 -- ESS Allegro Maestro3 audio device
- 
- File: ess/maestro3_assp_kernel.fw
- File: ess/maestro3_assp_minisrc.fw
-@@ -50,7 +50,7 @@ specs on the dsp."
- 
- --------------------------------------------------------------------------
- 
--Driver: ymfpci -- Yamaha YMF724/740/744/754 audio devices
-+Driver: snd-ymfpci -- Yamaha YMF724/740/744/754 audio devices
- 
- File: yamaha/ds1_ctrl.fw
- File: yamaha/ds1_dsp.fw
-@@ -63,7 +63,7 @@ Found alsa-firmware package in hex form, with the following comment:
- 
- --------------------------------------------------------------------------
- 
--Driver: SCSI_ADVANSYS - AdvanSys SCSI
-+Driver: advansys - AdvanSys SCSI
- 
- File: advansys/mcode.bin
- File: advansys/3550.bin
-@@ -76,7 +76,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: SCSI_QLOGIC_1280 - Qlogic QLA 1240/1x80/1x160 SCSI support
-+Driver: qla1280 - Qlogic QLA 1240/1x80/1x160 SCSI support
- 
- File: qlogic/1040.bin
- File: qlogic/1280.bin
-@@ -116,7 +116,7 @@ Found in hex form in the kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: ttusb-budget -- Technotrend/Hauppauge Nova-USB devices
-+Driver: dvb-ttusb-budget -- Technotrend/Hauppauge Nova-USB devices
- 
- File: ttusb-budget/dspbootcode.bin
- 
-@@ -295,7 +295,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: CPiA2 -- cameras based on Vision's CPiA2
-+Driver: cpia2 -- cameras based on Vision's CPiA2
- 
- File: cpia2/stv0672_vp4.bin
- 
-@@ -308,7 +308,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: DABUSB -- Digital Audio Broadcasting (DAB) Receiver for USB and Linux
-+Driver: dabusb -- Digital Audio Broadcasting (DAB) Receiver for USB and Linux
- 
- File: dabusb/firmware.fw
- File: dabusb/bitstream.bin
-@@ -324,7 +324,7 @@ Licence: Distributable
- 
- --------------------------------------------------------------------------
- 
--Driver: USB_VICAM -- USB 3com HomeConnect (aka vicam)
-+Driver: vicam -- USB 3com HomeConnect (aka vicam)
- 
- File: vicam/firmware.fw
- 
-@@ -334,7 +334,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: USB_SERIAL_EDGEPORT - USB Inside Out Edgeport Serial Driver
-+Driver: io_edgeport - USB Inside Out Edgeport Serial Driver
- 
- File: edgeport/boot.fw
- File: edgeport/boot2.fw
-@@ -352,7 +352,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: USB_SERIAL_EDGEPORT_TI - USB Inside Out Edgeport Serial Driver
-+Driver: io_ti - USB Inside Out Edgeport Serial Driver
- (TI Devices)
- 
- File: edgeport/down3.bin
-@@ -368,7 +368,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: ATARI_DSP56K - Atari DSP56k support
-+Driver: dsp56k - Atari DSP56k support
- 
- File: dsp56k/bootstrap.bin
- Source: dsp56k/bootstrap.asm
-@@ -380,7 +380,7 @@ http://www.zdomain.com/a56.html
- 
- --------------------------------------------------------------------------
- 
--Driver: SND_SB16_CSP - Sound Blaster 16/AWE CSP support
-+Driver: snd-sb16-csp - Sound Blaster 16/AWE CSP support
- 
- File: sb16/mulaw_main.csp
- File: sb16/alaw_main.csp
-@@ -398,7 +398,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: SCSI_QLA_FC - QLogic QLA2XXX Fibre Channel
-+Driver: qla2xxx - QLogic QLA2XXX Fibre Channel
- 
- File: ql2100_fw.bin -- 1.19.38 TP
- File: ql2200_fw.bin -- 2.02.08 TP
-@@ -413,7 +413,7 @@ Available from ftp://ftp.qlogic.com/outgoing/linux/firmware/
- 
- --------------------------------------------------------------------------
- 
--Driver: ORINOCO - Agere/Prism/Symbol Orinoco support
-+Driver: orinoco - Agere/Prism/Symbol Orinoco support
- 
- File: agere_sta_fw.bin -- 9.48 Hermes I
- File: agere_ap_fw.bin  -- 9.48 Hermes I
-@@ -422,7 +422,7 @@ Licence: Redistributable. See LICENCE.agere for details
- 
- --------------------------------------------------------------------------
- 
--Driver: AR9170 - Atheros 802.11n "otus" USB
-+Driver: ar9170 - Atheros 802.11n "otus" USB
- 
- File: ar9170-1.fw
- File: ar9170-2.fw
-@@ -431,7 +431,7 @@ Licence: Redistributable. See LICENCE.atheros_firmware for details
- 
- --------------------------------------------------------------------------
- 
--Driver: CASSINI - Sun Cassini
-+Driver: cassini - Sun Cassini
- 
- File: sun/cassini.bin
- 
-@@ -441,7 +441,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: SLICOSS - Alacritech IS-NIC products
-+Driver: slicoss - Alacritech IS-NIC products
- 
- File: slicoss/gbdownload.sys
- File: slicoss/gbrcvucode.sys
-@@ -468,7 +468,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: SXG - Alacritech IS-NIC products
-+Driver: sxg - Alacritech IS-NIC products
- 
- File: sxg/saharadownloadB.sys
- File: sxg/saharadbgdownloadB.sys
-@@ -545,7 +545,7 @@ http://alteon.shareable.org/
- 
- --------------------------------------------------------------------------
- 
--Driver: tigon3 -- Broadcom Tigon3 based gigabit Ethernet cards
-+Driver: tg3 -- Broadcom Tigon3 based gigabit Ethernet cards
- 
- File: tigon/tg3.bin
- File: tigon/tg3_tso.bin
-@@ -564,7 +564,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: ADAPTEC_STARFIRE - Adaptec Starfire/DuraLAN support
-+Driver: starfire - Adaptec Starfire/DuraLAN support
- 
- File: adaptec/starfire_rx.bin
- File: adaptec/starfire_tx.bin
-@@ -675,7 +675,7 @@ Licence:
- 
- --------------------------------------------------------------------------
- 
--Driver: TEHUTI - Tehuti Networks 10G Ethernet
-+Driver: tehuti - Tehuti Networks 10G Ethernet
- 
- File: tehuti/bdx.bin
- 
-@@ -691,7 +691,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: TYPHOON - 3cr990 series Typhoon
-+Driver: typhoon - 3cr990 series Typhoon
- 
- File: 3com/typhoon.bin
- 
-@@ -733,7 +733,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: YAM - YAM driver for AX.25
-+Driver: yam - YAM driver for AX.25
- 
- File: yam/1200.bin
- File: yam/9600.bin
-@@ -745,7 +745,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: 3C359 - 3Com 3C359 Token Link Velocity XL adapter
-+Driver: 3c359 - 3Com 3C359 Token Link Velocity XL adapter
- 
- File: 3com/3C359.bin
- 
-@@ -771,7 +771,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: PCMCIA_PCNET - NE2000 compatible PCMCIA adapter
-+Driver: pcnet_cs - NE2000 compatible PCMCIA adapter
- 
- File: cis/LA-PCM.cis
- File: cis/PCMLM28.cis
-@@ -786,7 +786,7 @@ Originally developed by the pcmcia-cs project
- 
- --------------------------------------------------------------------------
- 
--Driver: PCMCIA_3C589 - 3Com PCMCIA adapter
-+Driver: 3c589_cs - 3Com PCMCIA adapter
- 
- File: cis/3CXEM556.cis
- 
-@@ -796,7 +796,7 @@ Originally developed by the pcmcia-cs project
- 
- --------------------------------------------------------------------------
- 
--Driver: PCMCIA_3C574 - 3Com PCMCIA adapter
-+Driver: 3c574_cs - 3Com PCMCIA adapter
- 
- File: cis/3CCFEM556.cis
- 
-@@ -806,7 +806,7 @@ Originally developed by the pcmcia-cs project
- 
- --------------------------------------------------------------------------
- 
--Driver: SERIAL_8250_CS - Serial PCMCIA adapter
-+Driver: serial_cs - Serial PCMCIA adapter
- 
- File: cis/MT5634ZLX.cis
- File: cis/RS-COM-2P.cis
-@@ -822,7 +822,7 @@ Originally developed by the pcmcia-cs project
- 
- --------------------------------------------------------------------------
- 
--Driver: PCMCIA_SMC91C92 - SMC 91Cxx PCMCIA
-+Driver: smc91c92_cs - SMC 91Cxx PCMCIA
- 
- File: ositech/Xilinx7OD.bin
- 
-@@ -882,7 +882,7 @@ Licence:
- 
- --------------------------------------------------------------------------
- 
--Driver: SCSI_QLOGICPTI - PTI Qlogic, ISP Driver
-+Driver: qlogicpti - PTI Qlogic, ISP Driver
- 
- File: qlogic/isp1000.bin
- 
-@@ -892,7 +892,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: MYRI_SBUS - MyriCOM Gigabit Ethernet
-+Driver: myri_sbus - MyriCOM Gigabit Ethernet
- 
- File: myricom/lanai.bin
- 
-@@ -924,7 +924,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: BNX2 - Broadcom NetXtremeII
-+Driver: bnx2 - Broadcom NetXtremeII
- 
- File: bnx2/bnx2-mips-06-4.6.16.fw
- File: bnx2/bnx2-mips-06-5.0.0.j3.fw
-@@ -949,7 +949,7 @@ Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
- 
--Driver: DVB AV7110 -- AV7110 cards
-+Driver: dvb-ttpci -- AV7110 cards
- 
- File: av7110/bootcode.bin
- 
-@@ -959,7 +959,7 @@ ARM assembly source code available at http://www.linuxtv.org/downloads/firmware/
- 
- --------------------------------------------------------------------------
- 
--Driver: wavefront - ISA WaveFront sound card
-+Driver: snd-wavefront - ISA WaveFront sound card
- 
- File: yamaha/yss225_registers.bin
- 
-@@ -1042,7 +1042,7 @@ Licence: Redistributable. See LICENCE.dib0700 for details
- 
- --------------------------------------------------------------------------
- 
--Driver: DFU Driver for Atheros bluetooth chipset AR3011
-+Driver: ath3k - DFU Driver for Atheros bluetooth chipset AR3011
- 
- File: ath3k-1.fw
- Info: v1.0
--- 
-1.6.6.2
+Bah.  I was hoping Len Brown would have looked at this earlier.
+I just read through the relevant sections of the ACPI spec
+1.0, 2.0 and 3.0 so I can understand what is really going on.
 
+What the x3950 firmware does is stupid, and probably needs to be
+changed but it is in spec.
 
+I see two issues here.
+- You broke x3950 by only initializing the first ioapic.
+  We should be able to fix that by having setup_IO_APIC_irqs
+  loop through all of the irqs and setup setup any irq with
+  pin_2_irq < 16.  It is fragile and out of spec to assume only
+  one ioapic will have all of the isa irqs connected to it.
+  Plus extending your loop should be simpler and less intrusive
+  patch than what you have posted.
 
+  Although I suspect your patch to find the boot_ioapic_idx is
+  good enough for now.
+
+- The fact that our current code makes 3 gsis/irqs on the x3950 unusable.
+  This is the justification for the remapping and unless this is
+  also a regression I don't think we should fix this in the
+  current merge window.
+
+acpi guarantees there will be a 1 to 1 mapping between gsi's and
+isa interrupts but it does not guarantee what that mapping will be.
+acpi also specified that interrupt source overrides will only be
+provided for the isa irqs.
+
+linux irqs 0-15 must be the ISA irqs.
+
+So to handle anything that is legitimate according to the acpi spec we
+do need a mapping between gsi and irqs. Grrrr.
+
+Something like:
+
+/* By default isa irqs are identity mapped to gsis */
+unsigned int isa_irq_to_gsi[16] = {
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+};
+
+unsigned int gsi_to_irq(unsigned int gsi)
+{
+	unsigned int irq = gsi + 16;
+	unsigned int i;
+	for (i = 0; i < 16; i++) {
+		if (isa_irq_to_gsi[i] == gsi)
+			irq = i;
+	}
+	return irq;
+}
+
+unsigned int irq_to_gsi(unsigned int irq)
+{
+	unsigned int gsi;
+	if (irq < 16) {
+		gsi = isa_irq_to_gsi[irq];
+	} else {
+        	gsi = irq - 16;
+        }
+        return gsi;
+}
+
+When we process the interrupt source overrides we just need to
+update the little isa_irq_to_gsi table.
+
+I expect finding all of the places where we need to do a mapping
+for gsi number to irq numbers is going to take some time to do
+cleanly which suggests it is not a good idea for this merge window.
+
+YH your current remapping patch looks like a pretty horrible hack
+instead of real solution to the problem.  I honestly think starting
+with it will just obscure what is going and make it harder to
+introduce a clean gsi_to_irq/irq_to_gsi.
+
+> so far this patch only affect (fix ) x3950.
+>
+> all other platform will all have boot_ioapic_idx's gsi_base == 0, 
+> the function will just still return gsi.
+>
+> other solution will ask IBM to fix their bios, so we can get
+
+The IBM x3950 clearly fails to be conservative in the tables it
+generates which is a justification for fixing it if IBM is
+so inclined.  I don't see how they will ever get the first
+3 irqs to be used in older linux releases (aka Enterprise kernels)
+if IBM doesn't update the firmware.
+
+I wonder if we can get qemu to emulate a system with a twisted acpi
+setup like this to give us an easier platform to test this kind of
+code.
+
+> ACPI: IOAPIC (id[0x10] address[0xfecff000] gsi_base[36])
+> IOAPIC[0]: apic_id 16, version 0, address 0xfecff000, GSI 36-38
+> ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[0])
+> IOAPIC[1]: apic_id 15, version 0, address 0xfec00000, GSI 0-35
+> ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[39])
+> IOAPIC[2]: apic_id 14, version 0, address 0xfec01000, GSI 39-74
+> then they don't need append that bunch of OVR.
+
+Eric
