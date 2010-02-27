@@ -1,27 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030344Ab0B0QyF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:54:05 -0500
+	id S1030352Ab0B0QyN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:54:13 -0500
 Received: from mail-bw0-f209.google.com ([209.85.218.209]:46242 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968581Ab0B0Qxy (ORCPT
+	with ESMTP id S1030343Ab0B0QyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:53:54 -0500
+	Sat, 27 Feb 2010 11:54:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=cuODGhnqCXpCC1BfMXI67JVTlKPhxhXeW4QLNPVamSt3wQVd/0/gbETEvzPh96LnR9
-         r2TVcIIl6Xpqxq/voMB3sCraCHqQBktknsQZ3dCdO1BBpJMp4W7oQJXGbxjyGbZE9APx
-         PNMLgUloI/W3NJVtpjwExKMeVnE473EZ5d6mQ=
+        b=UoFDZyygqzMAXnVZb/Tn+ACPRlTcJx3VbZonM5TsqIEzswbtDNMxqG4TbMIawobWhF
+         CtTXt8eUgKpaU47JUuphG1jaqJanYuwQKTmPTJaXF913sOV/oLfz5oRPGEJRaGsCyzxh
+         crtPFr6ooeaWap3Cy1T1bmmELX5NjCjM12Zv4=
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: linux-kernel@vger.kernel.org
 Cc: Andrea Gelmini <andrea.gelmini@gelma.net>,
-       Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com
-Subject: [PATCH 20/66] arch/cris/include/asm/current.h: Checkpatch cleanup
-Date: Sat, 27 Feb 2010 17:51:01 +0100
-Message-Id: <1267289508-31031-21-git-send-email-andrea.gelmini@gelma.net>
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       alsa-devel@alsa-project.org
+Subject: [PATCH 22/66] sound/oss/v_midi.h: Checkpatch cleanup
+Date: Sat, 27 Feb 2010 17:51:03 +0100
+Message-Id: <1267289508-31031-23-git-send-email-andrea.gelmini@gelma.net>
 X-Mailer: git-send-email 1.7.0.90.g251a4
 In-Reply-To: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
 References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
@@ -29,34 +29,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/cris/include/asm/current.h:8: ERROR: "foo * bar" should be "foo *bar"
-arch/cris/include/asm/current.h:10: ERROR: code indent should use tabs where possible
-arch/cris/include/asm/current.h:12: ERROR: trailing whitespace
+sound/oss/v_midi.h:5: ERROR: code indent should use tabs where possible
+sound/oss/v_midi.h:7: ERROR: trailing whitespace
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- arch/cris/include/asm/current.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ sound/oss/v_midi.h |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/cris/include/asm/current.h b/arch/cris/include/asm/current.h
-index 5f5c0ef..e846834 100644
---- a/arch/cris/include/asm/current.h
-+++ b/arch/cris/include/asm/current.h
-@@ -5,11 +5,11 @@
+diff --git a/sound/oss/v_midi.h b/sound/oss/v_midi.h
+index 1b86cb4..08e2185 100644
+--- a/sound/oss/v_midi.h
++++ b/sound/oss/v_midi.h
+@@ -2,9 +2,9 @@ typedef struct vmidi_devc {
+ 	   int dev;
  
- struct task_struct;
- 
--static inline struct task_struct * get_current(void)
-+static inline struct task_struct *get_current(void)
- {
--        return current_thread_info()->task;
-+	return current_thread_info()->task;
- }
-- 
+ 	/* State variables */
+- 	   int opened;
++	   int opened;
+ 	   spinlock_t lock;
+-	
 +
- #define current get_current()
- 
- #endif /* !(_CRIS_CURRENT_H) */
+ 	/* MIDI fields */
+ 	   int my_mididev;
+ 	   int pair_mididev;
+@@ -12,4 +12,3 @@ typedef struct vmidi_devc {
+ 	   int intr_active;
+ 	   void (*midi_input_intr) (int dev, unsigned char data);
+ 	} vmidi_devc;
+-
 -- 
 1.7.0.90.g251a4
 
