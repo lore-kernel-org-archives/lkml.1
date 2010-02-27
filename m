@@ -1,85 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030780Ab0B0ULn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 15:11:43 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:47556 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030764Ab0B0ULm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 15:11:42 -0500
-Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEANYLiUurR7H+/2dsb2JhbACbHHOhE5gahHsEgxc
-X-IronPort-AV: E=Sophos;i="4.49,551,1262563200"; 
-   d="scan'208";a="157967628"
-From: Roland Dreier <rdreier@cisco.com>
-To: =?utf-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: schedule (wait_event) vs. while
-References: <b170af451002270152u228a46abr3b316da75b2fa3f0@mail.gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Sat, 27 Feb 2010 12:11:37 -0800
-In-Reply-To: <b170af451002270152u228a46abr3b316da75b2fa3f0@mail.gmail.com>
-	(=?utf-8?Q?=22Rafa=C5=82_Mi=C5=82ecki=22's?= message of "Sat, 27 Feb 2010
- 10:52:09 +0100")
-Message-ID: <ada8waev3pi.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	id S1030796Ab0B0U2O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 15:28:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55610 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030784Ab0B0U2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 15:28:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH] PM / Runtime: Document power.runtime_auto and related functions
+Date: Sat, 27 Feb 2010 21:30:38 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002272130.38639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > In radeon engine reclocking code I need to do some calculations and
- > then wait for VBLANK interrupt. Right after VBLANK interrupt will
- > happen I need to reclock ASAP.
- > 
- > Interrupts are received by another context and I need some quite fast
- > synchronization.
- > 
- > 1) Schedule solution:
- > reclocking() {
- >   calculations();
- >   radeon->vblank_sync = 0;
- >   wait_event_timeout(radeon->wq, radeon->vblank_sync, timeout);
- >   reclock();
- > }
- > i-handler() { radeon->vblank_sync = 1; }
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-What does reclock() involve?  Is there any reason you can't do it in the
-interrupt handler?  (quite possibly it needs to sleep or something)
+The power.runtime_auto device flag and the helper functions
+pm_runtime_allow() and pm_runtime_forbid() used to modify it are a
+part of the run-time power management framework and therefore they
+should be described in Documentation/power/runtime_pm.txt.
 
-If you can do it in the interrupt handler, then your reclocking()
-function could do the calculations, stash the result somewhere, and set
-a flag that tells the interrupt handler to do the reclock().  Then you
-could use a completion to have reclocking() wait until the reclock() was
-actually done (the latency of that completion doesn't matter, since
-you're not doing any actual work after the completion).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/runtime_pm.txt |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-If you do need to wait for process context, then one possibility would
-be to do reclocking() from a high-priority kernel thread.  Then the wake
-up latency should be low (but maybe not low enough).  Or you could
-convert the interrupt handler to use the new threaded interrupt support,
-to get into a process context as fast as possible.
-
-If you reall need to busy-wait, then
-
- > reclocking() {
- >   calculations();
- >   del_timer(radeon->fake_vblank);
- >   radeon->vblank_sync = 0;
- >   mod_timer(radeon->fake_vblank, 10ms);
- >   while(!radeon->vblank_sync);
- >   reclock();
- > }
- > i-handler() { radeon->vblank_sync = 1; }
- > fake-handler() { radeon->vblank_sync = 1; }
-
-There's no need for the fake_vblank timer -- just keep track of the time
-when you start busy-waiting and then exit the loop when 10ms passes.
-
- - R.
--- 
-Roland Dreier  <rolandd@cisco.com>
-For corporate legal information go to:
-http://www.cisco.com/web/about/doing_business/legal/cri/index.html
+Index: linux-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/runtime_pm.txt
++++ linux-2.6/Documentation/power/runtime_pm.txt
+@@ -224,6 +224,12 @@ defined in include/linux/pm.h:
+       RPM_SUSPENDED, which means that each device is initially regarded by the
+       PM core as 'suspended', regardless of its real hardware status
+ 
++  unsigned int runtime_auto;
++    - if set, indicates that the user space has allowed the device driver to
++      power manage the device at run time via the /sys/devices/.../power/control
++      interface; it may only be modified with the help of the pm_runtime_allow()
++      and pm_runtime_forbid() helper functions
++
+ All of the above fields are members of the 'power' member of 'struct device'.
+ 
+ 4. Run-time PM Device Helper Functions
+@@ -329,6 +335,16 @@ drivers/base/power/runtime.c and include
+       'power.runtime_error' is set or 'power.disable_depth' is greater than
+       zero)
+ 
++  void pm_runtime_allow(struct device *dev);
++    - set the power.runtime_auto flag for the device and decrease its usage
++      counter (used by the /sys/devices/.../power/control interface to
++      effectively allow the device to be power managed at run time)
++
++  void pm_runtime_forbid(struct device *dev);
++    - unset the power.runtime_auto flag for the device and increase its usage
++      counter (used by the /sys/devices/.../power/control interface to
++      effectively prevent the device from being power managed at run time)
++
+ It is safe to execute the following helper functions from interrupt context:
+ 
+ pm_request_idle()
+@@ -382,6 +398,18 @@ may be desirable to suspend the device a
+ finished, so the PM core uses pm_runtime_idle_sync() to invoke the
+ subsystem-level idle callback for the device at that time.
+ 
++The user space can effectively disallow the driver of the device to power manage
++it at run time by changing the value of its /sys/devices/.../power/control
++attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
++this mechanism may also be used by the driver to effectively turn off the
++run-time power management of the device until the user space turns it on.
++Namely, during the initialization the driver can make sure that the run-time PM
++status of the device is 'active' and call pm_runtime_forbid().  It should be
++noted, however, that if the user space has already intentionally changed the
++value of /sys/devices/.../power/control to "auto" to allow the driver to power
++manage the device at run time, the driver may confuse it by using
++pm_runtime_forbid() this way.
++
+ 6. Run-time PM and System Sleep
+ 
+ Run-time PM and system sleep (i.e., system suspend and hibernation, also known
