@@ -1,87 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751834Ab0B0Fro (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 00:47:44 -0500
-Received: from kroah.org ([198.145.64.141]:50446 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751603Ab0B0Frm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 00:47:42 -0500
-Date: Fri, 26 Feb 2010 21:48:08 -0800
-From: Greg KH <greg@kroah.com>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-usb@vger.kernel.org,
-       werner@guyane.dyn-o-saur.com, Marcus Meissner <meissner@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
-Message-ID: <20100227054808.GA32225@kroah.com>
-References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com> <20100227035639.GA11680@kroah.com> <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com> <20100227041815.GA12956@kroah.com> <alpine.LFD.2.00.1002262022090.4513@localhost.localdomain> <d9def9db1002262034p55cd569n6c423741c276798d@mail.gmail.com> <20100227051737.GA14976@kroah.com> <20100227052648.GA31418@kroah.com> <d9def9db1002262138q63c410b7ga7c04f35b6f154ff@mail.gmail.com>
+	id S1752343Ab0B0GNE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 01:13:04 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:61320 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001Ab0B0GNA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 01:13:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=AFfmocBLZeEmUhmMquGwHeenEy9VfoqygELus+k5h28QQ7jlvqNoVrFO6iHqlTbuqh
+         hJGkwUAAGNHtC/MC6DZZowXWtgfMUDezmcCs7ousGEYd6CtHnT8QXd02AIZdD6wXUMSs
+         nNOuNLqabfFIGObX7yxajqd9naRfHCn311dXg=
+Date: Sat, 27 Feb 2010 09:12:34 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Ulrich Kunitz <kune@deine-taler.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
+       Benoit PAPILLAULT <benoit.papillault@free.fr>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [patch] zd1211rw: fix potential array underflow
+Message-ID: <20100227061234.GA14323@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Daniel Drake <dsd@gentoo.org>, Ulrich Kunitz <kune@deine-taler.de>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Luis R. Rodriguez" <lrodriguez@atheros.com>,
+	=?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
+	Benoit PAPILLAULT <benoit.papillault@free.fr>,
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d9def9db1002262138q63c410b7ga7c04f35b6f154ff@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 06:38:09AM +0100, Markus Rechberger wrote:
-> On Sat, Feb 27, 2010 at 6:26 AM, Greg KH <greg@kroah.com> wrote:
-> > On Fri, Feb 26, 2010 at 09:17:37PM -0800, Greg KH wrote:
-> >> On Sat, Feb 27, 2010 at 05:34:27AM +0100, Markus Rechberger wrote:
-> >> > On Sat, Feb 27, 2010 at 5:29 AM, Linus Torvalds
-> >> > <torvalds@linux-foundation.org> wrote:
-> >> > >
-> >> > >
-> >> > > On Fri, 26 Feb 2010, Greg KH wrote:
-> >> > >>
-> >> > >> Yes, and that patch didn't touch the iso frames. ?That happens later on
-> >> > >> in the functions that were modified. ?The patch should not have had any
-> >> > >> affect on iso transfers. ?Unless I'm missing something?
-> >> > >
-> >> > > Hmm. What seems to happen is that for an isochronous transfer, the buffer
-> >> > > is split for each microframe. No?
-> >> > >
-> >> >
-> >> > exactly. and each microframe has its own buffer length identifier.
-> >> >
-> >> > the current behaviour breaks VMware, QEMU and virtualbox .. probably
-> >> > other things too.
-> >> >
-> >> >
-> >> > > So the total length may be in 'urb->actual_length', but the actual data in
-> >> > > the buffer may not be contiguous, because it's created from multiple
-> >> > > smaller frames, some of which might not be full length?
-> >> > >
-> >> >
-> >> > yes, it's only contiguous for BULK.
-> >> >
-> >> > > I dunno. That would explain the problem - actual_length is correct, but
-> >> > > the 'copy_to_user()' still doesn't copy all the data, because it's
-> >> > > fragmented.
-> >> > >
-> >> >
-> >> > no you got it, but your patch does not work. The best way would be to
-> >> > revert it if someone wants to speed up BULK it should go down another
-> >> > path, leaving the old working implementation untouched.
-> >>
-> >> Hm, so it's back to the original idea of just doing a kzalloc of the
-> >> initial buffer, that should solve the problem that Marcus found.
-> >>
-> >> I'll go dig that back up and if you could test it, that would be most
-> >> appreciated.
-> >
-> > Here, can you try this on top of everything?
-> >
-> 
-> just tested it, everything's back to normal again now!
+The first chunk fixes a debugging assert to print a warning about array underflows.
+The second chunk corrects a potential array underflow.  I also removed an assert
+in the second chunk because it can no longer happen.
 
-Thanks for testing, I'll queue it up for Linus and then add it back to
-.32-stable.
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+---
+This was found by a static check and compile tested only.  Please review carefully.
 
-Linus, I know you didn't want to do a kzalloc, but it looks like this is
-the easiest/simplest thing to do, unless you can think of something
-else?
-
-thanks,
-
-greg k-h
+diff --git a/drivers/net/wireless/zd1211rw/zd_mac.c b/drivers/net/wireless/zd1211rw/zd_mac.c
+index f14deb0..ead2f2c 100644
+--- a/drivers/net/wireless/zd1211rw/zd_mac.c
++++ b/drivers/net/wireless/zd1211rw/zd_mac.c
+@@ -350,7 +350,7 @@ static void zd_mac_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb,
+ 	first_idx = info->status.rates[0].idx;
+ 	ZD_ASSERT(0<=first_idx && first_idx<ARRAY_SIZE(zd_retry_rates));
+ 	retries = &zd_retry_rates[first_idx];
+-	ZD_ASSERT(0<=retry && retry<=retries->count);
++	ZD_ASSERT(1 <= retry && retry <= retries->count);
+ 
+ 	info->status.rates[0].idx = retries->rate[0];
+ 	info->status.rates[0].count = 1; // (retry > 1 ? 2 : 1);
+@@ -360,7 +360,7 @@ static void zd_mac_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb,
+ 		info->status.rates[i].count = 1; // ((i==retry-1) && success ? 1:2);
+ 	}
+ 	for (; i<IEEE80211_TX_MAX_RATES && i<retry; i++) {
+-		info->status.rates[i].idx = retries->rate[retry-1];
++		info->status.rates[i].idx = retries->rate[retry - 1];
+ 		info->status.rates[i].count = 1; // (success ? 1:2);
+ 	}
+ 	if (i<IEEE80211_TX_MAX_RATES)
+@@ -424,12 +424,10 @@ void zd_mac_tx_failed(struct urb *urb)
+ 		first_idx = info->status.rates[0].idx;
+ 		ZD_ASSERT(0<=first_idx && first_idx<ARRAY_SIZE(zd_retry_rates));
+ 		retries = &zd_retry_rates[first_idx];
+-		if (retry < 0 || retry > retries->count) {
++		if (retry <= 0 || retry > retries->count)
+ 			continue;
+-		}
+ 
+-		ZD_ASSERT(0<=retry && retry<=retries->count);
+-		final_idx = retries->rate[retry-1];
++		final_idx = retries->rate[retry - 1];
+ 		final_rate = zd_rates[final_idx].hw_value;
+ 
+ 		if (final_rate != tx_status->rate) {
