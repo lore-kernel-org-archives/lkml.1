@@ -1,89 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030872Ab0B0VBK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 16:01:10 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33219 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030850Ab0B0VBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 16:01:09 -0500
-Date: Sun, 28 Feb 2010 08:01:00 +1100
-From: Neil Brown <neilb@suse.de>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: Re: mdadm software raid + ext4, capped at ~350MiB/s limitation/bug?
-Message-ID: <20100228080100.092c24c2@notabene.brown>
-In-Reply-To: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan>
-References: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S936293Ab0B0VSo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:18:44 -0500
+Received: from jacques.telenet-ops.be ([195.130.132.50]:58568 "EHLO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933142Ab0B0VSm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 16:18:42 -0500
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Feb 2010 16:18:41 EST
+Date: Sat, 27 Feb 2010 22:13:34 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Greg Ungerer <gerg@uclinux.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [git pull] m68k updates for 2.6.34
+Message-ID: <alpine.DEB.2.00.1002272207450.9843@ayla.of.borg>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Feb 2010 08:47:48 -0500 (EST)
-Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+	Hi Linus,
 
-> Hello,
-> 
-> I have two separate systems and with ext4 I cannot get speeds greater than 
-> ~350MiB/s when using ext4 as the filesystem on top of a raid5 or raid0. 
-> It appears to be a bug with ext4 (or its just that ext4 is slower for this
-> test)?
-> 
-> Each system runs 2.6.33 x86_64.
+Please pull to receive the m68k updates for 2.6.34.
 
-Could be related to the recent implementation of IO barriers in md.
-Can you try mounting your filesystem with
-   -o barrier=0
+The parts that impact m68knommu have been acked by Greg.
+The pmac_zilog parts have been acked by BenH.
 
-and see how that changes the result.
+Thanks!
 
-NeilBrown
+The following changes since commit 06a79b82b2a3e4bebb9a20638ca208c780e9e507:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../rafael/suspend-2.6
 
+are available in the git repository at:
 
-> 
-> Can someone please confirm?
-> 
-> Here is ext4:
-> 
-> # dd if=/dev/zero of=bigfile bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 29.8556 s, 360 MB/s
-> 
-> The result is the same regardless of the RAID type (RAID-5 or RAID-0)
-> 
-> Note, this is not a bandwidth problem:
-> 
-> # dd if=/dev/zero of=/dev/md0 bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 17.6871 s, 607 MB/s
-> 
-> With XFS:
-> 
-> p63:~# mkfs.xfs -f /dev/md0
-> p63:~# mount /dev/md0 /r1
-> p63:~# cd /r1
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 17.6078 s, 610 MB/s
-> 
-> NOTE: With a HW raid controller (OR using XFS), I can get > 500 MiB/s, 
-> this problem only occurs with SW raid (Linux/mdadm).
-> 
-> Example (3ware 9650SE-16PML RAID-6, 15 drives (using EXT4)
-> $ dd if=/dev/zero of=bigfile bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 21.1729 s, 507 MB/s
-> 
-> Justin.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git for-linus
 
+Finn Thain (13):
+      mac68k: cleanup
+      mac68k: rework SWIM platform device
+      pmac-zilog: cleanup
+      pmac-zilog: add platform driver
+      mac68k: replace mac68k SCC code with platform device
+      mac68k: move mac_esp platform device
+      mac68k: move macsonic and macmace platform devices
+      fbdev: mac_var_to_mode() fix
+      valkyriefb: various fixes
+      mac68k: start CUDA early
+      fbdev: add some missing mac modes
+      macfb: cleanup
+      macfb: fix 24-bit visual and stuff
+
+Geert Uytterhoeven (2):
+      ataflop: Killl warning about unused variable flags
+      m68k: Eliminate unused variable in page_to_phys()
+
+Julia Lawall (1):
+      m68k: Use DIV_ROUND_CLOSEST
+
+Maxim Kuvyrkov (5):
+      m68k: Fix asm/swab.h for ColdFire
+      m68k: Switch to generic siginfo layout
+      m68k: Add NPTL support
+      m68knommu: NPTL support for uClinux
+      m68k: Define sigcontext ABI of ColdFire
+
+Peter Huewe (1):
+      m68k: vme_scc - __init annotations
+
+Philippe De Muyter (2):
+      m68k: Allow ioremapping top of memory
+      m68k{,nommu}/h8300: Remove obsolete comment about map_chunk
+
+ arch/h8300/mm/memory.c                 |    4 +-
+ arch/m68k/Kconfig                      |    6 +-
+ arch/m68k/amiga/config.c               |    2 +-
+ arch/m68k/configs/mac_defconfig        |    7 +-
+ arch/m68k/configs/multi_defconfig      |    6 +-
+ arch/m68k/include/asm/machw.h          |   25 --
+ arch/m68k/include/asm/macints.h        |   22 +-
+ arch/m68k/include/asm/ptrace.h         |    2 +
+ arch/m68k/include/asm/sigcontext.h     |    6 +
+ arch/m68k/include/asm/siginfo.h        |   91 ----
+ arch/m68k/include/asm/swab.h           |    2 +-
+ arch/m68k/include/asm/thread_info_mm.h |    1 +
+ arch/m68k/include/asm/thread_info_no.h |    1 +
+ arch/m68k/include/asm/ucontext.h       |    4 +
+ arch/m68k/include/asm/unistd.h         |    6 +-
+ arch/m68k/include/asm/virtconvert.h    |    7 +-
+ arch/m68k/kernel/entry.S               |    4 +
+ arch/m68k/kernel/process.c             |    4 +
+ arch/m68k/kernel/ptrace.c              |    5 +
+ arch/m68k/kernel/signal.c              |    7 +
+ arch/m68k/kernel/sys_m68k.c            |   81 ++++
+ arch/m68k/mac/Makefile                 |    2 +-
+ arch/m68k/mac/config.c                 |  344 ++++++++++------
+ arch/m68k/mac/debug.c                  |  365 ----------------
+ arch/m68k/mac/macints.c                |  101 +----
+ arch/m68k/mac/oss.c                    |   20 +-
+ arch/m68k/mac/via.c                    |    7 -
+ arch/m68k/mm/kmap.c                    |    5 +-
+ arch/m68knommu/kernel/process.c        |    4 +
+ arch/m68knommu/kernel/ptrace.c         |    5 +
+ arch/m68knommu/kernel/sys_m68k.c       |   36 ++
+ arch/m68knommu/kernel/syscalltable.S   |    4 +
+ arch/m68knommu/mm/memory.c             |    1 -
+ drivers/block/ataflop.c                |    2 -
+ drivers/block/swim.c                   |    4 +-
+ drivers/char/vme_scc.c                 |   12 +-
+ drivers/macintosh/adb.c                |    6 +-
+ drivers/macintosh/via-cuda.c           |   74 ++--
+ drivers/net/macmace.c                  |   33 +--
+ drivers/net/macsonic.c                 |   33 +--
+ drivers/scsi/mac_esp.c                 |   57 +---
+ drivers/serial/Kconfig                 |   12 +-
+ drivers/serial/pmac_zilog.c            |  240 ++++++++---
+ drivers/serial/pmac_zilog.h            |   34 +-
+ drivers/video/macfb.c                  |  736 +++++++++++++++-----------------
+ drivers/video/macmodes.c               |   80 +++--
+ drivers/video/valkyriefb.c             |    6 +-
+ drivers/video/valkyriefb.h             |   31 +-
+ 48 files changed, 1111 insertions(+), 1436 deletions(-)
+ delete mode 100644 arch/m68k/mac/debug.c
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
