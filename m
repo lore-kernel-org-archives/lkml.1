@@ -1,36 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965275Ab0B0Kbm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 05:31:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34135
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965052Ab0B0Kbk (ORCPT
+	id S965319Ab0B0Kdl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:33:41 -0500
+Received: from 70-90-202-97-Albuquerque.hfc.comcastbusiness.net ([70.90.202.97]:36334
+	"EHLO deneb.dwf.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S965052Ab0B0Kdk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 05:31:40 -0500
-Date: Sat, 27 Feb 2010 02:31:58 -0800 (PST)
-Message-Id: <20100227.023158.191415952.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-next-2.6 2010-02-26
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100226230149.GA10987@tuxdriver.com>
-References: <20100226230149.GA10987@tuxdriver.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Sat, 27 Feb 2010 05:33:40 -0500
+X-Greylist: delayed 1356 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Feb 2010 05:33:40 EST
+Message-Id: <201002271011.o1RAB3in007369@deneb.dwf.com>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.3
+To: linux-kernel@vger.kernel.org
+Subject: How to see kernel pr_err error messages.
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Date: Sat, 27 Feb 2010 03:11:03 -0700
+From: reg@dwf.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Fri, 26 Feb 2010 18:01:50 -0500
+Im looking at some kernel code, and there are 'pr_err' error messages in
+it that would help me discover my problem.
 
-> Here is one final round of wireless bits for the 2.6.34 merge window.
-> Basically these would qualify as fixes anyway (more or less), but we
-> might as well get them in now.
-> 
-> Please let me know if there are problems!
+However I dont see them printing anywhere.
 
-Pulled, thanks John.
+What do I have to do to see these error messages?
+A search with GOOGLE  and a grep of the code wasnt too useful, but
+it seems possible that I need to set
+
+    #define CONFIG_DEBUG
+
+Is that true?  I see a lot of <something>_DEBUGs in the .config file
+but no simple CONFIG_DEBUG that is commented out.
+
+In any case, how do I get these things to print?
+-- 
+                                        Reg.Clemens
+                                        reg@dwf.com
+
