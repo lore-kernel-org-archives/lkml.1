@@ -1,61 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967806Ab0B0ELm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 23:11:42 -0500
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:33842 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967768Ab0B0ELl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 23:11:41 -0500
-X-Greylist: delayed 1245 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Feb 2010 23:11:41 EST
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <201002270342.o1R3gSRb026851@mercury.physics.adelaide.edu.au>
-Subject: Re: [PATCH 01/14] MAINTAINERS: update drivers/platform/x86 information
-To: mjg@redhat.com (Matthew Garrett)
-Date: Sat, 27 Feb 2010 14:12:28 +1030 (CST)
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mjg@redhat.com (Matthew Garrett), anisse@astier.eu (Anisse Astier),
-       carlos@strangeworlds.co.uk (Carlos Corbacho),
-       cezary.jackiewicz@gmail.com (Cezary Jackiewicz),
-       corentincj@iksaif.net (Corentin Chary),
-       don@syst.com.br (Daniel Oliveira Nascimento),
-       laforge@gnumonks.org (Harald Welte),
-       ibm-acpi@hmh.eng.br (Henrique de Moraes Holschuh),
-       herton@mandriva.com.br (Herton Ronaldo Krzesinski),
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       sziwan@users.sourceforge.net (Karol Kozimor),
-       lenb@kernel.org (Len Brown), mzxreary@0pointer.de (Lennart Poettering),
-       malattia@linux.it (Mattia Dongili), peter@piie.net (Peter Feuerer),
-       sujith.thomas@intel.com (Sujith Thomas),
-       cascardo@holoscopio.com (Thadeu Lima de Souza Cascardo)
-In-Reply-To: <1267197527-18062-2-git-send-email-mjg@redhat.com> from "Matthew Garrett" at Feb 26, 2010 10:18:34 AM
-X-Mailer: ELM [version 2.5 PL6]
+	id S967813Ab0B0ERy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 23:17:54 -0500
+Received: from kroah.org ([198.145.64.141]:52051 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967774Ab0B0ERw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 23:17:52 -0500
+Date: Fri, 26 Feb 2010 20:18:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Markus Rechberger <mrechberger@gmail.com>, linux-usb@vger.kernel.org
+Cc: werner@guyane.dyn-o-saur.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcus Meissner <meissner@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33 bugs (USBFS, Intel graphic)
+Message-ID: <20100227041815.GA12956@kroah.com>
+References: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com> <20100227035639.GA11680@kroah.com> <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <d9def9db1002262005t6d63b902s673fb01dac228e4d@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew
+On Sat, Feb 27, 2010 at 05:05:41AM +0100, Markus Rechberger wrote:
+> On Sat, Feb 27, 2010 at 4:56 AM, Greg KH <greg@kroah.com> wrote:
+> > On Sat, Feb 27, 2010 at 04:42:53AM +0100, Markus Rechberger wrote:
+> >> * http://lkml.org/lkml/2010/2/19/192
+> >> .6.32-stable review patch. ?If anyone has any objections, please let us know.
+> >>
+> >> ------------------
+> >> From: Greg KH <greg@kroah.com>
+> >>
+> >> commit d4a4683ca054ed9917dfc9e3ff0f7ecf74ad90d6 upstream.
+> >>
+> >> We need to only copy the data received by the device to userspace, not
+> >> the whole kernel buffer, which can contain "stale" data.
+> >>
+> >> Thanks to Marcus Meissner for pointing this out and testing the fix.
+> >>
+> >> Reported-by: Marcus Meissner <meissner@suse.de>
+> >> Tested-by: Marcus Meissner <meissner@suse.de>
+> >> Cc: Alan Stern <stern@rowland.harvard.edu>
+> >> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> >> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >>
+> >>
+> >> this patch breaks isochronous USBFS support, please revert that patch!
+> >>
+> >> http://sundtek.de/images/tvtime-bildfehler.jpg
+> >>
+> >> with the patch reverted:
+> >> http://sundtek.de/images/tvtime-working.png
+> >>
+> >> * Intel graphic flickers now
+> >
+> > That is very strange. ?What userspace program is using usbfs for video
+> > feeds? ?And why would it be relying on the invalid data on the end of an
+> > urb?
+> >
+> 
+> there are 2 userspace videowrapper available for linux and freebsd
+> which do videoprocessing in userland rather than in kernelspace.
+> Well isochronous works slightly different than BULK transfer (which I
+> guess was tested)
+> urb->iso_frame_desc[i].actual_length
+> each microframe has it's own length field for ISO.
 
-> Many of the drivers/platform/x86 drivers have nothing to do with ACPI, so
-> it's kind of inappropriate for them to be stuck under the ACPI mailing
-> list. Add a new mailing list (platform-driver-x86@vger.kernel.org) and,
-> with Len's blessing, add myself as subsystem maintainer.
->
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> :
->  FUJITSU LAPTOP EXTRAS
->  M:	Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-> -L:	linux-acpi@vger.kernel.org
-> +L:	platform-driver-x86@vger.kernel.org
->  S:	Maintained
->  F:	drivers/platform/x86/fujitsu-laptop.c
+Yes, and that patch didn't touch the iso frames.  That happens later on
+in the functions that were modified.  The patch should not have had any
+affect on iso transfers.  Unless I'm missing something?
 
-Sounds fine to me.
+confused,
 
-Acked-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-
-Regards
-  jonathan
+greg k-h
