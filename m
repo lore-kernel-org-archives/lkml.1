@@ -1,139 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936293Ab0B0VSo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 16:18:44 -0500
-Received: from jacques.telenet-ops.be ([195.130.132.50]:58568 "EHLO
-	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933142Ab0B0VSm (ORCPT
+	id S934230Ab0B0V2B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 16:28:01 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:56279 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933277Ab0B0V2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 16:18:42 -0500
-X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Feb 2010 16:18:41 EST
-Date: Sat, 27 Feb 2010 22:13:34 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Greg Ungerer <gerg@uclinux.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [git pull] m68k updates for 2.6.34
-Message-ID: <alpine.DEB.2.00.1002272207450.9843@ayla.of.borg>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 27 Feb 2010 16:28:00 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-pX7LaaT74zBFAB893/SH"
+Date: Sat, 27 Feb 2010 21:27:56 +0000
+Message-ID: <1267306076.16186.103.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Please pull 'upstream' branch of
+ http://git.decadent.org.uk/git/linux-firmware.git
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus,
 
-Please pull to receive the m68k updates for 2.6.34.
+--=-pX7LaaT74zBFAB893/SH
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The parts that impact m68knommu have been acked by Greg.
-The pmac_zilog parts have been acked by BenH.
-
-Thanks!
-
-The following changes since commit 06a79b82b2a3e4bebb9a20638ca208c780e9e507:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../rafael/suspend-2.6
+The following changes since commit 764d482304e3b13024184b05d907fe4c291faa07=
+:
+  Reinette Chatre (1):
+        Update copyright year for iwlwifi licence
 
 are available in the git repository at:
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git for-linus
+  http://git.decadent.org.uk/git/linux-firmware.git upstream
 
-Finn Thain (13):
-      mac68k: cleanup
-      mac68k: rework SWIM platform device
-      pmac-zilog: cleanup
-      pmac-zilog: add platform driver
-      mac68k: replace mac68k SCC code with platform device
-      mac68k: move mac_esp platform device
-      mac68k: move macsonic and macmace platform devices
-      fbdev: mac_var_to_mode() fix
-      valkyriefb: various fixes
-      mac68k: start CUDA early
-      fbdev: add some missing mac modes
-      macfb: cleanup
-      macfb: fix 24-bit visual and stuff
+I will send patches (missing the binary changes) in reply to this message.
 
-Geert Uytterhoeven (2):
-      ataflop: Killl warning about unused variable flags
-      m68k: Eliminate unused variable in page_to_phys()
+Ben.
 
-Julia Lawall (1):
-      m68k: Use DIV_ROUND_CLOSEST
+Ben Hutchings (6):
+      Correct various filenames
+      Use 'File:' field name in front of each filename
+      Specify drivers using firmware by module/object name
+      Update firmware from rt2870sta
+      Add RT3090 firmware from rt2860sta
+      Add firmware for lgs8g75
 
-Maxim Kuvyrkov (5):
-      m68k: Fix asm/swab.h for ColdFire
-      m68k: Switch to generic siginfo layout
-      m68k: Add NPTL support
-      m68knommu: NPTL support for uClinux
-      m68k: Define sigcontext ABI of ColdFire
+ WHENCE     |  182 +++++++++++++++++++++++++++++++++-----------------------=
+----
+ lgs8g75.fw |  Bin 0 -> 262 bytes
+ rt2870.bin |  Bin 4096 -> 4096 bytes
+ rt3070.bin |  Bin 0 -> 4096 bytes
+ rt3071.bin |  Bin 0 -> 4096 bytes
+ rt3090.bin |  Bin 0 -> 8192 bytes
+ 6 files changed, 101 insertions(+), 81 deletions(-)
+ create mode 100644 lgs8g75.fw
+ create mode 100644 rt3070.bin
+ create mode 100644 rt3071.bin
+ create mode 100644 rt3090.bin
 
-Peter Huewe (1):
-      m68k: vme_scc - __init annotations
+--=20
+Ben Hutchings
+Horngren's Observation:
+                   Among economists, the real world is often a special case=
+.
 
-Philippe De Muyter (2):
-      m68k: Allow ioremapping top of memory
-      m68k{,nommu}/h8300: Remove obsolete comment about map_chunk
+--=-pX7LaaT74zBFAB893/SH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
- arch/h8300/mm/memory.c                 |    4 +-
- arch/m68k/Kconfig                      |    6 +-
- arch/m68k/amiga/config.c               |    2 +-
- arch/m68k/configs/mac_defconfig        |    7 +-
- arch/m68k/configs/multi_defconfig      |    6 +-
- arch/m68k/include/asm/machw.h          |   25 --
- arch/m68k/include/asm/macints.h        |   22 +-
- arch/m68k/include/asm/ptrace.h         |    2 +
- arch/m68k/include/asm/sigcontext.h     |    6 +
- arch/m68k/include/asm/siginfo.h        |   91 ----
- arch/m68k/include/asm/swab.h           |    2 +-
- arch/m68k/include/asm/thread_info_mm.h |    1 +
- arch/m68k/include/asm/thread_info_no.h |    1 +
- arch/m68k/include/asm/ucontext.h       |    4 +
- arch/m68k/include/asm/unistd.h         |    6 +-
- arch/m68k/include/asm/virtconvert.h    |    7 +-
- arch/m68k/kernel/entry.S               |    4 +
- arch/m68k/kernel/process.c             |    4 +
- arch/m68k/kernel/ptrace.c              |    5 +
- arch/m68k/kernel/signal.c              |    7 +
- arch/m68k/kernel/sys_m68k.c            |   81 ++++
- arch/m68k/mac/Makefile                 |    2 +-
- arch/m68k/mac/config.c                 |  344 ++++++++++------
- arch/m68k/mac/debug.c                  |  365 ----------------
- arch/m68k/mac/macints.c                |  101 +----
- arch/m68k/mac/oss.c                    |   20 +-
- arch/m68k/mac/via.c                    |    7 -
- arch/m68k/mm/kmap.c                    |    5 +-
- arch/m68knommu/kernel/process.c        |    4 +
- arch/m68knommu/kernel/ptrace.c         |    5 +
- arch/m68knommu/kernel/sys_m68k.c       |   36 ++
- arch/m68knommu/kernel/syscalltable.S   |    4 +
- arch/m68knommu/mm/memory.c             |    1 -
- drivers/block/ataflop.c                |    2 -
- drivers/block/swim.c                   |    4 +-
- drivers/char/vme_scc.c                 |   12 +-
- drivers/macintosh/adb.c                |    6 +-
- drivers/macintosh/via-cuda.c           |   74 ++--
- drivers/net/macmace.c                  |   33 +--
- drivers/net/macsonic.c                 |   33 +--
- drivers/scsi/mac_esp.c                 |   57 +---
- drivers/serial/Kconfig                 |   12 +-
- drivers/serial/pmac_zilog.c            |  240 ++++++++---
- drivers/serial/pmac_zilog.h            |   34 +-
- drivers/video/macfb.c                  |  736 +++++++++++++++-----------------
- drivers/video/macmodes.c               |   80 +++--
- drivers/video/valkyriefb.c             |    6 +-
- drivers/video/valkyriefb.h             |   31 +-
- 48 files changed, 1111 insertions(+), 1436 deletions(-)
- delete mode 100644 arch/m68k/mac/debug.c
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Gr{oetje,eeting}s,
+iQIVAwUAS4mOVue/yOyVhhEJAQJlVg/+PwqeKThZs38SiiytbaEiLKpqPgq8a/JX
+LnFucd4N42NmeR5zNxda3COpmxLBtw10Q+nFS5Aru9R7cdhQESSHUXyWvS9x7Pvr
+jX46gEhJt+XzK8fpGV7nfQXOMkqdYW2Lg5BjO6Gun7Ah3gg57tv2y8X694EHRejs
+66kTIrfydt5TqnkY6UFtWw6BWSq85OHS+Rf6SCJghpaWApM2Bd+nOqgWpTWuO0zX
+N0eVgs9jGye2PBWT8UdLyTPwRz4pqVAVCGLsr50MPJe/f3O+bcHk+GRWbp/yzOH7
+g0S+6IZrKD6bwVxvk203AvZkLCDqxGne/8VJ+HOWsn4QlQrPX77rIZyLCfyZCWeb
+5oqYiGOx36d1wWLKLIWkXVV5ZqCxOI+43TKsldpo4cBTYlmo/g7GPp46kFxcpY7e
+AbbL6RdioVZYkgEQ0XNbtrdAISdeNfzBWh50LbaQfYdyy5Z4AztaNnpsU3mIlDUd
+Y49GyL3hFLCS5oxIRMVrwuVMxKmeUU2P3eWXyWd8RpAAxSAeeOhaJ0dhDQ9laNu+
+jVLt2oNZo4nmtRyq55xa9jOprTB+i4ucbMu5DoO1l1m/GN+YxL8yXgleaWaTji+O
+OI8KjFIF8TLmvsOeNs5GZPJbqH8tJdnWvkjXr1Awhc9fTKZEuo/nB6sGTSLn1+jj
+QKb48umGQnI=
+=AYrq
+-----END PGP SIGNATURE-----
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--=-pX7LaaT74zBFAB893/SH--
