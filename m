@@ -1,63 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967949Ab0B0IJc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 03:09:32 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:49371 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967928Ab0B0IJa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 03:09:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uubRWWfd/DipJpseQuPG6vcFahe4T6+d2edgGYthA1hQ68St37Aivdxw3PvE9bmvhx
-         nJbgcYLI2uVXSIhFgHIw+iDBIT+kZ9k0rQF+nxVKLbwHgBelMLDilBIQwJsvmsHZb7Cc
-         y0T/zRD2+/hzrUzeYTbpDqfzn4WdwHuFKU0LM=
-Date: Sat, 27 Feb 2010 00:09:26 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/14] dell-laptop: Fix platform device unregistration
-Message-ID: <20100227080926.GE793@core.coreip.homeip.net>
-References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
- <1267197527-18062-6-git-send-email-mjg@redhat.com>
+	id S967954Ab0B0ILH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 03:11:07 -0500
+Received: from www.tglx.de ([62.245.132.106]:55511 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967911Ab0B0ILG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 03:11:06 -0500
+Date: Sat, 27 Feb 2010 09:10:24 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dan Carpenter <error27@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>, nando@ccrma.Stanford.EDU,
+       Carsten Emde <ce@ceag.ch>
+Subject: Re: [ANNOUNCE] 2.6.33-rc8-rt2
+In-Reply-To: <20100226194436.GE8417@bicker>
+Message-ID: <alpine.LFD.2.00.1002270907470.4245@localhost.localdomain>
+References: <alpine.LFD.2.00.1002241740410.4245@localhost.localdomain> <20100226194436.GE8417@bicker>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267197527-18062-6-git-send-email-mjg@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 10:18:38AM -0500, Matthew Garrett wrote:
-> dell-laptop currently fails to clean up its platform device correctly.
-> Make sure that it's unregistered.
+On Fri, 26 Feb 2010, Dan Carpenter wrote:
+> kernel/trace/latency_hist.c
+>    341  static ssize_t
+>    342  latency_hist_reset(struct file *file, const char __user *a,
+>    343                     size_t size, loff_t *off)
+>    344  {
+>    345          int cpu;
+>    346          struct hist_data *hist = NULL;
+>    347  #if defined(CONFIG_WAKEUP_LATENCY_HIST) || \
+>    348      defined(CONFIG_MISSED_TIMER_OFFSETS_HIST)
+>    349          struct maxlatproc_data *mp = NULL;
+>    350  #endif
+>    351          off_t latency_type = (off_t) file->private_data;
+>    352  
+>    353          for_each_online_cpu(cpu) {
+>    354  
+>    355                  switch (latency_type) {
 > 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> ---
->  drivers/platform/x86/dell-laptop.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+> It seems like this switch statement should have a default case.
 > 
-> diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell-laptop.c
-> index 9d7e0be..b4c2190 100644
-> --- a/drivers/platform/x86/dell-laptop.c
-> +++ b/drivers/platform/x86/dell-laptop.c
-> @@ -474,6 +474,10 @@ static void __exit dell_exit(void)
->  	i8042_remove_filter(dell_laptop_i8042_filter);
->  	backlight_device_unregister(dell_backlight_device);
->  	dell_cleanup_rfkill();
-> +	if (platform_device) {
-> +		platform_device_del(platform_device);
+> I haven't looked into it very closely but it seems like if you had all 
+> those config options turned off then "hist" would be still be NULL.
 
-That should be platform_device_unregister(), otherwise you are missing
-final platform_device_put().
+When all config options are turned off then the file is not compiled
+at all.
 
-> +		platform_driver_unregister(&platform_driver);
-> +	}
->  }
->  
+Thanks,
 
--- 
-Dmitry
+	tglx
