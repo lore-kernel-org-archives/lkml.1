@@ -1,23 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967007Ab0B0CEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 21:04:08 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:22995 "EHLO
+	id S967261Ab0B0CCW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 21:02:22 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:22584 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967454Ab0B0CD7 (ORCPT
+	with ESMTP id S967127Ab0B0CCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 21:03:59 -0500
+	Fri, 26 Feb 2010 21:02:19 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=from:subject:to:cc:date:message-id:user-agent:
 	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=q4KpbKuHs1q3IsX500PGm8luuCostWSrVrAzErBmyBSk2UhfAy5OYRWsyWW1NPj3E
-	ewcpjAs8drm0xKTbJjOdQ==
+	b=R8CBM+nB1oL7GabbsxxUNn6X5zu37cCVm0ETRJwjliKBi9xJrrXAtXI8++4jqwPLD
+	YRX92MZwk1LfZKXBJobmw==
 From: Divyesh Shah <dpshah@google.com>
-Subject: [PATCH][RESEND] Export per-tid and per-tgid cputime in nanoseconds.
+Subject: [PATCH] Export per-tid and per-tgid cputime in nanoseconds.
 To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, kenchen@google.com
-Date: Fri, 26 Feb 2010 18:03:48 -0800
-Message-ID: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl
+Date: Fri, 26 Feb 2010 18:01:06 -0800
+Message-ID: <20100227015506.32764.71812.stgit@austin.mtv.corp.google.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,10 +27,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This can be used by applications to get finer granularity cputime usage on
-platforms that use timestamp counters or HPET.
 
-Signed-off-by: Divyesh Shah<dpshah@google.com>
 ---
 
  fs/proc/array.c    |   40 ++++++++++++++++++++++++++++++++++++++++
