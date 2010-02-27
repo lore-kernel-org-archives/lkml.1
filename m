@@ -1,64 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030888Ab0B0WxN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 17:53:13 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39281 "EHLO e4.ny.us.ibm.com"
+	id S966554Ab0B0WyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 17:54:16 -0500
+Received: from ozlabs.org ([203.10.76.45]:37381 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964920Ab0B0WxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 17:53:11 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 1/2] rcu: fix holdoff for accelerated GPs for last non-dynticked CPU
-Date: Sat, 27 Feb 2010 14:53:07 -0800
-Message-Id: <1267311188-16603-1-git-send-email-paulmck@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100227225240.GA16515@linux.vnet.ibm.com>
-References: <20100227225240.GA16515@linux.vnet.ibm.com>
+	id S965848Ab0B0WyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 17:54:15 -0500
+Date: Sun, 28 Feb 2010 09:52:34 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       oleg@redhat.com
+Subject: [PATCH] workqueue: Fix build on PowerPC
+Message-ID: <20100227225234.GA13594@kryten>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the holdoff only happen when the full number of attempts have been
-made.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Fix the following compile error on PowerPC:
+
+include/linux/workqueue.h:66: error: ‘NR_CPUS’ undeclared here (not in a function)
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- kernel/rcutree_plugin.h |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 464ad2c..79b53bd 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -1010,6 +1010,10 @@ int rcu_needs_cpu(int cpu)
- 	int c = 0;
- 	int thatcpu;
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 66573b8..5d1d9be 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -9,6 +9,7 @@
+ #include <linux/linkage.h>
+ #include <linux/bitops.h>
+ #include <linux/lockdep.h>
++#include <linux/threads.h>
+ #include <asm/atomic.h>
  
-+	/* Check for being in the holdoff period. */
-+	if (per_cpu(rcu_dyntick_holdoff, cpu) == jiffies)
-+		return rcu_needs_cpu_quick_check(cpu);
-+
- 	/* Don't bother unless we are the last non-dyntick-idle CPU. */
- 	for_each_cpu_not(thatcpu, nohz_cpu_mask)
- 		if (thatcpu != cpu) {
-@@ -1041,10 +1045,8 @@ int rcu_needs_cpu(int cpu)
- 	}
- 
- 	/* If RCU callbacks are still pending, RCU still needs this CPU. */
--	if (c) {
-+	if (c)
- 		raise_softirq(RCU_SOFTIRQ);
--		per_cpu(rcu_dyntick_holdoff, cpu) = jiffies;
--	}
- 	return c;
- }
- 
--- 
-1.6.6
-
+ struct workqueue_struct;
