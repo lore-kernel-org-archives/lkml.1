@@ -1,80 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030655Ab0B0SpR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 13:45:17 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:62344 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030625Ab0B0SpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 13:45:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=lPBPp7cZ1RXQmYro4SOLehzhJ3uR3lrzDp8ThYQ5ayr1nW60z2esaMx5RgM0S3MajI
-         TnAxI3oH852Fa6eM/tbBYOTEuQCjRCzl4RxT/z6gPC+kVyVfpnCfbMSH3Hc/IOU05IGi
-         0TbkUEn0M9WoeJoG8iqzXZZSxYG/15Q6qHaWU=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>
-Subject: [PATCH 2/2] cfq-iosched: rethink seeky detection for SSDs
-Date: Sat, 27 Feb 2010 19:45:40 +0100
-Message-Id: <1267296340-3820-3-git-send-email-czoccolo@gmail.com>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <1267296340-3820-2-git-send-email-czoccolo@gmail.com>
-References: <1267296340-3820-1-git-send-email-czoccolo@gmail.com>
- <1267296340-3820-2-git-send-email-czoccolo@gmail.com>
+	id S1030660Ab0B0SyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 13:54:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38783 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030634Ab0B0SyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 13:54:15 -0500
+Message-ID: <4B8969E2.7000506@kernel.org>
+Date: Sat, 27 Feb 2010 10:52:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, ebiederm@xmission.com,
+       garyhade@us.ibm.com, iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, trenn@suse.de
+Subject: Re: [tip:x86/apic] x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
+References: <4B882182.4030205@kernel.org> <tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org> <20100227130113.GA18661@elte.hu>
+In-Reply-To: <20100227130113.GA18661@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CFQ currently applies the same logic of detecting seeky queues and
-grouping them together for rotational disks as well as SSDs.
-For SSDs, the time to complete a request doesn't depend on the
-request location, but only on the size.
-This patch therefore changes the criterion to group queues by
-request size in case of SSDs, in order to achieve better fairness.
+On 02/27/2010 05:01 AM, Ingo Molnar wrote:
+>  arch/x86/kernel/apic/io_apic.c:1042: error: implicit declaration of function ?remap_ioapic_gsi_to_irq?
+> 
+please check
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+[PATCH] x86: fix warning with remap_ioapic_gsi_to_irq when !CONFIG_ACPI
+
+Ingo found:
+| x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
+cause:
+ arch/x86/kernel/apic/io_apic.c:1042: error: implicit declaration of function ?remap_ioapic_gsi_to_irq?
+
+actually when !CONFIG_ACPI, we have
+#define acpi_ioapic 0
+
+somehow we still get warning for
+#if (!0) {
+	...
+} else {
+	...
+	remap_ioapic_gsi_to_irq...
+}
+
+gcc bug?
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
- block/cfq-iosched.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/mpspec.h |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 806d30b..f27e535 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -47,6 +47,7 @@ static const int cfq_hist_divisor = 4;
- #define CFQ_SERVICE_SHIFT       12
- 
- #define CFQQ_SEEK_THR		(sector_t)(8 * 100)
-+#define CFQQ_SECT_THR_NONROT	(sector_t)(2 * 32)
- #define CFQQ_SEEKY(cfqq)	(hweight32(cfqq->seek_history) > 32/8)
- 
- #define RQ_CIC(rq)		\
-@@ -2958,6 +2959,7 @@ cfq_update_io_seektime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		       struct request *rq)
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -116,6 +116,14 @@ static inline int acpi_probe_gsi(void)
  {
- 	sector_t sdist = 0;
-+	sector_t n_sec = blk_rq_sectors(rq);
- 	if (cfqq->last_request_pos) {
- 		if (cfqq->last_request_pos < blk_rq_pos(rq))
- 			sdist = blk_rq_pos(rq) - cfqq->last_request_pos;
-@@ -2966,7 +2968,10 @@ cfq_update_io_seektime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	}
- 
- 	cfqq->seek_history <<= 1;
--	cfqq->seek_history |= (sdist > CFQQ_SEEK_THR);
-+	if (blk_queue_nonrot(cfqd->queue))
-+		cfqq->seek_history |= (n_sec < CFQQ_SECT_THR_NONROT);
-+	else
-+		cfqq->seek_history |= (sdist > CFQQ_SEEK_THR);
+ 	return 0;
  }
++static inline int remap_ioapic_gsi_to_irq(int ioapic, u32 gsi)
++{
++	return gsi;
++}
++static inline int remap_ioapic_irq_to_gsi(int irq)
++{
++	return irq;
++}
+ #endif /* CONFIG_ACPI */
  
- /*
--- 
-1.6.4.4
-
+ #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
