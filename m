@@ -1,100 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966869Ab0B0Bnn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 20:43:43 -0500
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:41287 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966773Ab0B0Bnl (ORCPT
+	id S966874Ab0B0Boa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 20:44:30 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:56730 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966773Ab0B0Bo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 20:43:41 -0500
-Subject: Re: [PATCH 2/3] vmi: disable highmem PTE allocation even when
-	CONFIG_HIGHPTE=y
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ian Campbell <ian.campbell@citrix.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <1267204562-11844-2-git-send-email-ian.campbell@citrix.com>
-References: <1267204547.11737.12659.camel@zakaz.uk.xensource.com>
-	 <1267204562-11844-2-git-send-email-ian.campbell@citrix.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 26 Feb 2010 17:43:41 -0800
-Message-Id: <1267235021.24798.36.camel@ank32>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Fri, 26 Feb 2010 20:44:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=w36YPyDMkJm82yhUQivUl2kBbOjCYjGhdvfGIME+UCisplZnKwPm9aVougcdWZSVoL
+         PEQGDJKp58eQRZbAX5qjozwMBbbi9FVNvLfRwE3wkuC6Eqb/cMJJdI2g60EGu7r6X1c4
+         oI6Vifn5GUx/+fLX1YD/gEesyaOSHcd1EbZ/Q=
+Message-ID: <4B8878F6.8000809@gmail.com>
+Date: Sat, 27 Feb 2010 09:44:22 +0800
+From: Ang Way Chuang <wcang79@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] dvb-core: Fix DoS bug in ULE decapsulation code that can
+ be triggered by an invalid Payload Pointer
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi guys,
+   Sorry, I have to resend this email because I think my email didn't 
+through linux-media, stable or security mailing list.
 
-On Fri, 2010-02-26 at 09:16 -0800, Ian Campbell wrote:
-> Preventing HIGHPTE allocations under VMI will allow us to remove the
-> kmap_atomic_pte paravirt op.
 
-Acked-by: Alok N Kataria <akataria@vmware.com>
+ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
+has a bug that causes endless loop when Payload Pointer of MPEG2-TS
+frame is 182 or 183. Anyone who sends malicious MPEG2-TS frame will
+cause the receiver of ULE SNDU to go into endless loop.
 
-Thanks,
-Alok
-> 
-> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> Cc: Alok Kataria <akataria@vmware.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-> ---
->  arch/x86/kernel/vmi_32.c |   23 +++++++++++------------
->  1 files changed, 11 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-> index d430e4c..58aca86 100644
-> --- a/arch/x86/kernel/vmi_32.c
-> +++ b/arch/x86/kernel/vmi_32.c
-> @@ -33,6 +33,7 @@
->  #include <asm/fixmap.h>
->  #include <asm/apicdef.h>
->  #include <asm/apic.h>
-> +#include <asm/pgalloc.h>
->  #include <asm/processor.h>
->  #include <asm/timer.h>
->  #include <asm/vmi_time.h>
-> @@ -272,19 +273,11 @@ static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
->  	void *va = kmap_atomic(page, type);
->  
->  	/*
-> -	 * Internally, the VMI ROM must map virtual addresses to physical
-> -	 * addresses for processing MMU updates.  By the time MMU updates
-> -	 * are issued, this information is typically already lost.
-> -	 * Fortunately, the VMI provides a cache of mapping slots for active
-> -	 * page tables.
-> -	 *
-> -	 * We use slot zero for the linear mapping of physical memory, and
-> -	 * in HIGHPTE kernels, slot 1 and 2 for KM_PTE0 and KM_PTE1.
-> -	 *
-> -	 *  args:                 SLOT                 VA    COUNT PFN
-> +	 * We disable highmem allocations for page tables so we should never
-> +	 * see any calls to kmap_atomic_pte on a highmem page.
->  	 */
-> -	BUG_ON(type != KM_PTE0 && type != KM_PTE1);
-> -	vmi_ops.set_linear_mapping((type - KM_PTE0)+1, va, 1, page_to_pfn(page));
-> +
-> +	BUG_ON(PageHighmem(page));
->  
->  	return va;
->  }
-> @@ -640,6 +633,12 @@ static inline int __init activate_vmi(void)
->  	u64 reloc;
->  	const struct vmi_relocation_info *rel = (struct vmi_relocation_info *)&reloc;
->  
-> +	/*
-> +	 * Prevent page tables from being allocated in highmem, even if
-> +	 * CONFIG_HIGHPTE is enabled.
-> +	 */
-> +	__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
-> +
->  	if (call_vrom_func(vmi_rom, vmi_init) != 0) {
->  		printk(KERN_ERR "VMI ROM failed to initialize!");
->  		return 0;
+This patch was generated and tested against linux-2.6.32.9 and should
+apply cleanly to linux-2.6.33 as well because there was only one typo
+fix to dvb_net.c since v2.6.32.
+
+This bug was brought to you by modern day Santa Claus who decided to
+shower the satellite dish at Keio University with heavy snow causing huge
+burst of errors. We, receiver end, received Santa Claus's gift in the form
+of kernel bug.
+
+Care has been taken not to introduce more bug by fixing this bug, but
+please scrutinize the code because I always produces buggy code.
+
+Signed-off-by: Ang Way Chuang <wcang79@gmail.com>
+---
+--- linux-2.6.32.9/drivers/media/dvb/dvb-core/dvb_net.c	2010-02-23 23:38:51.000000000 +0800
++++ linux-2.6.32.9.new/drivers/media/dvb/dvb-core/dvb_net.c	2010-02-25 04:09:18.000000000 +0800
+@@ -504,6 +504,7 @@ static void dvb_net_ule( struct net_devi
+				       "bytes left in TS.  Resyncing.\n", ts_remain);
+				priv->ule_sndu_len = 0;
+				priv->need_pusi = 1;
++				ts += TS_SZ;
+				continue;
+			}
+
+
 
