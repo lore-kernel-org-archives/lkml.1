@@ -1,59 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030843Ab0B0Uk5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 15:40:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55655 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030794Ab0B0Uk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 15:40:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: [PATCH] Driver core: Reduce the level of request_firmware() messages
-Date: Sat, 27 Feb 2010 21:43:22 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	id S1030865Ab0B0Urh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 15:47:37 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:63893 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030834Ab0B0Ure (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 15:47:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Rg+JzkQ7PaNWLVyuuccJkcUJe6XpzZiZzAz6+XjrpzeMHqpelcfGgCmsBJ5FGUHIou
+         o0h++dfP65BlLXFZ/ZDnacmTdo+MmGO9/8Na0WIy8/5vQcwRDWv3a0MDKKtBw/6UYtvg
+         BmZosYd45vfSNBnUxZoZIQFfFAtT6tELKw6aU=
+Message-ID: <4B8984EE.8090605@gmail.com>
+Date: Sat, 27 Feb 2010 21:47:42 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: "David S. Miller" <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, penberg@cs.helsinki.fi,
+       Brian Gerst <brgerst@gmail.com>, andi@firstfloor.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
+       Herbert@gondor.apana.org.au
+Subject: [PATCH v1] compiler: prevent dead store elimination
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002272143.22156.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Due to optimization A call to memset() may be removed as a dead store when
+the buffer is not used after its value is overwritten. The new function
+secure_bzero() ensures a section of memory is padded with zeroes.
 
-The messages from _request_firmware() informing that firmware is
-being requested or built-in firmware is going to be used are printed
-at KERN_INFO, which produces lots of noise on systems with huge
-numbers of AMD CPUs.  Reduce the level of these messages to
-KERN_DEBUG to get rid of that noise.
+>From the GCC manual, section 5.37:
+If your assembler instructions access memory in an unpredictable
+fashion, add `memory' to the list of clobbered registers. This will
+cause GCC to not keep memory values cached in registers across the
+assembler instruction and not optimize stores or loads to that memory.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Every byte in the [p,p+n[ range must be used. If you only use the
+first byte, via e.g. asm("" :: "m"(*(char*)p)), then the compiler
+_will_ skip scrubbing bytes beyond the first. This works with
+gcc-3.2.3 up to gcc-4.4.3.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- drivers/base/firmware_class.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ include/linux/compiler-gcc.h   |   11 +++++++++++
+ include/linux/compiler-intel.h |    2 ++
+ include/linux/string.h         |    1 +
+ lib/string.c                   |   13 +++++++++++++
+ 4 files changed, 27 insertions(+), 0 deletions(-)
 
-Index: linux-2.6.32-SLE11-SP1/drivers/base/firmware_class.c
-===================================================================
---- linux-2.6.32-SLE11-SP1.orig/drivers/base/firmware_class.c
-+++ linux-2.6.32-SLE11-SP1/drivers/base/firmware_class.c
-@@ -487,15 +487,14 @@ _request_firmware(const struct firmware 
- 	     builtin++) {
- 		if (strcmp(name, builtin->name))
- 			continue;
--		dev_info(device, "firmware: using built-in firmware %s\n",
--			 name);
-+		dev_dbg(device, "firmware: using built-in firmware %s\n", name);
- 		firmware->size = builtin->size;
- 		firmware->data = builtin->data;
- 		return 0;
- 	}
+Thanks all for the required information, checkpatch.pl and compile
+tested. In my (non-kernel) testcase this prevents dead store elimination.
+Comments?
+
+Roel
+
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 73dcf80..0799938 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -12,6 +12,17 @@
+ #define barrier() __asm__ __volatile__("": : :"memory")
  
- 	if (uevent)
--		dev_info(device, "firmware: requesting %s\n", name);
-+		dev_dbg(device, "firmware: requesting %s\n", name);
+ /*
++ * Dead store elimination (DSE) is an optimization that may remove a write to
++ * a buffer that is not used anymore. Use ARRAY_PREVENT_DSE after a write when
++ * the scrub is required for security reasons.
++ */
++#define ARRAY_PREVENT_DSE(p, n)				\
++	do {						\
++		struct __scrub { char c[n]; };		\
++		asm("" : : "m"(*(struct __scrub *)p));	\
++	} while (0)
++
++/*
+  * This macro obfuscates arithmetic on a variable address so that gcc
+  * shouldn't recognize the original var, and make assumptions about it.
+  *
+diff --git a/include/linux/compiler-intel.h b/include/linux/compiler-intel.h
+index d8e636e..e8e11f3 100644
+--- a/include/linux/compiler-intel.h
++++ b/include/linux/compiler-intel.h
+@@ -14,9 +14,11 @@
+  * It uses intrinsics to do the equivalent things.
+  */
+ #undef barrier
++#undef ARRAY_PREVENT_DSE
+ #undef RELOC_HIDE
  
- 	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
- 	if (retval)
+ #define barrier() __memory_barrier()
++#define ARRAY_PREVENT_DSE(p, n)
+ 
+ #define RELOC_HIDE(ptr, off)					\
+   ({ unsigned long __ptr;					\
+diff --git a/include/linux/string.h b/include/linux/string.h
+index a716ee2..36213e6 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -118,6 +118,7 @@ extern void * memchr(const void *,int,__kernel_size_t);
+ extern char *kstrdup(const char *s, gfp_t gfp);
+ extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
+ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
++extern void secure_bzero(void *, __kernel_size_t);
+ 
+ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+ extern void argv_free(char **argv);
+diff --git a/lib/string.c b/lib/string.c
+index a1cdcfc..588ac31 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -559,6 +559,19 @@ void *memset(void *s, int c, size_t count)
+ EXPORT_SYMBOL(memset);
+ #endif
+ 
++/**
++ * secure_bzero - Call memset to fill a region of memory with zeroes and
++ * ensure this memset is not removed due to dead store elimination.
++ * @p: Pointer to the start of the area.
++ * @n: The size of the area.
++ */
++void secure_bzero(void *p, size_t n)
++{
++	memset(p, 0, n);
++	ARRAY_PREVENT_DSE(p, n);
++}
++EXPORT_SYMBOL(secure_bzero);
++
+ #ifndef __HAVE_ARCH_MEMCPY
+ /**
+  * memcpy - Copy one area of memory to another
+
