@@ -1,222 +1,267 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968676Ab0B0RFN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 12:05:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48370 "EHLO mx2.mail.elte.hu"
+	id S1030307Ab0B0RFs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 12:05:48 -0500
+Received: from aliencamel.com ([69.93.184.242]:36916 "EHLO aliencamel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968632Ab0B0RFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 12:05:04 -0500
-Date: Sat, 27 Feb 2010 18:04:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86/uv changes for v2.6.34
-Message-ID: <20100227170453.GA25723@elte.hu>
+	id S968633Ab0B0RFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 12:05:45 -0500
+Message-ID: <4B8950E2.4030201@aliencamel.com>
+Date: Sat, 27 Feb 2010 17:05:38 +0000
+From: Stewart Robertson <stewart_r@aliencamel.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Greg KH <gregkh@suse.de>, wfp5p@virginia.edu, m.kozlowski@tuxland.pl,
+       julia@diku.dk
+CC: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Staging-comedi-fix-comments-over-80-issue-in-usbdu.patch
+Content-Type: multipart/mixed;
+ boundary="------------070204030601050909070905"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This is a multi-part message in MIME format.
+--------------070204030601050909070905
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Please pull the latest x86-uv-for-linus git tree from:
+One more for luck...
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-uv-for-linus
+Not quite as much to fix in this one but I've still managed to iron out
+a few wrinkles.  The remaining going over 80 characters warnings are instances
+of code, which I do not know how to wrap effectively.
 
- Thanks,
+Once again I have pasted it below and hopefully set Thunderbird to not
+mangle it but I have attached the patch in case it does.
 
-	Ingo
+Cheers,
 
------------------->
-Jack Steiner (1):
-      x86, uv: uv_global_gru_mmr_address() macro fix
+Stewart
 
-Roel Kluin (1):
-      x86, uv: Remove recursion in uv_heartbeat_enable()
-
-Russ Anderson (1):
-      x86, uv: Add serial number parameter to uv_bios_get_sn_info()
+P.S. If someone could let me know whether the way the emails are arriving is okay
+or if I need to change the settings I am using I would appreciate it.
 
 
- arch/x86/include/asm/uv/bios.h     |    7 ++++---
- arch/x86/include/asm/uv/uv_hub.h   |    3 ++-
- arch/x86/kernel/apic/x2apic_uv_x.c |   15 +++++++--------
- arch/x86/kernel/bios_uv.c          |   20 ++++++++++++++------
- 4 files changed, 27 insertions(+), 18 deletions(-)
+>From 20795e3686e8350e51ad24f8346093c42e39ddf1 Mon Sep 17 00:00:00 2001
+From: Stewart Robertson <str@minty7.(none)>
+Date: Sat, 27 Feb 2010 16:45:39 +0000
+Subject: [PATCH] Staging: comedi: fix comments over 80 issue in usbduxfast.c
+ This is a patch to the usbduxfast.c file that fixes comments
+ over 80 warnings found by the checkpatch.pl tool
+ Signed-off-by: Stewart Robertson <stewart_r@aliencamel.com>
 
-diff --git a/arch/x86/include/asm/uv/bios.h b/arch/x86/include/asm/uv/bios.h
-index 2751f30..3fbc1f3 100644
---- a/arch/x86/include/asm/uv/bios.h
-+++ b/arch/x86/include/asm/uv/bios.h
-@@ -18,8 +18,8 @@
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-- *  Copyright (c) Russ Anderson
-+ *  Copyright (c) 2008-2009 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson <rja@sgi.com>
-  */
+---
+ drivers/staging/comedi/drivers/usbduxfast.c |   44 +++++++++++++++-----------
+ 1 files changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/staging/comedi/drivers/usbduxfast.c b/drivers/staging/comedi/drivers/usbduxfast.c
+index 2e675cc..4e8ee6a 100644
+--- a/drivers/staging/comedi/drivers/usbduxfast.c
++++ b/drivers/staging/comedi/drivers/usbduxfast.c
+@@ -178,8 +178,8 @@ struct usbduxfastsub_s {
+ 	int16_t *insnBuffer;	/* input buffer for single insn */
+ 	int ifnum;		/* interface number */
+ 	struct usb_interface *interface;	/* interface structure */
+-	struct comedi_device *comedidev;	/* comedi device for the interrupt
+-						   context */
++	/* comedi device for the interrupt context */
++	struct comedi_device *comedidev;
+ 	short int ai_cmd_running;	/* asynchronous command is running */
+ 	short int ai_continous;	/* continous aquisition */
+ 	long int ai_sample_count;	/* number of samples to aquire */
+@@ -272,7 +272,8 @@ static int usbduxfast_ai_stop(struct usbduxfastsub_s *udfs, int do_unlink)
+ 	udfs->ai_cmd_running = 0;
  
- #include <linux/rtc.h>
-@@ -89,7 +89,7 @@ extern s64 uv_bios_call(enum uv_bios_cmd, u64, u64, u64, u64, u64);
- extern s64 uv_bios_call_irqsave(enum uv_bios_cmd, u64, u64, u64, u64, u64);
- extern s64 uv_bios_call_reentrant(enum uv_bios_cmd, u64, u64, u64, u64, u64);
+ 	if (do_unlink)
+-		ret = usbduxfastsub_unlink_InURBs(udfs);	/* stop aquistion */
++		/* stop aquistion */
++		ret = usbduxfastsub_unlink_InURBs(udfs);
  
--extern s64 uv_bios_get_sn_info(int, int *, long *, long *, long *);
-+extern s64 uv_bios_get_sn_info(int, int *, long *, long *, long *, long *);
- extern s64 uv_bios_freq_base(u64, u64 *);
- extern int uv_bios_mq_watchlist_alloc(unsigned long, unsigned int,
- 					unsigned long *);
-@@ -104,6 +104,7 @@ extern int uv_type;
- extern long sn_partition_id;
- extern long sn_coherency_id;
- extern long sn_region_size;
-+extern long system_serial_number;
- #define partition_coherence_id()	(sn_coherency_id)
- 
- extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
-diff --git a/arch/x86/include/asm/uv/uv_hub.h b/arch/x86/include/asm/uv/uv_hub.h
-index 811bfab..7a81d9d 100644
---- a/arch/x86/include/asm/uv/uv_hub.h
-+++ b/arch/x86/include/asm/uv/uv_hub.h
-@@ -335,7 +335,8 @@ static inline unsigned long uv_read_global_mmr64(int pnode,
-  */
- static inline unsigned long uv_global_gru_mmr_address(int pnode, unsigned long offset)
- {
--	return UV_GLOBAL_GRU_MMR_BASE | offset | (pnode << uv_hub_info->m_val);
-+	return UV_GLOBAL_GRU_MMR_BASE | offset |
-+		((unsigned long)pnode << uv_hub_info->m_val);
- }
- 
- /*
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index b684bb3..d199dc3 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -5,7 +5,7 @@
-  *
-  * SGI UV APIC functions (note: not an Intel compatible APIC)
-  *
-- * Copyright (C) 2007-2008 Silicon Graphics, Inc. All rights reserved.
-+ * Copyright (C) 2007-2009 Silicon Graphics, Inc. All rights reserved.
-  */
- #include <linux/cpumask.h>
- #include <linux/hardirq.h>
-@@ -475,7 +475,7 @@ static void uv_heartbeat(unsigned long ignored)
- 
- static void __cpuinit uv_heartbeat_enable(int cpu)
- {
--	if (!uv_cpu_hub_info(cpu)->scir.enabled) {
-+	while (!uv_cpu_hub_info(cpu)->scir.enabled) {
- 		struct timer_list *timer = &uv_cpu_hub_info(cpu)->scir.timer;
- 
- 		uv_set_cpu_scir_bits(cpu, SCIR_CPU_HEARTBEAT|SCIR_CPU_ACTIVITY);
-@@ -483,11 +483,10 @@ static void __cpuinit uv_heartbeat_enable(int cpu)
- 		timer->expires = jiffies + SCIR_CPU_HB_INTERVAL;
- 		add_timer_on(timer, cpu);
- 		uv_cpu_hub_info(cpu)->scir.enabled = 1;
--	}
- 
--	/* check boot cpu */
--	if (!uv_cpu_hub_info(0)->scir.enabled)
--		uv_heartbeat_enable(0);
-+		/* also ensure that boot cpu is enabled */
-+		cpu = 0;
-+	}
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -627,8 +626,8 @@ void __init uv_system_init(void)
- 	}
- 
- 	uv_bios_init();
--	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
--			    &sn_coherency_id, &sn_region_size);
-+	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id, &sn_coherency_id,
-+			    &sn_region_size, &system_serial_number);
- 	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
-diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
-index b0206a2..c918eba 100644
---- a/arch/x86/kernel/bios_uv.c
-+++ b/arch/x86/kernel/bios_uv.c
-@@ -15,8 +15,8 @@
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  *
-- *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-- *  Copyright (c) Russ Anderson
-+ *  Copyright (c) 2008-2009 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson <rja@sgi.com>
-  */
- 
- #include <linux/efi.h>
-@@ -30,6 +30,7 @@ static struct uv_systab uv_systab;
- s64 uv_bios_call(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- {
- 	struct uv_systab *tab = &uv_systab;
-+	s64 ret;
- 
- 	if (!tab->function)
- 		/*
-@@ -37,9 +38,11 @@ s64 uv_bios_call(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5)
- 		 */
- 		return BIOS_STATUS_UNIMPLEMENTED;
- 
--	return efi_call6((void *)__va(tab->function),
--					(u64)which, a1, a2, a3, a4, a5);
-+	ret = efi_call6((void *)__va(tab->function), (u64)which,
-+			a1, a2, a3, a4, a5);
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(uv_bios_call);
- 
- s64 uv_bios_call_irqsave(enum uv_bios_cmd which, u64 a1, u64 a2, u64 a3,
- 					u64 a4, u64 a5)
-@@ -73,11 +76,14 @@ long sn_coherency_id;
- EXPORT_SYMBOL_GPL(sn_coherency_id);
- long sn_region_size;
- EXPORT_SYMBOL_GPL(sn_region_size);
-+long system_serial_number;
-+EXPORT_SYMBOL_GPL(system_serial_number);
- int uv_type;
-+EXPORT_SYMBOL_GPL(uv_type);
- 
- 
- s64 uv_bios_get_sn_info(int fc, int *uvtype, long *partid, long *coher,
--		long *region)
-+		long *region, long *ssn)
- {
- 	s64 ret;
- 	u64 v0, v1;
-@@ -97,8 +103,11 @@ s64 uv_bios_get_sn_info(int fc, int *uvtype, long *partid, long *coher,
- 		*coher = part.coherence_id;
- 	if (region)
- 		*region = part.region_size;
-+	if (ssn)
-+		*ssn = v1;
  	return ret;
  }
-+EXPORT_SYMBOL_GPL(uv_bios_get_sn_info);
+@@ -452,13 +453,15 @@ static int usbduxfastsub_start(struct usbduxfastsub_s *udfs)
  
- int
- uv_bios_mq_watchlist_alloc(unsigned long addr, unsigned int mq_size,
-@@ -185,4 +194,3 @@ void uv_bios_init(void)
+ 	/* 7f92 to zero */
+ 	local_transfer_buffer[0] = 0;
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* bRequest, "Firmware" */
+-			      VENDOR_DIR_OUT,	/* bmRequestType */
+-			      USBDUXFASTSUB_CPUCS,	/* Value */
+-			      0x0000,	/* Index */
+-			      local_transfer_buffer,	/* address of the transfer buffer */
+-			      1,	/* Length */
+-			      EZTIMEOUT);	/* Timeout */
++	/* bRequest, "Firmware" */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
++				VENDOR_DIR_OUT,	/* bmRequestType */
++				USBDUXFASTSUB_CPUCS,	/* Value */
++				0x0000,	/* Index */
++				/* address of the transfer buffer */
++				local_transfer_buffer,
++				1,	/* Length */
++				EZTIMEOUT);	/* Timeout */
+ 	if (ret < 0) {
+ 		printk("comedi_: usbduxfast_: control msg failed (start)\n");
+ 		return ret;
+@@ -474,7 +477,8 @@ static int usbduxfastsub_stop(struct usbduxfastsub_s *udfs)
  
- void uv_bios_init(void) { }
+ 	/* 7f92 to one */
+ 	local_transfer_buffer[0] = 1;
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* bRequest, "Firmware" */
++	/* bRequest, "Firmware" */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
+ 			      VENDOR_DIR_OUT,	/* bmRequestType */
+ 			      USBDUXFASTSUB_CPUCS,	/* Value */
+ 			      0x0000,	/* Index */
+@@ -500,13 +504,15 @@ static int usbduxfastsub_upload(struct usbduxfastsub_s *udfs,
+ 	printk(KERN_DEBUG " to addr %d, first byte=%d.\n",
+ 	       startAddr, local_transfer_buffer[0]);
  #endif
--
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* brequest, firmware */
+-			      VENDOR_DIR_OUT,	/* bmRequestType */
+-			      startAddr,	/* value */
+-			      0x0000,	/* index */
+-			      local_transfer_buffer,	/* our local safe buffer */
+-			      len,	/* length */
+-			      EZTIMEOUT);	/* timeout */
++	/* brequest, firmware */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
++				VENDOR_DIR_OUT,	/* bmRequestType */
++				startAddr,	/* value */
++				0x0000,	/* index */
++				/* our local safe buffer */
++				local_transfer_buffer,
++				len,	/* length */
++				EZTIMEOUT);	/* timeout */
+ 
+ #ifdef CONFIG_COMEDI_DEBUG
+ 	printk(KERN_DEBUG "comedi_: usbduxfast: result=%d\n", ret);
+@@ -1348,7 +1354,7 @@ static int usbduxfast_ai_insn_read(struct comedi_device *dev,
+ #define FIRMWARE_MAX_LEN 0x2000
+ 
+ static int firmwareUpload(struct usbduxfastsub_s *usbduxfastsub,
+-			  const u8 * firmwareBinary, int sizeFirmware)
++			  const u8 *firmwareBinary, int sizeFirmware)
+ {
+ 	int ret;
+ 	uint8_t *fwBuf;
+-- 
+1.6.0.4
+
+
+
+--------------070204030601050909070905
+Content-Type: text/x-patch;
+ name="0004-Staging-comedi-fix-comments-over-80-issue-in-usbdu.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0004-Staging-comedi-fix-comments-over-80-issue-in-usbdu.patc";
+ filename*1="h"
+
+>From 20795e3686e8350e51ad24f8346093c42e39ddf1 Mon Sep 17 00:00:00 2001
+From: Stewart Robertson <str@minty7.(none)>
+Date: Sat, 27 Feb 2010 16:45:39 +0000
+Subject: [PATCH] Staging: comedi: fix comments over 80 issue in usbduxfast.c
+ This is a patch to the usbduxfast.c file that fixes comments
+ over 80 warnings found by the checkpatch.pl tool
+ Signed-off-by: Stewart Robertson <stewart_r@aliencamel.com>
+
+---
+ drivers/staging/comedi/drivers/usbduxfast.c |   44 +++++++++++++++-----------
+ 1 files changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/staging/comedi/drivers/usbduxfast.c b/drivers/staging/comedi/drivers/usbduxfast.c
+index 2e675cc..4e8ee6a 100644
+--- a/drivers/staging/comedi/drivers/usbduxfast.c
++++ b/drivers/staging/comedi/drivers/usbduxfast.c
+@@ -178,8 +178,8 @@ struct usbduxfastsub_s {
+ 	int16_t *insnBuffer;	/* input buffer for single insn */
+ 	int ifnum;		/* interface number */
+ 	struct usb_interface *interface;	/* interface structure */
+-	struct comedi_device *comedidev;	/* comedi device for the interrupt
+-						   context */
++	/* comedi device for the interrupt context */
++	struct comedi_device *comedidev;
+ 	short int ai_cmd_running;	/* asynchronous command is running */
+ 	short int ai_continous;	/* continous aquisition */
+ 	long int ai_sample_count;	/* number of samples to aquire */
+@@ -272,7 +272,8 @@ static int usbduxfast_ai_stop(struct usbduxfastsub_s *udfs, int do_unlink)
+ 	udfs->ai_cmd_running = 0;
+ 
+ 	if (do_unlink)
+-		ret = usbduxfastsub_unlink_InURBs(udfs);	/* stop aquistion */
++		/* stop aquistion */
++		ret = usbduxfastsub_unlink_InURBs(udfs);
+ 
+ 	return ret;
+ }
+@@ -452,13 +453,15 @@ static int usbduxfastsub_start(struct usbduxfastsub_s *udfs)
+ 
+ 	/* 7f92 to zero */
+ 	local_transfer_buffer[0] = 0;
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* bRequest, "Firmware" */
+-			      VENDOR_DIR_OUT,	/* bmRequestType */
+-			      USBDUXFASTSUB_CPUCS,	/* Value */
+-			      0x0000,	/* Index */
+-			      local_transfer_buffer,	/* address of the transfer buffer */
+-			      1,	/* Length */
+-			      EZTIMEOUT);	/* Timeout */
++	/* bRequest, "Firmware" */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
++				VENDOR_DIR_OUT,	/* bmRequestType */
++				USBDUXFASTSUB_CPUCS,	/* Value */
++				0x0000,	/* Index */
++				/* address of the transfer buffer */
++				local_transfer_buffer,
++				1,	/* Length */
++				EZTIMEOUT);	/* Timeout */
+ 	if (ret < 0) {
+ 		printk("comedi_: usbduxfast_: control msg failed (start)\n");
+ 		return ret;
+@@ -474,7 +477,8 @@ static int usbduxfastsub_stop(struct usbduxfastsub_s *udfs)
+ 
+ 	/* 7f92 to one */
+ 	local_transfer_buffer[0] = 1;
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* bRequest, "Firmware" */
++	/* bRequest, "Firmware" */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
+ 			      VENDOR_DIR_OUT,	/* bmRequestType */
+ 			      USBDUXFASTSUB_CPUCS,	/* Value */
+ 			      0x0000,	/* Index */
+@@ -500,13 +504,15 @@ static int usbduxfastsub_upload(struct usbduxfastsub_s *udfs,
+ 	printk(KERN_DEBUG " to addr %d, first byte=%d.\n",
+ 	       startAddr, local_transfer_buffer[0]);
+ #endif
+-	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,	/* brequest, firmware */
+-			      VENDOR_DIR_OUT,	/* bmRequestType */
+-			      startAddr,	/* value */
+-			      0x0000,	/* index */
+-			      local_transfer_buffer,	/* our local safe buffer */
+-			      len,	/* length */
+-			      EZTIMEOUT);	/* timeout */
++	/* brequest, firmware */
++	ret = usb_control_msg(udfs->usbdev, usb_sndctrlpipe(udfs->usbdev, 0), USBDUXFASTSUB_FIRMWARE,
++				VENDOR_DIR_OUT,	/* bmRequestType */
++				startAddr,	/* value */
++				0x0000,	/* index */
++				/* our local safe buffer */
++				local_transfer_buffer,
++				len,	/* length */
++				EZTIMEOUT);	/* timeout */
+ 
+ #ifdef CONFIG_COMEDI_DEBUG
+ 	printk(KERN_DEBUG "comedi_: usbduxfast: result=%d\n", ret);
+@@ -1348,7 +1354,7 @@ static int usbduxfast_ai_insn_read(struct comedi_device *dev,
+ #define FIRMWARE_MAX_LEN 0x2000
+ 
+ static int firmwareUpload(struct usbduxfastsub_s *usbduxfastsub,
+-			  const u8 * firmwareBinary, int sizeFirmware)
++			  const u8 *firmwareBinary, int sizeFirmware)
+ {
+ 	int ret;
+ 	uint8_t *fwBuf;
+-- 
+1.6.0.4
+
+
+--------------070204030601050909070905--
