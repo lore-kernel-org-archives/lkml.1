@@ -1,77 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030660Ab0B0SyQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 13:54:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38783 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030634Ab0B0SyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 13:54:15 -0500
-Message-ID: <4B8969E2.7000506@kernel.org>
-Date: Sat, 27 Feb 2010 10:52:18 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, ebiederm@xmission.com,
-       garyhade@us.ibm.com, iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, trenn@suse.de
-Subject: Re: [tip:x86/apic] x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
-References: <4B882182.4030205@kernel.org> <tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org> <20100227130113.GA18661@elte.hu>
-In-Reply-To: <20100227130113.GA18661@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1030658Ab0B0S43 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 13:56:29 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:34730 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030492Ab0B0S42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 13:56:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=ehTBcqdxzs1kZfIhFrOTUXXGpgzwO/diSlgx7+5Gjzn7rapitpP2E0Fzm9+jNhV9m5
+         +P+/iSy/HTu7UoStcxmCiPksjjiBMZaxEx2a9pmJ7ugqFORs25ClJ7u0Es4OBQeqaxw9
+         Ujx7SaX73m5OPNJraq7d0OEOenkUgLXeTDZXY=
+From: Ben Gardner <gardner.ben@gmail.com>
+To: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       David Brownell <david-b@pacbell.net>
+Cc: Ben Gardner <gardner.ben@gmail.com>,
+       Andres Salomon <dilinger@collabora.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>
+Subject: [PATCH v2] cs5535-gpio: change input/output enable to match gpiolib expectations
+Date: Sat, 27 Feb 2010 12:56:17 -0600
+Message-Id: <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
+References: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/27/2010 05:01 AM, Ingo Molnar wrote:
->  arch/x86/kernel/apic/io_apic.c:1042: error: implicit declaration of function ?remap_ioapic_gsi_to_irq?
-> 
-please check
+The intent of the gpiolib set_direction_xxx functions is as follows:
+output: enable both input and output
+input: disable output, enable input
 
-[PATCH] x86: fix warning with remap_ioapic_gsi_to_irq when !CONFIG_ACPI
+Change the cs5535 driver to do that.
 
-Ingo found:
-| x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
-cause:
- arch/x86/kernel/apic/io_apic.c:1042: error: implicit declaration of function ?remap_ioapic_gsi_to_irq?
-
-actually when !CONFIG_ACPI, we have
-#define acpi_ioapic 0
-
-somehow we still get warning for
-#if (!0) {
-	...
-} else {
-	...
-	remap_ioapic_gsi_to_irq...
-}
-
-gcc bug?
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
+Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
+CC: Andres Salomon <dilinger@collabora.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: David Brownell <dbrownell@users.sourceforge.net>
+CC: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- arch/x86/include/asm/mpspec.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/gpio/cs5535-gpio.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -116,6 +116,14 @@ static inline int acpi_probe_gsi(void)
- {
- 	return 0;
- }
-+static inline int remap_ioapic_gsi_to_irq(int ioapic, u32 gsi)
-+{
-+	return gsi;
-+}
-+static inline int remap_ioapic_irq_to_gsi(int irq)
-+{
-+	return irq;
-+}
- #endif /* CONFIG_ACPI */
+diff --git a/drivers/gpio/cs5535-gpio.c b/drivers/gpio/cs5535-gpio.c
+index 0fdbe94..de064c9 100644
+--- a/drivers/gpio/cs5535-gpio.c
++++ b/drivers/gpio/cs5535-gpio.c
+@@ -171,6 +171,7 @@ static int chip_direction_input(struct gpio_chip *c, unsigned offset)
+ 	unsigned long flags;
  
- #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
+ 	spin_lock_irqsave(&chip->lock, flags);
++	__cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_ENABLE);
+ 	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
+ 	spin_unlock_irqrestore(&chip->lock, flags);
+ 
+@@ -185,6 +186,7 @@ static int chip_direction_output(struct gpio_chip *c, unsigned offset, int val)
+ 	spin_lock_irqsave(&chip->lock, flags);
+ 
+ 	__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_ENABLE);
++	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
+ 	if (val)
+ 		__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_VAL);
+ 	else
+-- 
+1.7.0
+
