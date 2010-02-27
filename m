@@ -1,79 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030698Ab0B0TSy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 14:18:54 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:28004 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030653Ab0B0TSx (ORCPT
+	id S1030706Ab0B0TTp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 14:19:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:65519 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030653Ab0B0TTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 14:18:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4GbqZaNEIkXVi/PyyaYFVurML12e6yZrHPbtTl6Fm6QUrsLoaHNQvHmfqhkCcEvuGUGKB6EcArfHnXwN6ohpuou826NbLOI576P5U1KjlgR56y+s/kYb4OvIbQAO9hxtSu7RsuNN3SPchdruMRBhbgaMhMCSe14cbhZleTqKJT8=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: r5fepbwVM1mPWMdr255NKB730frireWlZYLrwSM4gB1Ar2Oo8k9Hru2rQoZjX4XUz3PcotzyuuhDHmRAoqjaJkInxLMqDf4ZMcEf5gN0HCTqfP7875cGlS8Zy9eAVRCKJeXyqPU9511U9ZNvq5p0f7iBMjEoIAuHumjZ2YqiRqtTRakgYox1v_cr1LmpqD34T.F0fIdHS4m5AZvt5XuTIb8N2eBjOm61Cr3.0JyiMmaP6hflTau10H9BU9TdxC7bXTLvSBz6U80793IJbEY-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Gardner <gardner.ben@gmail.com>
-Subject: Re: [PATCH v2] cs5535-gpio: change input/output enable to match gpiolib expectations
-Date: Sat, 27 Feb 2010 11:18:51 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Andres Salomon <dilinger@collabora.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>
-References: <14e456b7d269efd860bb36c312de2bc4ad504dca.1267225701.git.gardner.ben@gmail.com> <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
-In-Reply-To: <1267296977-22626-1-git-send-email-gardner.ben@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 27 Feb 2010 14:19:44 -0500
+X-Authority-Analysis: v=1.0 c=1 a=TaH4jK7ghYAA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=m1q_mS8XJafhhTBQDicA:9 a=5YcSTZj621AnOlBtulgNtDbZoWEA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH][GIT PULL] ftrace: Add function names to dangling } in
+ function graph tracer
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <20100227094301.GC31794@elte.hu>
+References: <1267230439.6328.149.camel@gandalf.stny.rr.com>
+	 <20100227094301.GC31794@elte.hu>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Sat, 27 Feb 2010 14:19:42 -0500
+Message-ID: <1267298382.6328.176.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002271118.51842.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 February 2010, Ben Gardner wrote:
+On Sat, 2010-02-27 at 10:43 +0100, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
 
-Patch seems OK, but the comment could stand correction:
+> 
+> Neat! I think it would read even more C-ish if it was something non-syntactic, 
+> like:
+> 
+> >       0) ! 594.862 us  |              } /* add_wait_queue */
+> >       0) ! 603.361 us  |            } /* __pollwait */
+> >       0) ! 613.574 us  |          } /* tcp_poll */
+> >       0) ! 623.554 us  |        } /* sock_poll */
+> 
 
+Yeah, that looks better. I'll write up a patch when I get a chance.
 
-> The intent of the gpiolib set_direction_xxx functions is as follows:
+Thanks,
 
-Clarification:  it's not "gpiolib" which expects that; "gpiolib"
-is just an optional implementation infrastructure for the GPIO
-programming interface.
-
-That behavior is better described as a "weak expectation" than an
-intent.  It comes from the GPIO programming interface, as described
-in Documentation/gpio.txt ...
-
-And the reason it describes that weak expectation is that it's how
-most GPIO hardware behaves ... in particular, how the GPIO banks of
-most System-on-Chip (SoC) processors behave.  (Even on boards with
-external GPIO controllers, the SoC GPIOs generally outnumber the
-external GPIOs by one or more orders of magnitude.)
-
-Since the behavior of reading an "output" GPIO's value needs to
-be specified ... this issue comes up.
+-- Steve
 
 
-> output: enable both input and output
-> input: disable output, enable input
-
-... the expectation is "weak" in that output-only is very
-much allowed.  However, if a gpio is going to provide that
-model, (a) it needs to report its value as 0/low/false when
-asked, which (b) may well trigger some odd behavior in
-some other driver code that expects more typical behavior
-
-(You *could* also return 0/low/false for output-only GPIOs.
-But this behavior is more typical, and much more useful.)
-
-So a better explanation of this patch would emphasize that
-it's providing "more typical behavior" to reduce surprises.
-
-
-- Dave
