@@ -1,56 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965696Ab0B0LJK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 06:09:10 -0500
-Received: from lucidpixels.com ([75.144.35.66]:34583 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965569Ab0B0LJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 06:09:08 -0500
-Date: Sat, 27 Feb 2010 06:09:07 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Eric Sandeen <sandeen@redhat.com>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-In-Reply-To: <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan>
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
- <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S965834Ab0B0LKn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 06:10:43 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:33462 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965569Ab0B0LKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 06:10:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=yEVm8G/89IkLV3KurGPEs1uVliqr0KVVixfxRgv/9GkMsqca5ZnFQEg+vkLyVDssWz
+         ABHOK4JnvbIdZS0+spGZvnzeoplv5rQCygc8XFWX4ca3fMLoWLF91rLlm1mk8jwJLpzs
+         A8TK6aX6VD/0qYbpTwl5XauProQkV4x1R74w0=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] RFC directio: partial writes support
+References: <87iq9lxz3t.fsf@openvz.org>
+Date: Sat, 27 Feb 2010 14:10:35 +0300
+In-Reply-To: <87iq9lxz3t.fsf@openvz.org> (Dmitry Monakhov's message of "Thu,
+	25 Feb 2010 15:45:58 +0300")
+Message-ID: <87vddj6ij8.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitry Monakhov <dmonakhov@openvz.org> writes:
 
-
-On Sat, 27 Feb 2010, Justin Piszcz wrote:
-
-> 
-> 
-> On Sat, 27 Feb 2010, Justin Piszcz wrote:
-> 
-> > 
-> > 
-> > On Fri, 26 Feb 2010, Eric Sandeen wrote:
-> >
-
-Hi,
-
-I have found the same results on 2 different systems:
-
-It seems to peak at ~350MiB/s performance on mdadm raid, whether
-a RAID-5 or RAID-0 (two separate machines):
-
-The only option I found that allows it to go from:
-10737418240 bytes (11 GB) copied, 48.7335 s, 220 MB/s
-to
-10737418240 bytes (11 GB) copied, 30.5425 s, 352 MB/s
-
-Is the -o nodelalloc option.
-
-How come it is not breaking the 350MiB/s barrier is the question?
-
-Justin.
-
+> Can someone please describe me why directio deny partial writes.
+> For example if someone try to write 100Mb but file system has less
+> data it return ENOSPC in the middle of block allocation.
+> All allocated blocks will be truncated (it may be 100Mb -4k) end
+> ENOSPC will be returned. As far as i remember direct_io always act
+> like this, but i never asked why?
+> Why do we have to give up all the progress we made?
+> In fact partial writes are possible in case of holes, when we 
+> fall back to buffered write. XFS implemented partial writes.
+>
+> I've done trivial changes and it works like charm. 
+> Let's enable partial writes support and allow caller to define
+> this behavior.
+add Andrew to cc:
