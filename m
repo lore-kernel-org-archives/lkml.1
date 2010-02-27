@@ -1,187 +1,446 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968573Ab0B0QaX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:30:23 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:41118 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968551Ab0B0QaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:30:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=jU+C6BWRxb45w2SWgBQ3w78iIEjuiUG633dhoog0yB91iZfHxZTXuXMcpPgNx0HqAH
-         hg2kVYAHwFwINS90kJKqUdKhFRY3ZJeDcWgyjz9AqC5TVh0khqmd2tZeqcJigS3f0crt
-         ln2gYmITxPSqDTdoYQakheytYIiDJkOZRRIeo=
-Subject: [RFC] mx3fb: introduce waveform configuration for Pixel Clock
- signal.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 27 Feb 2010 17:30:11 +0100
-Message-ID: <1267288211.2723.102.camel@realization>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S968577Ab0B0Qb0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:31:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37579 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968550Ab0B0QbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 11:31:24 -0500
+Date: Sat, 27 Feb 2010 17:31:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] x86/numa changes for v2.6.24
+Message-ID: <20100227163113.GA9742@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of static assignments for Pixel Clock waveform timings
-make it machine configurable.
-This address an old problem posted here:
-http://thread.gmane.org/gmane.linux.ports.arm.kernel/58185/focus=58285
+Linus,
 
-In particular, the Armadillo 500 developing board is provided
-with a digital to analogue converter chip that need a different than
-default Pixel Clock waveform to perform the pixel conversion correctly.
-(Te DAC is low CS enabled and need more time than a half pixelclock
-period to perform the conversion)
+Please pull the latest x86-numa-for-linus git tree from:
 
-This RFC address the problem modelling the pixelclock signal as a
-square waveform where can be chosen the start and width for the high
-part of the signal. 
-These parameters are expressed in sixteenths of the pixelclock period.
-Why the number 16? Because I think it is the better trade off between
-the maths offered by the hardware (DISP3_IF_CLK_[UP:DOWN]_WR are number
-with 2 fractional digits so the unity can be divided at least by 4 and
-the normal configurations achieved with a 640x480 resolution is 
-div = circa 4 with 400Mhz MCU clock) and the configuration needs (think
-that today this timings cannot be configurable).
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-numa-for-linus
 
-The code is developed to prevent regressions: if not configured
-pix_clk_start and pix_clk_width, the driver probe function provide
-to choose a configuration very similar (on my board equal) to the 
-previous one.
+ Thanks,
 
-Reviews are welcomes!
+	Ingo
 
-Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
----
- arch/arm/plat-mxc/include/mach/mx3fb.h |   16 ++++++++++++++
- drivers/video/mx3fb.c                  |   35 ++++++++++++++++++++++++++++---
- 2 files changed, 47 insertions(+), 4 deletions(-)
+------------------>
+David Rientjes (3):
+      x86, numa: Fix numa emulation calculation of big nodes
+      x86, numa: Add fixed node size option for numa emulation
+      x86, numa: Remove configurable node size support for numa emulation
 
-diff --git a/arch/arm/plat-mxc/include/mach/mx3fb.h b/arch/arm/plat-mxc/include/mach/mx3fb.h
-index ac24c5c..6ca870e 100644
---- a/arch/arm/plat-mxc/include/mach/mx3fb.h
-+++ b/arch/arm/plat-mxc/include/mach/mx3fb.h
-@@ -33,6 +33,22 @@ struct mx3fb_platform_data {
- 	const char			*name;
- 	const struct fb_videomode	*mode;
- 	int				num_modes;
+Haicheng Li (1):
+      x86, acpi: Map hotadded cpu to correct node.
+
+
+ Documentation/x86/x86_64/boot-options.txt |   20 +--
+ arch/x86/include/asm/mmzone_64.h          |    6 -
+ arch/x86/include/asm/numa_64.h            |    5 +
+ arch/x86/kernel/acpi/boot.c               |   21 +++
+ arch/x86/mm/numa_64.c                     |  235 ++++++++++++----------------
+ 5 files changed, 134 insertions(+), 153 deletions(-)
+
+diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+index 29a6ff8..7fbbaf8 100644
+--- a/Documentation/x86/x86_64/boot-options.txt
++++ b/Documentation/x86/x86_64/boot-options.txt
+@@ -166,19 +166,13 @@ NUMA
+ 
+   numa=noacpi   Don't parse the SRAT table for NUMA setup
+ 
+-  numa=fake=CMDLINE
+-		If a number, fakes CMDLINE nodes and ignores NUMA setup of the
+-		actual machine.  Otherwise, system memory is configured
+-		depending on the sizes and coefficients listed.  For example:
+-			numa=fake=2*512,1024,4*256,*128
+-		gives two 512M nodes, a 1024M node, four 256M nodes, and the
+-		rest split into 128M chunks.  If the last character of CMDLINE
+-		is a *, the remaining memory is divided up equally among its
+-		coefficient:
+-			numa=fake=2*512,2*
+-		gives two 512M nodes and the rest split into two nodes.
+-		Otherwise, the remaining system RAM is allocated to an
+-		additional node.
++  numa=fake=<size>[MG]
++		If given as a memory unit, fills all system RAM with nodes of
++		size interleaved over physical nodes.
 +
-+	/*
-+	 * Timings configuration for the Pixel clock waveform:
-+	 *          ___________
-+	 *  _______|           |_____ Pixel clock
-+	 * ^       ^           ^     ^
-+	 * |<--ts->|<---tw---->|     |
-+	 * |<-----------Tc---------->|
-+	 *
-+	 * ts = (Tc * pix_clk_start) / 16
-+	 * tw = (Tc * pix_clk_width) / 16
-+	 *
-+	 * Constraint: ((pix_clk_start + pix_clk_width) / 16) <= 1
-+	 */
-+	__u8 pix_clk_start;
-+	__u8 pix_clk_width;
- };
++  numa=fake=<N>
++		If given as an integer, fills all system RAM with N fake nodes
++		interleaved over physical nodes.
  
+ ACPI
+ 
+diff --git a/arch/x86/include/asm/mmzone_64.h b/arch/x86/include/asm/mmzone_64.h
+index a29f48c..288b96f 100644
+--- a/arch/x86/include/asm/mmzone_64.h
++++ b/arch/x86/include/asm/mmzone_64.h
+@@ -39,11 +39,5 @@ static inline __attribute__((pure)) int phys_to_nid(unsigned long addr)
+ #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
+ #define node_end_pfn(nid)       (NODE_DATA(nid)->node_start_pfn +	\
+ 				 NODE_DATA(nid)->node_spanned_pages)
+-
+-#ifdef CONFIG_NUMA_EMU
+-#define FAKE_NODE_MIN_SIZE	(64 * 1024 * 1024)
+-#define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1UL))
+-#endif
+-
  #endif
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 054ef29..8dd7c22 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -241,6 +241,7 @@ struct mx3fb_data {
- 	void __iomem		*reg_base;
- 	spinlock_t		lock;
- 	struct device		*dev;
-+	struct mx3fb_platform_data	*pdata;
+ #endif /* _ASM_X86_MMZONE_64_H */
+diff --git a/arch/x86/include/asm/numa_64.h b/arch/x86/include/asm/numa_64.h
+index c4ae822..823e070 100644
+--- a/arch/x86/include/asm/numa_64.h
++++ b/arch/x86/include/asm/numa_64.h
+@@ -36,6 +36,11 @@ extern void __cpuinit numa_set_node(int cpu, int node);
+ extern void __cpuinit numa_clear_node(int cpu);
+ extern void __cpuinit numa_add_cpu(int cpu);
+ extern void __cpuinit numa_remove_cpu(int cpu);
++
++#ifdef CONFIG_NUMA_EMU
++#define FAKE_NODE_MIN_SIZE	((u64)64 << 20)
++#define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1UL))
++#endif /* CONFIG_NUMA_EMU */
+ #else
+ static inline void init_cpu_to_node(void)		{ }
+ static inline void numa_set_node(int cpu, int node)	{ }
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 036d28a..7db15e1 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -49,6 +49,7 @@ EXPORT_SYMBOL(acpi_disabled);
  
- 	uint32_t		h_start_width;
- 	uint32_t		v_start_width;
-@@ -440,6 +441,7 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
- 			  uint16_t v_sync_width, uint16_t v_end_width,
- 			  struct ipu_di_signal_cfg sig)
+ #ifdef	CONFIG_X86_64
+ # include <asm/proto.h>
++# include <asm/numa_64.h>
+ #endif				/* X86 */
+ 
+ #define BAD_MADT_ENTRY(entry, end) (					    \
+@@ -482,6 +483,25 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+  */
+ #ifdef CONFIG_ACPI_HOTPLUG_CPU
+ 
++static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
++{
++#ifdef CONFIG_ACPI_NUMA
++	int nid;
++
++	nid = acpi_get_node(handle);
++	if (nid == -1 || !node_online(nid))
++		return;
++#ifdef CONFIG_X86_64
++	apicid_to_node[physid] = nid;
++	numa_set_node(cpu, nid);
++#else /* CONFIG_X86_32 */
++	apicid_2_node[physid] = nid;
++	cpu_to_node_map[cpu] = nid;
++#endif
++
++#endif
++}
++
+ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
  {
-+	struct mx3fb_platform_data *mx3fb_pdata = mx3fb->pdata;
- 	unsigned long lock_flags;
- 	uint32_t reg;
- 	uint32_t old_conf;
-@@ -503,6 +505,10 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
- 		dev_dbg(mx3fb->dev,
- 			"InitPanel() - Pixel clock divider less than 4\n");
- 		div = 0x40;
-+	} else if (div > 0xFFF) {
-+		dev_dbg(mx3fb->dev,
-+			"InitPanel() - Pixel clock divider greater than max\n");
-+		div = 0xFFFF;
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+@@ -540,6 +560,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
  	}
  
- 	dev_dbg(mx3fb->dev, "pixel clk = %u, divider %u.%u\n",
-@@ -511,11 +517,18 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
- 	spin_lock_irqsave(&mx3fb->lock, lock_flags);
+ 	cpu = cpumask_first(new_map);
++	acpi_map_cpu2node(handle, cpu, physid);
  
- 	/*
--	 * DISP3_IF_CLK_DOWN_WR is half the divider value and 2 fraction bits
--	 * fewer. Subtract 1 extra from DISP3_IF_CLK_DOWN_WR based on timing
--	 * debug. DISP3_IF_CLK_UP_WR is 0
-+	 * Building DI_DISP3_TIME_CONF:
-+	 * DISP3_IF_CLK_PER_WR  = div; (4 fractional digits)
-+	 * DISP3_IF_CLK_UP_WR   [0:(DOWN_WR - 0.5)]  (2 fractional digits)
-+	 * DISP3_IF_CLK_DOWN_WR [(UP_WR + 0.5):PER_WR] (2 fractional digits)
-+	 * using old_conf as buffer.
+ 	*pcpu = cpu;
+ 	retval = 0;
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index 83bbc70..3307ea8 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -427,7 +427,7 @@ static int __init split_nodes_interleave(u64 addr, u64 max_addr,
+ 	 * Calculate the number of big nodes that can be allocated as a result
+ 	 * of consolidating the remainder.
  	 */
--	mx3fb_write_reg(mx3fb, (((div / 8) - 1) << 22) | div, DI_DISP3_TIME_CONF);
-+	old_conf = div;
-+	old_conf |= (((div * mx3fb_pdata->pix_clk_start) / 16) >> 2) << 12;
-+	old_conf |= (((div * (mx3fb_pdata->pix_clk_start +
-+		              mx3fb_pdata->pix_clk_width)) / 16) >> 2) << 22;
+-	big = ((size & ~FAKE_NODE_MIN_HASH_MASK) & nr_nodes) /
++	big = ((size & ~FAKE_NODE_MIN_HASH_MASK) * nr_nodes) /
+ 		FAKE_NODE_MIN_SIZE;
+ 
+ 	size &= FAKE_NODE_MIN_HASH_MASK;
+@@ -502,77 +502,99 @@ static int __init split_nodes_interleave(u64 addr, u64 max_addr,
+ }
+ 
+ /*
+- * Splits num_nodes nodes up equally starting at node_start.  The return value
+- * is the number of nodes split up and addr is adjusted to be at the end of the
+- * last node allocated.
++ * Returns the end address of a node so that there is at least `size' amount of
++ * non-reserved memory or `max_addr' is reached.
+  */
+-static int __init split_nodes_equally(u64 *addr, u64 max_addr, int node_start,
+-				      int num_nodes)
++static u64 __init find_end_of_node(u64 start, u64 max_addr, u64 size)
+ {
+-	unsigned int big;
+-	u64 size;
+-	int i;
+-
+-	if (num_nodes <= 0)
+-		return -1;
+-	if (num_nodes > MAX_NUMNODES)
+-		num_nodes = MAX_NUMNODES;
+-	size = (max_addr - *addr - e820_hole_size(*addr, max_addr)) /
+-	       num_nodes;
+-	/*
+-	 * Calculate the number of big nodes that can be allocated as a result
+-	 * of consolidating the leftovers.
+-	 */
+-	big = ((size & ~FAKE_NODE_MIN_HASH_MASK) * num_nodes) /
+-	      FAKE_NODE_MIN_SIZE;
+-
+-	/* Round down to nearest FAKE_NODE_MIN_SIZE. */
+-	size &= FAKE_NODE_MIN_HASH_MASK;
+-	if (!size) {
+-		printk(KERN_ERR "Not enough memory for each node.  "
+-		       "NUMA emulation disabled.\n");
+-		return -1;
+-	}
+-
+-	for (i = node_start; i < num_nodes + node_start; i++) {
+-		u64 end = *addr + size;
++	u64 end = start + size;
+ 
+-		if (i < big)
+-			end += FAKE_NODE_MIN_SIZE;
+-		/*
+-		 * The final node can have the remaining system RAM.  Other
+-		 * nodes receive roughly the same amount of available pages.
+-		 */
+-		if (i == num_nodes + node_start - 1)
++	while (end - start - e820_hole_size(start, end) < size) {
++		end += FAKE_NODE_MIN_SIZE;
++		if (end > max_addr) {
+ 			end = max_addr;
+-		else
+-			while (end - *addr - e820_hole_size(*addr, end) <
+-			       size) {
+-				end += FAKE_NODE_MIN_SIZE;
+-				if (end > max_addr) {
+-					end = max_addr;
+-					break;
+-				}
+-			}
+-		if (setup_node_range(i, addr, end - *addr, max_addr) < 0)
+ 			break;
++		}
+ 	}
+-	return i - node_start + 1;
++	return end;
+ }
+ 
+ /*
+- * Splits the remaining system RAM into chunks of size.  The remaining memory is
+- * always assigned to a final node and can be asymmetric.  Returns the number of
+- * nodes split.
++ * Sets up fake nodes of `size' interleaved over physical nodes ranging from
++ * `addr' to `max_addr'.  The return value is the number of nodes allocated.
+  */
+-static int __init split_nodes_by_size(u64 *addr, u64 max_addr, int node_start,
+-				      u64 size)
++static int __init split_nodes_size_interleave(u64 addr, u64 max_addr, u64 size)
+ {
+-	int i = node_start;
+-	size = (size << 20) & FAKE_NODE_MIN_HASH_MASK;
+-	while (!setup_node_range(i++, addr, size, max_addr))
+-		;
+-	return i - node_start;
++	nodemask_t physnode_mask = NODE_MASK_NONE;
++	u64 min_size;
++	int ret = 0;
++	int i;
 +
-+	mx3fb_write_reg(mx3fb, old_conf , DI_DISP3_TIME_CONF);
- 
- 	/* DI settings */
- 	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_IF_CONF) & 0x78FFFFFF;
-@@ -1444,6 +1457,7 @@ static int mx3fb_probe(struct platform_device *pdev)
- 	dma_cap_mask_t mask;
- 	struct dma_chan *chan;
- 	struct dma_chan_request rq;
-+	struct mx3fb_platform_data *pdata = pdev->dev.platform_data;
- 
- 	/*
- 	 * Display Interface (DI) and Synchronous Display Controller (SDC)
-@@ -1459,6 +1473,19 @@ static int mx3fb_probe(struct platform_device *pdev)
- 
- 	spin_lock_init(&mx3fb->lock);
- 
++	if (!size)
++		return -1;
 +	/*
-+	 * If pixel clock configuration is not defined or misconfigured, fall
-+	 * through the default: rising edge at the beginning of the period and
-+	 * falling edge a bit before the half.
++	 * The limit on emulated nodes is MAX_NUMNODES, so the size per node is
++	 * increased accordingly if the requested size is too small.  This
++	 * creates a uniform distribution of node sizes across the entire
++	 * machine (but not necessarily over physical nodes).
 +	 */
-+	if ((!pdata->pix_clk_start && !pdata->pix_clk_width) ||
-+	    ((pdata->pix_clk_start + pdata->pix_clk_width) > 16) {
-+		pr_debug("mx3fb: Default waveform for Pixel clock signal.\n");
-+		pdata->pix_clk_start = 0;
-+		pdata->pix_clk_width = 7;
++	min_size = (max_addr - addr - e820_hole_size(addr, max_addr)) /
++						MAX_NUMNODES;
++	min_size = max(min_size, FAKE_NODE_MIN_SIZE);
++	if ((min_size & FAKE_NODE_MIN_HASH_MASK) < min_size)
++		min_size = (min_size + FAKE_NODE_MIN_SIZE) &
++						FAKE_NODE_MIN_HASH_MASK;
++	if (size < min_size) {
++		pr_err("Fake node size %LuMB too small, increasing to %LuMB\n",
++			size >> 20, min_size >> 20);
++		size = min_size;
 +	}
-+	mx3fb->pdata = pdata;
++	size &= FAKE_NODE_MIN_HASH_MASK;
 +
- 	mx3fb->reg_base = ioremap(sdc_reg->start, resource_size(sdc_reg));
- 	if (!mx3fb->reg_base) {
- 		ret = -ENOMEM;
--- 
-1.6.3.3
-
-
-
-
++	for (i = 0; i < MAX_NUMNODES; i++)
++		if (physnodes[i].start != physnodes[i].end)
++			node_set(i, physnode_mask);
++	/*
++	 * Fill physical nodes with fake nodes of size until there is no memory
++	 * left on any of them.
++	 */
++	while (nodes_weight(physnode_mask)) {
++		for_each_node_mask(i, physnode_mask) {
++			u64 dma32_end = MAX_DMA32_PFN << PAGE_SHIFT;
++			u64 end;
++
++			end = find_end_of_node(physnodes[i].start,
++						physnodes[i].end, size);
++			/*
++			 * If there won't be at least FAKE_NODE_MIN_SIZE of
++			 * non-reserved memory in ZONE_DMA32 for the next node,
++			 * this one must extend to the boundary.
++			 */
++			if (end < dma32_end && dma32_end - end -
++			    e820_hole_size(end, dma32_end) < FAKE_NODE_MIN_SIZE)
++				end = dma32_end;
++
++			/*
++			 * If there won't be enough non-reserved memory for the
++			 * next node, this one must extend to the end of the
++			 * physical node.
++			 */
++			if (physnodes[i].end - end -
++			    e820_hole_size(end, physnodes[i].end) < size)
++				end = physnodes[i].end;
++
++			/*
++			 * Setup the fake node that will be allocated as bootmem
++			 * later.  If setup_node_range() returns non-zero, there
++			 * is no more memory available on this physical node.
++			 */
++			if (setup_node_range(ret++, &physnodes[i].start,
++						end - physnodes[i].start,
++						physnodes[i].end) < 0)
++				node_clear(i, physnode_mask);
++		}
++	}
++	return ret;
+ }
+ 
+ /*
+@@ -582,87 +604,32 @@ static int __init split_nodes_by_size(u64 *addr, u64 max_addr, int node_start,
+ static int __init numa_emulation(unsigned long start_pfn,
+ 			unsigned long last_pfn, int acpi, int k8)
+ {
+-	u64 size, addr = start_pfn << PAGE_SHIFT;
++	u64 addr = start_pfn << PAGE_SHIFT;
+ 	u64 max_addr = last_pfn << PAGE_SHIFT;
+-	int num_nodes = 0, num = 0, coeff_flag, coeff = -1, i;
+ 	int num_phys_nodes;
++	int num_nodes;
++	int i;
+ 
+ 	num_phys_nodes = setup_physnodes(addr, max_addr, acpi, k8);
+ 	/*
+-	 * If the numa=fake command-line is just a single number N, split the
+-	 * system RAM into N fake nodes.
++	 * If the numa=fake command-line contains a 'M' or 'G', it represents
++	 * the fixed node size.  Otherwise, if it is just a single number N,
++	 * split the system RAM into N fake nodes.
+ 	 */
+-	if (!strchr(cmdline, '*') && !strchr(cmdline, ',')) {
+-		long n = simple_strtol(cmdline, NULL, 0);
+-
+-		num_nodes = split_nodes_interleave(addr, max_addr,
+-							num_phys_nodes, n);
+-		if (num_nodes < 0)
+-			return num_nodes;
+-		goto out;
+-	}
++	if (strchr(cmdline, 'M') || strchr(cmdline, 'G')) {
++		u64 size;
+ 
+-	/* Parse the command line. */
+-	for (coeff_flag = 0; ; cmdline++) {
+-		if (*cmdline && isdigit(*cmdline)) {
+-			num = num * 10 + *cmdline - '0';
+-			continue;
+-		}
+-		if (*cmdline == '*') {
+-			if (num > 0)
+-				coeff = num;
+-			coeff_flag = 1;
+-		}
+-		if (!*cmdline || *cmdline == ',') {
+-			if (!coeff_flag)
+-				coeff = 1;
+-			/*
+-			 * Round down to the nearest FAKE_NODE_MIN_SIZE.
+-			 * Command-line coefficients are in megabytes.
+-			 */
+-			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
+-			if (size)
+-				for (i = 0; i < coeff; i++, num_nodes++)
+-					if (setup_node_range(num_nodes, &addr,
+-						size, max_addr) < 0)
+-						goto done;
+-			if (!*cmdline)
+-				break;
+-			coeff_flag = 0;
+-			coeff = -1;
+-		}
+-		num = 0;
+-	}
+-done:
+-	if (!num_nodes)
+-		return -1;
+-	/* Fill remainder of system RAM, if appropriate. */
+-	if (addr < max_addr) {
+-		if (coeff_flag && coeff < 0) {
+-			/* Split remaining nodes into num-sized chunks */
+-			num_nodes += split_nodes_by_size(&addr, max_addr,
+-							 num_nodes, num);
+-			goto out;
+-		}
+-		switch (*(cmdline - 1)) {
+-		case '*':
+-			/* Split remaining nodes into coeff chunks */
+-			if (coeff <= 0)
+-				break;
+-			num_nodes += split_nodes_equally(&addr, max_addr,
+-							 num_nodes, coeff);
+-			break;
+-		case ',':
+-			/* Do not allocate remaining system RAM */
+-			break;
+-		default:
+-			/* Give one final node */
+-			setup_node_range(num_nodes, &addr, max_addr - addr,
+-					 max_addr);
+-			num_nodes++;
+-		}
++		size = memparse(cmdline, &cmdline);
++		num_nodes = split_nodes_size_interleave(addr, max_addr, size);
++	} else {
++		unsigned long n;
++
++		n = simple_strtoul(cmdline, NULL, 0);
++		num_nodes = split_nodes_interleave(addr, max_addr, num_phys_nodes, n);
+ 	}
+-out:
++
++	if (num_nodes < 0)
++		return num_nodes;
+ 	memnode_shift = compute_hash_shift(nodes, num_nodes, NULL);
+ 	if (memnode_shift < 0) {
+ 		memnode_shift = 0;
