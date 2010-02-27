@@ -1,48 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966784Ab0B0A7x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 19:59:53 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:60921 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966750Ab0B0A7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 19:59:52 -0500
-To: cl@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] mm: Remove ZERO_SIZE_PTR.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <201002260635.o1Q6ZYET040848@www262.sakura.ne.jp>
-	<alpine.DEB.2.00.1002261009320.7719@router.home>
-In-Reply-To: <alpine.DEB.2.00.1002261009320.7719@router.home>
-Message-Id: <201002270959.EEI05786.OOFFQVMFJLOtSH@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sat, 27 Feb 2010 09:59:49 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S966778Ab0B0BFG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 20:05:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33662 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966750Ab0B0BFD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 20:05:03 -0500
+Date: Fri, 26 Feb 2010 17:04:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-2?Q?Rafa=B3_Mi=B3ecki?= <zajec5@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Subject: Re: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep
+  (w. timeout) until wake_up
+In-Reply-To: <b170af451002260238p29c7db97nd50154bf7288ef42@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1002261701230.4513@localhost.localdomain>
+References: <1266761422-2921-1-git-send-email-zajec5@gmail.com> <b170af451002260238p29c7db97nd50154bf7288ef42@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 26 Feb 2010, Tetsuo Handa wrote:
-> 
-> > Everybody should check for ptr != NULL, and most callers are actually checking
-> > for ptr != NULL. But nobody is checking for ptr != ZERO_SIZE_PTR.
-> 
-> That is so intentionally because some kernel subsystem can do a zero size
-> allocation.
-> 
-So, not only users *can* do zero size allocation,
-but also there *are* users who are intentionally doing zero size allocation.
-Then, we can't remove ZERO_SIZE_PTR.
 
-> > Yes, this is the fault of caller. But ZERO_SIZE_PTR is too small value to
-> > distinguish "NULL pointer dereference" and "ZERO_SIZE_PTR dereference" because
-> > address printed by oops message can easily exceed ZERO_SIZE_PTR when
-> > "struct foo" is large.
-> 
-> Correct.
 
-Maybe PAGE_SIZE / 2 is better than 16?
+On Fri, 26 Feb 2010, Rafał Miłecki wrote:
+>
+> Following macro is soemthing that seems to work fine for us, but instead
+> introducing this to radeon KMS only, I'd like to propose adding this to whole
+> wait.h. Do you this it's something we should place there? Can someone take this
+> patch for me? Or maybe you find this rather useless and we should keep this
+> marco locally?
 
-Thanks.
+This does not smell generic to me. In fact, it makes me personally think 
+you're doing something wrong in the first place, but maybe it's ok. But in 
+case it really is ok, I'd still not put it in a generic header file unless 
+you can point to other cases where it really makes sense to do this.
+
+		Linus
