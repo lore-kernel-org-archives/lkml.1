@@ -1,42 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966887Ab0B0ByQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 20:54:16 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:63305 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966829Ab0B0ByP convert rfc822-to-8bit (ORCPT
+	id S967007Ab0B0CEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 21:04:08 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:22995 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967454Ab0B0CD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 20:54:15 -0500
+	Fri, 26 Feb 2010 21:03:59 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=q4KpbKuHs1q3IsX500PGm8luuCostWSrVrAzErBmyBSk2UhfAy5OYRWsyWW1NPj3E
+	ewcpjAs8drm0xKTbJjOdQ==
+From: Divyesh Shah <dpshah@google.com>
+Subject: [PATCH][RESEND] Export per-tid and per-tgid cputime in nanoseconds.
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, kenchen@google.com
+Date: Fri, 26 Feb 2010 18:03:48 -0800
+Message-ID: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <20100224182540.918b48b0.sfr@canb.auug.org.au>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com> 
-	<tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org> 
-	<20100222090710.GA31357@elte.hu> <20100222203319.8bd497a2.sfr@canb.auug.org.au> 
-	<20100222102745.GJ20844@elte.hu> <20100222224752.0cbd5807.sfr@canb.auug.org.au> 
-	<20100223084552.GB17617@elte.hu> <20100224182540.918b48b0.sfr@canb.auug.org.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 26 Feb 2010 18:53:54 -0700
-X-Google-Sender-Auth: eacb5ae9ce8fed09
-Message-ID: <fa686aa41002261753i45b9a3e1w478eb1d63b929a74@mail.gmail.com>
-Subject: Re: linux-next requirements
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, roland@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 24, 2010 at 12:25 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Anyway, I sick of these discussions.  If people see the way I do
-> linux-next as a problem, then they can find someone else.  That is not
-> the impression I gained at the Kernel Summit and (apart from these
-> occasional "discussions") I am quite happy to continue.
+This can be used by applications to get finer granularity cputime usage on
+platforms that use timestamp counters or HPET.
 
-Please don't stop.  I'd be screwed.
+Signed-off-by: Divyesh Shah<dpshah@google.com>
+---
 
-g.
+ fs/proc/array.c    |   40 ++++++++++++++++++++++++++++++++++++++++
+ fs/proc/base.c     |    2 ++
+ fs/proc/internal.h |    2 ++
+ 3 files changed, 44 insertions(+), 0 deletions(-)
+
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 13b5d07..54604b8 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -547,3 +547,43 @@ int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
+ 
+ 	return 0;
+ }
++
++static int do_task_cputime(struct task_struct *task, char * buffer, int whole)
++{
++	int res;
++	unsigned long flags;
++	unsigned long long sum_exec_runtime = 0;
++	struct task_struct *t;
++
++	if (lock_task_sighand(task, &flags)) {
++		if (whole) {
++			t = task;
++			/* 
++			 * Add up live thread sum_exec_runtime at the group
++			 * level.
++			 */
++			do {
++				sum_exec_runtime += t->se.sum_exec_runtime;
++				t = next_thread(t);
++			} while (t != task);
++			sum_exec_runtime += task->signal->sum_sched_runtime;
++		}
++		unlock_task_sighand(task, &flags);
++	}
++
++	if (!whole)
++		sum_exec_runtime = task->se.sum_exec_runtime;
++
++	res = sprintf(buffer,"%llu\n", sum_exec_runtime);
++	return res;
++}
++
++int proc_tid_cputime(struct task_struct *task, char * buffer)
++{
++	return do_task_cputime(task, buffer, 0);
++}
++
++int proc_tgid_cputime(struct task_struct *task, char * buffer)
++{
++	return do_task_cputime(task, buffer, 1);
++}
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 58324c2..8fbc785 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2595,6 +2595,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	REG("numa_maps",  S_IRUGO, proc_numa_maps_operations),
+ #endif
+ 	REG("mem",        S_IRUSR|S_IWUSR, proc_mem_operations),
++	INF("cputime_ns", S_IRUGO, proc_tgid_cputime),
+ 	LNK("cwd",        proc_cwd_link),
+ 	LNK("root",       proc_root_link),
+ 	LNK("exe",        proc_exe_link),
+@@ -2930,6 +2931,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	REG("numa_maps", S_IRUGO, proc_numa_maps_operations),
+ #endif
+ 	REG("mem",       S_IRUSR|S_IWUSR, proc_mem_operations),
++	INF("cputime_ns", S_IRUGO, proc_tid_cputime),
+ 	LNK("cwd",       proc_cwd_link),
+ 	LNK("root",      proc_root_link),
+ 	LNK("exe",       proc_exe_link),
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 1f24a3e..f9e9799 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -51,6 +51,8 @@ extern int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task);
+ extern int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task);
++extern int proc_tid_cputime(struct task_struct *, char *);
++extern int proc_tgid_cputime(struct task_struct *, char *);
+ extern loff_t mem_lseek(struct file *file, loff_t offset, int orig);
+ 
+ extern const struct file_operations proc_maps_operations;
+
