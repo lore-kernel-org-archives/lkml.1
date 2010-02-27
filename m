@@ -1,52 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968176Ab0B0KU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 05:20:59 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:39579 "EHLO
+	id S965112Ab0B0K0H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:26:07 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:59091 "EHLO
 	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964927Ab0B0KU5 (ORCPT
+	with ESMTP id S964948Ab0B0K0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 05:20:57 -0500
+	Sat, 27 Feb 2010 05:26:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=M63tfyHtriu+4ja5U6OXpCdY0OAxmsmgoIFAz9u6bIw1+iB0hgHRPtmhVbpLkXFV51
-         xpbgVk0qvheDFN2zYZPaV/ZoRclAySRyiN2sGAbUvUR01oISXnSau6SxAiIWWCZEaaoB
-         qXe3rclM0S739U/9ern6eMBalV+sQ7/AlxvQ0=
-Date: Sat, 27 Feb 2010 11:20:53 +0100
+        b=LNC0v7+tlv7bIlyG96whFK1lwqW1MxaScMZ+M9po9nEpY3HGfJgVNbuZagsQvI/hkM
+         15GXo+cYQHL4uyFBt8fJY+ywa+IocEIsuPoSrIVZu9oxYMITGLiGuqUq9ol8NbR2/O4D
+         O2TtqelobrM0P9WWPJnPX7CsBve/XC/vfR6w4=
+Date: Sat, 27 Feb 2010 11:25:58 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/07] kernel.h string cleanup
-Message-ID: <20100227102051.GD5130@nowhere>
-References: <20100225155359.GA2722@darkstar> <20100225185515.GB3305@core2> <a8e1da1002251714l55ccbd44ibc1119770667c62b@mail.gmail.com> <b6fcc0a1002252315k1fd5360ehf5ea33566c19515d@mail.gmail.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: "Bird, Tim" <Timothy.Bird@am.sony.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: add tracing_thresh support to function_graph
+	tracer (v3)
+Message-ID: <20100227102556.GE5130@nowhere>
+References: <4B87098B.4040308@am.sony.com> <20100226024601.GG5592@nowhere> <4B881291.3040903@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6fcc0a1002252315k1fd5360ehf5ea33566c19515d@mail.gmail.com>
+In-Reply-To: <4B881291.3040903@am.sony.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 09:15:39AM +0200, Alexey Dobriyan wrote:
-> On Fri, Feb 26, 2010 at 3:14 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > Yeah, same question, then where should they go?
-> 
-> Should I hand a patch to you, so you can repost it?
-> 
-> > I think string.h is fine.
-> 
-> It obviously isn't fine.
-> 
-> Why all of sudden kernel.h split when kernel.h is for simple misc stuff
-> for which there is no other place.
+On Fri, Feb 26, 2010 at 10:27:29AM -0800, Tim Bird wrote:
+> On 02/25/2010 06:46 PM, Frederic Weisbecker wrote:
+> >> +static int __init set_tracing_thresh(char *str)
+> >> +{
+> >> +	unsigned long threshhold;
+> >> +	int ret;
+> >> +
+> >> +	if (!str)
+> >> +		return 0;
+> >> +	ret = strict_strtoul(str, 0, &threshhold);
+> >> +	if (ret < 0)
+> >> +		return 0;
+> >> +	tracing_thresh = threshhold * 1000;
+> >> +	return 1;
+> >> +}
+> >> +__setup("tracing_thresh=", set_tracing_thresh);
+> > 
+> > Looks like setting this, while the function graph tracer (normal
+> > mode) is running, will have no effect. That said it's perfectly
+> > fine as it would be pointless to change this value in the middle
+> > of the tracing.
+> > 
+> The command line is parsed before the tracer is activated, so
+> tracing_thresh is set when trace_graph_init() is called, which
+> results in the desired behaviour (that is, if you specify the
+> tracing_thresh on the command line, you get the duration
+> filtering on bootup).
 
 
-kernel.h can be split up, just to ventilate it a bit. It's really a
-big header so this could be an occasion to organize it a bit.
+Oh right, I made a confusion with the tracing_thresh file
+write callback.
 
