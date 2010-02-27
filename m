@@ -1,73 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967924Ab0B0H7e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 02:59:34 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:56810 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967879Ab0B0H7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 02:59:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cps3Fu0no90SjlIgSzldif4lQS8cv507vWu2piv7fvphyxpo+cEPnKWdPF1reaXvbE
-         vO23FLNrfwQABa0I13/q6cvxWr8bEhX94+3UuK9rjN2VhYt26GsdkVaCpzMy3ps0C1Dy
-         YCWO1dYdjghiU6ZNrUQaENy1KO3j87U5KfZTQ=
-Date: Fri, 26 Feb 2010 23:59:27 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [PATCH 14/28] kgdboc,keyboard: Keyboard driver for kdb with kgdb
-Message-ID: <20100227075927.GB793@core.coreip.homeip.net>
-References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com>
- <1267132893-23624-15-git-send-email-jason.wessel@windriver.com>
- <20100226075755.GC17062@core.coreip.homeip.net>
- <4B87C8DF.4000805@windriver.com>
+	id S967931Ab0B0ICT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 03:02:19 -0500
+Received: from perec.tyrell.hu ([66.197.149.104]:50383 "EHLO perec.tyrell.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967879Ab0B0ICR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 03:02:17 -0500
+Message-ID: <4B88D183.9000006@maroy.hu>
+Date: Sat, 27 Feb 2010 09:02:11 +0100
+From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B87C8DF.4000805@windriver.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+CC: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
+Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 8087:0020
+References: <20100225190452.GA4184@xanatos> <Pine.LNX.4.44L0.1002251430470.1686-100000@iolanthe.rowland.org> <20100225195249.GA5245@xanatos> <4B86FBB0.1080104@maroy.hu> <20100226001621.GA6060@xanatos>
+In-Reply-To: <20100226001621.GA6060@xanatos>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 07:13:03AM -0600, Jason Wessel wrote:
-> Dmitry Torokhov wrote:
-> > Hi Jason,
-> > 
-> > Sorry for not responding earlier.
-> > 
-> > On Thu, Feb 25, 2010 at 03:21:19PM -0600, Jason Wessel wrote:
-> >> +++ b/drivers/char/kdb_keyboard.c
-> > 
-> > Does it have to live here? If you are going for completely separate
-> > driver maybe it should be buried somewhere like xxx/kdb/kdb_keyboard.c
-> > so nobody needs to look at it?
-> 
-> 
-> I think in the long run we could consider integration with the primary
-> keyboard driver via a polling hook.  I am happy to move the driver off
-> into kernel/debug/kdb with the other kdb related files until that
-> happens.
-> 
-> The original logic for putting next to the keyboard.c was because they
-> are both fighting for the same HW.  Please let me know if this changes
-> your mind, else I will go ahead and move the keyboard implementation
-> into the kernel/debug/kdb.
-> 
+Sarah,
 
-It does not behause in 2.6 the driver talking to the i8042 is called
-i8042.c and it is located in drivers/input/serio.
-drivers/char/keyboard.c does not talk directly to hardware anymore and
-pc_keyb.c is long gone.
+> Actually, I wonder if 2.6.32 stable needs commit bcef3fd from 2.6.33.
+> If the xHCI driver wasn't cleaning up the endpoint rings properly after
+> a transfer error, I suppose the hardware could get wedged.
 
-Given the fact that your code does not implement a character device I do
-not see any reason for it to live in drivers/char.
+I see. where would I get this commit from? I have to stick with 2.6.32,
+as I'm using the binary ATI video driver, which doesn't work with 2.6.33...
 
-Thanks.
+> If the hardware wasn't responding properly to commands, then URBs
+> wouldn't have been able to be killed, the USB core would have sat around
+> waiting on those URBs, and rmmod could never exit.  I need a more
+> detailed log to figure out exactly why the hardware is wedged though.
+> Let me make the less-verbose debugging patch so you don't get log
+> corruption, and then we'll see what's going on.
 
--- 
-Dmitry
+let me know how I can use this..
+
+
+Akos
+
