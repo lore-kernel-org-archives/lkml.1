@@ -1,137 +1,151 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967747Ab0B0DII (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 22:08:08 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:40868 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967698Ab0B0DIF convert rfc822-to-8bit (ORCPT
+	id S967753Ab0B0Dm4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 22:42:56 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:36934 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967722Ab0B0Dmz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 22:08:05 -0500
+	Fri, 26 Feb 2010 22:42:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XeLLDGtUTxYW3UGhDi5rhMObqdL4OXLiEaMgh9GCvEmNv2zk8hLke/eUHWHr0N6DsX
-         Rf2QRh+Ew66ZHHV8i8B4891t4Jd8g2l9+U3xsmyY4Ib9F3IlZq6HFrLRoGTjBijmTzTF
-         vnMZsEVckvoeOgk7aNA+koKvsKklHcJyF2F/4=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=JgSLlG5q7Vn/E3s/gnVNC+0obZK+Y4VbKiHVpxXedGESRpHrPATOFUIXY9kONvyPHz
+         DrklNzpNvoUhDted17Ev2H6rhIPe9PEy51ONu0iImHBag8guqo466f3LmsHjUAHPg+i8
+         LnxoB112rdK0S/dzuhPSTI809SM7ryCx9/v1I=
 MIME-Version: 1.0
-In-Reply-To: <201002261625.24523.bzolnier@gmail.com>
-References: <4B834159.7070105@gmail.com>
-	 <20100226.013637.255461265.davem@davemloft.net>
-	 <51f3faa71002260646r705891e8tdbab1f6faeeb4b81@mail.gmail.com>
-	 <201002261625.24523.bzolnier@gmail.com>
-Date: Fri, 26 Feb 2010 21:08:04 -0600
-Message-ID: <51f3faa71002261908y7cfa62eeicb3e56d5c920887a@mail.gmail.com>
-Subject: Re: [RFC PATCH] fix problems with NETIF_F_HIGHDMA in networking 
-	drivers
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org
+Date: Sat, 27 Feb 2010 04:42:53 +0100
+Message-ID: <d9def9db1002261942k27b64dd4g670dd29969c93cbf@mail.gmail.com>
+Subject: 2.6.33 bugs (USBFS, Intel graphic)
+From: Markus Rechberger <mrechberger@gmail.com>
+To: werner@guyane.dyn-o-saur.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Marcus Meissner <meissner@suse.de>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2010 at 9:25 AM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> On Friday 26 February 2010 03:46:45 pm Robert Hancock wrote:
->> On Fri, Feb 26, 2010 at 3:36 AM, David Miller <davem@davemloft.net> wrote:
->> > From: Robert Hancock <hancockrwd@gmail.com>
->> > Date: Mon, 22 Feb 2010 20:45:45 -0600
->> >
->> >> Many networking drivers have issues with the use of the NETIF_F_HIGHDMA flag.
->> >> This flag actually indicates whether or not the device/driver can handle
->> >> skbs located in high memory (as opposed to lowmem). However, many drivers
->> >> incorrectly treat this flag as indicating that 64-bit DMA is supported, which
->> >> has nothing to do with its actual function. It makes no sense to make setting
->> >> NETIF_F_HIGHDMA conditional on whether a 64-bit DMA mask has been set, as many
->> >> drivers do, since if highmem DMA is supported at all, it should work regardless
->> >> of whether 64-bit DMA is supported. Failing to set NETIF_F_HIGHDMA when it
->> >> should be can hurt performance on architectures which use highmem since it
->> >> results in needless data copying.
->> >>
->> >> This fixes up the networking drivers which currently use NETIF_F_HIGHDMA to
->> >> not do so conditionally on DMA mask settings.
->> >>
->> >> For the USB kaweth and usbnet drivers, this patch also uncomments and corrects
->> >> some code to set NETIF_F_HIGHDMA based on the USB host controller's DMA mask.
->> >> These drivers should be able to access highmem unless the host controller is
->> >> non-DMA-capable, which is indicated by the DMA mask being null.
->> >>
->> >> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
->> >
->> > Well, if the device isn't using 64-bit DMA addressing and the platform
->> > uses direct (no-iommu) mapping of physical to DMA addresses , won't
->> > your change break things?  The device will get a >4GB DMA address or
->> > the DMA mapping layer will signal an error.
->> >
->> > That's really part of the what the issue is I think.
->> >
->> > So, this trigger the check in check_addr() in
->> > arch/x86/kernel/pci-nommu.c when such packets try to get mapped by the
->> > driver, right?
->> >
->> > That will make the DMA mapping call fail, and the packet will be
->> > dropped permanently.  And hey, on top of it, many of these drivers you
->> > remove the setting from don't even check the mapping call return
->> > values for errors.
->> >
->> > So even bigger breakage.  One example is drivers/net/8139cp.c,
->> > it just does dma_map_single() and uses the result.
->> >
->> > It really depends upon that NETIF_F_HIGHDMA setting for correct
->> > operation.
->> >
->> > And even if something like swiotlb is available, now we're going
->> > to do bounce buffering which is largely equivalent to what
->> > a lack of NETIF_F_HIGHDMA will do.  Except that once NETIF_F_HIGHDMA
->> > copies the packet to lowmem it will only do that once, whereas if
->> > the packet goes to multiple devices swiotlb might copy the packet
->> > to a bounce buffer multiple times.
->> >
->> > We definitely can't apply your patch as-is.
->>
->> Hmm.. Yeah, there is a bit of a mess there. I'm thinking of the
->> particular example of i386 where you have 32-bit DMA devices with more
->> than 4GB of RAM. If you then allow the device to access highmem then
->> the DMA mapping API can get presented with addresses above 4GB and
->> AFAIK I don't think it can cope with that situation on that platform.
->>
->> Problem is that the NETIF_F_HIGHDMA check is generally too restrictive
->> in that situation, and it's really conflating two things into one (the
->> genuine can't-access-highmem part, and the "oh by the way, if highmem
->> can be >4GB then we can't access that") . If you have 3GB of RAM on
->> i386 with one of these drivers, you'll have packets being bounced
->> through lowmem without any real reason. I'll have a look into things a
->> bit further..
->
-> Maybe it would be useful to start with splitting NETIF_F_HIGHDMA on two
-> independent flags, i.e.:
->
->        #define NETIF_F_DMA_HIGH        (1 << 27)
->        #define NETIF_F_DMA_64BIT       (1 << 28)
->
-> and keeping NETIF_F_HIGHDMA as
->
->        #define NETIF_F_HIGHDMA         (NETIF_F_DMA_HIGH | NET_F_DMA_64BIT)
->
-> for now..?
->
-> [ Next step would involve fixing illegal_highdma() check in net/core/dev.c
->  to distinguish between those new flags which in turn should allow sorting
->  out code in the device drivers on *per-driver* basis. ]
+* http://lkml.org/lkml/2010/2/19/192
+.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-That seems like a reasonable approach to me. Only question is how to
-implement the check for DMA_64BIT. Can we just check page_to_phys on
-each of the pages in the skb to see if it's > 0xffffffff ? Are there
-any architectures where it's more complicated than that?
+------------------
+From: Greg KH <greg@kroah.com>
 
-Also, presumably these flags still wouldn't have any effect on
-non-highmem architectures, same as NETIF_F_HIGHDMA now, since the best
-we can do is copy the data to lowmem, which could still be >4GB in
-this case. Therefore, the IOMMU (either HW or SWIOTLB, one of which
-had better exist) just has to deal with it. (I suppose you could copy
-to a buffer allocated with GFP_DMA32, but that likely wouldn't be a
-win if you had a hardware IOMMU.)
+commit d4a4683ca054ed9917dfc9e3ff0f7ecf74ad90d6 upstream.
+
+We need to only copy the data received by the device to userspace, not
+the whole kernel buffer, which can contain "stale" data.
+
+Thanks to Marcus Meissner for pointing this out and testing the fix.
+
+Reported-by: Marcus Meissner <meissner@suse.de>
+Tested-by: Marcus Meissner <meissner@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+
+this patch breaks isochronous USBFS support, please revert that patch!
+
+http://sundtek.de/images/tvtime-bildfehler.jpg
+
+with the patch reverted:
+http://sundtek.de/images/tvtime-working.png
+
+* Intel graphic flickers now
+
+Markus
+
+On Sat, Feb 27, 2010 at 2:43 AM,  <werner@guyane.dyn-o-saur.com> wrote:
+>
+>
+>
+>
+>
+> =======================
+> Feb 26 16:21:53 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
+> Feb 26 16:21:53 werner kernel: Pid: 5308, comm: modprobe Tainted: G         C 2.6.33 #1
+> Feb 26 16:21:53 werner kernel: Call Trace:
+> Feb 26 16:21:53 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
+> Feb 26 16:21:53 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
+> Feb 26 16:21:53 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
+> Feb 26 16:21:53 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
+> Feb 26 16:21:53 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
+> Feb 26 16:21:53 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
+> Feb 26 16:21:53 werner kernel:  [<feb505af>] ipv6_add_dev+0x191/0x30b [ipv6]
+> Feb 26 16:21:53 werner kernel:  [<fd268000>] ? inet6_init+0x0/0x2a2 [ipv6]
+> Feb 26 16:21:53 werner kernel:  [<fd2682ec>] addrconf_init+0x3b/0x11b [ipv6]
+> Feb 26 16:21:53 werner kernel:  [<fd268195>] inet6_init+0x195/0x2a2 [ipv6]
+> Feb 26 16:21:53 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
+> Feb 26 16:21:53 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
+> Feb 26 16:21:53 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
+> Feb 26 16:22:05 werner kdm_greet[5398]: Can't open default user face
+> Feb 26 16:23:22 werner named[5935]: /etc/named.conf:3: option 'multiple-cnames' is obsolete
+> Feb 26 16:23:22 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
+> Feb 26 16:23:22 werner kernel: Pid: 5940, comm: modprobe Tainted: G         C 2.6.33 #1
+> Feb 26 16:23:22 werner kernel: Call Trace:
+> Feb 26 16:23:22 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
+> Feb 26 16:23:22 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
+> Feb 26 16:23:22 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
+> Feb 26 16:23:22 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
+> Feb 26 16:23:22 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
+> Feb 26 16:23:22 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
+> Feb 26 16:23:22 werner kernel:  [<feb505af>] ipv6_add_dev+0x191/0x30b [ipv6]
+> Feb 26 16:23:22 werner kernel:  [<f9195000>] ? inet6_init+0x0/0x2a2 [ipv6]
+> Feb 26 16:23:22 werner kernel:  [<f91952ec>] addrconf_init+0x3b/0x11b [ipv6]
+> Feb 26 16:23:22 werner kernel:  [<f9195195>] inet6_init+0x195/0x2a2 [ipv6]
+> Feb 26 16:23:22 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
+> Feb 26 16:23:22 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
+> Feb 26 16:23:22 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
+>
+> ================
+> Feb 26 16:23:45 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
+> Feb 26 16:23:45 werner kernel: Pid: 6065, comm: modprobe Tainted: G         C 2.6.33 #1
+> Feb 26 16:23:45 werner kernel: Call Trace:
+> Feb 26 16:23:45 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
+> Feb 26 16:23:45 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
+> Feb 26 16:23:45 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
+> Feb 26 16:23:45 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
+> Feb 26 16:23:45 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
+> Feb 26 16:23:45 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
+> Feb 26 16:23:45 werner kernel:  [<fed1b5af>] ipv6_add_dev+0x191/0x30b [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<fd20a000>] ? inet6_init+0x0/0x2a2 [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<fd20a2ec>] addrconf_init+0x3b/0x11b [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<fd20a195>] inet6_init+0x195/0x2a2 [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
+> Feb 26 16:23:45 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
+> Feb 26 16:23:45 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
+> Feb 26 16:23:45 werner kernel: BUG: unable to handle kernel paging request at feb748d4
+> Feb 26 16:23:45 werner kernel: IP: [<c1b68700>] unregister_pernet_operations+0x21/0x93
+> Feb 26 16:23:45 werner kernel: *pde = 36683067 *pte = 00000000
+> Feb 26 16:23:45 werner kernel: Oops: 0002 [#1] PREEMPT SMP
+> Feb 26 16:23:45 werner kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:0d.0/boot_vga
+> Feb 26 16:23:45 werner kernel: Modules linked in: ipv6(+) bnep rfcomm hidp l2cap bluetooth snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device rt2860sta(C) uvcvideo usbvideo lp snd_hda_codec_analog rtc_cmos rtc_core rtc_lib tpm_tis tpm rtl8187 tpm_bios mac80211 snd_hda_intel led_class snd_hda_codec k8temp hwmon snd_hwdep cfg80211 8139too snd_pcm rfkill snd_timer snd forcedeth soundcore snd_page_alloc i2c_nforce2
+> Feb 26 16:23:45 werner kernel:
+> Feb 26 16:23:45 werner kernel: Pid: 6065, comm: modprobe Tainted: G         C 2.6.33 #1 M2N-VM DH/System Product Name
+> Feb 26 16:23:45 werner kernel: EIP: 0060:[<c1b68700>] EFLAGS: 00010246 CPU: 0
+> Feb 26 16:23:45 werner kernel: EIP is at unregister_pernet_operations+0x21/0x93
+> Feb 26 16:23:45 werner kernel: EAX: feb748d4 EBX: fed3f850 ECX: f29a3f58 EDX: fed3f8d4
+> Feb 26 16:23:45 werner kernel: ESI: fed3f850 EDI: fd20a000 EBP: f29a3f6c ESP: f29a3f58
+> Feb 26 16:23:45 werner kernel:  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> Feb 26 16:23:45 werner kernel: Process modprobe (pid: 6065, ti=f29a2000 task=f296ef20 task.ti=f29a2000)
+> Feb 26 16:23:45 werner kernel: Stack:
+> Feb 26 16:23:45 werner kernel:  f29a3f58 f29a3f58 fed3f850 00000000 fd20a000 f29a3f78 c1b687c6 fffffff4
+> Feb 26 16:23:45 werner kernel: <0> f29a3f84 fd20a257 fed41834 f29a3f9c c1001143 00000000 fed41834 00000000
+> Feb 26 16:23:45 werner kernel: <0> 0805e188 f29a3fac c1066570 b7549008 0805e138 f29a2000 c1c6acec b7549008
+> Feb 26 16:23:45 werner kernel: Call Trace:
+> Feb 26 16:23:45 werner kernel:  [<fd20a000>] ? inet6_init+0x0/0x2a2 [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<c1b687c6>] ? unregister_pernet_subsys+0x1c/0x29
+> Feb 26 16:23:45 werner kernel:  [<fd20a257>] ? inet6_init+0x257/0x2a2 [ipv6]
+> Feb 26 16:23:45 werner kernel:  [<c1001143>] ? do_one_initcall+0x51/0x13f
+> Feb 26 16:23:45 werner kernel:  [<c1066570>] ? sys_init_module+0xac/0x1e0
+> Feb 26 16:23:45 werner kernel:  [<c1c6acec>] ? syscall_call+0x7/0xb
+> Feb 26 16:23:45 werner kernel: Code: c2 75 e5 e8 78 0a 51 ff eb 97 55 89 e5 57 56 53 83 ec 08 e8 03 b2 49 ff 89 c6 8d 4d ec 89 4d ec 89 4d f0 8b 10 8b 40 04 89 42 04 <89> 10 c7 06 00 01 10 00 c7 46 04 00 02 20 00 a1 b8 b7 10 c2 8d
+> Feb 26 16:23:45 werner kernel: EIP: [<c1b68700>] unregister_pernet_operations+0x21/0x93 SS:ESP 0068:f29a3f58
+> Feb 26 16:23:45 werner kernel: CR2: 00000000feb748d4
+> Feb 26 16:23:45 werner kernel: ---[ end trace dda352e53880a4df ]---
+>
