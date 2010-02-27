@@ -1,46 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967931Ab0B0ICT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 03:02:19 -0500
-Received: from perec.tyrell.hu ([66.197.149.104]:50383 "EHLO perec.tyrell.hu"
+	id S967936Ab0B0IDc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 03:03:32 -0500
+Received: from perec.tyrell.hu ([66.197.149.104]:50422 "EHLO perec.tyrell.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967879Ab0B0ICR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 03:02:17 -0500
-Message-ID: <4B88D183.9000006@maroy.hu>
-Date: Sat, 27 Feb 2010 09:02:11 +0100
+	id S967911Ab0B0IDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 03:03:31 -0500
+Message-ID: <4B88D1CF.3040805@maroy.hu>
+Date: Sat, 27 Feb 2010 09:03:27 +0100
 From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Edward Shao <laface.tw@gmail.com>
 CC: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Kernel development list <linux-kernel@vger.kernel.org>,
        Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 8087:0020
-References: <20100225190452.GA4184@xanatos> <Pine.LNX.4.44L0.1002251430470.1686-100000@iolanthe.rowland.org> <20100225195249.GA5245@xanatos> <4B86FBB0.1080104@maroy.hu> <20100226001621.GA6060@xanatos>
-In-Reply-To: <20100226001621.GA6060@xanatos>
+Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 	8087:0020
+References: <Pine.LNX.4.44L0.1002241137030.2436-100000@iolanthe.rowland.org>	 <4B85A9D3.6060709@maroy.hu> <ff05f3d01002252121k2a757caexae13a8d919b2a170@mail.gmail.com>
+In-Reply-To: <ff05f3d01002252121k2a757caexae13a8d919b2a170@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sarah,
+Edward,
 
-> Actually, I wonder if 2.6.32 stable needs commit bcef3fd from 2.6.33.
-> If the xHCI driver wasn't cleaning up the endpoint rings properly after
-> a transfer error, I suppose the hardware could get wedged.
+> the whole system freezes for about 5 seconds or more?
+> I meet a very similar issue before on HP Envy 15 laptop when I plugged
+> usb device on xhci port.
+> My problem was BIOS still controlled xhci host controller.
+> Maybe you can try this patch.
+> http://markmail.org/message/vqcbzks4gnbrlir3
 
-I see. where would I get this commit from? I have to stick with 2.6.32,
-as I'm using the binary ATI video driver, which doesn't work with 2.6.33...
-
-> If the hardware wasn't responding properly to commands, then URBs
-> wouldn't have been able to be killed, the USB core would have sat around
-> waiting on those URBs, and rmmod could never exit.  I need a more
-> detailed log to figure out exactly why the hardware is wedged though.
-> Let me make the less-verbose debugging patch so you don't get log
-> corruption, and then we'll see what's going on.
-
-let me know how I can use this..
+thanks, indeed, this seems to have solved the freezing issue!
 
 
 Akos
