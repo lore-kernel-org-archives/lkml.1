@@ -1,66 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966795Ab0B0BId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 20:08:33 -0500
-Received: from lucidpixels.com ([75.144.35.66]:37749 "EHLO lucidpixels.com"
+	id S966801Ab0B0BMJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 20:12:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42395 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966723Ab0B0BIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 20:08:32 -0500
-Date: Fri, 26 Feb 2010 20:08:30 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Eric Sandeen <sandeen@redhat.com>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	id S966723Ab0B0BMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 20:12:07 -0500
+Message-ID: <4B887160.2090606@redhat.com>
+Date: Fri, 26 Feb 2010 19:12:00 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
        Alan Piszcz <ap@solarrain.com>
 Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-In-Reply-To: <4B886CA1.9050906@redhat.com>
-Message-ID: <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan>
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Justin Piszcz wrote:
+...
 
-
-On Fri, 26 Feb 2010, Eric Sandeen wrote:
-
-> Justin Piszcz wrote:
->> Hello,
+>> Were the filesystems created to align with raid geometry?
+> Only default options were used except the mount options.  If that is the
+> culprit, I have some more testing to do, thanks, will look into it.
+> 
 >>
->> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
->> I see about half the performance as XFS for sequential writes.
->>
->> I have checked the doc and tried several options, a few of which are shown
->> below (I have also tried the commit/journal_async/etc options but none
->> of them get the write speeds anywhere near XFS)?
->>
->> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2
->> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
->>
->> When it was XFS I used to get 400-600MiB/s for writes for the same RAID
->> volume.
->>
->> How do I 'speed' up ext4?  Is it possible?
->
-> Aside from Dmitry's suggestion to time sync as well (although for 10G, you are
-> likely not leaving much in cache) I'd ask:
->
-> What kernel version?  what xfsprogs/e2fsprogs version?
-2.6.33/x86_64
+>> mkfs.xfs has done that forever; mkfs.ext4 only will do so (automatically)
+>> with recent kernel+e2fsprogs.
+> How recent?
 
-ii  xfsprogs                                3.1.1                    Utilities for managing the XFS filesystem
-ii  e2fsprogs                               1.41.10-1                ext2/ext3/ext4 file system utilities
+You're recent enough.  :)
 
->
-> Were the filesystems created to align with raid geometry?
-Only default options were used except the mount options.  If that is the
-culprit, I have some more testing to do, thanks, will look into it.
+mkfs.ext4 output should include the stripe info if it was found.
 
->
-> mkfs.xfs has done that forever; mkfs.ext4 only will do so (automatically)
-> with recent kernel+e2fsprogs.
-How recent?
+        printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
+                s->s_log_block_size);
+        printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
+                s->s_log_frag_size);
+        printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
+               s->s_raid_stride, s->s_raid_stripe_width);
+        printf(_("%u inodes, %llu blocks\n"), s->s_inodes_count,
+               ext2fs_blocks_count(s));
 
+etc.
 
+-Eric
