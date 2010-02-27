@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968588Ab0B0Qgr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:36:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43019 "EHLO mx3.mail.elte.hu"
+	id S968592Ab0B0Qjl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:39:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51226 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968567Ab0B0Qgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:36:45 -0500
-Date: Sat, 27 Feb 2010 17:36:36 +0100
+	id S968550Ab0B0Qjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 11:39:39 -0500
+Date: Sat, 27 Feb 2010 17:39:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: [RFC GIT PULL] x86/pat changes for v2.6.34
-Message-ID: <20100227163636.GA10646@elte.hu>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] x86/pci changes for v2.6.34
+Message-ID: <20100227163915.GA12701@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,913 +31,438 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-pat-for-linus git tree from:
+Please pull the latest x86-pci-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-pat-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-pci-for-linus
 
-Please have a look at the lib/rbtree.c changes. The rebalancing changes ought 
-to not impact performance - rb_erase() possibly in a small way. Should this 
-perhaps be done via a separate API entry, instead of modifying existing rbtree 
-code?
+Jesse, the PCI bits were fine to you, right?
 
-out-of-topic modifications in x86-pat-for-linus:
+out-of-topic modifications in x86-pci-for-linus:
 ------------------------------------------------
-include/linux/rbtree.h             # 17d9ddc: rbtree: Add support for augmented
-lib/rbtree.c                       # 17d9ddc: rbtree: Add support for augmented
+drivers/gpu/vga/Kconfig            # 36028f3: vgaarb: Add user selectability of
+drivers/gpu/vga/vgaarb.c           # 36028f3: vgaarb: Add user selectability of
+                                   # 773a38d: vgaarb: Fix VGA arbiter to accept
+drivers/pci/pci.c                  # 95a8b6e: pci: Update pci_set_vga_state() t
+include/linux/pci.h                # 95a8b6e: pci: Update pci_set_vga_state() t
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Pallipadi, Venkatesh (2):
-      rbtree: Add support for augmented rbtrees
-      x86, pat: Migrate to rbtree only backend for pat memtype management
+Mike Travis (4):
+      pci: Update pci_set_vga_state() to call arch functions
+      x86, uv: Update UV arch to target Legacy VGA I/O correctly.
+      vgaarb: Fix VGA arbiter to accept PCI domains other than 0
+      vgaarb: Add user selectability of the number of GPUS in a system
 
-venkatesh.pallipadi@intel.com (1):
-      x86, pat: Preparatory changes in pat.c for bigger rbtree change
+Russ Anderson (1):
+      x86: Enable NMI on all cpus on UV
 
 
- Documentation/rbtree.txt   |   58 ++++++++++
- arch/x86/mm/Makefile       |    1 +
- arch/x86/mm/pat.c          |  231 +++----------------------------------
- arch/x86/mm/pat_internal.h |   46 ++++++++
- arch/x86/mm/pat_rbtree.c   |  271 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/rbtree.h     |    5 +-
- lib/rbtree.c               |   48 +++++++-
- 7 files changed, 443 insertions(+), 217 deletions(-)
- create mode 100644 arch/x86/mm/pat_internal.h
- create mode 100644 arch/x86/mm/pat_rbtree.c
+ arch/x86/include/asm/uv/bios.h     |    4 +-
+ arch/x86/include/asm/uv/uv.h       |    1 +
+ arch/x86/include/asm/x86_init.h    |    2 +
+ arch/x86/kernel/apic/x2apic_uv_x.c |   74 ++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/bios_uv.c          |   19 +++++++++
+ arch/x86/kernel/smpboot.c          |    1 +
+ arch/x86/kernel/x86_init.c         |    3 +
+ drivers/gpu/vga/Kconfig            |    8 ++++
+ drivers/gpu/vga/vgaarb.c           |   27 ++++++++++---
+ drivers/pci/pci.c                  |   25 ++++++++++++-
+ include/linux/pci.h                |    5 ++
+ 11 files changed, 161 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/rbtree.txt b/Documentation/rbtree.txt
-index aae8355..221f38b 100644
---- a/Documentation/rbtree.txt
-+++ b/Documentation/rbtree.txt
-@@ -190,3 +190,61 @@ Example:
-   for (node = rb_first(&mytree); node; node = rb_next(node))
- 	printk("key=%s\n", rb_entry(node, struct mytype, node)->keystring);
- 
-+Support for Augmented rbtrees
-+-----------------------------
-+
-+Augmented rbtree is an rbtree with "some" additional data stored in each node.
-+This data can be used to augment some new functionality to rbtree.
-+Augmented rbtree is an optional feature built on top of basic rbtree
-+infrastructure. rbtree user who wants this feature will have an augment
-+callback function in rb_root initialized.
-+
-+This callback function will be called from rbtree core routines whenever
-+a node has a change in one or both of its children. It is the responsibility
-+of the callback function to recalculate the additional data that is in the
-+rb node using new children information. Note that if this new additional
-+data affects the parent node's additional data, then callback function has
-+to handle it and do the recursive updates.
-+
-+
-+Interval tree is an example of augmented rb tree. Reference -
-+"Introduction to Algorithms" by Cormen, Leiserson, Rivest and Stein.
-+More details about interval trees:
-+
-+Classical rbtree has a single key and it cannot be directly used to store
-+interval ranges like [lo:hi] and do a quick lookup for any overlap with a new
-+lo:hi or to find whether there is an exact match for a new lo:hi.
-+
-+However, rbtree can be augmented to store such interval ranges in a structured
-+way making it possible to do efficient lookup and exact match.
-+
-+This "extra information" stored in each node is the maximum hi
-+(max_hi) value among all the nodes that are its descendents. This
-+information can be maintained at each node just be looking at the node
-+and its immediate children. And this will be used in O(log n) lookup
-+for lowest match (lowest start address among all possible matches)
-+with something like:
-+
-+find_lowest_match(lo, hi, node)
-+{
-+	lowest_match = NULL;
-+	while (node) {
-+		if (max_hi(node->left) > lo) {
-+			// Lowest overlap if any must be on left side
-+			node = node->left;
-+		} else if (overlap(lo, hi, node)) {
-+			lowest_match = node;
-+			break;
-+		} else if (lo > node->lo) {
-+			// Lowest overlap if any must be on right side
-+			node = node->right;
-+		} else {
-+			break;
-+		}
-+	}
-+	return lowest_match;
-+}
-+
-+Finding exact match will be to first find lowest match and then to follow
-+successor nodes looking for exact match, until the start of a node is beyond
-+the hi value we are looking for.
-diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
-index 06630d2..a4c7683 100644
---- a/arch/x86/mm/Makefile
-+++ b/arch/x86/mm/Makefile
-@@ -6,6 +6,7 @@ nostackp := $(call cc-option, -fno-stack-protector)
- CFLAGS_physaddr.o		:= $(nostackp)
- CFLAGS_setup_nx.o		:= $(nostackp)
- 
-+obj-$(CONFIG_X86_PAT)		+= pat_rbtree.o
- obj-$(CONFIG_SMP)		+= tlb.o
- 
- obj-$(CONFIG_X86_32)		+= pgtable_32.o iomap_32.o
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index ae9648e..9510111 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -30,6 +30,8 @@
- #include <asm/pat.h>
- #include <asm/io.h>
- 
-+#include "pat_internal.h"
-+
- #ifdef CONFIG_X86_PAT
- int __read_mostly pat_enabled = 1;
- 
-@@ -53,19 +55,15 @@ static inline void pat_disable(const char *reason)
- #endif
- 
- 
--static int debug_enable;
-+int pat_debug_enable;
- 
- static int __init pat_debug_setup(char *str)
- {
--	debug_enable = 1;
-+	pat_debug_enable = 1;
- 	return 0;
- }
- __setup("debugpat", pat_debug_setup);
- 
--#define dprintk(fmt, arg...) \
--	do { if (debug_enable) printk(KERN_INFO fmt, ##arg); } while (0)
--
--
- static u64 __read_mostly boot_pat_state;
- 
- enum {
-@@ -132,84 +130,7 @@ void pat_init(void)
- 
- #undef PAT
- 
--static char *cattr_name(unsigned long flags)
--{
--	switch (flags & _PAGE_CACHE_MASK) {
--	case _PAGE_CACHE_UC:		return "uncached";
--	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
--	case _PAGE_CACHE_WB:		return "write-back";
--	case _PAGE_CACHE_WC:		return "write-combining";
--	default:			return "broken";
--	}
--}
--
--/*
-- * The global memtype list keeps track of memory type for specific
-- * physical memory areas. Conflicting memory types in different
-- * mappings can cause CPU cache corruption. To avoid this we keep track.
-- *
-- * The list is sorted based on starting address and can contain multiple
-- * entries for each address (this allows reference counting for overlapping
-- * areas). All the aliases have the same cache attributes of course.
-- * Zero attributes are represented as holes.
-- *
-- * The data structure is a list that is also organized as an rbtree
-- * sorted on the start address of memtype range.
-- *
-- * memtype_lock protects both the linear list and rbtree.
-- */
--
--struct memtype {
--	u64			start;
--	u64			end;
--	unsigned long		type;
--	struct list_head	nd;
--	struct rb_node		rb;
--};
--
--static struct rb_root memtype_rbroot = RB_ROOT;
--static LIST_HEAD(memtype_list);
--static DEFINE_SPINLOCK(memtype_lock);	/* protects memtype list */
--
--static struct memtype *memtype_rb_search(struct rb_root *root, u64 start)
--{
--	struct rb_node *node = root->rb_node;
--	struct memtype *last_lower = NULL;
--
--	while (node) {
--		struct memtype *data = container_of(node, struct memtype, rb);
--
--		if (data->start < start) {
--			last_lower = data;
--			node = node->rb_right;
--		} else if (data->start > start) {
--			node = node->rb_left;
--		} else
--			return data;
--	}
--
--	/* Will return NULL if there is no entry with its start <= start */
--	return last_lower;
--}
--
--static void memtype_rb_insert(struct rb_root *root, struct memtype *data)
--{
--	struct rb_node **new = &(root->rb_node);
--	struct rb_node *parent = NULL;
--
--	while (*new) {
--		struct memtype *this = container_of(*new, struct memtype, rb);
--
--		parent = *new;
--		if (data->start <= this->start)
--			new = &((*new)->rb_left);
--		else if (data->start > this->start)
--			new = &((*new)->rb_right);
--	}
--
--	rb_link_node(&data->rb, parent, new);
--	rb_insert_color(&data->rb, root);
--}
-+static DEFINE_SPINLOCK(memtype_lock);	/* protects memtype accesses */
- 
- /*
-  * Does intersection of PAT memory type and MTRR memory type and returns
-@@ -237,33 +158,6 @@ static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
- 	return req_type;
- }
- 
--static int
--chk_conflict(struct memtype *new, struct memtype *entry, unsigned long *type)
--{
--	if (new->type != entry->type) {
--		if (type) {
--			new->type = entry->type;
--			*type = entry->type;
--		} else
--			goto conflict;
--	}
--
--	 /* check overlaps with more than one entry in the list */
--	list_for_each_entry_continue(entry, &memtype_list, nd) {
--		if (new->end <= entry->start)
--			break;
--		else if (new->type != entry->type)
--			goto conflict;
--	}
--	return 0;
--
-- conflict:
--	printk(KERN_INFO "%s:%d conflicting memory types "
--	       "%Lx-%Lx %s<->%s\n", current->comm, current->pid, new->start,
--	       new->end, cattr_name(new->type), cattr_name(entry->type));
--	return -EBUSY;
--}
--
- static int pat_pagerange_is_ram(unsigned long start, unsigned long end)
- {
- 	int ram_page = 0, not_rampage = 0;
-@@ -364,9 +258,8 @@ static int free_ram_pages_type(u64 start, u64 end)
- int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		    unsigned long *new_type)
- {
--	struct memtype *new, *entry;
-+	struct memtype *new;
- 	unsigned long actual_type;
--	struct list_head *where;
- 	int is_range_ram;
- 	int err = 0;
- 
-@@ -423,42 +316,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 
- 	spin_lock(&memtype_lock);
- 
--	/* Search for existing mapping that overlaps the current range */
--	where = NULL;
--	list_for_each_entry(entry, &memtype_list, nd) {
--		if (end <= entry->start) {
--			where = entry->nd.prev;
--			break;
--		} else if (start <= entry->start) { /* end > entry->start */
--			err = chk_conflict(new, entry, new_type);
--			if (!err) {
--				dprintk("Overlap at 0x%Lx-0x%Lx\n",
--					entry->start, entry->end);
--				where = entry->nd.prev;
--			}
--			break;
--		} else if (start < entry->end) { /* start > entry->start */
--			err = chk_conflict(new, entry, new_type);
--			if (!err) {
--				dprintk("Overlap at 0x%Lx-0x%Lx\n",
--					entry->start, entry->end);
--
--				/*
--				 * Move to right position in the linked
--				 * list to add this new entry
--				 */
--				list_for_each_entry_continue(entry,
--							&memtype_list, nd) {
--					if (start <= entry->start) {
--						where = entry->nd.prev;
--						break;
--					}
--				}
--			}
--			break;
--		}
--	}
--
-+	err = rbt_memtype_check_insert(new, new_type);
- 	if (err) {
- 		printk(KERN_INFO "reserve_memtype failed 0x%Lx-0x%Lx, "
- 		       "track %s, req %s\n",
-@@ -469,13 +327,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		return err;
- 	}
- 
--	if (where)
--		list_add(&new->nd, where);
--	else
--		list_add_tail(&new->nd, &memtype_list);
--
--	memtype_rb_insert(&memtype_rbroot, new);
--
- 	spin_unlock(&memtype_lock);
- 
- 	dprintk("reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s, ret %s\n",
-@@ -487,7 +338,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 
- int free_memtype(u64 start, u64 end)
- {
--	struct memtype *entry, *saved_entry;
- 	int err = -EINVAL;
- 	int is_range_ram;
- 
-@@ -511,46 +361,7 @@ int free_memtype(u64 start, u64 end)
- 	}
- 
- 	spin_lock(&memtype_lock);
--
--	entry = memtype_rb_search(&memtype_rbroot, start);
--	if (unlikely(entry == NULL))
--		goto unlock_ret;
--
--	/*
--	 * Saved entry points to an entry with start same or less than what
--	 * we searched for. Now go through the list in both directions to look
--	 * for the entry that matches with both start and end, with list stored
--	 * in sorted start address
--	 */
--	saved_entry = entry;
--	list_for_each_entry_from(entry, &memtype_list, nd) {
--		if (entry->start == start && entry->end == end) {
--			rb_erase(&entry->rb, &memtype_rbroot);
--			list_del(&entry->nd);
--			kfree(entry);
--			err = 0;
--			break;
--		} else if (entry->start > start) {
--			break;
--		}
--	}
--
--	if (!err)
--		goto unlock_ret;
--
--	entry = saved_entry;
--	list_for_each_entry_reverse(entry, &memtype_list, nd) {
--		if (entry->start == start && entry->end == end) {
--			rb_erase(&entry->rb, &memtype_rbroot);
--			list_del(&entry->nd);
--			kfree(entry);
--			err = 0;
--			break;
--		} else if (entry->start < start) {
--			break;
--		}
--	}
--unlock_ret:
-+	err = rbt_memtype_erase(start, end);
- 	spin_unlock(&memtype_lock);
- 
- 	if (err) {
-@@ -599,7 +410,7 @@ static unsigned long lookup_memtype(u64 paddr)
- 
- 	spin_lock(&memtype_lock);
- 
--	entry = memtype_rb_search(&memtype_rbroot, paddr);
-+	entry = rbt_memtype_lookup(paddr);
- 	if (entry != NULL)
- 		rettype = entry->type;
- 	else
-@@ -936,29 +747,25 @@ EXPORT_SYMBOL_GPL(pgprot_writecombine);
- 
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_X86_PAT)
- 
--/* get Nth element of the linked list */
- static struct memtype *memtype_get_idx(loff_t pos)
- {
--	struct memtype *list_node, *print_entry;
--	int i = 1;
-+	struct memtype *print_entry;
-+	int ret;
- 
--	print_entry  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
-+	print_entry  = kzalloc(sizeof(struct memtype), GFP_KERNEL);
- 	if (!print_entry)
- 		return NULL;
- 
- 	spin_lock(&memtype_lock);
--	list_for_each_entry(list_node, &memtype_list, nd) {
--		if (pos == i) {
--			*print_entry = *list_node;
--			spin_unlock(&memtype_lock);
--			return print_entry;
--		}
--		++i;
--	}
-+	ret = rbt_memtype_copy_nth_element(print_entry, pos);
- 	spin_unlock(&memtype_lock);
--	kfree(print_entry);
- 
--	return NULL;
-+	if (!ret) {
-+		return print_entry;
-+	} else {
-+		kfree(print_entry);
-+		return NULL;
-+	}
- }
- 
- static void *memtype_seq_start(struct seq_file *seq, loff_t *pos)
-diff --git a/arch/x86/mm/pat_internal.h b/arch/x86/mm/pat_internal.h
-new file mode 100644
-index 0000000..4f39eef
---- /dev/null
-+++ b/arch/x86/mm/pat_internal.h
-@@ -0,0 +1,46 @@
-+#ifndef __PAT_INTERNAL_H_
-+#define __PAT_INTERNAL_H_
-+
-+extern int pat_debug_enable;
-+
-+#define dprintk(fmt, arg...) \
-+	do { if (pat_debug_enable) printk(KERN_INFO fmt, ##arg); } while (0)
-+
-+struct memtype {
-+	u64			start;
-+	u64			end;
-+	u64			subtree_max_end;
-+	unsigned long		type;
-+	struct rb_node		rb;
-+};
-+
-+static inline char *cattr_name(unsigned long flags)
-+{
-+	switch (flags & _PAGE_CACHE_MASK) {
-+	case _PAGE_CACHE_UC:		return "uncached";
-+	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
-+	case _PAGE_CACHE_WB:		return "write-back";
-+	case _PAGE_CACHE_WC:		return "write-combining";
-+	default:			return "broken";
-+	}
-+}
-+
-+#ifdef CONFIG_X86_PAT
-+extern int rbt_memtype_check_insert(struct memtype *new,
-+					unsigned long *new_type);
-+extern int rbt_memtype_erase(u64 start, u64 end);
-+extern struct memtype *rbt_memtype_lookup(u64 addr);
-+extern int rbt_memtype_copy_nth_element(struct memtype *out, loff_t pos);
-+#else
-+static inline int rbt_memtype_check_insert(struct memtype *new,
-+					unsigned long *new_type)
-+{ return 0; }
-+static inline int rbt_memtype_erase(u64 start, u64 end)
-+{ return 0; }
-+static inline struct memtype *rbt_memtype_lookup(u64 addr)
-+{ return NULL; }
-+static inline int rbt_memtype_copy_nth_element(struct memtype *out, loff_t pos)
-+{ return 0; }
-+#endif
-+
-+#endif /* __PAT_INTERNAL_H_ */
-diff --git a/arch/x86/mm/pat_rbtree.c b/arch/x86/mm/pat_rbtree.c
-new file mode 100644
-index 0000000..9063f40
---- /dev/null
-+++ b/arch/x86/mm/pat_rbtree.c
-@@ -0,0 +1,271 @@
-+/*
-+ * Handle caching attributes in page tables (PAT)
-+ *
-+ * Authors: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-+ *          Suresh B Siddha <suresh.b.siddha@intel.com>
-+ *
-+ * Interval tree (augmented rbtree) used to store the PAT memory type
-+ * reservations.
-+ */
-+
-+#include <linux/seq_file.h>
-+#include <linux/debugfs.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/rbtree.h>
-+#include <linux/sched.h>
-+#include <linux/gfp.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/pat.h>
-+
-+#include "pat_internal.h"
-+
-+/*
-+ * The memtype tree keeps track of memory type for specific
-+ * physical memory areas. Without proper tracking, conflicting memory
-+ * types in different mappings can cause CPU cache corruption.
-+ *
-+ * The tree is an interval tree (augmented rbtree) with tree ordered
-+ * on starting address. Tree can contain multiple entries for
-+ * different regions which overlap. All the aliases have the same
-+ * cache attributes of course.
-+ *
-+ * memtype_lock protects the rbtree.
-+ */
-+
-+static void memtype_rb_augment_cb(struct rb_node *node);
-+static struct rb_root memtype_rbroot = RB_AUGMENT_ROOT(&memtype_rb_augment_cb);
-+
-+static int is_node_overlap(struct memtype *node, u64 start, u64 end)
-+{
-+	if (node->start >= end || node->end <= start)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static u64 get_subtree_max_end(struct rb_node *node)
-+{
-+	u64 ret = 0;
-+	if (node) {
-+		struct memtype *data = container_of(node, struct memtype, rb);
-+		ret = data->subtree_max_end;
-+	}
-+	return ret;
-+}
-+
-+/* Update 'subtree_max_end' for a node, based on node and its children */
-+static void update_node_max_end(struct rb_node *node)
-+{
-+	struct memtype *data;
-+	u64 max_end, child_max_end;
-+
-+	if (!node)
-+		return;
-+
-+	data = container_of(node, struct memtype, rb);
-+	max_end = data->end;
-+
-+	child_max_end = get_subtree_max_end(node->rb_right);
-+	if (child_max_end > max_end)
-+		max_end = child_max_end;
-+
-+	child_max_end = get_subtree_max_end(node->rb_left);
-+	if (child_max_end > max_end)
-+		max_end = child_max_end;
-+
-+	data->subtree_max_end = max_end;
-+}
-+
-+/* Update 'subtree_max_end' for a node and all its ancestors */
-+static void update_path_max_end(struct rb_node *node)
-+{
-+	u64 old_max_end, new_max_end;
-+
-+	while (node) {
-+		struct memtype *data = container_of(node, struct memtype, rb);
-+
-+		old_max_end = data->subtree_max_end;
-+		update_node_max_end(node);
-+		new_max_end = data->subtree_max_end;
-+
-+		if (new_max_end == old_max_end)
-+			break;
-+
-+		node = rb_parent(node);
-+	}
-+}
-+
-+/* Find the first (lowest start addr) overlapping range from rb tree */
-+static struct memtype *memtype_rb_lowest_match(struct rb_root *root,
-+				u64 start, u64 end)
-+{
-+	struct rb_node *node = root->rb_node;
-+	struct memtype *last_lower = NULL;
-+
-+	while (node) {
-+		struct memtype *data = container_of(node, struct memtype, rb);
-+
-+		if (get_subtree_max_end(node->rb_left) > start) {
-+			/* Lowest overlap if any must be on left side */
-+			node = node->rb_left;
-+		} else if (is_node_overlap(data, start, end)) {
-+			last_lower = data;
-+			break;
-+		} else if (start >= data->start) {
-+			/* Lowest overlap if any must be on right side */
-+			node = node->rb_right;
-+		} else {
-+			break;
-+		}
-+	}
-+	return last_lower; /* Returns NULL if there is no overlap */
-+}
-+
-+static struct memtype *memtype_rb_exact_match(struct rb_root *root,
-+				u64 start, u64 end)
-+{
-+	struct memtype *match;
-+
-+	match = memtype_rb_lowest_match(root, start, end);
-+	while (match != NULL && match->start < end) {
-+		struct rb_node *node;
-+
-+		if (match->start == start && match->end == end)
-+			return match;
-+
-+		node = rb_next(&match->rb);
-+		if (node)
-+			match = container_of(node, struct memtype, rb);
-+		else
-+			match = NULL;
-+	}
-+
-+	return NULL; /* Returns NULL if there is no exact match */
-+}
-+
-+static int memtype_rb_check_conflict(struct rb_root *root,
-+				u64 start, u64 end,
-+				unsigned long reqtype, unsigned long *newtype)
-+{
-+	struct rb_node *node;
-+	struct memtype *match;
-+	int found_type = reqtype;
-+
-+	match = memtype_rb_lowest_match(&memtype_rbroot, start, end);
-+	if (match == NULL)
-+		goto success;
-+
-+	if (match->type != found_type && newtype == NULL)
-+		goto failure;
-+
-+	dprintk("Overlap at 0x%Lx-0x%Lx\n", match->start, match->end);
-+	found_type = match->type;
-+
-+	node = rb_next(&match->rb);
-+	while (node) {
-+		match = container_of(node, struct memtype, rb);
-+
-+		if (match->start >= end) /* Checked all possible matches */
-+			goto success;
-+
-+		if (is_node_overlap(match, start, end) &&
-+		    match->type != found_type) {
-+			goto failure;
-+		}
-+
-+		node = rb_next(&match->rb);
-+	}
-+success:
-+	if (newtype)
-+		*newtype = found_type;
-+
-+	return 0;
-+
-+failure:
-+	printk(KERN_INFO "%s:%d conflicting memory types "
-+		"%Lx-%Lx %s<->%s\n", current->comm, current->pid, start,
-+		end, cattr_name(found_type), cattr_name(match->type));
-+	return -EBUSY;
-+}
-+
-+static void memtype_rb_augment_cb(struct rb_node *node)
-+{
-+	if (node)
-+		update_path_max_end(node);
-+}
-+
-+static void memtype_rb_insert(struct rb_root *root, struct memtype *newdata)
-+{
-+	struct rb_node **node = &(root->rb_node);
-+	struct rb_node *parent = NULL;
-+
-+	while (*node) {
-+		struct memtype *data = container_of(*node, struct memtype, rb);
-+
-+		parent = *node;
-+		if (newdata->start <= data->start)
-+			node = &((*node)->rb_left);
-+		else if (newdata->start > data->start)
-+			node = &((*node)->rb_right);
-+	}
-+
-+	rb_link_node(&newdata->rb, parent, node);
-+	rb_insert_color(&newdata->rb, root);
-+}
-+
-+int rbt_memtype_check_insert(struct memtype *new, unsigned long *ret_type)
-+{
-+	int err = 0;
-+
-+	err = memtype_rb_check_conflict(&memtype_rbroot, new->start, new->end,
-+						new->type, ret_type);
-+
-+	if (!err) {
-+		new->type = *ret_type;
-+		memtype_rb_insert(&memtype_rbroot, new);
-+	}
-+	return err;
-+}
-+
-+int rbt_memtype_erase(u64 start, u64 end)
-+{
-+	struct memtype *data;
-+
-+	data = memtype_rb_exact_match(&memtype_rbroot, start, end);
-+	if (!data)
-+		return -EINVAL;
-+
-+	rb_erase(&data->rb, &memtype_rbroot);
-+	return 0;
-+}
-+
-+struct memtype *rbt_memtype_lookup(u64 addr)
-+{
-+	struct memtype *data;
-+	data = memtype_rb_lowest_match(&memtype_rbroot, addr, addr + PAGE_SIZE);
-+	return data;
-+}
-+
-+#if defined(CONFIG_DEBUG_FS)
-+int rbt_memtype_copy_nth_element(struct memtype *out, loff_t pos)
-+{
-+	struct rb_node *node;
-+	int i = 1;
-+
-+	node = rb_first(&memtype_rbroot);
-+	while (node && pos != i) {
-+		node = rb_next(node);
-+		i++;
-+	}
-+
-+	if (node) { /* pos == i */
-+		struct memtype *this = container_of(node, struct memtype, rb);
-+		*out = *this;
-+		return 0;
-+	} else {
-+		return 1;
-+	}
-+}
-+#endif
-diff --git a/include/linux/rbtree.h b/include/linux/rbtree.h
-index 9c29541..8e33a25 100644
---- a/include/linux/rbtree.h
-+++ b/include/linux/rbtree.h
-@@ -110,6 +110,7 @@ struct rb_node
- struct rb_root
- {
- 	struct rb_node *rb_node;
-+	void (*augment_cb)(struct rb_node *node);
+diff --git a/arch/x86/include/asm/uv/bios.h b/arch/x86/include/asm/uv/bios.h
+index 2751f30..1634275 100644
+--- a/arch/x86/include/asm/uv/bios.h
++++ b/arch/x86/include/asm/uv/bios.h
+@@ -36,7 +36,8 @@ enum uv_bios_cmd {
+ 	UV_BIOS_WATCHLIST_ALLOC,
+ 	UV_BIOS_WATCHLIST_FREE,
+ 	UV_BIOS_MEMPROTECT,
+-	UV_BIOS_GET_PARTITION_ADDR
++	UV_BIOS_GET_PARTITION_ADDR,
++	UV_BIOS_SET_LEGACY_VGA_TARGET
  };
  
+ /*
+@@ -96,6 +97,7 @@ extern int uv_bios_mq_watchlist_alloc(unsigned long, unsigned int,
+ extern int uv_bios_mq_watchlist_free(int, int);
+ extern s64 uv_bios_change_memprotect(u64, u64, enum uv_memprotect);
+ extern s64 uv_bios_reserved_page_pa(u64, u64 *, u64 *, u64 *);
++extern int uv_bios_set_legacy_vga_target(bool decode, int domain, int bus);
  
-@@ -129,7 +130,9 @@ static inline void rb_set_color(struct rb_node *rb, int color)
- 	rb->rb_parent_color = (rb->rb_parent_color & ~1) | color;
- }
+ extern void uv_bios_init(void);
  
--#define RB_ROOT	(struct rb_root) { NULL, }
-+#define RB_ROOT	(struct rb_root) { NULL, NULL, }
-+#define RB_AUGMENT_ROOT(x)	(struct rb_root) { NULL, x}
+diff --git a/arch/x86/include/asm/uv/uv.h b/arch/x86/include/asm/uv/uv.h
+index c0a01b5..3bb9491 100644
+--- a/arch/x86/include/asm/uv/uv.h
++++ b/arch/x86/include/asm/uv/uv.h
+@@ -11,6 +11,7 @@ struct mm_struct;
+ extern enum uv_system_type get_uv_system_type(void);
+ extern int is_uv_system(void);
+ extern void uv_cpu_init(void);
++extern void uv_nmi_init(void);
+ extern void uv_system_init(void);
+ extern const struct cpumask *uv_flush_tlb_others(const struct cpumask *cpumask,
+ 						 struct mm_struct *mm,
+diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
+index ea0e8ea..60cc352 100644
+--- a/arch/x86/include/asm/x86_init.h
++++ b/arch/x86/include/asm/x86_init.h
+@@ -126,6 +126,7 @@ struct x86_cpuinit_ops {
+  * @get_wallclock:		get time from HW clock like RTC etc.
+  * @set_wallclock:		set time back to HW clock
+  * @is_untracked_pat_range	exclude from PAT logic
++ * @nmi_init			enable NMI on cpus
+  */
+ struct x86_platform_ops {
+ 	unsigned long (*calibrate_tsc)(void);
+@@ -133,6 +134,7 @@ struct x86_platform_ops {
+ 	int (*set_wallclock)(unsigned long nowtime);
+ 	void (*iommu_shutdown)(void);
+ 	bool (*is_untracked_pat_range)(u64 start, u64 end);
++	void (*nmi_init)(void);
+ };
+ 
+ extern struct x86_init_ops x86_init;
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index 21db3cb..4b8dbb2 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -20,6 +20,8 @@
+ #include <linux/cpu.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
++#include <linux/pci.h>
++#include <linux/kdebug.h>
+ 
+ #include <asm/uv/uv_mmrs.h>
+ #include <asm/uv/uv_hub.h>
+@@ -34,10 +36,13 @@
+ 
+ DEFINE_PER_CPU(int, x2apic_extra_bits);
+ 
++#define PR_DEVEL(fmt, args...)	pr_devel("%s: " fmt, __func__, args)
 +
- #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
+ static enum uv_system_type uv_system_type;
+ static u64 gru_start_paddr, gru_end_paddr;
+ int uv_min_hub_revision_id;
+ EXPORT_SYMBOL_GPL(uv_min_hub_revision_id);
++static DEFINE_SPINLOCK(uv_nmi_lock);
  
- #define RB_EMPTY_ROOT(root)	((root)->rb_node == NULL)
-diff --git a/lib/rbtree.c b/lib/rbtree.c
-index e2aa3be..15e10b1 100644
---- a/lib/rbtree.c
-+++ b/lib/rbtree.c
-@@ -44,6 +44,11 @@ static void __rb_rotate_left(struct rb_node *node, struct rb_root *root)
- 	else
- 		root->rb_node = right;
- 	rb_set_parent(node, right);
-+
-+	if (root->augment_cb) {
-+		root->augment_cb(node);
-+		root->augment_cb(right);
-+	}
- }
- 
- static void __rb_rotate_right(struct rb_node *node, struct rb_root *root)
-@@ -67,12 +72,20 @@ static void __rb_rotate_right(struct rb_node *node, struct rb_root *root)
- 	else
- 		root->rb_node = left;
- 	rb_set_parent(node, left);
-+
-+	if (root->augment_cb) {
-+		root->augment_cb(node);
-+		root->augment_cb(left);
-+	}
- }
- 
- void rb_insert_color(struct rb_node *node, struct rb_root *root)
+ static inline bool is_GRU_range(u64 start, u64 end)
  {
- 	struct rb_node *parent, *gparent;
+@@ -71,6 +76,7 @@ static int __init uv_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 	if (!strcmp(oem_id, "SGI")) {
+ 		nodeid = early_get_nodeid();
+ 		x86_platform.is_untracked_pat_range =  uv_is_untracked_pat_range;
++		x86_platform.nmi_init = uv_nmi_init;
+ 		if (!strcmp(oem_table_id, "UVL"))
+ 			uv_system_type = UV_LEGACY_APIC;
+ 		else if (!strcmp(oem_table_id, "UVX"))
+@@ -553,6 +559,30 @@ late_initcall(uv_init_heartbeat);
  
-+	if (root->augment_cb)
-+		root->augment_cb(node);
-+
- 	while ((parent = rb_parent(node)) && rb_is_red(parent))
- 	{
- 		gparent = rb_parent(parent);
-@@ -227,12 +240,15 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
- 	else
- 	{
- 		struct rb_node *old = node, *left;
-+		int old_parent_cb = 0;
-+		int successor_parent_cb = 0;
+ #endif /* !CONFIG_HOTPLUG_CPU */
  
- 		node = node->rb_right;
- 		while ((left = node->rb_left) != NULL)
- 			node = left;
++/* Direct Legacy VGA I/O traffic to designated IOH */
++int uv_set_vga_state(struct pci_dev *pdev, bool decode,
++		      unsigned int command_bits, bool change_bridge)
++{
++	int domain, bus, rc;
++
++	PR_DEVEL("devfn %x decode %d cmd %x chg_brdg %d\n",
++			pdev->devfn, decode, command_bits, change_bridge);
++
++	if (!change_bridge)
++		return 0;
++
++	if ((command_bits & PCI_COMMAND_IO) == 0)
++		return 0;
++
++	domain = pci_domain_nr(pdev->bus);
++	bus = pdev->bus->number;
++
++	rc = uv_bios_set_legacy_vga_target(decode, domain, bus);
++	PR_DEVEL("vga decode %d %x:%x, rc: %d\n", decode, domain, bus, rc);
++
++	return rc;
++}
++
+ /*
+  * Called on each cpu to initialize the per_cpu UV data area.
+  * FIXME: hotplug not supported yet
+@@ -569,6 +599,46 @@ void __cpuinit uv_cpu_init(void)
+ 		set_x2apic_extra_bits(uv_hub_info->pnode);
+ }
  
- 		if (rb_parent(old)) {
-+			old_parent_cb = 1;
- 			if (rb_parent(old)->rb_left == old)
- 				rb_parent(old)->rb_left = node;
- 			else
-@@ -247,8 +263,10 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
- 		if (parent == old) {
- 			parent = node;
- 		} else {
-+			successor_parent_cb = 1;
- 			if (child)
- 				rb_set_parent(child, parent);
++/*
++ * When NMI is received, print a stack trace.
++ */
++int uv_handle_nmi(struct notifier_block *self, unsigned long reason, void *data)
++{
++	if (reason != DIE_NMI_IPI)
++		return NOTIFY_OK;
++	/*
++	 * Use a lock so only one cpu prints at a time
++	 * to prevent intermixed output.
++	 */
++	spin_lock(&uv_nmi_lock);
++	pr_info("NMI stack dump cpu %u:\n", smp_processor_id());
++	dump_stack();
++	spin_unlock(&uv_nmi_lock);
 +
- 			parent->rb_left = child;
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block uv_dump_stack_nmi_nb = {
++	.notifier_call	= uv_handle_nmi
++};
++
++void uv_register_nmi_notifier(void)
++{
++	if (register_die_notifier(&uv_dump_stack_nmi_nb))
++		printk(KERN_WARNING "UV NMI handler failed to register\n");
++}
++
++void uv_nmi_init(void)
++{
++	unsigned int value;
++
++	/*
++	 * Unmask NMI on all cpus
++	 */
++	value = apic_read(APIC_LVT1) | APIC_DM_NMI;
++	value &= ~APIC_LVT_MASKED;
++	apic_write(APIC_LVT1, value);
++}
  
- 			node->rb_right = old->rb_right;
-@@ -259,6 +277,24 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
- 		node->rb_left = old->rb_left;
- 		rb_set_parent(old->rb_left, node);
+ void __init uv_system_init(void)
+ {
+@@ -690,5 +760,9 @@ void __init uv_system_init(void)
  
-+		if (root->augment_cb) {
-+			/*
-+			 * Here, three different nodes can have new children.
-+			 * The parent of the successor node that was selected
-+			 * to replace the node to be erased.
-+			 * The node that is getting erased and is now replaced
-+			 * by its successor.
-+			 * The parent of the node getting erased-replaced.
-+			 */
-+			if (successor_parent_cb)
-+				root->augment_cb(parent);
+ 	uv_cpu_init();
+ 	uv_scir_register_cpu_notifier();
++	uv_register_nmi_notifier();
+ 	proc_mkdir("sgi_uv", NULL);
 +
-+			root->augment_cb(node);
-+
-+			if (old_parent_cb)
-+				root->augment_cb(rb_parent(old));
-+		}
-+
- 		goto color;
- 	}
++	/* register Legacy VGA I/O redirection handler */
++	pci_register_set_vga_state(uv_set_vga_state);
+ }
+diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+index b0206a2..575127a 100644
+--- a/arch/x86/kernel/bios_uv.c
++++ b/arch/x86/kernel/bios_uv.c
+@@ -154,6 +154,25 @@ s64 uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
+ }
+ EXPORT_SYMBOL_GPL(uv_bios_freq_base);
  
-@@ -267,15 +303,19 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
++/*
++ * uv_bios_set_legacy_vga_target - Set Legacy VGA I/O Target
++ * @decode: true to enable target, false to disable target
++ * @domain: PCI domain number
++ * @bus: PCI bus number
++ *
++ * Returns:
++ *    0: Success
++ *    -EINVAL: Invalid domain or bus number
++ *    -ENOSYS: Capability not available
++ *    -EBUSY: Legacy VGA I/O cannot be retargeted at this time
++ */
++int uv_bios_set_legacy_vga_target(bool decode, int domain, int bus)
++{
++	return uv_bios_call(UV_BIOS_SET_LEGACY_VGA_TARGET,
++				(u64)decode, (u64)domain, (u64)bus, 0, 0);
++}
++EXPORT_SYMBOL_GPL(uv_bios_set_legacy_vga_target);
++
  
- 	if (child)
- 		rb_set_parent(child, parent);
--	if (parent)
--	{
-+
-+	if (parent) {
- 		if (parent->rb_left == node)
- 			parent->rb_left = child;
- 		else
- 			parent->rb_right = child;
--	}
--	else
-+
-+		if (root->augment_cb)
-+			root->augment_cb(parent);
-+
-+	} else {
- 		root->rb_node = child;
-+	}
+ #ifdef CONFIG_EFI
+ void uv_bios_init(void)
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 678d0b8..838a118 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -320,6 +320,7 @@ notrace static void __cpuinit start_secondary(void *unused)
+ 	unlock_vector_lock();
+ 	ipi_call_unlock();
+ 	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
++	x86_platform.nmi_init();
  
-  color:
- 	if (color == RB_BLACK)
+ 	/* enable local interrupts */
+ 	local_irq_enable();
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index ccd179d..ee5746c 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -76,10 +76,13 @@ struct x86_cpuinit_ops x86_cpuinit __cpuinitdata = {
+ 	.setup_percpu_clockev		= setup_secondary_APIC_clock,
+ };
+ 
++static void default_nmi_init(void) { };
++
+ struct x86_platform_ops x86_platform = {
+ 	.calibrate_tsc			= native_calibrate_tsc,
+ 	.get_wallclock			= mach_get_cmos_time,
+ 	.set_wallclock			= mach_set_rtc_mmss,
+ 	.iommu_shutdown			= iommu_shutdown_noop,
+ 	.is_untracked_pat_range		= is_ISA_range,
++	.nmi_init			= default_nmi_init
+ };
+diff --git a/drivers/gpu/vga/Kconfig b/drivers/gpu/vga/Kconfig
+index 790e675..0920492 100644
+--- a/drivers/gpu/vga/Kconfig
++++ b/drivers/gpu/vga/Kconfig
+@@ -8,3 +8,11 @@ config VGA_ARB
+ 	  are accessed at same time they need some kind of coordination. Please
+ 	  see Documentation/vgaarbiter.txt for more details. Select this to
+ 	  enable VGA arbiter.
++
++config VGA_ARB_MAX_GPUS
++	int "Maximum number of GPUs"
++	default 16
++	depends on VGA_ARB
++	help
++	  Reserves space in the kernel to maintain resource locking for
++	  multiple GPUS.  The overhead for each GPU is very small.
+diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
+index 1ac0c93..325a533 100644
+--- a/drivers/gpu/vga/vgaarb.c
++++ b/drivers/gpu/vga/vgaarb.c
+@@ -688,7 +688,7 @@ EXPORT_SYMBOL(vga_client_register);
+  * the arbiter.
+  */
+ 
+-#define MAX_USER_CARDS         16
++#define MAX_USER_CARDS         CONFIG_VGA_ARB_MAX_GPUS
+ #define PCI_INVALID_CARD       ((struct pci_dev *)-1UL)
+ 
+ /*
+@@ -954,6 +954,7 @@ static ssize_t vga_arb_write(struct file *file, const char __user * buf,
+ 		}
+ 
+ 	} else if (strncmp(curr_pos, "target ", 7) == 0) {
++		struct pci_bus *pbus;
+ 		unsigned int domain, bus, devfn;
+ 		struct vga_device *vgadev;
+ 
+@@ -969,18 +970,31 @@ static ssize_t vga_arb_write(struct file *file, const char __user * buf,
+ 				ret_val = -EPROTO;
+ 				goto done;
+ 			}
+-
+-			pdev = pci_get_bus_and_slot(bus, devfn);
++			pr_devel("vgaarb: %s ==> %x:%x:%x.%x\n", curr_pos,
++				domain, bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
++
++			pbus = pci_find_bus(domain, bus);
++			pr_devel("vgaarb: pbus %p\n", pbus);
++			if (pbus == NULL) {
++				pr_err("vgaarb: invalid PCI domain and/or bus address %x:%x\n",
++					domain, bus);
++				ret_val = -ENODEV;
++				goto done;
++			}
++			pdev = pci_get_slot(pbus, devfn);
++			pr_devel("vgaarb: pdev %p\n", pdev);
+ 			if (!pdev) {
+-				pr_info("vgaarb: invalid PCI address!\n");
++				pr_err("vgaarb: invalid PCI address %x:%x\n",
++					bus, devfn);
+ 				ret_val = -ENODEV;
+ 				goto done;
+ 			}
+ 		}
+ 
+ 		vgadev = vgadev_find(pdev);
++		pr_devel("vgaarb: vgadev %p\n", vgadev);
+ 		if (vgadev == NULL) {
+-			pr_info("vgaarb: this pci device is not a vga device\n");
++			pr_err("vgaarb: this pci device is not a vga device\n");
+ 			pci_dev_put(pdev);
+ 			ret_val = -ENODEV;
+ 			goto done;
+@@ -998,7 +1012,8 @@ static ssize_t vga_arb_write(struct file *file, const char __user * buf,
+ 			}
+ 		}
+ 		if (i == MAX_USER_CARDS) {
+-			pr_err("vgaarb: maximum user cards number reached!\n");
++			pr_err("vgaarb: maximum user cards (%d) number reached!\n",
++				MAX_USER_CARDS);
+ 			pci_dev_put(pdev);
+ 			/* XXX: which value to return? */
+ 			ret_val =  -ENOMEM;
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 315fea4..ac2a576 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2615,6 +2615,23 @@ int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
+ 	return 0;
+ }
+ 
++/* Some architectures require additional programming to enable VGA */
++static arch_set_vga_state_t arch_set_vga_state;
++
++void __init pci_register_set_vga_state(arch_set_vga_state_t func)
++{
++	arch_set_vga_state = func;	/* NULL disables */
++}
++
++static int pci_set_vga_state_arch(struct pci_dev *dev, bool decode,
++		      unsigned int command_bits, bool change_bridge)
++{
++	if (arch_set_vga_state)
++		return arch_set_vga_state(dev, decode, command_bits,
++						change_bridge);
++	return 0;
++}
++
+ /**
+  * pci_set_vga_state - set VGA decode state on device and parents if requested
+  * @dev: the PCI device
+@@ -2628,9 +2645,15 @@ int pci_set_vga_state(struct pci_dev *dev, bool decode,
+ 	struct pci_bus *bus;
+ 	struct pci_dev *bridge;
+ 	u16 cmd;
++	int rc;
+ 
+ 	WARN_ON(command_bits & ~(PCI_COMMAND_IO|PCI_COMMAND_MEMORY));
+ 
++	/* ARCH specific VGA enables */
++	rc = pci_set_vga_state_arch(dev, decode, command_bits, change_bridge);
++	if (rc)
++		return rc;
++
+ 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+ 	if (decode == true)
+ 		cmd |= command_bits;
+@@ -2845,6 +2868,7 @@ EXPORT_SYMBOL(pcim_pin_device);
+ EXPORT_SYMBOL(pci_disable_device);
+ EXPORT_SYMBOL(pci_find_capability);
+ EXPORT_SYMBOL(pci_bus_find_capability);
++EXPORT_SYMBOL(pci_register_set_vga_state);
+ EXPORT_SYMBOL(pci_release_regions);
+ EXPORT_SYMBOL(pci_request_regions);
+ EXPORT_SYMBOL(pci_request_regions_exclusive);
+@@ -2877,4 +2901,3 @@ EXPORT_SYMBOL(pci_target_state);
+ EXPORT_SYMBOL(pci_prepare_to_sleep);
+ EXPORT_SYMBOL(pci_back_from_sleep);
+ EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+-
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 174e539..5da166e 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -955,6 +955,11 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ }
+ #endif /* CONFIG_PCI_DOMAINS */
+ 
++/* some architectures require additional setup to direct VGA traffic */
++typedef int (*arch_set_vga_state_t)(struct pci_dev *pdev, bool decode,
++		      unsigned int command_bits, bool change_bridge);
++extern void pci_register_set_vga_state(arch_set_vga_state_t func);
++
+ #else /* CONFIG_PCI is not enabled */
+ 
+ /*
