@@ -1,29 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968647Ab0B0Qzw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:55:52 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:46242 "EHLO
+	id S1030432Ab0B0Qz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:55:57 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:41119 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030402Ab0B0Qzn (ORCPT
+	with ESMTP id S1030409Ab0B0Qzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:55:43 -0500
+	Sat, 27 Feb 2010 11:55:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=NXEKfhCKvxhVv0uqNgv7CphtdRG8pz5Ee5KHUoEmzXH1Sb2cSrVHCmEa9bE8n7LX5l
-         4uHP0t5MMDTqyBy5o5SYQJQqHdQXQ3tnFTcztR7Xl1pFBLxcibyyxDuMC2zKs4AJUl3q
-         0k5R9YOwgr7WzgJY8Do7FCP363nCnsA29yoiA=
+        b=WcBSpdu969AGaHkCPI1D0RDOrLIoAzDPRoz3bAU1w3ArlEgunT5+Y1+ZMTwVdn6UQb
+         tNJ7cj0z3L33cGX5aBmOTIDYDpiXQWVJxRAKn8g6cMpTJbzJuLHispguQnpeo9IvIZrO
+         vsbajTKUxpJsz7e2Eq9Wc6Sv36qxvuTWVZRzg=
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: linux-kernel@vger.kernel.org
-Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Jeff Dike <jdike@addtoit.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       WANG Cong <xiyou.wangcong@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       user-mode-linux-user@lists.sourceforge.net
-Subject: [PATCH 39/66] arch/um/drivers/pcap_user.h: Checkpatch cleanup
-Date: Sat, 27 Feb 2010 17:51:20 +0100
-Message-Id: <1267289508-31031-40-git-send-email-andrea.gelmini@gelma.net>
+Cc: Andrea Gelmini <andrea.gelmini@gelma.net>,
+       Patrick McHardy <kaber@trash.net>, netfilter-devel@vger.kernel.org,
+       netfilter@vger.kernel.org, coreteam@netfilter.org
+Subject: [PATCH 40/66] include/linux/netfilter/nf_conntrack_tuple_common.h: Checkpatch cleanup
+Date: Sat, 27 Feb 2010 17:51:21 +0100
+Message-Id: <1267289508-31031-41-git-send-email-andrea.gelmini@gelma.net>
 X-Mailer: git-send-email 1.7.0.90.g251a4
 In-Reply-To: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
 References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
@@ -31,28 +29,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/um/drivers/pcap_user.h:1: ERROR: trailing whitespace
+include/linux/netfilter/nf_conntrack_tuple_common.h:5: ERROR: open brace '{' following enum go on the same line
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- arch/um/drivers/pcap_user.h |    3 +--
+ .../linux/netfilter/nf_conntrack_tuple_common.h    |    3 +--
  1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/um/drivers/pcap_user.h b/arch/um/drivers/pcap_user.h
-index d8ba615..6ff1c46 100644
---- a/arch/um/drivers/pcap_user.h
-+++ b/arch/um/drivers/pcap_user.h
-@@ -1,4 +1,4 @@
--/* 
-+/*
-  * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-  * Licensed under the GPL
-  */
-@@ -18,4 +18,3 @@ struct pcap_data {
- extern const struct net_user_info pcap_user_info;
+diff --git a/include/linux/netfilter/nf_conntrack_tuple_common.h b/include/linux/netfilter/nf_conntrack_tuple_common.h
+index 8e145f0..2ea22b0 100644
+--- a/include/linux/netfilter/nf_conntrack_tuple_common.h
++++ b/include/linux/netfilter/nf_conntrack_tuple_common.h
+@@ -1,8 +1,7 @@
+ #ifndef _NF_CONNTRACK_TUPLE_COMMON_H
+ #define _NF_CONNTRACK_TUPLE_COMMON_H
  
- extern int pcap_user_read(int fd, void *buf, int len, struct pcap_data *pri);
--
+-enum ip_conntrack_dir
+-{
++enum ip_conntrack_dir {
+ 	IP_CT_DIR_ORIGINAL,
+ 	IP_CT_DIR_REPLY,
+ 	IP_CT_DIR_MAX
 -- 
 1.7.0.90.g251a4
 
