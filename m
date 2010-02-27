@@ -1,126 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965434Ab0B0Kod (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 05:44:33 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:56258 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965301Ab0B0Koa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 05:44:30 -0500
-Date: Sat, 27 Feb 2010 11:39:34 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [git pull] PCMCIA updates for 2.6.34
-Message-ID: <20100227103934.GA4430@comet.dominikbrodowski.net>
-Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+	id S965525Ab0B0KvX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 05:51:23 -0500
+Received: from lucidpixels.com ([75.144.35.66]:34705 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965301Ab0B0KvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 05:51:16 -0500
+Date: Sat, 27 Feb 2010 05:51:15 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Eric Sandeen <sandeen@redhat.com>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+In-Reply-To: <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
+Message-ID: <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan>
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com>
+ <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-several PCMCIA updates for 2.6.33 are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git master
 
-Please pull from that location. The diffstat and list of changes is below,
-the individual diffs are sent (at least) to the linux-pcmcia list.
+On Sat, 27 Feb 2010, Justin Piszcz wrote:
 
-Thanks,
-        Dominik
+> 
+> 
+> On Fri, 26 Feb 2010, Eric Sandeen wrote:
+> 
+> > Eric Sandeen wrote:
+> >
+> > Oh, you need very recent util-linux-ng as well, and use libblkid from there
+> > with:
+> >
+> > [e2fsprogs] # ./configure --disable-libblkid
+> >
+> > Otherwise you can just feed mkfs.ext4 stripe & stride manually.
+> >
+> > -Eric
+> >
 
-Dominik Brodowski (41):
-      pcmcia: make use of pcmcia_dev_resume() return value
-      pcmcia: remove remaining unused IRQ_FIRST_SHARED parameter
-      pcmcia: do not meddle with already assigned resources
-      pcmcia: validate CIS, not CIS cache.
-      pcmcia: cleanup pccard_validate_cis()
-      pcmcia: improve check for same card in slot after resume
-      pcmcia: CardBus doesn't need CIS access
-      pcmcia: call CIS cleanup from ds.c
-      pcmcia: rsrc_nonstatic io memory probe improvements
-      pcmcia: do not lock socket driver module in pcmcia_get_socket()
-      pcmcia: do not lock socket driver module on card insert
-      pcmcia: remove useless indirection
-      pcmcia: remove some rsrc_mgr indirections
-      pcmcia: m32r uses static socket resources
-      pcmcia: m8xx_pcmcia.c should use iodyn resource manager
-      pcmcia: move cistpl.c into pcmcia module
-      pcmcia: remove remaining rsrc_mgr indirections
-      pcmcia: do not use resource manager on !PCMCIA
-      pcmcia: add locking to set_mem_map()
-      pcmcia: also lock fake and cache CIS by ops_mutex
-      pcmcia: lock ops->set_io_map()
-      pcmcia: lock ops->set_socket
-      pcmcia: properly lock skt->irq, skt->irq_mask
-      pcmcia: protect s->device_count
-      pcmcia: add locking to struct pcmcia_socket->pcmcia_state()
-      pcmcia: simplify locking
-      pcmcia: add locking documentation
-      pcmcia: assert locking to struct pcmcia_device
-      pcmcia: use mutex for dynid lock
-      pcmcia: use ops_mutex for rsrc_{mgr,nonstatic} locking
-      pcmcia: use pccardd to handle eject, insert, suspend and resume requests
-      pcmcia: delay re-scanning and re-querying of PCMCIA bus
-      pcmcia: use state machine for extended requery
-      pcmcia: avoid sysfs-related lockup for cardbus
-      pcmcia: avoid prod_id memleak
-      pcmcia: add locking to pcmcia_{read,write}_cis_mem
-      pcmcia: handle error in serial_cs config calls
-      pcmcia: use read_cis_mem return value
-      pcmcia: remove useless msleep in ds.c
-      pcmcia: allow for extension of resource interval
-      pcmcia: validate late-added resources
 
-H Hartley Sweeten (1):
-      cm4000_cs.c: Remove unnecessary cast
+I also tried with the default chunk size (64KiB) incase ext4 had a problem
+with chunk sizes > 64KiB, the results were the same for ext4, I also tried
+ext2 & ext3 as well just to see what their performance would be:
 
-Michal Marek (1):
-      pcmcia: fix yenta dependency on PCCARD_NONSTATIC
+p63:~# mkfs.ext2 -b 4096 -E stride=16,stripe-width=176 /dev/md0
+p63:~# mount /dev/md0 /r1
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10737418240 bytes (11 GB) copied, 19.9434 s, 538 MB/s
+p63:/r1#
 
-Márton Németh (1):
-      pcmcia: make Open Firmware device id constant
+p63:~# mkfs.ext3 -b 4096 -E stride=16,stripe-width=176 /dev/md0
+p63:~# mount /dev/md0 /r1
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10737418240 bytes (11 GB) copied, 31.0195 s, 346 MB/s
 
-Uwe Kleine-König (3):
-      pcmcia/bfin_cf: don't check platform_get_irq's return value against zero
-      pcmcia/at91_cf: don't redefine SZ_2K
-      pcmcia/omap_cf: don't redefine SZ_2K
+p63:~# mkfs.ext4 -b 4096 -E stride=16,stripe-width=176 /dev/md0
+p63:~# mount /dev/md0 /r1
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10737418240 bytes (11 GB) copied, 35.3866 s, 303 MB/s
 
-Wolfram Sang (2):
-      pcmcia/yenta: add module parameter for O2 speedups
-      pcmcia/i82365: fix typos in comments
+And, for comparison, XFS:
+p63:~# mkfs.xfs -f /dev/md0 > /dev/null 2>&1
+p63:~# mount /dev/md0 /r1
+p63:~# cd /r1
+p63:/r1# dd if=/dev/zero of=file bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 18.1527 s, 592 MB/s
+p63:/r1#
 
- Documentation/pcmcia/locking.txt |  118 ++++++++
- drivers/char/pcmcia/cm4000_cs.c  |    2 +-
- drivers/net/pcmcia/smc91c92_cs.c |    6 +-
- drivers/pcmcia/Kconfig           |    9 +-
- drivers/pcmcia/Makefile          |    4 +-
- drivers/pcmcia/at91_cf.c         |    2 -
- drivers/pcmcia/bfin_cf_pcmcia.c  |    2 +-
- drivers/pcmcia/cardbus.c         |  175 +----------
- drivers/pcmcia/cistpl.c          |  606 +++++++++++++++++++++-----------------
- drivers/pcmcia/cs.c              |  312 +++++++++-----------
- drivers/pcmcia/cs_internal.h     |   89 ++----
- drivers/pcmcia/ds.c              |  333 ++++++++++++---------
- drivers/pcmcia/electra_cf.c      |    2 +-
- drivers/pcmcia/i82365.h          |    4 +-
- drivers/pcmcia/m32r_cfc.c        |    2 +-
- drivers/pcmcia/m8xx_pcmcia.c     |    4 +-
- drivers/pcmcia/o2micro.h         |   45 ++-
- drivers/pcmcia/omap_cf.c         |    2 -
- drivers/pcmcia/pcmcia_ioctl.c    |   42 ++--
- drivers/pcmcia/pcmcia_resource.c |  169 +++++++++---
- drivers/pcmcia/rsrc_mgr.c        |   48 ---
- drivers/pcmcia/rsrc_nonstatic.c  |  285 +++++++++++-------
- drivers/pcmcia/socket_sysfs.c    |  196 ++-----------
- drivers/pcmcia/yenta_socket.c    |    5 +
- drivers/serial/serial_cs.c       |    7 +-
- include/pcmcia/ds.h              |    2 +-
- include/pcmcia/ss.h              |   40 ++-
- 27 files changed, 1257 insertions(+), 1254 deletions(-)
- create mode 100644 Documentation/pcmcia/locking.txt
