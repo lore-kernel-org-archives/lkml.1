@@ -1,180 +1,469 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968542Ab0B0QCu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:02:50 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:37886 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968514Ab0B0QCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:02:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=e+i/oTibkWKSLUSxuegYQSN9Hp3rFJqHys/p513FXDFptALnANFYAkfzhzRyz2CI/Y
-         jK4lB0GiPe3fiJgo1pSED9rtxi73km7+xP7V6NDOYFLJvG0CXABjUYqLGO518WpRbeoz
-         6rOSnIEWmEnDLcbvY7KoraK6f6x6cx1gfjIBQ=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>
-Subject: [PATCH] cfq-iosched: requests "in flight" vs "in driver" clarification
-Date: Sat, 27 Feb 2010 17:03:09 +0100
-Message-Id: <1267286589-316-1-git-send-email-czoccolo@gmail.com>
-X-Mailer: git-send-email 1.6.4.4
+	id S968556Ab0B0QUQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:20:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35979 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968536Ab0B0QUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 11:20:13 -0500
+Date: Sat, 27 Feb 2010 17:20:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] x86/mm changes for v2.6.34
+Message-ID: <20100227162000.GA22346@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Counters for requests "in flight" and "in driver" are used asymmetrically
-in cfq_may_dispatch, and have slightly different meaning.
-We split the rq_in_flight counter (was sync_flight) to count both sync
-and async requests, in order to use this one, which is more accurate in
-some corner cases.
-The rq_in_driver counter is coalesced, since individual sync/async counts
-are not used any more.
+Linus,
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
- block/cfq-iosched.c |   44 ++++++++++++++++++--------------------------
- 1 files changed, 18 insertions(+), 26 deletions(-)
+Please pull the latest x86-mm-for-linus git tree from:
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 10eb286..eed649c 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -223,8 +223,8 @@ struct cfq_data {
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-mm-for-linus
+
+
+out-of-topic modifications in x86-mm-for-linus:
+-----------------------------------------------
+arch/mips/mm/init.c                # 61ef248: resources: introduce generic page
+arch/score/mm/init.c               # 61ef248: resources: introduce generic page
+include/linux/mm.h                 # 53df8fd: Move page_is_ram() declaration to
+kernel/resource.c                  # e527300: Generic page_is_ram: use __weak
+                                   # 61ef248: resources: introduce generic page
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Andrew Morton (1):
+      Generic page_is_ram: use __weak
+
+Ian Campbell (1):
+      x86, mm: Allow highmem user page tables to be disabled at boot time
+
+Pekka Enberg (1):
+      x86, mm: Unify kernel_physical_mapping_init() API
+
+Thadeu Lima de Souza Cascardo (1):
+      x86: Do not reserve brk for DMI if it's not going to be used
+
+Thomas Gleixner (1):
+      x86: Convert tlbstate_lock to raw_spinlock
+
+Wu Fengguang (3):
+      resources: introduce generic page_is_ram()
+      Move page_is_ram() declaration to mm.h
+      x86: Use the generic page_is_ram()
+
+Yinghai Lu (1):
+      x86: Remove BIOS data range from e820
+
+
+ Documentation/kernel-parameters.txt |    7 ++++++
+ arch/mips/mm/init.c                 |    2 +-
+ arch/score/mm/init.c                |    2 +-
+ arch/x86/include/asm/page_types.h   |    1 -
+ arch/x86/include/asm/pgalloc.h      |    5 ++++
+ arch/x86/kernel/e820.c              |    8 +++++++
+ arch/x86/kernel/setup.c             |   21 ++++++++++++++++++-
+ arch/x86/mm/init.c                  |    7 ------
+ arch/x86/mm/init_32.c               |    8 ++++--
+ arch/x86/mm/ioremap.c               |   37 -----------------------------------
+ arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++----
+ arch/x86/mm/tlb.c                   |    8 +++---
+ include/linux/mm.h                  |    2 +
+ kernel/resource.c                   |   13 ++++++++++++
+ 14 files changed, 92 insertions(+), 60 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..67c69ff 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2694,6 +2694,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 					medium is write-protected).
+ 			Example: quirks=0419:aaf5:rl,0421:0433:rc
  
- 	unsigned int busy_queues;
++	userpte=
++			[X86] Flags controlling user PTE allocations.
++
++				nohigh = do not allocate PTE pages in
++					HIGHMEM regardless of setting
++					of CONFIG_HIGHPTE.
++
+ 	vdso=		[X86,SH]
+ 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
+ 			vdso=1: enable VDSO (default)
+diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
+index 1651942..dee564a 100644
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -298,7 +298,7 @@ void __init fixrange_init(unsigned long start, unsigned long end,
+ }
  
--	int rq_in_driver[2];
--	int sync_flight;
-+	int rq_in_driver;
-+	int rq_in_flight[2];
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-static int __init page_is_ram(unsigned long pagenr)
++int page_is_ram(unsigned long pagenr)
+ {
+ 	int i;
  
- 	/*
- 	 * queue-depth detection
-@@ -417,11 +417,6 @@ static struct cfq_queue *cfq_get_queue(struct cfq_data *, bool,
- static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
- 						struct io_context *);
+diff --git a/arch/score/mm/init.c b/arch/score/mm/init.c
+index dfaf458..7f001bb 100644
+--- a/arch/score/mm/init.c
++++ b/arch/score/mm/init.c
+@@ -59,7 +59,7 @@ static unsigned long setup_zero_page(void)
+ }
  
--static inline int rq_in_driver(struct cfq_data *cfqd)
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+-static int __init page_is_ram(unsigned long pagenr)
++int page_is_ram(unsigned long pagenr)
+ {
+ 	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
+ 		return 1;
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+index 642fe34..a667f24 100644
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -40,7 +40,6 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-extern int page_is_ram(unsigned long pagenr);
+ extern int devmem_is_allowed(unsigned long pagenr);
+ 
+ extern unsigned long max_low_pfn_mapped;
+diff --git a/arch/x86/include/asm/pgalloc.h b/arch/x86/include/asm/pgalloc.h
+index 0e8c2a0..271de94 100644
+--- a/arch/x86/include/asm/pgalloc.h
++++ b/arch/x86/include/asm/pgalloc.h
+@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(unsigned long pfn) {}
+ #endif
+ 
+ /*
++ * Flags to use when allocating a user page table page.
++ */
++extern gfp_t __userpte_alloc_gfp;
++
++/*
+  * Allocate and free page tables.
+  */
+ extern pgd_t *pgd_alloc(struct mm_struct *);
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index a1a7876..a966b75 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -517,11 +517,19 @@ u64 __init e820_remove_range(u64 start, u64 size, unsigned old_type,
+ 			     int checktype)
+ {
+ 	int i;
++	u64 end;
+ 	u64 real_removed_size = 0;
+ 
+ 	if (size > (ULLONG_MAX - start))
+ 		size = ULLONG_MAX - start;
+ 
++	end = start + size;
++	printk(KERN_DEBUG "e820 remove range: %016Lx - %016Lx ",
++		       (unsigned long long) start,
++		       (unsigned long long) end);
++	e820_print_type(old_type);
++	printk(KERN_CONT "\n");
++
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		struct e820entry *ei = &e820.map[i];
+ 		u64 final_start, final_end;
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 5d9e40c..cb42109 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -121,7 +121,9 @@
+ unsigned long max_low_pfn_mapped;
+ unsigned long max_pfn_mapped;
+ 
++#ifdef CONFIG_DMI
+ RESERVE_BRK(dmi_alloc, 65536);
++#endif
+ 
+ unsigned int boot_cpu_id __read_mostly;
+ 
+@@ -667,6 +669,23 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+ 	{}
+ };
+ 
++static void __init trim_bios_range(void)
++{
++	/*
++	 * A special case is the first 4Kb of memory;
++	 * This is a BIOS owned area, not kernel ram, but generally
++	 * not listed as such in the E820 table.
++	 */
++	e820_update_range(0, PAGE_SIZE, E820_RAM, E820_RESERVED);
++	/*
++	 * special case: Some BIOSen report the PC BIOS
++	 * area (640->1Mb) as ram even though it is not.
++	 * take them out.
++	 */
++	e820_remove_range(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_RAM, 1);
++	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
++}
++
+ /*
+  * Determine if we were loaded by an EFI loader.  If so, then we have also been
+  * passed the efi memmap, systab, etc., so we should use these data structures
+@@ -830,7 +849,7 @@ void __init setup_arch(char **cmdline_p)
+ 	insert_resource(&iomem_resource, &data_resource);
+ 	insert_resource(&iomem_resource, &bss_resource);
+ 
+-
++	trim_bios_range();
+ #ifdef CONFIG_X86_32
+ 	if (ppro_with_ram_bug()) {
+ 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index d406c52..e71c5cb 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -266,16 +266,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	if (!after_bootmem)
+ 		find_early_table_space(end, use_pse, use_gbpages);
+ 
+-#ifdef CONFIG_X86_32
+-	for (i = 0; i < nr_range; i++)
+-		kernel_physical_mapping_init(mr[i].start, mr[i].end,
+-					     mr[i].page_size_mask);
+-	ret = end;
+-#else /* CONFIG_X86_64 */
+ 	for (i = 0; i < nr_range; i++)
+ 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
+ 						   mr[i].page_size_mask);
+-#endif
+ 
+ #ifdef CONFIG_X86_32
+ 	early_ioremap_page_table_range_init();
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 9a0c258..2226f2c 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -241,6 +241,7 @@ kernel_physical_mapping_init(unsigned long start,
+ 			     unsigned long page_size_mask)
+ {
+ 	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
++	unsigned long last_map_addr = end;
+ 	unsigned long start_pfn, end_pfn;
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 	int pgd_idx, pmd_idx, pte_ofs;
+@@ -341,9 +342,10 @@ repeat:
+ 					prot = PAGE_KERNEL_EXEC;
+ 
+ 				pages_4k++;
+-				if (mapping_iter == 1)
++				if (mapping_iter == 1) {
+ 					set_pte(pte, pfn_pte(pfn, init_prot));
+-				else
++					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
++				} else
+ 					set_pte(pte, pfn_pte(pfn, prot));
+ 			}
+ 		}
+@@ -368,7 +370,7 @@ repeat:
+ 		mapping_iter = 2;
+ 		goto repeat;
+ 	}
+-	return 0;
++	return last_map_addr;
+ }
+ 
+ pte_t *kmap_pte;
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index c246d25..e404ffe 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -24,43 +24,6 @@
+ 
+ #include "physaddr.h"
+ 
+-int page_is_ram(unsigned long pagenr)
 -{
--	return cfqd->rq_in_driver[0] + cfqd->rq_in_driver[1];
+-	resource_size_t addr, end;
+-	int i;
+-
+-	/*
+-	 * A special case is the first 4Kb of memory;
+-	 * This is a BIOS owned area, not kernel ram, but generally
+-	 * not listed as such in the E820 table.
+-	 */
+-	if (pagenr == 0)
+-		return 0;
+-
+-	/*
+-	 * Second special case: Some BIOSen report the PC BIOS
+-	 * area (640->1Mb) as ram even though it is not.
+-	 */
+-	if (pagenr >= (BIOS_BEGIN >> PAGE_SHIFT) &&
+-		    pagenr < (BIOS_END >> PAGE_SHIFT))
+-		return 0;
+-
+-	for (i = 0; i < e820.nr_map; i++) {
+-		/*
+-		 * Not usable memory:
+-		 */
+-		if (e820.map[i].type != E820_RAM)
+-			continue;
+-		addr = (e820.map[i].addr + PAGE_SIZE-1) >> PAGE_SHIFT;
+-		end = (e820.map[i].addr + e820.map[i].size) >> PAGE_SHIFT;
+-
+-
+-		if ((pagenr >= addr) && (pagenr < end))
+-			return 1;
+-	}
+-	return 0;
 -}
 -
- static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
- 					    bool is_sync)
+ /*
+  * Fix up the linear direct mapping of the kernel to avoid cache attribute
+  * conflicts.
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index ed34f5e..c9ba9de 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -6,6 +6,14 @@
+ 
+ #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
+ 
++#ifdef CONFIG_HIGHPTE
++#define PGALLOC_USER_GFP __GFP_HIGHMEM
++#else
++#define PGALLOC_USER_GFP 0
++#endif
++
++gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
++
+ pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
  {
-@@ -1415,9 +1410,9 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
+ 	return (pte_t *)__get_free_page(PGALLOC_GFP);
+@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
  {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
+ 	struct page *pte;
  
--	cfqd->rq_in_driver[rq_is_sync(rq)]++;
-+	cfqd->rq_in_driver++;
- 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
--						rq_in_driver(cfqd));
-+						cfqd->rq_in_driver);
- 
- 	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
- }
-@@ -1425,12 +1420,11 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
- static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
--	const int sync = rq_is_sync(rq);
- 
--	WARN_ON(!cfqd->rq_in_driver[sync]);
--	cfqd->rq_in_driver[sync]--;
-+	WARN_ON(!cfqd->rq_in_driver);
-+	cfqd->rq_in_driver--;
- 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
--						rq_in_driver(cfqd));
-+						cfqd->rq_in_driver);
- }
- 
- static void cfq_remove_request(struct request *rq)
-@@ -1873,8 +1867,7 @@ static void cfq_dispatch_insert(struct request_queue *q, struct request *rq)
- 	cfqq->dispatched++;
- 	elv_dispatch_sort(q, rq);
- 
--	if (cfq_cfqq_sync(cfqq))
--		cfqd->sync_flight++;
-+	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]++;
- 	cfqq->nr_sectors += blk_rq_sectors(rq);
+-#ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
+-#else
+-	pte = alloc_pages(PGALLOC_GFP, 0);
+-#endif
++	pte = alloc_pages(__userpte_alloc_gfp, 0);
+ 	if (pte)
+ 		pgtable_page_ctor(pte);
+ 	return pte;
  }
  
-@@ -2221,13 +2214,13 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	/*
- 	 * Drain async requests before we start sync IO
++static int __init setup_userpte(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	/*
++	 * "userpte=nohigh" disables allocation of user pagetables in
++	 * high memory.
++	 */
++	if (strcmp(arg, "nohigh") == 0)
++		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
++	else
++		return -EINVAL;
++	return 0;
++}
++early_param("userpte", setup_userpte);
++
+ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+ {
+ 	pgtable_page_dtor(pte);
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 65b58e4..426f3a1 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -41,7 +41,7 @@ union smp_flush_state {
+ 	struct {
+ 		struct mm_struct *flush_mm;
+ 		unsigned long flush_va;
+-		spinlock_t tlbstate_lock;
++		raw_spinlock_t tlbstate_lock;
+ 		DECLARE_BITMAP(flush_cpumask, NR_CPUS);
+ 	};
+ 	char pad[INTERNODE_CACHE_BYTES];
+@@ -181,7 +181,7 @@ static void flush_tlb_others_ipi(const struct cpumask *cpumask,
+ 	 * num_online_cpus() <= NUM_INVALIDATE_TLB_VECTORS, but it is
+ 	 * probably not worth checking this for a cache-hot lock.
  	 */
--	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
-+	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_flight[BLK_RW_ASYNC])
- 		return false;
+-	spin_lock(&f->tlbstate_lock);
++	raw_spin_lock(&f->tlbstate_lock);
  
- 	/*
- 	 * If this is an async queue and we have sync IO in flight, let it wait
- 	 */
--	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-+	if (cfqd->rq_in_flight[BLK_RW_SYNC] && !cfq_cfqq_sync(cfqq))
- 		return false;
+ 	f->flush_mm = mm;
+ 	f->flush_va = va;
+@@ -199,7 +199,7 @@ static void flush_tlb_others_ipi(const struct cpumask *cpumask,
  
- 	max_dispatch = cfqd->cfq_quantum;
-@@ -3210,14 +3203,14 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
- {
- 	struct cfq_queue *cfqq = cfqd->active_queue;
- 
--	if (rq_in_driver(cfqd) > cfqd->hw_tag_est_depth)
--		cfqd->hw_tag_est_depth = rq_in_driver(cfqd);
-+	if (cfqd->rq_in_driver > cfqd->hw_tag_est_depth)
-+		cfqd->hw_tag_est_depth = cfqd->rq_in_driver;
- 
- 	if (cfqd->hw_tag == 1)
- 		return;
- 
- 	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
--	    rq_in_driver(cfqd) <= CFQ_HW_QUEUE_MIN)
-+	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
- 		return;
- 
- 	/*
-@@ -3227,7 +3220,7 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
- 	 */
- 	if (cfqq && cfq_cfqq_idle_window(cfqq) &&
- 	    cfqq->dispatched + cfqq->queued[0] + cfqq->queued[1] <
--	    CFQ_HW_QUEUE_MIN && rq_in_driver(cfqd) < CFQ_HW_QUEUE_MIN)
-+	    CFQ_HW_QUEUE_MIN && cfqd->rq_in_driver < CFQ_HW_QUEUE_MIN)
- 		return;
- 
- 	if (cfqd->hw_tag_samples++ < 50)
-@@ -3280,13 +3273,12 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 
- 	cfq_update_hw_tag(cfqd);
- 
--	WARN_ON(!cfqd->rq_in_driver[sync]);
-+	WARN_ON(!cfqd->rq_in_driver);
- 	WARN_ON(!cfqq->dispatched);
--	cfqd->rq_in_driver[sync]--;
-+	cfqd->rq_in_driver--;
- 	cfqq->dispatched--;
- 
--	if (cfq_cfqq_sync(cfqq))
--		cfqd->sync_flight--;
-+	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]--;
- 
- 	if (sync) {
- 		RQ_CIC(rq)->last_end_request = now;
-@@ -3340,7 +3332,7 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 		}
- 	}
- 
--	if (!rq_in_driver(cfqd))
-+	if (!cfqd->rq_in_driver)
- 		cfq_schedule_dispatch(cfqd);
+ 	f->flush_mm = NULL;
+ 	f->flush_va = 0;
+-	spin_unlock(&f->tlbstate_lock);
++	raw_spin_unlock(&f->tlbstate_lock);
  }
  
--- 
-1.6.4.4
-
+ void native_flush_tlb_others(const struct cpumask *cpumask,
+@@ -223,7 +223,7 @@ static int __cpuinit init_smp_flush(void)
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(flush_state); i++)
+-		spin_lock_init(&flush_state[i].tlbstate_lock);
++		raw_spin_lock_init(&flush_state[i].tlbstate_lock);
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 60c467b..8b2fa85 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -265,6 +265,8 @@ static inline int get_page_unless_zero(struct page *page)
+ 	return atomic_inc_not_zero(&page->_count);
+ }
+ 
++extern int page_is_ram(unsigned long pfn);
++
+ /* Support for virtually mapped pages */
+ struct page *vmalloc_to_page(const void *addr);
+ unsigned long vmalloc_to_pfn(const void *addr);
+diff --git a/kernel/resource.c b/kernel/resource.c
+index af96c1e..03c897f 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -297,6 +297,19 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 
+ #endif
+ 
++static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
++{
++	return 1;
++}
++/*
++ * This generic page_is_ram() returns true if specified address is
++ * registered as "System RAM" in iomem_resource list.
++ */
++int __weak page_is_ram(unsigned long pfn)
++{
++	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
++}
++
+ /*
+  * Find empty slot in the resource tree given range and alignment.
+  */
