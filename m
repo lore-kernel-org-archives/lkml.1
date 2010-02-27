@@ -1,196 +1,187 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968570Ab0B0Q2B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:28:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59969 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968551Ab0B0Q2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:28:00 -0500
-Date: Sat, 27 Feb 2010 17:27:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86/mtrr changes for v2.6.34
-Message-ID: <20100227162750.GA5821@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S968573Ab0B0QaX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:30:23 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:41118 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968551Ab0B0QaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 11:30:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=jU+C6BWRxb45w2SWgBQ3w78iIEjuiUG633dhoog0yB91iZfHxZTXuXMcpPgNx0HqAH
+         hg2kVYAHwFwINS90kJKqUdKhFRY3ZJeDcWgyjz9AqC5TVh0khqmd2tZeqcJigS3f0crt
+         ln2gYmITxPSqDTdoYQakheytYIiDJkOZRRIeo=
+Subject: [RFC] mx3fb: introduce waveform configuration for Pixel Clock
+ signal.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 27 Feb 2010 17:30:11 +0100
+Message-ID: <1267288211.2723.102.camel@realization>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Instead of static assignments for Pixel Clock waveform timings
+make it machine configurable.
+This address an old problem posted here:
+http://thread.gmane.org/gmane.linux.ports.arm.kernel/58185/focus=58285
 
-Please pull the latest x86-mtrr-for-linus git tree from:
+In particular, the Armadillo 500 developing board is provided
+with a digital to analogue converter chip that need a different than
+default Pixel Clock waveform to perform the pixel conversion correctly.
+(Te DAC is low CS enabled and need more time than a half pixelclock
+period to perform the conversion)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-mtrr-for-linus
+This RFC address the problem modelling the pixelclock signal as a
+square waveform where can be chosen the start and width for the high
+part of the signal. 
+These parameters are expressed in sixteenths of the pixelclock period.
+Why the number 16? Because I think it is the better trade off between
+the maths offered by the hardware (DISP3_IF_CLK_[UP:DOWN]_WR are number
+with 2 fractional digits so the unity can be divided at least by 4 and
+the normal configurations achieved with a 640x480 resolution is 
+div = circa 4 with 400Mhz MCU clock) and the configuration needs (think
+that today this timings cannot be configurable).
 
- Thanks,
+The code is developed to prevent regressions: if not configured
+pix_clk_start and pix_clk_width, the driver probe function provide
+to choose a configuration very similar (on my board equal) to the 
+previous one.
 
-	Ingo
+Reviews are welcomes!
 
------------------->
-Alan Cox (1):
-      x86, mtrr: Kill over the top warn
+Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+---
+ arch/arm/plat-mxc/include/mach/mx3fb.h |   16 ++++++++++++++
+ drivers/video/mx3fb.c                  |   35 ++++++++++++++++++++++++++++---
+ 2 files changed, 47 insertions(+), 4 deletions(-)
 
-Emese Revfy (1):
-      x86, mtrr: Constify struct mtrr_ops
-
-Thomas Gleixner (1):
-      x86: Convert set_atomicity_lock to raw_spinlock
-
-
- arch/x86/kernel/cpu/mtrr/amd.c     |    2 +-
- arch/x86/kernel/cpu/mtrr/centaur.c |    2 +-
- arch/x86/kernel/cpu/mtrr/cyrix.c   |    2 +-
- arch/x86/kernel/cpu/mtrr/generic.c |   10 +++++-----
- arch/x86/kernel/cpu/mtrr/main.c    |    6 +++---
- arch/x86/kernel/cpu/mtrr/mtrr.h    |    6 +++---
- 6 files changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
-index 33af141..92ba9cd 100644
---- a/arch/x86/kernel/cpu/mtrr/amd.c
-+++ b/arch/x86/kernel/cpu/mtrr/amd.c
-@@ -108,7 +108,7 @@ amd_validate_add_page(unsigned long base, unsigned long size, unsigned int type)
- 	return 0;
- }
+diff --git a/arch/arm/plat-mxc/include/mach/mx3fb.h b/arch/arm/plat-mxc/include/mach/mx3fb.h
+index ac24c5c..6ca870e 100644
+--- a/arch/arm/plat-mxc/include/mach/mx3fb.h
++++ b/arch/arm/plat-mxc/include/mach/mx3fb.h
+@@ -33,6 +33,22 @@ struct mx3fb_platform_data {
+ 	const char			*name;
+ 	const struct fb_videomode	*mode;
+ 	int				num_modes;
++
++	/*
++	 * Timings configuration for the Pixel clock waveform:
++	 *          ___________
++	 *  _______|           |_____ Pixel clock
++	 * ^       ^           ^     ^
++	 * |<--ts->|<---tw---->|     |
++	 * |<-----------Tc---------->|
++	 *
++	 * ts = (Tc * pix_clk_start) / 16
++	 * tw = (Tc * pix_clk_width) / 16
++	 *
++	 * Constraint: ((pix_clk_start + pix_clk_width) / 16) <= 1
++	 */
++	__u8 pix_clk_start;
++	__u8 pix_clk_width;
+ };
  
--static struct mtrr_ops amd_mtrr_ops = {
-+static const struct mtrr_ops amd_mtrr_ops = {
- 	.vendor            = X86_VENDOR_AMD,
- 	.set               = amd_set_mtrr,
- 	.get               = amd_get_mtrr,
-diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
-index de89f14..316fe3e 100644
---- a/arch/x86/kernel/cpu/mtrr/centaur.c
-+++ b/arch/x86/kernel/cpu/mtrr/centaur.c
-@@ -110,7 +110,7 @@ centaur_validate_add_page(unsigned long base, unsigned long size, unsigned int t
- 	return 0;
- }
+ #endif
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 054ef29..8dd7c22 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -241,6 +241,7 @@ struct mx3fb_data {
+ 	void __iomem		*reg_base;
+ 	spinlock_t		lock;
+ 	struct device		*dev;
++	struct mx3fb_platform_data	*pdata;
  
--static struct mtrr_ops centaur_mtrr_ops = {
-+static const struct mtrr_ops centaur_mtrr_ops = {
- 	.vendor            = X86_VENDOR_CENTAUR,
- 	.set               = centaur_set_mcr,
- 	.get               = centaur_get_mcr,
-diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
-index 228d982..68a3343 100644
---- a/arch/x86/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
-@@ -265,7 +265,7 @@ static void cyrix_set_all(void)
- 	post_set();
- }
- 
--static struct mtrr_ops cyrix_mtrr_ops = {
-+static const struct mtrr_ops cyrix_mtrr_ops = {
- 	.vendor            = X86_VENDOR_CYRIX,
- 	.set_all	   = cyrix_set_all,
- 	.set               = cyrix_set_arr,
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 55da0c5..9aa5dc7 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -464,7 +464,7 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
- 		tmp |= ~((1<<(hi - 1)) - 1);
- 
- 		if (tmp != mask_lo) {
--			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
-+			printk(KERN_WARNING "mtrr: your BIOS has configured an incorrect mask, fixing it.\n");
- 			mask_lo = tmp;
- 		}
- 	}
-@@ -570,7 +570,7 @@ static unsigned long set_mtrr_state(void)
- 
- 
- static unsigned long cr4;
--static DEFINE_SPINLOCK(set_atomicity_lock);
-+static DEFINE_RAW_SPINLOCK(set_atomicity_lock);
- 
- /*
-  * Since we are disabling the cache don't allow any interrupts,
-@@ -590,7 +590,7 @@ static void prepare_set(void) __acquires(set_atomicity_lock)
- 	 * changes to the way the kernel boots
- 	 */
- 
--	spin_lock(&set_atomicity_lock);
-+	raw_spin_lock(&set_atomicity_lock);
- 
- 	/* Enter the no-fill (CD=1, NW=0) cache mode and flush caches. */
- 	cr0 = read_cr0() | X86_CR0_CD;
-@@ -627,7 +627,7 @@ static void post_set(void) __releases(set_atomicity_lock)
- 	/* Restore value of CR4 */
- 	if (cpu_has_pge)
- 		write_cr4(cr4);
--	spin_unlock(&set_atomicity_lock);
-+	raw_spin_unlock(&set_atomicity_lock);
- }
- 
- static void generic_set_all(void)
-@@ -752,7 +752,7 @@ int positive_have_wrcomb(void)
- /*
-  * Generic structure...
-  */
--struct mtrr_ops generic_mtrr_ops = {
-+const struct mtrr_ops generic_mtrr_ops = {
- 	.use_intel_if		= 1,
- 	.set_all		= generic_set_all,
- 	.get			= generic_get_mtrr,
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 84e83de..fe4622e 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -60,14 +60,14 @@ static DEFINE_MUTEX(mtrr_mutex);
- u64 size_or_mask, size_and_mask;
- static bool mtrr_aps_delayed_init;
- 
--static struct mtrr_ops *mtrr_ops[X86_VENDOR_NUM];
-+static const struct mtrr_ops *mtrr_ops[X86_VENDOR_NUM];
- 
--struct mtrr_ops *mtrr_if;
-+const struct mtrr_ops *mtrr_if;
- 
- static void set_mtrr(unsigned int reg, unsigned long base,
- 		     unsigned long size, mtrr_type type);
- 
--void set_mtrr_ops(struct mtrr_ops *ops)
-+void set_mtrr_ops(const struct mtrr_ops *ops)
+ 	uint32_t		h_start_width;
+ 	uint32_t		v_start_width;
+@@ -440,6 +441,7 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+ 			  uint16_t v_sync_width, uint16_t v_end_width,
+ 			  struct ipu_di_signal_cfg sig)
  {
- 	if (ops->vendor && ops->vendor < X86_VENDOR_NUM)
- 		mtrr_ops[ops->vendor] = ops;
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index a501dee..df5e41f 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -32,7 +32,7 @@ extern int generic_get_free_region(unsigned long base, unsigned long size,
- extern int generic_validate_add_page(unsigned long base, unsigned long size,
- 				     unsigned int type);
++	struct mx3fb_platform_data *mx3fb_pdata = mx3fb->pdata;
+ 	unsigned long lock_flags;
+ 	uint32_t reg;
+ 	uint32_t old_conf;
+@@ -503,6 +505,10 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+ 		dev_dbg(mx3fb->dev,
+ 			"InitPanel() - Pixel clock divider less than 4\n");
+ 		div = 0x40;
++	} else if (div > 0xFFF) {
++		dev_dbg(mx3fb->dev,
++			"InitPanel() - Pixel clock divider greater than max\n");
++		div = 0xFFFF;
+ 	}
  
--extern struct mtrr_ops generic_mtrr_ops;
-+extern const struct mtrr_ops generic_mtrr_ops;
+ 	dev_dbg(mx3fb->dev, "pixel clk = %u, divider %u.%u\n",
+@@ -511,11 +517,18 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+ 	spin_lock_irqsave(&mx3fb->lock, lock_flags);
  
- extern int positive_have_wrcomb(void);
+ 	/*
+-	 * DISP3_IF_CLK_DOWN_WR is half the divider value and 2 fraction bits
+-	 * fewer. Subtract 1 extra from DISP3_IF_CLK_DOWN_WR based on timing
+-	 * debug. DISP3_IF_CLK_UP_WR is 0
++	 * Building DI_DISP3_TIME_CONF:
++	 * DISP3_IF_CLK_PER_WR  = div; (4 fractional digits)
++	 * DISP3_IF_CLK_UP_WR   [0:(DOWN_WR - 0.5)]  (2 fractional digits)
++	 * DISP3_IF_CLK_DOWN_WR [(UP_WR + 0.5):PER_WR] (2 fractional digits)
++	 * using old_conf as buffer.
+ 	 */
+-	mx3fb_write_reg(mx3fb, (((div / 8) - 1) << 22) | div, DI_DISP3_TIME_CONF);
++	old_conf = div;
++	old_conf |= (((div * mx3fb_pdata->pix_clk_start) / 16) >> 2) << 12;
++	old_conf |= (((div * (mx3fb_pdata->pix_clk_start +
++		              mx3fb_pdata->pix_clk_width)) / 16) >> 2) << 22;
++
++	mx3fb_write_reg(mx3fb, old_conf , DI_DISP3_TIME_CONF);
  
-@@ -53,10 +53,10 @@ void fill_mtrr_var_range(unsigned int index,
- 		u32 base_lo, u32 base_hi, u32 mask_lo, u32 mask_hi);
- void get_mtrr_state(void);
+ 	/* DI settings */
+ 	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_IF_CONF) & 0x78FFFFFF;
+@@ -1444,6 +1457,7 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 	dma_cap_mask_t mask;
+ 	struct dma_chan *chan;
+ 	struct dma_chan_request rq;
++	struct mx3fb_platform_data *pdata = pdev->dev.platform_data;
  
--extern void set_mtrr_ops(struct mtrr_ops *ops);
-+extern void set_mtrr_ops(const struct mtrr_ops *ops);
+ 	/*
+ 	 * Display Interface (DI) and Synchronous Display Controller (SDC)
+@@ -1459,6 +1473,19 @@ static int mx3fb_probe(struct platform_device *pdev)
  
- extern u64 size_or_mask, size_and_mask;
--extern struct mtrr_ops *mtrr_if;
-+extern const struct mtrr_ops *mtrr_if;
+ 	spin_lock_init(&mx3fb->lock);
  
- #define is_cpu(vnd)	(mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
- #define use_intel()	(mtrr_if && mtrr_if->use_intel_if == 1)
++	/*
++	 * If pixel clock configuration is not defined or misconfigured, fall
++	 * through the default: rising edge at the beginning of the period and
++	 * falling edge a bit before the half.
++	 */
++	if ((!pdata->pix_clk_start && !pdata->pix_clk_width) ||
++	    ((pdata->pix_clk_start + pdata->pix_clk_width) > 16) {
++		pr_debug("mx3fb: Default waveform for Pixel clock signal.\n");
++		pdata->pix_clk_start = 0;
++		pdata->pix_clk_width = 7;
++	}
++	mx3fb->pdata = pdata;
++
+ 	mx3fb->reg_base = ioremap(sdc_reg->start, resource_size(sdc_reg));
+ 	if (!mx3fb->reg_base) {
+ 		ret = -ENOMEM;
+-- 
+1.6.3.3
+
+
+
+
