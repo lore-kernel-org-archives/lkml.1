@@ -1,53 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966801Ab0B0BMJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Feb 2010 20:12:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42395 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966723Ab0B0BMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Feb 2010 20:12:07 -0500
-Message-ID: <4B887160.2090606@redhat.com>
-Date: Fri, 26 Feb 2010 19:12:00 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S966817Ab0B0BYn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Feb 2010 20:24:43 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:21508 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966797Ab0B0BYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Feb 2010 20:24:42 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+To: David Miller <davem@davemloft.net>
+Cc: Octavian Purdila <opurdila@ixiacom.com>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       WANG Cong <amwang@redhat.com>
+Subject: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
+Date: Sat, 27 Feb 2010 03:25:49 +0200
+Message-Id: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 27 Feb 2010 01:24:40.0615 (UTC) FILETIME=[A2421370:01CAB74B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-...
+This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports which
+allows users to reserve ports for third-party applications.
 
->> Were the filesystems created to align with raid geometry?
-> Only default options were used except the mount options.  If that is the
-> culprit, I have some more testing to do, thanks, will look into it.
-> 
->>
->> mkfs.xfs has done that forever; mkfs.ext4 only will do so (automatically)
->> with recent kernel+e2fsprogs.
-> How recent?
+The reserved ports will not be used by automatic port assignments
+(e.g. when calling connect() or bind() with port number 0). Explicit
+port allocation behavior is unchanged.
 
-You're recent enough.  :)
+Changes from the previous version:
+- be more strict on accepted input (only comma separators, no spaces allowed)
+- add to the docs a paragraph about ip_local_port_range and
+  ip_local_reserved_ports relationship
+- fix a few corner cases with parsing
 
-mkfs.ext4 output should include the stripe info if it was found.
+There are still some miss behaviors with regard to proc parsing in odd
+invalid cases (for "40000\0-40001" all is acknowledged but only 40000
+is accepted) but they are not easy to fix without changing the current
+"acknowledge how much we accepted" behavior.
 
-        printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
-                s->s_log_block_size);
-        printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
-                s->s_log_frag_size);
-        printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
-               s->s_raid_stride, s->s_raid_stripe_width);
-        printf(_("%u inodes, %llu blocks\n"), s->s_inodes_count,
-               ext2fs_blocks_count(s));
+Because of that and because the same issues are present in the
+existing proc_dointvec code as well I don't think its worth holding
+the actual feature (port reservation) after such petty error recovery
+issues.
 
-etc.
+For the sake of discussion, I think Eric was right: the model we are
+using is messy, we should only accept all input or none. If we can
+(ABI implications) and you think its worth switching to this model I
+can give it a try in a future patch.
 
--Eric
+Octavian Purdila (3):
+  sysctl: refactor integer handling proc code
+  sysctl: add proc_do_large_bitmap
+  net: reserve ports for applications using fixed port numbers
+
+ Documentation/networking/ip-sysctl.txt |   31 ++
+ drivers/infiniband/core/cma.c          |    7 +-
+ include/linux/sysctl.h                 |    2 +
+ include/net/ip.h                       |    6 +
+ kernel/sysctl.c                        |  504 ++++++++++++++++++++++----------
+ net/ipv4/af_inet.c                     |    8 +-
+ net/ipv4/inet_connection_sock.c        |    6 +
+ net/ipv4/inet_hashtables.c             |    2 +
+ net/ipv4/sysctl_net_ipv4.c             |   17 +
+ net/ipv4/udp.c                         |    3 +-
+ net/sctp/socket.c                      |    2 +
+ 11 files changed, 431 insertions(+), 157 deletions(-)
+
