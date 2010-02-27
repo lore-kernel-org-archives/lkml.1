@@ -1,27 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030527Ab0B0Q5z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 11:57:55 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:46242 "EHLO
+	id S1030483Ab0B0Q4t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 11:56:49 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:41119 "EHLO
 	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030535Ab0B0Q5w (ORCPT
+	with ESMTP id S1030401Ab0B0Q4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 11:57:52 -0500
+	Sat, 27 Feb 2010 11:56:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=XSaXbe/4x2quqHWMkcB7fmn95DAU4yLnI9ftITuF3PImmgeUpJC14Zl2AfHzBKh7uT
-         6EtycnRnQgG40UtF1me6Td+EzSmlK2BKFeup2Pvh4luky18fCWbf5T8duoaTReRdUbgE
-         EEhteDESSQx5KGh+VK0Mq6KOtOR+Edqi0gFLs=
+        b=bECSl7RvcUvT5Swh0mUqdvdBwLOMKEtHLTXvyZYWUJoV1511qM0MotrlCSYyqLDGqd
+         AKcvm+OGvvYc7mWGtxhRHYkrIsJ5gUEr+Sd4O4SyMbWNu8kT0Fp61dAy7R/IREyNK9mB
+         ubBqXtnfFcEeX8GgUITvUOwVIx2fDDFAXEX3M=
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: linux-kernel@vger.kernel.org
 Cc: Andrea Gelmini <andrea.gelmini@gelma.net>,
-       Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com
-Subject: [PATCH 59/66] arch/cris/include/arch-v10/arch/thread_info.h: Checkpatch cleanup
-Date: Sat, 27 Feb 2010 17:51:40 +0100
-Message-Id: <1267289508-31031-60-git-send-email-andrea.gelmini@gelma.net>
+       Armin Schindler <mac@melware.de>, Karsten Keil <isdn@linux-pingi.de>
+Subject: [PATCH 46/66] drivers/isdn/hardware/eicon/os_bri.h: Checkpatch cleanup
+Date: Sat, 27 Feb 2010 17:51:27 +0100
+Message-Id: <1267289508-31031-47-git-send-email-andrea.gelmini@gelma.net>
 X-Mailer: git-send-email 1.7.0.90.g251a4
 In-Reply-To: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
 References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
@@ -29,28 +28,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/cris/include/arch-v10/arch/thread_info.h:8: ERROR: code indent should use tabs where possible
-arch/cris/include/arch-v10/arch/thread_info.h:8: ERROR: spaces required around that ':' (ctx:VxV)
-arch/cris/include/arch-v10/arch/thread_info.h:9: ERROR: code indent should use tabs where possible
+drivers/isdn/hardware/eicon/os_bri.h:6: ERROR: "foo * bar" should be "foo *bar"
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- arch/cris/include/arch-v10/arch/thread_info.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/isdn/hardware/eicon/os_bri.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/cris/include/arch-v10/arch/thread_info.h b/arch/cris/include/arch-v10/arch/thread_info.h
-index 218f415..218ceb8 100644
---- a/arch/cris/include/arch-v10/arch/thread_info.h
-+++ b/arch/cris/include/arch-v10/arch/thread_info.h
-@@ -5,8 +5,8 @@
- static inline struct thread_info *current_thread_info(void)
- {
- 	struct thread_info *ti;
--        __asm__("and.d $sp,%0; ":"=r" (ti) : "0" (~8191UL));
--        return ti;
-+	__asm__("and.d $sp,%0; " : "=r" (ti) : "0" (~8191UL));
-+	return ti;
- }
+diff --git a/drivers/isdn/hardware/eicon/os_bri.h b/drivers/isdn/hardware/eicon/os_bri.h
+index a54f0ce..02e7456 100644
+--- a/drivers/isdn/hardware/eicon/os_bri.h
++++ b/drivers/isdn/hardware/eicon/os_bri.h
+@@ -3,6 +3,6 @@
+ #ifndef __DIVA_OS_BRI_REV_1_H__
+ #define __DIVA_OS_BRI_REV_1_H__
+ 
+-int diva_bri_init_card(diva_os_xdi_adapter_t * a);
++int diva_bri_init_card(diva_os_xdi_adapter_t *a);
  
  #endif
 -- 
