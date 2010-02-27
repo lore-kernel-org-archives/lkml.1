@@ -1,79 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968085Ab0B0JiG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 04:38:06 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:54465 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968061Ab0B0JiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 04:38:03 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-References: <20100207210250.GB8256@jenkins.home.ifup.org>
-	<tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
-	<4B881097.1050505@kernel.org> <20100227091043.GA31794@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 27 Feb 2010 01:37:52 -0800
-In-Reply-To: <20100227091043.GA31794@elte.hu> (Ingo Molnar's message of "Sat\, 27 Feb 2010 10\:10\:43 +0100")
-Message-ID: <m1wrxzqarz.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S968090Ab0B0Jk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 04:40:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40730 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968061Ab0B0JkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 04:40:24 -0500
+Date: Sat, 27 Feb 2010 10:39:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next requirements
+Message-ID: <20100227093948.GB31794@elte.hu>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+ <tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
+ <20100222090710.GA31357@elte.hu>
+ <20100222203319.8bd497a2.sfr@canb.auug.org.au>
+ <20100222102745.GJ20844@elte.hu>
+ <20100222224752.0cbd5807.sfr@canb.auug.org.au>
+ <20100223084552.GB17617@elte.hu>
+ <20100224182540.918b48b0.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_04 7+ unique symbols in subject
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 T_TooManySym_03 6+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20100224182540.918b48b0.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
->
->> 
->> for x86, with radix tree based irq_to_desc(),
->> removing arch_probe_nr_irqs is intentional. so we get more irq that could be used.
->> 
->> wonder if the udev for some of your test system have irq number limitation?
->
-> was ancient udev: udev-095-17.fc6.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Something doesn't add up.  Nowhere in the udev source is there a
-single mention of irq.
+> [I have removed linux-tip-commits from the cc list]
+> 
+> Hi Ingo,
+> 
+> On Tue, 23 Feb 2010 09:45:52 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > Developers simply cannot be expected to build for 22 architectures, and 
+> > they shouldnt be.
+> 
+> I have agreed with this point of yours several times.  Why do you keep 
+> stating it?
 
-gsi have fixed interrupt numbers so that would not change.
+If you agree with me then why do you put so much focus on cross-arch build 
+failures, versus other, more relevant forms of testing?
 
-The dynamic irqs are allocated starting from the high gsi
-and working up.
+> > The thing is, last i checked you didnt even _test_ x86 as the first step 
+> > in your linux-next build tests. Most of your generic build bug reports are 
+> > against PowerPC. They create the appearance that x86 is a second class 
+> > citizen in linux-next.
+> 
+> Lets see.  Over the last 60 days, I have reported 37 build errors.  Of 
+> these, 16 were reported against x86, 14 against ppc, 7 against other archs.
 
-The irq numbers that get allocated should not have changed,
-unless this was actually a bug fix in this configuration.
+So only 43% of them were even relevant on the platform that 95+% of the Linux 
+testers use? Seems to support the points i made.
 
-The other possibility is that somehow arch_probe_nr_irqs()
-was returning a number greater than NR_IRQS.
+> Of the ppc reports, 10 would not affect x86 builds (due to being ppc 
+> specific problems or dependencies on implicit includes that do happen on 
+> x86).  None of the reports against other arches would affect x86 builds.
+> 
+> I also reported 31 warnings.  15 against x86, 15 against ppc and 1 against 
+> both.  Of those only reported against ppc, 13 did not affect x86.
+> 
+> So of my "generic" reports, 4 errors and 2 warnings were reported against 
+> ppc, 16 errors and 15 warnings again x86.
+> 
+> Also, I am not sure how reports of 37 build errors and 32 warnings over 60 
+> days can tax the resources of our developer base. [...]
 
-Ingo do you have any idea what NR_IRQS or nr_irqs were/are on
-that failing machine?
+Note that out of those 37 build errors only a small minority were caused by 
+any tree i co-maintain. (i dont have the precise numbers but it's below 5)
 
-Eric
+Why? Because i cross-build before pushing to linux-next. I bug people about 
+cross-arch build failures, and about the patch flow delays and hickups this 
+causes. Without that you'd see twice that many cross-build failures.
+
+Which in itself is not bad of course (any fix is a good fix) - except the 
+forced prioritization and its place in the workflow: it sends the wrong 
+testing message.
+
+It sends the message that building on N architectures is more important than 
+for the code to work for real people. I've had good developers waste their 
+time trying to set up cross-build testing environments and complain to me how 
+this complicates their testing.
+
+> [...]  Most of these are fairly trivial to fix (as is shown by how quick 
+> they are fixed.  Usually the developer has just forgotten to test the 
+> !CONFIG_SOMETHING case or used some function without explicitly including 
+> the file that declares it.
+> 
+> As to my perceived pro-PowerPC and anti-x86 bias, you are the only one who 
+> has even mentioned it to me.
+
+Have you asked me recently for example?
+
+> Anyway, I sick of these discussions.  If people see the way I do linux-next 
+> as a problem, then they can find someone else.  That is not the impression I 
+> gained at the Kernel Summit and (apart from these occasional "discussions") 
+> I am quite happy to continue.
+
+Not sure how you jump from my observations to "I will quit if you do this". I 
+am simply pointing out problems as i see them - as i do that with every piece 
+of the workflow we use. I have expressed my views numerous times about where i 
+find linux-next useful and positive - and it's sure a net positive.
+
+	Ingo
