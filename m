@@ -1,84 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735Ab0B1SQf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 13:16:35 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:38708 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754394Ab0B1SQd (ORCPT
+	id S932254Ab0B1S2N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 13:28:13 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:37012 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754422Ab0B1S2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 13:16:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=S8usmr9EyEHCa+4ezMz3Mr6Jqb6PHwB5YZDxqubHPlFHmXkR2Tw4nABDs1Z9Yly8u6
-         A45qjnyH3GVtYEKkBn23L7761KXxAsInT9f+/TDJGM/tToB3SajpGCIGXq0ClSyxV6TV
-         bGB8oU1tc4C0AlEnaeLphOLTQXnfr3TUr9UUM=
-Date: Sun, 28 Feb 2010 19:16:27 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [PATCH][GIT PULL] ftrace: Add function names to dangling } in
-	function graph tracer
-Message-ID: <20100228181622.GB5248@nowhere>
-References: <1267230439.6328.149.camel@gandalf.stny.rr.com> <20100227100223.GB5130@nowhere> <1267298703.6328.181.camel@gandalf.stny.rr.com>
+	Sun, 28 Feb 2010 13:28:11 -0500
+Date: Sun, 28 Feb 2010 10:28:39 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrea Gelmini <andrea.gelmini@gelma.net>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH 66/66]
+	arch/um/sys-x86_64/shared/sysdep/skas_ptrace.h: Checkpatch cleanup
+Message-ID: <20100228152839.GA3063@localhost.localdomain>
+References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net> <1267289508-31031-67-git-send-email-andrea.gelmini@gelma.net> <20100227221310.GA5455@localhost.localdomain> <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267298703.6328.181.camel@gandalf.stny.rr.com>
+In-Reply-To: <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 02:25:03PM -0500, Steven Rostedt wrote:
-> On Sat, 2010-02-27 at 11:02 +0100, Frederic Weisbecker wrote:
+On Sun, Feb 28, 2010 at 03:06:21PM +0100, Andrea Gelmini wrote:
+> 2010/2/27 Jeff Dike <jdike@addtoit.com>:
+> Hi Jeff,
+>    and thanks for your reply.
 > 
-> > >  		/*
-> > >  		 * Comments display at + 1 to depth. Since
-> > >  		 * this is a leaf function, keep the comments
-> > >  		 * equal to this depth.
-> > >  		 */
-> > > -		*depth = call->depth - 1;
-> > > +		cpu_data->depth = call->depth - 1;
-> > > +
-> > > +		/* No need to keep this function around for this depth */
-> > > +		if (call->depth < FTRACE_RETFUNC_DEPTH)
-> > 
-> > 
-> > 
-> > Do you really need to check that? call->depth >= FTRACE_RETFUNC_DEPTH
-> > are not recorded.
-> > 
-> > 
+> > Don't you have anything better to do with your time?
 > 
-> Call me paranoid, but working inside the kernel makes me paranoid. If
-> for some reason a trace gets corrupted here, not doing this check can
-> cause a kernel oops.
+> It's a dirty job, but somebody has to do it...
 
+To be a bit more serious, the UML tree was once a seething mass of
+checkpatch violations.  I cleaned up a lot of it while making other
+changes in the area.  This sort of thing I think is reasonably
+worthwhile, but dumping in a whole lot of checkpatch changes doesn't
+help anything and it just pollutes the change history.
 
-Ok but this may also hide a bug.
-
-Could it be a WARN_ON_ONCE?
-
-
- 
-> > 
-> > > +			cpu_data->enter_funcs[call->depth] = 0;
-> 
-> cpu_data->enter_funcs[102340320211] = 0;
-> 
-> would be bad ;-)
-> 
-> 
-> Hmm, I should also make sure depth is not less than zero. I'll send a
-> new patch to do that too.
-
-
-
-With a WARN_ON_ONCE? :)
-
-
-Thanks.
-
+				Jeff
