@@ -1,49 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966548Ab0B1MLN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 07:11:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56706 "EHLO ogre.sisk.pl"
+	id S967884Ab0B1MTR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 07:19:17 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56729 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965251Ab0B1MLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 07:11:12 -0500
+	id S966312Ab0B1MTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 07:19:15 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [PATCH] Driver core: Reduce the level of request_firmware() messages
-Date: Sun, 28 Feb 2010 13:13:38 +0100
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next requirements
+Date: Sun, 28 Feb 2010 13:22:05 +0100
 User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, roland@redhat.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-References: <201002272143.22156.rjw@sisk.pl> <3f9a31f41002272043t59d18d39ga0296ce3f6602c6d@mail.gmail.com>
-In-Reply-To: <3f9a31f41002272043t59d18d39ga0296ce3f6602c6d@mail.gmail.com>
+       Linus <torvalds@linux-foundation.org>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com> <201002272007.43042.rjw@sisk.pl> <20100228070626.GA30750@elte.hu>
+In-Reply-To: <20100228070626.GA30750@elte.hu>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002281313.38483.rjw@sisk.pl>
+Message-Id: <201002281322.05213.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 February 2010, Jaswinder Singh Rajput wrote:
-> Hello Rafael,
+On Sunday 28 February 2010, Ingo Molnar wrote:
 > 
-> On Sun, Feb 28, 2010 at 2:13 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > The messages from _request_firmware() informing that firmware is
-> > being requested or built-in firmware is going to be used are printed
-> > at KERN_INFO, which produces lots of noise on systems with huge
-> > numbers of AMD CPUs.  Reduce the level of these messages to
-> > KERN_DEBUG to get rid of that noise.
-> >
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> Which firmware we are using is very useful information. Because of
-> huge numbers of CPUs it seems noise then better provide the
-> information for first cpu and for the rest of the CPUs you can show by
-> KERN_DEBUG.
+> > On Saturday 27 February 2010, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > > > Lets see.  Over the last 60 days, I have reported 37 build errors.  Of 
+> > > > > > these, 16 were reported against x86, 14 against ppc, 7 against other 
+> > > > > > archs.
+> > > > > 
+> > > > > So only 43% of them were even relevant on the platform that 95+% of the 
+> > > > > Linux testers use? Seems to support the points i made.
+> > > > 
+> > > > Well, I hope you don't mean that because the majority of bug reporters (vs 
+> > > > testers, the number of whom is unknown to me at least) use x86, we are free 
+> > > > to break the other architectures. ;-)
+> > > 
+> > > It means exactly that: just like we 'can' break compilation with gcc296, 
+> > > ancient versions of binutils, odd bootloaders, can break the boot via odd 
+> > > hardware, etc. When someone uses that architectures then the 'easy' 
+> > > bugfixes will actually flow in very quickly and without much fuss
+> > 
+> > Then I don't understand what the problem with getting them in at the 
+> > linux-next stage is.  They are necessary anyway, so we'll need to add them 
+> > sooner or later and IMO the sooner the better.
+> 
+> The problem is the dynamics and resulting (non-)cleanliness of code. We have 
+> architectures that have been conceptually broken for 5 years or more, but 
+> still those problems get blamed on the last change that 'causes' the breakage: 
+> the core kernel and the developers who try to make a difference.
+> 
+> I think your perspective and your opinion is correct, while my perspective is 
+> real and correct as well - there's no contradiction really. Let me try to 
+> explain how i see it:
+> 
+> You are working in a relatively well-designed piece of code which interfaces 
+> to the kernel in sane ways - kernel/power/* et al. You might break the 
+> cross-builds sometimes, but it's not very common, and in those cases it's 
+> usually your own fault and you are grateful for linux-next to have caught that 
+> stupidity. (i hope this a fair summary!)
 
-That would have been better indeed, but the problem is _request_firmware()
-doesn't allow us to change the level of its messages on demand.
+Fair enough.
 
+> I am not criticising that aspect of linux-next _at all_ - it's useful and 
+> beneficial - and i'd like to thank Stephen for all his hard work. Other 
+> aspects of linux-next useful as well: such as the patch conflict mediation 
+> role.
+
+Great.
+
+> But as it happens so often, people tend to talk more about the things that are 
+> not so rosy, not about the things that work well.
+> 
+> The area i am worried about are new core kernel facilities and their 
+> development and extension of existing facilities. _Those_ facilities are 
+> affected by 'many architectures' in a different way from how you experience 
+> it: often we can do very correct changes to them, which still 'break' on some 
+> architecture due to _that architecture's conceptual fault_.
+> 
+> Let me give you an example that happened just yesterday. My cross-testing 
+> found that a change in the tracing infrastructure code broke m32r and parisc.
+> 
+> The breakage:
+> 
+>  /home/mingo/tip/kernel/trace/trace_clock.c:86: error: implicit declaration of function 'raw_local_irq_save'
+>  /home/mingo/tip/kernel/trace/trace_clock.c:112: error: implicit declaration of function 'raw_local_irq_restore'
+>  make[3]: *** [kernel/trace/trace_clock.o] Error 1
+>  make[3]: *** Waiting for unfinished jobs....
+> 
+> Is was 'caused by':
+> 
+>  18b4a4d: oprofile: remove tracing build dependency
+> 
+> In linux-next this would be pinned to commit 18b4a4d, which would have to be 
+> reverted/fixed.
+> 
+> Where does the _real_ blame lie? Clearly in the M32R and HP/PARISC code: why 
+> dont they, four years after it has been introduced as a core kernel facility 
+> in 2006, _still_ not support raw_local_irq_save()?
+
+OK, I see your point.
+
+> ( A similar situation occured in this very thread a well - before the subject 
+>   of the thread - so it's a real and present problem. We didnt even get _any_ 
+>   reaction about that particular breakage from the affected architecture ... )
+> 
+> These situations are magnified by how certain linux-next bugs are reported: 
+> the 'blame' is put on the new commit that exposes that laggy nature of certain 
+> architectures. Often the developers even believe this false notion and feel 
+> guilty for 'having broken' an architecture - often an architecture that has 
+> not contributed a single core kernel facility _in its whole existence_.
+> 
+> The usual end result is that the path of least resistance is taken: the commit 
+> is reverted or worked around, while the 'laggy' architecture can continue 
+> business as usual and cause more similar bugs and hickups in the future ...
+> 
+> I.e. there is extra overhead put on clearly 'good' efforts, while 'bad' 
+> behavior (parasitic hanging-on, passivity, indifference) is rewarded. 
+> Rewarding bad behavior is very clearly harmful to Linux in many regards, and i 
+> speak up when i see it.
+> 
+> So i wish linux-next balanced these things more fairly towards those areas of 
+> code that are actually useful: if it ignored build breakages that are due to 
+> architectures being lazy - in fact if it required architectures to _help out_ 
+> with the development of the kernel.
+> 
+> The majority of build-bugs i see trigger in cross-builds (90% of which i catch 
+> before they get into linux-next) are of this nature, that's why i raised it in 
+> such a pointed way. Your (and many other people's) experience will differ - so 
+> you might see this as an unjustified criticism.
+
+Thanks a lot for the clarification.
+
+Best,
 Rafael
