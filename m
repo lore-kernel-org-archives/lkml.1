@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936588Ab0B1TXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 14:23:21 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:58423 "EHLO sssup.it"
+	id S936594Ab0B1TYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 14:24:17 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:58464 "EHLO sssup.it"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936491Ab0B1TXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 14:23:19 -0500
-Subject: [RFC][PATCH 07/11] sched: add latency tracing for -deadline tasks.
+	id S936491Ab0B1TYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 14:24:16 -0500
+Subject: [RFC][PATCH 08/11] sched: send SIGXCPU at -deadline task overruns.
 From: Raistlin <raistlin@linux.it>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -25,9 +25,9 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Luca Abeni <luca.abeni@unitn.it>
 In-Reply-To: <1267383976.13676.79.camel@Palantir>
 References: <1267383976.13676.79.camel@Palantir>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-u+RzNI/L3+9std6cOzY1"
-Date: Sun, 28 Feb 2010 20:23:06 +0100
-Message-ID: <1267384986.13676.96.camel@Palantir>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jhzx0f6e0cFR6QwoTEMa"
+Date: Sun, 28 Feb 2010 20:24:06 +0100
+Message-ID: <1267385046.13676.97.camel@Palantir>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,211 +35,132 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-u+RzNI/L3+9std6cOzY1
+--=-jhzx0f6e0cFR6QwoTEMa
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-It is very likely that systems that wants/needs to use the new
-SCHED_DEADLINE policy also want to have the scheduling latency of
-the -deadline tasks under control.
+Add to the scheduler the capability of notifying when -deadline tasks
+overrun their maximum runtime and/or overcome their scheduling
+deadline.
 
-For this reason a new version of the scheduling wakeup latency,
-called "wakeup_dl", is introduced.
+Runtime overruns might be quite common, e.g., due to coarse granularity
+execution time accounting resolution or wrong assignment of tasks'
+parameters (especially runtime). However, since the scheduler enforces
+bandwidth isolation among tasks, this is not at all a threat to other
+tasks' schedulability. For this reason, it is not common that a task
+wants to be notified about that. Moreover, if we are using the
+SCHED_DEADLINE policy with sporadic tasks, or to limit the bandwidth
+of not periodic nor sporadic ones, runtime overruns are very likely
+to occur at each and every instance, and again they should not be
+considered a problem.
 
-As a consequence of applying this patch there will be three wakeup
-latency tracer:
- * "wakeup", that deals with all tasks in the system;
- * "wakeup_rt", that deals with -rt and -deadline tasks only;
- * "wakeup_dl", that deals with -deadline tasks only.
+On the other hand, a deadline miss in any task means that, even if we
+are trying at our best to keep each task isolated and to avoid
+reciprocal interference among them, something went very, very bad,
+and one task did not manage in consuming its runtime by its deadline.
+This is something that should happen only on an oversubscribed
+system, and thus being notified when it occurs could be very useful.
+
+The user can specify the signals he wants to be sent to his task
+during sched_setscheduler_ex(), raising two specific flags in the
+sched_flags field of struct sched_param_ex:
+ * SCHED_SIG_RORUN (if he wants to be signaled on runtime overrun),
+ * SCHED_SIG_DMISS (if he wants to be signaled on deadline misses).
+
+This patch:
+ - adds the logic needed to send SIGXCPU signal to a -deadline task
+   in case its actual runtime becomes negative;
+ - adds the logic needed to send SIGXCPU signal to a -deadline task
+   in case it is still being scheduled while its absolute deadline
+   passes.
 
 Signed-off-by: Dario Faggioli <raistlin@linux.it>
 ---
- kernel/trace/trace_sched_wakeup.c |   44 +++++++++++++++++++++++++++++++++=
----
- kernel/trace/trace_selftest.c     |   30 +++++++++++++++----------
- 2 files changed, 58 insertions(+), 16 deletions(-)
+ include/linux/sched.h |   18 ++++++++++++++++++
+ kernel/sched_dl.c     |   24 ++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_w=
-akeup.c
-index 0271742..a02ce04 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -27,6 +27,7 @@ static int			wakeup_cpu;
- static int			wakeup_current_cpu;
- static unsigned			wakeup_prio =3D -1;
- static int			wakeup_rt;
-+static int			wakeup_dl;
-=20
- static arch_spinlock_t wakeup_lock =3D
- 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
-@@ -214,9 +215,17 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int=
- success)
- 	tracing_record_cmdline(p);
- 	tracing_record_cmdline(current);
-=20
--	if ((wakeup_rt && !rt_task(p)) ||
--			p->prio >=3D wakeup_prio ||
--			p->prio >=3D current->prio)
-+	/*
-+	 * Semantic is like this:
-+	 *  - wakeup tracer handles all tasks in the system, independently
-+	 *    from their scheduling class;
-+	 *  - wakeup_rt tracer handles tasks belonging to sched_dl and
-+	 *    sched_rt class;
-+	 *  - wakeup_dl handles tasks belonging to sched_dl class only.
-+	 */
-+	if ((wakeup_dl && !dl_task(p)) ||
-+	    (wakeup_rt && !dl_task(p) && !rt_task(p)) ||
-+	    (p->prio >=3D wakeup_prio || p->prio >=3D current->prio))
- 		return;
-=20
- 	pc =3D preempt_count();
-@@ -228,7 +237,7 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int =
-success)
- 	arch_spin_lock(&wakeup_lock);
-=20
- 	/* check for races. */
--	if (!tracer_enabled || p->prio >=3D wakeup_prio)
-+	if (!tracer_enabled || (!dl_task(p) && p->prio >=3D wakeup_prio))
- 		goto out_locked;
-=20
- 	/* reset the trace */
-@@ -340,16 +349,25 @@ static int __wakeup_tracer_init(struct trace_array *t=
-r)
-=20
- static int wakeup_tracer_init(struct trace_array *tr)
- {
-+	wakeup_dl =3D 0;
- 	wakeup_rt =3D 0;
- 	return __wakeup_tracer_init(tr);
- }
-=20
- static int wakeup_rt_tracer_init(struct trace_array *tr)
- {
-+	wakeup_dl =3D 0;
- 	wakeup_rt =3D 1;
- 	return __wakeup_tracer_init(tr);
- }
-=20
-+static int wakeup_dl_tracer_init(struct trace_array *tr)
-+{
-+	wakeup_dl =3D 1;
-+	wakeup_rt =3D 0;
-+	return __wakeup_tracer_init(tr);
-+}
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index e6c1cda..64a7df2 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -138,6 +138,7 @@ struct sched_param {
+  * More information about the algorithm are available in the scheduling
+  * class file or in Documentation/.
+  */
 +
- static void wakeup_tracer_reset(struct trace_array *tr)
- {
- 	stop_wakeup_tracer(tr);
-@@ -398,6 +416,20 @@ static struct tracer wakeup_rt_tracer __read_mostly =
-=3D
- #endif
+ struct sched_param_ex {
+ 	int sched_priority;
+ 	struct timespec sched_runtime;
+@@ -146,6 +147,23 @@ struct sched_param_ex {
+ 	unsigned int sched_flags;
  };
 =20
-+static struct tracer wakeup_dl_tracer __read_mostly =3D
-+{
-+	.name		=3D "wakeup_dl",
-+	.init		=3D wakeup_dl_tracer_init,
-+	.reset		=3D wakeup_tracer_reset,
-+	.start		=3D wakeup_tracer_start,
-+	.stop		=3D wakeup_tracer_stop,
-+	.wait_pipe	=3D poll_wait_pipe,
-+	.print_max	=3D 1,
-+#ifdef CONFIG_FTRACE_SELFTEST
-+	.selftest    =3D trace_selftest_startup_wakeup,
-+#endif
-+};
++/*
++ * User -deadline flags.
++ *
++ * These flags are exported to userspace so that tasks can try to affect
++ * the scheduler behaviour and/or specifying that they want to be informed
++ * of the occurrence of some events. There are at most 16 of them availabl=
+e
++ * (lowest bits), since values above 0x10000 are reserved for kernel
++ * internal flags.
++ *
++ *  @SCHED_SIG_RORUN	tells us the task wants to be notified whenever
++ *                      a runtime overrun occurs;
++ *  @SCHED_SIG_DMISS	tells us the task wants to be notified whenever
++ *                      a scheduling deadline is missed.
++ */
++#define SCHED_SIG_RORUN		0x0001
++#define SCHED_SIG_DMISS		0x0002
 +
- __init static int init_wakeup_tracer(void)
- {
- 	int ret;
-@@ -410,6 +442,10 @@ __init static int init_wakeup_tracer(void)
- 	if (ret)
- 		return ret;
-=20
-+	ret =3D register_tracer(&wakeup_dl_tracer);
-+	if (ret)
-+		return ret;
-+
- 	return 0;
+ struct exec_domain;
+ struct futex_pi_state;
+ struct robust_list_head;
+diff --git a/kernel/sched_dl.c b/kernel/sched_dl.c
+index dee2668..b5dde44 100644
+--- a/kernel/sched_dl.c
++++ b/kernel/sched_dl.c
+@@ -265,6 +265,14 @@ static void init_dl_timer(struct sched_dl_entity *dl_s=
+e)
+ 	timer->function =3D dl_timer;
  }
- device_initcall(init_wakeup_tracer);
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index 280fea4..4834411 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -558,11 +558,17 @@ trace_selftest_startup_nop(struct tracer *trace, stru=
-ct trace_array *tr)
- #ifdef CONFIG_SCHED_TRACER
- static int trace_wakeup_test_thread(void *data)
+=20
++#define dl_se_signal(se, s, msg)					\
++ do {									\
++  struct task_struct *t =3D dl_task_of(se);				\
++  sigaddset(&t->pending.signal, s);					\
++  set_tsk_thread_flag(t, TIF_SIGPENDING);				\
++  printk(KERN_INFO msg "in %d (%s)\n", task_pid_nr(t), t->comm);	\
++ } while (0)
++
+ static
+ int dl_runtime_exceeded(struct rq *rq, struct sched_dl_entity *dl_se)
  {
--	/* Make this a RT thread, doesn't need to be too high */
--	struct sched_param param =3D { .sched_priority =3D 5 };
-+	/* Make this a -deadline thread */
-+	struct sched_param param =3D { .sched_priority =3D 0 };
-+	struct sched_param_ex paramx =3D {
-+		.sched_priority =3D 0,
-+		.sched_runtime =3D { .tv_sec =3D 0, .tv_nsec =3D 100000 },
-+		.sched_deadline =3D { .tv_sec =3D 0, .tv_nsec =3D 10000000 },
-+		.sched_flags =3D 0
-+	};
- 	struct completion *x =3D data;
+@@ -283,6 +291,22 @@ int dl_runtime_exceeded(struct rq *rq, struct sched_dl=
+_entity *dl_se)
+ 	if (dmiss)
+ 		dl_se->runtime -=3D rq->clock - dl_se->deadline;
 =20
--	sched_setscheduler(current, SCHED_FIFO, &param);
-+	sched_setscheduler_ex(current, SCHED_DEADLINE, &param, &paramx);
-=20
- 	/* Make it know we have a new prio */
- 	complete(x);
-@@ -574,8 +580,8 @@ static int trace_wakeup_test_thread(void *data)
- 	/* we are awake, now wait to disappear */
- 	while (!kthread_should_stop()) {
- 		/*
--		 * This is an RT task, do short sleeps to let
--		 * others run.
-+		 * This will likely be the system top priority
-+		 * task, do short sleeps to let others run.
- 		 */
- 		msleep(100);
- 	}
-@@ -588,21 +594,21 @@ trace_selftest_startup_wakeup(struct tracer *trace, s=
-truct trace_array *tr)
- {
- 	unsigned long save_max =3D tracing_max_latency;
- 	struct task_struct *p;
--	struct completion isrt;
-+	struct completion is_ready;
- 	unsigned long count;
- 	int ret;
-=20
--	init_completion(&isrt);
-+	init_completion(&is_ready);
-=20
--	/* create a high prio thread */
--	p =3D kthread_run(trace_wakeup_test_thread, &isrt, "ftrace-test");
-+	/* create a -deadline thread */
-+	p =3D kthread_run(trace_wakeup_test_thread, &is_ready, "ftrace-test");
- 	if (IS_ERR(p)) {
- 		printk(KERN_CONT "Failed to create ftrace wakeup test thread ");
- 		return -1;
- 	}
-=20
--	/* make sure the thread is running at an RT prio */
--	wait_for_completion(&isrt);
-+	/* make sure the thread is running at -deadline policy */
-+	wait_for_completion(&is_ready);
-=20
- 	/* start the tracing */
- 	ret =3D tracer_init(trace, tr);
-@@ -614,7 +620,7 @@ trace_selftest_startup_wakeup(struct tracer *trace, str=
-uct trace_array *tr)
- 	/* reset the max latency */
- 	tracing_max_latency =3D 0;
-=20
--	/* sleep to let the RT thread sleep too */
-+	/* sleep to let the thread sleep too */
- 	msleep(100);
-=20
- 	/*
++	/*
++	 * if the userspace asked for that, we notify about (scheduling)
++	 * deadline misses and runtime overruns via sending SIGXCPU to
++	 * "faulting" task.
++	 *
++	 * Note that (hopefully small) runtime overruns are very likely
++	 * to occur, mainly due to accounting resolution, while missing a
++	 * scheduling deadline should be very rare, and only happen on
++	 * an oversubscribed systems.
++	 */
++	if (unlikely(dmiss && dl_se->flags & SCHED_SIG_DMISS))
++		dl_se_signal(dl_se, SIGXCPU, "Deadline miss");
++
++	if (unlikely(rorun && dl_se->flags & SCHED_SIG_RORUN))
++		dl_se_signal(dl_se, SIGXCPU, "Runtime overrun");
++
+ 	dequeue_dl_entity(dl_se);
+ 	if (!start_dl_timer(dl_se, dl_se->deadline)) {
+ 		if (!rorun)
 --=20
 1.7.0
 
@@ -251,17 +172,17 @@ Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 http://blog.linux.it/raistlin / raistlin@ekiga.net /
 dario.faggioli@jabber.org
 
---=-u+RzNI/L3+9std6cOzY1
+--=-jhzx0f6e0cFR6QwoTEMa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkuKwpoACgkQk4XaBE3IOsQPHgCeIcobB2i7c06xgbzK/mj8ut5l
-26IAn3ocHWTa/45l0rx9yM0DztJCoMQL
-=DdGs
+iEYEABECAAYFAkuKwtUACgkQk4XaBE3IOsSpzwCgnpXKK3II2CWnpob/+p2qqLUH
+TJEAnixmvEaeH3/5SyNixARduxPnozVm
+=lYjI
 -----END PGP SIGNATURE-----
 
---=-u+RzNI/L3+9std6cOzY1--
+--=-jhzx0f6e0cFR6QwoTEMa--
 
