@@ -1,19 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751288Ab0B1XRU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 18:17:20 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:63337 "EHLO
+	id S1751711Ab0B1XU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 18:20:27 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:63477 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750802Ab0B1XRS (ORCPT
+	by vger.kernel.org with ESMTP id S1750994Ab0B1XU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 18:17:18 -0500
+	Sun, 28 Feb 2010 18:20:26 -0500
 Subject: Re: USB mass storage and ARM cache coherency
 From: Catalin Marinas <catalin.marinas@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       linux-usb@vger.kernel.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org, "Mankad, Maulik Ojas" <x0082077@ti.com>,
        Sergei Shtylyov <sshtylyov@ru.mvista.com>,
        Ming Lei <tom.leiming@gmail.com>,
        Sebastian Siewior <bigeasy@linutronix.de>,
@@ -22,52 +21,40 @@ Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
        "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
        Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <1267220980.23523.1820.camel@pasglop>
+In-Reply-To: <20100226220351.GE23933@n2100.arm.linux.org.uk>
 References: <1266445892.16346.306.camel@pasglop>
 	 <1266599755.32546.38.camel@e102109-lin.cambridge.arm.com>
 	 <1266979170.23523.1660.camel@pasglop>
 	 <1267202674.14703.70.camel@e102109-lin.cambridge.arm.com>
 	 <1267220980.23523.1820.camel@pasglop>
+	 <20100226220351.GE23933@n2100.arm.linux.org.uk>
 Content-Type: text/plain; charset="UTF-8"
 Organization: ARM Limited
-Date: Sun, 28 Feb 2010 23:17:14 +0000
-Message-ID: <1267399034.4485.24.camel@e102109-lin.cambridge.arm.com>
+Date: Sun, 28 Feb 2010 23:20:22 +0000
+Message-ID: <1267399222.4485.26.camel@e102109-lin.cambridge.arm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Feb 2010 23:17:15.0993 (UTC) FILETIME=[2A88D490:01CAB8CC]
+X-OriginalArrivalTime: 28 Feb 2010 23:20:24.0710 (UTC) FILETIME=[9B04C260:01CAB8CC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 21:49 +0000, Benjamin Herrenschmidt wrote:
-> > > > On ARM11MPCore we flush the caches in flush_dcache_page() because the
-> > > > cache maintenance operations weren't visible to the other CPUs.
-> > >
-> > > I'm not even sure that's going to be 100% correct. Don't you also need
-> > > to flush the remote icaches when you are dealing with instructions (such
-> > > as swap) anyways ?
-> >
-> > I don't think we tried swap but for pages that have been mapped for the
-> > first time, the I-cache would be clean.
-> >
-> > At mm switching, if a thread
-> > migrates to a new CPU we invalidate the cache at that point.
-> 
-> That sounds fragile. What about a multithread app with one thread on
-> each core hitting the pages at the same time ? Sounds racy to me...
+On Fri, 2010-02-26 at 22:03 +0000, Russell King - ARM Linux wrote:
+> On Sat, Feb 27, 2010 at 08:49:40AM +1100, Benjamin Herrenschmidt wrote:
+> > It will deadlock if you use normal IRQs. I don't see a good way around
+> > that other than using a higher-level type of IRQs. I though ARM has
+> > something like that (FIQs ?). Can you use those guys for IPIs ?
+[...]
+> The other problem we'd encounter using FIQs for IPIs is that some IPIs
+> need to take locks - and in order to make that safe, we'd either need
+> another class of locks which disable IRQs and FIQs together, or we'd
+> need to disable FIQs everywhere we disable IRQs - at which point FIQs
+> become utterly pointless.
 
-Interestingly, until commit 826cbdaff29 (< 2 years ago), we didn't have
-any I-cache flushing in update_mmu_cache() and it was working fine. I
-added it for correctness reasons rather than to fix something. My theory
-is that it was working because a page cache page tends to keep the same
-physical address, especially if we don't swap pages, and a 16KB PIPT
-cache cannot hold enough lines to show any issues (lines are replaced
-frequently).
+You could use the FIQ only for the DMA cache maintenance operations and
+not as a generic IPI mechanism. But the hardware needs to be modified.
 
-I suspect that's one of the reasons why only invalidating the whole
-I-cache when switching the mm to a new CPU seems to suffice. Once we
-enable some form of swapping, it may show the problem.
 
 -- 
 Catalin
