@@ -1,84 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032176Ab0B1WYX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 17:24:23 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:51790 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032129Ab0B1WYV (ORCPT
+	id S1032188Ab0B1Wa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 17:30:28 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:62192 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032075Ab0B1Wa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 17:24:21 -0500
+	Sun, 28 Feb 2010 17:30:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nUExOgEpNKDC+Tv/eGHF9OecADo/FiFC/Hxi3kcyHh7FWeYyH1451bzBOqw4VgxC66
-         k/MisS+RN1H6fb9i44fD8/ANpIloFT1+i8/mXFaMpLMat/Kfs0uXZi6n7oUNh2lsqsA4
-         0FlSKEHNwVUM6v5NmgVCQyqs2DBWQDutyFKf8=
-Date: Sun, 28 Feb 2010 23:24:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       paulmck@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
-	fast path
-Message-ID: <20100228222412.GD5248@nowhere>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-11-git-send-regression-fweisbec@gmail.com> <20100204154700.GE6676@linux.vnet.ibm.com> <4B6B84A1.60805@cn.fujitsu.com> <1265363102.22001.286.camel@laptop> <1265363441.22001.300.camel@laptop> <20100205104937.GB29515@elte.hu> <1265371808.22001.502.camel@laptop> <1265371973.22001.508.camel@laptop> <1265374915.22001.562.camel@laptop>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=RQlz3CcB/61EebGeXAJPrwuzIangjwfmrLZyO8VQxhoLQpFSKXmtC9qZ8NHX7I+vRL
+         9ier68fLmLEOdg4uBWwLZgVcacDgRT/lwudnnsqJgcdYmWmqx+13dHxnNmc+M1r9ccbI
+         9x7QxE59U2Mkf4zV2X4CN7ri9I+9urPxB5jSM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265374915.22001.562.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100228.001130.226792131.davem@davemloft.net>
+References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
+	 <1267289508-31031-31-git-send-email-andrea.gelmini@gelma.net>
+	 <20100228.001130.226792131.davem@davemloft.net>
+Date: Mon, 1 Mar 2010 09:30:26 +1100
+Message-ID: <d45a3acc1002281430g1c69a50fse4716457fa764792@mail.gmail.com>
+Subject: Re: [PATCH 30/66] include/net/x25device.h: Checkpatch cleanup
+From: andrew hendry <andrew.hendry@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: andrea.gelmini@gelma.net, linux-kernel@vger.kernel.org,
+       linux-x25@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 02:01:55PM +0100, Peter Zijlstra wrote:
-> On Fri, 2010-02-05 at 13:12 +0100, Peter Zijlstra wrote:
-> > On Fri, 2010-02-05 at 13:10 +0100, Peter Zijlstra wrote:
-> > > On Fri, 2010-02-05 at 11:49 +0100, Ingo Molnar wrote:
-> > > > 
-> > > > > That said, I'm not at all happy about removing lockdep annotations to make 
-> > > > > the tracer faster, that's really counter productive.
-> > > > 
-> > > > Are there no dynamic techniques that could be used here?
-> > > > 
-> > > > Lockdep obviously wants maximum instrumentation coverage - performance be 
-> > > > damned.
-> > > > 
-> > > > Lock profiling/tracing/visualization wants the minimum subset of events it is 
-> > > > interested in - everything else is unnecessary overhead.
-> > > 
-> > > Well, they could start by moving the tracepoint inside the lockdep
-> > > recursion check.
-> > 
-> > IIRC the reason its now outside is that you'd loose tracepoint on
-> > lockdep_off() usage, but having the tracer folks help on removing any
-> > such usage is of course a good thing.
-> > 
-> > The usage thereof in nmi_enter() doesn't seem like a problem, since
-> > you're not supposed to be using locks from nmi context anyway, more so,
-> > I'd not be adverse to putting BUG_ON(in_nmi()) in every lockdep hook.
-> 
-> Another nasty side effect is that it (lockdep recursion) isn't IRQ aware
-> in that we don't do any tracking for IRQ's that hit while we're doing
-> lockdep. We can fix that using a recursion context like we did for perf,
-> that would actually improve lockdep itself too.
+Acked-by: Andrew Hendry <andrew.hendry@gmail.com>
 
-
-Actually, looking at lock_acquire/release/acquired/contended, they are
-all performing their job under a raw_lock_irq_save() window, so it
-doesn't seem we are losing anything.
-
-Something that could be nice though: dropping this irq saving from the
-main window, add the perf style recursion protection, and eventually
-have a raw_local_irq_save only when we take internal lockdep locks.
-This will let irqs happen during lockdep checks.
-
-I just guess the irq disabled thing is also protecting something else,
-something I'll probably discover after testing that :)
-
+On Sun, Feb 28, 2010 at 7:11 PM, David Miller <davem@davemloft.net> wrote:
+> From: Andrea Gelmini <andrea.gelmini@gelma.net>
+> Date: Sat, 27 Feb 2010 17:51:11 +0100
+>
+>> include/net/x25device.h:13: ERROR: trailing whitespace
+>>
+>> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+>
+> Acked-by: David S. Miller <davem@davemloft.net>
+>
