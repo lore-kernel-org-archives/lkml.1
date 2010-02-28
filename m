@@ -1,306 +1,169 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031610Ab0B1Ixm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 03:53:42 -0500
-Received: from compulab.co.il ([67.18.134.219]:52263 "EHLO compulab.co.il"
+	id S1031623Ab0B1I6K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 03:58:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36811 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031600Ab0B1Ixk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 03:53:40 -0500
-Message-ID: <4B8A2F34.3020505@compulab.co.il>
-Date: Sun, 28 Feb 2010 10:54:12 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1031613Ab0B1I6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 03:58:07 -0500
+Date: Sun, 28 Feb 2010 08:57:37 GMT
+From: tip-bot for Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, tj@kernel.org, sfr@canb.auug.org.au,
+       tglx@linutronix.de, prasad@linux.vnet.ibm.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tj@kernel.org, tglx@linutronix.de,
+       sfr@canb.auug.org.au, prasad@linux.vnet.ibm.com
+In-Reply-To: <4B7B4B7A.9050902@kernel.org>
+References: <4B7B4B7A.9050902@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] percpu: Add __percpu sparse annotations to hw_breakpoint
+Message-ID: <tip-44ee63587dce85593c22497140db16f4e5027860@git.kernel.org>
+Git-Commit-ID: 44ee63587dce85593c22497140db16f4e5027860
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [RESEND] gpio: introduce it8761e_gpio driver for IT8761E Super I/O
- chip
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 28 Feb 2010 08:57:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Denis Turischev <denis@compulab.co.il>
+Commit-ID:  44ee63587dce85593c22497140db16f4e5027860
+Gitweb:     http://git.kernel.org/tip/44ee63587dce85593c22497140db16f4e5027860
+Author:     Tejun Heo <tj@kernel.org>
+AuthorDate: Wed, 17 Feb 2010 10:50:50 +0900
+Committer:  Frederic Weisbecker <fweisbec@gmail.com>
+CommitDate: Sat, 27 Feb 2010 16:23:39 +0100
+
+percpu: Add __percpu sparse annotations to hw_breakpoint
+
+Add __percpu sparse annotations to hw_breakpoint.
+
+These annotations are to make sparse consider percpu variables to be
+in a different address space and warn if accessed without going
+through percpu accessors.  This patch doesn't affect normal builds.
+
+In kernel/hw_breakpoint.c, per_cpu(nr_task_bp_pinned, cpu)'s will
+trigger spurious noderef related warnings from sparse.  Changing it to
+&per_cpu(nr_task_bp_pinned[0], cpu) will work around the problem but
+deemed to ugly by the maintainer.  Leave it alone until better
+solution can be found.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+LKML-Reference: <4B7B4B7A.9050902@kernel.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
-  drivers/gpio/Kconfig        |    6 +
-  drivers/gpio/Makefile       |    1 +
-  drivers/gpio/it8761e_gpio.c |  231 +++++++++++++++++++++++++++++++++++++++++++
-  3 files changed, 238 insertions(+), 0 deletions(-)
-  create mode 100644 drivers/gpio/it8761e_gpio.c
+ include/linux/hw_breakpoint.h           |    8 ++++----
+ kernel/hw_breakpoint.c                  |   10 +++++-----
+ samples/hw_breakpoint/data_breakpoint.c |    6 +++---
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 1730068..3c9e5ed 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -101,6 +101,12 @@ config GPIO_SCH
-  	  This driver can also be built as a module. If so, the module
-  	  will be called sch-gpio.
-
-+config GPIO_IT8761E
-+	tristate "IT8761E GPIO support"
-+	depends on GPIOLIB
-+	help
-+	  Say yes here to support GPIO functionality of IT8761E super I/O chip.
-+
-  comment "I2C GPIO expanders:"
-
-  config GPIO_MAX732X
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index aa1d06e..4adf128 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -23,3 +23,4 @@ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-  obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
-  obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
-  obj-$(CONFIG_GPIO_SCH)		+= sch_gpio.o
-+obj-$(CONFIG_GPIO_IT8761E)	+= it8761e_gpio.o
-diff --git a/drivers/gpio/it8761e_gpio.c b/drivers/gpio/it8761e_gpio.c
-new file mode 100644
-index 0000000..753219c
---- /dev/null
-+++ b/drivers/gpio/it8761e_gpio.c
-@@ -0,0 +1,231 @@
-+/*
-+ *  it8761_gpio.c - GPIO interface for IT8761E Super I/O chip
-+ *
-+ *  Author: Denis Turischev <denis@compulab.co.il>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License 2 as published
-+ *  by the Free Software Foundation.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; see the file COPYING.  If not, write to
-+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/io.h>
-+#include <linux/errno.h>
-+#include <linux/ioport.h>
-+
-+#include <linux/gpio.h>
-+
-+#define SIO_CHIP_ID		0x8761
-+#define CHIP_ID_HIGH_BYTE	0x20
-+#define CHIP_ID_LOW_BYTE	0x21
-+
-+static u8 ports[2] = { 0x2e, 0x4e };
-+static u8 port;
-+
-+static DEFINE_SPINLOCK(sio_lock);
-+
-+#define GPIO_NAME		"it8761-gpio"
-+#define GPIO_BA_HIGH_BYTE	0x60
-+#define GPIO_BA_LOW_BYTE	0x61
-+#define GPIO_IOSIZE		4
-+#define GPIO1X_IO		0xf0
-+#define GPIO2X_IO		0xf1
-+
-+static u16 gpio_ba;
-+
-+static u8 read_reg(u8 addr, u8 port)
-+{
-+	outb(addr, port);
-+	return inb(port + 1);
-+}
-+
-+static void write_reg(u8 data, u8 addr, u8 port)
-+{
-+	outb(addr, port);
-+	outb(data, port + 1);
-+}
-+
-+static void enter_conf_mode(u8 port)
-+{
-+	outb(0x87, port);
-+	outb(0x61, port);
-+	outb(0x55, port);
-+	outb((port == 0x2e) ? 0x55 : 0xaa, port);
-+}
-+
-+static void exit_conf_mode(u8 port)
-+{
-+	outb(0x2, port);
-+	outb(0x2, port + 1);
-+}
-+
-+static void enter_gpio_mode(u8 port)
-+{
-+	write_reg(0x2, 0x7, port);
-+}
-+
-+static int it8761e_gpio_get(struct gpio_chip *gc, unsigned gpio_num)
-+{
-+	u16 reg;
-+	u8 bit;
-+
-+	bit = gpio_num % 7;
-+	reg = (gpio_num >= 7) ? gpio_ba + 1 : gpio_ba;
-+
-+	return !!(inb(reg) & (1 << bit));
-+}
-+
-+static int it8761e_gpio_direction_in(struct gpio_chip *gc, unsigned gpio_num)
-+{
-+	u8 curr_dirs;
-+	u8 io_reg, bit;
-+
-+	bit = gpio_num % 7;
-+	io_reg = (gpio_num >= 7) ? GPIO2X_IO : GPIO1X_IO;
-+
-+	spin_lock(&sio_lock);
-+
-+	enter_conf_mode(port);
-+	enter_gpio_mode(port);
-+
-+	curr_dirs = read_reg(io_reg, port);
-+
-+	if (curr_dirs & (1 << bit))
-+		write_reg(curr_dirs & ~(1 << bit), io_reg, port);
-+
-+	exit_conf_mode(port);
-+
-+	spin_unlock(&sio_lock);
-+	return 0;
-+}
-+
-+static void it8761e_gpio_set(struct gpio_chip *gc,
-+				unsigned gpio_num, int val)
-+{
-+	u8 curr_vals, bit;
-+	u16 reg;
-+
-+	bit = gpio_num % 7;
-+	reg = (gpio_num >= 7) ? gpio_ba + 1 : gpio_ba;
-+
-+	spin_lock(&sio_lock);
-+
-+	curr_vals = inb(reg);
-+	if (val)
-+		outb(curr_vals | (1 << bit) , reg);
-+	else
-+		outb(curr_vals & ~(1 << bit), reg);
-+
-+	spin_unlock(&sio_lock);
-+}
-+
-+static int it8761e_gpio_direction_out(struct gpio_chip *gc,
-+					unsigned gpio_num, int val)
-+{
-+	u8 curr_dirs, io_reg, bit;
-+
-+	bit = gpio_num % 7;
-+	io_reg = (gpio_num >= 7) ? GPIO2X_IO : GPIO1X_IO;
-+
-+	it8761e_gpio_set(gc, gpio_num, val);
-+
-+	spin_lock(&sio_lock);
-+
-+	enter_conf_mode(port);
-+	enter_gpio_mode(port);
-+
-+	curr_dirs = read_reg(io_reg, port);
-+
-+	if (!(curr_dirs & (1 << bit)))
-+		write_reg(curr_dirs | (1 << bit), io_reg, port);
-+
-+	exit_conf_mode(port);
-+
-+	spin_unlock(&sio_lock);
-+	return 0;
-+}
-+
-+static struct gpio_chip it8761e_gpio_chip = {
-+	.label			= GPIO_NAME,
-+	.owner			= THIS_MODULE,
-+	.get			= it8761e_gpio_get,
-+	.direction_input	= it8761e_gpio_direction_in,
-+	.set			= it8761e_gpio_set,
-+	.direction_output	= it8761e_gpio_direction_out,
-+};
-+
-+static int __init it8761e_gpio_init(void)
-+{
-+	int i, id, err;
-+
-+	/* chip and port detection */
-+	for (i = 0; i < ARRAY_SIZE(ports); i++) {
-+		spin_lock(&sio_lock);
-+		enter_conf_mode(ports[i]);
-+
-+		id = (read_reg(CHIP_ID_HIGH_BYTE, ports[i]) << 8) +
-+				read_reg(CHIP_ID_LOW_BYTE, ports[i]);
-+
-+		exit_conf_mode(ports[i]);
-+		spin_unlock(&sio_lock);
-+
-+		if (id == SIO_CHIP_ID) {
-+			port = ports[i];
-+			break;
-+		}
-+	}
-+
-+	if (!port)
-+		return -ENODEV;
-+
-+	/* fetch GPIO base address */
-+	enter_conf_mode(port);
-+	enter_gpio_mode(port);
-+	gpio_ba = (read_reg(GPIO_BA_HIGH_BYTE, port) << 8) +
-+				read_reg(GPIO_BA_LOW_BYTE, port);
-+	exit_conf_mode(port);
-+
-+	if (!request_region(gpio_ba, GPIO_IOSIZE, GPIO_NAME))
-+		return -EBUSY;
-+
-+	it8761e_gpio_chip.base = -1;
-+	it8761e_gpio_chip.ngpio = 14;
-+
-+	err = gpiochip_add(&it8761e_gpio_chip);
-+	if (err < 0)
-+		goto gpiochip_add_err;
-+
-+	return 0;
-+
-+gpiochip_add_err:
-+	release_region(gpio_ba, GPIO_IOSIZE);
-+	gpio_ba = 0;
-+	return err;
-+}
-+
-+static void __exit it8761e_gpio_exit(void)
-+{
-+	if (gpio_ba) {
-+		gpiochip_remove(&it8761e_gpio_chip);
-+
-+		release_region(gpio_ba, GPIO_IOSIZE);
-+		gpio_ba = 0;
-+	}
-+}
-+module_init(it8761e_gpio_init);
-+module_exit(it8761e_gpio_exit);
-+
-+MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
-+MODULE_DESCRIPTION("GPIO interface for IT8761E Super I/O chip");
-+MODULE_LICENSE("GPL");
--- 
-1.6.3.3
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 5977b72..c70d27a 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -66,14 +66,14 @@ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	triggered,
+ 				int cpu);
+ 
+-extern struct perf_event **
++extern struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered);
+ 
+ extern int register_perf_hw_breakpoint(struct perf_event *bp);
+ extern int __register_perf_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_hw_breakpoint(struct perf_event *bp);
+-extern void unregister_wide_hw_breakpoint(struct perf_event **cpu_events);
++extern void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events);
+ 
+ extern int dbg_reserve_bp_slot(struct perf_event *bp);
+ extern int dbg_release_bp_slot(struct perf_event *bp);
+@@ -100,7 +100,7 @@ static inline struct perf_event *
+ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	 triggered,
+ 				int cpu)		{ return NULL; }
+-static inline struct perf_event **
++static inline struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)	{ return NULL; }
+ static inline int
+@@ -109,7 +109,7 @@ static inline int
+ __register_perf_hw_breakpoint(struct perf_event *bp) 	{ return -ENOSYS; }
+ static inline void unregister_hw_breakpoint(struct perf_event *bp)	{ }
+ static inline void
+-unregister_wide_hw_breakpoint(struct perf_event **cpu_events)		{ }
++unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)	{ }
+ static inline int
+ reserve_bp_slot(struct perf_event *bp)			{return -ENOSYS; }
+ static inline void release_bp_slot(struct perf_event *bp) 		{ }
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 967e661..6542eac 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -413,17 +413,17 @@ EXPORT_SYMBOL_GPL(unregister_hw_breakpoint);
+  *
+  * @return a set of per_cpu pointers to perf events
+  */
+-struct perf_event **
++struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)
+ {
+-	struct perf_event **cpu_events, **pevent, *bp;
++	struct perf_event * __percpu *cpu_events, **pevent, *bp;
+ 	long err;
+ 	int cpu;
+ 
+ 	cpu_events = alloc_percpu(typeof(*cpu_events));
+ 	if (!cpu_events)
+-		return ERR_PTR(-ENOMEM);
++		return (void __percpu __force *)ERR_PTR(-ENOMEM);
+ 
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+@@ -451,7 +451,7 @@ fail:
+ 	put_online_cpus();
+ 
+ 	free_percpu(cpu_events);
+-	return ERR_PTR(err);
++	return (void __percpu __force *)ERR_PTR(err);
+ }
+ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+ 
+@@ -459,7 +459,7 @@ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+  * unregister_wide_hw_breakpoint - unregister a wide breakpoint in the kernel
+  * @cpu_events: the per cpu set of events to unregister
+  */
+-void unregister_wide_hw_breakpoint(struct perf_event **cpu_events)
++void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)
+ {
+ 	int cpu;
+ 	struct perf_event **pevent;
+diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+index c69cbe9..bd0f337 100644
+--- a/samples/hw_breakpoint/data_breakpoint.c
++++ b/samples/hw_breakpoint/data_breakpoint.c
+@@ -34,7 +34,7 @@
+ #include <linux/perf_event.h>
+ #include <linux/hw_breakpoint.h>
+ 
+-struct perf_event **sample_hbp;
++struct perf_event * __percpu *sample_hbp;
+ 
+ static char ksym_name[KSYM_NAME_LEN] = "pid_max";
+ module_param_string(ksym, ksym_name, KSYM_NAME_LEN, S_IRUGO);
+@@ -61,8 +61,8 @@ static int __init hw_break_module_init(void)
+ 	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
+ 
+ 	sample_hbp = register_wide_hw_breakpoint(&attr, sample_hbp_handler);
+-	if (IS_ERR(sample_hbp)) {
+-		ret = PTR_ERR(sample_hbp);
++	if (IS_ERR((void __force *)sample_hbp)) {
++		ret = PTR_ERR((void __force *)sample_hbp);
+ 		goto fail;
+ 	}
+ 
