@@ -1,69 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031401Ab0B1F4j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 00:56:39 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:38276 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825Ab0B1F4i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 00:56:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=glya8J3n93BS8jSEElskdhrAwwyCsmBcmx0fqxQkJRRzfkiKVhF2DEon1crzlQds4a
-         O+frTIrwnPtMmVrd4U5RJhxA9EAdbzotWl283IO2Grm5Lxv0a7JtzBlFVzteS5YaYvtI
-         x2Iy5QoQKqDfILqzgLPRsgPnDCZoWDA3rC2AQ=
+	id S1753652Ab0B1F7I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 00:59:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59330 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752914Ab0B1F7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 00:59:06 -0500
+Message-ID: <4B8A084E.2070008@kernel.org>
+Date: Sun, 28 Feb 2010 15:08:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <201002271530.JCB31845.FOLJMFVFOHtQSO@I-love.SAKURA.ne.jp>
-References: <20100226144955.GB2778@localhost.localdomain>
-	 <201002271052.AHB64003.OOQLJtFOHVFMSF@I-love.SAKURA.ne.jp>
-	 <628d1651002261902k6b22277dmfa93c01350c1aed6@mail.gmail.com>
-	 <201002271530.JCB31845.FOLJMFVFOHtQSO@I-love.SAKURA.ne.jp>
-Date: Sun, 28 Feb 2010 13:56:37 +0800
-Message-ID: <628d1651002272156ld6cb7cdmee34117ccf103285@mail.gmail.com>
-Subject: Re: [PATCH] Security: Add __init to register_security to disable load 
-	a security module on runtime
-From: wzt wzt <wzt.wzt@gmail.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, jmorris@namei.org
+To: Anton Blanchard <anton@samba.org>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       oleg@redhat.com
+Subject: Re: [PATCH] workqueue: Fix build on PowerPC
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <20100227225234.GA13594@kryten>
+In-Reply-To: <20100227225234.GA13594@kryten>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 28 Feb 2010 05:57:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Load a security module on runtime is not safe on SMP systems,  LSM
-framework doesn't have any locks.
+On 02/28/2010 07:52 AM, Anton Blanchard wrote:
+> Fix the following compile error on PowerPC:
+> 
+> include/linux/workqueue.h:66: error: ‘NR_CPUS’ undeclared here (not in a function)
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-On Sat, Feb 27, 2010 at 2:30 PM, Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
-> Zhitong Wang wrote:
->> LSM original intention is not allowed to load security modules on runtime, right?
->
-> My understanding is that the reason register_security() became no longer
-> exported to loadable kernel modules is the difficulty of cleanly
-> initializing/finalizing security modules since security modules usually
-> allocate/release memory on various structures. When that change happened
-> (i.e. as of 2.6.24), SELinux was the only in-tree LSM user.
->
-> Those security modules which needn't to allocate/release memory on various
-> structures can be loaded on runtime, if register_security() is exported to
-> loadable kernel modules.
->
-> If a distribution user adds a loadable kernel module (which is not a security
-> module) which distributor didn't select, the user can get distributor's support
-> except problems caused by that module.
->
-> However, due to limitation that security modules cannot be added as loadable
-> kernel modules, when a distribution user wants to select security modules which
-> distributor didn't select, distributor's support is no longer provided
-> (i.e. not only problems caused by the security modules selected by the user
-> but also problems caused by the rest of kernel and userland).
->
-> What's the difference between a kernel module which uses LSM and a kernel
-> module which does not use LSM? Any kernel modules can cause severe problems.
->
-> My understanding is that LSM's original intention is to allow Linux users to
-> select security modules. Why LSM places security modules under adverse condition?
->
+Fix folded into
+0028-workqueue-carry-cpu-number-in-work-data-once-executi.patch
+
+Thanks.
+
+-- 
+tejun
