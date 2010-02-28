@@ -1,77 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031468Ab0B1HYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 02:24:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46270 "EHLO mx3.mail.elte.hu"
+	id S1031470Ab0B1H30 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 02:29:26 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:56264 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031444Ab0B1HYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 02:24:18 -0500
-Date: Sun, 28 Feb 2010 08:23:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, roland@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next requirements
-Message-ID: <20100228072357.GB14205@elte.hu>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
- <201002271323.14402.rjw@sisk.pl>
- <20100227124710.GA21164@elte.hu>
- <201002272007.43042.rjw@sisk.pl>
+	id S1031422Ab0B1H3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 02:29:25 -0500
+Date: Sat, 27 Feb 2010 23:29:25 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: benh@au1.ibm.com, anton@au1.ibm.com, paulus@au1.ibm.com,
+       akpm@linux-foundation.org
+Subject: [PATCH RFC] powerpc: Fixes to allow pseries to build for
+	HOTPLUG_CPU=n
+Message-ID: <20100228072925.GA26097@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002272007.43042.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Building for a pseries machine with HOTPLUG_CPU=n on 2.6.33 gives the
+following build errors:
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+arch/powerpc/platforms/built-in.o: In function `.smp_xics_setup_cpu':
+smp.c:(.devinit.text+0x8c): undefined reference to `.set_cpu_current_state'
+smp.c:(.devinit.text+0x98): undefined reference to `.set_default_offline_state'
+arch/powerpc/platforms/built-in.o: In function `.smp_pSeries_kick_cpu':
+smp.c:(.devinit.text+0x13c): undefined reference to `.get_cpu_current_state'
+smp.c:(.devinit.text+0x1c4): undefined reference to `.set_preferred_offline_state'
+smp.c:(.devinit.text+0x1d0): undefined reference to `.get_cpu_current_state'
 
-> > In fact those rare ways of building and booting the kernel i mentioned are 
-> > probably used _more_ than half of the architectures that linux-next 
-> > build-tests ...
-> 
-> I don't know and you don't know either.  That's just pure speculation and 
-> therefore meaningless.
+This patch fixes this by providing empty (or nearly empty) functions for
+the HOTPLUG_CPU=n case.  Passes moderate rcutorture testing.
 
-We know various arch (and hardware) usage stats, such as:
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-  http://smolt.fedoraproject.org/static/stats/stats.html
+ offline_states.h |   30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-Today's stats, done amongst users who are willing to opt in to the Smolt 
-daemon:
-
-       x86: 99.7%
-   powerpc: 0.3%
-
-x86 used to be 99.5 a year ago, so the world has become even more x86-centric.
-
-There's also the kerneloops.org client, which shows in excess of 95% x86 usage 
-as well. You can also grep the linux-kernel folder for arch signatures, etc.
-
-And yes, there are millions of ARM (and MIPS) CPUs running Linux as well. 
-(They are only as present as present their developers are: the users almost 
-never show up on linux-kernel.)
-
-Plus, a kernel subsystem maintainer like me who does lots of kernel 
-infrastructure work can have a pretty good gut feeling about which 
-architectures are actively helping out Linux, and which are just hanging on to 
-the bandwagon.
-
-So i respectfully disagree with your 'pure speculation' bit. Yes, it's 
-somewhat of a guessing game, as so many things in life - but the trend is very 
-clear.
-
-	Ingo
+diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
+index 22574e0..195f9c7 100644
+--- a/arch/powerpc/platforms/pseries/offline_states.h
++++ b/arch/powerpc/platforms/pseries/offline_states.h
+@@ -9,10 +9,40 @@ enum cpu_state_vals {
+ 	CPU_MAX_OFFLINE_STATES
+ };
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
+ extern enum cpu_state_vals get_cpu_current_state(int cpu);
+ extern void set_cpu_current_state(int cpu, enum cpu_state_vals state);
+ extern enum cpu_state_vals get_preferred_offline_state(int cpu);
+ extern void set_preferred_offline_state(int cpu, enum cpu_state_vals state);
+ extern void set_default_offline_state(int cpu);
++
++#else /* #ifdef CONFIG_HOTPLUG_CPU */
++
++static inline enum cpu_state_vals get_cpu_current_state(int cpu)
++{
++	return cpu_online(cpu) ? CPU_STATE_ONLINE : CPU_STATE_OFFLINE;
++}
++
++static inline void set_cpu_current_state(int cpu, enum cpu_state_vals state)
++{
++}
++
++static inline enum cpu_state_vals get_preferred_offline_state(int cpu)
++{
++	return CPU_STATE_OFFLINE;
++}
++
++static inline void set_preferred_offline_state(int cpu,
++					       enum cpu_state_vals state)
++{
++}
++
++static inline void set_default_offline_state(int cpu)
++{
++}
++
++#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
++
+ extern int start_secondary(void);
+ #endif
