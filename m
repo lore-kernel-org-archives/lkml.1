@@ -1,83 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031993Ab0B1UKU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 15:10:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55092 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031966Ab0B1UKT (ORCPT
+	id S1032007Ab0B1UKo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 15:10:44 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:47952 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031966Ab0B1UKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 15:10:19 -0500
-Date: Sun, 28 Feb 2010 12:09:46 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] x86/cpu changes for v2.6.34
-In-Reply-To: <20100227150942.GA6394@elte.hu>
-Message-ID: <alpine.LFD.2.00.1002281205320.27475@localhost.localdomain>
-References: <20100227150942.GA6394@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 28 Feb 2010 15:10:42 -0500
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <m1pr3qcbk1.fsf@fess.ebiederm.org>
+	<20100228195243.GA15976@ioremap.net>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 28 Feb 2010 12:10:35 -0800
+In-Reply-To: <20100228195243.GA15976@ioremap.net> (Evgeniy Polyakov's message of "Sun\, 28 Feb 2010 22\:52\:43 +0300")
+Message-ID: <m1r5o5azpg.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Evgeniy Polyakov <zbr@ioremap.net>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: Why does connector use a work queue???
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Evgeniy Polyakov <zbr@ioremap.net> writes:
 
-I haven't bisected this, but something slowed down in bootup on my machine 
-recently.
+> On Sat, Feb 27, 2010 at 06:57:02PM -0800, Eric W. Biederman (ebiederm@xmission.com) wrote:
+>> These days netlink callbacks for messages happen in the context of the
+>> process who sent the message.  Things like permission checks are much
+>> more complicated if we don't use that process context.
+>> 
+>> I was looking at removing NETLINK_CB(skb).eff_cap but I discovered
+>> that connected takes the netlink messages, them from their
+>> perfectly good process context, and puts the into a workqueue
+>> for reasons that are not apparent to me.
+>
+> Netlink was made synchronous rather recently and connector was not
+> changed to take advantage of that. Previously it used work queue to
+> postpone work processing into always-process context.
 
-See the timestamps:
+I suspected it was something like that but I want to be certain.
 
-	[    0.000000] Linux version 2.6.33-01832-g30ff056 
-	...
-	[    0.010066] Enabled Interrupt-remapping
-	[    0.010120] Setting APIC routing to physical flat
-	[    0.010180] DRHD: handling fault status reg 2
-	[    0.010582] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-	[    0.049955] CPU0: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-	[    0.157195] Booting Node   0, Processors  #1
-	[    0.245179] CPU 1 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    0.265332]  #2
-	[    0.353185] CPU 2 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    0.373328]  #3
-	[    2.193277] CPU 3 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    2.213379]  #4
-	[    2.301283] CPU 4 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    2.321391]  #5
-	[    2.417287] CPU 5 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    2.437356]  #6
-	[    2.525293] CPU 6 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    2.545354]  #7
-	[    2.633298] CPU 7 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    2.653423] Brought up 8 CPUs
-	[    2.653571] Total of 8 processors activated (51201.44 BogoMIPS).
+>> Unless I am misreading something we should just be able to remove the
+>> work queues and greatly simplify the connector code.
+>> 
+>> Something like:
+>
+> Idea looks very good, thank you, but it misses structure changes
+> to eliminate now unneded members.
 
-what happened there for almost 2 seconds in between CPU#3 and CPU#4?
+Right. I didn't trust myself to write a patch that would rip out half
+of the connector code until I understood what the constraints were.
 
-It wasn't very fast before either, but it was way better:
-
-	[    0.050298] CPU0: Genuine Intel(R) CPU             000  @ 3.20GHz stepping 04
-	[    0.156725] Booting Node   0, Processors  #1
-	[    0.244410] CPU 1 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    0.264458]  #2
-	[    0.352078] CPU 2 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    0.372147]  #3
-	[    0.459746] CPU 3 MCA banks CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:8
-	[    0.479838]  #4
-	[    0.567415] CPU 4 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    0.587446]  #5
-	[    0.683057] CPU 5 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    0.703081]  #6
-	[    0.790724] CPU 6 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    0.810748]  #7
-	[    0.898393] CPU 7 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-	[    0.918412] Brought up 8 CPUs
-	[    0.918562] Total of 8 processors activated (51203.34 BogoMIPS).
-
-what is it that takes so long to bring those CPU's up?
-
-		Linus
+Eric
