@@ -1,91 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030958Ab0B1AJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 19:09:57 -0500
-Received: from mail.tmr.com ([64.65.253.246]:47377 "EHLO partygirl.tmr.com"
+	id S1030969Ab0B1ATM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 19:19:12 -0500
+Received: from gate.crashing.org ([63.228.1.57]:38737 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030928Ab0B1AJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 19:09:55 -0500
-Message-ID: <4B89B44A.70005@tmr.com>
-Date: Sat, 27 Feb 2010 19:09:46 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: mdadm software raid + ext4, capped at ~350MiB/s limitation/bug?
-References: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan> <20100228080100.092c24c2@notabene.brown> <alpine.DEB.2.00.1002271624480.12663@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1002271624480.12663@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1030952Ab0B1ATL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 19:19:11 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org, "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+References: <1266979632.23523.1668.camel@pasglop>
+	 <1267201521.14703.50.camel@e102109-lin.cambridge.arm.com>
+	 <20100226210030.GC23933@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 28 Feb 2010 11:14:32 +1100
+Message-ID: <1267316072.23523.1842.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
->
->
-> On Sun, 28 Feb 2010, Neil Brown wrote:
->
->> On Sat, 27 Feb 2010 08:47:48 -0500 (EST)
->> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->>
->>> Hello,
->>>
->>> I have two separate systems and with ext4 I cannot get speeds 
->>> greater than
->>> ~350MiB/s when using ext4 as the filesystem on top of a raid5 or raid0.
->>> It appears to be a bug with ext4 (or its just that ext4 is slower 
->>> for this
->>> test)?
->>>
->>> Each system runs 2.6.33 x86_64.
->>
->> Could be related to the recent implementation of IO barriers in md.
->> Can you try mounting your filesystem with
->>   -o barrier=0
->>
->> and see how that changes the result.
->>
->> NeilBrown
->
-> Hi Neil,
->
-> Thanks for the suggestion, it has been used here:
-> http://lkml.org/lkml/2010/2/27/66
->
-> Looks like an EXT4 issue as XFS does ~600MiB/s..?
->
-> Its strange though, on a single hard disk, I get approximately the 
-> same speed for XFS and EXT4, but when it comes to scaling across 
-> multiple disks,
-> in RAID-0 or RAID-5 (tested), there is a performance problem as it hits a
-> performance problem at ~350MiB/s.  I tried multiple chunk sizes but 
-> nothing
-> seemed to made a difference (whether 64KiB or 1024KiB), XFS performs at
-> 500-600MiB/s no matter what and EXT4 does not exceed ~350MiB/s.
->
-> Is there anyone on any of the lists that gets > 350MiB/s on a mdadm/sw 
-> raid
-> with EXT4?
->
-> A single raw disk, no partitions:
-> p63:~# dd if=/dev/zero of=/dev/sdm bs=1M count=10240
-> 10240+0 records in
-> 10240+0 records out
-> 10737418240 bytes (11 GB) copied, 92.4249 s, 116 MB/s
+On Fri, 2010-02-26 at 21:00 +0000, Russell King - ARM Linux wrote:
+> On Fri, Feb 26, 2010 at 04:25:21PM +0000, Catalin Marinas wrote:
+> > For mmap'ed pages (and present in the page cache), is it guaranteed that
+> > the HCD driver won't write to it once it has been mapped into user
+> > space? If that's the case, it may solve the problem by just reversing
+> > the meaning of PG_arch_1 on ARM and assume that a newly allocated page
+> > has dirty D-cache by default.
+> 
+> I guess we could also set PG_arch_1 in the DMA API as well, to avoid the
+> unnecessary D cache flushing when clean pages get mapped into userspace.
 
-I hate to say it, but I don't think this measures anything useful. When 
-I was doing similar things I got great variabilty in my results until I 
-learned about the fdatasync option so you measure the actual speed to 
-the destination and not the disk cache. After that my results were far 
-slower and reproducible.
+That's an interesting thought for us too. When doing I$/D$ coherency, we
+have to fist flush the D$ and then invalidate the I$. If we could keep
+track of D$ and I$ separately, we could avoid the first step in many
+cases, including the DMA API trick you mentioned.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "We can't solve today's problems by using the same thinking we
-   used in creating them." - Einstein
+I wonder if it's time to get a PG_arch_2 :-)
+
+Cheers,
+Ben.
+
 
