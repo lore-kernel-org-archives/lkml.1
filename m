@@ -1,45 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032188Ab0B1Wa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 17:30:28 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:62192 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032075Ab0B1Wa1 (ORCPT
+	id S1032190Ab0B1Wi5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 17:38:57 -0500
+Received: from www84.your-server.de ([213.133.104.84]:38434 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032075Ab0B1Wi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 17:30:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=RQlz3CcB/61EebGeXAJPrwuzIangjwfmrLZyO8VQxhoLQpFSKXmtC9qZ8NHX7I+vRL
-         9ier68fLmLEOdg4uBWwLZgVcacDgRT/lwudnnsqJgcdYmWmqx+13dHxnNmc+M1r9ccbI
-         9x7QxE59U2Mkf4zV2X4CN7ri9I+9urPxB5jSM=
-MIME-Version: 1.0
-In-Reply-To: <20100228.001130.226792131.davem@davemloft.net>
-References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
-	 <1267289508-31031-31-git-send-email-andrea.gelmini@gelma.net>
-	 <20100228.001130.226792131.davem@davemloft.net>
-Date: Mon, 1 Mar 2010 09:30:26 +1100
-Message-ID: <d45a3acc1002281430g1c69a50fse4716457fa764792@mail.gmail.com>
-Subject: Re: [PATCH 30/66] include/net/x25device.h: Checkpatch cleanup
-From: andrew hendry <andrew.hendry@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: andrea.gelmini@gelma.net, linux-kernel@vger.kernel.org,
-       linux-x25@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 28 Feb 2010 17:38:56 -0500
+Subject: [PATCH] fix PHY polling system blocking
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 28 Feb 2010 23:39:09 +0100
+Message-ID: <1267396749.20057.62.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Andrew Hendry <andrew.hendry@gmail.com>
+This patch fix the PHY poller, which can block the whole system. On a
+Freescale PPC 834x this result in a delay of 450 us due the slow
+communication with the PHY chip.
 
-On Sun, Feb 28, 2010 at 7:11 PM, David Miller <davem@davemloft.net> wrote:
-> From: Andrea Gelmini <andrea.gelmini@gelma.net>
-> Date: Sat, 27 Feb 2010 17:51:11 +0100
->
->> include/net/x25device.h:13: ERROR: trailing whitespace
->>
->> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
->
-> Acked-by: David S. Miller <davem@davemloft.net>
->
+For PHY chips without interrupts, the status of the ethernet will be
+polled every 2 sec. The poll function will read some register of the MII
+PHY. The time between the sending the MII_READ_COMMAND and receiving the
+result is more the 100 us on a PPC 834x.
+   
+The patch modifies the poller a lit bit. Only a link status state change
+will result in a successive detection of the connection type. The poll
+cycle on the other hand will be increased to every seconds.
+
+Together this patch will prevent a blocking of nearly 400 us every two
+seconds of the whole system on a PPC 834x.
+
+The patch is against kernel 2.6.33. Please merge it.
+
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ phy.c        |    5 ++---
+ phy_device.c |   12 +++++++++---
+ 2 files changed, 11 insertions(+), 6 deletions(-)
+
+diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net//phy/phy.c
+--- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/net//phy/phy.c	2010-02-28 22:53:14.725464101 +0100
+@@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
+ 		case PHY_RUNNING:
+ 			/* Only register a CHANGE if we are
+ 			 * polling */
+-			if (PHY_POLL == phydev->irq)
+-				phydev->state = PHY_CHANGELINK;
+-			break;
++			if (PHY_POLL != phydev->irq)
++				break;
+ 		case PHY_CHANGELINK:
+ 			err = phy_read_status(phydev);
+ 
+diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net//phy/phy_device.c
+--- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
++++ linux-2.6.33/drivers/net//phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
+@@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
+ 	dev->speed = 0;
+ 	dev->duplex = -1;
+ 	dev->pause = dev->asym_pause = 0;
+-	dev->link = 1;
++	dev->link = 0;
+ 	dev->interface = PHY_INTERFACE_MODE_GMII;
+ 
+ 	dev->autoneg = AUTONEG_ENABLE;
+@@ -694,10 +694,16 @@ int genphy_update_link(struct phy_device
+ 	if (status < 0)
+ 		return status;
+ 
+-	if ((status & BMSR_LSTATUS) == 0)
++	if ((status & BMSR_LSTATUS) == 0) {
++		if (phydev->link==0)
++			return 1;
+ 		phydev->link = 0;
+-	else
++	}
++	else {
++		if (phydev->link==1)
++			return 1;
+ 		phydev->link = 1;
++	}
+ 
+ 	return 0;
+ }
+
+
