@@ -1,48 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030995Ab0B1AdV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 19:33:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55430 "EHLO gate.crashing.org"
+	id S1031160Ab0B1BAQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Feb 2010 20:00:16 -0500
+Received: from ozlabs.org ([203.10.76.45]:45429 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030972Ab0B1AdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 19:33:20 -0500
-Subject: Re: Proposal to move PCI out of arch/powerpc and into drivers/of
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: John Linn <John.Linn@xilinx.com>, linux-kernel@vger.kernel.org,
-       devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       John Williams <john.williams@petalogix.com>, michal.simek@petalogix.com
-In-Reply-To: <20100226154425.00dde291@jbarnes-piketon>
-References: <27bab769-0788-4b48-96a7-ced65e40144c@SG2EHSMHS007.ehs.local>
-	 <20100226154425.00dde291@jbarnes-piketon>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 28 Feb 2010 11:33:06 +1100
-Message-ID: <1267317186.23523.1860.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1031145Ab0B1BAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Feb 2010 20:00:10 -0500
+Date: Sun, 28 Feb 2010 12:00:02 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
+       oleg@redhat.com
+Subject: [PATCH] workqueue: Fix a compile warning in work_busy
+Message-ID: <20100228010002.GB13594@kryten>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1267187000-18791-1-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 15:44 -0800, Jesse Barnes wrote:
-> 
-> Dave and Ben have been talking about this for awhile; seems like a
-> good
-> excuse to do it.  IIRC they had even thought about just dumping the
-> code directly into drivers/pci so that API updates won't get
-> missed... 
 
-Depends which part. Not -all- of our PCI code as John seems to want.
+Ensure ret is initialised to avoid the following warning:
 
-The bits that generate PCI devices from the device-tree, for sure,
-though again, even there, there are quite a few dependencies on
-constructs and data structures that are powerpc specific, or even ppc64
-specific in some cases, and that would have to be cleaned up and/or
-abstracted first.
+kernel/workqueue.c: In function ‘work_busy’:
+kernel/workqueue.c:2697: warning: ‘ret’ may be used uninitialized in this function
 
-Cheers,
-Ben.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 5871708..6003afd 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -2682,7 +2682,7 @@ unsigned int work_busy(struct work_struct *work)
+ {
+ 	struct global_cwq *gcwq = get_work_gcwq(work);
+ 	unsigned long flags;
+-	unsigned int ret;
++	unsigned int ret = 0;
+ 
+ 	if (!gcwq)
+ 		return false;
