@@ -1,88 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031384Ab0B1Enb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Feb 2010 23:43:31 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:39419 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031368Ab0B1Ena convert rfc822-to-8bit (ORCPT
+	id S1750961Ab0B1FCX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 00:02:23 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:42680 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750696Ab0B1FCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Feb 2010 23:43:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Fym+3zUrmP2cY3OqgZQZ5a5tRIufesw1wF/WHZtkVh7zdqmPmWai7khNano7dXuilJ
-         hFdRy0EA8/3HRkzAopXrqY5KksXW8AWVe1zVD+QdfXfQebD1UHPmCUQmEUjNc9TxYGfp
-         7xtI0g4OaZ2nGIn2BE/FuQyKsuweXng4IWhOs=
-MIME-Version: 1.0
-In-Reply-To: <201002272143.22156.rjw@sisk.pl>
-References: <201002272143.22156.rjw@sisk.pl>
-Date: Sun, 28 Feb 2010 10:13:29 +0530
-Message-ID: <3f9a31f41002272043t59d18d39ga0296ce3f6602c6d@mail.gmail.com>
-Subject: Re: [PATCH] Driver core: Reduce the level of request_firmware() 
-	messages
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 28 Feb 2010 00:02:21 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org, "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <1267316072.23523.1842.camel@pasglop>
+References: <1266979632.23523.1668.camel@pasglop>
+	 <1267201521.14703.50.camel@e102109-lin.cambridge.arm.com>
+	 <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 28 Feb 2010 10:31:03 +0530
+Message-ID: <1267333263.2762.11.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rafael,
+On Sun, 2010-02-28 at 11:14 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-02-26 at 21:00 +0000, Russell King - ARM Linux wrote:
+> > On Fri, Feb 26, 2010 at 04:25:21PM +0000, Catalin Marinas wrote:
+> > > For mmap'ed pages (and present in the page cache), is it guaranteed that
+> > > the HCD driver won't write to it once it has been mapped into user
+> > > space? If that's the case, it may solve the problem by just reversing
+> > > the meaning of PG_arch_1 on ARM and assume that a newly allocated page
+> > > has dirty D-cache by default.
+> > 
+> > I guess we could also set PG_arch_1 in the DMA API as well, to avoid the
+> > unnecessary D cache flushing when clean pages get mapped into userspace.
+> 
+> That's an interesting thought for us too. When doing I$/D$ coherency, we
+> have to fist flush the D$ and then invalidate the I$. If we could keep
+> track of D$ and I$ separately, we could avoid the first step in many
+> cases, including the DMA API trick you mentioned.
+> 
+> I wonder if it's time to get a PG_arch_2 :-)
 
-On Sun, Feb 28, 2010 at 2:13 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> The messages from _request_firmware() informing that firmware is
-> being requested or built-in firmware is going to be used are printed
-> at KERN_INFO, which produces lots of noise on systems with huge
-> numbers of AMD CPUs.  Reduce the level of these messages to
-> KERN_DEBUG to get rid of that noise.
->
+Sorry to be a bit late to the party (on holiday), but I/D coherency is
+supposed to be taken care of using flush_cache_page in the memory
+mapping routines.  On parisc, at least, we don't use any PG_arch flags
+to help.  The way it's supposed to work is that I is invalidated on
+mapping or remapping, so the I/O code only needs to worry about flushing
+D.  The guarantee we pass to userland is that any page we do I/O to has
+a clean D cache before it goes back to userspace.  Thus if userspace
+executes the page, the I cache gets its first movein there.  There is an
+underlying assumption to all of this:  The CPU won't speculatively move
+in I cache until the page is executed, so we can rely on the
+flush_cache_page in the mapping to keep the I cache invalidated until
+we're ready to execute.  The other fundamental assumption is that if
+userspace needs to modify an executable region (say for dynamic linking)
+it has to take care of reinvalidating the I cache itself ... although it
+can do this by remapping the region to alter the flags (i.e W no X then
+X no W).
 
-Which firmware we are using is very useful information. Because of
-huge numbers of CPUs it seems noise then better provide the
-information for first cpu and for the rest of the CPUs you can show by
-KERN_DEBUG.
+But the point of all of this is that I cache invalidation doesn't appear
+anywhere in the I/O path ... so  if we're getting I/D incoherency,
+there's some problem in the mm code (or there's a missing arch
+assumption ... like I cache gets moved in more aggressively than we
+expect).  Parisc is very sensitive to I/D incoherency, so we'd notice if
+there were a serious generic problem here.
 
-Thanks,
---
-Jaswinder Singh.
+James
 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/firmware_class.c |    5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->
-> Index: linux-2.6.32-SLE11-SP1/drivers/base/firmware_class.c
-> ===================================================================
-> --- linux-2.6.32-SLE11-SP1.orig/drivers/base/firmware_class.c
-> +++ linux-2.6.32-SLE11-SP1/drivers/base/firmware_class.c
-> @@ -487,15 +487,14 @@ _request_firmware(const struct firmware
->             builtin++) {
->                if (strcmp(name, builtin->name))
->                        continue;
-> -               dev_info(device, "firmware: using built-in firmware %s\n",
-> -                        name);
-> +               dev_dbg(device, "firmware: using built-in firmware %s\n", name);
->                firmware->size = builtin->size;
->                firmware->data = builtin->data;
->                return 0;
->        }
->
->        if (uevent)
-> -               dev_info(device, "firmware: requesting %s\n", name);
-> +               dev_dbg(device, "firmware: requesting %s\n", name);
->
->        retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
->        if (retval)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
