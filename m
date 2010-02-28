@@ -1,51 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606Ab0B1RuF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 12:50:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5437 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754356Ab0B1RuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 12:50:01 -0500
-Message-ID: <4B8AAC9A.10203@redhat.com>
-Date: Sun, 28 Feb 2010 12:49:14 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1754640Ab0B1RwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 12:52:25 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:49535 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722Ab0B1RwY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 12:52:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V6fUB+t56PvgWGMwn0Zq2nlzqmN6mlR/WyfikyvRWeClifZT0bu1OrYr8gj5B25+qF
+         MAMCX3sMAPU9vZ0ggp5Ko8Y4GLS0faieG49htPxUWnqzc1Fr3JH0b8H6JibKd2S0YD0a
+         6E/HZjTHIfg00wow7YbUrHTJccOultl2Jjs4U=
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mm: used-once mapped file page detection
-References: <1266868150-25984-1-git-send-email-hannes@cmpxchg.org> <20100224133946.a5092804.akpm@linux-foundation.org> <20100226143232.GA13001@cmpxchg.org>
-In-Reply-To: <20100226143232.GA13001@cmpxchg.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <201002281531.45149.bzolnier@gmail.com>
+References: <201002281531.45149.bzolnier@gmail.com>
+Date: Sun, 28 Feb 2010 11:52:23 -0600
+Message-ID: <51f3faa71002280952p479dd795ue6a4e4a06b67e6f8@mail.gmail.com>
+Subject: Re: [git patch] atang tree: make SATA Asynchronous Notification work
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/2010 09:32 AM, Johannes Weiner wrote:
-> On Wed, Feb 24, 2010 at 01:39:46PM -0800, Andrew Morton wrote:
->> On Mon, 22 Feb 2010 20:49:07 +0100 Johannes Weiner<hannes@cmpxchg.org>  wrote:
->>
->>> This patch makes the VM be more careful about activating mapped file
->>> pages in the first place.  The minimum granted lifetime without
->>> another memory access becomes an inactive list cycle instead of the
->>> full memory cycle, which is more natural given the mentioned loads.
->>
->> iirc from a long time ago, the insta-activation of mapped pages was
->> done because people were getting peeved about having their interactive
->> applications (X, browser, etc) getting paged out, and bumping the pages
->> immediately was found to help with this subjective problem.
->>
->> So it was a latency issue more than a throughput issue.  I wouldn't be
->> surprised if we get some complaints from people for the same reasons as
->> a result of this patch.
+On Sun, Feb 28, 2010 at 8:31 AM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> DISCLAIMER: the fact of getting patches merged into atang tree means
+> that from now on they will be getting updates for changes happening
+> in atang tree and it should not be treated as an indication regarding
+> decisions taken by 'upstream' kernel trees
 >
-> Agreed.  Although we now have other things in place to protect them once
-> they are active (VM_EXEC protection, lazy active list scanning).
+>
+> Fix Asynchronous Notification (AN) support for SATA ATAPI devices
+> (drives which support this feature will send a notification when new
+> media is inserted and removed, preventing the need for user space to
+> poll for new media needlessly consuming energy and CPU resources).
+>
+> Originally AN support was added to kernel in 2007, unfortunately some
+> relevant bits were lost in the merge process and the feature remains
+> non-functional in modern Linux distributions.  Lets fix it by adding
+> kernel patch by Robert Hancock (from Oct 2009) addressing the issue.
+>
+> User-space part (HAL daemon in particular) still won't automatically
+> disable media polling but it can be done manually by executing:
+>
+>  hal-disable-polling --device /dev/sr0
+>
+> command as root.
+>
+> [ To check if your ATAPI device supports AN:
+>  # hdparm -I /dev/sr0|grep "Asynchronous notification"
+>
+>  To check if it is properly recognized by kernel & user-space:
+>  $ lshal|grep support_async_notification ]
+>
+>
+> PS1 if you have PLDS DS-8A3S drive in your laptop (like me) you may
+> need to update the drive's firmware to the one containing AN support
+> (HA28 for Asus' OEM drives and HD52 for Dell's ones)
+>
+> PS2 I will be rebasing atang on top of 2.6.33 in the near future
+>
+>
+> The following changes since commit cad2f21db052f21beafd44d3396a565d9a485073:
+>  Bartlomiej Zolnierkiewicz (1):
+>        block: fix SSD performance regression
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git atang-v4.9
+>
+> Robert Hancock (1):
+>      scsi: properly export media change notification capability in block device flags
+>
+>  drivers/scsi/sd.c |    2 ++
+>  drivers/scsi/sr.c |    2 ++
+>  2 files changed, 4 insertions(+), 0 deletions(-)
 
-You think we'll need VM_EXEC protection on the inactive list
-after your changes?
+I think that patch is still applicable, but as you noted it doesn't
+really have much effect on HAL by itself other than reporting the
+"supports asynchronous notification" flag, there's nothing in HAL that
+automatically stops polling when that's detected (at least last I
+checked).
 
+As I recall the new HAL replacement (DeviceKit-disks I believe)
+doesn't depend on that particular flag to detect AN support.
