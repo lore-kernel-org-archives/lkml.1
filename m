@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968750Ab0B1QT7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 11:19:59 -0500
-Received: from www.tglx.de ([62.245.132.106]:37682 "EHLO www.tglx.de"
+	id S1030352Ab0B1QUt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 11:20:49 -0500
+Received: from www.tglx.de ([62.245.132.106]:37717 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964812Ab0B1QT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 11:19:58 -0500
-Date: Sun, 28 Feb 2010 17:19:49 +0100 (CET)
+	id S964812Ab0B1QUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 11:20:48 -0500
+Date: Sun, 28 Feb 2010 17:20:39 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT pull] genirq for 2.6.34
-Message-ID: <alpine.LFD.2.00.1002281719170.4245@localhost.localdomain>
+Subject: [GIT pull] bkl removal for 2.6.34
+Message-ID: <alpine.LFD.2.00.1002281719550.4245@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -22,32 +22,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest irq-core-for-linus git tree from:
+Please pull the latest bkl-drivers-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-core-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git bkl-drivers-for-linus
 
 Thanks,
 
 	tglx
 
 ------------------>
-Mark Brown (1):
-      genirq: Fix documentation of default chip disable()
+Ingo Molnar (1):
+      nvram: Drop the BKL from nvram_open()
 
 
- include/linux/irq.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/char/nvram.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 451481c..d13492d 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -90,7 +90,7 @@ struct msi_desc;
-  * @startup:		start up the interrupt (defaults to ->enable if NULL)
-  * @shutdown:		shut down the interrupt (defaults to ->disable if NULL)
-  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
-- * @disable:		disable the interrupt (defaults to chip->mask if NULL)
-+ * @disable:		disable the interrupt
-  * @ack:		start of a new interrupt
-  * @mask:		mask an interrupt source
-  * @mask_ack:		ack and mask an interrupt source
+diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+index 2100a8f..7cf4518 100644
+--- a/drivers/char/nvram.c
++++ b/drivers/char/nvram.c
+@@ -329,14 +329,12 @@ static int nvram_ioctl(struct inode *inode, struct file *file,
+ 
+ static int nvram_open(struct inode *inode, struct file *file)
+ {
+-	lock_kernel();
+ 	spin_lock(&nvram_state_lock);
+ 
+ 	if ((nvram_open_cnt && (file->f_flags & O_EXCL)) ||
+ 	    (nvram_open_mode & NVRAM_EXCL) ||
+ 	    ((file->f_mode & FMODE_WRITE) && (nvram_open_mode & NVRAM_WRITE))) {
+ 		spin_unlock(&nvram_state_lock);
+-		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 
+@@ -347,7 +345,6 @@ static int nvram_open(struct inode *inode, struct file *file)
+ 	nvram_open_cnt++;
+ 
+ 	spin_unlock(&nvram_state_lock);
+-	unlock_kernel();
+ 
+ 	return 0;
+ }
