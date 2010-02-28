@@ -1,71 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032007Ab0B1UKo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 15:10:44 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:47952 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031966Ab0B1UKm (ORCPT
+	id S1032003Ab0B1UN5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 15:13:57 -0500
+Received: from mail-yw0-f197.google.com ([209.85.211.197]:49297 "EHLO
+	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031966Ab0B1UN4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 15:10:42 -0500
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <m1pr3qcbk1.fsf@fess.ebiederm.org>
-	<20100228195243.GA15976@ioremap.net>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 28 Feb 2010 12:10:35 -0800
-In-Reply-To: <20100228195243.GA15976@ioremap.net> (Evgeniy Polyakov's message of "Sun\, 28 Feb 2010 22\:52\:43 +0300")
-Message-ID: <m1r5o5azpg.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 28 Feb 2010 15:13:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wNzYSj8R1aQ80FQz7IE62D79Jtzb2OrW6l+hg6XP6Wu0/36izZIhbMIx5MLYrOxhzx
+         Y423I0MW/zPXVUOIs1Iirmgqj//cMNwEfZN67rDQtuYHlZFLJD22nf1bloaGT5gZM2qm
+         Puh5IHujA9Pe8WCWOYQBjQ8Si348IyqzNeQJE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Evgeniy Polyakov <zbr@ioremap.net>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: Why does connector use a work queue???
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+In-Reply-To: <201002282054.32204.rjw@sisk.pl>
+References: <201002272143.22156.rjw@sisk.pl> <201002281313.38483.rjw@sisk.pl>
+	 <1267374785.1929.2.camel@i7.satnam> <201002282054.32204.rjw@sisk.pl>
+Date: Mon, 1 Mar 2010 01:43:54 +0530
+Message-ID: <3f9a31f41002281213y2d65ae37xf9934a0775d8d9ee@mail.gmail.com>
+Subject: Re: [PATCH] Driver core: Reduce the level of request_firmware() 
+	messages
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov <zbr@ioremap.net> writes:
+Hello Rafael,
 
-> On Sat, Feb 27, 2010 at 06:57:02PM -0800, Eric W. Biederman (ebiederm@xmission.com) wrote:
->> These days netlink callbacks for messages happen in the context of the
->> process who sent the message.  Things like permission checks are much
->> more complicated if we don't use that process context.
->> 
->> I was looking at removing NETLINK_CB(skb).eff_cap but I discovered
->> that connected takes the netlink messages, them from their
->> perfectly good process context, and puts the into a workqueue
->> for reasons that are not apparent to me.
+On Mon, Mar 1, 2010 at 1:24 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday 28 February 2010, Jaswinder Singh Rajput wrote:
+>>
+>> On Sun, 2010-02-28 at 13:13 +0100, Rafael J. Wysocki wrote:
+>> > On Sunday 28 February 2010, Jaswinder Singh Rajput wrote:
+>> > > On Sun, Feb 28, 2010 at 2:13 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> > > >
+>> > > > The messages from _request_firmware() informing that firmware is
+>> > > > being requested or built-in firmware is going to be used are printed
+>> > > > at KERN_INFO, which produces lots of noise on systems with huge
+>> > > > numbers of AMD CPUs.  Reduce the level of these messages to
+>> > > > KERN_DEBUG to get rid of that noise.
+>> > > >
+>> > >
+>> > > Which firmware we are using is very useful information. Because of
+>> > > huge numbers of CPUs it seems noise then better provide the
+>> > > information for first cpu and for the rest of the CPUs you can show by
+>> > > KERN_DEBUG.
+>> >
+>> > That would have been better indeed, but the problem is _request_firmware()
+>> > doesn't allow us to change the level of its messages on demand.
+>>
+>> Can we try this :
+>>
+>>       if (smp_processor_id())
+>>               dev_dbg(..);
+>>       else
+>>               dev_info(..);
 >
-> Netlink was made synchronous rather recently and connector was not
-> changed to take advantage of that. Previously it used work queue to
-> postpone work processing into always-process context.
-
-I suspected it was something like that but I want to be certain.
-
->> Unless I am misreading something we should just be able to remove the
->> work queues and greatly simplify the connector code.
->> 
->> Something like:
+> Well, it doesn't look particularly nice, does it?
 >
-> Idea looks very good, thank you, but it misses structure changes
-> to eliminate now unneded members.
+> Besides, say we're requesting firmware for a non-CPU device which happens
+> to run on CPU1.  Then, dev_dbg() will be used, which most likely is not what we
+> want.
+>
 
-Right. I didn't trust myself to write a patch that would rip out half
-of the connector code until I understood what the constraints were.
+Yes, you are right. But atleast can you try it once and show the
+output with and without this.
 
-Eric
+Thanks,
+--
+Jaswinder.
