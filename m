@@ -1,84 +1,129 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031824Ab0B1K7u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 05:59:50 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:51694 "EHLO
+	id S1031837Ab0B1K75 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 05:59:57 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:43670 "EHLO
 	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031793Ab0B1K7F (ORCPT
+	with ESMTP id S1031823Ab0B1K7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 05:59:05 -0500
+	Sun, 28 Feb 2010 05:59:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=WlRPYbIT1Iqqp43oSMQQ/ebRuzzoOWJheFBEUoHxcCgcK818NlPTr9wm4CS9JG1vbb
-         KvcUs0TIs931iLzvoNuPULxZpA7tMP5SI+1pvoZeAZut2iN/9ReNsZxY162VE4+6vM73
-         NkjqIcD38h0V0iFsAUROIqa/U+C3BHLsI8XdU=
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ln26hdFiMkbju9FRx8FJmKCgc6RaGDubsddwmLswu3de0SNsxfTRVaw4twqho9c4wD
+         1ho7VPwj+6drNG+mBVAw36yXWzJhTpBwhOrr7rmex31kkyFHRZauRyoutt2THuX8V2g6
+         ZSbCPtjMBIqsCWf/7nG+k+2QIMzOvLwAM4yuM=
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Helge Deller <deller@gmx.de>,
-       "James E.J. Bottomley" <jejb@parisc-linux.org>,
-       linux-parisc@vger.kernel.org
-Subject: [PATCH] parisc: use __ratelimit
-Date: Sun, 28 Feb 2010 19:58:15 +0900
-Message-Id: <1267354697-6456-3-git-send-email-akinobu.mita@gmail.com>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org
+Subject: [PATCH] btrfs: use memparse
+Date: Sun, 28 Feb 2010 19:59:11 +0900
+Message-Id: <1267354751-6502-1-git-send-email-akinobu.mita@gmail.com>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace open-coded rate limiting logic with __ratelimit().
+Use memparse() instead of its own private implementation.
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: linux-parisc@vger.kernel.org
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: linux-btrfs@vger.kernel.org
 ---
- arch/parisc/kernel/unaligned.c |   14 ++++----------
- 1 files changed, 4 insertions(+), 10 deletions(-)
+ fs/btrfs/ctree.h |    1 -
+ fs/btrfs/ioctl.c |    2 +-
+ fs/btrfs/super.c |   31 +++----------------------------
+ 3 files changed, 4 insertions(+), 30 deletions(-)
 
-diff --git a/arch/parisc/kernel/unaligned.c b/arch/parisc/kernel/unaligned.c
-index e6f4b7a..92d977b 100644
---- a/arch/parisc/kernel/unaligned.c
-+++ b/arch/parisc/kernel/unaligned.c
-@@ -25,6 +25,7 @@
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/signal.h>
-+#include <linux/ratelimit.h>
- #include <asm/uaccess.h>
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 2aa8ec6..52af317 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -2386,7 +2386,6 @@ void btrfs_sysfs_del_super(struct btrfs_fs_info *root);
+ ssize_t btrfs_listxattr(struct dentry *dentry, char *buffer, size_t size);
  
- /* #define DEBUG_UNALIGNED 1 */
-@@ -446,8 +447,7 @@ static int emulate_std(struct pt_regs *regs, int frreg, int flop)
+ /* super.c */
+-u64 btrfs_parse_size(char *str);
+ int btrfs_parse_options(struct btrfs_root *root, char *options);
+ int btrfs_sync_fs(struct super_block *sb, int wait);
  
- void handle_unaligned(struct pt_regs *regs)
- {
--	static unsigned long unaligned_count = 0;
--	static unsigned long last_time = 0;
-+	static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
- 	unsigned long newbase = R1(regs->iir)?regs->gr[R1(regs->iir)]:0;
- 	int modify = 0;
- 	int ret = ERR_NOTHANDLED;
-@@ -460,14 +460,8 @@ void handle_unaligned(struct pt_regs *regs)
- 			goto force_sigbus;
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 645a179..c359efd 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -608,7 +608,7 @@ static noinline int btrfs_ioctl_resize(struct btrfs_root *root,
+ 			mod = 1;
+ 			sizestr++;
  		}
+-		new_size = btrfs_parse_size(sizestr);
++		new_size = memparse(sizestr, NULL);
+ 		if (new_size == 0) {
+ 			ret = -EINVAL;
+ 			goto out_unlock;
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 8a1ea6e..aa48c6b 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -95,31 +95,6 @@ static match_table_t tokens = {
+ 	{Opt_err, NULL},
+ };
  
--		if (unaligned_count > 5 &&
--				time_after(jiffies, last_time + 5 * HZ)) {
--			unaligned_count = 0;
--			last_time = jiffies;
--		}
+-u64 btrfs_parse_size(char *str)
+-{
+-	u64 res;
+-	int mult = 1;
+-	char *end;
+-	char last;
 -
--		if (!(current->thread.flags & PARISC_UAC_NOPRINT) 
--		    && ++unaligned_count < 5) {
-+		if (!(current->thread.flags & PARISC_UAC_NOPRINT) &&
-+			__ratelimit(&ratelimit)) {
- 			char buf[256];
- 			sprintf(buf, "%s(%d): unaligned access to 0x" RFMT " at ip=0x" RFMT "\n",
- 				current->comm, task_pid_nr(current), regs->ior, regs->iaoq[0]);
+-	res = simple_strtoul(str, &end, 10);
+-
+-	last = end[0];
+-	if (isalpha(last)) {
+-		last = tolower(last);
+-		switch (last) {
+-		case 'g':
+-			mult *= 1024;
+-		case 'm':
+-			mult *= 1024;
+-		case 'k':
+-			mult *= 1024;
+-		}
+-		res = res * mult;
+-	}
+-	return res;
+-}
+-
+ /*
+  * Regular mount options parser.  Everything that is needed only when
+  * reading in a new superblock is parsed here.
+@@ -213,7 +188,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 		case Opt_max_extent:
+ 			num = match_strdup(&args[0]);
+ 			if (num) {
+-				info->max_extent = btrfs_parse_size(num);
++				info->max_extent = memparse(num, NULL);
+ 				kfree(num);
+ 
+ 				info->max_extent = max_t(u64,
+@@ -225,7 +200,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 		case Opt_max_inline:
+ 			num = match_strdup(&args[0]);
+ 			if (num) {
+-				info->max_inline = btrfs_parse_size(num);
++				info->max_inline = memparse(num, NULL);
+ 				kfree(num);
+ 
+ 				if (info->max_inline) {
+@@ -240,7 +215,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 		case Opt_alloc_start:
+ 			num = match_strdup(&args[0]);
+ 			if (num) {
+-				info->alloc_start = btrfs_parse_size(num);
++				info->alloc_start = memparse(num, NULL);
+ 				kfree(num);
+ 				printk(KERN_INFO
+ 					"btrfs: allocations start at %llu\n",
 -- 
 1.6.0.6
 
