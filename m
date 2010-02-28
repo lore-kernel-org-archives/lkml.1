@@ -1,69 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031768Ab0B1K1L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 05:27:11 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:52371 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031648Ab0B1K1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 05:27:09 -0500
-Date: Sun, 28 Feb 2010 21:26:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next requirements
-Message-Id: <20100228212659.6c32034d.sfr@canb.auug.org.au>
-In-Reply-To: <20100228081922.GO30031@ZenIV.linux.org.uk>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
-	<201002271323.14402.rjw@sisk.pl>
-	<20100227124710.GA21164@elte.hu>
-	<201002272007.43042.rjw@sisk.pl>
-	<20100228071405.GA14205@elte.hu>
-	<20100228183725.80915681.sfr@canb.auug.org.au>
-	<20100228075105.GC14205@elte.hu>
-	<20100228081922.GO30031@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__28_Feb_2010_21_26_59_+1100_fNHx9oiS9WXO3DqU"
+	id S1031805Ab0B1K7H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 05:59:07 -0500
+Received: from mail-iw0-f182.google.com ([209.85.223.182]:51694 "EHLO
+	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031778Ab0B1K7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 05:59:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=Cpv0tp/GMPtMqAzslXtgKbGWaek8C+SG86BrWbBKFEvNbsVFNk5fjOdL1sb1X9bsvd
+         y1F+y0gGi4nMi6ykOH+C75KcPBuoS/wAV/bQ2QOF1MaP6CTr0bswzEewGSqiBOJA8nvH
+         VT9mHdaffCT0ZFezjtBLF2N79jJV99saFzbmk=
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org
+Subject: [PATCH] ia64: use __ratelimit
+Date: Sun, 28 Feb 2010 19:58:14 +0900
+Message-Id: <1267354697-6456-2-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
+References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__28_Feb_2010_21_26_59_+1100_fNHx9oiS9WXO3DqU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Replace open-coded rate limiting logic with __ratelimit().
 
-Hi Al,
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+---
+ arch/ia64/kernel/irq_ia64.c  |    9 +++------
+ arch/ia64/kernel/unaligned.c |   24 +++++-------------------
+ 2 files changed, 8 insertions(+), 25 deletions(-)
 
-On Sun, 28 Feb 2010 08:19:22 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
->
-> FWIW, it might make sense to run cross-builds for many targets and post
-> the things that crop up + analysis to linux-arch...  Any takers?
+diff --git a/arch/ia64/kernel/irq_ia64.c b/arch/ia64/kernel/irq_ia64.c
+index d4093a1..d5150d0 100644
+--- a/arch/ia64/kernel/irq_ia64.c
++++ b/arch/ia64/kernel/irq_ia64.c
+@@ -30,6 +30,7 @@
+ #include <linux/threads.h>
+ #include <linux/bitops.h>
+ #include <linux/irq.h>
++#include <linux/ratelimit.h>
+ 
+ #include <asm/delay.h>
+ #include <asm/intrinsics.h>
+@@ -468,13 +469,9 @@ ia64_handle_irq (ia64_vector vector, struct pt_regs *regs)
+ 		sp = ia64_getreg(_IA64_REG_SP);
+ 
+ 		if ((sp - bsp) < 1024) {
+-			static unsigned char count;
+-			static long last_time;
++			static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
+ 
+-			if (time_after(jiffies, last_time + 5 * HZ))
+-				count = 0;
+-			if (++count < 5) {
+-				last_time = jiffies;
++			if (__ratelimit(&ratelimit)) {
+ 				printk("ia64_handle_irq: DANGER: less than "
+ 				       "1KB of free stack space!!\n"
+ 				       "(bsp=0x%lx, sp=%lx)\n", bsp, sp);
+diff --git a/arch/ia64/kernel/unaligned.c b/arch/ia64/kernel/unaligned.c
+index 776dd40..622772b 100644
+--- a/arch/ia64/kernel/unaligned.c
++++ b/arch/ia64/kernel/unaligned.c
+@@ -17,6 +17,7 @@
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/tty.h>
++#include <linux/ratelimit.h>
+ 
+ #include <asm/intrinsics.h>
+ #include <asm/processor.h>
+@@ -1283,24 +1284,9 @@ emulate_store_float (unsigned long ifa, load_store_t ld, struct pt_regs *regs)
+ /*
+  * Make sure we log the unaligned access, so that user/sysadmin can notice it and
+  * eventually fix the program.  However, we don't want to do that for every access so we
+- * pace it with jiffies.  This isn't really MP-safe, but it doesn't really have to be
+- * either...
++ * pace it with jiffies.
+  */
+-static int
+-within_logging_rate_limit (void)
+-{
+-	static unsigned long count, last_time;
+-
+-	if (time_after(jiffies, last_time + 5 * HZ))
+-		count = 0;
+-	if (count < 5) {
+-		last_time = jiffies;
+-		count++;
+-		return 1;
+-	}
+-	return 0;
+-
+-}
++static DEFINE_RATELIMIT_STATE(logging_rate_limit, 5 * HZ, 5);
+ 
+ void
+ ia64_handle_unaligned (unsigned long ifa, struct pt_regs *regs)
+@@ -1337,7 +1323,7 @@ ia64_handle_unaligned (unsigned long ifa, struct pt_regs *regs)
+ 
+ 		if (!no_unaligned_warning &&
+ 		    !(current->thread.flags & IA64_THREAD_UAC_NOPRINT) &&
+-		    within_logging_rate_limit())
++		    __ratelimit(&logging_rate_limit))
+ 		{
+ 			char buf[200];	/* comm[] is at most 16 bytes... */
+ 			size_t len;
+@@ -1370,7 +1356,7 @@ ia64_handle_unaligned (unsigned long ifa, struct pt_regs *regs)
+ 			}
+ 		}
+ 	} else {
+-		if (within_logging_rate_limit()) {
++		if (__ratelimit(&logging_rate_limit)) {
+ 			printk(KERN_WARNING "kernel unaligned access to 0x%016lx, ip=0x%016lx\n",
+ 			       ifa, regs->cr_iip + ipsr->ri);
+ 			if (unaligned_dump_stack)
+-- 
+1.6.0.6
 
-See http://kisskb.ellerman.id.au/kisskb/branch/9/ ... we just need
-someone to read it regularly and post about them.  There is a set of
-builds of Linus' tree there as well (look under "Branches").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__28_Feb_2010_21_26_59_+1100_fNHx9oiS9WXO3DqU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuKRPMACgkQjjKRsyhoI8y29wCeLvVO9oC8Vn96WYP+KvnKfzES
-uLMAnRqq38u1b6VUccnjO0nWXa9TEtNn
-=M0jX
------END PGP SIGNATURE-----
-
---Signature=_Sun__28_Feb_2010_21_26_59_+1100_fNHx9oiS9WXO3DqU--
