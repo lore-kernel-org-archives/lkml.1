@@ -1,89 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968227Ab0B1OOG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 09:14:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59985 "EHLO mx1.redhat.com"
+	id S968266Ab0B1O1G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 09:27:06 -0500
+Received: from mail.tmr.com ([64.65.253.246]:35017 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968032Ab0B1OOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 09:14:04 -0500
-Date: Sun, 28 Feb 2010 15:11:35 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 10/43] stop_machine: reimplement without using workqueue
-Message-ID: <20100228141135.GB5495@redhat.com>
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-11-git-send-email-tj@kernel.org>
+	id S968155Ab0B1O1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 09:27:03 -0500
+Message-ID: <4B8A7D24.5040404@tmr.com>
+Date: Sun, 28 Feb 2010 09:26:44 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267187000-18791-11-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: mdadm software raid + ext4, capped at ~350MiB/s limitation/bug?
+References: <alpine.DEB.2.00.1002270840410.27192@p34.internal.lan> <20100228080100.092c24c2@notabene.brown> <alpine.DEB.2.00.1002271624480.12663@p34.internal.lan> <4B89B44A.70005@tmr.com> <alpine.DEB.2.00.1002280444530.16775@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1002280444530.16775@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Tejun Heo wrote:
+Justin Piszcz wrote:
 >
-> +static int stop_cpu(void *unused)
->  {
->  	enum stopmachine_state curstate = STOPMACHINE_NONE;
-> -	struct stop_machine_data *smdata = &idle;
-> +	struct stop_machine_data *smdata;
->  	int cpu = smp_processor_id();
->  	int err;
 >
-> +repeat:
-> +	/* Wait for __stop_machine() to initiate */
-> +	while (true) {
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		/* <- kthread_stop() and __stop_machine()::smp_wmb() */
-> +		if (kthread_should_stop()) {
-> +			__set_current_state(TASK_RUNNING);
-> +			return 0;
-> +		}
-> +		if (state == STOPMACHINE_PREPARE)
-> +			break;
+> On Sat, 27 Feb 2010, Bill Davidsen wrote:
+>
+>> Justin Piszcz wrote:
+>>>
+>>>
+>>> On Sun, 28 Feb 2010, Neil Brown wrote:
+>>>
+>>>> On Sat, 27 Feb 2010 08:47:48 -0500 (EST)
+>>>> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>>>>
+>>>>> Hello,
+>>>>>
+>>>>> I have two separate systems and with ext4 I cannot get speeds 
+>>>>> greater than
+>>>>> ~350MiB/s when using ext4 as the filesystem on top of a raid5 or 
+>>>>> raid0.
+>>>>> It appears to be a bug with ext4 (or its just that ext4 is slower 
+>>>>> for this
+>>>>> test)?
+>>>>>
+>>>>> Each system runs 2.6.33 x86_64.
+>>>>
+>>>> Could be related to the recent implementation of IO barriers in md.
+>>>> Can you try mounting your filesystem with
+>>>>   -o barrier=0
+>>>>
+>>>> and see how that changes the result.
+>>>>
+>>>> NeilBrown
+>>>
+>>> Hi Neil,
+>>>
+>>> Thanks for the suggestion, it has been used here:
+>>> http://lkml.org/lkml/2010/2/27/66
+>>>
+>>> Looks like an EXT4 issue as XFS does ~600MiB/s..?
+>>>
+>>> Its strange though, on a single hard disk, I get approximately the 
+>>> same speed for XFS and EXT4, but when it comes to scaling across 
+>>> multiple disks,
+>>> in RAID-0 or RAID-5 (tested), there is a performance problem as it 
+>>> hits a
+>>> performance problem at ~350MiB/s.  I tried multiple chunk sizes but 
+>>> nothing
+>>> seemed to made a difference (whether 64KiB or 1024KiB), XFS performs at
+>>> 500-600MiB/s no matter what and EXT4 does not exceed ~350MiB/s.
+>>>
+>>> Is there anyone on any of the lists that gets > 350MiB/s on a 
+>>> mdadm/sw raid
+>>> with EXT4?
+>>>
+>>> A single raw disk, no partitions:
+>>> p63:~# dd if=/dev/zero of=/dev/sdm bs=1M count=10240
+>>> 10240+0 records in
+>>> 10240+0 records out
+>>> 10737418240 bytes (11 GB) copied, 92.4249 s, 116 MB/s
+>>
+>> I hate to say it, but I don't think this measures anything useful. 
+>> When I was doing similar things I got great variabilty in my results 
+>> until I learned about the fdatasync option so you measure the actual 
+>> speed to the destination and not the disk cache. After that my 
+>> results were far slower and reproducible.
+>
+> fdatasync:
+> http://lkml.indiana.edu/hypermail/linux/kernel/1002.3/01507.html
+>
+I wasn't expecting a huge change in value, your data size is large. But 
+thanks, the total time without sync can be off by at least seconds, 
+making it hard to duplicate results. You missed nothing this time.
 
-Cosmetic nit: this doesn't matter at all, but perhaps it makes sense
-to set TASK_RUNNING here too.
+Did you use any of the options with ext4? I found about 15-20% with 
+options, but I didn't take good enough notes to quote now. :-(
+That doesn't mean there wasn't more, I tested on FC9, ext4 was 
+experimental then.
 
-Actually, I was a bit confused by this "while (true)" loop. It looks
-as if a spurious wakeup is possible. It is not, and more importantly,
-if it was possible stop_machine_cpu_callback(CPU_POST_DEAD) (which is
-called after cpu_hotplug_done()) could race with stop_machine().
-stop_machine_cpu_callback(CPU_POST_DEAD) relies on fact that this thread
-has already called schedule() and it can't be woken until kthread_stop()
-sets ->should_stop.
-
-> +		schedule();
-> +	}
-> +	smp_rmb();	/* <- __stop_machine()::set_state() */
-> +
-> +	/* Okay, let's go */
-> +	smdata = &idle;
->  	if (!active_cpus) {
->  		if (cpu == cpumask_first(cpu_online_mask))
->  			smdata = &active;
-
-I never understood why do we need "struct stop_machine_data idle".
-stop_cpu() just needs a "bool should_call_active_fn" ?
-
->  int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
->  {
-> ...
->  	/* Schedule the stop_cpu work on all cpus: hold this CPU so one
->  	 * doesn't hit this CPU until we're ready. */
->  	get_cpu();
-> +	for_each_online_cpu(i)
-> +		wake_up_process(*per_cpu_ptr(stop_machine_threads, i));
-
-I think the comment is wrong, and we need preempt_disable() instead
-of get_cpu(). We shouldn't worry about this CPU, but we need to ensure
-the woken real-time thread can't preempt us until we wake up them all.
-
-Oleg.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We can't solve today's problems by using the same thinking we
+   used in creating them." - Einstein
 
