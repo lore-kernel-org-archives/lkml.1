@@ -1,221 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936349Ab0B1S7J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 13:59:09 -0500
-Received: from mga10.intel.com ([192.55.52.92]:5621 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S936412Ab0B1S7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 13:59:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,556,1262592000"; 
-   d="scan'208";a="544698358"
-Date: Sun, 28 Feb 2010 20:00:16 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Denis Turischev <denis@compulab.co.il>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH v3 2/3] i2c: convert i2c-isch to platform_device
-Message-ID: <20100228190015.GB3589@sortiz.org>
-References: <4B73DAEE.5080400@compulab.co.il>
- <4B73DBB2.7020601@compulab.co.il>
- <4B7C0E5D.3070909@compulab.co.il>
- <4B812B42.2090405@compulab.co.il>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B812B42.2090405@compulab.co.il>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S936450Ab0B1TGe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 14:06:34 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:55556 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936410Ab0B1TGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 14:06:30 -0500
+Subject: [RFC][PATCH 0/11] sched: SCHED_DEADLINE v2
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>, Henrik Austad <henrik@austad.us>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Dario <raistlin@linux.it>,
+       Claudio Scordino <claudio@evidence.eu.com>,
+       michael trimarchi <trimarchi@retis.sssup.it>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Tommaso Cucinotta <t.cucinotta@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>,
+       Nicola Manica <nicola.manica@gmail.com>,
+       Luca Abeni <luca.abeni@unitn.it>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-eRm9BFbWXNYbpg9SC20I"
+Date: Sun, 28 Feb 2010 20:06:16 +0100
+Message-ID: <1267383976.13676.79.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Denis,
 
-On Sun, Feb 21, 2010 at 02:46:58PM +0200, Denis Turischev wrote:
-> v2: there is no acpi_check_region, it will be implemented in mfd-core
-> v3: patch refreshed against the latest Linus tree
+--=-eRm9BFbWXNYbpg9SC20I
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Still failing to apply against Linus' latest tree:
+Hi everybody,
 
-patching file drivers/i2c/busses/Kconfig
-Hunk #1 FAILED at 104.
-1 out of 1 hunk FAILED -- saving rejects to file
-drivers/i2c/busses/Kconfig.rej
-patching file drivers/i2c/busses/i2c-isch.c
-Hunk #1 FAILED at 27.
-Hunk #2 FAILED at 46.
-Hunk #3 FAILED at 57.
-Hunk #4 FAILED at 249.
-Hunk #5 FAILED at 277.
-Hunk #6 FAILED at 322.
-6 out of 6 hunks FAILED -- saving rejects to file
-drivers/i2c/busses/i2c-isch.c.rej
+Here it is the new version of the SCHED_DEADLINE patchset.
 
-Cheers,
-Samuel.
+For the ones that missed the first posting[*], it is basically a new
+scheduling policy (implemented inside its own scheduling class) aiming
+at introducing deadline scheduling for Linux tasks, and it is being
+developed by Evidence S.r.l. (http://www.evidence.eu.com) in the context
+of the EU-Funded project ACTORS (http://www.actors-project.eu/).
 
-> Signed-off-by: Denis Turischev <denis@compulab.co.il>
-> ---
->  drivers/i2c/busses/Kconfig    |    2 +-
->  drivers/i2c/busses/i2c-isch.c |   68 ++++++++++++++++------------------------
->  2 files changed, 28 insertions(+), 42 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-> index 5f318ce..d15b6d3 100644
-> --- a/drivers/i2c/busses/Kconfig
-> +++ b/drivers/i2c/busses/Kconfig
-> @@ -104,7 +104,7 @@ config I2C_I801
-> 
->  config I2C_ISCH
->  	tristate "Intel SCH SMBus 1.0"
-> -	depends on PCI
-> +	select LPC_SCH
->  	help
->  	  Say Y here if you want to use SMBus controller on the Intel SCH
->  	  based systems.
-> diff --git a/drivers/i2c/busses/i2c-isch.c b/drivers/i2c/busses/i2c-isch.c
-> index dba6eb0..ddc258e 100644
-> --- a/drivers/i2c/busses/i2c-isch.c
-> +++ b/drivers/i2c/busses/i2c-isch.c
-> @@ -27,7 +27,7 @@
->  */
-> 
->  #include <linux/module.h>
-> -#include <linux/pci.h>
-> +#include <linux/platform_device.h>
->  #include <linux/kernel.h>
->  #include <linux/delay.h>
->  #include <linux/stddef.h>
-> @@ -46,12 +46,6 @@
->  #define SMBHSTDAT1	(7 + sch_smba)
->  #define SMBBLKDAT	(0x20 + sch_smba)
-> 
-> -/* count for request_region */
-> -#define SMBIOSIZE	64
-> -
-> -/* PCI Address Constants */
-> -#define SMBBA_SCH	0x40
-> -
->  /* Other settings */
->  #define MAX_TIMEOUT	500
-> 
-> @@ -63,7 +57,6 @@
->  #define SCH_BLOCK_DATA		0x05
-> 
->  static unsigned short sch_smba;
-> -static struct pci_driver sch_driver;
->  static struct i2c_adapter sch_adapter;
-> 
->  /*
-> @@ -256,37 +249,23 @@ static struct i2c_adapter sch_adapter = {
->  	.algo		= &smbus_algorithm,
->  };
-> 
-> -static struct pci_device_id sch_ids[] = {
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
-> -	{ 0, }
-> -};
-> -
-> -MODULE_DEVICE_TABLE(pci, sch_ids);
-> -
-> -static int __devinit sch_probe(struct pci_dev *dev,
-> -				const struct pci_device_id *id)
-> +static int __devinit smbus_sch_probe(struct platform_device *dev)
->  {
-> +	struct resource *res;
->  	int retval;
-> -	unsigned int smba;
-> 
-> -	pci_read_config_dword(dev, SMBBA_SCH, &smba);
-> -	if (!(smba & (1 << 31))) {
-> -		dev_err(&dev->dev, "SMBus I/O space disabled!\n");
-> -		return -ENODEV;
-> -	}
-> +	res = platform_get_resource(dev, IORESOURCE_IO, 0);
-> +	if (!res)
-> +		return -EBUSY;
-> 
-> -	sch_smba = (unsigned short)smba;
-> -	if (sch_smba == 0) {
-> -		dev_err(&dev->dev, "SMBus base address uninitialized!\n");
-> -		return -ENODEV;
-> -	}
-> -	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
-> -		return -ENODEV;
-> -	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
-> +	if (!request_region(res->start, resource_size(res), dev->name)) {
->  		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
->  			sch_smba);
->  		return -EBUSY;
->  	}
-> +
-> +	sch_smba = res->start;
-> +
->  	dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
-> 
->  	/* set up the sysfs linkage to our parent device */
-> @@ -298,37 +277,43 @@ static int __devinit sch_probe(struct pci_dev *dev,
->  	retval = i2c_add_adapter(&sch_adapter);
->  	if (retval) {
->  		dev_err(&dev->dev, "Couldn't register adapter!\n");
-> -		release_region(sch_smba, SMBIOSIZE);
-> +		release_region(res->start, resource_size(res));
->  		sch_smba = 0;
->  	}
-> 
->  	return retval;
->  }
-> 
-> -static void __devexit sch_remove(struct pci_dev *dev)
-> +static int __devexit smbus_sch_remove(struct platform_device *pdev)
->  {
-> +	struct resource *res;
->  	if (sch_smba) {
->  		i2c_del_adapter(&sch_adapter);
-> -		release_region(sch_smba, SMBIOSIZE);
-> +		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> +		release_region(res->start, resource_size(res));
->  		sch_smba = 0;
->  	}
-> +
-> +	return 0;
->  }
-> 
-> -static struct pci_driver sch_driver = {
-> -	.name		= "isch_smbus",
-> -	.id_table	= sch_ids,
-> -	.probe		= sch_probe,
-> -	.remove		= __devexit_p(sch_remove),
-> +static struct platform_driver smbus_sch_driver = {
-> +	.driver = {
-> +		.name = "isch_smbus",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe		= smbus_sch_probe,
-> +	.remove		= __devexit_p(smbus_sch_remove),
->  };
-> 
->  static int __init i2c_sch_init(void)
->  {
-> -	return pci_register_driver(&sch_driver);
-> +	return platform_driver_register(&smbus_sch_driver);
->  }
-> 
->  static void __exit i2c_sch_exit(void)
->  {
-> -	pci_unregister_driver(&sch_driver);
-> +	platform_driver_unregister(&smbus_sch_driver);
->  }
-> 
->  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
-> @@ -337,3 +322,4 @@ MODULE_LICENSE("GPL");
-> 
->  module_init(i2c_sch_init);
->  module_exit(i2c_sch_exit);
-> +MODULE_ALIAS("platform:isch_smbus");
-> -- 
-> 1.6.3.3
+=46rom the previous version, mainly:
+ - I followed all the suggestions --about bug-fixing and code
+   restyling-- that Peter kindly gave us in his review;
+ - in particular, I rewrote from scratch the group part, i.e.,
+   bandwidth is now accounted for in a per-CPU fashion, such that
+   the interface is the same we already have for RT-throttling;
+ - I added a first drafted implementation of deadline inheritance, even
+   though it surely needs thorough testing and refinements.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+The official page of the project is:
+  http://www.evidence.eu.com/sched_deadline.html
+
+while the development is taking place at[**]:
+  http://gitorious.org/sched_deadline/pages/Home
+  http://gitorious.org/sched_deadline
+
+Still Missing parts:
+ - bandwidth reclaiming mechanisms, i.e., methods that avoid stopping
+   the tasks until their next deadline when overrunning. There are at
+   least three of them that are very simple, and patches are on their
+   way;
+ - porting to PREEMPT-RT is almost done --thanks to Nicola and Luca--
+   and separate patches will be available on the project website soon;
+ - migration of tasks throughout push and pull (as in -rt), to make it
+   possible to deploy global-EDF scheduling. Patches are ready, they're
+   just being tested and adapted to this last version;
+ - refinements in deadline inheritance, especially regarding the
+   possibility of retaining bandwidth isolation among non-interacting
+   tasks. This is being studied from both theoretical and practical
+   points of view, and hopefully we can have some demonstrative code
+   soon.
+
+As Fabio said recently, I also would like to remark that we are
+addressing different problems and providing the kernel with different
+new features, but we can share some code and we'll definitely do that if
+it is the case.
+
+Patchset against Linus' master (at the time of this writing) follows,
+comments and any kind of feedback is, as usual, more than welcome.
+
+Many thanks and Regards,
+	Dario Faggioli
+	Claudio Scordino
+	Michael Trimarchi
+
+[*] http://lwn.net/Articles/353797/
+[**] the repositories are outdated right now, I'll post the last changes
+     and the last version of utilities and testing programs in the very
+     next days.
+
+Dario Faggioli, SCHED_DEADLINE (11)
+  sched: add sched_class->task_dead.
+  sched: SCHED_DEADLINE policy implementation.
+  sched: add extended scheduling interface.
+  sched: add resource limits for -deadline tasks.
+  sched: add a syscall to wait for the next instance.
+  sched: add the sched-debug bits for sched_dl.
+  sched: add latency tracing for -deadline tasks.
+  sched: send SIGXCPU at -deadline task overruns.
+  sched: first draft of deadline inheritance.
+  sched: add bandwidth management for sched_dl.
+  sched: add sched_dl documentation.
+
+ Documentation/scheduler/sched-deadline.txt |  188 ++++
+ arch/arm/include/asm/unistd.h              |    4 +
+ arch/arm/kernel/calls.S                    |    4 +
+ arch/x86/ia32/ia32entry.S                  |    4 +
+ arch/x86/include/asm/unistd_32.h           |    6 +-
+ arch/x86/include/asm/unistd_64.h           |    8 +
+ arch/x86/kernel/syscall_table_32.S         |    4 +
+ include/asm-generic/resource.h             |    7 +-
+ include/linux/sched.h                      |  173 ++++
+ include/linux/syscalls.h                   |    9 +
+ init/Kconfig                               |   15 +
+ kernel/fork.c                              |   12 +
+ kernel/hrtimer.c                           |    2 +-
+ kernel/sched.c                             | 1329 ++++++++++++++++++++++++=
++++-
+ kernel/sched_debug.c                       |   36 +-
+ kernel/sched_dl.c                          |  787 ++++++++++++++++
+ kernel/sched_fair.c                        |    2 +-
+ kernel/sched_rt.c                          |    2 +-
+ kernel/sysctl.c                            |   21 +
+ kernel/trace/trace_sched_wakeup.c          |   44 +-
+ kernel/trace/trace_selftest.c              |   30 +-
+ 21 files changed, 2630 insertions(+), 57 deletions(-)
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-eRm9BFbWXNYbpg9SC20I
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkuKvqcACgkQk4XaBE3IOsSSewCeK4KdM6/o8usf+RyfMhiEBNbh
+DGQAnR47cp2wcjun4KLgYFVjFvN0PosZ
+=Y5Ku
+-----END PGP SIGNATURE-----
+
+--=-eRm9BFbWXNYbpg9SC20I--
+
