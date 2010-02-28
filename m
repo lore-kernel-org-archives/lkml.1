@@ -1,216 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031454Ab0B1HFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 02:05:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41908 "EHLO hera.kernel.org"
+	id S1031458Ab0B1HHH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 02:07:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36469 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031421Ab0B1HFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 02:05:50 -0500
-Message-ID: <4B8A1805.9090503@kernel.org>
-Date: Sun, 28 Feb 2010 16:15:17 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1031421Ab0B1HHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 02:07:04 -0500
+Date: Sun, 28 Feb 2010 08:06:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, roland@redhat.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next requirements
+Message-ID: <20100228070626.GA30750@elte.hu>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+ <201002271323.14402.rjw@sisk.pl>
+ <20100227124710.GA21164@elte.hu>
+ <201002272007.43042.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       Oleg Nesterov <oleg@redhat.com>, Anton Blanchard <anton@samba.org>
-Subject: [PATCH UPDATED 35/43] workqueue: implement several utility APIs
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-36-git-send-email-tj@kernel.org>
-In-Reply-To: <1267187000-18791-36-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 28 Feb 2010 07:04:40 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002272007.43042.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the following utility APIs.
 
- workqueue_set_max_active()	: adjust max_active of a wq
- workqueue_congested()		: test whether a wq is contested
- work_cpu()			: determine the last / current cpu of a work
- work_busy()			: query whether a work is busy
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-* Anton Blanchard fixed missing ret initialization in work_busy().
+> On Saturday 27 February 2010, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > > > Lets see.  Over the last 60 days, I have reported 37 build errors.  Of 
+> > > > > these, 16 were reported against x86, 14 against ppc, 7 against other 
+> > > > > archs.
+> > > > 
+> > > > So only 43% of them were even relevant on the platform that 95+% of the 
+> > > > Linux testers use? Seems to support the points i made.
+> > > 
+> > > Well, I hope you don't mean that because the majority of bug reporters (vs 
+> > > testers, the number of whom is unknown to me at least) use x86, we are free 
+> > > to break the other architectures. ;-)
+> > 
+> > It means exactly that: just like we 'can' break compilation with gcc296, 
+> > ancient versions of binutils, odd bootloaders, can break the boot via odd 
+> > hardware, etc. When someone uses that architectures then the 'easy' 
+> > bugfixes will actually flow in very quickly and without much fuss
+> 
+> Then I don't understand what the problem with getting them in at the 
+> linux-next stage is.  They are necessary anyway, so we'll need to add them 
+> sooner or later and IMO the sooner the better.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Anton Blanchard <anton@samba.org>
----
-Missing initialization of @ret in work_busy() fixed.  The git tree and
-patchset tarball are updated accordingly.  The new commit is
-ad66f6442f165fccf3b17f0fb0434272a6286f31.
+The problem is the dynamics and resulting (non-)cleanliness of code. We have 
+architectures that have been conceptually broken for 5 years or more, but 
+still those problems get blamed on the last change that 'causes' the breakage: 
+the core kernel and the developers who try to make a difference.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git review-cmwq
- http://master.kernel.org/~tj/patches/review-cmwq.tar.gz
+I think your perspective and your opinion is correct, while my perspective is 
+real and correct as well - there's no contradiction really. Let me try to 
+explain how i see it:
 
-Thanks.
+You are working in a relatively well-designed piece of code which interfaces 
+to the kernel in sane ways - kernel/power/* et al. You might break the 
+cross-builds sometimes, but it's not very common, and in those cases it's 
+usually your own fault and you are grateful for linux-next to have caught that 
+stupidity. (i hope this a fair summary!)
 
- include/linux/workqueue.h |   11 ++++-
- kernel/workqueue.c        |  108 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 117 insertions(+), 2 deletions(-)
+I am not criticising that aspect of linux-next _at all_ - it's useful and 
+beneficial - and i'd like to thank Stephen for all his hard work. Other 
+aspects of linux-next useful as well: such as the patch conflict mediation 
+role.
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 850942a..5d1d9be 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -65,6 +65,10 @@ enum {
- 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
- 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
- 	WORK_STRUCT_NO_CPU	= NR_CPUS << WORK_STRUCT_FLAG_BITS,
-+
-+	/* bit mask for work_busy() return values */
-+	WORK_BUSY_PENDING	= 1 << 0,
-+	WORK_BUSY_RUNNING	= 1 << 1,
- };
- 
- struct work_struct {
-@@ -320,9 +324,14 @@ extern void init_workqueues(void);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
- 
- extern int flush_work(struct work_struct *work);
--
- extern int cancel_work_sync(struct work_struct *work);
- 
-+extern void workqueue_set_max_active(struct workqueue_struct *wq,
-+				     int max_active);
-+extern bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq);
-+extern unsigned int work_cpu(struct work_struct *work);
-+extern unsigned int work_busy(struct work_struct *work);
-+
- /*
-  * Kill off a pending schedule_delayed_work().  Note that the work callback
-  * function may still be running on return from cancel_delayed_work(), unless
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index c4cb082..4c48bb6 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -205,7 +205,7 @@ struct workqueue_struct {
- 	cpumask_var_t		mayday_mask;	/* cpus requesting rescue */
- 	struct worker		*rescuer;	/* I: rescue worker */
- 
--	int			saved_max_active; /* I: saved cwq max_active */
-+	int			saved_max_active; /* W: saved cwq max_active */
- 	const char		*name;		/* I: workqueue name */
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map	lockdep_map;
-@@ -2594,6 +2594,112 @@ void destroy_workqueue(struct workqueue_struct *wq)
- }
- EXPORT_SYMBOL_GPL(destroy_workqueue);
- 
-+/**
-+ * workqueue_set_max_active - adjust max_active of a workqueue
-+ * @wq: target workqueue
-+ * @max_active: new max_active value.
-+ *
-+ * Set max_active of @wq to @max_active.
-+ *
-+ * CONTEXT:
-+ * Don't call from IRQ context.
-+ */
-+void workqueue_set_max_active(struct workqueue_struct *wq, int max_active)
-+{
-+	unsigned int cpu;
-+
-+	max_active = wq_clamp_max_active(max_active, wq->name);
-+
-+	spin_lock(&workqueue_lock);
-+
-+	wq->saved_max_active = max_active;
-+
-+	for_each_possible_cpu(cpu) {
-+		struct global_cwq *gcwq = get_gcwq(cpu);
-+
-+		spin_lock_irq(&gcwq->lock);
-+
-+		if (!(wq->flags & WQ_FREEZEABLE) ||
-+		    !(gcwq->flags & GCWQ_FREEZING))
-+			get_cwq(gcwq->cpu, wq)->max_active = max_active;
-+
-+		spin_unlock_irq(&gcwq->lock);
-+	}
-+
-+	spin_unlock(&workqueue_lock);
-+}
-+EXPORT_SYMBOL_GPL(workqueue_set_max_active);
-+
-+/**
-+ * workqueue_congested - test whether a workqueue is congested
-+ * @cpu: CPU in question
-+ * @wq: target workqueue
-+ *
-+ * Test whether @wq's cpu workqueue for @cpu is congested.  There is
-+ * no synchronization around this function and the test result is
-+ * unreliable and only useful as advisory hints or for debugging.
-+ *
-+ * RETURNS:
-+ * %true if congested, %false otherwise.
-+ */
-+bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq)
-+{
-+	struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
-+
-+	return !list_empty(&cwq->delayed_works);
-+}
-+EXPORT_SYMBOL_GPL(workqueue_congested);
-+
-+/**
-+ * work_cpu - return the last known associated cpu for @work
-+ * @work: the work of interest
-+ *
-+ * RETURNS:
-+ * CPU number if @work was ever queued.  NR_CPUS otherwise.
-+ */
-+unsigned int work_cpu(struct work_struct *work)
-+{
-+	struct global_cwq *gcwq = get_work_gcwq(work);
-+
-+	return gcwq ? gcwq->cpu : NR_CPUS;
-+}
-+EXPORT_SYMBOL_GPL(work_cpu);
-+
-+/**
-+ * work_busy - test whether a work is currently pending or running
-+ * @work: the work to be tested
-+ *
-+ * Test whether @work is currently pending or running.  There is no
-+ * synchronization around this function and the test result is
-+ * unreliable and only useful as advisory hints or for debugging.
-+ * Especially for reentrant wqs, the pending state might hide the
-+ * running state.
-+ *
-+ * RETURNS:
-+ * OR'd bitmask of WORK_BUSY_* bits.
-+ */
-+unsigned int work_busy(struct work_struct *work)
-+{
-+	struct global_cwq *gcwq = get_work_gcwq(work);
-+	unsigned long flags;
-+	unsigned int ret = 0;
-+
-+	if (!gcwq)
-+		return false;
-+
-+	spin_lock_irqsave(&gcwq->lock, flags);
-+
-+	if (work_pending(work))
-+		ret |= WORK_BUSY_PENDING;
-+	if (find_worker_executing_work(gcwq, work))
-+		ret |= WORK_BUSY_RUNNING;
-+
-+	spin_unlock_irqrestore(&gcwq->lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(work_busy);
-+
- /*
-  * CPU hotplug.
-  *
--- 
-1.6.4.2
+But as it happens so often, people tend to talk more about the things that are 
+not so rosy, not about the things that work well.
 
+The area i am worried about are new core kernel facilities and their 
+development and extension of existing facilities. _Those_ facilities are 
+affected by 'many architectures' in a different way from how you experience 
+it: often we can do very correct changes to them, which still 'break' on some 
+architecture due to _that architecture's conceptual fault_.
+
+Let me give you an example that happened just yesterday. My cross-testing 
+found that a change in the tracing infrastructure code broke m32r and parisc.
+
+The breakage:
+
+ /home/mingo/tip/kernel/trace/trace_clock.c:86: error: implicit declaration of function 'raw_local_irq_save'
+ /home/mingo/tip/kernel/trace/trace_clock.c:112: error: implicit declaration of function 'raw_local_irq_restore'
+ make[3]: *** [kernel/trace/trace_clock.o] Error 1
+ make[3]: *** Waiting for unfinished jobs....
+
+Is was 'caused by':
+
+ 18b4a4d: oprofile: remove tracing build dependency
+
+In linux-next this would be pinned to commit 18b4a4d, which would have to be 
+reverted/fixed.
+
+Where does the _real_ blame lie? Clearly in the M32R and HP/PARISC code: why 
+dont they, four years after it has been introduced as a core kernel facility 
+in 2006, _still_ not support raw_local_irq_save()?
+
+( A similar situation occured in this very thread a well - before the subject 
+  of the thread - so it's a real and present problem. We didnt even get _any_ 
+  reaction about that particular breakage from the affected architecture ... )
+
+These situations are magnified by how certain linux-next bugs are reported: 
+the 'blame' is put on the new commit that exposes that laggy nature of certain 
+architectures. Often the developers even believe this false notion and feel 
+guilty for 'having broken' an architecture - often an architecture that has 
+not contributed a single core kernel facility _in its whole existence_.
+
+The usual end result is that the path of least resistance is taken: the commit 
+is reverted or worked around, while the 'laggy' architecture can continue 
+business as usual and cause more similar bugs and hickups in the future ...
+
+I.e. there is extra overhead put on clearly 'good' efforts, while 'bad' 
+behavior (parasitic hanging-on, passivity, indifference) is rewarded. 
+Rewarding bad behavior is very clearly harmful to Linux in many regards, and i 
+speak up when i see it.
+
+So i wish linux-next balanced these things more fairly towards those areas of 
+code that are actually useful: if it ignored build breakages that are due to 
+architectures being lazy - in fact if it required architectures to _help out_ 
+with the development of the kernel.
+
+The majority of build-bugs i see trigger in cross-builds (90% of which i catch 
+before they get into linux-next) are of this nature, that's why i raised it in 
+such a pointed way. Your (and many other people's) experience will differ - so 
+you might see this as an unjustified criticism.
+
+Thanks,
+
+	Ingo
