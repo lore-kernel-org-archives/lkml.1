@@ -1,80 +1,147 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032003Ab0B1UN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 15:13:57 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:49297 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031966Ab0B1UN4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 15:13:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wNzYSj8R1aQ80FQz7IE62D79Jtzb2OrW6l+hg6XP6Wu0/36izZIhbMIx5MLYrOxhzx
-         Y423I0MW/zPXVUOIs1Iirmgqj//cMNwEfZN67rDQtuYHlZFLJD22nf1bloaGT5gZM2qm
-         Puh5IHujA9Pe8WCWOYQBjQ8Si348IyqzNeQJE=
+	id S1032039Ab0B1Uef (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 15:34:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53077 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1032025Ab0B1Uee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 15:34:34 -0500
+Date: Sun, 28 Feb 2010 21:31:36 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 18/43] workqueue: reimplement workqueue flushing using
+	color coded works
+Message-ID: <20100228203136.GA28915@redhat.com>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-19-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <201002282054.32204.rjw@sisk.pl>
-References: <201002272143.22156.rjw@sisk.pl> <201002281313.38483.rjw@sisk.pl>
-	 <1267374785.1929.2.camel@i7.satnam> <201002282054.32204.rjw@sisk.pl>
-Date: Mon, 1 Mar 2010 01:43:54 +0530
-Message-ID: <3f9a31f41002281213y2d65ae37xf9934a0775d8d9ee@mail.gmail.com>
-Subject: Re: [PATCH] Driver core: Reduce the level of request_firmware() 
-	messages
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267187000-18791-19-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rafael,
-
-On Mon, Mar 1, 2010 at 1:24 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday 28 February 2010, Jaswinder Singh Rajput wrote:
->>
->> On Sun, 2010-02-28 at 13:13 +0100, Rafael J. Wysocki wrote:
->> > On Sunday 28 February 2010, Jaswinder Singh Rajput wrote:
->> > > On Sun, Feb 28, 2010 at 2:13 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
->> > > >
->> > > > The messages from _request_firmware() informing that firmware is
->> > > > being requested or built-in firmware is going to be used are printed
->> > > > at KERN_INFO, which produces lots of noise on systems with huge
->> > > > numbers of AMD CPUs.  Reduce the level of these messages to
->> > > > KERN_DEBUG to get rid of that noise.
->> > > >
->> > >
->> > > Which firmware we are using is very useful information. Because of
->> > > huge numbers of CPUs it seems noise then better provide the
->> > > information for first cpu and for the rest of the CPUs you can show by
->> > > KERN_DEBUG.
->> >
->> > That would have been better indeed, but the problem is _request_firmware()
->> > doesn't allow us to change the level of its messages on demand.
->>
->> Can we try this :
->>
->>       if (smp_processor_id())
->>               dev_dbg(..);
->>       else
->>               dev_info(..);
+On 02/26, Tejun Heo wrote:
 >
-> Well, it doesn't look particularly nice, does it?
->
-> Besides, say we're requesting firmware for a non-CPU device which happens
-> to run on CPU1.  Then, dev_dbg() will be used, which most likely is not what we
-> want.
->
+> +	/*
+> +	 * The last color is no color used for works which don't
+> +	 * participate in workqueue flushing.
+> +	 */
+> +	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS) - 1,
+> +	WORK_NO_COLOR		= WORK_NR_COLORS,
 
-Yes, you are right. But atleast can you try it once and show the
-output with and without this.
+Not sure this makes sense, but instead of special NO_COLOR reserved
+for barriers we could change insert_wq_barrier() to use cwq == NULL
+to mark this work as no-color. Note that the barriers doesn't need a
+valid get_wq_data() or even _PENDING bit set (apart from BUG_ON()
+check in run_workqueue).
 
-Thanks,
---
-Jaswinder.
+> +static int work_flags_to_color(unsigned int flags)
+> +{
+> +	return (flags >> WORK_STRUCT_COLOR_SHIFT) &
+> +		((1 << WORK_STRUCT_COLOR_BITS) - 1);
+> +}
+
+perhaps work_to_color(work) makes more sense, every caller needs to
+read work->data anyway.
+
+> +static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
+> +{
+> +	/* ignore uncolored works */
+> +	if (color == WORK_NO_COLOR)
+> +		return;
+> +
+> +	cwq->nr_in_flight[color]--;
+> +
+> +	/* is flush in progress and are we at the flushing tip? */
+> +	if (likely(cwq->flush_color != color))
+> +		return;
+> +
+> +	/* are there still in-flight works? */
+> +	if (cwq->nr_in_flight[color])
+> +		return;
+> +
+> +	/* this cwq is done, clear flush_color */
+> +	cwq->flush_color = -1;
+
+Well. I am not that smart to understand this patch quickly ;) will try to
+read it more tomorrow, but...
+
+Very naive question: why do we need cwq->nr_in_flight[] at all? Can't
+cwq_dec_nr_in_flight(color) do
+
+	if (WORK_NO_COLOR)
+		return;
+
+	if (cwq->flush_color == -1)
+		return;
+
+	BUG_ON((cwq->flush_color != color);
+	if (next_work && work_to_color(next_work) == color)
+		return;
+
+	cwq->flush_color = -1;
+	if (atomic_dec_and_test(nr_cwqs_to_flush))
+		complete(first_flusher);
+
+?
+
+OK, try_to_grab_pending() needs more attention, it should check prev_work,
+but this is slow path.
+
+
+And I can't understand ->nr_cwqs_to_flush logic.
+
+Say, we have 2 CPUs and both have a single pending work with color == 0.
+
+flush_workqueue()->flush_workqueue_prep_cwqs() does for_each_possible_cpu()
+and each iteration does atomic_inc(nr_cwqs_to_flush).
+
+What if the first CPU flushes its work between these 2 iterations?
+
+Afaics, in this case this first CPU will complete(first_flusher->done),
+then the flusher will increment nr_cwqs_to_flush again during the
+second iteration.
+
+Then the flusher drops ->flush_mutex and wait_for_completion() succeeds
+before the second CPU flushes its work.
+
+No?
+
+
+>  void flush_workqueue(struct workqueue_struct *wq)
+>  {
+> ...
+> +	 * First flushers are responsible for cascading flushes and
+> +	 * handling overflow.  Non-first flushers can simply return.
+> +	 */
+> +	if (wq->first_flusher != &this_flusher)
+> +		return;
+> +
+> +	mutex_lock(&wq->flush_mutex);
+> +
+> +	wq->first_flusher = NULL;
+> +
+> +	BUG_ON(!list_empty(&this_flusher.list));
+> +	BUG_ON(wq->flush_color != this_flusher.flush_color);
+> +
+> +	while (true) {
+> +		struct wq_flusher *next, *tmp;
+> +
+> +		/* complete all the flushers sharing the current flush color */
+> +		list_for_each_entry_safe(next, tmp, &wq->flusher_queue, list) {
+> +			if (next->flush_color != wq->flush_color)
+> +				break;
+> +			list_del_init(&next->list);
+> +			complete(&next->done);
+
+Is it really possible that "next" can ever have the same flush_color?
+
+Oleg.
+
