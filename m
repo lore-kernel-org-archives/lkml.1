@@ -1,97 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032190Ab0B1Wi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 17:38:57 -0500
-Received: from www84.your-server.de ([213.133.104.84]:38434 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032075Ab0B1Wi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 17:38:56 -0500
-Subject: [PATCH] fix PHY polling system blocking
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sun, 28 Feb 2010 23:39:09 +0100
-Message-ID: <1267396749.20057.62.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1032199Ab0B1WnM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 17:43:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42334 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1032075Ab0B1WnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 17:43:10 -0500
+Message-ID: <4B8AF121.2060106@kernel.org>
+Date: Sun, 28 Feb 2010 14:41:37 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] PCI changes for 2.6.34
+References: <20100226093957.7b99d09c@jbarnes-piketon> <alpine.LFD.2.00.1002281227300.3851@localhost.localdomain> <alpine.LFD.2.00.1002281246120.3637@localhost.localdomain> <33223F6C-10BD-4671-937D-6D5E4956DD3F@kernel.org> <alpine.LFD.2.00.1002281314110.3637@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002281314110.3637@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fix the PHY poller, which can block the whole system. On a
-Freescale PPC 834x this result in a delay of 450 us due the slow
-communication with the PHY chip.
+On 02/28/2010 01:19 PM, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 28 Feb 2010, Yinghai wrote:
+>>
+>> Maybe we need to put back pci=try=num back
+>> And set pci_try_num=1 by default
+> 
+> Well, why does your patch trigger any changes at all in the first place? 
+> The old situation was fine. All the resources were mapped.
+> 
+> Sure, there were ROM resources that aren't even enabled, but that is 
+> _normal_. Iirc, several graphics chips actually alias the ROM resources 
+> with the regular memory-mapped IO resource, ie you can't even map both of 
+> them at the same time at some separate address, because the hardware 
+> shares address decoding resources.
+> 
+> There's a reson PCI ROM resources are treated specially by the kernel.
+> 
+> And as far as I can see, all the other resources are already allocated 
+> even without your patch. So there is some fundamental _bug_ there. This is 
+> not about enabling/disabling your patch, this is about your patch 
+> apparently simply being wrong.
+> 
 
-For PHY chips without interrupts, the status of the ethernet will be
-polled every 2 sec. The poll function will read some register of the MII
-PHY. The time between the sending the MII_READ_COMMAND and receiving the
-result is more the 100 us on a PPC 834x.
-   
-The patch modifies the poller a lit bit. Only a link status state change
-will result in a successive detection of the connection type. The poll
-cycle on the other hand will be increased to every seconds.
+looks like
 
-Together this patch will prevent a blocking of nearly 400 us every two
-seconds of the whole system on a PPC 834x.
+[    0.942502] pci 0000:04:00.0: reg 10: [mem 0xc6000000-0xc6ffffff]
 
-The patch is against kernel 2.6.33. Please merge it.
+[    0.942510] pci 0000:04:00.0: reg 14: [mem 0xe0000000-0xefffffff 64bit pref]
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- phy.c        |    5 ++---
- phy_device.c |   12 +++++++++---
- 2 files changed, 11 insertions(+), 6 deletions(-)
+[    0.942519] pci 0000:04:00.0: reg 1c: [mem 0xc4000000-0xc5ffffff 64bit]
 
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net//phy/phy.c
---- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net//phy/phy.c	2010-02-28 22:53:14.725464101 +0100
-@@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
- 		case PHY_RUNNING:
- 			/* Only register a CHANGE if we are
- 			 * polling */
--			if (PHY_POLL == phydev->irq)
--				phydev->state = PHY_CHANGELINK;
--			break;
-+			if (PHY_POLL != phydev->irq)
-+				break;
- 		case PHY_CHANGELINK:
- 			err = phy_read_status(phydev);
- 
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net//phy/phy_device.c
---- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net//phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
-@@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
--	dev->link = 1;
-+	dev->link = 0;
- 	dev->interface = PHY_INTERFACE_MODE_GMII;
- 
- 	dev->autoneg = AUTONEG_ENABLE;
-@@ -694,10 +694,16 @@ int genphy_update_link(struct phy_device
- 	if (status < 0)
- 		return status;
- 
--	if ((status & BMSR_LSTATUS) == 0)
-+	if ((status & BMSR_LSTATUS) == 0) {
-+		if (phydev->link==0)
-+			return 1;
- 		phydev->link = 0;
--	else
-+	}
-+	else {
-+		if (phydev->link==1)
-+			return 1;
- 		phydev->link = 1;
-+	}
- 
- 	return 0;
- }
+[    0.942523] pci 0000:04:00.0: reg 24: [io  0x3000-0x307f]
 
+[    0.942528] pci 0000:04:00.0: reg 30: [mem 0xfffe0000-0xffffffff pref]
 
+[    0.942558] pci 0000:03:00.0: PCI bridge to [bus 04-04]
+
+[    0.942613] pci 0000:03:00.0:   bridge window [io  0x3000-0x3fff]
+
+[    0.942616] pci 0000:03:00.0:   bridge window [mem 0xc4000000-0xc6ffffff]
+
+[    0.942619] pci 0000:03:00.0:   bridge window [mem 0xe0000000-0xefffffff 64bit pref]
+
+[    0.942657] pci 0000:05:00.0: reg 10: [mem 0xc2000000-0xc2ffffff]
+
+[    0.942665] pci 0000:05:00.0: reg 14: [mem 0xd0000000-0xdfffffff 64bit pref]
+
+[    0.942675] pci 0000:05:00.0: reg 1c: [mem 0xc0000000-0xc1ffffff 64bit]
+
+[    0.942679] pci 0000:05:00.0: reg 24: [io  0x2000-0x207f]
+
+[    0.942684] pci 0000:05:00.0: reg 30: [mem 0xfffe0000-0xffffffff pref]
+[    0.942715] pci 0000:03:02.0: PCI bridge to [bus 05-05]
+
+[    0.942770] pci 0000:03:02.0:   bridge window [io  0x2000-0x2fff]
+
+[    0.942773] pci 0000:03:02.0:   bridge window [mem 0xc0000000-0xc2ffffff]
+
+[    0.942777] pci 0000:03:02.0:   bridge window [mem 0xd0000000-0xdfffffff 64bit pref]
+
+later
+[    0.977506] pci 0000:04:00.0: no compatible bridge window for [mem 0xfffe0000-0xffffffff pref]
+
+[    0.977575] pci 0000:05:00.0: no compatible bridge window for [mem 0xfffe0000-0xffffffff pref]
+
+that trigger the reallocating...
+
+it seems old code
+1. read out from pci rom bar
+2. disable it, if it is enabled, but don't registered it
+3. before pci_assign_unassigned..., will check PCI_ASSIGN_ROMS, and could register it...
+3. to allocate for ROM bar together with other bar, for disabled or enabled but don't have PCI_ASSIGN_ROMS
+4. it will not update the BAR if old setting is not enabled by BIOS.
+
+looks like we should not allocate for those ROM bar at first place?
+
+YH
