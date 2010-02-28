@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031450Ab0B1HDg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 02:03:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41831 "EHLO hera.kernel.org"
+	id S1031454Ab0B1HFw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 02:05:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41908 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031440Ab0B1HDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 02:03:34 -0500
-Message-ID: <4B8A16F8.90600@kernel.org>
-Date: Sun, 28 Feb 2010 16:10:48 +0900
+	id S1031421Ab0B1HFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 02:05:50 -0500
+Message-ID: <4B8A1805.9090503@kernel.org>
+Date: Sun, 28 Feb 2010 16:15:17 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
@@ -17,32 +17,31 @@ CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org,
-       oleg@redhat.com, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH UPDATED 42/43] gfs2: use workqueue instead of slow-work
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-43-git-send-email-tj@kernel.org>
-In-Reply-To: <1267187000-18791-43-git-send-email-tj@kernel.org>
+       Oleg Nesterov <oleg@redhat.com>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH UPDATED 35/43] workqueue: implement several utility APIs
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-36-git-send-email-tj@kernel.org>
+In-Reply-To: <1267187000-18791-36-git-send-email-tj@kernel.org>
 X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 28 Feb 2010 07:00:11 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 28 Feb 2010 07:04:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Workqueue can now handle high concurrency.  Convert gfs to use
-workqueue instead of slow-work.
+Implement the following utility APIs.
 
-* Steven pointed out that recovery path might be run from allocation
-  path and thus requires forward progress guarantee without memory
-  allocation.  Create and use gfs_recovery_wq with rescuer.  Please
-  note that forward progress wasn't guaranteed with slow-work.
+ workqueue_set_max_active()	: adjust max_active of a wq
+ workqueue_congested()		: test whether a wq is contested
+ work_cpu()			: determine the last / current cpu of a work
+ work_busy()			: query whether a work is busy
 
-* Updated to use non-reentrant workqueue.
+* Anton Blanchard fixed missing ret initialization in work_busy().
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Anton Blanchard <anton@samba.org>
 ---
-Updated to use non-reentrant workqueue instead.  The git tree and
+Missing initialization of @ret in work_busy() fixed.  The git tree and
 patchset tarball are updated accordingly.  The new commit is
 ad66f6442f165fccf3b17f0fb0434272a6286f31.
 
@@ -51,292 +50,167 @@ ad66f6442f165fccf3b17f0fb0434272a6286f31.
 
 Thanks.
 
- fs/gfs2/Kconfig      |    1 -
- fs/gfs2/incore.h     |    3 +-
- fs/gfs2/main.c       |   15 ++++++++-----
- fs/gfs2/ops_fstype.c |    8 +++---
- fs/gfs2/recovery.c   |   54 +++++++++++++++++++------------------------------
- fs/gfs2/recovery.h   |    6 +++-
- fs/gfs2/sys.c        |    3 +-
- 7 files changed, 41 insertions(+), 49 deletions(-)
+ include/linux/workqueue.h |   11 ++++-
+ kernel/workqueue.c        |  108 ++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 117 insertions(+), 2 deletions(-)
 
-diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
-index 4dcddf8..f51f1bb 100644
---- a/fs/gfs2/Kconfig
-+++ b/fs/gfs2/Kconfig
-@@ -7,7 +7,6 @@ config GFS2_FS
- 	select IP_SCTP if DLM_SCTP
- 	select FS_POSIX_ACL
- 	select CRC32
--	select SLOW_WORK
- 	select QUOTA
- 	select QUOTACTL
- 	help
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index bc0ad15..ab5cb5c 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -12,7 +12,6 @@
- 
- #include <linux/fs.h>
- #include <linux/workqueue.h>
--#include <linux/slow-work.h>
- #include <linux/dlm.h>
- #include <linux/buffer_head.h>
- 
-@@ -383,7 +382,7 @@ struct gfs2_journal_extent {
- struct gfs2_jdesc {
- 	struct list_head jd_list;
- 	struct list_head extent_list;
--	struct slow_work jd_work;
-+	struct work_struct jd_work;
- 	struct inode *jd_inode;
- 	unsigned long jd_flags;
- #define JDF_RECOVERY 1
-diff --git a/fs/gfs2/main.c b/fs/gfs2/main.c
-index 5b31f77..3069276 100644
---- a/fs/gfs2/main.c
-+++ b/fs/gfs2/main.c
-@@ -15,7 +15,6 @@
- #include <linux/init.h>
- #include <linux/gfs2_ondisk.h>
- #include <asm/atomic.h>
--#include <linux/slow-work.h>
- 
- #include "gfs2.h"
- #include "incore.h"
-@@ -24,6 +23,7 @@
- #include "util.h"
- #include "glock.h"
- #include "quota.h"
-+#include "recovery.h"
- 
- static struct shrinker qd_shrinker = {
- 	.shrink = gfs2_shrink_qd_memory,
-@@ -114,9 +114,12 @@ static int __init init_gfs2_fs(void)
- 	if (error)
- 		goto fail_unregister;
- 
--	error = slow_work_register_user(THIS_MODULE);
--	if (error)
--		goto fail_slow;
-+	error = -ENOMEM;
-+	gfs_recovery_wq = __create_workqueue("gfs_recovery",
-+					     WQ_NON_REENTRANT | WQ_RESCUER,
-+					     WQ_DFL_ACTIVE);
-+	if (!gfs_recovery_wq)
-+		goto fail_wq;
- 
- 	gfs2_register_debugfs();
- 
-@@ -124,7 +127,7 @@ static int __init init_gfs2_fs(void)
- 
- 	return 0;
- 
--fail_slow:
-+fail_wq:
- 	unregister_filesystem(&gfs2meta_fs_type);
- fail_unregister:
- 	unregister_filesystem(&gfs2_fs_type);
-@@ -163,7 +166,7 @@ static void __exit exit_gfs2_fs(void)
- 	gfs2_unregister_debugfs();
- 	unregister_filesystem(&gfs2_fs_type);
- 	unregister_filesystem(&gfs2meta_fs_type);
--	slow_work_unregister_user(THIS_MODULE);
-+	destroy_workqueue(gfs_recovery_wq);
- 
- 	kmem_cache_destroy(gfs2_quotad_cachep);
- 	kmem_cache_destroy(gfs2_rgrpd_cachep);
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index a86ed63..9ea1217 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -17,7 +17,6 @@
- #include <linux/namei.h>
- #include <linux/mount.h>
- #include <linux/gfs2_ondisk.h>
--#include <linux/slow-work.h>
- #include <linux/quotaops.h>
- 
- #include "gfs2.h"
-@@ -675,7 +674,7 @@ static int gfs2_jindex_hold(struct gfs2_sbd *sdp, struct gfs2_holder *ji_gh)
- 			break;
- 
- 		INIT_LIST_HEAD(&jd->extent_list);
--		slow_work_init(&jd->jd_work, &gfs2_recover_ops);
-+		INIT_WORK(&jd->jd_work, gfs2_recover_func);
- 		jd->jd_inode = gfs2_lookupi(sdp->sd_jindex, &name, 1);
- 		if (!jd->jd_inode || IS_ERR(jd->jd_inode)) {
- 			if (!jd->jd_inode)
-@@ -780,7 +779,8 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 	if (sdp->sd_lockstruct.ls_first) {
- 		unsigned int x;
- 		for (x = 0; x < sdp->sd_journals; x++) {
--			error = gfs2_recover_journal(gfs2_jdesc_find(sdp, x));
-+			error = gfs2_recover_journal(gfs2_jdesc_find(sdp, x),
-+						     true);
- 			if (error) {
- 				fs_err(sdp, "error recovering journal %u: %d\n",
- 				       x, error);
-@@ -790,7 +790,7 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 
- 		gfs2_others_may_mount(sdp);
- 	} else if (!sdp->sd_args.ar_spectator) {
--		error = gfs2_recover_journal(sdp->sd_jdesc);
-+		error = gfs2_recover_journal(sdp->sd_jdesc, true);
- 		if (error) {
- 			fs_err(sdp, "error recovering my journal: %d\n", error);
- 			goto fail_jinode_gh;
-diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
-index 4b9bece..f7f89a9 100644
---- a/fs/gfs2/recovery.c
-+++ b/fs/gfs2/recovery.c
-@@ -14,7 +14,6 @@
- #include <linux/buffer_head.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/crc32.h>
--#include <linux/slow-work.h>
- 
- #include "gfs2.h"
- #include "incore.h"
-@@ -28,6 +27,8 @@
- #include "util.h"
- #include "dir.h"
- 
-+struct workqueue_struct *gfs_recovery_wq;
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 850942a..5d1d9be 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -65,6 +65,10 @@ enum {
+ 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
+ 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+ 	WORK_STRUCT_NO_CPU	= NR_CPUS << WORK_STRUCT_FLAG_BITS,
 +
- int gfs2_replay_read_block(struct gfs2_jdesc *jd, unsigned int blk,
- 			   struct buffer_head **bh)
- {
-@@ -443,23 +444,7 @@ static void gfs2_recovery_done(struct gfs2_sbd *sdp, unsigned int jid,
-         kobject_uevent_env(&sdp->sd_kobj, KOBJ_CHANGE, envp);
++	/* bit mask for work_busy() return values */
++	WORK_BUSY_PENDING	= 1 << 0,
++	WORK_BUSY_RUNNING	= 1 << 1,
+ };
+ 
+ struct work_struct {
+@@ -320,9 +324,14 @@ extern void init_workqueues(void);
+ int execute_in_process_context(work_func_t fn, struct execute_work *);
+ 
+ extern int flush_work(struct work_struct *work);
+-
+ extern int cancel_work_sync(struct work_struct *work);
+ 
++extern void workqueue_set_max_active(struct workqueue_struct *wq,
++				     int max_active);
++extern bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq);
++extern unsigned int work_cpu(struct work_struct *work);
++extern unsigned int work_busy(struct work_struct *work);
++
+ /*
+  * Kill off a pending schedule_delayed_work().  Note that the work callback
+  * function may still be running on return from cancel_delayed_work(), unless
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index c4cb082..4c48bb6 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -205,7 +205,7 @@ struct workqueue_struct {
+ 	cpumask_var_t		mayday_mask;	/* cpus requesting rescue */
+ 	struct worker		*rescuer;	/* I: rescue worker */
+ 
+-	int			saved_max_active; /* I: saved cwq max_active */
++	int			saved_max_active; /* W: saved cwq max_active */
+ 	const char		*name;		/* I: workqueue name */
+ #ifdef CONFIG_LOCKDEP
+ 	struct lockdep_map	lockdep_map;
+@@ -2594,6 +2594,112 @@ void destroy_workqueue(struct workqueue_struct *wq)
  }
+ EXPORT_SYMBOL_GPL(destroy_workqueue);
  
--static int gfs2_recover_get_ref(struct slow_work *work)
--{
--	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
--	if (test_and_set_bit(JDF_RECOVERY, &jd->jd_flags))
--		return -EBUSY;
--	return 0;
--}
--
--static void gfs2_recover_put_ref(struct slow_work *work)
--{
--	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
--	clear_bit(JDF_RECOVERY, &jd->jd_flags);
--	smp_mb__after_clear_bit();
--	wake_up_bit(&jd->jd_flags, JDF_RECOVERY);
--}
--
--static void gfs2_recover_work(struct slow_work *work)
-+void gfs2_recover_func(struct work_struct *work)
- {
- 	struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
- 	struct gfs2_inode *ip = GFS2_I(jd->jd_inode);
-@@ -578,7 +563,7 @@ static void gfs2_recover_work(struct slow_work *work)
- 		gfs2_glock_dq_uninit(&j_gh);
- 
- 	fs_info(sdp, "jid=%u: Done\n", jd->jd_jid);
--	return;
-+	goto done;
- 
- fail_gunlock_tr:
- 	gfs2_glock_dq_uninit(&t_gh);
-@@ -590,32 +575,35 @@ fail_gunlock_j:
- 	}
- 
- 	fs_info(sdp, "jid=%u: %s\n", jd->jd_jid, (error) ? "Failed" : "Done");
--
- fail:
- 	gfs2_recovery_done(sdp, jd->jd_jid, LM_RD_GAVEUP);
-+done:
-+	clear_bit(JDF_RECOVERY, &jd->jd_flags);
-+	smp_mb__after_clear_bit();
-+	wake_up_bit(&jd->jd_flags, JDF_RECOVERY);
- }
- 
--struct slow_work_ops gfs2_recover_ops = {
--	.owner	 = THIS_MODULE,
--	.get_ref = gfs2_recover_get_ref,
--	.put_ref = gfs2_recover_put_ref,
--	.execute = gfs2_recover_work,
--};
--
--
- static int gfs2_recovery_wait(void *word)
- {
- 	schedule();
- 	return 0;
- }
- 
--int gfs2_recover_journal(struct gfs2_jdesc *jd)
-+int gfs2_recover_journal(struct gfs2_jdesc *jd, bool wait)
- {
- 	int rv;
--	rv = slow_work_enqueue(&jd->jd_work);
--	if (rv)
--		return rv;
--	wait_on_bit(&jd->jd_flags, JDF_RECOVERY, gfs2_recovery_wait, TASK_UNINTERRUPTIBLE);
++/**
++ * workqueue_set_max_active - adjust max_active of a workqueue
++ * @wq: target workqueue
++ * @max_active: new max_active value.
++ *
++ * Set max_active of @wq to @max_active.
++ *
++ * CONTEXT:
++ * Don't call from IRQ context.
++ */
++void workqueue_set_max_active(struct workqueue_struct *wq, int max_active)
++{
++	unsigned int cpu;
 +
-+	if (test_and_set_bit(JDF_RECOVERY, &jd->jd_flags))
-+		return -EBUSY;
++	max_active = wq_clamp_max_active(max_active, wq->name);
 +
-+	/* we have JDF_RECOVERY, queue should always succeed */
-+	rv = queue_work(gfs_recovery_wq, &jd->jd_work);
-+	BUG_ON(!rv);
++	spin_lock(&workqueue_lock);
 +
-+	if (wait)
-+		wait_on_bit(&jd->jd_flags, JDF_RECOVERY, gfs2_recovery_wait,
-+			    TASK_UNINTERRUPTIBLE);
++	wq->saved_max_active = max_active;
 +
- 	return 0;
- }
- 
-diff --git a/fs/gfs2/recovery.h b/fs/gfs2/recovery.h
-index 1616ac2..2226136 100644
---- a/fs/gfs2/recovery.h
-+++ b/fs/gfs2/recovery.h
-@@ -12,6 +12,8 @@
- 
- #include "incore.h"
- 
-+extern struct workqueue_struct *gfs_recovery_wq;
++	for_each_possible_cpu(cpu) {
++		struct global_cwq *gcwq = get_gcwq(cpu);
 +
- static inline void gfs2_replay_incr_blk(struct gfs2_sbd *sdp, unsigned int *blk)
- {
- 	if (++*blk == sdp->sd_jdesc->jd_blocks)
-@@ -27,8 +29,8 @@ extern void gfs2_revoke_clean(struct gfs2_sbd *sdp);
- 
- extern int gfs2_find_jhead(struct gfs2_jdesc *jd,
- 		    struct gfs2_log_header_host *head);
--extern int gfs2_recover_journal(struct gfs2_jdesc *gfs2_jd);
--extern struct slow_work_ops gfs2_recover_ops;
-+extern int gfs2_recover_journal(struct gfs2_jdesc *gfs2_jd, bool wait);
-+extern void gfs2_recover_func(struct work_struct *work);
- 
- #endif /* __RECOVERY_DOT_H__ */
- 
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index 0dc3462..ee0f3cd 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -26,6 +26,7 @@
- #include "quota.h"
- #include "util.h"
- #include "glops.h"
-+#include "recovery.h"
- 
- struct gfs2_attr {
- 	struct attribute attr;
-@@ -351,7 +352,7 @@ static ssize_t recover_store(struct gfs2_sbd *sdp, const char *buf, size_t len)
- 	list_for_each_entry(jd, &sdp->sd_jindex_list, jd_list) {
- 		if (jd->jd_jid != jid)
- 			continue;
--		rv = slow_work_enqueue(&jd->jd_work);
-+		rv = gfs2_recover_journal(jd, false);
- 		break;
- 	}
- out:
++		spin_lock_irq(&gcwq->lock);
++
++		if (!(wq->flags & WQ_FREEZEABLE) ||
++		    !(gcwq->flags & GCWQ_FREEZING))
++			get_cwq(gcwq->cpu, wq)->max_active = max_active;
++
++		spin_unlock_irq(&gcwq->lock);
++	}
++
++	spin_unlock(&workqueue_lock);
++}
++EXPORT_SYMBOL_GPL(workqueue_set_max_active);
++
++/**
++ * workqueue_congested - test whether a workqueue is congested
++ * @cpu: CPU in question
++ * @wq: target workqueue
++ *
++ * Test whether @wq's cpu workqueue for @cpu is congested.  There is
++ * no synchronization around this function and the test result is
++ * unreliable and only useful as advisory hints or for debugging.
++ *
++ * RETURNS:
++ * %true if congested, %false otherwise.
++ */
++bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq)
++{
++	struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
++
++	return !list_empty(&cwq->delayed_works);
++}
++EXPORT_SYMBOL_GPL(workqueue_congested);
++
++/**
++ * work_cpu - return the last known associated cpu for @work
++ * @work: the work of interest
++ *
++ * RETURNS:
++ * CPU number if @work was ever queued.  NR_CPUS otherwise.
++ */
++unsigned int work_cpu(struct work_struct *work)
++{
++	struct global_cwq *gcwq = get_work_gcwq(work);
++
++	return gcwq ? gcwq->cpu : NR_CPUS;
++}
++EXPORT_SYMBOL_GPL(work_cpu);
++
++/**
++ * work_busy - test whether a work is currently pending or running
++ * @work: the work to be tested
++ *
++ * Test whether @work is currently pending or running.  There is no
++ * synchronization around this function and the test result is
++ * unreliable and only useful as advisory hints or for debugging.
++ * Especially for reentrant wqs, the pending state might hide the
++ * running state.
++ *
++ * RETURNS:
++ * OR'd bitmask of WORK_BUSY_* bits.
++ */
++unsigned int work_busy(struct work_struct *work)
++{
++	struct global_cwq *gcwq = get_work_gcwq(work);
++	unsigned long flags;
++	unsigned int ret = 0;
++
++	if (!gcwq)
++		return false;
++
++	spin_lock_irqsave(&gcwq->lock, flags);
++
++	if (work_pending(work))
++		ret |= WORK_BUSY_PENDING;
++	if (find_worker_executing_work(gcwq, work))
++		ret |= WORK_BUSY_RUNNING;
++
++	spin_unlock_irqrestore(&gcwq->lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(work_busy);
++
+ /*
+  * CPU hotplug.
+  *
 -- 
 1.6.4.2
 
