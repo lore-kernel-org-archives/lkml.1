@@ -1,101 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750932Ab0CAKaH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:30:07 -0500
-Received: from trinity.develer.com ([83.149.158.210]:41962 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696Ab0CAKaF (ORCPT
+	id S1751021Ab0CAKcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:32:15 -0500
+Received: from mta04.eastlink.ca ([24.224.136.10]:50575 "EHLO
+	mta04.eastlink.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778Ab0CAKcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:30:05 -0500
-Date: Mon, 1 Mar 2010 11:30:01 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH -mmotm 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100301103001.GB2087@linux>
-References: <1267224751-6382-1-git-send-email-arighi@develer.com>
- <1267224751-6382-2-git-send-email-arighi@develer.com>
- <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 1 Mar 2010 05:32:13 -0500
+X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 05:32:13 EST
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhpPADQfi0vOhDAYYmdsb2JhbACKAJA+TwsXDAkFFSEBhhKzKoMjgVgEgxeLJQI
+X-IronPort-AV: E=Sophos;i="4.49,559,1262577600";   d="scan'208";a="161265216"
+Message-id: <1267437720.4b8b9098d3760@webmail.xcelco.on.ca>
+Date: Mon, 01 Mar 2010 05:02:00 -0500
+From: claire page <page.com@xcelco.on.ca>
+Reply-to: barr_landon_watson@gala.net
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 82.207.66.114
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 05:05:35PM +0900, Daisuke Nishimura wrote:
-> On Fri, 26 Feb 2010 23:52:30 +0100, Andrea Righi <arighi@develer.com> wrote:
-> > Infrastructure to account dirty pages per cgroup and add dirty limit
-> > interfaces in the cgroupfs:
-> > 
-> >  - Active write-out: memory.dirty_ratio, memory.dirty_bytes
-> >  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
-> > 
-> It looks good for me in general.
-> 
-> > Signed-off-by: Andrea Righi <arighi@develer.com>
-> > ---
-> >  include/linux/memcontrol.h |   74 +++++++++-
-> >  mm/memcontrol.c            |  354 ++++++++++++++++++++++++++++++++++++++++----
-> >  2 files changed, 399 insertions(+), 29 deletions(-)
-> > 
-> 
-> (snip)
-> 
-> > +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> > +{
-> > +	struct mem_cgroup_page_stat stat = {};
-> > +	struct mem_cgroup *memcg;
-> > +
-> I think it would be better to add "if (mem_cgroup_disabled())".
 
-Agreed.
 
-> 
-> > +	rcu_read_lock();
-> > +	memcg = mem_cgroup_from_task(current);
-> > +	if (memcg) {
-> > +		/*
-> > +		 * Recursively evaulate page statistics against all cgroup
-> > +		 * under hierarchy tree
-> > +		 */
-> > +		stat.item = item;
-> > +		mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
-> > +	} else
-> > +		stat.value = -ENOMEM;
-> > +	rcu_read_unlock();
-> > +
-> > +	return stat.value;
-> > +}
-> > +
-> >  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
-> >  {
-> >  	int *val = data;
-> > @@ -1263,10 +1419,10 @@ static void record_last_oom(struct mem_cgroup *mem)
-> >  }
-> >  
-> >  /*
-> > - * Currently used to update mapped file statistics, but the routine can be
-> > - * generalized to update other statistics as well.
-> > + * Generalized routine to update memory cgroup statistics.
-> >   */
-> > -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> > +void mem_cgroup_update_stat(struct page *page,
-> > +			enum mem_cgroup_stat_index idx, int val)
-> >  {
-> >  	struct mem_cgroup *mem;
-> >  	struct page_cgroup *pc;
-> ditto.
-
-Agreed.
-
-Thanks,
--Andrea
+i am very sick in the hospital.Please contact my
+lawyer (barrister_landon_watson@gala.net)
