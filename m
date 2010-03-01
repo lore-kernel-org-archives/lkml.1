@@ -1,49 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643Ab0CAWB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 17:01:26 -0500
-Received: from claw.goop.org ([74.207.240.146]:47023 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615Ab0CAWBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 17:01:25 -0500
-Message-ID: <4B8C3933.7080507@goop.org>
-Date: Mon, 01 Mar 2010 14:01:23 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1752600Ab0CAWDc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 17:03:32 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:50691 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337Ab0CAWDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 17:03:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=Ck3MZ5o6neacSksc9abuPGJRteHgdpmtn4z02ue3NIqcXL6DFC+ga2EGfZLx+SO2NA
+         vM6LMklcLMopnI7PXcv8neuYEYh2kvTfyPWmjcJxuoDkdJWv4Hcp+CtzHo/NW2LHol1k
+         qjGld/XFivt/Lb1Azg1z8Jqs98+15pG7y0L1s=
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs()
- again
-References: <20100207210250.GB8256@jenkins.home.ifup.org>	 <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>	 <4B881097.1050505@kernel.org>	 <1267442545.11737.20718.camel@zakaz.uk.xensource.com>	 <m1d3zn7uwl.fsf@fess.ebiederm.org> <1267479860.2785.843.camel@localhost.localdomain>
-In-Reply-To: <1267479860.2785.843.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Mon, 1 Mar 2010 23:03:09 +0100
+Message-ID: <40101cc31003011403x4423cb3em1f6fcb04d64dd2bb@mail.gmail.com>
+Subject: AMD Geode i686
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 01:44 PM, Ian Campbell wrote:
->> - Xen has an array irq_info[NR_IRQS] one of the last static arrays
->>    sized at NR_IRQs in the entire kernel.
->>      
-> Hopefully the same info as is in that array could (and indeed should) be
-> instead stored in irq_desc->chip_data. Would you object to
-> arch_init_copy_chip_data and arch_free_chip_data becoming function
-> pointers within the struct irq_chip?
->    
+Hi,
+I have refreshed my AMD Geode i686 patch with NOPL and I have added a
+new nice feature.
+When a NOPL is found the parser looks for any NOPL after the current
+one, so they are emulated in bulk.
+Tested ok on a Pcengines Alix.
 
-Yes, I was just about to suggest something like this.  We just need a 
-mechanism of storing some per-irq info, and attaching it to the existing 
-desc structure is much cleaner than maintaining some parallel structure.
+Signed-off-by: Matteo Croce <technoboy85@gmail.com>
 
-You're right about the chip_data lifetime functions; it seems very odd 
-that most of irq_chip is nicely factored out into a set of ops, but the 
-per-chip data management is per-architecture.
+--- a/arch/x86/kernel/Makefile	2010-03-01 01:18:51.697166322 +0100
++++ b/arch/x86/kernel/Makefile	2010-03-01 01:19:45.727095700 +0100
+@@ -89,6 +89,8 @@
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
 
-With that in place, we could eliminate any dependency on irq numbers.
+ obj-$(CONFIG_K8_NB)		+= k8.o
++obj-$(CONFIG_MGEODEGX1)		+= nopl_emu.o
++obj-$(CONFIG_MGEODE_LX)		+= nopl_emu.o
+ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
+ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
 
-     J
+--- a/arch/x86/kernel/cpu/amd.c	2010-03-01 01:18:51.737097341 +0100
++++ b/arch/x86/kernel/cpu/amd.c	2010-03-01 01:19:27.867865836 +0100
+@@ -138,8 +138,10 @@
+ 	}
+
+ 	if (c->x86_model == 10) {
+-		/Index: linux-2.6.33/arch/x86/kernel/Makefile
+===================================================================
+* AMD Geode LX is model 10 */
+-		/* placeholder for any needed mods */
++		/* Geode only lacks the NOPL instruction to be i686,
++		   but we can emulate it in the exception handler
++		   and promote it to a class 6 cpu */
++		boot_cpu_data.x86 = 6;
+ 		return;
+ 	}
+ }
+--- a/arch/x86/kernel/entry_32.S	2010-03-01 01:18:51.717096708 +0100
++++ b/arch/x86/kernel/entry_32.S	2010-03-01 01:19:27.867865836 +0100
+@@ -960,7 +960,11 @@
+ 	RING0_INT_FRAME
+ 	pushl $0
+ 	CFI_ADJUST_CFA_OFFSET 4
++#ifdef CONFIG_MGEODE_LX
++	pushl $do_nopl_emu
++#else
+ 	pushl $do_invalid_op
++#endif
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	jmp error_code
+ 	CFI_ENDPROC
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/arch/x86/kernel/nopl_emu.c	2010-03-01 02:40:44.324595733 +0100
+@@ -0,0 +1,107 @@
++/*
++ *  linux/arch/x86/kernel/nopl_emu.c
++ *
++ *  Copyright (C) 2002  Willy Tarreau
++ *  Copyright (C) 2010  Matteo Croce
++ */
++
++#include <asm/processor.h>
++#include <asm/traps.h>
++
++/* This code can be used to allow the AMD Geode to hopefully correctly execute
++ * some code which was originally compiled for an i686, by emulating NOPL,
++ * the only missing i686 instruction in the CPU
++ *
++ * Willy Tarreau <willy@meta-x.org>
++ * Matteo Croce <technoboy85@gmail.com>
++ */
++
++static inline int do_1f(u8 *ip)
++{
++	int length = 3;
++	switch (*ip) {
++	case 0x84:
++		if (!ip[5])
++			length++;
++		else
++			return 0;
++	case 0x80:
++		if (!ip[4] && !ip[3])
++			length += 2;
++		else
++			return 0;
++	case 0x44:
++		if (!ip[2])
++			length++;
++		else
++			return 0;
++	case 0x40:
++		if (!ip[1])
++			length++;
++		else
++			return 0;
++	case 0x00:
++		return length;
++	}
++	return 0;
++}
++
++static inline int do_0f(u8 *ip)
++{
++	if (*ip == 0x1f)
++		return do_1f(ip + 1);
++	return 0;
++}
++
++static inline int do_66(u8 *ip)
++{
++	if (*ip == 0x90)
++		return 2;
++	if (*ip == 0x0f) {
++		int res = do_0f(ip + 1);
++		if (res)
++			return res + 1;
++		else
++			return 0;
++	}
++	return 0;
++}
++
++static inline int do_start(u8 *ip)
++{
++	if (*ip == 0x0f)
++		return do_0f(ip + 1);
++	if (*ip == 0x66)
++		return do_66(ip + 1);
++	return 0;
++}
++
++/* [do_nopl_emu] is called by exception 6 after an invalid opcode has been
++ * encountered. It will try to emulate it by doing nothing,
++ * and will send a SIGILL or SIGSEGV to the process if not possible.
++ * the NOPL can have variable length opcodes:
++
++bytes number	opcode
++	2	66 90
++	3	0f 1f 00
++	4	0f 1f 40 00
++	5	0f 1f 44 00 00
++	6	66 0f 1f 44 00 00
++	7	0f 1f 80 00 00 00 00
++	8	0f 1f 84 00 00 00 00 00
++	9	66 0f 1f 84 00 00 00 00 00
++*/
++void do_nopl_emu(struct pt_regs *regs, long error_code)
++{
++	u8 *ip = (u8 *)instruction_pointer(regs);
++	int res = do_start(ip);
++
++	if (res) {
++		do {
++			ip += res;
++			res = do_start(ip);
++		} while (res);
++		regs->ip = (typeof(regs->ip))ip;
++	} else
++		do_invalid_op(regs, error_code);
++}
