@@ -1,32 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751473Ab0CAOpH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 09:45:07 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:43462 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056Ab0CAOpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 09:45:06 -0500
-Date: Mon, 1 Mar 2010 14:45:01 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] x86 platform drivers tree
-Message-ID: <20100301144501.GA14808@srcf.ucam.org>
-References: <1267197527-18062-1-git-send-email-mjg@redhat.com> <20100227000732.GC23593@khazad-dum.debian.net>
+	id S1751383Ab0CAOsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:48:19 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:46256 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056Ab0CAOsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 09:48:18 -0500
+Message-ID: <4B8BD3B0.3020502@msgid.tls.msk.ru>
+Date: Mon, 01 Mar 2010 17:48:16 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100227000732.GC23593@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Andreas Dilger <adilger@sun.com>, tytso@mit.edu,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan> <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan> <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan> <20100228054240.GE14646@thunk.org> <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan> <832C6227-BF34-43C2-8768-1308C00AB17F@sun.com> <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll pick those up off linux-acpi. Thanks!
+Justin Piszcz wrote:
+> 
+> On Mon, 1 Mar 2010, Andreas Dilger wrote:
+> 
+>> On 2010-02-28, at 07:55, Justin Piszcz wrote:
+>>> === CREATE RAID-0 WITH 11 DISKS
+>>
+>> Have you tried testing with "nice" numbers of disks in your RAID set
+>> (e.g. 8 disks for RAID-0, 9 for RAID-5, 10 for RAID-6)?  The mballoc
+>> code is really much better tuned for power-of-two sized allocations.
+> 
+> Hi,
+> 
+> Yes, the second system (RAID-5) has 8 disks and it shows the same
+> performance problems with ext4 and not XFS (as shown from previous
+> e-mail), where XFS usually got 500-600MiB/s for writes.
+> 
+> http://groups.google.com/group/linux.kernel/browse_thread/thread/e7b189bcaa2c1cb4/ad6c2a54b678cf5f?show_docid=ad6c2a54b678cf5f&pli=1
+> 
+> 
+> For the RAID-5 (from earlier testing):  <- This one has 8 disks.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Note that for RAID-5, the "nice" number of disks is 9 as Andreas
+said, not 8 as in your example.
+
+/mjt
