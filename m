@@ -1,119 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751264Ab0CAQ1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:27:37 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51917 "EHLO e2.ny.us.ibm.com"
+	id S1751354Ab0CAQ2k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:28:40 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49542 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750808Ab0CAQ1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:27:36 -0500
-Date: Mon, 1 Mar 2010 08:27:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in
-	git tree
-Message-ID: <20100301162733.GB6758@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100301042249.GA12289@linux.vnet.ibm.com> <201003011042.48923.elendil@planet.nl> <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com>
+	id S1750998Ab0CAQ2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:28:39 -0500
+Message-ID: <4B8BED09.7000904@kernel.org>
+Date: Tue, 02 Mar 2010 01:36:25 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 10/43] stop_machine: reimplement without using workqueue
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-11-git-send-email-tj@kernel.org> <20100228141135.GB5495@redhat.com> <4B8BD822.1010402@kernel.org> <20100301153750.GA11090@redhat.com>
+In-Reply-To: <20100301153750.GA11090@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 16:25:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 11:10:54AM +0100, Geert Uytterhoeven wrote:
-> On Mon, Mar 1, 2010 at 10:42, Frans Pop <elendil@planet.nl> wrote:
-> > Paul E. McKenney wrote:
-> >> This patch appends the SHA1 hash of the current git tree to the
-> >> kernel version line, or "[Not git tree]" if run from a non-git tree.
-> >> Uses "git log" to print the hash.
-> >
-> > Nice idea.
-> >
-> > However, I gave it a try and got:
-> > # Linux kernel version: 2.6.34-rc0 [Not git tree]
-> >
-> > Even though I *am* building from a git tree. It does not seem to work when
-> > building with KBUILD_OUTPUT set or when using 'O='.
-> >
-> > IMO that makes the practical value of the patch very limited. I'm afraid
-> > because of this it will increase confusion rather than add information.
+Hello,
+
+On 03/02/2010 12:37 AM, Oleg Nesterov wrote:
+>> Hmmm... I'm probably missing something but I don't see how
+>> stop_machine_cpu_callback(CPU_POST_DEAD) depends on stop_cpu() thread
+>> already parked in schedule().  Can you elaborate a bit?
 > 
-> scripts/setlocalversion handles this case correctly, so you may want to
-> look there...
+> Suppose that, when stop_machine_cpu_callback(CPU_POST_DEAD) is called,
+> that stop_cpu() thread T is still running and it is going to check state
+> before schedule().
+> 
+> CPU_POST_DEAD is called after cpu_hotplug_done(), another CPU can do
+> stop_machine() and set STOPMACHINE_PREPARE.
+> 
+> If T sees state == STOPMACHINE_PREPARE it will join the game, but it
+> wasn't counted in thread_ack counter, it is not cpu-bound, etc.
 
-Very nice, thank you!!!
+Oh, I see.  I was thinking get/put_online_cpus() block is exclusive
+against cpu_maps_update_begin/done() instead of
+cpu_hotplug_begin/done().  Will update and add comments.
 
-Here is the updated patch.  Thoughts?
+Thanks.
 
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
-[PATCH RFC] kconfig: place localversion string in .config output
-
-This patch appends the localversion string to the Linux kernel version.
-For example, in a git tree with uncommitted changes, the .config file
-might start as follows:
-
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.33-01836-g90a6501-dirty
-# Mon Mar  1 08:21:49 2010
-
-This patch uses the scripts/setlocalversion output, so similar output
-is also generated for svn and mercurial.
-
-Suggested-by: Ingo Molnar <mingo@elte.hu>
-Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Frans Pop <elendil@planet.nl>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- confdata.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index c4dec80..fba6b07 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -399,10 +399,11 @@ int conf_read(const char *name)
- int conf_write(const char *name)
- {
- 	FILE *out;
-+	FILE *slv;
- 	struct symbol *sym;
- 	struct menu *menu;
- 	const char *basename;
--	char dirname[128], tmpname[128], newname[128];
-+	char dirname[128], tmpname[128], newname[128], localversion[128];
- 	int type, l;
- 	const char *str;
- 	time_t now;
-@@ -450,12 +451,20 @@ int conf_write(const char *name)
- 	if (env && *env)
- 		use_timestamp = 0;
- 
-+	localversion[0] = '\0';
-+	slv = popen("scripts/setlocalversion 2> /dev/null", "r");
-+	if (slv != NULL) {
-+		fscanf(slv, " %127s ", localversion);
-+		pclose(slv);
-+	}
-+
- 	fprintf(out, _("#\n"
- 		       "# Automatically generated make config: don't edit\n"
--		       "# Linux kernel version: %s\n"
-+		       "# Linux kernel version: %s%s\n"
- 		       "%s%s"
- 		       "#\n"),
- 		     sym_get_string_value(sym),
-+		     localversion[0] != '\0' ? localversion : "",
- 		     use_timestamp ? "# " : "",
- 		     use_timestamp ? ctime(&now) : "");
- 
+-- 
+tejun
