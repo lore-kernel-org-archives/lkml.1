@@ -1,59 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754383Ab0CAD6V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 22:58:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34128 "EHLO mx2.suse.de"
+	id S1754232Ab0CAEDR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 23:03:17 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:52910 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914Ab0CAD6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 22:58:18 -0500
-Date: Sun, 28 Feb 2010 19:57:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Jeff Dike <jdike@addtoit.com>,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-user@lists.sourceforge.net,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 66/66]
- arch/um/sys-x86_64/shared/sysdep/skas_ptrace.h: Checkpatch cleanup
-Message-ID: <20100301035718.GA17045@suse.de>
-References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
- <1267289508-31031-67-git-send-email-andrea.gelmini@gelma.net>
- <20100227221310.GA5455@localhost.localdomain>
- <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
- <20100228204506.GQ30031@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100228204506.GQ30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1753976Ab0CAEDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 23:03:16 -0500
+Date: Mon, 1 Mar 2010 15:03:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>
+Subject: Re: linux-next: build failure after merge of the blackfin tree
+Message-Id: <20100301150310.ae3aa9c6.sfr@canb.auug.org.au>
+In-Reply-To: <20100301010849.GA7210@nowhere>
+References: <20100301120321.8851ba86.sfr@canb.auug.org.au>
+	<20100301010849.GA7210@nowhere>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 08:45:06PM +0000, Al Viro wrote:
-> On Sun, Feb 28, 2010 at 03:06:21PM +0100, Andrea Gelmini wrote:
-> > 2010/2/27 Jeff Dike <jdike@addtoit.com>:
-> > Hi Jeff,
-> >    and thanks for your reply.
-> > 
-> > > Don't you have anything better to do with your time?
-> > 
-> > It's a dirty job, but somebody has to do it...
-> > Enlighted by Greg's talk at FOSDEM?? I sent him some patches (nothing
-> > more than boring things for a real programmer, but a good solitaire
-> > alternative for a rookie like me).
-> > 
-> > These patches are just a try to see if there are other subtree
-> > maintainers interested in stuff like this.
-> 
-> Note to gregkh: the next time you give a talk like that, consider including
-> "spamming l-k with sixty-odd solitaire sessions^W^Wwhitespace-removal patches
-> can lead to considerable annoyance"...
+--Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Heh, I did explicitly state that this should be done on the staging
-tree only.  This developer took it apon themselves to try a different
-subsystem, which is fine, why would we want to turn away free help :)
+Hi Frederic,
 
-thanks,
+On Mon, 1 Mar 2010 02:08:52 +0100 Frederic Weisbecker <fweisbec@gmail.com> =
+wrote:
+>
+> Oh, why is this patch in the blackfin tree?
 
-greg k-h
+I have no idea beyond the fact that Mike is the Blackfin maintainer.
+
+> Looks like the right patch yeah.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuLPH4ACgkQjjKRsyhoI8yfegCfQBMSqePH8T3VZaMpSwKAyFgz
+XXYAn02SEoOs0hTLaj3p+inQGlS01eNI
+=5m0O
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q--
