@@ -1,50 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242Ab0CAD6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 22:58:17 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:39662 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914Ab0CAD6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 22:58:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=BblKLtYSInRoYB+mMpHOWZHrL5bAQrhKvSOUaSzczltt6iF2pV9mZ+WWoWAoZv4CdW
-         v++bce5NClRVMxwz3Ol7MhkLiJCDGelzxWHGFUur6/OQ8J9qBMMFqw2I8uEP15iMuah2
-         +1RRlVXWeRofMNgrsfSvnOqz3j9aoXeFoNOUs=
+	id S1754383Ab0CAD6V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 22:58:21 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34128 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753914Ab0CAD6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 22:58:18 -0500
+Date: Sun, 28 Feb 2010 19:57:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Jeff Dike <jdike@addtoit.com>,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH 66/66]
+ arch/um/sys-x86_64/shared/sysdep/skas_ptrace.h: Checkpatch cleanup
+Message-ID: <20100301035718.GA17045@suse.de>
+References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
+ <1267289508-31031-67-git-send-email-andrea.gelmini@gelma.net>
+ <20100227221310.GA5455@localhost.localdomain>
+ <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
+ <20100228204506.GQ30031@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <4B76BD0B.2010307@gmail.com>
-References: <4B76BD0B.2010307@gmail.com>
-Date: Sun, 28 Feb 2010 20:58:14 -0700
-X-Google-Sender-Auth: 03a5571c183eab1a
-Message-ID: <e9c3a7c21002281958u4ee6fb94p55b7c5069dd08be5@mail.gmail.com>
-Subject: Re: [PATCH] iop-adma: redundant/wrong tests in iop_*_count()?
-From: Dan Williams <dan.j.williams@intel.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100228204506.GQ30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 7:54 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> When we reach the loop, len is at least 1, we only stay in the loop when
-> len is at least MAX_BYTE_COUNT + 1, MAX_BYTE_COUNT is subtracted in each
-> iteration. So when we leave the loop, or didn't take it, len is at least 1.
-> Testing whether len is non-zero appears redundant.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Or are the tests off by one? Then we'll need a different patch...
+On Sun, Feb 28, 2010 at 08:45:06PM +0000, Al Viro wrote:
+> On Sun, Feb 28, 2010 at 03:06:21PM +0100, Andrea Gelmini wrote:
+> > 2010/2/27 Jeff Dike <jdike@addtoit.com>:
+> > Hi Jeff,
+> >    and thanks for your reply.
+> > 
+> > > Don't you have anything better to do with your time?
+> > 
+> > It's a dirty job, but somebody has to do it...
+> > Enlighted by Greg's talk at FOSDEM?? I sent him some patches (nothing
+> > more than boring things for a real programmer, but a good solitaire
+> > alternative for a rookie like me).
+> > 
+> > These patches are just a try to see if there are other subtree
+> > maintainers interested in stuff like this.
+> 
+> Note to gregkh: the next time you give a talk like that, consider including
+> "spamming l-k with sixty-odd solitaire sessions^W^Wwhitespace-removal patches
+> can lead to considerable annoyance"...
 
-No, not off by one, just redundant.
+Heh, I did explicitly state that this should be done on the staging
+tree only.  This developer took it apon themselves to try a different
+subsystem, which is fine, why would we want to turn away free help :)
 
-Applied, thanks.
+thanks,
 
---
-Dan
+greg k-h
