@@ -1,57 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472Ab0CAV2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:28:52 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:47084 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332Ab0CAV2u (ORCPT
+	id S1752515Ab0CAVgy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:36:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57948 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751197Ab0CAVgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:28:50 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
-In-Reply-To: <20100301164800.GC6758@linux.vnet.ibm.com> (Paul E. McKenney's
-	message of "Mon, 1 Mar 2010 08:48:00 -0800")
-References: <20100301042249.GA12289@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.1003010812410.3616@localhost.localdomain>
-	<20100301164800.GC6758@linux.vnet.ibm.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 01 Mar 2010 15:46:26 -0500
-Message-ID: <m3r5o34vnp.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Hashcash: 1:30:100301:paulmck@linux.vnet.ibm.com::Ac4a/aQ+T8l/+46B:0000000000000000000000000000000000kmVOr
-X-Hashcash: 1:30:100301:torvalds@linux-foundation.org::83QX4d4vrbjmb49P:0000000000000000000000000000000TCl3v
-X-Hashcash: 1:30:100301:linux-kernel@vger.kernel.org::u36xDjlIV4JIjwj6:00000000000000000000000000000000Zu/Zo
-X-Hashcash: 1:30:100301:zippel@linux-m68k.org::OPmBgDQJcTbUfq0F:000000000000000000000000000000000000000p1jvR
-X-Hashcash: 1:30:100301:mingo@elte.hu::bmdbPBkZUebNn7ns:000cJWhv
-X-Hashcash: 1:30:100301:akpm@linux-foundation.org::mJvW9U9gc7Kcz8MA:00000000000000000000000000000000000CHzzX
+	Mon, 1 Mar 2010 16:36:53 -0500
+Date: Mon, 1 Mar 2010 13:36:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux-Containers <containers@lists.linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Checkpoint-Restart - v19
+Message-Id: <20100301133623.9808986f.akpm@linux-foundation.org>
+In-Reply-To: <4B83106C.7040203@cs.columbia.edu>
+References: <4B83106C.7040203@cs.columbia.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Paul" == Paul E McKenney <paulmck@linux.vnet.ibm.com> writes:
+On Mon, 22 Feb 2010 18:17:00 -0500
+Oren Laadan <orenl@cs.columbia.edu> wrote:
 
-Paul> Agreed!  The "-dirty" modifier for the case of changes not yet
-Paul> checked into git looks especially helpful.
+> Hi Andrew,
+> 
+> We've put a stake in the ground for our next set of checkpoint/restart
+> patches, v19. It has some great new stuff, and we put extra effort to
+> address your concerns. We would like to have the code included in -mm
+> for wider feedback and testing.
+> 
+> This one is able to checkpoint/restart screen and vnc sessions, and
+> live-migrate network servers between hosts. It also adds support for
+> x86-64 (in addition to x86-32, s390x and powerpc). It is rebased to
+> kernel 2.6.33-rc8.
+> 
+> Since one of your main concerns was about what is not yet implemented
+> and how complicated or ugly it will be to support that, we've put up
+> a wiki page to address that. In it there is a simple table that lists
+> what is not implemented and the anticipated solution impact, and for
+> some entries a link to more details.
+> 
+> The page is here:   http://ckpt.wiki.kernel.org/index.php/Checklist
 
-Except that the script calls »git update-index --refresh --unmerged«
-and »git diff-index --name-only HEAD«, both of which are painfully
-slow and resource intensive.
+Does "Refuses to Checkpoint" mean that an attempt to checkpoint will
+fail, return the failure to userspace and the system continues as
+before?
 
-I'd hate to have that run every time I make a kernel.
+> We want to stress that the patchset is already very useful as-is. We
+> will keep working to implement more features cleanly. Some features we
+> are working on include network namespaces and device configurations,
+> mounts and mounts namespaces, and file locks. Should a complicated
+> feature prove hard to implement, users have alternatives systems like
+> kvm, until we manage to come up with a clean solution.
+> 
+> We believe that maintenance is best addressed through testing. We now
+> have a comprehensive test-suite to automatically find regressions.
+> In addition, we ran LTP and the results are the same with CHECKPOINT=n
+> and =y.
+> 
+> If desired we'll send the whole patchset to lkml, but the git trees
+> can be seen at:
+> 
+>    kernel:       http://www.linux-cr.org/git/?p=linux-cr.git;a=summary
+>    user tools:   http://www.linux-cr.org/git/?p=user-cr.git;a=summary
+>    tests suite:  http://www.linux-cr.org/git/?p=tests-cr.git;a=summary
+> 
 
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+I'd suggest waiting until very shortly after 2.6.34-rc1 then please
+send all the patches onto the list and let's get to work.
+
