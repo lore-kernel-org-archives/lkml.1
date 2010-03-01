@@ -1,72 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750854Ab0CAIeP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:34:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59400 "EHLO hera.kernel.org"
+	id S1750921Ab0CAIee (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:34:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40891 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747Ab0CAIeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:34:13 -0500
-Date: Mon, 1 Mar 2010 08:33:39 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100228163218.GD6846@linux.vnet.ibm.com>
-References: <20100228163218.GD6846@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] sched, rcu: Fix rcu_dereference() for RCU-lockdep
-Message-ID: <tip-90a6501f94aedd7fb40f5556334843194fb598be@git.kernel.org>
-Git-Commit-ID: 90a6501f94aedd7fb40f5556334843194fb598be
-X-Mailer: tip-git-log-daemon
+	id S1750696Ab0CAIec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:34:32 -0500
+Date: Mon, 1 Mar 2010 09:34:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git
+ tree
+Message-ID: <20100301083404.GD19395@elte.hu>
+References: <20100301042249.GA12289@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 08:33:41 +0000 (UTC)
+In-Reply-To: <20100301042249.GA12289@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  90a6501f94aedd7fb40f5556334843194fb598be
-Gitweb:     http://git.kernel.org/tip/90a6501f94aedd7fb40f5556334843194fb598be
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Sun, 28 Feb 2010 08:32:18 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 1 Mar 2010 09:29:58 +0100
 
-sched, rcu: Fix rcu_dereference() for RCU-lockdep
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-Make rcu_dereference() of runqueue data structures be
-rcu_dereference_sched().
+> This patch appends the SHA1 hash of the current git tree to the
+> kernel version line, or "[Not git tree]" if run from a non-git tree.
+> Uses "git log" to print the hash.
+> 
+> Suggested-by: Ingo Molnar <mingo@elte.hu>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Located-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <20100228163218.GD6846@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>  	fprintf(out, _("#\n"
+>  		       "# Automatically generated make config: don't edit\n"
+> -		       "# Linux kernel version: %s\n"
+> +		       "# Linux kernel version: %s %s\n"
+>  		       "%s%s"
+>  		       "#\n"),
+>  		     sym_get_string_value(sym),
+> +		     gitsha[0] == '\0' ? "[Not git tree]" : gitsha,
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 3e1fd96..5a5ea2c 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -3476,7 +3476,7 @@ static void run_rebalance_domains(struct softirq_action *h)
- 
- static inline int on_null_domain(int cpu)
- {
--	return !rcu_dereference(cpu_rq(cpu)->sd);
-+	return !rcu_dereference_sched(cpu_rq(cpu)->sd);
- }
- 
- /*
+Very nice!
+
+I have scripting that does something similar for (most of) my own configs, but 
+it would be nice to see your more complete patch upstream.
+
+Thanks,
+
+	Ingo
