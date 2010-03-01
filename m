@@ -1,53 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751582Ab0CAHf5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 02:35:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44738 "EHLO mail.zytor.com"
+	id S1751691Ab0CAHhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 02:37:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36772 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751264Ab0CAHf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 02:35:56 -0500
-Message-ID: <4B8B6E43.9030305@zytor.com>
-Date: Sun, 28 Feb 2010 23:35:31 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1751451Ab0CAHho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 02:37:44 -0500
+Date: Mon, 1 Mar 2010 08:37:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Robert Richter <robert.richter@amd.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: linux-next: manual merge of the oprofile tree with Linus' tree
+Message-ID: <20100301073736.GA1453@elte.hu>
+References: <20100301182001.f67b21ac.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Luca Barbieri <luca@luca-barbieri.com>, Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
-References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>	 <4B845AEE.5080604@zytor.com>	 <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>	 <20100226101423.GA25641@elte.hu>	 <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com> <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
-In-Reply-To: <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301182001.f67b21ac.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/2010 03:23 AM, Luca Barbieri wrote:
-> Sent patches, both to conditionally perform the test and implement the
-> functions for x86 and x86-64.
 
-Yes, and with the test turned on, the kernel crashes immediately on boot
-on x86-64.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Some minor investigation reveals the following:
+> Hi Robert,
+> 
+> Today's linux-next merge of the oprofile tree got a conflict in
+> arch/x86/kernel/cpu/perf_event.c between commit
+> 8c48e444191de0ff84e85d41180d7bc3e74f14ef ("perf_events, x86: Implement
+> intel core solo/duo support") from Linus' tree and commit
+> 27d4a358bf5ef730aacf50696b9b5dfc5e2a87a5 ("perf, x86: rename macro in
+> ARCH_PERFMON_EVENTSEL_ENABLE") from the oprofile tree.
 
-lib/atomic64.c has the wrong return value for atomic64_add_unless().
-With "wrong" I mean it is the opposite sense compared to
-atomic_add_unless(), not just on x86 but on all architectures.
+Robert: the oprofile tree shouldnt be changing perf_event code in any case, 
+please dont push out such patches to linux-next but feed them through the 
+usual channels.
 
-Accordingly, I have to conclude that lib/atomic64.c is buggy, and that
-since your test matches that bug, I will have to conclude that your
-x86-32 implementation is also buggy.  Thus, please send patches to fix
-your test and your 32-bit implementations (and preferrably
-lib/atomic64.c too, but I can do that just fine.)
+Thanks,
 
-Cc: Paul Mackerras who did the generic atomic64_t implementation for
-verification that this is indeed a bug.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+	Ingo
