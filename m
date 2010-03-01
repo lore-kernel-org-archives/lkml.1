@@ -1,123 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751370Ab0CAPFs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:05:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33735 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119Ab0CAPFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:05:47 -0500
-Message-ID: <4B8BD822.1010402@kernel.org>
-Date: Tue, 02 Mar 2010 00:07:14 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
+	id S1751453Ab0CAPHB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:07:01 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58115 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831Ab0CAPG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:06:59 -0500
+Date: Mon, 1 Mar 2010 16:06:57 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: "Chatterjee, Amit" <amit.chatterjee@ti.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, linux-omap@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+Subject: Re: 2.6.33-rc8-rt1 on Beagle
+Message-ID: <20100301150657.GG16049@pengutronix.de>
+References: <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain> <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132927.GC5416@bicker> <4B84D20B.9080600@osadl.org> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCBE65@dbde02.ent.ti.com> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 10/43] stop_machine: reimplement without using workqueue
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-11-git-send-email-tj@kernel.org> <20100228141135.GB5495@redhat.com>
-In-Reply-To: <20100228141135.GB5495@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 15:04:17 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
 
-On 02/28/2010 11:11 PM, Oleg Nesterov wrote:
-> On 02/26, Tejun Heo wrote:
->>
->> +static int stop_cpu(void *unused)
->>  {
->>  	enum stopmachine_state curstate = STOPMACHINE_NONE;
->> -	struct stop_machine_data *smdata = &idle;
->> +	struct stop_machine_data *smdata;
->>  	int cpu = smp_processor_id();
->>  	int err;
->>
->> +repeat:
->> +	/* Wait for __stop_machine() to initiate */
->> +	while (true) {
->> +		set_current_state(TASK_INTERRUPTIBLE);
->> +		/* <- kthread_stop() and __stop_machine()::smp_wmb() */
->> +		if (kthread_should_stop()) {
->> +			__set_current_state(TASK_RUNNING);
->> +			return 0;
->> +		}
->> +		if (state == STOPMACHINE_PREPARE)
->> +			break;
+On Thu, Feb 25, 2010 at 04:36:23PM +0530, Chatterjee, Amit wrote:
+> Migrated to 2.6.33-rc8-rt2 but still am facing the same issue.
 > 
-> Cosmetic nit: this doesn't matter at all, but perhaps it makes sense
-> to set TASK_RUNNING here too.
-
-Yeap, I agree that would be prettier.  Will do so.
-
-> Actually, I was a bit confused by this "while (true)" loop. It looks
-> as if a spurious wakeup is possible. It is not,
-
-I don't think spurious wakeups are possible but without the loop the
-PREPARE check should be done before schedule(), and, after the
-schedule(), we'll need a matching BUG_ON() and the
-kthread_should_stop() check with a comment explaining that the initial
-exit condition check is done in the kthread code and thus not
-necessary before the initial schedule().  It seems more complex and
-fragile to me.
-
-> and more importantly, if it was possible
-> stop_machine_cpu_callback(CPU_POST_DEAD) (which is called after
-> cpu_hotplug_done()) could race with stop_machine().
-> stop_machine_cpu_callback(CPU_POST_DEAD) relies on fact that this
-> thread has already called schedule() and it can't be woken until
-> kthread_stop() sets ->should_stop.
-
-Hmmm... I'm probably missing something but I don't see how
-stop_machine_cpu_callback(CPU_POST_DEAD) depends on stop_cpu() thread
-already parked in schedule().  Can you elaborate a bit?
-
->> +		schedule();
->> +	}
->> +	smp_rmb();	/* <- __stop_machine()::set_state() */
->> +
->> +	/* Okay, let's go */
->> +	smdata = &idle;
->>  	if (!active_cpus) {
->>  		if (cpu == cpumask_first(cpu_online_mask))
->>  			smdata = &active;
+> Regards,
+> Amit
 > 
-> I never understood why do we need "struct stop_machine_data idle".
-> stop_cpu() just needs a "bool should_call_active_fn" ?
-
-Yeap, it's an odd way to switch to no-op.  I have no idea why the
-original code looked like that.  Maybe it has some history.  At any
-rate, easy to fix.  I'll write up a patch to change it.
-
->>  int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
->>  {
->> ...
->>  	/* Schedule the stop_cpu work on all cpus: hold this CPU so one
->>  	 * doesn't hit this CPU until we're ready. */
->>  	get_cpu();
->> +	for_each_online_cpu(i)
->> +		wake_up_process(*per_cpu_ptr(stop_machine_threads, i));
+> -----Original Message-----
+> From: linux-rt-users-owner@vger.kernel.org [mailto:linux-rt-users-owner@vger.kernel.org] On Behalf Of Chatterjee, Amit
+> Sent: Wednesday, February 24, 2010 5:50 PM
+> To: LKML; rt-users
+> Subject: 2.6.33-rc8-rt1 on Beagle
 > 
-> I think the comment is wrong, and we need preempt_disable() instead
-> of get_cpu(). We shouldn't worry about this CPU, but we need to ensure
-> the woken real-time thread can't preempt us until we wake up them all.
+> Hi,
+> 	I am facing NULL pointer deference error with beagle board. The bootargs used are -
+> 
+> setenv bootargs 'console=ttyS2,115200n8 root=/dev/mmcblk0p2 rootwait rootfstype=ext3 omapfb.mode=dvi:800x600MR-24@60 omapdss.def_disp=dvi omapfb.vram=0:8M,1:2M,2:4M mem=216M'
+> setenv bootcmd 'mmc init;fatload mmc 0 0x80200000 uImage;bootm 0x80200000'
+> 
+> The crash log is as follows -
+> 
+> Waiting for root device /dev/mmcblk0p2...
+> Unable to handle kernel NULL pointer dereference at virtual address 00000000
+> pgd = c0004000
+> [00000000] *pgd=00000000
+> Internal error: Oops: 805 [#1] PREEMPT
+> last sysfs file:
+> Modules linked in:
+> CPU: 0    Not tainted  (2.6.33-rc8-rt1 #3)
+> PC is at rt_spin_lock_slowlock+0x64/0x220
+This corresponds to:
 
-get_cpu() and preempt_disable() are exactly the same thing, aren't
-they?  Do you think get_cpu() is wrong there for some reason?  The
-comment could be right depending on how you interpret 'this CPU' -
-ie. you could read it as 'hold on to the CPU which is waking up
-stop_machine_threads'.  But I suppose there's no harm in clarifying
-the comment.
+	BUG_ON(rt_mutex_owner(lock) == current);
 
-Thanks.
+in rt_spin_lock_slowlock.  If you had CONFIG_BUG_VERBOSE this would have
+been more obvious.
+
+> LR is at rt_spin_lock_slowlock+0x24/0x220
+> pc : [<c029f85c>]    lr : [<c029f81c>]    psr: 60000093
+> sp : cd1a1ed8  ip : cd1a1f08  fp : 00000053
+> r10: cd3bc664  r9 : c039c8c4  r8 : cd3bc400
+> r7 : cd1a0000  r6 : cd3bc664  r5 : 60000013  r4 : cd3bc664
+> r3 : 00000000  r2 : cd3fb480  r1 : 00000000  r0 : cd1a1ed8
+> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+> Control: 10c5387d  Table: 80004019  DAC: 00000017
+> Process irq/83-mmc0 (pid: 355, stack limit = 0xcd1a02e8)
+> Stack: (0xcd1a1ed8 to 0xcd1a2000)
+> 1ec0:                                                       00000001 00000006
+> 1ee0: cd070040 c0397f48 00000001 cd3fb480 ffffffff 00000002 cd3bc664 60000013
+> 1f00: 00000000 cd1a0000 00000000 c029f9f0 00000000 cd3bc600 cd0c3ef4 cd3bc664
+> 1f20: 00000000 cd3bc400 cd3bc664 c0213850 cd0c2000 cd0c201c cd3fb480 00000017
+> 1f40: 00000000 cd3bc600 00000000 00018000 00000001 00000000 cd3bc664 c020bb94
+> 1f60: cd0c3f24 c02145fc c039c880 cd3d07c0 cd1a0000 cd3d07e4 08000000 c039c8c4
+> 1f80: c039c8dc c00768e8 cd3d07c0 00000032 cd1a1f88 cd021e58 cd1a1fbc c0076828
+> 1fa0: cd3d07c0 00000000 00000000 00000000 00000000 c0060ae8 00000000 00000000
+> 1fc0: cd1a1fc0 cd1a1fc0 cd1a1fc8 cd1a1fc8 00000000 00000000 cd1a1fd8 cd1a1fd8
+> 1fe0: 00000000 00000000 00000000 00000000 00000000 c0028ec4 107fcd00 0a33ef94
+> [<c029f85c>] (rt_spin_lock_slowlock+0x64/0x220) from [<c0213850>] (omap_hsmmc_request+0x44/0x400)
+> [<c0213850>] (omap_hsmmc_request+0x44/0x400) from [<c020bb94>] (mmc_request_done+0x64/0x90)
+> [<c020bb94>] (mmc_request_done+0x64/0x90) from [<c02145fc>] (omap_hsmmc_irq+0x364/0x46c)
+> [<c02145fc>] (omap_hsmmc_irq+0x364/0x46c) from [<c00768e8>] (irq_thread+0xc0/0x208)
+> [<c00768e8>] (irq_thread+0xc0/0x208) from [<c0060ae8>] (kthread+0x78/0x80)
+> [<c0060ae8>] (kthread+0x78/0x80) from [<c0028ec4>] (kernel_thread_exit+0x0/0x8)
+> Code: e597300c e1520003 1a000002 e3a03000 (e5833000)
+
+I assume the problem is that the function omap_hsmmc_request tries to be
+clever in a non-rt compatible way:
+	
+	/*
+	 * Prevent races with the interrupt handler because of unexpected
+	 * interrupts, but not if we are already in interrupt context i.e.
+	 * retries.
+	 */
+	if (!in_interrupt()) {
+		spin_lock_irqsave(&host->irq_lock, host->flags);
+
+But looking at the backtrace in this context in_interrupt() would be
+true in !PREEMPT_RT.
+
+You might want to report that to the author(s) of
+drivers/mmc/host/omap_hsmmc.c.
+
+Best regards
+Uwe
 
 -- 
-tejun
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
