@@ -1,40 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751665Ab0CAQxh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:53:37 -0500
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52712 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751033Ab0CAQxg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:53:36 -0500
-From: Frans Pop <elendil@planet.nl>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
-Date: Mon, 1 Mar 2010 17:53:32 +0100
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-References: <20100301042249.GA12289@linux.vnet.ibm.com> <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com> <20100301162733.GB6758@linux.vnet.ibm.com>
-In-Reply-To: <20100301162733.GB6758@linux.vnet.ibm.com>
+	id S1751532Ab0CAQxU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:53:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40522 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750844Ab0CAQxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:53:19 -0500
+Date: Mon, 1 Mar 2010 17:50:38 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 10/43] stop_machine: reimplement without using workqueue
+Message-ID: <20100301165038.GA14558@redhat.com>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-11-git-send-email-tj@kernel.org> <20100228141135.GB5495@redhat.com> <4B8BD822.1010402@kernel.org> <20100301153750.GA11090@redhat.com> <4B8BED09.7000904@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201003011753.34299.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Mar 2010 16:53:35.0164 (UTC) FILETIME=[BB76D7C0:01CAB95F]
+In-Reply-To: <4B8BED09.7000904@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 March 2010, Paul E. McKenney wrote:
-> Here is the updated patch.  Thoughts?
+On 03/02, Tejun Heo wrote:
+>
+> Hello,
+>
+> On 03/02/2010 12:37 AM, Oleg Nesterov wrote:
+> >
+> > Suppose that, when stop_machine_cpu_callback(CPU_POST_DEAD) is called,
+> > that stop_cpu() thread T is still running and it is going to check state
+> > before schedule().
+>
+> Oh, I see.  I was thinking get/put_online_cpus() block is exclusive
+> against cpu_maps_update_begin/done() instead of
+> cpu_hotplug_begin/done().  Will update and add comments.
 
-AFAICT that still won't work with KBUILD_OUTPUT as you're not passing the 
-source tree directory to the script. So it will default to "." and when 
-KBUILD_OUTPUT is used that is not the source tree but the target tree (and 
-thus not under git).
+Agreed, a little comment can help.
 
-Cheers,
-FJP
+But, just in case, I forgot to repeat this case is not possible anyway.
+_cpu_down() ensures idle_cpu(cpu) == T after __stop_machine(), this means
+that this SCHED_FIFO thread we are going to kthread_stop() later can't
+be active.
+
+Oleg.
+
