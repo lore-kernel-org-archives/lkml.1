@@ -1,168 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751061Ab0CAKik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:38:40 -0500
-Received: from trinity.develer.com ([83.149.158.210]:35914 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792Ab0CAKij (ORCPT
+	id S1751198Ab0CAKis (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:38:48 -0500
+Received: from mail09.linbit.com ([212.69.161.110]:55653 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078Ab0CAKiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:38:39 -0500
-Date: Mon, 1 Mar 2010 11:38:36 +0100
-From: Andrea Righi <arighi@develer.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Greg Thelen <gthelen@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100301103836.GC2087@linux>
-References: <1267224751-6382-1-git-send-email-arighi@develer.com>
- <1267224751-6382-2-git-send-email-arighi@develer.com>
- <cc557aab1003010058i3a824f98l4cec173fac05911f@mail.gmail.com>
+	Mon, 1 Mar 2010 05:38:46 -0500
+Date: Mon, 1 Mar 2010 11:38:45 +0100
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Karsten Keil <isdn@linux-pingi.de>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Andreas Eversberg <andreas@eversberg.eu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: repost [PATCH 1/1] mISDN: Add PCI ID for HFC-4S Beronet Card PCIe
+Message-ID: <20100301103845.GD4321@soda.linbit>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cc557aab1003010058i3a824f98l4cec173fac05911f@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 10:58:35AM +0200, Kirill A. Shutemov wrote:
-[snip]
-> > +static u64 mem_cgroup_dirty_ratio_read(struct cgroup *cgrp, struct cftype *cft)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       return get_dirty_param(memcg, MEM_CGROUP_DIRTY_RATIO);
-> > +}
-> > +
-> > +static int
-> > +mem_cgroup_dirty_ratio_write(struct cgroup *cgrp, struct cftype *cft, u64 val)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       if ((cgrp->parent == NULL) || (val > 100))
-> > +               return -EINVAL;
-> > +
-> > +       spin_lock(&memcg->reclaim_param_lock);
-> > +       memcg->dirty_ratio = val;
-> > +       memcg->dirty_bytes = 0;
-> > +       spin_unlock(&memcg->reclaim_param_lock);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static u64 mem_cgroup_dirty_bytes_read(struct cgroup *cgrp, struct cftype *cft)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       return get_dirty_param(memcg, MEM_CGROUP_DIRTY_BYTES);
-> > +}
-> > +
-> > +static int
-> > +mem_cgroup_dirty_bytes_write(struct cgroup *cgrp, struct cftype *cft, u64 val)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       if (cgrp->parent == NULL)
-> > +               return -EINVAL;
-> > +
-> > +       spin_lock(&memcg->reclaim_param_lock);
-> > +       memcg->dirty_ratio = 0;
-> > +       memcg->dirty_bytes = val;
-> > +       spin_unlock(&memcg->reclaim_param_lock);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static u64
-> > +mem_cgroup_dirty_background_ratio_read(struct cgroup *cgrp, struct cftype *cft)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       return get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_RATIO);
-> > +}
-> > +
-> > +static int mem_cgroup_dirty_background_ratio_write(struct cgroup *cgrp,
-> > +                               struct cftype *cft, u64 val)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       if ((cgrp->parent == NULL) || (val > 100))
-> > +               return -EINVAL;
-> > +
-> > +       spin_lock(&memcg->reclaim_param_lock);
-> > +       memcg->dirty_background_ratio = val;
-> > +       memcg->dirty_background_bytes = 0;
-> > +       spin_unlock(&memcg->reclaim_param_lock);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static u64
-> > +mem_cgroup_dirty_background_bytes_read(struct cgroup *cgrp, struct cftype *cft)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       return get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_BYTES);
-> > +}
-> > +
-> > +static int mem_cgroup_dirty_background_bytes_write(struct cgroup *cgrp,
-> > +                               struct cftype *cft, u64 val)
-> > +{
-> > +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> > +
-> > +       if (cgrp->parent == NULL)
-> > +               return -EINVAL;
-> > +
-> > +       spin_lock(&memcg->reclaim_param_lock);
-> > +       memcg->dirty_background_ratio = 0;
-> > +       memcg->dirty_background_bytes = val;
-> > +       spin_unlock(&memcg->reclaim_param_lock);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> >  static struct cftype mem_cgroup_files[] = {
-> >        {
-> >                .name = "usage_in_bytes",
-> > @@ -3518,6 +3785,26 @@ static struct cftype mem_cgroup_files[] = {
-> >                .write_u64 = mem_cgroup_swappiness_write,
-> >        },
-> >        {
-> > +               .name = "dirty_ratio",
-> > +               .read_u64 = mem_cgroup_dirty_ratio_read,
-> > +               .write_u64 = mem_cgroup_dirty_ratio_write,
-> > +       },
-> > +       {
-> > +               .name = "dirty_bytes",
-> > +               .read_u64 = mem_cgroup_dirty_bytes_read,
-> > +               .write_u64 = mem_cgroup_dirty_bytes_write,
-> > +       },
-> > +       {
-> > +               .name = "dirty_background_ratio",
-> > +               .read_u64 = mem_cgroup_dirty_background_ratio_read,
-> > +               .write_u64 = mem_cgroup_dirty_background_ratio_write,
-> > +       },
-> > +       {
-> > +               .name = "dirty_background_bytes",
-> > +               .read_u64 = mem_cgroup_dirty_background_bytes_read,
-> > +               .write_u64 = mem_cgroup_dirty_background_bytes_write,
-> > +       },
-> > +       {
-> 
-> mem_cgroup_dirty_background_* functions are too similar to
-> mem_cgroup_dirty_bytes_*. I think they should be combined
-> like mem_cgroup_read() and mem_cgroup_write(). It will be
-> cleaner.
+A few subdevice IDs seem to have been dropped when hfc_multi was
+included upstream, just compare the list at
+http://www.openvox.cn/viewvc/misdn/trunk/hfc_multi.c?revision=75&view=annotate#l175
+with the IDs in drivers/isdn/hardware/mISDN/hfcmulti.c
 
-Agreed.
+I only have access to the 0xB762 hardware, so I only added that ID.
 
-Thanks,
--Andrea
+Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+
+---
+
+*BUMP*
+
+Repost, first posted
+ Date: Wed, 3 Feb 2010 22:20:55 +0100
+ Message-ID: <20100203212055.GB28234@soda.linbit>
+
+As all our daily phone calls run over these cards, I can confirm this
+particular card as working just fine, once the driver feels responsible.
+But someone should consider to also include the rest of the IDs,
+unless there has been a reason to drop them.
+
+
+
+
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index 1a1420d..446a29c 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -5265,6 +5265,7 @@ static const struct hm_map hfcm_map[] = {
+ /*31*/	{VENDOR_CCD, "XHFC-4S Speech Design", 5, 4, 0, 0, 0, 0,
+ 		HFC_IO_MODE_EMBSD, XHFC_IRQ},
+ /*32*/	{VENDOR_JH, "HFC-8S (junghanns)", 8, 8, 1, 0, 0, 0, 0, 0},
++/*33*/	{VENDOR_CCD, "HFC-4S Beronet Card PCIe", 4, 4, 1, 0, 0, 0, 0, 0},
+ };
+ 
+ #undef H
+@@ -5300,6 +5301,8 @@ static struct pci_device_id hfmultipci_ids[] __devinitdata = {
+ 		PCI_SUBDEVICE_ID_CCD_OV4S, 0, 0, H(28)}, /* OpenVox 4 */
+ 	{ PCI_VENDOR_ID_CCD, PCI_DEVICE_ID_CCD_HFC4S, PCI_VENDOR_ID_CCD,
+ 		PCI_SUBDEVICE_ID_CCD_OV2S, 0, 0, H(29)}, /* OpenVox 2 */
++	{ PCI_VENDOR_ID_CCD, PCI_DEVICE_ID_CCD_HFC4S, PCI_VENDOR_ID_CCD,
++		PCI_SUBDEVICE_ID_CCD_BN4SE, 0, 0, H(33)}, /* BN4S PCIe */
+ 
+ 	/* Cards with HFC-8S Chip */
+ 	{ PCI_VENDOR_ID_CCD, PCI_DEVICE_ID_CCD_HFC8S, PCI_VENDOR_ID_CCD,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index cca8a04..c171690 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1924,6 +1924,7 @@
+ #define PCI_SUBDEVICE_ID_CCD_HFC8S	0xB622
+ #define PCI_DEVICE_ID_CCD_B700		0xb700
+ #define PCI_DEVICE_ID_CCD_B701		0xb701
++#define PCI_SUBDEVICE_ID_CCD_BN4SE	0xb762
+ #define PCI_SUBDEVICE_ID_CCD_HFCE1	0xC523
+ #define PCI_SUBDEVICE_ID_CCD_OV2S	0xE884
+ #define PCI_SUBDEVICE_ID_CCD_OV4S	0xE888
+
