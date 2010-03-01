@@ -1,14 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750932Ab0CAIzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:55:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40900 "EHLO smtps.tip.net.au"
+	id S1751054Ab0CAI5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:57:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46378 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716Ab0CAIzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:55:40 -0500
-Date: Mon, 1 Mar 2010 19:55:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
+	id S1750804Ab0CAI5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:57:50 -0500
+Date: Mon, 1 Mar 2010 09:56:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
        linux-next@vger.kernel.org, Len Brown <lenb@kernel.org>,
        Dave Jones <davej@redhat.com>, Jean Delvare <khali@linux-fr.org>,
@@ -17,65 +17,55 @@ Cc: Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
        Sage Weil <sage@newdream.net>, Pekka Enberg <penberg@cs.helsinki.fi>,
        Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
-       Al Viro <viro@ZenIV.linux.org.uk>, "\"J??rn Engel\"" <joern@logfs.org>
+       Al Viro <viro@ZenIV.linux.org.uk>, J??rn Engel <joern@logfs.org>
 Subject: Re: linux-next: current pending merge fix patches
-Message-Id: <20100301195532.d9e5ae64.sfr@canb.auug.org.au>
-In-Reply-To: <20100301081021.GB8049@elte.hu>
+Message-ID: <20100301085613.GA2867@elte.hu>
 References: <20100301160445.5e281f11.sfr@canb.auug.org.au>
-	<20100301081021.GB8049@elte.hu>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_19_55_32_+1100_p7_lJAmauz8xutPN"
+ <20100301081021.GB8049@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301081021.GB8049@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_19_55_32_+1100_p7_lJAmauz8xutPN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo,
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-On Mon, 1 Mar 2010 09:10:21 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> > This could also be taken as a reminder to the respective maintiners tha=
-t=20
-> > they may want to do a merge of your tree before asking you to pull thei=
-rs.
->=20
-> I dont think that's generally correct for trivial conflicts: it's better =
-if=20
-> Linus does the merge of a tree that is based in some stable tree.
+> So i'd argue to not backmerge during the merge window (and i have stopped 
+> doing that myself a few cycles ago, and it clearly helped things) - but in 
+> any case it's certainly no big deal and up to Linus i guess.
 
-In general I agree.  I have singled out these conflict resolutions
-because they involve either files not obvious from the conflicts (newly
-introduced or chunks of code moved between files), or chunks of code that
-are introduced in one tree but need to be modified after the otheris
-merged.  So in that sense they are a heads up to Linus because they are
-only found after you do the merge and then get a build failure (if you do
-the right builds).
+What i do instead is that once Linus pulls from me i pull back immediately to 
+test, and if it's fine i base further subsystem patches on that and test the 
+heck out of the combination from that point on.
 
-So they can be resolved by Linus after he merges the second tree or by
-the original maintainer of one of the trees merging/cherrypicking (part
-of) the other tree or waiting for Linus to merge the other tree and then
-do a merge with Linus' tree.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+That's the collective 'point of no looking back' when subsystem people should 
+jump in and help out testing the "final" combination.
 
---Signature=_Mon__1_Mar_2010_19_55_32_+1100_p7_lJAmauz8xutPN
-Content-Type: application/pgp-signature
+But if a subsystem tree backmerges during the merge window any sooner 
+(_before_ Linus pulls), it can cause criss-cross merges (as Linus may not pull 
+or may pull later during which fixes arrive, etc.), creating a less readable 
+history, etc. - which may make integration and problem isolation somewhat 
+harder in the end.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+( It's not a big deal in isolation and i dont think Linus actually rejects
+  trees that do the occasional backmerge - but the combination of many small
+  deals can have a bigger effect. )
 
-iEYEARECAAYFAkuLgQQACgkQjjKRsyhoI8z+xACfVinbPfM+8eG3pr2biLHv4TVU
-RNEAn1HZLKS7bCitBa6tALXJIGhtRtKU
-=zkW7
------END PGP SIGNATURE-----
+There are exceptions, such as tricky conflicts that i know to be problematic - 
+in that case i occasionally backmerge. But it's relatively rare - 90%+ of the 
+conflicts are trivial and all-or-nothing affairs (i.e. if you mess it up the 
+kernel wont work very well, so it's immediately noticeable).
 
---Signature=_Mon__1_Mar_2010_19_55_32_+1100_p7_lJAmauz8xutPN--
+Thanks,
+
+	Ingo
