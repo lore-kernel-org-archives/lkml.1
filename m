@@ -1,56 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884Ab0CAU3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 15:29:41 -0500
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:53128 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750748Ab0CAU3k convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 15:29:40 -0500
-From: Frans Pop <elendil@planet.nl>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
-Date: Mon, 1 Mar 2010 21:29:35 +0100
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-References: <20100301042249.GA12289@linux.vnet.ibm.com> <201003011753.34299.elendil@planet.nl> <20100301181616.GD6758@linux.vnet.ibm.com>
-In-Reply-To: <20100301181616.GD6758@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <201003012129.36937.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Mar 2010 20:29:37.0220 (UTC) FILETIME=[E973A040:01CAB97D]
+	id S1751497Ab0CAUew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 15:34:52 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:35920 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750947Ab0CAUev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 15:34:51 -0500
+Subject: [RESEND][PATCH] Fix oops on !GENERIC_TIME systems when accessing
+ current_clocksource
+From: john stultz <johnstul@us.ibm.com>
+To: greg kh <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>, stable@kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, aaro.koskinen@iki.fi,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Mar 2010 12:34:43 -0800
+Message-ID: <1267475683.4216.61.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 March 2010, Paul E. McKenney wrote:
-> Hmmm...  In that case, it won't find the scripts/setlocalversion script,
-> either.  Unless you have the git tree on your $PATH, which seems
-> unlikely.  So I can just check for popen() failure and take corrective
-> action.
+No one has replied to this, so I wanted to send it out again.
 
-It doesn't work for me yet, but I don't see why not. It does work when I do 
-e.g. a 'make defconfig' in the current directory, but not when I set 
-KBUILD_OUTPUT.
+Aaro Koskinen reported an issue in bug #15366, where on non-GENERIC_TIME
+systems,
+accessing /sys/devices/system/clocksource/clocksource0/current_clocksource would oops the system. 
 
-It's probably easiest if you try to debug it yourself. It's as simple as:
-$ mkdir /tmp/kbuild
-$ KBUILD_OUTPUT=/tmp/kbuild make defconfig
+It seems the timekeeper/clocksource rework missed initializing the
+curr_clocksource value in the !GENERIC_TIME.
+
+The following patch makes sure it gets initialized, and avoids the
+issue.
+
+Thanks to Aaro for reporting and diagnosing the issue as well as testing
+the fix!
+
+Bug Details: http://bugzilla.kernel.org/show_bug.cgi?id=15366
+
+Too late for 2.6.33, but this likely should go into 2.6.33-stable and
+2.6.32-stable.
+
+thanks
+-john
 
 
-One other thing. I wonder if this implementation will always reliably 
-result in the *current* SHA1 being included in the .config. AFAICT 
-the .config only actually gets written if there are changes, or if you 
-explicitly do a 'make oldconfig'.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-But if you e.g. pull a stable update and just run 'make', the .config will 
-likely remain unchanged and will thus still contain the SHA1 from a 
-previous build.
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index e85c234..c436ee5 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -568,6 +568,10 @@ static inline void clocksource_select(void) { }
+  */
+ static int __init clocksource_done_booting(void)
+ {
++	mutex_lock(&clocksource_mutex);
++	curr_clocksource = clocksource_default_clock();
++	mutex_unlock(&clocksource_mutex);
++
+ 	finished_booting = 1;
+ 
+ 	/*
 
-Cheers,
-FJP
+
+
