@@ -1,69 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125Ab0CAVMp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:12:45 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:65146 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118Ab0CAVMn convert rfc822-to-8bit (ORCPT
+	id S1752291Ab0CAVPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:15:31 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:59853 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895Ab0CAVP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:12:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vWKKqH0wvdBUN2XZDtvO6APC9SkBLZRZ4sAOjzCcA1l6Pr2HjKPn0Wr61rKOQ9pYVB
-         N7JXprC6Cu87dUDIo5iF/117AV5GjrdJV8Z1k3UJ7Crc6UVhgq4IrbZPa4sv3NZyTe63
-         cpFpAPd+qagMZ6NMBTE36Rm9p8Jcs9QNlMJvE=
-MIME-Version: 1.0
-In-Reply-To: <20100301163437.GE7881@phenom.dumpdata.com>
-References: <20100227.040502.182574085.davem@davemloft.net>
-	 <51f3faa71002271015i7c9ec45j18381b1269bfd799@mail.gmail.com>
-	 <20100228033706G.fujita.tomonori@lab.ntt.co.jp>
-	 <20100228.001628.48507956.davem@davemloft.net>
-	 <20100301163437.GE7881@phenom.dumpdata.com>
-Date: Mon, 1 Mar 2010 15:12:41 -0600
-Message-ID: <51f3faa71003011312n3e7f8151x1a5e4b8bb57bb7c0@mail.gmail.com>
-Subject: Re: Was: Re: [RFC PATCH] fix problems with NETIF_F_HIGHDMA in 
-	networking, Now: SWIOTLB dynamic allocation
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: David Miller <davem@davemloft.net>, fujita.tomonori@lab.ntt.co.jp,
-       bzolnier@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Mar 2010 16:15:29 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5907"; a="35197051"
+Subject: Re: [PATCH] staging/dream: add missing include files/fix
+ compilation
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20100301211057.GA3004@elf.ucw.cz>
+References: <1263914079.1951.43.camel@m0nster>
+	 <20100131084421.GG2238@elf.ucw.cz> <20100131092829.GJ2238@elf.ucw.cz>
+	 <1264953492.2059.5.camel@m0nster> <20100225193027.GA7391@elf.ucw.cz>
+	 <1267126586.5439.56.camel@c-dwalke-linux.qualcomm.com>
+	 <20100225194125.GA7645@elf.ucw.cz>
+	 <1267127298.5439.62.camel@c-dwalke-linux.qualcomm.com>
+	 <20100226213107.GA29615@elf.ucw.cz>
+	 <1267469856.29769.9.camel@c-dwalke-linux.qualcomm.com>
+	 <20100301211057.GA3004@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Mar 2010 13:15:18 -0800
+Message-ID: <1267478118.29769.16.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 10:34 AM, Konrad Rzeszutek Wilk
-<konrad.wilk@oracle.com> wrote:
-> On Sun, Feb 28, 2010 at 12:16:28AM -0800, David Miller wrote:
->> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->> Date: Sun, 28 Feb 2010 03:38:19 +0900
->>
->> > When I proposed such approach (always use swiotlb) before, IIRC,
->> > the objections were:
->> >
->> > - better to make allocation respect dma_mask. (I don't think that this
->> >   approach is possible since we don't know which device handles data
->> >   later when we allocate memory).
->>
->> And such objects might end up being processed by multiple devices with
->> different DMA restrictions.
->>
->> > - swiotlb is not good for small systems since it allocates too much
->> >   memory (we can fix this though).
->>
->> Indeed.
->
-> What would be a good mechanism for this? Enumerating all of the PCI
-> devices to find out which ones are 32-bit and then allocate some chunk
-> of memory based on the amount of them? say, 1MB per card?
->
-> Or maybe a simpler one - figure out how many pages we have an allocate
-> based on some sliding rule (say, 8MB for under 512MB, 16MB between 512MB
-> and 2GB, and 32MB for 2GB to 4GB, and after that the full 64MB?)
+On Mon, 2010-03-01 at 22:10 +0100, Pavel Machek wrote:
 
-Why do we need to allocate SWIOTLB if your highest memory address is
-under 4GB? You can just disable it in that case, like x86_64 does.
+> How do I get that one? I tried killing the repository and redoing git
+> pull, followed up by 
+
+You should just be able to do "git remotes update" , then checkout the
+branch again.
+
+> git checkout refs/remotes/origin/working-mmc
+> 
+> only to get (git log): [I think I was there before].
+> 
+> commit 2b0bcf161e83fc7d45476f3330f06b656a1f03d4
+> Author: Daniel Walker <dwalker@codeaurora.org>
+> Date:   Mon Feb 22 12:29:17 2010 -0800
+> 
+>     DMA fixes (get MMC working).
+> 
+> commit 5fc33446739aa7a0826d98a00cc50a712c6d60eb
+> Author: San Mehat <san@google.com>
+> Date:   Wed Feb 3 12:59:29 2010 -0800
+> 
+>     drivers: mmc: msm_sdcc: Add EMBEDDED_SDIO support
+>     
+>     Signed-off-by: Dmitry Shmidt <dimitrysh@google.com>
+
+I actually dropped a patch between the two above, otherwise the history
+is very similar. I think you have the right one, are you still getting
+the compile errors?
+
+Daniel
+
