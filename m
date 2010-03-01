@@ -1,62 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232Ab0CAEDR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 23:03:17 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:52910 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976Ab0CAEDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 23:03:16 -0500
-Date: Mon, 1 Mar 2010 15:03:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>
-Subject: Re: linux-next: build failure after merge of the blackfin tree
-Message-Id: <20100301150310.ae3aa9c6.sfr@canb.auug.org.au>
-In-Reply-To: <20100301010849.GA7210@nowhere>
-References: <20100301120321.8851ba86.sfr@canb.auug.org.au>
-	<20100301010849.GA7210@nowhere>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q"
+	id S1754334Ab0CAEDx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 23:03:53 -0500
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:41626 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649Ab0CAEDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 23:03:51 -0500
+Date: Sun, 28 Feb 2010 23:03:46 -0500 (EST)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Michal Marek <mmarek@suse.cz>
+cc: Denys Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       Bjorn Wesen <bjornw@axis.com>, Tim Bird <tim.bird@am.sony.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Waseem Daher <wdaher@ksplice.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Barry Song <barry.song@analog.com>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 00/24] Rename kernel's magic sections for compatibility
+ with -ffunction-sections -fdata-sections
+In-Reply-To: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
+Message-ID: <alpine.DEB.1.10.1002282111280.6474@dr-wily.mit.edu>
+References: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 20 Feb 2010, Denys Vlasenko wrote:
 
-Hi Frederic,
+> Here is a new version of the -ffunction-sections -fdata-sections patch
+> series based on current Linus tree.
 
-On Mon, 1 Mar 2010 02:08:52 +0100 Frederic Weisbecker <fweisbec@gmail.com> =
-wrote:
->
-> Oh, why is this patch in the blackfin tree?
+Aside from patch 17, which I would prefer that Haavard review, these 
+patches look correct (and patch 17 can be safely dropped).  Please 
+consider the rest of Denys' patches in this patch series
 
-I have no idea beyond the fact that Mike is the Blackfin maintainer.
+Acked-by: Tim Abbott <tabbott@ksplice.com>
 
-> Looks like the right patch yeah.
+The patches still apply fine on Linus' current master.  There are no merge 
+conflicts with linux-next's current master, but we will need to do 
+something to merge with
 
-Thanks.
+"Blackfin: initial XIP support"
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+in linux-next, which introduces a direct reference to .data.percpu.* (not 
+using the normal PERCPU macros so they can put .data.percpu content inside 
+the .init.data section).  That conflict looks easy to deal with by adding 
+a new macro to handle this case (CCing the author and blackfin maintainer; 
+it's possible that this blackfin patch is going in soon, in which case we 
+can just rebase these patches on top).
 
---Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q
-Content-Type: application/pgp-signature
+Michal, what are your thoughts on this patch series?  The kbuild tree 
+would be a reasonable path for merging these patches.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuLPH4ACgkQjjKRsyhoI8yfegCfQBMSqePH8T3VZaMpSwKAyFgz
-XXYAn02SEoOs0hTLaj3p+inQGlS01eNI
-=5m0O
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Mar_2010_15_03_10_+1100_wqk8rvVMlQ7cVc5q--
+	-Tim Abbott
