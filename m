@@ -1,250 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751644Ab0CAQuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:50:11 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45554 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588Ab0CAQuE (ORCPT
+	id S1751665Ab0CAQxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:53:37 -0500
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52712 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751033Ab0CAQxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:50:04 -0500
-Message-ID: <4B8BF01D.7070507@windriver.com>
-Date: Mon, 01 Mar 2010 10:49:33 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 1 Mar 2010 11:53:36 -0500
+From: Frans Pop <elendil@planet.nl>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
+Date: Mon, 1 Mar 2010 17:53:32 +0100
+User-Agent: KMail/1.9.9
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+References: <20100301042249.GA12289@linux.vnet.ibm.com> <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com> <20100301162733.GB6758@linux.vnet.ibm.com>
+In-Reply-To: <20100301162733.GB6758@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-input@vger.kernel.org
-Subject: Re: [PATCH 23/28] keyboard, input: Add hook to input to allow low
- level event clear
-References: <1267132893-23624-1-git-send-email-jason.wessel@windriver.com> <1267132893-23624-24-git-send-email-jason.wessel@windriver.com> <20100226080329.GD17062@core.coreip.homeip.net> <4B87F17B.6040305@windriver.com> <20100227075528.GA793@core.coreip.homeip.net> <4B8B3B08.7000705@windriver.com> <20100301050437.GE765@core.coreip.homeip.net>
-In-Reply-To: <20100301050437.GE765@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Mar 2010 16:49:33.0941 (UTC) FILETIME=[2BAF2250:01CAB95F]
+Content-Disposition: inline
+Message-Id: <201003011753.34299.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Mar 2010 16:53:35.0164 (UTC) FILETIME=[BB76D7C0:01CAB95F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Sun, Feb 28, 2010 at 09:56:56PM -0600, Jason Wessel wrote:
-> 
->> It is not obvious to me how walk through the input device list with the
->> right locks and then obtain the handle required to call the inject
->> input.  It does not appear that it is possible to hold the locks while
->> walking through the keycode device bitmap and issue calls to inject
->> input. Is there any kind of input API function to obtain the device bitmaps?
->>
-> 
-> There is key_down bitmap right there in keyboard.c that reflects all
-> keys that are considered "down" as far as keyboard driver is concerned.
-> You can use input_handler_for_each_handle() for kbd_handler to iterate
-> through all input handles and send "up" events for all keys that
-> keyboard.c is considering as being "down". There is no harm in sending
-> extra "up" events for keys that are not pressed - the event will simply
-> be ignored by input core.
-> 
+On Monday 01 March 2010, Paul E. McKenney wrote:
+> Here is the updated patch.  Thoughts?
 
-Thanks for the explanation.
+AFAICT that still won't work with KBUILD_OUTPUT as you're not passing the 
+source tree directory to the script. So it will default to "." and when 
+KBUILD_OUTPUT is used that is not the source tree but the target tree (and 
+thus not under git).
 
-Below is the new version.  You just have to decide if you want to
-expose the keyboard bitmap as a global, or use an accessors function
-inside keyboard.c.
-
-In X, it seems there is an unbalenced key up / down because
-emulate_raw() puts the keys in, but the keyboard bit map is not
-updated.  I worked around it by adding in a keyboard bitmap update
-prior to invoking the sysrq, so the kdb key free can free all the keys
-later.
-
-I am not sure if there is a better way to fix the bitmap update.  I
-did try moving the emulate_raw() around in a few combinations, but
-nothing would yield the correct results for still allowing the
-alt-print-screen work with the window capture in the window manager.
-
-Thanks,
-Jason.
-
----
-From: Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH] keyboard,kgdboc: Allow key release on kernel resume
-
-When using a keyboard with kdb, a hook point to free all the
-keystrokes is required for resuming kernel operations.
-
-This is mainly because there is no way to force the end user to hold
-down the original keys that were pressed prior to entering kdb when
-resuming the kernel.
-
-The kgdboc driver will call kdb_clear_keys() just prior to resuming
-the kernel execution which will create a tasklet to run
-kbd_dbg_clear_keys() inside the keyboard.c.
-
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>
-CC: linux-input@vger.kernel.org
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-
----
- drivers/char/keyboard.c         |   27 +++++++++++++++++++++++++++
- drivers/serial/kgdboc.c         |   13 +++++++++++++
- include/linux/kbd_kern.h        |    1 +
- include/linux/kdb.h             |    3 +++
- kernel/debug/kdb/kdb_keyboard.c |   25 +++++++++++++++++++++++++
- 5 files changed, 69 insertions(+)
-
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -379,6 +379,32 @@ static void to_utf8(struct vc_data *vc, 
- 	}
- }
- 
-+static int kbd_dbg_clear_keys_helper(struct input_handle *handle, void *data)
-+{
-+	unsigned int *keycode = data;
-+	input_inject_event(handle, EV_KEY, *keycode, 0);
-+	return 0;
-+}
-+
-+/* Called to clear the any key presses after resuming the kernel. */
-+void kbd_dbg_clear_keys(void) {
-+	unsigned int i, j, k;
-+
-+	for (i = 0; i < ARRAY_SIZE(key_down); i++) {
-+		if (!key_down[i])
-+			continue;
-+
-+		k = i * BITS_PER_LONG;
-+
-+		for (j = 0; j < BITS_PER_LONG; j++, k++) {
-+			if (!test_bit(k, key_down))
-+				continue;
-+			input_handler_for_each_handle(&kbd_handler, &k,
-+				      kbd_dbg_clear_keys_helper);
-+		}
-+	}
-+}
-+
- /*
-  * Called after returning from RAW mode or when changing consoles - recompute
-  * shift_down[] and shift_state from key_down[] maybe called when keymap is
-@@ -1206,6 +1232,7 @@ static void kbd_keycode(unsigned int key
- 	if (sysrq_down && !down && keycode == sysrq_alt_use)
- 		sysrq_down = 0;
- 	if (sysrq_down && down && !rep) {
-+		set_bit(keycode, key_down);
- 		handle_sysrq(kbd_sysrq_xlate[keycode], tty);
- 		return;
- 	}
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -17,6 +17,7 @@
- #include <linux/kdb.h>
- #include <linux/tty.h>
- #include <linux/console.h>
-+#include <linux/kbd_kern.h>
- 
- #define MAX_CONFIG_LEN		40
- 
-@@ -35,12 +36,16 @@ static struct tty_driver	*kgdb_tty_drive
- static int			kgdb_tty_line;
- 
- #ifdef CONFIG_KDB_KEYBOARD
-+static bool			kgdboc_use_kbd;
-+
- static int kgdboc_register_kbd(char **cptr)
- {
-+	kgdboc_use_kbd = false;
- 	if (strncmp(*cptr, "kbd", 3) == 0) {
- 		if (kdb_poll_idx < KDB_POLL_FUNC_MAX) {
- 			kdb_poll_funcs[kdb_poll_idx] = kdb_get_kbd_char;
- 			kdb_poll_idx++;
-+			kgdboc_use_kbd = true;
- 			if (cptr[0][3] == ',')
- 				*cptr += 4;
- 			else
-@@ -63,9 +68,16 @@ static void kgdboc_unregister_kbd(void)
- 		}
- 	}
- }
-+
-+static inline void kgdboc_clear_kbd(void)
-+{
-+	if (kgdboc_use_kbd)
-+		kdb_clear_keys(); /* Release all pressed keys */
-+}
- #else /* ! CONFIG_KDB_KEYBOARD */
- #define kgdboc_register_kbd(x) 0
- #define kgdboc_unregister_kbd()
-+#define kgdboc_clear_kbd()
- #endif /* ! CONFIG_KDB_KEYBOARD */
- 
- static int kgdboc_option_setup(char *opt)
-@@ -213,6 +225,7 @@ static void kgdboc_post_exp_handler(void
- 	/* decrement the module count when the debugger detaches */
- 	if (!kgdb_connected)
- 		module_put(THIS_MODULE);
-+	kgdboc_clear_kbd();
- }
- 
- static struct kgdb_io kgdboc_io_ops = {
---- a/include/linux/kbd_kern.h
-+++ b/include/linux/kbd_kern.h
-@@ -144,6 +144,7 @@ struct console;
- int getkeycode(unsigned int scancode);
- int setkeycode(unsigned int scancode, unsigned int keycode);
- void compute_shiftstate(void);
-+void kbd_dbg_clear_keys(void);
- 
- /* defkeymap.c */
- 
---- a/include/linux/kdb.h
-+++ b/include/linux/kdb.h
-@@ -93,6 +93,9 @@ typedef int (*get_char_func)(void);
- extern get_char_func kdb_poll_funcs[];
- extern int kdb_get_kbd_char(void);
- 
-+/* KDB keyboard hooks */
-+extern void kdb_clear_keys(void);
-+
- static inline
- int kdb_process_cpu(const struct task_struct *p)
- {
---- a/kernel/debug/kdb/kdb_keyboard.c
-+++ b/kernel/debug/kdb/kdb_keyboard.c
-@@ -13,6 +13,7 @@
- #include <linux/ctype.h>
- #include <linux/module.h>
- #include <linux/io.h>
-+#include <linux/kbd_kern.h>
- 
- /* Keyboard Controller Registers on normal PCs. */
- 
-@@ -210,3 +211,27 @@ int kdb_get_kbd_char(void)
- 	return keychar & 0xff;
- }
- EXPORT_SYMBOL_GPL(kdb_get_kbd_char);
-+
-+static bool dbg_keys_cleared;
-+/*
-+ * input_dbg_clear_keys - Clear any keyboards if they have a call back,
-+ * after returning from the kernel debugger
-+ */
-+static void kdb_keys_task(unsigned long not_used)
-+{
-+	if (!dbg_keys_cleared)
-+		return;
-+	kbd_dbg_clear_keys();
-+	dbg_keys_cleared = false;
-+}
-+
-+static DECLARE_TASKLET(kdb_keys_tasklet, kdb_keys_task, 0);
-+
-+void kdb_clear_keys(void)
-+{
-+	if (dbg_keys_cleared)
-+		return;
-+	dbg_keys_cleared = true;
-+	tasklet_schedule(&kdb_keys_tasklet);
-+}
-+EXPORT_SYMBOL_GPL(kdb_clear_keys);
+Cheers,
+FJP
