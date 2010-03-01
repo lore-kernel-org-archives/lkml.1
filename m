@@ -1,225 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751296Ab0CAFaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:30:15 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:42149 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897Ab0CAFaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 00:30:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=Hciqz6X5mvSMOJUS6A3L2NVp0BeZbu1FApW2mbxP23aldAh3MYSLW9r6Q1+2YYmZ0n
-         JQK6AY15leB0Fwxbi2asQ/ulumk+RP76MTRb1zU5XWbgLHbj6KeI/RcfOTKGWScVSlii
-         jaEAqQUlVUThToJ1LTxD1qQE63RiHz+U73l+c=
-MIME-Version: 1.0
-Date: Sun, 28 Feb 2010 21:30:12 -0800
-Message-ID: <be233a491002282130m3c637cfbw6648a77548241a64@mail.gmail.com>
-Subject: [PATCH] hpet: factor timer allocate from open
-From: Magnus Lynch <maglyx@gmail.com>
-To: clemens@ladisch.de, venkatesh.pallipadi@intel.com, vojtech@suse.cz,
-       bob.picco@hp.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751447Ab0CAFh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:37:58 -0500
+Received: from mga11.intel.com ([192.55.52.93]:11799 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750733Ab0CAFh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 00:37:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
+   d="scan'208";a="544789717"
+Message-Id: <20100301052651.857984880@intel.com>
+User-Agent: quilt/0.48-1
+Date: Mon, 01 Mar 2010 13:26:51 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Clemens Ladisch <clemens@ladisch.de>
+CC: Olivier Galibert <galibert@pobox.com>
+cc: Vivek Goyal <vgoyal@redhat.com>
+cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+cc: Matt Mackall <mpm@selenic.com>
+CC: Nick Piggin <npiggin@suse.de>
+cc: Linux Memory Management List <linux-mm@kvack.org>
+CC: <linux-fsdevel@vger.kernel.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 00/16] [PATCH 00/15] 512K readahead size with thrashing safe readahead v3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current implementation of the /dev/hpet driver couples opening the
-device with allocating one of the (scarce) timers (aka comparators).
-This is a limitation in that the main counter may be valuable to
-applications seeking a high-resolution timer who have no use for the
-interrupt generating functionality of the comparators.
+Andrew,
 
-This patch alters the open semantics so that when the device is
-opened, no timer is allocated. Operations that depend on a timer being
-in context implicitly attempt allocating a timer, to maintain backward
-compatibility. There is also an IOCTL (HPET_ALLOC_TIMER _IO) added so
-that the allocation may be done explicitly. (I prefer the explicit
-open then allocate pattern but don't know how practical it would be to
-require all existing code to be changed.)
+This enlarges the default readahead size from 128K to 512K.
+To avoid possible regressions, also do
+- scale down readahead size on small device and small memory
+- thrashing safe context readahead
+- add readahead tracing/stats support to help expose possible problems
 
-I also have changes for adding IOCTLs to get the main counter
-value--which is more straightforward than mmaping and reading the
-registers directly, and possibly necessary if mmap is ifdef'd
-away--but have separated that logically into another patch. I'll wait
-to post that until any issues with this are hashed out.
+Besides, the patchset also includes several algorithm updates:
+- no start-of-file readahead after lseek
+- faster radix_tree_next_hole()/radix_tree_prev_hole()
+- pagecache context based mmap read-around
 
-Signed-off-by: Magnus Lynch <maglyx@gmail.com>
----
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index e481c59..8991227 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -244,16 +244,40 @@ static void hpet_timer_set_irq(struct hpet_dev *devp)
 
- static int hpet_open(struct inode *inode, struct file *file)
- {
--       struct hpet_dev *devp;
-       struct hpets *hpetp;
--       int i;
+Changes since v2:
+- add notes on readahead size
+- limit read-around size for small memory system, but don't limit readahead size
+- bug fix: allow context readahead async size grow to its full size
+- bug fix: let radix_tree_lookup_leaf_node() handle the height=1 case
 
-       if (file->f_mode & FMODE_WRITE)
-               return -EINVAL;
+Changes since v1:
+- update mmap read-around heuristics (Thanks to Nick Piggin)
+- radix_tree_lookup_leaf_node() for the pagecache based mmap read-around
+- use __print_symbolic() to show readahead pattern names
+  (Thanks to Steven Rostedt)
+- scale down readahead size proportional to system memory
+  (Thanks to Matt Mackall)
+- add readahead size kernel parameter (by Nikanth Karthikesan)
+- add comments from Christian Ehrhardt
 
-+       hpetp = hpets;
-+       /* starting with timer-neutral instance */
-+       file->private_data = &hpetp->hp_dev[hpetp->hp_ntimer];
-+
-+       return 0;
-+}
-+
-+static int hpet_alloc_timer(struct file *file)
-+{
-+       struct hpet_dev *devp;
-+       struct hpets *hpetp;
-+       int i;
-+
-+       /* once acquired, will remain */
-+       devp = file->private_data;
-+       if (devp->hd_timer)
-+               return 0;
-+
-       lock_kernel();
-       spin_lock_irq(&hpet_lock);
+Changes since RFC:
+- move the lenthy intro text to individual patch changelogs
+- treat get_capacity()==0 as uninitilized value (Thanks to Vivek Goyal)
+- increase readahead size limit for small devices (Thanks to Jens Axboe)
+- add fio test results by Vivek Goyal
 
-+       /* check for race acquiring */
-+       devp = file->private_data;
-+       if (devp->hd_timer) {
-+               spin_unlock_irq(&hpet_lock);
-+               unlock_kernel();
-+               return 0;
-+       }
-+
-       for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
-               for (i = 0; i < hpetp->hp_ntimer; i++)
-                       if (hpetp->hp_dev[i].hd_flags & HPET_OPEN)
-@@ -384,6 +408,10 @@ static int hpet_fasync(int fd, struct file *file, int on)
- {
-       struct hpet_dev *devp;
 
-+       int r = hpet_alloc_timer(file);
-+       if (r < 0)
-+               return r;
-+
-       devp = file->private_data;
+[PATCH 01/16] readahead: limit readahead size for small devices
+[PATCH 02/16] readahead: retain inactive lru pages to be accessed soon
+[PATCH 03/16] readahead: bump up the default readahead size
+[PATCH 04/16] readahead: make default readahead size a kernel parameter
+[PATCH 05/16] readahead: limit read-ahead size for small memory systems
+[PATCH 06/16] readahead: add notes on readahead size
+[PATCH 07/16] readahead: replace ra->mmap_miss with ra->ra_flags
+[PATCH 08/16] readahead: thrashing safe context readahead
+[PATCH 09/16] readahead: record readahead patterns
+[PATCH 10/16] readahead: add tracing event
+[PATCH 11/16] readahead: add /debug/readahead/stats
+[PATCH 12/16] readahead: dont do start-of-file readahead after lseek()
+[PATCH 13/16] radixtree: introduce radix_tree_lookup_leaf_node()
+[PATCH 14/16] radixtree: speed up the search for hole
+[PATCH 15/16] readahead: reduce MMAP_LOTSAMISS for mmap read-around
+[PATCH 16/16] readahead: pagecache context based mmap read-around
 
-       if (fasync_helper(fd, file, on, &devp->hd_async_queue) >= 0)
-@@ -401,6 +429,9 @@ static int hpet_release(struct inode *inode,
-struct file *file)
-       devp = file->private_data;
-       timer = devp->hd_timer;
+ Documentation/kernel-parameters.txt |    4 
+ block/blk-core.c                    |    3 
+ block/genhd.c                       |   24 +
+ fs/fuse/inode.c                     |    2 
+ fs/read_write.c                     |    3 
+ include/linux/fs.h                  |   64 +++
+ include/linux/mm.h                  |    8 
+ include/linux/radix-tree.h          |    2 
+ include/trace/events/readahead.h    |   78 ++++
+ lib/radix-tree.c                    |  104 ++++-
+ mm/Kconfig                          |   13 
+ mm/filemap.c                        |   34 +
+ mm/readahead.c                      |  458 ++++++++++++++++++++++----
+ 13 files changed, 688 insertions(+), 109 deletions(-)
 
-+       if (!timer)
-+               goto out;
-+
-       spin_lock_irq(&hpet_lock);
+Thanks,
+Fengguang
 
-       writeq((readq(&timer->hpet_config) & ~Tn_INT_ENB_CNF_MASK),
-@@ -425,7 +456,7 @@ static int hpet_release(struct inode *inode,
-struct file *file)
-
-       if (irq)
-               free_irq(irq, devp);
--
-+out:
-       file->private_data = NULL;
-       return 0;
- }
-@@ -438,6 +469,17 @@ hpet_ioctl(struct inode *inode, struct file
-*file, unsigned int cmd,
- {
-       struct hpet_dev *devp;
-
-+       switch (cmd) {
-+       case HPET_INFO:
-+               break;
-+       default:
-+               {
-+                       int r = hpet_alloc_timer(file);
-+                       if (r < 0)
-+                               return r;
-+               }
-+       }
-+
-       devp = file->private_data;
-       return hpet_ioctl_common(devp, cmd, arg, 0);
- }
-@@ -570,6 +612,9 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd,
-unsigned long arg, int kernel)
-               break;
-       case HPET_IE_ON:
-               return hpet_ioctl_ieon(devp);
-+       case HPET_ALLOC_TIMER:
-+               /* nothing to do */
-+               return 0;
-       default:
-               return -EINVAL;
-       }
-@@ -598,10 +643,16 @@ hpet_ioctl_common(struct hpet_dev *devp, int
-cmd, unsigned long arg, int kernel)
-                                       hpet_time_div(hpetp, devp->hd_ireqfreq);
-                       else
-                               info.hi_ireqfreq = 0;
--                       info.hi_flags =
--                           readq(&timer->hpet_config) & Tn_PER_INT_CAP_MASK;
-+                       if (timer) {
-+                               info.hi_flags =
-+                                       readq(&timer->hpet_config) &
-+                                       Tn_PER_INT_CAP_MASK;
-+                               info.hi_timer = devp - hpetp->hp_dev;
-+                       } else {
-+                               info.hi_flags = 0;
-+                               info.hi_timer = -1;
-+                       }
-                       info.hi_hpet = hpetp->hp_which;
--                       info.hi_timer = devp - hpetp->hp_dev;
-                       if (kernel)
-                               memcpy((void *)arg, &info, sizeof(info));
-                       else
-@@ -794,7 +845,11 @@ int hpet_alloc(struct hpet_data *hdp)
-               return 0;
-       }
-
--       siz = sizeof(struct hpets) + ((hdp->hd_nirqs - 1) *
-+       /*
-+        * last hpet_dev will have null timer pointer, gives timer-neutral
-+        * representation of block
-+        */
-+       siz = sizeof(struct hpets) + ((hdp->hd_nirqs) *
-                                     sizeof(struct hpet_dev));
-
-       hpetp = kzalloc(siz, GFP_KERNEL);
-@@ -860,13 +915,16 @@ int hpet_alloc(struct hpet_data *hdp)
-               writeq(mcfg, &hpet->hpet_config);
-       }
-
--       for (i = 0, devp = hpetp->hp_dev; i < hpetp->hp_ntimer; i++, devp++) {
-+       for (i = 0, devp = hpetp->hp_dev; i < hpetp->hp_ntimer + 1;
-+            i++, devp++) {
-               struct hpet_timer __iomem *timer;
-
--               timer = &hpet->hpet_timers[devp - hpetp->hp_dev];
--
-               devp->hd_hpets = hpetp;
-               devp->hd_hpet = hpet;
-+               if (i == hpetp->hp_ntimer)
-+                       continue;
-+
-+               timer = &hpet->hpet_timers[devp - hpetp->hp_dev];
-               devp->hd_timer = timer;
-
-               /*
-diff --git a/include/linux/hpet.h b/include/linux/hpet.h
-index 219ca4f..d690c0f 100644
---- a/include/linux/hpet.h
-+++ b/include/linux/hpet.h
-@@ -125,6 +125,7 @@ struct hpet_info {
- #define        HPET_EPI        _IO('h', 0x04)  /* enable periodic */
- #define        HPET_DPI        _IO('h', 0x05)  /* disable periodic */
- #define        HPET_IRQFREQ    _IOW('h', 0x6, unsigned long)   /*
-IRQFREQ usec */
-+#define        HPET_ALLOC_TIMER _IO('h', 0x7)
-
- #define MAX_HPET_TBS   8               /* maximum hpet timer blocks */
