@@ -1,118 +1,171 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500Ab0CATEO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 14:04:14 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:39409 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003Ab0CATEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 14:04:11 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	id S1751744Ab0CATN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 14:13:29 -0500
+Received: from pindarots.xs4all.nl ([80.101.128.228]:53048 "EHLO
+	pindarots.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601Ab0CATN1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 14:13:27 -0500
+X-Greylist: delayed 3131 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 14:13:27 EST
+Message-ID: <4B8C0598.2060000@xs4all.nl>
+Date: Mon, 01 Mar 2010 19:21:12 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 1/2] rcu: suppress RCU lockdep warnings during early boot
-Date: Mon,  1 Mar 2010 11:03:53 -0800
-Message-Id: <1267470234-27150-1-git-send-email-paulmck@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100301190329.GA26892@linux.vnet.ibm.com>
-References: <20100301190329.GA26892@linux.vnet.ibm.com>
+Subject: 2.6.33 on jetway nc81-lf board
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RCU is used during very early boot, before RCU and lockdep have been
-initialized.  So make the underlying primitives (rcu_read_lock_held(),
-rcu_read_lock_bh_held(), rcu_read_lock_sched_held(), and
-rcu_dereference_check()) check for early boot via the rcu_scheduler_active
-flag.  This will suppress false positives.
+Hello,
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- include/linux/rcupdate.h |   26 +++++++++++++++++---------
- 1 files changed, 17 insertions(+), 9 deletions(-)
+I just compiled 2.6.33 on a Jetway NC81-LF board with AMD 235E CPU.
+While trying to get lm_sensors to work I get in dmesg stuff like:
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index c843736..af51d5f 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -104,12 +104,14 @@ extern struct lockdep_map rcu_sched_lock_map;
-  * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_lock_map);
--	return 1;
-+	if (!rcu_scheduler_active || !debug_locks)
-+		return 1;
-+	return lock_is_held(&rcu_lock_map);
- }
- 
- /**
-@@ -119,12 +121,14 @@ static inline int rcu_read_lock_held(void)
-  * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU-bh read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_bh_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_bh_lock_map);
--	return 1;
-+	if (!rcu_scheduler_active || !debug_locks)
-+		return 1;
-+	return lock_is_held(&rcu_bh_lock_map);
- }
- 
- /**
-@@ -135,14 +139,18 @@ static inline int rcu_read_lock_bh_held(void)
-  * this assumes we are in an RCU-sched read-side critical section unless it
-  * can prove otherwise.  Note that disabling of preemption (including
-  * disabling irqs) counts as an RCU-sched read-side critical section.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_sched_held(void)
- {
- 	int lockdep_opinion = 0;
- 
-+	if (!rcu_scheduler_active || !debug_locks)
-+		return 1;
- 	if (debug_locks)
- 		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
--	return lockdep_opinion || preempt_count() != 0 || !rcu_scheduler_active;
-+	return lockdep_opinion || preempt_count() != 0;
- }
- 
- #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -166,7 +174,7 @@ static inline int rcu_read_lock_bh_held(void)
- 
- static inline int rcu_read_lock_sched_held(void)
- {
--	return preempt_count() != 0 || !rcu_scheduler_active;
-+	return !rcu_scheduler_active || preempt_count() != 0;
- }
- 
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -184,7 +192,7 @@ static inline int rcu_read_lock_sched_held(void)
-  */
- #define rcu_dereference_check(p, c) \
- 	({ \
--		if (debug_locks && !(c)) \
-+		if (rcu_scheduler_active && debug_locks && !(c)) \
- 			lockdep_rcu_dereference(__FILE__, __LINE__); \
- 		rcu_dereference_raw(p); \
- 	})
--- 
-1.6.6
+f71882fg: Found f71862fg chip at 0x220, revision 18
+ACPI: I/O resource f71882fg [0x220-0x227] conflicts with ACPI region
+IP__ [0x225-0x226]
+ACPI: If an ACPI driver is available for this device, you should use it
+instead of the native driver
+ACPI: I/O resource piix4_smbus [0xb00-0xb07] conflicts with ACPI region
+SOR1 [0xb00-0xb0f]
+ACPI: If an ACPI driver is available for this device, you should use it
+instead of the native driver
 
+
+No other sensor-related modules are loaded.
+
+What could be wrong?
+
+# lspci
+00:00.0 Host bridge: Advanced Micro Devices [AMD] RS780 Host Bridge
+00:01.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge
+(int gfx)
+00:04.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge
+(PCIE port 0)
+00:05.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge
+(PCIE port 1)
+00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA
+Controller [AHCI mode]
+00:12.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0
+Controller
+00:12.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
+00:12.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
+00:13.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0
+Controller
+00:13.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
+00:13.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
+00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 3a)
+00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
+00:14.2 Audio device: ATI Technologies Inc SBx00 Azalia (Intel HDA)
+00:14.3 ISA bridge: ATI Technologies Inc SB700/SB800 LPC host controller
+00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge
+00:14.5 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI2
+Controller
+00:18.0 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron,
+Athlon64, Sempron] HyperTransport Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron,
+Athlon64, Sempron] Address Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron,
+Athlon64, Sempron] DRAM Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron,
+Athlon64, Sempron] Miscellaneous Control
+00:18.4 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron,
+Athlon64, Sempron] Link Control
+01:05.0 VGA compatible controller: ATI Technologies Inc Radeon HD 3200
+Graphics
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+03:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+
+# dmesg|grep -i acpi
+ BIOS-e820: 00000000bffe0000 - 00000000bffe3000 (ACPI NVS)
+ BIOS-e820: 00000000bffe3000 - 00000000bfff0000 (ACPI data)
+ACPI: RSDP 00000000000f83d0 00024 (v02 RS780 )
+ACPI: XSDT 00000000bffe3080 0004C (v01 RS780  AWRDACPI 42302E31 AWRD
+00000000)
+ACPI: FACP 00000000bffea480 000F4 (v03 RS780  AWRDACPI 42302E31 AWRD
+00000000)
+ACPI: DSDT 00000000bffe3200 0724B (v01 RS780  AWRDACPI 00001000 MSFT
+03000000)
+ACPI: FACS 00000000bffe0000 00040
+ACPI: SSDT 00000000bffea640 0095E (v01 PTLTD  POWERNOW 00000001  LTP
+00000001)
+ACPI: HPET 00000000bffeafc0 00038 (v01 RS780  AWRDACPI 42302E31 AWRD
+00000098)
+ACPI: MCFG 00000000bffeb000 0003C (v01 RS780  AWRDACPI 42302E31 AWRD
+00000000)
+ACPI: APIC 00000000bffea580 00084 (v01 RS780  AWRDACPI 42302E31 AWRD
+00000000)
+ACPI: Local APIC address 0xfee00000
+ACPI: PM-Timer IO Port: 0x4008
+ACPI: Local APIC address 0xfee00000
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] disabled)
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] disabled)
+ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
+ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+ACPI: IRQ0 used by override.
+ACPI: IRQ2 used by override.
+ACPI: IRQ9 used by override.
+Using ACPI (MADT) for SMP configuration information
+ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+ACPI: Core revision 20091214
+ACPI: bus type pci registered
+ACPI: EC: Look up EC in DSDT
+ACPI: Interpreter enabled
+ACPI: (supports S0 S5)
+ACPI: Using IOAPIC for interrupt routing
+ACPI: No dock devices found.
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+pci_root PNP0A03:00: ignoring host bridge windows from ACPI; boot with
+"pci=use_crs" to use them
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.P2P_._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCE4._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCE5._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.AGP_._PRT]
+ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNK0] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+ACPI: PCI Interrupt Link [LNK1] (IRQs 3 4 5 6 7 10 11) *0, disabled.
+PCI: Using ACPI for IRQ routing
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 12 devices
+ACPI: ACPI bus type pnp unregistered
+ACPI Warning for \_TZ_.THRM._PSL: Return Package type mismatch at index
+0 - found [NULL Object Descriptor], expected Reference
+(20091214/nspredef-1040)
+ACPI: Expecting a [Reference] package element, found type 0
+ACPI: Invalid passive threshold
+ACPI: Thermal Zone [THRM] (40 C)
+ACPI: Power Button [PWRB]
+ACPI: Power Button [PWRF]
+ACPI: Fan [FAN] (on)
+ACPI: I/O resource f71882fg [0x220-0x227] conflicts with ACPI region
+IP__ [0x225-0x226]
+ACPI: If an ACPI driver is available for this device, you should use it
+instead of the native driver
+(etc)
+
+
+
+
+Udo
