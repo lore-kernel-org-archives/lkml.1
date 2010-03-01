@@ -1,80 +1,143 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751305Ab0CAKnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:43:41 -0500
-Received: from www.tglx.de ([62.245.132.106]:40355 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947Ab0CAKnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:43:37 -0500
-Date: Mon, 1 Mar 2010 11:42:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiaotian Feng <xtfeng@gmail.com>
-cc: Sachin Sant <sachinp@in.ibm.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
-Subject: Re: 2.6.33-git6 boot failure[x86_64] (WARN: at
- arch/x86/mm/ioremap.c:111)
-In-Reply-To: <7b6bb4a51003010038l49c90414lff1ecaa37c96ad61@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1003011058470.4245@localhost.localdomain>
-References: <4B8B43E9.1010506@in.ibm.com>  <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com>  <4B8B7AC7.1070201@in.ibm.com> <7b6bb4a51003010038l49c90414lff1ecaa37c96ad61@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1750944Ab0CAKsP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:48:15 -0500
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:37556 "EHLO
+	mail.lvk.cs.msu.su" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764Ab0CAKsN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 05:48:13 -0500
+X-Spam-ASN: 
+Date: Mon, 1 Mar 2010 13:48:01 +0300
+From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
+       john stultz <johnstul@us.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
+       Avi Kivity <avi@redhat.com>, Reg Clemens <clemens@dwf.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       linux-doc@vger.kernel.org
+Subject: Re: [PATCHv2 4/6] pps: add kernel consumer support
+Message-ID: <20100301134801.319a6c3b@desktopvm.lvknet>
+In-Reply-To: <20100301082916.GJ3671@enneenne.com>
+References: <cover.1267008049.git.lasaine@lvk.cs.msu.su>
+	<84b05b9e8dc74f46c99de1728dc5baf24d85d9cc.1267008049.git.lasaine@lvk.cs.msu.su>
+	<20100301082916.GJ3671@enneenne.com>
+Organization: LVK
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/qJTYF0lfGk=2lceJpB9SX+u";
+ protocol="application/pgp-signature"; micalg=PGP-SHA256
+X-AV-Checked: ClamAV using ClamSMTP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010, Xiaotian Feng wrote:
-> On Mon, Mar 1, 2010 at 4:28 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
-> > Xiaotian Feng wrote:
-> >> On Mon, Mar 1, 2010 at 12:34 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> >>> WARNING: at arch/x86/mm/ioremap.c:111 __ioremap_caller+0x169/0x2f1()
-> >>> Hardware name: BladeCenter LS21 -[79716AA]-
-> >>> Modules linked in:
-> >>> Pid: 0, comm: swapper Not tainted 2.6.33-git6-autotest #1
-> >>> Call Trace:
-> >>> [<ffffffff81047cff>] ? __ioremap_caller+0x169/0x2f1
-> >>> [<ffffffff81063b7d>] warn_slowpath_common+0x77/0xa4
-> >>> [<ffffffff81063bb9>] warn_slowpath_null+0xf/0x11
-> >>> [<ffffffff81047cff>] __ioremap_caller+0x169/0x2f1
-> >>> [<ffffffff813747a3>] ? acpi_os_map_memory+0x12/0x1b
-> >>> [<ffffffff81047f10>] ioremap_nocache+0x12/0x14
-> >>> [<ffffffff813747a3>] acpi_os_map_memory+0x12/0x1b
-> >>> [<ffffffff81282fa0>] acpi_tb_verify_table+0x29/0x5b
-> >>> [<ffffffff812827f0>] acpi_load_tables+0x39/0x15a
-> >>> [<ffffffff8191c8f8>] acpi_early_init+0x60/0xf5
-> >>> [<ffffffff818f2cad>] start_kernel+0x397/0x3a7
-> >>> [<ffffffff818f2295>] x86_64_start_reservations+0xa5/0xa9
-> >>> [<ffffffff818f237a>] x86_64_start_kernel+0xe1/0xe8
-> >>> ---[ end trace 4eaa2a86a8e2da22 ]---
-> >>> ioremap reserve_memtype failed -22
+--Sig_/qJTYF0lfGk=2lceJpB9SX+u
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The return code is -EINVAL, so it failed in the is_ram check, which is
-not too surprising
+On Mon, 1 Mar 2010 09:29:16 +0100
+Rodolfo Giometti <giometti@enneenne.com> wrote:
 
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
->  BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000cffa3900 (usable)
->  BIOS-e820: 00000000cffa3900 - 00000000cffa7400 (ACPI data)
+> On Wed, Feb 24, 2010 at 03:28:15PM +0300, Alexander Gordeev wrote:
+> > Add an optional feature of PPSAPI, kernel consumer support, which uses
+> > the added hardpps() function.
+> >=20
+> > Signed-off-by: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+>=20
+> Acked-by: Rodolfo Giometti <giometti@linux.it>
+>=20
+> However see the note below.
+>=20
+> > ---
+> >  Documentation/ioctl/ioctl-number.txt |    2 +-
+> >  drivers/pps/kapi.c                   |   26 +++++++++++++
+> >  drivers/pps/pps.c                    |   67 ++++++++++++++++++++++++++=
++++++++-
+> >  include/linux/pps.h                  |    7 ++++
+> >  include/linux/pps_kernel.h           |    6 +++
+> >  5 files changed, 106 insertions(+), 2 deletions(-)
+> >=20
+> > diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl=
+/ioctl-number.txt
+> > index 9473749..d68718b 100644
+> > --- a/Documentation/ioctl/ioctl-number.txt
+> > +++ b/Documentation/ioctl/ioctl-number.txt
+> > @@ -152,7 +152,7 @@ Code	Seq#	Include File		Comments
+> >  'p'	40-7F	linux/nvram.h
+> >  'p'	80-9F				user-space parport
+> >  					<mailto:tim@cyberelk.net>
+> > -'p'	a1-a4	linux/pps.h		LinuxPPS
+> > +'p'	a1-a5	linux/pps.h		LinuxPPS
+> >  					<mailto:giometti@linux.it>
+> >  'q'	00-1F	linux/serio.h
+> >  'q'	80-FF				Internet PhoneJACK, Internet LineJACK
+> > diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
+> > index b87f699..5871744 100644
+> > --- a/drivers/pps/kapi.c
+> > +++ b/drivers/pps/kapi.c
+> > @@ -25,6 +25,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/time.h>
+> > +#include <linux/timex.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/idr.h>
+> >  #include <linux/fs.h>
+> > @@ -37,6 +38,12 @@
+> >  DEFINE_SPINLOCK(pps_idr_lock);
+> >  DEFINE_IDR(pps_idr);
+> > =20
+> > +/* state variables to bind kernel consumer */
+> > +/* PPS API (RFC 2783): current source and mode for ``kernel consumer''=
+ */
+> > +DEFINE_SPINLOCK(pps_kc_hardpps_lock);
+> > +void	*pps_kc_hardpps_dev;	/* some unique pointer to device */
+> > +int	pps_kc_hardpps_mode;	/* mode bits for kernel consumer */
+> > +
+> >  /*
+> >   * Local functions
+> >   */
+> > @@ -248,6 +255,15 @@ void pps_unregister_source(int source)
+> >  	}
+> >  	spin_unlock_irq(&pps_idr_lock);
+> > =20
+> > +	spin_lock_irq(&pps_kc_hardpps_lock);
+> > +	if (pps =3D=3D pps_kc_hardpps_dev) {
+> > +		pps_kc_hardpps_mode =3D 0;
+> > +		pps_kc_hardpps_dev =3D NULL;
+> > +		spin_unlock_irq(&pps_kc_hardpps_lock);
+> > +		pr_info("unbound kernel consumer on device removal\n");
+> > +	} else
+> > +		spin_unlock_irq(&pps_kc_hardpps_lock);
+> > +
+>=20
+> I suppose you are using such if-else schema due the fact pr_info is
+> too slow to be executed with helded spinlock, arent't you? :)
 
-The ACPI data is not starting on a page boundary and neither does the
-usable RAM area end on a page boundary. Very useful !
+Yes, indeed. Is it ok? :)
 
-> ACPI: DSDT 00000000cffa3900 036CE (v01 IBM    SERLEWIS 00001000 INTL 20060912)
+--=20
+  Alexander
 
-ACPI is trying to map DSDT at cffa3900, which results in a check
-vs. cffa3000 which is the relevant page boundary. The generic is_ram
-check correctly identifies that as RAM because it's in the usable
-resource area. The old e820 based is_ram check does not take
-overlapping resource areas into account. That's why it works.
+--Sig_/qJTYF0lfGk=2lceJpB9SX+u
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-We probably need to sanitize the E820 map befor throwing it at the
-resource manager.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Thanks,
+iQEcBAEBCAAGBQJLi5thAAoJEElrwznyooJbtbUH/0LWe+M/1TyLJ/vuv1DHFEb5
+p0n9VTYe6uXTjdDcFxd1pp8zitKybQ2n9366u2xPIQBP8Z47jPrpzghyt+ut/yZ5
+EXgv2NlFwJTSI1nRpsN805I4ojX5RBlHwBF0na/tyEaOg//ta4+2bWSnwzPp2OQp
+KjeiS+sK3pjqHQT3VlH6w06VYUTAN1g8WRjOkzJ/m6DPfEKwkseqfanFuMl3fMbQ
+pRvv9cXthmfBzGPG7YvpClXBi75WT2IO3BKtaVFtO3k5W6QX1d3jRaCwIteXzo6z
+I7l4cd5Luf1LZwlcBFd5+utt357IMTKQbHd+0qKGVRMUkq0SAQPIRvCZotYXcbc=
+=qGaI
+-----END PGP SIGNATURE-----
 
-	tglx
+--Sig_/qJTYF0lfGk=2lceJpB9SX+u--
