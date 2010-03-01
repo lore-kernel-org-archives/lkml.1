@@ -1,53 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383Ab0CAOsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 09:48:19 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:46256 "EHLO isrv.corpit.ru"
+	id S1751330Ab0CAOzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:55:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10312 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056Ab0CAOsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 09:48:18 -0500
-Message-ID: <4B8BD3B0.3020502@msgid.tls.msk.ru>
-Date: Mon, 01 Mar 2010 17:48:16 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	id S1751056Ab0CAOzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 09:55:41 -0500
+Date: Mon, 1 Mar 2010 15:53:44 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 20/43] workqueue: reimplement work flushing using
+	linked works
+Message-ID: <20100301145344.GA9815@redhat.com>
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-21-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Andreas Dilger <adilger@sun.com>, tytso@mit.edu,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan> <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan> <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan> <20100228054240.GE14646@thunk.org> <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan> <832C6227-BF34-43C2-8768-1308C00AB17F@sun.com> <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267187000-18791-21-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> 
-> On Mon, 1 Mar 2010, Andreas Dilger wrote:
-> 
->> On 2010-02-28, at 07:55, Justin Piszcz wrote:
->>> === CREATE RAID-0 WITH 11 DISKS
->>
->> Have you tried testing with "nice" numbers of disks in your RAID set
->> (e.g. 8 disks for RAID-0, 9 for RAID-5, 10 for RAID-6)?  The mballoc
->> code is really much better tuned for power-of-two sized allocations.
-> 
-> Hi,
-> 
-> Yes, the second system (RAID-5) has 8 disks and it shows the same
-> performance problems with ext4 and not XFS (as shown from previous
-> e-mail), where XFS usually got 500-600MiB/s for writes.
-> 
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/e7b189bcaa2c1cb4/ad6c2a54b678cf5f?show_docid=ad6c2a54b678cf5f&pli=1
-> 
-> 
-> For the RAID-5 (from earlier testing):  <- This one has 8 disks.
+On 02/26, Tejun Heo wrote:
+>
+> +static void move_linked_works(struct work_struct *work, struct list_head *head,
+> +			      struct work_struct **nextp)
+> +{
+> ...
+> +	work = list_entry(work->entry.prev, struct work_struct, entry);
+> +	list_for_each_entry_safe_continue(work, n, NULL, entry) {
 
-Note that for RAID-5, the "nice" number of disks is 9 as Andreas
-said, not 8 as in your example.
+list_for_each_entry_safe_from(work) ? It doesn't need to move this
+work back.
 
-/mjt
+> @@ -680,7 +734,27 @@ static int worker_thread(void *__worker)
+>  		if (kthread_should_stop())
+>  			break;
+>
+> -		run_workqueue(worker);
+> +		spin_lock_irq(&cwq->lock);
+> +
+> +		while (!list_empty(&cwq->worklist)) {
+> +			struct work_struct *work =
+> +				list_first_entry(&cwq->worklist,
+> +						 struct work_struct, entry);
+> +
+> +			if (likely(!(*work_data_bits(work) &
+> +				     WORK_STRUCT_LINKED))) {
+> +				/* optimization path, not strictly necessary */
+> +				process_one_work(worker, work);
+> +				if (unlikely(!list_empty(&worker->scheduled)))
+> +					process_scheduled_works(worker);
+> +			} else {
+> +				move_linked_works(work, &worker->scheduled,
+> +						  NULL);
+> +				process_scheduled_works(worker);
+> +			}
+> +		}
+
+So. If the next pending work W doesn't have WORK_STRUCT_LINKED,
+it will be executed first, then we flush ->scheduled.
+
+But,
+
+>  static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+> -			struct wq_barrier *barr, struct list_head *head)
+> +			      struct wq_barrier *barr,
+> +			      struct work_struct *target, struct worker *worker)
+>  {
+> ...
+> +	/*
+> +	 * If @target is currently being executed, schedule the
+> +	 * barrier to the worker; otherwise, put it after @target.
+> +	 */
+> +	if (worker)
+> +		head = worker->scheduled.next;
+
+this is the "target == current_work" case,
+
+> -	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
+> +	insert_work(cwq, &barr->work, head,
+> +		    work_color_to_flags(WORK_NO_COLOR) | linked);
+>  }
+
+and in this case we put this barrier at the head of ->scheduled list.
+
+This means, this barrier will run after that work W, not before it?
+
+
+Hmm. And what if there are no pending works but ->current_work == target ?
+Again, we add the barrier to ->scheduled, but in this case worker_thread()
+can't even notice ->scheduled is not empty because it only checks ->worklist?
+
+Well. most probably I just misread this code completely...
+
+
+insert_wq_barrier() also does:
+
+	unsigned long *bits = work_data_bits(target);
+	...
+	*bits |= WORK_STRUCT_LINKED;
+
+perhaps this needs atomic_long_set(), although I am not sure this really
+matters.
+
+Oleg.
+
