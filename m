@@ -1,56 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751397Ab0CAPMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:12:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53064 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263Ab0CAPMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:12:22 -0500
-Message-ID: <4B8BD934.4050908@kernel.org>
-Date: Tue, 02 Mar 2010 00:11:48 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 10/43] stop_machine: reimplement without using workqueue
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-11-git-send-email-tj@kernel.org> <20100228143405.GA13236@redhat.com>
-In-Reply-To: <20100228143405.GA13236@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 15:08:51 +0000 (UTC)
+	id S1751609Ab0CAPMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:12:55 -0500
+Received: from filtteri5.pp.htv.fi ([213.243.153.188]:46342 "EHLO
+	filtteri5.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525Ab0CAPMw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:12:52 -0500
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 01/26] w35und: Remove unused struct _RXLAYER1
+Date: Mon,  1 Mar 2010 17:04:03 +0200
+Message-Id: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, again.
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/mds_f.h |    3 ---
+ drivers/staging/winbond/mds_s.h |   28 ----------------------------
+ 2 files changed, 0 insertions(+), 31 deletions(-)
 
-On 02/28/2010 11:34 PM, Oleg Nesterov wrote:
-> On 02/26, Tejun Heo wrote:
->>
->> @@ -164,19 +259,18 @@ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
->>  	idle.fn = chill;
->>  	idle.data = NULL;
->>
->> +	smp_wmb();			/* -> stop_cpu()::set_current_state() */
->> ...
->> +	for_each_online_cpu(i)
->> +		wake_up_process(*per_cpu_ptr(stop_machine_threads, i));
-> 
-> Afaics, this smp_wmb() is not needed, wake_up_process() (try_to_wake_up)
-> should ensure we can't race with set_current_state() + check_condition.
-> It does, note the wmb() in try_to_wake_up().
-
-Yeap, the initial version was like that and it was awkward to explain
-in the comment in stop_cpu() so I basically put it there as a
-documentation anchor.  Do you think removing it would be better?
-
-Thanks.
-
+diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
+index ab1ea53..e09dd4b 100644
+--- a/drivers/staging/winbond/mds_f.h
++++ b/drivers/staging/winbond/mds_f.h
+@@ -11,9 +11,6 @@ void Mds_SendComplete(  struct wbsoft_priv *adapter,  PT02_DESCRIPTOR pT02 );
+ void Mds_MpduProcess(  struct wbsoft_priv *adapter,  struct wb35_descriptor *pRxDes );
+ extern void DataDmp(u8 *pdata, u32 len, u32 offset);
+ 
+-// For Asynchronous indicating. The routine collocates with USB.
+-void Mds_MsduProcess(  struct wbsoft_priv *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+-
+ // For data frame sending 20060802
+ u16 MDS_GetPacketSize(  struct wbsoft_priv *adapter );
+ void MDS_GetNextPacket(  struct wbsoft_priv *adapter,  struct wb35_descriptor *pDes );
+diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
+index e8e13bd..217ff08 100644
+--- a/drivers/staging/winbond/mds_s.h
++++ b/drivers/staging/winbond/mds_s.h
+@@ -133,32 +133,4 @@ struct wb35_mds {
+ 
+ };
+ 
+-//
+-// Reveive Layer 1 Format.
+-//----------------------------
+-typedef struct _RXLAYER1
+-{
+-    u16  SequenceNumber;     // The sequence number of the last received packet.
+-	u16	BufferTotalSize;
+-
+-	u32	InUsed;
+-    u32   DecryptionMethod;   // The desired defragment number of the next incoming packet.
+-
+-	u8	DeFragmentNumber;
+-	u8	FrameType;
+-    u8	TypeEncapsulated;
+-	u8	BufferNumber;
+-
+-	u32	FirstFrameArrivedTime;
+-
+-	u8		LastFrameType; // 20061004 for fix intel 3945 's bug
+-	u8		RESERVED[3];  //@@ anson
+-
+-	/////////////////////////////////////////////////////////////////////////////////////////////
+-	// For brand-new Rx system
+-	u8	ReservedBuffer[ 2400 ];//If Buffer ID is reserved one, it must copy the data into this area
+-	u8	*ReservedBufferPoint;// Point to the next availabe address of reserved buffer
+-
+-}RXLAYER1, * PRXLAYER1;
+-
+ #endif
 -- 
-tejun
+1.6.3.3
+
