@@ -1,68 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751370Ab0CAGBw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 01:01:52 -0500
-Received: from mail-iw0-f182.google.com ([209.85.223.182]:59344 "EHLO
-	mail-iw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733Ab0CAGBv convert rfc822-to-8bit (ORCPT
+	id S1751661Ab0CAGFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 01:05:42 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:53896 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932Ab0CAGFl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 01:01:51 -0500
+	Mon, 1 Mar 2010 01:05:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=EA7zaZ/H0aQCr3dPHGOhbw4L42fEEUemVXzb0tRyOUfggVWd82cOVXBzMaWCYTHMVm
-         qqQqoXfs7yc5jGrz2cFOjHkjtQE/QVC7RDRs1SDwhgbdd0LjNcb7gVOU3zTaigVAxWMY
-         2mXJdu211L1tlN9XwtEzk/T5ZjoxpnDN3FbQY=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=YyWTV4ljezJczyDAke351sqYYI1Vs0kA7X0IABxmEyAQL52MhIzdXEPNpcdS0j8YS2
+         +Yu+wEdSXB31h5FWd5RSOpeb4jSSt3UAQoIq3aeRpWvBzFtZuG9c9TVoH0WZR6bDV3Wh
+         tb6Mmp150ROU0lDiaYDgsH7gIrkBTjQE8Vbu4=
 MIME-Version: 1.0
-In-Reply-To: <20100224142759.ad4f53ce.randy.dunlap@oracle.com>
-References: <20100224142759.ad4f53ce.randy.dunlap@oracle.com>
-Date: Mon, 1 Mar 2010 16:01:50 +1000
-Message-ID: <21d7e9971002282201p3f932729nc00a60bc5eadd492@mail.gmail.com>
-Subject: Re: [PATCH] drm: fix char constant (sparse warning)
-From: Dave Airlie <airlied@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
-       Alex Deucher <alexdeucher@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 1 Mar 2010 11:57:38 +0600
+Message-ID: <b9df5fa11002282157x3c0eec13q4ad404bbe2f227d7@mail.gmail.com>
+Subject: [PATCH] acpi: Put acpi_battery_get/set_alarm into 
+	CONFIG_ACPI_SYSFS_POWER
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 25, 2010 at 8:27 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix radeon/atombios.h sparse warning (24 times):
->
-> drivers/gpu/drm/radeon/atombios.h:4091:63: error: Bad character constant
+ acpi_battery_get/set_alarm is only used when CONFIG_ACPI_SYSFS_POWER=y. So
+put this two functions under CONFIG_ACPI_SYSFS_POWER by shifting it upward.
 
-We get this file from AMD pretty much as-is and I hate deviating it as it
-causes merge issues. Alex any change you can get this fixed upstream?
+We were warned by the following warnings:
 
-Dave.
+drivers/acpi/sbs.c:399: warning: ‘acpi_battery_get_alarm’ defined but not used
+drivers/acpi/sbs.c:406: warning: ‘acpi_battery_set_alarm’ defined but not used
 
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc:     David Airlie <airlied@linux.ie>
-> ---
->  drivers/gpu/drm/radeon/atombios.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.33-rc8.orig/drivers/gpu/drm/radeon/atombios.h
-> +++ linux-2.6.33-rc8/drivers/gpu/drm/radeon/atombios.h
-> @@ -4088,7 +4088,7 @@ typedef struct _SW_I2C_IO_DATA_PARAMETER
->  #define SW_I2C_CNTL_WRITE1BIT 6
->
->  /* ==============================VESA definition Portion=============================== */
-> -#define VESA_OEM_PRODUCT_REV                               '01.00'
-> +#define VESA_OEM_PRODUCT_REV                               "01.00"
->  #define VESA_MODE_ATTRIBUTE_MODE_SUPPORT            0xBB       /* refer to VBE spec p.32, no TTY support */
->  #define VESA_MODE_WIN_ATTRIBUTE                                                     7
->  #define VESA_WIN_SIZE                                                                                       64
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Also fixes a checkpatch warning in acpi_ac_get_present.
+
+ERROR: space prohibited after that '&' (ctx:WxW)
+#13: FILE: drivers/acpi/sbs.c:405:
++				 0x13, (u8 *) & status);
+ 				              ^
+
+---
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+
+--- linux-33/drivers/acpi/sbs.c	2010-02-26 16:30:32.000000000 +0600
++++ linux-project/drivers/acpi/sbs.c	2010-03-01 11:02:32.000000000 +0600
+@@ -396,6 +396,20 @@ static int acpi_battery_get_state(struct
+ 	return result;
+ }
+
++static int acpi_ac_get_present(struct acpi_sbs *sbs)
++{
++	int result;
++	u16 status;
++
++	result = acpi_smbus_read(sbs->hc, SMBUS_READ_WORD, ACPI_SBS_CHARGER,
++				 0x13, (u8 *) &status);
++	if (!result)
++		sbs->charger_present = (status >> 15) & 0x1;
++	return result;
++}
++
++#ifdef CONFIG_ACPI_SYSFS_POWER
++
+ static int acpi_battery_get_alarm(struct acpi_battery *battery)
+ {
+ 	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
+@@ -432,19 +446,6 @@ static int acpi_battery_set_alarm(struct
+ 	return ret;
+ }
+
+-static int acpi_ac_get_present(struct acpi_sbs *sbs)
+-{
+-	int result;
+-	u16 status;
+-
+-	result = acpi_smbus_read(sbs->hc, SMBUS_READ_WORD, ACPI_SBS_CHARGER,
+-				 0x13, (u8 *) & status);
+-	if (!result)
+-		sbs->charger_present = (status >> 15) & 0x1;
+-	return result;
+-}
+-
+-#ifdef CONFIG_ACPI_SYSFS_POWER
+ static ssize_t acpi_battery_alarm_show(struct device *dev,
+ 					struct device_attribute *attr,
+ 					char *buf)
