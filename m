@@ -1,118 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750854Ab0CAJhv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 04:37:51 -0500
-Received: from mga11.intel.com ([192.55.52.93]:57735 "EHLO mga11.intel.com"
+	id S1751349Ab0CAJil (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 04:38:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41948 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213Ab0CAJhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 04:37:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,559,1262592000"; 
-   d="scan'208";a="544840234"
-From: Sheng Yang <sheng@linux.intel.com>
-To: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
-       Keir Fraser <keir.fraser@citrix.com>,
-       Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 2/7] xen: Import cpuid.h from Xen
-Date: Mon,  1 Mar 2010 17:38:30 +0800
-Message-Id: <1267436315-24486-3-git-send-email-sheng@linux.intel.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
+	id S1751293Ab0CAJii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 04:38:38 -0500
+Date: Mon, 1 Mar 2010 20:38:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: linux-next: build failure after merge of the final tree
+Message-Id: <20100301203836.5148090b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keir Fraser <keir.fraser@citrix.com>
+Hi Greg,
 
-Which would be used by CPUID detection later
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-Signed-off-by: Keir Fraser <keir.fraser@citrix.com>
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+drivers/pci/pci-sysfs.c: In function 'pci_create_legacy_files':
+drivers/pci/pci-sysfs.c:645: error: lvalue required as unary '&' operand
+drivers/pci/pci-sysfs.c:658: error: lvalue required as unary '&' operand
+
+Caused by commit 8e36e9ee3c5a9228b68717b35101c58fe9a001c5 ("sysfs: Use
+sysfs_attr_init and sysfs_bin_attr_init on dynamic attributes")
+interacting with commit 71f496c9ec9821d2e09b00298915b99b6cbc9d92 ("sysfs:
+Use one lockdep class per sysfs attribute") both from the driver-core
+tree.
+
+I applied the following patch for today.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 1 Mar 2010 19:41:15 +1100
+Subject: [PATCH] sysfs: fix for thinko with sysfs_bin_attr_init()
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/x86/include/asm/xen/cpuid.h |   68 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 68 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/xen/cpuid.h
+ drivers/pci/pci-sysfs.c |    4 ++--
+ include/linux/sysfs.h   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
-new file mode 100644
-index 0000000..8787f03
---- /dev/null
-+++ b/arch/x86/include/asm/xen/cpuid.h
-@@ -0,0 +1,68 @@
-+/******************************************************************************
-+ * arch/include/asm/xen/cpuid.h
-+ *
-+ * CPUID interface to Xen.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2007 Citrix Systems, Inc.
-+ *
-+ * Authors:
-+ *    Keir Fraser <keir.fraser@citrix.com>
-+ */
-+
-+#ifndef __ASM_X86_XEN_CPUID_H__
-+#define __ASM_X86_XEN_CPUID_H__
-+
-+/* Xen identification leaves start at 0x40000000. */
-+#define XEN_CPUID_FIRST_LEAF 0x40000000
-+#define XEN_CPUID_LEAF(i)    (XEN_CPUID_FIRST_LEAF + (i))
-+
-+/*
-+ * Leaf 1 (0x40000000)
-+ * EAX: Largest Xen-information leaf. All leaves up to an including @EAX
-+ *      are supported by the Xen host.
-+ * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
-+ *      of a Xen host.
-+ */
-+#define XEN_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
-+#define XEN_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
-+#define XEN_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
-+
-+/*
-+ * Leaf 2 (0x40000001)
-+ * EAX[31:16]: Xen major version.
-+ * EAX[15: 0]: Xen minor version.
-+ * EBX-EDX: Reserved (currently all zeroes).
-+ */
-+
-+/*
-+ * Leaf 3 (0x40000002)
-+ * EAX: Number of hypercall transfer pages. This register is always guaranteed
-+ *      to specify one hypercall page.
-+ * EBX: Base address of Xen-specific MSRs.
-+ * ECX: Features 1. Unused bits are set to zero.
-+ * EDX: Features 2. Unused bits are set to zero.
-+ */
-+
-+/* Does the host support MMU_PT_UPDATE_PRESERVE_AD for this guest? */
-+#define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
-+#define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
-+
-+#endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 9fa183c..de29645 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -642,7 +642,7 @@ void pci_create_legacy_files(struct pci_bus *b)
+ 	if (!b->legacy_io)
+ 		goto kzalloc_err;
+ 
+-	sysfs_bin_attr_init(&b->legacy_io);
++	sysfs_bin_attr_init(b->legacy_io);
+ 	b->legacy_io->attr.name = "legacy_io";
+ 	b->legacy_io->size = 0xffff;
+ 	b->legacy_io->attr.mode = S_IRUSR | S_IWUSR;
+@@ -655,7 +655,7 @@ void pci_create_legacy_files(struct pci_bus *b)
+ 		goto legacy_io_err;
+ 
+ 	/* Allocated above after the legacy_io struct */
+-	sysfs_bin_attr_init(&b->legacy_mem);
++	sysfs_bin_attr_init(b->legacy_mem);
+ 	b->legacy_mem = b->legacy_io + 1;
+ 	b->legacy_mem->attr.name = "legacy_mem";
+ 	b->legacy_mem->size = 1024*1024;
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index d77cde6..f0496b3 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -110,7 +110,7 @@ struct bin_attribute {
+  *	enabled.  Lockdep gives a nice error when your attribute is
+  *	added to sysfs if you don't have this.
+  */
+-#define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&bin_attr->attr)
++#define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
+ 
+ struct sysfs_ops {
+ 	ssize_t	(*show)(struct kobject *, struct attribute *,char *);
 -- 
-1.5.4.5
+1.7.0
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
