@@ -1,54 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752264Ab0CAUAg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 15:00:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34003 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043Ab0CAUAe convert rfc822-to-8bit (ORCPT
+	id S1752382Ab0CAUAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 15:00:45 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:44992 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778Ab0CAUAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 15:00:34 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug 15289] Regression 2.6.32 -> 2.6.33, Kernel needs a helping key to boot :)
-Date: Mon, 1 Mar 2010 21:03:00 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <bug-15289-10028@http.bugzilla.kernel.org/> <201003010617.o216HBix024914@demeter.kernel.org>
-In-Reply-To: <201003010617.o216HBix024914@demeter.kernel.org>
+	Mon, 1 Mar 2010 15:00:42 -0500
+Date: Mon, 1 Mar 2010 14:57:57 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 802.11 development process - extended documentation
+Message-ID: <20100301195756.GF2961@tuxdriver.com>
+References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201003012103.00609.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Swithing to e-mail, please keep bugzilla-daemon in the CC list.]
+On Wed, Feb 24, 2010 at 04:18:08PM -0800, Luis R. Rodriguez wrote:
+> I've extended our 802.11 development process into a new section on our
+> 802.11 wiki. I often get asked how this works from different parts of
+> the company here at Atheros so figured it'd be easier to illustrate
+> this as best as possible and share it.
+> 
+> http://wireless.kernel.org/en/developers/process
+> 
+> Hope it does justice, John if you see any mistakes feel free to edit.
+> If the diagram seems fishy let me know what I can fix.
 
-On Monday 01 March 2010, bugzilla-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=15289
-> 
-> --- Comment #30 from Asbjørn Sannes <kernelbugzilla@sannes.org>  2010-03-01 06:17:06 ---
-> hm, so from what I have gathered the previously bisected commit only exposes
-> another bug (hidden by enabling hpet). So I started bisecting again, this time
-> with hpet=disabled all the way and found:
-> 
-> commit aa276e1cafb3ce9d01d1e837bcd67e92616013ac
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Mon Jun 9 19:15:00 2008 +0200
-> 
-> x86, clockevents: add C1E aware idle function
-> 
-> Reverting this from a non-working 2.6.27 makes it work also. Things have
-> changed considerably since then so I was not able to revert it from the newest
-> kernel.
-> 
-> Maybe that disabling of SBX00 hpet msi, only should be done when you do
-> actually have floppy support? Makes more people boot atleast :P
+Overall, looks good.  I would make these changes to the diagram:
 
-Thomas, it looks like something's missing in our C1E handling.  Can you have
-a look at this bug report, please?
+	-- remove wireless-testing -> wireless-next-2.6 arrow
 
-Rafael
+	-- add me -> wireless-next-2.6 arrow
+
+	-- add wireless-2.6 -> wireless-testing arrow
+
+	-- add wireless-next-2.6 -> wireless-testing arrow
+
+This would reflect that patches go into wireless-2.6 and
+wireless-next-2.6, then are pulled to wireless-testing.  A few patches
+may go to wireless-testing directly, but they will eventually be
+reverted and possibly replaced with a patch in one of the other trees
+(and subsequently pulled back into wireless-testing).  Nothing pulls
+from wireless-testing (except developers).
+
+Thanks for the doc! :-)
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
