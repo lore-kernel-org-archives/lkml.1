@@ -1,61 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750998Ab0CAK1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:27:39 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:6018 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831Ab0CAK1i (ORCPT
+	id S1750932Ab0CAKaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:30:07 -0500
+Received: from trinity.develer.com ([83.149.158.210]:41962 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696Ab0CAKaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:27:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=oTv/5nlYfBI0+zEEJ42y6qDNdGIM6YVLv+smrekQe2Ljnmgj2zoYC77E5mL+jJ+AA
-	E4X9U09EqYi3+8RYafCHA==
-Date: Mon, 1 Mar 2010 02:27:31 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-In-Reply-To: <20100301105932.5db60c93.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1003010224530.26824@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home> <20100226173115.GG16335@basil.fritz.box>
- <20100301105932.5db60c93.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 1 Mar 2010 05:30:05 -0500
+Date: Mon, 1 Mar 2010 11:30:01 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH -mmotm 1/2] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-ID: <20100301103001.GB2087@linux>
+References: <1267224751-6382-1-git-send-email-arighi@develer.com>
+ <1267224751-6382-2-git-send-email-arighi@develer.com>
+ <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010, KAMEZAWA Hiroyuki wrote:
-
-> > > Well Kamesan indicated that this worked if a cpu became online.
+On Mon, Mar 01, 2010 at 05:05:35PM +0900, Daisuke Nishimura wrote:
+> On Fri, 26 Feb 2010 23:52:30 +0100, Andrea Righi <arighi@develer.com> wrote:
+> > Infrastructure to account dirty pages per cgroup and add dirty limit
+> > interfaces in the cgroupfs:
 > > 
-> > I mean in the general case. There were tons of problems all over.
+> >  - Active write-out: memory.dirty_ratio, memory.dirty_bytes
+> >  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
 > > 
-> Then, it's cpu hotplug matter, not memory hotplug.
-> cpu hotplug callback should prepaare 
+> It looks good for me in general.
 > 
+> > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > ---
+> >  include/linux/memcontrol.h |   74 +++++++++-
+> >  mm/memcontrol.c            |  354 ++++++++++++++++++++++++++++++++++++++++----
+> >  2 files changed, 399 insertions(+), 29 deletions(-)
+> > 
 > 
-> 	l3 = searchp->nodelists[node];
-> 	BUG_ON(!l3);
+> (snip)
 > 
-> before onlined. Rather than taking care of races.
-> 
+> > +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
+> > +{
+> > +	struct mem_cgroup_page_stat stat = {};
+> > +	struct mem_cgroup *memcg;
+> > +
+> I think it would be better to add "if (mem_cgroup_disabled())".
 
-I can only speak for x86 and not the abundance of memory hotplug support 
-that exists for powerpc, but cpu hotplug doesn't do _anything_ when a 
-memory region that has a corresponding ACPI_SRAT_MEM_HOT_PLUGGABLE entry 
-in the SRAT is hotadded and requires a new nodeid.  That can be triggered 
-via the acpi layer with plug and play or explicitly from the command line 
-via CONFIG_ARCH_MEMORY_PROBE.
+Agreed.
 
-Relying on cpu hotplug to set up nodelists in such a circumstance simply 
-won't work.  You need memory hotplug support such as in my patch.
+> 
+> > +	rcu_read_lock();
+> > +	memcg = mem_cgroup_from_task(current);
+> > +	if (memcg) {
+> > +		/*
+> > +		 * Recursively evaulate page statistics against all cgroup
+> > +		 * under hierarchy tree
+> > +		 */
+> > +		stat.item = item;
+> > +		mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
+> > +	} else
+> > +		stat.value = -ENOMEM;
+> > +	rcu_read_unlock();
+> > +
+> > +	return stat.value;
+> > +}
+> > +
+> >  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
+> >  {
+> >  	int *val = data;
+> > @@ -1263,10 +1419,10 @@ static void record_last_oom(struct mem_cgroup *mem)
+> >  }
+> >  
+> >  /*
+> > - * Currently used to update mapped file statistics, but the routine can be
+> > - * generalized to update other statistics as well.
+> > + * Generalized routine to update memory cgroup statistics.
+> >   */
+> > -void mem_cgroup_update_file_mapped(struct page *page, int val)
+> > +void mem_cgroup_update_stat(struct page *page,
+> > +			enum mem_cgroup_stat_index idx, int val)
+> >  {
+> >  	struct mem_cgroup *mem;
+> >  	struct page_cgroup *pc;
+> ditto.
+
+Agreed.
+
+Thanks,
+-Andrea
