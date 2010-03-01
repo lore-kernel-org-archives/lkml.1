@@ -1,73 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752253Ab0CAV4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:56:20 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:55711 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533Ab0CAV4T (ORCPT
+	id S1752430Ab0CAV7K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:59:10 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:37558 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460Ab0CAV7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:56:19 -0500
-Message-ID: <4B8C378B.2090400@oracle.com>
-Date: Mon, 01 Mar 2010 13:54:19 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 1 Mar 2010 16:59:08 -0500
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs() again
+References: <20100207210250.GB8256@jenkins.home.ifup.org>
+	<tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
+	<4B881097.1050505@kernel.org>
+	<1267442545.11737.20718.camel@zakaz.uk.xensource.com>
+	<m1d3zn7uwl.fsf@fess.ebiederm.org>
+	<1267479860.2785.843.camel@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 01 Mar 2010 13:58:55 -0800
+In-Reply-To: <1267479860.2785.843.camel@localhost.localdomain> (Ian Campbell's message of "Mon\, 01 Mar 2010 21\:44\:20 +0000")
+Message-ID: <m1iq9fvh40.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
-Subject: [PATCH -next] mtd/nand/r852: fix build for CONFIG_PM=n
-References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>
-In-Reply-To: <20100301210210.c6f465e6.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B8C37E2.0076:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Ian Campbell <ijc@hellion.org.uk> writes:
 
-Fix r852 build for the case of CONFIG_PM=n.
+> On Mon, 2010-03-01 at 10:34 -0800, Eric W. Biederman wrote:
+>> 
+>> As of 2.6.33 the limitations in DomU support are:
+>> - xen_evtchn_do_upcall starts with the irq number instead of
+>>   the irq_desc, and happens to unnecessarily call into arch
+>>   specific code.  
+>
+> I saw a patch to fix this one recently, "xen: Remove unnecessary arch
+> specific xen irq functions.", right?
 
-drivers/mtd/nand/r852.c:1039: error: implicit declaration of function 'pci_prepare_to_sleep'
-drivers/mtd/nand/r852.c:1048: error: implicit declaration of function 'pci_back_from_sleep'
+Yes.  
 
-This patch leaves r852_pm_ops untouched.
+You probably want to modify evtnchn_to_irq to return an irq_desc.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Woodhouse <dwmw2@infradead.org>
----
- drivers/mtd/nand/r852.c |    5 +++++
- 1 file changed, 5 insertions(+)
+It is going to take a bit but our next big step for the irq methods
+is to make them all take struct irq_desc pointers instead of unsigned
+int irq, so we don't have to repeat the lookups.
 
---- linux-next-20100301.orig/drivers/mtd/nand/r852.c
-+++ linux-next-20100301/drivers/mtd/nand/r852.c
-@@ -1007,6 +1007,7 @@ void r852_shutdown(struct pci_dev *pci_d
- 	pci_disable_device(pci_dev);
- }
- 
-+#ifdef CONFIG_PM
- int r852_suspend(struct device *device)
- {
- 	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
-@@ -1081,6 +1082,10 @@ int r852_resume(struct device *device)
- 	r852_update_card_detect(dev);
- 	return 0;
- }
-+#else
-+#define r852_suspend	NULL
-+#define r852_resume	NULL
-+#endif
- 
- static const struct pci_device_id r852_pci_id_tbl[] = {
- 
+>> - Xen has an array irq_info[NR_IRQS] one of the last static arrays
+>>   sized at NR_IRQs in the entire kernel.
+>
+> Hopefully the same info as is in that array could (and indeed should) be
+> instead stored in irq_desc->chip_data. Would you object to
+> arch_init_copy_chip_data and arch_free_chip_data becoming function
+> pointers within the struct irq_chip?
 
--- 
-~Randy
+No objections.  Now that I see those methods it looks like they always
+should have been in irq_chip.
+
+>> If you can fix the Xen code so it isn't dragging the rest of the
+>> kernel down when it comes to large numbers of irqs more power to you.
+>
+> If you know of other aspects of the Xen code where this is the case (or
+> find them in the future) please let me know, I'll do my best to fix
+> them.
+
+Good to hear.
+
+Right now I am being a bit of a jack in the box reviewer.  I don't have
+time to work on the irq code right now but I occasionally pop out of
+my box and review the code and try to keep it from descending into an
+unmaintainable disaster.
+
+Eric
