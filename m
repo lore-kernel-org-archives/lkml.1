@@ -1,59 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750878Ab0CAIt3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:49:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:38188 "EHLO ozlabs.org"
+	id S1750966Ab0CAIwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:52:17 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:33322 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764Ab0CAIt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:49:28 -0500
-Date: Mon, 1 Mar 2010 19:49:23 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Luca Barbieri <luca@luca-barbieri.com>, Ingo Molnar <mingo@elte.hu>,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
-Message-ID: <20100301084923.GG26848@brick.ozlabs.ibm.com>
-References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
- <4B845AEE.5080604@zytor.com>
- <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
- <20100226101423.GA25641@elte.hu>
- <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com>
- <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
- <4B8B6E43.9030305@zytor.com>
+	id S1750717Ab0CAIwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:52:16 -0500
+Message-ID: <4B8B802A.1090203@atmel.com>
+Date: Mon, 01 Mar 2010 09:51:54 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.8) Gecko/20100216 Thunderbird/3.0.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B8B6E43.9030305@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ARM: includecheck fix for mach-at91/board-sam9m10g45ek.c
+References: <1267260450.26906.9.camel@i7.satnam>
+In-Reply-To: <1267260450.26906.9.camel@i7.satnam>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 11:35:31PM -0800, H. Peter Anvin wrote:
+Le 27/02/2010 09:47, Jaswinder Singh Rajput :
+> 
+> Fix the following 'make includecheck' warning:
+>   arch/arm/mach-at91/board-sam9m10g45ek.c: mach/hardware.h is included more than once.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 
-> On 02/26/2010 03:23 AM, Luca Barbieri wrote:
-> > Sent patches, both to conditionally perform the test and implement the
-> > functions for x86 and x86-64.
-> 
-> Yes, and with the test turned on, the kernel crashes immediately on boot
-> on x86-64.
-> 
-> Some minor investigation reveals the following:
-> 
-> lib/atomic64.c has the wrong return value for atomic64_add_unless().
-> With "wrong" I mean it is the opposite sense compared to
-> atomic_add_unless(), not just on x86 but on all architectures.
-> 
-> Accordingly, I have to conclude that lib/atomic64.c is buggy, and that
-> since your test matches that bug, I will have to conclude that your
-> x86-32 implementation is also buggy.  Thus, please send patches to fix
-> your test and your 32-bit implementations (and preferrably
-> lib/atomic64.c too, but I can do that just fine.)
-> 
-> Cc: Paul Mackerras who did the generic atomic64_t implementation for
-> verification that this is indeed a bug.
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Yes, it sure looks like it.  *blush*
+> ---
+>  arch/arm/mach-at91/board-sam9m10g45ek.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
+> index 98f9f4b..f2ba9e2 100644
+> --- a/arch/arm/mach-at91/board-sam9m10g45ek.c
+> +++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
+> @@ -36,7 +36,6 @@
+>  #include <asm/mach/map.h>
+>  #include <asm/mach/irq.h>
+>  
+> -#include <mach/hardware.h>
+>  #include <mach/board.h>
+>  #include <mach/gpio.h>
+>  #include <mach/at91sam9_smc.h>
 
-Paul.
+
+-- 
+Nicolas Ferre
+
