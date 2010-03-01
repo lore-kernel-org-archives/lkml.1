@@ -1,60 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751339Ab0CAPeP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:34:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1450 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033Ab0CAPeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:34:13 -0500
-Message-ID: <4B8BDE34.3070900@redhat.com>
-Date: Mon, 01 Mar 2010 10:33:08 -0500
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0b2pre Thunderbird/3.0b4
+	id S1751330Ab0CAPiy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:38:54 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:38790 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750947Ab0CAPiw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:38:52 -0500
+Date: Mon, 1 Mar 2010 10:38:52 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.33: Intel DP55KG - USB still not fixed: USBDEVFS_CONTROL
+ failed cmd usbhid-ups rqt 161 rq 1 len 4 ret -110
+In-Reply-To: <alpine.DEB.2.00.1003010446390.20072@p34.internal.lan>
+Message-ID: <Pine.LNX.4.44L0.1003011036420.1645-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad@kernel.org>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       greg@kroah.com, michaelc@cs.wisc.edu
-Subject: Re: [PATCH 2/2] ibft: Update MAINTAINERS file.
-References: <1267219629-31536-1-git-send-email-konrad@kernel.org> <1267219629-31536-3-git-send-email-konrad@kernel.org>
-In-Reply-To: <1267219629-31536-3-git-send-email-konrad@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26/2010 04:27 PM, Konrad Rzeszutek Wilk wrote:
-> Provide the right e-mail and names for me and Peter.
+On Mon, 1 Mar 2010, Justin Piszcz wrote:
+
+> Hi,
 > 
-> Signed-off-by: Konrad Rzeszutek Wilk <konrad@kernel.org>
-
-Signed-off-by: Peter Jones <pjones@redhat.com>
-
-> ---
->  MAINTAINERS |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
+> Feb 28 19:39:10 p34 kernel: [274199.684428] usb 2-1.7: usbfs: USBDEVFS_CONTROL
+> failed cmd usbhid-ups rqt 161 rq 1 len 4 ret -110
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 317ed38..0d8a948 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2399,6 +2399,12 @@ L:	virtualization@lists.linux-foundation.org
->  S:	Maintained
->  F:	drivers/char/virtio_console.c
->  
-> +iSCSI BOOT FIRMWARE TABLE (iBFT) DRIVER
-> +M:	Peter Jones <pjones@redhat.com>
-> +M:	Konrad Rzeszutek Wilk <konrad@kernel.org>
-> +S:	Maintained
-> +F:	drivers/firmware/iscsi_ibft*
-> +
->  GSPCA FINEPIX SUBDRIVER
->  M:	Frank Zago <frank@zago.net>
->  L:	linux-media@vger.kernel.org
+> I know the DP55KG has USB problems (still, apparently) but was curious 
+> what the (above) error means?
 
+It means that the usbhid-ups program submitted a USB control transfer
+request via usbfs, and the device did not reply within the specified
+timeout period.
 
--- 
-        Peter
+Alan Stern
 
-First things first -- but not necessarily in that order.
-		-- The Doctor
