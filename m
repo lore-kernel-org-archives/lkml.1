@@ -1,48 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751369Ab0CASRG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:17:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54433 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207Ab0CASRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:17:04 -0500
-Message-ID: <4B8C047A.9030406@zytor.com>
-Date: Mon, 01 Mar 2010 10:16:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Wu Fengguang <fengguang.wu@intel.com>, Xiaotian Feng <xtfeng@gmail.com>,
-       Sachin Sant <sachinp@in.ibm.com>, Yinghai Lu <yinghai@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: 2.6.33-git6 boot failure[x86_64] (WARN: at arch/x86/mm/ioremap.c:111)
-References: <4B8B43E9.1010506@in.ibm.com> <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com> <4B8B7AC7.1070201@in.ibm.com> <7b6bb4a51003010038l49c90414lff1ecaa37c96ad61@mail.gmail.com> <alpine.LFD.2.00.1003011058470.4245@localhost.localdomain> <20100301135551.GA9998@localhost> <alpine.LFD.2.00.1003011728450.4245@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1003011728450.4245@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751536Ab0CASRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:17:23 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37084 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751339Ab0CASRV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 13:17:21 -0500
+Subject: Re: [PATCH][RESEND] Export per-tid and per-tgid cputime in 
+ nanoseconds.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Divyesh Shah <dpshah@google.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, kenchen@google.com
+In-Reply-To: <af41c7c41003010744m54fc325bjccae0ff6965656eb@mail.gmail.com>
+References: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
+	 <1267271025.22519.740.camel@laptop>
+	 <af41c7c41003010744m54fc325bjccae0ff6965656eb@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Mar 2010 19:05:40 +0100
+Message-ID: <1267466740.1579.36.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 08:31 AM, Thomas Gleixner wrote:
-> On Mon, 1 Mar 2010, Wu Fengguang wrote:
->  Ah walk_system_ram_range() is actually doing almost the same alignment
->> check as the removed x86 page_is_ram(), except that it calls func()
->> with len=0.  This happens when page_is_ram(cffa3000) is called.
->>
->> walk_system_ram_range():
->>     pfn = (unsigned long)(res.start >> PAGE_SHIFT);
->>     len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
->>     ret = (*func)(pfn, len, arg);
->>
->> The following patch should fix the problem.
+On Mon, 2010-03-01 at 07:44 -0800, Divyesh Shah wrote:
+> On Sat, Feb 27, 2010 at 3:43 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > On Fri, 2010-02-26 at 18:03 -0800, Divyesh Shah wrote:
+> > > This can be used by applications to get finer granularity cputime usage on
+> > > platforms that use timestamp counters or HPET.
+> >
+> > I guess the patch looks good, I'm just not sure what HPET got to do with
+> > anything.. the scheduler certainly doesn't use HPET for timekeeping, its
+> > terribly slow to read.
 > 
-> Right, that should fix it. Though I wonder whether we should warn
-> prominently about non page aligned e820 mapping entries.
+> Yes you're right. Please ignore the HPET comment.
 > 
+> >
+> > Also, it would be good to get some more justification than 'some
+> > applications can use this', which is basically a truism for any patch
+> > that adds a user interface.
+> 
+> 1) This should be useful for a shared or virtualized environment where
+> the shared management infrastructure needs to charge each application
+> as accurately as possible for cpu usage.
+> 2) An application that services different users and does some
+> cpu-intensive work may want to measure cpu time spent for each user by
+> the serving thread.
+> 
+> I think applications like web servers, remote database servers, etc.
+> fit into the second category.
+> 
+> For units of work smaller than a jiffy, this really helps as some
+> threads could potentially hide from the jiffy based accounting.
+> 
+> Please let me know if you want me to send the patch again with the
+> corrected description and added justification.
 
-Pointless.  It's way too common, and in the case of the lowmem region,
-probably correct.
 
-	-hpa
+Its all should and may, anything concrete?
+
+Also, doesn't muck like schedstat, task_delay_accounting, cpuacct-cgroup
+or some other stuff expose this number already?
+
