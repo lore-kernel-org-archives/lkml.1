@@ -1,70 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751324Ab0CAL4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 06:56:22 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:49897 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298Ab0CAL4T (ORCPT
+	id S1751336Ab0CAL5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 06:57:01 -0500
+Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:18099 "EHLO
+	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751192Ab0CAL5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 06:56:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=gdWNyzimYtoCMo7Z/I2YTxJd2z9U/HaX24SyLlYdCWpZN2geybpEfskKBKXF8E0uUA
-         W7vo9ftts3ou8wmoDPPJupi88ruyfFdDs99QfumRZWAXs2HUw+i54hIbQQ+9NbG0Q7Sk
-         hMJmDGXfChH+ToLVfp2wZKQdXR8vDuAosA9ec=
-Message-ID: <4B8BAB5C.5030707@gmail.com>
-Date: Mon, 01 Mar 2010 22:56:12 +1100
-From: Graeme Russ <graeme.russ@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: x86 embedded - Problem getting past 'move compressed kernel 
- before decompression'
-References: <4B80946D.1030503@gmail.com> <4B80C892.9000303@zytor.com>	 <4B80CA55.3040402@zytor.com> <d66caabb1002211451s5a68565fue6096e17b99402f7@mail.gmail.com> <4B88A865.2080009@gmail.com>
-In-Reply-To: <4B88A865.2080009@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Mar 2010 06:57:00 -0500
+X-Greylist: delayed 2054 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 06:56:54 EST
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <4B881097.1050505@kernel.org>
+References: <20100207210250.GB8256@jenkins.home.ifup.org>
+	 <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org>
+	 <4B881097.1050505@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Mar 2010 11:22:25 +0000
+Message-ID: <1267442545.11737.20718.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add
+ arch_probe_nr_irqs() again
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.1 cv=ZtHxNT4mZm3rCuM0SmWmgWxeBwJsziC8EqOrwwVkrhA= c=1 sm=0 a=xE1qpWtd3IAA:10 a=zTfOVrVR-XCbWqQERIkA:9 a=e74zu2V4jDPjODFp6G-N2sa1ougA:4 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Graeme Russ wrote:
-> Graeme Russ wrote:
->> On Sun, Feb 21, 2010 at 4:53 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->>> On 02/20/2010 09:45 PM, H. Peter Anvin wrote:
->>>
-
-> I borrowed __show_regs() from process_32.c and implemented crash dump and
-> break dump handlers in u-boot. So now I can int3 and dump all registers.
+On Fri, 2010-02-26 at 10:19 -0800, Yinghai Lu wrote:
 > 
 > 
-> I don't understand what is going on with SS and ESP, but everything else is
-> looking good up until:
->  	jmp	*%eax
-> 
-> At which point, eax appears to hold a reasonably value. But:
-> 
-> boot > md 5379c4
-> 005379c4: c11c0e7f b0c2ea61 2d43c068 f02e6fa0    ....a...h.C-.o..
+> for x86, with radix tree based irq_to_desc(),
+> removing arch_probe_nr_irqs is intentional. so we get more irq that
+> could be used. 
 
-> I would have expected a 0xcc at 0x005379c4.
-> 
+This sounds interesting for the Xen dom0 use case where we can have
+essentially arbitrary numbers of interrupt sources.
 
-I have done a little more digging. By adding an ascii string before
-relocated: label, I am able to determine that the int3 after the relocated:
-label exists in bzImage at offset 0x1C3FD7
+Is there a tree somewhere that I can be looking at?
 
-EAX holds (for the jump) 0x5379d0 (different bzImage of course). The
-contents of memory at this address is in bzImage at offset 0x1C09D7 - A
-difference of 0x3600 (seems too even to be random)
+Ian
+-- 
+Ian Campbell
+Current Noise: Rammstein - Morgenstern
 
-I'm obviously doing something hideously wrong, but what?
-
-Regards,
-
-Graeme
-
+Money will say more in one moment than the most eloquent lover can in years.
 
