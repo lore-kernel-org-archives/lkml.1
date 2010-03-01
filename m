@@ -1,62 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751305Ab0CAIPH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:15:07 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49823 "EHLO smtps.tip.net.au"
+	id S1751397Ab0CAIP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:15:29 -0500
+Received: from mga01.intel.com ([192.55.52.88]:2003 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770Ab0CAIPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:15:02 -0500
-Date: Mon, 1 Mar 2010 19:14:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@linux.intel.com>
-Subject: linux-next: build warning after merge of the final tree
-Message-Id: <20100301191457.315de136.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM"
+	id S1751327Ab0CAIP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:15:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,559,1262592000"; 
+   d="scan'208";a="776785466"
+Date: Mon, 1 Mar 2010 16:15:24 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "czoccolo@gmail.com" <czoccolo@gmail.com>,
+       "vgoyal@redhat.com" <vgoyal@redhat.com>,
+       "jmoyer@redhat.com" <jmoyer@redhat.com>,
+       "guijianfeng@cn.fujitsu.com" <guijianfeng@cn.fujitsu.com>
+Subject: Re: [PATCH] cfq-iosched: quantum check tweak --resend
+Message-ID: <20100301081524.GA28563@sli10-desk.sh.intel.com>
+References: <20100301015047.GA16630@sli10-desk.sh.intel.com>
+ <20100301080233.GO5768@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301080233.GO5768@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 01, 2010 at 04:02:34PM +0800, Jens Axboe wrote:
+> On Mon, Mar 01 2010, Shaohua Li wrote:
+> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> > This isn't optimal, device can handle more requests, for example, AHCI can
+> > handle 31 requests. I can understand the limit is for fairness, but we could
+> > do a tweak: if the queue still has a lot of slice left, sounds we could
+> > ignore the limit. Test shows this boost my workload (two thread randread of
+> > a SSD) from 78m/s to 100m/s.
+> > Thanks for suggestions from Corrado and Vivek for the patch.
+> 
+> As mentioned before, I think we definitely want to ensure that we drive
+> the full queue depth whenever possible. I think your patch is a bit
+> dangerous, though. The problematic workload here is a buffered write,
+> interleaved with the occasional sync reader. If the sync reader has to
+> endure 32 requests every time, latency rises dramatically for him.
+the patch still matains a hardlimit for dispatched request. For a async,
+the limit is cfq_slice_async/cfq_slice_idle = 5. For sync, the limit is 8.
+And we only pipe out such number of requests at the begining of a slice.
+For the workload you mentioned here, we only dispatch 1 extra request.
 
-Hi Greg,
-
-After merging the final tree, today's linux-next build (powerpc allnoconfig)
-produced these warnings:
-
-drivers/char/tty_buffer.c: In function 'tty_insert_flip_string_fixed_flag':
-drivers/char/tty_buffer.c:251: warning: comparison of distinct pointer type=
-s lacks a cast
-drivers/char/tty_buffer.c: In function 'tty_insert_flip_string_flags':
-drivers/char/tty_buffer.c:288: warning: comparison of distinct pointer type=
-s lacks a cast
-
-Introduced by commit 96a421002f897237bcc44efd909dd58aa759319c ("tty: Keep
-the default buffering to sub-page units") from the tty tree.  Its just
-the min macro parameters.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuLd4EACgkQjjKRsyhoI8xZvQCaA7TSLSO0p496xXUR3PX8A53C
-Sl8An14+GvT22xEB6qKd/QMcwUsvawJ+
-=ViqA
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM--
+Thanks,
+Shaohua
