@@ -1,91 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751297Ab0CAOkN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 09:40:13 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:53866
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751056Ab0CAOkL (ORCPT
+	id S1751427Ab0CAOk0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:40:26 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57510 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751311Ab0CAOkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 09:40:11 -0500
-X-SpamScore: -33
-X-BigFish: VPS-33(zz146fK1432R98dN936eM179dN62a3Lzz1202hzzz32i2a8h6bh43h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KYLY2A-02-091-02
-X-M-MSG: 
-Date: Mon, 1 Mar 2010 15:39:46 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 00/15] oprofile fixes and updates for v2.6.34
-Message-ID: <20100301143946.GE13205@erda.amd.com>
-References: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
- <20100227090331.GA22839@elte.hu>
+	Mon, 1 Mar 2010 09:40:23 -0500
+X-Sasl-enc: 3u8yrLzrLqD0ysTuH+EYUIOaLItWtmtET/xnyyjEGPBx 1267454422
+Message-ID: <4B8BD190.1060609@imap.cc>
+Date: Mon, 01 Mar 2010 15:39:12 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20100227090331.GA22839@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 01 Mar 2010 14:39:46.0809 (UTC) FILETIME=[0A311690:01CAB94D]
-X-Reverse-DNS: unknown
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+CC: linux-kernel@vger.kernel.org, Hansjoerg Lipp <hjlipp@web.de>
+Subject: Re: [PATCHv3] drivers: isdn: get rid of custom strtoul()
+References: <1267169216-31328-1-git-send-email-andy.shevchenko@gmail.com>
+In-Reply-To: <1267169216-31328-1-git-send-email-andy.shevchenko@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig15484FB532A3452E910CC7E5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27.02.10 10:03:31, Ingo Molnar wrote:
-> Hm, the perf_event.c bits conflict quite heavily with pending changes in 
-> tip:perf/core.
-> 
-> So to not hold up the oprofile changes for v2.6.34 i've pulled the core 
-> oprofile changes for v2.6.34 into tip:oprofile (up to cfc9c0b, if that is fine 
-> with you), and mind reworking the last 3 patches against perf/core?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig15484FB532A3452E910CC7E5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Ingo & Peter,
+Am 2010-02-26 08:26 schrieb Andy Shevchenko:
+> There were two methods isdn_gethex() and isdn_getnum() which are custom=
 
-I have a rebased version containing also a merge from:
+> implementations of strtoul(). Get rid of them in regard to
+> strict_strtoul() kernel's function.
+>=20
+> The patch should be applied on top of "[PATCH 3/4] gigaset: reduce sysl=
+og
+> clutter" [1]
 
- tip/oprofile -> tip/perf/core
+That patch is now in net-next, so that remark isn't needed anymore.
 
-Please pull again from:
+> --- a/drivers/isdn/gigaset/ev-layer.c
+> +++ b/drivers/isdn/gigaset/ev-layer.c
+[...]
+> @@ -647,24 +601,28 @@ void gigaset_handle_modem_response(struct cardsta=
+te *cs)
+>  		case RT_ZCAU:
+>  			event->parameter =3D -1;
+>  			if (curarg + 1 < params) {
+> -				i =3D isdn_gethex(argv[curarg]);
+> -				j =3D isdn_gethex(argv[curarg + 1]);
+> -				if (i >=3D 0 && i < 256 && j >=3D 0 && j < 256)
+> -					event->parameter =3D (unsigned) i << 8
+> -							   | j;
+> -				curarg +=3D 2;
+> +				unsigned long hi, lo;
+> +				int rh, rl;
+> +
+> +				rh =3D strict_strtoul(argv[curarg++], 16, &hi);
+> +				rl =3D strict_strtoul(argv[curarg++], 16, &lo);
+> +
+> +				if (rh =3D=3D 0 && hi < 256 && rl =3D=3D 0 && lo < 256)
+> +					event->parameter =3D (hi << 8) | lo;
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git core
+If you want to give the two decoded value variables speaking names (as
+opposed to the generic "i" and "j") I'd prefer that they correspond to
+their actual meaning (which of course you couldn't know). What you
+called "hi" is the "cause type", and what you called "lo", the "cause
+value". More appropriate variable names would therefore be, for example,
+"cautype" and "cauvalue".
 
-> 
-> On a related note, wrt. your ongoing work for perf IBS support. The following 
-> patch by Peter:
-> 
->   f22f54f: perf_events, x86: Split PMU definitions into separate files
+Of course that's only cosmetic, but it would still be nice if you could
+take it into account if you're doing another version of the patch.
 
-Yes, the patches went also upstream on Friday. Will update my current
-patch stack now. Maybe it would have been better to first integrate
-all pending patches before doing that split. Conflict resolution is a
-pain for moving code. But anyway, it is supposed to go upstream and I
-will rebase my patches.
+>  			} else
+>  				curarg =3D params - 1;
+>  			break;
+>  		case RT_NUMBER:
+>  		case RT_HEX:
+>  			if (curarg < params) {
+> -				if (param_type =3D=3D RT_HEX)
+> -					event->parameter =3D
+> -						isdn_gethex(argv[curarg]);
+> -				else
+> -					event->parameter =3D
+> -						isdn_getnum(argv[curarg]);
+> +				int base =3D (param_type =3D=3D RT_HEX) ? 16 : 10;
+> +				unsigned long res;
+> +				int rc;
+> +
+> +				rc =3D strict_strtoul(argv[curarg], base, &res);
+> +				if (rc =3D=3D 0)
+> +					event->parameter =3D res;
+> +
 
-> 
-> Will probably interact with those patches.
-> 
-> As usual you can avoid such interactions and conflicts by pushing any pending 
-> bits to Peter and me earlier. It can even be disabled temporarily (if that can 
-> be done cleanly), if IBS support is not fully working yet.
+That's not quite correct. (Sorry for not catching that in the last
+review.) The original code would set event->parameter to -1 if the
+argv[curarg] string isn't valid. Your code will leave it unchanged
+in that case.
 
-Hmm, I was working with latest tip/perf/core, but I was waiting with
-my submission for Peter's quilt queue since I know there were
-conflicts again.
+As a remedy, you can just set event->parameter =3D -1 at the beginning
+of the case, just as in the case RT_ZCAU above. That will also make
+the else clause below unnecessary.
 
-I will start submitting patches now relative to latest
-tip/perf/core. There shouldn't be more patches flying around.
+>  				++curarg;
+>  			} else
+>  				event->parameter =3D -1;
 
-I decided to send the perf_event.h changes via the oprofile tree since
-tip/perf/core was not stable enough. The patches contain cross
-subsystem changes and are not only for perf. Perf-only patches I wont
-send upstream via oprofile.
+Thanks,
+Tilman
 
--Robert
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
 
+--------------enig15484FB532A3452E910CC7E5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkuL0ZAACgkQQ3+did9BuFsJtQCgivD29YBnj6/pBd+u9JO7wlsv
+GQcAnjB3FIsyQVFxW87iaceUqW/+vFRG
+=m5WZ
+-----END PGP SIGNATURE-----
+
+--------------enig15484FB532A3452E910CC7E5--
