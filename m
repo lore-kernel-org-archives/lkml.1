@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181Ab0CAPQB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:16:01 -0500
-Received: from filtteri6.pp.htv.fi ([213.243.153.189]:34561 "EHLO
-	filtteri6.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736Ab0CAPOy (ORCPT
+	id S1752080Ab0CAPOz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:14:55 -0500
+Received: from filtteri2.pp.htv.fi ([213.243.153.185]:57879 "EHLO
+	filtteri2.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751582Ab0CAPOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:14:54 -0500
+	Mon, 1 Mar 2010 10:14:35 -0500
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
        Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 10/26] w35und: Remove unused struct _SCAN_REQ_PARA
-Date: Mon,  1 Mar 2010 17:04:12 +0200
-Message-Id: <1267455868-4533-10-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 05/26] w35und: Remove unused enum enum_TxRate
+Date: Mon,  1 Mar 2010 17:04:07 +0200
+Message-Id: <1267455868-4533-5-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
 References: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
@@ -24,74 +24,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Cc: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/scan_s.h |   54 --------------------------------------
- 1 files changed, 0 insertions(+), 54 deletions(-)
+ drivers/staging/winbond/mac_structures.h |   18 ------------------
+ 1 files changed, 0 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/staging/winbond/scan_s.h b/drivers/staging/winbond/scan_s.h
-index d35f194..a577884 100644
---- a/drivers/staging/winbond/scan_s.h
-+++ b/drivers/staging/winbond/scan_s.h
-@@ -31,60 +31,6 @@
+diff --git a/drivers/staging/winbond/mac_structures.h b/drivers/staging/winbond/mac_structures.h
+index 8a9c5e8..861b471 100644
+--- a/drivers/staging/winbond/mac_structures.h
++++ b/drivers/staging/winbond/mac_structures.h
+@@ -175,24 +175,6 @@ enum enum_MMPDUResultCode
+ } WB_MMPDURESULTCODE, *PWB_MMPDURESULTCODE;
+ */
  
- ///////////////////////////////////////////////////////////////////////////
- //Global data structures, Initial Scan & Background Scan
--typedef struct _SCAN_REQ_PARA	//mandatory parameters for SCAN request
+-//===========================================================
+-// enum_TxRate --
+-//   Define the transmission constants based on W89C32 MAC
+-//   target specification.
+-//===========================================================
+-typedef enum enum_TxRate
 -{
--	u32				ScanType;			//passive/active scan
--	u8			reserved_1[2];
+-    TXRATE_1M               = 0,
+-    TXRATE_2MLONG           = 2,
+-    TXRATE_2MSHORT          = 3,
+-    TXRATE_55MLONG          = 4,
+-    TXRATE_55MSHORT         = 5,
+-    TXRATE_11MLONG          = 6,
+-    TXRATE_11MSHORT         = 7,
+-    TXRATE_AUTO             = 255           // PD43 20021108
+-} WB_TXRATE, *PWB_TXRATE;
 -
--	struct SSID_Element	sSSID; // 34B. scan only for this SSID
--	u8			reserved_2[2];
 -
--} SCAN_REQ_PARA, *psSCAN_REQ_PARA;
--
--typedef struct _SCAN_PARAMETERS
--{
--	u16				wState;
--	u16				iCurrentChannelIndex;
--
--	SCAN_REQ_PARA	sScanReq;
--
--	u8				BSSID[MAC_ADDR_LENGTH + 2];		//scan only for this BSSID
--
--	u32				BssType;						//scan only for this BSS type
--
--	//struct SSID_Element	sSSID;						//scan only for this SSID
--	u16				ProbeDelay;
--	u16				MinChannelTime;
--
--	u16				MaxChannelTime;
--	u16				reserved_1;
--
--    s32				iBgScanPeriod;				// XP: 5 sec
--
--    u8				boBgScan;					// Wb: enable BG scan, For XP, this value must be FALSE
--    u8				boFastScan;					// Wb: reserved
--	u8				boCCAbusy;					// Wb: HWMAC CCA busy status
--	u8				reserved_2;
--
--	struct timer_list timer;
--
--	u32				ScanTimeStamp;			//Increase 1 per background scan(1 minute)
--	u32				BssTimeStamp;			//Increase 1 per connect status check
--	u32				RxNumPerAntenna[2];		//
--
--	u8				AntennaToggle;			//
--	u8				boInTimerHandler;
--	u8 				boTimerActive;				// Wb: reserved
--	u8				boSave;
--
--	u32				BScanEnable; // Background scan enable. Default is On
--
--} SCAN_PARAMETERS, *psSCAN_PARAMETERS;
--
--// Encapsulate 'adapter' data structure
--#define psSCAN			(&(adapter->sScanPara))
--#define psSCANREQ			(&(adapter->sScanPara.sScanReq))
--
- //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- //	scan.h
- //		Define the related definitions of scan module
+ #define	RATE_BITMAP_1M				1
+ #define	RATE_BITMAP_2M				2
+ #define	RATE_BITMAP_5dot5M			5
 -- 
 1.6.3.3
 
