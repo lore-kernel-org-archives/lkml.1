@@ -1,90 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581Ab0CAP2K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:28:10 -0500
-Received: from smtp.ispras.ru ([83.149.198.201]:36124 "EHLO smtp.ispras.ru"
+	id S1751257Ab0CAPdj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:33:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35218 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748Ab0CAP2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:28:08 -0500
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Drew Eckhardt <drew@colorado.edu>,
-       Thomas Quinot <thomas@melchior.cuivre.fdn.fr>,
-       Gerd Knorr <kraxel@cs.tu-berlin.de>, Jens Axboe <axboe@suse.de>,
-       Richard Gooch <rgooch@atnf.csiro.au>,
-       Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
-       linux-scsi@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-       linux-kernel@vger.kernel.org
-Subject: question about del_gendisk function use in drivers/scsi/sr.c
-Date: Mon, 1 Mar 2010 18:27:41 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Eric Youngdale <ericy@andante.org>
+	id S1751033Ab0CAPdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:33:38 -0500
+Message-ID: <4B8BDE02.1050208@kernel.org>
+Date: Tue, 02 Mar 2010 00:32:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100228 SUSE/3.0.3-3.1 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Oleg Nesterov <oleg@redhat.com>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 16/43] workqueue: kill cpu_populated_map
+References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-17-git-send-email-tj@kernel.org> <20100228160005.GA16144@redhat.com>
+In-Reply-To: <20100228160005.GA16144@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003011827.41818.strakh@ispras.ru>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 15:29:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-        KERNEL_VERSION: 2.6.33
-        SUBJECT: question about del_gendisk function use
-        SUBSCRIBE:
-        In driver drivers/scsi/sr.c in function sr_probe:
+Hello,
 
-1. In line 588 we call  alloc_disk(1);
-2. If in line 593 function find_first_zero_bit returns SR_DISKS then we goto 
-label fail_put (line 597).
-3. In line 652 we call put_disk. But in some other drivers del_gendisk is 
-called before put_disk. Why didn't we call del_gendisk before put_disk here? 
-Is it an error?
+On 03/01/2010 01:00 AM, Oleg Nesterov wrote:
+> On 02/26, Tejun Heo wrote:
+>>
+>> @@ -1023,41 +991,40 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+>> ...
+>> +	cpu_maps_update_done();
+>> ...
+>> +
+>> +	spin_lock(&workqueue_lock);
+>> +	list_add(&wq->list, &workqueues);
+>> +	spin_unlock(&workqueue_lock);
+> 
+> OK, but if cpu_up() happens right after we drop cpu_maps_update_done(),
+> cwq->thread on the new CPU will run unbound?
 
-570 static int sr_probe(struct device *dev)
-571 {
-572         struct scsi_device *sdev = to_scsi_device(dev);
-573         struct gendisk *disk;
-574         struct scsi_cd *cd;
-575         int minor, error;
-576
-577         error = -ENODEV;
-578         if (sdev->type != TYPE_ROM && sdev->type != TYPE_WORM)
-579                 goto fail;
-580
-581         error = -ENOMEM;
-582         cd = kzalloc(sizeof(*cd), GFP_KERNEL);
-583         if (!cd)
-584                 goto fail;
-585
-586         kref_init(&cd->kref);
-587
-588         disk = alloc_disk(1);
-589         if (!disk)
-590                 goto fail_free;
-591
-592         spin_lock(&sr_index_lock);
-593         minor = find_first_zero_bit(sr_index_bits, SR_DISKS);
-594         if (minor == SR_DISKS) {
-595                 spin_unlock(&sr_index_lock);
-596                 error = -EBUSY;
-597                 goto fail_put;
-598         }
+Indeed, looks like I was too impatient with cpu_maps_update_done().
 
-...
-641                 goto fail_put;
-642
-643         dev_set_drvdata(dev, cd);
-644         disk->flags |= GENHD_FL_REMOVABLE;
-645         add_disk(disk);
-646
-647         sdev_printk(KERN_DEBUG, sdev,
-648                     "Attached scsi CD-ROM %s\n", cd->cdi.name);
-649         return 0;
-650
-651 fail_put:
-652         put_disk(disk);
-653 fail_free:
-654         kfree(cd);
-655 fail:
-656         return error;
-...
+>> @@ -1127,47 +1091,30 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
+>> ...
+>>  	list_for_each_entry(wq, &workqueues, list) {
+> 
+> this becomes unsafe. create/destroy can modify workqueues list
+> in parallel.
+
+Yeap, has always been like that.  Will be fixed by later changes.
+
+>>  		case CPU_ONLINE:
+>> -			start_workqueue_thread(cwq, cpu);
+>> +			__set_cpus_allowed(cwq->thread, get_cpu_mask(cpu),
+>> +					   true);
+> 
+> if the thread doesn't have PF_THREAD_BOUND, who will set it?
+
+Indeed will update the worker function to set PF_THREAD_BOUND itself
+but again this problem is gone with later patches.
+
+>>  		case CPU_POST_DEAD:
+>> -			cleanup_workqueue_thread(cwq);
+>> +			lock_map_acquire(&cwq->wq->lockdep_map);
+>> +			lock_map_release(&cwq->wq->lockdep_map);
+>> +			flush_cpu_workqueue(cwq);
+> 
+> This can race with destroy_workqueue(), no?
+
+Yes, it can and, again, has been always like that and will be fixed by
+later patches.
+
+> I guess this patch is preparation, probably these problems should
+> go away later...
+
+I'll fix the new problems but leave the existing ones alone.  I don't
+think it's worth fixing them at this point with all the pending
+changes.
+
+Thanks.
+
+-- 
+tejun
