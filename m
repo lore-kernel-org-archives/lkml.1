@@ -1,46 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751491Ab0CAQdF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:33:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:43171 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015Ab0CAQdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:33:02 -0500
-Date: Mon, 1 Mar 2010 17:31:00 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: Xiaotian Feng <xtfeng@gmail.com>, Sachin Sant <sachinp@in.ibm.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: 2.6.33-git6 boot failure[x86_64] (WARN: at
- arch/x86/mm/ioremap.c:111)
-In-Reply-To: <20100301135551.GA9998@localhost>
-Message-ID: <alpine.LFD.2.00.1003011728450.4245@localhost.localdomain>
-References: <4B8B43E9.1010506@in.ibm.com> <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com> <4B8B7AC7.1070201@in.ibm.com> <7b6bb4a51003010038l49c90414lff1ecaa37c96ad61@mail.gmail.com> <alpine.LFD.2.00.1003011058470.4245@localhost.localdomain>
- <20100301135551.GA9998@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751426Ab0CAQeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:34:18 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:59468 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751071Ab0CAQeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:34:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=JGEt18gFwChDYR3c6UDegy5LVAxrCH0vhRryGdlJfZPlaMxiDoqo+za9JFLd3ArVTEYTPw5uok4JfwDFL4HS7Pib7ygYl+LHQSmO8KTj9f12alSqF7PP+Ue6aj3XD7xr;
+Date: Mon, 1 Mar 2010 08:35:13 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] PCI changes for 2.6.34  - pci rom rom fail list
+Message-ID: <20100301083513.2e77a214@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.1003010803360.3616@localhost.localdomain>
+References: <20100226093957.7b99d09c@jbarnes-piketon>
+	<alpine.LFD.2.00.1002281227300.3851@localhost.localdomain>
+	<alpine.LFD.2.00.1002281246120.3637@localhost.localdomain>
+	<33223F6C-10BD-4671-937D-6D5E4956DD3F@kernel.org>
+	<alpine.LFD.2.00.1002281314110.3637@localhost.localdomain>
+	<4B8AF121.2060106@kernel.org>
+	<4B8B0113.1020103@kernel.org>
+	<alpine.LFD.2.00.1003010803360.3616@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010, Wu Fengguang wrote:
- Ah walk_system_ram_range() is actually doing almost the same alignment
-> check as the removed x86 page_is_ram(), except that it calls func()
-> with len=0.  This happens when page_is_ram(cffa3000) is called.
+On Mon, 1 Mar 2010 08:05:55 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> walk_system_ram_range():
->     pfn = (unsigned long)(res.start >> PAGE_SHIFT);
->     len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
->     ret = (*func)(pfn, len, arg);
 > 
-> The following patch should fix the problem.
+> On Sun, 28 Feb 2010, Yinghai Lu wrote:
+> > 
+> > [PATCH] pci: don't reassign to ROM res if it is not going to be
+> > enabled
+> > 
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> Yes, this makes my setup work again.
+> 
+> I'm still nervous that it will cause problem on some _other_ machines 
+> (because of not knowing that some bridge is transparent and then
+> trying to re-allocate things unnecessarily and causing chaos), but at
+> least it seems to be ok on this machine.
+> 
+> So I do have this nagging feeling that we'll still end up having to
+> do this whole "reassign PCI buses" thing as a kernel command line
+> option and default to not doing it, but let's give it a chance.
 
-Right, that should fix it. Though I wonder whether we should warn
-prominently about non page aligned e820 mapping entries.
+Yeah we went back and forth on that a bit.  We can fall back to a
+command line option if necessary, but I think it would be ashame;
+ideally things should just work and not require users to pass special
+options when their drivers fail to bind.
 
-Thanks,
-
-	tglx
+-- 
+Jesse Barnes, Intel Open Source Technology Center
