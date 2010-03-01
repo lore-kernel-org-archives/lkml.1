@@ -1,89 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752322Ab0CAVW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:22:58 -0500
-Received: from www.tglx.de ([62.245.132.106]:60613 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661Ab0CAVW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:22:57 -0500
-Date: Mon, 1 Mar 2010 22:21:39 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       =?ISO-8859-15?Q?Asbj=F8rn_Sannes?= <kernelbugzilla@sannes.org>,
-       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [Bug 15289] Regression 2.6.32 -> 2.6.33, Kernel needs a helping
- key to boot :)
-In-Reply-To: <201003012103.00609.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.1003012114470.4245@localhost.localdomain>
-References: <bug-15289-10028@http.bugzilla.kernel.org/> <201003010617.o216HBix024914@demeter.kernel.org> <201003012103.00609.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1971964662-1267478501=:4245"
+	id S1752456Ab0CAVYK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:24:10 -0500
+Received: from trinity.develer.com ([83.149.158.210]:60465 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649Ab0CAVYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 16:24:09 -0500
+From: Andrea Righi <arighi@develer.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Suleiman Souhlal <suleiman@google.com>, Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH -mmotm 0/3] memcg: per cgroup dirty limit (v3)
+Date: Mon,  1 Mar 2010 22:23:37 +0100
+Message-Id: <1267478620-5276-1-git-send-email-arighi@develer.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Control the maximum amount of dirty pages a cgroup can have at any given time.
 
---8323328-1971964662-1267478501=:4245
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+page cache used by any cgroup. So, in case of multiple cgroup writers, they
+will not be able to consume more than their designated share of dirty pages and
+will be forced to perform write-out if they cross that limit.
 
-On Mon, 1 Mar 2010, Rafael J. Wysocki wrote:
-> [Swithing to e-mail, please keep bugzilla-daemon in the CC list.]
-> 
-> On Monday 01 March 2010, bugzilla-daemon@bugzilla.kernel.org wrote:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=15289
-> > 
-> > --- Comment #30 from Asbjørn Sannes <kernelbugzilla@sannes.org>  2010-03-01 06:17:06 ---
-> > hm, so from what I have gathered the previously bisected commit only exposes
-> > another bug (hidden by enabling hpet). So I started bisecting again, this time
-> > with hpet=disabled all the way and found:
-> > 
-> > commit aa276e1cafb3ce9d01d1e837bcd67e92616013ac
-> > Author: Thomas Gleixner <tglx@linutronix.de>
-> > Date:   Mon Jun 9 19:15:00 2008 +0200
-> > 
-> > x86, clockevents: add C1E aware idle function
-> > 
-> > Reverting this from a non-working 2.6.27 makes it work also. Things have
-> > changed considerably since then so I was not able to revert it from the newest
-> > kernel.
-> > 
-> > Maybe that disabling of SBX00 hpet msi, only should be done when you do
-> > actually have floppy support? Makes more people boot atleast :P
-> 
-> Thomas, it looks like something's missing in our C1E handling.  Can you have
-> a look at this bug report, please?
+The overall design is the following:
 
-Groan. We have been through that exercise of blaming the above commit
-and the C1E handling for a couple of times now. It never turned out to
-be the real culprit.
+ - account dirty pages per cgroup
+ - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+   and memory.dirty_background_ratio / memory.dirty_background_bytes in
+   cgroupfs
+ - start to write-out (background or actively) when the cgroup limits are
+   exceeded
 
-Looking at the various steps Asbjorn took to analyse that problem it
-simply boils down to the oldest problem with timers on ATI chipsets:
+This feature is supposed to be strictly connected to any underlying IO
+controller implementation, so we can stop increasing dirty pages in VM layer
+and enforce a write-out before any cgroup will consume the global amount of
+dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes limit.
 
-       the irq0 timer interrupt routing is hosed
+Changelog (v2 -> v3)
+~~~~~~~~~~~~~~~~~~~~~~
+ * properly handle the swapless case when reading dirtyable pages statistic
+ * combine similar functions + code cleanup based on the received feedbacks
+ * updated documentation in Documentation/cgroups/memory.txt
 
-I have no clue yet, why this is not detected by the test logic we have
-in place for that, but it might be something which gets borked later
-in the boot process.
-
-Enabling MSI for HPET just papers over the problem as it uses a
-different interrupt vector and mechanism.
-
-Disabling HPET does not help simply because PIT is using IRQ0 as well
-as the MSI disabled HPET.
-
-I need some sleep to come up with a reasonable method to debug that,
-but maybe someone else has an brilliant idea before I have to twist my
-brain around it.
-
-Thanks,
-
-	tglx
---8323328-1971964662-1267478501=:4245--
+-Andrea
