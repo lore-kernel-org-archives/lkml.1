@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411Ab0CAFiz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:38:55 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11799 "EHLO mga11.intel.com"
+	id S1754628Ab0CAFit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:38:49 -0500
+Received: from mga03.intel.com ([143.182.124.21]:19911 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170Ab0CAFh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751315Ab0CAFh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 1 Mar 2010 00:37:58 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
-   d="scan'208";a="544789721"
-Message-Id: <20100301053622.084130183@intel.com>
+   d="scan'208";a="249208734"
+Message-Id: <20100301053620.400434969@intel.com>
 User-Agent: quilt/0.48-1
-Date: Mon, 01 Mar 2010 13:27:04 +0800
+Date: Mon, 01 Mar 2010 13:26:52 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Li Shaohua <shaohua.li@intel.com>,
+       Clemens Ladisch <clemens@ladisch.de>, Rik van Riel <riel@redhat.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Clemens Ladisch <clemens@ladisch.de>
 CC: Olivier Galibert <galibert@pobox.com>
 cc: Vivek Goyal <vgoyal@redhat.com>
 cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
@@ -27,124 +27,218 @@ CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 13/16] radixtree: introduce radix_tree_lookup_leaf_node()
+Subject: [PATCH 01/16] readahead: limit readahead size for small devices
 References: <20100301052651.857984880@intel.com>
-Content-Disposition: inline; filename=radixtree-radix_tree_lookup_leaf_node.patch
+Content-Disposition: inline; filename=readahead-size-for-tiny-device.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will be used by the pagecache context based read-ahead/read-around
-heuristic to quickly check one pagecache range:
-- if there is any hole
-- if there is any pages
+Linus reports a _really_ small & slow (505kB, 15kB/s) USB device,
+on which blkid runs unpleasantly slow. He manages to optimize the blkid
+reads down to 1kB+16kB, but still kernel read-ahead turns it into 48kB.
 
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+     lseek 0,    read 1024   => readahead 4 pages (start of file)
+     lseek 1536, read 16384  => readahead 8 pages (page contiguous)
+
+The readahead heuristics involved here are reasonable ones in general.
+So it's good to fix blkid with fadvise(RANDOM), as Linus already did.
+
+For the kernel part, Linus suggests:
+  So maybe we could be less aggressive about read-ahead when the size of
+  the device is small? Turning a 16kB read into a 64kB one is a big deal,
+  when it's about 15% of the whole device!
+
+This looks reasonable: smaller device tend to be slower (USB sticks as
+well as micro/mobile/old hard disks).
+
+Given that the non-rotational attribute is not always reported, we can
+take disk size as a max readahead size hint. This patch uses a formula
+that generates the following concrete limits:
+
+        disk size    readahead size
+     (scale by 4)      (scale by 2)
+               1M                8k
+               4M               16k
+              16M               32k
+              64M               64k
+             256M              128k
+               1G              256k
+        --------------------------- (*)
+               4G              512k
+              16G             1024k
+              64G             2048k
+             256G             4096k
+
+(*) Since the default readahead size is 512k, this limit only takes
+effect for devices whose size is less than 4G.
+
+The formula is determined on the following data, collected by script:
+
+	#!/bin/sh
+
+	# please make sure BDEV is not mounted or opened by others
+	BDEV=sdb
+
+	for rasize in 4 16 32 64 128 256 512 1024 2048 4096 8192
+	do
+		echo $rasize > /sys/block/$BDEV/queue/read_ahead_kb 
+		time dd if=/dev/$BDEV of=/dev/null bs=4k count=102400
+	done
+
+The principle is, the formula shall not limit readahead size to such a
+degree that will impact some device's sequential read performance.
+
+The Intel SSD is special in that its throughput increases steadily with
+larger readahead size. However it may take years for Linux to increase
+its default readahead size to 2MB, so we don't take it seriously in the
+formula.
+
+SSD 80G Intel x25-M SSDSA2M080 (reported by Li Shaohua)
+
+	rasize	1st run		2nd run
+	----------------------------------
+	  4k	123 MB/s	122 MB/s
+	 16k  	153 MB/s	153 MB/s
+	 32k	161 MB/s	162 MB/s
+	 64k	167 MB/s	168 MB/s
+	128k	197 MB/s	197 MB/s
+	256k	217 MB/s	217 MB/s
+	512k	238 MB/s	234 MB/s
+	  1M	251 MB/s	248 MB/s
+	  2M	259 MB/s	257 MB/s
+==>	  4M	269 MB/s	264 MB/s
+	  8M	266 MB/s	266 MB/s
+
+Note that ==> points to the readahead size that yields plateau throughput.
+
+SSD 22G MARVELL SD88SA02 MP1F (reported by Jens Axboe)
+
+	rasize  1st             2nd
+	--------------------------------
+	  4k     41 MB/s         41 MB/s
+	 16k     85 MB/s         81 MB/s
+	 32k    102 MB/s        109 MB/s
+	 64k    125 MB/s        144 MB/s
+	128k    183 MB/s        185 MB/s
+	256k    216 MB/s        216 MB/s
+	512k    216 MB/s        236 MB/s
+	1024k   251 MB/s        252 MB/s
+	  2M    258 MB/s        258 MB/s
+==>       4M    266 MB/s        266 MB/s
+	  8M    266 MB/s        266 MB/s
+
+SSD 30G SanDisk SATA 5000
+
+	  4k	29.6 MB/s	29.6 MB/s	29.6 MB/s
+	 16k	52.1 MB/s	52.1 MB/s	52.1 MB/s
+	 32k	61.5 MB/s	61.5 MB/s	61.5 MB/s
+	 64k	67.2 MB/s	67.2 MB/s	67.1 MB/s
+	128k	71.4 MB/s	71.3 MB/s	71.4 MB/s
+	256k	73.4 MB/s	73.4 MB/s	73.3 MB/s
+==>	512k	74.6 MB/s	74.6 MB/s	74.6 MB/s
+	  1M	74.7 MB/s	74.6 MB/s	74.7 MB/s
+	  2M	76.1 MB/s	74.6 MB/s	74.6 MB/s
+
+USB stick 32G Teclast CoolFlash idVendor=1307, idProduct=0165
+
+	  4k	7.9 MB/s 	7.9 MB/s 	7.9 MB/s
+	 16k	17.9 MB/s	17.9 MB/s	17.9 MB/s
+	 32k	24.5 MB/s	24.5 MB/s	24.5 MB/s
+	 64k	28.7 MB/s	28.7 MB/s	28.7 MB/s
+	128k	28.8 MB/s	28.9 MB/s	28.9 MB/s
+==>	256k	30.5 MB/s	30.5 MB/s	30.5 MB/s
+	512k	30.9 MB/s	31.0 MB/s	30.9 MB/s
+	  1M	31.0 MB/s	30.9 MB/s	30.9 MB/s
+	  2M	30.9 MB/s	30.9 MB/s	30.9 MB/s
+
+USB stick 4G SanDisk  Cruzer idVendor=0781, idProduct=5151
+
+	  4k	6.4 MB/s 	6.4 MB/s 	6.4 MB/s
+	 16k	13.4 MB/s	13.4 MB/s	13.2 MB/s
+	 32k	17.8 MB/s	17.9 MB/s	17.8 MB/s
+	 64k	21.3 MB/s	21.3 MB/s	21.2 MB/s
+	128k	21.4 MB/s	21.4 MB/s	21.4 MB/s
+==>	256k	23.3 MB/s	23.2 MB/s	23.2 MB/s
+	512k	23.3 MB/s	23.8 MB/s	23.4 MB/s
+	  1M	23.8 MB/s	23.4 MB/s	23.3 MB/s
+	  2M	23.4 MB/s	23.2 MB/s	23.4 MB/s
+
+USB stick 2G idVendor=0204, idProduct=6025 SerialNumber: 08082005000113
+
+	  4k	6.7 MB/s 	6.9 MB/s 	6.7 MB/s
+	 16k	11.7 MB/s	11.7 MB/s	11.7 MB/s
+	 32k	12.4 MB/s	12.4 MB/s	12.4 MB/s
+   	 64k	13.4 MB/s	13.4 MB/s	13.4 MB/s
+	128k	13.4 MB/s	13.4 MB/s	13.4 MB/s
+==>	256k	13.6 MB/s	13.6 MB/s	13.6 MB/s
+	512k	13.7 MB/s	13.7 MB/s	13.7 MB/s
+	  1M	13.7 MB/s	13.7 MB/s	13.7 MB/s
+	  2M	13.7 MB/s	13.7 MB/s	13.7 MB/s
+
+64 MB, USB full speed (collected by Clemens Ladisch)
+Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
+
+	4KB:    139.339 s, 376 kB/s
+	16KB:   81.0427 s, 647 kB/s
+	32KB:   71.8513 s, 730 kB/s
+==>	64KB:   67.3872 s, 778 kB/s
+	128KB:  67.5434 s, 776 kB/s
+	256KB:  65.9019 s, 796 kB/s
+	512KB:  66.2282 s, 792 kB/s
+	1024KB: 67.4632 s, 777 kB/s
+	2048KB: 69.9759 s, 749 kB/s
+
+CC: Li Shaohua <shaohua.li@intel.com>
+CC: Clemens Ladisch <clemens@ladisch.de>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 Acked-by: Rik van Riel <riel@redhat.com>
+Tested-by: Vivek Goyal <vgoyal@redhat.com>
+Tested-by: Linus Torvalds <torvalds@linux-foundation.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/radix-tree.h |    2 +
- lib/radix-tree.c           |   37 ++++++++++++++++++++++++++---------
- 2 files changed, 30 insertions(+), 9 deletions(-)
+ block/genhd.c |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
---- linux.orig/lib/radix-tree.c	2010-02-27 12:59:22.000000000 +0800
-+++ linux/lib/radix-tree.c	2010-02-27 13:00:09.000000000 +0800
-@@ -359,19 +359,20 @@ EXPORT_SYMBOL(radix_tree_insert);
-  * is_slot == 0 : search for the node.
-  */
- static void *radix_tree_lookup_element(struct radix_tree_root *root,
--				unsigned long index, int is_slot)
-+				unsigned long index, int is_slot, int level)
- {
- 	unsigned int height, shift;
--	struct radix_tree_node *node, **slot;
-+	struct radix_tree_node *node;
-+	struct radix_tree_node **slot = &root->rnode;
+--- linux.orig/block/genhd.c	2010-02-03 20:40:37.000000000 +0800
++++ linux/block/genhd.c	2010-02-04 21:19:07.000000000 +0800
+@@ -518,6 +518,7 @@ void add_disk(struct gendisk *disk)
+ 	struct backing_dev_info *bdi;
+ 	dev_t devt;
+ 	int retval;
++	unsigned long size;
  
- 	node = rcu_dereference(root->rnode);
- 	if (node == NULL)
- 		return NULL;
- 
- 	if (!radix_tree_is_indirect_ptr(node)) {
--		if (index > 0)
-+		if (index > 0 || level > 0)
- 			return NULL;
--		return is_slot ? (void *)&root->rnode : node;
-+		goto out;
- 	}
- 	node = radix_tree_indirect_to_ptr(node);
- 
-@@ -381,7 +382,7 @@ static void *radix_tree_lookup_element(s
- 
- 	shift = (height-1) * RADIX_TREE_MAP_SHIFT;
- 
--	do {
-+	while (height > level) {
- 		slot = (struct radix_tree_node **)
- 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
- 		node = rcu_dereference(*slot);
-@@ -390,9 +391,10 @@ static void *radix_tree_lookup_element(s
- 
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
--	} while (height > 0);
-+	}
- 
--	return is_slot ? (void *)slot:node;
-+out:
-+	return is_slot ? (void *)slot : node;
- }
- 
- /**
-@@ -410,7 +412,7 @@ static void *radix_tree_lookup_element(s
-  */
- void **radix_tree_lookup_slot(struct radix_tree_root *root, unsigned long index)
- {
--	return (void **)radix_tree_lookup_element(root, index, 1);
-+	return (void **)radix_tree_lookup_element(root, index, 1, 0);
- }
- EXPORT_SYMBOL(radix_tree_lookup_slot);
- 
-@@ -428,11 +430,28 @@ EXPORT_SYMBOL(radix_tree_lookup_slot);
-  */
- void *radix_tree_lookup(struct radix_tree_root *root, unsigned long index)
- {
--	return radix_tree_lookup_element(root, index, 0);
-+	return radix_tree_lookup_element(root, index, 0, 0);
- }
- EXPORT_SYMBOL(radix_tree_lookup);
- 
- /**
-+ *	radix_tree_lookup_leaf_node    -    lookup leaf node on a radix tree
-+ *	@root:		radix tree root
-+ *	@index:		index key
-+ *
-+ *	Lookup the leaf node that covers @index in the radix tree @root.
-+ *	Return NULL if the node does not exist, or is the special root node.
-+ *
-+ *	The typical usage is to check the value of node->count, which shall be
-+ *	performed inside rcu_read_lock to prevent the node from being freed.
-+ */
-+struct radix_tree_node *
-+radix_tree_lookup_leaf_node(struct radix_tree_root *root, unsigned long index)
-+{
-+	return radix_tree_lookup_element(root, index, 0, 1);
-+}
+ 	/* minors == 0 indicates to use ext devt from part0 and should
+ 	 * be accompanied with EXT_DEVT flag.  Make sure all
+@@ -551,6 +552,29 @@ void add_disk(struct gendisk *disk)
+ 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
+ 				   "bdi");
+ 	WARN_ON(retval);
 +
-+/**
-  *	radix_tree_tag_set - set a tag on a radix tree node
-  *	@root:		radix tree root
-  *	@index:		index key
---- linux.orig/include/linux/radix-tree.h	2010-02-27 12:59:22.000000000 +0800
-+++ linux/include/linux/radix-tree.h	2010-02-27 12:59:23.000000000 +0800
-@@ -158,6 +158,8 @@ static inline void radix_tree_replace_sl
- int radix_tree_insert(struct radix_tree_root *, unsigned long, void *);
- void *radix_tree_lookup(struct radix_tree_root *, unsigned long);
- void **radix_tree_lookup_slot(struct radix_tree_root *, unsigned long);
-+struct radix_tree_node *
-+radix_tree_lookup_leaf_node(struct radix_tree_root *root, unsigned long index);
- void *radix_tree_delete(struct radix_tree_root *, unsigned long);
- unsigned int
- radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
++	/*
++	 * Limit default readahead size for small devices.
++	 *        disk size    readahead size
++	 *               1M                8k
++	 *               4M               16k
++	 *              16M               32k
++	 *              64M               64k
++	 *             256M              128k
++	 *               1G              256k
++	 *        ---------------------------
++	 *               4G              512k
++	 *              16G             1024k
++	 *              64G             2048k
++	 *             256G             4096k
++	 * Since the default readahead size is 512k, this limit
++	 * only takes effect for devices whose size is less than 4G.
++	 */
++	if (get_capacity(disk)) {
++		size = get_capacity(disk) >> 9;
++		size = 1UL << (ilog2(size) / 2);
++		bdi->ra_pages = min(bdi->ra_pages, size);
++	}
+ }
+ 
+ EXPORT_SYMBOL(add_disk);
 
 
