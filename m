@@ -1,100 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751316Ab0CAQEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:04:22 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:56593 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020Ab0CAQEU (ORCPT
+	id S1751296Ab0CAQFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:05:24 -0500
+Received: from smtprelay01.ispgateway.de ([80.67.29.23]:50898 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020Ab0CAQFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:04:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=OLVSSpr2RlX6R0fkCJi345u1lfY11UwPafhIgcmfCbdctZ1lOuhCKE/5xkQQ6DIPjS
-         s1s3A5300eza2aZ9UMr9y9LbjJZ+aUNN0Dk/o3NqvWSRy0rPrvq3knkWp2PesVfTYznA
-         BPqbUnqI1jircAiIKCQD/y4aroDn2bCX95qUQ=
-MIME-Version: 1.0
-Date: Mon, 1 Mar 2010 10:04:19 -0600
-Message-ID: <808c8e9d1003010804r331d39a6g9cf520cb27595e75@mail.gmail.com>
-Subject: [PATCH] gpio: cs5535-gpio: fix input direction
-From: Ben Gardner <gardner.ben@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andres Salomon <dilinger@collabora.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Mar 2010 11:05:22 -0500
+Date: Mon, 1 Mar 2010 17:05:15 +0100
+From: Peter Feuerer <peter@piie.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>,
+       lenb@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Peter Feuerer <peter@piie.net>
+Subject: [PATCH] acerhdf: Added new BIOS versions
+Message-Id: <20100301170515.2aa0337e.peter@piie.net>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: 650477
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gpio: cs5535-gpio: fix input direction
 
-The cs5535-gpio driver's get() function was returning the output value.
-This means that the GPIO pins would never work as an input, even if configured
-as an input.
-The driver should return the READ_BACK value, which is the sensed line value.
-To make that work when the direction is 'output', INPUT_ENABLE needs to be set.
+Hi Andrew,
 
-In addition, the driver was not disabling OUTPUT_ENABLE when the
-direction is set to 'input'. That would cause the GPIO to continue to
-drive the pin if the direction was ever set to output.
+please apply,
 
-This issue was noticed when attempting to use the gpiolib driver to read
-an external input. I had previously been using the char/cs5535-gpio driver.
+thanks and best regards,
+--peter;
 
-This patch should also be applied to 2.6.33.x, as that is the first version
-that contains the gpio/cs5535-gpio driver.
+--
+Added new BIOS versions for Acer 1410 and 1810xx and Packard Bell
+netbooks.
+Fixed registers of Acer AOA150 BIOS version v0.3114: Old registers
+caused Fan to spin up at every temperature check.
 
-Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
-CC: Andres Salomon <dilinger@collabora.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: David Brownell <dbrownell@users.sourceforge.net>
-CC: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Peter Feuerer <peter@piie.net>
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>
+Cc: Len Brown <lenb@kernel.org>
 ---
-This patch replaces the following patches:
-cs5535_gpio-gpio_chipget-should-return-the-input-value.patch
-olpc-alsa-fix-cs5535audios-mic-gpio-to-enable-input.patch
+ drivers/platform/x86/acerhdf.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-References:
-http://lkml.org/lkml/2010/2/27/253
-http://lkml.org/lkml/2010/2/23/311
-http://lkml.org/lkml/2010/2/26/335
-
- drivers/gpio/cs5535-gpio.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpio/cs5535-gpio.c b/drivers/gpio/cs5535-gpio.c
-index 0fdbe94..0c3c498 100644
---- a/drivers/gpio/cs5535-gpio.c
-+++ b/drivers/gpio/cs5535-gpio.c
-@@ -154,7 +154,7 @@ static int chip_gpio_request(struct gpio_chip *c,
-unsigned offset)
-
- static int chip_gpio_get(struct gpio_chip *chip, unsigned offset)
- {
--	return cs5535_gpio_isset(offset, GPIO_OUTPUT_VAL);
-+	return cs5535_gpio_isset(offset, GPIO_READ_BACK);
- }
-
- static void chip_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
-@@ -172,6 +172,7 @@ static int chip_direction_input(struct gpio_chip
-*c, unsigned offset)
-
- 	spin_lock_irqsave(&chip->lock, flags);
- 	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
-+	__cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_ENABLE);
- 	spin_unlock_irqrestore(&chip->lock, flags);
-
- 	return 0;
-@@ -184,6 +185,7 @@ static int chip_direction_output(struct gpio_chip
-*c, unsigned offset, int val)
-
- 	spin_lock_irqsave(&chip->lock, flags);
-
-+	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
- 	__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_ENABLE);
- 	if (val)
- 		__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_VAL);
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 7b2384d..40be6a4 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -52,7 +52,7 @@
+  */
+ #undef START_IN_KERNEL_MODE
+ 
+-#define DRV_VER "0.5.22"
++#define DRV_VER "0.5.23"
+ 
+ /*
+  * According to the Atom N270 datasheet,
+@@ -146,7 +146,7 @@ static const struct bios_settings_t bios_tbl[] = {
+ 	{"Acer", "AOA110", "v0.3309", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	{"Acer", "AOA110", "v0.3310", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	/* AOA150 */
+-	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x20, 0x20, 0x00} },
++	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x1f, 0x1f, 0x00} },
+ 	{"Acer", "AOA150", "v0.3301", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3304", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3305", 0x55, 0x58, {0x20, 0x20, 0x00} },
+@@ -155,13 +155,20 @@ static const struct bios_settings_t bios_tbl[] = {
+ 	{"Acer", "AOA150", "v0.3309", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	/* Acer 1410 */
++	{"Acer", "Aspire 1410", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Acer", "Aspire 1410", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Acer", "Aspire 1410", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	/* Acer 1810xx */
++	{"Acer", "Aspire 1810TZ", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810TZ", "v0.3119", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v0.3119", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Acer", "Aspire 1810TZ", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Acer", "Aspire 1810T", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+-	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810TZ", "v1.3204", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v1.3204", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Acer", "Aspire 1810TZ", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	/* Gateway */
+ 	{"Gateway", "AOA110", "v0.3103", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x20, 0x00} },
+@@ -175,6 +182,7 @@ static const struct bios_settings_t bios_tbl[] = {
+ 	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Packard Bell", "DOTMU", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	{"Packard Bell", "DOTMU", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Packard Bell", "DOTMA", "v1.3201", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	/* pewpew-terminator */
+ 	{"", "", "", 0, 0, {0, 0, 0} }
+ };
+@@ -667,6 +675,7 @@ MODULE_ALIAS("dmi:*:*Gateway*:pnLT31*:");
+ MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
+ MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
+ MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMU*:");
++MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMA*:");
+ 
+ module_init(acerhdf_init);
+ module_exit(acerhdf_exit);
 -- 
-1.6.4
+1.7.0
+
