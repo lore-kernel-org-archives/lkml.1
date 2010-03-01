@@ -1,69 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751497Ab0CAUew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 15:34:52 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:35920 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947Ab0CAUev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 15:34:51 -0500
-Subject: [RESEND][PATCH] Fix oops on !GENERIC_TIME systems when accessing
- current_clocksource
+	id S1751982Ab0CAU7M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 15:59:12 -0500
+Received: from mail-px0-f188.google.com ([209.85.216.188]:42882 "EHLO
+	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495Ab0CAU7K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 15:59:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=p4HWBRSA6tUi6MtcEzJf7U/bcI1UdoUS7ZBeO8XlUZl4HZsTDQFPp9/erXnejlJFca
+         ZWPpFpWkGRM2ig0Kzso1b7lFvo4OkfpX/KRZegOFlM4s59IRWlAJ9Ka5uoeWH5hOSdhh
+         o+/ZhfdDYJKKmox3Jx+BqwPD7/scz7Cg/kw0E=
+MIME-Version: 1.0
+In-Reply-To: <4b8c226e.0aa1660a.67e2.6fdc@mx.google.com>
+References: <4B8B901E.4050302@ladisch.de>
+	 <4b8c226e.0aa1660a.67e2.6fdc@mx.google.com>
+Date: Mon, 1 Mar 2010 12:59:06 -0800
+X-Google-Sender-Auth: d4f15f7ec372f61b
+Message-ID: <1f1b08da1003011259yed7c61bvb18071eb8e465bca@mail.gmail.com>
+Subject: Re: [PATCH] hpet: factor timer allocate from open
 From: john stultz <johnstul@us.ibm.com>
-To: greg kh <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>, stable@kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, aaro.koskinen@iki.fi,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Mar 2010 12:34:43 -0800
-Message-ID: <1267475683.4216.61.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+To: Magnus Lynch <maglyx@gmail.com>
+Cc: Clemens Ladisch <clemens@ladisch.de>,
+       "Venkatesh Pallipadi (Venki)" <venkatesh.pallipadi@intel.com>,
+       Vojtech Pavlik <vojtech@suse.cz>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No one has replied to this, so I wanted to send it out again.
+On Mon, Mar 1, 2010 at 12:24 PM, Magnus Lynch <maglyx@gmail.com> wrote:
+> Clemens Ladisch wrote:
+>> A ioctl to read the main counter would just duplicate clock_gettime(),
+>> but I cannot see any benefit over that.
+>
+> In fact for my situation I attempted using clock_gettime first and found it
+> unsuitable. Specifically, my case is finding a substitute for RDTSC as a
+> constant-rate counter for use in correcting real-time clock drift. This is for
+> a CPU without constant TSC, as many are; and I was patching DJ Bernstein's
+> excellent program clockspeed to be workable in such a case.
+>
+> Calculating the real time tick rate of clock_gettime using CLOCK_MONOTONIC
+> suspiciously yielded a rate almost exactly 1GHz, which seemed to imply some
+> feedback relative to real time was happening and thus wouldn't be reliably
+> constant rate in the face of slewing the clock. Whatever the reason, in fact
+> it wasn't and trying to depend on it as a constant rate timer while using
+> adjtime quickly led to inaccuracies... Which led me to HPET as a solution,
+> which worked swimmingly.
+>
+> I do now see there's another clockid, CLOCK_MONOTONIC_RAW, whose name implies
+> it might work for me. I'll try it and see.
 
-Aaro Koskinen reported an issue in bug #15366, where on non-GENERIC_TIME
-systems,
-accessing /sys/devices/system/clocksource/clocksource0/current_clocksource would oops the system. 
+Yes, CLOCK_MONOTONIC_RAW was added specifically to create a hardware
+agnostic interface that provided a 1:1 ratio to the hardware cycle
+counter used by the timekeeping core. No NTP corrections or slewing
+are applied and it isn't affected by settimeofday calls.
 
-It seems the timekeeper/clocksource rework missed initializing the
-curr_clocksource value in the !GENERIC_TIME.
-
-The following patch makes sure it gets initialized, and avoids the
-issue.
-
-Thanks to Aaro for reporting and diagnosing the issue as well as testing
-the fix!
-
-Bug Details: http://bugzilla.kernel.org/show_bug.cgi?id=15366
-
-Too late for 2.6.33, but this likely should go into 2.6.33-stable and
-2.6.32-stable.
-
+Let me know if you run into any trouble with it.
 thanks
 -john
-
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index e85c234..c436ee5 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -568,6 +568,10 @@ static inline void clocksource_select(void) { }
-  */
- static int __init clocksource_done_booting(void)
- {
-+	mutex_lock(&clocksource_mutex);
-+	curr_clocksource = clocksource_default_clock();
-+	mutex_unlock(&clocksource_mutex);
-+
- 	finished_booting = 1;
- 
- 	/*
-
-
-
