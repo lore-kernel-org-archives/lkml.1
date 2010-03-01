@@ -1,58 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752454Ab0CAW1Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 17:27:24 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45404 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711Ab0CAW1W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 17:27:22 -0500
-Date: Mon, 1 Mar 2010 23:27:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Roel Kluin <roel.kluin@gmail.com>, "David S. Miller" <davem@davemloft.net>,
-       Mikael Pettersson <mikpe@it.uu.se>, penberg@cs.helsinki.fi,
-       Brian Gerst <brgerst@gmail.com>, andi@firstfloor.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
-       Herbert@gondor.apana.org.au
-Subject: Re: [PATCH v1] compiler: prevent dead store elimination
-Message-ID: <20100301222716.GC29531@one.firstfloor.org>
-References: <4B8984EE.8090605@gmail.com> <20100228211511.60981829@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100228211511.60981829@infradead.org>
-User-Agent: Mutt/1.4.2.2i
+	id S1752163Ab0CAWbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 17:31:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60898 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087Ab0CAWbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 17:31:41 -0500
+Message-ID: <4B8C4032.7080703@zytor.com>
+Date: Mon, 01 Mar 2010 14:31:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Zachary Amsden <zamsden@redhat.com>
+CC: Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+References: <20100301091819.GD16909@redhat.com> <4B8BE7C1.40000@redhat.com> <20100301174724.GA12867@redhat.com> <4B8C09F5.9070506@redhat.com> <20100301190341.GD12867@redhat.com> <4B8C1320.6060602@redhat.com>
+In-Reply-To: <4B8C1320.6060602@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 09:15:11PM -0800, Arjan van de Ven wrote:
-> On Sat, 27 Feb 2010 21:47:42 +0100
-> Roel Kluin <roel.kluin@gmail.com> wrote:
-> > +void secure_bzero(void *p, size_t n)
-> > +{
-> > +	memset(p, 0, n);
-> > +	ARRAY_PREVENT_DSE(p, n);
-> > +}
-> > +EXPORT_SYMBOL(secure_bzero);
+On 03/01/2010 11:18 AM, Zachary Amsden wrote:
 > 
+> It's going to be ugly to emulate segmentation, NX and write protect 
+> support without hardware to do this checking for you, but it's just what 
+> you have to do in this slow path - tedious, fully specified emulation.
 > 
-> please don't introduce bzero again to the kernel;
+> Just because it's tedious doesn't mean we need to use setjmp / longjmp.  
+> Throw / catch might be effective, but it's still pretty bizarre to do 
+> tricks like that in C.
 > 
-> make it secure_memset() please.
 
-Would there ever be any reason to set the key to something
-else than 0? 
+Well, setjmp/longjmp really is not much more than exception handling in C.
 
-IMHO bzero is less error prone. With memset there are regular 
-bugs when the two end arguments get exchanged. 
-
-You could call it differently if you have a problem with old BSD
-names, but inherently there's nothing wrong with them. One possibility
-would be the same name as VC++ uses.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	-hpa
