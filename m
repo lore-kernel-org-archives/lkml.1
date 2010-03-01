@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751316Ab0CAKx7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:53:59 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54456 "EHLO
+	id S1751369Ab0CAKyf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:54:35 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54494 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257Ab0CAKxz (ORCPT
+	with ESMTP id S1750856Ab0CAKyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:53:55 -0500
+	Mon, 1 Mar 2010 05:54:31 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
@@ -14,17 +14,18 @@ Cc: Alessandro Zummo <a.zummo@towertech.it>,
        Paul Gortmaker <p_gortmaker@yahoo.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Valentin Longchamp <valentin.longchamp@epfl.ch>,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 6/6] rtc/mc13783: implement alarm
-Date: Mon,  1 Mar 2010 11:53:45 +0100
-Message-Id: <1267440825-14694-6-git-send-email-u.kleine-koenig@pengutronix.de>
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Luotao Fu <l.fu@pengutronix.de>
+Subject: [PATCH 1/6] mc13783: rename mc13783_{{un,}mask,ack_irq} to have a mc13783_irq prefix
+Date: Mon,  1 Mar 2010 11:53:40 +0100
+Message-Id: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To: rtc-linux@googlegroups.com
+To: linux-kernel@vger.kernel.org
 X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
 X-SA-Exim-Mail-From: ukl@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
@@ -33,229 +34,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In the source file group these functions together.
+
+The mc13783 header file provides fallback implementations for the old names
+to prevent build failures.  When all users of the old names are fixed to
+use the new names these can go away.
+
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
-Hello,
+ drivers/mfd/mc13783-core.c  |   38 +++++++++++++++++++-------------------
+ include/linux/mfd/mc13783.h |   24 +++++++++++++++++++++---
+ 2 files changed, 40 insertions(+), 22 deletions(-)
 
-for now this just ignores the possible race to trigger an alarm when
-setting the time.  Should I resolve that, if so, what is the prefered
-way to do that?
-
-Best regards
-Uwe
-
- drivers/rtc/rtc-mc13783.c |  159 +++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 147 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/rtc/rtc-mc13783.c b/drivers/rtc/rtc-mc13783.c
-index 6a36201..ae01217 100644
---- a/drivers/rtc/rtc-mc13783.c
-+++ b/drivers/rtc/rtc-mc13783.c
-@@ -28,6 +28,34 @@ struct mc13783_rtc {
- 	int valid;
- };
- 
-+static int mc13783_rtc_irq_enable_unlocked(struct device *dev,
-+		unsigned int enabled, int irq)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	int (*func)(struct mc13783 *mc13783, int irq);
-+
-+	if (!priv->valid)
-+		return -ENODATA;
-+
-+	func = enabled ? mc13783_irq_unmask : mc13783_irq_mask;
-+	return func(priv->mc13783, irq);
-+}
-+
-+static int mc13783_rtc_irq_enable(struct device *dev,
-+		unsigned int enabled, int irq)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mc13783_lock(priv->mc13783);
-+
-+	ret = mc13783_rtc_irq_enable_unlocked(dev, enabled, irq);
-+
-+	mc13783_unlock(priv->mc13783);
-+
-+	return ret;
-+}
-+
- static int mc13783_rtc_read_time(struct device *dev, struct rtc_time *tm)
- {
- 	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-@@ -114,6 +142,107 @@ out:
- 	return ret;
+diff --git a/drivers/mfd/mc13783-core.c b/drivers/mfd/mc13783-core.c
+index a1ade23..f89d12d 100644
+--- a/drivers/mfd/mc13783-core.c
++++ b/drivers/mfd/mc13783-core.c
+@@ -225,7 +225,7 @@ int mc13783_reg_rmw(struct mc13783 *mc13783, unsigned int offset,
  }
+ EXPORT_SYMBOL(mc13783_reg_rmw);
  
-+static int mc13783_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned seconds, days;
-+	unsigned long s1970;
-+	int enabled, pending;
-+	int ret;
-+
-+	mc13783_lock(priv->mc13783);
-+
-+	ret = mc13783_reg_read(priv->mc13783, MC13783_RTCTODA, &seconds);
-+	if (unlikely(ret))
-+		goto out;
-+	if (seconds >= 86400) {
-+		ret = -ENODATA;
-+		goto out;
-+	}
-+
-+	ret = mc13783_reg_read(priv->mc13783, MC13783_RTCDAY, &days);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	ret = mc13783_irq_status(priv->mc13783, MC13783_IRQ_TODA,
-+			&enabled, &pending);
-+
-+out:
-+	mc13783_unlock(priv->mc13783);
-+
-+	if (ret)
-+		return ret;
-+
-+	alarm->enabled = enabled;
-+	alarm->pending = pending;
-+
-+	s1970 = days * 86400 + seconds;
-+
-+	rtc_time_to_tm(s1970, &alarm->time);
-+	dev_dbg(dev, "%s: %lu\n", __func__, s1970);
-+
-+	return 0;
-+}
-+
-+static int mc13783_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
-+{
-+	struct mc13783_rtc *priv = dev_get_drvdata(dev);
-+	unsigned long s1970;
-+	unsigned seconds, days;
-+	int ret;
-+
-+	mc13783_lock(priv->mc13783);
-+
-+	/* disable alarm to prevent false triggering */
-+	ret = mc13783_reg_write(priv->mc13783, MC13783_RTCTODA, 0x1ffff);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	ret = mc13783_irq_ack(priv->mc13783, MC13783_IRQ_TODA);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	ret = rtc_tm_to_time(&alarm->time, &s1970);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	dev_dbg(dev, "%s: o%2.s %lu\n", __func__, alarm->enabled ? "n" : "ff",
-+			s1970);
-+
-+	ret = mc13783_rtc_irq_enable_unlocked(dev, alarm->enabled,
-+			MC13783_IRQ_TODA);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	seconds = s1970 % 86400;
-+	days = s1970 / 86400;
-+
-+	ret = mc13783_reg_write(priv->mc13783, MC13783_RTCDAYA, days);
-+	if (unlikely(ret))
-+		goto out;
-+
-+	ret = mc13783_reg_write(priv->mc13783, MC13783_RTCTODA, seconds);
-+
-+out:
-+	mc13783_unlock(priv->mc13783);
-+
-+	return ret;
-+}
-+
-+static irqreturn_t mc13783_rtc_alarm_handler(int irq, void *dev)
-+{
-+	struct mc13783_rtc *priv = dev;
-+	struct mc13783 *mc13783 = priv->mc13783;
-+
-+	dev_dbg(&priv->rtc->dev, "Alarm\n");
-+
-+	rtc_update_irq(priv->rtc, 1, RTC_IRQF | RTC_AF);
-+
-+	mc13783_irq_ack(mc13783, irq);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static irqreturn_t mc13783_rtc_update_handler(int irq, void *dev)
+-int mc13783_mask(struct mc13783 *mc13783, int irq)
++int mc13783_irq_mask(struct mc13783 *mc13783, int irq)
  {
- 	struct mc13783_rtc *priv = dev;
-@@ -131,24 +260,21 @@ static irqreturn_t mc13783_rtc_update_handler(int irq, void *dev)
- static int mc13783_rtc_update_irq_enable(struct device *dev,
- 		unsigned int enabled)
- {
--	struct mc13783_rtc *priv = dev_get_drvdata(dev);
--	int ret = -ENODATA;
--
--	mc13783_lock(priv->mc13783);
--	if (!priv->valid)
--		goto out;
--
--	ret = (enabled ? mc13783_irq_unmask : mc13783_irq_mask)(priv->mc13783,
--			MC13783_IRQ_1HZ);
--out:
--	mc13783_unlock(priv->mc13783);
-+	return mc13783_rtc_irq_enable(dev, enabled, MC13783_IRQ_1HZ);
-+}
+ 	int ret;
+ 	unsigned int offmask = irq < 24 ? MC13783_IRQMASK0 : MC13783_IRQMASK1;
+@@ -245,9 +245,9 @@ int mc13783_mask(struct mc13783 *mc13783, int irq)
  
--	return ret;
-+static int mc13783_rtc_alarm_irq_enable(struct device *dev,
-+		unsigned int enabled)
-+{
-+	return mc13783_rtc_irq_enable(dev, enabled, MC13783_IRQ_TODA);
+ 	return mc13783_reg_write(mc13783, offmask, mask | irqbit);
  }
+-EXPORT_SYMBOL(mc13783_mask);
++EXPORT_SYMBOL(mc13783_irq_mask);
  
- static const struct rtc_class_ops mc13783_rtc_ops = {
- 	.read_time = mc13783_rtc_read_time,
- 	.set_mmss = mc13783_rtc_set_mmss,
-+	.read_alarm = mc13783_rtc_read_alarm,
-+	.set_alarm = mc13783_rtc_set_alarm,
-+	.alarm_irq_enable = mc13783_rtc_alarm_irq_enable,
- 	.update_irq_enable = mc13783_rtc_update_irq_enable,
- };
+-int mc13783_unmask(struct mc13783 *mc13783, int irq)
++int mc13783_irq_unmask(struct mc13783 *mc13783, int irq)
+ {
+ 	int ret;
+ 	unsigned int offmask = irq < 24 ? MC13783_IRQMASK0 : MC13783_IRQMASK1;
+@@ -267,7 +267,18 @@ int mc13783_unmask(struct mc13783 *mc13783, int irq)
  
-@@ -197,11 +323,19 @@ static int __devinit mc13783_rtc_probe(struct platform_device *pdev)
+ 	return mc13783_reg_write(mc13783, offmask, mask & ~irqbit);
+ }
+-EXPORT_SYMBOL(mc13783_unmask);
++EXPORT_SYMBOL(mc13783_irq_unmask);
++
++int mc13783_irq_ack(struct mc13783 *mc13783, int irq)
++{
++	unsigned int offstat = irq < 24 ? MC13783_IRQSTAT0 : MC13783_IRQSTAT1;
++	unsigned int val = 1 << (irq < 24 ? irq : irq - 24);
++
++	BUG_ON(irq < 0 || irq >= MC13783_NUM_IRQ);
++
++	return mc13783_reg_write(mc13783, offstat, val);
++}
++EXPORT_SYMBOL(mc13783_irq_ack);
+ 
+ int mc13783_irq_request_nounmask(struct mc13783 *mc13783, int irq,
+ 		irq_handler_t handler, const char *name, void *dev)
+@@ -297,7 +308,7 @@ int mc13783_irq_request(struct mc13783 *mc13783, int irq,
  	if (ret)
- 		goto err_update_irq_request;
+ 		return ret;
  
-+	ret = mc13783_irq_request_nounmask(priv->mc13783, MC13783_IRQ_TODA,
-+			mc13783_rtc_alarm_handler, DRIVER_NAME, priv);
-+	if (ret)
-+		goto err_alarm_irq_request;
+-	ret = mc13783_unmask(mc13783, irq);
++	ret = mc13783_irq_unmask(mc13783, irq);
+ 	if (ret) {
+ 		mc13783->irqhandler[irq] = NULL;
+ 		mc13783->irqdata[irq] = NULL;
+@@ -317,7 +328,7 @@ int mc13783_irq_free(struct mc13783 *mc13783, int irq, void *dev)
+ 			mc13783->irqdata[irq] != dev)
+ 		return -EINVAL;
+ 
+-	ret = mc13783_mask(mc13783, irq);
++	ret = mc13783_irq_mask(mc13783, irq);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -333,17 +344,6 @@ static inline irqreturn_t mc13783_irqhandler(struct mc13783 *mc13783, int irq)
+ 	return mc13783->irqhandler[irq](irq, mc13783->irqdata[irq]);
+ }
+ 
+-int mc13783_ackirq(struct mc13783 *mc13783, int irq)
+-{
+-	unsigned int offstat = irq < 24 ? MC13783_IRQSTAT0 : MC13783_IRQSTAT1;
+-	unsigned int val = 1 << (irq < 24 ? irq : irq - 24);
+-
+-	BUG_ON(irq < 0 || irq >= MC13783_NUM_IRQ);
+-
+-	return mc13783_reg_write(mc13783, offstat, val);
+-}
+-EXPORT_SYMBOL(mc13783_ackirq);
+-
+ /*
+  * returns: number of handled irqs or negative error
+  * locking: holds mc13783->lock
+@@ -422,7 +422,7 @@ static irqreturn_t mc13783_handler_adcdone(int irq, void *data)
+ {
+ 	struct mc13783_adcdone_data *adcdone_data = data;
+ 
+-	mc13783_ackirq(adcdone_data->mc13783, irq);
++	mc13783_irq_ack(adcdone_data->mc13783, irq);
+ 
+ 	complete_all(&adcdone_data->done);
+ 
+@@ -486,7 +486,7 @@ int mc13783_adc_do_conversion(struct mc13783 *mc13783, unsigned int mode,
+ 	dev_dbg(&mc13783->spidev->dev, "%s: request irq\n", __func__);
+ 	mc13783_irq_request(mc13783, MC13783_IRQ_ADCDONE,
+ 			mc13783_handler_adcdone, __func__, &adcdone_data);
+-	mc13783_ackirq(mc13783, MC13783_IRQ_ADCDONE);
++	mc13783_irq_ack(mc13783, MC13783_IRQ_ADCDONE);
+ 
+ 	mc13783_reg_write(mc13783, MC13783_REG_ADC_0, adc0);
+ 	mc13783_reg_write(mc13783, MC13783_REG_ADC_1, adc1);
+diff --git a/include/linux/mfd/mc13783.h b/include/linux/mfd/mc13783.h
+index 3568040..05619f0 100644
+--- a/include/linux/mfd/mc13783.h
++++ b/include/linux/mfd/mc13783.h
+@@ -26,10 +26,28 @@ int mc13783_irq_request(struct mc13783 *mc13783, int irq,
+ int mc13783_irq_request_nounmask(struct mc13783 *mc13783, int irq,
+ 		irq_handler_t handler, const char *name, void *dev);
+ int mc13783_irq_free(struct mc13783 *mc13783, int irq, void *dev);
+-int mc13783_ackirq(struct mc13783 *mc13783, int irq);
+ 
+-int mc13783_mask(struct mc13783 *mc13783, int irq);
+-int mc13783_unmask(struct mc13783 *mc13783, int irq);
++int mc13783_irq_mask(struct mc13783 *mc13783, int irq);
++int mc13783_irq_unmask(struct mc13783 *mc13783, int irq);
++int mc13783_irq_ack(struct mc13783 *mc13783, int irq);
 +
- 	priv->rtc = rtc_device_register(pdev->name,
- 			&pdev->dev, &mc13783_rtc_ops, THIS_MODULE);
- 	if (IS_ERR(priv->rtc)) {
- 		ret = PTR_ERR(priv->rtc);
- 
-+		mc13783_irq_free(priv->mc13783, MC13783_IRQ_TODA, priv);
-+err_alarm_irq_request:
++static inline int mc13783_mask(struct mc13783 *mc13783, int irq) __deprecated;
++static inline int mc13783_mask(struct mc13783 *mc13783, int irq)
++{
++	return mc13783_irq_mask(mc13783, irq);
++}
 +
- 		mc13783_irq_free(priv->mc13783, MC13783_IRQ_1HZ, priv);
- err_update_irq_request:
++static inline int mc13783_unmask(struct mc13783 *mc13783, int irq) __deprecated;
++static inline int mc13783_unmask(struct mc13783 *mc13783, int irq)
++{
++	return mc13783_irq_unmask(mc13783, irq);
++}
++
++static inline int mc13783_ackirq(struct mc13783 *mc13783, int irq) __deprecated;
++static inline int mc13783_ackirq(struct mc13783 *mc13783, int irq)
++{
++	return mc13783_irq_ack(mc13783, irq);
++}
  
-@@ -227,6 +361,7 @@ static int __devexit mc13783_rtc_remove(struct platform_device *pdev)
- 
- 	rtc_device_unregister(priv->rtc);
- 
-+	mc13783_irq_free(priv->mc13783, MC13783_IRQ_TODA, priv);
- 	mc13783_irq_free(priv->mc13783, MC13783_IRQ_1HZ, priv);
- 	mc13783_irq_free(priv->mc13783, MC13783_IRQ_RTCRST, priv);
- 
+ #define MC13783_ADC0		43
+ #define MC13783_ADC0_ADREFEN		(1 << 10)
 -- 
 1.7.0
 
