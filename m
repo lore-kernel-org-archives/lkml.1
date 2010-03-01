@@ -1,54 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666Ab0CASC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:02:29 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:33419 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752687Ab0CASCY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:02:24 -0500
-Date: Mon, 1 Mar 2010 18:02:11 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Corentin Chary <corentin.chary@gmail.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Anisse Astier <anisse@astier.eu>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
-       Daniel Oliveira Nascimento <don@syst.com.br>,
-       Harald Welte <laforge@gnumonks.org>,
-       Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Karol Kozimor <sziwan@users.sourceforge.net>,
-       Lennart Poettering <mzxreary@0pointer.de>,
-       Mattia Dongili <malattia@linux.it>, Peter Feuerer <peter@piie.net>,
-       Sujith Thomas <sujith.thomas@intel.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH 01/14] MAINTAINERS: update drivers/platform/x86
-	information
-Message-ID: <20100301180211.GA19901@srcf.ucam.org>
-References: <1267197527-18062-1-git-send-email-mjg@redhat.com> <1267197527-18062-2-git-send-email-mjg@redhat.com> <71cd59b01002261353w53fea6cax146acfd18e87636@mail.gmail.com> <alpine.LFD.2.00.1003011255030.4281@localhost.localdomain>
+	id S1753238Ab0CASDQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:03:16 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:48962 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200Ab0CASDM (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Mon, 1 Mar 2010 13:03:12 -0500
+Date: Mon, 1 Mar 2010 12:38:58 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Sheng Yang <sheng@linux.intel.com>
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org
+Subject: Re: [LKML] [PATCH 7/7] xen: Enable grant table and xenbus for PV
+	extension of HVM
+Message-ID: <20100301173858.GJ7881@phenom.dumpdata.com>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-8-git-send-email-sheng@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003011255030.4281@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1267436315-24486-8-git-send-email-sheng@linux.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4B8C0151.0219:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 12:59:03PM -0500, Len Brown wrote:
+> +/* The region reserved by QEmu for Xen platform device */
+> +#define GNTTAB_START	    0xf2000000ul
+> +#define GNTTAB_SIZE	    0x20000ul
 
-> Matthew,
-> Unless you object, I'll send Corentin's asus-laptop cleanup
-> upstream with my treek.
+I thought that in the earlier review you said:
 
-I've just pulled this in (along with a couple of other minor fixes) - 
-I'm just waiting to make sure I get the right set of Thinkpad fixes 
-before sending another pull request.
+"> > +#define GNTTAB_START           0xfbfe0000ul
+> > +#define GNTTAB_SIZE            0x20000ul 
+> 
+> Is it possible that there would be a PCI device that would be
+> passed in the guest that would conflict with the above mentioned
+> E820 region?
+>
+I would change them to a dedicated PCI MMIO address in the next version.
+Thanks.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+"
+?
