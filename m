@@ -1,70 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751536Ab0CAP1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:27:35 -0500
-Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:36857 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751154Ab0CAP1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:27:33 -0500
-Date: Mon, 1 Mar 2010 10:13:00 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next requirements
-Message-ID: <20100301151300.GA14825@emergent.ellipticsemi.com>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com,
-	hpa@zytor.com, linux-kernel@vger.kernel.org, roland@redhat.com,
-	suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
- <201002271323.14402.rjw@sisk.pl>
- <20100227124710.GA21164@elte.hu>
- <201002272007.43042.rjw@sisk.pl>
- <20100228072357.GB14205@elte.hu>
+	id S1751581Ab0CAP2K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:28:10 -0500
+Received: from smtp.ispras.ru ([83.149.198.201]:36124 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750748Ab0CAP2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:28:08 -0500
+From: Alexander Strakh <strakh@ispras.ru>
+Organization: ISP RAS
+To: Drew Eckhardt <drew@colorado.edu>,
+       Thomas Quinot <thomas@melchior.cuivre.fdn.fr>,
+       Gerd Knorr <kraxel@cs.tu-berlin.de>, Jens Axboe <axboe@suse.de>,
+       Richard Gooch <rgooch@atnf.csiro.au>,
+       Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
+       linux-scsi@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+       linux-kernel@vger.kernel.org
+Subject: question about del_gendisk function use in drivers/scsi/sr.c
+Date: Mon, 1 Mar 2010 18:27:41 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Eric Youngdale <ericy@andante.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100228072357.GB14205@elte.hu>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003011827.41818.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08:23 Sun 28 Feb     , Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > In fact those rare ways of building and booting the kernel i mentioned are 
-> > > probably used _more_ than half of the architectures that linux-next 
-> > > build-tests ...
-> > 
-> > I don't know and you don't know either.  That's just pure speculation and 
-> > therefore meaningless.
-> 
-> We know various arch (and hardware) usage stats, such as:
-> 
->   http://smolt.fedoraproject.org/static/stats/stats.html
-> 
-> Today's stats, done amongst users who are willing to opt in to the Smolt 
-> daemon:
-> 
->        x86: 99.7%
->    powerpc: 0.3%
-> 
-> x86 used to be 99.5 a year ago, so the world has become even more x86-centric.
+        KERNEL_VERSION: 2.6.33
+        SUBJECT: question about del_gendisk function use
+        SUBSCRIBE:
+        In driver drivers/scsi/sr.c in function sr_probe:
 
-This only tells us that _smolt users_ have become even more x86-centric.
-As a self-selected sample, it is very likely a poor representative of
-"the world" and any such extrapolation is indeed "pure speculation".
+1. In line 588 we call  alloc_disk(1);
+2. If in line 593 function find_first_zero_bit returns SR_DISKS then we goto 
+label fail_put (line 597).
+3. In line 652 we call put_disk. But in some other drivers del_gendisk is 
+called before put_disk. Why didn't we call del_gendisk before put_disk here? 
+Is it an error?
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+570 static int sr_probe(struct device *dev)
+571 {
+572         struct scsi_device *sdev = to_scsi_device(dev);
+573         struct gendisk *disk;
+574         struct scsi_cd *cd;
+575         int minor, error;
+576
+577         error = -ENODEV;
+578         if (sdev->type != TYPE_ROM && sdev->type != TYPE_WORM)
+579                 goto fail;
+580
+581         error = -ENOMEM;
+582         cd = kzalloc(sizeof(*cd), GFP_KERNEL);
+583         if (!cd)
+584                 goto fail;
+585
+586         kref_init(&cd->kref);
+587
+588         disk = alloc_disk(1);
+589         if (!disk)
+590                 goto fail_free;
+591
+592         spin_lock(&sr_index_lock);
+593         minor = find_first_zero_bit(sr_index_bits, SR_DISKS);
+594         if (minor == SR_DISKS) {
+595                 spin_unlock(&sr_index_lock);
+596                 error = -EBUSY;
+597                 goto fail_put;
+598         }
+
+...
+641                 goto fail_put;
+642
+643         dev_set_drvdata(dev, cd);
+644         disk->flags |= GENHD_FL_REMOVABLE;
+645         add_disk(disk);
+646
+647         sdev_printk(KERN_DEBUG, sdev,
+648                     "Attached scsi CD-ROM %s\n", cd->cdi.name);
+649         return 0;
+650
+651 fail_put:
+652         put_disk(disk);
+653 fail_free:
+654         kfree(cd);
+655 fail:
+656         return error;
+...
