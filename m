@@ -1,137 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751615Ab0CANZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 08:25:49 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:56384
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751507Ab0CANZq (ORCPT
+	id S1751672Ab0CAN0H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 08:26:07 -0500
+Received: from krynn.se.axis.com ([193.13.178.10]:56433 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580Ab0CAN0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 08:25:46 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh2a8h87h43h61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYLULH-01-6WZ-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: iommu@lists.linux-foundation.org
-CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 4/4] x86/amd-iommu: Report errors in acpi parsing functions upstream
-Date: Mon, 1 Mar 2010 14:24:42 +0100
-Message-ID: <1267449882-1415-5-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267449882-1415-1-git-send-email-joerg.roedel@amd.com>
-References: <1267449882-1415-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 01 Mar 2010 13:24:48.0849 (UTC) FILETIME=[9132DC10:01CAB942]
+	Mon, 1 Mar 2010 08:26:04 -0500
+Date: Mon, 1 Mar 2010 14:25:01 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-cris-kernel <linux-cris-kernel@axis.com>
+Subject: [GIT PULL] CRIS updates for 2.6.34
+Message-ID: <20100301132501.GF4219@axis.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since acpi_table_parse ignores the return values of the
-parsing function this patch introduces a workaround and
-reports these errors upstream via a global variable.
+Hi,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu_init.c |   38 +++++++++++++++++++++++++++-----------
- 1 files changed, 27 insertions(+), 11 deletions(-)
+Please pull the below repo for some minor CRIS-fixes.
 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 9dc91b4..feaf471 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -138,9 +138,9 @@ int amd_iommus_present;
- bool amd_iommu_np_cache __read_mostly;
- 
- /*
-- * Set to true if ACPI table parsing and hardware intialization went properly
-+ * The ACPI table parsing functions set this variable on an error
-  */
--static bool amd_iommu_initialized;
-+static int __initdata amd_iommu_init_err;
- 
- /*
-  * List of protection domains - used during resume
-@@ -391,9 +391,11 @@ static int __init find_last_devid_acpi(struct acpi_table_header *table)
- 	 */
- 	for (i = 0; i < table->length; ++i)
- 		checksum += p[i];
--	if (checksum != 0)
-+	if (checksum != 0) {
- 		/* ACPI table corrupt */
--		return -ENODEV;
-+		amd_iommu_init_err = -ENODEV;
-+		return 0;
-+	}
- 
- 	p += IVRS_HEADER_LENGTH;
- 
-@@ -920,11 +922,16 @@ static int __init init_iommu_all(struct acpi_table_header *table)
- 				    h->mmio_phys);
- 
- 			iommu = kzalloc(sizeof(struct amd_iommu), GFP_KERNEL);
--			if (iommu == NULL)
--				return -ENOMEM;
-+			if (iommu == NULL) {
-+				amd_iommu_init_err = -ENOMEM;
-+				return 0;
-+			}
-+
- 			ret = init_iommu_one(iommu, h);
--			if (ret)
--				return ret;
-+			if (ret) {
-+				amd_iommu_init_err = ret;
-+				return 0;
-+			}
- 			break;
- 		default:
- 			break;
-@@ -934,8 +941,6 @@ static int __init init_iommu_all(struct acpi_table_header *table)
- 	}
- 	WARN_ON(p != end);
- 
--	amd_iommu_initialized = true;
--
- 	return 0;
- }
- 
-@@ -1211,6 +1216,10 @@ static int __init amd_iommu_init(void)
- 	if (acpi_table_parse("IVRS", find_last_devid_acpi) != 0)
- 		return -ENODEV;
- 
-+	ret = amd_iommu_init_err;
-+	if (ret)
-+		goto out;
-+
- 	dev_table_size     = tbl_size(DEV_TABLE_ENTRY_SIZE);
- 	alias_table_size   = tbl_size(ALIAS_TABLE_ENTRY_SIZE);
- 	rlookup_table_size = tbl_size(RLOOKUP_TABLE_ENTRY_SIZE);
-@@ -1270,12 +1279,19 @@ static int __init amd_iommu_init(void)
- 	if (acpi_table_parse("IVRS", init_iommu_all) != 0)
- 		goto free;
- 
--	if (!amd_iommu_initialized)
-+	if (amd_iommu_init_err) {
-+		ret = amd_iommu_init_err;
- 		goto free;
-+	}
- 
- 	if (acpi_table_parse("IVRS", init_memory_definitions) != 0)
- 		goto free;
- 
-+	if (amd_iommu_init_err) {
-+		ret = amd_iommu_init_err;
-+		goto free;
-+	}
-+
- 	ret = sysdev_class_register(&amd_iommu_sysdev_class);
- 	if (ret)
- 		goto free;
+Thanks!
+
+The following changes since commit 1836d95928a0f41ada0cbb2a6c4e46b027db9491:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../ericvh/v9fs
+
+are available in the git repository at:
+
+  git://repo.or.cz/cris-mirror.git for-linus
+
+Roel Kluin (1):
+      CRIS v32: Should index be positive?
+
+Thomas Gleixner (1):
+      cris: Fixup last users of irq_chip->typename
+
+ arch/cris/arch-v10/kernel/irq.c     |    2 +-
+ arch/cris/arch-v32/kernel/irq.c     |    2 +-
+ arch/cris/arch-v32/kernel/pinmux.c  |    4 ++--
+ arch/cris/arch-v32/mach-a3/pinmux.c |    2 +-
+ arch/cris/arch-v32/mach-fs/pinmux.c |    4 ++--
+ arch/cris/kernel/irq.c              |    2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
+
+
+/^JN - Jesper Nilsson
 -- 
-1.7.0
-
-
+               Jesper Nilsson -- jesper.nilsson@axis.com
