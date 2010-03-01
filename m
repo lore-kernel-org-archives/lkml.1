@@ -1,54 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439Ab0CAQYG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:24:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35715 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750998Ab0CAQYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:24:03 -0500
-Date: Mon, 1 Mar 2010 08:22:15 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git
- tree
-In-Reply-To: <20100301042249.GA12289@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.1003010812410.3616@localhost.localdomain>
-References: <20100301042249.GA12289@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751264Ab0CAQ1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:27:37 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51917 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808Ab0CAQ1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:27:36 -0500
+Date: Mon, 1 Mar 2010 08:27:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in
+	git tree
+Message-ID: <20100301162733.GB6758@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100301042249.GA12289@linux.vnet.ibm.com> <201003011042.48923.elendil@planet.nl> <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <10f740e81003010210k3de9851fuf9f67f55b08af4f1@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 01, 2010 at 11:10:54AM +0100, Geert Uytterhoeven wrote:
+> On Mon, Mar 1, 2010 at 10:42, Frans Pop <elendil@planet.nl> wrote:
+> > Paul E. McKenney wrote:
+> >> This patch appends the SHA1 hash of the current git tree to the
+> >> kernel version line, or "[Not git tree]" if run from a non-git tree.
+> >> Uses "git log" to print the hash.
+> >
+> > Nice idea.
+> >
+> > However, I gave it a try and got:
+> > # Linux kernel version: 2.6.34-rc0 [Not git tree]
+> >
+> > Even though I *am* building from a git tree. It does not seem to work when
+> > building with KBUILD_OUTPUT set or when using 'O='.
+> >
+> > IMO that makes the practical value of the patch very limited. I'm afraid
+> > because of this it will increase confusion rather than add information.
+> 
+> scripts/setlocalversion handles this case correctly, so you may want to
+> look there...
 
+Very nice, thank you!!!
 
-On Sun, 28 Feb 2010, Paul E. McKenney wrote:
->
-> Uses "git log" to print the hash.
+Here is the updated patch.  Thoughts?
 
-Please don't use "git log" for something like this.
+							Thanx, Paul
 
-Sure, it works, but it's kind of silly to say "I want a log, except I want 
-only a single entry, and btw, I don't actually even want the log entry for 
-that single entry at all, just the hash".
+------------------------------------------------------------------------
 
-It boils down to "I want a log, except with none of the log part". It 
-should make you go "Do I really want a log"?
+[PATCH RFC] kconfig: place localversion string in .config output
 
-If you really want the hash, maybe just using "git rev-parse HEAD" would 
-do it.
+This patch appends the localversion string to the Linux kernel version.
+For example, in a git tree with uncommitted changes, the .config file
+might start as follows:
 
-However, in this case I think _any_ of those would be wrong. Wouldn't it 
-make sense to use the same thing that we already compute for 'uname' 
-(scripts/setlocalversion)? Especially as that one already knows how to 
-handle other SCM's too (ie the whole hg/svn parts).
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.33-01836-g90a6501-dirty
+# Mon Mar  1 08:21:49 2010
 
-That script also ends up using a nicer format, ie it uses "git describe" 
-to give a better idea of where it all is.
+This patch uses the scripts/setlocalversion output, so similar output
+is also generated for svn and mercurial.
 
-				Linus
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Frans Pop <elendil@planet.nl>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ confdata.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index c4dec80..fba6b07 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -399,10 +399,11 @@ int conf_read(const char *name)
+ int conf_write(const char *name)
+ {
+ 	FILE *out;
++	FILE *slv;
+ 	struct symbol *sym;
+ 	struct menu *menu;
+ 	const char *basename;
+-	char dirname[128], tmpname[128], newname[128];
++	char dirname[128], tmpname[128], newname[128], localversion[128];
+ 	int type, l;
+ 	const char *str;
+ 	time_t now;
+@@ -450,12 +451,20 @@ int conf_write(const char *name)
+ 	if (env && *env)
+ 		use_timestamp = 0;
+ 
++	localversion[0] = '\0';
++	slv = popen("scripts/setlocalversion 2> /dev/null", "r");
++	if (slv != NULL) {
++		fscanf(slv, " %127s ", localversion);
++		pclose(slv);
++	}
++
+ 	fprintf(out, _("#\n"
+ 		       "# Automatically generated make config: don't edit\n"
+-		       "# Linux kernel version: %s\n"
++		       "# Linux kernel version: %s%s\n"
+ 		       "%s%s"
+ 		       "#\n"),
+ 		     sym_get_string_value(sym),
++		     localversion[0] != '\0' ? localversion : "",
+ 		     use_timestamp ? "# " : "",
+ 		     use_timestamp ? ctime(&now) : "");
+ 
