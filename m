@@ -1,45 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026Ab0CACu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 21:50:29 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33010 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363Ab0CACu2 (ORCPT
+	id S1754090Ab0CADNw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 22:13:52 -0500
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:49950 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526Ab0CADNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 21:50:28 -0500
-Date: Mon, 1 Mar 2010 11:49:54 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] pci: Kill off pci_register_set_vga_state() symbol export.
-Message-ID: <20100301024953.GC23086@linux-sh.org>
+	Sun, 28 Feb 2010 22:13:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=TiXwoG4Zn4QtDVbW5pL40lKd32UJqiHczrP7wbWtjO00xCew6kprErAmDGaWYp3N20
+         Rl/9bGKVwi7HdeD8VQy+qXzlCjG5rUaTbXf0Q4Uqh7XvyNBJltP4A53hwoh9ONUBOfUD
+         wP0Jv0pM84GRlIWD+xjQg2uHu1WBBaZt99rm0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1267382520.12641.29.camel@Joe-Laptop.home>
+References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
+	 <1267382520.12641.29.camel@Joe-Laptop.home>
+Date: Mon, 1 Mar 2010 12:13:49 +0900
+Message-ID: <961aa3351002281913w5c009443v4a90793ffc37d2c2@mail.gmail.com>
+Subject: Re: [PATCH] alpha: use __ratelimit
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When pci_register_set_vga_state() was made __init, the EXPORT_SYMBOL()
-was retained, which now leaves us with a section mismatch.
+2010/3/1 Joe Perches <joe@perches.com>:
+> On Sun, 2010-02-28 at 19:58 +0900, Akinobu Mita wrote:
+>> Replace open-coded rate limiting logic with __ratelimit().
+>
+> Perhaps printk_ratelimited?
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+This patch is cleanup only and no functionnal change (it does not change
+the rate limit interval and burst).
 
----
-
- drivers/pci/pci.c |    1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 5b548ae..37c23b7 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -3007,7 +3007,6 @@ EXPORT_SYMBOL(pcim_pin_device);
- EXPORT_SYMBOL(pci_disable_device);
- EXPORT_SYMBOL(pci_find_capability);
- EXPORT_SYMBOL(pci_bus_find_capability);
--EXPORT_SYMBOL(pci_register_set_vga_state);
- EXPORT_SYMBOL(pci_release_regions);
- EXPORT_SYMBOL(pci_request_regions);
- EXPORT_SYMBOL(pci_request_regions_exclusive);
+But using printk_ratelimited() changes the burst count from 5 to 10.
+It may not be big difference but I'm not sure...
