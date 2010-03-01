@@ -1,72 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282Ab0CAQOS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:14:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41558 "EHLO mx1.redhat.com"
+	id S1751452Ab0CAQPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:15:06 -0500
+Received: from www.tglx.de ([62.245.132.106]:55983 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844Ab0CAQOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:14:17 -0500
-Message-ID: <4B8BE7C1.40000@redhat.com>
-Date: Mon, 01 Mar 2010 06:13:53 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1750844Ab0CAQPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:15:03 -0500
+Date: Mon, 1 Mar 2010 17:14:54 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: "Chatterjee, Amit" <amit.chatterjee@ti.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, linux-omap@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+Subject: Re: 2.6.33-rc8-rt1 on Beagle
+In-Reply-To: <20100301150657.GG16049@pengutronix.de>
+Message-ID: <alpine.LFD.2.00.1003011713210.4245@localhost.localdomain>
+References: <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>
+ <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132927.GC5416@bicker> <4B84D20B.9080600@osadl.org> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCBE65@dbde02.ent.ti.com>
+ <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com> <20100301150657.GG16049@pengutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, avi@redhat.com,
-       mtosatti@redhat.com
-Subject: Re: use of setjmp/longjmp in x86 emulator.
-References: <20100301091819.GD16909@redhat.com>
-In-Reply-To: <20100301091819.GD16909@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-963598006-1267460096=:4245"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/28/2010 11:18 PM, Gleb Natapov wrote:
-> I am looking at improving KVM x86 emulator. Current code does not
-> handle some special cases correctly (code execution from ROM, ins/outs
-> to/from MMIO) and many exception conditions during instruction emulation
-> are not handled correctly. There is a lot of code in emulator that is
-> there only for exception propagation. Using setjmp/longjmp will be very
-> beneficial here as exception condition during instruction execution
-> maps very naturally to setjmp/longjmp, so my question is what about
-> adding setjmp/longjmp implementation to the kernel, or alternatively,
-> if there is a fear that it can be abused, add it locally to emulator.c?
-> Note that instruction emulation is always done in process context.
->    
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm all for radical ideas, but from a pragmatic point of view, you 
-shouldn't use longjmp in the kernel.  Seriously bad things are happening 
-with it; it leaves local variables undefined, doesn't undo global state 
-changes.
+--8323328-963598006-1267460096=:4245
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-So if you:
+On Mon, 1 Mar 2010, Uwe Kleine-König wrote:
+> You might want to report that to the author(s) of
+> drivers/mmc/host/omap_hsmmc.c.
 
-spin_lock(&s->lock);
-if (!s->active)
-     longjmp(buf, -1);
+FYI, thats fixed in 33-rt3 and the fix is going mainline as well.
 
-... you are broken.  This case can be made very much more complex and 
-hard to reason about by using local variables which are reset by the 
-longjmp.
+Thanks,
 
-Further, it requires use of the volatile keyword to interact properly 
-with logic involving more than one variable, and thus, by definition is 
-impossible to use in the kernel, which does not implement the volatile 
-keyword.  :)
-
-
-Instead, for this case, use the fact that there is an architecturally 
-designed finite number of exceptions that can be processed 
-simultaneously.  This means if you queue exceptions to a pending list of 
-control-flow interrupting events to be processed, as long as the queue 
-is appropriately sized, you will never overflow this queue and never 
-require dynamic allocation.  Further, you can then naturally follow the 
-exception priority rules at the top-level of the emulator and never need 
-to pass back complex exception structures, merely a simple return value 
-which indicates whether to return to top-level control logic or continue 
-with instruction emulation.  I believe using this style of programming 
-will make your need for setjmp/longjmp go away.
-
-Zach
+	tglx
+--8323328-963598006-1267460096=:4245--
