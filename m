@@ -1,60 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442Ab0CAS4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:56:52 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:41232 "EHLO
+	id S1751747Ab0CAS5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:57:48 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:56316 "EHLO
 	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609Ab0CASzy (ORCPT
+	with ESMTP id S1751557Ab0CAS5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:55:54 -0500
+	Mon, 1 Mar 2010 13:57:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=dmVot8+u5L33/CA3dhZTfuNXXCWDDzLn8wAKunPPz+BApytLE+lIBb5YaxE4wswQMJ
-         q1gE4aGY1foStdDkYrJG2zhnYUrvjbPItjAOFl41A+uZoKh/XF8iDuSDoWIk6Rnl30ua
-         WYzglIlAyeuDkdiusAzdn/CU8fgBZDGj1da+k=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=CTaYutvgUwcSF3BH4cN9tKMS4PZ4bAPoAXb0T3jGat80H4JM428m2Dbw+L2ZITXwr3
+         +lRMzPeKgH77H5KSTKqvF7qFj4BAa8IvtB0Gl0LEORYfOOrXC+o0jXyn/YSexJ9uowwY
+         ZiqM8PNoliS8Lk38sJBmHjhE7FFZoU1heH4fg=
+MIME-Version: 1.0
+In-Reply-To: <4B8C068A.4040402@zytor.com>
+References: <1267463700-25524-1-git-send-email-luca@luca-barbieri.com>
+	 <4B8C068A.4040402@zytor.com>
+Date: Mon, 1 Mar 2010 19:57:45 +0100
+X-Google-Sender-Auth: d83157b639c7bc1b
+Message-ID: <ff13bc9a1003011057s65fab4e5t7c37ebba5af16c9e@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Fix atomic64_add_unless return value convention
 From: Luca Barbieri <luca@luca-barbieri.com>
-To: hpa@zytor.com
+To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, paulus@samba.org,
-       linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 1/5] lib: fix atomic64_add_unless test
-Date: Mon,  1 Mar 2010 19:55:45 +0100
-Message-Id: <1267469749-11878-2-git-send-email-luca@luca-barbieri.com>
-X-Mailer: git-send-email 1.6.6.1.476.g01ddb
-In-Reply-To: <1267469749-11878-1-git-send-email-luca@luca-barbieri.com>
-References: <1267469749-11878-1-git-send-email-luca@luca-barbieri.com>
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atomic64_add_unless must return 1 if it perfomed the add and 0 otherwise.
-The test assumed the opposite convention.
+>> The x86-32 and atomic64_test.c patches should probably be squashed in the
+>> appropriate commits in tip/x86/atomic
+>
+> We tend to be very reluctant to do that.
+OK: I suggested that to avoid introducing broken commits that could
+cause annoyance in bisections.
 
-Reported-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
----
- lib/atomic64_test.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
-index 58efdab..ee8e6de 100644
---- a/lib/atomic64_test.c
-+++ b/lib/atomic64_test.c
-@@ -104,11 +104,11 @@ static __init int test_atomic64(void)
- 	BUG_ON(v.counter != r);
- 
- 	INIT(v0);
--	BUG_ON(!atomic64_add_unless(&v, one, v0));
-+	BUG_ON(atomic64_add_unless(&v, one, v0));
- 	BUG_ON(v.counter != r);
- 
- 	INIT(v0);
--	BUG_ON(atomic64_add_unless(&v, one, v1));
-+	BUG_ON(!atomic64_add_unless(&v, one, v1));
- 	r += one;
- 	BUG_ON(v.counter != r);
- 
--- 
-1.6.6.1.476.g01ddb
-
+> Anyway, please resend your patches with actual patch descriptions
+> (commit messages).
+Resent with more verbose descriptions.
