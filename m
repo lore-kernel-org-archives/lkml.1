@@ -1,24 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751536Ab0CASRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:17:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37084 "EHLO
+	id S1753090Ab0CASRl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:17:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37120 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339Ab0CASRV (ORCPT
+	with ESMTP id S1751232Ab0CASRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:17:21 -0500
-Subject: Re: [PATCH][RESEND] Export per-tid and per-tgid cputime in 
- nanoseconds.
+	Mon, 1 Mar 2010 13:17:39 -0500
+Subject: Re: [PATCH tip/core/rcu 0/2] more lockdep-RCU and RCU_FAST_NO_HZ
+ fixes
 From: Peter Zijlstra <peterz@infradead.org>
-To: Divyesh Shah <dpshah@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, kenchen@google.com
-In-Reply-To: <af41c7c41003010744m54fc325bjccae0ff6965656eb@mail.gmail.com>
-References: <20100227020242.1384.9945.stgit@austin.mtv.corp.google.com>
-	 <1267271025.22519.740.camel@laptop>
-	 <af41c7c41003010744m54fc325bjccae0ff6965656eb@mail.gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <20100301160813.GA6758@linux.vnet.ibm.com>
+References: <20100227225240.GA16515@linux.vnet.ibm.com>
+	 <20100228085505.GA2067@elte.hu> <20100228163218.GD6846@linux.vnet.ibm.com>
+	 <20100301121045.GA30901@elte.hu> <20100301160813.GA6758@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Mar 2010 19:05:40 +0100
-Message-ID: <1267466740.1579.36.camel@laptop>
+Date: Mon, 01 Mar 2010 18:58:10 +0100
+Message-ID: <1267466290.1579.29.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -26,43 +30,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-03-01 at 07:44 -0800, Divyesh Shah wrote:
-> On Sat, Feb 27, 2010 at 3:43 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Fri, 2010-02-26 at 18:03 -0800, Divyesh Shah wrote:
-> > > This can be used by applications to get finer granularity cputime usage on
-> > > platforms that use timestamp counters or HPET.
-> >
-> > I guess the patch looks good, I'm just not sure what HPET got to do with
-> > anything.. the scheduler certainly doesn't use HPET for timekeeping, its
-> > terribly slow to read.
+On Mon, 2010-03-01 at 08:08 -0800, Paul E. McKenney wrote:
+> On Mon, Mar 01, 2010 at 01:10:45PM +0100, Ingo Molnar wrote:
+> > 
+> > FYI, even with your patch applied i'm getting this in -tip testing:
+> > 
+> > [    0.000000] Memory: 914996k/1047744k available (15146k kernel code, 452k absent, 131584k reserved, 12516k data, 2552k init)
+> > [    0.000000] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+> > [    0.000000] 
+> > [    0.000000] ===================================================
+> > [    0.000000] [ INFO: suspicious rcu_dereference_check() usage. ]
+> > [    0.000000] ---------------------------------------------------
+> > [    0.000000] include/linux/cgroup.h:492 invoked rcu_dereference_check() without protection!
+> > [    0.000000] 
+> > [    0.000000] other info that might help us debug this:
+> > [    0.000000] 
+> > [    0.000000] 1 lock held by swapper/0:
+> > [    0.000000]  #0:  (&rq->lock){......}, at: [<ffffffff81ec0bad>] init_idle+0x31/0x1ee
+> > [    0.000000] 
+> > [    0.000000] stack backtrace:
+> > [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.33-tip+ #10563
+> > [    0.000000] Call Trace:
+> > [    0.000000]  [<ffffffff810ad1c1>] lockdep_rcu_dereference+0xa1/0xb0
+> > [    0.000000]  [<ffffffff81ec0cbd>] init_idle+0x141/0x1ee
+> > [    0.000000]  [<ffffffff82ceff40>] sched_init+0x43a/0x4b6
+> > [    0.000000]  [<ffffffff82cdcceb>] start_kernel+0x1b3/0x49e
+> > [    0.000000]  [<ffffffff82cdc319>] x86_64_start_reservations+0x120/0x124
+> > [    0.000000]  [<ffffffff82cdc46b>] x86_64_start_kernel+0x14e/0x15d
+> > [    0.000000] Hierarchical RCU implementation.
+> > [    0.000000] RCU-based detection of stalled CPUs is enabled.
+> > [    0.000000] NR_IRQS:4352
+> > 
+> > Config attached.
+> > 
+> > The sha1 is:
+> > 
+> >   b5fabe1: Merge branch 'perf/urgent'
+> > 
+> > i.e. your latest fix is included:
+> > 
+> >   90a6501: sched, rcu: Fix rcu_dereference() for RCU-lockdep
 > 
-> Yes you're right. Please ignore the HPET comment.
-> 
-> >
-> > Also, it would be good to get some more justification than 'some
-> > applications can use this', which is basically a truism for any patch
-> > that adds a user interface.
-> 
-> 1) This should be useful for a shared or virtualized environment where
-> the shared management infrastructure needs to charge each application
-> as accurately as possible for cpu usage.
-> 2) An application that services different users and does some
-> cpu-intensive work may want to measure cpu time spent for each user by
-> the serving thread.
-> 
-> I think applications like web servers, remote database servers, etc.
-> fit into the second category.
-> 
-> For units of work smaller than a jiffy, this really helps as some
-> threads could potentially hide from the jiffy based accounting.
-> 
-> Please let me know if you want me to send the patch again with the
-> corrected description and added justification.
+> Sigh!  I clearly need a more organized approach for handling this very
+> early boot stuff.  Fix is in progress, please accept my apologies for
+> the hassle!
 
-
-Its all should and may, anything concrete?
-
-Also, doesn't muck like schedstat, task_delay_accounting, cpuacct-cgroup
-or some other stuff expose this number already?
+add: system_state != SYSTEM_RUNNING, to all the default
+rcu_read_lock*_held thingies?
 
