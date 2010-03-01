@@ -1,59 +1,30 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407Ab0CACMk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 21:12:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43393 "EHLO smtps.tip.net.au"
+	id S1755488Ab0CACPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 21:15:54 -0500
+Received: from mga11.intel.com ([192.55.52.93]:4118 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753779Ab0CACMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 21:12:37 -0500
-Date: Mon, 1 Mar 2010 13:12:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: linux-next: build failure after merge of the i2c tree
-Message-Id: <20100301131231.4c541979.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_13_12_31_+1100_mrF_45LvJn.ooEgk"
+	id S1755186Ab0CACPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 21:15:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
+   d="scan'208";a="776710712"
+Date: Mon, 1 Mar 2010 10:15:51 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Norberto Lopes <nlopes.ml@gmail.com>, "perex@perex.cz" <perex@perex.cz>,
+       "tiwai@suse.de" <tiwai@suse.de>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] sound/pci/hda/hda_codec.c: various coding style fixes
+Message-ID: <20100301021551.GA12643@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_13_12_31_+1100_mrF_45LvJn.ooEgk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks. Could use shorter filename in the patch title :)
 
-Hi Jean,
-
-After merging the i2c tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
-
-drivers/i2c/busses/i2c-powermac.c: In function 'i2c_powermac_smbus_xfer':
-drivers/i2c/busses/i2c-powermac.c:125: error: 'err' undeclared (first use i=
-n this function)
-
-Caused by commit 2fe61c97a4b1be56d93a84992ffcf00d55f60f63 ("i2c-powermac:
-Be less verbose in the absence of real errors").
-
-I have used the i2c tree from next-20100226 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Mar_2010_13_12_31_+1100_mrF_45LvJn.ooEgk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuLIo8ACgkQjjKRsyhoI8ym5gCfbtPKaibCM2LOj40PaQsid3AD
-K1IAnRBDILFpTrKfr6n0mq7zwU9mMuXu
-=S01i
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Mar_2010_13_12_31_+1100_mrF_45LvJn.ooEgk--
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
