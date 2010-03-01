@@ -1,180 +1,189 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751315Ab0CANz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 08:55:57 -0500
-Received: from mga11.intel.com ([192.55.52.93]:5804 "EHLO mga11.intel.com"
+	id S1750998Ab0CAOLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:11:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29899 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099Ab0CANz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 08:55:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,560,1262592000"; 
-   d="scan'208";a="544894835"
-Date: Mon, 1 Mar 2010 21:55:51 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Xiaotian Feng <xtfeng@gmail.com>, Sachin Sant <sachinp@in.ibm.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: 2.6.33-git6 boot failure[x86_64] (WARN: at
-	arch/x86/mm/ioremap.c:111)
-Message-ID: <20100301135551.GA9998@localhost>
-References: <4B8B43E9.1010506@in.ibm.com> <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com> <4B8B7AC7.1070201@in.ibm.com> <7b6bb4a51003010038l49c90414lff1ecaa37c96ad61@mail.gmail.com> <alpine.LFD.2.00.1003011058470.4245@localhost.localdomain>
+	id S1750747Ab0CAOLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 09:11:51 -0500
+Date: Mon, 1 Mar 2010 09:11:18 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Subject: Re: [PATCH] cfq-iosched: requests "in flight" vs "in driver"
+	clarification
+Message-ID: <20100301141118.GA8878@redhat.com>
+References: <1267286589-316-1-git-send-email-czoccolo@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003011058470.4245@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1267286589-316-1-git-send-email-czoccolo@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 06:42:59PM +0800, Thomas Gleixner wrote:
-> On Mon, 1 Mar 2010, Xiaotian Feng wrote:
-> > On Mon, Mar 1, 2010 at 4:28 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
-> > > Xiaotian Feng wrote:
-> > >> On Mon, Mar 1, 2010 at 12:34 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
-> >
-> > >>> WARNING: at arch/x86/mm/ioremap.c:111 __ioremap_caller+0x169/0x2f1()
-> > >>> Hardware name: BladeCenter LS21 -[79716AA]-
-> > >>> Modules linked in:
-> > >>> Pid: 0, comm: swapper Not tainted 2.6.33-git6-autotest #1
-> > >>> Call Trace:
-> > >>> [<ffffffff81047cff>] ? __ioremap_caller+0x169/0x2f1
-> > >>> [<ffffffff81063b7d>] warn_slowpath_common+0x77/0xa4
-> > >>> [<ffffffff81063bb9>] warn_slowpath_null+0xf/0x11
-> > >>> [<ffffffff81047cff>] __ioremap_caller+0x169/0x2f1
-> > >>> [<ffffffff813747a3>] ? acpi_os_map_memory+0x12/0x1b
-> > >>> [<ffffffff81047f10>] ioremap_nocache+0x12/0x14
-> > >>> [<ffffffff813747a3>] acpi_os_map_memory+0x12/0x1b
-> > >>> [<ffffffff81282fa0>] acpi_tb_verify_table+0x29/0x5b
-> > >>> [<ffffffff812827f0>] acpi_load_tables+0x39/0x15a
-> > >>> [<ffffffff8191c8f8>] acpi_early_init+0x60/0xf5
-> > >>> [<ffffffff818f2cad>] start_kernel+0x397/0x3a7
-> > >>> [<ffffffff818f2295>] x86_64_start_reservations+0xa5/0xa9
-> > >>> [<ffffffff818f237a>] x86_64_start_kernel+0xe1/0xe8
-> > >>> ---[ end trace 4eaa2a86a8e2da22 ]---
-> > >>> ioremap reserve_memtype failed -22
+On Sat, Feb 27, 2010 at 05:03:09PM +0100, Corrado Zoccolo wrote:
+> Counters for requests "in flight" and "in driver" are used asymmetrically
+> in cfq_may_dispatch, and have slightly different meaning.
+> We split the rq_in_flight counter (was sync_flight) to count both sync
+> and async requests, in order to use this one, which is more accurate in
+> some corner cases.
+> The rq_in_driver counter is coalesced, since individual sync/async counts
+> are not used any more.
 > 
-> The return code is -EINVAL, so it failed in the is_ram check, which is
-> not too surprising
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+> ---
+>  block/cfq-iosched.c |   44 ++++++++++++++++++--------------------------
+>  1 files changed, 18 insertions(+), 26 deletions(-)
 > 
-> > BIOS-provided physical RAM map:
-> >  BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
-> >  BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
-> >  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-> >  BIOS-e820: 0000000000100000 - 00000000cffa3900 (usable)
-> >  BIOS-e820: 00000000cffa3900 - 00000000cffa7400 (ACPI data)
-> 
-> The ACPI data is not starting on a page boundary and neither does the
-> usable RAM area end on a page boundary. Very useful !
-> 
-> > ACPI: DSDT 00000000cffa3900 036CE (v01 IBM    SERLEWIS 00001000 INTL 20060912)
-> 
-> ACPI is trying to map DSDT at cffa3900, which results in a check
-> vs. cffa3000 which is the relevant page boundary. The generic is_ram
-> check correctly identifies that as RAM because it's in the usable
-> resource area. The old e820 based is_ram check does not take
-> overlapping resource areas into account. That's why it works.
-> 
-> We probably need to sanitize the E820 map befor throwing it at the
-> resource manager.
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 10eb286..eed649c 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -223,8 +223,8 @@ struct cfq_data {
+>  
+>  	unsigned int busy_queues;
+>  
+> -	int rq_in_driver[2];
+> -	int sync_flight;
+> +	int rq_in_driver;
+> +	int rq_in_flight[2];
+>  
+>  	/*
+>  	 * queue-depth detection
+> @@ -417,11 +417,6 @@ static struct cfq_queue *cfq_get_queue(struct cfq_data *, bool,
+>  static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
+>  						struct io_context *);
+>  
+> -static inline int rq_in_driver(struct cfq_data *cfqd)
+> -{
+> -	return cfqd->rq_in_driver[0] + cfqd->rq_in_driver[1];
+> -}
+> -
+>  static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
+>  					    bool is_sync)
+>  {
+> @@ -1415,9 +1410,9 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
+>  {
+>  	struct cfq_data *cfqd = q->elevator->elevator_data;
+>  
+> -	cfqd->rq_in_driver[rq_is_sync(rq)]++;
+> +	cfqd->rq_in_driver++;
+>  	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
+> -						rq_in_driver(cfqd));
+> +						cfqd->rq_in_driver);
+>  
+>  	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
+>  }
+> @@ -1425,12 +1420,11 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
+>  static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
+>  {
+>  	struct cfq_data *cfqd = q->elevator->elevator_data;
+> -	const int sync = rq_is_sync(rq);
+>  
+> -	WARN_ON(!cfqd->rq_in_driver[sync]);
+> -	cfqd->rq_in_driver[sync]--;
+> +	WARN_ON(!cfqd->rq_in_driver);
+> +	cfqd->rq_in_driver--;
+>  	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
+> -						rq_in_driver(cfqd));
+> +						cfqd->rq_in_driver);
+>  }
+>  
+>  static void cfq_remove_request(struct request *rq)
+> @@ -1873,8 +1867,7 @@ static void cfq_dispatch_insert(struct request_queue *q, struct request *rq)
+>  	cfqq->dispatched++;
+>  	elv_dispatch_sort(q, rq);
+>  
+> -	if (cfq_cfqq_sync(cfqq))
+> -		cfqd->sync_flight++;
+> +	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]++;
+>  	cfqq->nr_sectors += blk_rq_sectors(rq);
+>  }
+>  
+> @@ -2221,13 +2214,13 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>  	/*
+>  	 * Drain async requests before we start sync IO
+>  	 */
+> -	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
+> +	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_flight[BLK_RW_ASYNC])
+>  		return false;
+>  
 
-Ah walk_system_ram_range() is actually doing almost the same alignment
-check as the removed x86 page_is_ram(), except that it calls func()
-with len=0.  This happens when page_is_ram(cffa3000) is called.
+So we need to make sure there are no async requests either in dispatch
+queue or driver. So rq_in_flight is better than just plain rq_in_driver.
 
-walk_system_ram_range():
-               pfn = (unsigned long)(res.start >> PAGE_SHIFT);                                                                      
-               len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);                                                      
-               ret = (*func)(pfn, len, arg);                                                                                        
+Makes sense.
 
-The following patch should fix the problem.
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
-Thanks,
-Fengguang
----
-resource: fix generic page_is_ram() for partial RAM pages
-
-The System RAM walk shall skip partial RAM pages and avoid calling
-func() on them. So that page_is_ram() return 0 for a partial RAM page.
-
-In particular, it shall not call func() with len=0.
-This fixes a boot time bug reported by Sachin and root caused by Thomas:
-
-> >>> WARNING: at arch/x86/mm/ioremap.c:111 __ioremap_caller+0x169/0x2f1()
-> >>> Hardware name: BladeCenter LS21 -[79716AA]-
-> >>> Modules linked in:
-> >>> Pid: 0, comm: swapper Not tainted 2.6.33-git6-autotest #1
-> >>> Call Trace:
-> >>> [<ffffffff81047cff>] ? __ioremap_caller+0x169/0x2f1
-> >>> [<ffffffff81063b7d>] warn_slowpath_common+0x77/0xa4
-> >>> [<ffffffff81063bb9>] warn_slowpath_null+0xf/0x11
-> >>> [<ffffffff81047cff>] __ioremap_caller+0x169/0x2f1
-> >>> [<ffffffff813747a3>] ? acpi_os_map_memory+0x12/0x1b
-> >>> [<ffffffff81047f10>] ioremap_nocache+0x12/0x14
-> >>> [<ffffffff813747a3>] acpi_os_map_memory+0x12/0x1b
-> >>> [<ffffffff81282fa0>] acpi_tb_verify_table+0x29/0x5b
-> >>> [<ffffffff812827f0>] acpi_load_tables+0x39/0x15a
-> >>> [<ffffffff8191c8f8>] acpi_early_init+0x60/0xf5
-> >>> [<ffffffff818f2cad>] start_kernel+0x397/0x3a7
-> >>> [<ffffffff818f2295>] x86_64_start_reservations+0xa5/0xa9
-> >>> [<ffffffff818f237a>] x86_64_start_kernel+0xe1/0xe8
-> >>> ---[ end trace 4eaa2a86a8e2da22 ]---
-> >>> ioremap reserve_memtype failed -22
-
-The return code is -EINVAL, so it failed in the is_ram check, which is
-not too surprising
-
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
->  BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000cffa3900 (usable)
->  BIOS-e820: 00000000cffa3900 - 00000000cffa7400 (ACPI data)
-
-The ACPI data is not starting on a page boundary and neither does the
-usable RAM area end on a page boundary. Very useful !
-
-> ACPI: DSDT 00000000cffa3900 036CE (v01 IBM    SERLEWIS 00001000 INTL 20060912)
-
-ACPI is trying to map DSDT at cffa3900, which results in a check
-vs. cffa3000 which is the relevant page boundary. The generic is_ram
-check correctly identifies that as RAM because it's in the usable
-resource area. The old e820 based is_ram check does not take
-overlapping resource areas into account. That's why it works.
-
-
-CC: Sachin Sant <sachinp@in.ibm.com>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- kernel/resource.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
---- linux.orig/kernel/resource.c	2010-03-01 21:16:04.000000000 +0800
-+++ linux/kernel/resource.c	2010-03-01 21:33:32.000000000 +0800
-@@ -304,7 +304,7 @@ int walk_system_ram_range(unsigned long 
- 		void *arg, int (*func)(unsigned long, unsigned long, void *))
- {
- 	struct resource res;
--	unsigned long pfn, len;
-+	unsigned long pfn, end_pfn;
- 	u64 orig_end;
- 	int ret = -1;
+Thanks
+Vivek
  
-@@ -314,9 +314,10 @@ int walk_system_ram_range(unsigned long 
- 	orig_end = res.end;
- 	while ((res.start < res.end) &&
- 		(find_next_system_ram(&res, "System RAM") >= 0)) {
--		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
--		len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
--		ret = (*func)(pfn, len, arg);
-+		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+		end_pfn = (res.end + 1) >> PAGE_SHIFT;
-+		if (end_pfn > pfn)
-+		    ret = (*func)(pfn, end_pfn - pfn, arg);
- 		if (ret)
- 			break;
- 		res.start = res.end + 1;
+>  	/*
+>  	 * If this is an async queue and we have sync IO in flight, let it wait
+>  	 */
+> -	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> +	if (cfqd->rq_in_flight[BLK_RW_SYNC] && !cfq_cfqq_sync(cfqq))
+>  		return false;
+>  
+>  	max_dispatch = cfqd->cfq_quantum;
+> @@ -3210,14 +3203,14 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
+>  {
+>  	struct cfq_queue *cfqq = cfqd->active_queue;
+>  
+> -	if (rq_in_driver(cfqd) > cfqd->hw_tag_est_depth)
+> -		cfqd->hw_tag_est_depth = rq_in_driver(cfqd);
+> +	if (cfqd->rq_in_driver > cfqd->hw_tag_est_depth)
+> +		cfqd->hw_tag_est_depth = cfqd->rq_in_driver;
+>  
+>  	if (cfqd->hw_tag == 1)
+>  		return;
+>  
+>  	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
+> -	    rq_in_driver(cfqd) <= CFQ_HW_QUEUE_MIN)
+> +	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
+>  		return;
+>  
+>  	/*
+> @@ -3227,7 +3220,7 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
+>  	 */
+>  	if (cfqq && cfq_cfqq_idle_window(cfqq) &&
+>  	    cfqq->dispatched + cfqq->queued[0] + cfqq->queued[1] <
+> -	    CFQ_HW_QUEUE_MIN && rq_in_driver(cfqd) < CFQ_HW_QUEUE_MIN)
+> +	    CFQ_HW_QUEUE_MIN && cfqd->rq_in_driver < CFQ_HW_QUEUE_MIN)
+>  		return;
+>  
+>  	if (cfqd->hw_tag_samples++ < 50)
+> @@ -3280,13 +3273,12 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+>  
+>  	cfq_update_hw_tag(cfqd);
+>  
+> -	WARN_ON(!cfqd->rq_in_driver[sync]);
+> +	WARN_ON(!cfqd->rq_in_driver);
+>  	WARN_ON(!cfqq->dispatched);
+> -	cfqd->rq_in_driver[sync]--;
+> +	cfqd->rq_in_driver--;
+>  	cfqq->dispatched--;
+>  
+> -	if (cfq_cfqq_sync(cfqq))
+> -		cfqd->sync_flight--;
+> +	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]--;
+>  
+>  	if (sync) {
+>  		RQ_CIC(rq)->last_end_request = now;
+> @@ -3340,7 +3332,7 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+>  		}
+>  	}
+>  
+> -	if (!rq_in_driver(cfqd))
+> +	if (!cfqd->rq_in_driver)
+>  		cfq_schedule_dispatch(cfqd);
+>  }
+>  
+> -- 
+> 1.6.4.4
