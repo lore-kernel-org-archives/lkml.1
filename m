@@ -1,56 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751260Ab0CAJVI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 04:21:08 -0500
-Received: from lucidpixels.com ([75.144.35.66]:39402 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739Ab0CAJVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 04:21:06 -0500
-Date: Mon, 1 Mar 2010 04:21:03 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Andreas Dilger <adilger@sun.com>
-cc: tytso@mit.edu, Eric Sandeen <sandeen@redhat.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-In-Reply-To: <832C6227-BF34-43C2-8768-1308C00AB17F@sun.com>
-Message-ID: <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan>
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
- <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan> <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan> <20100228054240.GE14646@thunk.org> <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan>
- <832C6227-BF34-43C2-8768-1308C00AB17F@sun.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751060Ab0CAJaM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 04:30:12 -0500
+Received: from melkor.forwiss.uni-passau.de ([132.231.20.39]:58215 "EHLO
+	melkor.forwiss.uni-passau.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750705Ab0CAJaB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 04:30:01 -0500
+X-Greylist: delayed 1366 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 04:30:00 EST
+Date: Mon, 1 Mar 2010 10:07:08 +0100
+From: M G Berberich <berberic@fmi.uni-passau.de>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: 2.6.33 dies on modprobe
+Message-ID: <20100301090708.GF17929@forwiss.uni-passau.de>
+Mail-Followup-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	Linux Kernel Network Developers <netdev@vger.kernel.org>
+References: <20100228221257.GA8858@invalid> <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-purgate: This mail is considered clean
+X-purgate: clean
+X-purgate-type: clean
+X-purgate-Ad: Checked for Spam by eleven - eXpurgate www.eXpurgate.net
+X-purgate-ID: 151291::100301100708-4D6C0001-F0BD4BF1/0-0/0-1
+X-purgate-size: 1312/1216
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+Am Montag, den 01. März schrieb Américo Wang:
+> On Mon, Mar 1, 2010 at 6:12 AM, M G Berberich
+> <berberic@fmi.uni-passau.de> wrote:
 
-On Mon, 1 Mar 2010, Andreas Dilger wrote:
+> > I tried to build a 2.6.33 kernel but on boot it dies on modprobe
+> > (kernel-Oops). This might be the result of faulty config, but I'm
+> > totaly clueless what's the fault.
+> >
+> > The kernel starts up fine and mounts the root-filesystem, but then
+> > dies on the first modprobe executed. I can boot it with init=/bin/bash
+> > and get a working bash (until I do modprobe on any module).
+> >
+> > System is a Gigabyte M55S-S3 rev 2.0 (nForce 550) with an AMD Athlon64
+> > X2 5000+ and amd64-kernel architecture. kernel-sources are from
+> > kernel.org.
 
-> On 2010-02-28, at 07:55, Justin Piszcz wrote:
->> === CREATE RAID-0 WITH 11 DISKS
->
->
-> Have you tried testing with "nice" numbers of disks in your RAID set (e.g. 8 
-> disks for RAID-0, 9 for RAID-5, 10 for RAID-6)?  The mballoc code is really 
-> much better tuned for power-of-two sized allocations.
+> It seems something is wrong with forcedeth code or PCI code.
+> Adding some Cc's.
 
-Hi,
+I don't think it's forcedeth. forcedeth just happens to be the first
+module that get's loaded in startup. It crashes with any other module
+too (I tried ohci_hcd). 
 
-Yes, the second system (RAID-5) has 8 disks and it shows the same 
-performance problems with ext4 and not XFS (as shown from previous 
-e-mail), where XFS usually got 500-600MiB/s for writes.
+To repeat myself: This might be the result of faulty config
 
-http://groups.google.com/group/linux.kernel/browse_thread/thread/e7b189bcaa2c1cb4/ad6c2a54b678cf5f?show_docid=ad6c2a54b678cf5f&pli=1
+	MfG
+	bmg
 
-For the RAID-5 (from earlier testing):  <- This one has 8 disks.
--o data=writeback,nobarrier: 
-10737418240 bytes (11 GB) copied, 48.7335 s, 220 MB/s 
--o data=writeback,nobarrier,nodelalloc: 
-10737418240 bytes (11 GB) copied, 30.5425 s, 352 MB/s 
-An increase of 132MiB/s.
-
-Justin.
-
+-- 
+„Des is völlig wurscht, was heut beschlos- | M G Berberich
+ sen wird: I bin sowieso dagegn!“          | berberic@fmi.uni-passau.de
+(SPD-Stadtrat Kurt Schindler; Regensburg)  | www.fmi.uni-passau.de/~berberic
