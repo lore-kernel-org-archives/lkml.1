@@ -1,108 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751264Ab0CAINv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:13:51 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61644 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873Ab0CAINt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:13:49 -0500
-Date: Mon, 1 Mar 2010 17:05:35 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH -mmotm 1/2] memcg: dirty pages accounting and limiting
- infrastructure
-Message-Id: <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <1267224751-6382-2-git-send-email-arighi@develer.com>
-References: <1267224751-6382-1-git-send-email-arighi@develer.com>
-	<1267224751-6382-2-git-send-email-arighi@develer.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1751305Ab0CAIPH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:15:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49823 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770Ab0CAIPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:15:02 -0500
+Date: Mon, 1 Mar 2010 19:14:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Subject: linux-next: build warning after merge of the final tree
+Message-Id: <20100301191457.315de136.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Feb 2010 23:52:30 +0100, Andrea Righi <arighi@develer.com> wrote:
-> Infrastructure to account dirty pages per cgroup and add dirty limit
-> interfaces in the cgroupfs:
-> 
->  - Active write-out: memory.dirty_ratio, memory.dirty_bytes
->  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
-> 
-It looks good for me in general.
+--Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Andrea Righi <arighi@develer.com>
-> ---
->  include/linux/memcontrol.h |   74 +++++++++-
->  mm/memcontrol.c            |  354 ++++++++++++++++++++++++++++++++++++++++----
->  2 files changed, 399 insertions(+), 29 deletions(-)
-> 
+Hi Greg,
 
-(snip)
+After merging the final tree, today's linux-next build (powerpc allnoconfig)
+produced these warnings:
 
-> +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> +{
-> +	struct mem_cgroup_page_stat stat = {};
-> +	struct mem_cgroup *memcg;
-> +
-I think it would be better to add "if (mem_cgroup_disabled())".
+drivers/char/tty_buffer.c: In function 'tty_insert_flip_string_fixed_flag':
+drivers/char/tty_buffer.c:251: warning: comparison of distinct pointer type=
+s lacks a cast
+drivers/char/tty_buffer.c: In function 'tty_insert_flip_string_flags':
+drivers/char/tty_buffer.c:288: warning: comparison of distinct pointer type=
+s lacks a cast
 
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (memcg) {
-> +		/*
-> +		 * Recursively evaulate page statistics against all cgroup
-> +		 * under hierarchy tree
-> +		 */
-> +		stat.item = item;
-> +		mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
-> +	} else
-> +		stat.value = -ENOMEM;
-> +	rcu_read_unlock();
-> +
-> +	return stat.value;
-> +}
-> +
->  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
->  {
->  	int *val = data;
-> @@ -1263,10 +1419,10 @@ static void record_last_oom(struct mem_cgroup *mem)
->  }
->  
->  /*
-> - * Currently used to update mapped file statistics, but the routine can be
-> - * generalized to update other statistics as well.
-> + * Generalized routine to update memory cgroup statistics.
->   */
-> -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> +void mem_cgroup_update_stat(struct page *page,
-> +			enum mem_cgroup_stat_index idx, int val)
->  {
->  	struct mem_cgroup *mem;
->  	struct page_cgroup *pc;
-ditto.
+Introduced by commit 96a421002f897237bcc44efd909dd58aa759319c ("tty: Keep
+the default buffering to sub-page units") from the tty tree.  Its just
+the min macro parameters.
 
-> @@ -1286,7 +1442,8 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
->  	/*
->  	 * Preemption is already disabled. We can use __this_cpu_xxx
->  	 */
-> -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> +	VM_BUG_ON(idx >= MEM_CGROUP_STAT_NSTATS);
-> +	__this_cpu_add(mem->stat->count[idx], val);
->  
->  done:
->  	unlock_page_cgroup(pc);
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM
+Content-Type: application/pgp-signature
 
-Thanks,
-Daisuke Nishimura.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuLd4EACgkQjjKRsyhoI8xZvQCaA7TSLSO0p496xXUR3PX8A53C
+Sl8An14+GvT22xEB6qKd/QMcwUsvawJ+
+=ViqA
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__1_Mar_2010_19_14_57_+1100_y71Vo4o7sicn9bdM--
