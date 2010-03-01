@@ -1,122 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751453Ab0CAPHB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:07:01 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58115 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831Ab0CAPG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:06:59 -0500
-Date: Mon, 1 Mar 2010 16:06:57 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: "Chatterjee, Amit" <amit.chatterjee@ti.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, linux-omap@vger.kernel.org,
-       linux-mmc@vger.kernel.org
-Subject: Re: 2.6.33-rc8-rt1 on Beagle
-Message-ID: <20100301150657.GG16049@pengutronix.de>
-References: <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain> <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132927.GC5416@bicker> <4B84D20B.9080600@osadl.org> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCBE65@dbde02.ent.ti.com> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com>
+	id S1751507Ab0CAPHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:07:37 -0500
+Received: from lucidpixels.com ([75.144.35.66]:54534 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751306Ab0CAPHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:07:35 -0500
+Date: Mon, 1 Mar 2010 10:07:34 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+cc: Andreas Dilger <adilger@sun.com>, tytso@mit.edu,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+In-Reply-To: <4B8BD3B0.3020502@msgid.tls.msk.ru>
+Message-ID: <alpine.DEB.2.00.1003011002240.26228@p34.internal.lan>
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan>
+ <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan> <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan> <20100228054240.GE14646@thunk.org> <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan>
+ <832C6227-BF34-43C2-8768-1308C00AB17F@sun.com> <alpine.DEB.2.00.1003010419090.20072@p34.internal.lan> <4B8BD3B0.3020502@msgid.tls.msk.ru>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-On Thu, Feb 25, 2010 at 04:36:23PM +0530, Chatterjee, Amit wrote:
-> Migrated to 2.6.33-rc8-rt2 but still am facing the same issue.
-> 
-> Regards,
-> Amit
-> 
-> -----Original Message-----
-> From: linux-rt-users-owner@vger.kernel.org [mailto:linux-rt-users-owner@vger.kernel.org] On Behalf Of Chatterjee, Amit
-> Sent: Wednesday, February 24, 2010 5:50 PM
-> To: LKML; rt-users
-> Subject: 2.6.33-rc8-rt1 on Beagle
-> 
-> Hi,
-> 	I am facing NULL pointer deference error with beagle board. The bootargs used are -
-> 
-> setenv bootargs 'console=ttyS2,115200n8 root=/dev/mmcblk0p2 rootwait rootfstype=ext3 omapfb.mode=dvi:800x600MR-24@60 omapdss.def_disp=dvi omapfb.vram=0:8M,1:2M,2:4M mem=216M'
-> setenv bootcmd 'mmc init;fatload mmc 0 0x80200000 uImage;bootm 0x80200000'
-> 
-> The crash log is as follows -
-> 
-> Waiting for root device /dev/mmcblk0p2...
-> Unable to handle kernel NULL pointer dereference at virtual address 00000000
-> pgd = c0004000
-> [00000000] *pgd=00000000
-> Internal error: Oops: 805 [#1] PREEMPT
-> last sysfs file:
-> Modules linked in:
-> CPU: 0    Not tainted  (2.6.33-rc8-rt1 #3)
-> PC is at rt_spin_lock_slowlock+0x64/0x220
-This corresponds to:
 
-	BUG_ON(rt_mutex_owner(lock) == current);
+On Mon, 1 Mar 2010, Michael Tokarev wrote:
 
-in rt_spin_lock_slowlock.  If you had CONFIG_BUG_VERBOSE this would have
-been more obvious.
+> Justin Piszcz wrote:
+>>
+>> On Mon, 1 Mar 2010, Andreas Dilger wrote:
+>>
+>>> On 2010-02-28, at 07:55, Justin Piszcz wrote:
+>>>> === CREATE RAID-0 WITH 11 DISKS
+>>>
+>>> Have you tried testing with "nice" numbers of disks in your RAID set
+>>> (e.g. 8 disks for RAID-0, 9 for RAID-5, 10 for RAID-6)?  The mballoc
+>>> code is really much better tuned for power-of-two sized allocations.
+>>
+>> Hi,
+>>
+>> Yes, the second system (RAID-5) has 8 disks and it shows the same
+>> performance problems with ext4 and not XFS (as shown from previous
+>> e-mail), where XFS usually got 500-600MiB/s for writes.
+>>
+>> http://groups.google.com/group/linux.kernel/browse_thread/thread/e7b189bcaa2c1cb4/ad6c2a54b678cf5f?show_docid=ad6c2a54b678cf5f&pli=1
+>>
+>>
+>> For the RAID-5 (from earlier testing):  <- This one has 8 disks.
+>
+> Note that for RAID-5, the "nice" number of disks is 9 as Andreas
+> said, not 8 as in your example.
+>
+> /mjt
+>
 
-> LR is at rt_spin_lock_slowlock+0x24/0x220
-> pc : [<c029f85c>]    lr : [<c029f81c>]    psr: 60000093
-> sp : cd1a1ed8  ip : cd1a1f08  fp : 00000053
-> r10: cd3bc664  r9 : c039c8c4  r8 : cd3bc400
-> r7 : cd1a0000  r6 : cd3bc664  r5 : 60000013  r4 : cd3bc664
-> r3 : 00000000  r2 : cd3fb480  r1 : 00000000  r0 : cd1a1ed8
-> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
-> Control: 10c5387d  Table: 80004019  DAC: 00000017
-> Process irq/83-mmc0 (pid: 355, stack limit = 0xcd1a02e8)
-> Stack: (0xcd1a1ed8 to 0xcd1a2000)
-> 1ec0:                                                       00000001 00000006
-> 1ee0: cd070040 c0397f48 00000001 cd3fb480 ffffffff 00000002 cd3bc664 60000013
-> 1f00: 00000000 cd1a0000 00000000 c029f9f0 00000000 cd3bc600 cd0c3ef4 cd3bc664
-> 1f20: 00000000 cd3bc400 cd3bc664 c0213850 cd0c2000 cd0c201c cd3fb480 00000017
-> 1f40: 00000000 cd3bc600 00000000 00018000 00000001 00000000 cd3bc664 c020bb94
-> 1f60: cd0c3f24 c02145fc c039c880 cd3d07c0 cd1a0000 cd3d07e4 08000000 c039c8c4
-> 1f80: c039c8dc c00768e8 cd3d07c0 00000032 cd1a1f88 cd021e58 cd1a1fbc c0076828
-> 1fa0: cd3d07c0 00000000 00000000 00000000 00000000 c0060ae8 00000000 00000000
-> 1fc0: cd1a1fc0 cd1a1fc0 cd1a1fc8 cd1a1fc8 00000000 00000000 cd1a1fd8 cd1a1fd8
-> 1fe0: 00000000 00000000 00000000 00000000 00000000 c0028ec4 107fcd00 0a33ef94
-> [<c029f85c>] (rt_spin_lock_slowlock+0x64/0x220) from [<c0213850>] (omap_hsmmc_request+0x44/0x400)
-> [<c0213850>] (omap_hsmmc_request+0x44/0x400) from [<c020bb94>] (mmc_request_done+0x64/0x90)
-> [<c020bb94>] (mmc_request_done+0x64/0x90) from [<c02145fc>] (omap_hsmmc_irq+0x364/0x46c)
-> [<c02145fc>] (omap_hsmmc_irq+0x364/0x46c) from [<c00768e8>] (irq_thread+0xc0/0x208)
-> [<c00768e8>] (irq_thread+0xc0/0x208) from [<c0060ae8>] (kthread+0x78/0x80)
-> [<c0060ae8>] (kthread+0x78/0x80) from [<c0028ec4>] (kernel_thread_exit+0x0/0x8)
-> Code: e597300c e1520003 1a000002 e3a03000 (e5833000)
+Hi, thanks for this.
 
-I assume the problem is that the function omap_hsmmc_request tries to be
-clever in a non-rt compatible way:
-	
-	/*
-	 * Prevent races with the interrupt handler because of unexpected
-	 * interrupts, but not if we are already in interrupt context i.e.
-	 * retries.
-	 */
-	if (!in_interrupt()) {
-		spin_lock_irqsave(&host->irq_lock, host->flags);
+RAID-0 with 12 disks:
 
-But looking at the backtrace in this context in_interrupt() would be
-true in !PREEMPT_RT.
+p63:~# mdadm --create -e 0.90 /dev/md0 /dev/sd[b-m]1 --level=0 -n 12 -c 64
+mdadm: /dev/sdb1 appears to contain an ext2fs file system
+     size=1077256000K  mtime=Sun Feb 28 08:35:47 2010
+mdadm: /dev/sdb1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdc1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdd1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sde1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdf1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdg1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdh1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdi1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdj1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdk1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdl1 appears to be part of a raid array:
+     level=raid0 devices=11 ctime=Sun Feb 28 08:11:10 2010
+mdadm: /dev/sdm1 appears to be part of a raid array:
+     level=raid6 devices=11 ctime=Sat Feb 27 06:57:29 2010
+Continue creating array? y
+mdadm: array /dev/md0 started.
+p63:~# mkfs.ext4 /dev/md0
+mke2fs 1.41.10 (10-Feb-2009)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+366288896 inodes, 1465151808 blocks
+73257590 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=4294967296
+44713 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+         32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+         4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,
+         102400000, 214990848, 512000000, 550731776, 644972544
 
-You might want to report that to the author(s) of
-drivers/mmc/host/omap_hsmmc.c.
+Writing inode tables: 28936/44713..etc
 
-Best regards
-Uwe
+p63:~# mount -o nobarrier /dev/md0 /r1
+p63:~# cd /r1
+p63:/r1# dd if=/dev/zero of=bigfile bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 34.9723 s, 307 MB/s
+p63:/r1#
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Same issue for EXT4, with XFS, it gets faster:
+
+p63:~# mkfs.xfs /dev/md0 -f
+meta-data=/dev/md0               isize=256    agcount=32, agsize=45786000 blks
+          =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=1465151808, imaxpct=5
+          =                       sunit=16     swidth=192 blks
+naming   =version 2              bsize=4096   ascii-ci=0
+log      =internal log           bsize=4096   blocks=521728, version=2
+          =                       sectsz=512   sunit=16 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+mount /dev/md0 /r1
+p63:~# mount /dev/md0 /r1
+p63:~# cd /r1
+p63:/r1# dd if=/dev/zero of=bigfile bs=1M count=10240
+10240+0 records in
+10240+0 records out
+10737418240 bytes (11 GB) copied, 17.6473 s, 608 MB/s
+p63:/r1#
+
+Justin.
+
+
+
+
