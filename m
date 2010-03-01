@@ -1,57 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581Ab0CARQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 12:16:29 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:57917 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020Ab0CARQ1 convert rfc822-to-8bit (ORCPT
+	id S1751601Ab0CARRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 12:17:51 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:60403 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293Ab0CARRu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 12:16:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=aM5ng0uPQHi/OevYXA7I3AAkO5HhuJj0UrtfQGkQV1JfPhqPG3sRb9zlLEI/bEiC7f
-         DbfLnbwsNBXL93zxXOkFRsJrAOLa8lR9uFFOrMC8vdbg/OR7PDPtQAbm34TdebvYoOdS
-         aWddW3FFxm4vKsvpx81A0QqcdR25TD8Z3t92c=
+	Mon, 1 Mar 2010 12:17:50 -0500
+Message-ID: <4B8BF641.1050109@oracle.com>
+Date: Mon, 01 Mar 2010 09:15:45 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B8B6E43.9030305@zytor.com>
-References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
-	 <4B845AEE.5080604@zytor.com>
-	 <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
-	 <20100226101423.GA25641@elte.hu>
-	 <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com>
-	 <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
-	 <4B8B6E43.9030305@zytor.com>
-Date: Mon, 1 Mar 2010 18:16:25 +0100
-X-Google-Sender-Auth: 1134ad3439369176
-Message-ID: <ff13bc9a1003010916j860b1bbueebf8e5b21e100ad@mail.gmail.com>
-Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
-From: Luca Barbieri <luca@luca-barbieri.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
+To: Alex Deucher <alexdeucher@gmail.com>
+CC: Dave Airlie <airlied@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>
+Subject: Re: [PATCH] drm: fix char constant (sparse warning)
+References: <20100224142759.ad4f53ce.randy.dunlap@oracle.com>	 <21d7e9971002282201p3f932729nc00a60bc5eadd492@mail.gmail.com> <a728f9f91003010906x6103bee9pe72a28f63f04b984@mail.gmail.com>
+In-Reply-To: <a728f9f91003010906x6103bee9pe72a28f63f04b984@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B8BF6AA.000B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, and with the test turned on, the kernel crashes immediately on boot
-> on x86-64.
->
-> Some minor investigation reveals the following:
->
-> lib/atomic64.c has the wrong return value for atomic64_add_unless().
-> With "wrong" I mean it is the opposite sense compared to
-> atomic_add_unless(), not just on x86 but on all architectures.
->
-> Accordingly, I have to conclude that lib/atomic64.c is buggy, and that
-> since your test matches that bug, I will have to conclude that your
-> x86-32 implementation is also buggy.  Thus, please send patches to fix
-> your test and your 32-bit implementations (and preferrably
-> lib/atomic64.c too, but I can do that just fine.)
+On 03/01/10 09:06, Alex Deucher wrote:
+> On Mon, Mar 1, 2010 at 1:01 AM, Dave Airlie <airlied@gmail.com> wrote:
+>> On Thu, Feb 25, 2010 at 8:27 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>>
+>>> Fix radeon/atombios.h sparse warning (24 times):
+>>>
+>>> drivers/gpu/drm/radeon/atombios.h:4091:63: error: Bad character constant
+>>
+>> We get this file from AMD pretty much as-is and I hate deviating it as it
+>> causes merge issues. Alex any change you can get this fixed upstream?
 
-You are right: sent a patchset to fix it.
+Ah, thanks for that info.
+
+>>
+> 
+> I can try.
+> 
+> Alex
+
+OK, thanks.
+
+>> Dave.
+>>
+>>>
+>>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>>> Cc:     David Airlie <airlied@linux.ie>
+>>> ---
+>>>  drivers/gpu/drm/radeon/atombios.h |    2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> --- linux-2.6.33-rc8.orig/drivers/gpu/drm/radeon/atombios.h
+>>> +++ linux-2.6.33-rc8/drivers/gpu/drm/radeon/atombios.h
+>>> @@ -4088,7 +4088,7 @@ typedef struct _SW_I2C_IO_DATA_PARAMETER
+>>>  #define SW_I2C_CNTL_WRITE1BIT 6
+>>>
+>>>  /* ==============================VESA definition Portion=============================== */
+>>> -#define VESA_OEM_PRODUCT_REV                               '01.00'
+>>> +#define VESA_OEM_PRODUCT_REV                               "01.00"
+>>>  #define VESA_MODE_ATTRIBUTE_MODE_SUPPORT            0xBB       /* refer to VBE spec p.32, no TTY support */
+>>>  #define VESA_MODE_WIN_ATTRIBUTE                                                     7
+>>>  #define VESA_WIN_SIZE                                                                                       64
+>>> --
+
+
+-- 
+~Randy
