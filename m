@@ -1,73 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751119Ab0CALKL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 06:10:11 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44771 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966Ab0CALKJ (ORCPT
+	id S1751305Ab0CALK2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 06:10:28 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:41446 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167Ab0CALKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 06:10:09 -0500
-Date: Mon, 1 Mar 2010 12:10:07 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Valentin Longchamp <valentin.longchamp@epfl.ch>,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [rtc-linux] [PATCH 6/6] rtc/mc13783: implement alarm
-Message-ID: <20100301111007.GD16049@pengutronix.de>
-References: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de> <1267440825-14694-6-git-send-email-u.kleine-koenig@pengutronix.de> <20100301115625.5d048580@linux.lan.towertech.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100301115625.5d048580@linux.lan.towertech.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 1 Mar 2010 06:10:17 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       linux-usb@vger.kernel.org, "Mankad,Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Shilimkar,Santosh" <santosh.shilimkar@ti.com>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1267316647.23523.1852.camel@pasglop>
+References: <1266979632.23523.1668.camel@pasglop>
+	 <1267201521.14703.50.camel@e102109-lin.cambridge.arm.com>
+	 <1267220429.23523.1811.camel@pasglop>
+	 <20100226214908.GD23933@n2100.arm.linux.org.uk>
+	 <1267316647.23523.1852.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Mon, 01 Mar 2010 11:10:14 +0000
+Message-ID: <1267441814.23333.65.camel@e102109-lin.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Mar 2010 11:10:15.0652 (UTC) FILETIME=[C532C240:01CAB92F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 11:56:25AM +0100, Alessandro Zummo wrote:
-> On Mon,  1 Mar 2010 11:53:45 +0100
-> Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
+On Sun, 2010-02-28 at 00:24 +0000, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-02-26 at 21:49 +0000, Russell King - ARM Linux wrote:
+> > On Sat, Feb 27, 2010 at 08:40:29AM +1100, Benjamin Herrenschmidt wrote:
+> > > Hrm, the DMA API certainly doesn't handle the I$/D$ coherency on
+> > > powerpc.. I'm afraid that whole cache handling stuff is totally
+> > > inconsistent since different archs have different expectations here.
+> >
+> > It doesn't on ARM either.
 > 
-> > for now this just ignores the possible race to trigger an alarm when
-> > setting the time.  Should I resolve that, if so, what is the prefered
-> > way to do that?
+> Ok, pfiew :-)
 > 
->  I saw you email on the topic but I haven't had
->  the time to answer appropriately. 
+> So far, my understanding with I$/D$ is that we only care in a few cases
+> which is executing of an mmap'ed piece of executable that is -not- being
+> written to, and swap.
 > 
->  I'd suggest to disable the alarm irq while setting
->  the time.
-I have two possibilities, I'm not sure if you mean the first or just any
-of the two:
+> I -think- that in both cases, the page cache always pops up a new page
+> with PG_arch_1 clear before the driver gets to either DMA or PIO to it
+> when faulted the first time around, before any PTE is inserted.
 
-  1)
-	pending = is_alarm_pending
-	mask_alarm_irq
-	set time and date
-	if (!pending)
-		ack_alarm_irq
-	unmask_alarm_irq
+That's my understanding too.
 
-  2)
-	alarmtime = read_alaram
-	program_alarm(invalid)
-	set time and date
-	program_alarm(alarmtime)
+> So the current approach on powerpc with I$/D$ should work fine, and it
+> -might- make sense to use a similar one on PIPT ARM, provided we don't
+> have expectations of the I$/D$ coherency being maintained on
+> -subsequent- writes (PIO or DMA either) to such a page by the same
+> program transparently by the kernel.
 
-I'd prefer 2), is that OK for you, too?
+Are these subsequent writes likely to happen?
 
-Best regards
-Uwe
+> There's two potential problems with the approach, and maybe more that I
+> have missed though. One is the case of a networked filesystem where the
+> executable pages are modified remotely. However, I would expect such a
+> program to invalidate the PTE mappings before making the change visible,
+> so we -do- get a chance to re-flush provided something clears PG_arch_1.
+
+I think the NFS code in Linux calls flush_dcache_page(). This function
+can check whether the page is already mapped and do the cache flushing
+rather than deferring it to set_pte_at().
+
+> Then, there's In the case of a multithread app, where one thread does
+> the cache flush and another thread then executes, the earlier ARMs
+> without broadcast ops have a potential problem there. In fact, some
+> variant of PowerPC 440 have the same problem and some people are
+> (ab)using those for SMP setups I'm being told.
+
+Yes. That could be solved at set_pte_at() level using IPIs.
+
+> For that case, I see two options. One is a big hammer but would make
+> existing code work to "most" extent: Don't allow a page to be both
+> writable and executable. Ping-pong the page permission lazily and flush
+> when transitioning from write to exec.
+
+Are you referring to the SMP and non-broadcasting cache maintenance
+issue? The same pte could be shared between multiple CPUs, so once you
+make it executable on one it becomes executable on the others.
 
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Catalin
+
