@@ -1,75 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751340Ab0CANAJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 08:00:09 -0500
-Received: from smtp.ispras.ru ([83.149.198.201]:35428 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265Ab0CANAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 08:00:07 -0500
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Jaroslav Kysela <perex@perex.cz>
-Subject: BUG mutex_unlock without mutex_lock in drivers/pnp/isapnp/core.c
-Date: Mon, 1 Mar 2010 15:59:40 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Adam Belay <abelay@mit.edu>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org
+	id S1751359Ab0CANEi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 08:04:38 -0500
+Received: from exprod5og103.obsmtp.com ([64.18.0.145]:57079 "EHLO
+	exprod5og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235Ab0CANEg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 08:04:36 -0500
+Message-ID: <4B8BBC14.9010705@ge.com>
+Date: Mon, 01 Mar 2010 13:07:32 +0000
+From: Martyn Welch <martyn.welch@ge.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
+Subject: Re: Gianfar driver failing on MPC8641D based board
+References: <20100225174935.GA32370@oksana.dev.rtsoft.ru> <7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com> <20100226031452.GA11319@oksana.dev.rtsoft.ru> <4B87B937.6010204@ge.com> <20100226143532.GA31622@oksana.dev.rtsoft.ru> <4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com> <4B87E9EF.3010604@ge.com> <20100226161058.GA22954@oksana.dev.rtsoft.ru> <4B87F67E.5070601@windriver.com> <20100226213825.GA32363@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100226213825.GA32363@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003011559.40139.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	KERNEL_VERSION: 2.6.33
-	SUBJECT: mutex_unlock without mutex_lock
-	DESCRIBE:
-	In drivers/pnp/isapnp/core.c in function isapnp_get_resources:
+Anton Vorontsov wrote:
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 8bd3c9f..cccb409 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  	}
+>  
+>  	/* setup the TxBD length and buffer pointer for the first BD */
+> -	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+>  	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+>  			skb_headlen(skb), DMA_TO_DEVICE);
+>  
+> @@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  
+>  	txbdp_start->lstatus = lstatus;
+>  
+> +	eieio(); /* force lstatus write before tx_skbuff */
+> +
+> +	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+> +
+>  	/* Update the current skb pointer to the next entry we will use
+>  	 * (wrapping if necessary) */
+>  	tx_queue->skb_curtx = (tx_queue->skb_curtx + 1) &
+>   
+I can confirm 10/10 successful boots on p2020ds and mpc8641_hpcn.
 
- 1. In line 906 we call isapnp_cfg_begin(dev->card->number, dev->number);
+Martyn
 
- 900 static int isapnp_get_resources(struct pnp_dev *dev)
- 901 {
- 902         int i, ret;
- 903
- 904         pnp_dbg(&dev->dev, "get resources\n");
- 905         pnp_init_resources(dev);
- 906         isapnp_cfg_begin(dev->card->number, dev->number);
-...
 
-2. If csn<1 or csn > isapnp_csn_count or logdev > 10 then function returns -
-EINVAL and does not call mutex_lock.
+-- 
+Martyn Welch (Principal Software Engineer)   |   Registered in England and
+GE Intelligent Platforms                     |   Wales (3828642) at 100
+T +44(0)127322748                            |   Barbirolli Square, Manchester,
+E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
 
- 856 int isapnp_cfg_begin(int csn, int logdev)
- 857 {
- 858         if (csn < 1 || csn > isapnp_csn_count || logdev > 10)
- 859                 return -EINVAL;
- 860         mutex_lock(&isapnp_cfg_mutex);
-...
-
-3. Suppose function isapnp_read_bytes returned a null value. In this case we 
-goto line 932 and call isapnp_cfg_end.
-
- 907         dev->active = isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
- 908         if (!dev->active)
- 909                 goto __end;
-...
- 932 __end:
- 933         isapnp_cfg_end();
- 934         return 0;
- 935 }
-
-4. isapnp_cfg_end in line  886 calls mutex_unlock on &isapnp_cfg_mutex without 
-mutex_lock (it was not locked in function isapnp_cfg_begin because of -
-EINVAL).
-
- 883 int isapnp_cfg_end(void)
- 884 {
- 885         isapnp_wait();
- 886         mutex_unlock(&isapnp_cfg_mutex);
- 887         return 0;
- 888 }
-
-Found by Linux Device Drivers Verification Project
