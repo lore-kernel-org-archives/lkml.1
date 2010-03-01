@@ -1,117 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478Ab0CAVlV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:41:21 -0500
-Received: from ip-85-161-92-63.eurotel.cz ([85.161.92.63]:51358 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751603Ab0CAVlT (ORCPT
+	id S1752312Ab0CAVmg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:42:36 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:40534 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508Ab0CAVmf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:41:19 -0500
-Date: Mon, 1 Mar 2010 22:41:12 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] staging/dream: add missing include files/fix
- compilation
-Message-ID: <20100301214112.GB3004@elf.ucw.cz>
-References: <20100131092829.GJ2238@elf.ucw.cz>
- <1264953492.2059.5.camel@m0nster>
- <20100225193027.GA7391@elf.ucw.cz>
- <1267126586.5439.56.camel@c-dwalke-linux.qualcomm.com>
- <20100225194125.GA7645@elf.ucw.cz>
- <1267127298.5439.62.camel@c-dwalke-linux.qualcomm.com>
- <20100226213107.GA29615@elf.ucw.cz>
- <1267469856.29769.9.camel@c-dwalke-linux.qualcomm.com>
- <20100301211057.GA3004@elf.ucw.cz>
- <1267478118.29769.16.camel@c-dwalke-linux.qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267478118.29769.16.camel@c-dwalke-linux.qualcomm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 1 Mar 2010 16:42:35 -0500
+Date: Mon, 1 Mar 2010 13:40:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@bitplanet.net>,
+       Arnd Bergmann <arnd@arndb.de>, Dave Airlie <airlied@redhat.com>,
+       dri-devel@lists.sourceforge.net, David Airlie <airlied@linux.ie>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] DRM: fix headers_check warnings
+Message-Id: <20100301134024.829ef2ad.randy.dunlap@oracle.com>
+In-Reply-To: <1267262856.26906.12.camel@i7.satnam>
+References: <1267262856.26906.12.camel@i7.satnam>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B8C3479.0166:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2010-03-01 13:15:18, Daniel Walker wrote:
-> On Mon, 2010-03-01 at 22:10 +0100, Pavel Machek wrote:
+On Sat, 27 Feb 2010 14:57:36 +0530 Jaswinder Singh Rajput wrote:
+
 > 
-> > How do I get that one? I tried killing the repository and redoing git
-> > pull, followed up by 
+> Fixed following headers_check warnings:
+>   CHECK   include/drm (14 files)
+>  include/drm/drm_mode.h:84: found __[us]{8,16,32,64} type without #include <linux/types.h>
+>  include/drm/i915_drm.h:119: found __[us]{8,16,32,64} type without #include <linux/types.h>
+>  include/drm/mga_drm.h:260: found __[us]{8,16,32,64} type without #include <linux/types.h>
+>  include/drm/radeon_drm.h:758: found __[us]{8,16,32,64} type without #include <linux/types.h>
+>  include/drm/via_drm.h:117: found __[us]{8,16,32,64} type without #include <linux/types.h>
 > 
-> You should just be able to do "git remotes update" , then checkout the
-> branch again.
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Kristian Høgsberg <krh@bitplanet.net>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Dave Airlie <airlied@redhat.com>
 
-Thanks!
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > commit 5fc33446739aa7a0826d98a00cc50a712c6d60eb
-> > Author: San Mehat <san@google.com>
-> > Date:   Wed Feb 3 12:59:29 2010 -0800
-> > 
-> >     drivers: mmc: msm_sdcc: Add EMBEDDED_SDIO support
-> >     
-> >     Signed-off-by: Dmitry Shmidt <dimitrysh@google.com>
+Thanks much.
+
+> ---
+>  include/drm/drm_mode.h   |    2 ++
+>  include/drm/i915_drm.h   |    1 +
+>  include/drm/mga_drm.h    |    1 +
+>  include/drm/radeon_drm.h |    1 +
+>  include/drm/via_drm.h    |    1 +
+>  5 files changed, 6 insertions(+), 0 deletions(-)
 > 
-> I actually dropped a patch between the two above, otherwise the history
-> is very similar. I think you have the right one, are you still getting
-> the compile errors?
+> diff --git a/include/drm/drm_mode.h b/include/drm/drm_mode.h
+> index c5ba163..c5aa66d 100644
+> --- a/include/drm/drm_mode.h
+> +++ b/include/drm/drm_mode.h
+> @@ -27,6 +27,8 @@
+>  #ifndef _DRM_MODE_H
+>  #define _DRM_MODE_H
+>  
+> +#include <linux/types.h>
+> +
+>  #define DRM_DISPLAY_INFO_LEN	32
+>  #define DRM_CONNECTOR_NAME_LEN	32
+>  #define DRM_DISPLAY_MODE_LEN	32
+> diff --git a/include/drm/i915_drm.h b/include/drm/i915_drm.h
+> index b64a8d7..5cf7f5b 100644
+> --- a/include/drm/i915_drm.h
+> +++ b/include/drm/i915_drm.h
+> @@ -27,6 +27,7 @@
+>  #ifndef _I915_DRM_H_
+>  #define _I915_DRM_H_
+>  
+> +#include <linux/types.h>
+>  #include "drm.h"
+>  
+>  /* Please note that modifications to all structs defined here are
+> diff --git a/include/drm/mga_drm.h b/include/drm/mga_drm.h
+> index 3ffbc47..ae23df9 100644
+> --- a/include/drm/mga_drm.h
+> +++ b/include/drm/mga_drm.h
+> @@ -35,6 +35,7 @@
+>  #ifndef __MGA_DRM_H__
+>  #define __MGA_DRM_H__
+>  
+> +#include <linux/types.h>
+>  #include "drm.h"
+>  
+>  /* WARNING: If you change any of these defines, make sure to change the
+> diff --git a/include/drm/radeon_drm.h b/include/drm/radeon_drm.h
+> index 39537f3..459ff45 100644
+> --- a/include/drm/radeon_drm.h
+> +++ b/include/drm/radeon_drm.h
+> @@ -33,6 +33,7 @@
+>  #ifndef __RADEON_DRM_H__
+>  #define __RADEON_DRM_H__
+>  
+> +#include <linux/types.h>
+>  #include "drm.h"
+>  
+>  /* WARNING: If you change any of these defines, make sure to change the
+> diff --git a/include/drm/via_drm.h b/include/drm/via_drm.h
+> index fd11a5b..23880b0 100644
+> --- a/include/drm/via_drm.h
+> +++ b/include/drm/via_drm.h
+> @@ -24,6 +24,7 @@
+>  #ifndef _VIA_DRM_H_
+>  #define _VIA_DRM_H_
+>  
+> +#include <linux/types.h>
+>  #include "drm.h"
+>  
+>  /* WARNING: These defines must be the same as what the Xserver uses.
+> -- 
 
-Different one this time :-(
 
-make[1]: *** No rule to make target
-`arch/arm/mach-msm/board-halibut-keypad.o', needed by
-`arch/arm/mach-msm/built-in.o'.  Stop.
-
-Ok, I worked around it by config change, and had to disable msm
-framebuffer, too. Then it compiles... more testing tommorow.
-
-									Pavel
-
---- ../linux-dwalker-delme/.config	2010-02-26 21:49:02.000000000 +0100
-+++ .config	2010-03-01 22:39:26.000000000 +0100
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.33-rc8
--# Fri Feb 26 21:49:02 2010
-+# Mon Mar  1 22:39:26 2010
- #
- CONFIG_ARM=y
- CONFIG_SYS_SUPPORTS_APM_EMULATION=y
-@@ -224,7 +224,7 @@
- # CONFIG_MSM_DEBUG_UART1 is not set
- # CONFIG_MSM_DEBUG_UART2 is not set
- CONFIG_MSM_DEBUG_UART3=y
--CONFIG_MACH_HALIBUT=y
-+# CONFIG_MACH_HALIBUT is not set
- CONFIG_MACH_TROUT=y
- CONFIG_MSM_SMD=y
- 
-@@ -821,9 +821,9 @@
- # CONFIG_FIRMWARE_EDID is not set
- # CONFIG_FB_DDC is not set
- # CONFIG_FB_BOOT_VESA_SUPPORT is not set
--CONFIG_FB_CFB_FILLRECT=y
--CONFIG_FB_CFB_COPYAREA=y
--CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_CFB_FILLRECT is not set
-+# CONFIG_FB_CFB_COPYAREA is not set
-+# CONFIG_FB_CFB_IMAGEBLIT is not set
- # CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
- # CONFIG_FB_SYS_FILLRECT is not set
- # CONFIG_FB_SYS_COPYAREA is not set
-@@ -843,7 +843,7 @@
- # CONFIG_FB_VIRTUAL is not set
- # CONFIG_FB_METRONOME is not set
- # CONFIG_FB_MB862XX is not set
--CONFIG_FB_MSM=y
-+# CONFIG_FB_MSM is not set
- # CONFIG_FB_BROADSHEET is not set
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
- 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+~Randy
