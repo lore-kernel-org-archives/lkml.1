@@ -1,114 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330Ab0CAOzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 09:55:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10312 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056Ab0CAOzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 09:55:41 -0500
-Date: Mon, 1 Mar 2010 15:53:44 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 20/43] workqueue: reimplement work flushing using
-	linked works
-Message-ID: <20100301145344.GA9815@redhat.com>
-References: <1267187000-18791-1-git-send-email-tj@kernel.org> <1267187000-18791-21-git-send-email-tj@kernel.org>
+	id S1751449Ab0CAOzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:55:49 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:34237 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174Ab0CAOzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 09:55:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=SKWNG68hzVVFr7/7sf49pZtcrVDYOYbFHWnK2JbE+3DvRg5ex2YTPpW/cj9tbQlA1p
+         fPl+06bzrS9x9aWzvmb/wA8fsoMN0ToU3bwM7/yYZ2viiUCukh4Z1yoW3beFj5JJX85a
+         b4Vqxj8B5go1e4eDeiQzTnnySBoQVY0PGwEJk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267187000-18791-21-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <808c8e9d1002261532v447d62dfna61d0b19493b6551@mail.gmail.com>
+References: <808c8e9d1002231455q379b26acq4b4a50188c5d73be@mail.gmail.com>
+	 <20100224184505.1d8d3380@droptest.queued.net>
+	 <808c8e9d1002260947k281782al889db51e20073648@mail.gmail.com>
+	 <20100226160716.1bd4e342@droptest.queued.net>
+	 <808c8e9d1002261532v447d62dfna61d0b19493b6551@mail.gmail.com>
+Date: Mon, 1 Mar 2010 08:55:44 -0600
+Message-ID: <808c8e9d1003010655m4f31f3c2wcbe0c1c882ab202e@mail.gmail.com>
+Subject: Re: [PATCH] OLPC: ALSA: fix cs5535audio's MIC GPIO to enable input
+From: Ben Gardner <gardner.ben@gmail.com>
+To: Andres Salomon <dilinger@collabora.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Tejun Heo wrote:
->
-> +static void move_linked_works(struct work_struct *work, struct list_head *head,
-> +			      struct work_struct **nextp)
-> +{
-> ...
-> +	work = list_entry(work->entry.prev, struct work_struct, entry);
-> +	list_for_each_entry_safe_continue(work, n, NULL, entry) {
+> Lets see how the proposed changes I just sent off are received and go
+> from there.
 
-list_for_each_entry_safe_from(work) ? It doesn't need to move this
-work back.
+Based on the feedback from the other gpio patches, I'd like to do the following:
+1) drop this patch (olpc-alsa-fix-cs5535audios-mic-gpio-to-enable-input.patch)
+2) drop the patch that caused this patch to be created
+(cs5535_gpio-gpio_chipget-should-return-the-input-value.patch)
+3) submit a new patch that contains the original change + the changes
+needed to adjust input/output settings to follow the spirit of
+gpiolib.
 
-> @@ -680,7 +734,27 @@ static int worker_thread(void *__worker)
->  		if (kthread_should_stop())
->  			break;
->
-> -		run_workqueue(worker);
-> +		spin_lock_irq(&cwq->lock);
-> +
-> +		while (!list_empty(&cwq->worklist)) {
-> +			struct work_struct *work =
-> +				list_first_entry(&cwq->worklist,
-> +						 struct work_struct, entry);
-> +
-> +			if (likely(!(*work_data_bits(work) &
-> +				     WORK_STRUCT_LINKED))) {
-> +				/* optimization path, not strictly necessary */
-> +				process_one_work(worker, work);
-> +				if (unlikely(!list_empty(&worker->scheduled)))
-> +					process_scheduled_works(worker);
-> +			} else {
-> +				move_linked_works(work, &worker->scheduled,
-> +						  NULL);
-> +				process_scheduled_works(worker);
-> +			}
-> +		}
+That way, there is one patch that fully fixes the issue and no window
+where the OLPC MIC stuff is broken.
 
-So. If the next pending work W doesn't have WORK_STRUCT_LINKED,
-it will be executed first, then we flush ->scheduled.
-
-But,
-
->  static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
-> -			struct wq_barrier *barr, struct list_head *head)
-> +			      struct wq_barrier *barr,
-> +			      struct work_struct *target, struct worker *worker)
->  {
-> ...
-> +	/*
-> +	 * If @target is currently being executed, schedule the
-> +	 * barrier to the worker; otherwise, put it after @target.
-> +	 */
-> +	if (worker)
-> +		head = worker->scheduled.next;
-
-this is the "target == current_work" case,
-
-> -	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
-> +	insert_work(cwq, &barr->work, head,
-> +		    work_color_to_flags(WORK_NO_COLOR) | linked);
->  }
-
-and in this case we put this barrier at the head of ->scheduled list.
-
-This means, this barrier will run after that work W, not before it?
-
-
-Hmm. And what if there are no pending works but ->current_work == target ?
-Again, we add the barrier to ->scheduled, but in this case worker_thread()
-can't even notice ->scheduled is not empty because it only checks ->worklist?
-
-Well. most probably I just misread this code completely...
-
-
-insert_wq_barrier() also does:
-
-	unsigned long *bits = work_data_bits(target);
-	...
-	*bits |= WORK_STRUCT_LINKED;
-
-perhaps this needs atomic_long_set(), although I am not sure this really
-matters.
-
-Oleg.
-
+Ben
