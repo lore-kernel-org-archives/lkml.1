@@ -1,89 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751459Ab0CATj1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 14:39:27 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:38642 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307Ab0CATj0 (ORCPT
+	id S1751615Ab0CATk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 14:40:27 -0500
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:52310 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751231Ab0CATkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 14:39:26 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B8C1867.7040201@cam.ac.uk>
-Date: Mon, 01 Mar 2010 19:41:27 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+	Mon, 1 Mar 2010 14:40:25 -0500
+Message-ID: <4B8C1873.1080700@lougher.demon.co.uk>
+Date: Mon, 01 Mar 2010 19:41:39 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org
-CC: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [GIT PULL] Ambient Light Sensors subsystem
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] Squashfs updates for 2.6.34
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Linus,
+Hi Linus,
 
-Please pull from
+Please pull the following Squashfs updates.  They add support
+for lzma compressed file systems, plus there's also a couple of
+trivial code tidy patches.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/jic23/als.git for-linus
+Thanks
 
-to get the Ambient Light Sensors subsystem.
-A large part of the following consists of moving two drivers from
-elsewhere in the kernel to als now it is available.
-
-acpi-als will merge later through the acpi tree as it sits entirely
-within their directories. Both moves have been confirmed with the
-respective maintainers and all known users of the drivers.
-
-All changes as per linux-next branch where they have been for some weeks.
-
-Thanks,
-
-Jonathan
-
-Amit Kucheria (1):
-      als: add unique device-ids to the als device class
-
-Jonathan Cameron (5):
-      ALS: Add jic23 and als git tree to MAINTAINERS
-      tsl2550: Move form i2c/chips to als and update interfaces. Remove i2c/chips in this commit to avoid build failure that results from separating that step out.
-      als: tsl2550: Remove spurious check against a maximum lux value.
-      Merge remote branch 'linus/master' into for-next
-      isl29003: Move from misc to als now it is available with minimal changes
-
-Zhang Rui (1):
-      introduce ALS sysfs class
+Phillip
 
 
- Documentation/ABI/testing/sysfs-class-als |   18 +++++
- MAINTAINERS                               |    8 ++
- drivers/Kconfig                           |    2 +
- drivers/Makefile                          |    1 +
- drivers/als/Kconfig                       |   34 +++++++++
- drivers/als/Makefile                      |    9 ++
- drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
- drivers/{misc => als}/isl29003.c          |   46 ++++++++----
- drivers/{i2c/chips => als}/tsl2550.c      |   96 +++++++++++++++---------
- drivers/i2c/Kconfig                       |    1 -
- drivers/i2c/Makefile                      |    2 +-
- drivers/i2c/chips/Kconfig                 |   19 -----
- drivers/i2c/chips/Makefile                |   18 -----
- drivers/misc/Kconfig                      |   10 ---
- drivers/misc/Makefile                     |    1 -
- include/linux/als_sys.h                   |   35 +++++++++
- 16 files changed, 314 insertions(+), 102 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-als
- create mode 100644 drivers/als/Kconfig
- create mode 100644 drivers/als/Makefile
- create mode 100644 drivers/als/als_sys.c
- rename drivers/{misc => als}/isl29003.c (90%)
- rename drivers/{i2c/chips => als}/tsl2550.c (82%)
- delete mode 100644 drivers/i2c/chips/Kconfig
- delete mode 100644 drivers/i2c/chips/Makefile
- create mode 100644 include/linux/als_sys.h
+-------
+
+The following changes since commit 7284ce6c9f6153d1777df5f310c959724d1bd446:
+   Linus Torvalds (1):
+         Linux 2.6.33-rc4
+
+are available in the git repository at:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git master
+
+Phillip Lougher (11):
+       Squashfs: move zlib decompression wrapper code into a separate file
+       Squashfs: factor out remaining zlib dependencies into separate wrapper file
+       Squashfs: add a decompressor framework
+       Squashfs: add decompressor entries for lzma and lzo
+       Squashfs: add support for LZMA compressed filesystems
+       lzma: Make lzma available to non initramfs/initrd code
+       Squashfs: select DECOMPRESS_LZMA_NEEDED when including support for lzma
+       lzma: make lzma reentrant
+       Squashfs: get rid of obsolete variable in struct squashfs_sb_info
+       Squashfs: get rid of obsolete definition in header file
+       Squashfs: update Kconfig help to include lzma support
+
+Randy Dunlap (1):
+       libs: force lzma_wrapper to be retained
+
+  fs/squashfs/Kconfig                   |   23 +++--
+  fs/squashfs/Makefile                  |    3 +-
+  fs/squashfs/block.c                   |   76 +---------------
+  fs/squashfs/cache.c                   |    1 -
+  fs/squashfs/decompressor.c            |   72 ++++++++++++++++
+  fs/squashfs/decompressor.h            |   55 ++++++++++++
+  fs/squashfs/dir.c                     |    1 -
+  fs/squashfs/export.c                  |    1 -
+  fs/squashfs/file.c                    |    1 -
+  fs/squashfs/fragment.c                |    1 -
+  fs/squashfs/id.c                      |    1 -
+  fs/squashfs/inode.c                   |    1 -
+  fs/squashfs/lzma_wrapper.c            |  151 +++++++++++++++++++++++++++++++++
+  fs/squashfs/namei.c                   |    1 -
+  fs/squashfs/squashfs.h                |   11 ++-
+  fs/squashfs/squashfs_fs.h             |    6 +-
+  fs/squashfs/squashfs_fs_sb.h          |   40 +++++-----
+  fs/squashfs/super.c                   |   49 ++++++-----
+  fs/squashfs/symlink.c                 |    1 -
+  fs/squashfs/zlib_wrapper.c            |  150 ++++++++++++++++++++++++++++++++
+  include/linux/decompress/bunzip2_mm.h |   13 +++
+  include/linux/decompress/inflate_mm.h |   13 +++
+  include/linux/decompress/mm.h         |    4 -
+  include/linux/decompress/unlzma_mm.h  |   20 +++++
+  include/linux/decompress/unlzo_mm.h   |   13 +++
+  lib/Kconfig                           |    3 +
+  lib/Makefile                          |    2 +-
+  lib/decompress_bunzip2.c              |    1 +
+  lib/decompress_inflate.c              |    1 +
+  lib/decompress_unlzma.c               |   88 ++++++++++---------
+  lib/decompress_unlzo.c                |    1 +
+  31 files changed, 621 insertions(+), 183 deletions(-)
+  create mode 100644 fs/squashfs/decompressor.c
+  create mode 100644 fs/squashfs/decompressor.h
+  create mode 100644 fs/squashfs/lzma_wrapper.c
+  create mode 100644 fs/squashfs/zlib_wrapper.c
+  create mode 100644 include/linux/decompress/bunzip2_mm.h
+  create mode 100644 include/linux/decompress/inflate_mm.h
+  create mode 100644 include/linux/decompress/unlzma_mm.h
+  create mode 100644 include/linux/decompress/unlzo_mm.h
