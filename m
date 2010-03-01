@@ -1,46 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751452Ab0CAQPG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:15:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:55983 "EHLO www.tglx.de"
+	id S1751519Ab0CAQP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:15:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36233 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844Ab0CAQPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:15:03 -0500
-Date: Mon, 1 Mar 2010 17:14:54 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: "Chatterjee, Amit" <amit.chatterjee@ti.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, linux-omap@vger.kernel.org,
-       linux-mmc@vger.kernel.org
-Subject: Re: 2.6.33-rc8-rt1 on Beagle
-In-Reply-To: <20100301150657.GG16049@pengutronix.de>
-Message-ID: <alpine.LFD.2.00.1003011713210.4245@localhost.localdomain>
-References: <alpine.LFD.2.00.0910141115020.9428@localhost.localdomain> <alpine.LFD.2.00.0911061743210.12138@localhost.localdomain> <alpine.LFD.2.00.0911101326280.2725@localhost.localdomain> <alpine.LFD.2.00.1001212102220.2906@localhost.localdomain>
- <alpine.LFD.2.00.1002181748460.2811@localhost.localdomain> <alpine.LFD.2.00.1002212322450.2811@localhost.localdomain> <20100222132927.GC5416@bicker> <4B84D20B.9080600@osadl.org> <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCBE65@dbde02.ent.ti.com>
- <2A3DCF3DA181AD40BDE86A3150B27B6B030CDCC2FD@dbde02.ent.ti.com> <20100301150657.GG16049@pengutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1750844Ab0CAQP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 11:15:26 -0500
+Message-ID: <4B8BE815.50607@redhat.com>
+Date: Mon, 01 Mar 2010 10:15:17 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-963598006-1267460096=:4245"
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: tytso@mit.edu, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B886CA1.9050906@redhat.com> <alpine.DEB.2.00.1002262006000.8247@p34.internal.lan> <4B887160.2090606@redhat.com> <4B887548.50508@redhat.com> <alpine.DEB.2.00.1002270513280.17433@p34.internal.lan> <alpine.DEB.2.00.1002270550330.17433@p34.internal.lan> <alpine.DEB.2.00.1002270607020.17433@p34.internal.lan> <alpine.DEB.2.00.1002270634200.17433@p34.internal.lan> <20100228054240.GE14646@thunk.org> <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1002280628550.22822@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Justin Piszcz wrote:
+> 
+> 
+> On Sun, 28 Feb 2010, tytso@mit.edu wrote:
+> 
+>> On Sat, Feb 27, 2010 at 06:36:37AM -0500, Justin Piszcz wrote:
+>>>
+>>> I still would like to know however, why 350MiB/s seems to be the maximum
+>>> performance I can get from two different md raids (that easily do
+>>> 600MiB/s
+>>> with XFS).
+> 
+>> Can you run "filefrag -v <filename>" on the large file you created
+>> using dd?  Part of the problem may be the block allocator simply not
+>> being well optimized super large writes.  To be honest, that's not
+>> something we've tried (at all) to optimize, mainly because for most
+>> users of ext4 they're more interested in much more reasonable sized
+>> files, and we only have so many hours in a day to hack on ext4.  :-)
+>> XFS in contrast has in the past had plenty of paying customers
+>> interested in writing really large scientific data sets, so this is
+>> something Irix *has* spent time optimizing.
+> Yes, this is shown at the bottom of the e-mail both with -o data=ordered
+> and data=writeback.
 
---8323328-963598006-1267460096=:4245
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+...
 
-On Mon, 1 Mar 2010, Uwe Kleine-König wrote:
-> You might want to report that to the author(s) of
-> drivers/mmc/host/omap_hsmmc.c.
+> === SHOW FILEFRAG OUTPUT (NOBARRIER,ORDERED)
+> 
+> p63:/r1# filefrag -v /r1/bigfile Filesystem type is: ef53
+> File size of /r1/bigfile is 10737418240 (2621440 blocks, blocksize 4096)
+>  ext logical  physical  expected length flags
+>    0       0     34816            32768
+>    1   32768     67584            30720
+>    2   63488    100352     98303  32768
+>    3   96256    133120            30720
+>    4  126976    165888    163839  32768
+>    5  159744    198656            30720
+...
 
-FYI, thats fixed in 33-rt3 and the fix is going mainline as well.
+That looks pretty good.
 
-Thanks,
+I think Dave's suggesting of seeing what cpu usage looks like is a good one.
 
-	tglx
---8323328-963598006-1267460096=:4245--
+Running blktrace on xfs vs. ext4 could possibly also shed some light.
+
+-Eric
