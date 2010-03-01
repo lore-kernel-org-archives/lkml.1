@@ -1,53 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354Ab0CATDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 14:03:34 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34414 "EHLO e4.ny.us.ibm.com"
+	id S1753457Ab0CATDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 14:03:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8624 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650Ab0CATDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 14:03:32 -0500
-Date: Mon, 1 Mar 2010 11:03:29 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH RFC tip/core/rcu 0/2] rcu: make RCU lockdep handle early
-	boot in organized manner
-Message-ID: <20100301190329.GA26892@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	id S1752075Ab0CATDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 14:03:50 -0500
+Date: Mon, 1 Mar 2010 21:03:41 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, avi@redhat.com,
+       mtosatti@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+Message-ID: <20100301190341.GD12867@redhat.com>
+References: <20100301091819.GD16909@redhat.com>
+ <4B8BE7C1.40000@redhat.com>
+ <20100301174724.GA12867@redhat.com>
+ <4B8C09F5.9070506@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4B8C09F5.9070506@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Mon, Mar 01, 2010 at 08:39:49AM -1000, Zachary Amsden wrote:
+> On 03/01/2010 07:47 AM, Gleb Natapov wrote:
+> >On Mon, Mar 01, 2010 at 06:13:53AM -1000, Zachary Amsden wrote:
+> >
+> >>... you are broken.  This case can be made very much more complex
+> >>and hard to reason about by using local variables which are reset by
+> >>the longjmp.
+> >>
+> >>Further, it requires use of the volatile keyword to interact
+> >>properly with logic involving more than one variable, and thus, by
+> >>definition is impossible to use in the kernel, which does not
+> >>implement the volatile keyword.  :)
+> >volatile is a language keyword how it can be not implemented by the
+> >kernel? And why volatile is needed to implement longjmp?
+> 
+> Local variables which are not volatile are "undefined" after a
+> longjmp.  Thus setjmp() return value is the only valid rvalue
+> otherwise.
+> 
+That is nothing special. This is how setjmp/longjmp works. If a
+nonvolatile automatic variable local to the function in which
+setjmp is called is changed between the setjmp and longjmp calls,
+its state is indeterminate after the longjmp.
 
-This patch set makes RCU lockdep handle early boot in an organized
-manner:
+In practice return value from setjmp is all I need.
 
-1.	Make rcu_read_lock_held(), rcu_read_lock_bh_held(),
-	rcu_read_lock_sched_held(), and rcu_dereference_check()
-	suppress complaints if !rcu_scheduler_active.  The rationale
-	for this approach is that RCU grace periods are handled very
-	differently during early boot, and rcu_scheduler_active marks
-	the point that normal runtime RCU behavior starts.
+> As I said, the kernel does not implement the volatile keyword :)
+> (i.e. its use is heavily discouraged to the point one can consider
+> it not implemented)
+> 
+> >>Instead, for this case, use the fact that there is an
+> >>architecturally designed finite number of exceptions that can be
+> >>processed simultaneously.  This means if you queue exceptions to a
+> >>pending list of control-flow interrupting events to be processed, as
+> >>long as the queue is appropriately sized, you will never overflow
+> >>this queue and never require dynamic allocation.  Further, you can
+> >>then naturally follow the exception priority rules at the top-level
+> >>of the emulator and never need to pass back complex exception
+> >>structures, merely a simple return value which indicates whether to
+> >>return to top-level control logic or continue with instruction
+> >>emulation.  I believe using this style of programming will make your
+> >>need for setjmp/longjmp go away.
+> >>
+> >Of course it is possible to use return values instead. This is what code
+> >does currently and this is completely unrelated to exception queue
+> >depth. Code will be much simpler if we will be able to bail out from the
+> >depth of emulator immediately if exception condition is met or exit to
+> >userspace is required instead of passing the condition up the call
+> >chain.
+> 
+> Anything that can generate exceptions is going to need logic to
+> handle error cases anyway... the depth can not be that bad.
+> Especially if you structure it so as to optimize for tail calling.
+> 
+Tail call is not what usually happens. Usually emulation goes like this:
+ if (check some conditions) {
+	queue exception A
+        return exception queued
+ }
+ if (check other conditions) {
+	queue exception B
+        return exception queued
+ }
+ do some emulation
+ try to read guest memory
+ if (read failed) {
+    queue exception C
+    return exception queued
+ }
+ if (read needs exit to userspace for device emulation)
+    return please go out and retrieve me the data
 
-2.	Remove the !rcu_scheduler_active check from calls to
-	rcu_dereference_check(), because rcu_dereference_check() already
-	does the check in question.
+ continue emulation
+ try to write guest memory
+ if (write failed) {
+    queue exception C
+    return exception queued
+ }
+ if (write needs exit to userspace for device emulation)
+    return please go out and process the data
 
-Testing in progress, but want to get these out for review.
+ emulate some more.
 
-							Thanx, Paul
+ return emulation done
 
-------------------------------------------------------------------------
-
- cgroup.h   |    2 --
- rcupdate.h |   27 +++++++++++++++++----------
- 2 files changed, 17 insertions(+), 12 deletions(-)
+--
+			Gleb.
