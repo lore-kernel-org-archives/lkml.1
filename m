@@ -1,57 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817Ab0CAXnv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 18:43:51 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:50248 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467Ab0CAXnt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 18:43:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Gr7/147RAMsPaeR/YeqQy6T/gFH++rVsbW6jcoe/R9t/nLM0npcLs6lAQ0BFP0qvBu
-         NaUL/L97P/EyFp5/t3qdjMu18wuRXZN7BH6ZYfK66pPTl7bDfa2wJVi67NrzHbkxSSez
-         wKDYCYZLxnHK70nezmD4/SoesiJ6BKkgZdstI=
+	id S1752851Ab0CAXoQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 18:44:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35988 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751467Ab0CAXoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 18:44:15 -0500
+Message-ID: <4B8C5139.3000701@zytor.com>
+Date: Mon, 01 Mar 2010 15:43:53 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <40101cc31003011403x4423cb3em1f6fcb04d64dd2bb@mail.gmail.com>
-References: <40101cc31003011403x4423cb3em1f6fcb04d64dd2bb@mail.gmail.com>
-Date: Mon, 1 Mar 2010 18:43:48 -0500
-Message-ID: <73c1f2161003011543q41197be9vbc79e0c86753f0d4@mail.gmail.com>
-Subject: Re: AMD Geode i686
-From: Brian Gerst <brgerst@gmail.com>
-To: Matteo Croce <technoboy85@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+To: Zachary Amsden <zamsden@redhat.com>
+CC: Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+References: <20100301091819.GD16909@redhat.com> <4B8BE7C1.40000@redhat.com> <20100301174724.GA12867@redhat.com> <4B8C09F5.9070506@redhat.com> <20100301190341.GD12867@redhat.com> <4B8C1320.6060602@redhat.com> <4B8C4032.7080703@zytor.com> <4B8C463B.7070900@zytor.com> <4B8C4F12.8050009@redhat.com>
+In-Reply-To: <4B8C4F12.8050009@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 5:03 PM, Matteo Croce <technoboy85@gmail.com> wrote:
-> Hi,
-> I have refreshed my AMD Geode i686 patch with NOPL and I have added a
-> new nice feature.
-> When a NOPL is found the parser looks for any NOPL after the current
-> one, so they are emulated in bulk.
-> Tested ok on a Pcengines Alix.
->
-> Signed-off-by: Matteo Croce <technoboy85@gmail.com>
+On 03/01/2010 03:34 PM, Zachary Amsden wrote:
+> 
+> But I'd rather implement a new language where acquisition of resources 
+> such as locks, dynamically allocated objects, and ref counts are 
+> predicated in the function typing and are heavily encouraged to possess 
+> defined inverses.  Then the closure of a particular layer of nesting 
+> already has enough information to provide release upon escape, and the 
+> compiler can easily take the burden of checking for a large class of 
+> lock and resource violation.
+> 
+> And it would have to be prettier than the current languages that do 
+> that, meaning operator overloading would be banned.  Although it would 
+> define rational numbers, super-extended precision arithmetic, imaginary 
+> numbers, quaternions and matrices as part of the spec, so there would be 
+> no need to use arithmetic overrides anyway, and then all the nonsensical 
+> operators could die, die, die, especially the function () and logical 
+> operator overrides.
+> 
 
-1. Since this can possibly touch userspace, you must use get_user() to
-read the instruction bytes.
+/me takes away Zach's caffeine.
 
-2. This parser is too simple to cover all the possible encodings, not
-just the recommended ones from the Intel manual.  You really should be
-decoding:
-- all prefixes (like segment overrides), which can be repeated.
-- the 0f 1f opcode.
-- the Mod R/M byte.
-- the SIB byte (if present).
-- the displacement.
+	-hpa
 
-This should probably be part of a more general instruction emulator.
-
---
-Brian Gerst
