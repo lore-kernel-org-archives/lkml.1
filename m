@@ -1,56 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318Ab0CASoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:44:32 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:49313 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998Ab0CASoa (ORCPT
+	id S1753401Ab0CASo7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:44:59 -0500
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:52599 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998Ab0CASo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:44:30 -0500
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, garyhade@us.ibm.com,
-       iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       trenn@suse.de
-Subject: Re: [LKML] Re: [tip:x86/apic] x86: Fix out of order gsi -- add remap_ioapic_gsi_to_irq()
-References: <4B882182.4030205@kernel.org>
-	<tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org>
-	<20100227130113.GA18661@elte.hu> <m1y6ieo5zw.fsf@fess.ebiederm.org>
-	<4B897537.5050406@kernel.org> <m1zl2ue585.fsf@fess.ebiederm.org>
-	<20100301164602.GG7881@phenom.dumpdata.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 01 Mar 2010 10:44:23 -0800
-In-Reply-To: <20100301164602.GG7881@phenom.dumpdata.com> (Konrad Rzeszutek Wilk's message of "Mon\, 1 Mar 2010 11\:46\:02 -0500")
-Message-ID: <m1y6ib6fw8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 1 Mar 2010 13:44:57 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1911cc1aN7sF7/diTmrYAjA
+Date: Mon, 1 Mar 2010 10:46:00 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: Greg KH <greg@kroah.com>, linux-serial@vger.kernel.org,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
+Message-ID: <20100301184600.GC3389@atomide.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> writes:
+* Govindraj.R <govindraj.raja@ti.com> [100301 06:40]:
+> --- /dev/null
+> +++ b/drivers/serial/omap-serial.c
+> +
+> +static void serial_omap_stop_tx(struct uart_port *port)
+> +{
+> +	struct uart_omap_port *up = (struct uart_omap_port *)port;
+> +
+> +	if (up->use_dma &&
+> +		up->uart_dma.tx_dma_channel != OMAP_UART_DMA_CH_FREE) {
+> +		/*
+> +		 * Check if dma is still active . If yes do nothing,
 
->> 
->> > so far this patch only affect (fix ) x3950.
->
-> .. snip ..
->> > other solution will ask IBM to fix their bios, so we can get
->
-> It isn't just IBM. Asus P2B-D (PIIX4) and SuperMicro X8DAL (possibly)
-> seem to have the same issue.
->
-> (http://lists.xensource.com/archives/html/xen-devel/2010-02/msg00715.html)
-> and
-> (http://lists.xensource.com/archives/html/xen-devel/2010-02/msg01239.html)
+Looks like an extra space here before the period above.
 
-I can't find the reference to those boards in the email you quoted.  Xen
-does strange and very different things with it's irqs so it is unlikely to
-be the same issue.
+...
 
-Eric
+> +static int serial_omap_start_rxdma(struct uart_omap_port *up)
+> +{
+> +	int ret = 0;
+> +
+> +	if (up->uart_dma.rx_dma_channel == -1) {
+> +		ret = omap_request_dma(up->uart_dma.uart_dma_rx,
+> +				"UART Rx DMA",
+> +				(void *)uart_rx_dma_callback, up,
+> +				&(up->uart_dma.rx_dma_channel));
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		omap_set_dma_src_params(up->uart_dma.rx_dma_channel, 0,
+> +				OMAP_DMA_AMODE_CONSTANT,
+> +				up->uart_dma.uart_base, 0, 0);
+> +		omap_set_dma_dest_params(up->uart_dma.rx_dma_channel, 0,
+> +				OMAP_DMA_AMODE_POST_INC,
+> +				up->uart_dma.rx_buf_dma_phys, 0, 0);
+> +		omap_set_dma_transfer_params(up->uart_dma.rx_dma_channel,
+> +				OMAP_DMA_DATA_TYPE_S8,
+> +				up->uart_dma.rx_buf_size, 1,
+> +				OMAP_DMA_SYNC_ELEMENT,
+> +				up->uart_dma.uart_dma_rx, 0);
+> +	}
+> +	up->uart_dma.prev_rx_dma_pos = up->uart_dma.rx_buf_dma_phys;
+> +	if (cpu_is_omap44xx())
+> +		omap_writel(0, OMAP44XX_DMA4_BASE
+> +			+ OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+> +	else
+> +		omap_writel(0, OMAP34XX_DMA4_BASE
+> +			+ OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+
+NAK. Please don't use omap_read/write for for new code. And do not
+tinker with the omap hardware registers directly in the driver.
+
+This needs to be done properly in arch/arm/plat-omap/dma.c instead.
+
+We really don't want drivers tinkering with the omap hardware
+registers directly except for the driver block registers.
+
+Regards,
+
+Tony
