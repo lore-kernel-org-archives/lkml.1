@@ -1,62 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751418Ab0CAHUK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 02:20:10 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56746 "EHLO smtps.tip.net.au"
+	id S1751582Ab0CAHf5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 02:35:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44738 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733Ab0CAHUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 02:20:08 -0500
-Date: Mon, 1 Mar 2010 18:20:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Robert Richter <robert.richter@amd.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: linux-next: manual merge of the oprofile tree with Linus' tree
-Message-Id: <20100301182001.f67b21ac.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_18_20_01_+1100_5+/ri21fBnwZvdp7"
+	id S1751264Ab0CAHf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 02:35:56 -0500
+Message-ID: <4B8B6E43.9030305@zytor.com>
+Date: Sun, 28 Feb 2010 23:35:31 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Luca Barbieri <luca@luca-barbieri.com>, Paul Mackerras <paulus@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
+References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>	 <4B845AEE.5080604@zytor.com>	 <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>	 <20100226101423.GA25641@elte.hu>	 <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com> <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
+In-Reply-To: <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_18_20_01_+1100_5+/ri21fBnwZvdp7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 02/26/2010 03:23 AM, Luca Barbieri wrote:
+> Sent patches, both to conditionally perform the test and implement the
+> functions for x86 and x86-64.
 
-Hi Robert,
+Yes, and with the test turned on, the kernel crashes immediately on boot
+on x86-64.
 
-Today's linux-next merge of the oprofile tree got a conflict in
-arch/x86/kernel/cpu/perf_event.c between commit
-8c48e444191de0ff84e85d41180d7bc3e74f14ef ("perf_events, x86: Implement
-intel core solo/duo support") from Linus' tree and commit
-27d4a358bf5ef730aacf50696b9b5dfc5e2a87a5 ("perf, x86: rename macro in
-ARCH_PERFMON_EVENTSEL_ENABLE") from the oprofile tree.
+Some minor investigation reveals the following:
 
-I fixed it up (by using the version from Linus' tree and substituting
-ARCH_PERFMON_EVENTSEL_ENABLE for ARCH_PERFMON_EVENTSEL0_ENABLE) and can
-carry the fix for a while.  I also did the same substitution in
-arch/x86/kernel/cpu/perf_event_p6.c .
+lib/atomic64.c has the wrong return value for atomic64_add_unless().
+With "wrong" I mean it is the opposite sense compared to
+atomic_add_unless(), not just on x86 but on all architectures.
 
-It would be good if you did a merge with Linus' tree and fixed these up,
-thanks.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Accordingly, I have to conclude that lib/atomic64.c is buggy, and that
+since your test matches that bug, I will have to conclude that your
+x86-32 implementation is also buggy.  Thus, please send patches to fix
+your test and your 32-bit implementations (and preferrably
+lib/atomic64.c too, but I can do that just fine.)
 
---Signature=_Mon__1_Mar_2010_18_20_01_+1100_5+/ri21fBnwZvdp7
-Content-Type: application/pgp-signature
+Cc: Paul Mackerras who did the generic atomic64_t implementation for
+verification that this is indeed a bug.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+	-hpa
 
-iEYEARECAAYFAkuLaqEACgkQjjKRsyhoI8z4QgCeKLAhqy5slK5gkKrrhvYEZxOK
-q2sAni/JuJKQwBXqFhT33+ug03iiP1mN
-=pbRU
------END PGP SIGNATURE-----
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
---Signature=_Mon__1_Mar_2010_18_20_01_+1100_5+/ri21fBnwZvdp7--
