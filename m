@@ -1,69 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640Ab0CAXew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 18:34:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29936 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340Ab0CAXeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 18:34:50 -0500
-Message-ID: <4B8C4F12.8050009@redhat.com>
-Date: Mon, 01 Mar 2010 13:34:42 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752666Ab0CAXhj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 18:37:39 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:45541 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467Ab0CAXhh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 18:37:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OuvGdWDUxpPrlTYW/mjlfqWjsYJFFUMSAhpXJxkeEoTihcLqQTAfdZSJPHYFspIDNy
+         HoAlX7ah0tqgtG7MkIrtubVHIxtuGaiNgAYHoDTQZgV0w0rvuOhUaYQ6mnTCt5G6tjWo
+         x/7fqdpOWmV86u3WT+pWI0QMxq9errFNjiVY0=
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
-Subject: Re: use of setjmp/longjmp in x86 emulator.
-References: <20100301091819.GD16909@redhat.com> <4B8BE7C1.40000@redhat.com> <20100301174724.GA12867@redhat.com> <4B8C09F5.9070506@redhat.com> <20100301190341.GD12867@redhat.com> <4B8C1320.6060602@redhat.com> <4B8C4032.7080703@zytor.com> <4B8C463B.7070900@zytor.com>
-In-Reply-To: <4B8C463B.7070900@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
+References: <43e72e891002241618w10d5c45ar9303f074d0228217@mail.gmail.com>
+Date: Tue, 2 Mar 2010 01:37:34 +0200
+Message-ID: <40f31dec1003011537m1611ffecnd7af66d27d67a81a@mail.gmail.com>
+Subject: Re: 802.11 development process - extended documentation
+From: Nick Kossifidis <mickflemm@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 12:56 PM, H. Peter Anvin wrote:
-> On 03/01/2010 02:31 PM, H. Peter Anvin wrote:
->    
->> On 03/01/2010 11:18 AM, Zachary Amsden wrote:
->>      
->>> It's going to be ugly to emulate segmentation, NX and write protect
->>> support without hardware to do this checking for you, but it's just what
->>> you have to do in this slow path - tedious, fully specified emulation.
->>>
->>> Just because it's tedious doesn't mean we need to use setjmp / longjmp.
->>> Throw / catch might be effective, but it's still pretty bizarre to do
->>> tricks like that in C.
->>>
->>>        
->> Well, setjmp/longjmp really is not much more than exception handling in C.
->>
->>      
-> For what it's worth, I think that setjmp/longjmp is not anywhere near as
-> dangerous as people want to make it out to be.  gcc will warn for
-> dangerous uses (and a lot of non-dangerous uses), but generally the
-> difficult problems can be dealt with by moving the setjmp-protected code
-> into a separate function.
->    
+2010/2/25 Luis R. Rodriguez <mcgrof@gmail.com>:
+> I've extended our 802.11 development process into a new section on our
+> 802.11 wiki. I often get asked how this works from different parts of
+> the company here at Atheros so figured it'd be easier to illustrate
+> this as best as possible and share it.
+>
+> http://wireless.kernel.org/en/developers/process
+>
+> Hope it does justice, John if you see any mistakes feel free to edit.
+> If the diagram seems fishy let me know what I can fix.
+>
+>  Luis
 
-I'd be curious to see if it would need to evolve it to preemptsetjmp / 
-irqlongjmp or some other more complex forms in time.
+Thanks a lot Luis ;-)
 
-But I'd rather implement a new language where acquisition of resources 
-such as locks, dynamically allocated objects, and ref counts are 
-predicated in the function typing and are heavily encouraged to possess 
-defined inverses.  Then the closure of a particular layer of nesting 
-already has enough information to provide release upon escape, and the 
-compiler can easily take the burden of checking for a large class of 
-lock and resource violation.
 
-And it would have to be prettier than the current languages that do 
-that, meaning operator overloading would be banned.  Although it would 
-define rational numbers, super-extended precision arithmetic, imaginary 
-numbers, quaternions and matrices as part of the spec, so there would be 
-no need to use arithmetic overrides anyway, and then all the nonsensical 
-operators could die, die, die, especially the function () and logical 
-operator overrides.
 
-Zach
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
