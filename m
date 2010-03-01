@@ -1,58 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751474Ab0CAPX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:23:29 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40052 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751033Ab0CAPX2 (ORCPT
+	id S1751536Ab0CAP1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:27:35 -0500
+Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:36857 "EHLO
+	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751154Ab0CAP1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:23:28 -0500
-Date: Mon, 1 Mar 2010 10:23:27 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-In-Reply-To: <20100301063508.GA1455@ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.1003011021440.1645-100000@iolanthe.rowland.org>
+	Mon, 1 Mar 2010 10:27:33 -0500
+Date: Mon, 1 Mar 2010 10:13:00 -0500
+From: Nick Bowler <nbowler@elliptictech.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next requirements
+Message-ID: <20100301151300.GA14825@emergent.ellipticsemi.com>
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com,
+	hpa@zytor.com, linux-kernel@vger.kernel.org, roland@redhat.com,
+	suresh.b.siddha@intel.com, tglx@linutronix.de, hjl.tools@gmail.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>
+References: <20100211195614.886724710@sbs-t61.sc.intel.com>
+ <201002271323.14402.rjw@sisk.pl>
+ <20100227124710.GA21164@elte.hu>
+ <201002272007.43042.rjw@sisk.pl>
+ <20100228072357.GB14205@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100228072357.GB14205@elte.hu>
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010, Pavel Machek wrote:
-
-> Hi!
+On 08:23 Sun 28 Feb     , Ingo Molnar wrote:
 > 
-> > > > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-> > > > is, should it be made unfreezable?
-> > > 
-> > > I'm not a big expect on what tasks should be freezable or not. As it
-> > > stands, the writeback tasks will attempt to freeze and thaw with the
-> > > system. I guess that screws the sync from resume call, since it's not
-> > > running and the sync will wait for it to retrieve and finish that work
-> > > item.
-> > > 
-> > > To the suspend experts - can we safely mark the writeback tasks as
-> > > non-freezable?
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > In fact those rare ways of building and booting the kernel i mentioned are 
+> > > probably used _more_ than half of the architectures that linux-next 
+> > > build-tests ...
 > > 
-> > The reason for freezing those tasks is to avoid writebacks at random
-> > times during a system sleep transition, when the underlying device may
-> > already be suspended, right?
+> > I don't know and you don't know either.  That's just pure speculation and 
+> > therefore meaningless.
 > 
-> It is also there to avoid inconsistency between in-filesystem data and
-> snapshot in hibernation image.
+> We know various arch (and hardware) usage stats, such as:
+> 
+>   http://smolt.fedoraproject.org/static/stats/stats.html
+> 
+> Today's stats, done amongst users who are willing to opt in to the Smolt 
+> daemon:
+> 
+>        x86: 99.7%
+>    powerpc: 0.3%
+> 
+> x86 used to be 99.5 a year ago, so the world has become even more x86-centric.
 
-A good point, although in this case I think it won't matter.  Writing
-out a dirty page twice (once right after taking the snapshot and then
-again after resuming from hibernation) will leave the disk in a correct
-state.
+This only tells us that _smolt users_ have become even more x86-centric.
+As a self-selected sample, it is very likely a poor representative of
+"the world" and any such extrapolation is indeed "pure speculation".
 
-Alan Stern
-
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
