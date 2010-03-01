@@ -1,61 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750780Ab0CAIZO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:25:14 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:56930 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750705Ab0CAIZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:25:12 -0500
-Date: Mon, 1 Mar 2010 09:25:11 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "czoccolo@gmail.com" <czoccolo@gmail.com>,
-       "vgoyal@redhat.com" <vgoyal@redhat.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "guijianfeng@cn.fujitsu.com" <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: quantum check tweak --resend
-Message-ID: <20100301082511.GR5768@kernel.dk>
-References: <20100301015047.GA16630@sli10-desk.sh.intel.com> <20100301080233.GO5768@kernel.dk> <20100301081524.GA28563@sli10-desk.sh.intel.com> <20100301081920.GQ5768@kernel.dk> <20100301082250.GA1590@sli10-desk.sh.intel.com>
+	id S1750854Ab0CAI3F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:29:05 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59651 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729Ab0CAI3B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 03:29:01 -0500
+Message-ID: <4B8B7AC7.1070201@in.ibm.com>
+Date: Mon, 01 Mar 2010 13:58:55 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100301082250.GA1590@sli10-desk.sh.intel.com>
+To: Xiaotian Feng <xtfeng@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
+Subject: Re: 2.6.33-git6 boot failure[x86_64] (WARN: at arch/x86/mm/ioremap.c:111)
+References: <4B8B43E9.1010506@in.ibm.com> <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com>
+In-Reply-To: <7b6bb4a51002282218u22c8f4c4wb2a345fcb7a82257@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01 2010, Shaohua Li wrote:
-> On Mon, Mar 01, 2010 at 04:19:20PM +0800, Jens Axboe wrote:
-> > On Mon, Mar 01 2010, Shaohua Li wrote:
-> > > On Mon, Mar 01, 2010 at 04:02:34PM +0800, Jens Axboe wrote:
-> > > > On Mon, Mar 01 2010, Shaohua Li wrote:
-> > > > > Currently a queue can only dispatch up to 4 requests if there are other queues.
-> > > > > This isn't optimal, device can handle more requests, for example, AHCI can
-> > > > > handle 31 requests. I can understand the limit is for fairness, but we could
-> > > > > do a tweak: if the queue still has a lot of slice left, sounds we could
-> > > > > ignore the limit. Test shows this boost my workload (two thread randread of
-> > > > > a SSD) from 78m/s to 100m/s.
-> > > > > Thanks for suggestions from Corrado and Vivek for the patch.
-> > > > 
-> > > > As mentioned before, I think we definitely want to ensure that we drive
-> > > > the full queue depth whenever possible. I think your patch is a bit
-> > > > dangerous, though. The problematic workload here is a buffered write,
-> > > > interleaved with the occasional sync reader. If the sync reader has to
-> > > > endure 32 requests every time, latency rises dramatically for him.
-> > > the patch still matains a hardlimit for dispatched request. For a async,
-> > > the limit is cfq_slice_async/cfq_slice_idle = 5. For sync, the limit is 8.
-> > > And we only pipe out such number of requests at the begining of a slice.
-> > > For the workload you mentioned here, we only dispatch 1 extra request.
-> > 
-> > OK, that sound appropriate. Final question - why change the quantum and
-> > use quantum/2?
-> This is suggested by Vivek. In this way quantum is still the hard limit and
-> doesn't surprise users. we do throttling at 1/2 quantum (softlimit) and
-> then stop at quantum (hard limit)
+Xiaotian Feng wrote:
+> On Mon, Mar 1, 2010 at 12:34 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
+>   
+>> Latest 2.6.33 git(30ff056..) failed to boot on a x86_64 box
+>> with errors during mptsas/mptbase initialization. I also
+>> noticed a warning during ACPI initialization.
+>>     
+>
+> does revert of 13ca0f and 1b5576 makes your system alive?
+>   
+Yes.. after reverting 13ca0f and 1b5576, the machine boots fine.
 
-OK, that makes sense. I will apply the patch, thanks!
+
+>> Performance Events: AMD PMU driver.
+>> ... version:                0
+>> ... bit width:              48
+>> ... generic registers:      4
+>> ... value mask:             0000ffffffffffff
+>> ... max period:             00007fffffffffff
+>> ... fixed-purpose events:   0
+>> ... event mask:             000000000000000f
+>> ACPI: Core revision 20091214
+>> ------------[ cut here ]------------
+>> WARNING: at arch/x86/mm/ioremap.c:111 __ioremap_caller+0x169/0x2f1()
+>> Hardware name: BladeCenter LS21 -[79716AA]-
+>> Modules linked in:
+>> Pid: 0, comm: swapper Not tainted 2.6.33-git6-autotest #1
+>> Call Trace:
+>> [<ffffffff81047cff>] ? __ioremap_caller+0x169/0x2f1
+>> [<ffffffff81063b7d>] warn_slowpath_common+0x77/0xa4
+>> [<ffffffff81063bb9>] warn_slowpath_null+0xf/0x11
+>> [<ffffffff81047cff>] __ioremap_caller+0x169/0x2f1
+>> [<ffffffff813747a3>] ? acpi_os_map_memory+0x12/0x1b
+>> [<ffffffff81047f10>] ioremap_nocache+0x12/0x14
+>> [<ffffffff813747a3>] acpi_os_map_memory+0x12/0x1b
+>> [<ffffffff81282fa0>] acpi_tb_verify_table+0x29/0x5b
+>> [<ffffffff812827f0>] acpi_load_tables+0x39/0x15a
+>> [<ffffffff8191c8f8>] acpi_early_init+0x60/0xf5
+>> [<ffffffff818f2cad>] start_kernel+0x397/0x3a7
+>> [<ffffffff818f2295>] x86_64_start_reservations+0xa5/0xa9
+>> [<ffffffff818f237a>] x86_64_start_kernel+0xe1/0xe8
+>> ---[ end trace 4eaa2a86a8e2da22 ]---
+>> ioremap reserve_memtype failed -22
+>> ACPI Exception: AE_NO_ACPI_TABLES, While loading namespace from ACPI tables
+>> (20091214/tbxface-604)
+>> ACPI: Unable to load the System Description Tables
+>>
+>> I observed similar failure with x86_32 as well.
+>>
+>> 2.6.33-git5 (847f9c6...) worked fine.
+>>     
 
 -- 
-Jens Axboe
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
