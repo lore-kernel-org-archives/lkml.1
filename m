@@ -1,24 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540Ab0CAWye (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 17:54:34 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:49025 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153Ab0CAWyd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 17:54:33 -0500
-Subject: [PATCH 2/3] arm: Convert arm to arch_gettimeoffset()
+	id S1752650Ab0CAW4L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 17:56:11 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:58492 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752327Ab0CAW4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 17:56:09 -0500
+Subject: [PATCH 3/3] time: Kill off CONFIG_GENERIC_TIME
 From: john stultz <johnstul@us.ibm.com>
-To: Russell King <rmk@arm.linux.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <1267483897.4216.91.camel@localhost.localdomain>
+       Andrew Morton <akpm@linux-foundation.org>, starvik@axis.com,
+       jesper.nilsson@axis.com, Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <1267484054.4216.94.camel@localhost.localdomain>
 References: <1267483897.4216.91.camel@localhost.localdomain>
+	 <1267484054.4216.94.camel@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Mar 2010 14:54:14 -0800
-Message-ID: <1267484054.4216.94.camel@localhost.localdomain>
+Date: Mon, 01 Mar 2010 14:56:04 -0800
+Message-ID: <1267484164.4216.96.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -26,607 +25,634 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts arm to use GENERIC_TIME via the arch_getoffset()
-infrastructure, reducing the amount of arch specific code we need to
-maintain.
-
-The arm architecture is one of the last 2 arches that need to be
-converted.
-
-This patch applies on top of Linus' current -git tree
-
-I've taken my best swing at converting this, but I'm not 100% confident
-I got it right. My cross-compiler is now out of date (gcc4.2) so I
-wasn't able to check if it compiled. Any assistance from arch
-maintainers or testers to get this merged would be great.
+Now that all arches have been converted over to use generic time via
+clocksources or arch_gettimeoffset(), we can remove the GENERIC_TIME
+config option and simplify the generic code.
 
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
 ---
- arch/arm/Kconfig                 |   51 ++++++++++++++-------------
- arch/arm/include/asm/mach/time.h |    2 +-
- arch/arm/kernel/time.c           |   70 +++----------------------------------
- arch/arm/mach-at91/Kconfig       |   11 +-----
- 4 files changed, 35 insertions(+), 99 deletions(-)
+ Documentation/kernel-parameters.txt |    3 +-
+ arch/alpha/Kconfig                  |    4 --
+ arch/arm/Kconfig                    |    4 --
+ arch/avr32/Kconfig                  |    3 --
+ arch/blackfin/Kconfig               |    3 --
+ arch/cris/Kconfig                   |    3 --
+ arch/frv/Kconfig                    |    4 --
+ arch/h8300/Kconfig                  |    4 --
+ arch/ia64/Kconfig                   |    4 --
+ arch/m32r/Kconfig                   |    3 --
+ arch/m68k/Kconfig                   |    3 --
+ arch/m68knommu/Kconfig              |    4 --
+ arch/microblaze/Kconfig             |    3 --
+ arch/mips/Kconfig                   |    4 --
+ arch/mn10300/Kconfig                |    3 --
+ arch/parisc/Kconfig                 |    4 --
+ arch/powerpc/Kconfig                |    3 --
+ arch/s390/Kconfig                   |    3 --
+ arch/sh/Kconfig                     |    3 --
+ arch/sparc/Kconfig                  |    3 --
+ arch/um/Kconfig.common              |    4 --
+ arch/x86/Kconfig                    |    5 +--
+ arch/xtensa/Kconfig                 |    3 --
+ drivers/Makefile                    |    4 ++-
+ drivers/acpi/acpi_pad.c             |    2 +-
+ drivers/acpi/processor_idle.c       |    2 +-
+ drivers/clocksource/Kconfig         |    2 +-
+ drivers/misc/Kconfig                |    2 +-
+ kernel/time.c                       |   16 ----------
+ kernel/time/Kconfig                 |    4 +-
+ kernel/time/clocksource.c           |    4 +-
+ kernel/time/timekeeping.c           |   55 ++--------------------------------
+ kernel/trace/Kconfig                |    4 +-
+ 33 files changed, 19 insertions(+), 156 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 8c666d8..87ea67b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -71,7 +71,6 @@ parameter is applicable:
+ 	MTD	MTD (Memory Technology Device) support is enabled.
+ 	NET	Appropriate network support is enabled.
+ 	NUMA	NUMA support is enabled.
+-	GENERIC_TIME The generic timeofday code is enabled.
+ 	NFS	Appropriate NFS support is enabled.
+ 	OSS	OSS sound support is enabled.
+ 	PV_OPS	A paravirtualized kernel is enabled.
+@@ -472,7 +471,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			clocksource is not available, it defaults to PIT.
+ 			Format: { pit | tsc | cyclone | pmtmr }
+ 
+-	clocksource=	[GENERIC_TIME] Override the default clocksource
++	clocksource=	Override the default clocksource
+ 			Format: <string>
+ 			Override the default clocksource and use the clocksource
+ 			with the name specified.
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index bd7261e..b7dbb7f 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -46,10 +46,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	bool
+ 	default y
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 3b18128..ff8e0b4 100644
+index ff8e0b4..cec899f 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -42,6 +42,11 @@ config GENERIC_GPIO
- 
- config GENERIC_TIME
+@@ -40,10 +40,6 @@ config SYS_SUPPORTS_APM_EMULATION
+ config GENERIC_GPIO
  	bool
-+	default y
-+
-+config ARCH_USES_GETTIMEOFFSET
-+	bool
-+	default n
  
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	bool
+ 	default n
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index f2b3193..f515727 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -45,9 +45,6 @@ config GENERIC_IRQ_PROBE
+ config RWSEM_GENERIC_SPINLOCK
+ 	def_bool y
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_CLOCKEVENTS
+ 	def_bool y
+ 
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index 53c1e1d..a891f0a 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -602,9 +602,6 @@ comment "Kernel Timer/Scheduler"
+ 
+ source kernel/Kconfig.hz
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_CLOCKEVENTS
+ 	bool "Generic clock events"
+ 	default y
+diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
+index 059eac6..a668ce1 100644
+--- a/arch/cris/Kconfig
++++ b/arch/cris/Kconfig
+@@ -20,9 +20,6 @@ config RWSEM_GENERIC_SPINLOCK
+ config RWSEM_XCHGADD_ALGORITHM
+ 	bool
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	def_bool y
+ 
+diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
+index 4b5830b..16399bd 100644
+--- a/arch/frv/Kconfig
++++ b/arch/frv/Kconfig
+@@ -40,10 +40,6 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config TIME_LOW_RES
+ 	bool
+ 	default y
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 53cc669..988b6ff 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -62,10 +62,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config GENERIC_BUG
+         bool
+         depends on BUG
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 9a50d7d..177d0db 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -79,10 +79,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
+diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
+index 3a9319f..836abbb 100644
+--- a/arch/m32r/Kconfig
++++ b/arch/m32r/Kconfig
+@@ -44,9 +44,6 @@ config HZ
+ 	int
+ 	default 100
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	def_bool y
+ 
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index b5da298..ee3ed05 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -58,9 +58,6 @@ config HZ
+ 	int
+ 	default 100
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	def_bool y
+ 
+diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
+index 064f591..fb61afe 100644
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -63,10 +63,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config GENERIC_CMOS_UPDATE
+ 	bool
+ 	default y
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index b008168..adbfd0c 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -46,9 +46,6 @@ config GENERIC_IRQ_PROBE
+ config GENERIC_CALIBRATE_DELAY
+ 	def_bool y
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_TIME_VSYSCALL
+ 	def_bool n
+ 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 591ca0c..1448600 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -731,10 +731,6 @@ config GENERIC_CLOCKEVENTS
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config GENERIC_CMOS_UPDATE
+ 	bool
+ 	default y
+diff --git a/arch/mn10300/Kconfig b/arch/mn10300/Kconfig
+index 89faaca..fb2d232 100644
+--- a/arch/mn10300/Kconfig
++++ b/arch/mn10300/Kconfig
+@@ -43,9 +43,6 @@ config GENERIC_FIND_NEXT_BIT
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_BUG
+ 	def_bool y
+ 
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index f388dc6..f7a4d3e 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -66,10 +66,6 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
+ config TIME_LOW_RES
+ 	bool
+ 	depends on SMP
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 155d571..68d9df6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -29,9 +29,6 @@ config MMU
+ config GENERIC_CMOS_UPDATE
+ 	def_bool y
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_TIME_VSYSCALL
+ 	def_bool y
+ 
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 0d8cd9b..07ecd67 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -40,9 +40,6 @@ config ARCH_HAS_ILOG2_U64
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_TIME_VSYSCALL
+ 	def_bool y
+ 
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 05cef50..5819a92 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -97,9 +97,6 @@ config GENERIC_CALIBRATE_DELAY
+ config GENERIC_IOMAP
+ 	bool
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_CLOCKEVENTS
+ 	def_bool y
+ 
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 4097f6a..49611c0 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -63,9 +63,6 @@ config BITS
+ 	default 32 if SPARC32
+ 	default 64 if SPARC64
+ 
+-config GENERIC_TIME
+-	def_bool y
+-
+ config ARCH_USES_GETTIMEOFFSET
+ 	bool
+ 	default y if SPARC32
+diff --git a/arch/um/Kconfig.common b/arch/um/Kconfig.common
+index 0d207e7..7c8e277 100644
+--- a/arch/um/Kconfig.common
++++ b/arch/um/Kconfig.common
+@@ -55,10 +55,6 @@ config GENERIC_BUG
+ 	default y
+ 	depends on BUG
+ 
+-config GENERIC_TIME
+-	bool
+-	default y
+-
  config GENERIC_CLOCKEVENTS
  	bool
-@@ -224,6 +229,7 @@ config ARCH_AAEC2000
- 	select CPU_ARM920T
- 	select ARM_AMBA
- 	select HAVE_CLK
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This enables support for systems based on the Agilent AAEC-2000
+ 	default y
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 0896008..014b8bc 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -67,9 +67,6 @@ config ARCH_DEFCONFIG
+ 	default "arch/x86/configs/i386_defconfig" if X86_32
+ 	default "arch/x86/configs/x86_64_defconfig" if X86_64
  
-@@ -234,6 +240,7 @@ config ARCH_INTEGRATOR
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ICST525
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for ARM's Integrator platform.
+-config GENERIC_TIME
+-	def_bool y
+-
+ config GENERIC_CMOS_UPDATE
+ 	def_bool y
  
-@@ -243,7 +250,6 @@ config ARCH_REALVIEW
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ICST307
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	help
-@@ -256,7 +262,6 @@ config ARCH_VERSATILE
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ICST307
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	help
-@@ -267,6 +272,7 @@ config ARCH_AT91
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
- 	select HAVE_CLK
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This enables support for systems based on the Atmel AT91RM9200,
- 	  AT91SAM9 and AT91CAP9 processors.
-@@ -274,6 +280,7 @@ config ARCH_AT91
- config ARCH_CLPS711X
- 	bool "Cirrus Logic CLPS711x/EP721x-based"
- 	select CPU_ARM720T
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Cirrus Logic 711x/721x based boards.
+@@ -2006,7 +2003,7 @@ config SCx200
  
-@@ -282,6 +289,7 @@ config ARCH_GEMINI
- 	select CPU_FA526
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for the Cortina Systems Gemini family SoCs
+ config SCx200HR_TIMER
+ 	tristate "NatSemi SCx200 27MHz High-Resolution Timer Support"
+-	depends on SCx200 && GENERIC_TIME
++	depends on SCx200
+ 	default y
+ 	---help---
+ 	  This driver provides a clocksource built upon the on-chip
+diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+index ebe228d..0859bfd 100644
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -48,9 +48,6 @@ config HZ
+ 	int
+ 	default 100
  
-@@ -290,6 +298,7 @@ config ARCH_EBSA110
- 	select CPU_SA110
- 	select ISA
- 	select NO_IOPORT
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This is an evaluation board for the StrongARM processor available
- 	  from Digital. It has limited hardware on-board, including an
-@@ -306,6 +315,7 @@ config ARCH_EP93XX
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
- 	select ARCH_HAS_HOLES_MEMORYMODEL
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This enables support for the Cirrus EP93xx series of CPUs.
+-config GENERIC_TIME
+-	def_bool y
+-
+ source "init/Kconfig"
+ source "kernel/Kconfig.freezer"
  
-@@ -313,13 +323,13 @@ config ARCH_FOOTBRIDGE
- 	bool "FootBridge"
- 	select CPU_SA110
- 	select FOOTBRIDGE
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for systems based on the DC21285 companion chip
- 	  ("FootBridge"), such as the Simtec CATS and the Rebel NetWinder.
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 6ee53c7..a059f91 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -99,7 +99,9 @@ obj-$(CONFIG_SGI_SN)		+= sn/
+ obj-y				+= firmware/
+ obj-$(CONFIG_CRYPTO)		+= crypto/
+ obj-$(CONFIG_SUPERH)		+= sh/
+-obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
++ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
++obj-y				+= clocksource/
++endif
+ obj-$(CONFIG_DMA_ENGINE)	+= dma/
+ obj-$(CONFIG_DCA)		+= dca/
+ obj-$(CONFIG_HID)		+= hid/
+diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
+index 7e52295..d144710 100644
+--- a/drivers/acpi/acpi_pad.c
++++ b/drivers/acpi/acpi_pad.c
+@@ -73,7 +73,7 @@ static void power_saving_mwait_init(void)
+ 	for_each_online_cpu(i)
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &i);
  
- config ARCH_MXC
- 	bool "Freescale MXC/iMX-based"
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select ARCH_MTD_XIP
- 	select GENERIC_GPIO
-@@ -334,7 +344,6 @@ config ARCH_STMP3XXX
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_GPIO
- 	select USB_ARCH_HAS_EHCI
-@@ -346,7 +355,6 @@ config ARCH_NETX
- 	select CPU_ARM926T
- 	select ARM_VIC
- 	select GENERIC_CLOCKEVENTS
--	select GENERIC_TIME
- 	help
- 	  This enables support for systems based on the Hilscher NetX Soc
- 
-@@ -354,6 +362,7 @@ config ARCH_H720X
- 	bool "Hynix HMS720x-based"
- 	select CPU_ARM720T
- 	select ISA_DMA_API
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This enables support for systems based on the Hynix HMS720x
- 
-@@ -364,7 +373,6 @@ config ARCH_NOMADIK
- 	select CPU_ARM926T
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
-@@ -379,6 +387,7 @@ config ARCH_IOP13XX
- 	select PCI
- 	select ARCH_SUPPORTS_MSI
- 	select VMSPLIT_1G
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Intel's IOP13XX (XScale) family of processors.
- 
-@@ -390,6 +399,7 @@ config ARCH_IOP32X
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Intel's 80219 and IOP32X (XScale) family of
- 	  processors.
-@@ -402,6 +412,7 @@ config ARCH_IOP33X
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Intel's IOP33X (XScale) family of processors.
- 
-@@ -410,6 +421,7 @@ config ARCH_IXP23XX
- 	depends on MMU
- 	select CPU_XSC3
-  	select PCI
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Intel's IXP23xx (XScale) family of processors.
- 
-@@ -418,6 +430,7 @@ config ARCH_IXP2000
- 	depends on MMU
- 	select CPU_XSCALE
- 	select PCI
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Intel's IXP2400/2800 (XScale) family of processors.
- 
-@@ -426,7 +439,6 @@ config ARCH_IXP4XX
- 	depends on MMU
- 	select CPU_XSCALE
- 	select GENERIC_GPIO
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select DMABOUNCE if PCI
- 	help
-@@ -436,6 +448,7 @@ config ARCH_L7200
- 	bool "LinkUp-L7200"
- 	select CPU_ARM720T
- 	select FIQ
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Say Y here if you intend to run this kernel on a LinkUp Systems
- 	  L7200 Software Development Board which uses an ARM720T processor.
-@@ -451,7 +464,6 @@ config ARCH_DOVE
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select PLAT_ORION
- 	help
-@@ -463,7 +475,6 @@ config ARCH_KIRKWOOD
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select PLAT_ORION
- 	help
-@@ -473,7 +484,6 @@ config ARCH_KIRKWOOD
- config ARCH_LOKI
- 	bool "Marvell Loki (88RC8480)"
- 	select CPU_FEROCEON
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select PLAT_ORION
- 	help
-@@ -485,7 +495,6 @@ config ARCH_MV78XX0
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select PLAT_ORION
- 	help
-@@ -499,7 +508,6 @@ config ARCH_ORION5X
- 	select PCI
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select PLAT_ORION
- 	help
-@@ -514,7 +522,6 @@ config ARCH_MMP
- 	select ARCH_REQUIRE_GPIOLIB
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select TICK_ONESHOT
- 	select PLAT_PXA
-@@ -526,6 +533,7 @@ config ARCH_KS8695
- 	select CPU_ARM922T
- 	select GENERIC_GPIO
-         select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for Micrel/Kendin KS8695 "Centaur" (ARM922T) based
- 	  System-on-Chip devices.
-@@ -534,7 +542,6 @@ config ARCH_NS9XXX
- 	bool "NetSilicon NS9xxx"
- 	select CPU_ARM926T
- 	select GENERIC_GPIO
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_CLK
- 	help
-@@ -550,7 +557,6 @@ config ARCH_W90X900
- 	select GENERIC_GPIO
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	help
- 	  Support for Nuvoton (Winbond logic dept.) ARM9 processor,
-@@ -575,6 +581,7 @@ config ARCH_PNX4008
- 	select CPU_ARM926T
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  This enables support for Philips PNX4008 mobile platform.
- 
-@@ -587,7 +594,6 @@ config ARCH_PXA
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select TICK_ONESHOT
- 	select PLAT_PXA
-@@ -597,7 +603,6 @@ config ARCH_PXA
- config ARCH_MSM
- 	bool "Qualcomm MSM"
- 	select CPU_V6
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	help
- 	  Support for Qualcomm MSM7K based systems.  This runs on the ARM11
-@@ -615,6 +620,7 @@ config ARCH_RPC
- 	select ISA_DMA_API
- 	select NO_IOPORT
- 	select ARCH_SPARSEMEM_ENABLE
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  On the Acorn Risc-PC, Linux can support the internal IDE disk and
- 	  CD-ROM interface, serial and parallel port, and the floppy drive.
-@@ -628,7 +634,6 @@ config ARCH_SA1100
- 	select ARCH_HAS_CPUFREQ
- 	select CPU_FREQ
- 	select GENERIC_GPIO
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_CLK
- 	select TICK_ONESHOT
-@@ -641,6 +646,7 @@ config ARCH_S3C2410
- 	select GENERIC_GPIO
- 	select ARCH_HAS_CPUFREQ
- 	select HAVE_CLK
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Samsung S3C2410X CPU based systems, such as the Simtec Electronics
- 	  BAST (<http://www.simtec.co.uk/products/EB110ITX/>), the IPAQ 1940 or
-@@ -650,6 +656,7 @@ config ARCH_S3C64XX
- 	bool "Samsung S3C64XX"
- 	select GENERIC_GPIO
- 	select HAVE_CLK
-+	select ARCH_USES_GETTIMEOFFSET
- 	select ARCH_HAS_CPUFREQ
- 	help
- 	  Samsung S3C64XX series based systems
-@@ -670,6 +677,7 @@ config ARCH_SHARK
- 	select ISA_DMA
- 	select ZONE_DMA
- 	select PCI
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Support for the StrongARM based Digital DNARD machine, also known
- 	  as "Shark" (<http://www.shark-linux.de/shark.html>).
-@@ -679,6 +687,7 @@ config ARCH_LH7A40X
- 	select CPU_ARM922T
- 	select ARCH_DISCONTIGMEM_ENABLE if !LH7A40X_CONTIGMEM
- 	select ARCH_SPARSEMEM_ENABLE if !LH7A40X_CONTIGMEM
-+	select ARCH_USES_GETTIMEOFFSET
- 	help
- 	  Say Y here for systems based on one of the Sharp LH7A40X
- 	  System on a Chip processors.  These CPUs include an ARM922T
-@@ -692,7 +701,6 @@ config ARCH_U300
- 	select HAVE_TCM
- 	select ARM_AMBA
- 	select ARM_VIC
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
-@@ -703,7 +711,6 @@ config ARCH_U300
- config ARCH_DAVINCI
- 	bool "TI DaVinci"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
-@@ -722,7 +729,6 @@ config ARCH_OMAP
- 	select HAVE_CLK
- 	select ARCH_REQUIRE_GPIOLIB
- 	select ARCH_HAS_CPUFREQ
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select ARCH_HAS_HOLES_MEMORYMODEL
- 	help
-@@ -734,7 +740,6 @@ config ARCH_BCMRING
- 	select CPU_V6
- 	select ARM_AMBA
- 	select COMMON_CLKDEV
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	help
-@@ -744,7 +749,6 @@ config ARCH_U8500
- 	bool "ST-Ericsson U8500 Series"
- 	select CPU_V7
- 	select ARM_AMBA
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select COMMON_CLKDEV
- 	help
-@@ -867,7 +871,6 @@ config ARCH_ACORN
- config PLAT_IOP
- 	bool
- 	select GENERIC_CLOCKEVENTS
--	select GENERIC_TIME
- 
- config PLAT_ORION
- 	bool
-diff --git a/arch/arm/include/asm/mach/time.h b/arch/arm/include/asm/mach/time.h
-index 8bffc3f..35d408f 100644
---- a/arch/arm/include/asm/mach/time.h
-+++ b/arch/arm/include/asm/mach/time.h
-@@ -38,7 +38,7 @@ struct sys_timer {
- 	void			(*init)(void);
- 	void			(*suspend)(void);
- 	void			(*resume)(void);
--#ifndef CONFIG_GENERIC_TIME
-+#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
- 	unsigned long		(*offset)(void);
- #endif
- };
-diff --git a/arch/arm/kernel/time.c b/arch/arm/kernel/time.c
-index 2875380..38c261f 100644
---- a/arch/arm/kernel/time.c
-+++ b/arch/arm/kernel/time.c
-@@ -72,12 +72,15 @@ unsigned long profile_pc(struct pt_regs *regs)
- EXPORT_SYMBOL(profile_pc);
- #endif
- 
--#ifndef CONFIG_GENERIC_TIME
--static unsigned long dummy_gettimeoffset(void)
-+#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
-+u32 arch_gettimeoffset(void)
- {
-+	if (system_timer->offset != NULL)
-+		return system_timer->offset() * 1000;
-+
+-#if defined(CONFIG_GENERIC_TIME) && defined(CONFIG_X86)
++#if defined(CONFIG_X86)
+ 	switch (boot_cpu_data.x86_vendor) {
+ 	case X86_VENDOR_AMD:
+ 	case X86_VENDOR_INTEL:
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 37dfce7..60efa42 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -258,7 +258,7 @@ int acpi_processor_resume(struct acpi_device * device)
  	return 0;
  }
--#endif
-+#endif /* CONFIG_ARCH_USES_GETTIMEOFFSET */
  
- #ifdef CONFIG_LEDS_TIMER
- static inline void do_leds(void)
-@@ -93,63 +96,6 @@ static inline void do_leds(void)
- #define	do_leds()
- #endif
- 
--#ifndef CONFIG_GENERIC_TIME
--void do_gettimeofday(struct timeval *tv)
--{
--	unsigned long flags;
--	unsigned long seq;
--	unsigned long usec, sec;
--
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--		usec = system_timer->offset();
--		sec = xtime.tv_sec;
--		usec += xtime.tv_nsec / 1000;
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
--	/* usec may have gone up a lot: be safe */
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq(&xtime_lock);
--	/*
--	 * This is revolting. We need to set "xtime" correctly. However, the
--	 * value in this location is the value at the most recent update of
--	 * wall time.  Discover what correction gettimeofday() would have
--	 * done, and then undo it!
--	 */
--	nsec -= system_timer->offset() * NSEC_PER_USEC;
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--#endif /* !CONFIG_GENERIC_TIME */
- 
- #ifndef CONFIG_GENERIC_CLOCKEVENTS
- /*
-@@ -214,10 +160,6 @@ device_initcall(timer_init_sysfs);
- 
- void __init time_init(void)
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
++#if defined(CONFIG_X86)
+ static void tsc_check_state(int state)
  {
+ 	switch (boot_cpu_data.x86_vendor) {
+diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
+index 08f726c..f8d1d73 100644
+--- a/drivers/clocksource/Kconfig
++++ b/drivers/clocksource/Kconfig
+@@ -1,6 +1,6 @@
+ config CS5535_CLOCK_EVENT_SRC
+ 	tristate "CS5535/CS5536 high-res timer (MFGPT) events"
+-	depends on GENERIC_TIME && GENERIC_CLOCKEVENTS && CS5535_MFGPT
++	depends on GENERIC_CLOCKEVENTS && CS5535_MFGPT
+ 	help
+ 	  This driver provides a clock event source based on the MFGPT
+ 	  timer(s) in the CS5535 and CS5536 companion chips.
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index e3551d2..9da7433 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -46,7 +46,7 @@ config ATMEL_TCLIB
+ 
+ config ATMEL_TCB_CLKSRC
+ 	bool "TC Block Clocksource"
+-	depends on ATMEL_TCLIB && GENERIC_TIME
++	depends on ATMEL_TCLIB
+ 	default y
+ 	help
+ 	  Select this to get a high precision clocksource based on a
+diff --git a/kernel/time.c b/kernel/time.c
+index 8047980..19f7b37 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -302,22 +302,6 @@ struct timespec timespec_trunc(struct timespec t, unsigned gran)
+ }
+ EXPORT_SYMBOL(timespec_trunc);
+ 
 -#ifndef CONFIG_GENERIC_TIME
--	if (system_timer->offset == NULL)
--		system_timer->offset = dummy_gettimeoffset;
+-/*
+- * Simulate gettimeofday using do_gettimeofday which only allows a timeval
+- * and therefore only yields usec accuracy
+- */
+-void getnstimeofday(struct timespec *tv)
+-{
+-	struct timeval x;
+-
+-	do_gettimeofday(&x);
+-	tv->tv_sec = x.tv_sec;
+-	tv->tv_nsec = x.tv_usec * NSEC_PER_USEC;
+-}
+-EXPORT_SYMBOL_GPL(getnstimeofday);
 -#endif
- 	system_timer->init();
+-
+ /* Converts Gregorian date to seconds since 1970-01-01 00:00:00.
+  * Assumes input in normal date format, i.e. 1980-12-31 23:59:59
+  * => year=1980, mon=12, day=31, hour=23, min=59, sec=59.
+diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
+index 95ed429..f06a8a3 100644
+--- a/kernel/time/Kconfig
++++ b/kernel/time/Kconfig
+@@ -6,7 +6,7 @@ config TICK_ONESHOT
+ 
+ config NO_HZ
+ 	bool "Tickless System (Dynamic Ticks)"
+-	depends on GENERIC_TIME && GENERIC_CLOCKEVENTS
++	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
+ 	select TICK_ONESHOT
+ 	help
+ 	  This option enables a tickless system: timer interrupts will
+@@ -15,7 +15,7 @@ config NO_HZ
+ 
+ config HIGH_RES_TIMERS
+ 	bool "High Resolution Timer Support"
+-	depends on GENERIC_TIME && GENERIC_CLOCKEVENTS
++	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
+ 	select TICK_ONESHOT
+ 	help
+ 	  This option enables high resolution timer support. If your
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index 1f663d2..208d1db 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -531,7 +531,7 @@ static u64 clocksource_max_deferment(struct clocksource *cs)
+ 	return max_nsecs - (max_nsecs >> 5);
  }
  
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index 2db43a5..2d040a4 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -23,14 +23,12 @@ choice
- config ARCH_AT91RM9200
- 	bool "AT91RM9200"
- 	select CPU_ARM920T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
+-#ifdef CONFIG_GENERIC_TIME
++#ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
  
- config ARCH_AT91SAM9260
- 	bool "AT91SAM9260 or AT91SAM9XE"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
- 	select HAVE_AT91_USART4
-@@ -39,28 +37,24 @@ config ARCH_AT91SAM9260
- config ARCH_AT91SAM9261
- 	bool "AT91SAM9261"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_FB_ATMEL
+ /**
+  * clocksource_select - Select the best clocksource available
+@@ -577,7 +577,7 @@ static void clocksource_select(void)
+ 	}
+ }
  
- config ARCH_AT91SAM9G10
- 	bool "AT91SAM9G10"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_FB_ATMEL
+-#else /* CONFIG_GENERIC_TIME */
++#else /* !CONFIG_ARCH_USES_GETTIMEOFFSET */
  
- config ARCH_AT91SAM9263
- 	bool "AT91SAM9263"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_FB_ATMEL
+ static inline void clocksource_select(void) { }
  
- config ARCH_AT91SAM9RL
- 	bool "AT91SAM9RL"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
- 	select HAVE_FB_ATMEL
-@@ -68,7 +62,6 @@ config ARCH_AT91SAM9RL
- config ARCH_AT91SAM9G20
- 	bool "AT91SAM9G20"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
- 	select HAVE_AT91_USART4
-@@ -77,7 +70,6 @@ config ARCH_AT91SAM9G20
- config ARCH_AT91SAM9G45
- 	bool "AT91SAM9G45"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
- 	select HAVE_FB_ATMEL
-@@ -85,18 +77,17 @@ config ARCH_AT91SAM9G45
- config ARCH_AT91CAP9
- 	bool "AT91CAP9"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_FB_ATMEL
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 1673637..e81d319 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -180,8 +180,6 @@ void timekeeping_leap_insert(int leapsecond)
+ 	update_vsyscall(&xtime, timekeeper.clock, timekeeper.mult);
+ }
  
- config ARCH_AT572D940HF
- 	bool "AT572D940HF"
- 	select CPU_ARM926T
--	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
+-#ifdef CONFIG_GENERIC_TIME
+-
+ /**
+  * timekeeping_forward_now - update clock to the current time
+  *
+@@ -385,52 +383,6 @@ void timekeeping_notify(struct clocksource *clock)
+ 	tick_clock_notify();
+ }
  
- config ARCH_AT91X40
- 	bool "AT91x40"
-+	select ARCH_USES_GETTIMEOFFSET
+-#else /* GENERIC_TIME */
+-
+-static inline void timekeeping_forward_now(void) { }
+-
+-/**
+- * ktime_get - get the monotonic time in ktime_t format
+- *
+- * returns the time in ktime_t format
+- */
+-ktime_t ktime_get(void)
+-{
+-	struct timespec now;
+-
+-	ktime_get_ts(&now);
+-
+-	return timespec_to_ktime(now);
+-}
+-EXPORT_SYMBOL_GPL(ktime_get);
+-
+-/**
+- * ktime_get_ts - get the monotonic clock in timespec format
+- * @ts:		pointer to timespec variable
+- *
+- * The function calculates the monotonic clock from the realtime
+- * clock and the wall_to_monotonic offset and stores the result
+- * in normalized timespec format in the variable pointed to by @ts.
+- */
+-void ktime_get_ts(struct timespec *ts)
+-{
+-	struct timespec tomono;
+-	unsigned long seq;
+-
+-	do {
+-		seq = read_seqbegin(&xtime_lock);
+-		getnstimeofday(ts);
+-		tomono = wall_to_monotonic;
+-
+-	} while (read_seqretry(&xtime_lock, seq));
+-
+-	set_normalized_timespec(ts, ts->tv_sec + tomono.tv_sec,
+-				ts->tv_nsec + tomono.tv_nsec);
+-}
+-EXPORT_SYMBOL_GPL(ktime_get_ts);
+-
+-#endif /* !GENERIC_TIME */
+-
+ /**
+  * ktime_get_real - get the real (wall-) time in ktime_t format
+  *
+@@ -796,10 +748,11 @@ void update_wall_time(void)
+ 		return;
  
- endchoice
+ 	clock = timekeeper.clock;
+-#ifdef CONFIG_GENERIC_TIME
+-	offset = (clock->read(clock) - clock->cycle_last) & clock->mask;
+-#else
++
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
+ 	offset = timekeeper.cycle_interval;
++#else
++	offset = (clock->read(clock) - clock->cycle_last) & clock->mask;
+ #endif
+ 	timekeeper.xtime_nsec = (s64)xtime.tv_nsec << timekeeper.shift;
  
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 13e13d4..8930ba3 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -156,7 +156,7 @@ config IRQSOFF_TRACER
+ 	bool "Interrupts-off Latency Tracer"
+ 	default n
+ 	depends on TRACE_IRQFLAGS_SUPPORT
+-	depends on GENERIC_TIME
++	depends on !ARCH_USES_GETTIMEOFFSET
+ 	select TRACE_IRQFLAGS
+ 	select GENERIC_TRACER
+ 	select TRACER_MAX_TRACE
+@@ -178,7 +178,7 @@ config IRQSOFF_TRACER
+ config PREEMPT_TRACER
+ 	bool "Preemption-off Latency Tracer"
+ 	default n
+-	depends on GENERIC_TIME
++	depends on !ARCH_USES_GETTIMEOFFSET
+ 	depends on PREEMPT
+ 	select GENERIC_TRACER
+ 	select TRACER_MAX_TRACE
 -- 
 1.6.0.4
 
