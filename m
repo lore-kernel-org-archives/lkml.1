@@ -1,84 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311Ab0CAIMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 03:12:51 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:50484 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717Ab0CAIMt convert rfc822-to-8bit (ORCPT
+	id S1751264Ab0CAINv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 03:13:51 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61644 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873Ab0CAINt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 03:12:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=csAWTG0pVMFhFjEKT2B9VskC5Ud7XYIwIX47j1GPkFm1/YuBUpYuLh7IAcBpiLfPiB
-         32/6xth8WWR8PWinOVRB7jYycU7rs/UfEsar1Q6IappFOkftIx22kLHeK3I3UlC3Fqrb
-         p7BSSvBnS9uvwtSeFNx+8alz/tbDvY7SFW7jI=
-MIME-Version: 1.0
-In-Reply-To: <20100301075953.GA32038@jm.kir.nu>
-References: <9c30dffe1002281458w5705378fj52f36c5d352593fb@mail.gmail.com>
-	 <20100301075953.GA32038@jm.kir.nu>
-Date: Mon, 1 Mar 2010 09:12:48 +0100
-X-Google-Sender-Auth: 8486cfcb744aacf6
-Message-ID: <9c30dffe1003010012l5b3a912fma5655e630b83ce9f@mail.gmail.com>
-Subject: Re: Problem with bridges and wireless NIC's
-From: Bjarke Istrup Pedersen <gurligebis@gentoo.org>
-To: Jouni Malinen <j@w1.fi>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Mar 2010 03:13:49 -0500
+Date: Mon, 1 Mar 2010 17:05:35 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH -mmotm 1/2] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-Id: <20100301170535.2f1db0ed.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <1267224751-6382-2-git-send-email-arighi@develer.com>
+References: <1267224751-6382-1-git-send-email-arighi@develer.com>
+	<1267224751-6382-2-git-send-email-arighi@develer.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/1 Jouni Malinen <j@w1.fi>:
-> On Sun, Feb 28, 2010 at 11:58:10PM +0100, Bjarke Istrup Pedersen wrote:
->
->> There is a problem when trying to create a bridge containing a normal
->> NIC and a wireless NIC, and using hostapd.
->>
->> The problem is, that it is not possible to create a bridge containing
->> a wireless NIC, if it hasn't been setup first.
->>
->> Does anyone have a solution for this?
->
-> How about first creating the br0, then starting hostapd, and finally
-> adding wlan0 into br0?
->
->> (The commit that introduced this problem is
->> ad4bb6f8883a13bb0f65b194dae36c62a02ac779 , reverting it solves the
->> problem).
->
-> I don't know whether I would call that a solution, but well..
->
->> For more info, please have a look at this bug report:
->> http://bugs.gentoo.org/show_bug.cgi?id=298824
->
-> I'm not sure whether I understood the description correctly, but this
-> sounds like a limitation in the way the network setup is done. Forcing
-> br0 to be created with wlan0 before wlan0 has been configured is not
-> going to work. I would consider removing wlan0 from the static
-> configuration of br0 and just creating br0 with eth0 with the setup
-> scripts and allowing hostapd to add wlan0 into br0 once the interface
-> has been configured properly (support for this was added in hostapd
-> 0.7.1).
->
-> --
-> Jouni Malinen                                            PGP id EFC895FA
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Fri, 26 Feb 2010 23:52:30 +0100, Andrea Righi <arighi@develer.com> wrote:
+> Infrastructure to account dirty pages per cgroup and add dirty limit
+> interfaces in the cgroupfs:
+> 
+>  - Active write-out: memory.dirty_ratio, memory.dirty_bytes
+>  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
+> 
+It looks good for me in general.
 
-Hey,
+> Signed-off-by: Andrea Righi <arighi@develer.com>
+> ---
+>  include/linux/memcontrol.h |   74 +++++++++-
+>  mm/memcontrol.c            |  354 ++++++++++++++++++++++++++++++++++++++++----
+>  2 files changed, 399 insertions(+), 29 deletions(-)
+> 
 
-That sounds interresting, is there any chance that that functionality
-can be added to the 0.6.x branch too? (I'm maintaining hostapd in
-Gentoo, but cannot stabilize a 0.7.x build, due to it being a
-development branch)
+(snip)
 
-Best regards,
-Bjarke I. Pedersen
+> +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
+> +{
+> +	struct mem_cgroup_page_stat stat = {};
+> +	struct mem_cgroup *memcg;
+> +
+I think it would be better to add "if (mem_cgroup_disabled())".
+
+> +	rcu_read_lock();
+> +	memcg = mem_cgroup_from_task(current);
+> +	if (memcg) {
+> +		/*
+> +		 * Recursively evaulate page statistics against all cgroup
+> +		 * under hierarchy tree
+> +		 */
+> +		stat.item = item;
+> +		mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
+> +	} else
+> +		stat.value = -ENOMEM;
+> +	rcu_read_unlock();
+> +
+> +	return stat.value;
+> +}
+> +
+>  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
+>  {
+>  	int *val = data;
+> @@ -1263,10 +1419,10 @@ static void record_last_oom(struct mem_cgroup *mem)
+>  }
+>  
+>  /*
+> - * Currently used to update mapped file statistics, but the routine can be
+> - * generalized to update other statistics as well.
+> + * Generalized routine to update memory cgroup statistics.
+>   */
+> -void mem_cgroup_update_file_mapped(struct page *page, int val)
+> +void mem_cgroup_update_stat(struct page *page,
+> +			enum mem_cgroup_stat_index idx, int val)
+>  {
+>  	struct mem_cgroup *mem;
+>  	struct page_cgroup *pc;
+ditto.
+
+> @@ -1286,7 +1442,8 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+>  	/*
+>  	 * Preemption is already disabled. We can use __this_cpu_xxx
+>  	 */
+> -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+> +	VM_BUG_ON(idx >= MEM_CGROUP_STAT_NSTATS);
+> +	__this_cpu_add(mem->stat->count[idx], val);
+>  
+>  done:
+>  	unlock_page_cgroup(pc);
+
+
+Thanks,
+Daisuke Nishimura.
