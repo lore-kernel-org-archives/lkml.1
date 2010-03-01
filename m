@@ -1,139 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751799Ab0CAS7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:59:51 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:34925 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282Ab0CAS7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:59:49 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, garyhade@us.ibm.com,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, iranna.ankad@in.ibm.com,
-       suresh.b.siddha@intel.com, trenn@suse.de
-Subject: Re: [PATCH -v12 2/2] x86: fix out of order of gsi - full
-References: <4B882182.4030205@kernel.org>
-	<tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org>
-	<20100227130113.GA18661@elte.hu> <m1y6ieo5zw.fsf@fess.ebiederm.org>
-	<4B897537.5050406@kernel.org> <m1zl2ue585.fsf@fess.ebiederm.org>
-	<4B8995FB.9000908@kernel.org> <m1mxyue31g.fsf@fess.ebiederm.org>
-	<4B89E751.1060903@kernel.org> <20100228080941.GD14205@elte.hu>
-	<4B8A3270.2000007@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 01 Mar 2010 10:59:37 -0800
-In-Reply-To: <4B8A3270.2000007@kernel.org> (Yinghai Lu's message of "Sun\, 28 Feb 2010 01\:08\:00 -0800")
-Message-ID: <m1ljeb50me.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1751933Ab0CATBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 14:01:09 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:41747 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298Ab0CATBH (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Mon, 1 Mar 2010 14:01:07 -0500
+Date: Mon, 1 Mar 2010 13:33:27 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, garyhade@us.ibm.com,
+       iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       trenn@suse.de
+Subject: Re: [LKML] Re: [LKML] Re: [tip:x86/apic] x86: Fix out of order gsi
+	-- add remap_ioapic_gsi_to_irq()
+Message-ID: <20100301183327.GB31926@phenom.dumpdata.com>
+References: <4B882182.4030205@kernel.org> <tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org> <20100227130113.GA18661@elte.hu> <m1y6ieo5zw.fsf@fess.ebiederm.org> <4B897537.5050406@kernel.org> <m1zl2ue585.fsf@fess.ebiederm.org> <20100301164602.GG7881@phenom.dumpdata.com> <m1y6ib6fw8.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <m1y6ib6fw8.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B8C0E0E.020A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+On Mon, Mar 01, 2010 at 10:44:23AM -0800, Eric W. Biederman wrote:
+> Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> writes:
+> 
+> >> 
+> >> > so far this patch only affect (fix ) x3950.
+> >
+> > .. snip ..
+> >> > other solution will ask IBM to fix their bios, so we can get
+> >
+> > It isn't just IBM. Asus P2B-D (PIIX4) and SuperMicro X8DAL (possibly)
+> > seem to have the same issue.
+> >
+> > (http://lists.xensource.com/archives/html/xen-devel/2010-02/msg00715.html)
+> > and
+> > (http://lists.xensource.com/archives/html/xen-devel/2010-02/msg01239.html)
+> 
+> I can't find the reference to those boards in the email you quoted.  Xen
 
-> Iranna D Ankad reported that IBM x3950 systems have boot problems
-> after this commit:
->
->  |
->  | commit b9c61b70075c87a8612624736faf4a2de5b1ed30
->  |
->  |    x86/pci: update pirq_enable_irq() to setup io apic routing
->  |
->
->     As explained in the previous patch ("x86: Fix out of order gsi - partial)
->     try to remap those gsis
->
->     This patch adds boot_ioapic_idx and gsi_to_irq/irq_to_gsi
+Might have to hit the past button a couple of times. Anyway, here is the
+first description of the problem:
+http://lists.xensource.com/archives/html/xen-devel/2010-01/msg01049.html
 
+and the board name.
 
-A couple of nits, that we will eventually want to fix.
+> does strange and very different things with it's irqs so it is unlikely to
+> be the same issue.
 
-> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-> @@ -97,6 +97,41 @@ int mp_irq_entries;
->  /* GSI interrupts */
->  static int nr_irqs_gsi = NR_IRQS_LEGACY;
->  
-> +/* By default isa irqs are identity mapped to gsis */
-> +unsigned int isa_irq_to_gsi[NR_IRQS_LEGACY] = {
-> +	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-> +};
-> +
-> +static int boot_ioapic_idx;
-> +static int gsi_delta;
-> +int gsi_to_irq(unsigned int gsi)
-> +{
-> +	unsigned int irq = gsi;
-> +	unsigned int i;
-> +
-> +	irq += gsi_delta;
-> +	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-> +		if (isa_irq_to_gsi[i] == gsi) {
-> +			irq = i;
-> +			break;
-> +		}
-> +	}
-> +
-> +	return irq;
-> +}
-> +
-> +unsigned int irq_to_gsi(int irq)
-> +{
-> +	unsigned int gsi;
-> +
-> +	if (irq < NR_IRQS_LEGACY)
-> +		gsi = isa_irq_to_gsi[irq];
-> +	else
-> +		gsi = irq - gsi_delta;
-> +
-> +	return gsi;
-> +}
+I think I am confusing the patches. Adding in this patch:
 
-This should really live in arch/x86/kernel/acpi/boot.c or similar as
-it has everything to do with acpi and gsis and nothing to do with the
-ioapics.
+[PATCH 01/35] x86: fix sci on ioapic 1 which was posted by Yinghai Lu on
+Feb 9th fixed the issue with the ASUS board.
 
-Not this merge window, but ultimately we want a fixed value of 16 for
-gsi_delta, and we want to always use it.  This has a greater chance of
-breaking things but it will ensure in the long run that we flush out
-every place that actually needs translation from irqs to gsis.
-
-> Index: linux-2.6/drivers/pnp/pnpacpi/rsparser.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pnp/pnpacpi/rsparser.c
-> +++ linux-2.6/drivers/pnp/pnpacpi/rsparser.c
-> @@ -123,6 +123,14 @@ static void pnpacpi_parse_allocated_irqr
->  	}
->  
->  	flags = irq_flags(triggering, polarity, shareable);
-> +#ifdef CONFIG_X86_IO_APIC
-> +	/*
-> +	 * looks like IBM x3950 is using irq instead of gsi etc...
-> +	 * convert it back at first
-> +	 */
-> +	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
-> +		gsi = irq_to_gsi(gsi);
-> +#endif
-
-I would like to understand this better.  I suspect the actual problem
-is that we are getting passed bus_irq instead of gsi from acpi.  If we
-are getting passed the bus_irq than doing this just for x3950 is wrong.
-
-I really dislike having special cases for a specific motherboard.  Both
-because they are hard to maintain (as quickly no one has that board) and
-because may times they are a symptom of a bug elsewhere in the code
-that we are trying to patch over instead of actually fix properly.
-
->  	irq = acpi_register_gsi(&dev->dev, gsi, triggering, polarity);
->  	if (irq >= 0)
->  		pcibios_penalize_isa_irq(irq, 1);
-
-Eric
+and the discussion here is for a different patch, so I think I am
+raising unnecessary noise here - sorry about that.
