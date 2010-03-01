@@ -1,111 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751296Ab0CAQFY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:05:24 -0500
-Received: from smtprelay01.ispgateway.de ([80.67.29.23]:50898 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020Ab0CAQFW (ORCPT
+	id S1751360Ab0CAQF7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:05:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60501 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751020Ab0CAQF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:05:22 -0500
-Date: Mon, 1 Mar 2010 17:05:15 +0100
-From: Peter Feuerer <peter@piie.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>,
-       lenb@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Peter Feuerer <peter@piie.net>
-Subject: [PATCH] acerhdf: Added new BIOS versions
-Message-Id: <20100301170515.2aa0337e.peter@piie.net>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 650477
+	Mon, 1 Mar 2010 11:05:57 -0500
+Date: Mon, 1 Mar 2010 08:05:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] PCI changes for 2.6.34  - pci rom rom fail list
+In-Reply-To: <4B8B0113.1020103@kernel.org>
+Message-ID: <alpine.LFD.2.00.1003010803360.3616@localhost.localdomain>
+References: <20100226093957.7b99d09c@jbarnes-piketon> <alpine.LFD.2.00.1002281227300.3851@localhost.localdomain> <alpine.LFD.2.00.1002281246120.3637@localhost.localdomain> <33223F6C-10BD-4671-937D-6D5E4956DD3F@kernel.org> <alpine.LFD.2.00.1002281314110.3637@localhost.localdomain>
+ <4B8AF121.2060106@kernel.org> <4B8B0113.1020103@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Andrew,
 
-please apply,
+On Sun, 28 Feb 2010, Yinghai Lu wrote:
+> 
+> [PATCH] pci: don't reassign to ROM res if it is not going to be enabled
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-thanks and best regards,
---peter;
+Yes, this makes my setup work again.
 
---
-Added new BIOS versions for Acer 1410 and 1810xx and Packard Bell
-netbooks.
-Fixed registers of Acer AOA150 BIOS version v0.3114: Old registers
-caused Fan to spin up at every temperature check.
+I'm still nervous that it will cause problem on some _other_ machines 
+(because of not knowing that some bridge is transparent and then trying to 
+re-allocate things unnecessarily and causing chaos), but at least it seems 
+to be ok on this machine.
 
-Signed-off-by: Peter Feuerer <peter@piie.net>
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>
-Cc: Len Brown <lenb@kernel.org>
----
- drivers/platform/x86/acerhdf.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
+So I do have this nagging feeling that we'll still end up having to do 
+this whole "reassign PCI buses" thing as a kernel command line option and 
+default to not doing it, but let's give it a chance.
 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 7b2384d..40be6a4 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -52,7 +52,7 @@
-  */
- #undef START_IN_KERNEL_MODE
- 
--#define DRV_VER "0.5.22"
-+#define DRV_VER "0.5.23"
- 
- /*
-  * According to the Atom N270 datasheet,
-@@ -146,7 +146,7 @@ static const struct bios_settings_t bios_tbl[] = {
- 	{"Acer", "AOA110", "v0.3309", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	{"Acer", "AOA110", "v0.3310", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	/* AOA150 */
--	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x20, 0x20, 0x00} },
-+	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x1f, 0x1f, 0x00} },
- 	{"Acer", "AOA150", "v0.3301", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3304", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3305", 0x55, 0x58, {0x20, 0x20, 0x00} },
-@@ -155,13 +155,20 @@ static const struct bios_settings_t bios_tbl[] = {
- 	{"Acer", "AOA150", "v0.3309", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	/* Acer 1410 */
-+	{"Acer", "Aspire 1410", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Acer", "Aspire 1410", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Acer", "Aspire 1410", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	/* Acer 1810xx */
-+	{"Acer", "Aspire 1810TZ", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v0.3115", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810TZ", "v0.3119", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v0.3119", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Acer", "Aspire 1810TZ", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Acer", "Aspire 1810T", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
--	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810TZ", "v1.3204", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v1.3204", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Acer", "Aspire 1810TZ", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	/* Gateway */
- 	{"Gateway", "AOA110", "v0.3103", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x20, 0x00} },
-@@ -175,6 +182,7 @@ static const struct bios_settings_t bios_tbl[] = {
- 	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Packard Bell", "DOTMU", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	{"Packard Bell", "DOTMU", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Packard Bell", "DOTMA", "v1.3201", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	/* pewpew-terminator */
- 	{"", "", "", 0, 0, {0, 0, 0} }
- };
-@@ -667,6 +675,7 @@ MODULE_ALIAS("dmi:*:*Gateway*:pnLT31*:");
- MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
- MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
- MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMU*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMA*:");
- 
- module_init(acerhdf_init);
- module_exit(acerhdf_exit);
--- 
-1.7.0
-
+		Linus
