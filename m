@@ -1,105 +1,193 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751447Ab0CAFh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:37:58 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11799 "EHLO mga11.intel.com"
+	id S1752534Ab0CAFi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:38:29 -0500
+Received: from mga09.intel.com ([134.134.136.24]:36351 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733Ab0CAFh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 00:37:56 -0500
+	id S1751534Ab0CAFh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 00:37:59 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
-   d="scan'208";a="544789717"
-Message-Id: <20100301052651.857984880@intel.com>
+   d="scan'208";a="496512759"
+Message-Id: <20100301053620.688259529@intel.com>
 User-Agent: quilt/0.48-1
-Date: Mon, 01 Mar 2010 13:26:51 +0800
+Date: Mon, 01 Mar 2010 13:26:54 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>
-CC: Chris Mason <chris.mason@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jens Axboe <jens.axboe@oracle.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       Matt Mackall <mpm@selenic.com>, David Woodhouse <dwmw2@infradead.org>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
 CC: Clemens Ladisch <clemens@ladisch.de>
 CC: Olivier Galibert <galibert@pobox.com>
 cc: Vivek Goyal <vgoyal@redhat.com>
-cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-cc: Matt Mackall <mpm@selenic.com>
 CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 00/16] [PATCH 00/15] 512K readahead size with thrashing safe readahead v3 
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 03/16] readahead: bump up the default readahead size
+References: <20100301052651.857984880@intel.com>
+Content-Disposition: inline; filename=readahead-enlarge-default-size.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Use 512kb max readahead size, and 32kb min readahead size.
 
-This enlarges the default readahead size from 128K to 512K.
-To avoid possible regressions, also do
-- scale down readahead size on small device and small memory
-- thrashing safe context readahead
-- add readahead tracing/stats support to help expose possible problems
-
-Besides, the patchset also includes several algorithm updates:
-- no start-of-file readahead after lseek
-- faster radix_tree_next_hole()/radix_tree_prev_hole()
-- pagecache context based mmap read-around
+The former helps io performance for common workloads.
+The latter will be used in the thrashing safe context readahead.
 
 
-Changes since v2:
-- add notes on readahead size
-- limit read-around size for small memory system, but don't limit readahead size
-- bug fix: allow context readahead async size grow to its full size
-- bug fix: let radix_tree_lookup_leaf_node() handle the height=1 case
+====== Rationals on the 512kb size ======
 
-Changes since v1:
-- update mmap read-around heuristics (Thanks to Nick Piggin)
-- radix_tree_lookup_leaf_node() for the pagecache based mmap read-around
-- use __print_symbolic() to show readahead pattern names
-  (Thanks to Steven Rostedt)
-- scale down readahead size proportional to system memory
-  (Thanks to Matt Mackall)
-- add readahead size kernel parameter (by Nikanth Karthikesan)
-- add comments from Christian Ehrhardt
+I believe it yields more I/O throughput without noticeably increasing
+I/O latency for today's HDD.
 
-Changes since RFC:
-- move the lenthy intro text to individual patch changelogs
-- treat get_capacity()==0 as uninitilized value (Thanks to Vivek Goyal)
-- increase readahead size limit for small devices (Thanks to Jens Axboe)
-- add fio test results by Vivek Goyal
+For example, for a 100MB/s and 8ms access time HDD, its random IO or
+highly concurrent sequential IO would in theory be:
+
+io_size KB  access_time  transfer_time  io_latency   util%   throughput KB/s
+4           8             0.04           8.04        0.49%    497.57  
+8           8             0.08           8.08        0.97%    990.33  
+16          8             0.16           8.16        1.92%   1961.69 
+32          8             0.31           8.31        3.76%   3849.62 
+64          8             0.62           8.62        7.25%   7420.29 
+128         8             1.25           9.25       13.51%  13837.84
+256         8             2.50          10.50       23.81%  24380.95
+512         8             5.00          13.00       38.46%  39384.62
+1024        8            10.00          18.00       55.56%  56888.89
+2048        8            20.00          28.00       71.43%  73142.86
+4096        8            40.00          48.00       83.33%  85333.33
+
+The 128KB => 512KB readahead size boosts IO throughput from ~13MB/s to
+~39MB/s, while merely increases (minimal) IO latency from 9.25ms to 13ms.
+
+As for SSD, I find that Intel X25-M SSD desires large readahead size
+even for sequential reads:
+
+	rasize	1st run		2nd run
+	----------------------------------
+	  4k	123 MB/s	122 MB/s
+	 16k  	153 MB/s	153 MB/s
+	 32k	161 MB/s	162 MB/s
+	 64k	167 MB/s	168 MB/s
+	128k	197 MB/s	197 MB/s
+	256k	217 MB/s	217 MB/s
+	512k	238 MB/s	234 MB/s
+	  1M	251 MB/s	248 MB/s
+	  2M	259 MB/s	257 MB/s
+   	  4M	269 MB/s	264 MB/s
+	  8M	266 MB/s	266 MB/s
+
+The two other impacts of an enlarged readahead size are
+
+- memory footprint (caused by readahead miss)
+	Sequential readahead hit ratio is pretty high regardless of max
+	readahead size; the extra memory footprint is mainly caused by
+	enlarged mmap read-around.
+	I measured my desktop:
+	- under Xwindow:
+		128KB readahead hit ratio = 143MB/230MB = 62%
+		512KB readahead hit ratio = 138MB/248MB = 55%
+		  1MB readahead hit ratio = 130MB/253MB = 51%
+	- under console: (seems more stable than the Xwindow data)
+		128KB readahead hit ratio = 30MB/56MB   = 53%
+		  1MB readahead hit ratio = 30MB/59MB   = 51%
+	So the impact to memory footprint looks acceptable.
+
+- readahead thrashing
+	It will now cost 1MB readahead buffer per stream.  Memory tight
+	systems typically do not run multiple streams; but if they do
+	so, it should help I/O performance as long as we can avoid
+	thrashing, which can be achieved with the following patches.
+
+I also boot the system into console with different readahead size,
+and find that both the io_count and readahead_hit_ratio reduced by
+~10% when increasing readahead_size from 128k to 512k. I guess typical
+desktop users would prefer the reduced IO numbers (for fastboot) at
+the cost of a dozen MB memory.
+
+readahead_size	io_count   avg_io_pages   total_readahead_pages	 readahead_hit_ratio
+            4k      6765              1    6765			 -
+          128k      1077              8    8616			 78.5%
+          512k       897             11    9867			 68.6%
+         1024k       867             12   10404			 65.0%
+total_readahead_pages = io_count * avg_io_size
 
 
-[PATCH 01/16] readahead: limit readahead size for small devices
-[PATCH 02/16] readahead: retain inactive lru pages to be accessed soon
-[PATCH 03/16] readahead: bump up the default readahead size
-[PATCH 04/16] readahead: make default readahead size a kernel parameter
-[PATCH 05/16] readahead: limit read-ahead size for small memory systems
-[PATCH 06/16] readahead: add notes on readahead size
-[PATCH 07/16] readahead: replace ra->mmap_miss with ra->ra_flags
-[PATCH 08/16] readahead: thrashing safe context readahead
-[PATCH 09/16] readahead: record readahead patterns
-[PATCH 10/16] readahead: add tracing event
-[PATCH 11/16] readahead: add /debug/readahead/stats
-[PATCH 12/16] readahead: dont do start-of-file readahead after lseek()
-[PATCH 13/16] radixtree: introduce radix_tree_lookup_leaf_node()
-[PATCH 14/16] radixtree: speed up the search for hole
-[PATCH 15/16] readahead: reduce MMAP_LOTSAMISS for mmap read-around
-[PATCH 16/16] readahead: pagecache context based mmap read-around
+====== Remarks by Christian Ehrhardt ======
 
- Documentation/kernel-parameters.txt |    4 
- block/blk-core.c                    |    3 
- block/genhd.c                       |   24 +
- fs/fuse/inode.c                     |    2 
- fs/read_write.c                     |    3 
- include/linux/fs.h                  |   64 +++
- include/linux/mm.h                  |    8 
- include/linux/radix-tree.h          |    2 
- include/trace/events/readahead.h    |   78 ++++
- lib/radix-tree.c                    |  104 ++++-
- mm/Kconfig                          |   13 
- mm/filemap.c                        |   34 +
- mm/readahead.c                      |  458 ++++++++++++++++++++++----
- 13 files changed, 688 insertions(+), 109 deletions(-)
+- 512 is by far superior to 128 for sequential reads
+- improvements with iozone sequential read scaling from 1 to 64 parallel
+  processes up to +35%
+- readahead sizes larger than 512 reevealed to not be "more useful" but
+  increasing the chance of trashing in low mem systems
 
-Thanks,
-Fengguang
+
+====== Benchmarks by Vivek Goyal ======
+
+I have got two paths to the HP EVA and got multipath device setup(dm-3).
+I run increasing number of sequential readers. File system is ext3 and
+filesize is 1G.
+I have run the tests 3 times (3sets) and taken the average of it.
+
+Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+======================================================================
+                    2.6.33-rc5                2.6.33-rc5-readahead
+job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)
+---   --- --  ------------   -----------    ------------   -----------
+bsr   3   1   141768         130965         190302         97937.3    
+bsr   3   2   131979         135402         185636         223286     
+bsr   3   4   132351         420733         185986         363658     
+bsr   3   8   133152         455434         184352         428478     
+bsr   3   16  130316         674499         185646         594311     
+
+I ran same test on a different piece of hardware. There are few SATA disks
+(5-6) in striped configuration behind a hardware RAID controller.
+
+Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+======================================================================
+                    2.6.33-rc5                2.6.33-rc5-readahead
+job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)    
+---   --- --  ------------   -----------    ------------   -----------    
+bsr   3   1   147569         14369.7        160191         22752          
+bsr   3   2   124716         243932         149343         184698         
+bsr   3   4   123451         327665         147183         430875         
+bsr   3   8   122486         455102         144568         484045         
+bsr   3   16  117645         1.03957e+06    137485         1.06257e+06    
+
+
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>
+CC: Matt Mackall <mpm@selenic.com>
+CC: David Woodhouse <dwmw2@infradead.org>
+Tested-by: Vivek Goyal <vgoyal@redhat.com>
+Tested-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Acked-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Acked-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/mm.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux.orig/include/linux/mm.h	2010-02-24 10:44:26.000000000 +0800
++++ linux/include/linux/mm.h	2010-02-24 10:44:41.000000000 +0800
+@@ -1186,8 +1186,8 @@ int write_one_page(struct page *page, in
+ void task_dirty_inc(struct task_struct *tsk);
+ 
+ /* readahead.c */
+-#define VM_MAX_READAHEAD	128	/* kbytes */
+-#define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
++#define VM_MAX_READAHEAD	512	/* kbytes */
++#define VM_MIN_READAHEAD	32	/* kbytes (includes current page) */
+ 
+ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 			pgoff_t offset, unsigned long nr_to_read);
+
 
