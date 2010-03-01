@@ -1,42 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090Ab0CADNw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 22:13:52 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:49950 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526Ab0CADNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 22:13:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=TiXwoG4Zn4QtDVbW5pL40lKd32UJqiHczrP7wbWtjO00xCew6kprErAmDGaWYp3N20
-         Rl/9bGKVwi7HdeD8VQy+qXzlCjG5rUaTbXf0Q4Uqh7XvyNBJltP4A53hwoh9ONUBOfUD
-         wP0Jv0pM84GRlIWD+xjQg2uHu1WBBaZt99rm0=
-MIME-Version: 1.0
-In-Reply-To: <1267382520.12641.29.camel@Joe-Laptop.home>
-References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-	 <1267382520.12641.29.camel@Joe-Laptop.home>
-Date: Mon, 1 Mar 2010 12:13:49 +0900
-Message-ID: <961aa3351002281913w5c009443v4a90793ffc37d2c2@mail.gmail.com>
-Subject: Re: [PATCH] alpha: use __ratelimit
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754134Ab0CADUL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 22:20:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50983 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751990Ab0CADUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 22:20:09 -0500
+Date: Mon, 1 Mar 2010 14:20:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joe Perches <joe@perches.com>, hartleys <hartleys@visionengravers.com>
+Subject: linux-next: manual merge of the net tree with Linus' tree
+Message-Id: <20100301142002.ee497fd8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__1_Mar_2010_14_20_02_+1100_t3pxvQsq53O9YEJC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/1 Joe Perches <joe@perches.com>:
-> On Sun, 2010-02-28 at 19:58 +0900, Akinobu Mita wrote:
->> Replace open-coded rate limiting logic with __ratelimit().
->
-> Perhaps printk_ratelimited?
+--Signature=_Mon__1_Mar_2010_14_20_02_+1100_t3pxvQsq53O9YEJC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch is cleanup only and no functionnal change (it does not change
-the rate limit interval and burst).
+Hi all,
 
-But using printk_ratelimited() changes the burst count from 5 to 10.
-It may not be big difference but I'm not sure...
+Today's linux-next merge of the net tree got a conflict in
+drivers/firmware/iscsi_ibft.c between commit
+00e7825b943f486e80ff1305cd0594d8791870f8 ("drivers/firmware/iscsi_ibft.c:
+remove NIPQUAD_FMT, use %pI4") from Linus' tree and commit
+2c35294853b2e977bdfc9e401b7b6d881fcaa69b ("drivers/firmware/iscsi_ibft.c:
+use %pM to show MAC address") from the net tree.
+
+Just a trivial context change.  I fixed it up and can carry the change as
+necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__1_Mar_2010_14_20_02_+1100_t3pxvQsq53O9YEJC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuLMmIACgkQjjKRsyhoI8xYNgCfWmPjw+Vr3aqcIKujWuxmhz+2
+ZVsAoLDvoKmvCvsz8bgKwEmhvjpqzl/3
+=dIjt
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__1_Mar_2010_14_20_02_+1100_t3pxvQsq53O9YEJC--
