@@ -1,69 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751264Ab0CARh0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 12:37:26 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:36586 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748Ab0CARhY (ORCPT
+	id S1751337Ab0CARhd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 12:37:33 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:38147 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750998Ab0CARhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 12:37:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=UNe0PbpVXOkV1p3CC0fv2UMyXbEvQ32Rl7zJjShAdcOfr67ETKH810FGEdb8SplPn1
-         xZuH8t+iCJhWI6LdJhd4Y0tdfMLx6+WayJrWXtBYg5p5mtXIn87o2kJv8bdoEd0HT8tM
-         KK7cPBUAPolxPTtG2L6hW0DDQsjKNstDN1mtU=
-MIME-Version: 1.0
-In-Reply-To: <2d460de71003010934m76594f4fk2e0b505b1867538c@mail.gmail.com>
-References: <2d460de71002260242o50952e51sa9aee59d2b7bbe2e@mail.gmail.com>
-	 <4807377b1002261152x6a92cfffl6ecb09d0574156d4@mail.gmail.com>
-	 <2d460de71003010934m76594f4fk2e0b505b1867538c@mail.gmail.com>
-Date: Mon, 1 Mar 2010 09:37:24 -0800
-Message-ID: <4807377b1003010937x8cea2c8hf1518eafb230cd88@mail.gmail.com>
-Subject: Re: New thread: page allocation failure with E1000 (seems to be 
-	reproducible)
-From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: e1000-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Andrew Pochinsky <avp@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Mar 2010 12:37:25 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=SgYysuysDqwipOlXg+kqLr09ldEluRxY+96/LtUEZNQS9cGxIaxpggFzGc5OUGOM/cs8oIEMjYNIMLRJVygHoIfIHmu7p7SvuYFit7Gk949mmGXbHWWFTxNTkZmmtJb9;
+Date: Mon, 1 Mar 2010 09:38:22 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] PCI changes for 2.6.34  - pci rom rom fail list
+Message-ID: <20100301093822.34c18e43@jbarnes-piketon>
+In-Reply-To: <4B8B0113.1020103@kernel.org>
+References: <20100226093957.7b99d09c@jbarnes-piketon>
+	<alpine.LFD.2.00.1002281227300.3851@localhost.localdomain>
+	<alpine.LFD.2.00.1002281246120.3637@localhost.localdomain>
+	<33223F6C-10BD-4671-937D-6D5E4956DD3F@kernel.org>
+	<alpine.LFD.2.00.1002281314110.3637@localhost.localdomain>
+	<4B8AF121.2060106@kernel.org>
+	<4B8B0113.1020103@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in the future please copy netdev@vger.kernel.org on networking issues.
+On Sun, 28 Feb 2010 15:49:39 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-On Mon, Mar 1, 2010 at 9:34 AM, Richard Hartmann
-<richih.mailinglist@gmail.com> wrote:
-> Hi Jesse,
->
->> the memory allocation (order:0), while unexpected, are not fatal, and
->> the e1000 driver is written to handle the failures during allocation.
->>
->> Does something else happen to the system after this or does operation continue?
->
-> I can not be sure, but I _think_ some bogus data made it into userspace.
-> I did have some binary in a text string I received & logged, which is a
-> tad unusual.
+> please check
+> 
+> [PATCH] pci: don't reassign to ROM res if it is not going to be
+> enabled
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/setup-bus.c |   12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 
-hm, if that did occur it would be bad.  But it does sound like
-operation continued, which is good.
+Applied this one to my for-linus tree, thanks Yinghai.  I'll send it to
+Linus along with another fix tomorrow.
 
->> You might be able to try the sysctl tweak to reserve a little more
->> memory for driver allocations.
->> # sysctl vm.min_free_kbytes
->> # sysctl -e vm.min_free_kbytes=<double what you have>
->
-> I will try that, thanks.
->
->
->> have you increased the number of rx/tx descriptors in use by e1000?
->
-> No. Should I?
-
-I wouldn't recommend it if you're already having issues getting
-order:0 allocations, it would just make the problem worse.  I wanted
-to make sure you were not.
-
-Jesse
+-- 
+Jesse Barnes, Intel Open Source Technology Center
