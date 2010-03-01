@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628Ab0CAFit (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:38:49 -0500
+	id S1751224Ab0CAFij (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:38:39 -0500
 Received: from mga03.intel.com ([143.182.124.21]:19911 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315Ab0CAFh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 00:37:58 -0500
+	id S1751503Ab0CAFh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 00:37:59 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
-   d="scan'208";a="249208734"
-Message-Id: <20100301053620.400434969@intel.com>
+   d="scan'208";a="249208739"
+Message-Id: <20100301053621.799821906@intel.com>
 User-Agent: quilt/0.48-1
-Date: Mon, 01 Mar 2010 13:26:52 +0800
+Date: Mon, 01 Mar 2010 13:27:02 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Li Shaohua <shaohua.li@intel.com>,
-       Clemens Ladisch <clemens@ladisch.de>, Rik van Riel <riel@redhat.com>,
+CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Rik van Riel <riel@redhat.com>,
        Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Clemens Ladisch <clemens@ladisch.de>
 CC: Olivier Galibert <galibert@pobox.com>
 cc: Vivek Goyal <vgoyal@redhat.com>
 cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
@@ -27,218 +27,274 @@ CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 01/16] readahead: limit readahead size for small devices
+Subject: [PATCH 11/16] readahead: add /debug/readahead/stats
 References: <20100301052651.857984880@intel.com>
-Content-Disposition: inline; filename=readahead-size-for-tiny-device.patch
+Content-Disposition: inline; filename=readahead-stats.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus reports a _really_ small & slow (505kB, 15kB/s) USB device,
-on which blkid runs unpleasantly slow. He manages to optimize the blkid
-reads down to 1kB+16kB, but still kernel read-ahead turns it into 48kB.
+Collect readahead stats when CONFIG_READAHEAD_STATS=y.
 
-     lseek 0,    read 1024   => readahead 4 pages (start of file)
-     lseek 1536, read 16384  => readahead 8 pages (page contiguous)
+This is enabled by default because the added overheads are trivial:
+two readahead_stats() calls per readahead.
 
-The readahead heuristics involved here are reasonable ones in general.
-So it's good to fix blkid with fadvise(RANDOM), as Linus already did.
+Example output:
+(taken from a fresh booted NFS-ROOT box with rsize=16k)
 
-For the kernel part, Linus suggests:
-  So maybe we could be less aggressive about read-ahead when the size of
-  the device is small? Turning a 16kB read into a 64kB one is a big deal,
-  when it's about 15% of the whole device!
+$ cat /debug/readahead/stats
+pattern     readahead    eof_hit  cache_hit         io    sync_io    mmap_io       size async_size    io_size
+initial           524        216         26        498        498         18          7          4          4
+subsequent        181         80          1        130         13         60         25         25         24
+context            94         28          3         85         64          8          7          2          5
+thrash              0          0          0          0          0          0          0          0          0
+around            162        121         33        162        162        162         60          0         21
+fadvise             0          0          0          0          0          0          0          0          0
+random            137          0          0        137        137          0          1          0          1
+all              1098        445         63       1012        874          0         17          6          9
 
-This looks reasonable: smaller device tend to be slower (USB sticks as
-well as micro/mobile/old hard disks).
+The two most important columns are
+- io		number of readahead IO
+- io_size	average readahead IO size
 
-Given that the non-rotational attribute is not always reported, we can
-take disk size as a max readahead size hint. This patch uses a formula
-that generates the following concrete limits:
-
-        disk size    readahead size
-     (scale by 4)      (scale by 2)
-               1M                8k
-               4M               16k
-              16M               32k
-              64M               64k
-             256M              128k
-               1G              256k
-        --------------------------- (*)
-               4G              512k
-              16G             1024k
-              64G             2048k
-             256G             4096k
-
-(*) Since the default readahead size is 512k, this limit only takes
-effect for devices whose size is less than 4G.
-
-The formula is determined on the following data, collected by script:
-
-	#!/bin/sh
-
-	# please make sure BDEV is not mounted or opened by others
-	BDEV=sdb
-
-	for rasize in 4 16 32 64 128 256 512 1024 2048 4096 8192
-	do
-		echo $rasize > /sys/block/$BDEV/queue/read_ahead_kb 
-		time dd if=/dev/$BDEV of=/dev/null bs=4k count=102400
-	done
-
-The principle is, the formula shall not limit readahead size to such a
-degree that will impact some device's sequential read performance.
-
-The Intel SSD is special in that its throughput increases steadily with
-larger readahead size. However it may take years for Linux to increase
-its default readahead size to 2MB, so we don't take it seriously in the
-formula.
-
-SSD 80G Intel x25-M SSDSA2M080 (reported by Li Shaohua)
-
-	rasize	1st run		2nd run
-	----------------------------------
-	  4k	123 MB/s	122 MB/s
-	 16k  	153 MB/s	153 MB/s
-	 32k	161 MB/s	162 MB/s
-	 64k	167 MB/s	168 MB/s
-	128k	197 MB/s	197 MB/s
-	256k	217 MB/s	217 MB/s
-	512k	238 MB/s	234 MB/s
-	  1M	251 MB/s	248 MB/s
-	  2M	259 MB/s	257 MB/s
-==>	  4M	269 MB/s	264 MB/s
-	  8M	266 MB/s	266 MB/s
-
-Note that ==> points to the readahead size that yields plateau throughput.
-
-SSD 22G MARVELL SD88SA02 MP1F (reported by Jens Axboe)
-
-	rasize  1st             2nd
-	--------------------------------
-	  4k     41 MB/s         41 MB/s
-	 16k     85 MB/s         81 MB/s
-	 32k    102 MB/s        109 MB/s
-	 64k    125 MB/s        144 MB/s
-	128k    183 MB/s        185 MB/s
-	256k    216 MB/s        216 MB/s
-	512k    216 MB/s        236 MB/s
-	1024k   251 MB/s        252 MB/s
-	  2M    258 MB/s        258 MB/s
-==>       4M    266 MB/s        266 MB/s
-	  8M    266 MB/s        266 MB/s
-
-SSD 30G SanDisk SATA 5000
-
-	  4k	29.6 MB/s	29.6 MB/s	29.6 MB/s
-	 16k	52.1 MB/s	52.1 MB/s	52.1 MB/s
-	 32k	61.5 MB/s	61.5 MB/s	61.5 MB/s
-	 64k	67.2 MB/s	67.2 MB/s	67.1 MB/s
-	128k	71.4 MB/s	71.3 MB/s	71.4 MB/s
-	256k	73.4 MB/s	73.4 MB/s	73.3 MB/s
-==>	512k	74.6 MB/s	74.6 MB/s	74.6 MB/s
-	  1M	74.7 MB/s	74.6 MB/s	74.7 MB/s
-	  2M	76.1 MB/s	74.6 MB/s	74.6 MB/s
-
-USB stick 32G Teclast CoolFlash idVendor=1307, idProduct=0165
-
-	  4k	7.9 MB/s 	7.9 MB/s 	7.9 MB/s
-	 16k	17.9 MB/s	17.9 MB/s	17.9 MB/s
-	 32k	24.5 MB/s	24.5 MB/s	24.5 MB/s
-	 64k	28.7 MB/s	28.7 MB/s	28.7 MB/s
-	128k	28.8 MB/s	28.9 MB/s	28.9 MB/s
-==>	256k	30.5 MB/s	30.5 MB/s	30.5 MB/s
-	512k	30.9 MB/s	31.0 MB/s	30.9 MB/s
-	  1M	31.0 MB/s	30.9 MB/s	30.9 MB/s
-	  2M	30.9 MB/s	30.9 MB/s	30.9 MB/s
-
-USB stick 4G SanDisk  Cruzer idVendor=0781, idProduct=5151
-
-	  4k	6.4 MB/s 	6.4 MB/s 	6.4 MB/s
-	 16k	13.4 MB/s	13.4 MB/s	13.2 MB/s
-	 32k	17.8 MB/s	17.9 MB/s	17.8 MB/s
-	 64k	21.3 MB/s	21.3 MB/s	21.2 MB/s
-	128k	21.4 MB/s	21.4 MB/s	21.4 MB/s
-==>	256k	23.3 MB/s	23.2 MB/s	23.2 MB/s
-	512k	23.3 MB/s	23.8 MB/s	23.4 MB/s
-	  1M	23.8 MB/s	23.4 MB/s	23.3 MB/s
-	  2M	23.4 MB/s	23.2 MB/s	23.4 MB/s
-
-USB stick 2G idVendor=0204, idProduct=6025 SerialNumber: 08082005000113
-
-	  4k	6.7 MB/s 	6.9 MB/s 	6.7 MB/s
-	 16k	11.7 MB/s	11.7 MB/s	11.7 MB/s
-	 32k	12.4 MB/s	12.4 MB/s	12.4 MB/s
-   	 64k	13.4 MB/s	13.4 MB/s	13.4 MB/s
-	128k	13.4 MB/s	13.4 MB/s	13.4 MB/s
-==>	256k	13.6 MB/s	13.6 MB/s	13.6 MB/s
-	512k	13.7 MB/s	13.7 MB/s	13.7 MB/s
-	  1M	13.7 MB/s	13.7 MB/s	13.7 MB/s
-	  2M	13.7 MB/s	13.7 MB/s	13.7 MB/s
-
-64 MB, USB full speed (collected by Clemens Ladisch)
-Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
-
-	4KB:    139.339 s, 376 kB/s
-	16KB:   81.0427 s, 647 kB/s
-	32KB:   71.8513 s, 730 kB/s
-==>	64KB:   67.3872 s, 778 kB/s
-	128KB:  67.5434 s, 776 kB/s
-	256KB:  65.9019 s, 796 kB/s
-	512KB:  66.2282 s, 792 kB/s
-	1024KB: 67.4632 s, 777 kB/s
-	2048KB: 69.9759 s, 749 kB/s
-
-CC: Li Shaohua <shaohua.li@intel.com>
-CC: Clemens Ladisch <clemens@ladisch.de>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu> 
+CC: Jens Axboe <jens.axboe@oracle.com> 
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 Acked-by: Rik van Riel <riel@redhat.com>
-Tested-by: Vivek Goyal <vgoyal@redhat.com>
-Tested-by: Linus Torvalds <torvalds@linux-foundation.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- block/genhd.c |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ mm/Kconfig     |   13 +++
+ mm/readahead.c |  187 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 198 insertions(+), 2 deletions(-)
 
---- linux.orig/block/genhd.c	2010-02-03 20:40:37.000000000 +0800
-+++ linux/block/genhd.c	2010-02-04 21:19:07.000000000 +0800
-@@ -518,6 +518,7 @@ void add_disk(struct gendisk *disk)
- 	struct backing_dev_info *bdi;
- 	dev_t devt;
- 	int retval;
-+	unsigned long size;
+--- linux.orig/mm/readahead.c	2010-02-26 10:10:05.000000000 +0800
++++ linux/mm/readahead.c	2010-02-26 10:10:27.000000000 +0800
+@@ -87,6 +87,189 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
  
- 	/* minors == 0 indicates to use ext devt from part0 and should
- 	 * be accompanied with EXT_DEVT flag.  Make sure all
-@@ -551,6 +552,29 @@ void add_disk(struct gendisk *disk)
- 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
- 				   "bdi");
- 	WARN_ON(retval);
+ #define list_to_page(head) (list_entry((head)->prev, struct page, lru))
+ 
++#ifdef CONFIG_READAHEAD_STATS
++#include <linux/seq_file.h>
++#include <linux/debugfs.h>
++enum ra_account {
++	/* number of readaheads */
++	RA_ACCOUNT_COUNT,	/* readahead request */
++	RA_ACCOUNT_EOF,		/* readahead request contains/beyond EOF page */
++	RA_ACCOUNT_CHIT,	/* readahead request covers some cached pages */
++	RA_ACCOUNT_IOCOUNT,	/* readahead IO */
++	RA_ACCOUNT_SYNC,	/* readahead IO that is synchronous */
++	RA_ACCOUNT_MMAP,	/* readahead IO by mmap accesses */
++	/* number of readahead pages */
++	RA_ACCOUNT_SIZE,	/* readahead size */
++	RA_ACCOUNT_ASIZE,	/* readahead async size */
++	RA_ACCOUNT_ACTUAL,	/* readahead actual IO size */
++	/* end mark */
++	RA_ACCOUNT_MAX,
++};
 +
-+	/*
-+	 * Limit default readahead size for small devices.
-+	 *        disk size    readahead size
-+	 *               1M                8k
-+	 *               4M               16k
-+	 *              16M               32k
-+	 *              64M               64k
-+	 *             256M              128k
-+	 *               1G              256k
-+	 *        ---------------------------
-+	 *               4G              512k
-+	 *              16G             1024k
-+	 *              64G             2048k
-+	 *             256G             4096k
-+	 * Since the default readahead size is 512k, this limit
-+	 * only takes effect for devices whose size is less than 4G.
-+	 */
-+	if (get_capacity(disk)) {
-+		size = get_capacity(disk) >> 9;
-+		size = 1UL << (ilog2(size) / 2);
-+		bdi->ra_pages = min(bdi->ra_pages, size);
++static unsigned long ra_stats[RA_PATTERN_MAX][RA_ACCOUNT_MAX];
++
++static void readahead_stats(struct address_space *mapping,
++			    pgoff_t offset,
++			    unsigned long req_size,
++			    unsigned int ra_flags,
++			    pgoff_t start,
++			    unsigned int size,
++			    unsigned int async_size,
++			    int actual)
++{
++	unsigned int pattern = ra_pattern(ra_flags);
++
++	ra_stats[pattern][RA_ACCOUNT_COUNT]++;
++	ra_stats[pattern][RA_ACCOUNT_SIZE] += size;
++	ra_stats[pattern][RA_ACCOUNT_ASIZE] += async_size;
++	ra_stats[pattern][RA_ACCOUNT_ACTUAL] += actual;
++
++	if (actual < size) {
++		if (start + size >
++		    (i_size_read(mapping->host) - 1) >> PAGE_CACHE_SHIFT)
++			ra_stats[pattern][RA_ACCOUNT_EOF]++;
++		else
++			ra_stats[pattern][RA_ACCOUNT_CHIT]++;
 +	}
- }
++
++	if (!actual)
++		return;
++
++	ra_stats[pattern][RA_ACCOUNT_IOCOUNT]++;
++
++	if (start <= offset && start + size > offset)
++		ra_stats[pattern][RA_ACCOUNT_SYNC]++;
++
++	if (ra_flags & READAHEAD_MMAP)
++		ra_stats[pattern][RA_ACCOUNT_MMAP]++;
++}
++
++static int readahead_stats_show(struct seq_file *s, void *_)
++{
++	static const char * const ra_pattern_names[] = {
++		[RA_PATTERN_INITIAL]		= "initial",
++		[RA_PATTERN_SUBSEQUENT]		= "subsequent",
++		[RA_PATTERN_CONTEXT]		= "context",
++		[RA_PATTERN_THRASH]		= "thrash",
++		[RA_PATTERN_MMAP_AROUND]	= "around",
++		[RA_PATTERN_FADVISE]		= "fadvise",
++		[RA_PATTERN_RANDOM]		= "random",
++		[RA_PATTERN_ALL]		= "all",
++	};
++	unsigned long count, iocount;
++	unsigned long i;
++
++	seq_printf(s, "%-10s %10s %10s %10s %10s %10s %10s %10s %10s %10s\n",
++			"pattern",
++			"readahead", "eof_hit", "cache_hit",
++			"io", "sync_io", "mmap_io",
++			"size", "async_size", "io_size");
++
++	for (i = 0; i < RA_PATTERN_MAX; i++) {
++		count = ra_stats[i][RA_ACCOUNT_COUNT];
++		iocount = ra_stats[i][RA_ACCOUNT_IOCOUNT];
++		/*
++		 * avoid division-by-zero
++		 */
++		if (count == 0)
++			count = 1;
++		if (iocount == 0)
++			iocount = 1;
++
++		seq_printf(s, "%-10s %10lu %10lu %10lu %10lu %10lu %10lu "
++			   "%10lu %10lu %10lu\n",
++				ra_pattern_names[i],
++				ra_stats[i][RA_ACCOUNT_COUNT],
++				ra_stats[i][RA_ACCOUNT_EOF],
++				ra_stats[i][RA_ACCOUNT_CHIT],
++				ra_stats[i][RA_ACCOUNT_IOCOUNT],
++				ra_stats[i][RA_ACCOUNT_SYNC],
++				ra_stats[i][RA_ACCOUNT_MMAP],
++				ra_stats[i][RA_ACCOUNT_SIZE]   / count,
++				ra_stats[i][RA_ACCOUNT_ASIZE]  / count,
++				ra_stats[i][RA_ACCOUNT_ACTUAL] / iocount);
++	}
++
++	return 0;
++}
++
++static int readahead_stats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, readahead_stats_show, NULL);
++}
++
++static ssize_t readahead_stats_write(struct file *file, const char __user *buf,
++				     size_t size, loff_t *offset)
++{
++	memset(ra_stats, 0, sizeof(ra_stats));
++	return size;
++}
++
++static struct file_operations readahead_stats_fops = {
++	.owner		= THIS_MODULE,
++	.open		= readahead_stats_open,
++	.write		= readahead_stats_write,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static struct dentry *ra_debug_root;
++
++static int debugfs_create_readahead(void)
++{
++	struct dentry *debugfs_stats;
++
++	ra_debug_root = debugfs_create_dir("readahead", NULL);
++	if (!ra_debug_root)
++		goto out;
++
++	debugfs_stats = debugfs_create_file("stats", 0644, ra_debug_root,
++					    NULL, &readahead_stats_fops);
++	if (!debugfs_stats)
++		goto out;
++
++	return 0;
++out:
++	printk(KERN_ERR "readahead: failed to create debugfs entries\n");
++	return -ENOMEM;
++}
++
++static int __init readahead_init(void)
++{
++	debugfs_create_readahead();
++	return 0;
++}
++
++static void __exit readahead_exit(void)
++{
++	debugfs_remove_recursive(ra_debug_root);
++}
++
++module_init(readahead_init);
++module_exit(readahead_exit);
++#endif
++
++static void readahead_event(struct address_space *mapping,
++			    pgoff_t offset,
++			    unsigned long req_size,
++			    unsigned int ra_flags,
++			    pgoff_t start,
++			    unsigned int size,
++			    unsigned int async_size,
++			    unsigned int actual)
++{
++#ifdef CONFIG_READAHEAD_STATS
++	readahead_stats(mapping, offset, req_size, ra_flags,
++			start, size, async_size, actual);
++	readahead_stats(mapping, offset, req_size,
++			RA_PATTERN_ALL << READAHEAD_PATTERN_SHIFT,
++			start, size, async_size, actual);
++#endif
++	trace_readahead(mapping, offset, req_size, ra_flags,
++			start, size, async_size, actual);
++}
++
+ /*
+  * see if a page needs releasing upon read_cache_pages() failure
+  * - the caller of read_cache_pages() may have set PG_private or PG_fscache
+@@ -324,7 +507,7 @@ int force_page_cache_readahead(struct ad
+ 		nr_to_read -= this_chunk;
+ 	}
  
- EXPORT_SYMBOL(add_disk);
+-	trace_readahead(mapping, offset, nr_to_read,
++	readahead_event(mapping, offset, nr_to_read,
+ 			RA_PATTERN_FADVISE << READAHEAD_PATTERN_SHIFT,
+ 			offset, nr_to_read, 0, ret);
+ 
+@@ -355,7 +538,7 @@ unsigned long ra_submit(struct file_ra_s
+ 	actual = __do_page_cache_readahead(mapping, filp,
+ 					ra->start, ra->size, ra->async_size);
+ 
+-	trace_readahead(mapping, offset, req_size, ra->ra_flags,
++	readahead_event(mapping, offset, req_size, ra->ra_flags,
+ 			ra->start, ra->size, ra->async_size, actual);
+ 
+ 	return actual;
+--- linux.orig/mm/Kconfig	2010-02-26 09:17:43.000000000 +0800
++++ linux/mm/Kconfig	2010-02-26 10:10:27.000000000 +0800
+@@ -283,3 +283,16 @@ config NOMMU_INITIAL_TRIM_EXCESS
+ 	  of 1 says that all excess pages should be trimmed.
+ 
+ 	  See Documentation/nommu-mmap.txt for more information.
++
++config READAHEAD_STATS
++	bool "Collect page-cache readahead stats"
++	depends on DEBUG_FS
++	default y
++	help
++	  Enable readahead events accounting. Usage:
++
++	  # mount -t debugfs none /debug
++
++	  # echo > /debug/readahead/stats  # reset counters
++	  # do benchmarks
++	  # cat /debug/readahead/stats     # check counters
 
 
