@@ -1,46 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751391Ab0CAQSO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 11:18:14 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:55183 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015Ab0CAQSM (ORCPT
+	id S1751439Ab0CAQYG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 11:24:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35715 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998Ab0CAQYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 11:18:12 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B8BE8BE.9070505@s5r6.in-berlin.de>
-Date: Mon, 01 Mar 2010 17:18:06 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
+	Mon, 1 Mar 2010 11:24:03 -0500
+Date: Mon, 1 Mar 2010 08:22:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git
+ tree
+In-Reply-To: <20100301042249.GA12289@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.1003010812410.3616@localhost.localdomain>
+References: <20100301042249.GA12289@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org
-Subject: Re: sparse checking prevented by "net: fix kmemcheck annotations"
-References: <4B8BAE79.9000609@s5r6.in-berlin.de> <1267448966.3039.22.camel@edumazet-laptop>
-In-Reply-To: <1267448966.3039.22.camel@edumazet-laptop>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> [PATCH] net: fix protocol sk_buff field
-> 
-> Commit e992cd9b72a18 (kmemcheck: make bitfield annotations truly no-ops
-> when disabled) allows us to revert a workaround we did in the past to
-> not add holes in sk_buff structure.
-> 
-> This patch partially reverts commit 14d18a81b5171
-> (net: fix kmemcheck annotations) so that sparse doesnt complain:
-> 
-> include/linux/skbuff.h:357:41: error: invalid bitfield specifier for
-> type restricted __be16.
 
-Great, very appreciated.
--- 
-Stefan Richter
--=====-==-=- --== ----=
-http://arcgraph.de/sr/
+
+On Sun, 28 Feb 2010, Paul E. McKenney wrote:
+>
+> Uses "git log" to print the hash.
+
+Please don't use "git log" for something like this.
+
+Sure, it works, but it's kind of silly to say "I want a log, except I want 
+only a single entry, and btw, I don't actually even want the log entry for 
+that single entry at all, just the hash".
+
+It boils down to "I want a log, except with none of the log part". It 
+should make you go "Do I really want a log"?
+
+If you really want the hash, maybe just using "git rev-parse HEAD" would 
+do it.
+
+However, in this case I think _any_ of those would be wrong. Wouldn't it 
+make sense to use the same thing that we already compute for 'uname' 
+(scripts/setlocalversion)? Especially as that one already knows how to 
+handle other SCM's too (ie the whole hg/svn parts).
+
+That script also ends up using a nicer format, ie it uses "git describe" 
+to give a better idea of where it all is.
+
+				Linus
