@@ -1,110 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751787Ab0CAWfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 17:35:00 -0500
-Received: from r3b136.net.upc.cz ([213.220.193.136]:52637 "EHLO dhcp35"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751359Ab0CAWe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 17:34:59 -0500
-Date: Mon, 1 Mar 2010 23:34:57 +0100
-From: Michal Hocko <mstsxfx@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>, linux-mm@kvack.org
-Subject: Re: unable to handle kernel paging request on resume with
- 2.6.33-00001-gbaac35c
-Message-ID: <20100301223457.GB4034@tiehlicka.suse.cz>
-References: <20100301175256.GA4034@tiehlicka.suse.cz>
- <201003012207.37582.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003012207.37582.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752123Ab0CAWjl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 17:39:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47741 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751476Ab0CAWjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 17:39:40 -0500
+Date: Tue, 2 Mar 2010 09:39:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: linux-next: build failure after merge of the final tree (mtd
+ related)
+Message-Id: <20100302093932.1305852c.sfr@canb.auug.org.au>
+In-Reply-To: <1267455546.11061.0.camel@macbook.infradead.org>
+References: <20100301204844.68915148.sfr@canb.auug.org.au>
+	<1267455546.11061.0.camel@macbook.infradead.org>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Mar_2010_09_39_32_+1100_yj=zS1S0/BCtUO7K"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Let's CC mm guys]
+--Signature=_Tue__2_Mar_2010_09_39_32_+1100_yj=zS1S0/BCtUO7K
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 01, 2010 at 10:07:37PM +0100, Rafael J. Wysocki wrote:
-> On Monday 01 March 2010, Michal Hocko wrote:
-> > Hi,
-> > 
-> > I have experienced the following kernel BUG on resume from suspend from
-> > disk (the whole log from  hibarnation to suspend along with kernel
-> > config are attached):
-> > 
-> > BUG: unable to handle kernel paging request at 00aaaaaa
-> > IP: [<c019e28c>] anon_vma_link+0x2c/0x39
-> > *pde = 00000000
-> > Oops: 0002 [#1] PREEMPT SMP
-> > last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0003:00/power_supply/AC/type
-> > Modules linked in: aes_i586 aes_generic iwl3945 iwlcore mac80211 cfg80211 fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect fuse tun coretemp hwmon snd_hda_codec_realtek snd_hda_intel snd_hda_codec arc4 ecb snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi_event snd_seq snd_timer fujitsu_laptop snd_seq_device rtc_cmos rtc_core led_class rtc_lib snd snd_page_alloc video backlight output [last unloaded: cfg80211]
-> > 
-> > Pid: 3942, comm: kxkb Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
-> > EIP: 0060:[<c019e28c>] EFLAGS: 00010246 CPU: 1
-> > EIP is at anon_vma_link+0x2c/0x39
-> > EAX: 00aaaaaa EBX: f69c6410 ECX: f69c6414 EDX: f63e4df4
-> > ESI: f63e4dc0 EDI: f63e4e14 EBP: f6901ec0 ESP: f6901eb8
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Process kxkb (pid: 3942, ti=f6901000 task=f6aa6ff0 task.ti=f6901000)
-> > Stack:
-> >  f63e4dc0 f23fc7e4 f6901efc c012fc28 f6aa6ff0 f63e4e30 f63e4e34 f63e4e24
-> > <0> ca4656f4 f6ace734 f6aa6ff0 f6ace700 ca4656c0 f23fc790 ca560000 fffffff4
-> > <0> f659ef94 f6901f38 c0130821 f6aa6ff0 f6901fb4 bff441f0 ca560208 00000000
-> > Call Trace:
-> >  [<c012fc28>] ? dup_mm+0x1c7/0x3d3
-> >  [<c0130821>] ? copy_process+0x98e/0xf26
-> >  [<c0130ed6>] ? do_fork+0x11d/0x2a1
-> >  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
-> >  [<c01b6795>] ? set_close_on_exec+0x45/0x4b
-> >  [<c01b6e98>] ? do_fcntl+0x15f/0x3f1
-> >  [<c0108678>] ? sys_clone+0x20/0x25
-> >  [<c010291d>] ? ptregs_clone+0x15/0x38
-> >  [<c0102850>] ? sysenter_do_call+0x12/0x26
-> > Code: 89 e5 56 53 0f 1f 44 00 00 8b 58 3c 89 c6 85 db 74 22 89 d8 e8 54 65 29 00 8b 43 08 8d 56 34 8d 4b 04 89 53 08 89 4e 34 89 46 38 <89> 10 89 d8 e8 9e 62 29 00 5b 5e 5d c3 55 89 e5 0f 1f 44 00 00
-> > EIP: [<c019e28c>] anon_vma_link+0x2c/0x39 SS:ESP 0068:f6901eb8
-> > CR2: 0000000000aaaaaa
-> > ---[ end trace b7f008b0e5aa7c65 ]---
-> 
-> This looks like a low-level memory management issue of some sort.
+Hi David,
 
-Yes, it really looks strange. dup_mm+0x1c7 matches to:
-c102fc0e:       81 60 14 ff df ff ff    andl   $0xffffdfff,0x14(%eax)
-c102fc15:       8b 45 ec                mov    -0x14(%ebp),%eax
-c102fc18:       c7 43 0c 00 00 00 00    movl   $0x0,0xc(%ebx)
-c102fc1f:       89 03                   mov    %eax,(%ebx)
-c102fc21:       89 d8                   mov    %ebx,%eax
-c102fc23:       e8 38 e6 06 00          call   c109e260 <anon_vma_link>
-c102fc28:       8b 43 48                mov    0x48(%ebx),%eax  <<< BANG
+On Mon, 01 Mar 2010 15:59:06 +0100 David Woodhouse <dwmw2@infradead.org> wr=
+ote:
+>
+> Thanks. Are you happy carrying those until I get back to civilisation on
+> Monday?
 
-which corresponds to:
-kernel/fork.c:336
-		tmp->vm_flags &= ~VM_LOCKED;
-                tmp->vm_mm = mm;
-                tmp->vm_next = NULL;
-                anon_vma_link(tmp);
-                file = tmp->vm_file; <<< BANG
+OK, I will keep applying them.  You might want to let Linus know that
+your pull request will be relatively late, though, as he has threatened a
+short merge window ...
 
-ebx is tmp which somehow got deallocated. I cannot see how this could happened.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__2_Mar_2010_09_39_32_+1100_yj=zS1S0/BCtUO7K
+Content-Type: application/pgp-signature
 
-> 
-> What's the HEAD commit in this kernel tree?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-$ git describe
-v2.6.33-1-gbaac35c
+iEYEARECAAYFAkuMQiQACgkQjjKRsyhoI8ybmgCgrjNJEfT7kI13Z9jI08QAXVZr
+18kAn2GcNYzhgZ5pajJI8DuhwApy72lA
+=lvXO
+-----END PGP SIGNATURE-----
 
-> 
-> Also, is the problem reproducible?
-
-As I've already mentioned. This is the first time I have seen this problem.
-I am using suspend to disk and wake up quite often (several times a day). I
-haven't tried suspend/resume loop test yet.
-
-> 
-> Rafael
-
--- 
-Michal Hocko
+--Signature=_Tue__2_Mar_2010_09_39_32_+1100_yj=zS1S0/BCtUO7K--
