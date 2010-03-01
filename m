@@ -1,91 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751661Ab0CAGFm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 01:05:42 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:53896 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932Ab0CAGFl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 01:05:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YyWTV4ljezJczyDAke351sqYYI1Vs0kA7X0IABxmEyAQL52MhIzdXEPNpcdS0j8YS2
-         +Yu+wEdSXB31h5FWd5RSOpeb4jSSt3UAQoIq3aeRpWvBzFtZuG9c9TVoH0WZR6bDV3Wh
-         tb6Mmp150ROU0lDiaYDgsH7gIrkBTjQE8Vbu4=
-MIME-Version: 1.0
-Date: Mon, 1 Mar 2010 11:57:38 +0600
-Message-ID: <b9df5fa11002282157x3c0eec13q4ad404bbe2f227d7@mail.gmail.com>
-Subject: [PATCH] acpi: Put acpi_battery_get/set_alarm into 
-	CONFIG_ACPI_SYSFS_POWER
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+	id S1752007Ab0CAGFz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 01:05:55 -0500
+Received: from sh.osrg.net ([192.16.179.4]:36275 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751139Ab0CAGFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 01:05:53 -0500
+Date: Mon, 1 Mar 2010 15:05:48 +0900
+To: davem@davemloft.net
+Cc: fujita.tomonori@lab.ntt.co.jp, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc: use asm-generic/scatterlist.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100226.043536.63730567.davem@davemloft.net>
+References: <20100226093941C.fujita.tomonori@lab.ntt.co.jp>
+	<20100226.043536.63730567.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100301150532R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Mar 2010 15:05:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- acpi_battery_get/set_alarm is only used when CONFIG_ACPI_SYSFS_POWER=y. So
-put this two functions under CONFIG_ACPI_SYSFS_POWER by shifting it upward.
+On Fri, 26 Feb 2010 04:35:36 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-We were warned by the following warnings:
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Fri, 26 Feb 2010 09:43:51 +0900
+> 
+> > sparc's scatterlist structure is identical to the generic one.
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> 
+> Applied, thank you.
 
-drivers/acpi/sbs.c:399: warning: ‘acpi_battery_get_alarm’ defined but not used
-drivers/acpi/sbs.c:406: warning: ‘acpi_battery_set_alarm’ defined but not used
+Thanks,
 
-Also fixes a checkpatch warning in acpi_ac_get_present.
+> BTW, the conditional sg_dma_len() definition cpp games done
+> in asm-generic/scatterlist.h might be superfluous these days.
 
-ERROR: space prohibited after that '&' (ctx:WxW)
-#13: FILE: drivers/acpi/sbs.c:405:
-+				 0x13, (u8 *) & status);
- 				              ^
+You are referring to the following code (I guess that this hack came
+from x86)?
 
----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+#if __BITS_PER_LONG == 64
+#define sg_dma_len(sg)		((sg)->dma_length)
+#else
+#define sg_dma_len(sg)		((sg)->length)
+#endif /* 64 bit */
 
---- linux-33/drivers/acpi/sbs.c	2010-02-26 16:30:32.000000000 +0600
-+++ linux-project/drivers/acpi/sbs.c	2010-03-01 11:02:32.000000000 +0600
-@@ -396,6 +396,20 @@ static int acpi_battery_get_state(struct
- 	return result;
- }
+if so, seems that you are right. we could simply have:
 
-+static int acpi_ac_get_present(struct acpi_sbs *sbs)
-+{
-+	int result;
-+	u16 status;
-+
-+	result = acpi_smbus_read(sbs->hc, SMBUS_READ_WORD, ACPI_SBS_CHARGER,
-+				 0x13, (u8 *) &status);
-+	if (!result)
-+		sbs->charger_present = (status >> 15) & 0x1;
-+	return result;
-+}
-+
-+#ifdef CONFIG_ACPI_SYSFS_POWER
-+
- static int acpi_battery_get_alarm(struct acpi_battery *battery)
- {
- 	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
-@@ -432,19 +446,6 @@ static int acpi_battery_set_alarm(struct
- 	return ret;
- }
+#define sg_dma_len(sg)		((sg)->dma_length)
 
--static int acpi_ac_get_present(struct acpi_sbs *sbs)
--{
--	int result;
--	u16 status;
--
--	result = acpi_smbus_read(sbs->hc, SMBUS_READ_WORD, ACPI_SBS_CHARGER,
--				 0x13, (u8 *) & status);
--	if (!result)
--		sbs->charger_present = (status >> 15) & 0x1;
--	return result;
--}
--
--#ifdef CONFIG_ACPI_SYSFS_POWER
- static ssize_t acpi_battery_alarm_show(struct device *dev,
- 					struct device_attribute *attr,
- 					char *buf)
+The current users of asm-generic/scatterlist.h are microblaze, s390,
+score, sh, and x86.
+
+The first three users don't support DMA so sg_dma_len doesn't matter
+for them.
+
+sh and x86_32 use sg->length, x86_64 uses sg->dma_length. However, sh
+and x86_32 sets dma_length in dma_map_sg() so they can use
+sg->dma_length.
+
+I'll clean up this in the next merge window.
