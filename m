@@ -1,62 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334Ab0CAEDx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 23:03:53 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:41626 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649Ab0CAEDv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 23:03:51 -0500
-Date: Sun, 28 Feb 2010 23:03:46 -0500 (EST)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Michal Marek <mmarek@suse.cz>
-cc: Denys Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       Bjorn Wesen <bjornw@axis.com>, Tim Bird <tim.bird@am.sony.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Waseem Daher <wdaher@ksplice.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Barry Song <barry.song@analog.com>,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH 00/24] Rename kernel's magic sections for compatibility
- with -ffunction-sections -fdata-sections
-In-Reply-To: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
-Message-ID: <alpine.DEB.1.10.1002282111280.6474@dr-wily.mit.edu>
-References: <1266624237-22372-1-git-send-email-vda.linux@googlemail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1754205Ab0CAEML (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 23:12:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26984 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752992Ab0CAEMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 23:12:09 -0500
+Message-ID: <4B8B3F60.8030007@redhat.com>
+Date: Mon, 01 Mar 2010 12:15:28 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using
+ fixed port numbers
+References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com>
+In-Reply-To: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Feb 2010, Denys Vlasenko wrote:
+Octavian Purdila wrote:
+> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports which
+> allows users to reserve ports for third-party applications.
+> 
+> The reserved ports will not be used by automatic port assignments
+> (e.g. when calling connect() or bind() with port number 0). Explicit
+> port allocation behavior is unchanged.
+> 
+> Changes from the previous version:
+> - be more strict on accepted input (only comma separators, no spaces allowed)
+> - add to the docs a paragraph about ip_local_port_range and
+>   ip_local_reserved_ports relationship
+> - fix a few corner cases with parsing
+> 
 
-> Here is a new version of the -ffunction-sections -fdata-sections patch
-> series based on current Linus tree.
 
-Aside from patch 17, which I would prefer that Haavard review, these 
-patches look correct (and patch 17 can be safely dropped).  Please 
-consider the rest of Denys' patches in this patch series
+Thanks for keeping working on this!
 
-Acked-by: Tim Abbott <tabbott@ksplice.com>
+Then this version should be fine now.
 
-The patches still apply fine on Linus' current master.  There are no merge 
-conflicts with linux-next's current master, but we will need to do 
-something to merge with
 
-"Blackfin: initial XIP support"
+> There are still some miss behaviors with regard to proc parsing in odd
+> invalid cases (for "40000\0-40001" all is acknowledged but only 40000
+> is accepted) but they are not easy to fix without changing the current
+> "acknowledge how much we accepted" behavior.
 
-in linux-next, which introduces a direct reference to .data.percpu.* (not 
-using the normal PERCPU macros so they can put .data.percpu content inside 
-the .init.data section).  That conflict looks easy to deal with by adding 
-a new macro to handle this case (CCing the author and blackfin maintainer; 
-it's possible that this blackfin patch is going in soon, in which case we 
-can just rebase these patches on top).
 
-Michal, what are your thoughts on this patch series?  The kbuild tree 
-would be a reasonable path for merging these patches.
+I think this is the right behavior.
 
-	-Tim Abbott
+> 
+> Because of that and because the same issues are present in the
+> existing proc_dointvec code as well I don't think its worth holding
+> the actual feature (port reservation) after such petty error recovery
+> issues.
+> 
+> For the sake of discussion, I think Eric was right: the model we are
+> using is messy, we should only accept all input or none. If we can
+> (ABI implications) and you think its worth switching to this model I
+> can give it a try in a future patch.
+> 
+
+
+Well, this depends, for things like "40000b", we should reject it,
+since it is invalid, for "40000\0-40001", I think returning 5 is alright.
+
+Thanks.
