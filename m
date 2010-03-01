@@ -1,76 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751519Ab0CARGg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 12:06:36 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:63336 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132Ab0CARGf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 12:06:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NmhkowLpbQ5WYe4sb9+ihPjX7RkgUI8PvrSR/GLAB5V7lHYSsThQiSgcguJvubsR1p
-         CCKCKX0dk4itzUgz2tk2YiQFPQGH4I+VopBv14gD2l7dyvt6tNI2yFqgnNBZ42DevKfj
-         cCL82Bi9ao8zaR4oPquKYkPrvYMWMe85j5I/I=
+	id S1751503Ab0CARMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 12:12:24 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:18331 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349Ab0CARMW (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Mon, 1 Mar 2010 12:12:22 -0500
+Date: Mon, 1 Mar 2010 11:46:02 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, garyhade@us.ibm.com,
+       iranna.ankad@in.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       trenn@suse.de
+Subject: Re: [LKML] Re: [tip:x86/apic] x86: Fix out of order gsi -- add
+	remap_ioapic_gsi_to_irq()
+Message-ID: <20100301164602.GG7881@phenom.dumpdata.com>
+References: <4B882182.4030205@kernel.org> <tip-519d637a93116ffbcd50e9e3f2591f41584f372c@git.kernel.org> <20100227130113.GA18661@elte.hu> <m1y6ieo5zw.fsf@fess.ebiederm.org> <4B897537.5050406@kernel.org> <m1zl2ue585.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <21d7e9971002282201p3f932729nc00a60bc5eadd492@mail.gmail.com>
-References: <20100224142759.ad4f53ce.randy.dunlap@oracle.com>
-	 <21d7e9971002282201p3f932729nc00a60bc5eadd492@mail.gmail.com>
-Date: Mon, 1 Mar 2010 12:06:31 -0500
-Message-ID: <a728f9f91003010906x6103bee9pe72a28f63f04b984@mail.gmail.com>
-Subject: Re: [PATCH] drm: fix char constant (sparse warning)
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zl2ue585.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B8BF4A1.01D5:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 1:01 AM, Dave Airlie <airlied@gmail.com> wrote:
-> On Thu, Feb 25, 2010 at 8:27 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Fix radeon/atombios.h sparse warning (24 times):
->>
->> drivers/gpu/drm/radeon/atombios.h:4091:63: error: Bad character constant
->
-> We get this file from AMD pretty much as-is and I hate deviating it as it
-> causes merge issues. Alex any change you can get this fixed upstream?
->
+> 
+> > so far this patch only affect (fix ) x3950.
 
-I can try.
+.. snip ..
+> > other solution will ask IBM to fix their bios, so we can get
 
-Alex
+It isn't just IBM. Asus P2B-D (PIIX4) and SuperMicro X8DAL (possibly)
+seem to have the same issue.
 
-> Dave.
->
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> Cc:     David Airlie <airlied@linux.ie>
->> ---
->>  drivers/gpu/drm/radeon/atombios.h |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> --- linux-2.6.33-rc8.orig/drivers/gpu/drm/radeon/atombios.h
->> +++ linux-2.6.33-rc8/drivers/gpu/drm/radeon/atombios.h
->> @@ -4088,7 +4088,7 @@ typedef struct _SW_I2C_IO_DATA_PARAMETER
->>  #define SW_I2C_CNTL_WRITE1BIT 6
->>
->>  /* ==============================VESA definition Portion=============================== */
->> -#define VESA_OEM_PRODUCT_REV                               '01.00'
->> +#define VESA_OEM_PRODUCT_REV                               "01.00"
->>  #define VESA_MODE_ATTRIBUTE_MODE_SUPPORT            0xBB       /* refer to VBE spec p.32, no TTY support */
->>  #define VESA_MODE_WIN_ATTRIBUTE                                                     7
->>  #define VESA_WIN_SIZE                                                                                       64
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
+(http://lists.xensource.com/archives/html/xen-devel/2010-02/msg00715.html)
+and
+(http://lists.xensource.com/archives/html/xen-devel/2010-02/msg01239.html)
