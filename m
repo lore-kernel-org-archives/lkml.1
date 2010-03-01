@@ -1,24 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860Ab0CAFi5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:38:57 -0500
-Received: from mga11.intel.com ([192.55.52.93]:9938 "EHLO mga11.intel.com"
+	id S1754411Ab0CAFiz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:38:55 -0500
+Received: from mga11.intel.com ([192.55.52.93]:11799 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873Ab0CAFh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 00:37:57 -0500
+	id S1751170Ab0CAFh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 00:37:58 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
-   d="scan'208";a="776755491"
-Message-Id: <20100301053620.539719938@intel.com>
+   d="scan'208";a="544789721"
+Message-Id: <20100301053622.084130183@intel.com>
 User-Agent: quilt/0.48-1
-Date: Mon, 01 Mar 2010 13:26:53 +0800
+Date: Mon, 01 Mar 2010 13:27:04 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Rik van Riel <riel@redhat.com>,
-       Chris Frost <frost@cs.ucla.edu>,
-       Steve VanDeBogart <vandebo@cs.ucla.edu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: Clemens Ladisch <clemens@ladisch.de>
@@ -30,129 +27,124 @@ CC: Nick Piggin <npiggin@suse.de>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 02/16] readahead: retain inactive lru pages to be accessed soon
+Subject: [PATCH 13/16] radixtree: introduce radix_tree_lookup_leaf_node()
 References: <20100301052651.857984880@intel.com>
-Content-Disposition: inline; filename=readahead-retain-pages-find_get_page.patch
+Content-Disposition: inline; filename=radixtree-radix_tree_lookup_leaf_node.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Frost <frost@cs.ucla.edu>
+This will be used by the pagecache context based read-ahead/read-around
+heuristic to quickly check one pagecache range:
+- if there is any hole
+- if there is any pages
 
-Ensure that cached pages in the inactive list are not prematurely evicted;
-move such pages to lru head when they are covered by
-- in-kernel heuristic readahead
-- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
-
-Before this patch, pages already in core may be evicted before the
-pages covered by the same prefetch scan but that were not yet in core.
-Many small read requests may be forced on the disk because of this
-behavior.
-
-In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-has no effect on the page's location in the LRU list, even if it is the
-next victim on the inactive list.
-
-This change helps address the performance problems we encountered
-while modifying SQLite and the GIMP to use large file prefetching.
-Overall these prefetching techniques improved the runtime of large
-benchmarks by 10-17x for these applications. More in the publication
-_Reducing Seek Overhead with Application-Directed Prefetching_ in
-USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-
-Notes from Fengguang:
-
-I'm actually not afraid of it adding memory pressure to the readahead
-thrashing case.  The context readahead can adaptively control the memory
-pressure with or without this patch.
-
-It does add memory pressure to mmap read-around. A typical read-around
-request would cover some cached pages (whether or not they are
-memory-mapped), and all those pages would be moved to LRU head by this
-patch.
-
-This somehow implicitly adds LRU lifetime to executable/lib pages.
-
-Hopefully this won't behave too bad. Note that the read-around size will
-be limited in small memory systems, which in turn reduces the risk of
-this patch.
-
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
 Acked-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ include/linux/radix-tree.h |    2 +
+ lib/radix-tree.c           |   37 ++++++++++++++++++++++++++---------
+ 2 files changed, 30 insertions(+), 9 deletions(-)
 
---- linux.orig/mm/readahead.c	2010-02-24 10:44:26.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-24 10:44:40.000000000 +0800
-@@ -9,7 +9,9 @@
+--- linux.orig/lib/radix-tree.c	2010-02-27 12:59:22.000000000 +0800
++++ linux/lib/radix-tree.c	2010-02-27 13:00:09.000000000 +0800
+@@ -359,19 +359,20 @@ EXPORT_SYMBOL(radix_tree_insert);
+  * is_slot == 0 : search for the node.
+  */
+ static void *radix_tree_lookup_element(struct radix_tree_root *root,
+-				unsigned long index, int is_slot)
++				unsigned long index, int is_slot, int level)
+ {
+ 	unsigned int height, shift;
+-	struct radix_tree_node *node, **slot;
++	struct radix_tree_node *node;
++	struct radix_tree_node **slot = &root->rnode;
  
- #include <linux/kernel.h>
- #include <linux/fs.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
-+#include <linux/mm_inline.h>
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-@@ -133,6 +135,40 @@ out:
+ 	node = rcu_dereference(root->rnode);
+ 	if (node == NULL)
+ 		return NULL;
+ 
+ 	if (!radix_tree_is_indirect_ptr(node)) {
+-		if (index > 0)
++		if (index > 0 || level > 0)
+ 			return NULL;
+-		return is_slot ? (void *)&root->rnode : node;
++		goto out;
+ 	}
+ 	node = radix_tree_indirect_to_ptr(node);
+ 
+@@ -381,7 +382,7 @@ static void *radix_tree_lookup_element(s
+ 
+ 	shift = (height-1) * RADIX_TREE_MAP_SHIFT;
+ 
+-	do {
++	while (height > level) {
+ 		slot = (struct radix_tree_node **)
+ 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
+ 		node = rcu_dereference(*slot);
+@@ -390,9 +391,10 @@ static void *radix_tree_lookup_element(s
+ 
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+ 		height--;
+-	} while (height > 0);
++	}
+ 
+-	return is_slot ? (void *)slot:node;
++out:
++	return is_slot ? (void *)slot : node;
  }
  
- /*
-+ * The file range is expected to be accessed in near future.  Move pages
-+ * (possibly in inactive lru tail) to lru head, so that they are retained
-+ * in memory for some reasonable time.
+ /**
+@@ -410,7 +412,7 @@ static void *radix_tree_lookup_element(s
+  */
+ void **radix_tree_lookup_slot(struct radix_tree_root *root, unsigned long index)
+ {
+-	return (void **)radix_tree_lookup_element(root, index, 1);
++	return (void **)radix_tree_lookup_element(root, index, 1, 0);
+ }
+ EXPORT_SYMBOL(radix_tree_lookup_slot);
+ 
+@@ -428,11 +430,28 @@ EXPORT_SYMBOL(radix_tree_lookup_slot);
+  */
+ void *radix_tree_lookup(struct radix_tree_root *root, unsigned long index)
+ {
+-	return radix_tree_lookup_element(root, index, 0);
++	return radix_tree_lookup_element(root, index, 0, 0);
+ }
+ EXPORT_SYMBOL(radix_tree_lookup);
+ 
+ /**
++ *	radix_tree_lookup_leaf_node    -    lookup leaf node on a radix tree
++ *	@root:		radix tree root
++ *	@index:		index key
++ *
++ *	Lookup the leaf node that covers @index in the radix tree @root.
++ *	Return NULL if the node does not exist, or is the special root node.
++ *
++ *	The typical usage is to check the value of node->count, which shall be
++ *	performed inside rcu_read_lock to prevent the node from being freed.
 + */
-+static void retain_inactive_pages(struct address_space *mapping,
-+				  pgoff_t index, int len)
++struct radix_tree_node *
++radix_tree_lookup_leaf_node(struct radix_tree_root *root, unsigned long index)
 +{
-+	int i;
-+	struct page *page;
-+	struct zone *zone;
-+
-+	for (i = 0; i < len; i++) {
-+		page = find_get_page(mapping, index + i);
-+		if (!page)
-+			continue;
-+
-+		zone = page_zone(page);
-+		spin_lock_irq(&zone->lru_lock);
-+
-+		if (PageLRU(page) &&
-+		    !PageActive(page) &&
-+		    !PageUnevictable(page)) {
-+			int lru = page_lru_base_type(page);
-+
-+			del_page_from_lru_list(zone, page, lru);
-+			add_page_to_lru_list(zone, page, lru);
-+		}
-+
-+		spin_unlock_irq(&zone->lru_lock);
-+		put_page(page);
-+	}
++	return radix_tree_lookup_element(root, index, 0, 1);
 +}
 +
-+/*
-  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
-  * the pages first, then submits them all for I/O. This avoids the very bad
-  * behaviour which would occur if page allocations are causing VM writeback.
-@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address
- 	}
- 
- 	/*
-+	 * Normally readahead will auto stop on cached segments, so we won't
-+	 * hit many cached pages. If it does happen, bring the inactive pages
-+	 * adjecent to the newly prefetched ones(if any).
-+	 */
-+	if (ret < nr_to_read)
-+		retain_inactive_pages(mapping, offset, page_idx);
-+
-+	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
- 	 * uptodate then the caller will launch readpage again, and
- 	 * will then handle the error.
++/**
+  *	radix_tree_tag_set - set a tag on a radix tree node
+  *	@root:		radix tree root
+  *	@index:		index key
+--- linux.orig/include/linux/radix-tree.h	2010-02-27 12:59:22.000000000 +0800
++++ linux/include/linux/radix-tree.h	2010-02-27 12:59:23.000000000 +0800
+@@ -158,6 +158,8 @@ static inline void radix_tree_replace_sl
+ int radix_tree_insert(struct radix_tree_root *, unsigned long, void *);
+ void *radix_tree_lookup(struct radix_tree_root *, unsigned long);
+ void **radix_tree_lookup_slot(struct radix_tree_root *, unsigned long);
++struct radix_tree_node *
++radix_tree_lookup_leaf_node(struct radix_tree_root *root, unsigned long index);
+ void *radix_tree_delete(struct radix_tree_root *, unsigned long);
+ unsigned int
+ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
 
 
