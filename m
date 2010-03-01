@@ -1,216 +1,869 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091Ab0CAVHL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:07:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29061 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792Ab0CAVHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:07:08 -0500
-Date: Mon, 1 Mar 2010 16:05:22 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: fweisbec@gmail.com, mingo@elte.hu, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       hpa@zytor.com, tglx@linutronix.de, mhiramat@redhat.com,
-       benh@kernel.crashing.org, davem@davemloft.net, lethal@linux-sh.org,
-       schwidefsky@de.ibm.com, brueckner@linux.vnet.ibm.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH 08/12] syscalls: add new COMPAT_SYSCALL_DEFINE#N() macro
-Message-ID: <20100301210522.GA2676@redhat.com>
-References: <cover.1267214186.git.jbaron@redhat.com> <4aefea222db757a76ca70f20b6165e5084b99e8e.1267214186.git.jbaron@redhat.com> <20100228100902.GA2330@osiris.boeblingen.de.ibm.com>
+	id S1751940Ab0CAVIO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:08:14 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:16954 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751460Ab0CAVIN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 16:08:13 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: staging: dt3155: fix coding style issues in dt3155_isr.c
+Date: Mon, 1 Mar 2010 14:08:10 -0700
+Cc: greg@kroah.com, ss@aao.gov.au
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100228100902.GA2330@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201003011408.11183.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 11:09:02AM +0100, Heiko Carstens wrote:
-> On Fri, Feb 26, 2010 at 04:37:30PM -0500, Jason Baron wrote:
-> > Add COMPAT_SYSCALL_DEFINE#N() macro define common compat syscalls that
-> > are not arch specific. Prepends "compat_sys_" to the syscall name to identify
-> > it.
-> > 
-> > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > ---
-> >  include/linux/syscalls.h |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> > index cd7b959..241a19c 100644
-> > --- a/include/linux/syscalls.h
-> > +++ b/include/linux/syscalls.h
-> > @@ -228,6 +228,13 @@ struct perf_event_attr;
-> >  #define ARCH_COMPAT_SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, arch_compat_sys_##name, __VA_ARGS__)
-> >  #define ARCH_COMPAT_SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, arch_compat_sys_##name, __VA_ARGS__)
-> > 
-> > +#define COMPAT_SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, compat_sys_##name, __VA_ARGS__)
-> > +#define COMPAT_SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, compat_sys_##name, __VA_ARGS__)
-> > +#define COMPAT_SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, compat_sys_##name, __VA_ARGS__)
-> > +#define COMPAT_SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, compat_sys_##name, __VA_ARGS__)
-> > +#define COMPAT_SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, compat_sys_##name, __VA_ARGS__)
-> > +#define COMPAT_SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, compat_sys_##name, __VA_ARGS__)
-> > +
-> 
-> For architectures which select CONFIG_HAVE_SYSCALL_WRAPPERS this adds
-> unnecessary sign extension code to each compat syscall.
-> On the other hand we could get rid partly of the arch specific sign extension
-> code but that would need some other changes before as well.
-> For example this one:
-> 
-> asmlinkage long compat_sys_gettimeofday(struct compat_timeval __user *tv,
->                 struct timezone __user *tz)
-> 
-> should be converted to a function which takes two compat_uptr_t's and let
-> the syscall code itself do the proper pointer conversion (compat_ptr()).
-> 
-> Besides that the syscall alias names for these compat calls do look a
-> bit strange:
-> 
-> 000000000008b57c T SyScompat_sys_adjtimex
-> 000000000008b57c T compat_sys_adjtimex
-> 
-> That needs to be fixed as well.
-> Or simply add a 1:1 wrapper independent of CONFIG_HAVE_SYSCALL_WRAPPERS.
+This fixes up the coding style issues found in the  dt3155_isr.c file.
+    
+No code is changed, only formatting.
 
-ok, the later suggestion seems simpler. Below I've re-spun patch #6 and
-#8. how do they look?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>    
+Cc: Greg Kroah-Hartman <gregkh@kroah.com>
+Cc: Scott Smedley <ss@aao.gov.au>
 
-thanks,
+---
 
--Jason
-
-patch 6/12:
-
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index e601985..39cc67b 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -141,7 +141,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))				\
- 	  __attribute__((section("_ftrace_events")))			\
- 	  event_enter_##sname = {					\
--		.name                   = "sys_enter"#sname,		\
-+		.name                   = "enter_"#sname,		\
- 		.system                 = "syscalls",			\
- 		.event                  = &enter_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
-@@ -163,7 +163,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))				\
- 	  __attribute__((section("_ftrace_events")))			\
- 	  event_exit_##sname = {					\
--		.name                   = "sys_exit"#sname,		\
-+		.name                   = "exit_"#sname,		\
- 		.system                 = "syscalls",			\
- 		.event                  = &exit_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
-@@ -181,7 +181,7 @@ struct perf_event_attr;
- 	  __attribute__((__aligned__(4)))			\
- 	  __attribute__((section("__syscalls_metadata")))	\
- 	  __syscall_meta_##sname = {				\
--		.name 		= "sys"#sname,			\
-+		.name 		= #sname,			\
- 		.nb_args 	= nb,				\
- 		.types		= types_##sname,		\
- 		.args		= args_##sname,			\
-@@ -194,20 +194,20 @@ struct perf_event_attr;
- 	};
+diff --git a/drivers/staging/dt3155/dt3155_isr.c b/drivers/staging/dt3155/dt3155_isr.c
+index fd7f93d..23a3696 100644
+--- a/drivers/staging/dt3155/dt3155_isr.c
++++ b/drivers/staging/dt3155/dt3155_isr.c
+@@ -1,48 +1,20 @@
+ /*
+-
+-Copyright 1996,2002,2005 Gregory D. Hager, Alfred A. Rizzi, Noah J. Cowan,
+-                         Jason Lapenta, Scott Smedley, Greg Sharp
+-
+-This file is part of the DT3155 Device Driver.
+-
+-The DT3155 Device Driver is free software; you can redistribute it
+-and/or modify it under the terms of the GNU General Public License as
+-published by the Free Software Foundation; either version 2 of the
+-License, or (at your option) any later version.
+-
+-The DT3155 Device Driver is distributed in the hope that it will be
+-useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+-of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with the DT3155 Device Driver; if not, write to the Free
+-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+-MA 02111-1307 USA
+-
+-   File: dt3155_isr.c
+-Purpose: Buffer management routines, and other routines for the ISR
+-         (the actual isr is in dt3155_drv.c)
+-
+--- Changes --
+-
+-  Date       Programmer  Description of changes made
+-  -------------------------------------------------------------------
+-  03-Jul-2000 JML       n/a
+-  02-Apr-2002 SS        Mods to make work with separate allocator
+-                        module; Merged John Roll's mods to make work with
+-                        multiple boards.
+-  10-Jul-2002 GCS       Complete rewrite of setup_buffers to disallow
+-                        buffers which span a 4MB boundary.
+-  24-Jul-2002 SS        GPL licence.
+-  30-Jul-2002 NJC       Added support for buffer loop.
+-  31-Jul-2002 NJC       Complete rewrite of buffer management
+-  02-Aug-2002 NJC       Including slab.h instead of malloc.h (no warning).
+-                        Also, allocator_init() now returns allocator_max
+-                        so cleaned up allocate_buffers() accordingly.
+-  08-Aug-2005 SS        port to 2.6 kernel.
+-
+-*/
++ *
++ * Copyright 1996,2002,2005 Gregory D. Hager, Alfred A. Rizzi, Noah J. Cowan,
++ *                          Jason Lapenta, Scott Smedley, Greg Sharp
++ *
++ * This file is part of the DT3155 Device Driver.
++ *
++ * The DT3155 Device Driver is free software; you can redistribute it
++ * and/or modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * The DT3155 Device Driver is distributed in the hope that it will be
++ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
  
- #define SYSCALL_DEFINE0(sname)					\
--	SYSCALL_TRACE_ENTER_EVENT(_##sname);			\
--	SYSCALL_TRACE_EXIT_EVENT(_##sname);			\
-+	SYSCALL_TRACE_ENTER_EVENT(sys_##sname);			\
-+	SYSCALL_TRACE_EXIT_EVENT(sys_##sname);			\
- 	static const struct syscall_metadata __used		\
- 	  __attribute__((__aligned__(4)))			\
- 	  __attribute__((section("__syscalls_metadata")))	\
--	  __syscall_meta__##sname = {				\
-+	  __syscall_meta_sys_##sname = {			\
- 		.name 		= "sys_"#sname,			\
- 		.nb_args 	= 0,				\
- 		.ftrace_enter	= 0,				\
- 		.ftrace_exit	= 0,				\
- 		.perf_enter	= 0,				\
- 		.perf_exit	= 0,				\
--		.enter_event	= &event_enter__##sname,	\
--		.exit_event	= &event_exit__##sname,		\
-+		.enter_event	= &event_enter_sys_##sname,	\
-+		.exit_event	= &event_exit_sys_##sname,	\
- 	};							\
- 	asmlinkage long sys_##sname(void)
- #else
-@@ -221,6 +221,32 @@ struct perf_event_attr;
- #define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
- #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
+ #include <asm/system.h>
+ #include <linux/slab.h>
+@@ -55,34 +27,34 @@ Purpose: Buffer management routines, and other routines for the ISR
+ #include "dt3155_isr.h"
+ #include "allocator.h"
  
-+#ifdef CONFIG_COMPAT
+-#define FOUR_MB         (0x0400000)  /* Can't DMA accross a 4MB boundary!*/
+-#define UPPER_10_BITS   (0x3FF<<22)  /* Can't DMA accross a 4MB boundary!*/
+-
++/* Can't DMA accross a 4MB boundary! */
++#define FOUR_MB		(0x0400000)
++#define UPPER_10_BITS	(0x3ff << 22)
+ 
+ /* Pointer into global structure for handling buffers */
+-struct dt3155_fbuffer_s *dt3155_fbuffer[MAXBOARDS] = {NULL
++struct dt3155_fbuffer_s *dt3155_fbuffer[MAXBOARDS] = {
++	NULL
+ #if MAXBOARDS == 2
+-						      , NULL
++	, NULL
+ #endif
+ };
+ 
+-/******************************************************************************
+- * Simple array based que struct
++/*
++ * Simple array based queue struct
+  *
+  * Some handy functions using the buffering structure.
+- *****************************************************************************/
++ */
+ 
+-
+-/***************************
+- * are_empty_buffers
++/*
++ * are_empty_buffers()
+  * m is minor # of device
+- ***************************/
+-inline bool are_empty_buffers( int m )
++ */
++inline bool are_empty_buffers(int m)
+ {
+-  return ( dt3155_fbuffer[ m ]->empty_len );
++	return dt3155_fbuffer[m]->empty_len;
+ }
+ 
+-/**************************
++/*
+  * push_empty
+  * m is minor # of device
+  *
+@@ -91,204 +63,195 @@ inline bool are_empty_buffers( int m )
+  * empty buffer stack.  So, if empty_len == 1, there is one empty buffer,
+  * given by dt3155_fbuffer[m]->empty_buffers[0].
+  * empty_buffers should never fill up, though this is not checked.
+- **************************/
+-inline void push_empty( int index, int m )
++ */
++inline void push_empty(int index, int m)
+ {
+-  dt3155_fbuffer[m]->empty_buffers[ dt3155_fbuffer[m]->empty_len ] = index;
+-  dt3155_fbuffer[m]->empty_len++;
++	dt3155_fbuffer[m]->empty_buffers[dt3155_fbuffer[m]->empty_len] = index;
++	dt3155_fbuffer[m]->empty_len++;
+ }
+ 
+-/**************************
+- * pop_empty( m )
++/*
++ * pop_empty
+  * m is minor # of device
+- **************************/
+-inline int pop_empty( int m )
++ */
++inline int pop_empty(int m)
+ {
+-  dt3155_fbuffer[m]->empty_len--;
+-  return dt3155_fbuffer[m]->empty_buffers[ dt3155_fbuffer[m]->empty_len ];
++	dt3155_fbuffer[m]->empty_len--;
++	return dt3155_fbuffer[m]->empty_buffers[dt3155_fbuffer[m]->empty_len];
+ }
+ 
+-/*************************
+- * is_ready_buf_empty( m )
++/*
++ * is_ready_buf_empty
+  * m is minor # of device
+- *************************/
+-inline bool is_ready_buf_empty( int m )
++ */
++inline bool is_ready_buf_empty(int m)
+ {
+-  return ((dt3155_fbuffer[ m ]->ready_len) == 0);
++	return dt3155_fbuffer[m]->ready_len == 0;
+ }
+ 
+-/*************************
+- * is_ready_buf_full( m )
++/*
++ * is_ready_buf_full
+  * m is minor # of device
++ *
+  * this should *never* be true if there are any active, locked or empty
+  * buffers, since it corresponds to nbuffers ready buffers!!
+  * 7/31/02: total rewrite. --NJC
+- *************************/
+-inline bool is_ready_buf_full( int m )
++ */
++inline bool is_ready_buf_full(int m)
+ {
+-  return ( dt3155_fbuffer[ m ]->ready_len == dt3155_fbuffer[ m ]->nbuffers );
++	return dt3155_fbuffer[m]->ready_len == dt3155_fbuffer[m]->nbuffers;
+ }
+ 
+-/*****************************************************
+- * push_ready( m, buffer )
++/*
++ * push_ready
+  * m is minor # of device
+- *
+- *****************************************************/
+-inline void push_ready( int m, int index )
++ */
++inline void push_ready(int m, int index)
+ {
+-  int head = dt3155_fbuffer[m]->ready_head;
+-
+-  dt3155_fbuffer[ m ]->ready_que[ head ] = index;
+-  dt3155_fbuffer[ m ]->ready_head = ( (head + 1) %
+-				      (dt3155_fbuffer[ m ]->nbuffers) );
+-  dt3155_fbuffer[ m ]->ready_len++;
++	int head = dt3155_fbuffer[m]->ready_head;
+ 
++	dt3155_fbuffer[m]->ready_que[head] = index;
++	dt3155_fbuffer[m]->ready_head = (head + 1) %
++					dt3155_fbuffer[m]->nbuffers;
++	dt3155_fbuffer[m]->ready_len++;
+ }
+ 
+-/*****************************************************
+- * get_tail()
++/*
++ * get_tail
+  * m is minor # of device
+  *
+  * Simply comptutes the tail given the head and the length.
+- *****************************************************/
+-static inline int get_tail( int m )
++ */
++static inline int get_tail(int m)
+ {
+-  return ((dt3155_fbuffer[ m ]->ready_head -
+-	   dt3155_fbuffer[ m ]->ready_len +
+-	   dt3155_fbuffer[ m ]->nbuffers)%
+-	  (dt3155_fbuffer[ m ]->nbuffers));
++	return (dt3155_fbuffer[m]->ready_head -
++		dt3155_fbuffer[m]->ready_len +
++		dt3155_fbuffer[m]->nbuffers) % dt3155_fbuffer[m]->nbuffers;
+ }
+ 
+-
+-
+-/*****************************************************
+- * pop_ready()
++/*
++ * pop_ready
+  * m is minor # of device
+  *
+  * This assumes that there is a ready buffer ready... should
+  * be checked (e.g. with is_ready_buf_empty()  prior to call.
+- *****************************************************/
+-inline int pop_ready( int m )
++ */
++inline int pop_ready(int m)
+ {
+-  int tail;
+-  tail = get_tail(m);
+-  dt3155_fbuffer[ m ]->ready_len--;
+-  return dt3155_fbuffer[ m ]->ready_que[ tail ];
++	int tail = get_tail(m);
 +
-+#define ARCH_COMPAT_SYSCALL_DEFINE1(name, ...) COMPAT_SYSCALL_DEFINEx(1, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE2(name, ...) COMPAT_SYSCALL_DEFINEx(2, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE3(name, ...) COMPAT_SYSCALL_DEFINEx(3, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE4(name, ...) COMPAT_SYSCALL_DEFINEx(4, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE5(name, ...) COMPAT_SYSCALL_DEFINEx(5, arch_compat_sys_##name, __VA_ARGS__)
-+#define ARCH_COMPAT_SYSCALL_DEFINE6(name, ...) COMPAT_SYSCALL_DEFINEx(6, arch_compat_sys_##name, __VA_ARGS__)
++	dt3155_fbuffer[m]->ready_len--;
++	return dt3155_fbuffer[m]->ready_que[tail];
+ }
+ 
+ 
+-/*****************************************************
++/*
+  * printques
+  * m is minor # of device
+- *****************************************************/
+-inline void printques( int m )
++ */
++inline void printques(int m)
+ {
+-  int head = dt3155_fbuffer[ m ]->ready_head;
+-  int tail;
+-  int num = dt3155_fbuffer[ m ]->nbuffers;
+-  int frame_index;
+-  int index;
+-
+-  tail = get_tail(m);
+-
+-  printk("\n R:");
+-  for ( index = tail; index != head; index++, index = index % (num) )
+-    {
+-      frame_index = dt3155_fbuffer[ m ]->ready_que[ index ];
+-      printk(" %d ", frame_index );
+-    }
+-
+-  printk("\n E:");
+-  for ( index = 0; index < dt3155_fbuffer[ m ]->empty_len; index++ )
+-    {
+-      frame_index = dt3155_fbuffer[ m ]->empty_buffers[ index ];
+-      printk(" %d ", frame_index );
+-    }
+-
+-  frame_index = dt3155_fbuffer[ m ]->active_buf;
+-  printk("\n A: %d", frame_index);
+-
+-  frame_index = dt3155_fbuffer[ m ]->locked_buf;
+-  printk("\n L: %d \n", frame_index );
++	int head = dt3155_fbuffer[m]->ready_head;
++	int tail = get_tail(m);
++	int num = dt3155_fbuffer[m]->nbuffers;
++	int frame_index;
++	int index;
 +
-+#ifdef CONFIG_FTRACE_SYSCALLS
-+#define COMPAT_SYSCALL_DEFINEx(x, sname, ...)			\
-+	static const char *types_##sname[] = {			\
-+		__SC_STR_TDECL##x(__VA_ARGS__)			\
-+	};							\
-+	static const char *args_##sname[] = {			\
-+		__SC_STR_ADECL##x(__VA_ARGS__)			\
-+	};							\
-+	SYSCALL_METADATA(sname, x);				\
-+	asmlinkage long sname(__SC_DECL##x(__VA_ARGS__))
-+#else
-+#define COMPAT_SYSCALL_DEFINEx(x, sname, ...)			\
-+	asmlinkage long sname(__SC_DECL##x(__VA_ARGS__))
++	printk("\n R:");
++	for (index = tail; index != head; index++, index = index % num) {
++		frame_index = dt3155_fbuffer[m]->ready_que[index];
++		printk(" %d ", frame_index);
++	}
++
++	printk("\n E:");
++	for (index = 0; index < dt3155_fbuffer[m]->empty_len; index++) {
++		frame_index = dt3155_fbuffer[m]->empty_buffers[index];
++		printk(" %d ", frame_index);
++	}
++
++	frame_index = dt3155_fbuffer[m]->active_buf;
++	printk("\n A: %d", frame_index);
+ 
++	frame_index = dt3155_fbuffer[m]->locked_buf;
++	printk("\n L: %d \n", frame_index);
+ }
+ 
+-/*****************************************************
++/*
+  * adjust_4MB
+  *
+  *  If a buffer intersects the 4MB boundary, push
+  *  the start address up to the beginning of the
+  *  next 4MB chunk (assuming bufsize < 4MB).
+- *****************************************************/
+-u32 adjust_4MB (u32 buf_addr, u32 bufsize) {
+-  if (((buf_addr+bufsize) & UPPER_10_BITS) != (buf_addr & UPPER_10_BITS))
+-    return (buf_addr+bufsize) & UPPER_10_BITS;
+-  else
+-    return buf_addr;
++ */
++u32 adjust_4MB(u32 buf_addr, u32 bufsize)
++{
++	if (((buf_addr+bufsize) & UPPER_10_BITS) != (buf_addr & UPPER_10_BITS))
++		return (buf_addr+bufsize) & UPPER_10_BITS;
++	else
++		return buf_addr;
+ }
+ 
+-
+-/*****************************************************
++/*
+  * allocate_buffers
+  *
+  *  Try to allocate enough memory for all requested
+  *  buffers.  If there is not enough free space
+  *  try for less memory.
+- *****************************************************/
+-void allocate_buffers (u32 *buf_addr, u32* total_size_kbs,
+-		       u32 bufsize)
++ */
++void allocate_buffers(u32 *buf_addr, u32 *total_size_kbs, u32 bufsize)
+ {
+-  /* Compute the minimum amount of memory guaranteed to hold all
+-     MAXBUFFERS such that no buffer crosses the 4MB boundary.
+-     Store this value in the variable "full_size" */
+-
+-  u32 allocator_max;
+-  u32 bufs_per_chunk = (FOUR_MB / bufsize);
+-  u32 filled_chunks = (MAXBUFFERS-1) / bufs_per_chunk;
+-  u32 leftover_bufs = MAXBUFFERS - filled_chunks * bufs_per_chunk;
+-
+-  u32 full_size = bufsize      /* possibly unusable part of 1st chunk */
+-    + filled_chunks * FOUR_MB   /* max # of completely filled 4mb chunks */
+-    + leftover_bufs * bufsize;  /* these buffs will be in a partly filled
+-				   chunk at beginning or end */
+-
+-  u32 full_size_kbs = 1 + (full_size-1) / 1024;
+-  u32 min_size_kbs = 2*ndevices*bufsize / 1024;
+-  u32 size_kbs;
+-
+-  /* Now, try to allocate full_size.  If this fails, keep trying for
+-     less & less memory until it succeeds. */
++	/*
++	 * Compute the minimum amount of memory guaranteed to hold all
++	 * MAXBUFFERS such that no buffer crosses the 4MB boundary.
++	 * Store this value in the variable "full_size"
++	 */
++
++	u32 allocator_max;
++	u32 bufs_per_chunk = FOUR_MB / bufsize;
++	u32 filled_chunks = (MAXBUFFERS - 1) / bufs_per_chunk;
++	u32 leftover_bufs = MAXBUFFERS - filled_chunks * bufs_per_chunk;
++
++	u32 full_size = bufsize + filled_chunks * FOUR_MB +
++			leftover_bufs * bufsize;
++
++	u32 full_size_kbs = 1 + (full_size - 1) / 1024;
++	u32 min_size_kbs = 2 * ndevices * bufsize / 1024;
++	u32 size_kbs;
++
++	/*
++	 * Now, try to allocate full_size.  If this fails, keep
++	 * trying for less & less memory until it succeeds.
++	 */
+ #ifndef STANDALONE_ALLOCATOR
+-  /* initialize the allocator            */
+-  allocator_init(&allocator_max);
++	/* initialize the allocator */
++	allocator_init(&allocator_max);
+ #endif
+-  size_kbs = full_size_kbs;
+-  *buf_addr = 0;
+-  printk("DT3155: We would like to get: %d KB\n", full_size_kbs);
+-  printk("DT3155: ...but need at least: %d KB\n", min_size_kbs);
+-  printk("DT3155: ...the allocator has: %d KB\n", allocator_max);
+-  size_kbs = (full_size_kbs <= allocator_max ? full_size_kbs : allocator_max);
+-  if (size_kbs > min_size_kbs) {
+-    if ((*buf_addr = allocator_allocate_dma (size_kbs, GFP_KERNEL)) != 0) {
+-      printk("DT3155:  Managed to allocate: %d KB\n", size_kbs);
+-      *total_size_kbs = size_kbs;
+-      return;
+-    }
+-  }
+-  /* If we got here, the allocation failed */
+-  printk ("DT3155: Allocator failed!\n");
+-  *buf_addr = 0;
+-  *total_size_kbs = 0;
+-  return;
+-
++	size_kbs = full_size_kbs;
++	*buf_addr = 0;
++	printk("DT3155: We would like to get: %d KB\n", full_size_kbs);
++	printk("DT3155: ...but need at least: %d KB\n", min_size_kbs);
++	printk("DT3155: ...the allocator has: %d KB\n", allocator_max);
++	size_kbs = full_size_kbs <= allocator_max ? full_size_kbs : allocator_max;
++	if (size_kbs > min_size_kbs) {
++		*buf_addr = allocator_allocate_dma(size_kbs, GFP_KERNEL);
++		if (*buf_addr != 0) {
++			printk("DT3155:  Managed to allocate: %d KB\n", size_kbs);
++			*total_size_kbs = size_kbs;
++			return;
++		}
++	}
++	/* If we got here, the allocation failed */
++	printk("DT3155: Allocator failed!\n");
++	*buf_addr = 0;
++	*total_size_kbs = 0;
++	return;
+ }
+ 
+-
+-/*****************************************************
++/*
+  * dt3155_setup_buffers
+  *
+- *  setup_buffers just puts the buffering system into
+- *  a consistent state before the start of interrupts
++ * setup_buffers just puts the buffering system into
++ * a consistent state before the start of interrupts
+  *
+  * JML : it looks like all the buffers need to be
+  * continuous. So I'm going to try and allocate one
+@@ -297,220 +260,223 @@ void allocate_buffers (u32 *buf_addr, u32* total_size_kbs,
+  * GCS : Fix DMA problems when buffer spans
+  * 4MB boundary.  Also, add error checking.  This
+  * function will return -ENOMEM when not enough memory.
+- *****************************************************/
++ */
+ u32 dt3155_setup_buffers(u32 *allocatorAddr)
+ 
+ {
+-  u32 index;
+-  u32 rambuff_addr; /* start of allocation */
+-  u32 rambuff_size; /* total size allocated to driver */
+-  u32 rambuff_acm;  /* accumlator, keep track of how much
+-			  is left after being split up*/
+-  u32 rambuff_end;  /* end of rambuff */
+-  u32 numbufs;      /* number of useful buffers allocated (per device) */
+-  u32 bufsize      = DT3155_MAX_ROWS * DT3155_MAX_COLS;
+-  int m;               /* minor # of device, looped for all devs */
+-
+-  /* zero the fbuffer status and address structure */
+-  for ( m = 0; m < ndevices; m++)
+-    {
+-      dt3155_fbuffer[ m ] = &(dt3155_status[ m ].fbuffer);
+-
+-      /* Make sure the buffering variables are consistent */
+-      {
+-	u8 *ptr = (u8 *) dt3155_fbuffer[ m ];
+-	for( index = 0; index < sizeof(struct dt3155_fbuffer_s); index++)
+-	  *(ptr++)=0;
+-      }
+-    }
+-
+-  /* allocate a large contiguous chunk of RAM */
+-  allocate_buffers (&rambuff_addr, &rambuff_size, bufsize);
+-  printk("DT3155: mem info\n");
+-  printk("  - rambuf_addr = 0x%x \n", rambuff_addr);
+-  printk("  - length (kb) = %u \n", rambuff_size);
+-  if( rambuff_addr == 0 )
+-    {
+-      printk( KERN_INFO
+-	      "DT3155: Error setup_buffers() allocator dma failed \n" );
+-      return -ENOMEM;
+-    }
+-  *allocatorAddr = rambuff_addr;
+-  rambuff_end = rambuff_addr + 1024 * rambuff_size;
+-
+-  /* after allocation, we need to count how many useful buffers there
+-     are so we can give an equal number to each device */
+-  rambuff_acm = rambuff_addr;
+-  for ( index = 0; index < MAXBUFFERS; index++) {
+-    rambuff_acm = adjust_4MB (rambuff_acm, bufsize);/*avoid spanning 4MB bdry*/
+-    if (rambuff_acm + bufsize > rambuff_end)
+-      break;
+-    rambuff_acm += bufsize;
+-  }
+-  /* Following line is OK, will waste buffers if index
+-   * not evenly divisible by ndevices -NJC*/
+-  numbufs = index / ndevices;
+-  printk("  - numbufs = %u\n", numbufs);
+-  if (numbufs < 2) {
+-    printk( KERN_INFO
+-	    "DT3155: Error setup_buffers() couldn't allocate 2 bufs/board\n" );
+-    return -ENOMEM;
+-  }
+-
+-  /* now that we have board memory we spit it up */
+-  /* between the boards and the buffers          */
+-  rambuff_acm = rambuff_addr;
+-  for ( m = 0; m < ndevices; m ++)
+-    {
+-      rambuff_acm = adjust_4MB (rambuff_acm, bufsize);
+-
+-      /* Save the start of this boards buffer space (for mmap).  */
+-      dt3155_status[ m ].mem_addr = rambuff_acm;
+-
+-      for (index = 0; index < numbufs; index++)
+-	{
+-	  rambuff_acm = adjust_4MB (rambuff_acm, bufsize);
+-	  if (rambuff_acm + bufsize > rambuff_end) {
+-	    /* Should never happen */
+-	    printk ("DT3155 PROGRAM ERROR (GCS)\n"
+-		    "Error distributing allocated buffers\n");
+-	    return -ENOMEM;
+-	  }
+-
+-	  dt3155_fbuffer[ m ]->frame_info[ index ].addr = rambuff_acm;
+-	  push_empty( index, m );
+-	  /* printk("  - Buffer : %lx\n",
+-	   * dt3155_fbuffer[ m ]->frame_info[ index ].addr );
+-	   */
+-	  dt3155_fbuffer[ m ]->nbuffers += 1;
+-	  rambuff_acm += bufsize;
++	u32 index;
++	u32 rambuff_addr;	/* start of allocation */
++	u32 rambuff_size;	/* total size allocated to driver */
++	u32 rambuff_acm;	/* accumlator, keep track of how much
++				 * is left after being split up
++				 */
++	u32 rambuff_end;	/* end of rambuff */
++	u32 numbufs;		/* number of useful buffers allocated
++				 * (per device)
++				 */
++	u32 bufsize = DT3155_MAX_ROWS * DT3155_MAX_COLS;
++	int m;			/* minor # of device, looped for all devs */
++
++	/* zero the fbuffer status and address structure */
++	for (m = 0; m < ndevices; m++) {
++		u8 *ptr;
++
++		dt3155_fbuffer[m] = &dt3155_status[m].fbuffer;
++		*ptr = (u8 *)dt3155_fbuffer[m];
++
++		/* Make sure the buffering variables are consistent */
++		for (index = 0; index < sizeof(struct dt3155_fbuffer_s); index++)
++			*(ptr++) = 0;
+ 	}
+ 
+-      /* Make sure there is an active buffer there. */
+-      dt3155_fbuffer[ m ]->active_buf    = pop_empty( m );
+-      dt3155_fbuffer[ m ]->even_happened = 0;
+-      dt3155_fbuffer[ m ]->even_stopped  = 0;
+-
+-      /* make sure there is no locked_buf JML 2/28/00 */
+-      dt3155_fbuffer[ m ]->locked_buf = -1;
+-
+-      dt3155_status[ m ].mem_size =
+-	rambuff_acm - dt3155_status[ m ].mem_addr;
++	/* allocate a large contiguous chunk of RAM */
++	allocate_buffers(&rambuff_addr, &rambuff_size, bufsize);
++	printk("DT3155: mem info\n");
++	printk("  - rambuf_addr = 0x%x \n", rambuff_addr);
++	printk("  - length (kb) = %u \n", rambuff_size);
++	if (rambuff_addr == 0) {
++		printk(KERN_INFO
++			"DT3155: Error setup_buffers() allocator dma failed \n");
++		return -ENOMEM;
++	}
++	*allocatorAddr = rambuff_addr;
++	rambuff_end = rambuff_addr + 1024 * rambuff_size;
++
++	/*
++	 * After allocation, we need to count how many useful buffers there
++	 * are so we can give an equal number to each device
++	 */
++	rambuff_acm = rambuff_addr;
++	for (index = 0; index < MAXBUFFERS; index++) {
++		/* avoid spanning 4MB bdry */
++		rambuff_acm = adjust_4MB(rambuff_acm, bufsize);
++		if (rambuff_acm + bufsize > rambuff_end)
++			break;
++		rambuff_acm += bufsize;
++	}
++	/* Following line is OK, will waste buffers if index
++	 * not evenly divisible by ndevices -NJC
++	 */
++	numbufs = index / ndevices;
++	printk("  - numbufs = %u\n", numbufs);
++	if (numbufs < 2) {
++		printk(KERN_INFO
++			"DT3155: Error setup_buffers() couldn't allocate 2 bufs/board\n");
++		return -ENOMEM;
++	}
+ 
+-      /* setup the ready queue */
+-      dt3155_fbuffer[ m ]->ready_head = 0;
+-      dt3155_fbuffer[ m ]->ready_len = 0;
+-      printk("Available buffers for device %d: %d\n",
+-	     m, dt3155_fbuffer[ m ]->nbuffers);
+-    }
++	/*
++	 * Now that we have board memory we spit it up
++	 * between the boards and the buffers
++	 */
++	rambuff_acm = rambuff_addr;
++	for (m = 0; m < ndevices; m ++) {
++		rambuff_acm = adjust_4MB(rambuff_acm, bufsize);
++
++		/* Save the start of this boards buffer space (for mmap) */
++		dt3155_status[m].mem_addr = rambuff_acm;
++
++		for (index = 0; index < numbufs; index++) {
++			rambuff_acm = adjust_4MB(rambuff_acm, bufsize);
++			if (rambuff_acm + bufsize > rambuff_end) {
++				/* Should never happen */
++				printk("DT3155 PROGRAM ERROR (GCS)\n");
++				printk("Error distributing allocated buffers\n");
++				return -ENOMEM;
++			}
++
++			dt3155_fbuffer[m]->frame_info[index].addr = rambuff_acm;
++			push_empty(index, m);
++#if 0
++			printk("  - Buffer : %lx\n",
++				dt3155_fbuffer[m]->frame_info[index].addr);
 +#endif
++			dt3155_fbuffer[m]->nbuffers += 1;
++			rambuff_acm += bufsize;
++		}
 +
-+#endif
++		/* Make sure there is an active buffer there. */
++		dt3155_fbuffer[m]->active_buf = pop_empty(m);
++		dt3155_fbuffer[m]->even_happened = 0;
++		dt3155_fbuffer[m]->even_stopped  = 0;
 +
- #ifdef CONFIG_PPC64
- #define SYSCALL_ALIAS(alias, name)					\
- 	asm ("\t.globl " #alias "\n\t.set " #alias ", " #name "\n"	\
-@@ -237,13 +263,13 @@ struct perf_event_attr;
++		/* make sure there is no locked_buf JML 2/28/00 */
++		dt3155_fbuffer[m]->locked_buf = -1;
++
++		dt3155_status[m].mem_size = rambuff_acm -
++						dt3155_status[m].mem_addr;
++
++		/* setup the ready queue */
++		dt3155_fbuffer[m]->ready_head = 0;
++		dt3155_fbuffer[m]->ready_len = 0;
++		printk("Available buffers for device %d: %d\n",
++			m, dt3155_fbuffer[m]->nbuffers);
++	}
  
- #ifdef CONFIG_FTRACE_SYSCALLS
- #define SYSCALL_DEFINEx(x, sname, ...)				\
--	static const char *types_##sname[] = {			\
-+	static const char *types_sys##sname[] = {		\
- 		__SC_STR_TDECL##x(__VA_ARGS__)			\
- 	};							\
--	static const char *args_##sname[] = {			\
-+	static const char *args_sys##sname[] = {		\
- 		__SC_STR_ADECL##x(__VA_ARGS__)			\
- 	};							\
--	SYSCALL_METADATA(sname, x);				\
-+	SYSCALL_METADATA(sys##sname, x);			\
- 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
- #else
- #define SYSCALL_DEFINEx(x, sname, ...)				\
-
-
-patch 8/12:
-
-
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 39cc67b..7b4c746 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -230,6 +230,13 @@ struct perf_event_attr;
- #define ARCH_COMPAT_SYSCALL_DEFINE5(name, ...) COMPAT_SYSCALL_DEFINEx(5, arch_compat_sys_##name, __VA_ARGS__)
- #define ARCH_COMPAT_SYSCALL_DEFINE6(name, ...) COMPAT_SYSCALL_DEFINEx(6, arch_compat_sys_##name, __VA_ARGS__)
+-  return 1;
++	return 1;
+ }
  
-+#define COMPAT_SYSCALL_DEFINE1(name, ...) COMPAT_SYSCALL_DEFINEx(1, compat_sys_##name, __VA_ARGS__)
-+#define COMPAT_SYSCALL_DEFINE2(name, ...) COMPAT_SYSCALL_DEFINEx(2, compat_sys_##name, __VA_ARGS__)
-+#define COMPAT_SYSCALL_DEFINE3(name, ...) COMPAT_SYSCALL_DEFINEx(3, compat_sys_##name, __VA_ARGS__)
-+#define COMPAT_SYSCALL_DEFINE4(name, ...) COMPAT_SYSCALL_DEFINEx(4, compat_sys_##name, __VA_ARGS__)
-+#define COMPAT_SYSCALL_DEFINE5(name, ...) COMPAT_SYSCALL_DEFINEx(5, compat_sys_##name, __VA_ARGS__)
-+#define COMPAT_SYSCALL_DEFINE6(name, ...) COMPAT_SYSCALL_DEFINEx(6, compat_sys_##name, __VA_ARGS__)
+-/*****************************************************
++/*
+  * internal_release_locked_buffer
++ * m is minor # of device
+  *
+  * The internal function for releasing a locked buffer.
+  * It assumes interrupts are turned off.
+- *
+- * m is minor number of device
+- *****************************************************/
+-static inline void internal_release_locked_buffer( int m )
++ */
++static inline void internal_release_locked_buffer(int m)
+ {
+-  /* Pointer into global structure for handling buffers */
+-  if ( dt3155_fbuffer[ m ]->locked_buf >= 0 )
+-    {
+-      push_empty( dt3155_fbuffer[ m ]->locked_buf, m );
+-      dt3155_fbuffer[ m ]->locked_buf = -1;
+-    }
++	/* Pointer into global structure for handling buffers */
++	if (dt3155_fbuffer[m]->locked_buf >= 0 ) {
++		push_empty(dt3155_fbuffer[m]->locked_buf, m);
++		dt3155_fbuffer[m]->locked_buf = -1;
++	}
+ }
+ 
+ 
+-/*****************************************************
+- * dt3155_release_locked_buffer()
++/*
++ * dt3155_release_locked_buffer
+  * m is minor # of device
+  *
+  * The user function of the above.
+- *
+- *****************************************************/
+-inline void dt3155_release_locked_buffer( int m )
++ */
++inline void dt3155_release_locked_buffer(int m)
+ {
+ 	unsigned long int flags;
 +
- #ifdef CONFIG_FTRACE_SYSCALLS
- #define COMPAT_SYSCALL_DEFINEx(x, sname, ...)			\
- 	static const char *types_##sname[] = {			\
+ 	local_save_flags(flags);
+ 	local_irq_disable();
+ 	internal_release_locked_buffer(m);
+ 	local_irq_restore(flags);
+ }
+ 
+-
+-/*****************************************************
+- * dt3155_flush()
++/*
++ * dt3155_flush
+  * m is minor # of device
+- *
+- *****************************************************/
+-inline int dt3155_flush( int m )
++ */
++inline int dt3155_flush(int m)
+ {
+-  int index;
+-  unsigned long int flags;
+-  local_save_flags(flags);
+-  local_irq_disable();
++	int index;
++	unsigned long int flags;
++
++	local_save_flags(flags);
++	local_irq_disable();
+ 
+-  internal_release_locked_buffer( m );
+-  dt3155_fbuffer[ m ]->empty_len = 0;
++	internal_release_locked_buffer(m);
++	dt3155_fbuffer[m]->empty_len = 0;
+ 
+-  for ( index = 0; index < dt3155_fbuffer[ m ]->nbuffers; index++ )
+-    push_empty( index,  m );
++	for (index = 0; index < dt3155_fbuffer[m]->nbuffers; index++)
++		push_empty(index, m);
+ 
+-  /* Make sure there is an active buffer there. */
+-  dt3155_fbuffer[ m ]->active_buf = pop_empty( m );
++	/* Make sure there is an active buffer there. */
++	dt3155_fbuffer[m]->active_buf = pop_empty(m);
+ 
+-  dt3155_fbuffer[ m ]->even_happened = 0;
+-  dt3155_fbuffer[ m ]->even_stopped  = 0;
++	dt3155_fbuffer[m]->even_happened = 0;
++	dt3155_fbuffer[m]->even_stopped  = 0;
+ 
+-  /* setup the ready queue  */
+-  dt3155_fbuffer[ m ]->ready_head = 0;
+-  dt3155_fbuffer[ m ]->ready_len = 0;
++	/* setup the ready queue  */
++	dt3155_fbuffer[m]->ready_head = 0;
++	dt3155_fbuffer[m]->ready_len = 0;
+ 
+-  local_irq_restore(flags);
++	local_irq_restore(flags);
+ 
+-  return 0;
++	return 0;
+ }
+ 
+-/*****************************************************
+- * dt3155_get_ready_buffer()
++/*
++ * dt3155_get_ready_buffer
+  * m is minor # of device
+  *
+  * get_ready_buffer will grab the next chunk of data
+  * if it is already there, otherwise it returns 0.
+  * If the user has a buffer locked it will unlock
+  * that buffer before returning the new one.
+- *****************************************************/
+-inline int dt3155_get_ready_buffer( int m )
++ */
++inline int dt3155_get_ready_buffer(int m)
+ {
+-  int frame_index;
+-  unsigned long int flags;
+-  local_save_flags(flags);
+-  local_irq_disable();
++	int frame_index;
++	unsigned long int flags;
++
++	local_save_flags(flags);
++	local_irq_disable();
+ 
+ #ifdef DEBUG_QUES_A
+-  printques( m );
++	printques(m);
+ #endif
+ 
+-  internal_release_locked_buffer( m );
++	internal_release_locked_buffer(m);
+ 
+-  if (is_ready_buf_empty( m ))
+-    frame_index = -1;
+-  else
+-    {
+-      frame_index = pop_ready( m );
+-      dt3155_fbuffer[ m ]->locked_buf = frame_index;
+-    }
++	if (is_ready_buf_empty(m)) {
++		frame_index = -1;
++	} else {
++		frame_index = pop_ready(m);
++		dt3155_fbuffer[m]->locked_buf = frame_index;
++	}
+ 
+ #ifdef DEBUG_QUES_B
+-  printques( m );
++	printques(m);
+ #endif
+ 
+-  local_irq_restore(flags);
++	local_irq_restore(flags);
+ 
+-  return frame_index;
++	return frame_index;
+ }
