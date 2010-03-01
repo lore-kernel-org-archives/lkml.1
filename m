@@ -1,80 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090Ab0CASRl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 13:17:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37120 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232Ab0CASRj (ORCPT
+	id S1751567Ab0CASXi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 13:23:38 -0500
+Received: from vms173017pub.verizon.net ([206.46.173.17]:33745 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087Ab0CASXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 13:17:39 -0500
-Subject: Re: [PATCH tip/core/rcu 0/2] more lockdep-RCU and RCU_FAST_NO_HZ
- fixes
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-In-Reply-To: <20100301160813.GA6758@linux.vnet.ibm.com>
-References: <20100227225240.GA16515@linux.vnet.ibm.com>
-	 <20100228085505.GA2067@elte.hu> <20100228163218.GD6846@linux.vnet.ibm.com>
-	 <20100301121045.GA30901@elte.hu> <20100301160813.GA6758@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Mar 2010 18:58:10 +0100
-Message-ID: <1267466290.1579.29.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Mar 2010 13:23:36 -0500
+Date: Mon, 01 Mar 2010 13:23:25 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Corentin Chary <corentin.chary@gmail.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Anisse Astier <anisse@astier.eu>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
+       Daniel Oliveira Nascimento <don@syst.com.br>,
+       Harald Welte <laforge@gnumonks.org>,
+       Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
+       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Karol Kozimor <sziwan@users.sourceforge.net>,
+       Lennart Poettering <mzxreary@0pointer.de>,
+       Mattia Dongili <malattia@linux.it>, Peter Feuerer <peter@piie.net>,
+       Sujith Thomas <sujith.thomas@intel.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: [PATCH 01/14] MAINTAINERS: update drivers/platform/x86 information
+In-reply-to: <20100301180211.GA19901@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.1003011320540.4281@localhost.localdomain>
+References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
+ <1267197527-18062-2-git-send-email-mjg@redhat.com>
+ <71cd59b01002261353w53fea6cax146acfd18e87636@mail.gmail.com>
+ <alpine.LFD.2.00.1003011255030.4281@localhost.localdomain>
+ <20100301180211.GA19901@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-03-01 at 08:08 -0800, Paul E. McKenney wrote:
-> On Mon, Mar 01, 2010 at 01:10:45PM +0100, Ingo Molnar wrote:
-> > 
-> > FYI, even with your patch applied i'm getting this in -tip testing:
-> > 
-> > [    0.000000] Memory: 914996k/1047744k available (15146k kernel code, 452k absent, 131584k reserved, 12516k data, 2552k init)
-> > [    0.000000] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-> > [    0.000000] 
-> > [    0.000000] ===================================================
-> > [    0.000000] [ INFO: suspicious rcu_dereference_check() usage. ]
-> > [    0.000000] ---------------------------------------------------
-> > [    0.000000] include/linux/cgroup.h:492 invoked rcu_dereference_check() without protection!
-> > [    0.000000] 
-> > [    0.000000] other info that might help us debug this:
-> > [    0.000000] 
-> > [    0.000000] 1 lock held by swapper/0:
-> > [    0.000000]  #0:  (&rq->lock){......}, at: [<ffffffff81ec0bad>] init_idle+0x31/0x1ee
-> > [    0.000000] 
-> > [    0.000000] stack backtrace:
-> > [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.33-tip+ #10563
-> > [    0.000000] Call Trace:
-> > [    0.000000]  [<ffffffff810ad1c1>] lockdep_rcu_dereference+0xa1/0xb0
-> > [    0.000000]  [<ffffffff81ec0cbd>] init_idle+0x141/0x1ee
-> > [    0.000000]  [<ffffffff82ceff40>] sched_init+0x43a/0x4b6
-> > [    0.000000]  [<ffffffff82cdcceb>] start_kernel+0x1b3/0x49e
-> > [    0.000000]  [<ffffffff82cdc319>] x86_64_start_reservations+0x120/0x124
-> > [    0.000000]  [<ffffffff82cdc46b>] x86_64_start_kernel+0x14e/0x15d
-> > [    0.000000] Hierarchical RCU implementation.
-> > [    0.000000] RCU-based detection of stalled CPUs is enabled.
-> > [    0.000000] NR_IRQS:4352
-> > 
-> > Config attached.
-> > 
-> > The sha1 is:
-> > 
-> >   b5fabe1: Merge branch 'perf/urgent'
-> > 
-> > i.e. your latest fix is included:
-> > 
-> >   90a6501: sched, rcu: Fix rcu_dereference() for RCU-lockdep
-> 
-> Sigh!  I clearly need a more organized approach for handling this very
-> early boot stuff.  Fix is in progress, please accept my apologies for
-> the hassle!
 
-add: system_state != SYSTEM_RUNNING, to all the default
-rcu_read_lock*_held thingies?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+On Mon, 1 Mar 2010, Matthew Garrett wrote:
+
+> On Mon, Mar 01, 2010 at 12:59:03PM -0500, Len Brown wrote:
+> 
+> > Matthew,
+> > Unless you object, I'll send Corentin's asus-laptop cleanup
+> > upstream with my treek.
+> 
+> I've just pulled this in (along with a couple of other minor fixes) - 
+> I'm just waiting to make sure I get the right set of Thinkpad fixes 
+> before sending another pull request.
+
+excellent.
+
+please pick up this one too, and I'll delete my asus branch.
+
+thanks,
+-Len
+
+
+>From 6204ff7f967d68b6c3b830b6df2cf2a3081b77a8 Mon Sep 17 00:00:00 2001
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Tue, 2 Feb 2010 14:37:57 -0800
+Subject: [PATCH] asus-acpi: remove duplicate comparison of asus_model strings
+X-Patchwork-Hint: ignore
+
+These tests already occur elsewhere
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Corentin Chary <corentin.chary@gmail.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/platform/x86/asus_acpi.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/asus_acpi.c b/drivers/platform/x86/asus_acpi.c
+index c1d2aee..1381430 100644
+--- a/drivers/platform/x86/asus_acpi.c
++++ b/drivers/platform/x86/asus_acpi.c
+@@ -1225,9 +1225,8 @@ static int asus_model_match(char *model)
+ 	else if (strncmp(model, "M2N", 3) == 0 ||
+ 		 strncmp(model, "M3N", 3) == 0 ||
+ 		 strncmp(model, "M5N", 3) == 0 ||
+-		 strncmp(model, "M6N", 3) == 0 ||
+ 		 strncmp(model, "S1N", 3) == 0 ||
+-		 strncmp(model, "S5N", 3) == 0 || strncmp(model, "W1N", 3) == 0)
++		 strncmp(model, "S5N", 3) == 0)
+ 		return xxN;
+ 	else if (strncmp(model, "M1", 2) == 0)
+ 		return M1A;
+-- 
+1.7.0.87.g0901d
 
