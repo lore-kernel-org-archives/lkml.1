@@ -1,89 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485Ab0CAPSL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:18:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25305 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119Ab0CAPR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:17:57 -0500
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 3/5] GFS2: Remove old, unused linked list code from quota
-Date: Mon,  1 Mar 2010 15:08:24 +0000
-Message-Id: <1267456106-3084-4-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1267456106-3084-3-git-send-email-swhiteho@redhat.com>
-References: <1267456106-3084-1-git-send-email-swhiteho@redhat.com>
- <1267456106-3084-2-git-send-email-swhiteho@redhat.com>
- <1267456106-3084-3-git-send-email-swhiteho@redhat.com>
+	id S1752123Ab0CAPQX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:16:23 -0500
+Received: from filtteri1.pp.htv.fi ([213.243.153.184]:60576 "EHLO
+	filtteri1.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922Ab0CAPOQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 10:14:16 -0500
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 08/26] w35und: Remove unused typedef TXRETRY_REC
+Date: Mon,  1 Mar 2010 17:04:10 +0200
+Message-Id: <1267455868-4533-8-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
+References: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Abhijith Das <adas@redhat.com>
-
-This is the kernel portion of the patch-set for upstream gfs2,
-to remove the quota-linked-list stuff and replace it with
-fiemap-based traversal of the quota file.
-
-The corresponding userland fixes have been pushed to
-STABLE3 and master branches of cluster.git and gfs2-utils.git
-respectively (Refer Red Hat bug #536902).
-
-Signed-off-by: Abhi Das <adas@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/gfs2_ondisk.h |   30 +-----------------------------
- 1 files changed, 1 insertions(+), 29 deletions(-)
+ drivers/staging/winbond/mto.h |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/gfs2_ondisk.h b/include/linux/gfs2_ondisk.h
-index 81f90a5..4f44629 100644
---- a/include/linux/gfs2_ondisk.h
-+++ b/include/linux/gfs2_ondisk.h
-@@ -180,33 +180,6 @@ struct gfs2_rgrp {
- };
+diff --git a/drivers/staging/winbond/mto.h b/drivers/staging/winbond/mto.h
+index 4fe24b0..fb4781d 100644
+--- a/drivers/staging/winbond/mto.h
++++ b/drivers/staging/winbond/mto.h
+@@ -141,11 +141,6 @@ extern u16  MTO_Frag_Th_Tbl[];
+ #define MTO_DATA_RATE()          MTO_Data_Rate_Tbl[MTO_RATE_LEVEL()]
+ #define MTO_FRAG_TH()            MTO_Frag_Th_Tbl[MTO_FRAG_TH_LEVEL()]
  
- /*
-- * quota linked list: user quotas and group quotas form two separate 
-- * singly linked lists. ll_next stores uids or gids of next quotas in the 
-- * linked list.
+-typedef struct {
+-	u8 tx_rate;
+-	u8 tx_retry_rate;
+-} TXRETRY_REC;
 -
--Given the uid/gid, how to calculate the quota file offsets for the corresponding
--gfs2_quota structures on disk:
--
--for user quotas, given uid,
--offset = uid * sizeof(struct gfs2_quota);
--
--for group quotas, given gid,
--offset = (gid * sizeof(struct gfs2_quota)) + sizeof(struct gfs2_quota);
--
--
--  uid:0   gid:0       uid:12   gid:12      uid:17   gid:17     uid:5142 gid:5142
--+-------+-------+    +-------+-------+    +-------+- - - -+    +- - - -+-------+
--| valid | valid | :: | valid | valid | :: | valid | inval | :: | inval | valid |
--+-------+-------+    +-------+-------+    +-------+- - - -+    +- - - -+-------+
--next:12   next:12    next:17 next:5142    next:NULL                    next:NULL
--    |       |            |       |            |<-- user quota list         |
--     \______|___________/ \______|___________/         group quota list -->|
--            |                    |                                         |
--             \__________________/ \_______________________________________/
--
--*/
--
--/*
-  * quota structure
-  */
- 
-@@ -214,8 +187,7 @@ struct gfs2_quota {
- 	__be64 qu_limit;
- 	__be64 qu_warn;
- 	__be64 qu_value;
--	__be32 qu_ll_next; /* location of next quota in list */
--	__u8 qu_reserved[60];
-+	__u8 qu_reserved[64];
- };
- 
- /*
+ extern void MTO_Init(struct wbsoft_priv *);
+ extern void MTO_PeriodicTimerExpired(struct wbsoft_priv *);
+ extern void MTO_SetDTORateRange(struct wbsoft_priv *, u8 *, u8);
 -- 
-1.6.2.5
+1.6.3.3
 
