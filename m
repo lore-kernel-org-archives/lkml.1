@@ -1,49 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751192Ab0CAKxi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 05:53:38 -0500
-Received: from 128-177-27-249.ip.openhosting.com ([128.177.27.249]:41915 "EHLO
-	jmalinen.user.openhosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750998Ab0CAKxf (ORCPT
+	id S1751260Ab0CAKxz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 05:53:55 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54446 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998Ab0CAKxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 05:53:35 -0500
-Date: Mon, 1 Mar 2010 12:53:29 +0200
-From: Jouni Malinen <j@w1.fi>
-To: Bjarke Istrup Pedersen <gurligebis@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: Problem with bridges and wireless NIC's
-Message-ID: <20100301105329.GA2684@jm.kir.nu>
-References: <9c30dffe1002281458w5705378fj52f36c5d352593fb@mail.gmail.com>
- <20100301075953.GA32038@jm.kir.nu>
- <9c30dffe1003010012l5b3a912fma5655e630b83ce9f@mail.gmail.com>
+	Mon, 1 Mar 2010 05:53:53 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Sascha Hauer <s.hauer@pengutronix.de>, Luotao Fu <l.fu@pengutronix.de>
+Subject: [PATCH 2/6] input/mc13783-ts: Don't use deprecated mc13783 API calls
+Date: Mon,  1 Mar 2010 11:53:41 +0100
+Message-Id: <1267440825-14694-2-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9c30dffe1003010012l5b3a912fma5655e630b83ce9f@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+To: linux-input@vger.kernel.org
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 09:12:48AM +0100, Bjarke Istrup Pedersen wrote:
-> That sounds interresting, is there any chance that that functionality
-> can be added to the 0.6.x branch too? (I'm maintaining hostapd in
-> Gentoo, but cannot stabilize a 0.7.x build, due to it being a
-> development branch)
+mc13783_ackirq is deprecated, use the drop in replacement mc13783_irq_ack.
 
-While it might be relatively simple to port the bridge setup code into
-0.6.x, I'm not that keen on doing it for this particular reason. I'm
-recommending 0.7.x branch for all AP functionality with nl80211-based
-driver interface and as such, do not really want to promote use of 0.6.x
-versions for this.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-I started working on porting the driver_nl80211.c changes into the 0.6.x
-branch, but that turned up to take way too much effort compared to what
-the potential benefit would be. As such, I do not plan on continuing on
-this direction and you should be prepared to quite a bit of additional
-work on porting non-trivial fixes from hostapd 0.7.x yourself if you
-plan on using hostapd 0.6.x in Gentoo with mac80211/nl80211-based
-drivers.
+note this obviously depends on patch 1/6.
 
+Best regards
+Uwe
+
+ drivers/input/touchscreen/mc13783_ts.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
+index be115b3..be54fd6 100644
+--- a/drivers/input/touchscreen/mc13783_ts.c
++++ b/drivers/input/touchscreen/mc13783_ts.c
+@@ -44,7 +44,7 @@ static irqreturn_t mc13783_ts_handler(int irq, void *data)
+ {
+ 	struct mc13783_ts_priv *priv = data;
+ 
+-	mc13783_ackirq(priv->mc13783, irq);
++	mc13783_irq_ack(priv->mc13783, irq);
+ 
+ 	/*
+ 	 * Kick off reading coordinates. Note that if work happens already
+@@ -135,7 +135,7 @@ static int mc13783_ts_open(struct input_dev *dev)
+ 
+ 	mc13783_lock(priv->mc13783);
+ 
+-	mc13783_ackirq(priv->mc13783, MC13783_IRQ_TS);
++	mc13783_irq_ack(priv->mc13783, MC13783_IRQ_TS);
+ 
+ 	ret = mc13783_irq_request(priv->mc13783, MC13783_IRQ_TS,
+ 		mc13783_ts_handler, MC13783_TS_NAME, priv);
 -- 
-Jouni Malinen                                            PGP id EFC895FA
+1.7.0
+
