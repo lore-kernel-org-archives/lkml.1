@@ -1,80 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751327Ab0CAMYu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 07:24:50 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:36593 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244Ab0CAMYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 07:24:48 -0500
-From: Luotao Fu <l.fu@pengutronix.de>
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Ben Dooks <ben-linux@fluff.org>,
-       Kevin Wells <kevin.wells@nxp.com>, Julia Lawall <julia@diku.dk>,
-       Russell King <rmk+kernel@arm.linux.org.uk>, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Luotao Fu <l.fu@pengutronix.de>
-Subject: [PATCH] i2c-pnx: fix setting start/stop condition
-Date: Mon,  1 Mar 2010 13:24:24 +0100
-Message-Id: <1267446264-8446-1-git-send-email-l.fu@pengutronix.de>
-X-Mailer: git-send-email 1.7.0
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	id S1751359Ab0CAMen (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 07:34:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7766 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751244Ab0CAMem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 07:34:42 -0500
+Date: Mon, 1 Mar 2010 13:34:35 +0100
+From: Michal Schmidt <mschmidt@redhat.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: [PATCH] ext4: reduce scheduling latency with delayed allocation
+Message-ID: <20100301133435.141c4bc5@leela>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The start/stop condtions are set in different places repetedly in the i2c-pnx
-driver.  Beside in i2c_pnx_start and i2c_pnx_stop the start/stop bit are also
-set during the transfer of a i2c message in the master_xmit/rcv calls. This is
-wrong since we can't set the start/stop condition during the transaction of a
-single message any way. As a matter of fact, the driver will sometimes set both
-the start and the stop bits at one time. This can be easily reproduced by
-sending a simple read request like e.g
-struct i2c_msg msgs[] = {
-{ addr, 0, 1, buf },
-{ addr, I2C_M_RD, offset, buf }
-};
-While processing the first message the i2c_pnx_master_xmit will set both the
-start_bit and the stop_bit, which will eventually confuse the slave.
+mpage_da_submit_io() may process tens of thousands of pages at a time.
+Unless full preemption is enabled, it causes scheduling latencies in the order
+of tens of milliseconds.
 
-Fixed by remove setting start/stop condition from the transmit routines.
+It can be reproduced simply by writing a big file on ext4 repeatedly with
+dd if=/dev/zero of=/tmp/dummy bs=10M count=50
 
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+The patch fixes it by allowing to reschedule in the loop.
+
+cyclictest can be used to measure the latency. I tested with:
+$ cyclictest -t1 -p 80 -n -i 5000 -m -l 20000
+
+The results from an UP AMD Turion 2GHz with voluntary preemption:
+
+Without the patch:
+T: 0 ( 2535) P:80 I:5000 C:  20000 Min:   12 Act:  23 Avg: 3166 Max:  70524
+(i.e. Average latency was more than 3 ms. Max observed latency was 71 ms.)
+
+With the patch:
+T: 0 ( 2588) P:80 I:5000 C:  20000 Min:   13 Act:  33 Avg:   49 Max:  11009
+(i.e. Average latency was only 49 us. Max observed latency was 11 ms.)
+
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
- drivers/i2c/busses/i2c-pnx.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+ fs/ext4/inode.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-pnx.c b/drivers/i2c/busses/i2c-pnx.c
-index 5d1c260..92c0e46 100644
---- a/drivers/i2c/busses/i2c-pnx.c
-+++ b/drivers/i2c/busses/i2c-pnx.c
-@@ -175,12 +175,6 @@ static int i2c_pnx_master_xmit(struct i2c_adapter *adap)
- 		/* We still have something to talk about... */
- 		val = *alg_data->mif.buf++;
- 
--		if (alg_data->mif.len == 1) {
--			val |= stop_bit;
--			if (!alg_data->last)
--				val |= start_bit;
--		}
--
- 		alg_data->mif.len--;
- 		iowrite32(val, I2C_REG_TX(alg_data));
- 
-@@ -252,11 +246,6 @@ static int i2c_pnx_master_rcv(struct i2c_adapter *adap)
- 			"Rx-fifo...\n", __func__);
- 
- 		if (alg_data->mif.len == 1) {
--			/* Last byte, do not acknowledge next rcv. */
--			val |= stop_bit;
--			if (!alg_data->last)
--				val |= start_bit;
--
- 			/*
- 			 * Enable interrupt RFDAIE (data in Rx fifo),
- 			 * and disable DRMIE (need data for Tx)
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index e119524..687a993 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2007,6 +2007,7 @@ static int mpage_da_submit_io(struct mpage_da_data *mpd)
+ 				ret = err;
+ 		}
+ 		pagevec_release(&pvec);
++		cond_resched();
+ 	}
+ 	return ret;
+ }
 -- 
 1.7.0
 
