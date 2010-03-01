@@ -1,58 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751503Ab0CAFra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 00:47:30 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48590 "EHLO smtps.tip.net.au"
+	id S1751327Ab0CAF5j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 00:57:39 -0500
+Received: from haleb.uoa.edu.er ([196.200.98.2]:37925 "EHLO haleb.uoa.edu.er"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733Ab0CAFr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 00:47:28 -0500
-Date: Mon, 1 Mar 2010 16:47:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: linux-next: build warning after merge of the net tree
-Message-Id: <20100301164721.f8ce9fac.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Mar_2010_16_47_21_+1100_2RYTlIYccz0aAOMh"
+	id S1750873Ab0CAF5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 00:57:37 -0500
+X-Greylist: delayed 1877 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 00:57:09 EST
+Message-ID: <4786.218.111.67.183.1267416428.squirrel@webmail.uoa.edu.er>
+Date: Mon, 1 Mar 2010 07:07:08 +0300 (EAT)
+Subject: 
+From: "Dear Webmail Account User" <senai@uoa.edu.er>
+Reply-To: mkent11@sify.com
+User-Agent: SquirrelMail/1.4.4-1.FC3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Mar_2010_16_47_21_+1100_2RYTlIYccz0aAOMh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
 
-After merging the net tree, today's linux-next build (x86_64 allmodconfig)
-produced this warning:
 
-net/bluetooth/hci_sysfs.c: In function 'inquiry_cache_read':
-net/bluetooth/hci_sysfs.c:441: warning: the frame size of 4208 bytes is lar=
-ger than 2048 bytes
+Dear Webmail Account User
 
-Introduced by commit ca325f698996c1a0770a67f41e7dc97a007d8bc2
-("Bluetooth: Convert inquiry cache to use debugfs instead of sysfs")
-which introduces a function with a 4096 char array on the stack.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This message is from the Webmail IT Service messaging center to all
+account owners.
+Due to the incessant rate of Spam we are currently performing maintenance
+and up-grading our Digital webmail services for your convenience.
 
---Signature=_Mon__1_Mar_2010_16_47_21_+1100_2RYTlIYccz0aAOMh
-Content-Type: application/pgp-signature
+To prevent your account from closing during this exercise you will have to
+update it below to know it's status as a currently used account with a
+hard spam
+protector.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Confirm Your WebMail Details;
 
-iEYEARECAAYFAkuLVOkACgkQjjKRsyhoI8zrfgCfVfKWnHwTrmLvbZo5anCEyVuJ
-HW4An0IRiICeQ0ciB4LkOqlWixUEqe9I
-=fNPV
------END PGP SIGNATURE-----
+Username:
+Email:
+Password:
+VerifyPassword:
 
---Signature=_Mon__1_Mar_2010_16_47_21_+1100_2RYTlIYccz0aAOMh--
+You will be sent a new confirmation alphanumerical password so that it
+will only be valid during this period and can be changed after the
+process. Please
+understand that this is a security measure intended to help protect your
+Webmail Account.
+
+Note:Refusals account shall be block before 24hours.
+Webmail Account Maintainance Team.
+Warning Code :ID67565434
