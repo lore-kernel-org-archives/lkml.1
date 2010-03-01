@@ -1,109 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820Ab0CABuv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Feb 2010 20:50:51 -0500
-Received: from mga02.intel.com ([134.134.136.20]:2044 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929Ab0CABuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Feb 2010 20:50:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,557,1262592000"; 
-   d="scan'208";a="496464621"
-Date: Mon, 1 Mar 2010 09:50:47 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, czoccolo@gmail.com, vgoyal@redhat.com,
-       jmoyer@redhat.com, guijianfeng@cn.fujitsu.com
-Subject: [PATCH] cfq-iosched: quantum check tweak --resend
-Message-ID: <20100301015047.GA16630@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1753654Ab0CACDO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Feb 2010 21:03:14 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54321 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164Ab0CACDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Feb 2010 21:03:13 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 1 Mar 2010 10:59:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com
+Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
+Message-Id: <20100301105932.5db60c93.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100226173115.GG16335@basil.fritz.box>
+References: <alpine.DEB.2.00.1002191222320.26567@router.home>
+	<20100220090154.GB11287@basil.fritz.box>
+	<alpine.DEB.2.00.1002240949140.26771@router.home>
+	<4B862623.5090608@cs.helsinki.fi>
+	<alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002251228140.18861@router.home>
+	<20100226114136.GA16335@basil.fritz.box>
+	<alpine.DEB.2.00.1002260904311.6641@router.home>
+	<20100226155755.GE16335@basil.fritz.box>
+	<alpine.DEB.2.00.1002261123520.7719@router.home>
+	<20100226173115.GG16335@basil.fritz.box>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently a queue can only dispatch up to 4 requests if there are other queues.
-This isn't optimal, device can handle more requests, for example, AHCI can
-handle 31 requests. I can understand the limit is for fairness, but we could
-do a tweak: if the queue still has a lot of slice left, sounds we could
-ignore the limit. Test shows this boost my workload (two thread randread of
-a SSD) from 78m/s to 100m/s.
-Thanks for suggestions from Corrado and Vivek for the patch.
+On Fri, 26 Feb 2010 18:31:15 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- block/cfq-iosched.c |   30 ++++++++++++++++++++++++++----
- 1 files changed, 26 insertions(+), 4 deletions(-)
+> On Fri, Feb 26, 2010 at 11:24:50AM -0600, Christoph Lameter wrote:
+> > On Fri, 26 Feb 2010, Andi Kleen wrote:
+> > 
+> > > > > Memory hotplug with node add never quite worked on x86 before,
+> > > > > for various reasons not related to slab.
+> > > >
+> > > > Ok but why did things break in such a big way?
+> > >
+> > > 1) numa memory hotadd never worked
+> > 
+> > Well Kamesan indicated that this worked if a cpu became online.
+> 
+> I mean in the general case. There were tons of problems all over.
+> 
+Then, it's cpu hotplug matter, not memory hotplug.
+cpu hotplug callback should prepaare 
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index f27e535..0db07d7 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -19,7 +19,7 @@
-  * tunables
-  */
- /* max queue in one round of service */
--static const int cfq_quantum = 4;
-+static const int cfq_quantum = 8;
- static const int cfq_fifo_expire[2] = { HZ / 4, HZ / 8 };
- /* maximum backwards seek, in KiB */
- static const int cfq_back_max = 16 * 1024;
-@@ -2197,6 +2197,19 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
- 	return dispatched;
- }
- 
-+static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
-+	struct cfq_queue *cfqq)
-+{
-+	/* the queue hasn't finished any request, can't estimate */
-+	if (cfq_cfqq_slice_new(cfqq))
-+		return 1;
-+	if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
-+		cfqq->slice_end))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
- 	unsigned int max_dispatch;
-@@ -2213,7 +2226,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	if (cfqd->rq_in_flight[BLK_RW_SYNC] && !cfq_cfqq_sync(cfqq))
- 		return false;
- 
--	max_dispatch = cfqd->cfq_quantum;
-+	max_dispatch = max_t(unsigned int, cfqd->cfq_quantum / 2, 1);
- 	if (cfq_class_idle(cfqq))
- 		max_dispatch = 1;
- 
-@@ -2230,13 +2243,22 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 		/*
- 		 * We have other queues, don't allow more IO from this one
- 		 */
--		if (cfqd->busy_queues > 1)
-+		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
- 			return false;
- 
- 		/*
- 		 * Sole queue user, no limit
- 		 */
--		max_dispatch = -1;
-+		if (cfqd->busy_queues == 1)
-+			max_dispatch = -1;
-+		else
-+			/*
-+			 * Normally we start throttling cfqq when cfq_quantum/2
-+			 * requests have been dispatched. But we can drive
-+			 * deeper queue depths at the beginning of slice
-+			 * subjected to upper limit of cfq_quantum.
-+			 * */
-+			max_dispatch = cfqd->cfq_quantum;
- 	}
- 
- 	/*
--- 
-1.6.3.3
+
+	l3 = searchp->nodelists[node];
+	BUG_ON(!l3);
+
+before onlined. Rather than taking care of races.
+
+
+Thanks,
+-Kame
 
