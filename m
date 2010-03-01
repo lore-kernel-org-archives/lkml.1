@@ -1,55 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751937Ab0CATmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 14:42:32 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:50843 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748Ab0CATma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 14:42:30 -0500
-Date: Mon, 1 Mar 2010 14:41:53 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Ben Gardner <gardner.ben@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] gpio: cs5535-gpio: fix input direction
-Message-ID: <20100301144153.735690aa@droptest.queued.net>
-In-Reply-To: <808c8e9d1003010804r331d39a6g9cf520cb27595e75@mail.gmail.com>
-References: <808c8e9d1003010804r331d39a6g9cf520cb27595e75@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751820Ab0CATnQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 14:43:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40083 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855Ab0CATnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 14:43:15 -0500
+Message-ID: <4B8C18D0.2050208@zytor.com>
+Date: Mon, 01 Mar 2010 11:43:12 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Graeme Russ <graeme.russ@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: x86 embedded - Problem getting past 'move compressed kernel 
+ before decompression'
+References: <4B80946D.1030503@gmail.com> <4B80C892.9000303@zytor.com>	 <4B80CA55.3040402@zytor.com> <d66caabb1002211451s5a68565fue6096e17b99402f7@mail.gmail.com> <4B88A865.2080009@gmail.com> <4B8BAB5C.5030707@gmail.com> <4B8BEF71.5040105@zytor.com> <4B8C184E.2000400@gmail.com>
+In-Reply-To: <4B8C184E.2000400@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010 10:04:19 -0600
-Ben Gardner <gardner.ben@gmail.com> wrote:
+On 03/01/2010 11:41 AM, Graeme Russ wrote:
+> H. Peter Anvin wrote:
+>> On 03/01/2010 03:56 AM, Graeme Russ wrote:
+>>> I have done a little more digging. By adding an ascii string before
+>>> relocated: label, I am able to determine that the int3 after the relocated:
+>>> label exists in bzImage at offset 0x1C3FD7
+>>>
+>>> EAX holds (for the jump) 0x5379d0 (different bzImage of course). The
+>>> contents of memory at this address is in bzImage at offset 0x1C09D7 - A
+>>> difference of 0x3600 (seems too even to be random)
+>>>
+>>> I'm obviously doing something hideously wrong, but what?
+>>>
+>>
+>> 0x3600 sounds like the size of the real-mode code in bzImage.
+>>
+> 
+> But what could I be doing to cause the miscalculation? From what I
+> understand, everything looks to be calculated at build time
+> 
 
-> gpio: cs5535-gpio: fix input direction
-> 
-> The cs5535-gpio driver's get() function was returning the output value.
-> This means that the GPIO pins would never work as an input, even if configured
-> as an input.
-> The driver should return the READ_BACK value, which is the sensed line value.
-> To make that work when the direction is 'output', INPUT_ENABLE needs to be set.
-> 
-> In addition, the driver was not disabling OUTPUT_ENABLE when the
-> direction is set to 'input'. That would cause the GPIO to continue to
-> drive the pin if the direction was ever set to output.
-> 
-> This issue was noticed when attempting to use the gpiolib driver to read
-> an external input. I had previously been using the char/cs5535-gpio driver.
-> 
-> This patch should also be applied to 2.6.33.x, as that is the first version
-> that contains the gpio/cs5535-gpio driver.
-> 
-> Signed-off-by: Ben Gardner <gardner.ben@gmail.com>
-> CC: Andres Salomon <dilinger@collabora.co.uk>
+If I were to guess, you loaded the entire bzImage into high memory,
+rather than just the PM portion thereof.
 
-Looked it over and tested it, seems fine to me.  Thanks!
+	-hpa
 
-
-Acked-by: Andres Salomon <dilinger@collabora.co.uk>
