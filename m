@@ -1,89 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751063Ab0CAJk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 04:40:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42013 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889Ab0CAJkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 04:40:55 -0500
-Date: Mon, 1 Mar 2010 20:40:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: linux-next: build failure after merge of the final tree
-Message-Id: <20100301204052.8561a0e5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751118Ab0CAJmv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 04:42:51 -0500
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:63062 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750844Ab0CAJmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 04:42:50 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
+Date: Mon, 1 Mar 2010 10:42:47 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+References: <20100301042249.GA12289@linux.vnet.ibm.com>
+In-reply-To: <20100301042249.GA12289@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201003011042.48923.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Mar 2010 09:42:49.0304 (UTC) FILETIME=[8E219580:01CAB923]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Paul E. McKenney wrote:
+> This patch appends the SHA1 hash of the current git tree to the
+> kernel version line, or "[Not git tree]" if run from a non-git tree.
+> Uses "git log" to print the hash.
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+Nice idea.
 
-drivers/mtd/nand/r852.c:22: error: 'enable_dma' redeclared as different kind of symbol
-arch/powerpc/include/asm/dma.h:189: note: previous definition of 'enable_dma' was here
-drivers/mtd/nand/r852.c: In function 'r852_engine_enable':
-drivers/mtd/nand/r852.c:545: error: implicit declaration of function 'msleep'
+However, I gave it a try and got:
+# Linux kernel version: 2.6.34-rc0 [Not git tree]
 
-Caused by commit 67e054e919248fa1db93de727fb9ad49eb700642 ("mtd: nand:
-Add driver for Ricoh xD/SmartMedia reader") from the mtd.
+Even though I *am* building from a git tree. It does not seem to work when 
+building with KBUILD_OUTPUT set or when using 'O='.
 
-I applied the following patch for today.
+IMO that makes the practical value of the patch very limited. I'm afraid 
+because of this it will increase confusion rather than add information.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 1 Mar 2010 20:21:06 +1100
-Subject: [PATCH] mtd: nand: fix name space clash
-
-and include delay.h for msleep().
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/mtd/nand/r852.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/mtd/nand/r852.c b/drivers/mtd/nand/r852.c
-index 218a42d..ca21883 100644
---- a/drivers/mtd/nand/r852.c
-+++ b/drivers/mtd/nand/r852.c
-@@ -13,15 +13,16 @@
- #include <linux/workqueue.h>
- #include <linux/interrupt.h>
- #include <linux/pci_ids.h>
-+#include <linux/delay.h>
- #include <asm/byteorder.h>
- #include <linux/sched.h>
- #include "sm_common.h"
- #include "r852.h"
- 
- 
--static int enable_dma = 1;
--module_param(enable_dma, bool, S_IRUGO);
--MODULE_PARM_DESC(enable_dma, "Enable usage of the DMA (default)");
-+static int r852_enable_dma = 1;
-+module_param(r852_enable_dma, bool, S_IRUGO);
-+MODULE_PARM_DESC(r852_enable_dma, "Enable usage of the DMA (default)");
- 
- static int debug;
- module_param(debug, int, S_IRUGO | S_IWUSR);
-@@ -75,7 +76,7 @@ static void r852_dma_test(struct r852_device *dev)
- 	if (!dev->dma_usable)
- 		message("Non dma capable device detected, dma disabled");
- 
--	if (!enable_dma) {
-+	if (!r852_enable_dma) {
- 		message("disabling dma on user request");
- 		dev->dma_usable = 0;
- 	}
--- 
-1.7.0
-
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+FJP
