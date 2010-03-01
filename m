@@ -1,57 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751672Ab0CAN0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 08:26:07 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:56433 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580Ab0CAN0E (ORCPT
+	id S1751567Ab0CAN0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 08:26:39 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:58849
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751457Ab0CAN0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 08:26:04 -0500
-Date: Mon, 1 Mar 2010 14:25:01 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-cris-kernel <linux-cris-kernel@axis.com>
-Subject: [GIT PULL] CRIS updates for 2.6.34
-Message-ID: <20100301132501.GF4219@axis.com>
+	Mon, 1 Mar 2010 08:26:37 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i2a8h6bh87h43h62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYLULG-01-6WX-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: iommu@lists.linux-foundation.org
+CC: linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/4] x86/amd-iommu: Remove double NULL check in check_device
+Date: Mon, 1 Mar 2010 14:24:39 +0100
+Message-ID: <1267449882-1415-2-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267449882-1415-1-git-send-email-joerg.roedel@amd.com>
+References: <1267449882-1415-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 01 Mar 2010 13:24:48.0724 (UTC) FILETIME=[911FC940:01CAB942]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Julia Lawall <julia@diku.dk>
 
-Please pull the below repo for some minor CRIS-fixes.
+dev was tested just above, so drop the second test.
 
-Thanks!
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The following changes since commit 1836d95928a0f41ada0cbb2a6c4e46b027db9491:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../ericvh/v9fs
-
-are available in the git repository at:
-
-  git://repo.or.cz/cris-mirror.git for-linus
-
-Roel Kluin (1):
-      CRIS v32: Should index be positive?
-
-Thomas Gleixner (1):
-      cris: Fixup last users of irq_chip->typename
-
- arch/cris/arch-v10/kernel/irq.c     |    2 +-
- arch/cris/arch-v32/kernel/irq.c     |    2 +-
- arch/cris/arch-v32/kernel/pinmux.c  |    4 ++--
- arch/cris/arch-v32/mach-a3/pinmux.c |    2 +-
- arch/cris/arch-v32/mach-fs/pinmux.c |    4 ++--
- arch/cris/kernel/irq.c              |    2 +-
- 6 files changed, 8 insertions(+), 8 deletions(-)
-
-
-/^JN - Jesper Nilsson
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index adb0ba0..2c4a501 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -118,7 +118,7 @@ static bool check_device(struct device *dev)
+ 		return false;
+ 
+ 	/* No device or no PCI device */
+-	if (!dev || dev->bus != &pci_bus_type)
++	if (dev->bus != &pci_bus_type)
+ 		return false;
+ 
+ 	devid = get_device_id(dev);
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+1.7.0
+
+
