@@ -1,94 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752693Ab0CAW4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 17:56:21 -0500
-Received: from tarap.cc.columbia.edu ([128.59.29.7]:50399 "EHLO
-	tarap.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665Ab0CAW4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 17:56:20 -0500
-Message-ID: <4B8C4626.1040604@cs.columbia.edu>
-Date: Mon, 01 Mar 2010 17:56:38 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752677Ab0CAW5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 17:57:21 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47896 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752348Ab0CAW5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 17:57:20 -0500
+Message-ID: <4B8C463B.7070900@zytor.com>
+Date: Mon, 01 Mar 2010 14:56:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux-Containers <containers@lists.linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Checkpoint-Restart - v19
-References: <4B83106C.7040203@cs.columbia.edu> <20100301133623.9808986f.akpm@linux-foundation.org>
-In-Reply-To: <20100301133623.9808986f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Zachary Amsden <zamsden@redhat.com>
+CC: Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+References: <20100301091819.GD16909@redhat.com> <4B8BE7C1.40000@redhat.com> <20100301174724.GA12867@redhat.com> <4B8C09F5.9070506@redhat.com> <20100301190341.GD12867@redhat.com> <4B8C1320.6060602@redhat.com> <4B8C4032.7080703@zytor.com>
+In-Reply-To: <4B8C4032.7080703@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Andrew Morton wrote:
-> On Mon, 22 Feb 2010 18:17:00 -0500
-> Oren Laadan <orenl@cs.columbia.edu> wrote:
-> 
->> Hi Andrew,
+On 03/01/2010 02:31 PM, H. Peter Anvin wrote:
+> On 03/01/2010 11:18 AM, Zachary Amsden wrote:
 >>
->> We've put a stake in the ground for our next set of checkpoint/restart
->> patches, v19. It has some great new stuff, and we put extra effort to
->> address your concerns. We would like to have the code included in -mm
->> for wider feedback and testing.
+>> It's going to be ugly to emulate segmentation, NX and write protect 
+>> support without hardware to do this checking for you, but it's just what 
+>> you have to do in this slow path - tedious, fully specified emulation.
 >>
->> This one is able to checkpoint/restart screen and vnc sessions, and
->> live-migrate network servers between hosts. It also adds support for
->> x86-64 (in addition to x86-32, s390x and powerpc). It is rebased to
->> kernel 2.6.33-rc8.
->>
->> Since one of your main concerns was about what is not yet implemented
->> and how complicated or ugly it will be to support that, we've put up
->> a wiki page to address that. In it there is a simple table that lists
->> what is not implemented and the anticipated solution impact, and for
->> some entries a link to more details.
->>
->> The page is here:   http://ckpt.wiki.kernel.org/index.php/Checklist
-> 
-> Does "Refuses to Checkpoint" mean that an attempt to checkpoint will
-> fail, return the failure to userspace and the system continues as
-> before?
-
-Yes.
-
-Also, there is a mechanism in place to report the reason for the
-failure (e.g. the offending resource) to the user.
-
-> 
->> We want to stress that the patchset is already very useful as-is. We
->> will keep working to implement more features cleanly. Some features we
->> are working on include network namespaces and device configurations,
->> mounts and mounts namespaces, and file locks. Should a complicated
->> feature prove hard to implement, users have alternatives systems like
->> kvm, until we manage to come up with a clean solution.
->>
->> We believe that maintenance is best addressed through testing. We now
->> have a comprehensive test-suite to automatically find regressions.
->> In addition, we ran LTP and the results are the same with CHECKPOINT=n
->> and =y.
->>
->> If desired we'll send the whole patchset to lkml, but the git trees
->> can be seen at:
->>
->>    kernel:       http://www.linux-cr.org/git/?p=linux-cr.git;a=summary
->>    user tools:   http://www.linux-cr.org/git/?p=user-cr.git;a=summary
->>    tests suite:  http://www.linux-cr.org/git/?p=tests-cr.git;a=summary
+>> Just because it's tedious doesn't mean we need to use setjmp / longjmp.  
+>> Throw / catch might be effective, but it's still pretty bizarre to do 
+>> tricks like that in C.
 >>
 > 
-> I'd suggest waiting until very shortly after 2.6.34-rc1 then please
-> send all the patches onto the list and let's get to work.
+> Well, setjmp/longjmp really is not much more than exception handling in C.
 > 
 
-Sounds good -- will do.
+For what it's worth, I think that setjmp/longjmp is not anywhere near as
+dangerous as people want to make it out to be.  gcc will warn for
+dangerous uses (and a lot of non-dangerous uses), but generally the
+difficult problems can be dealt with by moving the setjmp-protected code
+into a separate function.
 
-Thanks,
-
-Oren.
+	-hpa
