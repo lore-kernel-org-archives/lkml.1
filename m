@@ -1,66 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828Ab0CAXWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 18:22:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46737 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752640Ab0CAXWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 18:22:35 -0500
-Date: Mon, 1 Mar 2010 15:21:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [patch] RFC directio: partial writes support
-Message-Id: <20100301152149.7ce78e14.akpm@linux-foundation.org>
-In-Reply-To: <87iq9lxz3t.fsf@openvz.org>
-References: <87iq9lxz3t.fsf@openvz.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751580Ab0CAXZi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 18:25:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58500 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197Ab0CAXZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 18:25:36 -0500
+Date: Mon, 1 Mar 2010 23:21:39 GMT
+From: "tip-bot for Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       steiner@sgi.com, venkatesh.pallipadi@intel.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, venkatesh.pallipadi@intel.com, tglx@linutronix.de
+In-Reply-To: <20100224214355.GA16431@linux-os.sc.intel.com>
+References: <20100224214355.GA16431@linux-os.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/pat] x86, pat: In rbt_memtype_check_insert(), update new->type only if valid
+Message-ID: <tip-4daa2a8093ecd1148270a1fc64e99f072b8c2901@git.kernel.org>
+Git-Commit-ID: 4daa2a8093ecd1148270a1fc64e99f072b8c2901
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 01 Mar 2010 23:21:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Feb 2010 15:45:58 +0300
-Dmitry Monakhov <dmonakhov@openvz.org> wrote:
+Commit-ID:  4daa2a8093ecd1148270a1fc64e99f072b8c2901
+Gitweb:     http://git.kernel.org/tip/4daa2a8093ecd1148270a1fc64e99f072b8c2901
+Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+AuthorDate: Wed, 24 Feb 2010 13:43:55 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Mon, 1 Mar 2010 14:28:48 -0800
 
-> Can someone please describe me why directio deny partial writes.
-> For example if someone try to write 100Mb but file system has less
-> data it return ENOSPC in the middle of block allocation.
-> All allocated blocks will be truncated (it may be 100Mb -4k) end
-> ENOSPC will be returned. As far as i remember direct_io always act
-> like this, but i never asked why?
-> Why do we have to give up all the progress we made?
-> In fact partial writes are possible in case of holes, when we 
-> fall back to buffered write. XFS implemented partial writes.
+x86, pat: In rbt_memtype_check_insert(), update new->type only if valid
 
-The problem with direct-io writes is that the writes don't necessarily
-complete in file-offset-ascending order.  So if we've issued 50 write
-BIOs and then hit an EIO on a BIO then we could have a hunk of
-unwritten data with newly-writted data either side of it.  If we get a
-bunch of discontiguous EIO BIOs coming in then the problem gets even
-messier - we have a span of disk which has a random mix of
-correctly-written and not-correctly-written runs of sectors.  What do
-we do with that?
+new->type should only change when there is a valid ret_type. Otherwise
+the requested type and return type should be same.
 
-The code _could_ perhaps go back and crawl through the request and
-identify the number of successfully-written bytes between
-start-of-request and first-EIO and then return that.  But we didn't
-bother.
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+LKML-Reference: <20100224214355.GA16431@linux-os.sc.intel.com>
+Tested-by: Jack Steiner <steiner@sgi.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/mm/pat_rbtree.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-
-ENOSPC errors are handled via the same code path and hence got
-deoptimised due to this EIO handling.  We could perhaps improve the
-ENOSPC handling along the lines you propose, as long as we
-appropriately take care of EIO considerations.  Which, afacit, your
-patch didn't do.
-
-The presence of opt-in DIO_PARTIAL_WRITE thing is rather unfortunate -
-it would be better to make this change for all filesystems in one hit. 
-But I guess DIO_PARTIAL_WRITE permits us to migrate filesystems
-one-at-a-time as testing permits.  But the aim should be to remove
-DIO_PARTIAL_WRITE altogether once all the conversion and testing is
-completed.
-
+diff --git a/arch/x86/mm/pat_rbtree.c b/arch/x86/mm/pat_rbtree.c
+index 9063f40..07de4cb 100644
+--- a/arch/x86/mm/pat_rbtree.c
++++ b/arch/x86/mm/pat_rbtree.c
+@@ -223,7 +223,9 @@ int rbt_memtype_check_insert(struct memtype *new, unsigned long *ret_type)
+ 						new->type, ret_type);
+ 
+ 	if (!err) {
+-		new->type = *ret_type;
++		if (ret_type)
++			new->type = *ret_type;
++
+ 		memtype_rb_insert(&memtype_rbroot, new);
+ 	}
+ 	return err;
