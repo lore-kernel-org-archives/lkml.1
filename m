@@ -1,189 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750998Ab0CAOLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 09:11:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29899 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747Ab0CAOLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 09:11:51 -0500
-Date: Mon, 1 Mar 2010 09:11:18 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: requests "in flight" vs "in driver"
-	clarification
-Message-ID: <20100301141118.GA8878@redhat.com>
-References: <1267286589-316-1-git-send-email-czoccolo@gmail.com>
+	id S1751119Ab0CAONQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 09:13:16 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:59697 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798Ab0CAONO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 09:13:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=L89+41RzsG5ktGHBvzoWLzfapinJFXp477gtXYuV+4k7LnsUxVDnv9XHTjXIK/Oa+9
+         pWR53C0Z7iY1KKQpRJkggMRk0FflBJW+jfmpR+gh/NiEl8GDG2P0c8Bd+0GInbHMx460
+         Zpm/BfZeMaocvjIu3kqIzcDpfeXysIN/Kt4UA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267286589-316-1-git-send-email-czoccolo@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1267446264-8446-1-git-send-email-l.fu@pengutronix.de>
+References: <1267446264-8446-1-git-send-email-l.fu@pengutronix.de>
+Date: Mon, 1 Mar 2010 15:13:12 +0100
+Message-ID: <acd2a5931003010613v4b0f7666ua47e19d72921c151@mail.gmail.com>
+Subject: Re: [PATCH] i2c-pnx: fix setting start/stop condition
+From: Vitaly Wool <vitalywool@gmail.com>
+To: Luotao Fu <l.fu@pengutronix.de>
+Cc: Jean Delvare <khali@linux-fr.org>, Ben Dooks <ben-linux@fluff.org>,
+       Kevin Wells <kevin.wells@nxp.com>, Julia Lawall <julia@diku.dk>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, linux-i2c@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 05:03:09PM +0100, Corrado Zoccolo wrote:
-> Counters for requests "in flight" and "in driver" are used asymmetrically
-> in cfq_may_dispatch, and have slightly different meaning.
-> We split the rq_in_flight counter (was sync_flight) to count both sync
-> and async requests, in order to use this one, which is more accurate in
-> some corner cases.
-> The rq_in_driver counter is coalesced, since individual sync/async counts
-> are not used any more.
-> 
-> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
-> ---
->  block/cfq-iosched.c |   44 ++++++++++++++++++--------------------------
->  1 files changed, 18 insertions(+), 26 deletions(-)
-> 
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 10eb286..eed649c 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -223,8 +223,8 @@ struct cfq_data {
->  
->  	unsigned int busy_queues;
->  
-> -	int rq_in_driver[2];
-> -	int sync_flight;
-> +	int rq_in_driver;
-> +	int rq_in_flight[2];
->  
->  	/*
->  	 * queue-depth detection
-> @@ -417,11 +417,6 @@ static struct cfq_queue *cfq_get_queue(struct cfq_data *, bool,
->  static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
->  						struct io_context *);
->  
-> -static inline int rq_in_driver(struct cfq_data *cfqd)
-> -{
-> -	return cfqd->rq_in_driver[0] + cfqd->rq_in_driver[1];
-> -}
-> -
->  static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
->  					    bool is_sync)
->  {
-> @@ -1415,9 +1410,9 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
->  {
->  	struct cfq_data *cfqd = q->elevator->elevator_data;
->  
-> -	cfqd->rq_in_driver[rq_is_sync(rq)]++;
-> +	cfqd->rq_in_driver++;
->  	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
-> -						rq_in_driver(cfqd));
-> +						cfqd->rq_in_driver);
->  
->  	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
->  }
-> @@ -1425,12 +1420,11 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
->  static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
->  {
->  	struct cfq_data *cfqd = q->elevator->elevator_data;
-> -	const int sync = rq_is_sync(rq);
->  
-> -	WARN_ON(!cfqd->rq_in_driver[sync]);
-> -	cfqd->rq_in_driver[sync]--;
-> +	WARN_ON(!cfqd->rq_in_driver);
-> +	cfqd->rq_in_driver--;
->  	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
-> -						rq_in_driver(cfqd));
-> +						cfqd->rq_in_driver);
->  }
->  
->  static void cfq_remove_request(struct request *rq)
-> @@ -1873,8 +1867,7 @@ static void cfq_dispatch_insert(struct request_queue *q, struct request *rq)
->  	cfqq->dispatched++;
->  	elv_dispatch_sort(q, rq);
->  
-> -	if (cfq_cfqq_sync(cfqq))
-> -		cfqd->sync_flight++;
-> +	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]++;
->  	cfqq->nr_sectors += blk_rq_sectors(rq);
->  }
->  
-> @@ -2221,13 +2214,13 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  	/*
->  	 * Drain async requests before we start sync IO
->  	 */
-> -	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
-> +	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_flight[BLK_RW_ASYNC])
->  		return false;
->  
+On Mon, Mar 1, 2010 at 1:24 PM, Luotao Fu <l.fu@pengutronix.de> wrote:
+> The start/stop condtions are set in different places repetedly in the i2c-pnx
+> driver.  Beside in i2c_pnx_start and i2c_pnx_stop the start/stop bit are also
+> set during the transfer of a i2c message in the master_xmit/rcv calls. This is
+> wrong since we can't set the start/stop condition during the transaction of a
+> single message any way. As a matter of fact, the driver will sometimes set both
+> the start and the stop bits at one time. This can be easily reproduced by
+> sending a simple read request like e.g
+> struct i2c_msg msgs[] = {
+> { addr, 0, 1, buf },
+> { addr, I2C_M_RD, offset, buf }
+> };
+> While processing the first message the i2c_pnx_master_xmit will set both the
+> start_bit and the stop_bit, which will eventually confuse the slave.
+>
+> Fixed by remove setting start/stop condition from the transmit routines.
+>
+> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
 
-So we need to make sure there are no async requests either in dispatch
-queue or driver. So rq_in_flight is better than just plain rq_in_driver.
-
-Makes sense.
-
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
-
-Thanks
-Vivek
- 
->  	/*
->  	 * If this is an async queue and we have sync IO in flight, let it wait
->  	 */
-> -	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-> +	if (cfqd->rq_in_flight[BLK_RW_SYNC] && !cfq_cfqq_sync(cfqq))
->  		return false;
->  
->  	max_dispatch = cfqd->cfq_quantum;
-> @@ -3210,14 +3203,14 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
->  {
->  	struct cfq_queue *cfqq = cfqd->active_queue;
->  
-> -	if (rq_in_driver(cfqd) > cfqd->hw_tag_est_depth)
-> -		cfqd->hw_tag_est_depth = rq_in_driver(cfqd);
-> +	if (cfqd->rq_in_driver > cfqd->hw_tag_est_depth)
-> +		cfqd->hw_tag_est_depth = cfqd->rq_in_driver;
->  
->  	if (cfqd->hw_tag == 1)
->  		return;
->  
->  	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
-> -	    rq_in_driver(cfqd) <= CFQ_HW_QUEUE_MIN)
-> +	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
->  		return;
->  
->  	/*
-> @@ -3227,7 +3220,7 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
->  	 */
->  	if (cfqq && cfq_cfqq_idle_window(cfqq) &&
->  	    cfqq->dispatched + cfqq->queued[0] + cfqq->queued[1] <
-> -	    CFQ_HW_QUEUE_MIN && rq_in_driver(cfqd) < CFQ_HW_QUEUE_MIN)
-> +	    CFQ_HW_QUEUE_MIN && cfqd->rq_in_driver < CFQ_HW_QUEUE_MIN)
->  		return;
->  
->  	if (cfqd->hw_tag_samples++ < 50)
-> @@ -3280,13 +3273,12 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
->  
->  	cfq_update_hw_tag(cfqd);
->  
-> -	WARN_ON(!cfqd->rq_in_driver[sync]);
-> +	WARN_ON(!cfqd->rq_in_driver);
->  	WARN_ON(!cfqq->dispatched);
-> -	cfqd->rq_in_driver[sync]--;
-> +	cfqd->rq_in_driver--;
->  	cfqq->dispatched--;
->  
-> -	if (cfq_cfqq_sync(cfqq))
-> -		cfqd->sync_flight--;
-> +	cfqd->rq_in_flight[cfq_cfqq_sync(cfqq)]--;
->  
->  	if (sync) {
->  		RQ_CIC(rq)->last_end_request = now;
-> @@ -3340,7 +3332,7 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
->  		}
->  	}
->  
-> -	if (!rq_in_driver(cfqd))
-> +	if (!cfqd->rq_in_driver)
->  		cfq_schedule_dispatch(cfqd);
->  }
->  
-> -- 
-> 1.6.4.4
+Acked-by: Vitaly Wool <vitalywool@gmail.com>
