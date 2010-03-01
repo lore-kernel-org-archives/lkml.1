@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751812Ab0CAPPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 10:15:37 -0500
-Received: from filtteri6.pp.htv.fi ([213.243.153.189]:34579 "EHLO
+	id S1752077Ab0CAPPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 10:15:40 -0500
+Received: from filtteri6.pp.htv.fi ([213.243.153.189]:34578 "EHLO
 	filtteri6.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077Ab0CAPO4 (ORCPT
+	with ESMTP id S1752074Ab0CAPOz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 10:14:56 -0500
+	Mon, 1 Mar 2010 10:14:55 -0500
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
        Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 22/26] w35und: Convert T01_DESCRIPTOR typedef to struct wb35_T01_descriptor
-Date: Mon,  1 Mar 2010 17:04:24 +0200
-Message-Id: <1267455868-4533-22-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 16/26] w35und: Convert WB_LOCALDESCRIPT typedef to struct wb35_local_para
+Date: Mon,  1 Mar 2010 17:04:18 +0200
+Message-Id: <1267455868-4533-16-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
 References: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
@@ -24,91 +24,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Cc: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/mds.c     |   10 +++++-----
- drivers/staging/winbond/wbhal_s.h |    7 +++----
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/staging/winbond/core.h      |    2 +-
+ drivers/staging/winbond/localpara.h |    5 ++---
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
-index de8cec9..b9dbb2c 100644
---- a/drivers/staging/winbond/mds.c
-+++ b/drivers/staging/winbond/mds.c
-@@ -25,7 +25,7 @@ Mds_Destroy(struct wbsoft_priv * adapter)
- static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor *pDes,  u8 *buffer)
- {
- 	struct wb35_T00_descriptor *	pT00;
--	PT01_DESCRIPTOR	pT01;
-+	struct wb35_T01_descriptor *	pT01;
- 	u16	Duration, NextBodyLen, OffsetSize;
- 	u8	Rate, i;
- 	unsigned char	CTS_on = false, RTS_on = false;
-@@ -40,7 +40,7 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
- 		Rate = 1;
+diff --git a/drivers/staging/winbond/core.h b/drivers/staging/winbond/core.h
+index 7d4bd5e..4dc6b71 100644
+--- a/drivers/staging/winbond/core.h
++++ b/drivers/staging/winbond/core.h
+@@ -14,7 +14,7 @@
+ struct wbsoft_priv {
+ 	u32 adapterIndex;	// 20060703.4 Add for using padapterContext global adapter point
  
- 	pT00 = (struct wb35_T00_descriptor *)buffer;
--	pT01 = (PT01_DESCRIPTOR)(buffer+4);
-+	pT01 = (struct wb35_T01_descriptor *)(buffer+4);
- 	pNextT00 = (struct wb35_T00_descriptor *)(buffer+OffsetSize);
+-	WB_LOCALDESCRIPT sLocalPara;	// Myself connected parameters
++	struct wb35_local_para sLocalPara;	// Myself connected parameters
  
- 	if( buffer[ DOT_11_DA_OFFSET+8 ] & 0x1 ) // +8 for USB hdr
-@@ -176,7 +176,7 @@ static void Mds_DurationSet(struct wbsoft_priv *adapter,  struct wb35_descriptor
- 			//----end 20061009 add by anson's endian
+ 	MLME_FRAME sMlmeFrame;	// connect to peerSTA parameters
  
- 			buffer += OffsetSize;
--			pT01 = (PT01_DESCRIPTOR)(buffer+4);
-+			pT01 = (struct wb35_T01_descriptor *)(buffer+4);
- 			if (i != 1)	//The last fragment will not have the next fragment
- 				pNextT00 = (struct wb35_T00_descriptor *)(buffer+OffsetSize);
- 		}
-@@ -323,7 +323,7 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
- 	struct wb35_mds *pMds = &adapter->Mds;
- 	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
- 	struct wb35_T00_descriptor *	pT00;
--	PT01_DESCRIPTOR	pT01;
-+	struct wb35_T01_descriptor *	pT01;
- 	u16	stmp;
- 	u8	i, ctmp1, ctmp2, ctmpf;
- 	u16	FragmentThreshold = CURRENT_FRAGMENT_THRESHOLD;
-@@ -335,7 +335,7 @@ static void Mds_HeaderCopy(struct wbsoft_priv * adapter, struct wb35_descriptor
- 	//
- 	pT00 = (struct wb35_T00_descriptor *)TargetBuffer;
- 	TargetBuffer += 4;
--	pT01 = (PT01_DESCRIPTOR)TargetBuffer;
-+	pT01 = (struct wb35_T01_descriptor *)TargetBuffer;
- 	TargetBuffer += 4;
- 
- 	pT00->value = 0;// Clear
-diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index 1185205..00329df 100644
---- a/drivers/staging/winbond/wbhal_s.h
-+++ b/drivers/staging/winbond/wbhal_s.h
-@@ -221,8 +221,7 @@ struct wb35_R01_descriptor {
- 	};
+diff --git a/drivers/staging/winbond/localpara.h b/drivers/staging/winbond/localpara.h
+index ebce37f..4e761b7 100644
+--- a/drivers/staging/winbond/localpara.h
++++ b/drivers/staging/winbond/localpara.h
+@@ -121,8 +121,7 @@ struct wb35_radio_off {
  };
  
--typedef struct _T01_DESCRIPTOR
+ //===========================================================================
+-typedef struct LOCAL_PARA
 -{
-+struct wb35_T01_descriptor {
- 	union
- 	{
- 		u32	value;
-@@ -260,7 +259,7 @@ typedef struct _T01_DESCRIPTOR
- 		};
- 		#endif
- 	};
--} T01_DESCRIPTOR, *PT01_DESCRIPTOR;
++struct wb35_local_para {
+ 	u8			PermanentAddress[ MAC_ADDR_LENGTH + 2 ]; 	// read from EPROM, manufacture set for each NetCard
+     u8    		ThisMacAddress[ MAC_ADDR_LENGTH + 2 ];			// the driver will use actually.
+ 
+@@ -256,6 +255,6 @@ typedef struct LOCAL_PARA
+ 	u16		IE_Append_size;
+ 	u16		reserved_7;
+ 
+-} WB_LOCALDESCRIPT, *PWB_LOCALDESCRIPT;
 +};
  
- typedef struct _T02_DESCRIPTOR
- {
-@@ -337,7 +336,7 @@ struct wb35_descriptor {		// Skip length = 8 DWORD
- 	union
- 	{
- 		struct wb35_R01_descriptor	R01;
--		T01_DESCRIPTOR	T01;
-+		struct wb35_T01_descriptor	T01;
- 	};
- 
- 	// For R02 and T02 ----------------------------------------------
+ #endif
 -- 
 1.6.3.3
 
