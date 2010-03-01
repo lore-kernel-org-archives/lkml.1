@@ -1,71 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751060Ab0CAJaM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 04:30:12 -0500
-Received: from melkor.forwiss.uni-passau.de ([132.231.20.39]:58215 "EHLO
-	melkor.forwiss.uni-passau.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750705Ab0CAJaB convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 04:30:01 -0500
-X-Greylist: delayed 1366 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Mar 2010 04:30:00 EST
-Date: Mon, 1 Mar 2010 10:07:08 +0100
-From: M G Berberich <berberic@fmi.uni-passau.de>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: 2.6.33 dies on modprobe
-Message-ID: <20100301090708.GF17929@forwiss.uni-passau.de>
-Mail-Followup-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Linux Kernel Network Developers <netdev@vger.kernel.org>
-References: <20100228221257.GA8858@invalid> <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
+	id S1750908Ab0CAJ36 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 04:29:58 -0500
+Received: from fanny.its.uu.se ([130.238.4.241]:8176 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750705Ab0CAJ35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 04:29:57 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-purgate: This mail is considered clean
-X-purgate: clean
-X-purgate-type: clean
-X-purgate-Ad: Checked for Spam by eleven - eXpurgate www.eXpurgate.net
-X-purgate-ID: 151291::100301100708-4D6C0001-F0BD4BF1/0-0/0-1
-X-purgate-size: 1312/1216
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19339.35080.637800.292674@pilspetsen.it.uu.se>
+Date: Mon, 1 Mar 2010 10:29:44 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "David S. Miller" <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, penberg@cs.helsinki.fi,
+       Brian Gerst <brgerst@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
+       Herbert@gondor.apana.org.au
+Subject: Re: [PATCH v2] compiler: prevent dead store elimination
+In-Reply-To: <4B8A8D17.2040208@gmail.com>
+References: <4B8984EE.8090605@gmail.com>
+	<20100228095520.GA29531@one.firstfloor.org>
+	<4B8A8D17.2040208@gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Roel Kluin writes:
+ > Due to optimization A call to memset() may be removed as a dead store when
 
-Am Montag, den 01. März schrieb Américo Wang:
-> On Mon, Mar 1, 2010 at 6:12 AM, M G Berberich
-> <berberic@fmi.uni-passau.de> wrote:
+_______________________^ lower-case a
 
-> > I tried to build a 2.6.33 kernel but on boot it dies on modprobe
-> > (kernel-Oops). This might be the result of faulty config, but I'm
-> > totaly clueless what's the fault.
-> >
-> > The kernel starts up fine and mounts the root-filesystem, but then
-> > dies on the first modprobe executed. I can boot it with init=/bin/bash
-> > and get a working bash (until I do modprobe on any module).
-> >
-> > System is a Gigabyte M55S-S3 rev 2.0 (nForce 550) with an AMD Athlon64
-> > X2 5000+ and amd64-kernel architecture. kernel-sources are from
-> > kernel.org.
+ > the buffer is not used after its value is overwritten. The new function
+ > secure_bzero() ensures a section of memory is padded with zeroes.
+ > 
+ > >From the GCC manual, section 5.37:
+ > If your assembler instructions access memory in an unpredictable
+ > fashion, add `memory' to the list of clobbered registers. This will
+ > cause GCC to not keep memory values cached in registers across the
+ > assembler instruction and not optimize stores or loads to that memory.
 
-> It seems something is wrong with forcedeth code or PCI code.
-> Adding some Cc's.
+This paragraph, while accurate, is unrelated to the contents of this
+patch. Note that in an asm(), a "memory" clobber (see barrier()) is
+not at all the same thing as a memory operand "m"(...), which is what
+we're using here. Just drop this bit.
 
-I don't think it's forcedeth. forcedeth just happens to be the first
-module that get's loaded in startup. It crashes with any other module
-too (I tried ohci_hcd). 
+ > Every byte in the [p,p+n[ range must be used. If you only use the
+ > first byte, via e.g. asm("" :: "m"(*(char*)p)), then the compiler
+ > _will_ skip scrubbing bytes beyond the first.
+and then
+ > This works with
+ > gcc-3.2.3 up to gcc-4.4.3.
 
-To repeat myself: This might be the result of faulty config
+You've edited my comments and put them together in a way that doesn't
+quite make sense. In particular, "This works" doesn't refer to the
+previous text but the local-struct-of-variable-size trick. The text
+should read something like:
 
-	MfG
-	bmg
+To prevent a memset() from being eliminated, the compiler must belive
+that the memory area is used after the memset(). Also, every byte in
+the memory area must be used. If only the first byte is used, via e.g.
+asm("" :: "m"(*(char*)p)), then the compiler _will_ skip scrubbing
+bytes beyond the first.
 
--- 
-„Des is völlig wurscht, was heut beschlos- | M G Berberich
- sen wird: I bin sowieso dagegn!“          | berberic@fmi.uni-passau.de
-(SPD-Stadtrat Kurt Schindler; Regensburg)  | www.fmi.uni-passau.de/~berberic
+The trick is to define a local type of the same size as the memory
+area, and use it for the "m" operand in a dummy asm():
+
+	static inline void fake_memory_use(void *p, size_t n)
+	{
+		struct __scrub { char c[n]; }
+		asm("" : : "m"(*(struct __scrub *)p));
+	}
+
+This looks strange, n being a variable, but has been confirmed to
+work with gcc-3.2.3 up to gcc-4.4.3.
+
+ > diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+ > index 188fcae..2f14199 100644
+ > --- a/include/linux/compiler.h
+ > +++ b/include/linux/compiler.h
+ > @@ -302,4 +302,15 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+ >   */
+ >  #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
+ >  
+ > +/*
+ > + * Dead store elimination is an optimization that may remove a write to a
+ > + * buffer that is not used anymore. Use ARRAY_KEEP_STORE after a write when
+ > + * the scrub is required for security reasons.
+ > + */
+ > +#define ARRAY_KEEP_STORE(p, n)				\
+
+1. This doesn't need to be a macro. Please make it a static inline function.
+2. Its function is to "fake" a use of a memory area, which allows us to prevent
+   unwanted DSE elsewhere. So this should be fake_memory_use() or something.
+
+ > +	do {						\
+ > +		struct __scrub { typeof(*p) c[n]; };	\
+
+The typeof(*p) suggestion doesn't work. It would require p to always be
+a pointer type with an accurate (for memset) sizeof(*p). In general however
+we'll memset some array described by a void*/size_t pair, and typeof in
+that case is useless. The original'struct __scrub { char c[n]; };' was Ok.
+
+ >  extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
+ >  extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
+ > +extern void secure_bzero(void *, __kernel_size_t);
+
+Why is this __kernel_size_t and not just plain size_t? It's not
+a user-space API.
