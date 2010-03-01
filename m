@@ -1,31 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751824Ab0CARar (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 12:30:47 -0500
-Received: from comsmtp2.singnet.com.sg ([165.21.101.75]:41122 "EHLO
-	comsmtp2.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015Ab0CARao (ORCPT
+	id S1751231Ab0CARbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 12:31:49 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:33330 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808Ab0CARbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 12:30:44 -0500
-To: info@dtl.nl
-Subject: Re: Royal Dutch Shell
-Message-ID: <1267464569.4b8bf979db527@discus.singnet.com.sg>
-Date: Tue, 02 Mar 2010 01:29:29 +0800 (SGT)
-From: =?iso-8859-1?Q?=A9Web_Unit?= <dbass@singnet.com.sg>
-Reply-To: r_dutchplc@yahoo.ie
+	Mon, 1 Mar 2010 12:31:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=blDMNX7kUMUWJ1WMy//kNBE4EeS59WQB5eq56pqENJxSktiuH+7K8ixNFjKAxc8yDy
+         Vtb7NFZ36TxDCz+yxS7ZUDqBK1+lxEORnjWX2PzczPpeBdIbMNJvqv1LcPyDk5DmbDcj
+         SQF83Kug7m/nMHJuBapyem9uhwvH6Bnc5Oclc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: SingNet WebMail
+In-Reply-To: <ff13bc9a1003010916j860b1bbueebf8e5b21e100ad@mail.gmail.com>
+References: <1266600404-16402-1-git-send-email-luca@luca-barbieri.com>
+	 <4B845AEE.5080604@zytor.com>
+	 <ff13bc9a1002240156x27e28764mb6ba24da0b125d81@mail.gmail.com>
+	 <20100226101423.GA25641@elte.hu>
+	 <ff13bc9a1002260308k319d34b5y4757fcfb36106278@mail.gmail.com>
+	 <ff13bc9a1002260323k6b3f38ah4f0505e401dcf77d@mail.gmail.com>
+	 <4B8B6E43.9030305@zytor.com>
+	 <ff13bc9a1003010916j860b1bbueebf8e5b21e100ad@mail.gmail.com>
+Date: Mon, 1 Mar 2010 18:31:46 +0100
+X-Google-Sender-Auth: 44ed6d372f7186df
+Message-ID: <ff13bc9a1003010931w12834f6cm59247d3fcfcfa2c2@mail.gmail.com>
+Subject: Re: [PATCH 0/5] x86-32: improve atomic64_t functions (v2)
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$1.500,000.00 US Dollars has been award to you by your Email in the ROYAL DUTCH OIL 2010 send your requirement immediately such as your
-Names,,,,,,,,,,,
-Tel,,,,,,,,,,,,,,,,,,
-Age,,,,,,,,,,,,,,,,
-Address,,,,,,,,,,,,
-Occupation,,,,,,,,,,
-Country,,,,,,,,,,,,,,,
-Email:pyunit23@yahoo.ie
+Upon further inspection, atomic64_inc_not_zero was broken too.
+
+The generic implementation implements it in terms of
+atomic64_add_unless and thus does not need a specific fix for it.
+
+Sent another patchset to fix that.
