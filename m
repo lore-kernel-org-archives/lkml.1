@@ -1,218 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383Ab0CAVEG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 16:04:06 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:33550 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808Ab0CAVEC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 16:04:02 -0500
-To: "Karicheri\, Muralidharan" <m-karicheri2@ti.com>
-Cc: "davinci-linux-open-source\@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] davinci platform updates for 2.6.34
-References: <87d3zngaml.fsf@deeprootsystems.com>
-	<A69FA2915331DC488A831521EAE36FE4016A389ED7@dlee06.ent.ti.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Mon, 01 Mar 2010 13:03:59 -0800
-In-Reply-To: <A69FA2915331DC488A831521EAE36FE4016A389ED7@dlee06.ent.ti.com> (Muralidharan Karicheri's message of "Mon\, 1 Mar 2010 14\:02\:48 -0600")
-Message-ID: <87vddfbvpc.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1751663Ab0CAVFE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 16:05:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34236 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751054Ab0CAVFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 16:05:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michal Hocko <mstsxfx@gmail.com>
+Subject: Re: unable to handle kernel paging request on resume with 2.6.33-00001-gbaac35c
+Date: Mon, 1 Mar 2010 22:07:37 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <20100301175256.GA4034@tiehlicka.suse.cz>
+In-Reply-To: <20100301175256.GA4034@tiehlicka.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003012207.37582.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Karicheri, Muralidharan" <m-karicheri2@ti.com> writes:
+On Monday 01 March 2010, Michal Hocko wrote:
+> Hi,
+> 
+> I have experienced the following kernel BUG on resume from suspend from
+> disk (the whole log from  hibarnation to suspend along with kernel
+> config are attached):
+> 
+> BUG: unable to handle kernel paging request at 00aaaaaa
+> IP: [<c019e28c>] anon_vma_link+0x2c/0x39
+> *pde = 00000000
+> Oops: 0002 [#1] PREEMPT SMP
+> last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0003:00/power_supply/AC/type
+> Modules linked in: aes_i586 aes_generic iwl3945 iwlcore mac80211 cfg80211 fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect fuse tun coretemp hwmon snd_hda_codec_realtek snd_hda_intel snd_hda_codec arc4 ecb snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi_event snd_seq snd_timer fujitsu_laptop snd_seq_device rtc_cmos rtc_core led_class rtc_lib snd snd_page_alloc video backlight output [last unloaded: cfg80211]
+> 
+> Pid: 3942, comm: kxkb Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
+> EIP: 0060:[<c019e28c>] EFLAGS: 00010246 CPU: 1
+> EIP is at anon_vma_link+0x2c/0x39
+> EAX: 00aaaaaa EBX: f69c6410 ECX: f69c6414 EDX: f63e4df4
+> ESI: f63e4dc0 EDI: f63e4e14 EBP: f6901ec0 ESP: f6901eb8
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process kxkb (pid: 3942, ti=f6901000 task=f6aa6ff0 task.ti=f6901000)
+> Stack:
+>  f63e4dc0 f23fc7e4 f6901efc c012fc28 f6aa6ff0 f63e4e30 f63e4e34 f63e4e24
+> <0> ca4656f4 f6ace734 f6aa6ff0 f6ace700 ca4656c0 f23fc790 ca560000 fffffff4
+> <0> f659ef94 f6901f38 c0130821 f6aa6ff0 f6901fb4 bff441f0 ca560208 00000000
+> Call Trace:
+>  [<c012fc28>] ? dup_mm+0x1c7/0x3d3
+>  [<c0130821>] ? copy_process+0x98e/0xf26
+>  [<c0130ed6>] ? do_fork+0x11d/0x2a1
+>  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
+>  [<c01b6795>] ? set_close_on_exec+0x45/0x4b
+>  [<c01b6e98>] ? do_fcntl+0x15f/0x3f1
+>  [<c0108678>] ? sys_clone+0x20/0x25
+>  [<c010291d>] ? ptregs_clone+0x15/0x38
+>  [<c0102850>] ? sysenter_do_call+0x12/0x26
+> Code: 89 e5 56 53 0f 1f 44 00 00 8b 58 3c 89 c6 85 db 74 22 89 d8 e8 54 65 29 00 8b 43 08 8d 56 34 8d 4b 04 89 53 08 89 4e 34 89 46 38 <89> 10 89 d8 e8 9e 62 29 00 5b 5e 5d c3 55 89 e5 0f 1f 44 00 00
+> EIP: [<c019e28c>] anon_vma_link+0x2c/0x39 SS:ESP 0068:f6901eb8
+> CR2: 0000000000aaaaaa
+> ---[ end trace b7f008b0e5aa7c65 ]---
 
-> The arch part (shown below) of the vpfe capture driver on DM365 is
-> already part of Mauro's request to Linus as we had agreed before. So
-> please drop it from your request.
+This looks like a low-level memory management issue of some sort.
 
-Murali,
+What's the HEAD commit in this kernel tree?
 
-This was intentional, and will not cause any problems since we sorted
-this out for linux-next.  It's in my tree also to address dependencies
-and avoid merge conflicts in linux-next.
+Also, is the problem reproducible?
 
-Linus has already merged Mauro's tree, so if/when he merges mine, git
-will figure it out and "do the right thing."
-
-Kevin
-
-
-> Murali Karicheri (1):
->       DaVinci - Adding platform & board changes for vpfe capture on DM365
->
->
-> Here is the request from Mauro for 2.6.33.rc1 that has the above arch part.
->
-> http://www.mail-archive.com/linux-media@vger.kernel.org/msg16109.html
->
->
-> Murali Karicheri
-> Software Design Engineer
-> Texas Instruments Inc.
-> Germantown, MD 20874
-> phone: 301-407-9583
-> email: m-karicheri2@ti.com
->
->>-----Original Message-----
->>From: davinci-linux-open-source-bounces@linux.davincidsp.com
->>[mailto:davinci-linux-open-source-bounces@linux.davincidsp.com] On Behalf
->>Of Kevin Hilman
->>Sent: Monday, March 01, 2010 1:28 PM
->>To: Linus Torvalds
->>Cc: davinci-linux-open-source@linux.davincidsp.com; linux-
->>kernel@vger.kernel.org
->>Subject: [GIT PULL] davinci platform updates for 2.6.34
->>
->>Linus,
->>
->>Please pull the following changes for the TI davinci platform.
->>
->>Note that the drivers/net changes are Acked by David Miller but we
->>agreed to merge them via my tree to keep them along with other
->>relevant platform changes for the davinci driver.
->>
->>Also, the last 5 or so patches were rebased today from what has been
->>in linux-next, but it was only to fixup one changelog and add a missing
->>signoff.
->>
->>Thanks,
->>
->>Kevin
->>
->>The following changes since commit
->>abe94c756c08d50566c09a65b9c7fe72f83071c5:
->>  Linus Torvalds (1):
->>        Linux 2.6.33-rc6
->>
->>are available in the git repository at:
->>
->>  ssh://master.kernel.org/pub/scm/linux/kernel/git/khilman/linux-
->>davinci.git davinci-for-linus
->>
->>Chaithrika U S (1):
->>      davinci: clock: Check CLK_PSC flag before disabling PSC
->>
->>Kevin Hilman (2):
->>      davinci: clkdev cleanup: remove clk_lookup wrapper, use
->>clkdev_add_table()
->>      davinci: dm646x: CDCE clocks: davinci_clk converted to clk_lookup
->>
->>Miguel Aguilar (1):
->>      DaVinci: DM365: Voice codec support for the DM365 SoC
->>
->>Murali Karicheri (1):
->>      DaVinci - Adding platform & board changes for vpfe capture on DM365
->>
->>Nageswari Srinivasan (2):
->>      davinci: add support for CDCE949 clock synthesizer
->>      davinci: add CDCE949 support on DM6467 EVM
->>
->>Philby John (1):
->>      Add SDA and SCL pin numbers to i2c platform data
->>
->>Sandeep Paulraj (5):
->>      DaVinci: DM365: Changing default queue for DM365.
->>      DaVinci: SPI: Adding header file for SPI support.
->>      DaVinci DM355: Modifications to DM355 SPI support
->>      DaVinci DM365: Adding DM365 SPI support
->>      DaVinci DM365: Adding support for SPI EEPROM
->>
->>Sekhar Nori (17):
->>      davinci: da8xx/omapl1: add support for the second sysconfig module
->>      davinci: move PLL wait time values to clock.h
->>      davinci: move DDR2 controller defines to memory.h
->>      davinci: move PSC register definitions from psc.c to psc.h
->>      davinci: make it possible to include clock.h and psc.h in assembly
->>code
->>      davinci: cpuidle: move mapping of DDR2 controller registers out of
->>driver
->>      davinci: da850/omap-l138: unlock PLL registers during init
->>      davinci: da850/omap-l138: create static map for SRAM
->>      davinci: explain CLOCK_TICK_RATE of 27MHz in include/mach/timex.h
->>      davinci: board-dm646x-evm.c: arrange related code together
->>      davinci: add support for DM6467T EVM
->>      davinci: make /proc/davinci_clocks display multi-rooted clock tree
->>      davinci: move /proc/davinci_clocks to debugfs
->>      davinci: add power management support
->>      davinci: da850/omap-l138: add support for SoC suspend
->>      davinci: da850/omap-l138 EVM: register for suspend support
->>      davinci: clock: let clk->set_rate function sleep
->>
->>Sriramakrishnan (3):
->>      TI Davinci EMAC : Re-use driver for other platforms.
->>      TI Davinci EMAC : add platform specific interrupt enable/disable
->>logic.
->>      TI Davinci EMAC : Abstract Buffer address translation logic.
->>
->>Sudhakar Rajashekhara (7):
->>      davinci: da850/omap-l138: Modify NOR partition info
->>      davinci: da850/omap-l138: Enable 4-bit ecc
->>      davinci: Correct return value of edma_alloc_channel api
->>      davinci: Keep count of channel controllers on a platform
->>      davinci: Fix edma_alloc_channel api for EDMA_CHANNEL_ANY case
->>      davinci: build list of unused EDMA events dynamically
->>      davinci: da8xx/omap-l1xx: Add EDMA platform data for da850/omap-l138
->>
->> arch/arm/mach-davinci/Kconfig                      |    4 +
->> arch/arm/mach-davinci/Makefile                     |    3 +-
->> arch/arm/mach-davinci/board-da830-evm.c            |    4 +-
->> arch/arm/mach-davinci/board-da850-evm.c            |   34 +++-
->> arch/arm/mach-davinci/board-dm355-evm.c            |    2 +
->> arch/arm/mach-davinci/board-dm365-evm.c            |   94 +++++++
->> arch/arm/mach-davinci/board-dm644x-evm.c           |    2 +
->> arch/arm/mach-davinci/board-dm646x-evm.c           |  143 +++++++---
->> arch/arm/mach-davinci/cdce949.c                    |  293
->>++++++++++++++++++++
->> arch/arm/mach-davinci/clock.c                      |   93 +++----
->> arch/arm/mach-davinci/clock.h                      |   45 ++-
->> arch/arm/mach-davinci/common.c                     |    2 +-
->> arch/arm/mach-davinci/cpuidle.c                    |   38 +---
->> arch/arm/mach-davinci/da830.c                      |   10 +-
->> arch/arm/mach-davinci/da850.c                      |   90 +++++-
->> arch/arm/mach-davinci/devices-da8xx.c              |  146 +++++++++-
->> arch/arm/mach-davinci/dm355.c                      |   49 ++--
->> arch/arm/mach-davinci/dm365.c                      |  213 ++++++++++++++-
->> arch/arm/mach-davinci/dm644x.c                     |   12 +-
->> arch/arm/mach-davinci/dm646x.c                     |   14 +-
->> arch/arm/mach-davinci/dma.c                        |   67 ++++-
->> arch/arm/mach-davinci/include/mach/cdce949.h       |   19 ++
->> arch/arm/mach-davinci/include/mach/common.h        |    2 +-
->> arch/arm/mach-davinci/include/mach/cpuidle.h       |    1 +
->> arch/arm/mach-davinci/include/mach/da8xx.h         |   18 +-
->> arch/arm/mach-davinci/include/mach/dm365.h         |   11 +-
->> arch/arm/mach-davinci/include/mach/dm644x.h        |    2 +-
->> arch/arm/mach-davinci/include/mach/dm646x.h        |    4 +-
->> arch/arm/mach-davinci/include/mach/edma.h          |    2 -
->> arch/arm/mach-davinci/include/mach/i2c.h           |    2 +
->> arch/arm/mach-davinci/include/mach/memory.h        |    5 +
->> arch/arm/mach-davinci/include/mach/mux.h           |    3 +
->> arch/arm/mach-davinci/include/mach/pm.h            |   54 ++++
->> arch/arm/mach-davinci/include/mach/psc.h           |   15 +
->> arch/arm/mach-davinci/include/mach/spi.h           |   44 +++
->> arch/arm/mach-davinci/include/mach/timex.h         |    7 +-
->> arch/arm/mach-davinci/pm.c                         |  158 +++++++++++
->> arch/arm/mach-davinci/psc.c                        |   11 -
->> arch/arm/mach-davinci/sleep.S                      |  224 +++++++++++++++
->> drivers/net/Kconfig                                |    2 +-
->> drivers/net/davinci_emac.c                         |   55 +++--
->> .../mach/emac.h => include/linux/davinci_emac.h    |    7 +-
->> 42 files changed, 1708 insertions(+), 296 deletions(-)
->> create mode 100644 arch/arm/mach-davinci/cdce949.c
->> create mode 100644 arch/arm/mach-davinci/include/mach/cdce949.h
->> create mode 100644 arch/arm/mach-davinci/include/mach/pm.h
->> create mode 100644 arch/arm/mach-davinci/include/mach/spi.h
->> create mode 100644 arch/arm/mach-davinci/pm.c
->> create mode 100644 arch/arm/mach-davinci/sleep.S
->> rename arch/arm/mach-davinci/include/mach/emac.h =>
->>include/linux/davinci_emac.h (83%)
->>_______________________________________________
->>Davinci-linux-open-source mailing list
->>Davinci-linux-open-source@linux.davincidsp.com
->>http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source
+Rafael
