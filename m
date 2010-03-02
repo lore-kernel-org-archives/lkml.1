@@ -1,93 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071Ab0CBQ3o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 11:29:44 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:38049 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292Ab0CBQ3n (ORCPT
+	id S1754056Ab0CBQog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 11:44:36 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:30366
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753292Ab0CBQof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 11:29:43 -0500
-Date: Tue, 2 Mar 2010 21:59:32 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ego@in.ibm.com
-Subject: [patch] sched: Fix group_capacity for sched_smt_powersavings=1
-Message-ID: <20100302162932.GC5439@dirshya.in.ibm.com>
+	Tue, 2 Mar 2010 11:44:35 -0500
+X-SpamScore: -3
+X-BigFish: VPS-3(zz4015Lzz1202hzzz32i6bh2a8h62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KYNYHH-01-FY5-02
+X-M-MSG: 
+Date: Tue, 2 Mar 2010 17:44:05 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: [GIT PULL] oprofile: updates for v2.6.34
+Message-ID: <20100302164405.GJ13205@erda.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
+X-Mailer: git-send-email 1.6.6
 User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 02 Mar 2010 16:44:06.0106 (UTC) FILETIME=[92B13BA0:01CABA27]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Ingo,
 
-After applying Suresh's fixes from discussion thread
-http://lkml.org/lkml/2010/2/12/352, we still need the attached patch
-to restore sched_smt_powersavings=1 functionality where tasks prefer
-sibling threads and keep more cores idle.
+it's only one patch, please pull from:
 
-I am reposting the patch from http://lkml.org/lkml/2010/2/16/291
+ git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
 
-Please apply to sched-tip, the patch is based on today's sched-tip
-master.
-
-The attached patch will run 4 while(1) loops in two cores when
-sched_smt_power_savings=1.  Tested on two socket, quad core, hyper
-threaded system.
+(It seems the git mirror is not yet sync'ed.)
 
 Thanks,
-Vaidy
----
-        sched: Fix group_capacity for sched_smt_powersavings=1
 
-        sched_smt_powersavings for threaded systems need this fix for
-        consolidation to sibling threads to work.  Since threads have 
-        fractional capacity, group_capacity will turn out to be one 
-        always and not accommodate another task in the sibling thread.
-        
-        This fix makes group_capacity a function of cpumask_weight that
-        will enable the power saving load balancer to pack tasks among
-        sibling threads and keep more cores idle.
+-Robert
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+The following changes since commit cfc9c0b450176a077205ef39092f0dc1a04e020a:
+  Robert Richter (1):
+        oprofile/x86: fix msr access to reserved counters
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5a5ea2c..7c0a29a 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -2538,6 +2538,21 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
- 		 */
- 		if (prefer_sibling)
- 			sgs.group_capacity = min(sgs.group_capacity, 1UL);
-+		/*
-+		 * If power savings balance is set at this domain, then
-+		 * make capacity equal to number of hardware threads to
-+		 * accommodate more tasks until capacity is reached.
-+		 */
-+		else if (sd->flags & SD_POWERSAVINGS_BALANCE)
-+			sgs.group_capacity =
-+				cpumask_weight(sched_group_cpus(group));
-+
-+			/*
-+			 * The default group_capacity is rounded from sum of
-+			 * fractional cpu_powers of sibling hardware threads
-+			 * in order to enable fair use of available hardware
-+			 * resources.
-+			 */
- 
- 		if (local_group) {
- 			sds->this_load = sgs.avg_load;
-@@ -2863,7 +2878,8 @@ static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle)
- 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
- 			return 0;
- 
--		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
-+		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP &&
-+		    sched_smt_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
- 			return 0;
- 	}
- 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git ..BRANCH.NOT.VERIFIED..
+
+Martin Schwidefsky (1):
+      oprofile: convert oprofile from timer_hook to hrtimer
+
+ drivers/oprofile/oprof.c     |   12 ++++--
+ drivers/oprofile/oprof.h     |    3 +-
+ drivers/oprofile/timer_int.c |   78 +++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 79 insertions(+), 14 deletions(-)
+
