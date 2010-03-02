@@ -1,76 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860Ab0CBBFj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 20:05:39 -0500
-Received: from claw.goop.org ([74.207.240.146]:40913 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533Ab0CBBFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 20:05:38 -0500
-Message-ID: <4B8C6460.6020506@goop.org>
-Date: Mon, 01 Mar 2010 17:05:36 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1752938Ab0CBBMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 20:12:42 -0500
+Received: from be1ssnxpe1.nxp.com ([57.67.164.69]:39847 "EHLO
+	be1ssnxpe1.nxp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701Ab0CBBMk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 20:12:40 -0500
+From: Kevin Wells <kevin.wells@nxp.com>
+To: Luotao Fu <l.fu@pengutronix.de>
+CC: Vitaly Wool <vitalywool@gmail.com>, Jean Delvare <khali@linux-fr.org>,
+       Ben Dooks <ben-linux@fluff.org>, Julia Lawall <julia@diku.dk>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 2 Mar 2010 02:12:05 +0100
+Subject: RE: [PATCH] i2c-pnx: fix setting start/stop condition
+Thread-Topic: [PATCH] i2c-pnx: fix setting start/stop condition
+Thread-Index: Acq5dC9MHGCnQsjZRIqZFTmq3ZtaQwALjZ2Q
+Message-ID: <083DF309106F364B939360100EC290F805CCF929E1@eu1rdcrdc1wx030.exi.nxp.com>
+References: <1267446264-8446-1-git-send-email-l.fu@pengutronix.de>
+ <083DF309106F364B939360100EC290F805CCF9294A@eu1rdcrdc1wx030.exi.nxp.com>
+ <20100301191954.GA1811@pengutronix.de>
+In-Reply-To: <20100301191954.GA1811@pengutronix.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Xen-devel] [PATCH 4/7] xen: The entrance for PV extension of
- HVM
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-5-git-send-email-sheng@linux.intel.com>
-In-Reply-To: <1267436315-24486-5-git-send-email-sheng@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166 definitions=2010-03-01_17:2010-02-06,2010-03-01,2010-03-01 signatures=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 01:38 AM, Sheng Yang wrote:
-> xen_guest_init() would setup the environment.
->
-> Cc: Ingo Molnar<mingo@elte.hu>
-> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
-> ---
->   arch/x86/kernel/setup.c |    8 ++++++++
->   1 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 5d9e40c..2b61d46 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -113,6 +113,10 @@
->   #endif
->   #include<asm/mce.h>
->
-> +#ifdef CONFIG_XEN
-> +#include<xen/xen.h>
-> +#endif
->    
 
-No #ifdefs; put them in xen.h if necessary (which they aren't).  This 
-probably isn't the right header anyway; this is specifically for testing 
-the presence of Xen and/or the current domain type.  It shouldn't have 
-any other prototypes in it, or include anything else (it probably 
-already includes too much).  Given this is already x86-specific code, 
-include asm/xen/something.h.
+Hi Luotao,
 
-> +
->   /*
->    * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
->    * The direct mapping extends to max_pfn_mapped, so that we can directly access
-> @@ -740,6 +744,10 @@ void __init setup_arch(char **cmdline_p)
->
->   	x86_init.oem.arch_setup();
->
-> +#ifdef CONFIG_XEN
-> +	xen_guest_init();
-> +#endif
->    
+> 
+> I had a closer look into this and think that you are right. I was
+> irritated by the unregular usage of start_bit and thought the stop bit is
+> asserted with the i2c_pnx_stop call, which is apparently only used for
+> zero sized transfers.
+> 
+> Fixed patch is attached with this mail.
+> 
 
-Again, no #ifdefs here.  Put an #ifdeffed stub in an appropriate header.
+This latest patch seems to work fine and tests well with all our
+I2C devices - including the pcf8563, which didn't work right before
+this patch. I think it's good to go.
 
-     J
+thanks!
+Kevin
+
+> cheers
+> Luotao Fu
+> --
+> Pengutronix e.K.                           | Dipl.-Ing. Luotao Fu        |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
