@@ -1,80 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381Ab0CBGvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 01:51:21 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:64163 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015Ab0CBGvT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 01:51:19 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19mXM6ZCV003qm2UFKhw7D2
-Date: Mon, 1 Mar 2010 22:52:24 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: "G, Manjunath Kondaiah" <manjugk@ti.com>
-Cc: "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+	id S1753402Ab0CBGwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 01:52:35 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34063 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015Ab0CBGwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 01:52:34 -0500
+Date: Tue, 2 Mar 2010 17:52:25 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
-Message-ID: <20100302065224.GL3389@atomide.com>
-References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
- <20100301184600.GC3389@atomide.com>
- <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
- <20100302060821.GI3389@atomide.com>
- <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+ due to "e084b - page-allocator: preserve PFN ordering when __GFP_COLD is
+ set"
+Message-ID: <20100302065225.GC8653@laptop>
+References: <4B742C2C.5080305@linux.vnet.ibm.com>
+ <20100212100519.GA29085@laptop>
+ <4B796C6D.80800@linux.vnet.ibm.com>
+ <20100216112517.GE1194@csn.ul.ie>
+ <4B7ACC1E.9080205@linux.vnet.ibm.com>
+ <4B7BBCFC.4090101@linux.vnet.ibm.com>
+ <20100218114310.GC32626@csn.ul.ie>
+ <4B7D664C.20507@linux.vnet.ibm.com>
+ <4B7E73BF.5030901@linux.vnet.ibm.com>
+ <20100219151934.GA1445@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+In-Reply-To: <20100219151934.GA1445@csn.ul.ie>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* G, Manjunath Kondaiah <manjugk@ti.com> [100301 22:24]:
+On Fri, Feb 19, 2010 at 03:19:34PM +0000, Mel Gorman wrote:
+> On Fri, Feb 19, 2010 at 12:19:27PM +0100, Christian Ehrhardt wrote:
+> > Eventually it might come down to a discussion of allocation priorities and
+> > we might even keep them as is and accept this issue - I still would prefer
+> > a good second chance implementation, other page cache allocation flags or
+> > something else that explicitly solves this issue.
+> >
 > 
+> In that line, the patch that replaced congestion_wait() with a waitqueue
+> makes some sense.
 > 
+> > Mel's patch that replaces congestion_wait with a wait for the zone watermarks
+> > becoming available again is definitely a step in the right direction and
+> > should go into upstream and the long term support branches.
 > 
-> > > > > +	up->uart_dma.prev_rx_dma_pos = 
-> > up->uart_dma.rx_buf_dma_phys;
-> > > > > +	if (cpu_is_omap44xx())
-> > > > > +		omap_writel(0, OMAP44XX_DMA4_BASE
-> > > > > +			+ 
-> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-> > > > > +	else
-> > > > > +		omap_writel(0, OMAP34XX_DMA4_BASE
-> > > > > +			+ 
-> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-> > > > 
-> > > > NAK. Please don't use omap_read/write for for new code. And do not
-> > > > tinker with the omap hardware registers directly in the driver.
-> > > > 
-> > > > This needs to be done properly in 
-> > arch/arm/plat-omap/dma.c instead.
-> > > 
-> > > Thanks for the suggestion.
-> > > 
-> > > Currently, dma_read/dma_write are #define's in dma.c which 
-> > cannot be 
-> > > accessed outside dma.c. I don't see any API's in dma.c for 
-> > setting required 
-> > > value for this register?
-> > 
-> > Hmm isn't this the same as omap_get_dma_dst_pos(int lch)? If you're
-> > trying do something that's not in dma.c, we can add a new function
-> > for it.
+> I'll need to do a number of tests before I can move that upstream but I
+> don't think it's a merge candidate. Unfortunately, I'll be offline for a
+> week starting tomorrow so I won't be able to do the testing.
 > 
-> The omap_get_dma_dst_pos(int lch) is for read operation in CDAC register. 
-> But, We need to write required value into CDAC register. For this, I propose:
-> 
-> omap_set_dma_dst_pos(int lch, int value) which does not exist in current dma 
-> driver.
+> When I get back, I'll revisit those patches with the view to pushing
+> them upstream. I hate to treat symptoms here without knowing the
+> underlying problem but this has been spinning in circles for ages with
+> little forward progress :(
 
-OK, it that's needed.
+The zone pressure waitqueue patch makes sense. We may even want to make
+it more strictly FIFO (eg. check upfront if there are waiters on the
+queue before allocating a page, and if yes then add ourself to the back
+of the waitqueue). And also possibly even look at doing the wakeups in
+the page-freeing path. Although that might start adding too much
+overhead, so it's quite possible your sloppy-but-lighter timeout
+approach is preferable.
 
-Tony
