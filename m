@@ -1,67 +1,316 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314Ab0CBC41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 21:56:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52377 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753048Ab0CBC40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 21:56:26 -0500
-Message-ID: <4B8C7E23.1000302@redhat.com>
-Date: Mon, 01 Mar 2010 21:55:31 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
- framework
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6> <20100225152130.GB12635@Krystal>
-In-Reply-To: <20100225152130.GB12635@Krystal>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753318Ab0CBDCQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 22:02:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32840 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203Ab0CBDCP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 22:02:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 2 Mar 2010 11:58:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       rientjes@google.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [BUGFIX][PATCH] memcg: fix oom kill behavior.
+Message-Id: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Make insn_slot framework support various size slots.
->> Current insn_slot just supports one-size instruction buffer slot. However,
->> kprobes jump optimization needs larger size buffers.
-> 
-> OK, so you end up having one insn slot cache for kprobes and one insn
-> slot (eventually) for the static jump patching (which needs larger
-> instruction slots than kprobes). That seems like a good way to ensure
-> you do not use more memory than necessary.
-> 
-> We could possibly go even further and automatically use the right insn
-> slot cache given the size of the instruction entry that must be added (a
-> bit like the memory allocator which have different pools for each
-> allocation order).
+Brief Summary (for Andrew)
 
-Sure, that will be simpler interface.
+ - Nishimura reported my fix (one year ago)
+   a636b327f731143ccc544b966cfd8de6cb6d72c6
+   doesn't work well in some extreme situation.
 
-> Possibly that using the terminology of "memory pools" rather than
-> "cache" could be a better fit too. So what this really becomes is an
-> instruction slot allocator and garbage collector.
+ - David Rientjes said mem_cgroup_oom_called() is completely
+   ugly and broken and.....
+   And he tries to remove that in his patch set.
 
-Ah, right. It would be better to rename kprobe_insn_pool() :)
+Then, I wrote this as bugfix onto mmotm. This patch implements
+ - per-memcg OOM lock as per-zone OOM lock
+ - avoid to return -ENOMEM via mamcg's page fault path.
+   ENOMEM causes unnecessary page_fault_out_of_memory().
+   (Even if memcg hangs, there is no change from current behavior)
+ - in addtion to MEMDIE thread, KILLED proceses go bypath memcg.
 
-Thank you,
+I'm glad if this goes into 2.6.34 timeline (as bugfix). But I'm
+afraid this seems too big as bugfix...
 
+My plans for 2.6.35 are
+ - oom-notifier for memcg (based on memcg threshold notifier) 
+ - oom-freezer (disable oom-kill) for memcg
+ - better handling in extreme situation.
+And now, Andrea Righi works for dirty_ratio for memcg. We'll have
+something better in 2.6.35 kernels.
 
+This patch will HUNK with David's set. Then, if this hunks in mmotm,
+I'll rework.
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+Tested on x86-64. Nishimura-san, could you test ?
+
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+In current page-fault code,
+
+	handle_mm_fault()
+		-> ...
+		-> mem_cgroup_charge()
+		-> map page or handle error.
+	-> check return code.
+
+If page fault's return code is VM_FAULT_OOM, page_fault_out_of_memory()
+is called. But if it's caused by memcg, OOM should have been already
+invoked.
+Then, I added a patch: a636b327f731143ccc544b966cfd8de6cb6d72c6
+
+That patch records last_oom_jiffies for memcg's sub-hierarchy and
+prevents page_fault_out_of_memory from being invoked in near future.
+
+But Nishimura-san reported that check by jiffies is not enough
+when the system is terribly heavy. 
+
+This patch changes memcg's oom logic as.
+ * If memcg causes OOM-kill, continue to retry.
+ * remove jiffies check which is used now.
+ * add memcg-oom-lock which works like perzone oom lock.
+ * If current is killed(as a process), bypass charge.
+
+Something more sophisticated can be added but this pactch does
+fundamental things.
+TODO:
+ - add oom notifier
+ - add permemcg disable-oom-kill flag and freezer at oom.
+ - more chances for wake up oom waiter (when changing memory limit etc..)
+
+Changelog;
+ - fixed per-memcg oom lock.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/memcontrol.h |    6 --
+ mm/memcontrol.c            |  109 +++++++++++++++++++++++++++++++++------------
+ mm/oom_kill.c              |    8 ---
+ 3 files changed, 82 insertions(+), 41 deletions(-)
+
+Index: mmotm-2.6.33-Feb11/include/linux/memcontrol.h
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/include/linux/memcontrol.h
++++ mmotm-2.6.33-Feb11/include/linux/memcontrol.h
+@@ -124,7 +124,6 @@ static inline bool mem_cgroup_disabled(v
+ 	return false;
+ }
+ 
+-extern bool mem_cgroup_oom_called(struct task_struct *task);
+ void mem_cgroup_update_file_mapped(struct page *page, int val);
+ unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
+ 						gfp_t gfp_mask, int nid,
+@@ -258,11 +257,6 @@ static inline bool mem_cgroup_disabled(v
+ 	return true;
+ }
+ 
+-static inline bool mem_cgroup_oom_called(struct task_struct *task)
+-{
+-	return false;
+-}
+-
+ static inline int
+ mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
+ {
+Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
++++ mmotm-2.6.33-Feb11/mm/memcontrol.c
+@@ -200,7 +200,7 @@ struct mem_cgroup {
+ 	 * Should the accounting and control be hierarchical, per subtree?
+ 	 */
+ 	bool use_hierarchy;
+-	unsigned long	last_oom_jiffies;
++	atomic_t	oom_lock;
+ 	atomic_t	refcnt;
+ 
+ 	unsigned int	swappiness;
+@@ -1234,32 +1234,77 @@ static int mem_cgroup_hierarchical_recla
+ 	return total;
+ }
+ 
+-bool mem_cgroup_oom_called(struct task_struct *task)
++static int mem_cgroup_oom_lock_cb(struct mem_cgroup *mem, void *data)
+ {
+-	bool ret = false;
+-	struct mem_cgroup *mem;
+-	struct mm_struct *mm;
++	int *val = (int *)data;
++	int x;
+ 
+-	rcu_read_lock();
+-	mm = task->mm;
+-	if (!mm)
+-		mm = &init_mm;
+-	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
+-	if (mem && time_before(jiffies, mem->last_oom_jiffies + HZ/10))
+-		ret = true;
+-	rcu_read_unlock();
+-	return ret;
++	x = atomic_inc_return(&mem->oom_lock);
++	if (x > *val)
++		*val = x;
++	return 0;
++}
++/*
++ * Check OOM-Killer is already running under our hierarchy.
++ * If someone is running, return false.
++ */
++static bool mem_cgroup_oom_lock(struct mem_cgroup *mem)
++{
++	int check = 0;
++
++	mem_cgroup_walk_tree(mem, &check, mem_cgroup_oom_lock_cb);
++
++	if (check == 1)
++		return true;
++	return false;
+ }
+ 
+-static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
++static int mem_cgroup_oom_unlock_cb(struct mem_cgroup *mem, void *data)
+ {
+-	mem->last_oom_jiffies = jiffies;
++	atomic_dec(&mem->oom_lock);
+ 	return 0;
+ }
+ 
+-static void record_last_oom(struct mem_cgroup *mem)
++static void mem_cgroup_oom_unlock(struct mem_cgroup *mem)
+ {
+-	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
++	mem_cgroup_walk_tree(mem, NULL,	mem_cgroup_oom_unlock_cb);
++}
++
++static DEFINE_MUTEX(memcg_oom_mutex);
++static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
++
++/*
++ * try to call OOM killer. returns false if we should exit memory-reclaim loop.
++ */
++bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
++{
++	DEFINE_WAIT(wait);
++	bool locked;
++
++	prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
++	/* At first, try to OOM lock hierarchy under mem.*/
++	mutex_lock(&memcg_oom_mutex);
++	locked = mem_cgroup_oom_lock(mem);
++	mutex_unlock(&memcg_oom_mutex);
++
++	if (locked) {
++		finish_wait(&memcg_oom_waitq, &wait);
++		mem_cgroup_out_of_memory(mem, mask);
++	} else {
++		schedule();
++		finish_wait(&memcg_oom_waitq, &wait);
++	}
++	mutex_lock(&memcg_oom_mutex);
++	mem_cgroup_oom_unlock(mem);
++	/* TODO: more fine grained waitq ? */
++	wake_up_all(&memcg_oom_waitq);
++	mutex_unlock(&memcg_oom_mutex);
++
++	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
++		return false;
++	/* Give chance to dying process */
++	schedule_timeout(1);
++	return true;
+ }
+ 
+ /*
+@@ -1432,11 +1477,14 @@ static int __mem_cgroup_try_charge(struc
+ 	struct res_counter *fail_res;
+ 	int csize = CHARGE_SIZE;
+ 
+-	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
+-		/* Don't account this! */
+-		*memcg = NULL;
+-		return 0;
+-	}
++	/*
++	 * Unlike gloval-vm's OOM-kill, we're not in memory shortage
++	 * in system level. So, allow to go ahead dying process in addition to
++	 * MEMDIE process.
++	 */
++	if (unlikely(test_thread_flag(TIF_MEMDIE)
++		     || fatal_signal_pending(current)))
++		goto bypass;
+ 
+ 	/*
+ 	 * We always charge the cgroup the mm_struct belongs to.
+@@ -1549,11 +1597,15 @@ static int __mem_cgroup_try_charge(struc
+ 		}
+ 
+ 		if (!nr_retries--) {
+-			if (oom) {
+-				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
+-				record_last_oom(mem_over_limit);
++			if (!oom)
++				goto nomem;
++			if (mem_cgroup_handle_oom(mem_over_limit, gfp_mask)) {
++				nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
++				continue;
+ 			}
+-			goto nomem;
++			/* When we reach here, current task is dying .*/
++			css_put(&mem->css);
++			goto bypass;
+ 		}
+ 	}
+ 	if (csize > PAGE_SIZE)
+@@ -1572,6 +1624,9 @@ done:
+ nomem:
+ 	css_put(&mem->css);
+ 	return -ENOMEM;
++bypass:
++	*memcg = NULL;
++	return 0;
+ }
+ 
+ /*
+Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
++++ mmotm-2.6.33-Feb11/mm/oom_kill.c
+@@ -599,13 +599,6 @@ void pagefault_out_of_memory(void)
+ 		/* Got some memory back in the last second. */
+ 		return;
+ 
+-	/*
+-	 * If this is from memcg, oom-killer is already invoked.
+-	 * and not worth to go system-wide-oom.
+-	 */
+-	if (mem_cgroup_oom_called(current))
+-		goto rest_and_return;
+-
+ 	if (sysctl_panic_on_oom)
+ 		panic("out of memory from page fault. panic_on_oom is selected.\n");
+ 
+@@ -617,7 +610,6 @@ void pagefault_out_of_memory(void)
+ 	 * Give "p" a good chance of killing itself before we
+ 	 * retry to allocate memory.
+ 	 */
+-rest_and_return:
+ 	if (!test_thread_flag(TIF_MEMDIE))
+ 		schedule_timeout_uninterruptible(1);
+ }
+
