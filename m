@@ -1,91 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470Ab0CBPS1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:18:27 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:64981 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343Ab0CBPSZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:18:25 -0500
-Date: Tue, 2 Mar 2010 15:18:21 +0000
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: paulus@samba.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Add ID and STREAM_ID to recorded event data
-Message-ID: <20100302151821.GA3901@us.ibm.com>
-References: <cover.1267537676.git.ebmunson@us.ibm.com>
- <71583fc64cb167adcdb0039b53b8bc76fed21f80.1267537676.git.ebmunson@us.ibm.com>
- <1267541905.25158.64.camel@laptop>
+	id S1753809Ab0CBPTi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:19:38 -0500
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56181 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752343Ab0CBPTg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 10:19:36 -0500
+From: Frans Pop <elendil@planet.nl>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
+Date: Tue, 2 Mar 2010 16:19:32 +0100
+User-Agent: KMail/1.9.9
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+References: <20100301042249.GA12289@linux.vnet.ibm.com> <201003012129.36937.elendil@planet.nl> <20100302011633.GJ6758@linux.vnet.ibm.com>
+In-Reply-To: <20100302011633.GJ6758@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1267541905.25158.64.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201003021619.34793.elendil@planet.nl>
+X-OriginalArrivalTime: 02 Mar 2010 15:19:35.0624 (UTC) FILETIME=[C4731480:01CABA1B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 02 March 2010, Paul E. McKenney wrote:
+> Sigh!  Because popen() doesn't fail when the command is bogus, it seems.
+> I now do stat() to check for it existing, and that seems to handle the
+> remote-output case.
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cool. Did you check if it's really necessary to treat the two cases 
+separately? I would expect srctree to always be set, and if I read the 
+root Makefile correctly that's indeed the case:
+srctree         := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
 
-On Tue, 02 Mar 2010, Peter Zijlstra wrote:
+Hmm. I see you've switched from SRCTREE to KBUILD_SRC. Is that correct? 
+SCRTREE is also used elsewhere in the same file and that's the variable 
+(in lower case; the upper case variant is a C define) that's explicitly 
+exported in the root Makefile.
 
-> On Tue, 2010-03-02 at 14:42 +0000, Eric B Munson wrote:
-> > Currently perf record does not write the ID or the STREAM_ID to disk
-> > for events.  This doesn't allow report to tell if an event stream conta=
-ins
-> > one or more types of events.  This patch adds these two entries to the =
-list
-> > of data that record will write to disk.
-> >=20
-> > Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-> > ---
-> >  tools/perf/builtin-record.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> >=20
-> > diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> > index 771533c..35e4605 100644
-> > --- a/tools/perf/builtin-record.c
-> > +++ b/tools/perf/builtin-record.c
-> > @@ -242,7 +242,8 @@ static void create_counter(int counter, int cpu, pi=
-d_t pid)
-> >  				  PERF_FORMAT_TOTAL_TIME_RUNNING |
-> >  				  PERF_FORMAT_ID;
-> > =20
-> > -	attr->sample_type	|=3D PERF_SAMPLE_IP | PERF_SAMPLE_TID;
-> > +	attr->sample_type	|=3D PERF_SAMPLE_IP | PERF_SAMPLE_TID |
-> > +				   PERF_SAMPLE_ID | PERF_SAMPLE_STREAM_ID;
-> > =20
-> >  	if (freq) {
-> >  		attr->sample_type	|=3D PERF_SAMPLE_PERIOD;
->=20
-> can we make this conditional on there being more than one event, that
-> saves a little space/time when recording
->=20
+> > One other thing. I wonder if this implementation will always reliably
+> > result in the *current* SHA1 being included in the .config. AFAICT
+> > the .config only actually gets written if there are changes, or if you
+> > explicitly do a 'make oldconfig'.
+> >
+> > But if you e.g. pull a stable update and just run 'make', the .config
+> > will likely remain unchanged and will thus still contain the SHA1 from
+> > a previous build.
+>
+> Good point.  But the same is true of the Linux kernel version
+> identifier, right?
 
-Yeah, I will add that in the next version.
+Right. But the increased precision of the SHA1 IMO also demands an 
+increased reliability of its accuracy: if it's not accurate it loses its 
+value.
 
---=20
-Eric B Munson
-IBM Linux Technology Center
-ebmunson@us.ibm.com
+Personally I think that maybe the config file is not the correct place for 
+this. For one thing users may well send a config file that's not the 100% 
+exact one used to build the kernel when they know it's close enough that 
+it makes no practical difference (I know I've done so in the past).
 
+Wouldn't it be more logical to include the line in the dmesg output? My 
+preference would be a separate line below the existing (Linux version) 
+line. That line could only be output if the kernel was built from a VCS.
+It could then even be repeated in oops output.
 
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+That would also solve the problem of the config file not being updated.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Paul E. McKenney wrote:
+>> I'd hate to have that run every time I make a kernel.
+> 
+> Good point...  Should we have an environment variable that controls this
+> behavior?
 
-iEYEARECAAYFAkuNLD0ACgkQsnv9E83jkzoFwgCgw9OgTIC1gIQhFrk1aeS3G4eN
-UWIAoKdzWhq6BWE/+/IRvzkRclvph2dv
-=VD/u
------END PGP SIGNATURE-----
+I would suggest at most a general enabled/disabled switch (distros might 
+prefer to disable it too), and not more detailed settings to control 
+whether or not to include dirty or whatnot.
 
---n8g4imXOkfNTN/H1--
+Cheers,
+FJP
