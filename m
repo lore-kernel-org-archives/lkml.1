@@ -1,78 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601Ab0CBIFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:05:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16016 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408Ab0CBIFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:05:37 -0500
-Date: Tue, 2 Mar 2010 10:05:27 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Zachary Amsden <zamsden@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
-Subject: Re: use of setjmp/longjmp in x86 emulator.
-Message-ID: <20100302080527.GT16909@redhat.com>
-References: <20100301091819.GD16909@redhat.com>
- <4B8BE7C1.40000@redhat.com>
- <20100301174724.GA12867@redhat.com>
- <4B8C09F5.9070506@redhat.com>
- <20100301190341.GD12867@redhat.com>
- <4B8C1320.6060602@redhat.com>
- <4B8C4032.7080703@zytor.com>
- <4B8C463B.7070900@zytor.com>
- <4B8C4F12.8050009@redhat.com>
+	id S1753630Ab0CBIK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:10:27 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39590 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753475Ab0CBIKZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:10:25 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B8CC7BD.5020206@jp.fujitsu.com>
+Date: Tue, 02 Mar 2010 17:09:33 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.8) Gecko/20100216 Thunderbird/3.0.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B8C4F12.8050009@redhat.com>
+To: Huang Ying <ying.huang@intel.com>
+CC: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 2/2] ACPI, APEI, PCIE AER, use general HEST table parsing
+ in AER firmware_first setup
+References: <1267494902-7193-1-git-send-email-ying.huang@intel.com> <1267494902-7193-2-git-send-email-ying.huang@intel.com>
+In-Reply-To: <1267494902-7193-2-git-send-email-ying.huang@intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 01:34:42PM -1000, Zachary Amsden wrote:
-> On 03/01/2010 12:56 PM, H. Peter Anvin wrote:
-> >On 03/01/2010 02:31 PM, H. Peter Anvin wrote:
-> >>On 03/01/2010 11:18 AM, Zachary Amsden wrote:
-> >>>It's going to be ugly to emulate segmentation, NX and write protect
-> >>>support without hardware to do this checking for you, but it's just what
-> >>>you have to do in this slow path - tedious, fully specified emulation.
-> >>>
-> >>>Just because it's tedious doesn't mean we need to use setjmp / longjmp.
-> >>>Throw / catch might be effective, but it's still pretty bizarre to do
-> >>>tricks like that in C.
-> >>>
-> >>Well, setjmp/longjmp really is not much more than exception handling in C.
-> >>
-> >For what it's worth, I think that setjmp/longjmp is not anywhere near as
-> >dangerous as people want to make it out to be.  gcc will warn for
-> >dangerous uses (and a lot of non-dangerous uses), but generally the
-> >difficult problems can be dealt with by moving the setjmp-protected code
-> >into a separate function.
-> 
-> I'd be curious to see if it would need to evolve it to preemptsetjmp
-> / irqlongjmp or some other more complex forms in time.
-> 
-Just don't allow stupid usage of longjmp. Like everything else
-it can be abused.
+(2010/03/02 10:55), Huang Ying wrote:
+> ... The firmware_first setup code is moved from PCI core to
+> AER driver too, because it is only AER related.
+(snip)
+> diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
+> index c843a79..cc527c1 100644
+> --- a/drivers/pci/pcie/aer/aerdrv_core.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
+> @@ -858,6 +858,8 @@ void aer_delete_rootport(struct aer_rpc *rpc)
+>   */
+>  int aer_init(struct pcie_device *dev)
+>  {
+> +	aer_set_firmware_first(dev);
+> +
+>  	if (dev->port->aer_firmware_first) {
+>  		dev_printk(KERN_DEBUG, &dev->device,
+>  			   "PCIe errors handled by platform firmware.\n");
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 2a94309..ccfaf19 100644
+(snip)
+> @@ -935,7 +928,6 @@ int pci_setup_device(struct pci_dev *dev)
+>  	dev->multifunction = !!(hdr_type & 0x80);
+>  	dev->error_state = pci_channel_io_normal;
+>  	set_pcie_port_type(dev);
+> -	set_pci_aer_firmware_first(dev);
+>  
+>  	list_for_each_entry(slot, &dev->bus->slots, list)
+>  		if (PCI_SLOT(dev->devfn) == slot->number)
 
-> But I'd rather implement a new language where acquisition of
-> resources such as locks, dynamically allocated objects, and ref
-> counts are predicated in the function typing and are heavily
-> encouraged to possess defined inverses.  Then the closure of a
-> particular layer of nesting already has enough information to
-> provide release upon escape, and the compiler can easily take the
-> burden of checking for a large class of lock and resource violation.
-> 
-> And it would have to be prettier than the current languages that do
-> that, meaning operator overloading would be banned.  Although it
-> would define rational numbers, super-extended precision arithmetic,
-> imaginary numbers, quaternions and matrices as part of the spec, so
-> there would be no need to use arithmetic overrides anyway, and then
-> all the nonsensical operators could die, die, die, especially the
-> function () and logical operator overrides.
-> 
-Will you language have a lot of parentheses?
+The aer_init() will be called for root ports, but not for end point
+devices or so on.  So please remain the firmware_first setup code in
+PCI core.  Otherwise endpoint drivers will get success on call of
+pci_enable_pcie_error_reporting() regardless of the firmware first.
 
---
-			Gleb.
+
+Thanks,
+H.Seto
+
