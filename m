@@ -1,68 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413Ab0CBOTm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 09:19:42 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:33453 "EHLO mx2.netapp.com"
+	id S1753447Ab0CBObM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 09:31:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43163 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352Ab0CBOTk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 09:19:40 -0500
-X-IronPort-AV: E=Sophos;i="4.49,567,1262592000"; 
-   d="scan'208";a="325184132"
-Subject: Re: [RFC] nfs: use 4*rsize readahead size
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Dave Chinner <david@fromorbit.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100302031021.GA14267@localhost>
-References: <20100224024100.GA17048@localhost>
-	 <20100224032934.GF16175@discord.disaster>
-	 <20100224041822.GB27459@localhost>
-	 <20100224052215.GH16175@discord.disaster> <20100224061247.GA8421@localhost>
-	 <20100224073940.GJ16175@discord.disaster> <20100226074916.GA8545@localhost>
-	 <20100302031021.GA14267@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Tue, 02 Mar 2010 09:19:23 -0500
-Message-ID: <1267539563.3099.43.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-X-OriginalArrivalTime: 02 Mar 2010 14:19:24.0258 (UTC) FILETIME=[5BE85C20:01CABA13]
+	id S1751352Ab0CBObK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 09:31:10 -0500
+Date: Tue, 2 Mar 2010 14:30:34 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu,
+       dzickus@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, dzickus@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/nmi] nmi_watchdog: Tell the world we're active
+Message-ID: <tip-5671a10e2bc7f99d9157c6044faf8be2ef302361@git.kernel.org>
+Git-Commit-ID: 5671a10e2bc7f99d9157c6044faf8be2ef302361
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 14:30:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 11:10 +0800, Wu Fengguang wrote: 
-> Dave,
-> 
-> Here is one more test on a big ext4 disk file:
-> 
-> 	   16k	39.7 MB/s
-> 	   32k	54.3 MB/s
-> 	   64k	63.6 MB/s
-> 	  128k	72.6 MB/s
-> 	  256k	71.7 MB/s
-> rsize ==> 512k  71.7 MB/s
-> 	 1024k	72.2 MB/s
-> 	 2048k	71.0 MB/s
-> 	 4096k	73.0 MB/s
-> 	 8192k	74.3 MB/s
-> 	16384k	74.5 MB/s
-> 
-> It shows that >=128k client side readahead is enough for single disk
-> case :) As for RAID configurations, I guess big server side readahead
-> should be enough.
+Commit-ID:  5671a10e2bc7f99d9157c6044faf8be2ef302361
+Gitweb:     http://git.kernel.org/tip/5671a10e2bc7f99d9157c6044faf8be2ef302361
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Tue, 2 Mar 2010 14:20:14 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 2 Mar 2010 15:02:05 +0100
 
-There are lots of people who would like to use NFS on their company WAN,
-where you typically have high bandwidths (up to 10GigE), but often a
-high latency too (due to geographical dispersion).
-My ping latency from here to a typical server in NetApp's Bangalore
-office is ~ 312ms. I read your test results with 10ms delays, but have
-you tested with higher than that?
+nmi_watchdog: Tell the world we're active
 
-Cheers
-  Trond
+Because I was wondering why perf stat wasn't working as expected..
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Don Zickus <dzickus@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/nmi_watchdog.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
+index 0a6f57f..a79d211 100644
+--- a/kernel/nmi_watchdog.c
++++ b/kernel/nmi_watchdog.c
+@@ -244,6 +244,8 @@ static int __init spawn_nmi_watchdog_task(void)
+ 	if (nonmi_watchdog)
+ 		return 0;
+ 
++	printk(KERN_INFO "NMI watchdog enabled, takes one hw-pmu counter.\n");
++
+ 	err = cpu_callback(&cpu_nfb, CPU_UP_PREPARE, cpu);
+ 	if (err == NOTIFY_BAD) {
+ 		BUG();
