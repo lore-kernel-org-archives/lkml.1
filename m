@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344Ab0CBUcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:32:17 -0500
-Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:47392 "EHLO
+	id S1753632Ab0CBUa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:30:26 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:38865 "EHLO
 	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207Ab0CBUa1 (ORCPT
+	with ESMTP id S1751751Ab0CBUaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:30:27 -0500
+	Tue, 2 Mar 2010 15:30:23 -0500
 From: Samir Bellabes <sam@synack.fr>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
@@ -14,126 +14,119 @@ Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        Patrick McHardy <kaber@trash.net>, Evgeniy Polyakov <zbr@ioremap.net>,
        Neil Horman <nhorman@tuxdriver.com>,
        Grzegorz Nosek <root@localdomain.pl>, Samir Bellabes <sam@synack.fr>
-Subject: [RFC v2 00/10] snet: Security for NETwork syscalls
-Date: Tue,  2 Mar 2010 21:23:04 +0100
-Message-Id: <1267561394-13626-1-git-send-email-sam@synack.fr>
+Subject: [RFC v2 01/10] lsm: add security_socket_closed()
+Date: Tue,  2 Mar 2010 21:23:05 +0100
+Message-Id: <1267561394-13626-2-git-send-email-sam@synack.fr>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267561394-13626-1-git-send-email-sam@synack.fr>
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello lsm and netdev people,
-This set of patches is the version 2 of snet, which I would like to submit as a
-RFC.
+Allow a security module to update security informations when a socket is closed.
 
-snet is a linux security module. It provides a mecanism defering syscall
-security hooks and decision (verdict) to userspace. 
+Signed-off-by: Samir Bellabes <sam@synack.fr>
+---
+ include/linux/security.h |   10 ++++++++++
+ net/socket.c             |    1 +
+ security/capability.c    |    5 +++++
+ security/security.c      |    5 +++++
+ 4 files changed, 21 insertions(+), 0 deletions(-)
 
-snet has some subsystems :
-    - snet_core     : init and exit the system
-    - snet_hooks    : LSM hooks
-    - snet_netlink  : kernel-user communication (genetlink)
-    - snet_event    : manages the list of protected syscalls
-    - snet_verdict  : provides a waitqueue for syscalls and manage verdicts
-    - snet_ticket   : provides a granted-access ticket mecanism
-
-I believe that snet will help to get over the classical configuration
-complexity of others security modules, by providing interactivity to users.
-I also think that monolithic strategy is broken with snet, as we can provide
-security for others syscall's categories:
- - sfs  : security for filesystem,
- - stask: security for task,
- - smem : security for memory
- ..
-
-In this way, and by putting abstraction on how this subsystems can talk to each
-others, we may use the security combinaison we want: choose to run sfs,
-stask, but not snet nor smem. Better, developpers may investigated how to build
-another security subsystem for tasks, and use others existing (smem, snet..)
-which they don't want to modify
-
-I think that interactivity is very usefull for users, as they may be notify when
-something is wrong and take decision, and from userspace, the decision may be
-defered to another box. In this way, snet also have a advantage for mobile
-devices as the policy decision will be push to a distant server, mobile device
-will then wait for verdicts and as policy strategies are centralized.
-
-Finally, and a important point: snet integration respects the LSM framework idea
-of using LSM hooks.
-
-New feature from the previous version:
- * Building a ticket mecanism for each task_struct using pointer void *security
-   Use the pointer (void*) security related to task_struct to provides
-   granted-acces tickets: if two identical requests are coming, ask the user
-   for the first one, store the result in a ticket and for the second request,
-   just look in the tickets owned by the task-struct
- * send data buffer of sendmsg to userspace
-   this may provide a way to look inside the data (as a anti-virus do)
-
-roadmap:
- * find a way to send data buffer of sendmsg to userspace (using netfilter)
- * adding other security systems
-   we can think about adding fork(), exec(), open(), close()..
-
-I'm Ccing netfilter-devel, as snet may be seen as a way to do filtering.
-
-Samir Bellabes (10):
-  lsm: add security_socket_closed()
-  Revert "lsm: Remove the socket_post_accept() hook"
-  snet: introduce security/snet, Makefile and Kconfig changes
-  snet: introduce snet_core
-  snet: introduce snet_event
-  snet: introduce snet_hooks
-  snet: introduce snet_netlink
-  snet: introduce snet_verdict
-  snet: introduce snet_ticket
-  snet: introduce snet_utils
-
- include/linux/security.h            |   23 ++
- include/linux/snet.h                |  120 ++++++
- net/socket.c                        |    3 +
- security/Kconfig                    |    6 +
- security/Makefile                   |    2 +
- security/capability.c               |   10 +
- security/security.c                 |   10 +
- security/snet/Kconfig               |   11 +
- security/snet/Makefile              |   14 +
- security/snet/snet_core.c           |   76 ++++
- security/snet/snet_event.c          |  189 ++++++++++
- security/snet/snet_event.h          |   21 +
- security/snet/snet_hooks.c          |  710 +++++++++++++++++++++++++++++++++++
- security/snet/snet_hooks.h          |   10 +
- security/snet/snet_netlink.c        |  431 +++++++++++++++++++++
- security/snet/snet_netlink.h        |   17 +
- security/snet/snet_netlink_helper.c |  230 +++++++++++
- security/snet/snet_netlink_helper.h |    7 +
- security/snet/snet_ticket.c         |  171 +++++++++
- security/snet/snet_ticket.h         |   37 ++
- security/snet/snet_ticket_helper.c  |  127 +++++++
- security/snet/snet_ticket_helper.h  |    8 +
- security/snet/snet_utils.c          |   38 ++
- security/snet/snet_utils.h          |   10 +
- security/snet/snet_verdict.c        |  184 +++++++++
- security/snet/snet_verdict.h        |   23 ++
- 26 files changed, 2488 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/snet.h
- create mode 100644 security/snet/Kconfig
- create mode 100644 security/snet/Makefile
- create mode 100644 security/snet/snet_core.c
- create mode 100644 security/snet/snet_event.c
- create mode 100644 security/snet/snet_event.h
- create mode 100644 security/snet/snet_hooks.c
- create mode 100644 security/snet/snet_hooks.h
- create mode 100644 security/snet/snet_netlink.c
- create mode 100644 security/snet/snet_netlink.h
- create mode 100644 security/snet/snet_netlink_helper.c
- create mode 100644 security/snet/snet_netlink_helper.h
- create mode 100644 security/snet/snet_ticket.c
- create mode 100644 security/snet/snet_ticket.h
- create mode 100644 security/snet/snet_ticket_helper.c
- create mode 100644 security/snet/snet_ticket_helper.h
- create mode 100644 security/snet/snet_utils.c
- create mode 100644 security/snet/snet_utils.h
- create mode 100644 security/snet/snet_verdict.c
- create mode 100644 security/snet/snet_verdict.h
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 2c627d3..74e564b 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -981,6 +981,9 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+  *	@sock contains the socket structure.
+  *	@how contains the flag indicating how future sends and receives are handled.
+  *	Return 0 if permission is granted.
++ * @socket_close:
++ *	Allow a module to update security informations when a socket is closed
++ *	@sock is closed.
+  * @socket_sock_rcv_skb:
+  *	Check permissions on incoming network packets.  This hook is distinct
+  *	from Netfilter's IP input hooks since it is the first time that the
+@@ -1680,6 +1683,7 @@ struct security_operations {
+ 	int (*socket_getsockopt) (struct socket *sock, int level, int optname);
+ 	int (*socket_setsockopt) (struct socket *sock, int level, int optname);
+ 	int (*socket_shutdown) (struct socket *sock, int how);
++	void (*socket_close) (struct socket *sock);
+ 	int (*socket_sock_rcv_skb) (struct sock *sk, struct sk_buff *skb);
+ 	int (*socket_getpeersec_stream) (struct socket *sock, char __user *optval, int __user *optlen, unsigned len);
+ 	int (*socket_getpeersec_dgram) (struct socket *sock, struct sk_buff *skb, u32 *secid);
+@@ -2700,6 +2704,7 @@ int security_socket_getpeername(struct socket *sock);
+ int security_socket_getsockopt(struct socket *sock, int level, int optname);
+ int security_socket_setsockopt(struct socket *sock, int level, int optname);
+ int security_socket_shutdown(struct socket *sock, int how);
++void security_socket_close(struct socket *sock);
+ int security_sock_rcv_skb(struct sock *sk, struct sk_buff *skb);
+ int security_socket_getpeersec_stream(struct socket *sock, char __user *optval,
+ 				      int __user *optlen, unsigned len);
+@@ -2812,6 +2817,11 @@ static inline int security_socket_shutdown(struct socket *sock, int how)
+ {
+ 	return 0;
+ }
++
++static inline void security_socket_close(struct socket *sock)
++{
++}
++
+ static inline int security_sock_rcv_skb(struct sock *sk,
+ 					struct sk_buff *skb)
+ {
+diff --git a/net/socket.c b/net/socket.c
+index 769c386..b4eb361 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1055,6 +1055,7 @@ static int sock_close(struct inode *inode, struct file *filp)
+ 		printk(KERN_DEBUG "sock_close: NULL inode\n");
+ 		return 0;
+ 	}
++	security_socket_close(SOCKET_I(inode));
+ 	sock_release(SOCKET_I(inode));
+ 	return 0;
+ }
+diff --git a/security/capability.c b/security/capability.c
+index 5c700e1..a9810dc 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -677,6 +677,10 @@ static int cap_socket_shutdown(struct socket *sock, int how)
+ 	return 0;
+ }
+ 
++static void cap_socket_close(struct socket *sock)
++{
++}
++
+ static int cap_socket_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
+ {
+ 	return 0;
+@@ -1084,6 +1088,7 @@ void security_fixup_ops(struct security_operations *ops)
+ 	set_to_cap_if_null(ops, socket_setsockopt);
+ 	set_to_cap_if_null(ops, socket_getsockopt);
+ 	set_to_cap_if_null(ops, socket_shutdown);
++	set_to_cap_if_null(ops, socket_close);
+ 	set_to_cap_if_null(ops, socket_sock_rcv_skb);
+ 	set_to_cap_if_null(ops, socket_getpeersec_stream);
+ 	set_to_cap_if_null(ops, socket_getpeersec_dgram);
+diff --git a/security/security.c b/security/security.c
+index 122b748..288c3a8 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -1118,6 +1118,11 @@ int security_socket_shutdown(struct socket *sock, int how)
+ 	return security_ops->socket_shutdown(sock, how);
+ }
+ 
++void security_socket_close(struct socket *sock)
++{
++	return security_ops->socket_close(sock);
++}
++
+ int security_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
+ {
+ 	return security_ops->socket_sock_rcv_skb(sk, skb);
+-- 
+1.6.3.3
 
