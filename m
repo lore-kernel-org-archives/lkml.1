@@ -1,60 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056Ab0CBQog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 11:44:36 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:30366
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753292Ab0CBQof (ORCPT
+	id S1754088Ab0CBQuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 11:50:18 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:53213 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753366Ab0CBQuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 11:44:35 -0500
-X-SpamScore: -3
-X-BigFish: VPS-3(zz4015Lzz1202hzzz32i6bh2a8h62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KYNYHH-01-FY5-02
-X-M-MSG: 
-Date: Tue, 2 Mar 2010 17:44:05 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: [GIT PULL] oprofile: updates for v2.6.34
-Message-ID: <20100302164405.GJ13205@erda.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-X-Mailer: git-send-email 1.6.6
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 02 Mar 2010 16:44:06.0106 (UTC) FILETIME=[92B13BA0:01CABA27]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+	Tue, 2 Mar 2010 11:50:16 -0500
+Date: Tue, 02 Mar 2010 11:50:15 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
+In-reply-to: <hmiocs$p6h$1@dough.gmane.org>
+To: walt <w41ter@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <4B8D41C7.1030404@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <201003011615.31709.dmitry.torokhov@gmail.com>
+ <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk>
+ <hmiocs$p6h$1@dough.gmane.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
-
-it's only one patch, please pull from:
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
-
-(It seems the git mirror is not yet sync'ed.)
-
-Thanks,
-
--Robert
-
-The following changes since commit cfc9c0b450176a077205ef39092f0dc1a04e020a:
-  Robert Richter (1):
-        oprofile/x86: fix msr access to reserved counters
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git ..BRANCH.NOT.VERIFIED..
-
-Martin Schwidefsky (1):
-      oprofile: convert oprofile from timer_hook to hrtimer
-
- drivers/oprofile/oprof.c     |   12 ++++--
- drivers/oprofile/oprof.h     |    3 +-
- drivers/oprofile/timer_int.c |   78 +++++++++++++++++++++++++++++++++++++-----
- 3 files changed, 79 insertions(+), 14 deletions(-)
+On 3/2/2010 5:13 AM, walt wrote:
+> On 03/02/2010 12:15 AM, Jens Axboe wrote:
+>>> On Mon, Mar 01 2010, Dmitry Torokhov wrote:
+>
+>>>> It looks like block tree that has been pulled today into mainline is
+>>>> busted, I am getting the Opps below on boot with the following commit:
+>>>>
+>>>> commit b1bf9368407ae7e89d8a005bb40beb70a41df539
+>
+>
+>> ....Can you also try and see if reverting
+>> 9f7cdbc33f36d28e57eaba0093f68f0d14c38c5b makes it work?
+>
+> I'm getting the same oops and reverting that commit fixes it, thanks.
+> I'm happy to test patches, etc.
+>
+Same here - was unable to boot - revert of this solved the issue.
 
