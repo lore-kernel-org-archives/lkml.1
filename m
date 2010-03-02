@@ -1,105 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752993Ab0CBB0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 20:26:19 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:3836 "EHLO mms1.broadcom.com"
+	id S1753023Ab0CBBcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 20:32:22 -0500
+Received: from claw.goop.org ([74.207.240.146]:59953 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751557Ab0CBB0R convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 20:26:17 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
-From: "Benjamin Li" <benli@broadcom.com>
-To: "Bruno =?ISO-8859-1?Q?Pr=E9mont?=" <bonbons@linux-vserver.org>
-cc: NetDEV <netdev@vger.kernel.org>, "Michael Chan" <mchan@broadcom.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100223131508.4c6cb866@neptune.home>
-References: <20091229084929.54912c0c@pluto.restena.lu>
- <1262077540.12520.4.camel@localhost>
- <20091229145403.39f82773@pluto.restena.lu>
- <1262149691.2788.63.camel@localhost>
- <20100219091034.5fbb0165@pluto.restena.lu>
- <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
- <20100223131508.4c6cb866@neptune.home>
-Date: Mon, 1 Mar 2010 17:26:10 -0800
-Message-ID: <1267493170.2762.45.camel@dhcp-10-12-137-104.broadcom.com>
+	id S1751460Ab0CBBcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 20:32:21 -0500
+Message-ID: <4B8C6AA4.8000700@goop.org>
+Date: Mon, 01 Mar 2010 17:32:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
-X-Mailer: Evolution 2.26.3
-X-WSS-ID: 6792B6B820S45858229-01-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>, linux-kernel@vger.kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Subject: Re: [Xen-devel] [PATCH 0/7][v4] PV extension of HVM (Hybrid) for
+ Xen
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <4B8C5ED9.1040109@goop.org> <201003020926.03512.sheng@linux.intel.com>
+In-Reply-To: <201003020926.03512.sheng@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bruno,
+On 03/01/2010 05:26 PM, Sheng Yang wrote:
+>> Why 2.6.33?  I'm currently working on 2.6.32; I intend to move to .33
+>> shortly, but .32 is a much more convenient base (particularly if you're
+>> interested in getting these changes into any distro kernels).
+>>
+>> I rebased it to .32 without much effort.
+>>      
+> OK.
+>    
 
-On Tue, 2010-02-23 at 04:15 -0800, Bruno Prémont wrote:
-> Hi Benjamin,
-> 
-> On Fri, 19 February 2010 "Benjamin Li" <benli@broadcom.com> wrote:
-> > >From your logs it looks like the device came up using MSI, but in the
-> > MSI-X poll routine was being called:
-> > 
-> > [    9.836673] bnx2: eth0: using MSI
-> > ...
-> > 
-> > [  134.643459]  [<ffffffffa004019e>] bnx2_poll_msix+0x3e/0xd0 [bnx2]
-> > [  134.643465]  [<ffffffff8135bcd1>] netpoll_poll+0xe1/0x3c0
-> > 
-> > which is incorrect.  If we are in MSI mode, the bnx2_poll() routine
-> > should be used.
-> > 
-> > I think what is going on here is that during the bnx2x driver
-> > initialization the current bnx2 driver adds all possible NAPI
-> > structures that map to all the hardware vectors (BNX2_MAX_MSIX_VEC=9)
-> > to the NAPI list in the net_device structure regardless if they are
-> > used or not (Seen in drivers/net/bnx2.c:bnx2_init_napi()).  This can
-> > cause uninitialized NAPI structures to be placed on the napi_list.
-> > Because this device is in MSI mode, only 1 vector is initialized.
-> > Now, the problem is triggered when net/core/netpoll.c:poll_napi() is
-> > called. This is because this routine will run through the entire
-> > napi_list calling all the poll routines.  In your particular case, it
-> > is calling the poll routine on an uninitialized vector causing the
-> > kernel panic.
-> > 
-> > Please try the patch below to see if it solves your problem.  Note,
-> > this only have been compile tested and tested against basic traffic
-> > runs. Unfortunately, I could not reproduce the kernel panic with the
-> > instructions below to verify the patch.
-> > 
-> > Thanks again for all your help in helping us track this down.
-> 
-> I applied the patch today and tried to reproduce with my showcases.
-> 
-> Seems that it's harder to trigger now but I still end up being able to
-> crash the box. Don't know if it's the same cause or not (could also
-> be the tcp-retransmit ghost)...
-> 
-> This time I had to run a few paralell scp's (8Mb/s each) to the box and 
-> 'echo t > /proc/sysrq-trigger' multiple times via ssh session for it to
-> happen. It didn't trigger with by netbomb though I will try some more
-> and see)
-> 
-> I don't know if it's the same reason or not (hopefully something
-> reached disk as serial console is dead and pings are not
-> answered anymore.
-> It's probably some printk/bug/warn that triggers in network stack and
-> deadlocks with netconsole.
+Hm, looks like the x86_platform_ipi stuff is missing in .32.
 
-Thanks for trying the patch.  I still haven't been able to reproduce
-what you are seeing here.  I am able to run scp and 'echo t
-> /proc/sysrq-trigger' multiple times.  I was wondering if you had any
-success reproducing the problem with a stack trace?
-
-Thanks again.
-
--Ben
-
-> 
-> Regards,
-> Bruno
-> 
-
-
+     J
