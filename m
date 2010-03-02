@@ -1,46 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752276Ab0CBRM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 12:12:59 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:20192 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577Ab0CBRM5 (ORCPT
+	id S1753207Ab0CBRZh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 12:25:37 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50729 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752433Ab0CBRZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 12:12:57 -0500
-Message-ID: <4B8D4701.6060903@oracle.com>
-Date: Tue, 02 Mar 2010 09:12:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: linux-next: Tree for March 2 (watchdog)
-References: <20100302180915.1388d3f3.sfr@canb.auug.org.au>
-In-Reply-To: <20100302180915.1388d3f3.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Mar 2010 12:25:36 -0500
+Date: Tue, 2 Mar 2010 17:28:47 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@linux.intel.com>, jeff@garzik.org.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [RFC 1/4] libata: cache device select
+Message-ID: <20100302172847.2e87de07@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B8C2079.7010607@garzik.org>
+References: <20100217130847.16338.55586.stgit@localhost.localdomain>
+	<4B8C2079.7010607@garzik.org>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B8D4708.00B0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/10 23:09, Stephen Rothwell wrote:
-> Hi all,
+> > -	ata_dev_select(ap, qc->dev->devno, 1, 0);
+> > +	if (qc->dev->devno != ap->sff_selected)
+> > +        	ata_dev_select(ap, qc->dev->devno, 1, 0);
+> >
+> >   	/* start the command */
+> >   	switch (qc->tf.protocol) {
 > 
-> Changes since 20100301:
+> My main worry here is that this logic excises the 150ms wait in 
+> ata_dev_select() that has been used effectively to allow ATAPI devices 
+> to "collect themselves" after waiting for idle, prior to command issuance.
 
+It doesn't. You call it with wait = 1, can_sleep = 0 so it will never do
+the 150ms magic delay here anyway (good job or it would kill us for
+performance ;))
 
-linux-next-20100302/drivers/watchdog/wdt.c: In function 'wdt_ioctl':
-linux-next-20100302/drivers/watchdog/wdt.c:370: error: assignment of read-only variable 'ident'
-linux-next-20100302/drivers/watchdog/wdt.c:373: error: assignment of read-only variable 'ident'
-linux-next-20100302/drivers/watchdog/wdt.c:375: error: assignment of read-only variable 'ident'
-make[3]: *** [drivers/watchdog/wdt.o] Error 1
+It does mean we don't do the device idle wait in that situation but there
+are no code paths where we try to overlap commands by spinning on the
+drive busy bit (again for obvious reasons)
 
-
-
--- 
-~Randy
+Alan
