@@ -1,60 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272Ab0CBGkF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 01:40:05 -0500
-Received: from mtagate3.uk.ibm.com ([194.196.100.163]:57814 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752561Ab0CBGkC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 01:40:02 -0500
-Date: Tue, 2 Mar 2010 07:40:00 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: fweisbec@gmail.com, mingo@elte.hu, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       hpa@zytor.com, tglx@linutronix.de, mhiramat@redhat.com,
-       benh@kernel.crashing.org, davem@davemloft.net, lethal@linux-sh.org,
-       schwidefsky@de.ibm.com, brueckner@linux.vnet.ibm.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH 08/12] syscalls: add new COMPAT_SYSCALL_DEFINE#N() macro
-Message-ID: <20100302064000.GA2379@osiris.boeblingen.de.ibm.com>
-References: <cover.1267214186.git.jbaron@redhat.com>
- <4aefea222db757a76ca70f20b6165e5084b99e8e.1267214186.git.jbaron@redhat.com>
- <20100228100902.GA2330@osiris.boeblingen.de.ibm.com>
- <20100301210522.GA2676@redhat.com>
+	id S1753286Ab0CBGo3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 01:44:29 -0500
+Received: from compulab.co.il ([67.18.134.219]:39060 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752547Ab0CBGo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 01:44:28 -0500
+Message-ID: <4B8CB370.5080903@compulab.co.il>
+Date: Tue, 02 Mar 2010 08:42:56 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20100106)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100301210522.GA2676@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Len Brown <lenb@kernel.org>
+CC: David Brownell <david-b@pacbell.net>,
+       Denis Turischev <denis@compulab.co.il>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 3/3] gpio: add Intel SCH GPIO controller driver
+References: <4B73DAEE.5080400@compulab.co.il> <4B7C0DC3.3060907@compulab.co.il> <4B812C21.8000602@compulab.co.il> <201002211112.48527.david-b@pacbell.net> <4B84CC0E.5060203@compulab.co.il> <alpine.LFD.2.00.1003011304500.4281@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003011304500.4281@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 04:05:22PM -0500, Jason Baron wrote:
-> On Sun, Feb 28, 2010 at 11:09:02AM +0100, Heiko Carstens wrote:
-> > For architectures which select CONFIG_HAVE_SYSCALL_WRAPPERS this adds
-> > unnecessary sign extension code to each compat syscall.
-> > On the other hand we could get rid partly of the arch specific sign extension
-> > code but that would need some other changes before as well.
-> > For example this one:
-> > 
-> > asmlinkage long compat_sys_gettimeofday(struct compat_timeval __user *tv,
-> >                 struct timezone __user *tz)
-> > 
-> > should be converted to a function which takes two compat_uptr_t's and let
-> > the syscall code itself do the proper pointer conversion (compat_ptr()).
-> > 
-> > Besides that the syscall alias names for these compat calls do look a
-> > bit strange:
-> > 
-> > 000000000008b57c T SyScompat_sys_adjtimex
-> > 000000000008b57c T compat_sys_adjtimex
-> > 
-> > That needs to be fixed as well.
-> > Or simply add a 1:1 wrapper independent of CONFIG_HAVE_SYSCALL_WRAPPERS.
+Len Brown wrote:
+>> I've looked at two x86 drivers in drivers/gpiolib (cs5535 and langwell) and
+>> there's no treatment of ACPI in either of them. Since SCH is defined by Intel
+>> as "embedded" product, having a GPIO driver for it seems logical even despite
+>> problems you mention.
 > 
-> ok, the later suggestion seems simpler. Below I've re-spun patch #6 and
-> #8. how do they look?
+> FWIW
+> I believe that Langwell is used only in products without an ACPI BIOS.
+> 
+> Poulsbo, OTOH, is used in zillions of netbooks running Windows XP.
+> I don't know what a cs5535 is.
 
-Looks good to me! :)
+The cs5535 is AMD Geode LX companion chip which is used with ACPI BIOS 
+as well.
+
+> cheers,
+> Len Brown, Intel Open Source Technology Center
+> 
+
+
+-- 
+Sincerely yours,
+Mike.
