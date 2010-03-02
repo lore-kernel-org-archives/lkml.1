@@ -1,55 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022Ab0CBQXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 11:23:43 -0500
-Received: from smtp1-g21.free.fr ([212.27.42.1]:42157 "EHLO smtp1-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753297Ab0CBQXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 11:23:42 -0500
-Message-ID: <1267547013.4b8d3b8596461@imp.free.fr>
-Date: Tue, 02 Mar 2010 17:23:33 +0100
-From: castet.matthieu@free.fr
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [tip:x86/mm] x86, mm: NX protection for kernel data
+	id S1754060Ab0CBQ0o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 11:26:44 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:43257 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292Ab0CBQ0n convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 11:26:43 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=RmYw2Y45LB7wVlblJG83z/Ymv+wfJ9mEDn7dV2HMm8JI4EY6lvBdEBklTxrljlVb/
+	9lTUuJ0ovdNue1uVW5tZw==
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="-MOQ12675470136bbbeeac0829a81a9899786cbaa306e8"
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 93.1.149.109
+In-Reply-To: <tip-b622d644c7d61a5cb95b74e7b143c263bed21f0a@git.kernel.org>
+References: <tip-b622d644c7d61a5cb95b74e7b143c263bed21f0a@git.kernel.org>
+Date: Tue, 2 Mar 2010 17:26:39 +0100
+Message-ID: <bd4cb8901003020826w6540ffebje2cee53b52f1ff27@mail.gmail.com>
+Subject: Re: [tip:perf/core] perf_events, x86: Fixup fixed counter constraints
+From: Stephane Eranian <eranian@google.com>
+To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is in MIME format.
+On Tue, Mar 2, 2010 at 3:31 PM, tip-bot for Peter Zijlstra
+<a.p.zijlstra@chello.nl> wrote:
+>
+> Commit-ID:  b622d644c7d61a5cb95b74e7b143c263bed21f0a
+> Gitweb:     http://git.kernel.org/tip/b622d644c7d61a5cb95b74e7b143c263bed21f0a
+> Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> AuthorDate: Mon, 1 Feb 2010 15:36:30 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 2 Mar 2010 15:06:47 +0100
+>
+> perf_events, x86: Fixup fixed counter constraints
+>
+> Patch 1da53e0230 ("perf_events, x86: Improve x86 event scheduling")
+> lost us one of the fixed purpose counters and then ed8777fc13
+> ("perf_events, x86: Fix event constraint masks") broke it even
+> further.
+>
+> Widen the fixed event mask to event+umask and specify the full config
+> for each of the 3 fixed purpose counters. Then let the init code fill
+> out the placement for the GP regs based on the cpuid info.
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Stephane Eranian <eranian@google.com>
+> LKML-Reference: <new-submission>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
----MOQ12675470136bbbeeac0829a81a9899786cbaa306e8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+>  static struct event_constraint intel_core2_event_constraints[] =
+>  {
+> -       FIXED_EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32))), /* INSTRUCTIONS_RETIRED */
+> -       FIXED_EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33))), /* UNHALTED_CORE_CYCLES */
+> +       FIXED_EVENT_CONSTRAINT(0x00c0, 0), /* INST_RETIRED.ANY */
+> +       FIXED_EVENT_CONSTRAINT(0x003c, 1), /* CPU_CLK_UNHALTED.CORE */
+> +       /*
+> +        * Core2 has Fixed Counter 2 listed as CPU_CLK_UNHALTED.REF and event
+> +        * 0x013c as CPU_CLK_UNHALTED.BUS and specifies there is a fixed
+> +        * ratio between these counters.
+> +        */
+> +       /* FIXED_EVENT_CONSTRAINT(0x013c, 2),  CPU_CLK_UNHALTED.REF */
+>        INTEL_EVENT_CONSTRAINT(0x10, 0x1), /* FP_COMP_OPS_EXE */
+>        INTEL_EVENT_CONSTRAINT(0x11, 0x2), /* FP_ASSIST */
+>        INTEL_EVENT_CONSTRAINT(0x12, 0x2), /* MUL */
+> @@ -37,14 +43,16 @@ static struct event_constraint intel_core2_event_constraints[] =
+>        INTEL_EVENT_CONSTRAINT(0x18, 0x1), /* IDLE_DURING_DIV */
+>        INTEL_EVENT_CONSTRAINT(0x19, 0x2), /* DELAYED_BYPASS */
+>        INTEL_EVENT_CONSTRAINT(0xa1, 0x1), /* RS_UOPS_DISPATCH_CYCLES */
+> +       INTEL_EVENT_CONSTRAINT(0xc9, 0x1), /* ITLB_MISS_RETIRED (T30-9) */
 
-
-
-> At this point I need some help and guidance on how to track down what
-> exactly happens there, as I am not very familiar with what goes into
-> .data and why are we trying to execute it.
-Can't you add debug printk in the fault handler before any exception processing
-
-Something like that.
-
-Matthieu
-
-
----MOQ12675470136bbbeeac0829a81a9899786cbaa306e8
-Content-Type: text/x-diff; name="test.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="test.diff"
-
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L21tL2ZhdWx0LmMgYi9hcmNoL3g4Ni9tbS9mYXVsdC5jCmlu
-ZGV4IGY2Mjc3NzkuLjU3OGJhNTIgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L21tL2ZhdWx0LmMKKysr
-IGIvYXJjaC94ODYvbW0vZmF1bHQuYwpAQCAtNjI5LDYgKzYyOSw4IEBAIG5vX2NvbnRleHQoc3Ry
-dWN0IHB0X3JlZ3MgKnJlZ3MsIHVuc2lnbmVkIGxvbmcgZXJyb3JfY29kZSwKIAl1bnNpZ25lZCBs
-b25nIGZsYWdzOwogCWludCBzaWc7CiAKKwlpZiAoZXJyb3JfY29kZSAmIFBGX0lOU1RSKQorCQlw
-cmludGsoImV4ZWMgb24gTlhcbiIpOwogCS8qIEFyZSB3ZSBwcmVwYXJlZCB0byBoYW5kbGUgdGhp
-cyBrZXJuZWwgZmF1bHQ/ICovCiAJaWYgKGZpeHVwX2V4Y2VwdGlvbihyZWdzKSkKIAkJcmV0dXJu
-Owo=
-
----MOQ12675470136bbbeeac0829a81a9899786cbaa306e8--
+Where does the constraint on ITLB_MISS_RETIRED come from?
