@@ -1,28 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934Ab0CBJNi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 04:13:38 -0500
-Received: from mga01.intel.com ([192.55.52.88]:18648 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853Ab0CBJN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 04:13:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,565,1262592000"; 
-   d="scan'208";a="777157812"
-Subject: Re: [PATCH 2/2] ACPI, APEI, PCIE AER, use general HEST table
- parsing in AER firmware_first setup
-From: Huang Ying <ying.huang@intel.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-In-Reply-To: <4B8CC7BD.5020206@jp.fujitsu.com>
-References: <1267494902-7193-1-git-send-email-ying.huang@intel.com>
-	 <1267494902-7193-2-git-send-email-ying.huang@intel.com>
-	 <4B8CC7BD.5020206@jp.fujitsu.com>
+	id S1751998Ab0CBJNx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 04:13:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50645 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884Ab0CBJNg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 04:13:36 -0500
+Subject: Re: [PATCH] perf_events: add sampling period randomization support
+From: Peter Zijlstra <peterz@infradead.org>
+To: eranian@google.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com, perfmon2-devel@lists.sf.net, robert.richter@amd.com,
+       eranian@gmail.com
+In-Reply-To: <1267510029-19750-1-git-send-email-eranian@google.com>
+References: <1267510029-19750-1-git-send-email-eranian@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Mar 2010 17:13:27 +0800
-Message-ID: <1267521207.1640.130.camel@yhuang-dev.sh.intel.com>
+Date: Tue, 02 Mar 2010 09:21:28 +0100
+Message-ID: <1267518088.25158.0.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -30,51 +25,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 16:09 +0800, Hidetoshi Seto wrote:
-> (2010/03/02 10:55), Huang Ying wrote:
-> > ... The firmware_first setup code is moved from PCI core to
-> > AER driver too, because it is only AER related.
-> (snip)
-> > diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-> > index c843a79..cc527c1 100644
-> > --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> > +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> > @@ -858,6 +858,8 @@ void aer_delete_rootport(struct aer_rpc *rpc)
-> >   */
-> >  int aer_init(struct pcie_device *dev)
-> >  {
-> > +	aer_set_firmware_first(dev);
-> > +
-> >  	if (dev->port->aer_firmware_first) {
-> >  		dev_printk(KERN_DEBUG, &dev->device,
-> >  			   "PCIe errors handled by platform firmware.\n");
-> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> > index 2a94309..ccfaf19 100644
-> (snip)
-> > @@ -935,7 +928,6 @@ int pci_setup_device(struct pci_dev *dev)
-> >  	dev->multifunction = !!(hdr_type & 0x80);
-> >  	dev->error_state = pci_channel_io_normal;
-> >  	set_pcie_port_type(dev);
-> > -	set_pci_aer_firmware_first(dev);
-> >  
-> >  	list_for_each_entry(slot, &dev->bus->slots, list)
-> >  		if (PCI_SLOT(dev->devfn) == slot->number)
+On Mon, 2010-03-01 at 22:07 -0800, eranian@google.com wrote:
+> This patch adds support for randomizing the sampling period.
+> Randomization is very useful to mitigate the bias that exists
+> with sampling. The random number generator does not need to
+> be sophisticated. This patch uses the builtin random32()
+> generator.
 > 
-> The aer_init() will be called for root ports, but not for end point
-> devices or so on.  So please remain the firmware_first setup code in
-> PCI core.  Otherwise endpoint drivers will get success on call of
-> pci_enable_pcie_error_reporting() regardless of the firmware first.
+> The user activates randomization by setting the perf_event_attr.random
+> field to 1 and by passing a bitmask to control the range of variation
+> above the base period. Period will vary from period to period & mask.
+> Note that randomization is not available when a target interrupt rate
+> (freq) is enabled.
+> 
+> The last used period can be collected using the PERF_SAMPLE_PERIOD flag
+> in sample_type.
+> 
+> The patch has been tested on X86. There is also code for PowerPC but
+> I could not test it.
 
-Or we can call firmware_first setup code in
-pci_enable_pcie_error_reporting(), because
-
-1. I think AER related code should be put in drivers/pci/pcie/aer
-instead of PCI core or drivers/acpi, if it is possible.
-
-2. pci_setup_device is called so early, so that it is hard to do some
-HEST related initialization (such as checking bad format) before it.
-
-Best Regards,
-Huang Ying
-
+I don't thikn we need to touch the arch code, we didn't need to for
+frequency driven sampling, so I don't see a reason to do so for
+randomization either.
 
