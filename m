@@ -1,90 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930Ab0CBPDv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:03:51 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:32845 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753833Ab0CBPDt convert rfc822-to-8bit (ORCPT
+	id S1753950Ab0CBPEG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:04:06 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50083 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272Ab0CBPED convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:03:49 -0500
-From: "G, Manjunath Kondaiah" <manjugk@ti.com>
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       "S, Venkatraman" <svenkatr@ti.com>, Tony Lindgren <tony@atomide.com>,
-       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Olof Johansson <olof@lixom.net>
-Date: Tue, 2 Mar 2010 20:33:40 +0530
-Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
-Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
-Thread-Index: Acq6DrzxzzLj/+UaR0CqYftNXskKIAAAL3RwAABS3WAAAXrY4A==
-Message-ID: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED963B1@dbde02.ent.ti.com>
-References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
-	 <20100301184600.GC3389@atomide.com>
-	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
-	 <20100302060821.GI3389@atomide.com>
-	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
-	 <20100302065224.GL3389@atomide.com>
- <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
- <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
- <EAF47CD23C76F840A9E7FCE10091EFAB02C44C22F6@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C44C22F6@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 2 Mar 2010 10:04:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=FB69I5UkVKOTTDFZFn7Tk044ogIfOsyESH25/KI557+S0apXyp7gXvT/quGyHvvzrl
+         SeFxysfugxVR55OC7ToXxMiaIMDJMNuLdw/fK795BgOQDF10Yx0XcPN6pec9KBzyxB/F
+         3kycz7H6TUnn84I0SCPepNEJfH0rrefFHkAUo=
 MIME-Version: 1.0
+In-Reply-To: <20100302125306.GD19208@basil.fritz.box>
+References: <alpine.DEB.2.00.1002240949140.26771@router.home>
+	 <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.1002251228140.18861@router.home>
+	 <20100226114136.GA16335@basil.fritz.box>
+	 <alpine.DEB.2.00.1002260904311.6641@router.home>
+	 <20100226155755.GE16335@basil.fritz.box>
+	 <alpine.DEB.2.00.1002261123520.7719@router.home>
+	 <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
+	 <20100302125306.GD19208@basil.fritz.box>
+Date: Tue, 2 Mar 2010 17:04:00 +0200
+X-Google-Sender-Auth: c1fadf8718e952ff
+Message-ID: <84144f021003020704s3abafc24t9b8ab34234094b79@mail.gmail.com>
+Subject: Re: [patch] slab: add memory hotplug support
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andi,
 
-Santosh,
+On Tue, Mar 2, 2010 at 2:53 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> On Mon, Mar 01, 2010 at 02:24:43AM -0800, David Rientjes wrote:
+>> Slab lacks any memory hotplug support for nodes that are hotplugged
+>> without cpus being hotplugged.  This is possible at least on x86
+>> CONFIG_MEMORY_HOTPLUG_SPARSE kernels where SRAT entries are marked
+>> ACPI_SRAT_MEM_HOT_PLUGGABLE and the regions of RAM represent a seperate
+>> node.  It can also be done manually by writing the start address to
+>> /sys/devices/system/memory/probe for kernels that have
+>> CONFIG_ARCH_MEMORY_PROBE set, which is how this patch was tested, and
+>> then onlining the new memory region.
+>
+> The patch looks far more complicated than my simple fix.
 
-> -----Original Message-----
-> From: Shilimkar, Santosh 
-> Sent: Tuesday, March 02, 2010 7:34 PM
-> To: G, Manjunath Kondaiah; S, Venkatraman; Tony Lindgren; 
-> Raja, Govindraj; Greg KH; linux-serial@vger.kernel.org; 
-> linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> Kevin Hilman; Olof Johansson
-> Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
-> 
-> <snip snip>
-> > > > --
-> > > CDAC is a shadow register used for monitoring the DMA channel.
-> > >  I think it would be a lot
-> > > simpler if omap_start_dma() always resets CDAC to 0, and the
-> > > UART driver
-> > > just not set it explicitly.
-> > 
-> > This seems to be better option than exposing CDAC read/write API
-> > to other drivers since user need to write '0' before 
-> starting any DMA
-> > transfer which can be be done in omap_start_dma().
-> > 
-> > I am wondering how other drivers are using DMA transfer 
-> API's without
-> > resetting CDAC to zero.
-> >
-> It's needed only if some one is interested in that count. 
-> UART seems to 
-> using this counter where as other driver don't.
-> 
-> Why do you think drivers need to know about counter value ?
+I wouldn't exactly call the fallback_alloc() games "simple".
 
-Reading of non zero value(after reset to zero and enabling dma channel) 
-from CDAC register indicates that, DMA transfer has started and user can 
-rely on DMA4_CCENi and DMA4_CCFNi element and frame counters.
+> Is more complicated now better?
 
-If the CDAC value is zero even after starting DMA channel, indicates
-error.
+Heh, heh. You can't post the oops, you don't want to rework your
+patches as per review comments, and now you complain about David's
+patch without one bit of technical content. I'm sorry but I must
+conclude that someone is playing a prank on me because there's no way
+a seasoned kernel hacker such as yourself could possibly think that
+this is the way to get patches merged.
 
--Manjunath
+But anyway, if you have real technical concerns over the patch, please
+make them known; otherwise I'd much appreciate a Tested-by tag from
+you for David's patch.
 
+Thanks,
 
+                        Pekka
