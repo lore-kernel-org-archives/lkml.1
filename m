@@ -1,52 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755031Ab0CBX6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:58:18 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41074 "EHLO mx1.suse.de"
+	id S1752369Ab0CBX6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:58:22 -0500
+Received: from kroah.org ([198.145.64.141]:38518 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751716Ab0CBX6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:58:15 -0500
-Date: Tue, 2 Mar 2010 15:58:04 -0800
-From: Greg KH <gregkh@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@novell.com>,
-       Lennart Poettering <mzxreary@0pointer.de>
-Subject: Re: [PATCH 56/62] msi-laptop: Support standard ec 66/62 command on
- MSI notebook and nebook
-Message-ID: <20100302235804.GA2463@suse.de>
+	id S1754165Ab0CBX3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:16 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 13/62] sysdev: Fix type of sysdev class attribute in memory driver
+Date: Tue,  2 Mar 2010 15:28:12 -0800
+Message-Id: <1267572541-410-13-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
- <1267572541-410-56-git-send-email-gregkh@suse.de>
- <20100302234219.GC13739@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100302234219.GC13739@srcf.ucam.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 11:42:19PM +0000, Matthew Garrett wrote:
-> On Tue, Mar 02, 2010 at 03:28:55PM -0800, Greg Kroah-Hartman wrote:
-> > From: Lee, Chun-Yi <jlee@novell.com>
-> > 
-> > Suppport standard ec 66/62 command on MSI notebook and nebook. MSI
-> > netbook and notebook already support 66/62 command, so, add new
-> > get_state function, and put the old model to non-standard model, but
-> > driver still support those old model.
-> > 
-> > Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
-> > Cc: Lennart Poettering <mzxreary@0pointer.de>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ACKed-by: Matthew Garrett <mjg@redhat.com>
-> 
-> Greg, could you send x86 platform drivers patches via me from now on? 
-> There's some stuff in this patchset that isn't sane.
+From: Andi Kleen <andi@firstfloor.org>
 
-Ok, will do, you might want to update the MAINTAINERS file, as I just
-went with the information in there, and what the get_maintainers.pl
-script found by looking at the git history.
+This attribute is really a sysdev_class attribute, not a plain class attribute.
 
-thanks,
+They are identical in layout currently, but this might not always be
+the case.
 
-greg k-h
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/memory.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index bd02505..563656a 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -309,17 +309,18 @@ static SYSDEV_ATTR(removable, 0444, show_mem_removable, NULL);
+  * Block size attribute stuff
+  */
+ static ssize_t
+-print_block_size(struct class *class, char *buf)
++print_block_size(struct sysdev_class *class, struct sysdev_class_attribute *attr,
++		 char *buf)
+ {
+ 	return sprintf(buf, "%#lx\n", (unsigned long)PAGES_PER_SECTION * PAGE_SIZE);
+ }
+ 
+-static CLASS_ATTR(block_size_bytes, 0444, print_block_size, NULL);
++static SYSDEV_CLASS_ATTR(block_size_bytes, 0444, print_block_size, NULL);
+ 
+ static int block_size_init(void)
+ {
+ 	return sysfs_create_file(&memory_sysdev_class.kset.kobj,
+-				&class_attr_block_size_bytes.attr);
++				&attr_block_size_bytes.attr);
+ }
+ 
+ /*
+-- 
+1.7.0.1
+
