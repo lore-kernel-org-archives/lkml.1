@@ -1,81 +1,213 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313Ab0CBSq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:46:28 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35813 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751541Ab0CBSq0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:46:26 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 2 Mar 2010 19:45:51 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates post 2.6.33
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.671196999e56464f@s5r6.in-berlin.de>
+	id S1752798Ab0CBSsb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:48:31 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:52793 "EHLO mail.cs.nmsu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921Ab0CBSs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 13:48:29 -0500
+From: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Message-Id: <201003021847.o22IlYR8004349@mustang.cs.nmsu.edu>
+Date: Tue, 02 Mar 2010 11:47:34 -0700
+To: linux-kernel@vger.kernel.org
+Cc: felipe.balbi@nokia.com, pavel@ucw.cz, jayakumar.lkml@gmail.com,
+       linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com,
+       FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org,
+       linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
+Subject: [PATCH] Add sysfs support for fbdefio delay
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+This patch adds support for examining and modifying the fbdefio delay
+parameter through sysfs. It also adds two driver definable minimum
+and maximum bounds.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+The default behavior is to not permit modifications if delay_max is 0,
+thus preventing modification of the delay if the driver does not
+explicitly permit modification.
 
-to receive the following IEEE 1394/ FireWire subsystem update.  There
-are minor fixes in it, improvements of the facility which relates bus
-time with local time, and minor refactoring.
+Signed-off-by: Rick L. Vinyard, Jr <rvinyard@cs.nmsu.edu>
+---
+ .../ABI/testing/sysfs-class-graphics-defio         |   35 ++++++++
+ drivers/video/fbsysfs.c                            |   87 ++++++++++++++++++++
+ include/linux/fb.h                                 |    9 ++-
+ 3 files changed, 130 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-graphics-defio
 
-Clemens Ladisch (2):
-      firewire: add fw_csr_string() helper function
-      firewire: ohci: work around cycle timer bugs on VIA controllers
-
-Németh Márton (1):
-      firewire: make PCI device id constant
-
-Stefan Richter (21):
-      firewire: core: fw_csr_string addendum
-      firewire: qualify config ROM cache pointers as const pointers
-      firewire: ohci: enable cycle timer fix on ALi and NEC controllers
-      firewire: get_cycle_timer optimization and cleanup
-      firewire: remove incomplete Bus_Time CSR support
-      Merge tag 'v2.6.33' for its firewire changes since last branch point
-      firewire: core: fix "giving up on config rom" with Panasonic AG-DV2500
-      firewire: core: don't fail device creation in case of too large config ROM blocks
-      firewire: core: increase stack size of config ROM reader
-      firewire: core: fix an information leak
-      firewire: core: rename an internal function
-      firewire: cdev: add more flexible cycle timer ioctl
-      firewire: cdev: increment ABI version number
-      firewire: core: change type of a data buffer
-      firewire: core: combine a bit of repeated code
-      firewire: ohci: remove unused dualbuffer IR code
-      firewire: ohci: reorder struct fw_ohci for better cache efficiency
-      firewire: ohci: use an ID table for quirks detection
-      firewire: ohci: add module parameter to activate quirk fixes
-      firewire: ohci: fix IR/IT context mask mixup
-      firewire: ohci: extend initialization log message
-
- drivers/firewire/core-cdev.c            |  368 +++++++++++++++----------------
- drivers/firewire/core-device.c          |  198 +++++++++++------
- drivers/firewire/core-transaction.c     |   17 +-
- drivers/firewire/core.h                 |    2 +-
- drivers/firewire/ohci.c                 |  364 ++++++++++--------------------
- drivers/firewire/sbp2.c                 |    5 +-
- drivers/media/dvb/firewire/firedtv-fw.c |   39 +---
- include/linux/firewire-cdev.h           |   40 +++-
- include/linux/firewire.h                |   11 +-
- include/linux/pci_ids.h                 |    1 -
- 10 files changed, 493 insertions(+), 552 deletions(-)
-
-Thanks,
+diff --git a/Documentation/ABI/testing/sysfs-class-graphics-defio b/Documentation/ABI/testing/sysfs-class-graphics-defio
+new file mode 100644
+index 0000000..e0ef924
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-graphics-defio
+@@ -0,0 +1,35 @@
++What:		/sys/class/graphics/<fb>/defio_delay
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Set the deferred I/O delay of the framebuffer in ms.
++		This value can be used to throttle deferred I/O updates.
++		Most framebuffer devices do not have or need support for
++		deferred I/O. Accessing a framebuffer without deferred I/O
++		support will return -ENODEV. Can be read but not modified if
++		/sys/class/graphics/<fb>/defio_delay_max is 0. When modifying,
++		the value must be greater than or equal to
++		/sys/class/graphics/<fb>/defio_delay_min and less than or equal
++		to /sys/class/graphics/<fb>/defio_delay_max.
++
++What:		/sys/class/graphics/<fb>/defio_delay_min
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Minimum deferred I/O value in ms for this framebuffer.
++		This value is specified by the driver and cannot be modified
++		from sysfs. Default is 0.
++
++What:		/sys/class/graphics/<fb>/defio_delay_min
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Maximum deferred I/O value in ms for this framebuffer.
++		This value is specified by the driver and cannot be modified
++		from sysfs. Default is 0.
++		If this value is 0 /sys/class/graphics/<fb>/defio_delay cannot
++		be modified, but can be read.
++
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index d4a2c11..d00ea2d 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -484,6 +484,87 @@ static ssize_t show_bl_curve(struct device *device,
+ }
+ #endif
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++static ssize_t store_defio_delay(struct device *device,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms = 0;
++	unsigned long delay;
++	int error;
++	char *last = NULL;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	/* Check whether delay_max permits setting of delay */
++	if (fb_info->fbdefio->delay_max == 0)
++		return -EPERM;
++
++	error = strict_strtoul(buf, 10, &delay_ms);
++	if (error < 0)
++		return error;
++
++	delay = delay_ms * HZ / 1000;
++
++	if (delay < fb_info->fbdefio->delay_min ||
++	    delay > fb_info->fbdefio->delay_max)
++		return -EINVAL;
++
++	fb_info->fbdefio->delay = delay;
++
++	return count;
++}
++
++static ssize_t show_defio_delay(struct device *device,
++				struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++static ssize_t show_defio_delay_min(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay_min * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++static ssize_t show_defio_delay_max(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay_max * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++#endif
++
+ /* When cmap is added back in it should be a binary attribute
+  * not a text one. Consideration should also be given to converting
+  * fbdev to use configfs instead of sysfs */
+@@ -503,6 +584,12 @@ static struct device_attribute device_attrs[] = {
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
+ #endif
++#ifdef CONFIG_FB_DEFERRED_IO
++	__ATTR(defio_delay, S_IRUGO|S_IWUSR,
++	       show_defio_delay, store_defio_delay),
++	__ATTR(defio_delay_min, S_IRUGO, show_defio_delay_min, NULL),
++	__ATTR(defio_delay_max, S_IRUGO, show_defio_delay_max, NULL),
++#endif
+ };
+ 
+ int fb_init_device(struct fb_info *fb_info)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 369767b..76f35fd 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -591,8 +591,15 @@ struct fb_pixmap {
+ 
+ #ifdef CONFIG_FB_DEFERRED_IO
+ struct fb_deferred_io {
+-	/* delay between mkwrite and deferred handler */
++	/* delay in jiffies between mkwrite and deferred handler */
+ 	unsigned long delay;
++	/* The minimum delay in jiffies that may be set through sysfs */
++	unsigned long delay_min;
++	/*
++	 * The maximum delay in jiffies that may be set through sysfs.
++	 * If delay_max is 0, delay cannot be set through sysfs.
++	 */
++	unsigned long delay_max;
+ 	struct mutex lock; /* mutex that protects the page list */
+ 	struct list_head pagelist; /* list of touched pages */
+ 	/* callback */
 -- 
-Stefan Richter
--=====-==-=- --== ---=-
-http://arcgraph.de/sr/
+1.6.6.1
 
