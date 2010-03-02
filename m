@@ -1,68 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805Ab0CBT35 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 14:29:57 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60333 "EHLO mx1.suse.de"
+	id S1752472Ab0CBTez (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 14:34:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50354 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694Ab0CBT34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 14:29:56 -0500
-Date: Tue, 2 Mar 2010 11:29:42 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: Memory management woes - order 1 allocation failures
-Message-ID: <20100302192942.GA2953@suse.de>
-References: <alpine.DEB.2.00.1002261042020.7719@router.home>
- <84144f021002260917q61f7c255rf994425f3a613819@mail.gmail.com>
- <20100301103546.DD86.A69D9226@jp.fujitsu.com>
- <20100302172606.GA11355@csn.ul.ie>
- <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
- <20100302191110.GB11355@csn.ul.ie>
+	id S1751449Ab0CBTex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 14:34:53 -0500
+Date: Tue, 2 Mar 2010 19:33:37 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       fengguang.wu@intel.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       fengguang.wu@intel.com
+In-Reply-To: <20100301135551.GA9998@localhost>
+References: <20100301135551.GA9998@localhost>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mm] resource: Fix broken indentation
+Message-ID: <tip-f41496607e03ab99f263b8e26689ad0fc853007f@git.kernel.org>
+Git-Commit-ID: f41496607e03ab99f263b8e26689ad0fc853007f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100302191110.GB11355@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 19:33:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 07:11:10PM +0000, Mel Gorman wrote:
-> On Tue, Mar 02, 2010 at 06:34:51PM +0000, Alan Cox wrote:
-> > > For reasons that are not particularly clear to me, tty_buffer_alloc() is
-> > > called far more frequently in 2.6.33 than in 2.6.24. I instrumented the
-> > > function to print out the size of the buffers allocated, booted under
-> > > qemu and would just "cat /bin/ls" to see what buffers were allocated.
-> > > 2.6.33 allocates loads, including high-order allocations. 2.6.24
-> > > appeared to allocate once and keep silent.
-> > 
-> > The pty layer is using them now and didn't before. That will massively
-> > distort your numhers.
-> > 
-> 
-> That makes perfect sense. It explains why only one allocation showed up
-> because it must belong to the tty attached to the serial console.
-> 
-> Thanks Alan.
-> 
-> > > While there have been snags recently with respect to high-order
-> > > allocation failures in recent kernels, this might be one of the cases
-> > > where it's due to subsystems requesting high-order allocations more.
-> > 
-> > The pty code certainly triggered more such allocations. I've sent Greg
-> > patches to make the tty buffering layer allocate sensible sizes as it
-> > doesn't need multiple page allocations in the first place.
-> > 
-> 
-> Greg, what's the story with these patches?
+Commit-ID:  f41496607e03ab99f263b8e26689ad0fc853007f
+Gitweb:     http://git.kernel.org/tip/f41496607e03ab99f263b8e26689ad0fc853007f
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Tue, 2 Mar 2010 11:21:09 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 2 Mar 2010 11:21:09 -0800
 
-They are in -next and will go to Linus later on today for .34.
+resource: Fix broken indentation
 
-thanks,
+Fix broken indentation in patch
+37b99dd5372cff42f83210c280f314f10f99138e.
 
-greg k-h
+Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+LKML-Reference: <20100301135551.GA9998@localhost>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ kernel/resource.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 8f0e3d0..91f430f 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -287,7 +287,7 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 		end_pfn = (res.end + 1) >> PAGE_SHIFT;
+ 		if (end_pfn > pfn)
+-		    ret = (*func)(pfn, end_pfn - pfn, arg);
++			ret = (*func)(pfn, end_pfn - pfn, arg);
+ 		if (ret)
+ 			break;
+ 		res.start = res.end + 1;
