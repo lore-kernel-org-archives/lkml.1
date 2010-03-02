@@ -1,109 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750987Ab0CBLCJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 06:02:09 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:35789 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750772Ab0CBLCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 06:02:06 -0500
-Date: Tue, 2 Mar 2010 11:01:50 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+	id S1751502Ab0CBLCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 06:02:44 -0500
+Received: from trinity.develer.com ([83.149.158.210]:56188 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825Ab0CBLCm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 06:02:42 -0500
+Date: Tue, 2 Mar 2010 12:02:39 +0100
+From: Andrea Righi <arighi@develer.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
-	due to "e084b - page-allocator: preserve PFN ordering when
-	__GFP_COLD is set"
-Message-ID: <20100302110149.GI3852@csn.ul.ie>
-References: <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com> <20100218114310.GC32626@csn.ul.ie> <4B7D664C.20507@linux.vnet.ibm.com> <4B7E73BF.5030901@linux.vnet.ibm.com> <20100219151934.GA1445@csn.ul.ie> <20100302065225.GC8653@laptop> <20100302100402.GH3852@csn.ul.ie> <20100302103646.GF8653@laptop>
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100302110239.GB1921@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
+ <cc557aab1003020211h391947f0p3eae04a298127d32@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100302103646.GF8653@laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cc557aab1003020211h391947f0p3eae04a298127d32@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 09:36:46PM +1100, Nick Piggin wrote:
-> On Tue, Mar 02, 2010 at 10:04:02AM +0000, Mel Gorman wrote:
-> > On Tue, Mar 02, 2010 at 05:52:25PM +1100, Nick Piggin wrote:
-> > > The zone pressure waitqueue patch makes sense.
-> > 
-> > I've just started the rebase and considering what sort of test is best
-> > for it.
-> > 
-> > > We may even want to make
-> > > it more strictly FIFO (eg. check upfront if there are waiters on the
-> > > queue before allocating a page, and if yes then add ourself to the back
-> > > of the waitqueue).
-> > 
-> > To be really strict about this, we'd have to check in the hot-path of the
-> > per-cpu allocator which would be undesirable.
+On Tue, Mar 02, 2010 at 12:11:10PM +0200, Kirill A. Shutemov wrote:
+> On Mon, Mar 1, 2010 at 11:23 PM, Andrea Righi <arighi@develer.com> wrote:
+> > Apply the cgroup dirty pages accounting and limiting infrastructure to
+> > the opportune kernel functions.
+> >
+> > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > ---
+> >  fs/fuse/file.c      |    5 +++
+> >  fs/nfs/write.c      |    4 ++
+> >  fs/nilfs2/segment.c |   10 +++++-
+> >  mm/filemap.c        |    1 +
+> >  mm/page-writeback.c |   84 ++++++++++++++++++++++++++++++++------------------
+> >  mm/rmap.c           |    4 +-
+> >  mm/truncate.c       |    2 +
+> >  7 files changed, 76 insertions(+), 34 deletions(-)
+> >
+> > diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+> > index a9f5e13..dbbdd53 100644
+> > --- a/fs/fuse/file.c
+> > +++ b/fs/fuse/file.c
+> > @@ -11,6 +11,7 @@
+> >  #include <linux/pagemap.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/kernel.h>
+> > +#include <linux/memcontrol.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/module.h>
+> >
+> > @@ -1129,6 +1130,8 @@ static void fuse_writepage_finish(struct fuse_conn *fc, struct fuse_req *req)
+> >
+> >        list_del(&req->writepages_entry);
+> >        dec_bdi_stat(bdi, BDI_WRITEBACK);
+> > +       mem_cgroup_update_stat(req->pages[0],
+> > +                       MEM_CGROUP_STAT_WRITEBACK_TEMP, -1);
+> >        dec_zone_page_state(req->pages[0], NR_WRITEBACK_TEMP);
+> >        bdi_writeout_inc(bdi);
+> >        wake_up(&fi->page_waitq);
+> > @@ -1240,6 +1243,8 @@ static int fuse_writepage_locked(struct page *page)
+> >        req->inode = inode;
+> >
+> >        inc_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
+> > +       mem_cgroup_update_stat(tmp_page,
+> > +                       MEM_CGROUP_STAT_WRITEBACK_TEMP, 1);
+> >        inc_zone_page_state(tmp_page, NR_WRITEBACK_TEMP);
+> >        end_page_writeback(page);
+> >
+> > diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+> > index b753242..7316f7a 100644
+> > --- a/fs/nfs/write.c
+> > +++ b/fs/nfs/write.c
+> > @@ -439,6 +439,7 @@ nfs_mark_request_commit(struct nfs_page *req)
+> >                        req->wb_index,
+> >                        NFS_PAGE_TAG_COMMIT);
+> >        spin_unlock(&inode->i_lock);
+> > +       mem_cgroup_update_stat(req->wb_page, MEM_CGROUP_STAT_UNSTABLE_NFS, 1);
+> >        inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
+> >        inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
+> >        __mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+> > @@ -450,6 +451,7 @@ nfs_clear_request_commit(struct nfs_page *req)
+> >        struct page *page = req->wb_page;
+> >
+> >        if (test_and_clear_bit(PG_CLEAN, &(req)->wb_flags)) {
+> > +               mem_cgroup_update_stat(page, MEM_CGROUP_STAT_UNSTABLE_NFS, -1);
+> >                dec_zone_page_state(page, NR_UNSTABLE_NFS);
+> >                dec_bdi_stat(page->mapping->backing_dev_info, BDI_UNSTABLE);
+> >                return 1;
+> > @@ -1273,6 +1275,8 @@ nfs_commit_list(struct inode *inode, struct list_head *head, int how)
+> >                req = nfs_list_entry(head->next);
+> >                nfs_list_remove_request(req);
+> >                nfs_mark_request_commit(req);
+> > +               mem_cgroup_update_stat(req->wb_page,
+> > +                               MEM_CGROUP_STAT_UNSTABLE_NFS, -1);
+> >                dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
+> >                dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
+> >                                BDI_UNSTABLE);
+> > diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
+> > index ada2f1b..aef6d13 100644
+> > --- a/fs/nilfs2/segment.c
+> > +++ b/fs/nilfs2/segment.c
+> > @@ -1660,8 +1660,11 @@ nilfs_copy_replace_page_buffers(struct page *page, struct list_head *out)
+> >        } while (bh = bh->b_this_page, bh2 = bh2->b_this_page, bh != head);
+> >        kunmap_atomic(kaddr, KM_USER0);
+> >
+> > -       if (!TestSetPageWriteback(clone_page))
+> > +       if (!TestSetPageWriteback(clone_page)) {
+> > +               mem_cgroup_update_stat(clone_page,
 > 
-> Yes, but it would also be desirable for other reasons (eliminating
-> all unnecessary latency here). Which is why I say it is a tradeoff
-> but it might be worthwhile.
+> s/clone_page/page/
+
+mmh... shouldn't we use the same page used by TestSetPageWriteback() and
+inc_zone_page_state()?
+
 > 
-> We obviously wouldn't load the waitqueue itself in the fastpath, but
-> probably some field in a cacheline we already touch.
-> 
+> And #include <linux/memcontrol.h> is missed.
 
-I'm struggling to justify it in my head. Granted, right now the pressure_wq is
-located beside the wait_table as a "rarely-used" field. It could be located
-before the free_area[] so it would be pulled in which would have some impact
-for the high-order lists but probably not too bad. This would make
-accessing pressure_wq a little cheaper.
+OK.
 
-The impact of *not* checking is unfairness. A late process makes forward
-progress while others sleep on a queue waiting for a reclaim pass to finish
-and the queue to be woken up. At worst, processes continue sleeping for the
-entire timeout because late processes kept the zone below the watermark.
+I'll apply your fixes and post a new version.
 
-Is a little unfairness in a path concerned with heavy memory pressure
-enough to justify checking on every page allocation?
-
-> > We could check further in the
-> > slow-path but I bet it'd be very rare that the logic would be triggered. For
-> > a process to enter the FIFO due to waiters that were not yet woken up, the
-> > system would have to be a) under heavy memory pressure b) reclaim taking such
-> > a long time that check_zone_pressure() is not being called in time and c)
-> > a process exiting or otherwise freeing memory such that the watermarks are
-> > cleared without reclaim being involved.
-> 
-> I don't think it would be too rare. Things can get freed up and
-> other allocations come in while reclaim is happening. But anyway
-> the nasty thing about the "rare" events is that they do add a
-> rare source of unexpected latency or starvation.
-> 
-
-If processes are asleep on the waitqueue, reclaim must be active (by kswapd
-if nothing else). If pages are getting freed above the necessary watermark,
-then the processes will be woken up when the current shrink_zone() finished
-unless unfair processes are keeping the zone below watermarks.  But unless
-reclaim is taking an extraordinary long length of time, there would be little
-difference between waking the queue in the free path and waking it in the
-reclaim path.
-
-Again, is a little unfairness under heavy memory pressure enough to
-alter the main paths?
-
-> I'm not saying necessarily that it will make a noticable improvement
-> to throughput for this test case, but that now that we have the
-> waitqueue there, we should think about exactly how far we want to
-> go with it.
-
-Fair point but I'd sooner look at the other places the VM waits on timeouts
-and see can they be converted to waiting on events. Just in case, after these
-tests complete (and assuming they generate usable figures), I'll prototype
-some of the suggestions and see what the impact is.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks for reviewing,
+-Andrea
