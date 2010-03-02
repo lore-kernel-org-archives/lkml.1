@@ -1,48 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979Ab0CBPNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:13:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:60148 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203Ab0CBPNM (ORCPT
+	id S1752077Ab0CBPNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:13:38 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:33514 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808Ab0CBPNb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:13:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=PPQ0r/9CHIylOGUv7vbVV1Siz6rw8KKsLvTaNLwrLZQhVai7Zk/5yg/Lp1p1AEmyEm
-         3QCTaFsXR56e0LGblfj5joYGZMmuVG4IGQTupJRAdnjJSfaZdzAkyW6NUHY8xuA6lemT
-         X4eY1bqaOoZroXQIJOWFnsCucpDutspT+QXnY=
+	Tue, 2 Mar 2010 10:13:31 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: "G, Manjunath Kondaiah" <manjugk@ti.com>,
+       "S, Venkatraman" <svenkatr@ti.com>, Tony Lindgren <tony@atomide.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Date: Tue, 2 Mar 2010 20:43:24 +0530
+Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Index: Acq6DrzxzzLj/+UaR0CqYftNXskKIAAAL3RwAABS3WAAAXrY4AAA+Kog
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C44C2348@dbde02.ent.ti.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+	 <20100301184600.GC3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
+	 <20100302060821.GI3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+	 <20100302065224.GL3389@atomide.com>
+ <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+ <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02C44C22F6@dbde02.ent.ti.com>
+ <E0D41E29EB0DAC4E9F3FF173962E9E94026ED963B1@dbde02.ent.ti.com>
+In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED963B1@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-In-Reply-To: <20100301023316.GB23086@linux-sh.org>
-References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
-	 <1267289508-31031-43-git-send-email-andrea.gelmini@gelma.net>
-	 <20100301023316.GB23086@linux-sh.org>
-Date: Tue, 2 Mar 2010 16:13:11 +0100
-X-Google-Sender-Auth: 718d2b274871f915
-Message-ID: <9cdbb57f1003020713x4e897af9ka87e348bf782f380@mail.gmail.com>
-Subject: Re: [PATCH 42/66] arch/mips/lib/libgcc.h: Checkpatch cleanup
-From: Andrea Gelmini <andrea.gelmini@gelma.net>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips@linux-mips.org, linux-sh@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/3/1 Paul Mundt <lethal@linux-sh.org>:
-Hi Paul,
-   thanks for your reply.
+> -----Original Message-----
+> From: G, Manjunath Kondaiah
+> Sent: Tuesday, March 02, 2010 8:34 PM
+> To: Shilimkar, Santosh; S, Venkatraman; Tony Lindgren; Raja, Govindraj; Greg KH; linux-
+> serial@vger.kernel.org; linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org; Kevin Hilman; Olof
+> Johansson
+> Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+> 
+> 
+> Santosh,
+> 
+> > -----Original Message-----
+> > From: Shilimkar, Santosh
+> > Sent: Tuesday, March 02, 2010 7:34 PM
+> > To: G, Manjunath Kondaiah; S, Venkatraman; Tony Lindgren;
+> > Raja, Govindraj; Greg KH; linux-serial@vger.kernel.org;
+> > linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > Kevin Hilman; Olof Johansson
+> > Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+> >
+> > <snip snip>
+> > > > > --
+> > > > CDAC is a shadow register used for monitoring the DMA channel.
+> > > >  I think it would be a lot
+> > > > simpler if omap_start_dma() always resets CDAC to 0, and the
+> > > > UART driver
+> > > > just not set it explicitly.
+> > >
+> > > This seems to be better option than exposing CDAC read/write API
+> > > to other drivers since user need to write '0' before
+> > starting any DMA
+> > > transfer which can be be done in omap_start_dma().
+> > >
+> > > I am wondering how other drivers are using DMA transfer
+> > API's without
+> > > resetting CDAC to zero.
+> > >
+> > It's needed only if some one is interested in that count.
+> > UART seems to
+> > using this counter where as other driver don't.
+> >
+> > Why do you think drivers need to know about counter value ?
+> 
+> Reading of non zero value(after reset to zero and enabling dma channel)
+> from CDAC register indicates that, DMA transfer has started and user can
+> rely on DMA4_CCENi and DMA4_CCFNi element and frame counters.
+> 
+> If the CDAC value is zero even after starting DMA channel, indicates
+> error.
+Not necessary. The DMA can still wait for the hw sync signal and the CDAC
+can remain 0 if the hw sync in not received. This will be any way returned 
+by DMA error ( SYNC lost)
 
-> I'll apply the sh part by itself, and I suppose Ralf will do the same for
-> MIPS. I'm a bit confused as to why these were lumped together when 65 out
-> of 66 oneliner patches made no use of ad-hoc grouping.
-
-After the experience with GregKH, I was looking for others maintainer
-interested in code cleanup. So I sent some patches over random files.
-If you care, I can checkpatch.pl all mips subtree and send you patches (if any).
-
-Thanks a lot for your work,
-Andrea
+This register was mainly suppose to be used for debug purposes.
+Regards,
+Santosh
