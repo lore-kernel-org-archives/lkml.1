@@ -1,52 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084Ab0CBTRM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 14:17:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48771 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516Ab0CBTRJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 14:17:09 -0500
-X-Authority-Analysis: v=1.0 c=1 a=5NVHotgoJoIA:10 a=7U3hwN5JcxgA:10 a=JxY7tLwbamfrbw2YqUEA:9 a=c2UABteAHuzy2VFA1Zc3H_EO7Z8A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [GIT PULL] single block IO revert (Was "Re: Oops while booting
- 2.6.34-rc0 (block pull busted)")
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: walt <w41ter@gmail.com>, linux-kernel@vger.kernel.org,
-       Michael Breuer <mbreuer@majjas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dmonakhov@openvz.org
-In-Reply-To: <20100302182117.GW5768@kernel.dk>
-References: <201003011615.31709.dmitry.torokhov@gmail.com>
-	 <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk>
-	 <hmiocs$p6h$1@dough.gmane.org> <4B8D41C7.1030404@majjas.com>
-	 <20100302174250.GA13131@goodmis.org> <20100302174939.GB13131@goodmis.org>
-	 <20100302182117.GW5768@kernel.dk>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Tue, 02 Mar 2010 14:17:02 -0500
-Message-ID: <1267557422.10871.23.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1752277Ab0CBTTp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 14:19:45 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56957 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751001Ab0CBTTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 14:19:43 -0500
+Message-ID: <4B8D6275.30100@zytor.com>
+Date: Tue, 02 Mar 2010 11:09:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "H. Peter Anvin" <hpa@linux.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sachin Sant <sachinp@in.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Alok Kataria <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       =?ISO-8859-1?Q?Pasi_K=E4rkk=E4i?= =?ISO-8859-1?Q?nen?= 
+	<pasik@iki.fi>
+Subject: Re: [GIT PULL] x86/mm fixes
+References: <201003020010.o220Ax3Z025848@hera.kernel.org> <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 19:21 +0100, Jens Axboe wrote:
-> On Tue, Mar 02 2010, Steven Rostedt wrote:
-
+On 03/02/2010 10:39 AM, Linus Torvalds wrote:
 > 
-> We'll revert it asap, no point in wasting time debugging it first.
+> 
+> On Tue, 2 Mar 2010, H. Peter Anvin wrote:
+>> +		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
+>> +		end_pfn = (res.end + 1) >> PAGE_SHIFT;
+>> +		if (end_pfn > pfn)
+>> +		    ret = (*func)(pfn, end_pfn - pfn, arg);
+>>  		if (ret)
+>>  			break;
+>>  		res.start = res.end + 1;
+> 
+> What kind of messed-up indentation is that? We don't use 4-char indents.
+> 
+> 		Linus
 
-Thanks!
+Sorry, you're right.  I have to admit I didn't even see that aspect of
+the patch.
 
-Since I have a box that triggers this issue, let me know if there's a
-git branch you would like me to test.
+I'll add a reformatting patch and update the branch, if you want.
 
--- Steve
-
+	-hpa
 
