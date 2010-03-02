@@ -1,50 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751830Ab0CBJPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 04:15:44 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:33328 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311Ab0CBJPl convert rfc822-to-8bit (ORCPT
+	id S1751940Ab0CBJWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 04:22:21 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:13329 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618Ab0CBJWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 04:15:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TBImiauidACpmRQp7hODOAvhJ17kx2xwHnnekeMP+6RyrUX5YOOpTqp2iPxUwLizpB
-         UOBaRXrxUzrlYL4y9FonKR18UnccQE97JiQaS41tPvoya3QjUazB0/HFv1BYNHc8khcy
-         ceqvsuezeIXGNfGiLpL7eK+8+ZBVG/4cjzU1U=
+	Tue, 2 Mar 2010 04:22:19 -0500
+X-IronPort-AV: E=Sophos;i="4.49,565,1262581200"; 
+   d="scan'208";a="86274862"
+Subject: Re: [Xen-devel] [PATCH 3/7] xen/hvm: Xen PV extension of  HVM
+ initialization
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <201003020938.53630.sheng@linux.intel.com>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
+	 <1267436315-24486-4-git-send-email-sheng@linux.intel.com>
+	 <4B8C63B0.2090507@goop.org>  <201003020938.53630.sheng@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Tue, 2 Mar 2010 09:22:15 +0000
+Message-ID: <1267521735.11737.23107.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-In-Reply-To: <20100301120321.8851ba86.sfr@canb.auug.org.au>
-References: <20100301120321.8851ba86.sfr@canb.auug.org.au>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 2 Mar 2010 04:15:19 -0500
-Message-ID: <8bd0f97a1003020115m4016c5f6v643e90a6c6415e74@mail.gmail.com>
-Subject: Re: linux-next: build failure after merge of the blackfin tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 20:03, Stephen Rothwell wrote:
-> After merging the blackfin tree, today's linux-next build (x86_64 allmodconfig)
-> failed like this:
->
-> kernel/trace/trace_syscalls.c:402: error: redefinition of 'arch_syscall_addr'
-> kernel/trace/trace_syscalls.c:397: note: previous definition of 'arch_syscall_addr' was here
->
-> Caused by commit d156d1881ea54ec609d92388601661c2679439bb ("ftrace: unify
-> arch_syscall_addr() implementations") from the blackfin tree interacting
-> with commit e7b8e675d9c71b868b66f62f725a948047514719 ("tracing: Unify
-> arch_syscall_addr() implementations") from Linus' tree.
->
-> These are slightly different versions of the same patch. but merging with the blackfin tree managed to add a second copy of the above function.  I have applied the following patch for today.
+On Tue, 2010-03-02 at 01:38 +0000, Sheng Yang wrote:
+> 
+> A annoy thing in pv drivers is that it would test if the domain type
+> is _NOT_ XEN_NATIVE. So set the domain to XEN_HVM_DOMAIN would result
+> in PV driver initialization then probably panic. 
 
-i'm traveling atm and wont be able to clean up my tree for a few more
-days.  i'd suggest you just drop the Blackfin tree as well as your
-local patch.  i'll drop a line once things are sane again on my side.
--mike
+What _actually_ panics?
+
+Registration of the frontend devices should be completely harmless
+(apart from a little wasted RAM) unless a xenbus driver manages to come
+up and enumerate the xen bus and cause the ->probe function run.
+
+You should be gating the xenbus startup on the availability of PV
+functionality not the individual driver registrations. This keeps the
+test in a single easy to maintain place.
+
+Compare with pci_register_driver and all of the callers of that function
+-- not a single one of them has an "is_pci_available" test anywhere.
+
+Ian.
+
