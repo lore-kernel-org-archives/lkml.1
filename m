@@ -1,49 +1,338 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318Ab0CBSDR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:03:17 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:54141 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344Ab0CBSDQ (ORCPT
+	id S1753338Ab0CBSIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:08:45 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:15711 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752586Ab0CBSIn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:03:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=PikB08QZLLgwvfJ7N6WeHH4EnVTlyLXW1Cz79+0ZTm+smjH6mDeiNJjhnHIJ44A1FZ
-         Xff4lXJUazXlceMG/DbJtwhKa8kkXofnsYAihTauWeqTvnd1oCbDSWZdHerXnSy/3qNb
-         +Z6WjVdBFSPcWAf2lPl8MG8kGvMXEyhA5Q5qw=
+	Tue, 2 Mar 2010 13:08:43 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=mhgaaktadCgQQMek2Tu5nhPvxAQOs/LDOCt1G82a5O+FkS9nhe1LKDpzMYsEcxy30
+	dLeeMmZQ6mUJxLQUpPdiQ==
 MIME-Version: 1.0
-In-Reply-To: <817ecb6f1003020951v2926c819q7bd322c40a74b4bd@mail.gmail.com>
-References: <1267547013.4b8d3b8596461@imp.free.fr>
-	 <817ecb6f1003020951v2926c819q7bd322c40a74b4bd@mail.gmail.com>
-Date: Tue, 2 Mar 2010 13:03:14 -0500
-Message-ID: <817ecb6f1003021003s4000fa4j1b357de0833db9ed@mail.gmail.com>
-Subject: Re: [tip:x86/mm] x86, mm: NX protection for kernel data
-From: Siarhei Liakh <sliakh.lkml@gmail.com>
-To: castet.matthieu@free.fr
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1267478620-5276-3-git-send-email-arighi@develer.com>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com> 
+	<1267478620-5276-3-git-send-email-arighi@develer.com>
+From: Greg Thelen <gthelen@google.com>
+Date: Tue, 2 Mar 2010 10:08:17 -0800
+Message-ID: <49b004811003021008t4fae71bbu8d56192e48c32f39@mail.gmail.com>
+Subject: Re: [PATCH -mmotm 2/3] memcg: dirty pages accounting and limiting 
+	infrastructure
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 12:51 PM, Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
->>> At this point I need some help and guidance on how to track down what
->>> exactly happens there, as I am not very familiar with what goes into
->>> .data and why are we trying to execute it.
->> Can't you add debug printk in the fault handler before any exception processing
->>
->> Something like that.
->
-> That does not really give any additional information. The message does
-> not show up in the output and the stack trace says that we are somehow
-> ended up in doublefault_fn.
+Comments below.  Yet to be tested on my end, but I will test it.
 
-Forgot to add one more thing: it looks like fault on instruction
-prefetch is already taken care of in fault handlers and should
-generate an appropriate message. The way I interpret the fact that
-doublefault_fn is the one that prints out a message, is that main
-fault handler is somehow dependent on .data being executable.... (but
-this is pure speculation on my part at this point)...
+On Mon, Mar 1, 2010 at 1:23 PM, Andrea Righi <arighi@develer.com> wrote:
+> Infrastructure to account dirty pages per cgroup and add dirty limit
+> interfaces in the cgroupfs:
+>
+>  - Direct write-out: memory.dirty_ratio, memory.dirty_bytes
+>
+>  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
+>
+> Signed-off-by: Andrea Righi <arighi@develer.com>
+> ---
+>  include/linux/memcontrol.h |   77 ++++++++++-
+>  mm/memcontrol.c            |  336 ++++++++++++++++++++++++++++++++++++++++----
+>  2 files changed, 384 insertions(+), 29 deletions(-)
+>
+> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+> index 1f9b119..cc88b2e 100644
+> --- a/include/linux/memcontrol.h
+> +++ b/include/linux/memcontrol.h
+> @@ -19,12 +19,50 @@
+>
+>  #ifndef _LINUX_MEMCONTROL_H
+>  #define _LINUX_MEMCONTROL_H
+> +
+> +#include <linux/writeback.h>
+>  #include <linux/cgroup.h>
+> +
+>  struct mem_cgroup;
+>  struct page_cgroup;
+>  struct page;
+>  struct mm_struct;
+>
+> +/* Cgroup memory statistics items exported to the kernel */
+> +enum mem_cgroup_page_stat_item {
+> +       MEMCG_NR_DIRTYABLE_PAGES,
+> +       MEMCG_NR_RECLAIM_PAGES,
+> +       MEMCG_NR_WRITEBACK,
+> +       MEMCG_NR_DIRTY_WRITEBACK_PAGES,
+> +};
+> +
+> +/*
+> + * Statistics for memory cgroup.
+> + */
+> +enum mem_cgroup_stat_index {
+> +       /*
+> +        * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
+> +        */
+> +       MEM_CGROUP_STAT_CACHE,     /* # of pages charged as cache */
+> +       MEM_CGROUP_STAT_RSS,       /* # of pages charged as anon rss */
+> +       MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
+> +       MEM_CGROUP_STAT_PGPGIN_COUNT,   /* # of pages paged in */
+> +       MEM_CGROUP_STAT_PGPGOUT_COUNT,  /* # of pages paged out */
+> +       MEM_CGROUP_STAT_EVENTS, /* sum of pagein + pageout for internal use */
+> +       MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+> +       MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
+> +                                       used by soft limit implementation */
+> +       MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
+> +                                       used by threshold implementation */
+> +       MEM_CGROUP_STAT_FILE_DIRTY,   /* # of dirty pages in page cache */
+> +       MEM_CGROUP_STAT_WRITEBACK,   /* # of pages under writeback */
+> +       MEM_CGROUP_STAT_WRITEBACK_TEMP,   /* # of pages under writeback using
+> +                                               temporary buffers */
+> +       MEM_CGROUP_STAT_UNSTABLE_NFS,   /* # of NFS unstable pages */
+> +
+> +       MEM_CGROUP_STAT_NSTATS,
+> +};
+> +
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+>  /*
+>  * All "charge" functions with gfp_mask should use GFP_KERNEL or
+> @@ -117,6 +155,13 @@ extern void mem_cgroup_print_oom_info(struct mem_cgroup *memcg,
+>  extern int do_swap_account;
+>  #endif
+>
+> +extern long mem_cgroup_dirty_ratio(void);
+> +extern unsigned long mem_cgroup_dirty_bytes(void);
+> +extern long mem_cgroup_dirty_background_ratio(void);
+> +extern unsigned long mem_cgroup_dirty_background_bytes(void);
+> +
+> +extern s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item);
+> +
+>  static inline bool mem_cgroup_disabled(void)
+>  {
+>        if (mem_cgroup_subsys.disabled)
+> @@ -125,7 +170,8 @@ static inline bool mem_cgroup_disabled(void)
+>  }
+>
+>  extern bool mem_cgroup_oom_called(struct task_struct *task);
+> -void mem_cgroup_update_file_mapped(struct page *page, int val);
+> +void mem_cgroup_update_stat(struct page *page,
+> +                       enum mem_cgroup_stat_index idx, int val);
+>  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
+>                                                gfp_t gfp_mask, int nid,
+>                                                int zid);
+> @@ -300,8 +346,8 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+>  {
+>  }
+>
+> -static inline void mem_cgroup_update_file_mapped(struct page *page,
+> -                                                       int val)
+> +static inline void mem_cgroup_update_stat(struct page *page,
+> +                       enum mem_cgroup_stat_index idx, int val)
+>  {
+>  }
+>
+> @@ -312,6 +358,31 @@ unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
+>        return 0;
+>  }
+>
+> +static inline long mem_cgroup_dirty_ratio(void)
+> +{
+> +       return vm_dirty_ratio;
+> +}
+> +
+> +static inline unsigned long mem_cgroup_dirty_bytes(void)
+> +{
+> +       return vm_dirty_bytes;
+> +}
+> +
+> +static inline long mem_cgroup_dirty_background_ratio(void)
+> +{
+> +       return dirty_background_ratio;
+> +}
+> +
+> +static inline unsigned long mem_cgroup_dirty_background_bytes(void)
+> +{
+> +       return dirty_background_bytes;
+> +}
+> +
+> +static inline s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
+> +{
+> +       return -ENOMEM;
+> +}
+> +
+>  #endif /* CONFIG_CGROUP_MEM_CONT */
+>
+>  #endif /* _LINUX_MEMCONTROL_H */
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index a443c30..e74cf66 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -66,31 +66,16 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+>  #define SOFTLIMIT_EVENTS_THRESH (1000)
+>  #define THRESHOLDS_EVENTS_THRESH (100)
+>
+> -/*
+> - * Statistics for memory cgroup.
+> - */
+> -enum mem_cgroup_stat_index {
+> -       /*
+> -        * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
+> -        */
+> -       MEM_CGROUP_STAT_CACHE,     /* # of pages charged as cache */
+> -       MEM_CGROUP_STAT_RSS,       /* # of pages charged as anon rss */
+> -       MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
+> -       MEM_CGROUP_STAT_PGPGIN_COUNT,   /* # of pages paged in */
+> -       MEM_CGROUP_STAT_PGPGOUT_COUNT,  /* # of pages paged out */
+> -       MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+> -       MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
+> -                                       used by soft limit implementation */
+> -       MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
+> -                                       used by threshold implementation */
+> -
+> -       MEM_CGROUP_STAT_NSTATS,
+> -};
+> -
+>  struct mem_cgroup_stat_cpu {
+>        s64 count[MEM_CGROUP_STAT_NSTATS];
+>  };
+>
+> +/* Per cgroup page statistics */
+> +struct mem_cgroup_page_stat {
+> +       enum mem_cgroup_page_stat_item item;
+> +       s64 value;
+> +};
+> +
+>  /*
+>  * per-zone information in memory controller.
+>  */
+> @@ -157,6 +142,15 @@ struct mem_cgroup_threshold_ary {
+>  static bool mem_cgroup_threshold_check(struct mem_cgroup *mem);
+>  static void mem_cgroup_threshold(struct mem_cgroup *mem);
+>
+> +enum mem_cgroup_dirty_param {
+> +       MEM_CGROUP_DIRTY_RATIO,
+> +       MEM_CGROUP_DIRTY_BYTES,
+> +       MEM_CGROUP_DIRTY_BACKGROUND_RATIO,
+> +       MEM_CGROUP_DIRTY_BACKGROUND_BYTES,
+> +
+> +       MEM_CGROUP_DIRTY_NPARAMS,
+> +};
+> +
+>  /*
+>  * The memory controller data structure. The memory controller controls both
+>  * page cache and RSS per cgroup. We would eventually like to provide
+> @@ -205,6 +199,9 @@ struct mem_cgroup {
+>
+>        unsigned int    swappiness;
+>
+> +       /* control memory cgroup dirty pages */
+> +       unsigned long dirty_param[MEM_CGROUP_DIRTY_NPARAMS];
+> +
+>        /* set when res.limit == memsw.limit */
+>        bool            memsw_is_minimum;
+>
+> @@ -1021,6 +1018,164 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
+>        return swappiness;
+>  }
+>
+> +static unsigned long get_dirty_param(struct mem_cgroup *memcg,
+> +                       enum mem_cgroup_dirty_param idx)
+> +{
+> +       unsigned long ret;
+> +
+> +       VM_BUG_ON(idx >= MEM_CGROUP_DIRTY_NPARAMS);
+> +       spin_lock(&memcg->reclaim_param_lock);
+> +       ret = memcg->dirty_param[idx];
+> +       spin_unlock(&memcg->reclaim_param_lock);
+> +
+> +       return ret;
+> +}
+> +
+
+> +long mem_cgroup_dirty_ratio(void)
+> +{
+> +       struct mem_cgroup *memcg;
+> +       long ret = vm_dirty_ratio;
+> +
+> +       if (mem_cgroup_disabled())
+> +               return ret;
+> +       /*
+> +        * It's possible that "current" may be moved to other cgroup while we
+> +        * access cgroup. But precise check is meaningless because the task can
+> +        * be moved after our access and writeback tends to take long time.
+> +        * At least, "memcg" will not be freed under rcu_read_lock().
+> +        */
+> +       rcu_read_lock();
+> +       memcg = mem_cgroup_from_task(current);
+> +       if (likely(memcg))
+> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_RATIO);
+> +       rcu_read_unlock();
+> +
+> +       return ret;
+> +}
+> +
+> +unsigned long mem_cgroup_dirty_bytes(void)
+> +{
+> +       struct mem_cgroup *memcg;
+> +       unsigned long ret = vm_dirty_bytes;
+> +
+> +       if (mem_cgroup_disabled())
+> +               return ret;
+> +       rcu_read_lock();
+> +       memcg = mem_cgroup_from_task(current);
+> +       if (likely(memcg))
+> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BYTES);
+> +       rcu_read_unlock();
+> +
+> +       return ret;
+> +}
+> +
+> +long mem_cgroup_dirty_background_ratio(void)
+> +{
+> +       struct mem_cgroup *memcg;
+> +       long ret = dirty_background_ratio;
+> +
+> +       if (mem_cgroup_disabled())
+> +               return ret;
+> +       rcu_read_lock();
+> +       memcg = mem_cgroup_from_task(current);
+> +       if (likely(memcg))
+> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_RATIO);
+> +       rcu_read_unlock();
+> +
+> +       return ret;
+> +}
+> +
+> +unsigned long mem_cgroup_dirty_background_bytes(void)
+> +{
+> +       struct mem_cgroup *memcg;
+> +       unsigned long ret = dirty_background_bytes;
+> +
+> +       if (mem_cgroup_disabled())
+> +               return ret;
+> +       rcu_read_lock();
+> +       memcg = mem_cgroup_from_task(current);
+> +       if (likely(memcg))
+> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_BYTES);
+> +       rcu_read_unlock();
+> +
+> +       return ret;
+> +}
+
+Given that mem_cgroup_dirty_[background_]{ratio,bytes}() are similar,
+should we refactor the majority of them into a single routine?
+
+--
+Greg
