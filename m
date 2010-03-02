@@ -1,79 +1,403 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464Ab0CBX3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:42 -0500
-Received: from kroah.org ([198.145.64.141]:38626 "EHLO coco.kroah.org"
+	id S1754722Ab0CBXe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:34:57 -0500
+Received: from kroah.org ([198.145.64.141]:38666 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754324Ab0CBX3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:32 -0500
+	id S1754427Ab0CBX3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:39 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Kalle Jokiniemi <ext-kalle.jokiniemi@nokia.com>,
-       Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
-       Richard Woodruff <r-woodruff2@ti.com>,
-       chandra shekhar <x0044955@ti.com>,
-       Jason P Marini <jason.marini@gmail.com>,
-       Syed Mohammed Khasim <x0khasim@ti.com>,
-       Jarkko Nikula <jarkko.nikula@nokia.com>,
-       Juha Yrjola <juha.yrjola@solidboot.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 33/62] i2c: move i2c_omap's probe function to .devinit.text
-Date: Tue,  2 Mar 2010 15:28:32 -0800
-Message-Id: <1267572541-410-33-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/62] sysfs: Remove sysfs_get/put_active_two
+Date: Tue,  2 Mar 2010 15:28:41 -0800
+Message-Id: <1267572541-410-42-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-A pointer to omap_i2c_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+It turns out that holding an active reference on a directory is
+pointless.  The purpose of the active references are to allows us to
+block when removing sysfs entries that have custom methods so we don't
+remove modules while running modular code and to keep those custom
+methods from accessing data structures after the files have been
+removed.  Further sysfs_remove_dir remove all elements in the
+directory before removing the directory itself, so there is no chance
+we will remove a directory with active children.
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Kalle Jokiniemi <ext-kalle.jokiniemi@nokia.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: Richard Woodruff <r-woodruff2@ti.com>
-Cc: chandra shekhar <x0044955@ti.com>
-Cc: Jason P Marini <jason.marini@gmail.com>
-Cc: Syed Mohammed Khasim  <x0khasim@ti.com>
-Cc: Jarkko Nikula <jarkko.nikula@nokia.com>
-Cc: Juha Yrjola <juha.yrjola@solidboot.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Tejun Heo <tj@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/i2c/busses/i2c-omap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/sysfs/bin.c   |   50 +++++++++++++++++++++++++-------------------------
+ fs/sysfs/dir.c   |   43 ++-----------------------------------------
+ fs/sysfs/file.c  |   18 +++++++++---------
+ fs/sysfs/sysfs.h |    4 ++--
+ 4 files changed, 38 insertions(+), 77 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-index 0037e31..bd86a85 100644
---- a/drivers/i2c/busses/i2c-omap.c
-+++ b/drivers/i2c/busses/i2c-omap.c
-@@ -849,7 +849,7 @@ static const struct i2c_algorithm omap_i2c_algo = {
- 	.functionality	= omap_i2c_func,
- };
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index a0a500a..e9d2935 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -54,14 +54,14 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
+ 	int rc;
  
--static int __init
-+static int __devinit
- omap_i2c_probe(struct platform_device *pdev)
+ 	/* need attr_sd for attr, its parent for kobj */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	rc = -EIO;
+ 	if (attr->read)
+ 		rc = attr->read(kobj, attr, buffer, off, count);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 
+ 	return rc;
+ }
+@@ -125,14 +125,14 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
+ 	int rc;
+ 
+ 	/* need attr_sd for attr, its parent for kobj */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	rc = -EIO;
+ 	if (attr->write)
+ 		rc = attr->write(kobj, attr, buffer, offset, count);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 
+ 	return rc;
+ }
+@@ -184,12 +184,12 @@ static void bin_vma_open(struct vm_area_struct *vma)
+ 	if (!bb->vm_ops || !bb->vm_ops->open)
+ 		return;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return;
+ 
+ 	bb->vm_ops->open(vma);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ }
+ 
+ static void bin_vma_close(struct vm_area_struct *vma)
+@@ -201,12 +201,12 @@ static void bin_vma_close(struct vm_area_struct *vma)
+ 	if (!bb->vm_ops || !bb->vm_ops->close)
+ 		return;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return;
+ 
+ 	bb->vm_ops->close(vma);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ }
+ 
+ static int bin_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+@@ -219,12 +219,12 @@ static int bin_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	if (!bb->vm_ops || !bb->vm_ops->fault)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return VM_FAULT_SIGBUS;
+ 
+ 	ret = bb->vm_ops->fault(vma, vmf);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return ret;
+ }
+ 
+@@ -241,12 +241,12 @@ static int bin_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	if (!bb->vm_ops->page_mkwrite)
+ 		return 0;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return VM_FAULT_SIGBUS;
+ 
+ 	ret = bb->vm_ops->page_mkwrite(vma, vmf);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return ret;
+ }
+ 
+@@ -261,12 +261,12 @@ static int bin_access(struct vm_area_struct *vma, unsigned long addr,
+ 	if (!bb->vm_ops || !bb->vm_ops->access)
+ 		return -EINVAL;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -EINVAL;
+ 
+ 	ret = bb->vm_ops->access(vma, addr, buf, len, write);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return ret;
+ }
+ 
+@@ -281,12 +281,12 @@ static int bin_set_policy(struct vm_area_struct *vma, struct mempolicy *new)
+ 	if (!bb->vm_ops || !bb->vm_ops->set_policy)
+ 		return 0;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -EINVAL;
+ 
+ 	ret = bb->vm_ops->set_policy(vma, new);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return ret;
+ }
+ 
+@@ -301,12 +301,12 @@ static struct mempolicy *bin_get_policy(struct vm_area_struct *vma,
+ 	if (!bb->vm_ops || !bb->vm_ops->get_policy)
+ 		return vma->vm_policy;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return vma->vm_policy;
+ 
+ 	pol = bb->vm_ops->get_policy(vma, addr);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return pol;
+ }
+ 
+@@ -321,12 +321,12 @@ static int bin_migrate(struct vm_area_struct *vma, const nodemask_t *from,
+ 	if (!bb->vm_ops || !bb->vm_ops->migrate)
+ 		return 0;
+ 
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return 0;
+ 
+ 	ret = bb->vm_ops->migrate(vma, from, to, flags);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return ret;
+ }
+ #endif
+@@ -356,7 +356,7 @@ static int mmap(struct file *file, struct vm_area_struct *vma)
+ 
+ 	/* need attr_sd for attr, its parent for kobj */
+ 	rc = -ENODEV;
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		goto out_unlock;
+ 
+ 	rc = -EINVAL;
+@@ -384,7 +384,7 @@ static int mmap(struct file *file, struct vm_area_struct *vma)
+ 	bb->vm_ops = vma->vm_ops;
+ 	vma->vm_ops = &bin_vm_ops;
+ out_put:
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ out_unlock:
+ 	mutex_unlock(&bb->mutex);
+ 
+@@ -399,7 +399,7 @@ static int open(struct inode * inode, struct file * file)
+ 	int error;
+ 
+ 	/* binary file operations requires both @sd and its parent */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	error = -EACCES;
+@@ -426,11 +426,11 @@ static int open(struct inode * inode, struct file * file)
+ 	mutex_unlock(&sysfs_bin_lock);
+ 
+ 	/* open succeeded, put active references */
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return 0;
+ 
+  err_out:
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	kfree(bb);
+ 	return error;
+ }
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 5c4703d..1bdc42f 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -93,7 +93,7 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+  *	RETURNS:
+  *	Pointer to @sd on success, NULL on failure.
+  */
+-static struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
++struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
  {
- 	struct omap_i2c_dev	*dev;
+ 	if (unlikely(!sd))
+ 		return NULL;
+@@ -124,7 +124,7 @@ static struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
+  *	Put an active reference to @sd.  This function is noop if @sd
+  *	is NULL.
+  */
+-static void sysfs_put_active(struct sysfs_dirent *sd)
++void sysfs_put_active(struct sysfs_dirent *sd)
+ {
+ 	struct completion *cmpl;
+ 	int v;
+@@ -145,45 +145,6 @@ static void sysfs_put_active(struct sysfs_dirent *sd)
+ }
+ 
+ /**
+- *	sysfs_get_active_two - get active references to sysfs_dirent and parent
+- *	@sd: sysfs_dirent of interest
+- *
+- *	Get active reference to @sd and its parent.  Parent's active
+- *	reference is grabbed first.  This function is noop if @sd is
+- *	NULL.
+- *
+- *	RETURNS:
+- *	Pointer to @sd on success, NULL on failure.
+- */
+-struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd)
+-{
+-	if (sd) {
+-		if (sd->s_parent && unlikely(!sysfs_get_active(sd->s_parent)))
+-			return NULL;
+-		if (unlikely(!sysfs_get_active(sd))) {
+-			sysfs_put_active(sd->s_parent);
+-			return NULL;
+-		}
+-	}
+-	return sd;
+-}
+-
+-/**
+- *	sysfs_put_active_two - put active references to sysfs_dirent and parent
+- *	@sd: sysfs_dirent of interest
+- *
+- *	Put active references to @sd and its parent.  This function is
+- *	noop if @sd is NULL.
+- */
+-void sysfs_put_active_two(struct sysfs_dirent *sd)
+-{
+-	if (sd) {
+-		sysfs_put_active(sd);
+-		sysfs_put_active(sd->s_parent);
+-	}
+-}
+-
+-/**
+  *	sysfs_deactivate - deactivate sysfs_dirent
+  *	@sd: sysfs_dirent to deactivate
+  *
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index ced2299..4096136 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -85,13 +85,13 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
+ 		return -ENOMEM;
+ 
+ 	/* need attr_sd for attr and ops, its parent for kobj */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	buffer->event = atomic_read(&attr_sd->s_attr.open->event);
+ 	count = ops->show(kobj, attr_sd->s_attr.attr, buffer->page);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 
+ 	/*
+ 	 * The code works fine with PAGE_SIZE return but it's likely to
+@@ -203,12 +203,12 @@ flush_write_buffer(struct dentry * dentry, struct sysfs_buffer * buffer, size_t
+ 	int rc;
+ 
+ 	/* need attr_sd for attr and ops, its parent for kobj */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	rc = ops->store(kobj, attr_sd->s_attr.attr, buffer->page, count);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 
+ 	return rc;
+ }
+@@ -344,7 +344,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 		memmove(last_sysfs_file, p, strlen(p) + 1);
+ 
+ 	/* need attr_sd for attr and ops, its parent for kobj */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+ 	/* every kobject with an attribute needs a ktype assigned */
+@@ -393,13 +393,13 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 		goto err_free;
+ 
+ 	/* open succeeded, put active references */
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return 0;
+ 
+  err_free:
+ 	kfree(buffer);
+  err_out:
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 	return error;
+ }
+ 
+@@ -437,12 +437,12 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
+ 	struct sysfs_open_dirent *od = attr_sd->s_attr.open;
+ 
+ 	/* need parent for the kobj, grab both */
+-	if (!sysfs_get_active_two(attr_sd))
++	if (!sysfs_get_active(attr_sd))
+ 		goto trigger;
+ 
+ 	poll_wait(filp, &od->poll, wait);
+ 
+-	sysfs_put_active_two(attr_sd);
++	sysfs_put_active(attr_sd);
+ 
+ 	if (buffer->event != atomic_read(&od->event))
+ 		goto trigger;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index cdd9377..bb7723c 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -124,8 +124,8 @@ extern const struct file_operations sysfs_dir_operations;
+ extern const struct inode_operations sysfs_dir_inode_operations;
+ 
+ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
+-struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
+-void sysfs_put_active_two(struct sysfs_dirent *sd);
++struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
++void sysfs_put_active(struct sysfs_dirent *sd);
+ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+ 		       struct sysfs_dirent *parent_sd);
+ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
 -- 
 1.7.0.1
 
