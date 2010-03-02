@@ -1,165 +1,278 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939Ab0CBWmh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:42:37 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:51565 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020Ab0CBWmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:42:36 -0500
-Date: Tue, 2 Mar 2010 14:42:19 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: werner@guyane.dyn-o-saur.com, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, netdev@vger.kernel.org
-Subject: Re: 2.6.33 problems
-Message-ID: <20100302144219.3cd28ae9@nehalam>
-In-Reply-To: <20100302135032.e3d11bbf.akpm@linux-foundation.org>
-References: <1267290551.13148@guyane.dyn-o-saur.com>
-	<20100302135032.e3d11bbf.akpm@linux-foundation.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753555Ab0CBWti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:49:38 -0500
+Received: from wdscspam2.wdc.com ([129.253.170.131]:45667 "EHLO
+	wdscspam2.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540Ab0CBWth convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:49:37 -0500
+X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Mar 2010 17:49:36 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [RESUBMIT PATCH] msdos: add support for large disks
+Date: Tue, 2 Mar 2010 14:40:06 -0800
+Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD49@wdscexbe01.sc.wdc.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RESUBMIT PATCH] msdos: add support for large disks
+Thread-Index: Acq6WU8K1eKWRb4+Sem08zoa/CBLdQ==
+From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>
+X-OriginalArrivalTime: 02 Mar 2010 22:40:07.0154 (UTC) FILETIME=[4EDE7D20:01CABA59]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 13:50:32 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+In order to use disks larger than 2TiB on Windows XP, it is necessary to use
+4096-byte logical sectors in an MBR.
 
-> On Sat, 27 Feb 2010 14:09:11 -0300 (GFT)
-> werner@guyane.dyn-o-saur.com wrote:
-> 
-> > For better error searching / correction, I add below the whole syslog.
-> > 
-> > This is refered to 2.6.33  published (without patchs)
-> > 
-> > This are different errors.
-> > 
-> > The most of them exists since 2.6.33-rc1 or appr. -rc5.
-> > 
-> > I posted here already the whole syslog.bz2 but nobody toke care.
-> > 
-> > the boot_vga error occurs only after I start the grafics mode.  It's the mainboard's embedded nvidia grafics. I use the vesa framebuffer driver of X 1.8
-> > 
-> > the int6_init error occurs also in text mode. I think it have something to do with internet.
-> > 
-> > Also the printk errors occur only when start the computer in the grafics mode, but not when starting it in the text mode.
-> > 
-> > Below is also the kernel config. Its the same like since -rc7 (but the errors are also the same)
-> > 
-> > 
-> 
-> Thanks.
-> 
-> >
-> > ...
-> >
-> > Feb 27 13:43:07 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> > Feb 27 13:43:07 werner kernel: Pid: 5314, comm: modprobe Tainted: G         C 2.6.33 #1
-> > Feb 27 13:43:07 werner kernel: Call Trace:
-> > Feb 27 13:43:07 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> > Feb 27 13:43:07 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> > Feb 27 13:43:07 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> > Feb 27 13:43:07 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> > Feb 27 13:43:07 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> > Feb 27 13:43:07 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> > Feb 27 13:43:07 werner kernel:  [<fed105af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> > Feb 27 13:43:07 werner kernel:  [<fd269000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> > Feb 27 13:43:07 werner kernel:  [<fd2692ec>] addrconf_init+0x3b/0x11b [ipv6]
-> > Feb 27 13:43:07 werner kernel:  [<fd269195>] inet6_init+0x195/0x2a2 [ipv6]
-> > Feb 27 13:43:07 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> > Feb 27 13:43:07 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> > Feb 27 13:43:07 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> > Feb 27 13:43:19 werner kdm_greet[5382]: Can't open default user face
-> > Feb 27 13:44:24 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> > Feb 27 13:44:24 werner kernel: Pid: 5737, comm: modprobe Tainted: G         C 2.6.33 #1
-> > Feb 27 13:44:24 werner kernel: Call Trace:
-> > Feb 27 13:44:24 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> > Feb 27 13:44:24 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> > Feb 27 13:44:24 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> > Feb 27 13:44:24 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> > Feb 27 13:44:24 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> > Feb 27 13:44:24 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> > Feb 27 13:44:24 werner kernel:  [<fed105af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> > Feb 27 13:44:24 werner kernel:  [<f91bf000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> > Feb 27 13:44:24 werner kernel:  [<f91bf2ec>] addrconf_init+0x3b/0x11b [ipv6]
-> > Feb 27 13:44:24 werner kernel:  [<f91bf195>] inet6_init+0x195/0x2a2 [ipv6]
-> > Feb 27 13:44:24 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> > Feb 27 13:44:24 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> > Feb 27 13:44:24 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> > Feb 27 13:44:27 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> > Feb 27 13:44:27 werner kernel: Pid: 5772, comm: modprobe Tainted: G         C 2.6.33 #1
-> > Feb 27 13:44:27 werner kernel: Call Trace:
-> > Feb 27 13:44:27 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> > Feb 27 13:44:27 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> > Feb 27 13:44:27 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> > Feb 27 13:44:27 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> > Feb 27 13:44:27 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> > Feb 27 13:44:27 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> > Feb 27 13:44:27 werner kernel:  [<fee155af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<f9185000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<f91852ec>] addrconf_init+0x3b/0x11b [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<f9185195>] inet6_init+0x195/0x2a2 [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> > Feb 27 13:44:27 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> > Feb 27 13:44:27 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> 
-> Methinks Tejun's stuff broke, and then triggered a bug in a
-> hitherto-untested networking error recovery codepath.
-> 
-> 
-> > Feb 27 13:44:27 werner kernel: BUG: unable to handle kernel paging request at fed348d4
-> > Feb 27 13:44:27 werner kernel: IP: [<c1b68700>] unregister_pernet_operations+0x21/0x93
-> > Feb 27 13:44:27 werner kernel: *pde = 360fc067 *pte = 00000000 
-> > Feb 27 13:44:27 werner kernel: Oops: 0002 [#1] PREEMPT SMP 
-> > Feb 27 13:44:27 werner kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:0d.0/boot_vga
-> > Feb 27 13:44:27 werner kernel: Modules linked in: ipv6(+) bnep rfcomm hidp l2cap bluetooth snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device rt2860sta(C) uvcvideo usbvideo lp snd_hda_codec_analog rtc_cmos rtc_core rtc_lib rtl8187 tpm_tis tpm tpm_bios mac80211 led_class snd_hda_intel snd_hda_codec k8temp hwmon 8139too cfg80211 snd_hwdep snd_pcm rfkill snd_timer snd soundcore snd_page_alloc forcedeth i2c_nforce2
-> > Feb 27 13:44:27 werner kernel: 
-> > Feb 27 13:44:27 werner kernel: Pid: 5772, comm: modprobe Tainted: G         C 2.6.33 #1 M2N-VM DH/System Product Name
-> > Feb 27 13:44:27 werner kernel: EIP: 0060:[<c1b68700>] EFLAGS: 00010246 CPU: 0
-> > Feb 27 13:44:27 werner kernel: EIP is at unregister_pernet_operations+0x21/0x93
-> > Feb 27 13:44:27 werner kernel: EAX: fed348d4 EBX: fee39850 ECX: f0d7bf58 EDX: fee398d4
-> > Feb 27 13:44:27 werner kernel: ESI: fee39850 EDI: f9185000 EBP: f0d7bf6c ESP: f0d7bf58
-> > Feb 27 13:44:27 werner kernel:  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> > Feb 27 13:44:27 werner kernel: Process modprobe (pid: 5772, ti=f0d7a000 task=f0ccb660 task.ti=f0d7a000)
-> > Feb 27 13:44:27 werner kernel: Stack:
-> > Feb 27 13:44:27 werner kernel:  f0d7bf58 f0d7bf58 fee39850 00000000 f9185000 f0d7bf78 c1b687c6 fffffff4
-> > Feb 27 13:44:27 werner kernel: <0> f0d7bf84 f9185257 fee3b834 f0d7bf9c c1001143 00000000 fee3b834 00000000
-> > Feb 27 13:44:27 werner kernel: <0> 0805e188 f0d7bfac c1066570 b7516008 0805e138 f0d7a000 c1c6acec b7516008
-> > Feb 27 13:44:27 werner kernel: Call Trace:
-> > Feb 27 13:44:27 werner kernel:  [<f9185000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<c1b687c6>] ? unregister_pernet_subsys+0x1c/0x29
-> > Feb 27 13:44:27 werner kernel:  [<f9185257>] ? inet6_init+0x257/0x2a2 [ipv6]
-> > Feb 27 13:44:27 werner kernel:  [<c1001143>] ? do_one_initcall+0x51/0x13f
-> > Feb 27 13:44:27 werner kernel:  [<c1066570>] ? sys_init_module+0xac/0x1e0
-> > Feb 27 13:44:27 werner kernel:  [<c1c6acec>] ? syscall_call+0x7/0xb
-> > Feb 27 13:44:27 werner kernel: Code: c2 75 e5 e8 78 0a 51 ff eb 97 55 89 e5 57 56 53 83 ec 08 e8 03 b2 49 ff 89 c6 8d 4d ec 89 4d ec 89 4d f0 8b 10 8b 40 04 89 42 04 <89> 10 c7 06 00 01 10 00 c7 46 04 00 02 20 00 a1 b8 b7 10 c2 8d 
-> > Feb 27 13:44:27 werner kernel: EIP: [<c1b68700>] unregister_pernet_operations+0x21/0x93 SS:ESP 0068:f0d7bf58
-> > Feb 27 13:44:27 werner kernel: CR2: 00000000fed348d4
-> > Feb 27 13:44:27 werner kernel: ---[ end trace 120df121853896c9 ]---
-> > Feb 27 13:45:39 werner kernel: BUG: Bad page map in process kio_http  pte:fee39850 pmd:ace05067
-> > Feb 27 13:45:39 werner kernel: addr:b6635000 vm_flags:08000075 anon_vma:(null) mapping:f20f434c index:5d
-> > Feb 27 13:45:39 werner kernel: vma->vm_ops->fault: filemap_fault+0x0/0x2eb
-> > Feb 27 13:45:39 werner kernel: vma->vm_file->f_op->mmap: generic_file_mmap+0x0/0x44
-> > Feb 27 13:45:39 werner kernel: Pid: 5764, comm: kio_http Tainted: G      D  C 2.6.33 #1
-> > Feb 27 13:45:39 werner kernel: Call Trace:
-> > Feb 27 13:45:39 werner kernel:  [<c10a47c7>] print_bad_pte+0x17e/0x190
-> > Feb 27 13:45:39 werner kernel:  [<c10a5782>] unmap_vmas+0x444/0x676
-> > Feb 27 13:45:39 werner kernel:  [<c10a461d>] ? __do_fault+0x3bd/0x3e9
-> > Feb 27 13:45:39 werner kernel:  [<c10988b9>] ? ____pagevec_lru_add+0x101/0x10f
-> > Feb 27 13:45:39 werner kernel:  [<c10a9344>] exit_mmap+0xab/0x13a
-> > Feb 27 13:45:39 werner kernel:  [<c1038cc1>] mmput+0x3a/0xb0
-> > Feb 27 13:45:39 werner kernel:  [<c103c669>] exit_mm+0xec/0xf4
-> > Feb 27 13:45:39 werner kernel:  [<c1c6a525>] ? _raw_spin_lock_irq+0xb/0x34
-> > Feb 27 13:45:39 werner kernel:  [<c1c6a855>] ? _raw_spin_unlock_irq+0x8/0x27
-> > Feb 27 13:45:39 werner kernel:  [<c103dbc1>] do_exit+0x1ad/0x605
-> > Feb 27 13:45:39 werner kernel:  [<c105554c>] ? up_read+0x8/0x18
-> > Feb 27 13:45:39 werner kernel:  [<c103e080>] do_group_exit+0x67/0x8a
-> > Feb 27 13:45:39 werner kernel:  [<c103e0bb>] sys_exit_group+0x18/0x1c
-> > Feb 27 13:45:39 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
+Although the kernel storage and functions called from msdos.c used
+"sector_t" internally, msdos.c still used u32 variables, which results in
+the ability to handle XP-compatible large disks.
 
+This patch changes the internal variables to "sector_t".
 
-The SNMP MIB stuff does allocate a disproportionately large amount of percpu
-data. Looks like 2 tables per MIB.
+Signed-off-by: Daniel Taylor <daniel.taylor@wdc.com> diff --git
+a/fs/partitions/msdos.c b/fs/partitions/msdos.c index 0028d2e..039bb61
+100644
+--- a/fs/partitions/msdos.c
++++ b/fs/partitions/msdos.c
+@@ -32,13 +32,20 @@
+ #include <asm/unaligned.h>
+ 
+ #define SYS_IND(p)	(get_unaligned(&p->sys_ind))
+-#define NR_SECTS(p)	({ __le32 __a =	get_unaligned(&p->nr_sects);	\
+-				le32_to_cpu(__a); \
+-			})
+ 
+-#define START_SECT(p)	({ __le32 __a =	get_unaligned(&p->start_sect);	\
+-				le32_to_cpu(__a); \
+-			})
++static inline sector_t nr_sects(struct partition *p) {
++	u32 number_of_sectors = le32_to_cpu(get_unaligned(&p->nr_sects));
++
++	return (sector_t)number_of_sectors;
++}
++
++static inline sector_t start_sect(struct partition *p) {
++	u32 start_sector = le32_to_cpu(get_unaligned(&p->start_sect));
++
++	return (sector_t)start_sector;
++}
+ 
+ static inline int is_extended_partition(struct partition *p)  { @@ -104,13
++111,13 @@ static int aix_magic_present(unsigned char *p, struct
+block_device *bdev)
+ 
+ static void
+ parse_extended(struct parsed_partitions *state, struct block_device *bdev,
+-			u32 first_sector, u32 first_size)
++			sector_t first_sector, sector_t first_size)
+ {
+ 	struct partition *p;
+ 	Sector sect;
+ 	unsigned char *data;
+-	u32 this_sector, this_size;
+-	int sector_size = bdev_logical_block_size(bdev) / 512;
++	sector_t this_sector, this_size;
++	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
+ 	int loopct = 0;		/* number of links followed
+ 				   without finding a data partition */
+ 	int i;
+@@ -145,14 +152,14 @@ parse_extended(struct parsed_partitions *state, struct
+block_device *bdev,
+ 		 * First process the data partition(s)
+ 		 */
+ 		for (i=0; i<4; i++, p++) {
+-			u32 offs, size, next;
+-			if (!NR_SECTS(p) || is_extended_partition(p))
++			sector_t offs, size, next;
++			if (!nr_sects(p) || is_extended_partition(p))
+ 				continue;
+ 
+ 			/* Check the 3rd and 4th entries -
+ 			   these sometimes contain random garbage */
+-			offs = START_SECT(p)*sector_size;
+-			size = NR_SECTS(p)*sector_size;
++			offs = start_sect(p)*sector_size;
++			size = nr_sects(p)*sector_size;
+ 			next = this_sector + offs;
+ 			if (i >= 2) {
+ 				if (offs + size > this_size)
+@@ -179,13 +186,13 @@ parse_extended(struct parsed_partitions *state, struct
+block_device *bdev,
+ 		 */
+ 		p -= 4;
+ 		for (i=0; i<4; i++, p++)
+-			if (NR_SECTS(p) && is_extended_partition(p))
++			if (nr_sects(p) && is_extended_partition(p))
+ 				break;
+ 		if (i == 4)
+ 			goto done;	 /* nothing left to do */
+ 
+-		this_sector = first_sector + START_SECT(p) * sector_size;
+-		this_size = NR_SECTS(p) * sector_size;
++		this_sector = first_sector + start_sect(p) * sector_size;
++		this_size = nr_sects(p) * sector_size;
+ 		put_dev_sector(sect);
+ 	}
+ done:
+@@ -197,7 +204,7 @@ done:
+ 
+ static void
+ parse_solaris_x86(struct parsed_partitions *state, struct block_device
+*bdev,
+-			u32 offset, u32 size, int origin)
++			sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_SOLARIS_X86_PARTITION
+ 	Sector sect;
+@@ -244,7 +251,7 @@ parse_solaris_x86(struct parsed_partitions *state,
+struct block_device *bdev,
+  */
+ static void
+ parse_bsd(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin, char *flavour,
++		sector_t offset, sector_t size, int origin, char *flavour,
+ 		int max_partitions)
+ {
+ 	Sector sect;
+@@ -263,7 +270,7 @@ parse_bsd(struct parsed_partitions *state, struct
+block_device *bdev,
+ 	if (le16_to_cpu(l->d_npartitions) < max_partitions)
+ 		max_partitions = le16_to_cpu(l->d_npartitions);
+ 	for (p = l->d_partitions; p - l->d_partitions < max_partitions; p++)
+{
+-		u32 bsd_start, bsd_size;
++		sector_t bsd_start, bsd_size;
+ 
+ 		if (state->next == state->limit)
+ 			break;
+@@ -290,7 +297,7 @@ parse_bsd(struct parsed_partitions *state, struct
+block_device *bdev,
+ 
+ static void
+ parse_freebsd(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin)
++		sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_BSD_DISKLABEL
+ 	parse_bsd(state, bdev, offset, size, origin, @@ -300,7 +307,7 @@
+parse_freebsd(struct parsed_partitions *state, struct block_device *bdev,
+ 
+ static void
+ parse_netbsd(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin)
++		sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_BSD_DISKLABEL
+ 	parse_bsd(state, bdev, offset, size, origin, @@ -310,7 +317,7 @@
+parse_netbsd(struct parsed_partitions *state, struct block_device *bdev,
+ 
+ static void
+ parse_openbsd(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin)
++		sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_BSD_DISKLABEL
+ 	parse_bsd(state, bdev, offset, size, origin, @@ -324,7 +331,7 @@
+parse_openbsd(struct parsed_partitions *state, struct block_device *bdev,
+  */
+ static void
+ parse_unixware(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin)
++		sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_UNIXWARE_DISKLABEL
+ 	Sector sect;
+@@ -348,7 +355,8 @@ parse_unixware(struct parsed_partitions *state, struct
+block_device *bdev,
+ 
+ 		if (p->s_label != UNIXWARE_FS_UNUSED)
+ 			put_partition(state, state->next++,
+-						START_SECT(p), NR_SECTS(p));
++				      start_sect((struct partition *)p),
++				      nr_sects((struct partition *)p));
+ 		p++;
+ 	}
+ 	put_dev_sector(sect);
+@@ -363,7 +371,7 @@ parse_unixware(struct parsed_partitions *state, struct
+block_device *bdev,
+  */
+ static void
+ parse_minix(struct parsed_partitions *state, struct block_device *bdev,
+-		u32 offset, u32 size, int origin)
++		sector_t offset, sector_t size, int origin)
+ {
+ #ifdef CONFIG_MINIX_SUBPARTITION
+ 	Sector sect;
+@@ -390,7 +398,7 @@ parse_minix(struct parsed_partitions *state, struct
+block_device *bdev,
+ 			/* add each partition in use */
+ 			if (SYS_IND(p) == MINIX_PARTITION)
+ 				put_partition(state, state->next++,
+-					      START_SECT(p), NR_SECTS(p));
++					      start_sect(p), nr_sects(p));
+ 		}
+ 		printk(" >\n");
+ 	}
+@@ -401,7 +409,7 @@ parse_minix(struct parsed_partitions *state, struct
+block_device *bdev,  static struct {
+ 	unsigned char id;
+ 	void (*parse)(struct parsed_partitions *, struct block_device *,
+-			u32, u32, int);
++			sector_t, sector_t, int);
+ } subtypes[] = {
+ 	{FREEBSD_PARTITION, parse_freebsd},
+ 	{NETBSD_PARTITION, parse_netbsd},
+@@ -415,7 +423,7 @@ static struct {
+  
+ int msdos_partition(struct parsed_partitions *state, struct block_device
+*bdev)  {
+-	int sector_size = bdev_logical_block_size(bdev) / 512;
++	sector_t sector_size = bdev_logical_block_size(bdev) / 512;
+ 	Sector sect;
+ 	unsigned char *data;
+ 	struct partition *p;
+@@ -483,8 +491,8 @@ int msdos_partition(struct parsed_partitions *state,
+struct block_device *bdev)
+ 
+ 	state->next = 5;
+ 	for (slot = 1 ; slot <= 4 ; slot++, p++) {
+-		u32 start = START_SECT(p)*sector_size;
+-		u32 size = NR_SECTS(p)*sector_size;
++		sector_t start = start_sect(p)*sector_size;
++		sector_t size = nr_sects(p)*sector_size;
+ 		if (!size)
+ 			continue;
+ 		if (is_extended_partition(p)) {
+@@ -513,7 +521,7 @@ int msdos_partition(struct parsed_partitions *state,
+struct block_device *bdev)
+ 		unsigned char id = SYS_IND(p);
+ 		int n;
+ 
+-		if (!NR_SECTS(p))
++		if (!nr_sects(p))
+ 			continue;
+ 
+ 		for (n = 0; subtypes[n].parse && id != subtypes[n].id; n++)
+@@ -521,8 +529,8 @@ int msdos_partition(struct parsed_partitions *state,
+struct block_device *bdev)
+ 
+ 		if (!subtypes[n].parse)
+ 			continue;
+-		subtypes[n].parse(state, bdev, START_SECT(p)*sector_size,
+-						NR_SECTS(p)*sector_size,
+slot);
++		subtypes[n].parse(state, bdev, start_sect(p)*sector_size,
++						nr_sects(p)*sector_size,
+slot);
+ 	}
+ 	put_dev_sector(sect);
+ 	return 1;
