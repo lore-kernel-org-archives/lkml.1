@@ -1,53 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031Ab0CBPUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:20:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:25493 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907Ab0CBPUm (ORCPT
+	id S1752910Ab0CBPXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:23:09 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:34345 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804Ab0CBPXF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:20:42 -0500
+	Tue, 2 Mar 2010 10:23:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=roJT+25qGCm8YtB4klvJgHnZdeLX9cKNHctGQiIKeJ+UiZVQEESMjESVK/KRzefm16
-         N571j7M7CkbbVD19psKDIz+f8Udyg5hJWMerXieqrGQmdKoOg08ryX1JHXBpEeuuBexS
-         ZVnssfZlROQlTWwOfraIdHNSFO0kV1CUu4Sso=
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=f+dNRJKFPJ0rJjNxKGulZQY2aRIecgofp2MuFZNa/DQ9MFX+DHdlNkaAs88NlQWYDh
+         zozci6jVwgQ7L3vtM1YkUoEHRmLBjyYcjKOt93cozYc+2cPAUz9FdyYcMmJChzKvV456
+         /xqVVVZFiyEmUXyc40eAzGDT3ZhHq0RBX7RZ0=
 MIME-Version: 1.0
-In-Reply-To: <20100228204506.GQ30031@ZenIV.linux.org.uk>
+In-Reply-To: <s5hocj7szqj.wl%tiwai@suse.de>
 References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
-	 <1267289508-31031-67-git-send-email-andrea.gelmini@gelma.net>
-	 <20100227221310.GA5455@localhost.localdomain>
-	 <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
-	 <20100228204506.GQ30031@ZenIV.linux.org.uk>
-Date: Tue, 2 Mar 2010 16:20:39 +0100
-X-Google-Sender-Auth: 17708edeae1bbd77
-Message-ID: <9cdbb57f1003020720i15eec6bcg56ecb15c0e17e1e5@mail.gmail.com>
-Subject: Re: [uml-devel] [PATCH 66/66] arch/um/sys-x86_64/shared/sysdep/skas_ptrace.h: 
-	Checkpatch cleanup
+	 <1267289508-31031-23-git-send-email-andrea.gelmini@gelma.net>
+	 <s5hocj7szqj.wl%tiwai@suse.de>
+Date: Tue, 2 Mar 2010 16:23:03 +0100
+X-Google-Sender-Auth: 17f443cc45502e0e
+Message-ID: <9cdbb57f1003020723wbd7a2du5934d75ca1544b42@mail.gmail.com>
+Subject: Re: [PATCH 22/66] sound/oss/v_midi.h: Checkpatch cleanup
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       user-mode-linux-user@lists.sourceforge.net,
-       user-mode-linux-devel@lists.sourceforge.net, gregkh@suse.de
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
+       alsa-devel@alsa-project.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/28 Al Viro <viro@zeniv.linux.org.uk>:
-Hi Viro,
-    thanks a lot for your reply.
+2010/3/2 Takashi Iwai <tiwai@suse.de>:
+Hi Takashi,
+    thanks a lot for you reply.
 
-> Note to gregkh: the next time you give a talk like that, consider including
-> "spamming l-k with sixty-odd solitaire sessions^W^Wwhitespace-removal patches
-> can lead to considerable annoyance"...
+> Applied all three patches for sound/* now.  Thanks.
 
-   As you can see in the video, Greg talked about - just and only -
-Staging Drivers.
+Thanks a lot.
+If you care I can check all sound subtree.
 
-   It's all my fault if someone is bored with my patches.
-
-Thanks a lot for your work,
+Thanks again,
 Andrea
