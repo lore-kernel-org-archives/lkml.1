@@ -1,80 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060Ab0CBQ0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 11:26:44 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:43257 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292Ab0CBQ0n convert rfc822-to-8bit (ORCPT
+	id S1754071Ab0CBQ3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 11:29:44 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:38049 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292Ab0CBQ3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 11:26:43 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=RmYw2Y45LB7wVlblJG83z/Ymv+wfJ9mEDn7dV2HMm8JI4EY6lvBdEBklTxrljlVb/
-	9lTUuJ0ovdNue1uVW5tZw==
+	Tue, 2 Mar 2010 11:29:43 -0500
+Date: Tue, 2 Mar 2010 21:59:32 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ego@in.ibm.com
+Subject: [patch] sched: Fix group_capacity for sched_smt_powersavings=1
+Message-ID: <20100302162932.GC5439@dirshya.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <tip-b622d644c7d61a5cb95b74e7b143c263bed21f0a@git.kernel.org>
-References: <tip-b622d644c7d61a5cb95b74e7b143c263bed21f0a@git.kernel.org>
-Date: Tue, 2 Mar 2010 17:26:39 +0100
-Message-ID: <bd4cb8901003020826w6540ffebje2cee53b52f1ff27@mail.gmail.com>
-Subject: Re: [tip:perf/core] perf_events, x86: Fixup fixed counter constraints
-From: Stephane Eranian <eranian@google.com>
-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 3:31 PM, tip-bot for Peter Zijlstra
-<a.p.zijlstra@chello.nl> wrote:
->
-> Commit-ID:  b622d644c7d61a5cb95b74e7b143c263bed21f0a
-> Gitweb:     http://git.kernel.org/tip/b622d644c7d61a5cb95b74e7b143c263bed21f0a
-> Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> AuthorDate: Mon, 1 Feb 2010 15:36:30 +0100
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Tue, 2 Mar 2010 15:06:47 +0100
->
-> perf_events, x86: Fixup fixed counter constraints
->
-> Patch 1da53e0230 ("perf_events, x86: Improve x86 event scheduling")
-> lost us one of the fixed purpose counters and then ed8777fc13
-> ("perf_events, x86: Fix event constraint masks") broke it even
-> further.
->
-> Widen the fixed event mask to event+umask and specify the full config
-> for each of the 3 fixed purpose counters. Then let the init code fill
-> out the placement for the GP regs based on the cpuid info.
->
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Stephane Eranian <eranian@google.com>
-> LKML-Reference: <new-submission>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Hi Peter,
 
->  static struct event_constraint intel_core2_event_constraints[] =
->  {
-> -       FIXED_EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32))), /* INSTRUCTIONS_RETIRED */
-> -       FIXED_EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33))), /* UNHALTED_CORE_CYCLES */
-> +       FIXED_EVENT_CONSTRAINT(0x00c0, 0), /* INST_RETIRED.ANY */
-> +       FIXED_EVENT_CONSTRAINT(0x003c, 1), /* CPU_CLK_UNHALTED.CORE */
-> +       /*
-> +        * Core2 has Fixed Counter 2 listed as CPU_CLK_UNHALTED.REF and event
-> +        * 0x013c as CPU_CLK_UNHALTED.BUS and specifies there is a fixed
-> +        * ratio between these counters.
-> +        */
-> +       /* FIXED_EVENT_CONSTRAINT(0x013c, 2),  CPU_CLK_UNHALTED.REF */
->        INTEL_EVENT_CONSTRAINT(0x10, 0x1), /* FP_COMP_OPS_EXE */
->        INTEL_EVENT_CONSTRAINT(0x11, 0x2), /* FP_ASSIST */
->        INTEL_EVENT_CONSTRAINT(0x12, 0x2), /* MUL */
-> @@ -37,14 +43,16 @@ static struct event_constraint intel_core2_event_constraints[] =
->        INTEL_EVENT_CONSTRAINT(0x18, 0x1), /* IDLE_DURING_DIV */
->        INTEL_EVENT_CONSTRAINT(0x19, 0x2), /* DELAYED_BYPASS */
->        INTEL_EVENT_CONSTRAINT(0xa1, 0x1), /* RS_UOPS_DISPATCH_CYCLES */
-> +       INTEL_EVENT_CONSTRAINT(0xc9, 0x1), /* ITLB_MISS_RETIRED (T30-9) */
+After applying Suresh's fixes from discussion thread
+http://lkml.org/lkml/2010/2/12/352, we still need the attached patch
+to restore sched_smt_powersavings=1 functionality where tasks prefer
+sibling threads and keep more cores idle.
 
-Where does the constraint on ITLB_MISS_RETIRED come from?
+I am reposting the patch from http://lkml.org/lkml/2010/2/16/291
+
+Please apply to sched-tip, the patch is based on today's sched-tip
+master.
+
+The attached patch will run 4 while(1) loops in two cores when
+sched_smt_power_savings=1.  Tested on two socket, quad core, hyper
+threaded system.
+
+Thanks,
+Vaidy
+---
+        sched: Fix group_capacity for sched_smt_powersavings=1
+
+        sched_smt_powersavings for threaded systems need this fix for
+        consolidation to sibling threads to work.  Since threads have 
+        fractional capacity, group_capacity will turn out to be one 
+        always and not accommodate another task in the sibling thread.
+        
+        This fix makes group_capacity a function of cpumask_weight that
+        will enable the power saving load balancer to pack tasks among
+        sibling threads and keep more cores idle.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 5a5ea2c..7c0a29a 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -2538,6 +2538,21 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
+ 		 */
+ 		if (prefer_sibling)
+ 			sgs.group_capacity = min(sgs.group_capacity, 1UL);
++		/*
++		 * If power savings balance is set at this domain, then
++		 * make capacity equal to number of hardware threads to
++		 * accommodate more tasks until capacity is reached.
++		 */
++		else if (sd->flags & SD_POWERSAVINGS_BALANCE)
++			sgs.group_capacity =
++				cpumask_weight(sched_group_cpus(group));
++
++			/*
++			 * The default group_capacity is rounded from sum of
++			 * fractional cpu_powers of sibling hardware threads
++			 * in order to enable fair use of available hardware
++			 * resources.
++			 */
+ 
+ 		if (local_group) {
+ 			sds->this_load = sgs.avg_load;
+@@ -2863,7 +2878,8 @@ static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle)
+ 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 			return 0;
+ 
+-		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP &&
++		    sched_smt_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
+ 			return 0;
+ 	}
+ 
