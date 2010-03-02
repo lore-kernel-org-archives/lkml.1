@@ -1,102 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275Ab0CBUgo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:36:44 -0500
-Received: from mail-wy0-f174.google.com ([74.125.82.174]:48722 "EHLO
-	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391Ab0CBUgm convert rfc822-to-8bit (ORCPT
+	id S1754448Ab0CBUm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:42:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51420 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752538Ab0CBUm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:36:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=wXloQKzTTJKZNE+7X3dcJpVR3OIkWbyNfLBWYCt+pVOn/br2faU+6fs5k95wclm07P
-         25hNIB1kYtf2D9f/z2Zv9W/yefEnSkp10aKTzoIE/fKJrN2zeJ7wEzR31nt850zBI6Fg
-         EbirkJYq6B21fp212QY66HAT2MJdwna3GRg8c=
-MIME-Version: 1.0
-In-Reply-To: <10f740e81002221103h7408d52ajf5a67da39d6ae8dd@mail.gmail.com>
-References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-	 <4B6B29DD.7060502@oracle.com> <4B7AC2A9.4070203@oracle.com>
-	 <20100216173326.091c1c77@hyperion.delvare>
-	 <4B7AC999.3060103@oracle.com> <4B82B28F.10104@oracle.com>
-	 <10f740e81002221103h7408d52ajf5a67da39d6ae8dd@mail.gmail.com>
-Date: Tue, 2 Mar 2010 21:36:40 +0100
-X-Google-Sender-Auth: 379675818169d911
-Message-ID: <10f740e81003021236i662aa20fs7e092295f07aecd4@mail.gmail.com>
-Subject: Re: [PATCH -next] i2c: fix xiic build error
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: ben-linux@fluff.org, Jean Delvare <khali@linux-fr.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Mar 2010 15:42:26 -0500
+Date: Tue, 2 Mar 2010 12:42:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
+       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] binfmt_elf: plug a memory leak situation on dump_seek()
+Message-Id: <20100302124206.4e0a42b4.akpm@linux-foundation.org>
+In-Reply-To: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com>
+References: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 22, 2010 at 20:03, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Mon, Feb 22, 2010 at 17:36, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> On 02/16/10 08:36, Randy Dunlap wrote:
->>> On 02/16/10 08:33, Jean Delvare wrote:
->>>> On Tue, 16 Feb 2010 08:07:05 -0800, Randy Dunlap wrote:
->>>>> On 02/04/10 12:11, Randy Dunlap wrote:
->>>>>
->>>>> This patch is still needed in linux-next-20100216.
->>>>
->>>> Nothing I can do about it, as the i2c-xiic driver is neither upstream
->>>> nor in my tree.
->>>
->>> Thanks, Jean.
->>>
->>> Next/merge.log tells me:
->>> Merge remote branch 'bjdooks-i2c/next-i2c'
->>>
->>> Ben??
->>>
->>
->> ping Ben.
->
-> Yes, please. Thx!
+On Fri, 26 Feb 2010 00:54:40 -0300
+Andr__ Goddard Rosa <andre.goddard@gmail.com> wrote:
 
-Ping? This build problem is almost one month old now...
+> Signed-off-by: Andr__ Goddard Rosa <andre.goddard@gmail.com>
+> ---
+>  fs/binfmt_elf.c |   10 +++++++---
+>  1 files changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index fd5b2ea..13b0845 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1096,6 +1096,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
+>  
+>  static int dump_seek(struct file *file, loff_t off)
+>  {
+> +	int ret = 1;
+> +
+>  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
+>  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
+>  			return 0;
+> @@ -1107,13 +1109,15 @@ static int dump_seek(struct file *file, loff_t off)
+>  			unsigned long n = off;
+>  			if (n > PAGE_SIZE)
+>  				n = PAGE_SIZE;
+> -			if (!dump_write(file, buf, n))
+> -				return 0;
+> +			if (!dump_write(file, buf, n)) {
+> +				ret = 0;
+> +				break;
+> +			}
+>  			off -= n;
+>  		}
+>  		free_page((unsigned long)buf);
+>  	}
+> -	return 1;
+> +	return ret;
+>  }
 
->> Here's the patch again.
->>
->> ---
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Add header file to fix build error:
->>
->> drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of function 'mdelay'
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
->> Cc: linux-i2c@vger.kernel.org
->> ---
->>  drivers/i2c/busses/i2c-xiic.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> --- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
->> +++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
->> @@ -31,6 +31,7 @@
->>  #include <linux/module.h>
->>  #include <linux/init.h>
->>  #include <linux/errno.h>
->> +#include <linux/delay.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/i2c.h>
->>  #include <linux/interrupt.h>
+Please don't send unchangelogged patches.
 
-Gr{oetje,eeting}s,
+Explain the leak.
 
-						Geert
+Explain the user impact (ie: how it is triggered).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Explain how the patch fixes it.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks.
