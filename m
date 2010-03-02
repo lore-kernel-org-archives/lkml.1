@@ -1,61 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506Ab0CBPiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:38:25 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:31712
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751495Ab0CBPiX (ORCPT
+	id S1753563Ab0CBPkI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:40:08 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:60496 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752855Ab0CBPkF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:38:23 -0500
-X-SpamScore: -24
-X-BigFish: VPS-24(zz1432R98dN936eM62a3Lzz1202hzzz32i2a8h6bh43h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KYNVFJ-02-4ES-02
-X-M-MSG: 
-Date: Tue, 2 Mar 2010 16:38:07 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Aaro Koskinen <aaro.koskinen@nokia.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-Message-ID: <20100302153807.GI13205@erda.amd.com>
-References: <20090622165936.0bb776e1@skybase>
- <20090622150553.GA14363@elte.hu>
- <20090622171834.0df64aea@skybase>
- <20090622152937.GA17512@elte.hu>
- <20090622173611.3b583c95@skybase>
- <20090622154030.GA19076@elte.hu>
- <20090624185100.6ca7e82a@skybase>
- <4B8D1942.8060405@nokia.com>
- <20100302160110.5fd14f5f@mschwide.boeblingen.de.ibm.com>
- <alpine.LFD.2.00.1003021605570.4245@localhost.localdomain>
+	Tue, 2 Mar 2010 10:40:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=MASDYeciRNYkfjya3IuvEKYfBrFnHIaKOdOLZEL8p/BJKKxZyE/7noqpfkBKLTZC6X
+         S05AcrggihKzZ+Kgou9f951Du85G7OnCOi8XZMPnt4qeY69mVar3o2dwXaLw+cI0WrsQ
+         fheIj1MXexdg25rTCbNEJMXsvqcwQ5pMctv68=
+Date: Tue, 2 Mar 2010 23:42:56 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Oleg Kutkov <elenbert@gmail.com>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Notifier chains bug ?
+Message-ID: <20100302153651.GC4014@hack>
+References: <4B8C56F0.5090700@gmail.com> <2375c9f91003011924k43f03649y5b4df405d6247a79@mail.gmail.com> <5e9821061003012150y15e543cdkf6f23c3a7a47e4a3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003021605570.4245@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 02 Mar 2010 15:38:08.0316 (UTC) FILETIME=[5BAA67C0:01CABA1E]
-X-Reverse-DNS: unknown
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5e9821061003012150y15e543cdkf6f23c3a7a47e4a3@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02.03.10 16:08:09, Thomas Gleixner wrote:
-> > Patch against current git. Ingo, Thomas: one for the timer tree I guess.
-> 
-> No objections from my side, but shouldn't that go via Robert ?
+On Tue, Mar 02, 2010 at 07:50:01AM +0200, Oleg Kutkov wrote:
+>2010/3/2 Américo Wang <xiyou.wangcong@gmail.com>:
+>> On Tue, Mar 2, 2010 at 8:08 AM, Oleg Kutkov <elenbert@gmail.com> wrote:
+>>> Hello.
+>>> I try to used notifier chains for monitoring network devices events.
+>>> All works perfectly when just i'm connecting/disconnecting network cable or
+>>> up/down interface via ifconfig.
+>>> But when i try to change interface address - nothing happens. Notifier is
+>>> don't send any events :(
+>>
+>> I think you mean IP address? No, NETDEV_CHANGEADDR is for hardware
+>> address, not for IP address.
+>>
+>> If you were changing mac address, you will receive NETDEV_CHANGEADDR.
+>>
+>
+>Thank for quick answer.
+>Yes, i mean IP address. And what about NETDEV_CHANGE ?
 
-I will send the patch upstream.
+It is for rtnetlink state transition.
 
--Robert
+>Is there possible for monitoring IP address/netmask changing ?
+>
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+AFAIK, no.
 
+Cc'ing netdev experts...
