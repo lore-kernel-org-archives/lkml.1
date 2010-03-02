@@ -1,21 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677Ab0CBL5L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 06:57:11 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43734 "EHLO mx1.suse.de"
+	id S1752776Ab0CBL5d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 06:57:33 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:33404 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752478Ab0CBL5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 06:57:09 -0500
-Date: Tue, 02 Mar 2010 12:57:08 +0100
-Message-ID: <s5hocj7szqj.wl%tiwai@suse.de>
+	id S1752478Ab0CBL5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 06:57:31 -0500
+Date: Tue, 02 Mar 2010 12:57:30 +0100
+Message-ID: <s5hmxyrszpx.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Andrea Gelmini <andrea.gelmini@gelma.net>
-Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
-       alsa-devel@alsa-project.org
-Subject: Re: [PATCH 22/66] sound/oss/v_midi.h: Checkpatch cleanup
-In-Reply-To: <1267289508-31031-23-git-send-email-andrea.gelmini@gelma.net>
-References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
-	<1267289508-31031-23-git-send-email-andrea.gelmini@gelma.net>
+To: Norberto Lopes <nlopes.ml@gmail.com>
+Cc: perex@perex.cz, fengguang.wu@intel.com, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] sound/pci/hda/hda_codec.c: various coding style fixes
+In-Reply-To: <1267384613-20983-1-git-send-email-nlopes.ml@gmail.com>
+References: <1267384613-20983-1-git-send-email-nlopes.ml@gmail.com>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -25,15 +24,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 27 Feb 2010 17:51:03 +0100,
-Andrea Gelmini wrote:
+At Sun, 28 Feb 2010 20:16:53 +0100,
+Norberto Lopes wrote:
 > 
-> sound/oss/v_midi.h:5: ERROR: code indent should use tabs where possible
-> sound/oss/v_midi.h:7: ERROR: trailing whitespace
 > 
-> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+> Signed-off-by: Norberto Lopes <nlopes.ml@gmail.com>
 
-Applied all three patches for sound/* now.  Thanks.
+Applied now.  Thanks.
 
 
 Takashi
