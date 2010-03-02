@@ -1,72 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508Ab0CBBUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 20:20:46 -0500
-Received: from mga05.intel.com ([192.55.52.89]:45216 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751412Ab0CBBUp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 20:20:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,563,1262592000"; 
-   d="scan'208";a="777063716"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [LKML] [PATCH 7/7] xen: Enable grant table and xenbus for PV extension of HVM
-Date: Tue, 2 Mar 2010 09:21:43 +0800
-User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
-Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
-       "xen-devel" <xen-devel@lists.xensource.com>,
-       linux-kernel@vger.kernel.org
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-8-git-send-email-sheng@linux.intel.com> <20100301173858.GJ7881@phenom.dumpdata.com>
-In-Reply-To: <20100301173858.GJ7881@phenom.dumpdata.com>
+	id S1753164Ab0CBBU7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 20:20:59 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:50034 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752888Ab0CBBU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 20:20:56 -0500
+Date: Mon, 1 Mar 2010 17:20:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Cloos <cloos@jhcloos.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in
+	git tree
+Message-ID: <20100302012055.GK6758@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100301042249.GA12289@linux.vnet.ibm.com> <alpine.LFD.2.00.1003010812410.3616@localhost.localdomain> <20100301164800.GC6758@linux.vnet.ibm.com> <m3r5o34vnp.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003020921.43398.sheng@linux.intel.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <m3r5o34vnp.fsf@lugabout.jhcloos.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 March 2010 01:38:58 Konrad Rzeszutek Wilk wrote:
-> > +/* The region reserved by QEmu for Xen platform device */
-> > +#define GNTTAB_START	    0xf2000000ul
-> > +#define GNTTAB_SIZE	    0x20000ul
+On Mon, Mar 01, 2010 at 03:46:26PM -0500, James Cloos wrote:
+> >>>>> "Paul" == Paul E McKenney <paulmck@linux.vnet.ibm.com> writes:
 > 
-> I thought that in the earlier review you said:
+> Paul> Agreed!  The "-dirty" modifier for the case of changes not yet
+> Paul> checked into git looks especially helpful.
 > 
-> "> > +#define GNTTAB_START           0xfbfe0000ul
+> Except that the script calls »git update-index --refresh --unmerged«
+> and »git diff-index --name-only HEAD«, both of which are painfully
+> slow and resource intensive.
 > 
-> > > +#define GNTTAB_SIZE            0x20000ul
-> >
-> > Is it possible that there would be a PCI device that would be
-> > passed in the guest that would conflict with the above mentioned
-> > E820 region?
-> 
-> I would change them to a dedicated PCI MMIO address in the next version.
-> Thanks.
-> 
-> "
-> ?
+> I'd hate to have that run every time I make a kernel.
 
-And yes, this is the dedicated PCI MMIO address I mentioned.. I would update 
-the comments to get it more clear.
+Good point...  Should we have an environment variable that controls this
+behavior?
 
-I don't think it's very clear solution, because the real good way to do this 
-is probe pci device and find out with one is the platform pci device then use 
-it. But the grant table initialization is quite earlier compared to the 
-possible probing now... I hardcode the position now, and hunting for a better 
-idea.
-
-Comments?
-
--- 
-regards
-Yang, Sheng
- 
+							Thanx, Paul
