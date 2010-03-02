@@ -1,79 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753056Ab0CBAEg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 19:04:36 -0500
-Received: from mms2.broadcom.com ([216.31.210.18]:2336 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879Ab0CBAEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 19:04:33 -0500
-X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
-From: "Hugh Daschbach" <hdasch@broadcom.com>
-To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       "Chandra Seetharaman" <sekharan@us.ibm.com>,
-       "Eddie Williams" <Eddie.Williams@steeleye.com>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Hugh Daschbach" <hdasch@broadcom.com>
-Subject: [PATCH] Don't change direction flags in struct request.
-Date: Thu, 18 Mar 2010 22:31:30 -0700
-Message-ID: <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>
-References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>
+	id S1753044Ab0CBAIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 19:08:23 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:48030 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752559Ab0CBAIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 19:08:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=sMOxRDoxeX/8b5tP5vrKSmbZvDT0XIbNjTsW4fYlha7FfmzmNJVgSqylMTwIDtfr/R
+         VNYXzuhkFs0e2WAIm9+MFWAIJCE5qWOW5kiih6G1gYJndHpuabs1i7/7LbBKDC7LazHI
+         15i7FS1QRkk2QVqWeBguG2IBm5A7lDwXiRny0=
+Message-ID: <4B8C56F0.5090700@gmail.com>
+Date: Tue, 02 Mar 2010 02:08:16 +0200
+From: Oleg Kutkov <elenbert@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-X-WSS-ID: 6792898C38O129518088-01-01
-Content-Type: text/plain
+To: linux-kernel@vger.kernel.org
+Subject: Notifier chains bug ?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The EMC multipath device handler should not change the I/O direction
-flags of its trespass command request.
+Hello.
+I try to used notifier chains for monitoring network devices events.
+All works perfectly when just i'm connecting/disconnecting network cable 
+or up/down interface via ifconfig.
+But when i try to change interface address - nothing happens. Notifier 
+is don't send any events :(
+There is many events in notifier.h:
 
-The CFQ elevator may BUG if the direction flags on an I/O request are
-changed after allocation.  cfq_set_request() and cfq_put_request()
-count READ and WRITE requests separately.  Changing the I/O request
-direction after blk_get_request() allocates the request throws off
-this CFQ accounting.
+#define NETDEV_UP                                        0x0001   
+#define NETDEV_DOWN                                 0x0002
+#define NETDEV_REBOOT                              0x0003   
+#define NETDEV_CHANGE                             0x0004 
+#define NETDEV_REGISTER                          0x0005
+#define NETDEV_UNREGISTER                    0x0006
+#define NETDEV_CHANGEMTU                    0x0007
+#define NETDEV_CHANGEADDR                  0x0008
+#define NETDEV_GOING_DOWN                  0x0009
+#define NETDEV_CHANGENAME                 0x000A
+#define NETDEV_FEAT_CHANGE                 0x000B
+#define NETDEV_BONDING_FAILOVER      0x000C
+#define NETDEV_PRE_UP                               0x000D
+#define NETDEV_BONDING_OLDTYPE        0x000E
+#define NETDEV_BONDING_NEWTYPE       0x000F
 
-Signed-off-by: Hugh Daschbach <hdasch@broadcom.com>
----
- drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+So i receive only NETDEV_UP  and NETDEV_DOWN events.
 
-diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
-index 6196675..3709342 100644
---- a/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -269,10 +269,12 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
- 				unsigned char *buffer)
- {
- 	struct request *rq;
-+	int mode = READ;
- 	int len = 0;
+Part of my code:
+
+//event handler
+static int ifEventListener(struct notifier_block *nb, unsigned long 
+event, void *ptr);
+
+//set handler
+struct notifier_block nbListener =
+{
+    .notifier_call = ifEventListener
+};
+
+//event handler
+static int ifEventListener(struct notifier_block *this, unsigned long 
+event, void *ptr)
+{
+    struct net_device *dev = (struct net_device *) ptr;
+
+    printk(KERN_INFO "eventListener() -- %d event from net_device '%s' 
+(0x%08X)\n", event, dev->name, (unsigned) dev);
  
--	rq = blk_get_request(sdev->request_queue,
--			(cmd == MODE_SELECT) ? WRITE : READ, GFP_NOIO);
-+	if (cmd == MODE_SELECT || cmd == MODE_SELECT_10)
-+		mode = WRITE;
-+	rq = blk_get_request(sdev->request_queue, mode, GFP_NOIO);
- 	if (!rq) {
- 		sdev_printk(KERN_INFO, sdev, "get_req: blk_get_request failed");
- 		return NULL;
-@@ -284,12 +286,10 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
- 	switch (cmd) {
- 	case MODE_SELECT:
- 		len = sizeof(short_trespass);
--		rq->cmd_flags |= REQ_RW;
- 		rq->cmd[1] = 0x10;
- 		break;
- 	case MODE_SELECT_10:
- 		len = sizeof(long_trespass);
--		rq->cmd_flags |= REQ_RW;
- 		rq->cmd[1] = 0x10;
- 		break;
- 	case INQUIRY:
--- 
-1.6.6.196.g1f735
+    return 0;
+}
 
+//register handler
+register_netdevice_notifier(&nbListener);
+
+
+
+So, this is a bug in notifier or something wrong with my code ?
+Thank for any help
+
+-- 
+Best regards, 
+Oleg
 
