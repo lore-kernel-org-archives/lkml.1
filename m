@@ -1,84 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498Ab0CBSbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:31:48 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:38728 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754232Ab0CBS3e (ORCPT
+	id S1754269Ab0CBSce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:32:34 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57143 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752249Ab0CBScc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:29:34 -0500
-Date: Tue, 2 Mar 2010 21:29:33 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@redhat.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/12] ahci: Factor out PCI specifics from
- ahci_reset_controller()
-Message-ID: <20100302182933.GE3445@oksana.dev.rtsoft.ru>
-References: <20100302182850.GA32057@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20100302182850.GA32057@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 2 Mar 2010 13:32:32 -0500
+Date: Tue, 2 Mar 2010 18:34:51 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>
+Subject: Re: Memory management woes - order 1 allocation failures
+Message-ID: <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100302172606.GA11355@csn.ul.ie>
+References: <alpine.DEB.2.00.1002261042020.7719@router.home>
+	<84144f021002260917q61f7c255rf994425f3a613819@mail.gmail.com>
+	<20100301103546.DD86.A69D9226@jp.fujitsu.com>
+	<20100302172606.GA11355@csn.ul.ie>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move PCI stuff into ahci_pci_reset_controller().
+> For reasons that are not particularly clear to me, tty_buffer_alloc() is
+> called far more frequently in 2.6.33 than in 2.6.24. I instrumented the
+> function to print out the size of the buffers allocated, booted under
+> qemu and would just "cat /bin/ls" to see what buffers were allocated.
+> 2.6.33 allocates loads, including high-order allocations. 2.6.24
+> appeared to allocate once and keep silent.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/ata/ahci.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
+The pty layer is using them now and didn't before. That will massively
+distort your numhers.
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index acfdcb5..c46a064 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -1318,7 +1318,6 @@ static int ahci_deinit_port(struct ata_port *ap, const char **emsg)
- 
- static int ahci_reset_controller(struct ata_host *host)
- {
--	struct pci_dev *pdev = to_pci_dev(host->dev);
- 	struct ahci_host_priv *hpriv = host->private_data;
- 	void __iomem *mmio = hpriv->mmio;
- 	u32 tmp;
-@@ -1362,7 +1361,17 @@ static int ahci_reset_controller(struct ata_host *host)
- 		dev_printk(KERN_INFO, host->dev,
- 			   "skipping global host reset\n");
- 
-+	return 0;
-+}
-+
-+static int ahci_pci_reset_controller(struct ata_host *host)
-+{
-+	struct pci_dev *pdev = to_pci_dev(host->dev);
-+
-+	ahci_reset_controller(host);
-+
- 	if (pdev->vendor == PCI_VENDOR_ID_INTEL) {
-+		struct ahci_host_priv *hpriv = host->private_data;
- 		u16 tmp16;
- 
- 		/* configure PCS */
-@@ -2499,7 +2508,7 @@ static int ahci_pci_device_resume(struct pci_dev *pdev)
- 		return rc;
- 
- 	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
--		rc = ahci_reset_controller(host);
-+		rc = ahci_pci_reset_controller(host);
- 		if (rc)
- 			return rc;
- 
-@@ -3207,7 +3216,7 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (rc)
- 		return rc;
- 
--	rc = ahci_reset_controller(host);
-+	rc = ahci_pci_reset_controller(host);
- 	if (rc)
- 		return rc;
- 
--- 
-1.7.0
+> While there have been snags recently with respect to high-order
+> allocation failures in recent kernels, this might be one of the cases
+> where it's due to subsystems requesting high-order allocations more.
 
+The pty code certainly triggered more such allocations. I've sent Greg
+patches to make the tty buffering layer allocate sensible sizes as it
+doesn't need multiple page allocations in the first place.
+
+Alan
