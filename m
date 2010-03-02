@@ -1,75 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096Ab0CBXbp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:31:45 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51728 "EHLO gate.crashing.org"
+	id S1754611Ab0CBXay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:30:54 -0500
+Received: from kroah.org ([198.145.64.141]:38750 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754652Ab0CBXbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:31:42 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       mdharm-kernel@one-eyed-alien.net, oliver@neukum.org,
-       linux@arm.linux.org.uk, greg@kroah.com, x0082077@ti.com,
-       sshtylyov@ru.mvista.com, bigeasy@linutronix.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, santosh.shilimkar@ti.com,
-       pavel@ucw.cz, tom.leiming@gmail.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
-	 <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 10:29:54 +1100
-Message-ID: <1267572594.2173.25.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753420Ab0CBX3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:53 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: "Lee, Chun-Yi" <jlee@novell.com>,
+       Lennart Poettering <mzxreary@0pointer.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 60/62] msi-laptop: Detect 3G device exists by standard ec command
+Date: Tue,  2 Mar 2010 15:28:59 -0800
+Message-Id: <1267572541-410-60-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 17:05 +0000, Catalin Marinas wrote:
+From: Lee, Chun-Yi <jlee@novell.com>
 
-> The viable solutions so far:
-> 
->      1. Implement a PIO mapping API similar to the DMA API which takes
->         care of the D-cache flushing. This means that PIO drivers would
->         need to be modified to use an API like pio_kmap()/pio_kunmap()
->         before writing to a page cache page.
->      2. Invert the meaning of PG_arch_1 to denote a clean page. This
->         means that by default newly allocated page cache pages are
->         considered dirty and even if there isn't a call to
->         flush_dcache_page(), update_mmu_cache() would flush the D-cache.
->         This is the PowerPC approach.
+Detect 3G device exists by standard ec command. Driver will not create the threeg sysfs
+file and threeg rfkill interface if there have no internal 3G device in MSI notebook/netbook.
 
-I don't see the point of a "PIO" API. I would thus vote for 2 :-) Note
-that flushing the D-cache isn't enough, you also need to invalidate the
-I-cache as we discussed earlier, though you mostly get away if you don't
-by luck.
+Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
+Cc: Lennart Poettering <mzxreary@0pointer.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/platform/x86/msi-laptop.c |   44 ++++++++++++++++++++++++++++--------
+ 1 files changed, 34 insertions(+), 10 deletions(-)
 
-There's also a question as to whether clearing PG_arch_1 is
-flush_dcache_page() is really necessary or not.
-
-> Option 2 above looks pretty appealing to me since it can be done in the
-> ARM code exclusively. I've done some tests and it indeed solves the
-> cache coherency with a rootfs on a USB stick. As Russell suggested, it
-> can be optimised to mark a page as clean when the DMA API is involved to
-> avoid duplicate flushing.
-
-That wouldn't solve the need for invalidating the I-cache... Unless we
-use another bit.
-
-> It was also suggested to add a PG_arch_2 flag which would keep track of
-> the I-cache status as well.
-> 
-> I can post a proposal to modify the cachetlb.txt document to reflect the
-> issues we currently have on ARM.
-
-Cheers,
-Ben.
+diff --git a/drivers/platform/x86/msi-laptop.c b/drivers/platform/x86/msi-laptop.c
+index af1b62f..c2b05da 100644
+--- a/drivers/platform/x86/msi-laptop.c
++++ b/drivers/platform/x86/msi-laptop.c
+@@ -79,6 +79,8 @@
+ 
+ static int msi_laptop_resume(struct platform_device *device);
+ 
++#define MSI_STANDARD_EC_DEVICES_EXISTS_ADDRESS	0x2f
++
+ static int force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
+@@ -89,6 +91,7 @@ MODULE_PARM_DESC(auto_brightness, "Enable automatic brightness control (0: disab
+ 
+ static bool old_ec_model;
+ static int wlan_s, bluetooth_s, threeg_s;
++static int threeg_exists;
+ 
+ /* Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
+  * those netbook will load the SCM (windows app) to disable the original
+@@ -224,6 +227,20 @@ static int get_wireless_state_ec_standard(void)
+ 	return 0;
+ }
+ 
++static int get_threeg_exists(void)
++{
++	u8 rdata;
++	int result;
++
++	result = ec_read(MSI_STANDARD_EC_DEVICES_EXISTS_ADDRESS, &rdata);
++	if (result < 0)
++		return -1;
++
++	threeg_exists = !!(rdata & MSI_STANDARD_EC_3G_MASK);
++
++	return 0;
++}
++
+ /* Backlight device stuff */
+ 
+ static int bl_get_brightness(struct backlight_device *b)
+@@ -561,15 +578,17 @@ static int rfkill_init(struct platform_device *sdev)
+ 	if (retval)
+ 		goto err_wlan;
+ 
+-	rfk_threeg = rfkill_alloc("msi-threeg", &sdev->dev, RFKILL_TYPE_WWAN,
+-				&rfkill_threeg_ops, NULL);
+-	if (!rfk_threeg) {
+-		retval = -ENOMEM;
+-		goto err_threeg;
++	if (threeg_exists) {
++		rfk_threeg = rfkill_alloc("msi-threeg", &sdev->dev,
++				RFKILL_TYPE_WWAN, &rfkill_threeg_ops, NULL);
++		if (!rfk_threeg) {
++			retval = -ENOMEM;
++			goto err_threeg;
++		}
++		retval = rfkill_register(rfk_threeg);
++		if (retval)
++			goto err_threeg;
+ 	}
+-	retval = rfkill_register(rfk_threeg);
+-	if (retval)
+-		goto err_threeg;
+ 
+ 	return 0;
+ 
+@@ -649,6 +668,9 @@ static int __init msi_init(void)
+ 	if (force || dmi_check_system(msi_dmi_table))
+ 		old_ec_model = 1;
+ 
++	if (!old_ec_model)
++		get_threeg_exists();
++
+ 	if (!old_ec_model && dmi_check_system(msi_load_scm_models_dmi_table))
+ 		load_scm_model = 1;
+ 
+@@ -694,7 +716,9 @@ static int __init msi_init(void)
+ 		goto fail_platform_device2;
+ 
+ 	if (!old_ec_model) {
+-		ret = device_create_file(&msipf_device->dev, &dev_attr_threeg);
++		if (threeg_exists)
++			ret = device_create_file(&msipf_device->dev,
++						&dev_attr_threeg);
+ 		if (ret)
+ 			goto fail_platform_device2;
+ 	}
+@@ -733,7 +757,7 @@ static void __exit msi_cleanup(void)
+ {
+ 
+ 	sysfs_remove_group(&msipf_device->dev.kobj, &msipf_attribute_group);
+-	if (!old_ec_model)
++	if (!old_ec_model && threeg_exists)
+ 		device_remove_file(&msipf_device->dev, &dev_attr_threeg);
+ 	platform_device_unregister(msipf_device);
+ 	platform_driver_unregister(&msipf_driver);
+-- 
+1.7.0.1
 
