@@ -1,18 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167Ab0CBX3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:17 -0500
-Received: from kroah.org ([198.145.64.141]:38501 "EHLO coco.kroah.org"
+	id S1754378Ab0CBX3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:29:36 -0500
+Received: from kroah.org ([198.145.64.141]:38555 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376Ab0CBX3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:12 -0500
+	id S1754238Ab0CBX3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:25 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 07/62] sysdev: Convert cpu driver sysdev class attributes
-Date: Tue,  2 Mar 2010 15:28:06 -0800
-Message-Id: <1267572541-410-7-git-send-email-gregkh@suse.de>
+Cc: Emese Revfy <re.emese@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 24/62] kobject: Constify struct kset_uevent_ops
+Date: Tue,  2 Mar 2010 15:28:23 -0800
+Message-Id: <1267572541-410-24-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
@@ -20,83 +19,190 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Emese Revfy <re.emese@gmail.com>
 
-Using the new attribute argument convert the cpu driver class attributes
-to carry the node state. Then use a shared function to do what a lot of
-individual functions did before.
+Constify struct kset_uevent_ops.
 
-This eliminates an ugly macro.
+This is part of the ops structure constification
+effort started by Arjan van de Ven et al.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Benefits of this constification:
+
+ * prevents modification of data that is shared
+   (referenced) by many other structure instances
+   at runtime
+
+ * detects/prevents accidental (but not intentional)
+   modification attempts on archs that enforce
+   read-only kernel data at runtime
+
+ * potentially better optimized code as the compiler
+   can assume that the const data cannot be changed
+
+ * the compiler/linker move const data into .rodata
+   and therefore exclude them from false sharing
+
+Signed-off-by: Emese Revfy <re.emese@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/cpu.c |   37 +++++++++++++++++++++----------------
- 1 files changed, 21 insertions(+), 16 deletions(-)
+ drivers/base/bus.c      |    2 +-
+ drivers/base/core.c     |    2 +-
+ drivers/base/memory.c   |    2 +-
+ fs/gfs2/sys.c           |    2 +-
+ include/linux/kobject.h |   10 +++++-----
+ kernel/params.c         |    2 +-
+ lib/kobject.c           |    4 ++--
+ lib/kobject_uevent.c    |    2 +-
+ mm/slub.c               |    2 +-
+ 9 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index fd1b2f9..b04ecfc 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -141,27 +141,32 @@ static SYSDEV_ATTR(crash_notes, 0400, show_crash_notes, NULL);
- /*
-  * Print cpu online, possible, present, and system maps
-  */
--static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
-+
-+struct cpu_attr {
-+	struct sysdev_class_attribute attr;
-+	const struct cpumask *const * const map;
-+};
-+
-+static ssize_t show_cpus_attr(struct sysdev_class *class,
-+			      struct sysdev_class_attribute *attr,
-+			      char *buf)
- {
--	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, map);
-+	struct cpu_attr *ca = container_of(attr, struct cpu_attr, attr);
-+	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, *(ca->map));
- 
- 	buf[n++] = '\n';
- 	buf[n] = '\0';
- 	return n;
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index c0c5a43..2afe599 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -154,7 +154,7 @@ static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
  }
  
--#define	print_cpus_func(type) \
--static ssize_t print_cpus_##type(struct sysdev_class *class, 		\
--	 		struct sysdev_class_attribute *attr, char *buf)	\
--{									\
--	return print_cpus_map(buf, cpu_##type##_mask);			\
--}									\
--static struct sysdev_class_attribute attr_##type##_map = 		\
--	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
-+#define _CPU_ATTR(name, map)						\
-+	{ _SYSDEV_CLASS_ATTR(name, 0444, show_cpus_attr, NULL), map }
- 
--print_cpus_func(online);
--print_cpus_func(possible);
--print_cpus_func(present);
-+static struct cpu_attr cpu_attrs[] = {
-+	_CPU_ATTR(online, &cpu_online_mask),
-+	_CPU_ATTR(possible, &cpu_possible_mask),
-+	_CPU_ATTR(present, &cpu_present_mask),
-+};
- 
- /*
-  * Print values for NR_CPUS and offlined cpus
-@@ -208,9 +213,9 @@ static ssize_t print_cpus_offline(struct sysdev_class *class,
- static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
- 
- static struct sysdev_class_attribute *cpu_state_attr[] = {
--	&attr_online_map,
--	&attr_possible_map,
--	&attr_present_map,
-+	&cpu_attrs[0].attr,
-+	&cpu_attrs[1].attr,
-+	&cpu_attrs[2].attr,
- 	&attr_kernel_max,
- 	&attr_offline,
+-static struct kset_uevent_ops bus_uevent_ops = {
++static const struct kset_uevent_ops bus_uevent_ops = {
+ 	.filter = bus_uevent_filter,
  };
+ 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index e1d6cb4..313db11 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -252,7 +252,7 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
+ 	return retval;
+ }
+ 
+-static struct kset_uevent_ops device_uevent_ops = {
++static const struct kset_uevent_ops device_uevent_ops = {
+ 	.filter =	dev_uevent_filter,
+ 	.name =		dev_uevent_name,
+ 	.uevent =	dev_uevent,
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 495f15e..2f86915 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -44,7 +44,7 @@ static int memory_uevent(struct kset *kset, struct kobject *obj, struct kobj_uev
+ 	return retval;
+ }
+ 
+-static struct kset_uevent_ops memory_uevent_ops = {
++static const struct kset_uevent_ops memory_uevent_ops = {
+ 	.name		= memory_uevent_name,
+ 	.uevent		= memory_uevent,
+ };
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index 0dc3462..9be733e 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -576,7 +576,7 @@ static int gfs2_uevent(struct kset *kset, struct kobject *kobj,
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops gfs2_uevent_ops = {
++static const struct kset_uevent_ops gfs2_uevent_ops = {
+ 	.uevent = gfs2_uevent,
+ };
+ 
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 58ae8e0..57a1eaa 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -118,9 +118,9 @@ struct kobj_uevent_env {
+ };
+ 
+ struct kset_uevent_ops {
+-	int (*filter)(struct kset *kset, struct kobject *kobj);
+-	const char *(*name)(struct kset *kset, struct kobject *kobj);
+-	int (*uevent)(struct kset *kset, struct kobject *kobj,
++	int (* const filter)(struct kset *kset, struct kobject *kobj);
++	const char *(* const name)(struct kset *kset, struct kobject *kobj);
++	int (* const uevent)(struct kset *kset, struct kobject *kobj,
+ 		      struct kobj_uevent_env *env);
+ };
+ 
+@@ -155,14 +155,14 @@ struct kset {
+ 	struct list_head list;
+ 	spinlock_t list_lock;
+ 	struct kobject kobj;
+-	struct kset_uevent_ops *uevent_ops;
++	const struct kset_uevent_ops *uevent_ops;
+ };
+ 
+ extern void kset_init(struct kset *kset);
+ extern int __must_check kset_register(struct kset *kset);
+ extern void kset_unregister(struct kset *kset);
+ extern struct kset * __must_check kset_create_and_add(const char *name,
+-						struct kset_uevent_ops *u,
++						const struct kset_uevent_ops *u,
+ 						struct kobject *parent_kobj);
+ 
+ static inline struct kset *to_kset(struct kobject *kobj)
+diff --git a/kernel/params.c b/kernel/params.c
+index cf1b691..ac5de7d 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -737,7 +737,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops module_uevent_ops = {
++static const struct kset_uevent_ops module_uevent_ops = {
+ 	.filter = uevent_filter,
+ };
+ 
+diff --git a/lib/kobject.c b/lib/kobject.c
+index b512b74..cecf5a0 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -789,7 +789,7 @@ static struct kobj_type kset_ktype = {
+  * If the kset was not able to be created, NULL will be returned.
+  */
+ static struct kset *kset_create(const char *name,
+-				struct kset_uevent_ops *uevent_ops,
++				const struct kset_uevent_ops *uevent_ops,
+ 				struct kobject *parent_kobj)
+ {
+ 	struct kset *kset;
+@@ -832,7 +832,7 @@ static struct kset *kset_create(const char *name,
+  * If the kset was not able to be created, NULL will be returned.
+  */
+ struct kset *kset_create_and_add(const char *name,
+-				 struct kset_uevent_ops *uevent_ops,
++				 const struct kset_uevent_ops *uevent_ops,
+ 				 struct kobject *parent_kobj)
+ {
+ 	struct kset *kset;
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 920a3ca..c9d3a3e 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -95,7 +95,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 	const char *subsystem;
+ 	struct kobject *top_kobj;
+ 	struct kset *kset;
+-	struct kset_uevent_ops *uevent_ops;
++	const struct kset_uevent_ops *uevent_ops;
+ 	u64 seq;
+ 	int i = 0;
+ 	int retval = 0;
+diff --git a/mm/slub.c b/mm/slub.c
+index 8d71aaf..02b5a83 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4538,7 +4538,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops slab_uevent_ops = {
++static const struct kset_uevent_ops slab_uevent_ops = {
+ 	.filter = uevent_filter,
+ };
+ 
 -- 
 1.7.0.1
 
