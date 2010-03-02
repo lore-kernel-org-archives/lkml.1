@@ -1,19 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517Ab0CBScF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:32:05 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:38721 "HELO
+	id S1754422Ab0CBSbd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:31:33 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:38737 "HELO
 	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752249Ab0CBS3b (ORCPT
+	with SMTP id S1754269Ab0CBS3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:29:31 -0500
-Date: Tue, 2 Mar 2010 21:29:29 +0300
+	Tue, 2 Mar 2010 13:29:39 -0500
+Date: Tue, 2 Mar 2010 21:29:38 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Jeff Garzik <jgarzik@redhat.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/12] ahci: Factor out PCI specifics from
- ahci_save_initial_config()
-Message-ID: <20100302182929.GC3445@oksana.dev.rtsoft.ru>
+Subject: [PATCH 08/12] ahci: Factor out PCI specifics from ahci_print_info()
+Message-ID: <20100302182938.GH3445@oksana.dev.rtsoft.ru>
 References: <20100302182850.GA32057@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -24,130 +23,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make ahci_save_initial_config() a bit more generic by introducing
-force_port_map and mask_port_map arguments.
-
-Move PCI stuff into ahci_pci_save_initial_config().
+Introduce ahci_pci_print_info() that now handles PCI stuff.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/ata/ahci.c |   66 +++++++++++++++++++++++++++++++++-------------------
- 1 files changed, 42 insertions(+), 24 deletions(-)
+ drivers/ata/ahci.c |   40 +++++++++++++++++++++++-----------------
+ 1 files changed, 23 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 4f00aea..aba800d 100644
+index aaeac15..18443e9 100644
 --- a/drivers/ata/ahci.c
 +++ b/drivers/ata/ahci.c
-@@ -801,6 +801,8 @@ static ssize_t ahci_show_port_cmd(struct device *dev,
-  *	ahci_save_initial_config - Save and fixup initial config values
-  *	@pdev: target PCI device
-  *	@hpriv: host private area to store config values
-+ *	@force_port_map: force port map to a specified value
-+ *	@mask_port_map: mask out particular bits from port map
-  *
-  *	Some registers containing configuration info might be setup by
-  *	BIOS and might be cleared on reset.  This function saves the
-@@ -813,12 +815,13 @@ static ssize_t ahci_show_port_cmd(struct device *dev,
-  *	None.
-  */
- static void ahci_save_initial_config(struct pci_dev *pdev,
--				     struct ahci_host_priv *hpriv)
-+				     struct ahci_host_priv *hpriv,
-+				     unsigned int force_port_map,
-+				     unsigned int mask_port_map)
- {
- 	void __iomem *mmio = hpriv->mmio;
- 	u32 cap, cap2, vers, port_map;
- 	int i;
--	int mv;
- 
- 	/* make sure AHCI mode is enabled before accessing CAP */
- 	ahci_enable_ahci(mmio);
-@@ -868,32 +871,19 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
- 		cap &= ~HOST_CAP_SNTF;
- 	}
- 
--	if (pdev->vendor == PCI_VENDOR_ID_JMICRON && pdev->device == 0x2361 &&
--	    port_map != 1) {
-+	if (force_port_map && port_map != force_port_map) {
- 		dev_printk(KERN_INFO, &pdev->dev,
--			   "JMB361 has only one port, port_map 0x%x -> 0x%x\n",
--			   port_map, 1);
--		port_map = 1;
-+			   "forcing port_map 0x%x -> 0x%x\n",
-+			   port_map, force_port_map);
-+		port_map = force_port_map;
- 	}
- 
--	/*
--	 * Temporary Marvell 6145 hack: PATA port presence
--	 * is asserted through the standard AHCI port
--	 * presence register, as bit 4 (counting from 0)
--	 */
--	if (hpriv->flags & AHCI_HFLAG_MV_PATA) {
--		if (pdev->device == 0x6121)
--			mv = 0x3;
--		else
--			mv = 0xf;
-+	if (mask_port_map) {
- 		dev_printk(KERN_ERR, &pdev->dev,
--			   "MV_AHCI HACK: port_map %x -> %x\n",
-+			   "masking port_map 0x%x -> 0x%x\n",
- 			   port_map,
--			   port_map & mv);
--		dev_printk(KERN_ERR, &pdev->dev,
--			  "Disabling your PATA port. Use the boot option 'ahci.marvell_enable=0' to avoid this.\n");
--
--		port_map &= mv;
-+			   port_map & mask_port_map);
-+		port_map &= mask_port_map;
- 	}
- 
- 	/* cross check port_map and cap.n_ports */
-@@ -932,6 +922,34 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
- 	hpriv->port_map = port_map;
+@@ -2627,15 +2627,12 @@ static int ahci_configure_dma_masks(struct pci_dev *pdev, int using_dac)
+ 	return 0;
  }
  
-+static void ahci_pci_save_initial_config(struct pci_dev *pdev,
-+					 struct ahci_host_priv *hpriv)
+-static void ahci_print_info(struct ata_host *host)
++static void ahci_print_info(struct ata_host *host, const char *scc_s)
+ {
+ 	struct ahci_host_priv *hpriv = host->private_data;
+-	struct pci_dev *pdev = to_pci_dev(host->dev);
+ 	void __iomem *mmio = hpriv->mmio;
+ 	u32 vers, cap, cap2, impl, speed;
+ 	const char *speed_s;
+-	u16 cc;
+-	const char *scc_s;
+ 
+ 	vers = readl(mmio + HOST_VERSION);
+ 	cap = hpriv->cap;
+@@ -2652,17 +2649,7 @@ static void ahci_print_info(struct ata_host *host)
+ 	else
+ 		speed_s = "?";
+ 
+-	pci_read_config_word(pdev, 0x0a, &cc);
+-	if (cc == PCI_CLASS_STORAGE_IDE)
+-		scc_s = "IDE";
+-	else if (cc == PCI_CLASS_STORAGE_SATA)
+-		scc_s = "SATA";
+-	else if (cc == PCI_CLASS_STORAGE_RAID)
+-		scc_s = "RAID";
+-	else
+-		scc_s = "unknown";
+-
+-	dev_printk(KERN_INFO, &pdev->dev,
++	dev_info(host->dev,
+ 		"AHCI %02x%02x.%02x%02x "
+ 		"%u slots %u ports %s Gbps 0x%x impl %s mode\n"
+ 		,
+@@ -2678,7 +2665,7 @@ static void ahci_print_info(struct ata_host *host)
+ 		impl,
+ 		scc_s);
+ 
+-	dev_printk(KERN_INFO, &pdev->dev,
++	dev_info(host->dev,
+ 		"flags: "
+ 		"%s%s%s%s%s%s%s"
+ 		"%s%s%s%s%s%s%s"
+@@ -2708,6 +2695,25 @@ static void ahci_print_info(struct ata_host *host)
+ 		);
+ }
+ 
++static void ahci_pci_print_info(struct ata_host *host)
 +{
-+	unsigned int force_port_map = 0;
-+	unsigned int mask_port_map = 0;
++	struct pci_dev *pdev = to_pci_dev(host->dev);
++	u16 cc;
++	const char *scc_s;
 +
-+	if (pdev->vendor == PCI_VENDOR_ID_JMICRON && pdev->device == 0x2361) {
-+		dev_info(&pdev->dev, "JMB361 has only one port\n");
-+		force_port_map = 1;
-+	}
++	pci_read_config_word(pdev, 0x0a, &cc);
++	if (cc == PCI_CLASS_STORAGE_IDE)
++		scc_s = "IDE";
++	else if (cc == PCI_CLASS_STORAGE_SATA)
++		scc_s = "SATA";
++	else if (cc == PCI_CLASS_STORAGE_RAID)
++		scc_s = "RAID";
++	else
++		scc_s = "unknown";
 +
-+	/*
-+	 * Temporary Marvell 6145 hack: PATA port presence
-+	 * is asserted through the standard AHCI port
-+	 * presence register, as bit 4 (counting from 0)
-+	 */
-+	if (hpriv->flags & AHCI_HFLAG_MV_PATA) {
-+		if (pdev->device == 0x6121)
-+			mask_port_map = 0x3;
-+		else
-+			mask_port_map = 0xf;
-+		dev_info(&pdev->dev,
-+			  "Disabling your PATA port. Use the boot option 'ahci.marvell_enable=0' to avoid this.\n");
-+	}
-+
-+	ahci_save_initial_config(pdev, hpriv, force_port_map, mask_port_map);
++	ahci_print_info(host, scc_s);
 +}
 +
- /**
-  *	ahci_restore_initial_config - Restore initial config
-  *	@host: target ATA host
-@@ -3086,7 +3104,7 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hpriv->mmio = pcim_iomap_table(pdev)[AHCI_PCI_BAR];
+ /* On ASUS P5W DH Deluxe, the second port of PCI device 00:1f.2 is
+  * hardwired to on-board SIMG 4726.  The chipset is ICH8 and doesn't
+  * support PMP and the 4726 either directly exports the device
+@@ -3229,7 +3235,7 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		return rc;
  
- 	/* save initial config */
--	ahci_save_initial_config(pdev, hpriv);
-+	ahci_pci_save_initial_config(pdev, hpriv);
+ 	ahci_pci_init_controller(host);
+-	ahci_print_info(host);
++	ahci_pci_print_info(host);
  
- 	/* prepare host */
- 	if (hpriv->cap & HOST_CAP_NCQ) {
+ 	pci_set_master(pdev);
+ 	return ata_host_activate(host, pdev->irq, ahci_interrupt, IRQF_SHARED,
 -- 
 1.7.0
 
