@@ -1,55 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224Ab0CBX6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:58:01 -0500
-Received: from kroah.org ([198.145.64.141]:38524 "EHLO coco.kroah.org"
+	id S1755031Ab0CBX6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:58:18 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41074 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753456Ab0CBX3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:17 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 14/62] sysdev: fix missing s390 conversion
-Date: Tue,  2 Mar 2010 15:28:13 -0800
-Message-Id: <1267572541-410-14-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.7.0.1
-In-Reply-To: <20100302230933.GA32287@kroah.com>
+	id S1751716Ab0CBX6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:58:15 -0500
+Date: Tue, 2 Mar 2010 15:58:04 -0800
+From: Greg KH <gregkh@suse.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@novell.com>,
+       Lennart Poettering <mzxreary@0pointer.de>
+Subject: Re: [PATCH 56/62] msi-laptop: Support standard ec 66/62 command on
+ MSI notebook and nebook
+Message-ID: <20100302235804.GA2463@suse.de>
 References: <20100302230933.GA32287@kroah.com>
+ <1267572541-410-56-git-send-email-gregkh@suse.de>
+ <20100302234219.GC13739@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302234219.GC13739@srcf.ucam.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Tue, Mar 02, 2010 at 11:42:19PM +0000, Matthew Garrett wrote:
+> On Tue, Mar 02, 2010 at 03:28:55PM -0800, Greg Kroah-Hartman wrote:
+> > From: Lee, Chun-Yi <jlee@novell.com>
+> > 
+> > Suppport standard ec 66/62 command on MSI notebook and nebook. MSI
+> > netbook and notebook already support 66/62 command, so, add new
+> > get_state function, and put the old model to non-standard model, but
+> > driver still support those old model.
+> > 
+> > Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
+> > Cc: Lennart Poettering <mzxreary@0pointer.de>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ACKed-by: Matthew Garrett <mjg@redhat.com>
+> 
+> Greg, could you send x86 platform drivers patches via me from now on? 
+> There's some stuff in this patchset that isn't sane.
 
-In linux-next "sysdev: Pass attribute in sysdev_class attributes show/store"
-forgot to convert one place in s390 code. Here is the missing part.
+Ok, will do, you might want to update the MAINTAINERS file, as I just
+went with the information in there, and what the get_maintainers.pl
+script found by looking at the git history.
 
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/s390/kernel/smp.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+thanks,
 
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index e212109..29f65bc 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -1033,7 +1033,9 @@ static ssize_t __ref rescan_store(struct sysdev_class *class,
- static SYSDEV_CLASS_ATTR(rescan, 0200, NULL, rescan_store);
- #endif /* CONFIG_HOTPLUG_CPU */
- 
--static ssize_t dispatching_show(struct sysdev_class *class, char *buf)
-+static ssize_t dispatching_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	ssize_t count;
- 
--- 
-1.7.0.1
-
+greg k-h
