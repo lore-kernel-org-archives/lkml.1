@@ -1,137 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643Ab0CBLep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 06:34:45 -0500
-Received: from trinity.develer.com ([83.149.158.210]:44805 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416Ab0CBLeo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 06:34:44 -0500
-Date: Tue, 2 Mar 2010 12:34:41 +0100
-From: Andrea Righi <arighi@develer.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-ID: <20100302113441.GD1921@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
- <1267478620-5276-4-git-send-email-arighi@develer.com>
- <cc557aab1003020211h391947f0p3eae04a298127d32@mail.gmail.com>
- <20100302110239.GB1921@linux>
- <cc557aab1003020309y37587110i685d0d968bfba9f4@mail.gmail.com>
+	id S1752219Ab0CBLhJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 06:37:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44288 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833Ab0CBLhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 06:37:06 -0500
+Message-ID: <4B8CFAF4.7030303@kernel.org>
+Date: Tue, 02 Mar 2010 20:48:04 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cc557aab1003020309y37587110i685d0d968bfba9f4@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: =?UTF-8?B?Q2VuZ2l6IEfDvG5heQ==?= <cgunay@emory.edu>
+CC: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Subject: Re: sata_nv times out for BD-ROM iHOS104-08
+References: <Pine.LNX.4.64.0912221105010.5876@stg.biology.emory.edu> 	<4B5A70E5.6050106@kernel.org> <d2d378041001231339o1d1b0984y2b2a85b717987d93@mail.gmail.com> 	<4B67A149.10406@kernel.org> <d2d378041002170814l1da6b022p4902128c604fc84b@mail.gmail.com> 	<4B7C9CEE.4080902@kernel.org> <d2d378041002201111g7af41a3dpdb2fa300a65d56bf@mail.gmail.com> 	<4B8085E7.5000501@kernel.org> <d2d378041002211328w6355d2f9ued625de53964cee5@mail.gmail.com> 	<4B833FA1.8030207@kernel.org> <d2d378041002280924q26b4a159g5ad22a3476ec3e18@mail.gmail.com>
+In-Reply-To: <d2d378041002280924q26b4a159g5ad22a3476ec3e18@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------020103000700030706070403"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 11:37:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 01:09:24PM +0200, Kirill A. Shutemov wrote:
-> On Tue, Mar 2, 2010 at 1:02 PM, Andrea Righi <arighi@develer.com> wrote:
-> > On Tue, Mar 02, 2010 at 12:11:10PM +0200, Kirill A. Shutemov wrote:
-> >> On Mon, Mar 1, 2010 at 11:23 PM, Andrea Righi <arighi@develer.com> wrote:
-> >> > Apply the cgroup dirty pages accounting and limiting infrastructure to
-> >> > the opportune kernel functions.
-> >> >
-> >> > Signed-off-by: Andrea Righi <arighi@develer.com>
-> >> > ---
-> >> >  fs/fuse/file.c      |    5 +++
-> >> >  fs/nfs/write.c      |    4 ++
-> >> >  fs/nilfs2/segment.c |   10 +++++-
-> >> >  mm/filemap.c        |    1 +
-> >> >  mm/page-writeback.c |   84 ++++++++++++++++++++++++++++++++------------------
-> >> >  mm/rmap.c           |    4 +-
-> >> >  mm/truncate.c       |    2 +
-> >> >  7 files changed, 76 insertions(+), 34 deletions(-)
-> >> >
-> >> > diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-> >> > index a9f5e13..dbbdd53 100644
-> >> > --- a/fs/fuse/file.c
-> >> > +++ b/fs/fuse/file.c
-> >> > @@ -11,6 +11,7 @@
-> >> >  #include <linux/pagemap.h>
-> >> >  #include <linux/slab.h>
-> >> >  #include <linux/kernel.h>
-> >> > +#include <linux/memcontrol.h>
-> >> >  #include <linux/sched.h>
-> >> >  #include <linux/module.h>
-> >> >
-> >> > @@ -1129,6 +1130,8 @@ static void fuse_writepage_finish(struct fuse_conn *fc, struct fuse_req *req)
-> >> >
-> >> >        list_del(&req->writepages_entry);
-> >> >        dec_bdi_stat(bdi, BDI_WRITEBACK);
-> >> > +       mem_cgroup_update_stat(req->pages[0],
-> >> > +                       MEM_CGROUP_STAT_WRITEBACK_TEMP, -1);
-> >> >        dec_zone_page_state(req->pages[0], NR_WRITEBACK_TEMP);
-> >> >        bdi_writeout_inc(bdi);
-> >> >        wake_up(&fi->page_waitq);
-> >> > @@ -1240,6 +1243,8 @@ static int fuse_writepage_locked(struct page *page)
-> >> >        req->inode = inode;
-> >> >
-> >> >        inc_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
-> >> > +       mem_cgroup_update_stat(tmp_page,
-> >> > +                       MEM_CGROUP_STAT_WRITEBACK_TEMP, 1);
-> >> >        inc_zone_page_state(tmp_page, NR_WRITEBACK_TEMP);
-> >> >        end_page_writeback(page);
-> >> >
-> >> > diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-> >> > index b753242..7316f7a 100644
-> >> > --- a/fs/nfs/write.c
-> >> > +++ b/fs/nfs/write.c
-> >> > @@ -439,6 +439,7 @@ nfs_mark_request_commit(struct nfs_page *req)
-> >> >                        req->wb_index,
-> >> >                        NFS_PAGE_TAG_COMMIT);
-> >> >        spin_unlock(&inode->i_lock);
-> >> > +       mem_cgroup_update_stat(req->wb_page, MEM_CGROUP_STAT_UNSTABLE_NFS, 1);
-> >> >        inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-> >> >        inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
-> >> >        __mark_inode_dirty(inode, I_DIRTY_DATASYNC);
-> >> > @@ -450,6 +451,7 @@ nfs_clear_request_commit(struct nfs_page *req)
-> >> >        struct page *page = req->wb_page;
-> >> >
-> >> >        if (test_and_clear_bit(PG_CLEAN, &(req)->wb_flags)) {
-> >> > +               mem_cgroup_update_stat(page, MEM_CGROUP_STAT_UNSTABLE_NFS, -1);
-> >> >                dec_zone_page_state(page, NR_UNSTABLE_NFS);
-> >> >                dec_bdi_stat(page->mapping->backing_dev_info, BDI_UNSTABLE);
-> >> >                return 1;
-> >> > @@ -1273,6 +1275,8 @@ nfs_commit_list(struct inode *inode, struct list_head *head, int how)
-> >> >                req = nfs_list_entry(head->next);
-> >> >                nfs_list_remove_request(req);
-> >> >                nfs_mark_request_commit(req);
-> >> > +               mem_cgroup_update_stat(req->wb_page,
-> >> > +                               MEM_CGROUP_STAT_UNSTABLE_NFS, -1);
-> >> >                dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
-> >> >                dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-> >> >                                BDI_UNSTABLE);
-> >> > diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-> >> > index ada2f1b..aef6d13 100644
-> >> > --- a/fs/nilfs2/segment.c
-> >> > +++ b/fs/nilfs2/segment.c
-> >> > @@ -1660,8 +1660,11 @@ nilfs_copy_replace_page_buffers(struct page *page, struct list_head *out)
-> >> >        } while (bh = bh->b_this_page, bh2 = bh2->b_this_page, bh != head);
-> >> >        kunmap_atomic(kaddr, KM_USER0);
-> >> >
-> >> > -       if (!TestSetPageWriteback(clone_page))
-> >> > +       if (!TestSetPageWriteback(clone_page)) {
-> >> > +               mem_cgroup_update_stat(clone_page,
-> >>
-> >> s/clone_page/page/
-> >
-> > mmh... shouldn't we use the same page used by TestSetPageWriteback() and
-> > inc_zone_page_state()?
+This is a multi-part message in MIME format.
+--------------020103000700030706070403
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Hello,
+
+On 03/01/2010 02:24 AM, Cengiz GÃ¼nay wrote:
+> Before and after the swncq-atapi-pio patch I still get awful read
+> times from the BD-ROM drive:
 > 
-> Sorry, I've commented wrong hunk. It's for the next one.
+> $ time dd if=/dev/sr0 of=/dev/null bs=64k count=1024
+> 67108864 bytes (67 MB) copied, 106.945 seconds, 628 kB/s
+> => real	1m46.977s
 
-Yes. Good catch! Will fix in the next version.
+Hmmm... the drive is timing out even on 4k READ10's.  This shouldn't
+really be happening.  Can you please try this one?
 
-Thanks,
--Andrea
+-- 
+tejun
+
+--------------020103000700030706070403
+Content-Type: text/x-patch;
+ name="swncq-atapi-pio-2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="swncq-atapi-pio-2.patch"
+
+diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+index 0c82d33..84d3eba 100644
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -307,6 +307,7 @@ static int nv_scr_write(struct ata_link *link, unsigned int sc_reg, u32 val);
+ 
+ static int nv_hardreset(struct ata_link *link, unsigned int *class,
+ 			unsigned long deadline);
++static int nv_check_atapi_dma(struct ata_queued_cmd *qc);
+ static void nv_nf2_freeze(struct ata_port *ap);
+ static void nv_nf2_thaw(struct ata_port *ap);
+ static void nv_ck804_freeze(struct ata_port *ap);
+@@ -470,6 +471,7 @@ static struct ata_port_operations nv_generic_ops = {
+ 	.scr_read		= nv_scr_read,
+ 	.scr_write		= nv_scr_write,
+ 	.hardreset		= nv_hardreset,
++	.check_atapi_dma	= nv_check_atapi_dma,
+ };
+ 
+ static struct ata_port_operations nv_nf2_ops = {
+@@ -585,7 +587,7 @@ static const struct ata_port_info nv_port_info[] = {
+ 	/* SWNCQ */
+ 	{
+ 		.flags	        = ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+-				  ATA_FLAG_NCQ,
++				  ATA_FLAG_NCQ | ATA_FLAG_PIO_POLLING,
+ 		.pio_mask	= NV_PIO_MASK,
+ 		.mwdma_mask	= NV_MWDMA_MASK,
+ 		.udma_mask	= NV_UDMA_MASK,
+@@ -1614,6 +1616,25 @@ static int nv_hardreset(struct ata_link *link, unsigned int *class,
+ 	return -EAGAIN;
+ }
+ 
++#include <scsi/scsi_cmnd.h>
++static int nv_check_atapi_dma(struct ata_queued_cmd *qc)
++{
++	/* Whitelist commands that may use DMA. */
++	switch (qc->scsicmd->cmnd[0]) {
++	case WRITE_12:
++	case WRITE_10:
++	case WRITE_6:
++	case READ_12:
++	case READ_10:
++	case READ_6:
++	case 0xad: /* READ_DVD_STRUCTURE */
++	case 0xbe: /* READ_CD */
++		if (ata_qc_raw_nbytes(qc) > 4096)
++			return 0;
++	}
++	return 1;
++}
++
+ static void nv_nf2_freeze(struct ata_port *ap)
+ {
+ 	void __iomem *scr_addr = ap->host->ports[0]->ioaddr.scr_addr;
+
+--------------020103000700030706070403--
