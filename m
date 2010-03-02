@@ -1,57 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277Ab0CBTTp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 14:19:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56957 "EHLO mail.zytor.com"
+	id S1752342Ab0CBTVi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 14:21:38 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:40481 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001Ab0CBTTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 14:19:43 -0500
-Message-ID: <4B8D6275.30100@zytor.com>
-Date: Tue, 02 Mar 2010 11:09:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1751363Ab0CBTVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 14:21:37 -0500
+Date: Tue, 2 Mar 2010 20:21:35 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: walt <w41ter@gmail.com>, linux-kernel@vger.kernel.org,
+       Michael Breuer <mbreuer@majjas.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dmonakhov@openvz.org
+Subject: Re: [GIT PULL] single block IO revert (Was "Re: Oops while booting
+	2.6.34-rc0 (block pull busted)")
+Message-ID: <20100302192135.GA5768@kernel.dk>
+References: <201003011615.31709.dmitry.torokhov@gmail.com> <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk> <hmiocs$p6h$1@dough.gmane.org> <4B8D41C7.1030404@majjas.com> <20100302174250.GA13131@goodmis.org> <20100302174939.GB13131@goodmis.org> <20100302182117.GW5768@kernel.dk> <1267557422.10871.23.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@linux.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Alok Kataria <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       =?ISO-8859-1?Q?Pasi_K=E4rkk=E4i?= =?ISO-8859-1?Q?nen?= 
-	<pasik@iki.fi>
-Subject: Re: [GIT PULL] x86/mm fixes
-References: <201003020010.o220Ax3Z025848@hera.kernel.org> <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267557422.10871.23.camel@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02/2010 10:39 AM, Linus Torvalds wrote:
+On Tue, Mar 02 2010, Steven Rostedt wrote:
+> On Tue, 2010-03-02 at 19:21 +0100, Jens Axboe wrote:
+> > On Tue, Mar 02 2010, Steven Rostedt wrote:
 > 
+> > 
+> > We'll revert it asap, no point in wasting time debugging it first.
 > 
-> On Tue, 2 Mar 2010, H. Peter Anvin wrote:
->> +		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
->> +		end_pfn = (res.end + 1) >> PAGE_SHIFT;
->> +		if (end_pfn > pfn)
->> +		    ret = (*func)(pfn, end_pfn - pfn, arg);
->>  		if (ret)
->>  			break;
->>  		res.start = res.end + 1;
+> Thanks!
 > 
-> What kind of messed-up indentation is that? We don't use 4-char indents.
-> 
-> 		Linus
+> Since I have a box that triggers this issue, let me know if there's a
+> git branch you would like me to test.
 
-Sorry, you're right.  I have to admit I didn't even see that aspect of
-the patch.
+Thanks, will let you know!
 
-I'll add a reformatting patch and update the branch, if you want.
-
-	-hpa
+-- 
+Jens Axboe
 
