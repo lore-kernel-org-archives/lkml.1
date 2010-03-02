@@ -1,143 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583Ab0CBXd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:33:56 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:33314 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470Ab0CBXdw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:33:52 -0500
-Date: Tue, 2 Mar 2010 15:32:30 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: [GIT PULL] ocfs2 changes for 2.6.34
-Message-ID: <20100302233230.GE11860@mail.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B8DA035.01C0:SCFMA4539814,ss=1,fgs=0
+	id S1754726Ab0CBXd2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:33:28 -0500
+Received: from kroah.org ([198.145.64.141]:38679 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754463Ab0CBX3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:42 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 46/62] sysfs: Document sysfs_attr_init and sysfs_bin_attr_init
+Date: Tue,  2 Mar 2010 15:28:45 -0800
+Message-Id: <1267572541-410-46-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-	Here are the ocfs2 changes for the 2.6.34 merge window.  There's
-a cleanup of the xattr setting code (so we have one set path instead of
-three), we give ocfs2_dlmfs the ability to run atop fs/dlm as well as
-our internal o2dlm, and we improve metadata allocation near ENOSPC.
-Also included are various sundry bug fixes and some tracing
-improvements.
-	Please pull.
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-Joel
+I have added a new requirement to the external sysfs interface
+that dynamically allocated sysfs attributes must call sysfs_attr_init
+if lockdep is enabled.  For the time being callying sysfs_attr_init
+is only mandatory if lockdep is enabled, so we can live with a few
+unconverted instances until we find them all.  As this is part of
+the public interface of sysfs it is a good idea to document these
+pseudo functions so someone inspeciting the code can find out
+what has happened.
 
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ include/linux/sysfs.h |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-The following changes since commit a5f28ae4df291d81d9d23066f88c55ca45e388d3:
-  Linus Torvalds (1):
-        Merge branch 'fixes' of git://git.kernel.org/.../jlbec/ocfs2
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/ocfs2.git upstream-linus
-
-Coly Li (1):
-      ocfs2: fix warning in ocfs2_file_aio_write()
-
-Joel Becker (26):
-      ocfs2: Introduce ocfs2_xa_loc
-      ocfs2: Remove xattrs via ocfs2_xa_loc
-      ocfs2: Prefix the member fields of struct ocfs2_xattr_info.
-      ocfs2: Add a name_len field to ocfs2_xattr_info.
-      ocfs2: Wrap calculation of name+value pair size.
-      ocfs2: Set the xattr name+value pair in one place
-      ocfs2: Handle value tree roots in ocfs2_xa_set_inline_value()
-      ocfs2: Provide ocfs2_xa_fill_value_buf() for external value processing
-      ocfs2: Teach ocfs2_xa_loc how to do its own journal work
-      ocfs2: Allocation in ocfs2_xa_prepare_entry(), values in ocfs2_xa_store_value()
-      ocfs2: Gell into ocfs2_xa_set()
-      ocfs2: Let ocfs2_xa_prepare_entry() do space checks.
-      ocfs2: Set xattr block entries with ocfs2_xa_set()
-      ocfs2: Set inline xattr entries with ocfs2_xa_set()
-      ocfs2: Handle errors while setting external xattr values.
-      ocfs2_dlmfs: Add capabilities parameter.
-      ocfs2_dlmfs: Use poll() to signify BASTs.
-      ocfs2_dlmfs: Move to its own directory
-      ocfs2: Pass lksbs back from stackglue ast/bast functions.
-      ocfs2: Attach the connection to the lksb
-      ocfs2: Hang the locking proto on the cluster conn and use it in asts.
-      ocfs2: Remove the ast pointers from ocfs2_stack_plugins
-      ocfs2: Pass the locking protocol into ocfs2_cluster_connect().
-      ocfs2_dlmfs: Don't honor truncate.  The size of a dlmfs file is LVB_LEN
-      ocfs2_dlmfs: Use the stackglue.
-      ocfs2_dlmfs: Enable the use of user cluster stacks.
-
-Srinivas Eeda (1):
-      dlm: allow dlm do recovery during shutdown
-
-Sunil Mushran (3):
-      ocfs2: Add current->comm in trace output
-      ocfs2: Use a separate masklog for AST and BASTs
-      ocfs2/userdlm: Add tracing in userdlm
-
-Tao Ma (1):
-      ocfs2: Only bug out in direct io write for reflinked extent.
-
-Tiger Yang (1):
-      ocfs2: add extent block stealing for ocfs2 v5
-
-Tristan Ye (1):
-      Ocfs2: Move ocfs2 ioctl definitions from ocfs2_fs.h to newly added ocfs2_ioctl.h
-
-Wengang Wang (2):
-      ocfs2: Clean up the checks for CoW and direct I/O.
-      ocfs2: send SIGXFSZ if new filesize exceeds limit -v2
-
- fs/ocfs2/Makefile                  |    1 +
- fs/ocfs2/alloc.c                   |    5 +-
- fs/ocfs2/aops.c                    |    5 +-
- fs/ocfs2/cluster/masklog.c         |    1 +
- fs/ocfs2/cluster/masklog.h         |    7 +-
- fs/ocfs2/dir.c                     |    2 +-
- fs/ocfs2/dlm/Makefile              |    3 +-
- fs/ocfs2/dlm/dlmrecovery.c         |    2 +-
- fs/ocfs2/dlmfs/Makefile            |    5 +
- fs/ocfs2/{dlm => dlmfs}/dlmfs.c    |  127 ++-
- fs/ocfs2/{dlm => dlmfs}/dlmfsver.c |    0
- fs/ocfs2/{dlm => dlmfs}/dlmfsver.h |    0
- fs/ocfs2/{dlm => dlmfs}/userdlm.c  |  308 +++---
- fs/ocfs2/{dlm => dlmfs}/userdlm.h  |   16 +-
- fs/ocfs2/dlmglue.c                 |  284 +++--
- fs/ocfs2/file.c                    |   13 +-
- fs/ocfs2/ioctl.h                   |    6 +-
- fs/ocfs2/localalloc.c              |    2 +-
- fs/ocfs2/ocfs2.h                   |   32 +-
- fs/ocfs2/ocfs2_fs.h                |   57 -
- fs/ocfs2/ocfs2_ioctl.h             |   79 ++
- fs/ocfs2/ocfs2_lockingver.h        |    2 +
- fs/ocfs2/refcounttree.c            |    6 +-
- fs/ocfs2/stack_o2cb.c              |   37 +-
- fs/ocfs2/stack_user.c              |   49 +-
- fs/ocfs2/stackglue.c               |   98 +-
- fs/ocfs2/stackglue.h               |   95 +-
- fs/ocfs2/suballoc.c                |  171 +++-
- fs/ocfs2/suballoc.h                |    1 +
- fs/ocfs2/super.c                   |   10 +-
- fs/ocfs2/xattr.c                   | 2180 +++++++++++++++++++-----------------
- 31 files changed, 2013 insertions(+), 1591 deletions(-)
- create mode 100644 fs/ocfs2/dlmfs/Makefile
- rename fs/ocfs2/{dlm => dlmfs}/dlmfs.c (82%)
- rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.c (100%)
- rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.h (100%)
- rename fs/ocfs2/{dlm => dlmfs}/userdlm.c (67%)
- rename fs/ocfs2/{dlm => dlmfs}/userdlm.h (89%)
- create mode 100644 fs/ocfs2/ocfs2_ioctl.h
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 006c359..5b8f80f 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -36,6 +36,16 @@ struct attribute {
+ #endif
+ };
+ 
++/**
++ *	sysfs_attr_init - initialize a dynamically allocated sysfs attribute
++ *	@attr: struct attribute to initialize
++ *
++ *	Initialize a dynamically allocated struct attribute so we can
++ *	make lockdep happy.  This is a new requirement for attributes
++ *	and initially this is only needed when lockdep is enabled.
++ *	Lockdep gives a nice error when your attribute is added to
++ *	sysfs if you don't have this.
++ */
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ #define sysfs_attr_init(attr)				\
+ do {							\
+@@ -90,6 +100,16 @@ struct bin_attribute {
+ 		    struct vm_area_struct *vma);
+ };
+ 
++/**
++ *	sysfs_bin_attr_init - initialize a dynamically allocated bin_attribute
++ *	@attr: struct bin_attribute to initialize
++ *
++ *	Initialize a dynamically allocated struct bin_attribute so we
++ *	can make lockdep happy.  This is a new requirement for
++ *	attributes and initially this is only needed when lockdep is
++ *	enabled.  Lockdep gives a nice error when your attribute is
++ *	added to sysfs if you don't have this.
++ */
+ #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&bin_attr->attr)
+ 
+ struct sysfs_ops {
+-- 
+1.7.0.1
 
