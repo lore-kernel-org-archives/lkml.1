@@ -1,47 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751709Ab0CBVGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 16:06:45 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:46951 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932Ab0CBVGo convert rfc822-to-8bit (ORCPT
+	id S1752224Ab0CBVNa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 16:13:30 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:10397 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751588Ab0CBVN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 16:06:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=O+t1XE4bZCRN1pakAzKw2ewKdjDJYvFUSI3wD1HC6l0I1jXzqLl6Ded6F66AcW7sPd
-         gfS4A/X7TMVCM9A/fa1u7u8pFa9ZsyQ58y6fzV1MDGK/5cNhkB8Ri/BsRk9BuPDM9bMZ
-         YkgqewIkvdj8XY7lEOB7FVyzIDv9xdWi9FxZc=
+	Tue, 2 Mar 2010 16:13:29 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging/dt3155: use C99 syntax for struct initializer
+Date: Tue, 2 Mar 2010 14:13:22 -0700
+Cc: greg@kroah.com, ss@aao.gov.au
 MIME-Version: 1.0
-In-Reply-To: <1267560734-17001-1-git-send-email-linus.walleij@stericsson.com>
-References: <1267560734-17001-1-git-send-email-linus.walleij@stericsson.com>
-Date: Tue, 2 Mar 2010 14:06:43 -0700
-X-Google-Sender-Auth: 3bf40a99bf17a46b
-Message-ID: <e9c3a7c21003021306w3546521dsd1ad50893f1ea44b@mail.gmail.com>
-Subject: Re: [PATCH 1/5] DMAENGINE: COH 901 318 cleanups
-From: Dan Williams <dan.j.williams@intel.com>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201003021413.23114.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 1:12 PM, Linus Walleij
-<linus.walleij@stericsson.com> wrote:
->        if (cohc->nbr_active_done)
-> +       /*
-> +        * If another interrupt fired while the tasklet was scheduling,
-> +        * we don't get called twice, so we have this number of active
-> +        * counter that keep track of the number of IRQs expected to
-> +        * be handled for this channel. If there happen to be more than
-> +        * one IRQ to be ack:ed, we simply schedule this tasklet again.
-> +        */
->                cohc->nbr_active_done--;
+Use C99 syntax for the struct file_operations initialization.
 
-Checkpatch made a justifiable wimper about this.  It looks like you
-wanted to delete that if() according to the previous unified patch?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>
+Cc: Scott Smedley <ss@aao.gov.au>
+
+---
+
+diff --git a/drivers/staging/dt3155/dt3155_drv.c b/drivers/staging/dt3155/dt3155_drv.c
+index a67c622..0183005 100644
+--- a/drivers/staging/dt3155/dt3155_drv.c
++++ b/drivers/staging/dt3155/dt3155_drv.c
+@@ -850,12 +850,12 @@ static unsigned int dt3155_poll (struct file * filp, poll_table *wait)
+  *  register_chrdev
+  *****************************************************/
+ static struct file_operations dt3155_fops = {
+-  read:		dt3155_read,
+-  ioctl:		dt3155_ioctl,
+-  mmap:		dt3155_mmap,
+-  poll:           dt3155_poll,
+-  open:		dt3155_open,
+-  release:	dt3155_close
++	.read		= dt3155_read,
++	.ioctl		= dt3155_ioctl,
++	.mmap		= dt3155_mmap,
++	.poll		= dt3155_poll,
++	.open		= dt3155_open,
++	.release	= dt3155_close,
+ };
+ 
+ 
