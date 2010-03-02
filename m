@@ -1,164 +1,323 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816Ab0CBWLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:11:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5606 "EHLO mx1.redhat.com"
+	id S1753980Ab0CBWMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:12:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16989 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651Ab0CBWLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:11:39 -0500
+	id S1753740Ab0CBWLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:11:44 -0500
 From: Valerie Aurora <vaurora@redhat.com>
 To: Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Blunck <jblunck@suse.de>, Valerie Aurora <vaurora@redhat.com>
-Subject: [PATCH 2/6] union-mount: Drive the union cache via dcache
-Date: Tue,  2 Mar 2010 14:11:25 -0800
-Message-Id: <1267567889-4637-3-git-send-email-vaurora@redhat.com>
-In-Reply-To: <1267567889-4637-2-git-send-email-vaurora@redhat.com>
+       Valerie Aurora <vaurora@redhat.com>, Jan Blunck <jblunck@suse.de>
+Subject: [PATCH 4/6] union-mount: Support for mounting union mount file systems
+Date: Tue,  2 Mar 2010 14:11:27 -0800
+Message-Id: <1267567889-4637-5-git-send-email-vaurora@redhat.com>
+In-Reply-To: <1267567889-4637-4-git-send-email-vaurora@redhat.com>
 References: <1267567889-4637-1-git-send-email-vaurora@redhat.com>
  <1267567889-4637-2-git-send-email-vaurora@redhat.com>
+ <1267567889-4637-3-git-send-email-vaurora@redhat.com>
+ <1267567889-4637-4-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+Create and tear down union mount structures on mount.  Check
+requirements for union mounts.
 
-If a dentry is removed from dentry cache because its usage count drops to
-zero, the references to the underlying layer of the unions the dentry is in
-are dropped too. Therefore the union cache is driven by the dentry cache.
+Thanks to Felix Fietkau <nbd@openwrt.org> for a bug fix.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 ---
- fs/dcache.c            |   13 +++++++++++
- fs/union.c             |   56 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/dcache.h |    8 ++++++
- include/linux/union.h  |    4 +++
- 4 files changed, 81 insertions(+), 0 deletions(-)
+ fs/namespace.c        |  123 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/union.c            |   56 ++++++++++++++++++++++
+ include/linux/union.h |    5 ++
+ 3 files changed, 183 insertions(+), 1 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 0c2dd32..fc37f7a 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -18,6 +18,7 @@
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/fs.h>
+diff --git a/fs/namespace.c b/fs/namespace.c
+index fc56bf7..c994173 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -29,6 +29,7 @@
+ #include <linux/log2.h>
+ #include <linux/idr.h>
+ #include <linux/fs_struct.h>
 +#include <linux/union.h>
- #include <linux/fsnotify.h>
- #include <linux/slab.h>
- #include <linux/init.h>
-@@ -175,6 +176,8 @@ static struct dentry *d_kill(struct dentry *dentry)
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
- 	/*drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
-+	/* If the dentry was in an union delete them */
-+	shrink_d_unions(dentry);
- 	if (IS_ROOT(dentry))
- 		parent = NULL;
- 	else
-@@ -696,6 +699,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
- 					iput(inode);
- 			}
- 
-+			shrink_d_unions(dentry);
- 			d_free(dentry);
- 
- 			/* finished when we fall off the top of the tree,
-@@ -1536,7 +1540,9 @@ void d_delete(struct dentry * dentry)
- 	spin_lock(&dentry->d_lock);
- 	isdir = S_ISDIR(dentry->d_inode->i_mode);
- 	if (atomic_read(&dentry->d_count) == 1) {
-+		__d_drop_unions(dentry);
- 		dentry_iput(dentry);
-+		shrink_d_unions(dentry);
- 		fsnotify_nameremove(dentry, isdir);
- 		return;
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ #include "pnode.h"
+@@ -157,6 +158,9 @@ struct vfsmount *alloc_vfsmnt(const char *name)
+ #else
+ 		mnt->mnt_writers = 0;
+ #endif
++#ifdef CONFIG_UNION_MOUNT
++		INIT_LIST_HEAD(&mnt->mnt_unions);
++#endif
  	}
-@@ -1547,6 +1553,13 @@ void d_delete(struct dentry * dentry)
- 	spin_unlock(&dentry->d_lock);
- 	spin_unlock(&dcache_lock);
+ 	return mnt;
  
-+	/*
-+	 * Remove any associated unions.  While someone still has this
-+	 * directory open (ref count > 0), we could not have deleted
-+	 * it unless it was empty, and therefore has no references to
-+	 * directories below it.  So we don't need the unions.
-+	 */
-+	shrink_d_unions(dentry);
- 	fsnotify_nameremove(dentry, isdir);
+@@ -492,6 +496,7 @@ static void __touch_mnt_namespace(struct mnt_namespace *ns)
+ 
+ static void detach_mnt(struct vfsmount *mnt, struct path *old_path)
+ {
++	detach_mnt_union(mnt);
+ 	old_path->dentry = mnt->mnt_mountpoint;
+ 	old_path->mnt = mnt->mnt_parent;
+ 	mnt->mnt_parent = mnt;
+@@ -515,6 +520,7 @@ static void attach_mnt(struct vfsmount *mnt, struct path *path)
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 			hash(path->mnt, path->dentry));
+ 	list_add_tail(&mnt->mnt_child, &path->mnt->mnt_mounts);
++	attach_mnt_union(mnt, path->mnt, path->dentry);
  }
- EXPORT_SYMBOL(d_delete);
+ 
+ /*
+@@ -537,6 +543,7 @@ static void commit_tree(struct vfsmount *mnt)
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 				hash(parent, mnt->mnt_mountpoint));
+ 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
++	attach_mnt_union(mnt, mnt->mnt_parent, mnt->mnt_mountpoint);
+ 	touch_mnt_namespace(n);
+ }
+ 
+@@ -1025,6 +1032,7 @@ void release_mounts(struct list_head *head)
+ 			struct dentry *dentry;
+ 			struct vfsmount *m;
+ 			spin_lock(&vfsmount_lock);
++			detach_mnt_union(mnt);
+ 			dentry = mnt->mnt_mountpoint;
+ 			m = mnt->mnt_parent;
+ 			mnt->mnt_mountpoint = mnt->mnt_root;
+@@ -1143,6 +1151,13 @@ static int do_umount(struct vfsmount *mnt, int flags)
+ 	spin_unlock(&vfsmount_lock);
+ 	if (retval)
+ 		security_sb_umount_busy(mnt);
++	/*
++	 * If this was a union mount, we are no longer a read-only
++	 * user on the underlying mount.
++	 */
++	if (mnt->mnt_flags & MNT_UNION)
++		dec_hard_readonly_users(mnt->mnt_parent);
++
+ 	up_write(&namespace_sem);
+ 	release_mounts(&umount_list);
+ 	return retval;
+@@ -1483,6 +1498,17 @@ static int do_change_type(struct path *path, int flag)
+ 		return -EINVAL;
+ 
+ 	down_write(&namespace_sem);
++
++	/*
++	 * Mounts of file systems with read-only users can't deal with
++	 * mount/umount propagation events - it's the moral equivalent
++	 * of rm -rf dir/ or the like.
++	 */
++	if (sb_is_hard_readonly(mnt->mnt_sb)) {
++		err = -EROFS;
++		goto out_unlock;
++	}
++
+ 	if (type == MS_SHARED) {
+ 		err = invent_group_ids(mnt, recurse);
+ 		if (err)
+@@ -1500,6 +1526,77 @@ static int do_change_type(struct path *path, int flag)
+ }
+ 
+ /*
++ * Mount-time check of upper and lower layer file systems to see if we
++ * can union mount one on the other.
++ *
++ * Note on union mounts and mount event propagation: The lower
++ * layer(s) of a union mount must not have any changes to its
++ * namespace.  Therefore, it must not be part of any mount event
++ * propagation group - i.e., shared or slave.  MNT_SHARED and
++ * MNT_SLAVE are not set at mount, but in do_change_type(), which
++ * prevents setting these flags on file systems with read-only users,
++ * which includes the lower layer(s) of a union mount.
++ */
++
++static int
++check_union_mnt(struct path *mntpnt, struct vfsmount *topmost_mnt, int mnt_flags)
++{
++	struct vfsmount *lower_mnt = mntpnt->mnt;
++
++	if (!(mnt_flags & MNT_UNION))
++		return 0;
++
++#ifndef CONFIG_UNION_MOUNT
++	return -EINVAL;
++#endif
++	/*
++	 * We can't deal with namespace changes in the lower layers of
++	 * a union, so the lower layer must be read-only.  Note that
++	 * we could possibly convert a read-write unioned mount into a
++	 * read-only mount here, which would give us a way to union
++	 * more than one layer with separate mount commands.  But
++	 * first we have to solve the locking order problems with more
++	 * than two layers of union.
++	 */
++	if (!(lower_mnt->mnt_sb->s_flags & MS_RDONLY))
++		return -EBUSY;
++
++	/*
++	 * WRITEME: For simplicity, the lower layer can't have
++	 * submounts.  If there's a good reason, we could recursively
++	 * check the whole subtree for read-only-ness, etc. and it
++	 * would probably work fine.
++	 */
++	if (!list_empty(&lower_mnt->mnt_mounts))
++		return -EBUSY;
++
++	/*
++	 * Only permit unioning of file systems at their root
++	 * directories.  This allows us to mark entire mounts as
++	 * unioned.  Otherwise we must slowly and expensively work our
++	 * way up a path looking for a unioned directory before we
++	 * know if a path is from a unioned lower layer.
++	 */
++
++	if (!IS_ROOT(mntpnt->dentry))
++		return -EINVAL;
++
++	/*
++	 * Topmost layer must be writable to support our readdir()
++	 * solution of copying up all lower level entries to the
++	 * topmost layer.
++	 */
++	if (mnt_flags & MNT_READONLY)
++		return -EROFS;
++
++	/* Topmost file system must support whiteouts and fallthrus. */
++	if (!(topmost_mnt->mnt_sb->s_flags & MS_WHITEOUT))
++		return -EINVAL;
++
++	return 0;
++}
++
++/*
+  * do loopback mount.
+  */
+ static int do_loopback(struct path *path, char *old_name,
+@@ -1520,6 +1617,9 @@ static int do_loopback(struct path *path, char *old_name,
+ 	err = -EINVAL;
+ 	if (IS_MNT_UNBINDABLE(old_path.mnt))
+ 		goto out;
++	/* Mount part of a union mount elsewhere? The mind boggles. */
++	if (IS_MNT_UNION(old_path.mnt))
++		goto out;
+ 
+ 	if (!check_mnt(path->mnt) || !check_mnt(old_path.mnt))
+ 		goto out;
+@@ -1541,7 +1641,6 @@ static int do_loopback(struct path *path, char *old_name,
+ 		spin_unlock(&vfsmount_lock);
+ 		release_mounts(&umount_list);
+ 	}
+-
+ out:
+ 	up_write(&namespace_sem);
+ 	path_put(&old_path);
+@@ -1582,6 +1681,9 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
+ 	if (!check_mnt(path->mnt))
+ 		return -EINVAL;
+ 
++	if (mnt_flags & MNT_UNION)
++		return -EINVAL;
++
+ 	if (path->dentry != path->mnt->mnt_root)
+ 		return -EINVAL;
+ 
+@@ -1634,6 +1736,9 @@ static int do_move_mount(struct path *path, char *old_name)
+ 	while (d_mountpoint(path->dentry) &&
+ 	       follow_down(path))
+ 		;
++	/* Get the lowest layer of a union mount to move the whole stack */
++	while (union_down_one(&old_path.mnt, &old_path.dentry))
++		;
+ 	err = -EINVAL;
+ 	if (!check_mnt(path->mnt) || !check_mnt(old_path.mnt))
+ 		goto out;
+@@ -1746,10 +1851,18 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
+ 
++	err = check_union_mnt(path, newmnt, mnt_flags);
++	if (err)
++		goto unlock;
++
+ 	newmnt->mnt_flags = mnt_flags;
+ 	if ((err = graft_tree(newmnt, path)))
+ 		goto unlock;
+ 
++	/* Union mounts require the lower layer to always be read-only */
++	if (mnt_flags & MNT_UNION)
++		inc_hard_readonly_users(newmnt->mnt_parent);
++
+ 	if (fslist) /* add to the specified expiration list */
+ 		list_add_tail(&newmnt->mnt_expire, fslist);
+ 
+@@ -2260,6 +2373,14 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
+ 	if (d_unlinked(old.dentry))
+ 		goto out2;
+ 	error = -EBUSY;
++	/*
++	 * We want the bottom-most layer of a union mount here - if we
++	 * move that around, all the layers on top move with it.
++	 */
++	while (union_down_one(&new.mnt, &new.dentry))
++		;
++	while (union_down_one(&root.mnt, &root.dentry))
++		;
+ 	if (new.mnt == root.mnt ||
+ 	    old.mnt == root.mnt)
+ 		goto out2; /* loop, on the same file system  */
 diff --git a/fs/union.c b/fs/union.c
-index 2e005d9..182ca91 100644
+index 6823081..ed852e5 100644
 --- a/fs/union.c
 +++ b/fs/union.c
-@@ -14,6 +14,7 @@
+@@ -114,6 +114,7 @@ struct union_mount *union_alloc(struct dentry *this, struct vfsmount *this_mnt,
  
- #include <linux/bootmem.h>
- #include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/types.h>
- #include <linux/hash.h>
- #include <linux/fs.h>
-@@ -236,6 +237,8 @@ int append_to_union(struct vfsmount *upper_mnt, struct dentry *upper_dentry,
+ 	atomic_set(&um->u_count, 1);
+ 	INIT_LIST_HEAD(&um->u_unions);
++	INIT_LIST_HEAD(&um->u_list);
+ 	INIT_HLIST_NODE(&um->u_hash);
+ 	INIT_HLIST_NODE(&um->u_rhash);
+ 
+@@ -275,6 +276,7 @@ int append_to_union(struct vfsmount *upper_mnt, struct dentry *upper_dentry,
  		union_put(new);
  		return 0;
  	}
-+	list_add(&new->u_unions, &upper_dentry->d_unions);
-+	lower_dentry->d_unionized++;
++	list_add(&new->u_list, &upper_mnt->mnt_unions);
+ 	list_add(&new->u_unions, &upper_dentry->d_unions);
+ 	lower_dentry->d_unionized++;
  	__union_hash(new);
- 	spin_unlock(&union_lock);
- 	return 0;
-@@ -288,3 +291,56 @@ int union_down_one(struct vfsmount **mnt, struct dentry **dentry)
- 	}
- 	return 0;
+@@ -374,6 +376,7 @@ repeat:
+ 	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+ 		BUG_ON(!hlist_unhashed(&this->u_hash));
+ 		BUG_ON(!hlist_unhashed(&this->u_rhash));
++		list_del(&this->u_list);
+ 		list_del(&this->u_unions);
+ 		this->u_next.dentry->d_unionized--;
+ 		spin_unlock(&union_lock);
+@@ -384,6 +387,59 @@ repeat:
  }
-+
-+/**
-+ * __d_drop_unions  -  remove all this dentry's unions from the union hash table
-+ *
-+ * @dentry - topmost dentry in the union stack to remove
-+ *
-+ * This must be called after unhashing a dentry. This is called with
-+ * dcache_lock held and unhashes all the unions this dentry is
-+ * attached to.
+ 
+ /*
++ * Remove all union_mounts structures belonging to this vfsmount from the
++ * union lookup hashtable and so on ...
 + */
-+void __d_drop_unions(struct dentry *dentry)
-+{
-+	struct union_mount *this, *next;
-+
-+	spin_lock(&union_lock);
-+	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions)
-+		__union_unhash(this);
-+	spin_unlock(&union_lock);
-+}
-+EXPORT_SYMBOL_GPL(__d_drop_unions);
-+
-+/*
-+ * This must be called after __d_drop_unions() without holding any locks.
-+ * Note: The dentry might still be reachable via a lookup but at that time it
-+ * already a negative dentry. Otherwise it would be unhashed. The union_mount
-+ * structure itself is still reachable through mnt->mnt_unions (which we
-+ * protect against with union_lock).
-+ *
-+ * We were worried about a recursive dput() call through:
-+ *
-+ * dput()->d_kill()->shrink_d_unions()->union_put()->dput()
-+ *
-+ * But this path can only be reached if the dentry is unhashed when we
-+ * enter the first dput(), and it can only be unhashed if it was
-+ * rmdir()'d, and d_delete() calls shrink_d_unions() for us.
-+ */
-+void shrink_d_unions(struct dentry *dentry)
++void shrink_mnt_unions(struct vfsmount *mnt)
 +{
 +	struct union_mount *this, *next;
 +
 +repeat:
 +	spin_lock(&union_lock);
-+	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
-+		BUG_ON(!hlist_unhashed(&this->u_hash));
-+		BUG_ON(!hlist_unhashed(&this->u_rhash));
++	list_for_each_entry_safe(this, next, &mnt->mnt_unions, u_list) {
++		if (this->u_this.dentry == mnt->mnt_root)
++			continue;
++		__union_unhash(this);
++		list_del(&this->u_list);
 +		list_del(&this->u_unions);
 +		this->u_next.dentry->d_unionized--;
 +		spin_unlock(&union_lock);
@@ -167,49 +326,60 @@ index 2e005d9..182ca91 100644
 +	}
 +	spin_unlock(&union_lock);
 +}
-diff --git a/include/linux/dcache.h b/include/linux/dcache.h
-index d6c1da2..bfa8f97 100644
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -227,12 +227,20 @@ extern seqlock_t rename_lock;
-  * __d_drop requires dentry->d_lock.
++
++int attach_mnt_union(struct vfsmount *mnt, struct vfsmount *dest_mnt,
++		     struct dentry *dest_dentry)
++{
++	if (!IS_MNT_UNION(mnt))
++		return 0;
++
++	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry);
++}
++
++void detach_mnt_union(struct vfsmount *mnt)
++{
++	struct union_mount *um;
++
++	if (!IS_MNT_UNION(mnt))
++		return;
++
++	shrink_mnt_unions(mnt);
++
++	spin_lock(&union_lock);
++	um = union_lookup(mnt->mnt_root, mnt);
++	__union_unhash(um);
++	list_del(&um->u_list);
++	list_del(&um->u_unions);
++	um->u_next.dentry->d_unionized--;
++	spin_unlock(&union_lock);
++	union_put(um);
++	return;
++}
++
++/*
+  * union_create_topmost_dir - Create a matching dir in the topmost file system
   */
  
-+#ifdef CONFIG_UNION_MOUNT
-+extern void __d_drop_unions(struct dentry *);
-+#endif
-+
- static inline void __d_drop(struct dentry *dentry)
- {
- 	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
- 		dentry->d_flags |= DCACHE_UNHASHED;
- 		hlist_del_rcu(&dentry->d_hash);
- 	}
-+#ifdef CONFIG_UNION_MOUNT
-+	/* remove dentry from the union hashtable */
-+	__d_drop_unions(dentry);
-+#endif
- }
- 
- static inline void d_drop(struct dentry *dentry)
 diff --git a/include/linux/union.h b/include/linux/union.h
-index 71dc35a..0ab0a2f 100644
+index 938b15a..6eaeae8 100644
 --- a/include/linux/union.h
 +++ b/include/linux/union.h
-@@ -42,12 +42,16 @@ struct union_mount {
- extern int append_to_union(struct vfsmount *, struct dentry *,
- 			   struct vfsmount *, struct dentry *);
- extern int union_down_one(struct vfsmount **, struct dentry **);
-+extern void __d_drop_unions(struct dentry *);
-+extern void shrink_d_unions(struct dentry *);
+@@ -50,6 +50,9 @@ extern void __d_drop_unions(struct dentry *);
+ extern void shrink_d_unions(struct dentry *);
+ extern struct dentry * union_create_topmost_dir(struct path *, struct qstr *,
+ 						struct path *);
++extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
++			    struct dentry *);
++extern void detach_mnt_union(struct vfsmount *);
  
  #else /* CONFIG_UNION_MOUNT */
  
- #define IS_MNT_UNION(x)			(0)
- #define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
- #define union_down_one(x, y)		({ (0); })
-+#define __d_drop_unions(x)		do { } while (0)
-+#define shrink_d_unions(x)		do { } while (0)
+@@ -61,6 +64,8 @@ extern struct dentry * union_create_topmost_dir(struct path *, struct qstr *,
+ #define __d_drop_unions(x)		do { } while (0)
+ #define shrink_d_unions(x)		do { } while (0)
+ #define union_create_topmost_dir(x, y, z)	({ BUG(); (NULL); })
++#define attach_mnt_union(x, y, z)	do { } while (0)
++#define detach_mnt_union(x)		do { } while (0)
  
  #endif	/* CONFIG_UNION_MOUNT */
  #endif	/* __KERNEL__ */
