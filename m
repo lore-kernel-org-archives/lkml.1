@@ -1,57 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973Ab0CBWwl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:52:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46041 "EHLO
+	id S1753825Ab0CBXAF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:00:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48338 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753224Ab0CBWwj (ORCPT
+	by vger.kernel.org with ESMTP id S1751601Ab0CBXAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:52:39 -0500
-Date: Tue, 2 Mar 2010 14:52:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] inflate_fast: sout is already a short so ptr arith
- was off by one.
-Message-Id: <20100302145231.5f3f0fb0.akpm@linux-foundation.org>
-In-Reply-To: <1267373163-10841-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1267373163-10841-1-git-send-email-Joakim.Tjernlund@transmode.se>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Mar 2010 18:00:03 -0500
+Date: Tue, 2 Mar 2010 14:59:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@linux.ie>
+cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm request 2
+In-Reply-To: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie>
+Message-ID: <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain>
+References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Feb 2010 17:06:02 +0100
-Joakim Tjernlund <Joakim.Tjernlund@transmode.se> wrote:
 
-> This won't change anything for current code, but post increment
-> will break without this fix, should anyone want to try that.
+
+On Mon, 1 Mar 2010, Dave Airlie wrote:
 > 
+> Same tree as yesterday with a warning + PPC build fix + fix for build on 
+> x86 after PPC (I think I just validated Ingo).
 
-The description is a bit cryptic.  Hopefully you understand what you
-mean, but does anyone else?
+Why is VGA_SWITCHEROO enabled by default?
 
-> diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-> index fa62fc7..2c13ecc 100644
-> --- a/lib/zlib_inflate/inffast.c
-> +++ b/lib/zlib_inflate/inffast.c
-> @@ -286,7 +286,7 @@ void inflate_fast(z_streamp strm, unsigned start)
->  		    } else { /* dist == 1 or dist == 2 */
->  			unsigned short pat16;
->  
-> -			pat16 = *(sout-2+2*OFF);
-> +			pat16 = *(sout-1+OFF);
->  			if (dist == 1) {
->  				union uu mm;
->  				/* copy one char pattern to both bytes */
+We don't do things like that. New drivers and new features are _not_ 
+enabled by default, unless there is some overriding reason why they should 
+be. And I don't see that reason.
 
-The code you're altering was changed two months ago by, err, you.  I
-don't know if the patch still makes sense in current kernels.
+Please stop doing that. The whole "default y" is a f*cking disease. Yes, a 
+developer always thinks that _his_ new code is so special and important 
+that it should be enabled by default, BUT HE IS WRONG.
 
-Please don't raise patches against old kernels.  Please check that,
-redo the patch, add a changelog which helps non-inffast.c people
-understand what it does, then resend?
+So remember: unless your new feature cures cancer, it should damn well not 
+be enabled by default.
 
+I disabled it in the merge, since I had to fix up that file anyway. But 
+please don't make me do these so-called "evil merges" where I end up 
+modifying the thing I merge.
+
+			Linus
