@@ -1,74 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305Ab0CBOCh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 09:02:37 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:53309 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753075Ab0CBOCg (ORCPT
+	id S1753413Ab0CBOES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 09:04:18 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:38173 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753056Ab0CBOEQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 09:02:36 -0500
-Date: Tue, 2 Mar 2010 17:02:33 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gopalpet-B05799 <B05799@freescale.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
-       Martyn Welch <martyn.welch@ge.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, davem@davemloft.net
-Subject: Re: Gianfar driver failing on MPC8641D based board
-Message-ID: <20100302140233.GA14488@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20100226031452.GA11319@oksana.dev.rtsoft.ru>
- <4B87B937.6010204@ge.com>
- <20100226143532.GA31622@oksana.dev.rtsoft.ru>
- <4B87E01E.4070704@windriver.com>
- <4B87E662.3080106@ge.com>
- <4B87E9EF.3010604@ge.com>
- <20100226161058.GA22954@oksana.dev.rtsoft.ru>
- <4B87F67E.5070601@windriver.com>
- <20100226213825.GA32363@oksana.dev.rtsoft.ru>
- <9F4C7D19E8361D4C94921B95BE08B81BC93EC3@zin33exm22.fsl.freescale.net>
+	Tue, 2 Mar 2010 09:04:16 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: "G, Manjunath Kondaiah" <manjugk@ti.com>,
+       "S, Venkatraman" <svenkatr@ti.com>, Tony Lindgren <tony@atomide.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Date: Tue, 2 Mar 2010 19:34:06 +0530
+Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Index: Acq6DrzxzzLj/+UaR0CqYftNXskKIAAAL3RwAABS3WA=
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C44C22F6@dbde02.ent.ti.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+	 <20100301184600.GC3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
+	 <20100302060821.GI3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+	 <20100302065224.GL3389@atomide.com>
+ <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+ <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
+In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <9F4C7D19E8361D4C94921B95BE08B81BC93EC3@zin33exm22.fsl.freescale.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-On Sat, Feb 27, 2010 at 11:05:32AM +0530, Kumar Gopalpet-B05799 wrote:
-[...]
-> Understood, and thanks for the explanation. Am I correct in saying that
-> this is
-> due to the out-of-order execution capability on powerpc ?
-
-Nope, that was just a logic issue in the driver. 
-
-Though, with the patch, the eieio() is needed so that compiler (or CPU)
-won't reorder lstatus and skbuff writes.
-
-> I have one more question, why don't we use use atomic_t for num_txbdfree
-> and
-> completely  do away with spin_locks in gfar_clean_tx_ring() and
-> gfar_start_xmit().
-> In an non-SMP, scenario I would feel there is absolutely no requirement
-> of spin_locks
-> and in case of SMP atomic operation would be much more safer on powerpc
-> rather than spin_locks.
+<snip snip>
+> > > --
+> > CDAC is a shadow register used for monitoring the DMA channel.
+> >  I think it would be a lot
+> > simpler if omap_start_dma() always resets CDAC to 0, and the
+> > UART driver
+> > just not set it explicitly.
 > 
-> What is your suggestion ?
+> This seems to be better option than exposing CDAC read/write API
+> to other drivers since user need to write '0' before starting any DMA
+> transfer which can be be done in omap_start_dma().
+> 
+> I am wondering how other drivers are using DMA transfer API's without
+> resetting CDAC to zero.
+>
+It's needed only if some one is interested in that count. UART seems to 
+using this counter where as other driver don't.
 
-I think that's a good idea.
+Why do you think drivers need to know about counter value ?
 
-However, in start_xmit() we'll have to keep the spinlock anyway
-since it also protects from gfar_error(), which can modify
-regs->tstat.
-
-Thanks!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Regards,
+Santosh
