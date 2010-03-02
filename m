@@ -1,119 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977Ab0CBPGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:06:18 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:33384 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644Ab0CBPGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:06:14 -0500
-Date: Tue, 2 Mar 2010 15:06:11 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: platform-drivers-x86@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundatio.org
-Subject: [GIT PULL] x86 platform drivers tree
-Message-ID: <20100302150611.GA4547@srcf.ucam.org>
+	id S1753939Ab0CBPGL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:06:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16557 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753644Ab0CBPGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 10:06:10 -0500
+Date: Tue, 2 Mar 2010 10:05:29 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100302150529.GA12855@redhat.com>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com> <1267478620-5276-4-git-send-email-arighi@develer.com> <20100301220208.GH3109@redhat.com> <20100301221830.GA5460@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20100301221830.GA5460@linux>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, Mar 01, 2010 at 11:18:31PM +0100, Andrea Righi wrote:
+> On Mon, Mar 01, 2010 at 05:02:08PM -0500, Vivek Goyal wrote:
+> > > @@ -686,10 +699,14 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+> > >                   */
+> > >                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+> > >  
+> > > -                if (global_page_state(NR_UNSTABLE_NFS) +
+> > > -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> > > -                        	break;
+> > > -                congestion_wait(BLK_RW_ASYNC, HZ/10);
+> > > +
+> > > +		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> > > +		if (dirty < 0)
+> > > +			dirty = global_page_state(NR_UNSTABLE_NFS) +
+> > > +				global_page_state(NR_WRITEBACK);
+> > 
+> > dirty is unsigned long. As mentioned last time, above will never be true?
+> > In general these patches look ok to me. I will do some testing with these.
+> 
+> Re-introduced the same bug. My bad. :(
+> 
+> The value returned from mem_cgroup_page_stat() can be negative, i.e.
+> when memory cgroup is disabled. We could simply use a long for dirty,
+> the unit is in # of pages so s64 should be enough. Or cast dirty to long
+> only for the check (see below).
+> 
+> Thanks!
+> -Andrea
+> 
+> Signed-off-by: Andrea Righi <arighi@develer.com>
+> ---
+>  mm/page-writeback.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index d83f41c..dbee976 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -701,7 +701,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+>  
+>  
+>  		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> -		if (dirty < 0)
+> +		if ((long)dirty < 0)
 
-Here's some misc fixes (including a couple of build fixes), along with 
-updates to the asus and Thinkpad drivers.
+This will also be problematic as on 32bit systems, your uppper limit of
+dirty memory will be 2G?
 
-The following changes since commit 30ff056c42c665b9ea535d8515890857ae382540:
-  Linus Torvalds (1):
-        Merge branch 'x86-uv-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+I guess, I will prefer one of the two.
 
-are available in the git repository at:
+- return the error code from function and pass a pointer to store stats
+  in as function argument.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mjg59/platform-drivers-x86.git for_linus
+- Or Peter's suggestion of checking mem_cgroup_has_dirty_limit() and if
+  per cgroup dirty control is enabled, then use per cgroup stats. In that
+  case you don't have to return negative values.
 
-Alan Jenkins (2):
-      eeepc-laptop: disable wireless hotplug for 1005PE
-      eeepc-laptop: check wireless hotplug events
+  Only tricky part will be careful accouting so that none of the stats go
+  negative in corner cases of migration etc.
 
-Corentin Chary (30):
-      eeepc-laptop: set the right paths in the documentation
-      asus-laptop: add wireless and bluetooth status parameter
-      asus-laptop: set the right paths in the documentation
-      asus-laptop: no need to check argument of set_brightness()
-      asus-laptop: simplify write_acpi_int
-      asus-laptop: use tabs to indent macros and remove unused ones
-      asus-laptop: remove unecessary hotk != NULL check
-      asus-laptop: change initialization order
-      asus-laptop: revise names
-      asus-laptop: move backlight and dsdt info inside asus_laptop struct
-      asus-laptop: callbacks should use "driver data" parameter or field
-      asus-laptop: code movement
-      asus-laptop: stop using read_status for bluetooth and wlan
-      asus-laptop: stop using read_status and store_status for GPS
-      asus-laptop: stop using read_status for lcd
-      asus-laptop: removing read_status/store_status/write_status and asus->status
-      asus-laptop: rename function talking directly to acpi with asus_xxx scheme
-      asus-laptop: stop using ASUS_HANDLE and use relative methods instead
-      asus-laptop: add error check for write_acpi_int calls
-      asus-laptop: rename wireless_status to wlan_status to avoid confusion
-      asus-laptop: switch to sparse keymap library
-      asus-laptop: add bluetooth keys found on M9V
-      asus-laptop: add backlight changes notifications
-      asus-laptop: leds, remove dead code and fix asus_led_exit()/asus_led_init()
-      asus-laptop: set initial lcd state
-      asus-laptop: add gps rfkill
-      asus-laptop: clean led code
-      asus-laptop: use device_create_file() instead of platform_group
-      asus-laptop: fix style problems reported by checkpath.pl
-      Merge branch 'eeepc-laptop' into acpi4asus
+Thanks
+Vivek
 
-Frans Pop (1):
-      toshiba-acpi: fix multimedia keys on some machines
-
-Henrique de Moraes Holschuh (7):
-      thinkpad-acpi: document HKEY event 3006
-      thinkpad-acpi: R52 brightness_mode has been confirmed
-      thinkpad-acpi: fix poll thread auto-start
-      thinkpad-acpi: make driver events work in NVRAM poll mode
-      thinkpad-acpi: fix bluetooth/wwan resume
-      thinkpad-acpi: lock down video output state access
-      thinkpad-acpi: fix ALSA callback return status
-
-Ingo Molnar (2):
-      dell-laptop: Fix build error by making buffer_mutex static
-      compal-laptop: Make it depend on CONFIG_RFKILL
-
-Matthew Garrett (3):
-      dell-laptop: Fix errors on failure and exit paths
-      Merge git://git.iksaif.net/acpi4asus into x86-platform
-      Merge branch 'for-upstream/platform-x86_tpacpi' of git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6 into x86-platform
-
-Roel Kluin (1):
-      asus-acpi: remove duplicate comparison of asus_model strings
-
-Thadeu Lima de Souza Cascardo (2):
-      MAINTAINERS: Add git tree to x86 Platform Drivers
-      classmate-laptop: Added some keys present in other devices
-
- .../ABI/testing/sysfs-platform-asus-laptop         |   12 +-
- .../ABI/testing/sysfs-platform-eeepc-laptop        |   10 +-
- Documentation/laptops/thinkpad-acpi.txt            |    4 +
- MAINTAINERS                                        |    1 +
- drivers/platform/x86/Kconfig                       |   13 +-
- drivers/platform/x86/asus-laptop.c                 | 1741 ++++++++++----------
- drivers/platform/x86/asus_acpi.c                   |    3 +-
- drivers/platform/x86/classmate-laptop.c            |    4 +
- drivers/platform/x86/dell-laptop.c                 |    9 +-
- drivers/platform/x86/eeepc-laptop.c                |   21 +-
- drivers/platform/x86/thinkpad_acpi.c               |  116 +-
- drivers/platform/x86/toshiba_acpi.c                |   30 +-
- 12 files changed, 1058 insertions(+), 906 deletions(-)
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+>  			dirty = global_page_state(NR_UNSTABLE_NFS) +
+>  				global_page_state(NR_WRITEBACK);
+>  		if (dirty <= dirty_thresh)
