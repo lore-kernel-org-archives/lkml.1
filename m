@@ -1,81 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628Ab0CBXbG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:31:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36415 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754185Ab0CBXbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:31:00 -0500
-Date: Wed, 3 Mar 2010 10:30:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-next@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>
-Subject: Re: [origin tree build failure] Re: [PATCH -next] scsi: RAID_ATTRS
- depends on SCSI
-Message-Id: <20100303103053.7be411ba.sfr@canb.auug.org.au>
-In-Reply-To: <20100302112603.GA27686@elte.hu>
-References: <20100219174711.5e7cc7be.sfr@canb.auug.org.au>
-	<4B7EC8AE.60200@oracle.com>
-	<20100221194636.ef885e5a.rdunlap@xenotime.net>
-	<20100302112603.GA27686@elte.hu>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Mar_2010_10_30_53_+1100_OdGpE+XMTWUzZ4kS"
+	id S1754630Ab0CBXbS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:31:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55586 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754346Ab0CBXbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:31:05 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Memory management woes - order 1 allocation failures
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>
+In-Reply-To: <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
+References: <20100302172606.GA11355@csn.ul.ie> <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
+Message-Id: <20100303082239.D614.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  3 Mar 2010 08:31:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Mar_2010_10_30_53_+1100_OdGpE+XMTWUzZ4kS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > For reasons that are not particularly clear to me, tty_buffer_alloc() is
+> > called far more frequently in 2.6.33 than in 2.6.24. I instrumented the
+> > function to print out the size of the buffers allocated, booted under
+> > qemu and would just "cat /bin/ls" to see what buffers were allocated.
+> > 2.6.33 allocates loads, including high-order allocations. 2.6.24
+> > appeared to allocate once and keep silent.
+> 
+> The pty layer is using them now and didn't before. That will massively
+> distort your numhers.
+> 
+> > While there have been snags recently with respect to high-order
+> > allocation failures in recent kernels, this might be one of the cases
+> > where it's due to subsystems requesting high-order allocations more.
+> 
+> The pty code certainly triggered more such allocations. I've sent Greg
+> patches to make the tty buffering layer allocate sensible sizes as it
+> doesn't need multiple page allocations in the first place.
 
-Hi Ingo,
+Wow, great! :)
 
-On Tue, 2 Mar 2010 12:26:03 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Randy Dunlap <rdunlap@xenotime.net> wrote:
->=20
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> >=20
-> > raid_class uses scsi interfaces, so it should depend on SCSI.
-> > Otherwise build errors occur when RAID_ATTRS=3Dy and SCSI=3Dm:
-> >=20
-> > ERROR: "raid_class_release" [drivers/scsi/mpt2sas/mpt2sas.ko] undefined!
-> > ERROR: "raid_class_attach" [drivers/scsi/mpt2sas/mpt2sas.ko] undefined!
->=20
-> FYI, this build bug has been pushed upstream via the SCSI tree, without=20
-> Randy's fix.
->=20
-> I have applied Randy's drivers/scsi/Kconfig fix to tip:out-of-tree and th=
-at=20
-> solves the build bug here.
->=20
->  Tested-by: Ingo Molnar <mingo@elte.hu>
 
-Thanks for the heads up Ingo, I have added that to my fixes tree as well
-so it will be in linux-next today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__3_Mar_2010_10_30_53_+1100_OdGpE+XMTWUzZ4kS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuNn60ACgkQjjKRsyhoI8wlBwCfXSD3mJQSd9hYEgJ3wSq82zdG
-W6AAnR5ShF5g0nBKHmaS0/MwetrInYkW
-=39pg
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Mar_2010_10_30_53_+1100_OdGpE+XMTWUzZ4kS--
