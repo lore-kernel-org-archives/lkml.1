@@ -1,61 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615Ab0CBShm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:37:42 -0500
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:59806 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294Ab0CBShk (ORCPT
+	id S1752151Ab0CBSkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:40:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33212 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750830Ab0CBSkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:37:40 -0500
-X-IronPort-AV: E=Sophos;i="4.49,568,1262563200"; 
-   d="scan'208";a="9747572"
-Date: Tue, 2 Mar 2010 18:41:24 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH SERIES] enhanced PV on Xen HVM
-In-Reply-To: <alpine.DEB.2.00.1003021817540.22259@kaball-desktop>
-Message-ID: <alpine.DEB.2.00.1003021838180.22259@kaball-desktop>
-References: <alpine.DEB.2.00.1003021817540.22259@kaball-desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 2 Mar 2010 13:40:36 -0500
+Date: Tue, 2 Mar 2010 10:39:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@linux.kernel.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sachin Sant <sachinp@in.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Alok Kataria <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       =?ISO-8859-15?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
+Subject: Re: [GIT PULL] x86/mm fixes
+In-Reply-To: <201003020010.o220Ax3Z025848@hera.kernel.org>
+Message-ID: <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
+References: <201003020010.o220Ax3Z025848@hera.kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010, Stefano Stabellini wrote:
-> Hi all,
-> this patch series is derived from an earlier version of Shen's "PV
-> extension of HVM" patch series.
-> It tries to achieve two goals:
-> 
-> - enable PV devices in Linux running in a Xen HVM domain;
-> 
-> - receive evtchns in place of interrupts to avoid expensive EOIs.
-> 
-> The main difference between the two patch series is the way the second
-> goals is achieved: in this patch series I am trying to reuse the same
-> code that is used in the Linux kernel to setup GSI to pirq mappings when
-> running as dom0.
-> In this case the GSIs that are being remapped correspond to emulated
-> interrupts, but Xen knows the difference and handles the two cases
-> separately.
-> It should be easy to use this mechanism also to map interrupts or MSIs
-> from pci passthrough devices with minimal changes to the Linux kernel.
-> 
-> The patch series consists of 5 patches, 1 for Xen and 4 for Linux; each
-> patch comes with a detailed description.
-> 
-> Any comment, critic or suggestion is very welcome.
-> 
 
-I should point out that the Linux side of the patch series is developed
-against the branch "xen/dom0/apic-xiantao" of the pvops tree, that is
-the master branch plus the recent apic rework.
-Moreover it still needs few fixes: in particular the PV on HVM SMP
-initialization code is exactly the same as in the last patch series from
-Shen, therefore it doesn't address any of Jeremy's comments yet.
 
+On Tue, 2 Mar 2010, H. Peter Anvin wrote:
+> +		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> +		end_pfn = (res.end + 1) >> PAGE_SHIFT;
+> +		if (end_pfn > pfn)
+> +		    ret = (*func)(pfn, end_pfn - pfn, arg);
+>  		if (ret)
+>  			break;
+>  		res.start = res.end + 1;
+
+What kind of messed-up indentation is that? We don't use 4-char indents.
+
+		Linus
