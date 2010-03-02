@@ -1,115 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935Ab0CBFv0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 00:51:26 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:37558 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293Ab0CBFvY convert rfc822-to-8bit (ORCPT
+	id S1752045Ab0CBFyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 00:54:11 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56242 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293Ab0CBFyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 00:51:24 -0500
-From: "G, Manjunath Kondaiah" <manjugk@ti.com>
-To: Tony Lindgren <tony@atomide.com>,
-       "Raja, Govindraj" <govindraj.raja@ti.com>
-CC: Greg KH <greg@kroah.com>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Olof Johansson <olof@lixom.net>
-Date: Tue, 2 Mar 2010 11:21:13 +0530
-Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
-Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
-Thread-Index: Acq5b17/zA9YukSIR8maWHSqIjS9YwAW7HlA
-Message-ID: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
-References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
- <20100301184600.GC3389@atomide.com>
-In-Reply-To: <20100301184600.GC3389@atomide.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Mar 2010 00:54:09 -0500
+Message-ID: <4B8CA7F5.1030802@cs.helsinki.fi>
+Date: Tue, 02 Mar 2010 07:53:57 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [patch] slab: add memory hotplug support
+References: <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony,
+David Rientjes wrote:
+> Slab lacks any memory hotplug support for nodes that are hotplugged
+> without cpus being hotplugged.  This is possible at least on x86
+> CONFIG_MEMORY_HOTPLUG_SPARSE kernels where SRAT entries are marked
+> ACPI_SRAT_MEM_HOT_PLUGGABLE and the regions of RAM represent a seperate
+> node.  It can also be done manually by writing the start address to
+> /sys/devices/system/memory/probe for kernels that have
+> CONFIG_ARCH_MEMORY_PROBE set, which is how this patch was tested, and
+> then onlining the new memory region.
+> 
+> When a node is hotadded, a nodelist for that node is allocated and 
+> initialized for each slab cache.  If this isn't completed due to a lack
+> of memory, the hotadd is aborted: we have a reasonable expectation that
+> kmalloc_node(nid) will work for all caches if nid is online and memory is
+> available.  
+> 
+> Since nodelists must be allocated and initialized prior to the new node's
+> memory actually being online, the struct kmem_list3 is allocated off-node
+> due to kmalloc_node()'s fallback.
+> 
+> When an entire node is offlined (or an online is aborted), these
+> nodelists are subsequently drained and freed.  If objects still exist
+> either on the partial or full lists for those nodes, the offline is
+> aborted.  This scenario will not occur for an aborted online, however,
+> since objects can never be allocated from those nodelists until the
+> online has completed.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org 
-> [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Tony Lindgren
-> Sent: Tuesday, March 02, 2010 12:16 AM
-> To: Raja, Govindraj
-> Cc: Greg KH; linux-serial@vger.kernel.org; 
-> linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> Kevin Hilman; Olof Johansson
-> Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
-> 
-> * Govindraj.R <govindraj.raja@ti.com> [100301 06:40]:
-> > --- /dev/null
-> > +++ b/drivers/serial/omap-serial.c
-> > +
-> > +static void serial_omap_stop_tx(struct uart_port *port)
-> > +{
-> > +	struct uart_omap_port *up = (struct uart_omap_port *)port;
-> > +
-> > +	if (up->use_dma &&
-> > +		up->uart_dma.tx_dma_channel != OMAP_UART_DMA_CH_FREE) {
-> > +		/*
-> > +		 * Check if dma is still active . If yes do nothing,
-> 
-> Looks like an extra space here before the period above.
-> 
-> ...
-> 
-> > +static int serial_omap_start_rxdma(struct uart_omap_port *up)
-> > +{
-> > +	int ret = 0;
-> > +
-> > +	if (up->uart_dma.rx_dma_channel == -1) {
-> > +		ret = omap_request_dma(up->uart_dma.uart_dma_rx,
-> > +				"UART Rx DMA",
-> > +				(void *)uart_rx_dma_callback, up,
-> > +				&(up->uart_dma.rx_dma_channel));
-> > +		if (ret < 0)
-> > +			return ret;
-> > +
-> > +		omap_set_dma_src_params(up->uart_dma.rx_dma_channel, 0,
-> > +				OMAP_DMA_AMODE_CONSTANT,
-> > +				up->uart_dma.uart_base, 0, 0);
-> > +		omap_set_dma_dest_params(up->uart_dma.rx_dma_channel, 0,
-> > +				OMAP_DMA_AMODE_POST_INC,
-> > +				up->uart_dma.rx_buf_dma_phys, 0, 0);
-> > +		
-> omap_set_dma_transfer_params(up->uart_dma.rx_dma_channel,
-> > +				OMAP_DMA_DATA_TYPE_S8,
-> > +				up->uart_dma.rx_buf_size, 1,
-> > +				OMAP_DMA_SYNC_ELEMENT,
-> > +				up->uart_dma.uart_dma_rx, 0);
-> > +	}
-> > +	up->uart_dma.prev_rx_dma_pos = up->uart_dma.rx_buf_dma_phys;
-> > +	if (cpu_is_omap44xx())
-> > +		omap_writel(0, OMAP44XX_DMA4_BASE
-> > +			+ OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-> > +	else
-> > +		omap_writel(0, OMAP34XX_DMA4_BASE
-> > +			+ OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-> 
-> NAK. Please don't use omap_read/write for for new code. And do not
-> tinker with the omap hardware registers directly in the driver.
-> 
-> This needs to be done properly in arch/arm/plat-omap/dma.c instead.
+Andi, does this fix the oops you were seeing?
 
-Thanks for the suggestion.
-
-Currently, dma_read/dma_write are #define's in dma.c which cannot be 
-accessed outside dma.c. I don't see any API's in dma.c for setting required 
-value for this register?
-
-Can we move dma_read/dma_write to header file so that it can be global or 
-Is there alternate way to perform this operation with existing dma driver?
-
--Manjunath
+			Pekka
