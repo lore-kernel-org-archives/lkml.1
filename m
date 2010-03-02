@@ -1,31 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335Ab0CBDOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 22:14:15 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:46209 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472Ab0CBDOO (ORCPT
+	id S1753338Ab0CBDYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 22:24:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:53053 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751508Ab0CBDYD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 22:14:14 -0500
-Date: Tue, 2 Mar 2010 12:13:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrea Gelmini <andrea.gelmini@gelma.net>
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH 55/66] arch/sh/boot/compressed/cache.c: Checkpatch cleanup
-Message-ID: <20100302031339.GD20256@linux-sh.org>
-References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net> <1267289508-31031-56-git-send-email-andrea.gelmini@gelma.net>
+	Mon, 1 Mar 2010 22:24:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,564,1262592000"; 
+   d="scan'208";a="600383842"
+From: "Dong, Eddie" <eddie.dong@intel.com>
+To: Sheng Yang <sheng@linux.intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+CC: xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       "Dong, Eddie" <eddie.dong@intel.com>
+Date: Tue, 2 Mar 2010 11:20:10 +0800
+Subject: RE: [Xen-devel] [PATCH 0/7][v4] PV extension of HVM (Hybrid) for Xen
+Thread-Topic: [Xen-devel] [PATCH 0/7][v4] PV extension of HVM (Hybrid) for
+ Xen
+Thread-Index: Acq5p8tFb9J01QPRSaOxOSrdKjAUFAADwiNg
+Message-ID: <1A42CE6F5F474C41B63392A5F80372B21D43CEF0@shsmsx501.ccr.corp.intel.com>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
+	<4B8C5ED9.1040109@goop.org> <201003020926.03512.sheng@linux.intel.com>
+In-Reply-To: <201003020926.03512.sheng@linux.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267289508-31031-56-git-send-email-andrea.gelmini@gelma.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 27, 2010 at 05:51:36PM +0100, Andrea Gelmini wrote:
-> arch/sh/boot/compressed/cache.c:8: WARNING: space prohibited between function name and open parenthesis '('
 > 
-> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+>> Also, I'd like to see a clearer statement of what you're specifically
+>> trying to optimise for here.  What is inefficient in an unmodified
+>> HVM domain, and how do your patches address these things.  What
+>> measurements have you made?
+> 
+> The key issue we want to address is the overhead of LAPIC, especially
+> EOI and other actions resulted in explicit vmexit. That is the
+> overhead we want to eliminate. And evtchn seems like a perfect choice
+> to us. 
+> 
 
-Applied.
+That is not complete. Linux timer in HVM is always annoying, and time to time make surprise to endusers. PV timer does help here. Eventchannel is nice to HVM as well. 
+
+Thx, Eddie
