@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702Ab0CBXdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:33:24 -0500
-Received: from kroah.org ([198.145.64.141]:38687 "EHLO coco.kroah.org"
+	id S1754678Ab0CBXdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:33:21 -0500
+Received: from kroah.org ([198.145.64.141]:38688 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754335Ab0CBX3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754469Ab0CBX3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Mar 2010 18:29:44 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Johannes Berg <johannes@sipsolutions.net>,
+Cc: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 48/62] sysfs: windfarm: init sysfs attributes
-Date: Tue,  2 Mar 2010 15:28:47 -0800
-Message-Id: <1267572541-410-48-git-send-email-gregkh@suse.de>
+Subject: [PATCH 49/62] sysfs: Serialize updates to the vfs inode
+Date: Tue,  2 Mar 2010 15:28:48 -0800
+Message-Id: <1267572541-410-49-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
@@ -20,41 +20,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-This is required for lockdep.
+The vfs depends upon filesystem methods to update the
+vfs inode.   Sysfs adds to the normal number of places
+where the vfs inode is updated by also updatng the
+vfs inode in sysfs_refresh_inode.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Typically the inode mutex is used to serialize updates
+to the vfs inode, but grabbing the inode mutex in
+sysfs_permission and sysfs_getattr causes deadlocks,
+because sometimes the vfs calls those operations with
+the inode mutex held.  Therefore sysfs  can not use the
+inode mutex to serial updates to the vfs inode.
+
+The sysfs_mutex is acquired in all of the routines
+where sysfs updates the vfs inode, and with a small
+change we can consistently protext sysfs vfs inode
+updates with the sysfs_mutex. To protect the sysfs
+vfs inode updates with the sysfs_mutex simply requires
+extending the scope of sysfs_mutex in sysfs_setattr
+over inode_setattr, and over inode_change_ok (so we
+have an unchanging inode when we perform the check).
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/macintosh/windfarm_core.c         |    1 +
- drivers/macintosh/windfarm_smu_controls.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ fs/sysfs/inode.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-index 437f55c..419795f 100644
---- a/drivers/macintosh/windfarm_core.c
-+++ b/drivers/macintosh/windfarm_core.c
-@@ -321,6 +321,7 @@ int wf_register_sensor(struct wf_sensor *new_sr)
- 	kref_init(&new_sr->ref);
- 	list_add(&new_sr->link, &wf_sensors);
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 6a06a1d..0d09f6c 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -111,20 +111,20 @@ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr)
+ 	if (!sd)
+ 		return -EINVAL;
  
-+	sysfs_attr_init(&new_sr->attr.attr);
- 	new_sr->attr.attr.name = new_sr->name;
- 	new_sr->attr.attr.mode = 0444;
- 	new_sr->attr.show = wf_show_sensor;
-diff --git a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
-index 6c68b9e..43137b4 100644
---- a/drivers/macintosh/windfarm_smu_controls.c
-+++ b/drivers/macintosh/windfarm_smu_controls.c
-@@ -173,6 +173,7 @@ static struct smu_fan_control *smu_fan_create(struct device_node *node,
++	mutex_lock(&sysfs_mutex);
+ 	error = inode_change_ok(inode, iattr);
+ 	if (error)
+-		return error;
++		goto out;
  
- 	fct->fan_type = pwm_fan;
- 	fct->ctrl.type = pwm_fan ? WF_CONTROL_PWM_FAN : WF_CONTROL_RPM_FAN;
-+	sysfs_attr_init(&fct->ctrl.attr.attr);
+ 	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
  
- 	/* We use the name & location here the same way we do for SMU sensors,
- 	 * see the comment in windfarm_smu_sensors.c. The locations are a bit
+ 	error = inode_setattr(inode, iattr);
+ 	if (error)
+-		return error;
++		goto out;
+ 
+-	mutex_lock(&sysfs_mutex);
+ 	error = sysfs_sd_setattr(sd, iattr);
++out:
+ 	mutex_unlock(&sysfs_mutex);
+-
+ 	return error;
+ }
+ 
 -- 
 1.7.0.1
 
