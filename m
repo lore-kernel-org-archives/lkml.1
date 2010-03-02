@@ -1,91 +1,211 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752307Ab0CBKEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 05:04:20 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52891 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563Ab0CBKES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 05:04:18 -0500
-Date: Tue, 2 Mar 2010 10:04:02 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
-	due to "e084b - page-allocator: preserve PFN ordering when
-	__GFP_COLD is set"
-Message-ID: <20100302100402.GH3852@csn.ul.ie>
-References: <20100212100519.GA29085@laptop> <4B796C6D.80800@linux.vnet.ibm.com> <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com> <20100218114310.GC32626@csn.ul.ie> <4B7D664C.20507@linux.vnet.ibm.com> <4B7E73BF.5030901@linux.vnet.ibm.com> <20100219151934.GA1445@csn.ul.ie> <20100302065225.GC8653@laptop>
+	id S1752508Ab0CBKFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 05:05:38 -0500
+Received: from mga10.intel.com ([192.55.52.92]:19167 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752091Ab0CBKFf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 05:05:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,565,1262592000"; 
+   d="scan'208";a="777168426"
+Date: Tue, 2 Mar 2010 11:06:44 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Denis Turischev <denis@compulab.co.il>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
+Subject: Re: [PATCH v4 2/3] i2c: convert i2c-isch to platform_device
+Message-ID: <20100302100643.GA3195@sortiz.org>
+References: <4B73DAEE.5080400@compulab.co.il>
+ <4B73DBB2.7020601@compulab.co.il>
+ <4B7C0E5D.3070909@compulab.co.il>
+ <4B812B42.2090405@compulab.co.il>
+ <20100228190015.GB3589@sortiz.org>
+ <4B8BF28B.1060701@compulab.co.il>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100302065225.GC8653@laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4B8BF28B.1060701@compulab.co.il>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 05:52:25PM +1100, Nick Piggin wrote:
-> On Fri, Feb 19, 2010 at 03:19:34PM +0000, Mel Gorman wrote:
-> > On Fri, Feb 19, 2010 at 12:19:27PM +0100, Christian Ehrhardt wrote:
-> > > Eventually it might come down to a discussion of allocation priorities and
-> > > we might even keep them as is and accept this issue - I still would prefer
-> > > a good second chance implementation, other page cache allocation flags or
-> > > something else that explicitly solves this issue.
-> > >
-> > 
-> > In that line, the patch that replaced congestion_wait() with a waitqueue
-> > makes some sense.
-> > 
-> > > Mel's patch that replaces congestion_wait with a wait for the zone watermarks
-> > > becoming available again is definitely a step in the right direction and
-> > > should go into upstream and the long term support branches.
-> > 
-> > I'll need to do a number of tests before I can move that upstream but I
-> > don't think it's a merge candidate. Unfortunately, I'll be offline for a
-> > week starting tomorrow so I won't be able to do the testing.
-> > 
-> > When I get back, I'll revisit those patches with the view to pushing
-> > them upstream. I hate to treat symptoms here without knowing the
-> > underlying problem but this has been spinning in circles for ages with
-> > little forward progress :(
+Hi Denis,
+
+On Mon, Mar 01, 2010 at 06:59:55PM +0200, Denis Turischev wrote:
+> v2: there is no acpi_check_region, it will be implemented in mfd-core
+> v3: patch refreshed against the latest Linus tree
+> v4: refreshed again
+Patch applied, many thanks.
+
+Cheers,
+Samuel.
+
+
+> Signed-off-by: Denis Turischev <denis@compulab.co.il>
 > 
-> The zone pressure waitqueue patch makes sense.
-
-I've just started the rebase and considering what sort of test is best
-for it.
-
-> We may even want to make
-> it more strictly FIFO (eg. check upfront if there are waiters on the
-> queue before allocating a page, and if yes then add ourself to the back
-> of the waitqueue).
-
-To be really strict about this, we'd have to check in the hot-path of the
-per-cpu allocator which would be undesirable. We could check further in the
-slow-path but I bet it'd be very rare that the logic would be triggered. For
-a process to enter the FIFO due to waiters that were not yet woken up, the
-system would have to be a) under heavy memory pressure b) reclaim taking such
-a long time that check_zone_pressure() is not being called in time and c)
-a process exiting or otherwise freeing memory such that the watermarks are
-cleared without reclaim being involved.
-
-This seems overkill but maybe you have a simplier case in mind?
-
-> And also possibly even look at doing the wakeups in
-> the page-freeing path. Although that might start adding too much
-> overhead, so it's quite possible your sloppy-but-lighter timeout
-> approach is preferable.
+> ---
+>  drivers/i2c/busses/Kconfig    |    2 +-
+>  drivers/i2c/busses/i2c-isch.c |   68 ++++++++++++++++------------------------
+>  2 files changed, 28 insertions(+), 42 deletions(-)
 > 
-
-That's how I felt about it. I was going to put another check_zone_pressure()
-check after a pcp drain but thought it was too expensive.
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index 5f318ce..d15b6d3 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -104,7 +104,7 @@ config I2C_I801
+> 
+>  config I2C_ISCH
+>  	tristate "Intel SCH SMBus 1.0"
+> -	depends on PCI
+> +	select LPC_SCH
+>  	help
+>  	  Say Y here if you want to use SMBus controller on the Intel SCH
+>  	  based systems.
+> diff --git a/drivers/i2c/busses/i2c-isch.c b/drivers/i2c/busses/i2c-isch.c
+> index dba6eb0..ddc258e 100644
+> --- a/drivers/i2c/busses/i2c-isch.c
+> +++ b/drivers/i2c/busses/i2c-isch.c
+> @@ -27,7 +27,7 @@
+>  */
+> 
+>  #include <linux/module.h>
+> -#include <linux/pci.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/kernel.h>
+>  #include <linux/delay.h>
+>  #include <linux/stddef.h>
+> @@ -46,12 +46,6 @@
+>  #define SMBHSTDAT1	(7 + sch_smba)
+>  #define SMBBLKDAT	(0x20 + sch_smba)
+> 
+> -/* count for request_region */
+> -#define SMBIOSIZE	64
+> -
+> -/* PCI Address Constants */
+> -#define SMBBA_SCH	0x40
+> -
+>  /* Other settings */
+>  #define MAX_TIMEOUT	500
+> 
+> @@ -63,7 +57,6 @@
+>  #define SCH_BLOCK_DATA		0x05
+> 
+>  static unsigned short sch_smba;
+> -static struct pci_driver sch_driver;
+>  static struct i2c_adapter sch_adapter;
+> 
+>  /*
+> @@ -256,37 +249,23 @@ static struct i2c_adapter sch_adapter = {
+>  	.algo		= &smbus_algorithm,
+>  };
+> 
+> -static struct pci_device_id sch_ids[] = {
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
+> -	{ 0, }
+> -};
+> -
+> -MODULE_DEVICE_TABLE(pci, sch_ids);
+> -
+> -static int __devinit sch_probe(struct pci_dev *dev,
+> -				const struct pci_device_id *id)
+> +static int __devinit smbus_sch_probe(struct platform_device *dev)
+>  {
+> +	struct resource *res;
+>  	int retval;
+> -	unsigned int smba;
+> 
+> -	pci_read_config_dword(dev, SMBBA_SCH, &smba);
+> -	if (!(smba & (1 << 31))) {
+> -		dev_err(&dev->dev, "SMBus I/O space disabled!\n");
+> -		return -ENODEV;
+> -	}
+> +	res = platform_get_resource(dev, IORESOURCE_IO, 0);
+> +	if (!res)
+> +		return -EBUSY;
+> 
+> -	sch_smba = (unsigned short)smba;
+> -	if (sch_smba == 0) {
+> -		dev_err(&dev->dev, "SMBus base address uninitialized!\n");
+> -		return -ENODEV;
+> -	}
+> -	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
+> -		return -ENODEV;
+> -	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
+> +	if (!request_region(res->start, resource_size(res), dev->name)) {
+>  		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
+>  			sch_smba);
+>  		return -EBUSY;
+>  	}
+> +
+> +	sch_smba = res->start;
+> +
+>  	dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
+> 
+>  	/* set up the sysfs linkage to our parent device */
+> @@ -298,37 +277,43 @@ static int __devinit sch_probe(struct pci_dev *dev,
+>  	retval = i2c_add_adapter(&sch_adapter);
+>  	if (retval) {
+>  		dev_err(&dev->dev, "Couldn't register adapter!\n");
+> -		release_region(sch_smba, SMBIOSIZE);
+> +		release_region(res->start, resource_size(res));
+>  		sch_smba = 0;
+>  	}
+> 
+>  	return retval;
+>  }
+> 
+> -static void __devexit sch_remove(struct pci_dev *dev)
+> +static int __devexit smbus_sch_remove(struct platform_device *pdev)
+>  {
+> +	struct resource *res;
+>  	if (sch_smba) {
+>  		i2c_del_adapter(&sch_adapter);
+> -		release_region(sch_smba, SMBIOSIZE);
+> +		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> +		release_region(res->start, resource_size(res));
+>  		sch_smba = 0;
+>  	}
+> +
+> +	return 0;
+>  }
+> 
+> -static struct pci_driver sch_driver = {
+> -	.name		= "isch_smbus",
+> -	.id_table	= sch_ids,
+> -	.probe		= sch_probe,
+> -	.remove		= __devexit_p(sch_remove),
+> +static struct platform_driver smbus_sch_driver = {
+> +	.driver = {
+> +		.name = "isch_smbus",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.probe		= smbus_sch_probe,
+> +	.remove		= __devexit_p(smbus_sch_remove),
+>  };
+> 
+>  static int __init i2c_sch_init(void)
+>  {
+> -	return pci_register_driver(&sch_driver);
+> +	return platform_driver_register(&smbus_sch_driver);
+>  }
+> 
+>  static void __exit i2c_sch_exit(void)
+>  {
+> -	pci_unregister_driver(&sch_driver);
+> +	platform_driver_unregister(&smbus_sch_driver);
+>  }
+> 
+>  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
+> @@ -337,3 +322,4 @@ MODULE_LICENSE("GPL");
+> 
+>  module_init(i2c_sch_init);
+>  module_exit(i2c_sch_exit);
+> +MODULE_ALIAS("platform:isch_smbus");
+> -- 
+> 1.6.3.3
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Intel Open Source Technology Centre
+http://oss.intel.com/
