@@ -1,45 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090Ab0CBMxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 07:53:19 -0500
-Received: from fe02x03-cgp.akado.ru ([77.232.31.165]:53468 "EHLO akado.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753044Ab0CBMxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 07:53:18 -0500
-X-Greylist: delayed 3611 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Mar 2010 07:53:17 EST
-From: Arseniy Lartsev <arseniy@fizlesh.ru>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH] usbaudio: Fix wrong bitrate for Creative Creative VF0470 Live Cam
-Date: Tue, 2 Mar 2010 14:52:28 +0300
-User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-default; KDE/4.3.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+	id S1753019Ab0CBMxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 07:53:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56064 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752123Ab0CBMxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 07:53:08 -0500
+Date: Tue, 2 Mar 2010 13:53:06 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [patch] slab: add memory hotplug support
+Message-ID: <20100302125306.GD19208@basil.fritz.box>
+References: <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi> <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003021452.28716.arseniy@fizlesh.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch works around misbehaviour of Creative Creative VF0470 Live Cam
-which reports 16 kHz sample rate for audio capture while actually producing
-8 kHz stream.
+On Mon, Mar 01, 2010 at 02:24:43AM -0800, David Rientjes wrote:
+> Slab lacks any memory hotplug support for nodes that are hotplugged
+> without cpus being hotplugged.  This is possible at least on x86
+> CONFIG_MEMORY_HOTPLUG_SPARSE kernels where SRAT entries are marked
+> ACPI_SRAT_MEM_HOT_PLUGGABLE and the regions of RAM represent a seperate
+> node.  It can also be done manually by writing the start address to
+> /sys/devices/system/memory/probe for kernels that have
+> CONFIG_ARCH_MEMORY_PROBE set, which is how this patch was tested, and
+> then onlining the new memory region.
 
-Signed-off-by: Arseniy Lartsev <arseniy@fizlesh.ru>
+The patch looks far more complicated than my simple fix.
 
---
-diff -rup linux-2.6.33-rc8-orig/sound/usb/usbaudio.c linux-2.6.33-
-rc8/sound/usb/usbaudio.c
---- linux-2.6.33-rc8-orig/sound/usb/usbaudio.c
-+++ linux-2.6.33-rc8/sound/usb/usbaudio.c
-@@ -2513,6 +2513,9 @@ static int parse_audio_format_rates(stru
- 			     chip->usb_id == USB_ID(0x0d8c, 0x0102)) &&
- 			    fp->altsetting == 5 && fp->maxpacksize == 392)
- 				rate = 96000;
-+			/* Creative VF0470 Live Cam reports 16 kHz instead of 8 */
-+			if ((rate == 16000) && (chip->usb_id == USB_ID(0x041e, 0x4068)))
-+				rate = 8000;
- 			fp->rate_table[fp->nr_rates] = rate;
- 			if (!fp->rate_min || rate < fp->rate_min)
- 				fp->rate_min = rate;
+Is more complicated now better?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
