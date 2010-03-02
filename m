@@ -1,43 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298Ab0CCBn3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 20:43:29 -0500
-Received: from mga14.intel.com ([143.182.124.37]:39099 "EHLO mga14.intel.com"
+	id S1755315Ab0CCBwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 20:52:25 -0500
+Received: from mga02.intel.com ([134.134.136.20]:46243 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701Ab0CCBn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 20:43:28 -0500
+	id S1754705Ab0CCBwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 20:52:24 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,570,1262592000"; 
-   d="scan'208";a="250110300"
-Date: Wed, 3 Mar 2010 09:43:24 +0800
+   d="scan'208";a="600747199"
+Date: Tue, 2 Mar 2010 13:43:07 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
-To: Bret Towe <magnade@gmail.com>
-Cc: Dave Chinner <david@fromorbit.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] nfs: use 4*rsize readahead size
-Message-ID: <20100303014324.GA6477@localhost>
-References: <20100224024100.GA17048@localhost> <20100224032934.GF16175@discord.disaster> <20100224041822.GB27459@localhost> <20100224052215.GH16175@discord.disaster> <20100224061247.GA8421@localhost> <20100224073940.GJ16175@discord.disaster> <20100226074916.GA8545@localhost> <20100302031021.GA14267@localhost> <dda83e781003021214g6721c142o7c66f409296cf5a@mail.gmail.com>
+To: Wei Ni <wni@nvidia.com>
+Cc: "'Takashi Iwai'" <tiwai@suse.de>, "'akpm'" <akpm@linux-foundation.org>,
+       "'alsa-devel'" <alsa-devel@alsa-project.org>,
+       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
+       "'Pavel Hofman'" <pavel.hofman@insite.cz>
+Subject: Re: [alsa-devel]  [PATCH]Support MCP89 and GT21x hdmi audio
+Message-ID: <20100302054307.GA6165@localhost>
+References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <dda83e781003021214g6721c142o7c66f409296cf5a@mail.gmail.com>
+In-Reply-To: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 04:14:33AM +0800, Bret Towe wrote:
+On Mon, Mar 01, 2010 at 07:27:53PM +0800, Wei Ni wrote:
+> Hi, Takashi
+> I developed the hdmi audio driver for new chipset MCP89 and GT21x.
+> The new HAD controller and codec support standard HDMI operation.
+> 
+> I attached the patch file, please check it.
 
-> how do you determine which bdi to use? I skimmed thru
-> the filesystem in /sys and didn't see anything that says which is what
+Wei Ni,
 
-MOUNTPOINT=" /mnt/ext4_test "
-# grep "$MOUNTPOINT" /proc/$$/mountinfo|awk  '{print $3}'
-0:24
+Can we avoid the big copy&paste and do more code reuse?
+This benefits all of us in long term.
 
 Thanks,
 Fengguang
