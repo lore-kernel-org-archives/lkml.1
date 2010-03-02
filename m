@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835Ab0CBXwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:52:18 -0500
-Received: from kroah.org ([198.145.64.141]:51560 "EHLO coco.kroah.org"
+	id S1758121Ab0CBXx1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:53:27 -0500
+Received: from kroah.org ([198.145.64.141]:38640 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806Ab0CBXgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:36:51 -0500
+	id S1754339Ab0CBX3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:34 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Baruch Siach <baruch@tkos.co.il>, Alan Cox <alan@linux.intel.com>,
-       Sascha Hauer <s.hauer@pengutronix.de>, Oskar Schirmer <os@emlix.com>,
-       Fabian Godehardt <fg@emlix.com>,
-       =?UTF-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
-       stable <stable@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 07/36] serial: imx: fix NULL dereference Oops when pdata == NULL
-Date: Tue,  2 Mar 2010 15:36:14 -0800
-Message-Id: <1267573003-782-7-git-send-email-gregkh@suse.de>
+Subject: [PATCH 35/62] media: move omap24xxcam's probe function to .devinit.text
+Date: Tue,  2 Mar 2010 15:28:34 -0800
+Message-Id: <1267572541-410-35-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
-In-Reply-To: <20100302230956.GC32287@kroah.com>
-References: <20100302230956.GC32287@kroah.com>
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -27,61 +27,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Baruch Siach <baruch@tkos.co.il>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-The platform code doesn't have to provide platform data to get sensible
-default behaviour from the imx serial driver.
+A pointer to omap24xxcam_probe is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
-This patch does not handle NULL dereference in the IrDA case, which still
-requires a valid platform data pointer (in imx_startup()/imx_shutdown()),
-since I don't know whether there is a sensible default behaviour, or
-should the operation just fail cleanly.
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Cc: Baruch Siach <baruch@tkos.co.il>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Oskar Schirmer <os@emlix.com>
-Cc: Fabian Godehardt <fg@emlix.com>
-Cc: Daniel Glöckner <dg@emlix.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Acked-by: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
+Acked-by: Trilok Soni <soni.trilok@gmail.com>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/imx.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/omap24xxcam.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
-index 60d665a..d00fcf8 100644
---- a/drivers/serial/imx.c
-+++ b/drivers/serial/imx.c
-@@ -1279,7 +1279,7 @@ static int serial_imx_probe(struct platform_device *pdev)
- 		sport->use_irda = 1;
- #endif
+diff --git a/drivers/media/video/omap24xxcam.c b/drivers/media/video/omap24xxcam.c
+index 7400eac..142c327 100644
+--- a/drivers/media/video/omap24xxcam.c
++++ b/drivers/media/video/omap24xxcam.c
+@@ -1735,7 +1735,7 @@ static struct v4l2_int_device omap24xxcam = {
+  *
+  */
  
--	if (pdata->init) {
-+	if (pdata && pdata->init) {
- 		ret = pdata->init(pdev);
- 		if (ret)
- 			goto clkput;
-@@ -1292,7 +1292,7 @@ static int serial_imx_probe(struct platform_device *pdev)
- 
- 	return 0;
- deinit:
--	if (pdata->exit)
-+	if (pdata && pdata->exit)
- 		pdata->exit(pdev);
- clkput:
- 	clk_put(sport->clk);
-@@ -1321,7 +1321,7 @@ static int serial_imx_remove(struct platform_device *pdev)
- 
- 	clk_disable(sport->clk);
- 
--	if (pdata->exit)
-+	if (pdata && pdata->exit)
- 		pdata->exit(pdev);
- 
- 	iounmap(sport->port.membase);
+-static int __init omap24xxcam_probe(struct platform_device *pdev)
++static int __devinit omap24xxcam_probe(struct platform_device *pdev)
+ {
+ 	struct omap24xxcam_device *cam;
+ 	struct resource *mem;
 -- 
 1.7.0.1
 
