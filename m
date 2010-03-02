@@ -1,52 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630Ab0CBXbS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:31:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55586 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754346Ab0CBXbF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:31:05 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Memory management woes - order 1 allocation failures
-Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>
-In-Reply-To: <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
-References: <20100302172606.GA11355@csn.ul.ie> <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
-Message-Id: <20100303082239.D614.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  3 Mar 2010 08:31:01 +0900 (JST)
+	id S1754541Ab0CBX3w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:29:52 -0500
+Received: from kroah.org ([198.145.64.141]:38700 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753420Ab0CBX3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:47 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 53/62] sysfs: Pass super_block to sysfs_get_inode
+Date: Tue,  2 Mar 2010 15:28:52 -0800
+Message-Id: <1267572541-410-53-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > For reasons that are not particularly clear to me, tty_buffer_alloc() is
-> > called far more frequently in 2.6.33 than in 2.6.24. I instrumented the
-> > function to print out the size of the buffers allocated, booted under
-> > qemu and would just "cat /bin/ls" to see what buffers were allocated.
-> > 2.6.33 allocates loads, including high-order allocations. 2.6.24
-> > appeared to allocate once and keep silent.
-> 
-> The pty layer is using them now and didn't before. That will massively
-> distort your numhers.
-> 
-> > While there have been snags recently with respect to high-order
-> > allocation failures in recent kernels, this might be one of the cases
-> > where it's due to subsystems requesting high-order allocations more.
-> 
-> The pty code certainly triggered more such allocations. I've sent Greg
-> patches to make the tty buffering layer allocate sensible sizes as it
-> doesn't need multiple page allocations in the first place.
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-Wow, great! :)
+Currently sysfs_get_inode magically returns an inode on
+sysfs_sb.  Make the super_block parameter explicit and
+the code becomes clearer.
 
+Acked-by: Tejun Heo <tj@kernel.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/sysfs/dir.c   |    2 +-
+ fs/sysfs/inode.c |    5 +++--
+ fs/sysfs/mount.c |    2 +-
+ fs/sysfs/sysfs.h |    2 +-
+ 4 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 481fdec..5907178 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -645,7 +645,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ 	}
+ 
+ 	/* attach dentry and inode */
+-	inode = sysfs_get_inode(sd);
++	inode = sysfs_get_inode(dir->i_sb, sd);
+ 	if (!inode) {
+ 		ret = ERR_PTR(-ENOMEM);
+ 		goto out_unlock;
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 0d09f6c..082daae 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -283,6 +283,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ 
+ /**
+  *	sysfs_get_inode - get inode for sysfs_dirent
++ *	@sb: super block
+  *	@sd: sysfs_dirent to allocate inode for
+  *
+  *	Get inode for @sd.  If such inode doesn't exist, a new inode
+@@ -295,11 +296,11 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+  *	RETURNS:
+  *	Pointer to allocated inode on success, NULL on failure.
+  */
+-struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
++struct inode * sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd)
+ {
+ 	struct inode *inode;
+ 
+-	inode = iget_locked(sysfs_sb, sd->s_ino);
++	inode = iget_locked(sb, sd->s_ino);
+ 	if (inode && (inode->i_state & I_NEW))
+ 		sysfs_init_inode(sd, inode);
+ 
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 4974995..89db07e 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -54,7 +54,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ 
+ 	/* get root inode, initialize and unlock it */
+ 	mutex_lock(&sysfs_mutex);
+-	inode = sysfs_get_inode(&sysfs_root);
++	inode = sysfs_get_inode(sb, &sysfs_root);
+ 	mutex_unlock(&sysfs_mutex);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 5a3192a..7593d71 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -172,7 +172,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+ /*
+  * inode.c
+  */
+-struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++struct inode *sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd);
+ void sysfs_delete_inode(struct inode *inode);
+ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
+ int sysfs_permission(struct inode *inode, int mask);
+-- 
+1.7.0.1
 
