@@ -1,77 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840Ab0CBIZO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:25:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51746 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504Ab0CBIZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:25:11 -0500
-Date: Tue, 2 Mar 2010 08:24:35 GMT
-From: tip-bot for john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, aaro.koskinen@iki.fi,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, aaro.koskinen@iki.fi,
-       tglx@linutronix.de
-In-Reply-To: <1267475683.4216.61.camel@localhost.localdomain>
-References: <1267475683.4216.61.camel@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] timekeeping: Prevent oops when GENERIC_TIME=n
-Message-ID: <tip-ad6759fbf35d104dbf573cd6f4c6784ad6823f7e@git.kernel.org>
-Git-Commit-ID: ad6759fbf35d104dbf573cd6f4c6784ad6823f7e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 08:24:36 +0000 (UTC)
+	id S1753852Ab0CBI1E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:27:04 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50002 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753829Ab0CBI1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:27:00 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 2 Mar 2010 17:23:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-Id: <20100302172316.b959b04c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100302080056.GA1548@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	<1267478620-5276-4-git-send-email-arighi@develer.com>
+	<20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302080056.GA1548@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ad6759fbf35d104dbf573cd6f4c6784ad6823f7e
-Gitweb:     http://git.kernel.org/tip/ad6759fbf35d104dbf573cd6f4c6784ad6823f7e
-Author:     john stultz <johnstul@us.ibm.com>
-AuthorDate: Mon, 1 Mar 2010 12:34:43 -0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 2 Mar 2010 09:22:25 +0100
+On Tue, 2 Mar 2010 09:01:58 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
-timekeeping: Prevent oops when GENERIC_TIME=n
+> On Tue, Mar 02, 2010 at 09:23:09AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Mon,  1 Mar 2010 22:23:40 +0100
+> > Andrea Righi <arighi@develer.com> wrote:
+> > 
+> > > Apply the cgroup dirty pages accounting and limiting infrastructure to
+> > > the opportune kernel functions.
+> > > 
+> > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > 
+> > Seems nice.
+> > 
+> > Hmm. the last problem is moving account between memcg.
+> > 
+> > Right ?
+> 
+> Correct. This was actually the last item of the TODO list. Anyway, I'm
+> still considering if it's correct to move dirty pages when a task is
+> migrated from a cgroup to another. Currently, dirty pages just remain in
+> the original cgroup and are flushed depending on the original cgroup
+> settings. That is not totally wrong... at least moving the dirty pages
+> between memcgs should be optional (move_charge_at_immigrate?).
+> 
 
-Aaro Koskinen reported an issue in kernel.org bugzilla #15366, where
-on non-GENERIC_TIME systems, accessing
-/sys/devices/system/clocksource/clocksource0/current_clocksource
-results in an oops.
+My concern is 
+ - migration between memcg is already suppoted
+    - at task move
+    - at rmdir
 
-It seems the timekeeper/clocksource rework missed initializing the
-curr_clocksource value in the !GENERIC_TIME case.
+Then, if you leave DIRTY_PAGE accounting to original cgroup,
+the new cgroup (migration target)'s Dirty page accounting may
+goes to be negative, or incorrect value. Please check FILE_MAPPED
+implementation in __mem_cgroup_move_account()
 
-Thanks to Aaro for reporting and diagnosing the issue as well as
-testing the fix!
+As
+       if (page_mapped(page) && !PageAnon(page)) {
+                /* Update mapped_file data for mem_cgroup */
+                preempt_disable();
+                __this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+                __this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+                preempt_enable();
+        }
+then, FILE_MAPPED never goes negative.
 
-Reported-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: stable@kernel.org
-LKML-Reference: <1267475683.4216.61.camel@localhost.localdomain>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
----
- kernel/time/clocksource.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Thanks,
+-Kame
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 1f663d2..1f5dde6 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -592,6 +592,10 @@ static inline void clocksource_select(void) { }
-  */
- static int __init clocksource_done_booting(void)
- {
-+	mutex_lock(&clocksource_mutex);
-+	curr_clocksource = clocksource_default_clock();
-+	mutex_unlock(&clocksource_mutex);
-+
- 	finished_booting = 1;
- 
- 	/*
+> Thanks for your ack and the detailed review!
+> 
+> -Andrea
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
