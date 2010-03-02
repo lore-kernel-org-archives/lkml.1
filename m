@@ -1,62 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975Ab0CBMZk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 07:25:40 -0500
-Received: from sh.osrg.net ([192.16.179.4]:55502 "EHLO sh.osrg.net"
+	id S1752938Ab0CBMhX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 07:37:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45627 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518Ab0CBMZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 07:25:39 -0500
-Date: Tue, 2 Mar 2010 21:25:29 +0900
-To: arnd@arndb.de
-Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparc: use asm-generic/scatterlist.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <201003021303.26064.arnd@arndb.de>
-References: <201003011229.51399.arnd@arndb.de>
-	<20100302123326H.fujita.tomonori@lab.ntt.co.jp>
-	<201003021303.26064.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100302212513N.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 02 Mar 2010 21:25:30 +0900 (JST)
+	id S1752693Ab0CBMhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 07:37:21 -0500
+Date: Tue, 2 Mar 2010 23:37:11 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch] RFC directio: partial writes support
+Message-ID: <20100302123711.GJ8653@laptop>
+References: <87iq9lxz3t.fsf@openvz.org>
+ <20100301152149.7ce78e14.akpm@linux-foundation.org>
+ <20100302092502.GD8653@laptop>
+ <20100302113406.GA4763@quack.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302113406.GA4763@quack.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 13:03:25 +0100
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> On Tuesday 02 March 2010, FUJITA Tomonori wrote:
-> > If we go with such approach, then we could use something like the
-> > following. There are only two kinds of scatterlist definitions (use
-> > dma_length or not) so we can cover all the architectures.
+On Tue, Mar 02, 2010 at 12:34:06PM +0100, Jan Kara wrote:
+> On Tue 02-03-10 20:25:02, Nick Piggin wrote:
+> > On Mon, Mar 01, 2010 at 03:21:49PM -0800, Andrew Morton wrote:
+> > > On Thu, 25 Feb 2010 15:45:58 +0300
+> > > Dmitry Monakhov <dmonakhov@openvz.org> wrote:
+> > > 
+> > > > Can someone please describe me why directio deny partial writes.
+> > > > For example if someone try to write 100Mb but file system has less
+> > > > data it return ENOSPC in the middle of block allocation.
+> > > > All allocated blocks will be truncated (it may be 100Mb -4k) end
+> > > > ENOSPC will be returned. As far as i remember direct_io always act
+> > > > like this, but i never asked why?
+> > > > Why do we have to give up all the progress we made?
+> > > > In fact partial writes are possible in case of holes, when we 
+> > > > fall back to buffered write. XFS implemented partial writes.
+> > > 
+> > > The problem with direct-io writes is that the writes don't necessarily
+> > > complete in file-offset-ascending order.  So if we've issued 50 write
+> > > BIOs and then hit an EIO on a BIO then we could have a hunk of
+> > > unwritten data with newly-writted data either side of it.  If we get a
+> > > bunch of discontiguous EIO BIOs coming in then the problem gets even
+> > > messier - we have a span of disk which has a random mix of
+> > > correctly-written and not-correctly-written runs of sectors.  What do
+> > > we do with that?
 > > 
-> > diff --git a/include/asm-generic/scatterlist.h b/include/asm-generic/scatterlist.h
-> > index 8b94544..1bf620d 100644
-> > --- a/include/asm-generic/scatterlist.h
-> > +++ b/include/asm-generic/scatterlist.h
-> > @@ -11,7 +11,9 @@ struct scatterlist {
-> >         unsigned int    offset;
-> >         unsigned int    length;
-> >         dma_addr_t      dma_address;
-> > +#ifdef CONFIG_NEED_SG_DMA_LENGTH
-> >         unsigned int    dma_length;
-> > +#endif
-> >  };
-> 
-> Yes, that sounds good. If the only reason to need dma_length is virtual merging,
-> a clearer (from the Kconfig perspective, not from the implementation) name 
-> might be CONFIG_HAVE_IOMMU_VMERGE, similar to the CONFIG_IOMMU_VMERGE option
-> on PPC64 that determines the default for the virtual merging runtime option.
+> > Hmm, what if we're filling in a hole with direct IO? I don't see where
+> > blocks allocated in DIO code will be trimmed on a failed write (because
+> > it's within isize). This could cause uninitalized data of the block to
+> > leak couldn't it?
+>   The trick is that blockdev_direct_IO is defined to pass
+> DIO_SKIP_HOLES to __blockdev_direct_IO. Thus e.g. ext2 or ext3 will just
+> fail the direct IO if there is a hole and we fall back to buffered IO
+> which should handle that just fine.
 
-Yeah, but IIRC, Alpha, x86_64 GART, parisc, and IA64 don't have
-CONFIG_ option for IOMMU virtual merging. I prefer to avoid to adding
-something like CONFIG_HAVE_IOMMU_VMERGE for them. If we add
-CONFIG_HAVE_IOMMU_VMERGE to them, it's a bit strange not to add the
-feature to disable virtual merging for them (I guess GART already has
-the feature though).
+OK yes I see, I missed that.
 
-Actually, I want to use dma_length on all the architectures (if nobody
-complains).
+
