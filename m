@@ -1,58 +1,151 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147Ab0CBAId (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 19:08:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11938 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096Ab0CBAIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 19:08:30 -0500
-Message-ID: <4B8C56F8.70503@redhat.com>
-Date: Mon, 01 Mar 2010 18:08:24 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S1753082Ab0CBAJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 19:09:22 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:26716 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340Ab0CBAJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 19:09:21 -0500
+Message-ID: <4B8C56FF.6030509@oracle.com>
+Date: Mon, 01 Mar 2010 16:08:31 -0800
+From: Sunil Mushran <sunil.mushran@oracle.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
-References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
-In-Reply-To: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joel Becker <joel.becker@oracle.com>
+CC: ocfs2-devel@oss.oracle.com, mfasheh@suse.com, linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 11/11] ocfs2_dlmfs: Enable the use of user
+ cluster stacks.
+References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com> <1265794074-19539-12-git-send-email-joel.becker@oracle.com>
+In-Reply-To: <1265794074-19539-12-git-send-email-joel.becker@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B8C572C.001C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Hello,
-> 
-> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
-> I see about half the performance as XFS for sequential writes.
-> 
-> I have checked the doc and tried several options, a few of which are shown
-> below (I have also tried the commit/journal_async/etc options but none
-> of them get the write speeds anywhere near XFS)?
-> 
-> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2
-> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
-> 
-> When it was XFS I used to get 400-600MiB/s for writes for the same RAID
-> volume.
-> 
-> How do I 'speed' up ext4?  Is it possible?
-> 
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
 
-FWIW I'm seeing similar things on fast storage (Fusion IO),
-though this is under 2.6.31.  500MB/s+ for xfs, 300 for ext4.
 
-Overwriting an existing file is no faster.   I don't think this
-driver is blktraceable but I'll try a newer driver that should be I think.
+Joel Becker wrote:
+> Unlike ocfs2, dlmfs has no permanent storage.  It can't store off a
+> cluster stack it is supposed to be using.  So it can't specify the stack
+> name in ocfs2_cluster_connect().
+>
+> Instead, we create ocfs2_cluster_connect_agnostic(), which simply uses
+> the stack that is currently enabled.  This is find for dlmfs, which will
+> rely on the stack initialization.
+>
+> We add the "stackglue" capability to dlmfs's capability list.  This lets
+> userspace know dlmfs can be used with all cluster stacks.
+>
+> Signed-off-by: Joel Becker <joel.becker@oracle.com>
+> ---
+>  fs/ocfs2/dlmfs/dlmfs.c      |    2 +-
+>  fs/ocfs2/dlmfs/userdlm.c    |    8 ++++----
+>  fs/ocfs2/ocfs2_lockingver.h |    2 ++
+>  fs/ocfs2/stackglue.c        |   18 ++++++++++++++++++
+>  fs/ocfs2/stackglue.h        |   11 +++++++++++
+>  5 files changed, 36 insertions(+), 5 deletions(-)
+>
+> diff --git a/fs/ocfs2/dlmfs/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
+> index 8697366..1b0de15 100644
+> --- a/fs/ocfs2/dlmfs/dlmfs.c
+> +++ b/fs/ocfs2/dlmfs/dlmfs.c
+> @@ -87,7 +87,7 @@ struct workqueue_struct *user_dlm_worker;
+>   * - bast	: POLLIN against the file descriptor of a held lock
+>   *		  signifies a bast fired on the lock.
+>   */
+> -#define DLMFS_CAPABILITIES "bast"
+> +#define DLMFS_CAPABILITIES "bast stackglue"
+>  extern int param_set_dlmfs_capabilities(const char *val,
+>  					struct kernel_param *kp)
+>  {
+> diff --git a/fs/ocfs2/dlmfs/userdlm.c b/fs/ocfs2/dlmfs/userdlm.c
+> index c1b6a56..2858ee6 100644
+> --- a/fs/ocfs2/dlmfs/userdlm.c
+> +++ b/fs/ocfs2/dlmfs/userdlm.c
+> @@ -666,10 +666,10 @@ struct ocfs2_cluster_connection *user_dlm_register(struct qstr *name)
+>  	int rc;
+>  	struct ocfs2_cluster_connection *conn;
+>  
+> -	rc = ocfs2_cluster_connect("o2cb", name->name, name->len,
+> -				   &user_dlm_lproto,
+> -				   user_dlm_recovery_handler_noop,
+> -				   NULL, &conn);
+> +	rc = ocfs2_cluster_connect_agnostic(name->name, name->len,
+> +					    &user_dlm_lproto,
+> +					    user_dlm_recovery_handler_noop,
+> +					    NULL, &conn);
+>  	if (rc)
+>  		mlog_errno(rc);
+>  
+> diff --git a/fs/ocfs2/ocfs2_lockingver.h b/fs/ocfs2/ocfs2_lockingver.h
+> index 82d5eea..2e45c8d 100644
+> --- a/fs/ocfs2/ocfs2_lockingver.h
+> +++ b/fs/ocfs2/ocfs2_lockingver.h
+> @@ -23,6 +23,8 @@
+>  /*
+>   * The protocol version for ocfs2 cluster locking.  See dlmglue.c for
+>   * more details.
+> + *
+> + * 1.0 - Initial locking version from ocfs2 1.4.
+>   */
+>  #define OCFS2_LOCKING_PROTOCOL_MAJOR 1
+>  #define OCFS2_LOCKING_PROTOCOL_MINOR 0
+> diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+> index 31db2e8..39abf89 100644
+> --- a/fs/ocfs2/stackglue.c
+> +++ b/fs/ocfs2/stackglue.c
+> @@ -373,6 +373,24 @@ out:
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_cluster_connect);
+>  
+> +/* The caller will ensure all nodes have the same cluster stack */
+> +int ocfs2_cluster_connect_agnostic(const char *group,
+> +				   int grouplen,
+> +				   struct ocfs2_locking_protocol *lproto,
+> +				   void (*recovery_handler)(int node_num,
+> +							    void *recovery_data),
+> +				   void *recovery_data,
+> +				   struct ocfs2_cluster_connection **conn)
+> +{
+> +	char *stack_name = NULL;
+> +
+> +	if (cluster_stack_name[0])
+> +		stack_name = cluster_stack_name;
+> +	return ocfs2_cluster_connect(stack_name, group, grouplen, lproto,
+> +				     recovery_handler, recovery_data, conn);
+> +}
+> +EXPORT_SYMBOL_GPL(ocfs2_cluster_connect_agnostic);
+> +
+>  /* If hangup_pending is 0, the stack driver will be dropped */
+>  int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
+>  			     int hangup_pending)
+> diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+> index b1981ba..8ce7398 100644
+> --- a/fs/ocfs2/stackglue.h
+> +++ b/fs/ocfs2/stackglue.h
+> @@ -246,6 +246,17 @@ int ocfs2_cluster_connect(const char *stack_name,
+>  						   void *recovery_data),
+>  			  void *recovery_data,
+>  			  struct ocfs2_cluster_connection **conn);
+> +/*
+> + * Used by callers that don't store their stack name.  They must ensure
+> + * all nodes have the same stack.
+> + */
+> +int ocfs2_cluster_connect_agnostic(const char *group,
+> +				   int grouplen,
+> +				   struct ocfs2_locking_protocol *lproto,
+> +				   void (*recovery_handler)(int node_num,
+> +							    void *recovery_data),
+> +				   void *recovery_data,
+> +				   struct ocfs2_cluster_connection **conn);
+>  int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
+>  			     int hangup_pending);
+>  void ocfs2_cluster_hangup(const char *group, int grouplen);
+>   
 
-(xfs's overwrite went from 534 to 597 mb/s; ext4 sat at 320-ish)
-
-direct IO was good for both xfs & ext4 at around 530mb/s
-
-I'll see if I can get this running on a more recent kernel to
-do further investigation.
-
--Eric
