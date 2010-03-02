@@ -1,46 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974Ab0CBPUO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:20:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48217 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907Ab0CBPUM (ORCPT
+	id S1754031Ab0CBPUn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:20:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:25493 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907Ab0CBPUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:20:12 -0500
-Message-ID: <4B8D2CA8.80505@infradead.org>
-Date: Tue, 02 Mar 2010 12:20:08 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 2 Mar 2010 10:20:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=roJT+25qGCm8YtB4klvJgHnZdeLX9cKNHctGQiIKeJ+UiZVQEESMjESVK/KRzefm16
+         N571j7M7CkbbVD19psKDIz+f8Udyg5hJWMerXieqrGQmdKoOg08ryX1JHXBpEeuuBexS
+         ZVnssfZlROQlTWwOfraIdHNSFO0kV1CUu4Sso=
 MIME-Version: 1.0
-To: david woodhouse <dwmw2@infradead.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL - RESEND] Firmwares for Sensoray s2255 driver
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20100228204506.GQ30031@ZenIV.linux.org.uk>
+References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
+	 <1267289508-31031-67-git-send-email-andrea.gelmini@gelma.net>
+	 <20100227221310.GA5455@localhost.localdomain>
+	 <9cdbb57f1002280606j6d6ca697k21f42cff87d685de@mail.gmail.com>
+	 <20100228204506.GQ30031@ZenIV.linux.org.uk>
+Date: Tue, 2 Mar 2010 16:20:39 +0100
+X-Google-Sender-Auth: 17708edeae1bbd77
+Message-ID: <9cdbb57f1003020720i15eec6bcg56ecb15c0e17e1e5@mail.gmail.com>
+Subject: Re: [uml-devel] [PATCH 66/66] arch/um/sys-x86_64/shared/sysdep/skas_ptrace.h: 
+	Checkpatch cleanup
+From: Andrea Gelmini <andrea.gelmini@gelma.net>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       user-mode-linux-user@lists.sourceforge.net,
+       user-mode-linux-devel@lists.sourceforge.net, gregkh@suse.de
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit c024a251e1dd1a39de610bbdc2af65b36e42637d:
-  David Woodhouse (1):
-        Merge from fixed from-kernel tree to fix Matrox firmware binaries
+2010/2/28 Al Viro <viro@zeniv.linux.org.uk>:
+Hi Viro,
+    thanks a lot for your reply.
 
-are available in the git repository at:
+> Note to gregkh: the next time you give a talk like that, consider including
+> "spamming l-k with sixty-odd solitaire sessions^W^Wwhitespace-removal patches
+> can lead to considerable annoyance"...
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-firmware.git master
+   As you can see in the video, Greg talked about - just and only -
+Staging Drivers.
 
-Mauro Carvalho Chehab (2):
-      Firmware for Sensoray s2255 webcam drivers
-      Additional firmwares for Sensoray s2255 webcam drivers
+   It's all my fault if someone is bored with my patches.
 
- WHENCE          |   14 ++++++++++++++
- f2255usb.bin    |  Bin 0 -> 180760 bytes
- s2250.fw        |  Bin 0 -> 9508 bytes
- s2250_loader.fw |  Bin 0 -> 1092 bytes
- 4 files changed, 14 insertions(+), 0 deletions(-)
- create mode 100644 f2255usb.bin
- create mode 100644 s2250.fw
- create mode 100644 s2250_loader.fw
+Thanks a lot for your work,
+Andrea
