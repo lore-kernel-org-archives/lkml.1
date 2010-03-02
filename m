@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650Ab0CBXbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:31:35 -0500
-Received: from kroah.org ([198.145.64.141]:38746 "EHLO coco.kroah.org"
+	id S1754652Ab0CBXcA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:32:00 -0500
+Received: from kroah.org ([198.145.64.141]:38741 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754539Ab0CBX3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:52 -0500
+	id S1754529Ab0CBX3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:51 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Lee, Chun-Yi" <jlee@novell.com>,
        Lennart Poettering <mzxreary@0pointer.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 59/62] msi-laptop: Add resume method for set the SCM load again
-Date: Tue,  2 Mar 2010 15:28:58 -0800
-Message-Id: <1267572541-410-59-git-send-email-gregkh@suse.de>
+Subject: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that is need load SCM
+Date: Tue,  2 Mar 2010 15:28:57 -0800
+Message-Id: <1267572541-410-58-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
@@ -23,54 +23,291 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Lee, Chun-Yi <jlee@novell.com>
 
-Implement the resume method for set the load SCM flag after system reusme.
-Without this patch, the wifi function key on SCM model will back to BIOS
-control mode then confuse with the userland software control.
-e.g. MSI N034
+Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
+those netbook will load the SCM (windows app) to disable the original
+Wlan/Bluetooth control by BIOS when user press fn key, then control
+Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
+cann't on/off 3G module on those 3G netbook.
+On Linux, msi-laptop driver will do the same thing to disable the
+original BIOS control, then might need use HAL or other userland
+application to do the software control that simulate with SCM.
+e.g. MSI N034 netbook
 
 Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
 Cc: Lennart Poettering <mzxreary@0pointer.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/platform/x86/msi-laptop.c |   26 +++++++++++++++++++++++++-
- 1 files changed, 25 insertions(+), 1 deletions(-)
+ drivers/platform/x86/msi-laptop.c |  238 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 238 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/platform/x86/msi-laptop.c b/drivers/platform/x86/msi-laptop.c
-index ff21d1a..af1b62f 100644
+index 1784d55..ff21d1a 100644
 --- a/drivers/platform/x86/msi-laptop.c
 +++ b/drivers/platform/x86/msi-laptop.c
-@@ -77,6 +77,8 @@
- #define MSI_STANDARD_EC_SCM_LOAD_ADDRESS	0x2d
- #define MSI_STANDARD_EC_SCM_LOAD_MASK		(1 << 0)
+@@ -58,6 +58,7 @@
+ #include <linux/dmi.h>
+ #include <linux/backlight.h>
+ #include <linux/platform_device.h>
++#include <linux/rfkill.h>
  
-+static int msi_laptop_resume(struct platform_device *device);
+ #define MSI_DRIVER_VERSION "0.5"
+ 
+@@ -72,6 +73,10 @@
+ #define MSI_STANDARD_EC_WLAN_MASK	(1 << 3)
+ #define MSI_STANDARD_EC_3G_MASK		(1 << 4)
+ 
++/* For set SCM load flag to disable BIOS fn key */
++#define MSI_STANDARD_EC_SCM_LOAD_ADDRESS	0x2d
++#define MSI_STANDARD_EC_SCM_LOAD_MASK		(1 << 0)
 +
  static int force;
  module_param(force, bool, 0);
  MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
-@@ -395,7 +397,8 @@ static struct platform_driver msipf_driver = {
- 	.driver = {
- 		.name = "msi-laptop-pf",
- 		.owner = THIS_MODULE,
--	}
-+	},
-+	.resume = msi_laptop_resume,
- };
+@@ -83,6 +88,19 @@ MODULE_PARM_DESC(auto_brightness, "Enable automatic brightness control (0: disab
+ static bool old_ec_model;
+ static int wlan_s, bluetooth_s, threeg_s;
  
- static struct platform_device *msipf_device;
-@@ -584,6 +587,27 @@ err_bluetooth:
- 	return retval;
++/* Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
++ * those netbook will load the SCM (windows app) to disable the original
++ * Wlan/Bluetooth control by BIOS when user press fn key, then control
++ * Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
++ * cann't on/off 3G module on those 3G netbook.
++ * On Linux, msi-laptop driver will do the same thing to disable the
++ * original BIOS control, then might need use HAL or other userland
++ * application to do the software control that simulate with SCM.
++ * e.g. MSI N034 netbook
++ */
++static bool load_scm_model;
++static struct rfkill *rfk_wlan, *rfk_bluetooth, *rfk_threeg;
++
+ /* Hardware access */
+ 
+ static int set_lcd_level(int level)
+@@ -139,6 +157,35 @@ static int set_auto_brightness(int enable)
+ 	return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 2, NULL, 0, 1);
  }
  
-+static int msi_laptop_resume(struct platform_device *device)
++static ssize_t set_device_state(const char *buf, size_t count, u8 mask)
++{
++	int status;
++	u8 wdata = 0, rdata;
++	int result;
++
++	if (sscanf(buf, "%i", &status) != 1 || (status < 0 || status > 1))
++		return -EINVAL;
++
++	/* read current device state */
++	result = ec_read(MSI_STANDARD_EC_COMMAND_ADDRESS, &rdata);
++	if (result < 0)
++		return -EINVAL;
++
++	if (!!(rdata & mask) != status) {
++		/* reverse device bit */
++		if (rdata & mask)
++			wdata = rdata & ~mask;
++		else
++			wdata = rdata | mask;
++
++		result = ec_write(MSI_STANDARD_EC_COMMAND_ADDRESS, wdata);
++		if (result < 0)
++			return -EINVAL;
++	}
++
++	return count;
++}
++
+ static int get_wireless_state(int *wlan, int *bluetooth)
+ {
+ 	u8 wdata = 0, rdata;
+@@ -215,6 +262,12 @@ static ssize_t show_wlan(struct device *dev,
+ 	return sprintf(buf, "%i\n", enabled);
+ }
+ 
++static ssize_t store_wlan(struct device *dev,
++	struct device_attribute *attr, const char *buf, size_t count)
++{
++	return set_device_state(buf, count, MSI_STANDARD_EC_WLAN_MASK);
++}
++
+ static ssize_t show_bluetooth(struct device *dev,
+ 	struct device_attribute *attr, char *buf)
+ {
+@@ -233,6 +286,12 @@ static ssize_t show_bluetooth(struct device *dev,
+ 	return sprintf(buf, "%i\n", enabled);
+ }
+ 
++static ssize_t store_bluetooth(struct device *dev,
++	struct device_attribute *attr, const char *buf, size_t count)
++{
++	return set_device_state(buf, count, MSI_STANDARD_EC_BLUETOOTH_MASK);
++}
++
+ static ssize_t show_threeg(struct device *dev,
+ 	struct device_attribute *attr, char *buf)
+ {
+@@ -250,6 +309,12 @@ static ssize_t show_threeg(struct device *dev,
+ 	return sprintf(buf, "%i\n", threeg_s);
+ }
+ 
++static ssize_t store_threeg(struct device *dev,
++	struct device_attribute *attr, const char *buf, size_t count)
++{
++	return set_device_state(buf, count, MSI_STANDARD_EC_3G_MASK);
++}
++
+ static ssize_t show_lcd_level(struct device *dev,
+ 	struct device_attribute *attr, char *buf)
+ {
+@@ -387,6 +452,169 @@ static struct dmi_system_id __initdata msi_dmi_table[] = {
+ 	{ }
+ };
+ 
++static struct dmi_system_id __initdata msi_load_scm_models_dmi_table[] = {
++	{
++		.ident = "MSI N034",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR,
++				"MICRO-STAR INTERNATIONAL CO., LTD"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MS-N034"),
++			DMI_MATCH(DMI_CHASSIS_VENDOR,
++			"MICRO-STAR INTERNATIONAL CO., LTD")
++		},
++		.callback = dmi_check_cb
++	},
++	{ }
++};
++
++static int rfkill_bluetooth_set(void *data, bool blocked)
++{
++	/* Do something with blocked...*/
++	/*
++	 * blocked == false is on
++	 * blocked == true is off
++	 */
++	if (blocked)
++		set_device_state("0", 0, MSI_STANDARD_EC_BLUETOOTH_MASK);
++	else
++		set_device_state("1", 0, MSI_STANDARD_EC_BLUETOOTH_MASK);
++
++	return 0;
++}
++
++static int rfkill_wlan_set(void *data, bool blocked)
++{
++	if (blocked)
++		set_device_state("0", 0, MSI_STANDARD_EC_WLAN_MASK);
++	else
++		set_device_state("1", 0, MSI_STANDARD_EC_WLAN_MASK);
++
++	return 0;
++}
++
++static int rfkill_threeg_set(void *data, bool blocked)
++{
++	if (blocked)
++		set_device_state("0", 0, MSI_STANDARD_EC_3G_MASK);
++	else
++		set_device_state("1", 0, MSI_STANDARD_EC_3G_MASK);
++
++	return 0;
++}
++
++static struct rfkill_ops rfkill_bluetooth_ops = {
++	.set_block = rfkill_bluetooth_set
++};
++
++static struct rfkill_ops rfkill_wlan_ops = {
++	.set_block = rfkill_wlan_set
++};
++
++static struct rfkill_ops rfkill_threeg_ops = {
++	.set_block = rfkill_threeg_set
++};
++
++static void rfkill_cleanup(void)
++{
++	if (rfk_bluetooth) {
++		rfkill_unregister(rfk_bluetooth);
++		rfkill_destroy(rfk_bluetooth);
++	}
++
++	if (rfk_threeg) {
++		rfkill_unregister(rfk_threeg);
++		rfkill_destroy(rfk_threeg);
++	}
++
++	if (rfk_wlan) {
++		rfkill_unregister(rfk_wlan);
++		rfkill_destroy(rfk_wlan);
++	}
++}
++
++static int rfkill_init(struct platform_device *sdev)
++{
++	/* add rfkill */
++	int retval;
++
++	rfk_bluetooth = rfkill_alloc("msi-bluetooth", &sdev->dev,
++				RFKILL_TYPE_BLUETOOTH,
++				&rfkill_bluetooth_ops, NULL);
++	if (!rfk_bluetooth) {
++		retval = -ENOMEM;
++		goto err_bluetooth;
++	}
++	retval = rfkill_register(rfk_bluetooth);
++	if (retval)
++		goto err_bluetooth;
++
++	rfk_wlan = rfkill_alloc("msi-wlan", &sdev->dev, RFKILL_TYPE_WLAN,
++				&rfkill_wlan_ops, NULL);
++	if (!rfk_wlan) {
++		retval = -ENOMEM;
++		goto err_wlan;
++	}
++	retval = rfkill_register(rfk_wlan);
++	if (retval)
++		goto err_wlan;
++
++	rfk_threeg = rfkill_alloc("msi-threeg", &sdev->dev, RFKILL_TYPE_WWAN,
++				&rfkill_threeg_ops, NULL);
++	if (!rfk_threeg) {
++		retval = -ENOMEM;
++		goto err_threeg;
++	}
++	retval = rfkill_register(rfk_threeg);
++	if (retval)
++		goto err_threeg;
++
++	return 0;
++
++err_threeg:
++	rfkill_destroy(rfk_threeg);
++	if (rfk_wlan)
++		rfkill_unregister(rfk_wlan);
++err_wlan:
++	rfkill_destroy(rfk_wlan);
++	if (rfk_bluetooth)
++		rfkill_unregister(rfk_bluetooth);
++err_bluetooth:
++	rfkill_destroy(rfk_bluetooth);
++
++	return retval;
++}
++
++static int load_scm_model_init(struct platform_device *sdev)
 +{
 +	u8 data;
 +	int result;
 +
-+	if (!load_scm_model)
-+		return 0;
++	/* allow userland write sysfs file  */
++	dev_attr_bluetooth.store = store_bluetooth;
++	dev_attr_wlan.store = store_wlan;
++	dev_attr_threeg.store = store_threeg;
++	dev_attr_bluetooth.attr.mode |= S_IWUSR;
++	dev_attr_wlan.attr.mode |= S_IWUSR;
++	dev_attr_threeg.attr.mode |= S_IWUSR;
 +
-+	/* set load SCM to disable hardware control by fn key */
++	/* disable hardware control by fn key */
 +	result = ec_read(MSI_STANDARD_EC_SCM_LOAD_ADDRESS, &data);
 +	if (result < 0)
 +		return result;
@@ -80,12 +317,48 @@ index ff21d1a..af1b62f 100644
 +	if (result < 0)
 +		return result;
 +
++	/* initial rfkill */
++	result = rfkill_init(sdev);
++	if (result < 0)
++		return result;
++
 +	return 0;
 +}
 +
- static int load_scm_model_init(struct platform_device *sdev)
+ static int __init msi_init(void)
  {
- 	u8 data;
+ 	int ret;
+@@ -397,6 +625,9 @@ static int __init msi_init(void)
+ 	if (force || dmi_check_system(msi_dmi_table))
+ 		old_ec_model = 1;
+ 
++	if (!old_ec_model && dmi_check_system(msi_load_scm_models_dmi_table))
++		load_scm_model = 1;
++
+ 	if (auto_brightness < 0 || auto_brightness > 2)
+ 		return -EINVAL;
+ 
+@@ -429,6 +660,11 @@ static int __init msi_init(void)
+ 	if (ret)
+ 		goto fail_platform_device1;
+ 
++	if (load_scm_model && (load_scm_model_init(msipf_device) < 0)) {
++		ret = -EINVAL;
++		goto fail_platform_device1;
++	}
++
+ 	ret = sysfs_create_group(&msipf_device->dev.kobj, &msipf_attribute_group);
+ 	if (ret)
+ 		goto fail_platform_device2;
+@@ -479,6 +715,8 @@ static void __exit msi_cleanup(void)
+ 	platform_driver_unregister(&msipf_driver);
+ 	backlight_device_unregister(msibl_device);
+ 
++	rfkill_cleanup();
++
+ 	/* Enable automatic brightness control again */
+ 	if (auto_brightness != 2)
+ 		set_auto_brightness(1);
 -- 
 1.7.0.1
 
