@@ -1,91 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044Ab0CBAIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 19:08:23 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:48030 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559Ab0CBAIW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 19:08:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=sMOxRDoxeX/8b5tP5vrKSmbZvDT0XIbNjTsW4fYlha7FfmzmNJVgSqylMTwIDtfr/R
-         VNYXzuhkFs0e2WAIm9+MFWAIJCE5qWOW5kiih6G1gYJndHpuabs1i7/7LbBKDC7LazHI
-         15i7FS1QRkk2QVqWeBguG2IBm5A7lDwXiRny0=
-Message-ID: <4B8C56F0.5090700@gmail.com>
-Date: Tue, 02 Mar 2010 02:08:16 +0200
-From: Oleg Kutkov <elenbert@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	id S1753147Ab0CBAId (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 19:08:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11938 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753096Ab0CBAIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 19:08:30 -0500
+Message-ID: <4B8C56F8.70503@redhat.com>
+Date: Mon, 01 Mar 2010 18:08:24 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Notifier chains bug ?
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-I try to used notifier chains for monitoring network devices events.
-All works perfectly when just i'm connecting/disconnecting network cable 
-or up/down interface via ifconfig.
-But when i try to change interface address - nothing happens. Notifier 
-is don't send any events :(
-There is many events in notifier.h:
+Justin Piszcz wrote:
+> Hello,
+> 
+> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
+> I see about half the performance as XFS for sequential writes.
+> 
+> I have checked the doc and tried several options, a few of which are shown
+> below (I have also tried the commit/journal_async/etc options but none
+> of them get the write speeds anywhere near XFS)?
+> 
+> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2
+> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
+> 
+> When it was XFS I used to get 400-600MiB/s for writes for the same RAID
+> volume.
+> 
+> How do I 'speed' up ext4?  Is it possible?
+> 
 
-#define NETDEV_UP                                        0x0001   
-#define NETDEV_DOWN                                 0x0002
-#define NETDEV_REBOOT                              0x0003   
-#define NETDEV_CHANGE                             0x0004 
-#define NETDEV_REGISTER                          0x0005
-#define NETDEV_UNREGISTER                    0x0006
-#define NETDEV_CHANGEMTU                    0x0007
-#define NETDEV_CHANGEADDR                  0x0008
-#define NETDEV_GOING_DOWN                  0x0009
-#define NETDEV_CHANGENAME                 0x000A
-#define NETDEV_FEAT_CHANGE                 0x000B
-#define NETDEV_BONDING_FAILOVER      0x000C
-#define NETDEV_PRE_UP                               0x000D
-#define NETDEV_BONDING_OLDTYPE        0x000E
-#define NETDEV_BONDING_NEWTYPE       0x000F
+FWIW I'm seeing similar things on fast storage (Fusion IO),
+though this is under 2.6.31.  500MB/s+ for xfs, 300 for ext4.
 
-So i receive only NETDEV_UP  and NETDEV_DOWN events.
+Overwriting an existing file is no faster.   I don't think this
+driver is blktraceable but I'll try a newer driver that should be I think.
 
-Part of my code:
+(xfs's overwrite went from 534 to 597 mb/s; ext4 sat at 320-ish)
 
-//event handler
-static int ifEventListener(struct notifier_block *nb, unsigned long 
-event, void *ptr);
+direct IO was good for both xfs & ext4 at around 530mb/s
 
-//set handler
-struct notifier_block nbListener =
-{
-    .notifier_call = ifEventListener
-};
+I'll see if I can get this running on a more recent kernel to
+do further investigation.
 
-//event handler
-static int ifEventListener(struct notifier_block *this, unsigned long 
-event, void *ptr)
-{
-    struct net_device *dev = (struct net_device *) ptr;
-
-    printk(KERN_INFO "eventListener() -- %d event from net_device '%s' 
-(0x%08X)\n", event, dev->name, (unsigned) dev);
- 
-    return 0;
-}
-
-//register handler
-register_netdevice_notifier(&nbListener);
-
-
-
-So, this is a bug in notifier or something wrong with my code ?
-Thank for any help
-
--- 
-Best regards, 
-Oleg
-
+-Eric
