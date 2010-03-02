@@ -1,79 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284Ab0CBN4n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:56:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46748 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075Ab0CBN4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:56:42 -0500
-Date: Tue, 2 Mar 2010 14:56:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] compal-laptop: Make it depend on CONFIG_RFKILL
-Message-ID: <20100302135626.GA18373@elte.hu>
-References: <1267197527-18062-1-git-send-email-mjg@redhat.com>
+	id S1753401Ab0CBN4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:56:48 -0500
+Received: from mail-wy0-f174.google.com ([74.125.82.174]:51690 "EHLO
+	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075Ab0CBN4p convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 08:56:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267197527-18062-1-git-send-email-mjg@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20100302134736.GG3212@balbir.in.ibm.com>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	 <1267478620-5276-4-git-send-email-arighi@develer.com>
+	 <20100302134736.GG3212@balbir.in.ibm.com>
+Date: Tue, 2 Mar 2010 15:56:44 +0200
+Message-ID: <cc557aab1003020556kcb3f790yba5bceaeb75c5a4c@mail.gmail.com>
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrea Righi <arighi@develer.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 2, 2010 at 3:47 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * Andrea Righi <arighi@develer.com> [2010-03-01 22:23:40]:
+>
+>> Apply the cgroup dirty pages accounting and limiting infrastructure to
+>> the opportune kernel functions.
+>>
+>> Signed-off-by: Andrea Righi <arighi@develer.com>
+>> ---
+>>  fs/fuse/file.c      |    5 +++
+>>  fs/nfs/write.c      |    4 ++
+>>  fs/nilfs2/segment.c |   10 +++++-
+>>  mm/filemap.c        |    1 +
+>>  mm/page-writeback.c |   84 ++++++++++++++++++++++++++++++++------------------
+>>  mm/rmap.c           |    4 +-
+>>  mm/truncate.c       |    2 +
+>>  7 files changed, 76 insertions(+), 34 deletions(-)
+>>
+>> diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+>> index a9f5e13..dbbdd53 100644
+>> --- a/fs/fuse/file.c
+>> +++ b/fs/fuse/file.c
+>> @@ -11,6 +11,7 @@
+>>  #include <linux/pagemap.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/kernel.h>
+>> +#include <linux/memcontrol.h>
+>>  #include <linux/sched.h>
+>>  #include <linux/module.h>
+>>
+>> @@ -1129,6 +1130,8 @@ static void fuse_writepage_finish(struct fuse_conn *fc, struct fuse_req *req)
+>>
+>>       list_del(&req->writepages_entry);
+>>       dec_bdi_stat(bdi, BDI_WRITEBACK);
+>> +     mem_cgroup_update_stat(req->pages[0],
+>> +                     MEM_CGROUP_STAT_WRITEBACK_TEMP, -1);
+>>       dec_zone_page_state(req->pages[0], NR_WRITEBACK_TEMP);
+>>       bdi_writeout_inc(bdi);
+>>       wake_up(&fi->page_waitq);
+>> @@ -1240,6 +1243,8 @@ static int fuse_writepage_locked(struct page *page)
+>>       req->inode = inode;
+>>
+>>       inc_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
+>> +     mem_cgroup_update_stat(tmp_page,
+>> +                     MEM_CGROUP_STAT_WRITEBACK_TEMP, 1);
+>>       inc_zone_page_state(tmp_page, NR_WRITEBACK_TEMP);
+>>       end_page_writeback(page);
+>>
+>> diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+>> index b753242..7316f7a 100644
+>> --- a/fs/nfs/write.c
+>> +++ b/fs/nfs/write.c
+>
+> Don't need memcontrol.h to be included here?
 
-Hi,
+It's included in <linux/swap.h>
 
-* Matthew Garrett <mjg@redhat.com> wrote:
-
->       compal-laptop: Add support for known Compal made Dell laptops
->       compal-laptop: Replace sysfs support with rfkill support
-
-FYI, -tip testing found a (relatively rare) build failure introduced by these 
-commits, which occurs with certain .config's - see the fix below. Please 
-apply.
-
-Thanks,
-
-	Ingo
-
---------------------------->
->From a6e5fbf2d4b6e9f78abcc5784f23403aa7972369 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 2 Mar 2010 14:51:16 +0100
-Subject: [PATCH] compal-laptop: Make it depend on CONFIG_RFKILL
-
--tip testing found this build failure (x86 randconfig):
-
- drivers/built-in.o: In function `setup_rfkill':
- compal-laptop.c:(.text+0x36abe8): undefined reference to `rfkill_alloc'
- compal-laptop.c:(.text+0x36abfc): undefined reference to `rfkill_register'
- compal-laptop.c:(.text+0x36ac30): undefined reference to `rfkill_alloc'
- compal-laptop.c:(.text+0x36ac44): undefined reference to `rfkill_register'
-
-Which can happen with CONFIG_COMPAL_LAPTOP=y but COMPAL_LAPTOP=m.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/platform/x86/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 89da3e2..56076ee 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -178,6 +178,7 @@ config COMPAL_LAPTOP
- 	tristate "Compal Laptop Extras"
- 	depends on ACPI
- 	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on RFKILL
- 	---help---
- 	  This is a driver for laptops built by Compal:
- 
+> Looks OK to me overall, but there might be objection using the
+> mem_cgroup_* naming convention, but I don't mind it very much :)
+>
+> --
+>        Three Cheers,
+>        Balbir
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
