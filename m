@@ -1,104 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964Ab0CBWWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:22:55 -0500
-Received: from trinity.develer.com ([83.149.158.210]:35694 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842Ab0CBWWx (ORCPT
+	id S1753904Ab0CBWY1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:24:27 -0500
+Received: from mms2.broadcom.com ([216.31.210.18]:2821 "EHLO mms2.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752067Ab0CBWYZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:22:53 -0500
-Date: Tue, 2 Mar 2010 23:22:48 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-ID: <20100302222248.GD2369@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
- <1267478620-5276-4-git-send-email-arighi@develer.com>
- <20100301220208.GH3109@redhat.com>
- <20100301221830.GA5460@linux>
- <20100302150529.GA12855@redhat.com>
+	Tue, 2 Mar 2010 17:24:25 -0500
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Bruno =?ISO-8859-1?Q?Pr=E9mont?=" <bonbons@linux-vserver.org>
+cc: "Benjamin Li" <benli@broadcom.com>, NetDEV <netdev@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100302092020.52cfcd0e@pluto.restena.lu>
+References: <20091229084929.54912c0c@pluto.restena.lu>
+ <1262077540.12520.4.camel@localhost>
+ <20091229145403.39f82773@pluto.restena.lu>
+ <1262149691.2788.63.camel@localhost>
+ <20100219091034.5fbb0165@pluto.restena.lu>
+ <1266609426.2610.36.camel@dhcp-10-12-137-130.broadcom.com>
+ <20100223131508.4c6cb866@neptune.home>
+ <1267493170.2762.45.camel@dhcp-10-12-137-104.broadcom.com>
+ <20100302081051.3d1b1c53@pluto.restena.lu>
+ <20100302092020.52cfcd0e@pluto.restena.lu>
+Date: Tue, 2 Mar 2010 14:12:06 -0800
+Message-ID: <1267567926.19491.175.camel@nseg_linux_HP1.broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100302150529.GA12855@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 67934F8738O130445452-01-01
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 10:05:29AM -0500, Vivek Goyal wrote:
-> On Mon, Mar 01, 2010 at 11:18:31PM +0100, Andrea Righi wrote:
-> > On Mon, Mar 01, 2010 at 05:02:08PM -0500, Vivek Goyal wrote:
-> > > > @@ -686,10 +699,14 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-> > > >                   */
-> > > >                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
-> > > >  
-> > > > -                if (global_page_state(NR_UNSTABLE_NFS) +
-> > > > -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-> > > > -                        	break;
-> > > > -                congestion_wait(BLK_RW_ASYNC, HZ/10);
-> > > > +
-> > > > +		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
-> > > > +		if (dirty < 0)
-> > > > +			dirty = global_page_state(NR_UNSTABLE_NFS) +
-> > > > +				global_page_state(NR_WRITEBACK);
-> > > 
-> > > dirty is unsigned long. As mentioned last time, above will never be true?
-> > > In general these patches look ok to me. I will do some testing with these.
-> > 
-> > Re-introduced the same bug. My bad. :(
-> > 
-> > The value returned from mem_cgroup_page_stat() can be negative, i.e.
-> > when memory cgroup is disabled. We could simply use a long for dirty,
-> > the unit is in # of pages so s64 should be enough. Or cast dirty to long
-> > only for the check (see below).
-> > 
-> > Thanks!
-> > -Andrea
-> > 
-> > Signed-off-by: Andrea Righi <arighi@develer.com>
-> > ---
-> >  mm/page-writeback.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index d83f41c..dbee976 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -701,7 +701,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-> >  
-> >  
-> >  		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
-> > -		if (dirty < 0)
-> > +		if ((long)dirty < 0)
-> 
-> This will also be problematic as on 32bit systems, your uppper limit of
-> dirty memory will be 2G?
-> 
-> I guess, I will prefer one of the two.
-> 
-> - return the error code from function and pass a pointer to store stats
->   in as function argument.
-> 
-> - Or Peter's suggestion of checking mem_cgroup_has_dirty_limit() and if
->   per cgroup dirty control is enabled, then use per cgroup stats. In that
->   case you don't have to return negative values.
-> 
->   Only tricky part will be careful accouting so that none of the stats go
->   negative in corner cases of migration etc.
 
-What do you think about Peter's suggestion + the locking stuff? (see the
-previous email). Otherwise, I'll choose the other solution, passing a
-pointer and always return the error code is not bad.
+On Tue, 2010-03-02 at 00:20 -0800, Bruno Prémont wrote:
+> [ 3405.422963] ------------[ cut here ]------------
+> [ 3405.428958] WARNING: at /usr/src/linux-2.6.33-rc8-git7/kernel/softirq.c:143 local_bh_enable_ip+0x72/0xa0()
 
-Thanks,
--Andrea
+In normal NAPI mode, we are in softirq context and we correctly use
+spin_lock_bh() and spin_unlock_bh() here.  In netpoll mode, IRQs are
+disabled and so we get a warning from spin_unlock_bh().
+
+> [ 3405.431858] Hardware name: ProLiant DL360 G5
+> [ 3405.431858] Modules linked in: netbomb bnx2 ipmi_devintf loop dm_mod sg sr_mod cdrom ata_piix ahci ipmi_si ipmi_msghandler uhci_hcd qla2xxx libata hpwdt ehci_hcd [last unloaded: bnx2]
+> [ 3405.431858] Pid: 25763, comm: cat Not tainted 2.6.33-rc8-git7-x86_64 #1
+> [ 3405.431858] Call Trace:
+> [ 3405.431858]  [<ffffffff8103f002>] ? local_bh_enable_ip+0x72/0xa0
+> [ 3405.431858]  [<ffffffff81039368>] warn_slowpath_common+0x78/0xd0
+> [ 3405.431858]  [<ffffffff810393cf>] warn_slowpath_null+0xf/0x20
+> [ 3405.431858]  [<ffffffff8103f002>] local_bh_enable_ip+0x72/0xa0
+> [ 3405.431858]  [<ffffffff814002af>] _raw_spin_unlock_bh+0xf/0x20
+> [ 3405.431858]  [<ffffffffa0108ed4>] bnx2_reg_rd_ind+0x44/0x60 [bnx2]
+> [ 3405.431858]  [<ffffffffa0108eff>] bnx2_shmem_rd+0xf/0x20 [bnx2]
+> [ 3405.431858]  [<ffffffffa0113464>] bnx2_poll+0x194/0x228 [bnx2]
+> [ 3405.431858]  [<ffffffff8135c081>] netpoll_poll+0xe1/0x3c0
+> [ 3405.431858]  [<ffffffff8135c518>] netpoll_send_skb+0x118/0x210
+> [ 3405.431858]  [<ffffffff8135c80b>] netpoll_send_udp+0x1fb/0x210
+> [ 3405.431858]  [<ffffffffa00131c5>] write_msg+0x95/0xd0 [netbomb]
+> [ 3405.431858]  [<ffffffffa0013255>] netbomb_write+0x55/0xa4 [netbomb]
+> [ 3405.431858]  [<ffffffff810f6571>] proc_reg_write+0x71/0xb0
+> [ 3405.431858]  [<ffffffff810ab6db>] vfs_write+0xcb/0x180
+> [ 3405.431858]  [<ffffffff810ab880>] sys_write+0x50/0x90
+> [ 3405.431858]  [<ffffffff8102a1a4>] sysenter_dispatch+0x7/0x2b
+> [ 3405.431858] ---[ end trace b4ac1510884bf2bc ]---
+> [ 3411.050005] ------------[ cut here ]------------
+> [ 3411.054851] WARNING: at /usr/src/linux-2.6.33-rc8-git7/net/sched/sch_generic.c:255 dev_watchdog+0x25e/0x270()
+> [ 3411.059546] Hardware name: ProLiant DL360 G5
+> [ 3411.061569] NETDEV WATCHDOG: eth0 (bnx2): transmit queue 0 timed out
+> [ 3411.064582] Modules linked in: netbomb bnx2 ipmi_devintf loop dm_mod sg sr_mod cdrom ata_piix ahci ipmi_si ipmi_msghandler uhci_hcd qla2xxx libata hpwdt ehci_hcd [last unloaded: bnx2]
+> [ 3411.064597] Pid: 0, comm: swapper Tainted: G        W  2.6.33-rc8-git7-x86_64 #1
+> [ 3411.064599] Call Trace:
+
+Do we have timers running in this environment?  The timer in the bnx2
+driver, bnx2_timer(), needs to run to provide a heart beat to the
+firmware.  In netpoll mode without timer interrupts, if we are regularly
+calling the NAPI poll function, it should also be able to provide the
+heartbeat.  Without the heartbeat, the firmware will reset the chip and
+result in the NETDEV WATCHDOG.
+
+> [ 3411.064601]  <IRQ>  [<ffffffff8135f84e>] ? dev_watchdog+0x25e/0x270
+> [ 3411.064609]  [<ffffffff81039368>] warn_slowpath_common+0x78/0xd0
+> [ 3411.064612]  [<ffffffff81039444>] warn_slowpath_fmt+0x64/0x70
+> [ 3411.064616]  [<ffffffff8103486d>] ? default_wake_function+0xd/0x10
+> [ 3411.064620]  [<ffffffff8119f339>] ? strlcpy+0x49/0x60
+> [ 3411.064623]  [<ffffffff81349b33>] ? netdev_drivername+0x43/0x50
+> [ 3411.064626]  [<ffffffff8135f84e>] dev_watchdog+0x25e/0x270
+> [ 3411.064630]  [<ffffffff8104c000>] ? delayed_work_timer_fn+0x0/0x40
+> [ 3411.064633]  [<ffffffff8104bf87>] ? __queue_work+0x77/0x90
+> [ 3411.064636]  [<ffffffff8103558b>] ? scheduler_tick+0x1bb/0x290
+> [ 3411.064639]  [<ffffffff8135f5f0>] ? dev_watchdog+0x0/0x270
+> [ 3411.064642]  [<ffffffff810440fc>] run_timer_softirq+0x13c/0x210
+> [ 3411.064645]  [<ffffffff8105b4b7>] ? clockevents_program_event+0x57/0xa0
+> [ 3411.064649]  [<ffffffff8103edb6>] __do_softirq+0xa6/0x130
+> [ 3411.064652]  [<ffffffff81003bcc>] call_softirq+0x1c/0x30
+> [ 3411.064655]  [<ffffffff81005be5>] do_softirq+0x55/0x90
+> [ 3411.064658]  [<ffffffff8103eb35>] irq_exit+0x75/0x90
+> [ 3411.064661]  [<ffffffff8101aeed>] smp_apic_timer_interrupt+0x6d/0xa0
+> [ 3411.064664]  [<ffffffff81003693>] apic_timer_interrupt+0x13/0x20
+> [ 3411.064666]  <EOI>  [<ffffffff8100b186>] ? mwait_idle+0x66/0x80
+> [ 3411.064670]  [<ffffffff81001f90>] ? enter_idle+0x20/0x30
+> [ 3411.064673]  [<ffffffff81002003>] cpu_idle+0x63/0xb0
+> [ 3411.064676]  [<ffffffff813f2f14>] rest_init+0x74/0x80
+> [ 3411.064680]  [<ffffffff81880c15>] start_kernel+0x2f8/0x336
+> [ 3411.064683]  [<ffffffff8188026d>] x86_64_start_reservations+0x7d/0x84
+> [ 3411.064686]  [<ffffffff81880354>] x86_64_start_kernel+0xe0/0xf2
+> [ 3411.064688] ---[ end trace b4ac1510884bf2bd ]---
+
+
