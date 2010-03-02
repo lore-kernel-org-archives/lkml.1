@@ -1,117 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679Ab0CBOdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 09:33:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43271 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531Ab0CBOdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 09:33:15 -0500
-Date: Tue, 2 Mar 2010 14:30:50 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf, x86: Restrict the ANY flag
-Message-ID: <tip-320ebf09cbb6d01954c9a060266aa8e0d27f4638@git.kernel.org>
-Git-Commit-ID: 320ebf09cbb6d01954c9a060266aa8e0d27f4638
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 14:30:50 +0000 (UTC)
+	id S1753579Ab0CBOdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 09:33:50 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53358 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153Ab0CBOds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 09:33:48 -0500
+X-Authority-Analysis: v=1.0 c=1 a=2G6vFbrScLIA:10 a=7U3hwN5JcxgA:10 a=omOdbC7AAAAA:8 a=rKPCixGL3i7CWmDxaKYA:9 a=VJ1U209am30waqlppFuIRM_tXl4A:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] tracing: fix warning in s_next
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B8CE06A.9090207@cn.fujitsu.com>
+References: <4B8CE06A.9090207@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 02 Mar 2010 09:33:43 -0500
+Message-ID: <1267540423.10871.20.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  320ebf09cbb6d01954c9a060266aa8e0d27f4638
-Gitweb:     http://git.kernel.org/tip/320ebf09cbb6d01954c9a060266aa8e0d27f4638
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Tue, 2 Mar 2010 12:35:37 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 2 Mar 2010 15:06:46 +0100
+On Tue, 2010-03-02 at 17:54 +0800, Lai Jiangshan wrote:
+> This warning in s_next() can be triggered by lseek():
+>  [<c018b3f7>] ? s_next+0x77/0x80
+>  [<c013e3c1>] warn_slowpath_common+0x81/0xa0
+>  [<c018b3f7>] ? s_next+0x77/0x80
+>  [<c013e3fa>] warn_slowpath_null+0x1a/0x20
+>  [<c018b3f7>] s_next+0x77/0x80
+>  [<c01efa77>] traverse+0x117/0x200
+>  [<c01eff13>] seq_lseek+0xa3/0x120
+>  [<c01efe70>] ? seq_lseek+0x0/0x120
+>  [<c01d7081>] vfs_llseek+0x41/0x50
+>  [<c01d8116>] sys_llseek+0x66/0xa0
+>  [<c0102bd0>] sysenter_do_call+0x12/0x26
+> 
+> It is because s_start() calls s_next() without reset leftover.
 
-perf, x86: Restrict the ANY flag
+Applied, Thanks!
 
-The ANY flag can show SMT data of another task (like 'top'),
-so we want to disable it when system-wide profiling is
-disabled.
+-- Steve
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/perf_event.c |    3 +++
- include/linux/perf_event.h       |   15 +++++++++++++++
- kernel/perf_event.c              |   15 ---------------
- 3 files changed, 18 insertions(+), 15 deletions(-)
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 032c57c..5edf410 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -1703,6 +1703,7 @@ static void *s_start(struct seq_file *m, loff_t *pos)
+>  
+>  		ftrace_enable_cpu();
+>  
+> +		iter->leftover = 0;
+>  		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
+>  			;
+>  
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index 6531b4b..aab2e1c 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -503,6 +503,9 @@ static int __hw_perf_event_init(struct perf_event *event)
- 	 */
- 	if (attr->type == PERF_TYPE_RAW) {
- 		hwc->config |= x86_pmu.raw_event(attr->config);
-+		if ((hwc->config & ARCH_PERFMON_EVENTSEL_ANY) &&
-+		    perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
-+			return -EACCES;
- 		return 0;
- 	}
- 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 04f06b4..90e0521 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -857,6 +857,21 @@ extern int sysctl_perf_event_paranoid;
- extern int sysctl_perf_event_mlock;
- extern int sysctl_perf_event_sample_rate;
- 
-+static inline bool perf_paranoid_tracepoint_raw(void)
-+{
-+	return sysctl_perf_event_paranoid > -1;
-+}
-+
-+static inline bool perf_paranoid_cpu(void)
-+{
-+	return sysctl_perf_event_paranoid > 0;
-+}
-+
-+static inline bool perf_paranoid_kernel(void)
-+{
-+	return sysctl_perf_event_paranoid > 1;
-+}
-+
- extern void perf_event_init(void);
- extern void perf_tp_event(int event_id, u64 addr, u64 count, void *record, int entry_size);
- extern void perf_bp_event(struct perf_event *event, void *data);
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index a661e79..482d5e1 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -56,21 +56,6 @@ static atomic_t nr_task_events __read_mostly;
-  */
- int sysctl_perf_event_paranoid __read_mostly = 1;
- 
--static inline bool perf_paranoid_tracepoint_raw(void)
--{
--	return sysctl_perf_event_paranoid > -1;
--}
--
--static inline bool perf_paranoid_cpu(void)
--{
--	return sysctl_perf_event_paranoid > 0;
--}
--
--static inline bool perf_paranoid_kernel(void)
--{
--	return sysctl_perf_event_paranoid > 1;
--}
--
- int sysctl_perf_event_mlock __read_mostly = 512; /* 'free' kb per user */
- 
- /*
+
