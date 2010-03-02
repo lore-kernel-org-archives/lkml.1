@@ -1,63 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326Ab0CBDGO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 22:06:14 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41204 "EHLO smtps.tip.net.au"
+	id S1753353Ab0CBDG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 22:06:27 -0500
+Received: from THUNK.ORG ([69.25.196.29]:49440 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472Ab0CBDGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 22:06:12 -0500
-Date: Tue, 2 Mar 2010 14:06:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Corentin Chary <corentincj@iksaif.net>
-Subject: linux-next: build warning after merge of the acpi tree
-Message-Id: <20100302140606.340170f7.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__2_Mar_2010_14_06_06_+1100_qYAKVAxBKANK6/yf"
+	id S1753333Ab0CBDGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 22:06:24 -0500
+Date: Mon, 1 Mar 2010 22:06:19 -0500
+From: tytso@mit.edu
+To: Michal Schmidt <mschmidt@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] ext4: reduce scheduling latency with delayed allocation
+Message-ID: <20100302030619.GB6077@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Michal Schmidt <mschmidt@redhat.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <20100301133435.141c4bc5@leela>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301133435.141c4bc5@leela>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__2_Mar_2010_14_06_06_+1100_qYAKVAxBKANK6/yf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 01, 2010 at 01:34:35PM +0100, Michal Schmidt wrote:
+> mpage_da_submit_io() may process tens of thousands of pages at a time.
+> Unless full preemption is enabled, it causes scheduling latencies in the order
+> of tens of milliseconds.
+> 
+> It can be reproduced simply by writing a big file on ext4 repeatedly with
+> dd if=/dev/zero of=/tmp/dummy bs=10M count=50
+> 
+> The patch fixes it by allowing to reschedule in the loop.
+> 
+> cyclictest can be used to measure the latency. I tested with:
+> $ cyclictest -t1 -p 80 -n -i 5000 -m -l 20000
+> 
+> The results from an UP AMD Turion 2GHz with voluntary preemption:
+> 
+> Without the patch:
+> T: 0 ( 2535) P:80 I:5000 C:  20000 Min:   12 Act:  23 Avg: 3166 Max:  70524
+> (i.e. Average latency was more than 3 ms. Max observed latency was 71 ms.)
+> 
+> With the patch:
+> T: 0 ( 2588) P:80 I:5000 C:  20000 Min:   13 Act:  33 Avg:   49 Max:  11009
+> (i.e. Average latency was only 49 us. Max observed latency was 11 ms.)
 
-Hi Len,
+Have you tested for any performance regressions as a result of this
+patch, using some file system benchmarks?
 
-After merging the acpi tree, today's linux-next build (x86_64
-allmodconfig) produced this warning:
+I don't think this is the best way to fix this problem, though.  The
+real right answer is to change how the code is structued.  All of the
+callsites that call mpage_da_submit_io() are immediately preceeded by
+mpage_da_map_blocks().  These two functions should be combined and
+instead of calling ext4_writepage() for each page,
+mpage_da_map_and_write_blocks() should make a single call to
+submit_bio() for each extent.  That should far more CPU efficient,
+solving both your scheduling latency issue as well as helping out for
+benchmarks that strive to stress both the disk and CPU simultaneously
+(such as for example the TPC benchmarks).
 
-drivers/platform/x86/asus-laptop.c: In function 'asus_laptop_get_info':
-drivers/platform/x86/asus-laptop.c:1416: warning: passing argument 3 of 'as=
-us_handle_init' from incompatible pointer type
-drivers/platform/x86/asus-laptop.c:1313: note: expected 'char **' but argum=
-ent is of type 'const char **'
-drivers/platform/x86/asus-laptop.c:1417: warning: passing argument 3 of 'as=
-us_handle_init' from incompatible pointer type
-drivers/platform/x86/asus-laptop.c:1313: note: expected 'char **' but argum=
-ent is of type 'const char **'
+This will also make our blktrace results much more compact, and Chris
+Mason will be very happy about that!
 
-Introduced by commit c21085108a02e1b838c34f3650c8cc9fbd178615 ("asus-laptop=
-: fix style problems reported by checkpath.pl").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+					- Ted
 
---Signature=_Tue__2_Mar_2010_14_06_06_+1100_qYAKVAxBKANK6/yf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuMgJ4ACgkQjjKRsyhoI8xTAQCgmANER72M8FEf6Orjj6FsXQhU
-BAgAnilLDZNQduFqD5GotEa2tde1b7Su
-=aljP
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Mar_2010_14_06_06_+1100_qYAKVAxBKANK6/yf--
