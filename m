@@ -1,78 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950Ab0CBPEG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:04:06 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:50083 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272Ab0CBPED convert rfc822-to-8bit (ORCPT
+	id S1753977Ab0CBPGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:06:18 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:33384 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644Ab0CBPGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:04:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=FB69I5UkVKOTTDFZFn7Tk044ogIfOsyESH25/KI557+S0apXyp7gXvT/quGyHvvzrl
-         SeFxysfugxVR55OC7ToXxMiaIMDJMNuLdw/fK795BgOQDF10Yx0XcPN6pec9KBzyxB/F
-         3kycz7H6TUnn84I0SCPepNEJfH0rrefFHkAUo=
+	Tue, 2 Mar 2010 10:06:14 -0500
+Date: Tue, 2 Mar 2010 15:06:11 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: platform-drivers-x86@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundatio.org
+Subject: [GIT PULL] x86 platform drivers tree
+Message-ID: <20100302150611.GA4547@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <20100302125306.GD19208@basil.fritz.box>
-References: <alpine.DEB.2.00.1002240949140.26771@router.home>
-	 <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.1002251228140.18861@router.home>
-	 <20100226114136.GA16335@basil.fritz.box>
-	 <alpine.DEB.2.00.1002260904311.6641@router.home>
-	 <20100226155755.GE16335@basil.fritz.box>
-	 <alpine.DEB.2.00.1002261123520.7719@router.home>
-	 <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
-	 <20100302125306.GD19208@basil.fritz.box>
-Date: Tue, 2 Mar 2010 17:04:00 +0200
-X-Google-Sender-Auth: c1fadf8718e952ff
-Message-ID: <84144f021003020704s3abafc24t9b8ab34234094b79@mail.gmail.com>
-Subject: Re: [patch] slab: add memory hotplug support
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+Hi Linus,
 
-On Tue, Mar 2, 2010 at 2:53 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> On Mon, Mar 01, 2010 at 02:24:43AM -0800, David Rientjes wrote:
->> Slab lacks any memory hotplug support for nodes that are hotplugged
->> without cpus being hotplugged.  This is possible at least on x86
->> CONFIG_MEMORY_HOTPLUG_SPARSE kernels where SRAT entries are marked
->> ACPI_SRAT_MEM_HOT_PLUGGABLE and the regions of RAM represent a seperate
->> node.  It can also be done manually by writing the start address to
->> /sys/devices/system/memory/probe for kernels that have
->> CONFIG_ARCH_MEMORY_PROBE set, which is how this patch was tested, and
->> then onlining the new memory region.
->
-> The patch looks far more complicated than my simple fix.
+Here's some misc fixes (including a couple of build fixes), along with 
+updates to the asus and Thinkpad drivers.
 
-I wouldn't exactly call the fallback_alloc() games "simple".
+The following changes since commit 30ff056c42c665b9ea535d8515890857ae382540:
+  Linus Torvalds (1):
+        Merge branch 'x86-uv-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-> Is more complicated now better?
+are available in the git repository at:
 
-Heh, heh. You can't post the oops, you don't want to rework your
-patches as per review comments, and now you complain about David's
-patch without one bit of technical content. I'm sorry but I must
-conclude that someone is playing a prank on me because there's no way
-a seasoned kernel hacker such as yourself could possibly think that
-this is the way to get patches merged.
+  git://git.kernel.org/pub/scm/linux/kernel/git/mjg59/platform-drivers-x86.git for_linus
 
-But anyway, if you have real technical concerns over the patch, please
-make them known; otherwise I'd much appreciate a Tested-by tag from
-you for David's patch.
+Alan Jenkins (2):
+      eeepc-laptop: disable wireless hotplug for 1005PE
+      eeepc-laptop: check wireless hotplug events
 
-Thanks,
+Corentin Chary (30):
+      eeepc-laptop: set the right paths in the documentation
+      asus-laptop: add wireless and bluetooth status parameter
+      asus-laptop: set the right paths in the documentation
+      asus-laptop: no need to check argument of set_brightness()
+      asus-laptop: simplify write_acpi_int
+      asus-laptop: use tabs to indent macros and remove unused ones
+      asus-laptop: remove unecessary hotk != NULL check
+      asus-laptop: change initialization order
+      asus-laptop: revise names
+      asus-laptop: move backlight and dsdt info inside asus_laptop struct
+      asus-laptop: callbacks should use "driver data" parameter or field
+      asus-laptop: code movement
+      asus-laptop: stop using read_status for bluetooth and wlan
+      asus-laptop: stop using read_status and store_status for GPS
+      asus-laptop: stop using read_status for lcd
+      asus-laptop: removing read_status/store_status/write_status and asus->status
+      asus-laptop: rename function talking directly to acpi with asus_xxx scheme
+      asus-laptop: stop using ASUS_HANDLE and use relative methods instead
+      asus-laptop: add error check for write_acpi_int calls
+      asus-laptop: rename wireless_status to wlan_status to avoid confusion
+      asus-laptop: switch to sparse keymap library
+      asus-laptop: add bluetooth keys found on M9V
+      asus-laptop: add backlight changes notifications
+      asus-laptop: leds, remove dead code and fix asus_led_exit()/asus_led_init()
+      asus-laptop: set initial lcd state
+      asus-laptop: add gps rfkill
+      asus-laptop: clean led code
+      asus-laptop: use device_create_file() instead of platform_group
+      asus-laptop: fix style problems reported by checkpath.pl
+      Merge branch 'eeepc-laptop' into acpi4asus
 
-                        Pekka
+Frans Pop (1):
+      toshiba-acpi: fix multimedia keys on some machines
+
+Henrique de Moraes Holschuh (7):
+      thinkpad-acpi: document HKEY event 3006
+      thinkpad-acpi: R52 brightness_mode has been confirmed
+      thinkpad-acpi: fix poll thread auto-start
+      thinkpad-acpi: make driver events work in NVRAM poll mode
+      thinkpad-acpi: fix bluetooth/wwan resume
+      thinkpad-acpi: lock down video output state access
+      thinkpad-acpi: fix ALSA callback return status
+
+Ingo Molnar (2):
+      dell-laptop: Fix build error by making buffer_mutex static
+      compal-laptop: Make it depend on CONFIG_RFKILL
+
+Matthew Garrett (3):
+      dell-laptop: Fix errors on failure and exit paths
+      Merge git://git.iksaif.net/acpi4asus into x86-platform
+      Merge branch 'for-upstream/platform-x86_tpacpi' of git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6 into x86-platform
+
+Roel Kluin (1):
+      asus-acpi: remove duplicate comparison of asus_model strings
+
+Thadeu Lima de Souza Cascardo (2):
+      MAINTAINERS: Add git tree to x86 Platform Drivers
+      classmate-laptop: Added some keys present in other devices
+
+ .../ABI/testing/sysfs-platform-asus-laptop         |   12 +-
+ .../ABI/testing/sysfs-platform-eeepc-laptop        |   10 +-
+ Documentation/laptops/thinkpad-acpi.txt            |    4 +
+ MAINTAINERS                                        |    1 +
+ drivers/platform/x86/Kconfig                       |   13 +-
+ drivers/platform/x86/asus-laptop.c                 | 1741 ++++++++++----------
+ drivers/platform/x86/asus_acpi.c                   |    3 +-
+ drivers/platform/x86/classmate-laptop.c            |    4 +
+ drivers/platform/x86/dell-laptop.c                 |    9 +-
+ drivers/platform/x86/eeepc-laptop.c                |   21 +-
+ drivers/platform/x86/thinkpad_acpi.c               |  116 +-
+ drivers/platform/x86/toshiba_acpi.c                |   30 +-
+ 12 files changed, 1058 insertions(+), 906 deletions(-)
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
