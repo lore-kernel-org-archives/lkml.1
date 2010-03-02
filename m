@@ -1,87 +1,166 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599Ab0CBH47 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 02:56:59 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:42022 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531Ab0CBH46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 02:56:58 -0500
-Date: Tue, 2 Mar 2010 08:56:56 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
-Message-ID: <20100302075656.GO5768@kernel.dk>
-References: <201003011615.31709.dmitry.torokhov@gmail.com>
+	id S1753568Ab0CBH4e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 02:56:34 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:13341 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531Ab0CBH4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 02:56:32 -0500
+Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAF5TjEurR7H+/2dsb2JhbACbBnOlLZgrhHsEgxc
+X-IronPort-AV: E=Sophos;i="4.49,565,1262563200"; 
+   d="scan'208";a="304162807"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 01 Mar 2010 23:56:28 -0800
+Message-ID: <adaeik3tavn.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003011615.31709.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01 2010, Dmitry Torokhov wrote:
-> Hi,
-> 
-> It looks like block tree that has been pulled today into mainline is
-> busted, I am getting the Opps below on boot with the following commit:
-> 
-> commit b1bf9368407ae7e89d8a005bb40beb70a41df539
-> Merge: 524df55 4671a13
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon Mar 1 09:00:29 2010 -0800
-> 
->     Merge branch 'for-2.6.34' of git://git.kernel.dk/linux-2.6-block
->  
-> 
-> but not with the previous one:
-> 
-> commit 524df55725217b13d5a232fb5badb5846418ea0e
-> Merge: 0f45339 6679ee1
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon Mar 1 08:58:44 2010 -0800
-> 
->     Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
-> 
-> This is on plain Fedora 12 VM.
-> 
-> Thanks.
-> 
-> -- 
-> Dmitry
-> 
-> sd 2:0:0:0: Attached scsi generic sg1 type 0
-> sd 2:0:0:0: [sda] 16777216 512-byte logical blocks: (8.58 GB/8.00 GiB)
-> sd 2:0:0:0: [sda] Write Protect is off
-> sd 2:0:0:0: [sda] Cache data unavailable
-> sd 2:0:0:0: [sda] Assuming drive cache: write through
-> sd 2:0:0:0: [sda] Cache data unavailable
-> sd 2:0:0:0: [sda] Assuming drive cache: write through
->  sda: sda1 sda2
-> sd 2:0:0:0: [sda] Cache data unavailable
-> sd 2:0:0:0: [sda] Assuming drive cache: write through
-> sd 2:0:0:0: [sda] Attached SCSI disk
-> device-mapper: multipath: version 1.1.1 loaded
-> dracut: Scanning devices sda2  for LVM volume groups 
-> dracut: Reading all physical volumes. This may take a while...
-> dracut: Found volume group "VolGroup" using metadata type lvm2
-> dracut: 2 logical volume(s) in volume group "VolGroup" now active
-> EXT4-fs (dm-0): mounted filesystem with ordered data mode
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
-> PGD 3b776067 PUD 3b7b1067 PMD 0 
-> Oops: 0002 [#1] SMP 
-> last sysfs file: /sys/kernel/uevent_seqnum
-> CPU 0 
-> Modules linked in: dm_multipath mptspi mptscsih mptbase scsi_transport_spi floppy [last unloaded: scsi_wait_scan]
-> 
-> Pid: 1, comm: init Not tainted 2.6.33 #4 440BX Desktop Reference Platform/VMware Virtual Platform
-> RIP: 0010:[<ffffffff81128ee1>]  [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+Linus, please pull from
 
-Can you check where that is? Just do a gdb vmlinux and then an
-l *mpage_end_io_read+0x45
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
+This tree is also available from kernel.org mirrors at:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get my current pile for the 2.6.34 merge window:
+
+Alexander Chiang (18):
+      IB/uverbs: Convert *cdev to cdev in struct ib_uverbs_device
+      IB/uverbs: Remove dev_table
+      IB/uverbs: Use stack variable 'devnum' in ib_uverbs_add_one
+      IB/uverbs: use stack variable 'base' in ib_uverbs_add_one
+      IB/uverbs: Increase maximum devices supported
+      IB/uverbs: Pack struct ib_uverbs_event_file tighter
+      IB/uverbs: Whitespace cleanup
+      IB/umad: Convert *cdev to cdev in struct ib_umad_port
+      IB/umad: Remove port_table[]
+      IB/umad: Use stack variable 'devnum' in ib_umad_init_port
+      IB/umad: Use stack variable 'base' in ib_umad_init_port
+      IB/umad: Increase maximum devices supported
+      IB/umad: Clean whitespace
+      IB/ucm: Use stack variable 'devnum' in ib_ucm_add_one
+      IB/ucm: Use stack variable 'base' in ib_ucm_add_one
+      IB/ucm: Increase maximum devices supported
+      IB/ucm: Clean whitespace errors
+      IB/core: Pack struct ib_device a little tighter
+
+Alexander Schmidt (3):
+      IB/ehca: Do not turn off irqs in tasklet context
+      IB/ehca: Allow access for ib_query_qp()
+      IB/ehca: Require in_wc in process_mad()
+
+Bart Van Assche (1):
+      IB/srp: Split send and recieve CQs to reduce number of interrupts
+
+Chien Tung (1):
+      RDMA/nes: Add support for KR device id 0x0110
+
+Eli Cohen (2):
+      IB/mlx4: Simplify retrieval of ib_device
+      IB/core: Fix and clean up ib_ud_header_init()
+
+Faisal Latif (3):
+      RDMA/nes: Use atomic counters for CM listener create and destroy
+      RDMA/nes: Fix crash when listener destroyed during loopback setup
+      RDMA/nes: Multiple disconnects cause crash during AE handling
+
+Jiri Slaby (1):
+      RDMA: Use rlimit helpers
+
+Or Gerlitz (11):
+      IPoIB: Remove TX moderation settings from ethtool support
+      RDMA/nes: Change WQ overflow return code
+      IB/iser: Revert commit bba7ebb "avoid recv buffer exhaustion"
+      IB/iser: New receive buffer posting logic
+      IB/iser: Remove atomic counter for posted receive buffers
+      IB/iser: Use different CQ for send completions
+      IB/iser: Simplify send flow/descriptors
+      IB/iser: Use atomic allocations
+      IB/iser: Remove unnecessary connection checks
+      IB/iser: Use libiscsi passthrough mode
+      IB/iser: Remove redundant locking from iser scsi command response flow
+
+Roland Dreier (11):
+      IB/uverbs: Use anon_inodes instead of private infinibandeventfs
+      IB/srp: Clean up error path in srp_create_target_ib()
+      Merge branch 'cma' into for-next
+      Merge branch 'cxgb3' into for-next
+      Merge branch 'ehca' into for-next
+      Merge branch 'ipoib' into for-next
+      Merge branch 'iser' into for-next
+      Merge branch 'mlx4' into for-next
+      Merge branch 'nes' into for-next
+      Merge branch 'srp' into for-next
+      Merge branch 'misc' into for-next
+
+Sean Hefty (1):
+      RDMA/cm: Remove unused definition of RDMA_PS_SCTP
+
+Steve Wise (5):
+      RDMA/cxgb3: Remove BUG_ON() on CQ rearm failure
+      RDMA/cxgb3: Doorbell overflow avoidance and recovery
+      RDMA/cxgb3: Increase the max CQ depth
+      RDMA/cxgb3: Don't allocate the SW queue for user mode CQs
+      RDMA/cxgb3: Mark RDMA device with CXIO_ERROR_FATAL when removing
+
+ drivers/infiniband/Kconfig                     |    1 +
+ drivers/infiniband/core/ucm.c                  |   63 +++-
+ drivers/infiniband/core/ud_header.c            |   14 +-
+ drivers/infiniband/core/umem.c                 |    2 +-
+ drivers/infiniband/core/user_mad.c             |  173 +++++----
+ drivers/infiniband/core/uverbs.h               |   11 +-
+ drivers/infiniband/core/uverbs_main.c          |  234 +++++------
+ drivers/infiniband/hw/cxgb3/cxio_hal.c         |   15 +-
+ drivers/infiniband/hw/cxgb3/cxio_hal.h         |    4 +-
+ drivers/infiniband/hw/cxgb3/cxio_wr.h          |   17 +-
+ drivers/infiniband/hw/cxgb3/iwch.c             |   80 ++++-
+ drivers/infiniband/hw/cxgb3/iwch.h             |    2 +
+ drivers/infiniband/hw/cxgb3/iwch_provider.c    |    2 +-
+ drivers/infiniband/hw/cxgb3/iwch_qp.c          |    9 +-
+ drivers/infiniband/hw/ehca/ehca_irq.c          |    5 +-
+ drivers/infiniband/hw/ehca/ehca_qp.c           |    4 +-
+ drivers/infiniband/hw/ehca/ehca_sqp.c          |    2 +-
+ drivers/infiniband/hw/ipath/ipath_user_pages.c |    3 +-
+ drivers/infiniband/hw/mlx4/qp.c                |    4 +-
+ drivers/infiniband/hw/mthca/mthca_qp.c         |    2 +-
+ drivers/infiniband/hw/nes/nes.c                |    1 +
+ drivers/infiniband/hw/nes/nes.h                |    9 +-
+ drivers/infiniband/hw/nes/nes_cm.c             |   11 +-
+ drivers/infiniband/hw/nes/nes_hw.c             |  488 ++++++++++++-----------
+ drivers/infiniband/hw/nes/nes_hw.h             |    2 +-
+ drivers/infiniband/hw/nes/nes_nic.c            |   61 +---
+ drivers/infiniband/hw/nes/nes_verbs.c          |    6 +-
+ drivers/infiniband/ulp/ipoib/ipoib_ethtool.c   |   10 +-
+ drivers/infiniband/ulp/iser/iscsi_iser.c       |   47 ++-
+ drivers/infiniband/ulp/iser/iscsi_iser.h       |   97 +++---
+ drivers/infiniband/ulp/iser/iser_initiator.c   |  506 ++++++++----------------
+ drivers/infiniband/ulp/iser/iser_memory.c      |   64 +---
+ drivers/infiniband/ulp/iser/iser_verbs.c       |  281 +++++++-------
+ drivers/infiniband/ulp/srp/ib_srp.c            |   91 +++--
+ drivers/infiniband/ulp/srp/ib_srp.h            |    6 +-
+ drivers/net/cxgb3/adapter.h                    |    5 +
+ drivers/net/cxgb3/cxgb3_main.c                 |   57 +++-
+ drivers/net/cxgb3/cxgb3_offload.h              |    5 +-
+ drivers/net/cxgb3/regs.h                       |   16 +
+ drivers/net/cxgb3/sge.c                        |   10 +-
+ drivers/net/cxgb3/t3_hw.c                      |    5 +-
+ include/rdma/ib_pack.h                         |    1 +
+ include/rdma/ib_verbs.h                        |    4 +-
+ include/rdma/rdma_cm.h                         |    1 -
+ 44 files changed, 1221 insertions(+), 1210 deletions(-)
 -- 
-Jens Axboe
-
+Roland Dreier  <rolandd@cisco.com>
+For corporate legal information go to:
+http://www.cisco.com/web/about/doing_business/legal/cri/index.html
