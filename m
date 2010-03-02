@@ -1,62 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692Ab0CBIOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:14:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2205 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495Ab0CBIOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:14:16 -0500
-Date: Tue, 2 Mar 2010 03:13:40 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org,
-       Amerigo Wang <amwang@redhat.com>
-Message-Id: <20100302081715.3856.29571.sendpatchset@localhost.localdomain>
-Subject: [Patch] mm: use the same log level for show_mem()
+	id S1753737Ab0CBIPQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:15:16 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34269 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753508Ab0CBIPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:15:14 -0500
+Date: Tue, 2 Mar 2010 17:12:14 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-Id: <20100302171214.99f9c73d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100302080056.GA1548@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	<1267478620-5276-4-git-send-email-arighi@develer.com>
+	<20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302080056.GA1548@linux>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2 Mar 2010 09:01:58 +0100, Andrea Righi <arighi@develer.com> wrote:
+> On Tue, Mar 02, 2010 at 09:23:09AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Mon,  1 Mar 2010 22:23:40 +0100
+> > Andrea Righi <arighi@develer.com> wrote:
+> > 
+> > > Apply the cgroup dirty pages accounting and limiting infrastructure to
+> > > the opportune kernel functions.
+> > > 
+> > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > 
+> > Seems nice.
+> > 
+> > Hmm. the last problem is moving account between memcg.
+> > 
+> > Right ?
+> 
+> Correct. This was actually the last item of the TODO list. Anyway, I'm
+> still considering if it's correct to move dirty pages when a task is
+> migrated from a cgroup to another. Currently, dirty pages just remain in
+> the original cgroup and are flushed depending on the original cgroup
+> settings. That is not totally wrong... at least moving the dirty pages
+> between memcgs should be optional (move_charge_at_immigrate?).
+> 
+FYI, I'm planning to add file-cache and shmem/tmpfs support for move_charge feature
+for 2.6.35.
+But, hmm, it would be complicated if we try to move dirty account too.
 
-Use the same log level for printk's in show_mem(),
-so that those messages can be shown completely
-when using log level 6.
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-
----
-diff --git a/lib/show_mem.c b/lib/show_mem.c
-index 238e72a..fdc77c8 100644
---- a/lib/show_mem.c
-+++ b/lib/show_mem.c
-@@ -15,7 +15,7 @@ void show_mem(void)
- 	unsigned long total = 0, reserved = 0, shared = 0,
- 		nonshared = 0, highmem = 0;
- 
--	printk(KERN_INFO "Mem-Info:\n");
-+	printk("Mem-Info:\n");
- 	show_free_areas();
- 
- 	for_each_online_pgdat(pgdat) {
-@@ -49,15 +49,15 @@ void show_mem(void)
- 		pgdat_resize_unlock(pgdat, &flags);
- 	}
- 
--	printk(KERN_INFO "%lu pages RAM\n", total);
-+	printk("%lu pages RAM\n", total);
- #ifdef CONFIG_HIGHMEM
--	printk(KERN_INFO "%lu pages HighMem\n", highmem);
-+	printk("%lu pages HighMem\n", highmem);
- #endif
--	printk(KERN_INFO "%lu pages reserved\n", reserved);
--	printk(KERN_INFO "%lu pages shared\n", shared);
--	printk(KERN_INFO "%lu pages non-shared\n", nonshared);
-+	printk("%lu pages reserved\n", reserved);
-+	printk("%lu pages shared\n", shared);
-+	printk("%lu pages non-shared\n", nonshared);
- #ifdef CONFIG_QUICKLIST
--	printk(KERN_INFO "%lu pages in pagetable cache\n",
-+	printk("%lu pages in pagetable cache\n",
- 		quicklist_total_size());
- #endif
- }
+Thanks,
+Daisuke Nishimura.
