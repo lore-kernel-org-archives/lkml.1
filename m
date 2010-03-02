@@ -1,186 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075Ab0CBNRF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:17:05 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:48963 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743Ab0CBNRB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:17:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IvRTLlfwjKeJPlT0vgxFx7h5DGWVY22WLcZwdx3okNdqKGYS2RypltFoRL06T8SxdF
-         2EcZLABkPr3nxERYr+Si7kbI/kbS9D6so9SECVpD+Rbf1zLzPGtb9KolOfYLbXIOYnEY
-         8+0fgrXFjo3ZXgWB2VO9PWe3wXN4YJ1m3zAHw=
+	id S1753165Ab0CBN1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:27:22 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46913 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753069Ab0CBN1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 08:27:21 -0500
+Date: Tue, 2 Mar 2010 05:27:18 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu 1/2] rcu: suppress RCU lockdep
+	warnings during early boot
+Message-ID: <20100302132718.GB6821@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100301190329.GA26892@linux.vnet.ibm.com> <1267470234-27150-1-git-send-email-paulmck@linux.vnet.ibm.com> <20100302122059.GA8247@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.1002151520250.7063@wel-95.cs.helsinki.fi>
-References: <53cc795f1001190813m377c6c91l16b2dc04f63049e7@mail.gmail.com>
-	 <53cc795f1002010645w54b98b51s3dbdea18e5eb73f2@mail.gmail.com>
-	 <alpine.DEB.2.00.1002031258160.7063@wel-95.cs.helsinki.fi>
-	 <alpine.DEB.2.00.1002151520250.7063@wel-95.cs.helsinki.fi>
-Date: Tue, 2 Mar 2010 16:16:59 +0300
-Message-ID: <53cc795f1003020516y7cbbfccfof73dab2de349277c@mail.gmail.com>
-Subject: Re: Panic at tcp_xmit_retransmit_queue
-From: sbs <gexlie@gmail.com>
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302122059.GA8247@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thank you very much, have stable running server for a week and it
-seems that it works like a charm now, i havent detected any panics
-since i apply the patch. although seems that the problem stops
-ocurring cause i dont see any debug information through netconsole
+On Tue, Mar 02, 2010 at 01:20:59PM +0100, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > +	if (!rcu_scheduler_active || !debug_locks)
+> > +		return 1;
+> > +	return lock_is_held(&rcu_lock_map);
+> 
+> > +	if (!rcu_scheduler_active || !debug_locks)
+> > +		return 1;
+> > +	return lock_is_held(&rcu_bh_lock_map);
+> 
+> i guess there could be a common helper here?
 
-On Mon, Feb 15, 2010 at 4:21 PM, Ilpo Järvinen
-<ilpo.jarvinen@helsinki.fi> wrote:
-> On Wed, 3 Feb 2010, Ilpo Järvinen wrote:
->
->> On Mon, 1 Feb 2010, sbs wrote:
->>
->> > actually removing netconsole from kernel didnt help.
->> > i found many guys with the same problem but with different hardware
->> > configurations here:
->> >
->> > freez in TCP stack :
->> > http://bugzilla.kernel.org/show_bug.cgi?id=14470
->> >
->> > is there someone who can investigate it?
->> >
->> >
->> > On Tue, Jan 19, 2010 at 7:13 PM, sbs <gexlie@gmail.com> wrote:
->> > > We are hiting kernel panics on servers with nVidia MCP55 NICs once a day;
->> > > it appears usualy under a high network trafic ( around 10000Mbit/s) but
->> > > it is not a rule, it has happened even on low trafic.
->> > >
->> > > Servers are used as nginx+static content
->> > > On 2 equal servers this panic happens aprox 2 times a day depending on
->> > > network load. Machine completly freezes till the netconsole reboots.
->> > >
->> > > Kernel: 2.6.32.3
->> > >
->> > > what can it be? whats wrong with tcp_xmit_retransmit_queue() function ?
->> > > can anyone explain or fix?
->>
->> You might want to try with to debug patch below. It might even make the
->> box to survive the event (if I got it coded right).
->
-> Here should be a better version of the debug patch, hopefully the infinite
-> looping is now gone.
->
-> --
->  i.
->
-> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-> index 383ce23..4672a30 100644
-> --- a/net/ipv4/tcp_output.c
-> +++ b/net/ipv4/tcp_output.c
-> @@ -2186,6 +2186,42 @@ static int tcp_can_forward_retransmit(struct sock *sk)
->        return 1;
->  }
->
-> +static void print_queue(struct sock *sk, struct sk_buff *old, struct sk_buff *hole)
-> +{
-> +       struct tcp_sock *tp = tcp_sk(sk);
-> +       struct sk_buff *skb, *prev;
-> +
-> +       skb = tcp_write_queue_head(sk);
-> +       prev = (struct sk_buff *)(&sk->sk_write_queue);
-> +
-> +       if (skb == NULL) {
-> +               printk("NULL head, pkts %u\n", tp->packets_out);
-> +               return;
-> +       }
-> +       printk("head %p tail %p sendhead %p oldhint %p now %p hole %p high %u\n",
-> +              tcp_write_queue_head(sk), tcp_write_queue_tail(sk),
-> +              tcp_send_head(sk), old, tp->retransmit_skb_hint, hole,
-> +              tp->retransmit_high);
-> +
-> +       while (skb) {
-> +               printk("skb %p (%u-%u) next %p prev %p sacked %u\n",
-> +                      skb, TCP_SKB_CB(skb)->seq, TCP_SKB_CB(skb)->end_seq,
-> +                      skb->next, skb->prev, TCP_SKB_CB(skb)->sacked);
-> +               if (prev != skb->prev)
-> +                       printk("Inconsistent prev\n");
-> +
-> +               if (skb == tcp_write_queue_tail(sk)) {
-> +                       if (skb->next != (struct sk_buff *)(&sk->sk_write_queue))
-> +                               printk("Improper next at tail\n");
-> +                       return;
-> +               }
-> +
-> +               prev = skb;
-> +               skb = skb->next;
-> +       }
-> +       printk("Encountered unexpected NULL\n");
-> +}
-> +
->  /* This gets called after a retransmit timeout, and the initially
->  * retransmitted data is acknowledged.  It tries to continue
->  * resending the rest of the retransmit queue, until either
-> @@ -2194,12 +2230,15 @@ static int tcp_can_forward_retransmit(struct sock *sk)
->  * based retransmit packet might feed us FACK information again.
->  * If so, we use it to avoid unnecessarily retransmissions.
->  */
-> +static int caught_it = 0;
-> +
->  void tcp_xmit_retransmit_queue(struct sock *sk)
->  {
->        const struct inet_connection_sock *icsk = inet_csk(sk);
->        struct tcp_sock *tp = tcp_sk(sk);
->        struct sk_buff *skb;
->        struct sk_buff *hole = NULL;
-> +       struct sk_buff *old = tp->retransmit_skb_hint;
->        u32 last_lost;
->        int mib_idx;
->        int fwd_rexmitting = 0;
-> @@ -2217,6 +2256,16 @@ void tcp_xmit_retransmit_queue(struct sock *sk)
->                last_lost = tp->snd_una;
->        }
->
-> +checknull:
-> +       if (skb == NULL) {
-> +               if (!caught_it)
-> +                       print_queue(sk, old, hole);
-> +               caught_it++;
-> +               if (net_ratelimit())
-> +                       printk("Errors caught so far %u\n", caught_it);
-> +               return;
-> +       }
-> +
->        tcp_for_write_queue_from(skb, sk) {
->                __u8 sacked = TCP_SKB_CB(skb)->sacked;
->
-> @@ -2257,7 +2306,7 @@ begin_fwd:
->                } else if (!(sacked & TCPCB_LOST)) {
->                        if (hole == NULL && !(sacked & (TCPCB_SACKED_RETRANS|TCPCB_SACKED_ACKED)))
->                                hole = skb;
-> -                       continue;
-> +                       goto cont;
->
->                } else {
->                        last_lost = TCP_SKB_CB(skb)->end_seq;
-> @@ -2268,7 +2317,7 @@ begin_fwd:
->                }
->
->                if (sacked & (TCPCB_SACKED_ACKED|TCPCB_SACKED_RETRANS))
-> -                       continue;
-> +                       goto cont;
->
->                if (tcp_retransmit_skb(sk, skb))
->                        return;
-> @@ -2278,6 +2327,9 @@ begin_fwd:
->                        inet_csk_reset_xmit_timer(sk, ICSK_TIME_RETRANS,
->                                                  inet_csk(sk)->icsk_rto,
->                                                  TCP_RTO_MAX);
-> +cont:
-> +               skb = skb->next;
-> +               goto checknull;
->        }
->  }
->
+Will do!
+
+> Also, could we clear rcu_scheduler_active when we clear debug_locks? That way 
+> only a single test is needed, a generic 'is lock debugging active'.
+
+Doing that will break synchronize_rcu(), which returns immediately if
+!rcu_scheduler_active.
+
+> (Which test should probably be unlikely() as well?)
+
+Good point, will fix.
+
+							Thanx, Paul
