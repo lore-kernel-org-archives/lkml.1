@@ -1,53 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499Ab0CBWBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:01:42 -0500
-Received: from tundra.namei.org ([65.99.196.166]:55496 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752562Ab0CBWBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:01:40 -0500
-Date: Wed, 3 Mar 2010 09:01:22 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-Subject: Re: [PATCH 2/2] ocfs2: ensure trusted xattrs are not returned to
- unprivileged users via listxattr
-In-Reply-To: <20100302092946.GA21180@mail.oracle.com>
-Message-ID: <alpine.LRH.2.00.1003030855400.14492@tundra.namei.org>
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org> <20100302092946.GA21180@mail.oracle.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1753505Ab0CBWF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:05:56 -0500
+Received: from xenotime.net ([72.52.64.118]:40055 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753208Ab0CBWFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:05:55 -0500
+Message-ID: <4B8D8BC1.5000105@xenotime.net>
+Date: Tue, 02 Mar 2010 14:05:53 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: werner@guyane.dyn-o-saur.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33-git6 problem (compal-laptop)
+References: <1267446083.16093@guyane.dyn-o-saur.com>
+In-Reply-To: <1267446083.16093@guyane.dyn-o-saur.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010, Joel Becker wrote:
+On 03/01/10 04:21, werner@guyane.dyn-o-saur.com wrote:
+> before, these errors didn't occur
+> ....
+>   CC      arch/x86/lib/strstr_32.o
+>   AS      arch/x86/lib/thunk_32.o
+>   CC      arch/x86/lib/usercopy_32.o
+>   AR      arch/x86/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 9 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   GEN     .version
+>   CHK     include/generated/compile.h
+>   UPD     include/generated/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `compal_rfkill_poll':
+> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
+> drivers/built-in.o: In function `compal_init':
+> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
+> drivers/built-in.o: In function `compal_cleanup':
+> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
+> make: [.tmp_vmlinux1] Error 1 (ignored)
+>   KSYM    .tmp_kallsyms1.S
+> nm: '.tmp_vmlinux1': No such file
+> No valid symbol.
+> make: [.tmp_kallsyms1.S] Error 1 (ignored)
+>   AS      .tmp_kallsyms1.o
+>   LD      .tmp_vmlinux2
+> drivers/built-in.o: In function `compal_rfkill_poll':
+> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
+> drivers/built-in.o: In function `compal_init':
+> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
+> drivers/built-in.o: In function `compal_cleanup':
+> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
+> make: [.tmp_vmlinux2] Error 1 (ignored)
+>   KSYM    .tmp_kallsyms2.S
+> nm: '.tmp_vmlinux2': No such file
+> No valid symbol.
+> make: [.tmp_kallsyms2.S] Error 1 (ignored)
+>   AS      .tmp_kallsyms2.o
+>   LD      vmlinux
+> drivers/built-in.o: In function `compal_rfkill_poll':
+> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
+> drivers/built-in.o: In function `compal_init':
+> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
+> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
+> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
+> drivers/built-in.o: In function `compal_cleanup':
+> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
+> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
+> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
 
-> On Tue, Mar 02, 2010 at 07:02:22PM +1100, James Morris wrote:
-> > Ensure that trusted xattrs are not returned to unprivileged users
-> > via listxattr, in keeping with several other implmentations, such
-> > as ext3.
-> > 
-> > Signed-off-by: James Morris <jmorris@namei.org>
-> 
-> If this is the standard expectation, why not lift it up into the vfs?
+Ingo posted a patch for this.  See  http://lkml.org/lkml/2010/3/2/153
 
-The VFS doesn't know what's in the listxattr list.  When using generic 
-xattr handlers for synthetic xattrs, it's easy to determine the xattr 
-namespace (each namespace has a handler), although on-disk xattrs need to 
-be read from disk to determine if they're in the trusted namespace.
-
-The VFS could possibly modify the listxattr results after the fact, 
-although it's very ugly, and it would not be able to correctly handle size 
-probes, where the VFS only sees a total size value from the FS.
-
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+~Randy
