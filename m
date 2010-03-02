@@ -1,17 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981Ab0CBVWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 16:22:30 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:35785 "EHLO
+	id S1752855Ab0CBVW3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 16:22:29 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:35786 "EHLO
 	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342Ab0CBVWZ (ORCPT
+	with ESMTP id S1752315Ab0CBVWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Mar 2010 16:22:25 -0500
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] gpio: add support for Janz VMOD-TTL Digital IO module
-Date: Tue,  2 Mar 2010 13:22:09 -0800
-Message-Id: <1267564929-9324-4-git-send-email-iws@ovro.caltech.edu>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH 1/3] mfd: add support for Janz CMOD-IO PCI MODULbus Carrier Board
+Date: Tue,  2 Mar 2010 13:22:07 -0800
+Message-Id: <1267564929-9324-2-git-send-email-iws@ovro.caltech.edu>
 X-Mailer: git-send-email 1.7.0.1.61.gdc05d
 In-Reply-To: <1267564929-9324-1-git-send-email-iws@ovro.caltech.edu>
 References: <1267564929-9324-1-git-send-email-iws@ovro.caltech.edu>
@@ -20,61 +21,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Janz VMOD-TTL is a MODULbus daughterboard which fits onto any MODULbus
-carrier board. It essentially consists of some various logic and a Zilog
-Z8536 CIO Counter/Timer and Parallel IO Unit.
-
-The board must be physically configured with jumpers to enable a user to
-drive output signals. I am only interested in outputs, so I have made this
-driver as simple as possible. It only supports a very minimal amount of the
-features provided by the Z8536 chip.
+The Janz CMOD-IO PCI MODULbus carrier board is a PCI to MODULbus bridge,
+which may host many different types of MODULbus daughterboards, including
+CAN and GPIO controllers.
 
 Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
 ---
- drivers/gpio/Kconfig    |   10 ++
- drivers/gpio/Makefile   |    1 +
- drivers/gpio/janz-ttl.c |  257 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 268 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/janz-ttl.c
+ drivers/mfd/Kconfig       |    8 +
+ drivers/mfd/Makefile      |    1 +
+ drivers/mfd/janz-cmodio.c |  339 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/janz.h  |   54 +++++++
+ 4 files changed, 402 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/janz-cmodio.c
+ create mode 100644 include/linux/mfd/janz.h
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 1f1d88a..0da364d 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -255,4 +255,14 @@ config GPIO_UCB1400
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called ucb1400_gpio.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 8782978..f1858d7 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -27,6 +27,14 @@ config MFD_SM501_GPIO
+ 	 lines on the SM501. The platform data is used to supply the
+ 	 base number for the first GPIO line to register.
  
-+comment "MODULbus GPIO expanders:"
++config MFD_JANZ_CMODIO
++	tristate "Support for Janz CMOD-IO PCI MODULbus Carrier Board"
++	---help---
++	  This is the core driver for the Janz CMOD-IO PCI MODULbus
++	  carrier board. This device is a PCI to MODULbus bridge which may
++	  host many different types of MODULbus daughterboards, including
++	  CAN and GPIO controllers.
 +
-+config GPIO_JANZ_TTL
-+	tristate "Janz VMOD-TTL Digital IO Module"
-+	depends on MFD_JANZ_CMODIO
-+	help
-+	  This enables support for the Janz VMOD-TTL Digital IO module.
-+	  This driver provides support for driving the pins in output
-+	  mode only. Input mode is not supported.
-+
- endif
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 4868723..2263966 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -22,3 +22,4 @@ obj-$(CONFIG_GPIO_CS5535)	+= cs5535-gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
- obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
- obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
-+obj-$(CONFIG_GPIO_JANZ_TTL)	+= janz-ttl.o
-diff --git a/drivers/gpio/janz-ttl.c b/drivers/gpio/janz-ttl.c
+ config MFD_ASIC3
+ 	bool "Support for Compaq ASIC3"
+ 	depends on GENERIC_HARDIRQS && GPIOLIB && ARM
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index e09eb48..e8fa905 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -3,6 +3,7 @@
+ #
+ 
+ obj-$(CONFIG_MFD_SM501)		+= sm501.o
++obj-$(CONFIG_MFD_JANZ_CMODIO)	+= janz-cmodio.o
+ obj-$(CONFIG_MFD_ASIC3)		+= asic3.o tmio_core.o
+ obj-$(CONFIG_MFD_SH_MOBILE_SDHI)		+= sh_mobile_sdhi.o
+ 
+diff --git a/drivers/mfd/janz-cmodio.c b/drivers/mfd/janz-cmodio.c
 new file mode 100644
-index 0000000..d97eeda
+index 0000000..914280e
 --- /dev/null
-+++ b/drivers/gpio/janz-ttl.c
-@@ -0,0 +1,257 @@
++++ b/drivers/mfd/janz-cmodio.c
+@@ -0,0 +1,339 @@
 +/*
-+ * Janz MODULbus VMOD-TTL GPIO Driver
++ * Janz CMOD-IO MODULbus Carrier Board PCI Driver
 + *
 + * Copyright (c) 2010 Ira W. Snyder <iws@ovro.caltech.edu>
++ *
++ * Lots of inspiration and code was copied from drivers/mfd/sm501.c
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License as published by the
@@ -85,249 +89,389 @@ index 0000000..d97eeda
 +#include <linux/kernel.h>
 +#include <linux/module.h>
 +#include <linux/init.h>
++#include <linux/pci.h>
 +#include <linux/interrupt.h>
 +#include <linux/delay.h>
 +#include <linux/platform_device.h>
-+#include <linux/io.h>
-+#include <linux/gpio.h>
 +
 +#include <linux/mfd/janz.h>
 +
-+#define DRV_NAME "janz-ttl"
++#define DRV_NAME "janz-cmodio"
 +
-+#define PORTA_DIRECTION		0x23
-+#define PORTB_DIRECTION		0x2B
-+#define PORTC_DIRECTION		0x06
-+#define PORTA_IOCTL		0x24
-+#define PORTB_IOCTL		0x2C
-+#define PORTC_IOCTL		0x07
++/* Size of each MODULbus module in PCI BAR4 */
++#define CMODIO_MODULBUS_SIZE	0x200
 +
-+#define MASTER_INT_CTL		0x00
-+#define MASTER_CONF_CTL		0x01
++/* Maximum number of MODULbus modules on a CMOD-IO carrier board */
++#define CMODIO_MAX_MODULES	4
 +
-+#define CONF_PAE		(1 << 2)
-+#define CONF_PBE		(1 << 7)
-+#define CONF_PCE		(1 << 4)
-+
-+struct ttl_control_regs {
-+	__be16 portc;
-+	__be16 portb;
-+	__be16 porta;
-+	__be16 control;
++/* Module Parameters */
++static unsigned int num_modules = CMODIO_MAX_MODULES;
++static unsigned char *modules[CMODIO_MAX_MODULES] = {
++	"janz-ican3",
++	"janz-ican3",
++	"",
++	"janz-ttl",
 +};
 +
-+struct ttl_module {
-+	struct gpio_chip gpio;
++module_param_array(modules, charp, &num_modules, S_IRUGO);
++MODULE_PARM_DESC(modules, "MODULbus modules attached to the carrier board");
 +
-+	/* base address of registers */
-+	struct ttl_control_regs __iomem *regs;
++struct cmodio_device {
++	/* Parent PCI device */
++	struct pci_dev *pdev;
 +
-+	u8 portc_shadow;
-+	u8 portb_shadow;
-+	u8 porta_shadow;
++	/* PLX control registers */
++	struct janz_cmodio_onboard_regs __iomem *ctrl;
 +
-+	spinlock_t lock;
++	/* hex switch position */
++	u8 hex;
++
++	/* Subdevice ID numbers */
++	unsigned int subdev_id;
 +};
 +
-+static int ttl_get_value(struct gpio_chip *gpio, unsigned offset)
-+{
-+	struct ttl_module *mod = dev_get_drvdata(gpio->dev);
-+	u8 *shadow;
-+	int ret;
++/*
++ * Subdevice Support
++ */
 +
-+	if (offset < 8) {
-+		shadow = &mod->porta_shadow;
-+	} else if (offset < 16) {
-+		shadow = &mod->portb_shadow;
-+		offset -= 8;
-+	} else {
-+		shadow = &mod->portc_shadow;
-+		offset -= 16;
++static int cmodio_remove_subdev(struct device *dev, void *data)
++{
++	platform_device_unregister(to_platform_device(dev));
++	return 0;
++}
++
++static void cmodio_subdev_release(struct device *dev)
++{
++	kfree(to_platform_device(dev));
++}
++
++static struct platform_device *cmodio_create_subdev(struct cmodio_device *priv,
++						    char *name,
++						    unsigned int res_count,
++						    unsigned int pdata_size)
++{
++	struct platform_device *pdev;
++	size_t res_size;
++
++	res_size = sizeof(struct resource) * res_count;
++	pdev = kzalloc(sizeof(*pdev) + res_size + pdata_size, GFP_KERNEL);
++	if (!pdev)
++		return NULL;
++
++	pdev->dev.release = cmodio_subdev_release;
++	pdev->dev.parent = &priv->pdev->dev;
++	pdev->name = name;
++
++	if (res_count) {
++		pdev->resource = (struct resource *)(pdev + 1);
++		pdev->num_resources = res_count;
 +	}
 +
-+	spin_lock(&mod->lock);
-+	ret = *shadow & (1 << offset);
-+	spin_unlock(&mod->lock);
-+	return ret;
++	if (pdata_size)
++		pdev->dev.platform_data = (void *)(pdev + 1) + res_size;
++
++	return pdev;
 +}
 +
-+static void ttl_set_value(struct gpio_chip *gpio, unsigned offset, int value)
++/* Create a memory resource for a subdevice */
++static void cmodio_create_mem(struct resource *parent, struct resource *res,
++			      resource_size_t offset, resource_size_t size)
 +{
-+	struct ttl_module *mod = dev_get_drvdata(gpio->dev);
-+	void __iomem *port;
-+	u8 *shadow;
-+
-+	if (offset < 8) {
-+		port = &mod->regs->porta;
-+		shadow = &mod->porta_shadow;
-+	} else if (offset < 16) {
-+		port = &mod->regs->portb;
-+		shadow = &mod->portb_shadow;
-+		offset -= 8;
-+	} else {
-+		port = &mod->regs->portc;
-+		shadow = &mod->portc_shadow;
-+		offset -= 16;
-+	}
-+
-+	spin_lock(&mod->lock);
-+	if (value)
-+		*shadow |= (1 << offset);
-+	else
-+		*shadow &= ~(1 << offset);
-+
-+	iowrite16be(*shadow, port);
-+	spin_unlock(&mod->lock);
++	res->flags = IORESOURCE_MEM;
++	res->parent = parent;
++	res->start = parent->start + offset;
++	res->end = parent->start + offset + size - 1;
 +}
 +
-+static void __devinit ttl_write_reg(struct ttl_module *mod, u8 reg, u16 val)
++/* Create an IRQ resource for a subdevice */
++static void cmodio_create_irq(struct resource *res, unsigned int irq)
 +{
-+	iowrite16be(reg, &mod->regs->control);
-+	iowrite16be(val, &mod->regs->control);
++	res->flags = IORESOURCE_IRQ;
++	res->parent = NULL;
++	res->start = irq;
++	res->end = irq;
 +}
 +
-+static void __devinit ttl_setup_device(struct ttl_module *mod)
-+{
-+	/* reset the device to a known state */
-+	iowrite16be(0x0000, &mod->regs->control);
-+	iowrite16be(0x0001, &mod->regs->control);
-+	iowrite16be(0x0000, &mod->regs->control);
-+
-+	/* put all ports in open-drain mode */
-+	ttl_write_reg(mod, PORTA_IOCTL, 0x00ff);
-+	ttl_write_reg(mod, PORTB_IOCTL, 0x00ff);
-+	ttl_write_reg(mod, PORTC_IOCTL, 0x000f);
-+
-+	/* set all ports as outputs */
-+	ttl_write_reg(mod, PORTA_DIRECTION, 0x0000);
-+	ttl_write_reg(mod, PORTB_DIRECTION, 0x0000);
-+	ttl_write_reg(mod, PORTC_DIRECTION, 0x0000);
-+
-+	/* set all ports to drive zeroes */
-+	iowrite16be(0x0000, &mod->regs->porta);
-+	iowrite16be(0x0000, &mod->regs->portb);
-+	iowrite16be(0x0000, &mod->regs->portc);
-+
-+	/* enable all ports */
-+	ttl_write_reg(mod, MASTER_CONF_CTL, CONF_PAE | CONF_PBE | CONF_PCE);
-+}
-+
-+static int __devinit ttl_probe(struct platform_device *pdev)
++static int __devinit cmodio_probe_subdevice(struct cmodio_device *priv,
++					    char *name, unsigned int modno)
 +{
 +	struct janz_platform_data *pdata;
-+	struct device *dev = &pdev->dev;
-+	struct ttl_module *mod;
-+	struct gpio_chip *gpio;
-+	struct resource *res;
++	struct platform_device *pdev;
++	resource_size_t offset, size;
++	struct pci_dev *pci;
 +	int ret;
 +
++	pci = priv->pdev;
++	pdev = cmodio_create_subdev(priv, name, 3, sizeof(*pdata));
++	if (!pdev) {
++		dev_err(&pci->dev, "MODULbus slot %d alloc failed\n", modno);
++		ret = -ENOMEM;
++		goto out_return;
++	}
++
 +	pdata = pdev->dev.platform_data;
-+	if (!pdata) {
-+		dev_err(dev, "no platform data\n");
-+		ret = -ENXIO;
-+		goto out_return;
-+	}
++	pdata->modno = modno;
++	pdev->id = priv->subdev_id++;
 +
-+	mod = kzalloc(sizeof(*mod), GFP_KERNEL);
-+	if (!mod) {
-+		dev_err(dev, "unable to allocate private data\n");
-+		ret = -ENOMEM;
-+		goto out_return;
-+	}
++	/* MODULbus registers -- PCI BAR3 is big-endian MODULbus access */
++	offset = CMODIO_MODULBUS_SIZE * modno;
++	size = CMODIO_MODULBUS_SIZE;
++	cmodio_create_mem(&pci->resource[3], &pdev->resource[0], offset, size);
 +
-+	platform_set_drvdata(pdev, mod);
-+	spin_lock_init(&mod->lock);
++	/* PLX Control Registers -- PCI BAR4 is interrupt and other registers */
++	offset = 0;
++	size = resource_size(&pci->resource[4]);
++	cmodio_create_mem(&pci->resource[4], &pdev->resource[1], offset, size);
 +
-+	/* get access to the MODULbus registers for this module */
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "MODULbus registers not found\n");
-+		ret = -ENODEV;
-+		goto out_free_mod;
-+	}
++	/* IRQ */
++	cmodio_create_irq(&pdev->resource[2], pci->irq);
 +
-+	mod->regs = ioremap(res->start, resource_size(res));
-+	if (!mod->regs) {
-+		dev_err(dev, "MODULbus registers not ioremap\n");
-+		ret = -ENOMEM;
-+		goto out_free_mod;
-+	}
-+
-+	ttl_setup_device(mod);
-+
-+	/* Initialize the GPIO data structures */
-+	gpio = &mod->gpio;
-+	gpio->dev = &pdev->dev;
-+	gpio->label = pdev->name;
-+	gpio->get = ttl_get_value;
-+	gpio->set = ttl_set_value;
-+	gpio->owner = THIS_MODULE;
-+
-+	/* request dynamic allocation */
-+	gpio->base = -1;
-+	gpio->ngpio = 20;
-+
-+	ret = gpiochip_add(gpio);
++	/* Register the device */
++	ret = platform_device_register(pdev);
 +	if (ret) {
-+		dev_err(dev, "unable to add GPIO chip\n");
-+		goto out_iounmap_regs;
++		dev_err(&pci->dev, "MODULbus slot %d register failed\n", modno);
++		goto out_free;
 +	}
 +
-+	dev_info(&pdev->dev, "module %d: registered GPIO device\n",
-+			     pdata->modno);
 +	return 0;
 +
-+out_iounmap_regs:
-+	iounmap(mod->regs);
-+out_free_mod:
-+	kfree(mod);
++out_free:
++	cmodio_subdev_release(&pdev->dev);
 +out_return:
 +	return ret;
 +}
 +
-+static int __devexit ttl_remove(struct platform_device *pdev)
++/* Probe each submodule using kernel parameters */
++static int __devinit cmodio_probe_submodules(struct cmodio_device *priv)
 +{
-+	struct ttl_module *mod = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	int ret;
++	char *name;
++	int i;
 +
-+	ret = gpiochip_remove(&mod->gpio);
-+	if (ret) {
-+		dev_err(dev, "unable to remove GPIO chip\n");
-+		return ret;
++	for (i = 0; i < num_modules; i++) {
++		name = modules[i];
++		if (!strcmp(name, ""))
++			continue;
++
++		dev_dbg(&priv->pdev->dev, "MODULbus %d: name %s\n", i, name);
++		cmodio_probe_subdevice(priv, name, i);
 +	}
 +
-+	iounmap(mod->regs);
-+	kfree(mod);
 +	return 0;
 +}
 +
-+static struct platform_driver ttl_driver = {
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= ttl_probe,
-+	.remove		= __devexit_p(ttl_remove),
-+};
++/*
++ * SYSFS Attributes
++ */
 +
-+static int __init ttl_init(void)
++static ssize_t mbus_show(struct device *dev, struct device_attribute *attr,
++			 char *buf)
 +{
-+	return platform_driver_register(&ttl_driver);
++	struct cmodio_device *priv = dev_get_drvdata(dev);
++
++	return snprintf(buf, PAGE_SIZE, "%x\n", priv->hex);
 +}
 +
-+static void __exit ttl_exit(void)
++static DEVICE_ATTR(modulbus_number, S_IRUGO, mbus_show, NULL);
++
++static struct attribute *cmodio_sysfs_attrs[] = {
++	&dev_attr_modulbus_number.attr,
++	NULL,
++};
++
++static const struct attribute_group cmodio_sysfs_attr_group = {
++	.attrs = cmodio_sysfs_attrs,
++};
++
++/*
++ * PCI Driver
++ */
++
++static int __devinit cmodio_pci_probe(struct pci_dev *dev,
++				      const struct pci_device_id *id)
 +{
-+	platform_driver_unregister(&ttl_driver);
++	struct cmodio_device *priv;
++	int ret;
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		dev_err(&dev->dev, "unable to allocate private data\n");
++		ret = -ENOMEM;
++		goto out_return;
++	}
++
++	pci_set_drvdata(dev, priv);
++	priv->pdev = dev;
++
++	/* Hardware Initialization */
++	ret = pci_enable_device(dev);
++	if (ret) {
++		dev_err(&dev->dev, "unable to enable device\n");
++		goto out_free_priv;
++	}
++
++	pci_set_master(dev);
++	ret = pci_request_regions(dev, DRV_NAME);
++	if (ret) {
++		dev_err(&dev->dev, "unable to request regions\n");
++		goto out_pci_disable_device;
++	}
++
++	/* Onboard configuration registers */
++	priv->ctrl = pci_ioremap_bar(dev, 4);
++	if (!priv->ctrl) {
++		dev_err(&dev->dev, "unable to remap onboard regs\n");
++		ret = -ENOMEM;
++		goto out_pci_release_regions;
++	}
++
++	/* Read the hex switch on the carrier board */
++	priv->hex = ioread8(&priv->ctrl->int_enable);
++
++	/* Add the MODULbus number (hex switch value) to the device's sysfs */
++	ret = sysfs_create_group(&dev->dev.kobj, &cmodio_sysfs_attr_group);
++	if (ret) {
++		dev_err(&dev->dev, "unable to create sysfs attributes\n");
++		goto out_unmap_ctrl;
++	}
++
++	/*
++	 * Disable all interrupt lines, each submodule will enable its
++	 * own interrupt line if needed
++	 */
++	iowrite8(0xf, &priv->ctrl->int_disable);
++
++	/* Register drivers for all submodules */
++	ret = cmodio_probe_submodules(priv);
++	if (ret) {
++		dev_err(&dev->dev, "unable to probe submodules\n");
++		goto out_sysfs_remove_group;
++	}
++
++	return 0;
++
++out_sysfs_remove_group:
++	sysfs_remove_group(&dev->dev.kobj, &cmodio_sysfs_attr_group);
++out_unmap_ctrl:
++	iounmap(priv->ctrl);
++out_pci_release_regions:
++	pci_release_regions(dev);
++out_pci_disable_device:
++	pci_disable_device(dev);
++out_free_priv:
++	kfree(priv);
++out_return:
++	return ret;
++}
++
++static void __devexit cmodio_pci_remove(struct pci_dev *dev)
++{
++	struct cmodio_device *priv = pci_get_drvdata(dev);
++
++	device_for_each_child(&dev->dev, NULL, cmodio_remove_subdev);
++	sysfs_remove_group(&dev->dev.kobj, &cmodio_sysfs_attr_group);
++	iounmap(priv->ctrl);
++	pci_release_regions(dev);
++	pci_disable_device(dev);
++	kfree(priv);
++}
++
++#define PCI_VENDOR_ID_JANZ		0x13c3
++
++/* The list of devices that this module will support */
++static DEFINE_PCI_DEVICE_TABLE(cmodio_pci_ids) = {
++	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030, PCI_VENDOR_ID_JANZ, 0x0101 },
++	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050, PCI_VENDOR_ID_JANZ, 0x0100 },
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, cmodio_pci_ids);
++
++static struct pci_driver cmodio_pci_driver = {
++	.name     = DRV_NAME,
++	.id_table = cmodio_pci_ids,
++	.probe    = cmodio_pci_probe,
++	.remove   = __devexit_p(cmodio_pci_remove),
++};
++
++/*
++ * Module Init / Exit
++ */
++
++static int __init cmodio_init(void)
++{
++	return pci_register_driver(&cmodio_pci_driver);
++}
++
++static void __exit cmodio_exit(void)
++{
++	pci_unregister_driver(&cmodio_pci_driver);
 +}
 +
 +MODULE_AUTHOR("Ira W. Snyder <iws@ovro.caltech.edu>");
-+MODULE_DESCRIPTION("Janz MODULbus VMOD-TTL Driver");
++MODULE_DESCRIPTION("Janz CMOD-IO PCI MODULbus Carrier Board Driver");
 +MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:janz-ttl");
 +
-+module_init(ttl_init);
-+module_exit(ttl_exit);
++module_init(cmodio_init);
++module_exit(cmodio_exit);
+diff --git a/include/linux/mfd/janz.h b/include/linux/mfd/janz.h
+new file mode 100644
+index 0000000..e9994c4
+--- /dev/null
++++ b/include/linux/mfd/janz.h
+@@ -0,0 +1,54 @@
++/*
++ * Common Definitions for Janz MODULbus devices
++ *
++ * Copyright (c) 2010 Ira W. Snyder <iws@ovro.caltech.edu>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#ifndef JANZ_H
++#define JANZ_H
++
++struct janz_platform_data {
++	/* MODULbus Module Number */
++	unsigned int modno;
++};
++
++/* PLX bridge chip onboard registers */
++struct janz_cmodio_onboard_regs {
++	u8 unused1;
++
++	/*
++	 * Read access: interrupt status
++	 * Write access: interrupt disable
++	 */
++	u8 int_disable;
++	u8 unused2;
++
++	/*
++	 * Read access: MODULbus number (hex switch)
++	 * Write access: interrupt enable
++	 */
++	u8 int_enable;
++	u8 unused3;
++
++	/* write-only */
++	u8 reset_assert;
++	u8 unused4;
++
++	/* write-only */
++	u8 reset_deassert;
++	u8 unused5;
++
++	/* read-write access to serial EEPROM */
++	u8 eep;
++	u8 unused6;
++
++	/* write-only access to EEPROM chip select */
++	u8 enid;
++};
++
++#endif /* JANZ_H */
 -- 
 1.5.4.3
 
