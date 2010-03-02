@@ -1,75 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752804Ab0CBMC6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 07:02:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41292
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752181Ab0CBMC5 (ORCPT
+	id S1752840Ab0CBMDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 07:03:41 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:52646 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181Ab0CBMDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 07:02:57 -0500
-Date: Tue, 02 Mar 2010 04:03:16 -0800 (PST)
-Message-Id: <20100302.040316.155442888.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Tue, 2 Mar 2010 07:03:39 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] sparc: use asm-generic/scatterlist.h
+Date: Tue, 2 Mar 2010 13:03:25 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100228.230535.123985162.davem@davemloft.net>
-References: <20100228.230535.123985162.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+References: <20100226.043536.63730567.davem@davemloft.net> <201003011229.51399.arnd@arndb.de> <20100302123326H.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100302123326H.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003021303.26064.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19anwVp4ATiycq1nb2KLacGDZRDYO8OAibuPsI
+ lZy306Rt6VDUp/FXkweSpp+7J1DpHql32NIuM/MobcGbMsS8JM
+ Wyj9aZNQ7wsGFU0deeCKQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Sun, 28 Feb 2010 23:05:35 -0800 (PST)
-
-> Please pull, thanks a lot!
+On Tuesday 02 March 2010, FUJITA Tomonori wrote:
+> If we go with such approach, then we could use something like the
+> following. There are only two kinds of scatterlist definitions (use
+> dma_length or not) so we can cover all the architectures.
 > 
-> The following changes since commit 30ff056c42c665b9ea535d8515890857ae382540:
->   Linus Torvalds (1):
->         Merge branch 'x86-uv-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-> 
-> are available in the git repository at:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/davem/net-next-2.6.git master
+> diff --git a/include/asm-generic/scatterlist.h b/include/asm-generic/scatterlist.h
+> index 8b94544..1bf620d 100644
+> --- a/include/asm-generic/scatterlist.h
+> +++ b/include/asm-generic/scatterlist.h
+> @@ -11,7 +11,9 @@ struct scatterlist {
+>         unsigned int    offset;
+>         unsigned int    length;
+>         dma_addr_t      dma_address;
+> +#ifdef CONFIG_NEED_SG_DMA_LENGTH
+>         unsigned int    dma_length;
+> +#endif
+>  };
 
-Linus, if you haven't pulled in the networking tree yet, please pull
-again as I just pushed the following bug fixes into there tonight.
+Yes, that sounds good. If the only reason to need dma_length is virtual merging,
+a clearer (from the Kconfig perspective, not from the implementation) name 
+might be CONFIG_HAVE_IOMMU_VMERGE, similar to the CONFIG_IOMMU_VMERGE option
+on PPC64 that determines the default for the virtual merging runtime option.
 
-Thanks!
-
-The following changes since commit 47871889c601d8199c51a4086f77eebd77c29b0b:
-  David S. Miller (1):
-        Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-next-2.6.git master
-
-Eric Dumazet (1):
-      net: fix protocol sk_buff field
-
-Herton Ronaldo Krzesinski (1):
-      sis190: fix cable detect via link status poll
-
-Jiri Pirko (1):
-      virtio_net: remove forgotten assignment
-
-Sathya Perla (1):
-      be2net: fix tx completion polling
-
-Sridhar Samudrala (1):
-      bridge: Fix build error when IGMP_SNOOPING is not enabled
-
- drivers/net/benet/be_cmds.c |   26 +++++++++++-----------
- drivers/net/benet/be_cmds.h |    2 +-
- drivers/net/benet/be_main.c |   47 +++++++++++++++++++++----------------------
- drivers/net/sis190.c        |   23 ++++++++++++++++----
- drivers/net/virtio_net.c    |    1 -
- include/linux/skbuff.h      |    2 +-
- net/bridge/br_private.h     |   14 ++++++++----
- 7 files changed, 65 insertions(+), 50 deletions(-)
+	Arnd
