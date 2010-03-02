@@ -1,48 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752963Ab0CBX27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:28:59 -0500
-Received: from mga09.intel.com ([134.134.136.24]:39580 "EHLO mga09.intel.com"
+	id S1754113Ab0CBX3K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:29:10 -0500
+Received: from kroah.org ([198.145.64.141]:38480 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327Ab0CBX25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:28:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,570,1262592000"; 
-   d="scan'208";a="497158185"
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] x86/mrst: remove X86_MRST dependency on PCI_IOAPIC
-Date: Tue,  2 Mar 2010 09:19:28 -0800
-Message-Id: <1267550368-7435-1-git-send-email-jacob.jun.pan@linux.intel.com>
-X-Mailer: git-send-email 1.5.6.5
+	id S1753978Ab0CBX3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:07 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Radu Voicilas <rvoicilas@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/62] kobject-example: Spelling fixes.
+Date: Tue,  2 Mar 2010 15:28:00 -0800
+Message-Id: <1267572541-410-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI_IOAPIC is used for PCI hotplug, Moorestown does not have ACPI PCI
-hotplug. This unnecessary dependency causes X86_MRST fail to be selected if
-ACPI is not selected.
+From: Radu Voicilas <rvoicilas@gmail.com>
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+No change in functionality.
+
+Signed-off-by: Radu Voicilas <rvoicilas@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ samples/kobject/kobject-example.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index b25da64..1ecab88 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -396,7 +396,6 @@ config X86_MRST
-        bool "Moorestown MID platform"
- 	depends on PCI
- 	depends on PCI_GOANY
--	depends on PCI_IOAPIC
- 	depends on X86_32
- 	depends on X86_EXTENDED_PLATFORM
- 	depends on X86_IO_APIC
+diff --git a/samples/kobject/kobject-example.c b/samples/kobject/kobject-example.c
+index 8d9b55a..86ea0c3 100644
+--- a/samples/kobject/kobject-example.c
++++ b/samples/kobject/kobject-example.c
+@@ -44,7 +44,7 @@ static struct kobj_attribute foo_attribute =
+ 	__ATTR(foo, 0666, foo_show, foo_store);
+ 
+ /*
+- * More complex function where we determine which varible is being accessed by
++ * More complex function where we determine which variable is being accessed by
+  * looking at the attribute for the "baz" and "bar" files.
+  */
+ static ssize_t b_show(struct kobject *kobj, struct kobj_attribute *attr,
+@@ -79,7 +79,7 @@ static struct kobj_attribute bar_attribute =
+ 
+ 
+ /*
+- * Create a group of attributes so that we can create and destory them all
++ * Create a group of attributes so that we can create and destroy them all
+  * at once.
+  */
+ static struct attribute *attrs[] = {
 -- 
-1.5.6.5
+1.7.0.1
 
