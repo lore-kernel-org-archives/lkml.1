@@ -1,221 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353Ab0CBN6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:58:31 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:37238 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153Ab0CBN63 (ORCPT
+	id S1753447Ab0CBN6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:58:45 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:57358 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753357Ab0CBN6m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:58:29 -0500
-Message-ID: <4B8D1942.8060405@nokia.com>
-Date: Tue, 02 Mar 2010 15:57:22 +0200
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: ext Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 2 Mar 2010 08:58:42 -0500
+From: "G, Manjunath Kondaiah" <manjugk@ti.com>
+To: "S, Venkatraman" <svenkatr@ti.com>, Tony Lindgren <tony@atomide.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-References: <20090603152223.083010123@de.ibm.com>	<alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>	<20090622162631.4b4dcee4@skybase>	<20090622144110.GA9771@elte.hu>	<20090622165936.0bb776e1@skybase>	<20090622150553.GA14363@elte.hu>	<20090622171834.0df64aea@skybase>	<20090622152937.GA17512@elte.hu>	<20090622173611.3b583c95@skybase>	<20090622154030.GA19076@elte.hu> <20090624185100.6ca7e82a@skybase>
-In-Reply-To: <20090624185100.6ca7e82a@skybase>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Mar 2010 13:57:29.0415 (UTC) FILETIME=[4C333D70:01CABA10]
-X-Nokia-AV: Clean
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Date: Tue, 2 Mar 2010 19:28:34 +0530
+Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Index: Acq6DrzxzzLj/+UaR0CqYftNXskKIAAAL3Rw
+Message-ID: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+	 <20100301184600.GC3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
+	 <20100302060821.GI3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+	 <20100302065224.GL3389@atomide.com>
+ <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+In-Reply-To: <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+ 
 
-Martin Schwidefsky wrote:
-> First version of the hrtimer patch for oprofile. I did not add the
-> sysctl yet, if the sysctl is added in oprofile_timer_init it would not
-> be available if some better profiling source is available. If it is
-> added unconditionally it would only have an effect if the timer
-> fallback is used. Both cases are not exactly nice for a user space
-> interface.
+> -----Original Message-----
+> From: svenkatr@gmail.com [mailto:svenkatr@gmail.com] On 
+> Behalf Of Venkatraman S
+> Sent: Tuesday, March 02, 2010 7:16 PM
+> To: Tony Lindgren; G, Manjunath Kondaiah; Raja, Govindraj; 
+> Greg KH; linux-serial@vger.kernel.org; 
+> linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Kevin Hilman; Olof Johansson
+> Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
+> 
+> On Tue, Mar 2, 2010 at 12:22 PM, Tony Lindgren 
+> <tony@atomide.com> wrote:
+> > * G, Manjunath Kondaiah <manjugk@ti.com> [100301 22:24]:
+> >>
+> >>
+> >>
+> >> > > > > +     up->uart_dma.prev_rx_dma_pos =
+> >> > up->uart_dma.rx_buf_dma_phys;
+> >> > > > > +     if (cpu_is_omap44xx())
+> >> > > > > +             omap_writel(0, OMAP44XX_DMA4_BASE
+> >> > > > > +                     +
+> >> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+> >> > > > > +     else
+> >> > > > > +             omap_writel(0, OMAP34XX_DMA4_BASE
+> >> > > > > +                     +
+> >> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+> >> > > >
+> >> > > > NAK. Please don't use omap_read/write for for new 
+> code. And do not
+> >> > > > tinker with the omap hardware registers directly in 
+> the driver.
+> >> > > >
+> >> > > > This needs to be done properly in
+> >> > arch/arm/plat-omap/dma.c instead.
+> >> > >
+> >> > > Thanks for the suggestion.
+> >> > >
+> >> > > Currently, dma_read/dma_write are #define's in dma.c which
+> >> > cannot be
+> >> > > accessed outside dma.c. I don't see any API's in dma.c for
+> >> > setting required
+> >> > > value for this register?
+> >> >
+> >> > Hmm isn't this the same as omap_get_dma_dst_pos(int 
+> lch)? If you're
+> >> > trying do something that's not in dma.c, we can add a 
+> new function
+> >> > for it.
+> >>
+> >> The omap_get_dma_dst_pos(int lch) is for read operation in 
+> CDAC register.
+> >> But, We need to write required value into CDAC register. 
+> For this, I propose:
+> >>
+> >> omap_set_dma_dst_pos(int lch, int value) which does not 
+> exist in current dma
+> >> driver.
+> >
+> > OK, it that's needed.
+> >
+> > Tony
+> > --
+> CDAC is a shadow register used for monitoring the DMA channel.
+>  I think it would be a lot
+> simpler if omap_start_dma() always resets CDAC to 0, and the 
+> UART driver
+> just not set it explicitly.
 
-I wonder what happened to this patch? Some platforms would need
-this fix (i.e. the timer mode has to be used due to HW issues).
+This seems to be better option than exposing CDAC read/write API
+to other drivers since user need to write '0' before starting any DMA
+transfer which can be be done in omap_start_dma().
 
-> ---
-> Subject: [PATCH] convert oprofile from timer_hook to hrtimer
-> 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Oprofile is currently broken on systems running with NOHZ enabled.
-> A maximum of 1 tick is accounted via the timer_hook if a cpu sleeps
-> for a longer period of time. This does bad things to the percentages
-> in the profiler output. To solve this problem convert oprofile to
-> use a restarting hrtimer instead of the timer_hook.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  drivers/oprofile/oprof.c     |   12 ++++--
->  drivers/oprofile/oprof.h     |    3 +
->  drivers/oprofile/timer_int.c |   77 +++++++++++++++++++++++++++++++++++++------
->  3 files changed, 78 insertions(+), 14 deletions(-)
-> 
-> diff -urpN linux-2.6/drivers/oprofile/oprof.c linux-2.6-patched/drivers/oprofile/oprof.c
-> --- linux-2.6/drivers/oprofile/oprof.c	2009-06-24 17:21:12.000000000 +0200
-> +++ linux-2.6-patched/drivers/oprofile/oprof.c	2009-06-24 17:18:28.000000000 +0200
-> @@ -184,22 +184,26 @@ static int __init oprofile_init(void)
->  	int err;
->  
->  	err = oprofile_arch_init(&oprofile_ops);
-> -
->  	if (err < 0 || timer) {
->  		printk(KERN_INFO "oprofile: using timer interrupt.\n");
-> -		oprofile_timer_init(&oprofile_ops);
-> +		err = oprofile_timer_init(&oprofile_ops);
-> +		if (err)
-> +			goto out_arch;
->  	}
-> -
->  	err = oprofilefs_register();
->  	if (err)
-> -		oprofile_arch_exit();
-> +		goto out_arch;
-> +	return 0;
->  
-> +out_arch:
-> +	oprofile_arch_exit();
->  	return err;
->  }
->  
->  
->  static void __exit oprofile_exit(void)
->  {
-> +	oprofile_timer_exit();
->  	oprofilefs_unregister();
->  	oprofile_arch_exit();
->  }
-> diff -urpN linux-2.6/drivers/oprofile/oprof.h linux-2.6-patched/drivers/oprofile/oprof.h
-> --- linux-2.6/drivers/oprofile/oprof.h	2009-06-24 17:21:12.000000000 +0200
-> +++ linux-2.6-patched/drivers/oprofile/oprof.h	2009-06-24 17:19:11.000000000 +0200
-> @@ -32,7 +32,8 @@ struct super_block;
->  struct dentry;
->  
->  void oprofile_create_files(struct super_block *sb, struct dentry *root);
-> -void oprofile_timer_init(struct oprofile_operations *ops);
-> +int oprofile_timer_init(struct oprofile_operations *ops);
-> +void oprofile_timer_exit(void);
->  
->  int oprofile_set_backtrace(unsigned long depth);
->  
-> diff -urpN linux-2.6/drivers/oprofile/timer_int.c linux-2.6-patched/drivers/oprofile/timer_int.c
-> --- linux-2.6/drivers/oprofile/timer_int.c	2009-06-24 17:21:12.000000000 +0200
-> +++ linux-2.6-patched/drivers/oprofile/timer_int.c	2009-06-24 17:18:44.000000000 +0200
-> @@ -13,34 +13,93 @@
->  #include <linux/oprofile.h>
->  #include <linux/profile.h>
->  #include <linux/init.h>
-> +#include <linux/cpu.h>
-> +#include <linux/hrtimer.h>
-> +#include <asm/irq_regs.h>
->  #include <asm/ptrace.h>
->  
->  #include "oprof.h"
->  
-> -static int timer_notify(struct pt_regs *regs)
-> +static DEFINE_PER_CPU(struct hrtimer, oprofile_hrtimer);
-> +
-> +static enum hrtimer_restart oprofile_hrtimer_notify(struct hrtimer *hrtimer)
-> +{
-> +	oprofile_add_sample(get_irq_regs(), 0);
-> +	hrtimer_forward_now(hrtimer, ns_to_ktime(TICK_NSEC));
-> +	return HRTIMER_RESTART;
-> +}
-> +
-> +static void __oprofile_hrtimer_start(void *unused)
-> +{
-> +	struct hrtimer *hrtimer = &__get_cpu_var(oprofile_hrtimer);
-> +
-> +	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +	hrtimer->function = oprofile_hrtimer_notify;
-> +
-> +	hrtimer_start(hrtimer, ns_to_ktime(TICK_NSEC),
-> +		      HRTIMER_MODE_REL_PINNED);
-> +}
-> +
-> +static int oprofile_hrtimer_start(void)
->  {
-> -	oprofile_add_sample(regs, 0);
-> +	on_each_cpu(__oprofile_hrtimer_start, NULL, 1);
->  	return 0;
->  }
->  
-> -static int timer_start(void)
-> +static void __oprofile_hrtimer_stop(int cpu)
->  {
-> -	return register_timer_hook(timer_notify);
-> +	struct hrtimer *hrtimer = &per_cpu(oprofile_hrtimer, cpu);
-> +
-> +	hrtimer_cancel(hrtimer);
->  }
->  
-> +static void oprofile_hrtimer_stop(void)
-> +{
-> +	int cpu;
-> +	for_each_online_cpu(cpu)
-> +		__oprofile_hrtimer_stop(cpu);
-> +}
->  
-> -static void timer_stop(void)
-> +static int __cpuinit oprofile_cpu_notify(struct notifier_block *self,
-> +					 unsigned long action, void *hcpu)
->  {
-> -	unregister_timer_hook(timer_notify);
-> +	long cpu = (long) hcpu;
-> +
-> +	switch (action) {
-> +	case CPU_ONLINE:
-> +	case CPU_ONLINE_FROZEN:
-> +		smp_call_function_single(cpu, __oprofile_hrtimer_start,
-> +					 NULL, 1);
-> +		break;
-> +	case CPU_DEAD:
-> +	case CPU_DEAD_FROZEN:
-> +		__oprofile_hrtimer_stop(cpu);
-> +		break;
-> +	}
-> +	return NOTIFY_OK;
->  }
->  
-> +static struct notifier_block __refdata oprofile_cpu_notifier = {
-> +	.notifier_call = oprofile_cpu_notify,
-> +};
->  
-> -void __init oprofile_timer_init(struct oprofile_operations *ops)
-> +int __init oprofile_timer_init(struct oprofile_operations *ops)
->  {
-> +	int rc;
-> +
-> +        rc = register_hotcpu_notifier(&oprofile_cpu_notifier);
-> +        if (rc)
-> +		return rc;
->  	ops->create_files = NULL;
->  	ops->setup = NULL;
->  	ops->shutdown = NULL;
-> -	ops->start = timer_start;
-> -	ops->stop = timer_stop;
-> +	ops->start = oprofile_hrtimer_start;
-> +	ops->stop = oprofile_hrtimer_stop;
->  	ops->cpu_type = "timer";
-> +	return 0;
-> +}
-> +
-> +void __exit oprofile_timer_exit(void)
-> +{
-> +	unregister_hotcpu_notifier(&oprofile_cpu_notifier);
->  }
-> 
-> ---
-> 
+I am wondering how other drivers are using DMA transfer API's without 
+resetting CDAC to zero. 
+
+-Manjunath
+
 
