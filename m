@@ -1,76 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262Ab0CBC24 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 21:28:56 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:50849 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143Ab0CBC2z (ORCPT
+	id S1753273Ab0CBCgq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 21:36:46 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:37342 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309Ab0CBCgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 21:28:55 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in  git tree
-In-Reply-To: <20100302012055.GK6758@linux.vnet.ibm.com> (Paul E. McKenney's
-	message of "Mon, 1 Mar 2010 17:20:55 -0800")
-References: <20100301042249.GA12289@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.1003010812410.3616@localhost.localdomain>
-	<20100301164800.GC6758@linux.vnet.ibm.com>
-	<m3r5o34vnp.fsf@lugabout.jhcloos.org>
-	<20100302012055.GK6758@linux.vnet.ibm.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 01 Mar 2010 20:53:19 -0500
-Message-ID: <m3d3zn4hg8.fsf@lugabout.jhcloos.org>
+	Mon, 1 Mar 2010 21:36:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=kYs0qFPYLb5ya0RbCys++vqGKqwlMhFnLJbQxAba+cqIhfnYeDn+XvD/A8+4ssfNQx
+         YQbiYx9b71Y+42N5BgsSplpTFW0baMjvDZVhAkYup7M3lhz56jbJtFJ50ga2lC8zPYHc
+         oYP0AfYA+8GPYoqudDxTJbF1mVbePPaC/YAT8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Hashcash: 1:30:100302:paulmck@linux.vnet.ibm.com::ori+00RMt9OvIouF:0000000000000000000000000000000000Utpry
-X-Hashcash: 1:30:100302:torvalds@linux-foundation.org::F8DtrbxGRHWNE0K9:0000000000000000000000000000000vjR4y
-X-Hashcash: 1:30:100302:linux-kernel@vger.kernel.org::fjTouoEtTZhQKwZa:00000000000000000000000000000000b3uiK
-X-Hashcash: 1:30:100302:zippel@linux-m68k.org::ErXMJrVK3fx8MMP3:000000000000000000000000000000000000000Waf3p
-X-Hashcash: 1:30:100302:mingo@elte.hu::raoDPR2urVGGVc+M:000F/xqJ
-X-Hashcash: 1:30:100302:akpm@linux-foundation.org::LVq8FfVswqgtMP83:00000000000000000000000000000000000YmaZ/
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Mon, 1 Mar 2010 18:36:24 -0800
+Message-ID: <43e72e891003011836x5c3d0336h6f0f99100b525b9@mail.gmail.com>
+Subject: compat-wireless based on the 2.6.33 kernel release
+To: linux-wireless <linux-wireless@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Paul" == Paul E McKenney <paulmck@linux.vnet.ibm.com> writes:
+I kicked out a new release for compat-wireless based on 2.6.33 [1]. As
+usual this ships the entire 802.11 and Bluetooth subsystems, the Sonic
+Silicon Backplane, b44 (Broadcom Ethernet driver as it depends on the
+ssb as being replaced for b43), and all Atheros Ethernet drivers as
+are released on the 2.6.33 kernel.
 
-Paul> Agreed!  The "-dirty" modifier for the case of changes not yet
-Paul> checked into git looks especially helpful.
+This release also now has a directory for cherry picked patches we
+think are important for 802.11 but not so critical for stable, the
+only one I have added so far is Atheros Ethernet AR8152 and AR8152
+support which won't get to users until 2.6.34 otherwise. If you have a
+few important yet not stable mac80211/new-driver send me the
+respective backported cherry pick from linux-next and we can add it;
+the only requirement is it *must* be part of linux-next already.
+Distributions could also potentially use the patches in this directory
+as a guide for cherry picking some changes / new drivers / etc.
 
-JimC> Except that the script calls »git update-index --refresh --unmerged«
-JimC> and »git diff-index --name-only HEAD«, both of which are painfully
-JimC> slow and resource intensive.
+You can find the kernel ChangeLog for the driver/subsystem changes for
+this release on orbit [2]. For the backport work you can review the
+2.6.32.y branch via gitweb for both compat-wireless.git [3] and
+compat.git [4]. Please help test it and report any issues [5].
 
-JimC> I'd hate to have that run every time I make a kernel.
+Thanks to Pavel Roskin's backporting of debugfs_remove_recursive()
+through the compat.git tree we can now take again the entire tree to
+older kernels, so far tested are 2.6.25 with this and the new
+Multiqueue backport work, but technically you can take kernel
+compatibility further to older kernels by selecting individual
+drivers. It should be possible to use ath5k and ath9k on >= 2.6.23
+with this release so that is left enabled if you choose to select only
+those drivers from compilation:
 
-Paul> Good point...  Should we have an environment variable that controls
-Paul> this behavior?
+./scripts/driver-select ath5k
+or
+./scripts/driver-select ath9k
 
-I wouldn't mind the intial idea: just the abbreviated top of three hash.
+A few users reported issues with SSB and B43 not compiling on the last
+release but I tested this myself and it does compile. Please be sure
+to check that you have CONFIG_SSB enabled as a module on your current
+kernel configuration, otherwise CONFIG_SSB does not get built. If you
+are using a distribution kernel you should be fine.
 
-I was, next, going to write that CONFIG_LOCALVERSION_AUTO already exists
-for that, but LOCALVERSION_AUTO calls scripts/setlocalversion these days
-and that is what I'd prefer to avoid.  [SIGH]
+[1] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/compat-wireless-2.6.33.tar.bz2
+[2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/ChangeLog-2.6.33-wireless
+[3] http://git.kernel.org/?p=linux/kernel/git/mcgrof/compat-wireless-2.6.git;a=shortlog;h=refs/heads/linux-2.6.33.y
+[4] http://git.kernel.org/?p=linux/kernel/git/mcgrof/compat.git;a=shortlog;h=refs/heads/linux-2.6.33.y
+[5] http://wireless.kernel.org/en/users/Documentation/Reporting_bugs
 
-Shows how long it has been since I last used it.  I stopped using it
-when I was maintaining my .config in git.  Now I maintain .config in a
-separate git repo, for the express purpose of avoiding a merge (rather
-than a fast forward) when I run git pull.  Something that a local edit
-of scripts/setlocalversion will, of course, prevent.
-
-Anyone up for a CONFIG_LOCALVERSION_AUTO_DO_NOT_BOTHER_WITH_DIRTY? ☺
-
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+  Luis
