@@ -1,98 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270Ab0CBUSA (ORCPT <rfc822;w@1wt.eu>);
+	id S1757280Ab0CBUSQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:18:16 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:52402 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756696Ab0CBUSA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Mar 2010 15:18:00 -0500
-Received: from mail.df.lth.se ([194.47.250.12]:59632 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756649Ab0CBUMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:12:49 -0500
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH 4/5] DMAENGINE: COH 901 318 configure channel direction
-Date: Tue,  2 Mar 2010 21:12:46 +0100
-Message-Id: <1267560766-17822-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+From: Surbhi Palande <surbhi.palande@canonical.com>
+To: dri-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie, eric@anholt.net,
+       yakui.zhao@intel.com, jbarnes@virtuousgeek.org, airlied@redhat.com,
+       zhenyuw@linux.intel.com
+Subject: This patch fixes the "no connectors reported" bug on Sony VGN-BX196VP and
+Date: Tue,  2 Mar 2010 22:17:57 +0200
+Message-Id: <1267561077-6292-1-git-send-email-surbhi.palande@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes the COH 901 318 configure channel direction (to or from
-device) dynamically, instead of being passed in from the platform
-data. This was necessary in order to get the MMC/SD-card channel
-bidirectional (all other channels on the U300 were either RX or
-TX but this one was both). This also sets memcpy() alignent to
-even 2^2 (32bit) boundaries, which makes the memcpy() stress tests
-start working.
+Thanks !
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+Regards,
+Surbhi.
+
+>From 47edbf7437388b23562f12888c36af6b59f56eec Mon Sep 17 00:00:00 2001
+From: Surbhi Palande <surbhi.palande@canonical.com>
+Date: Mon, 22 Feb 2010 22:39:28 +0200
+Subject: [PATCH] drm/i915: blacklist lid status: Sony VGN-BX196VP, Dell Inspiron 700m
+
+BugLink: https://bugs.launchpad.net/bugs/515246
+
+Sony VGN-BX196VP and Dell Inspiron 700m report lid status as closed
+when it is open. This leads to a "no connectors reported" error at startup.
+Blacklisting them, to always return a connected status for the default
+lvds connector.
+
+Signed-off-by: Surbhi Palande <surbhi.palande@canonical.com>
 ---
- drivers/dma/coh901318.c |   14 ++++++++++++++
+ drivers/gpu/drm/i915/intel_lvds.c |   14 ++++++++++++++
  1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
-index 544c462..1656fdc 100644
---- a/drivers/dma/coh901318.c
-+++ b/drivers/dma/coh901318.c
-@@ -928,6 +928,7 @@ coh901318_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 	struct coh901318_chan *cohc = to_coh901318_chan(chan);
- 	struct coh901318_lli *data;
- 	struct coh901318_desc *cohd;
-+	const struct coh901318_params *params;
- 	struct scatterlist *sg;
- 	int len = 0;
- 	int size;
-@@ -935,6 +936,7 @@ coh901318_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 	u32 ctrl_chained = cohc_chan_param(cohc)->ctrl_lli_chained;
- 	u32 ctrl = cohc_chan_param(cohc)->ctrl_lli;
- 	u32 ctrl_last = cohc_chan_param(cohc)->ctrl_lli_last;
-+	u32 config;
- 	unsigned long flg;
- 	int ret;
+diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+index c2e8a45..b94a5e5 100644
+--- a/drivers/gpu/drm/i915/intel_lvds.c
++++ b/drivers/gpu/drm/i915/intel_lvds.c
+@@ -643,6 +643,20 @@ static const struct dmi_system_id bad_lid_status[] = {
+ 			DMI_MATCH(DMI_BOARD_NAME, "M5x0N"),
+ 		},
+ 	},
++	{
++		.ident = "Sony VGN-BX196VP",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++			DMI_MATCH(DMI_BOARD_NAME, "VGN-BX196VP"),
++		},
++	},
++	{
++		.ident = "Dell Inspiron 700m",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc"),
++			DMI_MATCH(DMI_BOARD_NAME, "Inspiron 700m"),
++		},
++	},
+ 	{ }
+ };
  
-@@ -952,10 +954,14 @@ coh901318_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 		/* Trigger interrupt after last lli */
- 		ctrl_last |= COH901318_CX_CTRL_TC_IRQ_ENABLE;
- 
-+	params = cohc_chan_param(cohc);
-+	config = params->config;
-+
- 	if (direction == DMA_TO_DEVICE) {
- 		u32 tx_flags = COH901318_CX_CTRL_PRDD_SOURCE |
- 			COH901318_CX_CTRL_SRC_ADDR_INC_ENABLE;
- 
-+		config |= COH901318_CX_CFG_RM_MEMORY_TO_PRIMARY;
- 		ctrl_chained |= tx_flags;
- 		ctrl_last |= tx_flags;
- 		ctrl |= tx_flags;
-@@ -963,12 +969,15 @@ coh901318_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 		u32 rx_flags = COH901318_CX_CTRL_PRDD_DEST |
- 			COH901318_CX_CTRL_DST_ADDR_INC_ENABLE;
- 
-+		config |= COH901318_CX_CFG_RM_PRIMARY_TO_MEMORY;
- 		ctrl_chained |= rx_flags;
- 		ctrl_last |= rx_flags;
- 		ctrl |= rx_flags;
- 	} else
- 		goto err_direction;
- 
-+	coh901318_set_conf(cohc, config);
-+
- 	/* The dma only supports transmitting packages up to
- 	 * MAX_DMA_PACKET_SIZE. Calculate to total number of
- 	 * dma elemts required to send the entire sg list
-@@ -1250,6 +1259,11 @@ static int __init coh901318_probe(struct platform_device *pdev)
- 	base->dma_memcpy.device_issue_pending = coh901318_issue_pending;
- 	base->dma_memcpy.device_terminate_all = coh901318_terminate_all;
- 	base->dma_memcpy.dev = &pdev->dev;
-+	/*
-+	 * This controller can only access address at even 32bit boundaries,
-+	 * i.e. 2^2
-+	 */
-+	base->dma_memcpy.copy_align = 2;
- 	err = dma_async_device_register(&base->dma_memcpy);
- 
- 	if (err)
 -- 
 1.6.3.3
 
