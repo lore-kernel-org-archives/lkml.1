@@ -1,48 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151Ab0CBSkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:40:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33212 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750830Ab0CBSkg (ORCPT
+	id S1752480Ab0CBSmZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:42:25 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:30781 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752007Ab0CBSmY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:40:36 -0500
-Date: Tue, 2 Mar 2010 10:39:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@linux.kernel.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Alok Kataria <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       =?ISO-8859-15?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
-Subject: Re: [GIT PULL] x86/mm fixes
-In-Reply-To: <201003020010.o220Ax3Z025848@hera.kernel.org>
-Message-ID: <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain>
-References: <201003020010.o220Ax3Z025848@hera.kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Mar 2010 13:42:24 -0500
+X-IronPort-AV: E=Sophos;i="4.49,568,1262592000"; 
+   d="scan'208";a="325313337"
+Subject: Re: [RFC] nfs: use 4*rsize readahead size
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: John Stoffel <john@stoffel.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <19341.19446.356359.99958@stoffel.org>
+References: <20100224024100.GA17048@localhost>
+	 <20100224032934.GF16175@discord.disaster>
+	 <20100224041822.GB27459@localhost>
+	 <20100224052215.GH16175@discord.disaster> <20100224061247.GA8421@localhost>
+	 <20100224073940.GJ16175@discord.disaster> <20100226074916.GA8545@localhost>
+	 <20100302031021.GA14267@localhost>
+	 <1267539563.3099.43.camel@localhost.localdomain>
+	 <19341.19446.356359.99958@stoffel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Tue, 02 Mar 2010 13:42:19 -0500
+Message-ID: <1267555339.3099.127.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 02 Mar 2010 18:42:20.0508 (UTC) FILETIME=[174911C0:01CABA38]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-03-02 at 12:33 -0500, John Stoffel wrote: 
+> >>>>> "Trond" == Trond Myklebust <Trond.Myklebust@netapp.com> writes:
+> 
+> Trond> On Tue, 2010-03-02 at 11:10 +0800, Wu Fengguang wrote: 
+> >> Dave,
+> >> 
+> >> Here is one more test on a big ext4 disk file:
+> >> 
+> >> 16k	39.7 MB/s
+> >> 32k	54.3 MB/s
+> >> 64k	63.6 MB/s
+> >> 128k	72.6 MB/s
+> >> 256k	71.7 MB/s
+> >> rsize ==> 512k  71.7 MB/s
+> >> 1024k	72.2 MB/s
+> >> 2048k	71.0 MB/s
+> >> 4096k	73.0 MB/s
+> >> 8192k	74.3 MB/s
+> >> 16384k	74.5 MB/s
+> >> 
+> >> It shows that >=128k client side readahead is enough for single disk
+> >> case :) As for RAID configurations, I guess big server side readahead
+> >> should be enough.
+> 
+> Trond> There are lots of people who would like to use NFS on their
+> Trond> company WAN, where you typically have high bandwidths (up to
+> Trond> 10GigE), but often a high latency too (due to geographical
+> Trond> dispersion).  My ping latency from here to a typical server in
+> Trond> NetApp's Bangalore office is ~ 312ms. I read your test results
+> Trond> with 10ms delays, but have you tested with higher than that?
+> 
+> If you have that high a latency, the low level TCP protocol is going
+> to kill your performance before you get to the NFS level.  You really
+> need to open up the TCP window size at that point.  And it only gets
+> worse as the bandwidth goes up too.  
 
+Yes. You need to open the TCP window in addition to reading ahead
+aggressively.
 
-On Tue, 2 Mar 2010, H. Peter Anvin wrote:
-> +		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
-> +		end_pfn = (res.end + 1) >> PAGE_SHIFT;
-> +		if (end_pfn > pfn)
-> +		    ret = (*func)(pfn, end_pfn - pfn, arg);
->  		if (ret)
->  			break;
->  		res.start = res.end + 1;
+> There's no good solution, because while you can get good throughput at
+> points, latency is going to suffer no matter what.
 
-What kind of messed-up indentation is that? We don't use 4-char indents.
+It depends upon your workload. Sequential read and write should still be
+doable if you have aggressive readahead and open up for lots of parallel
+write RPCs.
 
-		Linus
+Cheers
+  Trond
