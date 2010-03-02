@@ -1,65 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752143Ab0CBLd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 06:33:57 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43100 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811Ab0CBLd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 06:33:56 -0500
-Date: Tue, 2 Mar 2010 12:34:06 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch] RFC directio: partial writes support
-Message-ID: <20100302113406.GA4763@quack.suse.cz>
-References: <87iq9lxz3t.fsf@openvz.org>
- <20100301152149.7ce78e14.akpm@linux-foundation.org>
- <20100302092502.GD8653@laptop>
+	id S1752362Ab0CBLeQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 06:34:16 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33952 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752163Ab0CBLeL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 06:34:11 -0500
+Date: Tue, 2 Mar 2010 19:34:08 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto, Speed testing support for ghash
+Message-ID: <20100302113408.GA1824@gondor.apana.org.au>
+References: <1267430804.1640.85.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100302092502.GD8653@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267430804.1640.85.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 02-03-10 20:25:02, Nick Piggin wrote:
-> On Mon, Mar 01, 2010 at 03:21:49PM -0800, Andrew Morton wrote:
-> > On Thu, 25 Feb 2010 15:45:58 +0300
-> > Dmitry Monakhov <dmonakhov@openvz.org> wrote:
-> > 
-> > > Can someone please describe me why directio deny partial writes.
-> > > For example if someone try to write 100Mb but file system has less
-> > > data it return ENOSPC in the middle of block allocation.
-> > > All allocated blocks will be truncated (it may be 100Mb -4k) end
-> > > ENOSPC will be returned. As far as i remember direct_io always act
-> > > like this, but i never asked why?
-> > > Why do we have to give up all the progress we made?
-> > > In fact partial writes are possible in case of holes, when we 
-> > > fall back to buffered write. XFS implemented partial writes.
-> > 
-> > The problem with direct-io writes is that the writes don't necessarily
-> > complete in file-offset-ascending order.  So if we've issued 50 write
-> > BIOs and then hit an EIO on a BIO then we could have a hunk of
-> > unwritten data with newly-writted data either side of it.  If we get a
-> > bunch of discontiguous EIO BIOs coming in then the problem gets even
-> > messier - we have a span of disk which has a random mix of
-> > correctly-written and not-correctly-written runs of sectors.  What do
-> > we do with that?
+On Mon, Mar 01, 2010 at 04:06:44PM +0800, Huang Ying wrote:
+> Because ghash needs setkey, the setkey and keysize template support
+> for test_hash_speed is added.
 > 
-> Hmm, what if we're filling in a hole with direct IO? I don't see where
-> blocks allocated in DIO code will be trimmed on a failed write (because
-> it's within isize). This could cause uninitalized data of the block to
-> leak couldn't it?
-  The trick is that blockdev_direct_IO is defined to pass
-DIO_SKIP_HOLES to __blockdev_direct_IO. Thus e.g. ext2 or ext3 will just
-fail the direct IO if there is a hole and we fall back to buffered IO
-which should handle that just fine.
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> ---
+>  crypto/tcrypt.c |  122 +++++++++++++++++++++++++++++++++++---------------------
+>  crypto/tcrypt.h |    1 
+>  2 files changed, 78 insertions(+), 45 deletions(-)
+> 
+> --- a/crypto/tcrypt.c
+> +++ b/crypto/tcrypt.c
+> @@ -395,12 +395,13 @@ out:
+>  }
+>  
+>  static void test_hash_speed(const char *algo, unsigned int sec,
+> -			    struct hash_speed *speed)
+> +			    struct hash_speed *speed, u8 *keysize)
 
-								Honza
+Can we possibly move keysize into struct hash_speed to reduce
+the churn?
+
+Thanks,
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
