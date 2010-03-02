@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541Ab0CBX3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:52 -0500
-Received: from kroah.org ([198.145.64.141]:38700 "EHLO coco.kroah.org"
+	id S1754650Ab0CBXbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:31:35 -0500
+Received: from kroah.org ([198.145.64.141]:38746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420Ab0CBX3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:47 -0500
+	id S1754539Ab0CBX3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:52 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+Cc: "Lee, Chun-Yi" <jlee@novell.com>,
+       Lennart Poettering <mzxreary@0pointer.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 53/62] sysfs: Pass super_block to sysfs_get_inode
-Date: Tue,  2 Mar 2010 15:28:52 -0800
-Message-Id: <1267572541-410-53-git-send-email-gregkh@suse.de>
+Subject: [PATCH 59/62] msi-laptop: Add resume method for set the SCM load again
+Date: Tue,  2 Mar 2010 15:28:58 -0800
+Message-Id: <1267572541-410-59-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
@@ -21,88 +21,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Lee, Chun-Yi <jlee@novell.com>
 
-Currently sysfs_get_inode magically returns an inode on
-sysfs_sb.  Make the super_block parameter explicit and
-the code becomes clearer.
+Implement the resume method for set the load SCM flag after system reusme.
+Without this patch, the wifi function key on SCM model will back to BIOS
+control mode then confuse with the userland software control.
+e.g. MSI N034
 
-Acked-by: Tejun Heo <tj@kernel.org>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
+Cc: Lennart Poettering <mzxreary@0pointer.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c   |    2 +-
- fs/sysfs/inode.c |    5 +++--
- fs/sysfs/mount.c |    2 +-
- fs/sysfs/sysfs.h |    2 +-
- 4 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/platform/x86/msi-laptop.c |   26 +++++++++++++++++++++++++-
+ 1 files changed, 25 insertions(+), 1 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 481fdec..5907178 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -645,7 +645,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	}
+diff --git a/drivers/platform/x86/msi-laptop.c b/drivers/platform/x86/msi-laptop.c
+index ff21d1a..af1b62f 100644
+--- a/drivers/platform/x86/msi-laptop.c
++++ b/drivers/platform/x86/msi-laptop.c
+@@ -77,6 +77,8 @@
+ #define MSI_STANDARD_EC_SCM_LOAD_ADDRESS	0x2d
+ #define MSI_STANDARD_EC_SCM_LOAD_MASK		(1 << 0)
  
- 	/* attach dentry and inode */
--	inode = sysfs_get_inode(sd);
-+	inode = sysfs_get_inode(dir->i_sb, sd);
- 	if (!inode) {
- 		ret = ERR_PTR(-ENOMEM);
- 		goto out_unlock;
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 0d09f6c..082daae 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -283,6 +283,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
++static int msi_laptop_resume(struct platform_device *device);
++
+ static int force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
+@@ -395,7 +397,8 @@ static struct platform_driver msipf_driver = {
+ 	.driver = {
+ 		.name = "msi-laptop-pf",
+ 		.owner = THIS_MODULE,
+-	}
++	},
++	.resume = msi_laptop_resume,
+ };
  
- /**
-  *	sysfs_get_inode - get inode for sysfs_dirent
-+ *	@sb: super block
-  *	@sd: sysfs_dirent to allocate inode for
-  *
-  *	Get inode for @sd.  If such inode doesn't exist, a new inode
-@@ -295,11 +296,11 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
-  *	RETURNS:
-  *	Pointer to allocated inode on success, NULL on failure.
-  */
--struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
-+struct inode * sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd)
+ static struct platform_device *msipf_device;
+@@ -584,6 +587,27 @@ err_bluetooth:
+ 	return retval;
+ }
+ 
++static int msi_laptop_resume(struct platform_device *device)
++{
++	u8 data;
++	int result;
++
++	if (!load_scm_model)
++		return 0;
++
++	/* set load SCM to disable hardware control by fn key */
++	result = ec_read(MSI_STANDARD_EC_SCM_LOAD_ADDRESS, &data);
++	if (result < 0)
++		return result;
++
++	result = ec_write(MSI_STANDARD_EC_SCM_LOAD_ADDRESS,
++		data | MSI_STANDARD_EC_SCM_LOAD_MASK);
++	if (result < 0)
++		return result;
++
++	return 0;
++}
++
+ static int load_scm_model_init(struct platform_device *sdev)
  {
- 	struct inode *inode;
- 
--	inode = iget_locked(sysfs_sb, sd->s_ino);
-+	inode = iget_locked(sb, sd->s_ino);
- 	if (inode && (inode->i_state & I_NEW))
- 		sysfs_init_inode(sd, inode);
- 
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 4974995..89db07e 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -54,7 +54,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	/* get root inode, initialize and unlock it */
- 	mutex_lock(&sysfs_mutex);
--	inode = sysfs_get_inode(&sysfs_root);
-+	inode = sysfs_get_inode(sb, &sysfs_root);
- 	mutex_unlock(&sysfs_mutex);
- 	if (!inode) {
- 		pr_debug("sysfs: could not get root inode\n");
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 5a3192a..7593d71 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -172,7 +172,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
- /*
-  * inode.c
-  */
--struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
-+struct inode *sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd);
- void sysfs_delete_inode(struct inode *inode);
- int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
- int sysfs_permission(struct inode *inode, int mask);
+ 	u8 data;
 -- 
 1.7.0.1
 
