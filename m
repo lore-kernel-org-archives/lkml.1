@@ -1,66 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737Ab0CBIPQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:15:16 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34269 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753508Ab0CBIPO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:15:14 -0500
-Date: Tue, 2 Mar 2010 17:12:14 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrea Righi <arighi@develer.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-Id: <20100302171214.99f9c73d.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100302080056.GA1548@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
-	<1267478620-5276-4-git-send-email-arighi@develer.com>
-	<20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302080056.GA1548@linux>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753810Ab0CBIPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:15:50 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:50184 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753608Ab0CBIPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:15:49 -0500
+Date: Tue, 2 Mar 2010 09:15:47 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
+Message-ID: <20100302081547.GP5768@kernel.dk>
+References: <201003011615.31709.dmitry.torokhov@gmail.com> <20100302075656.GO5768@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302075656.GO5768@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 09:01:58 +0100, Andrea Righi <arighi@develer.com> wrote:
-> On Tue, Mar 02, 2010 at 09:23:09AM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Mon,  1 Mar 2010 22:23:40 +0100
-> > Andrea Righi <arighi@develer.com> wrote:
+On Tue, Mar 02 2010, Jens Axboe wrote:
+> On Mon, Mar 01 2010, Dmitry Torokhov wrote:
+> > Hi,
 > > 
-> > > Apply the cgroup dirty pages accounting and limiting infrastructure to
-> > > the opportune kernel functions.
-> > > 
-> > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > It looks like block tree that has been pulled today into mainline is
+> > busted, I am getting the Opps below on boot with the following commit:
 > > 
-> > Seems nice.
+> > commit b1bf9368407ae7e89d8a005bb40beb70a41df539
+> > Merge: 524df55 4671a13
+> > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date:   Mon Mar 1 09:00:29 2010 -0800
 > > 
-> > Hmm. the last problem is moving account between memcg.
+> >     Merge branch 'for-2.6.34' of git://git.kernel.dk/linux-2.6-block
+> >  
 > > 
-> > Right ?
+> > but not with the previous one:
+> > 
+> > commit 524df55725217b13d5a232fb5badb5846418ea0e
+> > Merge: 0f45339 6679ee1
+> > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date:   Mon Mar 1 08:58:44 2010 -0800
+> > 
+> >     Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
+> > 
+> > This is on plain Fedora 12 VM.
+> > 
+> > Thanks.
+> > 
+> > -- 
+> > Dmitry
+> > 
+> > sd 2:0:0:0: Attached scsi generic sg1 type 0
+> > sd 2:0:0:0: [sda] 16777216 512-byte logical blocks: (8.58 GB/8.00 GiB)
+> > sd 2:0:0:0: [sda] Write Protect is off
+> > sd 2:0:0:0: [sda] Cache data unavailable
+> > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > sd 2:0:0:0: [sda] Cache data unavailable
+> > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> >  sda: sda1 sda2
+> > sd 2:0:0:0: [sda] Cache data unavailable
+> > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > sd 2:0:0:0: [sda] Attached SCSI disk
+> > device-mapper: multipath: version 1.1.1 loaded
+> > dracut: Scanning devices sda2  for LVM volume groups 
+> > dracut: Reading all physical volumes. This may take a while...
+> > dracut: Found volume group "VolGroup" using metadata type lvm2
+> > dracut: 2 logical volume(s) in volume group "VolGroup" now active
+> > EXT4-fs (dm-0): mounted filesystem with ordered data mode
+> > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > IP: [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+> > PGD 3b776067 PUD 3b7b1067 PMD 0 
+> > Oops: 0002 [#1] SMP 
+> > last sysfs file: /sys/kernel/uevent_seqnum
+> > CPU 0 
+> > Modules linked in: dm_multipath mptspi mptscsih mptbase scsi_transport_spi floppy [last unloaded: scsi_wait_scan]
+> > 
+> > Pid: 1, comm: init Not tainted 2.6.33 #4 440BX Desktop Reference Platform/VMware Virtual Platform
+> > RIP: 0010:[<ffffffff81128ee1>]  [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
 > 
-> Correct. This was actually the last item of the TODO list. Anyway, I'm
-> still considering if it's correct to move dirty pages when a task is
-> migrated from a cgroup to another. Currently, dirty pages just remain in
-> the original cgroup and are flushed depending on the original cgroup
-> settings. That is not totally wrong... at least moving the dirty pages
-> between memcgs should be optional (move_charge_at_immigrate?).
-> 
-FYI, I'm planning to add file-cache and shmem/tmpfs support for move_charge feature
-for 2.6.35.
-But, hmm, it would be complicated if we try to move dirty account too.
+> Can you check where that is? Just do a gdb vmlinux and then an
+> l *mpage_end_io_read+0x45
 
+I tried checking mine here, but we must be using vastly different gcc
+versions. So I'd like that output. Can you also try and see if reverting
+9f7cdbc33f36d28e57eaba0093f68f0d14c38c5b makes it work?
 
-Thanks,
-Daisuke Nishimura.
+-- 
+Jens Axboe
+
