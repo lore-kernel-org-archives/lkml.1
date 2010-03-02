@@ -1,93 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156Ab0CBXzH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:55:07 -0500
-Received: from sh.osrg.net ([192.16.179.4]:48054 "EHLO sh.osrg.net"
+	id S1758164Ab0CBXyn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:54:43 -0500
+Received: from kroah.org ([198.145.64.141]:38560 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269Ab0CBXzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:55:01 -0500
-Date: Wed, 3 Mar 2010 08:54:45 +0900
-To: linuxppc-dev@ozlabs.org
-Cc: benh@kernel.crashing.or, arnd@arndb.de, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Mar 2010 08:54:46 +0900 (JST)
+	id S1754262Ab0CBX31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:27 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH 26/62] sysdev: fix up the probe/release attributes
+Date: Tue,  2 Mar 2010 15:28:25 -0800
+Message-Id: <1267572541-410-26-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230933.GA32287@kroah.com>
+References: <20100302230933.GA32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems that IOMMU_VMERGE option description gives the false
-information:
+These should be sysdev attributes, not class attributes.  This patch
+should resolve the problem.
 
-http://marc.info/?l=linux-sparc&m=126753808727669&w=2
-http://marc.info/?l=linux-sparc&m=126753880528825&w=2
+Thanks to Stephen Rothwell for pointing out the problem.
 
-IOMMU_VMERGE is unnecessary nowadays so how about removing it?
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
-
-The description says:
-
- Cause IO segments sent to a device for DMA to be merged virtually
- by the IOMMU when they happen to have been allocated contiguously.
- This doesn't add pressure to the IOMMU allocator. However, some
- drivers don't support getting large merged segments coming back
- from *_map_sg().
-
- Most drivers don't have this problem; it is safe to say Y here.
-
-It's out of date. Long ago, drivers didn't have a way to tell IOMMUs
-about their segment length limit (that is, the maximum segment length
-that they can handle). So IOMMUs merged as many segments as possible
-and gave too large segments to drivers.
-
-dma_get_max_seg_size() was introduced to solve the above
-problem. Device drives can use the API to tell IOMMU about the maximum
-segment length that they can handle. The powerpc IOMMU supports
-dma_get_max_seg_size() properly. In addition, the default limit (64K)
-should be safe for everyone.
-
-So this config option seems to be unnecessary.
-
-Note that this config option just enables users to disable the virtual
-merging by default (powerpc enables it by default). Users can still
-disable the virtual merging by the boot parameter.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/powerpc/Kconfig |   11 +----------
- 1 files changed, 1 insertions(+), 10 deletions(-)
+ drivers/base/cpu.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 155d571..2dfa83b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -314,17 +314,8 @@ config 8XX_MINIMAL_FPEMU
- 	  It is recommended that you build a soft-float userspace instead.
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 9121c77..7036e8e 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -79,24 +79,24 @@ void unregister_cpu(struct cpu *cpu)
+ }
  
- config IOMMU_VMERGE
--	bool "Enable IOMMU virtual merging"
-+	def_bool y
- 	depends on PPC64
--	default y
--	help
--	  Cause IO segments sent to a device for DMA to be merged virtually
--	  by the IOMMU when they happen to have been allocated contiguously.
--	  This doesn't add pressure to the IOMMU allocator. However, some
--	  drivers don't support getting large merged segments coming back
--	  from *_map_sg().
--
--	  Most drivers don't have this problem; it is safe to say Y here.
+ #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+-static ssize_t cpu_probe_store(struct class *class,
+-				struct class_attribute *attr,
++static ssize_t cpu_probe_store(struct sys_device *dev,
++				struct sysdev_attribute *attr,
+ 				const char *buf,
+ 			       size_t count)
+ {
+ 	return arch_cpu_probe(buf, count);
+ }
  
- config IOMMU_HELPER
- 	def_bool PPC64
+-static ssize_t cpu_release_store(struct class *class,
+-				struct class_attribute *attr,
++static ssize_t cpu_release_store(struct sys_device *dev,
++				struct sysdev_attribute *attr,
+ 				const char *buf,
+ 				 size_t count)
+ {
+ 	return arch_cpu_release(buf, count);
+ }
+ 
+-static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
+-static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
++static SYSDEV_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static SYSDEV_ATTR(release, S_IWUSR, NULL, cpu_release_store);
+ #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+@@ -261,8 +261,8 @@ int __init cpu_dev_init(void)
+ 
+ static struct sysdev_class_attribute *cpu_sysdev_class_attrs[] = {
+ #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+-	&class_attr_probe.attr,
+-	&class_attr_release.attr,
++	&attr_probe,
++	&attr_release,
+ #endif
+ 	&cpu_attrs[0].attr,
+ 	&cpu_attrs[1].attr,
 -- 
-1.6.5
+1.7.0.1
 
