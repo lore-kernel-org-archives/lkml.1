@@ -1,121 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019Ab0CBNKO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:10:14 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:60748 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776Ab0CBNKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:10:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XNRrya74El7GKQIKM6RoFHg9gaJh3AD69pxbjrQ2NEXZZcKbf2MMhBl6pbLKBU5fzz
-         OAjEE/JlAgTUqHy1nMvvUermQpXWMamftPVN2gbduEN0ksqN9JncxeKYrKZmVpIedP+0
-         xkFrSs4xfBBl9L+UcFchVdzGRb+WEuPkUa1QI=
-Date: Tue, 2 Mar 2010 14:10:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: eranian@google.com
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@elte.hu,
-       paulus@samba.org, perfmon2-devel@lists.sf.net, robert.richter@amd.com,
-       eranian@gmail.com
-Subject: Re: [PATCH] perf_events: add sampling period randomization support
-Message-ID: <20100302131002.GD5137@nowhere>
-References: <1267510029-19750-1-git-send-email-eranian@google.com>
+	id S1753115Ab0CBNKc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:10:32 -0500
+Received: from airmail.airvana.com ([131.239.32.135]:10025 "EHLO
+	airmail.wirelessworld.airvananet.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753062Ab0CBNK2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 08:10:28 -0500
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Mar 2010 08:10:28 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267510029-19750-1-git-send-email-eranian@google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: do_loop_readv_writev() not as described for drivers implementing only write()?
+Date: Tue, 2 Mar 2010 12:55:14 -0000
+Message-ID: <4B3F8896E1733D4787DDB0EA1C7FF91F01163E1D@ukmail.uk.wirelessworld.airvananet.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: do_loop_readv_writev() not as described for drivers implementing only write()?
+Thread-Index: Acq6B5o/aWqPGI/gTdOvH6n3R9tZyA==
+From: "Mike McTernan" <mmcternan@airvana.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Mar 2010 12:54:58.0062 (UTC) FILETIME=[903832E0:01CABA07]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 01, 2010 at 10:07:09PM -0800, eranian@google.com wrote:
-> This patch adds support for randomizing the sampling period.
-> Randomization is very useful to mitigate the bias that exists
-> with sampling. The random number generator does not need to
-> be sophisticated. This patch uses the builtin random32()
-> generator.
-> 
-> The user activates randomization by setting the perf_event_attr.random
-> field to 1 and by passing a bitmask to control the range of variation
-> above the base period. Period will vary from period to period & mask.
-> Note that randomization is not available when a target interrupt rate
-> (freq) is enabled.
-> 
-> The last used period can be collected using the PERF_SAMPLE_PERIOD flag
-> in sample_type.
-> 
-> The patch has been tested on X86. There is also code for PowerPC but
-> I could not test it.
-> 
-> 	Signed-off-by: Stephane Eranian <eranian@google.com>
-> 
-> --
->  arch/powerpc/kernel/perf_event.c       |    3 +++
->  arch/x86/kernel/cpu/perf_event.c       |    2 ++
->  arch/x86/kernel/cpu/perf_event_intel.c |    4 ++++
->  include/linux/perf_event.h             |    7 +++++--
->  kernel/perf_event.c                    |   24 ++++++++++++++++++++++++
->  5 files changed, 38 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
-> index b6cf8f1..994df17 100644
-> --- a/arch/powerpc/kernel/perf_event.c
-> +++ b/arch/powerpc/kernel/perf_event.c
-> @@ -1150,6 +1150,9 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
->  	val = 0;
->  	left = atomic64_read(&event->hw.period_left) - delta;
->  	if (period) {
-> +		if (event->attr.random)
-> +			perf_randomize_event_period(event);
-> +
->  		if (left <= 0) {
->  			left += period;
->  			if (left <= 0)
-> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-> index 641ccb9..159d951 100644
-> --- a/arch/x86/kernel/cpu/perf_event.c
-> +++ b/arch/x86/kernel/cpu/perf_event.c
-> @@ -1110,6 +1110,8 @@ static int x86_pmu_handle_irq(struct pt_regs *regs)
->  		if (val & (1ULL << (x86_pmu.event_bits - 1)))
->  			continue;
->  
-> +		if (event->attr.random)
-> +			perf_randomize_event_period(event);
->  		/*
->  		 * event overflow
->  		 */
-> diff --git a/arch/x86/kernel/cpu/perf_event_intel.c b/arch/x86/kernel/cpu/perf_event_intel.c
-> index cf6590c..5c8d6ed 100644
-> --- a/arch/x86/kernel/cpu/perf_event_intel.c
-> +++ b/arch/x86/kernel/cpu/perf_event_intel.c
-> @@ -690,6 +690,10 @@ static int intel_pmu_save_and_restart(struct perf_event *event)
->  	int ret;
->  
->  	x86_perf_event_update(event, hwc, idx);
-> +
-> +	if (event->attr.random)
-> +		perf_randomize_event_period(event);
-> +
->  	ret = x86_perf_event_set_period(event, hwc, idx);
->  
->  	return ret;
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index 04f06b4..e91a759 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -203,8 +203,8 @@ struct perf_event_attr {
->  				enable_on_exec :  1, /* next exec enables     */
->  				task           :  1, /* trace fork/exit       */
->  				watermark      :  1, /* wakeup_watermark      */
-> -
-> -				__reserved_1   : 49;
-> +				random	       :  1, /* period randomization  */
+Hi,
 
+I'm using writev() with an old FPGA driver which only implements
+write(), not aio_write().  I'm expecting the behaviour described in the
+man page for writev():
 
-I'd rather name this field random_period. Even though the comment
-tell us enough, it's better that the code speak for itself.
+"The  data  transfers  performed by readv() and writev() are atomic: the
+data written by writev() is written as a single block that is not
+intermingled with output from writes in other processes (but see pipe(7)
+for an exception); analogously, readv() is guaranteed to read a
+contiguous block of data from the file, regardless of read operations
+performed in other threads or processes that have file descriptors
+referring to the same open file description (see open(2))."
+
+I appear to be observing intermingling of individual iovec entries that
+are being written to the same fd from different threads i.e. each call
+to writev() isn't producing a contiguous block to be output.  This is at
+odds with the man page description.
+
+Looking into the kernel sources (from around 2.6.28 to 2.6.33), the
+driver doesn't implement aio_write(), so vfs_writev() gets handled by
+do_loop_readv_writev() as a series of discrete calls to the driver's
+write().
+
+I can't see where any locking is applied to ensure each iovec is handled
+serially without 'internmingling', which would awkwardly have to be
+outside the driver in this case.
+
+Hunting around I found various good articles on writev() and the aio
+stuff e.g.
+
+  http://lwn.net/Articles/170954/
+  http://lwn.net/Articles/24366/
+
+But nowhere can I find whether it is expected behaviour that
+writev/readv() for an driver which only implements write/readv() is
+actually non-atomic.  Lots of sources are stating the atomicity of these
+calls though.
+
+Have I overlooked some good docs or some locking hidden in the vfs
+handling?
+
+Aside I'm working to update the driver to provide aio_write() so it can
+provide it's own locking such that the userspace.
+
+Kind Regards,
+
+Mike
 
