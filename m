@@ -1,69 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306Ab0CBVTc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 16:19:32 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:46413 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905Ab0CBVTa (ORCPT
+	id S1752523Ab0CBVVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 16:21:43 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:60582 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580Ab0CBVVm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 16:19:30 -0500
-Message-ID: <4B8D80C3.1050006@ru.mvista.com>
-Date: Wed, 03 Mar 2010 00:18:59 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 2 Mar 2010 16:21:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Nz1f+9ejEHroAZlxu0OT1xG4eBj4WDltPEaluj2t13rTrL9YQZ9UOJ3QWQDB80y0Lu
+         0hus011tUkfmzfOM961TaSReHlYutB/OFaoQtOm0sE/siRjRNcm77gVc84V9dtsvCVHG
+         8sja7FbSpmzPcbyy+Ys7NZWcwMympt1hCtxcA=
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-CC: Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/12] ahci: Introduce ahci_set_em_messages()
-References: <20100302182850.GA32057@oksana.dev.rtsoft.ru> <20100302182939.GI3445@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100302182939.GI3445@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <e9c3a7c21003021306w3546521dsd1ad50893f1ea44b@mail.gmail.com>
+References: <1267560734-17001-1-git-send-email-linus.walleij@stericsson.com>
+	 <e9c3a7c21003021306w3546521dsd1ad50893f1ea44b@mail.gmail.com>
+Date: Tue, 2 Mar 2010 14:21:40 -0700
+X-Google-Sender-Auth: 3f4dbb845462f793
+Message-ID: <e9c3a7c21003021321h7df40afep2a3c82c6d429cf47@mail.gmail.com>
+Subject: Re: [PATCH 1/5] DMAENGINE: COH 901 318 cleanups
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Anton Vorontsov wrote:
-
-> Factor out some ahci_em_messages handling code from ahci_init_one().
-> We would like to reuse it for non-PCI devices.
+On Tue, Mar 2, 2010 at 2:06 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Tue, Mar 2, 2010 at 1:12 PM, Linus Walleij
+> <linus.walleij@stericsson.com> wrote:
+>>        if (cohc->nbr_active_done)
+>> +       /*
+>> +        * If another interrupt fired while the tasklet was scheduling,
+>> +        * we don't get called twice, so we have this number of active
+>> +        * counter that keep track of the number of IRQs expected to
+>> +        * be handled for this channel. If there happen to be more than
+>> +        * one IRQ to be ack:ed, we simply schedule this tasklet again.
+>> +        */
+>>                cohc->nbr_active_done--;
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/ata/ahci.c |   41 ++++++++++++++++++++++++-----------------
->  1 files changed, 24 insertions(+), 17 deletions(-)
+> Checkpatch made a justifiable wimper about this.  It looks like you
+> wanted to delete that if() according to the previous unified patch?
 >
-> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-> index 18443e9..6694b17 100644
-> --- a/drivers/ata/ahci.c
-> +++ b/drivers/ata/ahci.c
-> @@ -3040,6 +3040,29 @@ static inline void ahci_gtf_filter_workaround(struct ata_host *host)
->  {}
->  #endif
->  
-> +static void ahci_set_em_messages(struct ahci_host_priv *hpriv,
-> +				 struct ata_port_info *pi)
-> +{
-> +	u8 messages;
-> +	void __iomem *mmio = hpriv->mmio;
-> +	u32 em_loc = readl(mmio + HOST_EM_LOC);
-> +	u32 em_ctl = readl(mmio + HOST_EM_CTL);
-> +
-> +	if (!ahci_em_messages || !(hpriv->cap & HOST_CAP_EMS))
-> +		return;
-> +
-> +	messages = (em_ctl & EM_CTRL_MSG_TYPE) >> 16;
-> +
-> +	/* we only support LED message type right now */
-> +	if ((messages & 0x01) && (ahci_em_messages == 1)) {
-> +		/* store em_loc */
-> +		hpriv->em_loc = ((em_loc >> 16) * 4);
->   
 
-   Could drop unneeded parens, while at it...
+Looks like it gets deleted later on in patch #3.  I took a stab at
+fixing it up[1], or you can just send me a new series if that does not
+look right to you.
 
-MBR, Sergei
+--
+Dan
 
+[1]: http://git.kernel.org/?p=linux/kernel/git/djbw/async_tx.git;a=shortlog;h=refs/heads/coh
