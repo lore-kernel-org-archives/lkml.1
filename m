@@ -1,98 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225Ab0CBNqQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:46:16 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:63416 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051Ab0CBNqN convert rfc822-to-8bit (ORCPT
+	id S1753263Ab0CBNrt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:47:49 -0500
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:33475 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151Ab0CBNrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:46:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=mtzzck8AXWypo1AjOGdLdnJB/yqmEMAtvMSrrBp2445oObXPHpgw1EOo2NohpIEPmi
-         nqYTS2PRjGJuwuhNYhnz02POC7MTcfkDLToHmDgRVCD6PmKK61d98gS1v+6ox+0f+DIU
-         YHte9HyTUDNIRW8xbmMwYYVclANdWjld2fKA8=
+	Tue, 2 Mar 2010 08:47:48 -0500
+Date: Tue, 2 Mar 2010 19:17:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100302134736.GG3212@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
 MIME-Version: 1.0
-In-Reply-To: <20100302065224.GL3389@atomide.com>
-References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
-	 <20100301184600.GC3389@atomide.com>
-	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
-	 <20100302060821.GI3389@atomide.com>
-	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
-	 <20100302065224.GL3389@atomide.com>
-Date: Tue, 2 Mar 2010 19:16:12 +0530
-X-Google-Sender-Auth: 8f938fee5fabaa06
-Message-ID: <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
-Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
-From: Venkatraman S <svenkatr@ti.com>
-To: Tony Lindgren <tony@atomide.com>, "G, Manjunath Kondaiah" <manjugk@ti.com>,
-       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Olof Johansson <olof@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1267478620-5276-4-git-send-email-arighi@develer.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 12:22 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * G, Manjunath Kondaiah <manjugk@ti.com> [100301 22:24]:
->>
->>
->>
->> > > > > +     up->uart_dma.prev_rx_dma_pos =
->> > up->uart_dma.rx_buf_dma_phys;
->> > > > > +     if (cpu_is_omap44xx())
->> > > > > +             omap_writel(0, OMAP44XX_DMA4_BASE
->> > > > > +                     +
->> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
->> > > > > +     else
->> > > > > +             omap_writel(0, OMAP34XX_DMA4_BASE
->> > > > > +                     +
->> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
->> > > >
->> > > > NAK. Please don't use omap_read/write for for new code. And do not
->> > > > tinker with the omap hardware registers directly in the driver.
->> > > >
->> > > > This needs to be done properly in
->> > arch/arm/plat-omap/dma.c instead.
->> > >
->> > > Thanks for the suggestion.
->> > >
->> > > Currently, dma_read/dma_write are #define's in dma.c which
->> > cannot be
->> > > accessed outside dma.c. I don't see any API's in dma.c for
->> > setting required
->> > > value for this register?
->> >
->> > Hmm isn't this the same as omap_get_dma_dst_pos(int lch)? If you're
->> > trying do something that's not in dma.c, we can add a new function
->> > for it.
->>
->> The omap_get_dma_dst_pos(int lch) is for read operation in CDAC register.
->> But, We need to write required value into CDAC register. For this, I propose:
->>
->> omap_set_dma_dst_pos(int lch, int value) which does not exist in current dma
->> driver.
->
-> OK, it that's needed.
->
-> Tony
-> --
-CDAC is a shadow register used for monitoring the DMA channel.
- I think it would be a lot
-simpler if omap_start_dma() always resets CDAC to 0, and the UART driver
-just not set it explicitly.
+* Andrea Righi <arighi@develer.com> [2010-03-01 22:23:40]:
 
-Simple wrapper APIs doing get / set on individual DMA registers is as
-difficult to understand
-as omap_read / omap_write, IMHO.
+> Apply the cgroup dirty pages accounting and limiting infrastructure to
+> the opportune kernel functions.
+> 
+> Signed-off-by: Andrea Righi <arighi@develer.com>
+> ---
+>  fs/fuse/file.c      |    5 +++
+>  fs/nfs/write.c      |    4 ++
+>  fs/nilfs2/segment.c |   10 +++++-
+>  mm/filemap.c        |    1 +
+>  mm/page-writeback.c |   84 ++++++++++++++++++++++++++++++++------------------
+>  mm/rmap.c           |    4 +-
+>  mm/truncate.c       |    2 +
+>  7 files changed, 76 insertions(+), 34 deletions(-)
+> 
+> diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+> index a9f5e13..dbbdd53 100644
+> --- a/fs/fuse/file.c
+> +++ b/fs/fuse/file.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/pagemap.h>
+>  #include <linux/slab.h>
+>  #include <linux/kernel.h>
+> +#include <linux/memcontrol.h>
+>  #include <linux/sched.h>
+>  #include <linux/module.h>
+> 
+> @@ -1129,6 +1130,8 @@ static void fuse_writepage_finish(struct fuse_conn *fc, struct fuse_req *req)
+> 
+>  	list_del(&req->writepages_entry);
+>  	dec_bdi_stat(bdi, BDI_WRITEBACK);
+> +	mem_cgroup_update_stat(req->pages[0],
+> +			MEM_CGROUP_STAT_WRITEBACK_TEMP, -1);
+>  	dec_zone_page_state(req->pages[0], NR_WRITEBACK_TEMP);
+>  	bdi_writeout_inc(bdi);
+>  	wake_up(&fi->page_waitq);
+> @@ -1240,6 +1243,8 @@ static int fuse_writepage_locked(struct page *page)
+>  	req->inode = inode;
+> 
+>  	inc_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
+> +	mem_cgroup_update_stat(tmp_page,
+> +			MEM_CGROUP_STAT_WRITEBACK_TEMP, 1);
+>  	inc_zone_page_state(tmp_page, NR_WRITEBACK_TEMP);
+>  	end_page_writeback(page);
+> 
+> diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+> index b753242..7316f7a 100644
+> --- a/fs/nfs/write.c
+> +++ b/fs/nfs/write.c
 
-Best regards,
-Venkat.
+Don't need memcontrol.h to be included here?
+
+Looks OK to me overall, but there might be objection using the
+mem_cgroup_* naming convention, but I don't mind it very much :)
+
+-- 
+	Three Cheers,
+	Balbir
