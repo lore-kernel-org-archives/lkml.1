@@ -1,219 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756461Ab0CBUOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:14:41 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:52675 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756880Ab0CBUOe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:14:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FTcKXKBfasfAnLWM6OTN7El76bs6pWKVBFYPzOsGsvvvQ+vCMvDe7JLT92bXRtyDTV
-         jsDXf55ZmIktluwn+rc5pqQly8kTnspOSwpbI3dX3hUSd41y1b9xH2yfK/2jcqHdm5bw
-         B7WuqzBLCkNVExswyAMJTb/hZGSuUE7heV2fE=
+	id S1757264Ab0CBURT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:17:19 -0500
+Received: from claw.goop.org ([74.207.240.146]:55523 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756888Ab0CBURP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 15:17:15 -0500
+Message-ID: <4B8D7248.5070807@goop.org>
+Date: Tue, 02 Mar 2010 12:17:12 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <20100302031021.GA14267@localhost>
-References: <20100224024100.GA17048@localhost>
-	 <20100224032934.GF16175@discord.disaster>
-	 <20100224041822.GB27459@localhost>
-	 <20100224052215.GH16175@discord.disaster>
-	 <20100224061247.GA8421@localhost>
-	 <20100224073940.GJ16175@discord.disaster>
-	 <20100226074916.GA8545@localhost> <20100302031021.GA14267@localhost>
-Date: Tue, 2 Mar 2010 12:14:33 -0800
-Message-ID: <dda83e781003021214g6721c142o7c66f409296cf5a@mail.gmail.com>
-Subject: Re: [RFC] nfs: use 4*rsize readahead size
-From: Bret Towe <magnade@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Dave Chinner <david@fromorbit.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Ian Campbell <Ian.Campbell@citrix.com>
+CC: Sheng Yang <sheng@linux.intel.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 3/7] xen/hvm: Xen PV extension of  HVM initialization
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>	 <1267436315-24486-4-git-send-email-sheng@linux.intel.com>	 <4B8C63B0.2090507@goop.org>  <201003020938.53630.sheng@linux.intel.com> <1267521735.11737.23107.camel@zakaz.uk.xensource.com>
+In-Reply-To: <1267521735.11737.23107.camel@zakaz.uk.xensource.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 7:10 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> Dave,
+On 03/02/2010 01:22 AM, Ian Campbell wrote:
+> On Tue, 2010-03-02 at 01:38 +0000, Sheng Yang wrote:
+>    
+>> A annoy thing in pv drivers is that it would test if the domain type
+>> is _NOT_ XEN_NATIVE. So set the domain to XEN_HVM_DOMAIN would result
+>> in PV driver initialization then probably panic.
+>>      
+> What _actually_ panics?
 >
-> Here is one more test on a big ext4 disk file:
+> Registration of the frontend devices should be completely harmless
+> (apart from a little wasted RAM) unless a xenbus driver manages to come
+> up and enumerate the xen bus and cause the ->probe function run.
 >
->           16k  39.7 MB/s
->           32k  54.3 MB/s
->           64k  63.6 MB/s
->          128k  72.6 MB/s
->          256k  71.7 MB/s
-> rsize ==> 512k  71.7 MB/s
->         1024k  72.2 MB/s
->         2048k  71.0 MB/s
->         4096k  73.0 MB/s
->         8192k  74.3 MB/s
->        16384k  74.5 MB/s
+> You should be gating the xenbus startup on the availability of PV
+> functionality not the individual driver registrations. This keeps the
+> test in a single easy to maintain place.
 >
-> It shows that >=128k client side readahead is enough for single disk
-> case :) As for RAID configurations, I guess big server side readahead
-> should be enough.
->
-> #!/bin/sh
->
-> file=/mnt/ext4_test/zero
-> BDI=0:24
->
-> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
-> do
->        echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
->        echo readahead_size=${rasize}k
->        fadvise $file 0 0 dontneed
->        ssh p9 "fadvise $file 0 0 dontneed"
->        dd if=$file of=/dev/null bs=4k count=402400
-> done
+> Compare with pci_register_driver and all of the callers of that function
+> -- not a single one of them has an "is_pci_available" test anywhere.
+>    
 
-how do you determine which bdi to use? I skimmed thru
-the filesystem in /sys and didn't see anything that says which is what
+The problem is that it currently assumes xenbus is initialized by the 
+time the PV drivers init, because in a PV boot xenbus gets initted very 
+early.  We need to change it so that it can cope with drivers being 
+initialized and registering with xenbus before it has been initialized.
 
-> Thanks,
-> Fengguang
->
-> On Fri, Feb 26, 2010 at 03:49:16PM +0800, Wu Fengguang wrote:
->> On Wed, Feb 24, 2010 at 03:39:40PM +0800, Dave Chinner wrote:
->> > On Wed, Feb 24, 2010 at 02:12:47PM +0800, Wu Fengguang wrote:
->> > > On Wed, Feb 24, 2010 at 01:22:15PM +0800, Dave Chinner wrote:
->> > > > What I'm trying to say is that while I agree with your premise that
->> > > > a 7.8MB readahead window is probably far larger than was ever
->> > > > intended, I disagree with your methodology and environment for
->> > > > selecting a better default value.  The default readahead value needs
->> > > > to work well in as many situations as possible, not just in perfect
->> > > > 1:1 client/server environment.
->> > >
->> > > Good points. It's imprudent to change a default value based on one
->> > > single benchmark. Need to collect more data, which may take time..
->> >
->> > Agreed - better to spend time now to get it right...
->>
->> I collected more data with large network latency as well as rsize=32k,
->> and updates the readahead size accordingly to 4*rsize.
->>
->> ===
->> nfs: use 2*rsize readahead size
->>
->> With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
->> readahead size 512k*15=7680k is too large than necessary for typical
->> clients.
->>
->> On a e1000e--e1000e connection, I got the following numbers
->> (this reads sparse file from server and involves no disk IO)
->>
->> readahead size        normal          1ms+1ms         5ms+5ms         10ms+10ms(*)
->>          16k  35.5 MB/s        4.8 MB/s        2.1 MB/s       1.2 MB/s
->>          32k  54.3 MB/s        6.7 MB/s        3.6 MB/s       2.3 MB/s
->>          64k  64.1 MB/s       12.6 MB/s        6.5 MB/s       4.7 MB/s
->>         128k  70.5 MB/s       20.1 MB/s       11.9 MB/s       8.7 MB/s
->>         256k  74.6 MB/s       38.6 MB/s       21.3 MB/s      15.0 MB/s
->> rsize ==> 512k        77.4 MB/s       59.4 MB/s       39.8 MB/s      25.5 MB/s
->>        1024k  85.5 MB/s       77.9 MB/s       65.7 MB/s      43.0 MB/s
->>        2048k  86.8 MB/s       81.5 MB/s       84.1 MB/s      59.7 MB/s
->>        4096k  87.9 MB/s       77.4 MB/s       56.2 MB/s      59.2 MB/s
->>        8192k  89.0 MB/s       81.2 MB/s       78.0 MB/s      41.2 MB/s
->>       16384k  87.7 MB/s       85.8 MB/s       62.0 MB/s      56.5 MB/s
->>
->> readahead size        normal          1ms+1ms         5ms+5ms         10ms+10ms(*)
->>          16k  37.2 MB/s        6.4 MB/s        2.1 MB/s        1.2 MB/s
->> rsize ==>  32k        56.6 MB/s        6.8 MB/s        3.6 MB/s        2.3 MB/s
->>          64k  66.1 MB/s       12.7 MB/s        6.6 MB/s        4.7 MB/s
->>         128k  69.3 MB/s       22.0 MB/s       12.2 MB/s        8.9 MB/s
->>         256k  69.6 MB/s       41.8 MB/s       20.7 MB/s       14.7 MB/s
->>         512k  71.3 MB/s       54.1 MB/s       25.0 MB/s       16.9 MB/s
->> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>        1024k  71.5 MB/s       48.4 MB/s       26.0 MB/s       16.7 MB/s
->>        2048k  71.7 MB/s       53.2 MB/s       25.3 MB/s       17.6 MB/s
->>        4096k  71.5 MB/s       50.4 MB/s       25.7 MB/s       17.1 MB/s
->>        8192k  71.1 MB/s       52.3 MB/s       26.3 MB/s       16.9 MB/s
->>       16384k  70.2 MB/s       56.6 MB/s       27.0 MB/s       16.8 MB/s
->>
->> (*) 10ms+10ms means to add delay on both client & server sides with
->>     # /sbin/tc qdisc change dev eth0 root netem delay 10ms
->>     The total >=20ms delay is so large for NFS, that a simple `vi some.sh`
->>     command takes a dozen seconds. Note that the actual delay reported
->>     by ping is larger, eg. for the 1ms+1ms case:
->>         rtt min/avg/max/mdev = 7.361/8.325/9.710/0.837 ms
->>
->>
->> So it seems that readahead_size=4*rsize (ie. keep 4 RPC requests in
->> flight) is able to get near full NFS bandwidth. Reducing the mulriple
->> from 15 to 4 not only makes the client side readahead size more sane
->> (2MB by default), but also reduces the disorderness of the server side
->> RPC read requests, which yeilds better server side readahead behavior.
->>
->> To avoid small readahead when the client mount with "-o rsize=32k" or
->> the server only supports rsize <= 32k, we take the max of 2*rsize and
->> default_backing_dev_info.ra_pages. The latter defaults to 512K, and can
->> be explicitly changed by user with kernel parameter "readahead=" and
->> runtime tunable "/sys/devices/virtual/bdi/default/read_ahead_kb" (which
->> takes effective for future NFS mounts).
->>
->> The test script is:
->>
->> #!/bin/sh
->>
->> file=/mnt/sparse
->> BDI=0:15
->>
->> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
->> do
->>       echo 3 > /proc/sys/vm/drop_caches
->>       echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
->>       echo readahead_size=${rasize}k
->>       dd if=$file of=/dev/null bs=4k count=1024000
->> done
->>
->> CC: Dave Chinner <david@fromorbit.com>
->> CC: Trond Myklebust <Trond.Myklebust@netapp.com>
->> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->> ---
->>  fs/nfs/client.c   |    4 +++-
->>  fs/nfs/internal.h |    8 --------
->>  2 files changed, 3 insertions(+), 9 deletions(-)
->>
->> --- linux.orig/fs/nfs/client.c        2010-02-26 10:10:46.000000000 +0800
->> +++ linux/fs/nfs/client.c     2010-02-26 11:07:22.000000000 +0800
->> @@ -889,7 +889,9 @@ static void nfs_server_set_fsinfo(struct
->>       server->rpages = (server->rsize + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->>
->>       server->backing_dev_info.name = "nfs";
->> -     server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
->> +     server->backing_dev_info.ra_pages = max_t(unsigned long,
->> +                                           default_backing_dev_info.ra_pages,
->> +                                           4 * server->rpages);
->>       server->backing_dev_info.capabilities |= BDI_CAP_ACCT_UNSTABLE;
->>
->>       if (server->wsize > max_rpc_payload)
->> --- linux.orig/fs/nfs/internal.h      2010-02-26 10:10:46.000000000 +0800
->> +++ linux/fs/nfs/internal.h   2010-02-26 11:07:07.000000000 +0800
->> @@ -10,14 +10,6 @@
->>
->>  struct nfs_string;
->>
->> -/* Maximum number of readahead requests
->> - * FIXME: this should really be a sysctl so that users may tune it to suit
->> - *        their needs. People that do NFS over a slow network, might for
->> - *        instance want to reduce it to something closer to 1 for improved
->> - *        interactive response.
->> - */
->> -#define NFS_MAX_READAHEAD    (RPC_DEF_SLOT_TABLE - 1)
->> -
->>  /*
->>   * Determine if sessions are in use.
->>   */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+We have the same problem with plain PV-on-HVM drivers as xenbus only 
+comes up as a result of probing the Xen PCI platform device, which may 
+be after the PV drivers' init functions have been called.
+
+     J
