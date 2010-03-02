@@ -1,646 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893Ab0CBNCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:02:33 -0500
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:52785 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752237Ab0CBNCc (ORCPT
+	id S1753019Ab0CBNKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:10:14 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:60748 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776Ab0CBNKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:02:32 -0500
-Date: Tue, 2 Mar 2010 18:32:24 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 2/3] memcg: dirty pages accounting and limiting
- infrastructure
-Message-ID: <20100302130223.GF3212@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
- <1267478620-5276-3-git-send-email-arighi@develer.com>
+	Tue, 2 Mar 2010 08:10:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XNRrya74El7GKQIKM6RoFHg9gaJh3AD69pxbjrQ2NEXZZcKbf2MMhBl6pbLKBU5fzz
+         OAjEE/JlAgTUqHy1nMvvUermQpXWMamftPVN2gbduEN0ksqN9JncxeKYrKZmVpIedP+0
+         xkFrSs4xfBBl9L+UcFchVdzGRb+WEuPkUa1QI=
+Date: Tue, 2 Mar 2010 14:10:05 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: eranian@google.com
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@elte.hu,
+       paulus@samba.org, perfmon2-devel@lists.sf.net, robert.richter@amd.com,
+       eranian@gmail.com
+Subject: Re: [PATCH] perf_events: add sampling period randomization support
+Message-ID: <20100302131002.GD5137@nowhere>
+References: <1267510029-19750-1-git-send-email-eranian@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267478620-5276-3-git-send-email-arighi@develer.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <1267510029-19750-1-git-send-email-eranian@google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Righi <arighi@develer.com> [2010-03-01 22:23:39]:
-
-> Infrastructure to account dirty pages per cgroup and add dirty limit
-> interfaces in the cgroupfs:
+On Mon, Mar 01, 2010 at 10:07:09PM -0800, eranian@google.com wrote:
+> This patch adds support for randomizing the sampling period.
+> Randomization is very useful to mitigate the bias that exists
+> with sampling. The random number generator does not need to
+> be sophisticated. This patch uses the builtin random32()
+> generator.
 > 
->  - Direct write-out: memory.dirty_ratio, memory.dirty_bytes
+> The user activates randomization by setting the perf_event_attr.random
+> field to 1 and by passing a bitmask to control the range of variation
+> above the base period. Period will vary from period to period & mask.
+> Note that randomization is not available when a target interrupt rate
+> (freq) is enabled.
 > 
->  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
+> The last used period can be collected using the PERF_SAMPLE_PERIOD flag
+> in sample_type.
 > 
-> Signed-off-by: Andrea Righi <arighi@develer.com>
-
-Look good, but yet to be tested from my side.
-
-
-> ---
->  include/linux/memcontrol.h |   77 ++++++++++-
->  mm/memcontrol.c            |  336 ++++++++++++++++++++++++++++++++++++++++----
->  2 files changed, 384 insertions(+), 29 deletions(-)
+> The patch has been tested on X86. There is also code for PowerPC but
+> I could not test it.
 > 
-> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> index 1f9b119..cc88b2e 100644
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -19,12 +19,50 @@
+> 	Signed-off-by: Stephane Eranian <eranian@google.com>
 > 
->  #ifndef _LINUX_MEMCONTROL_H
->  #define _LINUX_MEMCONTROL_H
-> +
-> +#include <linux/writeback.h>
->  #include <linux/cgroup.h>
-> +
->  struct mem_cgroup;
->  struct page_cgroup;
->  struct page;
->  struct mm_struct;
+> --
+>  arch/powerpc/kernel/perf_event.c       |    3 +++
+>  arch/x86/kernel/cpu/perf_event.c       |    2 ++
+>  arch/x86/kernel/cpu/perf_event_intel.c |    4 ++++
+>  include/linux/perf_event.h             |    7 +++++--
+>  kernel/perf_event.c                    |   24 ++++++++++++++++++++++++
+>  5 files changed, 38 insertions(+), 2 deletions(-)
 > 
-> +/* Cgroup memory statistics items exported to the kernel */
-> +enum mem_cgroup_page_stat_item {
-> +	MEMCG_NR_DIRTYABLE_PAGES,
-> +	MEMCG_NR_RECLAIM_PAGES,
-> +	MEMCG_NR_WRITEBACK,
-> +	MEMCG_NR_DIRTY_WRITEBACK_PAGES,
-> +};
+> diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
+> index b6cf8f1..994df17 100644
+> --- a/arch/powerpc/kernel/perf_event.c
+> +++ b/arch/powerpc/kernel/perf_event.c
+> @@ -1150,6 +1150,9 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+>  	val = 0;
+>  	left = atomic64_read(&event->hw.period_left) - delta;
+>  	if (period) {
+> +		if (event->attr.random)
+> +			perf_randomize_event_period(event);
 > +
-> +/*
-> + * Statistics for memory cgroup.
-> + */
-> +enum mem_cgroup_stat_index {
-> +	/*
-> +	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-> +	 */
-> +	MEM_CGROUP_STAT_CACHE,	   /* # of pages charged as cache */
-> +	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
-> +	MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
-> +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
-> +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-> +	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
-> +	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
-> +	MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
-> +					used by soft limit implementation */
-> +	MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
-> +					used by threshold implementation */
-> +	MEM_CGROUP_STAT_FILE_DIRTY,   /* # of dirty pages in page cache */
-> +	MEM_CGROUP_STAT_WRITEBACK,   /* # of pages under writeback */
-> +	MEM_CGROUP_STAT_WRITEBACK_TEMP,   /* # of pages under writeback using
-> +						temporary buffers */
-> +	MEM_CGROUP_STAT_UNSTABLE_NFS,   /* # of NFS unstable pages */
+>  		if (left <= 0) {
+>  			left += period;
+>  			if (left <= 0)
+> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+> index 641ccb9..159d951 100644
+> --- a/arch/x86/kernel/cpu/perf_event.c
+> +++ b/arch/x86/kernel/cpu/perf_event.c
+> @@ -1110,6 +1110,8 @@ static int x86_pmu_handle_irq(struct pt_regs *regs)
+>  		if (val & (1ULL << (x86_pmu.event_bits - 1)))
+>  			continue;
+>  
+> +		if (event->attr.random)
+> +			perf_randomize_event_period(event);
+>  		/*
+>  		 * event overflow
+>  		 */
+> diff --git a/arch/x86/kernel/cpu/perf_event_intel.c b/arch/x86/kernel/cpu/perf_event_intel.c
+> index cf6590c..5c8d6ed 100644
+> --- a/arch/x86/kernel/cpu/perf_event_intel.c
+> +++ b/arch/x86/kernel/cpu/perf_event_intel.c
+> @@ -690,6 +690,10 @@ static int intel_pmu_save_and_restart(struct perf_event *event)
+>  	int ret;
+>  
+>  	x86_perf_event_update(event, hwc, idx);
 > +
-> +	MEM_CGROUP_STAT_NSTATS,
-> +};
+> +	if (event->attr.random)
+> +		perf_randomize_event_period(event);
 > +
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  /*
->   * All "charge" functions with gfp_mask should use GFP_KERNEL or
-> @@ -117,6 +155,13 @@ extern void mem_cgroup_print_oom_info(struct mem_cgroup *memcg,
->  extern int do_swap_account;
->  #endif
-> 
-> +extern long mem_cgroup_dirty_ratio(void);
-> +extern unsigned long mem_cgroup_dirty_bytes(void);
-> +extern long mem_cgroup_dirty_background_ratio(void);
-> +extern unsigned long mem_cgroup_dirty_background_bytes(void);
-> +
-> +extern s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item);
-> +
-
-Docstyle comments for each function would be appreciated
-
->  static inline bool mem_cgroup_disabled(void)
->  {
->  	if (mem_cgroup_subsys.disabled)
-> @@ -125,7 +170,8 @@ static inline bool mem_cgroup_disabled(void)
->  }
-> 
->  extern bool mem_cgroup_oom_called(struct task_struct *task);
-> -void mem_cgroup_update_file_mapped(struct page *page, int val);
-
-Good to see you make generic use of this function
-
-> +void mem_cgroup_update_stat(struct page *page,
-> +			enum mem_cgroup_stat_index idx, int val);
->  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  						gfp_t gfp_mask, int nid,
->  						int zid);
-> @@ -300,8 +346,8 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
->  {
->  }
-> 
-> -static inline void mem_cgroup_update_file_mapped(struct page *page,
-> -							int val)
-> +static inline void mem_cgroup_update_stat(struct page *page,
-> +			enum mem_cgroup_stat_index idx, int val)
->  {
->  }
-> 
-> @@ -312,6 +358,31 @@ unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  	return 0;
->  }
-> 
-> +static inline long mem_cgroup_dirty_ratio(void)
-> +{
-> +	return vm_dirty_ratio;
-> +}
-> +
-> +static inline unsigned long mem_cgroup_dirty_bytes(void)
-> +{
-> +	return vm_dirty_bytes;
-> +}
-> +
-> +static inline long mem_cgroup_dirty_background_ratio(void)
-> +{
-> +	return dirty_background_ratio;
-> +}
-> +
-> +static inline unsigned long mem_cgroup_dirty_background_bytes(void)
-> +{
-> +	return dirty_background_bytes;
-> +}
-> +
-> +static inline s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> +{
-> +	return -ENOMEM;
-> +}
-> +
->  #endif /* CONFIG_CGROUP_MEM_CONT */
-> 
->  #endif /* _LINUX_MEMCONTROL_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index a443c30..e74cf66 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -66,31 +66,16 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
->  #define SOFTLIMIT_EVENTS_THRESH (1000)
->  #define THRESHOLDS_EVENTS_THRESH (100)
-> 
-> -/*
-> - * Statistics for memory cgroup.
-> - */
-> -enum mem_cgroup_stat_index {
-> -	/*
-> -	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-> -	 */
-> -	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
-> -	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon rss */
-> -	MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
-> -	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
-> -	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-> -	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
-> -	MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
-> -					used by soft limit implementation */
-> -	MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
-> -					used by threshold implementation */
-> -
-> -	MEM_CGROUP_STAT_NSTATS,
-> -};
-> -
->  struct mem_cgroup_stat_cpu {
->  	s64 count[MEM_CGROUP_STAT_NSTATS];
->  };
-> 
-> +/* Per cgroup page statistics */
-> +struct mem_cgroup_page_stat {
-> +	enum mem_cgroup_page_stat_item item;
-> +	s64 value;
-> +};
-> +
->  /*
->   * per-zone information in memory controller.
->   */
-> @@ -157,6 +142,15 @@ struct mem_cgroup_threshold_ary {
->  static bool mem_cgroup_threshold_check(struct mem_cgroup *mem);
->  static void mem_cgroup_threshold(struct mem_cgroup *mem);
-> 
-> +enum mem_cgroup_dirty_param {
-> +	MEM_CGROUP_DIRTY_RATIO,
-> +	MEM_CGROUP_DIRTY_BYTES,
-> +	MEM_CGROUP_DIRTY_BACKGROUND_RATIO,
-> +	MEM_CGROUP_DIRTY_BACKGROUND_BYTES,
-> +
-> +	MEM_CGROUP_DIRTY_NPARAMS,
-> +};
-> +
->  /*
->   * The memory controller data structure. The memory controller controls both
->   * page cache and RSS per cgroup. We would eventually like to provide
-> @@ -205,6 +199,9 @@ struct mem_cgroup {
-> 
->  	unsigned int	swappiness;
-> 
-> +	/* control memory cgroup dirty pages */
-> +	unsigned long dirty_param[MEM_CGROUP_DIRTY_NPARAMS];
-> +
-
-Could you mention what protects this field, is it the reclaim_lock?
-BTW, is unsigned long sufficient to represent dirty_param(s)?
-
->  	/* set when res.limit == memsw.limit */
->  	bool		memsw_is_minimum;
-> 
-> @@ -1021,6 +1018,164 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
->  	return swappiness;
->  }
-> 
-> +static unsigned long get_dirty_param(struct mem_cgroup *memcg,
-> +			enum mem_cgroup_dirty_param idx)
-> +{
-> +	unsigned long ret;
-> +
-> +	VM_BUG_ON(idx >= MEM_CGROUP_DIRTY_NPARAMS);
-> +	spin_lock(&memcg->reclaim_param_lock);
-> +	ret = memcg->dirty_param[idx];
-> +	spin_unlock(&memcg->reclaim_param_lock);
-
-Do we need a spinlock if we protect it using RCU? Is precise data very
-important?
-
-> +
-> +	return ret;
-> +}
-> +
-> +long mem_cgroup_dirty_ratio(void)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	long ret = vm_dirty_ratio;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return ret;
-> +	/*
-> +	 * It's possible that "current" may be moved to other cgroup while we
-> +	 * access cgroup. But precise check is meaningless because the task can
-> +	 * be moved after our access and writeback tends to take long time.
-> +	 * At least, "memcg" will not be freed under rcu_read_lock().
-> +	 */
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (likely(memcg))
-> +		ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_RATIO);
-> +	rcu_read_unlock();
-> +
-> +	return ret;
-> +}
-> +
-> +unsigned long mem_cgroup_dirty_bytes(void)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	unsigned long ret = vm_dirty_bytes;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return ret;
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (likely(memcg))
-> +		ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BYTES);
-> +	rcu_read_unlock();
-> +
-> +	return ret;
-> +}
-> +
-> +long mem_cgroup_dirty_background_ratio(void)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	long ret = dirty_background_ratio;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return ret;
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (likely(memcg))
-> +		ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_RATIO);
-> +	rcu_read_unlock();
-> +
-> +	return ret;
-> +}
-> +
-> +unsigned long mem_cgroup_dirty_background_bytes(void)
-> +{
-> +	struct mem_cgroup *memcg;
-> +	unsigned long ret = dirty_background_bytes;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return ret;
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (likely(memcg))
-> +		ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_BYTES);
-> +	rcu_read_unlock();
-> +
-> +	return ret;
-> +}
-> +
-> +static inline bool mem_cgroup_can_swap(struct mem_cgroup *memcg)
-> +{
-> +	return do_swap_account ?
-> +			res_counter_read_u64(&memcg->memsw, RES_LIMIT) :
-
-Shouldn't you do a res_counter_read_u64(...) > 0 for readability?
-What happens if memcg->res, RES_LIMIT == memcg->memsw, RES_LIMIT?
-
-> +			nr_swap_pages > 0;
-> +}
-> +
-> +static s64 mem_cgroup_get_local_page_stat(struct mem_cgroup *memcg,
-> +				enum mem_cgroup_page_stat_item item)
-> +{
-> +	s64 ret;
-> +
-> +	switch (item) {
-> +	case MEMCG_NR_DIRTYABLE_PAGES:
-> +		ret = res_counter_read_u64(&memcg->res, RES_LIMIT) -
-> +			res_counter_read_u64(&memcg->res, RES_USAGE);
-> +		/* Translate free memory in pages */
-> +		ret >>= PAGE_SHIFT;
-> +		ret += mem_cgroup_read_stat(memcg, LRU_ACTIVE_FILE) +
-> +			mem_cgroup_read_stat(memcg, LRU_INACTIVE_FILE);
-> +		if (mem_cgroup_can_swap(memcg))
-> +			ret += mem_cgroup_read_stat(memcg, LRU_ACTIVE_ANON) +
-> +				mem_cgroup_read_stat(memcg, LRU_INACTIVE_ANON);
-> +		break;
-> +	case MEMCG_NR_RECLAIM_PAGES:
-> +		ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_FILE_DIRTY) +
-> +			mem_cgroup_read_stat(memcg,
-> +					MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +		break;
-> +	case MEMCG_NR_WRITEBACK:
-> +		ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_WRITEBACK);
-> +		break;
-> +	case MEMCG_NR_DIRTY_WRITEBACK_PAGES:
-> +		ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_WRITEBACK) +
-> +			mem_cgroup_read_stat(memcg,
-> +				MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +		break;
-> +	default:
-> +		ret = 0;
-> +		WARN_ON_ONCE(1);
-> +	}
-> +	return ret;
-> +}
-> +
-> +static int mem_cgroup_page_stat_cb(struct mem_cgroup *mem, void *data)
-> +{
-> +	struct mem_cgroup_page_stat *stat = (struct mem_cgroup_page_stat *)data;
-> +
-> +	stat->value += mem_cgroup_get_local_page_stat(mem, stat->item);
-> +	return 0;
-> +}
-> +
-> +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> +{
-> +	struct mem_cgroup_page_stat stat = {};
-> +	struct mem_cgroup *memcg;
-> +
-> +	if (mem_cgroup_disabled())
-> +		return -ENOMEM;
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_from_task(current);
-> +	if (memcg) {
-> +		/*
-> +		 * Recursively evaulate page statistics against all cgroup
-> +		 * under hierarchy tree
-> +		 */
-> +		stat.item = item;
-> +		mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
-> +	} else
-> +		stat.value = -ENOMEM;
-> +	rcu_read_unlock();
-> +
-> +	return stat.value;
-> +}
-> +
->  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
->  {
->  	int *val = data;
-> @@ -1263,14 +1418,16 @@ static void record_last_oom(struct mem_cgroup *mem)
->  }
-> 
->  /*
-> - * Currently used to update mapped file statistics, but the routine can be
-> - * generalized to update other statistics as well.
-> + * Generalized routine to update memory cgroup statistics.
->   */
-> -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> +void mem_cgroup_update_stat(struct page *page,
-> +			enum mem_cgroup_stat_index idx, int val)
->  {
->  	struct mem_cgroup *mem;
->  	struct page_cgroup *pc;
-> 
-> +	if (mem_cgroup_disabled())
-> +		return;
->  	pc = lookup_page_cgroup(page);
->  	if (unlikely(!pc))
->  		return;
-> @@ -1286,7 +1443,8 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
->  	/*
->  	 * Preemption is already disabled. We can use __this_cpu_xxx
->  	 */
-> -	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> +	VM_BUG_ON(idx >= MEM_CGROUP_STAT_NSTATS);
-> +	__this_cpu_add(mem->stat->count[idx], val);
-> 
->  done:
->  	unlock_page_cgroup(pc);
-> @@ -3033,6 +3191,10 @@ enum {
->  	MCS_PGPGIN,
->  	MCS_PGPGOUT,
->  	MCS_SWAP,
-> +	MCS_FILE_DIRTY,
-> +	MCS_WRITEBACK,
-> +	MCS_WRITEBACK_TEMP,
-> +	MCS_UNSTABLE_NFS,
->  	MCS_INACTIVE_ANON,
->  	MCS_ACTIVE_ANON,
->  	MCS_INACTIVE_FILE,
-> @@ -3055,6 +3217,10 @@ struct {
->  	{"pgpgin", "total_pgpgin"},
->  	{"pgpgout", "total_pgpgout"},
->  	{"swap", "total_swap"},
-> +	{"filedirty", "dirty_pages"},
-> +	{"writeback", "writeback_pages"},
-> +	{"writeback_tmp", "writeback_temp_pages"},
-> +	{"nfs", "nfs_unstable"},
->  	{"inactive_anon", "total_inactive_anon"},
->  	{"active_anon", "total_active_anon"},
->  	{"inactive_file", "total_inactive_file"},
-> @@ -3083,6 +3249,14 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
->  		val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_SWAPOUT);
->  		s->stat[MCS_SWAP] += val * PAGE_SIZE;
->  	}
-> +	val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_FILE_DIRTY);
-> +	s->stat[MCS_FILE_DIRTY] += val;
-> +	val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_WRITEBACK);
-> +	s->stat[MCS_WRITEBACK] += val;
-> +	val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_WRITEBACK_TEMP);
-> +	s->stat[MCS_WRITEBACK_TEMP] += val;
-> +	val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +	s->stat[MCS_UNSTABLE_NFS] += val;
-> 
->  	/* per zone stat */
->  	val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_ANON);
-> @@ -3467,6 +3641,50 @@ unlock:
+>  	ret = x86_perf_event_set_period(event, hwc, idx);
+>  
 >  	return ret;
->  }
-> 
-> +static u64 mem_cgroup_dirty_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +	int type = cft->private;
-> +
-> +	return get_dirty_param(memcg, type);
-> +}
-> +
-> +static int
-> +mem_cgroup_dirty_write(struct cgroup *cgrp, struct cftype *cft, u64 val)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +	int type = cft->private;
-> +
-> +	if (cgrp->parent == NULL)
-> +		return -EINVAL;
-> +	if (((type == MEM_CGROUP_DIRTY_RATIO) ||
-> +		(type == MEM_CGROUP_DIRTY_BACKGROUND_RATIO)) && (val > 100))
-> +		return -EINVAL;
-> +
-> +	spin_lock(&memcg->reclaim_param_lock);
-> +	switch (type) {
-> +	case MEM_CGROUP_DIRTY_RATIO:
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_RATIO] = val;
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BYTES] = 0;
-> +		break;
-> +	case MEM_CGROUP_DIRTY_BYTES:
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_RATIO] = 0;
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BYTES] = val;
-> +		break;
-> +	case MEM_CGROUP_DIRTY_BACKGROUND_RATIO:
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] = val;
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] = 0;
-> +		break;
-> +	case MEM_CGROUP_DIRTY_BACKGROUND_BYTES:
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] = 0;
-> +		memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] = val;
-> +		break;
-> +	}
-> +	spin_unlock(&memcg->reclaim_param_lock);
-> +
-> +	return 0;
-> +}
-> +
->  static struct cftype mem_cgroup_files[] = {
->  	{
->  		.name = "usage_in_bytes",
-> @@ -3518,6 +3736,30 @@ static struct cftype mem_cgroup_files[] = {
->  		.write_u64 = mem_cgroup_swappiness_write,
->  	},
->  	{
-> +		.name = "dirty_ratio",
-> +		.read_u64 = mem_cgroup_dirty_read,
-> +		.write_u64 = mem_cgroup_dirty_write,
-> +		.private = MEM_CGROUP_DIRTY_RATIO,
-> +	},
-> +	{
-> +		.name = "dirty_bytes",
-> +		.read_u64 = mem_cgroup_dirty_read,
-> +		.write_u64 = mem_cgroup_dirty_write,
-> +		.private = MEM_CGROUP_DIRTY_BYTES,
-> +	},
-> +	{
-> +		.name = "dirty_background_ratio",
-> +		.read_u64 = mem_cgroup_dirty_read,
-> +		.write_u64 = mem_cgroup_dirty_write,
-> +		.private = MEM_CGROUP_DIRTY_BACKGROUND_RATIO,
-> +	},
-> +	{
-> +		.name = "dirty_background_bytes",
-> +		.read_u64 = mem_cgroup_dirty_read,
-> +		.write_u64 = mem_cgroup_dirty_write,
-> +		.private = MEM_CGROUP_DIRTY_BACKGROUND_BYTES,
-> +	},
-> +	{
->  		.name = "move_charge_at_immigrate",
->  		.read_u64 = mem_cgroup_move_charge_read,
->  		.write_u64 = mem_cgroup_move_charge_write,
-> @@ -3725,6 +3967,19 @@ static int mem_cgroup_soft_limit_tree_init(void)
->  	return 0;
->  }
-> 
-> +/*
-> + * NOTE: called only with &src->reclaim_param_lock held from
-> + * mem_cgroup_create().
-> + */
-> +static inline void
-> +copy_dirty_params(struct mem_cgroup *dst, struct mem_cgroup *src)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < MEM_CGROUP_DIRTY_NPARAMS; i++)
-> +		dst->dirty_param[i] = src->dirty_param[i];
-> +}
-> +
->  static struct cgroup_subsys_state * __ref
->  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  {
-> @@ -3776,8 +4031,37 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	mem->last_scanned_child = 0;
->  	spin_lock_init(&mem->reclaim_param_lock);
-> 
-> -	if (parent)
-> +	if (parent) {
->  		mem->swappiness = get_swappiness(parent);
-> +
-> +		spin_lock(&parent->reclaim_param_lock);
-> +		copy_dirty_params(mem, parent);
-> +		spin_unlock(&parent->reclaim_param_lock);
-> +	} else {
-> +		/*
-> +		 * XXX: should we need a lock here? we could switch from
-> +		 * vm_dirty_ratio to vm_dirty_bytes or vice versa but we're not
-> +		 * reading them atomically. The same for dirty_background_ratio
-> +		 * and dirty_background_bytes.
-> +		 *
-> +		 * For now, try to read them speculatively and retry if a
-> +		 * "conflict" is detected.a
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 04f06b4..e91a759 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -203,8 +203,8 @@ struct perf_event_attr {
+>  				enable_on_exec :  1, /* next exec enables     */
+>  				task           :  1, /* trace fork/exit       */
+>  				watermark      :  1, /* wakeup_watermark      */
+> -
+> -				__reserved_1   : 49;
+> +				random	       :  1, /* period randomization  */
 
-The do while loop is subtle, can we add a validate check,share it with
-the write routine and retry if validation fails?
 
-> +		 */
-> +		do {
-> +			mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] =
-> +						vm_dirty_ratio;
-> +			mem->dirty_param[MEM_CGROUP_DIRTY_BYTES] =
-> +						vm_dirty_bytes;
-> +		} while (mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] &&
-> +			 mem->dirty_param[MEM_CGROUP_DIRTY_BYTES]);
-> +		do {
-> +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] =
-> +						dirty_background_ratio;
-> +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] =
-> +						dirty_background_bytes;
-> +		} while (mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] &&
-> +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES]);
-> +	}
->  	atomic_set(&mem->refcnt, 1);
->  	mem->move_charge_at_immigrate = 0;
->  	mutex_init(&mem->thresholds_lock);
-> -- 
-> 1.6.3.3
-> 
+I'd rather name this field random_period. Even though the comment
+tell us enough, it's better that the code speak for itself.
 
--- 
-	Three Cheers,
-	Balbir
