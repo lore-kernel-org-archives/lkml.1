@@ -1,63 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752067Ab0CBJ2j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 04:28:39 -0500
-Received: from compulab.co.il ([67.18.134.219]:40090 "EHLO compulab.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363Ab0CBJ2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 04:28:37 -0500
-Message-ID: <4B8CDA64.4070504@compulab.co.il>
-Date: Tue, 02 Mar 2010 11:29:08 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752091Ab0CBJaY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 04:30:24 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:65210 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751737Ab0CBJaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 04:30:21 -0500
+Date: Tue, 2 Mar 2010 01:29:47 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>, Mark Fasheh <mfasheh@suse.com>,
+       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
+       a.gruenbacher@computer.org
+Subject: Re: [PATCH 2/2] ocfs2: ensure trusted xattrs are not returned to
+ unprivileged users via listxattr
+Message-ID: <20100302092946.GA21180@mail.oracle.com>
+Mail-Followup-To: James Morris <jmorris@namei.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	David Woodhouse <dwmw2@infradead.org>,
+	Mark Fasheh <mfasheh@suse.com>, Alex Elder <aelder@sgi.com>,
+	Chris Mason <chris.mason@oracle.com>, a.gruenbacher@computer.org
+References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
+ <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Mike Rapoport <mike@compulab.co.il>, David Brownell <david-b@pacbell.net>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 3/3] gpio: add Intel SCH GPIO controller driver
-References: <4B73DAEE.5080400@compulab.co.il> <4B7C0DC3.3060907@compulab.co.il> <4B812C21.8000602@compulab.co.il> <201002211112.48527.david-b@pacbell.net> <4B84CC0E.5060203@compulab.co.il> <alpine.LFD.2.00.1003011304500.4281@localhost.localdomain> <4B8CB370.5080903@compulab.co.il>
-In-Reply-To: <4B8CB370.5080903@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B8CDA9D.0058:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Rapoport wrote:
-> Len Brown wrote:
->>> I've looked at two x86 drivers in drivers/gpiolib (cs5535 and langwell) and
->>> there's no treatment of ACPI in either of them. Since SCH is defined by Intel
->>> as "embedded" product, having a GPIO driver for it seems logical even despite
->>> problems you mention.
->> FWIW
->> I believe that Langwell is used only in products without an ACPI BIOS.
->>
->> Poulsbo, OTOH, is used in zillions of netbooks running Windows XP.
->> I don't know what a cs5535 is.
+On Tue, Mar 02, 2010 at 07:02:22PM +1100, James Morris wrote:
+> Ensure that trusted xattrs are not returned to unprivileged users
+> via listxattr, in keeping with several other implmentations, such
+> as ext3.
 > 
-> The cs5535 is AMD Geode LX companion chip which is used with ACPI BIOS 
-> as well.
-> 
->> cheers,
->> Len Brown, Intel Open Source Technology Center
->>
-> 
-> 
+> Signed-off-by: James Morris <jmorris@namei.org>
 
-I'm really not an ACPI expert too, but as I see in LDD3 "...the role of a device driver
-is providing mechanism, not policy".
+If this is the standard expectation, why not lift it up into the vfs?
 
-HW manufacturer must warn users if some GPIOs may conflict with ACPI, and it is user`s
-responsibility to use the GPIOs in proper way.
+Acked-by: Joel Becker <joel.becker@oracle.com>
 
-Denis
+-- 
+
+"The nearest approach to immortality on Earth is a government
+ bureau."
+	- James F. Byrnes
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
