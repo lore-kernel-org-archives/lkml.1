@@ -1,636 +1,384 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752422Ab0CBKE6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 05:04:58 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:58395 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360Ab0CBKE4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 05:04:56 -0500
+	id S1752391Ab0CBKIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 05:08:37 -0500
+Received: from mga09.intel.com ([134.134.136.24]:65452 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751830Ab0CBKIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 05:08:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,565,1262592000"; 
+   d="scan'208";a="600475090"
+Date: Tue, 2 Mar 2010 11:09:43 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Denis Turischev <denis@compulab.co.il>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH v4 3/3] gpio: add Intel SCH GPIO controller driver
+Message-ID: <20100302100942.GB3195@sortiz.org>
+References: <4B73DAEE.5080400@compulab.co.il>
+ <4B73DBE9.2030307@compulab.co.il>
+ <4B7C0DC3.3060907@compulab.co.il>
+ <4B812C21.8000602@compulab.co.il>
+ <20100228190117.GC3589@sortiz.org>
+ <4B8BF32B.9070807@compulab.co.il>
 MIME-Version: 1.0
-In-Reply-To: <1267478620-5276-3-git-send-email-arighi@develer.com>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
-	 <1267478620-5276-3-git-send-email-arighi@develer.com>
-Date: Tue, 2 Mar 2010 12:04:53 +0200
-Message-ID: <cc557aab1003020204k16038838ta537357aeeb67b11@mail.gmail.com>
-Subject: Re: [PATCH -mmotm 2/3] memcg: dirty pages accounting and limiting 
-	infrastructure
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8BF32B.9070807@compulab.co.il>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 11:23 PM, Andrea Righi <arighi@develer.com> wrote:
-> Infrastructure to account dirty pages per cgroup and add dirty limit
-> interfaces in the cgroupfs:
->
->  - Direct write-out: memory.dirty_ratio, memory.dirty_bytes
->
->  - Background write-out: memory.dirty_background_ratio, memory.dirty_background_bytes
->
-> Signed-off-by: Andrea Righi <arighi@develer.com>
+Hi Denis,
+
+On Mon, Mar 01, 2010 at 07:02:35PM +0200, Denis Turischev wrote:
+> v2: there is no acpi_check_region, it will be implemented in mfd-core
+> v3: patch refreshed against the latest Linus tree
+> v4: refreshed again
+I'm taking this one as well, unless David NACKs it.
+
+Cheers,
+Samuel.
+
+
+> Signed-off-by: Denis Turischev <denis@compulab.co.il>
 > ---
->  include/linux/memcontrol.h |   77 ++++++++++-
->  mm/memcontrol.c            |  336 ++++++++++++++++++++++++++++++++++++++++----
->  2 files changed, 384 insertions(+), 29 deletions(-)
->
-> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> index 1f9b119..cc88b2e 100644
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -19,12 +19,50 @@
->
->  #ifndef _LINUX_MEMCONTROL_H
->  #define _LINUX_MEMCONTROL_H
+>  drivers/gpio/Kconfig    |   16 +++
+>  drivers/gpio/Makefile   |    1 +
+>  drivers/gpio/sch_gpio.c |  282 +++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 299 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/gpio/sch_gpio.c
+> 
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index 1f1d88a..1730068 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -85,6 +85,22 @@ config GPIO_VR41XX
+>  	help
+>  	  Say yes here to support the NEC VR4100 series General-purpose I/O Uint
+> 
+> +config GPIO_SCH
+> +	tristate "Intel SCH GPIO"
+> +	depends on GPIOLIB
+> +	select LPC_SCH
+> +	help
+> +	  Say yes here to support GPIO interface on Intel Poulsbo SCH.
+> +	  The Intel SCH contains a total of 14 GPIO pins. Ten GPIOs are
+> +	  powered by the core power rail and are turned off during sleep
+> +	  modes (S3 and higher). The remaining four GPIOs are powered by
+> +	  the Intel SCH suspend power supply. These GPIOs remain
+> +	  active during S3. The suspend powered GPIOs can be used to wake the
+> +	  system from the Suspend-to-RAM state.
 > +
-> +#include <linux/writeback.h>
->  #include <linux/cgroup.h>
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called sch-gpio.
 > +
->  struct mem_cgroup;
->  struct page_cgroup;
->  struct page;
->  struct mm_struct;
->
-> +/* Cgroup memory statistics items exported to the kernel */
-> +enum mem_cgroup_page_stat_item {
-> +       MEMCG_NR_DIRTYABLE_PAGES,
-> +       MEMCG_NR_RECLAIM_PAGES,
-> +       MEMCG_NR_WRITEBACK,
-> +       MEMCG_NR_DIRTY_WRITEBACK_PAGES,
-> +};
-> +
+>  comment "I2C GPIO expanders:"
+> 
+>  config GPIO_MAX732X
+> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+> index 4868723..aa1d06e 100644
+> --- a/drivers/gpio/Makefile
+> +++ b/drivers/gpio/Makefile
+> @@ -22,3 +22,4 @@ obj-$(CONFIG_GPIO_CS5535)	+= cs5535-gpio.o
+>  obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+>  obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
+>  obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
+> +obj-$(CONFIG_GPIO_SCH)		+= sch_gpio.o
+> diff --git a/drivers/gpio/sch_gpio.c b/drivers/gpio/sch_gpio.c
+> new file mode 100644
+> index 0000000..761071a
+> --- /dev/null
+> +++ b/drivers/gpio/sch_gpio.c
+> @@ -0,0 +1,282 @@
 > +/*
-> + * Statistics for memory cgroup.
+> + *  sch_gpio.c - GPIO interface for Intel Poulsbo SCH
+> + *
+> + *  Copyright (c) 2010 CompuLab Ltd
+> + *  Author: Denis Turischev <denis@compulab.co.il>
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License 2 as published
+> + *  by the Free Software Foundation.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; see the file COPYING.  If not, write to
+> + *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 > + */
-> +enum mem_cgroup_stat_index {
-> +       /*
-> +        * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-> +        */
-> +       MEM_CGROUP_STAT_CACHE,     /* # of pages charged as cache */
-> +       MEM_CGROUP_STAT_RSS,       /* # of pages charged as anon rss */
-> +       MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
-> +       MEM_CGROUP_STAT_PGPGIN_COUNT,   /* # of pages paged in */
-> +       MEM_CGROUP_STAT_PGPGOUT_COUNT,  /* # of pages paged out */
-> +       MEM_CGROUP_STAT_EVENTS, /* sum of pagein + pageout for internal use */
-> +       MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
-> +       MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
-> +                                       used by soft limit implementation */
-> +       MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
-> +                                       used by threshold implementation */
-> +       MEM_CGROUP_STAT_FILE_DIRTY,   /* # of dirty pages in page cache */
-> +       MEM_CGROUP_STAT_WRITEBACK,   /* # of pages under writeback */
-> +       MEM_CGROUP_STAT_WRITEBACK_TEMP,   /* # of pages under writeback using
-> +                                               temporary buffers */
-> +       MEM_CGROUP_STAT_UNSTABLE_NFS,   /* # of NFS unstable pages */
 > +
-> +       MEM_CGROUP_STAT_NSTATS,
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/io.h>
+> +#include <linux/errno.h>
+> +#include <linux/acpi.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <linux/gpio.h>
+> +
+> +static DEFINE_SPINLOCK(gpio_lock);
+> +
+> +#define CGEN	(0x00)
+> +#define CGIO	(0x04)
+> +#define CGLV	(0x08)
+> +
+> +#define RGEN	(0x20)
+> +#define RGIO	(0x24)
+> +#define RGLV	(0x28)
+> +
+> +static unsigned short gpio_ba;
+> +
+> +static int sch_gpio_core_direction_in(struct gpio_chip *gc, unsigned  gpio_num)
+> +{
+> +	u8 curr_dirs;
+> +	unsigned short offset, bit;
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	offset = CGIO + gpio_num / 8;
+> +	bit = gpio_num % 8;
+> +
+> +	curr_dirs = inb(gpio_ba + offset);
+> +
+> +	if (!(curr_dirs & (1 << bit)))
+> +		outb(curr_dirs | (1 << bit), gpio_ba + offset);
+> +
+> +	spin_unlock(&gpio_lock);
+> +	return 0;
+> +}
+> +
+> +static int sch_gpio_core_get(struct gpio_chip *gc, unsigned gpio_num)
+> +{
+> +	int res;
+> +	unsigned short offset, bit;
+> +
+> +	offset = CGLV + gpio_num / 8;
+> +	bit = gpio_num % 8;
+> +
+> +	res = !!(inb(gpio_ba + offset) & (1 << bit));
+> +	return res;
+> +}
+> +
+> +static void sch_gpio_core_set(struct gpio_chip *gc, unsigned gpio_num, int val)
+> +{
+> +	u8 curr_vals;
+> +	unsigned short offset, bit;
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	offset = CGLV + gpio_num / 8;
+> +	bit = gpio_num % 8;
+> +
+> +	curr_vals = inb(gpio_ba + offset);
+> +
+> +	if (val)
+> +		outb(curr_vals | (1 << bit), gpio_ba + offset);
+> +	else
+> +		outb((curr_vals & ~(1 << bit)), gpio_ba + offset);
+> +	spin_unlock(&gpio_lock);
+> +}
+> +
+> +static int sch_gpio_core_direction_out(struct gpio_chip *gc,
+> +					unsigned gpio_num, int val)
+> +{
+> +	u8 curr_dirs;
+> +	unsigned short offset, bit;
+> +
+> +	sch_gpio_core_set(gc, gpio_num, val);
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	offset = CGIO + gpio_num / 8;
+> +	bit = gpio_num % 8;
+> +
+> +	curr_dirs = inb(gpio_ba + offset);
+> +	if (curr_dirs & (1 << bit))
+> +		outb(curr_dirs & ~(1 << bit), gpio_ba + offset);
+> +
+> +	spin_unlock(&gpio_lock);
+> +	return 0;
+> +}
+> +
+> +static struct gpio_chip sch_gpio_core = {
+> +	.label			= "sch_gpio_core",
+> +	.owner			= THIS_MODULE,
+> +	.direction_input	= sch_gpio_core_direction_in,
+> +	.get			= sch_gpio_core_get,
+> +	.direction_output	= sch_gpio_core_direction_out,
+> +	.set			= sch_gpio_core_set,
 > +};
 > +
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  /*
->  * All "charge" functions with gfp_mask should use GFP_KERNEL or
-> @@ -117,6 +155,13 @@ extern void mem_cgroup_print_oom_info(struct mem_cgroup *memcg,
->  extern int do_swap_account;
->  #endif
->
-> +extern long mem_cgroup_dirty_ratio(void);
-> +extern unsigned long mem_cgroup_dirty_bytes(void);
-> +extern long mem_cgroup_dirty_background_ratio(void);
-> +extern unsigned long mem_cgroup_dirty_background_bytes(void);
-> +
-> +extern s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item);
-> +
->  static inline bool mem_cgroup_disabled(void)
->  {
->        if (mem_cgroup_subsys.disabled)
-> @@ -125,7 +170,8 @@ static inline bool mem_cgroup_disabled(void)
->  }
->
->  extern bool mem_cgroup_oom_called(struct task_struct *task);
-> -void mem_cgroup_update_file_mapped(struct page *page, int val);
-> +void mem_cgroup_update_stat(struct page *page,
-> +                       enum mem_cgroup_stat_index idx, int val);
->  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->                                                gfp_t gfp_mask, int nid,
->                                                int zid);
-> @@ -300,8 +346,8 @@ mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
->  {
->  }
->
-> -static inline void mem_cgroup_update_file_mapped(struct page *page,
-> -                                                       int val)
-> +static inline void mem_cgroup_update_stat(struct page *page,
-> +                       enum mem_cgroup_stat_index idx, int val)
->  {
->  }
->
-> @@ -312,6 +358,31 @@ unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->        return 0;
->  }
->
-> +static inline long mem_cgroup_dirty_ratio(void)
+> +static int sch_gpio_resume_direction_in(struct gpio_chip *gc,
+> +					unsigned gpio_num)
 > +{
-> +       return vm_dirty_ratio;
+> +	u8 curr_dirs;
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	curr_dirs = inb(gpio_ba + RGIO);
+> +
+> +	if (!(curr_dirs & (1 << gpio_num)))
+> +		outb(curr_dirs | (1 << gpio_num) , gpio_ba + RGIO);
+> +
+> +	spin_unlock(&gpio_lock);
+> +	return 0;
 > +}
 > +
-> +static inline unsigned long mem_cgroup_dirty_bytes(void)
+> +static int sch_gpio_resume_get(struct gpio_chip *gc, unsigned gpio_num)
 > +{
-> +       return vm_dirty_bytes;
+> +	return !!(inb(gpio_ba + RGLV) & (1 << gpio_num));
 > +}
 > +
-> +static inline long mem_cgroup_dirty_background_ratio(void)
+> +static void sch_gpio_resume_set(struct gpio_chip *gc,
+> +				unsigned gpio_num, int val)
 > +{
-> +       return dirty_background_ratio;
+> +	u8 curr_vals;
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	curr_vals = inb(gpio_ba + RGLV);
+> +
+> +	if (val)
+> +		outb(curr_vals | (1 << gpio_num), gpio_ba + RGLV);
+> +	else
+> +		outb((curr_vals & ~(1 << gpio_num)), gpio_ba + RGLV);
+> +
+> +	spin_unlock(&gpio_lock);
 > +}
 > +
-> +static inline unsigned long mem_cgroup_dirty_background_bytes(void)
+> +static int sch_gpio_resume_direction_out(struct gpio_chip *gc,
+> +					unsigned gpio_num, int val)
 > +{
-> +       return dirty_background_bytes;
+> +	u8 curr_dirs;
+> +
+> +	sch_gpio_resume_set(gc, gpio_num, val);
+> +
+> +	spin_lock(&gpio_lock);
+> +
+> +	curr_dirs = inb(gpio_ba + RGIO);
+> +	if (curr_dirs & (1 << gpio_num))
+> +		outb(curr_dirs & ~(1 << gpio_num), gpio_ba + RGIO);
+> +
+> +	spin_unlock(&gpio_lock);
+> +	return 0;
 > +}
 > +
-> +static inline s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> +{
-> +       return -ENOMEM;
-
-Why ENOMEM? Probably, EINVAL or ENOSYS?
-
-> +}
-> +
->  #endif /* CONFIG_CGROUP_MEM_CONT */
->
->  #endif /* _LINUX_MEMCONTROL_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index a443c30..e74cf66 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -66,31 +66,16 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
->  #define SOFTLIMIT_EVENTS_THRESH (1000)
->  #define THRESHOLDS_EVENTS_THRESH (100)
->
-> -/*
-> - * Statistics for memory cgroup.
-> - */
-> -enum mem_cgroup_stat_index {
-> -       /*
-> -        * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-> -        */
-> -       MEM_CGROUP_STAT_CACHE,     /* # of pages charged as cache */
-> -       MEM_CGROUP_STAT_RSS,       /* # of pages charged as anon rss */
-> -       MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
-> -       MEM_CGROUP_STAT_PGPGIN_COUNT,   /* # of pages paged in */
-> -       MEM_CGROUP_STAT_PGPGOUT_COUNT,  /* # of pages paged out */
-> -       MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
-> -       MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
-> -                                       used by soft limit implementation */
-> -       MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
-> -                                       used by threshold implementation */
-> -
-> -       MEM_CGROUP_STAT_NSTATS,
-> -};
-> -
->  struct mem_cgroup_stat_cpu {
->        s64 count[MEM_CGROUP_STAT_NSTATS];
->  };
->
-> +/* Per cgroup page statistics */
-> +struct mem_cgroup_page_stat {
-> +       enum mem_cgroup_page_stat_item item;
-> +       s64 value;
+> +static struct gpio_chip sch_gpio_resume = {
+> +	.label			= "sch_gpio_resume",
+> +	.owner			= THIS_MODULE,
+> +	.direction_input	= sch_gpio_resume_direction_in,
+> +	.get			= sch_gpio_resume_get,
+> +	.direction_output	= sch_gpio_resume_direction_out,
+> +	.set			= sch_gpio_resume_set,
 > +};
 > +
->  /*
->  * per-zone information in memory controller.
->  */
-> @@ -157,6 +142,15 @@ struct mem_cgroup_threshold_ary {
->  static bool mem_cgroup_threshold_check(struct mem_cgroup *mem);
->  static void mem_cgroup_threshold(struct mem_cgroup *mem);
->
-> +enum mem_cgroup_dirty_param {
-> +       MEM_CGROUP_DIRTY_RATIO,
-> +       MEM_CGROUP_DIRTY_BYTES,
-> +       MEM_CGROUP_DIRTY_BACKGROUND_RATIO,
-> +       MEM_CGROUP_DIRTY_BACKGROUND_BYTES,
+> +static int __devinit sch_gpio_probe(struct platform_device *pdev)
+> +{
+> +	struct resource *res;
+> +	int err;
 > +
-> +       MEM_CGROUP_DIRTY_NPARAMS,
+> +	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> +	if (!res)
+> +		return -EBUSY;
+> +
+> +	if (!request_region(res->start, resource_size(res), pdev->name))
+> +		return -EBUSY;
+> +
+> +	gpio_ba = res->start;
+> +
+> +	sch_gpio_core.base = 0;
+> +	sch_gpio_core.ngpio = 10;
+> +	sch_gpio_core.dev = &pdev->dev;
+> +
+> +	sch_gpio_resume.base = 10;
+> +	sch_gpio_resume.ngpio = 4;
+> +	sch_gpio_resume.dev = &pdev->dev;
+> +
+> +	err = gpiochip_add(&sch_gpio_core);
+> +	if (err < 0)
+> +		goto err_sch_gpio_core;
+> +
+> +	err = gpiochip_add(&sch_gpio_resume);
+> +	if (err < 0)
+> +		goto err_sch_gpio_resume;
+> +
+> +	/*
+> +	 * GPIO[6:0] enabled by default
+> +	 * GPIO7 is configured by the CMC as SLPIOVR
+> +	 * Enable GPIO[9:8] core powered gpios explicitly
+> +	 */
+> +	outb(0x3, gpio_ba + CGEN + 1);
+> +	/*
+> +	 * SUS_GPIO[2:0] enabled by default
+> +	 * Enable SUS_GPIO3 resume powered gpio explicitly
+> +	 */
+> +	outb(0x8, gpio_ba + RGEN);
+> +
+> +	return 0;
+> +
+> +err_sch_gpio_resume:
+> +	gpiochip_remove(&sch_gpio_core);
+> +
+> +err_sch_gpio_core:
+> +	release_region(res->start, resource_size(res));
+> +	gpio_ba = 0;
+> +
+> +	return err;
+> +}
+> +
+> +static int __devexit sch_gpio_remove(struct platform_device *pdev)
+> +{
+> +	struct resource *res;
+> +	if (gpio_ba) {
+> +		gpiochip_remove(&sch_gpio_core);
+> +		gpiochip_remove(&sch_gpio_resume);
+> +
+> +		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> +
+> +		release_region(res->start, resource_size(res));
+> +		gpio_ba = 0;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver sch_gpio_driver = {
+> +	.driver = {
+> +		.name = "sch_gpio",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.probe		= sch_gpio_probe,
+> +	.remove		= __devexit_p(sch_gpio_remove),
 > +};
 > +
->  /*
->  * The memory controller data structure. The memory controller controls both
->  * page cache and RSS per cgroup. We would eventually like to provide
-> @@ -205,6 +199,9 @@ struct mem_cgroup {
->
->        unsigned int    swappiness;
->
-> +       /* control memory cgroup dirty pages */
-> +       unsigned long dirty_param[MEM_CGROUP_DIRTY_NPARAMS];
-> +
->        /* set when res.limit == memsw.limit */
->        bool            memsw_is_minimum;
->
-> @@ -1021,6 +1018,164 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
->        return swappiness;
->  }
->
-> +static unsigned long get_dirty_param(struct mem_cgroup *memcg,
-> +                       enum mem_cgroup_dirty_param idx)
+> +static int __init sch_gpio_init(void)
 > +{
-> +       unsigned long ret;
-> +
-> +       VM_BUG_ON(idx >= MEM_CGROUP_DIRTY_NPARAMS);
-> +       spin_lock(&memcg->reclaim_param_lock);
-> +       ret = memcg->dirty_param[idx];
-> +       spin_unlock(&memcg->reclaim_param_lock);
-> +
-> +       return ret;
+> +	return platform_driver_register(&sch_gpio_driver);
 > +}
 > +
-> +long mem_cgroup_dirty_ratio(void)
+> +static void __exit sch_gpio_exit(void)
 > +{
-> +       struct mem_cgroup *memcg;
-> +       long ret = vm_dirty_ratio;
-> +
-> +       if (mem_cgroup_disabled())
-> +               return ret;
-> +       /*
-> +        * It's possible that "current" may be moved to other cgroup while we
-> +        * access cgroup. But precise check is meaningless because the task can
-> +        * be moved after our access and writeback tends to take long time.
-> +        * At least, "memcg" will not be freed under rcu_read_lock().
-> +        */
-> +       rcu_read_lock();
-> +       memcg = mem_cgroup_from_task(current);
-> +       if (likely(memcg))
-> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_RATIO);
-> +       rcu_read_unlock();
-> +
-> +       return ret;
+> +	platform_driver_unregister(&sch_gpio_driver);
 > +}
 > +
-> +unsigned long mem_cgroup_dirty_bytes(void)
-> +{
-> +       struct mem_cgroup *memcg;
-> +       unsigned long ret = vm_dirty_bytes;
+> +module_init(sch_gpio_init);
+> +module_exit(sch_gpio_exit);
 > +
-> +       if (mem_cgroup_disabled())
-> +               return ret;
-> +       rcu_read_lock();
-> +       memcg = mem_cgroup_from_task(current);
-> +       if (likely(memcg))
-> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BYTES);
-> +       rcu_read_unlock();
-> +
-> +       return ret;
-> +}
-> +
-> +long mem_cgroup_dirty_background_ratio(void)
-> +{
-> +       struct mem_cgroup *memcg;
-> +       long ret = dirty_background_ratio;
-> +
-> +       if (mem_cgroup_disabled())
-> +               return ret;
-> +       rcu_read_lock();
-> +       memcg = mem_cgroup_from_task(current);
-> +       if (likely(memcg))
-> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_RATIO);
-> +       rcu_read_unlock();
-> +
-> +       return ret;
-> +}
-> +
-> +unsigned long mem_cgroup_dirty_background_bytes(void)
-> +{
-> +       struct mem_cgroup *memcg;
-> +       unsigned long ret = dirty_background_bytes;
-> +
-> +       if (mem_cgroup_disabled())
-> +               return ret;
-> +       rcu_read_lock();
-> +       memcg = mem_cgroup_from_task(current);
-> +       if (likely(memcg))
-> +               ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_BYTES);
-> +       rcu_read_unlock();
-> +
-> +       return ret;
-> +}
-> +
-> +static inline bool mem_cgroup_can_swap(struct mem_cgroup *memcg)
-> +{
-> +       return do_swap_account ?
-> +                       res_counter_read_u64(&memcg->memsw, RES_LIMIT) :
-> +                       nr_swap_pages > 0;
-> +}
-> +
-> +static s64 mem_cgroup_get_local_page_stat(struct mem_cgroup *memcg,
-> +                               enum mem_cgroup_page_stat_item item)
-> +{
-> +       s64 ret;
-> +
-> +       switch (item) {
-> +       case MEMCG_NR_DIRTYABLE_PAGES:
-> +               ret = res_counter_read_u64(&memcg->res, RES_LIMIT) -
-> +                       res_counter_read_u64(&memcg->res, RES_USAGE);
-> +               /* Translate free memory in pages */
-> +               ret >>= PAGE_SHIFT;
-> +               ret += mem_cgroup_read_stat(memcg, LRU_ACTIVE_FILE) +
-> +                       mem_cgroup_read_stat(memcg, LRU_INACTIVE_FILE);
-> +               if (mem_cgroup_can_swap(memcg))
-> +                       ret += mem_cgroup_read_stat(memcg, LRU_ACTIVE_ANON) +
-> +                               mem_cgroup_read_stat(memcg, LRU_INACTIVE_ANON);
-> +               break;
-> +       case MEMCG_NR_RECLAIM_PAGES:
-> +               ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_FILE_DIRTY) +
-> +                       mem_cgroup_read_stat(memcg,
-> +                                       MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +               break;
-> +       case MEMCG_NR_WRITEBACK:
-> +               ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_WRITEBACK);
-> +               break;
-> +       case MEMCG_NR_DIRTY_WRITEBACK_PAGES:
-> +               ret = mem_cgroup_read_stat(memcg, MEM_CGROUP_STAT_WRITEBACK) +
-> +                       mem_cgroup_read_stat(memcg,
-> +                               MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +               break;
-> +       default:
-> +               ret = 0;
-> +               WARN_ON_ONCE(1);
-
-I think it's a bug, not warning.
-
-> +       }
-> +       return ret;
-> +}
-> +
-> +static int mem_cgroup_page_stat_cb(struct mem_cgroup *mem, void *data)
-> +{
-> +       struct mem_cgroup_page_stat *stat = (struct mem_cgroup_page_stat *)data;
-> +
-> +       stat->value += mem_cgroup_get_local_page_stat(mem, stat->item);
-> +       return 0;
-> +}
-> +
-> +s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item)
-> +{
-> +       struct mem_cgroup_page_stat stat = {};
-> +       struct mem_cgroup *memcg;
-> +
-> +       if (mem_cgroup_disabled())
-> +               return -ENOMEM;
-
-EINVAL/ENOSYS?
-
-> +       rcu_read_lock();
-> +       memcg = mem_cgroup_from_task(current);
-> +       if (memcg) {
-> +               /*
-> +                * Recursively evaulate page statistics against all cgroup
-> +                * under hierarchy tree
-> +                */
-> +               stat.item = item;
-> +               mem_cgroup_walk_tree(memcg, &stat, mem_cgroup_page_stat_cb);
-> +       } else
-> +               stat.value = -ENOMEM;
-
-ditto.
-
-> +       rcu_read_unlock();
-> +
-> +       return stat.value;
-> +}
-> +
->  static int mem_cgroup_count_children_cb(struct mem_cgroup *mem, void *data)
->  {
->        int *val = data;
-> @@ -1263,14 +1418,16 @@ static void record_last_oom(struct mem_cgroup *mem)
->  }
->
->  /*
-> - * Currently used to update mapped file statistics, but the routine can be
-> - * generalized to update other statistics as well.
-> + * Generalized routine to update memory cgroup statistics.
->  */
-> -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> +void mem_cgroup_update_stat(struct page *page,
-> +                       enum mem_cgroup_stat_index idx, int val)
-
-EXPORT_SYMBOL_GPL(mem_cgroup_update_stat) is needed, since
-it uses by filesystems.
-
->  {
->        struct mem_cgroup *mem;
->        struct page_cgroup *pc;
->
-> +       if (mem_cgroup_disabled())
-> +               return;
->        pc = lookup_page_cgroup(page);
->        if (unlikely(!pc))
->                return;
-> @@ -1286,7 +1443,8 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
->        /*
->         * Preemption is already disabled. We can use __this_cpu_xxx
->         */
-> -       __this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
-> +       VM_BUG_ON(idx >= MEM_CGROUP_STAT_NSTATS);
-> +       __this_cpu_add(mem->stat->count[idx], val);
->
->  done:
->        unlock_page_cgroup(pc);
-> @@ -3033,6 +3191,10 @@ enum {
->        MCS_PGPGIN,
->        MCS_PGPGOUT,
->        MCS_SWAP,
-> +       MCS_FILE_DIRTY,
-> +       MCS_WRITEBACK,
-> +       MCS_WRITEBACK_TEMP,
-> +       MCS_UNSTABLE_NFS,
->        MCS_INACTIVE_ANON,
->        MCS_ACTIVE_ANON,
->        MCS_INACTIVE_FILE,
-> @@ -3055,6 +3217,10 @@ struct {
->        {"pgpgin", "total_pgpgin"},
->        {"pgpgout", "total_pgpgout"},
->        {"swap", "total_swap"},
-> +       {"filedirty", "dirty_pages"},
-> +       {"writeback", "writeback_pages"},
-> +       {"writeback_tmp", "writeback_temp_pages"},
-> +       {"nfs", "nfs_unstable"},
->        {"inactive_anon", "total_inactive_anon"},
->        {"active_anon", "total_active_anon"},
->        {"inactive_file", "total_inactive_file"},
-> @@ -3083,6 +3249,14 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
->                val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_SWAPOUT);
->                s->stat[MCS_SWAP] += val * PAGE_SIZE;
->        }
-> +       val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_FILE_DIRTY);
-> +       s->stat[MCS_FILE_DIRTY] += val;
-> +       val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_WRITEBACK);
-> +       s->stat[MCS_WRITEBACK] += val;
-> +       val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_WRITEBACK_TEMP);
-> +       s->stat[MCS_WRITEBACK_TEMP] += val;
-> +       val = mem_cgroup_read_stat(mem, MEM_CGROUP_STAT_UNSTABLE_NFS);
-> +       s->stat[MCS_UNSTABLE_NFS] += val;
->
->        /* per zone stat */
->        val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_ANON);
-> @@ -3467,6 +3641,50 @@ unlock:
->        return ret;
->  }
->
-> +static u64 mem_cgroup_dirty_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +       int type = cft->private;
-> +
-> +       return get_dirty_param(memcg, type);
-> +}
-> +
-> +static int
-> +mem_cgroup_dirty_write(struct cgroup *cgrp, struct cftype *cft, u64 val)
-> +{
-> +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +       int type = cft->private;
-> +
-> +       if (cgrp->parent == NULL)
-> +               return -EINVAL;
-> +       if (((type == MEM_CGROUP_DIRTY_RATIO) ||
-> +               (type == MEM_CGROUP_DIRTY_BACKGROUND_RATIO)) && (val > 100))
-
-Too many unnecessary brackets
-
-       if ((type == MEM_CGROUP_DIRTY_RATIO ||
-               type == MEM_CGROUP_DIRTY_BACKGROUND_RATIO) && val > 100)
-
-> +               return -EINVAL;
-> +
-> +       spin_lock(&memcg->reclaim_param_lock);
-> +       switch (type) {
-> +       case MEM_CGROUP_DIRTY_RATIO:
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_RATIO] = val;
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BYTES] = 0;
-> +               break;
-> +       case MEM_CGROUP_DIRTY_BYTES:
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_RATIO] = 0;
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BYTES] = val;
-> +               break;
-> +       case MEM_CGROUP_DIRTY_BACKGROUND_RATIO:
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] = val;
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] = 0;
-> +               break;
-> +       case MEM_CGROUP_DIRTY_BACKGROUND_BYTES:
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] = 0;
-> +               memcg->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] = val;
-> +               break;
-> +       }
-> +       spin_unlock(&memcg->reclaim_param_lock);
-> +
-> +       return 0;
-> +}
-> +
->  static struct cftype mem_cgroup_files[] = {
->        {
->                .name = "usage_in_bytes",
-> @@ -3518,6 +3736,30 @@ static struct cftype mem_cgroup_files[] = {
->                .write_u64 = mem_cgroup_swappiness_write,
->        },
->        {
-> +               .name = "dirty_ratio",
-> +               .read_u64 = mem_cgroup_dirty_read,
-> +               .write_u64 = mem_cgroup_dirty_write,
-> +               .private = MEM_CGROUP_DIRTY_RATIO,
-> +       },
-> +       {
-> +               .name = "dirty_bytes",
-> +               .read_u64 = mem_cgroup_dirty_read,
-> +               .write_u64 = mem_cgroup_dirty_write,
-> +               .private = MEM_CGROUP_DIRTY_BYTES,
-> +       },
-> +       {
-> +               .name = "dirty_background_ratio",
-> +               .read_u64 = mem_cgroup_dirty_read,
-> +               .write_u64 = mem_cgroup_dirty_write,
-> +               .private = MEM_CGROUP_DIRTY_BACKGROUND_RATIO,
-> +       },
-> +       {
-> +               .name = "dirty_background_bytes",
-> +               .read_u64 = mem_cgroup_dirty_read,
-> +               .write_u64 = mem_cgroup_dirty_write,
-> +               .private = MEM_CGROUP_DIRTY_BACKGROUND_BYTES,
-> +       },
-> +       {
->                .name = "move_charge_at_immigrate",
->                .read_u64 = mem_cgroup_move_charge_read,
->                .write_u64 = mem_cgroup_move_charge_write,
-> @@ -3725,6 +3967,19 @@ static int mem_cgroup_soft_limit_tree_init(void)
->        return 0;
->  }
->
-> +/*
-> + * NOTE: called only with &src->reclaim_param_lock held from
-> + * mem_cgroup_create().
-> + */
-> +static inline void
-> +copy_dirty_params(struct mem_cgroup *dst, struct mem_cgroup *src)
-> +{
-> +       int i;
-> +
-> +       for (i = 0; i < MEM_CGROUP_DIRTY_NPARAMS; i++)
-> +               dst->dirty_param[i] = src->dirty_param[i];
-> +}
-> +
->  static struct cgroup_subsys_state * __ref
->  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  {
-> @@ -3776,8 +4031,37 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->        mem->last_scanned_child = 0;
->        spin_lock_init(&mem->reclaim_param_lock);
->
-> -       if (parent)
-> +       if (parent) {
->                mem->swappiness = get_swappiness(parent);
-> +
-> +               spin_lock(&parent->reclaim_param_lock);
-> +               copy_dirty_params(mem, parent);
-> +               spin_unlock(&parent->reclaim_param_lock);
-> +       } else {
-> +               /*
-> +                * XXX: should we need a lock here? we could switch from
-> +                * vm_dirty_ratio to vm_dirty_bytes or vice versa but we're not
-> +                * reading them atomically. The same for dirty_background_ratio
-> +                * and dirty_background_bytes.
-> +                *
-> +                * For now, try to read them speculatively and retry if a
-> +                * "conflict" is detected.
-> +                */
-> +               do {
-> +                       mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] =
-> +                                               vm_dirty_ratio;
-> +                       mem->dirty_param[MEM_CGROUP_DIRTY_BYTES] =
-> +                                               vm_dirty_bytes;
-> +               } while (mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] &&
-> +                        mem->dirty_param[MEM_CGROUP_DIRTY_BYTES]);
-> +               do {
-> +                       mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] =
-> +                                               dirty_background_ratio;
-> +                       mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] =
-> +                                               dirty_background_bytes;
-> +               } while (mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] &&
-> +                       mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES]);
-> +       }
->        atomic_set(&mem->refcnt, 1);
->        mem->move_charge_at_immigrate = 0;
->        mutex_init(&mem->thresholds_lock);
-> --
+> +MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
+> +MODULE_DESCRIPTION("GPIO interface for Intel Poulsbo SCH");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:sch_gpio");
+> -- 
 > 1.6.3.3
->
->
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
