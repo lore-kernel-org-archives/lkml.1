@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219Ab0CBX3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:23 -0500
-Received: from kroah.org ([198.145.64.141]:38507 "EHLO coco.kroah.org"
+	id S1754167Ab0CBX3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:29:17 -0500
+Received: from kroah.org ([198.145.64.141]:38501 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123Ab0CBX3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:13 -0500
+	id S1753376Ab0CBX3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:12 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 08/62] sysfs: Add sysfs_add/remove_files utility functions
-Date: Tue,  2 Mar 2010 15:28:07 -0800
-Message-Id: <1267572541-410-8-git-send-email-gregkh@suse.de>
+Subject: [PATCH 07/62] sysdev: Convert cpu driver sysdev class attributes
+Date: Tue,  2 Mar 2010 15:28:06 -0800
+Message-Id: <1267572541-410-7-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
@@ -22,101 +22,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andi Kleen <andi@firstfloor.org>
 
-Adding/Removing a whole array of attributes is very common. Add a standard
-utility function to do this with a simple function call, instead of
-requiring drivers to open code this.
+Using the new attribute argument convert the cpu driver class attributes
+to carry the node state. Then use a shared function to do what a lot of
+individual functions did before.
+
+This eliminates an ugly macro.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/file.c       |   20 ++++++++++++++++++++
- include/linux/sysfs.h |   14 ++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
+ drivers/base/cpu.c |   37 +++++++++++++++++++++----------------
+ 1 files changed, 21 insertions(+), 16 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index dc30d9e..50b725b 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -542,6 +542,18 @@ int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
- 
- }
- 
-+int sysfs_create_files(struct kobject *kobj, const struct attribute **ptr)
-+{
-+	int err = 0;
-+	int i;
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index fd1b2f9..b04ecfc 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -141,27 +141,32 @@ static SYSDEV_ATTR(crash_notes, 0400, show_crash_notes, NULL);
+ /*
+  * Print cpu online, possible, present, and system maps
+  */
+-static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
 +
-+	for (i = 0; ptr[i] && !err; i++)
-+		err = sysfs_create_file(kobj, ptr[i]);
-+	if (err)
-+		while (--i >= 0)
-+			sysfs_remove_file(kobj, ptr[i]);
-+	return err;
-+}
- 
- /**
-  * sysfs_add_file_to_group - add an attribute file to a pre-existing group.
-@@ -614,6 +626,12 @@ void sysfs_remove_file(struct kobject * kobj, const struct attribute * attr)
- 	sysfs_hash_and_remove(kobj->sd, attr->name);
- }
- 
-+void sysfs_remove_files(struct kobject * kobj, const struct attribute **ptr)
-+{
-+	int i;
-+	for (i = 0; ptr[i]; i++)
-+		sysfs_remove_file(kobj, ptr[i]);
-+}
- 
- /**
-  * sysfs_remove_file_from_group - remove an attribute file from a group.
-@@ -732,3 +750,5 @@ EXPORT_SYMBOL_GPL(sysfs_schedule_callback);
- 
- EXPORT_SYMBOL_GPL(sysfs_create_file);
- EXPORT_SYMBOL_GPL(sysfs_remove_file);
-+EXPORT_SYMBOL_GPL(sysfs_remove_files);
-+EXPORT_SYMBOL_GPL(sysfs_create_files);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index cfa8308..3e85265 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -94,9 +94,12 @@ int __must_check sysfs_move_dir(struct kobject *kobj,
- 
- int __must_check sysfs_create_file(struct kobject *kobj,
- 				   const struct attribute *attr);
-+int __must_check sysfs_create_files(struct kobject *kobj,
-+				   const struct attribute **attr);
- int __must_check sysfs_chmod_file(struct kobject *kobj, struct attribute *attr,
- 				  mode_t mode);
- void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr);
-+void sysfs_remove_files(struct kobject *kobj, const struct attribute **attr);
- 
- int __must_check sysfs_create_bin_file(struct kobject *kobj,
- 				       const struct bin_attribute *attr);
-@@ -164,6 +167,12 @@ static inline int sysfs_create_file(struct kobject *kobj,
- 	return 0;
- }
- 
-+static inline int sysfs_create_files(struct kobject *kobj,
-+				    const struct attribute **attr)
-+{
-+	return 0;
-+}
++struct cpu_attr {
++	struct sysdev_class_attribute attr;
++	const struct cpumask *const * const map;
++};
 +
- static inline int sysfs_chmod_file(struct kobject *kobj,
- 				   struct attribute *attr, mode_t mode)
++static ssize_t show_cpus_attr(struct sysdev_class *class,
++			      struct sysdev_class_attribute *attr,
++			      char *buf)
  {
-@@ -175,6 +184,11 @@ static inline void sysfs_remove_file(struct kobject *kobj,
- {
+-	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, map);
++	struct cpu_attr *ca = container_of(attr, struct cpu_attr, attr);
++	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, *(ca->map));
+ 
+ 	buf[n++] = '\n';
+ 	buf[n] = '\0';
+ 	return n;
  }
  
-+static inline void sysfs_remove_files(struct kobject *kobj,
-+				     const struct attribute **attr)
-+{
-+}
-+
- static inline int sysfs_create_bin_file(struct kobject *kobj,
- 					const struct bin_attribute *attr)
- {
+-#define	print_cpus_func(type) \
+-static ssize_t print_cpus_##type(struct sysdev_class *class, 		\
+-	 		struct sysdev_class_attribute *attr, char *buf)	\
+-{									\
+-	return print_cpus_map(buf, cpu_##type##_mask);			\
+-}									\
+-static struct sysdev_class_attribute attr_##type##_map = 		\
+-	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
++#define _CPU_ATTR(name, map)						\
++	{ _SYSDEV_CLASS_ATTR(name, 0444, show_cpus_attr, NULL), map }
+ 
+-print_cpus_func(online);
+-print_cpus_func(possible);
+-print_cpus_func(present);
++static struct cpu_attr cpu_attrs[] = {
++	_CPU_ATTR(online, &cpu_online_mask),
++	_CPU_ATTR(possible, &cpu_possible_mask),
++	_CPU_ATTR(present, &cpu_present_mask),
++};
+ 
+ /*
+  * Print values for NR_CPUS and offlined cpus
+@@ -208,9 +213,9 @@ static ssize_t print_cpus_offline(struct sysdev_class *class,
+ static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
+ 
+ static struct sysdev_class_attribute *cpu_state_attr[] = {
+-	&attr_online_map,
+-	&attr_possible_map,
+-	&attr_present_map,
++	&cpu_attrs[0].attr,
++	&cpu_attrs[1].attr,
++	&cpu_attrs[2].attr,
+ 	&attr_kernel_max,
+ 	&attr_offline,
+ };
 -- 
 1.7.0.1
 
