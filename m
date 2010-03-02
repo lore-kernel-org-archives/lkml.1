@@ -1,38 +1,248 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183Ab0CBBpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 20:45:51 -0500
-Received: from claw.goop.org ([74.207.240.146]:42250 "EHLO claw.goop.org"
+	id S1753196Ab0CBBzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 20:55:25 -0500
+Received: from mga14.intel.com ([143.182.124.37]:60233 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211Ab0CBBpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 20:45:49 -0500
-Message-ID: <4B8C6DCC.1090207@goop.org>
-Date: Mon, 01 Mar 2010 17:45:48 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>, linux-kernel@vger.kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Subject: Re: [Xen-devel] [PATCH 6/7] xen: Unified checking for Xen of PV drivers
- to xenbus_register_frontend()
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-7-git-send-email-sheng@linux.intel.com>
-In-Reply-To: <1267436315-24486-7-git-send-email-sheng@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752771Ab0CBBzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 20:55:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,563,1262592000"; 
+   d="scan'208,217";a="249621953"
+From: Huang Ying <ying.huang@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
+       Huang Ying <ying.huang@intel.com>
+Subject: [PATCH 1/2] ACPI, APEI: Make APEI core configurable built-in instead of module
+Date: Tue,  2 Mar 2010 09:55:01 +0800
+Message-Id: <1267494902-7193-1-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 01:38 AM, Sheng Yang wrote:
-> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
->    
+PCIE AER optionally depends on APEI HEST tabling parsing. If AER is
+built-in, HEST should be built-in or not configured at all instead of
+module. It is hard to express this elegantly in Kconfig. It is better
+to make APEI code part configurable built-in instead of module.
 
-We covered this before; just change the tests so they run in PV domains 
-so they don't crash on HVM+PV, and we can address these later.
+On the other hand, APEI core code is used for hardware error
+processing. It may run in very bad condition. It is reasonable to keep
+it built-in if enabled.
 
-     J
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ Documentation/kernel-parameters.txt |   10 ++++----
+ drivers/acpi/apei/Kconfig           |    2 +-
+ drivers/acpi/apei/apei-base.c       |   42 +++++------------------------------
+ drivers/acpi/apei/apei-internal.h   |    4 +--
+ drivers/acpi/apei/einj.c            |    2 +-
+ drivers/acpi/apei/hest.c            |   34 +++++++++++++++++++++++-----
+ 6 files changed, 42 insertions(+), 52 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index b41a486..212d63f 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -350,11 +350,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			not play well with APC CPU idle - disable it if you have
+ 			APC and your system crashes randomly.
+ 
+-	apei.hest_disable= [ACPI]
+-			Disable Hardware Error Source Table (HEST) support,
+-			corresponding firmware-first mode error processing
+-			logic will be disabled.
+-
+ 	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
+ 			Change the output verbosity whilst booting
+ 			Format: { quiet (default) | verbose | debug }
+@@ -847,6 +842,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	hd=		[EIDE] (E)IDE hard drive subsystem geometry
+ 			Format: <cyl>,<head>,<sect>
+ 
++	hest_disable	[ACPI]
++			Disable Hardware Error Source Table (HEST) support,
++			corresponding firmware-first mode error processing
++			logic will be disabled.
++
+ 	highmem=nn[KMG]	[KNL,BOOT] forces the highmem zone to have an exact
+ 			size of <nn>. This works even on boxes that have no
+ 			highmem otherwise. This also works to reduce highmem
+diff --git a/drivers/acpi/apei/Kconfig b/drivers/acpi/apei/Kconfig
+index 22791e4..5f0a41c 100644
+--- a/drivers/acpi/apei/Kconfig
++++ b/drivers/acpi/apei/Kconfig
+@@ -1,5 +1,5 @@
+ config ACPI_APEI
+-	tristate "ACPI Platform Error Interface (APEI)"
++	bool "ACPI Platform Error Interface (APEI)"
+ 	depends on X86
+ 	help
+ 	  APEI allows to report errors (for example from the chipset)
+diff --git a/drivers/acpi/apei/apei-base.c b/drivers/acpi/apei/apei-base.c
+index c35fec7..01cb937 100644
+--- a/drivers/acpi/apei/apei-base.c
++++ b/drivers/acpi/apei/apei-base.c
+@@ -45,12 +45,6 @@
+ 
+ #define APEI_PFX "APEI: "
+ 
+-struct dentry *apei_debug_dir;
+-EXPORT_SYMBOL_GPL(apei_debug_dir);
+-
+-int hest_disable;
+-EXPORT_SYMBOL(hest_disable);
+-
+ /*
+  * APEI ERST (Error Record Serialization Table) and EINJ (Error
+  * INJection) interpreter framework.
+@@ -553,37 +547,13 @@ int apei_exec_collect_resources(struct apei_exec_context *ctx,
+ }
+ EXPORT_SYMBOL_GPL(apei_exec_collect_resources);
+ 
+-static int __init apei_init(void)
++struct dentry *apei_get_debugfs_dir(void)
+ {
+-	int rc;
+-
+-	apei_debug_dir = debugfs_create_dir("apei", NULL);
+-	if (!apei_debug_dir)
+-		return -ENOMEM;
+-	if (!hest_disable) {
+-		rc = hest_init();
+-		if (rc) {
+-			hest_disable = 1;
+-			if (rc != -ENODEV)
+-				pr_err(
+-				"ACPI: APEI: Failed to initialize Hardware "
+-				"Error Source Table (HEST) subsystem\n");
+-		}
+-	}
++	static struct dentry *dapei;
+ 
+-	return 0;
+-}
++	if (!dapei)
++		dapei = debugfs_create_dir("apei", NULL);
+ 
+-static void __exit apei_exit(void)
+-{
+-	debugfs_remove_recursive(apei_debug_dir);
++	return dapei;
+ }
+-
+-module_init(apei_init);
+-module_exit(apei_exit);
+-
+-module_param(hest_disable, int, 0444);
+-
+-MODULE_AUTHOR("Huang Ying");
+-MODULE_DESCRIPTION("ACPI Platform Error Interface support");
+-MODULE_LICENSE("GPL");
++EXPORT_SYMBOL_GPL(apei_get_debugfs_dir);
+diff --git a/drivers/acpi/apei/apei-internal.h b/drivers/acpi/apei/apei-internal.h
+index 1ab6598..86e041a 100644
+--- a/drivers/acpi/apei/apei-internal.h
++++ b/drivers/acpi/apei/apei-internal.h
+@@ -6,8 +6,6 @@
+ #ifndef APEI_INTERNAL_H
+ #define APEI_INTERNAL_H
+ 
+-int hest_init(void);
+-
+ struct apei_exec_context;
+ 
+ typedef int (*apei_exec_ins_func_t)(struct apei_exec_context *ctx,
+@@ -93,5 +91,5 @@ int apei_exec_collect_resources(struct apei_exec_context *ctx,
+ 				struct apei_resources *resources);
+ 
+ struct dentry;
+-extern struct dentry *apei_debug_dir;
++struct dentry *apei_get_debugfs_dir(void);
+ #endif
+diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
+index 5521609..788b990 100644
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -409,7 +409,7 @@ static int __init einj_init(void)
+ 	}
+ 
+ 	rc = -ENOMEM;
+-	einj_debug_dir = debugfs_create_dir("einj", apei_debug_dir);
++	einj_debug_dir = debugfs_create_dir("einj", apei_get_debugfs_dir());
+ 	if (!einj_debug_dir)
+ 		goto err_cleanup;
+ 	fentry = debugfs_create_file("available_error_type", S_IRUSR,
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index f872e54..2bd23c1 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -40,6 +40,9 @@
+ 
+ #define HEST_PFX "HEST: "
+ 
++int hest_disable;
++EXPORT_SYMBOL_GPL(hest_disable);
++
+ /* HEST table parsing */
+ 
+ static struct acpi_table_hest *hest_tab;
+@@ -118,30 +121,49 @@ int apei_hest_parse(apei_hest_func_t func, void *data)
+ }
+ EXPORT_SYMBOL_GPL(apei_hest_parse);
+ 
+-int __init hest_init(void)
++static int __init setup_hest_disable(char *str)
++{
++	hest_disable = 1;
++	return 0;
++}
++
++__setup("hest_disable", setup_hest_disable);
++
++static int __init hest_init(void)
+ {
+ 	acpi_status status;
+-	int rc;
++	int rc = 0;
+ 
+ 	if (acpi_disabled)
+-		return -ENODEV;
++		goto err;
++
++	if (hest_disable) {
++		pr_info(HEST_PFX "HEST tabling parsing is disabled.\n");
++		goto err;
++	}
+ 
+ 	status = acpi_get_table(ACPI_SIG_HEST, 0,
+ 				(struct acpi_table_header **)&hest_tab);
+ 	if (status == AE_NOT_FOUND) {
+ 		pr_info(HEST_PFX "Table is not found!\n");
+-		return -ENODEV;
++		goto err;
+ 	} else if (ACPI_FAILURE(status)) {
+ 		const char *msg = acpi_format_exception(status);
+ 		pr_info(HEST_PFX "Failed to get table, %s\n", msg);
+-		return -EINVAL;
++		rc = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	rc = apei_hest_parse(hest_void_parse, NULL);
+ 	if (rc)
+-		return rc;
++		goto err;
+ 
+ 	pr_info(HEST_PFX "HEST table parsing is initialized.\n");
+ 
+ 	return 0;
++err:
++	hest_disable = 1;
++	return rc;
+ }
++
++subsys_initcall(hest_init);
+-- 
+1.6.6.1
+
