@@ -1,58 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787Ab0CBWRv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:17:51 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:48748 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752067Ab0CBWRt (ORCPT
+	id S1753821Ab0CBWS2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:18:28 -0500
+Received: from trinity.develer.com ([83.149.158.210]:57491 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067Ab0CBWS1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:17:49 -0500
-Date: Wed, 3 Mar 2010 09:17:29 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: BUG: spinlock lockup on task_rq_lock in 2.6.33
-Message-ID: <20100302221729.GG18369@discord.disaster>
-References: <20100302063132.GF18369@discord.disaster> <alpine.LFD.2.00.1003021106330.4245@localhost.localdomain>
+	Tue, 2 Mar 2010 17:18:27 -0500
+Date: Tue, 2 Mar 2010 23:18:23 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100302221823.GC2369@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
+ <20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
+ <20100302080056.GA1548@linux>
+ <20100302172316.b959b04c.kamezawa.hiroyu@jp.fujitsu.com>
+ <20100302135026.GH3212@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003021106330.4245@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100302135026.GH3212@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 11:08:50AM +0100, Thomas Gleixner wrote:
-> Dave,
+On Tue, Mar 02, 2010 at 07:20:26PM +0530, Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-03-02 17:23:16]:
 > 
-> On Tue, 2 Mar 2010, Dave Chinner wrote:
-> 
-> > Hi Folks,
+> > On Tue, 2 Mar 2010 09:01:58 +0100
+> > Andrea Righi <arighi@develer.com> wrote:
 > > 
-> > I just locked up a machine with the following trace:
+> > > On Tue, Mar 02, 2010 at 09:23:09AM +0900, KAMEZAWA Hiroyuki wrote:
+> > > > On Mon,  1 Mar 2010 22:23:40 +0100
+> > > > Andrea Righi <arighi@develer.com> wrote:
+> > > > 
+> > > > > Apply the cgroup dirty pages accounting and limiting infrastructure to
+> > > > > the opportune kernel functions.
+> > > > > 
+> > > > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > > > 
+> > > > Seems nice.
+> > > > 
+> > > > Hmm. the last problem is moving account between memcg.
+> > > > 
+> > > > Right ?
+> > > 
+> > > Correct. This was actually the last item of the TODO list. Anyway, I'm
+> > > still considering if it's correct to move dirty pages when a task is
+> > > migrated from a cgroup to another. Currently, dirty pages just remain in
+> > > the original cgroup and are flushed depending on the original cgroup
+> > > settings. That is not totally wrong... at least moving the dirty pages
+> > > between memcgs should be optional (move_charge_at_immigrate?).
+> > > 
 > > 
-> > [ 5247.149256] BUG: spinlock lockup on CPU#1, dd/7018, ffff8800059d4380
-> > [ 5247.150009] BUG: spinlock lockup on CPU#0, dd/6211, ffff8800059d4380
-> > [ 5247.150009] Pid: 6211, comm: dd Not tainted 2.6.33-dgc #86
-> > [ 5247.150009] Call Trace:
-> > [ 5247.150009]  [<ffffffff8140ad40>] do_raw_spin_lock+0x160/0x170
-> > [ 5247.150009]  [<ffffffff8170fec6>] _raw_spin_lock+0x56/0x70
-> > [ 5247.150009]  [<ffffffff8103d092>] ? task_rq_lock+0x52/0x90
-> > [ 5247.150009]  [<ffffffff8103d092>] task_rq_lock+0x52/0x90
-> > [ 5247.150009]  [<ffffffff81044a70>] try_to_wake_up+0x40/0x3d0
-> > [ 5247.150009]  [<ffffffff81044e55>] wake_up_process+0x15/0x20
+> > My concern is 
+> >  - migration between memcg is already suppoted
+> >     - at task move
+> >     - at rmdir
+> > 
+> > Then, if you leave DIRTY_PAGE accounting to original cgroup,
+> > the new cgroup (migration target)'s Dirty page accounting may
+> > goes to be negative, or incorrect value. Please check FILE_MAPPED
+> > implementation in __mem_cgroup_move_account()
+> > 
+> > As
+> >        if (page_mapped(page) && !PageAnon(page)) {
+> >                 /* Update mapped_file data for mem_cgroup */
+> >                 preempt_disable();
+> >                 __this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+> >                 __this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+> >                 preempt_enable();
+> >         }
+> > then, FILE_MAPPED never goes negative.
+> >
 > 
-> I can't say it for sure, but that might be related to a problem with
-> TASK_WAKING which we discovered recently. The fix is in linus tree
-> (commit 0970d2992dfd7d5ec2c787417cf464f01eeaf42a) and on the way to stable.
+> Absolutely! I am not sure how complex dirty memory migration will be,
+> but one way of working around it would be to disable migration of
+> charges when the feature is enabled (dirty* is set in the memory
+> cgroup). We might need additional logic to allow that to happen. 
 
-Thanks Thomas - I'll pull that commit in and see if it has any
-effect on the problems I'm seeing.
+I've started to look at dirty memory migration. First attempt is to add
+DIRTY, WRITEBACK, etc. to page_cgroup flags and handle them in
+__mem_cgroup_move_account(). Probably I'll have something ready for the
+next version of the patch. I still need to figure if this can work as
+expected...
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+-Andrea
