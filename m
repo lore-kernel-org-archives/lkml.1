@@ -1,104 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163Ab0CBKBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 05:01:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45112 "EHLO mx2.mail.elte.hu"
+	id S1752307Ab0CBKEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 05:04:20 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:52891 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934Ab0CBKBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 05:01:50 -0500
-Date: Tue, 2 Mar 2010 11:01:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 00/15] oprofile fixes and updates for v2.6.34
-Message-ID: <20100302100137.GA31186@elte.hu>
-References: <1267205407-6523-1-git-send-email-robert.richter@amd.com>
- <20100227090331.GA22839@elte.hu>
- <20100301143946.GE13205@erda.amd.com>
+	id S1751563Ab0CBKES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 05:04:18 -0500
+Date: Tue, 2 Mar 2010 10:04:02 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+	due to "e084b - page-allocator: preserve PFN ordering when
+	__GFP_COLD is set"
+Message-ID: <20100302100402.GH3852@csn.ul.ie>
+References: <20100212100519.GA29085@laptop> <4B796C6D.80800@linux.vnet.ibm.com> <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com> <20100218114310.GC32626@csn.ul.ie> <4B7D664C.20507@linux.vnet.ibm.com> <4B7E73BF.5030901@linux.vnet.ibm.com> <20100219151934.GA1445@csn.ul.ie> <20100302065225.GC8653@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20100301143946.GE13205@erda.amd.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20100302065225.GC8653@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Robert Richter <robert.richter@amd.com> wrote:
-
-> On 27.02.10 10:03:31, Ingo Molnar wrote:
-> > Hm, the perf_event.c bits conflict quite heavily with pending changes in 
-> > tip:perf/core.
+On Tue, Mar 02, 2010 at 05:52:25PM +1100, Nick Piggin wrote:
+> On Fri, Feb 19, 2010 at 03:19:34PM +0000, Mel Gorman wrote:
+> > On Fri, Feb 19, 2010 at 12:19:27PM +0100, Christian Ehrhardt wrote:
+> > > Eventually it might come down to a discussion of allocation priorities and
+> > > we might even keep them as is and accept this issue - I still would prefer
+> > > a good second chance implementation, other page cache allocation flags or
+> > > something else that explicitly solves this issue.
+> > >
 > > 
-> > So to not hold up the oprofile changes for v2.6.34 i've pulled the core 
-> > oprofile changes for v2.6.34 into tip:oprofile (up to cfc9c0b, if that is fine 
-> > with you), and mind reworking the last 3 patches against perf/core?
-> 
-> Ingo & Peter,
-> 
-> I have a rebased version containing also a merge from:
-> 
->  tip/oprofile -> tip/perf/core
-> 
-> Please pull again from:
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git core
-
-Pulled, thanks Robert!
-
-> > On a related note, wrt. your ongoing work for perf IBS support. The following 
-> > patch by Peter:
+> > In that line, the patch that replaced congestion_wait() with a waitqueue
+> > makes some sense.
 > > 
-> >   f22f54f: perf_events, x86: Split PMU definitions into separate files
+> > > Mel's patch that replaces congestion_wait with a wait for the zone watermarks
+> > > becoming available again is definitely a step in the right direction and
+> > > should go into upstream and the long term support branches.
+> > 
+> > I'll need to do a number of tests before I can move that upstream but I
+> > don't think it's a merge candidate. Unfortunately, I'll be offline for a
+> > week starting tomorrow so I won't be able to do the testing.
+> > 
+> > When I get back, I'll revisit those patches with the view to pushing
+> > them upstream. I hate to treat symptoms here without knowing the
+> > underlying problem but this has been spinning in circles for ages with
+> > little forward progress :(
 > 
-> Yes, the patches went also upstream on Friday. Will update my current patch 
-> stack now. Maybe it would have been better to first integrate all pending 
-> patches before doing that split.  Conflict resolution is a pain for moving 
-> code. But anyway, it is supposed to go upstream and I will rebase my 
-> patches.
+> The zone pressure waitqueue patch makes sense.
 
-The way to do it is to not keep that many pending patches in the first place. 
-There are always 'pending patches' - if we waited for them to drain then we 
-could never do cleanups.
+I've just started the rebase and considering what sort of test is best
+for it.
 
-Peter, Arnaldo, Frederic and all the other perf developers sync their patches 
-with perf/core very frequently and push these bits to me. This has various 
-advantages:
+> We may even want to make
+> it more strictly FIFO (eg. check upfront if there are waiters on the
+> queue before allocating a page, and if yes then add ourself to the back
+> of the waitqueue).
 
- - breakages are discovered quickly and can be mitigated before more harm is 
-   done.
+To be really strict about this, we'd have to check in the hot-path of the
+per-cpu allocator which would be undesirable. We could check further in the
+slow-path but I bet it'd be very rare that the logic would be triggered. For
+a process to enter the FIFO due to waiters that were not yet woken up, the
+system would have to be a) under heavy memory pressure b) reclaim taking such
+a long time that check_zone_pressure() is not being called in time and c)
+a process exiting or otherwise freeing memory such that the watermarks are
+cleared without reclaim being involved.
 
- - patch review is a lot more gradual (and a lot less taxing) as well. 
+This seems overkill but maybe you have a simplier case in mind?
 
- - other people can get interested and jump in and help you out.
+> And also possibly even look at doing the wakeups in
+> the page-freeing path. Although that might start adding too much
+> overhead, so it's quite possible your sloppy-but-lighter timeout
+> approach is preferable.
+> 
 
- - design mistakes/disagreements can also be hashed out before too much work 
-   is invested into a particular direction.
+That's how I felt about it. I was going to put another check_zone_pressure()
+check after a pcp drain but thought it was too expensive.
 
- - as a maintainer i can see progress and can see problem areas. This makes it
-   much easier to judge and plan a new topic's upstream integration schedule.
-   It's not tucked away in some tree, with a large stream of patches showing
-   up at once.
-
-i.e. it's all variations of the 'release early, release often' Linux mantra.
-
-So if you have a significant amount of pending patches then you are doing 
-something wrong. Please consider adapting your workflow and please get any 
-pending pieces to us in small, reviewable pieces.
-
-That's especially true of large, intrusive features: for example the IBS bits 
-could be moved into perf/core gradually, in a series of clean steps, even if 
-they are not functional yet.
-
-Thanks,
-
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
