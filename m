@@ -1,134 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185Ab0CBNnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 08:43:23 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:58653 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362Ab0CBNnV (ORCPT
+	id S1753225Ab0CBNqQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 08:46:16 -0500
+Received: from mail-iw0-f196.google.com ([209.85.223.196]:63416 "EHLO
+	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051Ab0CBNqN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 08:43:21 -0500
-Message-ID: <4B8D15F8.9010306@dcl.info.waseda.ac.jp>
-Date: Tue, 02 Mar 2010 22:43:20 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Tue, 2 Mar 2010 08:46:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=mtzzck8AXWypo1AjOGdLdnJB/yqmEMAtvMSrrBp2445oObXPHpgw1EOo2NohpIEPmi
+         nqYTS2PRjGJuwuhNYhnz02POC7MTcfkDLToHmDgRVCD6PmKK61d98gS1v+6ox+0f+DIU
+         YHte9HyTUDNIRW8xbmMwYYVclANdWjld2fKA8=
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Question about policy of calling lockdep functions in trylocks
-References: <4B8CCFFC.2020704@dcl.info.waseda.ac.jp> <1267521211.25158.13.camel@laptop>
-In-Reply-To: <1267521211.25158.13.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100302065224.GL3389@atomide.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+	 <20100301184600.GC3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
+	 <20100302060821.GI3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+	 <20100302065224.GL3389@atomide.com>
+Date: Tue, 2 Mar 2010 19:16:12 +0530
+X-Google-Sender-Auth: 8f938fee5fabaa06
+Message-ID: <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+Subject: Re: [PATCH] serial: Add OMAP high-speed UART driver.
+From: Venkatraman S <svenkatr@ti.com>
+To: Tony Lindgren <tony@atomide.com>, "G, Manjunath Kondaiah" <manjugk@ti.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02/10 18:13, Peter Zijlstra wrote:
-> On Tue, 2010-03-02 at 17:44 +0900, Hitoshi Mitake wrote:
->> Hi,
+On Tue, Mar 2, 2010 at 12:22 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * G, Manjunath Kondaiah <manjugk@ti.com> [100301 22:24]:
 >>
->> I have a question about policy of callings lockdep functions in trylocks.
 >>
->> Normal locks like __raw_spin_lock are defined like this:
 >>
->> static inline void __raw_spin_lock(raw_spinlock_t *lock)
->> {
->> 	preempt_disable();
->> 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
->> 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
->> }
+>> > > > > +     up->uart_dma.prev_rx_dma_pos =
+>> > up->uart_dma.rx_buf_dma_phys;
+>> > > > > +     if (cpu_is_omap44xx())
+>> > > > > +             omap_writel(0, OMAP44XX_DMA4_BASE
+>> > > > > +                     +
+>> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+>> > > > > +     else
+>> > > > > +             omap_writel(0, OMAP34XX_DMA4_BASE
+>> > > > > +                     +
+>> > OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
+>> > > >
+>> > > > NAK. Please don't use omap_read/write for for new code. And do not
+>> > > > tinker with the omap hardware registers directly in the driver.
+>> > > >
+>> > > > This needs to be done properly in
+>> > arch/arm/plat-omap/dma.c instead.
+>> > >
+>> > > Thanks for the suggestion.
+>> > >
+>> > > Currently, dma_read/dma_write are #define's in dma.c which
+>> > cannot be
+>> > > accessed outside dma.c. I don't see any API's in dma.c for
+>> > setting required
+>> > > value for this register?
+>> >
+>> > Hmm isn't this the same as omap_get_dma_dst_pos(int lch)? If you're
+>> > trying do something that's not in dma.c, we can add a new function
+>> > for it.
 >>
->> And LOCK_CONTENDED is defined:
->> #define LOCK_CONTENDED(_lock, try, lock)			\
->> do {								\
->> 	if (!try(_lock)) {					\
->> 		lock_contended(&(_lock)->dep_map, _RET_IP_);	\
->> 		lock(_lock);					\
->> 	}							\
->> 	lock_acquired(&(_lock)->dep_map, _RET_IP_);			\
->> } while (0)
+>> The omap_get_dma_dst_pos(int lch) is for read operation in CDAC register.
+>> But, We need to write required value into CDAC register. For this, I propose:
 >>
->> So, acquiring and releasing lock with no contention calls lockdep
->> functions like this:
->>
->>       lock_acquire ->  lock_acquired ->  lock_release
->>
->> And acquiring and releasing lock with contention calls lockdep functions
->> like this:
->>
->>       lock_acquire ->  lock_contended ->  lock_acquired ->  lock_release
->>
->> But I found that locks with try like __raw_spin_trylock is defined like
->> this:
->>
->> static inline int __raw_spin_trylock(raw_spinlock_t *lock)
->> {
->> 	preempt_disable();
->> 	if (do_raw_spin_trylock(lock)) {
->> 		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
->> 		return 1;
->> 	}
->> 	preempt_enable();
->> 	return 0;
->> }
->>
->> So, trying acquiring and releasing lock with no contention calls lockdep
->> functions like this:
->>
->>       lock_acquire ->  lock_release
->>
->> And failed trying acquiring calls no lockdep function.
->>
->> I felt that policy of calling lockdep functions is strange.
->> Trylocks should be like this:
->>
->> static inline int __raw_spin_trylock(raw_spinlock_t *lock)
->> {
->> 	preempt_disable();
->> 	spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
->> 	if (do_raw_spin_trylock(lock)) {
->> 		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
->> 		lock_acquired(&lock->dep_map, _RET_IP_);
->> 		return 1;
->> 	}
->> 	lock_contended(&lock->dep_map, _RET_IP_);
->> 	preempt_enable();
->> 	return 0;
->> }
+>> omap_set_dma_dst_pos(int lch, int value) which does not exist in current dma
+>> driver.
 >
-> Did you mean to call acquire twice?
-
-Sorry, this is my mistake.
-I've forgot to remove spin_acquire() after do_raw_spin_trylock().
-
+> OK, it that's needed.
 >
->>
->> This is my question.
->> Are there some reasons current calling lockdep functions of trylocks?
->> If not, can I change these trylocks like I described above?
->>
->> The reason why I'm asking about it is perf lock.
->> For state machine of perf lock, these event sequenses are very confusable.
->> Because sequence of trylock is subset of normal lock. This is ambiguity.
->
-> Well, trylocks cannot contend, so the lock_contended() call doesn't make
-> sense, I don't think it will confuse lockstat, since acquire will simply
-> reset the state again, but it will waste cycles, nor is there a reason
-> to call acquired without first having call contended. So no.
->
-> What exactly is the problem, the lack of callbacks for a failed trylock?
-> Why would you want one?
->
-> Because other than that I see no problem, you get an acquire(.try=1) and
-> a release() to match and lockstat measure and accounts the hold-time.
+> Tony
+> --
+CDAC is a shadow register used for monitoring the DMA channel.
+ I think it would be a lot
+simpler if omap_start_dma() always resets CDAC to 0, and the UART driver
+just not set it explicitly.
 
-Ah, I've forgot about try and read parameters of lock_acquire().
-These parameters are enough things for me.
-perf lock can separate event sequences of normal locks and trylocks with 
-these.
+Simple wrapper APIs doing get / set on individual DMA registers is as
+difficult to understand
+as omap_read / omap_write, IMHO.
 
-Thanks!
-	Hitoshi
-
-
+Best regards,
+Venkat.
