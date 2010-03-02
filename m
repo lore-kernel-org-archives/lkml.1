@@ -1,353 +1,667 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508Ab0CBFoF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 00:44:05 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37312 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830Ab0CBFoD (ORCPT
+	id S1751703Ab0CBFrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 00:47:11 -0500
+Received: from mga06.intel.com ([134.134.136.21]:58655 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751125Ab0CBFrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 00:44:03 -0500
-Date: Tue, 2 Mar 2010 14:37:38 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v2
-Message-Id: <20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Mar 2010 00:47:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,564,1262592000"; 
+   d="scan'208";a="496883139"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Xen-devel] [PATCH 5/7] xen: Make event channel work with PV extension of HVM
+Date: Tue, 2 Mar 2010 13:48:06 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>, linux-kernel@vger.kernel.org,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-6-git-send-email-sheng@linux.intel.com> <4B8C6C0D.3070005@goop.org>
+In-Reply-To: <4B8C6C0D.3070005@goop.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201003021348.06360.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 13:55:24 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Very sorry, mutex_lock is called after prepare_to_wait.
-> This is a fixed one.
-I'm willing to test your patch, but I have one concern.
+On Tuesday 02 March 2010 09:38:21 Jeremy Fitzhardinge wrote:
+> On 03/01/2010 01:38 AM, Sheng Yang wrote:
+> > We mapped each IOAPIC pin to a VIRQ, so that we can deliver interrupt
+> > through these VIRQs.
+> >
+> > We used X86_PLATFORM_IPI_VECTOR as the noficiation vector for hypervisor
+> > to notify guest about the event.
+> 
+> I don't understand this aspect of the patch.  Can you explain the
+> interrupt delivery path when HVM event channels are enabled?
 
-> +/*
-> + * try to call OOM killer. returns false if we should exit memory-reclaim loop.
-> + */
-> +bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
->  {
-> -	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-> +	DEFINE_WAIT(wait);
-> +	bool locked;
-> +
-> +	/* At first, try to OOM lock hierarchy under mem.*/
-> +	mutex_lock(&memcg_oom_mutex);
-> +	locked = mem_cgroup_oom_lock(mem);
-> +	if (!locked)
-> +		prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (locked)
-> +		mem_cgroup_out_of_memory(mem, mask);
-> +	else {
-> +		schedule();
-> +		finish_wait(&memcg_oom_waitq, &wait);
-> +	}
-> +	mutex_lock(&memcg_oom_mutex);
-> +	mem_cgroup_oom_unlock(mem);
-> +	/* TODO: more fine grained waitq ? */
-> +	wake_up_all(&memcg_oom_waitq);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
-> +		return false;
-> +	/* Give chance to dying process */
-> +	schedule_timeout(1);
-> +	return true;
->  }
->  
-Isn't there such race conditions ?
+The goal is to eliminate LAPIC overhead(especially EOI and other operation 
+which caused VMExit when using LAPIC) in the current interrupt delivery 
+system, so that we use evtchn to delivery interrupt.
 
-	context A				context B
-  mutex_lock(&memcg_oom_mutex)
-  mem_cgroup_oom_lock()
-    ->success
-  mutex_unlock(&memcg_oom_mutex)
-  mem_cgroup_out_of_memory()
-					mutex_lock(&memcg_oom_mutex)
-					mem_cgroup_oom_lock()
-					  ->fail
-					prepare_to_wait()
-					mutex_unlock(&memcg_oom_mutex)
-  mutex_lock(&memcg_oom_mutex)
-  mem_cgroup_oom_unlock()
-  wake_up_all()
-  mutex_unlocklock(&memcg_oom_mutex)
-					schedule()
-					finish_wait()
+For the emulated device, we allocate one VIRQ for each IOAPIC pin. When IOAPIC 
+pin should be assert, instead we inject a VIRQ.
 
-In this case, context B will not be waken up, right?
+The X86_PLATFORM_IPI_VECTOR is the entry point for event handling. When we 
+want to inject event(VIRQ or others) to guest, we inject a 
+X86_PLATFORM_IPI_VECTOR, so that the handler of vector in the guest can handle 
+the events well.
+ 
+> > The Xen PV timer is used to provide guest a reliable timer.
+> >
+> > The patch also enabled SMP support, then we can support IPI through
+> > evtchn as well.
+> >
+> > Then we don't use IOAPIC/LAPIC.
+> >
+> > Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> > ---
+> >   arch/x86/xen/enlighten.c    |   72 +++++++++++++++++++++
+> >   arch/x86/xen/irq.c          |   37 ++++++++++-
+> >   arch/x86/xen/smp.c          |  144
+> > ++++++++++++++++++++++++++++++++++++++++++- arch/x86/xen/xen-ops.h      |
+> >    3 +
+> >   drivers/xen/events.c        |   66 ++++++++++++++++++-
+> >   include/xen/events.h        |    1 +
+> >   include/xen/hvm.h           |    5 ++
+> >   include/xen/interface/xen.h |    6 ++-
+> >   8 files changed, 326 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> > index fdb9664..f617639 100644
+> > --- a/arch/x86/xen/enlighten.c
+> > +++ b/arch/x86/xen/enlighten.c
+> > @@ -58,6 +58,9 @@
+> >   #include<asm/reboot.h>
+> >   #include<asm/stackprotector.h>
+> >
+> > +#include<xen/hvm.h>
+> > +#include<xen/events.h>
+> > +
+> >   #include "xen-ops.h"
+> >   #include "mmu.h"
+> >   #include "multicalls.h"
+> > @@ -1212,6 +1215,8 @@ static void __init xen_hvm_pv_banner(void)
+> >   		pv_info.name);
+> >   	printk(KERN_INFO "Xen version: %d.%d%s\n",
+> >   		version>>  16, version&  0xffff, extra.extraversion);
+> > +	if (xen_hvm_pv_evtchn_enabled())
+> > +		printk(KERN_INFO "PV feature: Event channel enabled\n");
+> >   }
+> >
+> >   static int xen_para_available(void)
+> > @@ -1256,6 +1261,9 @@ static int init_hvm_pv_info(void)
+> >
+> >   	xen_hvm_pv_status = XEN_HVM_PV_ENABLED;
+> >
+> > +	if (edx&  XEN_CPUID_FEAT2_HVM_PV_EVTCHN)
+> > +		xen_hvm_pv_status |= XEN_HVM_PV_EVTCHN_ENABLED;
+> > +
+> >   	/* We only support 1 page of hypercall for now */
+> >   	if (pages != 1)
+> >   		return -ENOMEM;
+> > @@ -1292,12 +1300,42 @@ static void __init init_shared_info(void)
+> >   	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
+> >   }
+> >
+> > +static int set_callback_via(uint64_t via)
+> > +{
+> > +	struct xen_hvm_param a;
+> > +
+> > +	a.domid = DOMID_SELF;
+> > +	a.index = HVM_PARAM_CALLBACK_IRQ;
+> > +	a.value = via;
+> > +	return HYPERVISOR_hvm_op(HVMOP_set_param,&a);
+> > +}
+> > +
+> > +void do_hvm_pv_evtchn_intr(void)
+> > +{
+> > +#ifdef CONFIG_X86_64
+> > +	per_cpu(irq_count, smp_processor_id())++;
+> > +#endif
+> > +	xen_evtchn_do_upcall(get_irq_regs());
+> > +#ifdef CONFIG_X86_64
+> > +	per_cpu(irq_count, smp_processor_id())--;
+> > +#endif
+> > +}
+> > +
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +static void xen_hvm_pv_evtchn_apic_write(u32 reg, u32 val)
+> > +{
+> > +	/* The only one reached here should be EOI */
+> > +	WARN_ON(reg != APIC_EOI);
+> > +}
+> > +#endif
+> >
+> >
+> > +
+> >   void __init xen_guest_init(void)
+> >   {
+> >   #ifdef CONFIG_X86_32
+> >   	return;
+> >   #else
+> >   	int r;
+> > +	uint64_t callback_via;
+> >
+> >   	/* Ensure the we won't confused with PV */
+> >   	if (xen_domain_type == XEN_PV_DOMAIN)
+> > @@ -1310,6 +1348,40 @@ void __init xen_guest_init(void)
+> >   	init_shared_info();
+> >
+> >   	xen_hvm_pv_init_irq_ops();
+> > +
+> > +	if (xen_hvm_pv_evtchn_enabled()) {
+> > +		if (enable_hvm_pv(HVM_PV_EVTCHN))
+> 
+> If this fails, shouldn't it also clear XEN_HVM_PV_EVTCHN_ENABLED?
 
+Yes...
+ 
+> > +			return;
+> > +
+> > +		pv_time_ops = xen_time_ops;
+> > +
+> > +		x86_init.timers.timer_init = xen_time_init;
+> > +		x86_init.timers.setup_percpu_clockev = x86_init_noop;
+> > +		x86_cpuinit.setup_percpu_clockev = x86_init_noop;
+> 
+> Presumably even if we don't have PV_EVTCHN available/enabled, the Xen
+> clocksource would be available for getting time?
 
-Thanks,
-Daisuke Nishimura.
+I think currently Xen pv clocksource and clockevent are binding... Not sure if 
+a single line "clocksource_register(&xen_clocksource)" can work. I would give 
+it a try, maybe add a new PV feature.
+ 
+> > +
+> > +		x86_platform.calibrate_tsc = xen_tsc_khz;
+> > +		x86_platform.get_wallclock = xen_get_wallclock;
+> > +		x86_platform.set_wallclock = xen_set_wallclock;
+> > +
+> > +		pv_apic_ops = xen_apic_ops;
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +		/*
+> > +		 * set up the basic apic ops.
+> > +		 */
+> > +		set_xen_basic_apic_ops();
+> > +		apic->write = xen_hvm_pv_evtchn_apic_write;
+> 
+> I'd just change the xen_apic_write to remove the WARN_ON, since you
+> don't seem to care about it either.
 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+:)
 > 
-> In current page-fault code,
+> > +#endif
+> > +
+> > +		callback_via = HVM_CALLBACK_VECTOR(X86_PLATFORM_IPI_VECTOR);
+> > +		set_callback_via(callback_via);
+> > +
+> > +		x86_platform_ipi_callback = do_hvm_pv_evtchn_intr;
+> > +
+> > +		disable_acpi();
+> > +
+> > +		xen_hvm_pv_smp_init();
+> > +		machine_ops = xen_machine_ops;
+> > +	}
+> >   #endif
+> >   }
+> >
+> > diff --git a/arch/x86/xen/irq.c b/arch/x86/xen/irq.c
+> > index fadaa97..7827a6d 100644
+> > --- a/arch/x86/xen/irq.c
+> > +++ b/arch/x86/xen/irq.c
+> > @@ -5,6 +5,7 @@
+> >   #include<xen/interface/xen.h>
+> >   #include<xen/interface/sched.h>
+> >   #include<xen/interface/vcpu.h>
+> > +#include<xen/xen.h>
+> >
+> >   #include<asm/xen/hypercall.h>
+> >   #include<asm/xen/hypervisor.h>
+> > @@ -132,6 +133,20 @@ void __init xen_init_irq_ops()
+> >   	x86_init.irqs.intr_init = xen_init_IRQ;
+> >   }
+> >
+> > +static void xen_hvm_pv_evtchn_disable(void)
+> > +{
+> > +	native_irq_disable();
+> > +	xen_irq_disable();
+> > +}
+> > +PV_CALLEE_SAVE_REGS_THUNK(xen_hvm_pv_evtchn_disable);
+> > +
+> > +static void xen_hvm_pv_evtchn_enable(void)
+> > +{
+> > +	native_irq_enable();
+> > +	xen_irq_enable();
+> > +}
+> > +PV_CALLEE_SAVE_REGS_THUNK(xen_hvm_pv_evtchn_enable);
+> > +
+> >   static void xen_hvm_pv_safe_halt(void)
+> >   {
+> >   	/* Do local_irq_enable() explicitly in hvm_pv guest */
+> > @@ -147,8 +162,26 @@ static void xen_hvm_pv_halt(void)
+> >   		xen_hvm_pv_safe_halt();
+> >   }
+> >
+> > +static const struct pv_irq_ops xen_hvm_pv_irq_ops __initdata = {
+> > +	.save_fl = __PV_IS_CALLEE_SAVE(native_save_fl),
+> > +	.restore_fl = __PV_IS_CALLEE_SAVE(native_restore_fl),
+> > +	.irq_disable = PV_CALLEE_SAVE(xen_hvm_pv_evtchn_disable),
+> > +	.irq_enable = PV_CALLEE_SAVE(xen_hvm_pv_evtchn_enable),
+> > +
+> > +	.safe_halt = xen_hvm_pv_safe_halt,
+> > +	.halt = xen_hvm_pv_halt,
+> > +#ifdef CONFIG_X86_64
+> > +	.adjust_exception_frame = paravirt_nop,
+> > +#endif
+> > +};
+> > +
+> >   void __init xen_hvm_pv_init_irq_ops(void)
+> >   {
+> > -	pv_irq_ops.safe_halt = xen_hvm_pv_safe_halt;
+> > -	pv_irq_ops.halt = xen_hvm_pv_halt;
+> > +	if (xen_hvm_pv_evtchn_enabled()) {
+> > +		pv_irq_ops = xen_hvm_pv_irq_ops;
+> > +		x86_init.irqs.intr_init = xen_hvm_pv_evtchn_init_IRQ;
+> > +	} else {
+> > +		pv_irq_ops.safe_halt = xen_hvm_pv_safe_halt;
+> > +		pv_irq_ops.halt = xen_hvm_pv_halt;
+> > +	}
+> >   }
+> > diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+> > index 563d205..a85d0b6 100644
+> > --- a/arch/x86/xen/smp.c
+> > +++ b/arch/x86/xen/smp.c
+> > @@ -15,20 +15,26 @@
+> >   #include<linux/sched.h>
+> >   #include<linux/err.h>
+> >   #include<linux/smp.h>
+> > +#include<linux/nmi.h>
+> >
+> >   #include<asm/paravirt.h>
+> >   #include<asm/desc.h>
+> >   #include<asm/pgtable.h>
+> >   #include<asm/cpu.h>
+> > +#include<asm/trampoline.h>
+> > +#include<asm/tlbflush.h>
+> > +#include<asm/mtrr.h>
+> >
+> >   #include<xen/interface/xen.h>
+> >   #include<xen/interface/vcpu.h>
+> >
+> >   #include<asm/xen/interface.h>
+> >   #include<asm/xen/hypercall.h>
+> > +#include<asm/xen/hypervisor.h>
+> >
+> >   #include<xen/page.h>
+> >   #include<xen/events.h>
+> > +#include<xen/xen.h>
+> >
+> >   #include "xen-ops.h"
+> >   #include "mmu.h"
+> > @@ -171,7 +177,8 @@ static void __init xen_smp_prepare_boot_cpu(void)
+> >
+> >   	/* We've switched to the "real" per-cpu gdt, so make sure the
+> >   	   old memory can be recycled */
+> > -	make_lowmem_page_readwrite(xen_initial_gdt);
+> > +	if (xen_pv_domain())
+> > +		make_lowmem_page_readwrite(xen_initial_gdt);
 > 
-> 	handle_mm_fault()
-> 		-> ...
-> 		-> mem_cgroup_charge()
-> 		-> map page or handle error.
-> 	-> check return code.
+> Test for xen_feature(XENFEAT_writable_descriptor_tables).
+
+Sure.
 > 
-> If page fault's return code is VM_FAULT_OOM, page_fault_out_of_memory()
-> is called. But if it's caused by memcg, OOM should have been already
-> invoked.
-> Then, I added a patch: a636b327f731143ccc544b966cfd8de6cb6d72c6
+> >   	xen_setup_vcpu_info_placement();
+> >   }
+> > @@ -480,3 +487,138 @@ void __init xen_smp_init(void)
+> >   	xen_fill_possible_map();
+> >   	xen_init_spinlocks();
+> >   }
+> > +
+> > +static __cpuinit void xen_hvm_pv_start_secondary(void)
+> > +{
+> > +	int cpu = smp_processor_id();
+> > +
+> > +	cpu_init();
+> > +	touch_nmi_watchdog();
+> > +	preempt_disable();
+> > +
+> > +	/* otherwise gcc will move up smp_processor_id before the cpu_init */
+> > +	barrier();
+> > +	/*
+> > +	 * Check TSC synchronization with the BSP:
+> > +	 */
+> > +	check_tsc_sync_target();
+> > +
+> > +	/* Done in smp_callin(), move it here */
+> > +	set_mtrr_aps_delayed_init();
+> > +	smp_store_cpu_info(cpu);
+> > +
+> > +	/* This must be done before setting cpu_online_mask */
+> > +	set_cpu_sibling_map(cpu);
+> > +	wmb();
+> > +
+> > +	set_cpu_online(smp_processor_id(), true);
+> > +	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
+> > +
+> > +	/* enable local interrupts */
+> > +	local_irq_enable();
+> > +
+> > +	xen_setup_cpu_clockevents();
 > 
-> That patch records last_oom_jiffies for memcg's sub-hierarchy and
-> prevents page_fault_out_of_memory from being invoked in near future.
+> How much of this is necessary?  At this point, isn't CPU bringup the
+> same as PV?
+
+Xen_enable_sysenter/syscall is not needed for this. And we have a TSC sync 
+here - but it seems unnecessary for PV. But set_mtrr_aps_delayed_init() is 
+needed. Reuse the cpu_bring_up() is fine?
+ 
+> > +
+> > +	wmb();
+> > +	cpu_idle();
+> > +}
+> > +
+> > +static __cpuinit int
+> > +hvm_pv_cpu_initialize_context(unsigned int cpu, struct task_struct
+> > *idle) +{
+> > +	struct vcpu_guest_context *ctxt;
+> > +	unsigned long start_ip;
+> > +
+> > +	if (cpumask_test_and_set_cpu(cpu, xen_cpu_initialized_map))
+> > +		return 0;
+> > +
+> > +	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
+> > +	if (ctxt == NULL)
+> > +		return -ENOMEM;
+> > +
+> > +	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+> > +	initial_code = (unsigned long)xen_hvm_pv_start_secondary;
+> > +	stack_start.sp = (void *) idle->thread.sp;
+> > +
+> > +	/* start_ip had better be page-aligned! */
+> > +	start_ip = setup_trampoline();
+> > +
+> > +	/* only start_ip is what we want */
+> > +	ctxt->flags = VGCF_HVM_GUEST;
+> > +	ctxt->user_regs.eip = start_ip;
+> > +
+> > +	printk(KERN_INFO "Booting processor %d ip 0x%lx\n", cpu, start_ip);
+> > +
+> > +	if (HYPERVISOR_vcpu_op(VCPUOP_initialise, cpu, ctxt))
+> > +		BUG();
+> > +
+> > +	kfree(ctxt);
+> > +	return 0;
+> > +}
+> > +
+> > +static int __init xen_hvm_pv_cpu_up(unsigned int cpu)
+> > +{
+> > +	struct task_struct *idle = idle_task(cpu);
+> > +	int rc;
+> > +	unsigned long flags;
+> > +
+> > +	per_cpu(current_task, cpu) = idle;
+> > +
+> > +#ifdef CONFIG_X86_32
+> > +	irq_ctx_init(cpu);
+> > +#else
+> > +	clear_tsk_thread_flag(idle, TIF_FORK);
+> > +	initial_gs = per_cpu_offset(cpu);
+> > +	per_cpu(kernel_stack, cpu) =
+> > +		(unsigned long)task_stack_page(idle) -
+> > +		KERNEL_STACK_OFFSET + THREAD_SIZE;
+> > +#endif
+> > +
+> > +	xen_setup_timer(cpu);
+> > +	xen_init_lock_cpu(cpu);
+> > +
+> > +	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
 > 
-> But Nishimura-san reported that check by jiffies is not enough
-> when the system is terribly heavy. 
+> Can you put all this duplicated code into a common function?
+
+Sure.
 > 
-> This patch changes memcg's oom logic as.
->  * If memcg causes OOM-kill, continue to retry.
->  * remove jiffies check which is used now.
->  * add memcg-oom-lock which works like perzone oom lock.
->  * If current is killed(as a process), bypass charge.
+> > +
+> > +	rc = hvm_pv_cpu_initialize_context(cpu, idle);
+> > +	if (rc)
+> > +		return rc;
+> > +
+> > +	if (num_online_cpus() == 1)
+> > +		alternatives_smp_switch(1);
+> > +
+> > +	rc = xen_smp_intr_init(cpu);
+> > +	if (rc)
+> > +		return rc;
+> > +
+> > +	rc = HYPERVISOR_vcpu_op(VCPUOP_up, cpu, NULL);
+> > +	BUG_ON(rc);
+> > +
+> > +	/*
+> > +	 * Check TSC synchronization with the AP (keep irqs disabled
+> > +	 * while doing so):
+> > +	 */
+> > +	local_irq_save(flags);
+> > +	check_tsc_sync_source(cpu);
+> > +	local_irq_restore(flags);
+> > +
+> > +	while (!cpu_online(cpu)) {
+> > +		cpu_relax();
+> > +		touch_nmi_watchdog();
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void xen_hvm_pv_flush_tlb_others(const struct cpumask *cpumask,
+> > +					struct mm_struct *mm, unsigned long va)
+> > +{
+> > +	/* TODO Make it more specific */
+> > +	flush_tlb_all();
 > 
-> Something more sophisticated can be added but this pactch does
-> fundamental things.
-> TODO:
->  - add oom notifier
->  - add permemcg disable-oom-kill flag and freezer at oom.
->  - more chances for wake up oom waiter (when changing memory limit etc..)
+> Is the MMUEXT_TLB_FLUSH/INVLPG_MULTI hypercall not currently available
+> to HVM?
+
+I think they are different. These hypercalls flushed native's TLB, but HVM 
+want to flush guest one, especially when using shadow, HVM need do something 
+for it.
+ 
+> > +}
+> > +
+> > +void __init xen_hvm_pv_smp_init(void)
+> > +{
 > 
-> Changelog;
->  - fixed mutex and prepare_to_wait order.
->  - fixed per-memcg oom lock.
+> It's probably safest to have this do its own test for
+> xen_hvm_pv_evtchn_enabled(), rather than assuming the caller is getting
+> it right.
+
+Yes.
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/memcontrol.h |    6 --
->  mm/memcontrol.c            |  109 +++++++++++++++++++++++++++++++++------------
->  mm/oom_kill.c              |    8 ---
->  3 files changed, 82 insertions(+), 41 deletions(-)
+> > +	smp_ops = xen_smp_ops;
+> > +	smp_ops.cpu_up = xen_hvm_pv_cpu_up;
+> > +	pv_mmu_ops.flush_tlb_others = xen_hvm_pv_flush_tlb_others;
+> > +}
+> > diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+> > index cc00760..a8cc129 100644
+> > --- a/arch/x86/xen/xen-ops.h
+> > +++ b/arch/x86/xen/xen-ops.h
+> > @@ -34,6 +34,7 @@ void xen_reserve_top(void);
+> >   char * __init xen_memory_setup(void);
+> >   void __init xen_arch_setup(void);
+> >   void __init xen_init_IRQ(void);
+> > +void __init xen_hvm_pv_evtchn_init_IRQ(void);
+> >   void xen_enable_sysenter(void);
+> >   void xen_enable_syscall(void);
+> >   void xen_vcpu_restore(void);
+> > @@ -61,10 +62,12 @@ void xen_setup_vcpu_info_placement(void);
+> >
+> >   #ifdef CONFIG_SMP
+> >   void xen_smp_init(void);
+> > +void xen_hvm_pv_smp_init(void);
+> >
+> >   extern cpumask_var_t xen_cpu_initialized_map;
+> >   #else
+> >   static inline void xen_smp_init(void) {}
+> > +static inline void xen_hvm_pv_smp_init(void) {}
+> >   #endif
+> >
+> >   #ifdef CONFIG_PARAVIRT_SPINLOCKS
+> > diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> > index ce602dd..e1835db 100644
+> > --- a/drivers/xen/events.c
+> > +++ b/drivers/xen/events.c
+> > @@ -37,9 +37,12 @@
+> >
+> >   #include<xen/xen-ops.h>
+> >   #include<xen/events.h>
+> > +#include<xen/xen.h>
+> >   #include<xen/interface/xen.h>
+> >   #include<xen/interface/event_channel.h>
+> >
+> > +#include<asm/desc.h>
+> > +
+> >   /*
+> >    * This lock protects updates to the following mapping and
+> > reference-count * arrays. The lock does not need to be acquired to read
+> > the mapping tables. @@ -624,8 +627,13 @@ void xen_evtchn_do_upcall(struct
+> > pt_regs *regs) struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
+> >    	unsigned count;
+> >
+> > -	exit_idle();
+> > -	irq_enter();
+> > +	/*
+> > +	 * If is PV featured HVM, these have already been done
+> > +	 */
+> > +	if (likely(!xen_hvm_pv_evtchn_enabled())) {
+> > +		exit_idle();
+> > +		irq_enter();
+> > +	}
 > 
-> Index: mmotm-2.6.33-Feb11/include/linux/memcontrol.h
-> ===================================================================
-> --- mmotm-2.6.33-Feb11.orig/include/linux/memcontrol.h
-> +++ mmotm-2.6.33-Feb11/include/linux/memcontrol.h
-> @@ -124,7 +124,6 @@ static inline bool mem_cgroup_disabled(v
->  	return false;
->  }
->  
-> -extern bool mem_cgroup_oom_called(struct task_struct *task);
->  void mem_cgroup_update_file_mapped(struct page *page, int val);
->  unsigned long mem_cgroup_soft_limit_reclaim(struct zone *zone, int order,
->  						gfp_t gfp_mask, int nid,
-> @@ -258,11 +257,6 @@ static inline bool mem_cgroup_disabled(v
->  	return true;
->  }
->  
-> -static inline bool mem_cgroup_oom_called(struct task_struct *task)
-> -{
-> -	return false;
-> -}
-> -
->  static inline int
->  mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
->  {
-> Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
-> +++ mmotm-2.6.33-Feb11/mm/memcontrol.c
-> @@ -200,7 +200,7 @@ struct mem_cgroup {
->  	 * Should the accounting and control be hierarchical, per subtree?
->  	 */
->  	bool use_hierarchy;
-> -	unsigned long	last_oom_jiffies;
-> +	atomic_t	oom_lock;
->  	atomic_t	refcnt;
->  
->  	unsigned int	swappiness;
-> @@ -1234,32 +1234,77 @@ static int mem_cgroup_hierarchical_recla
->  	return total;
->  }
->  
-> -bool mem_cgroup_oom_called(struct task_struct *task)
-> +static int mem_cgroup_oom_lock_cb(struct mem_cgroup *mem, void *data)
->  {
-> -	bool ret = false;
-> -	struct mem_cgroup *mem;
-> -	struct mm_struct *mm;
-> +	int *val = (int *)data;
-> +	int x;
->  
-> -	rcu_read_lock();
-> -	mm = task->mm;
-> -	if (!mm)
-> -		mm = &init_mm;
-> -	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-> -	if (mem && time_before(jiffies, mem->last_oom_jiffies + HZ/10))
-> -		ret = true;
-> -	rcu_read_unlock();
-> -	return ret;
-> +	x = atomic_inc_return(&mem->oom_lock);
-> +	if (x > *val)
-> +		*val = x;
-> +	return 0;
->  }
-> +/*
-> + * Check OOM-Killer is already running under our hierarchy.
-> + * If someone is running, return false.
-> + */
-> +static bool mem_cgroup_oom_lock(struct mem_cgroup *mem)
-> +{
-> +	int check = 0;
-> +
-> +	mem_cgroup_walk_tree(mem, &check, mem_cgroup_oom_lock_cb);
->  
-> -static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
-> +	if (check == 1)
-> +		return true;
-> +	return false;
-> +}
-> +
-> +static int mem_cgroup_oom_unlock_cb(struct mem_cgroup *mem, void *data)
->  {
-> -	mem->last_oom_jiffies = jiffies;
-> +	atomic_dec(&mem->oom_lock);
->  	return 0;
->  }
->  
-> -static void record_last_oom(struct mem_cgroup *mem)
-> +static void mem_cgroup_oom_unlock(struct mem_cgroup *mem)
-> +{
-> +	mem_cgroup_walk_tree(mem, NULL,	mem_cgroup_oom_unlock_cb);
-> +}
-> +
-> +static DEFINE_MUTEX(memcg_oom_mutex);
-> +static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
-> +
-> +/*
-> + * try to call OOM killer. returns false if we should exit memory-reclaim loop.
-> + */
-> +bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
->  {
-> -	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-> +	DEFINE_WAIT(wait);
-> +	bool locked;
-> +
-> +	/* At first, try to OOM lock hierarchy under mem.*/
-> +	mutex_lock(&memcg_oom_mutex);
-> +	locked = mem_cgroup_oom_lock(mem);
-> +	if (!locked)
-> +		prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (locked)
-> +		mem_cgroup_out_of_memory(mem, mask);
-> +	else {
-> +		schedule();
-> +		finish_wait(&memcg_oom_waitq, &wait);
-> +	}
-> +	mutex_lock(&memcg_oom_mutex);
-> +	mem_cgroup_oom_unlock(mem);
-> +	/* TODO: more fine grained waitq ? */
-> +	wake_up_all(&memcg_oom_waitq);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
-> +		return false;
-> +	/* Give chance to dying process */
-> +	schedule_timeout(1);
-> +	return true;
->  }
->  
->  /*
-> @@ -1432,11 +1477,14 @@ static int __mem_cgroup_try_charge(struc
->  	struct res_counter *fail_res;
->  	int csize = CHARGE_SIZE;
->  
-> -	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
-> -		/* Don't account this! */
-> -		*memcg = NULL;
-> -		return 0;
-> -	}
-> +	/*
-> +	 * Unlike gloval-vm's OOM-kill, we're not in memory shortage
-> +	 * in system level. So, allow to go ahead dying process in addition to
-> +	 * MEMDIE process.
-> +	 */
-> +	if (unlikely(test_thread_flag(TIF_MEMDIE)
-> +		     || fatal_signal_pending(current)))
-> +		goto bypass;
->  
->  	/*
->  	 * We always charge the cgroup the mm_struct belongs to.
-> @@ -1549,11 +1597,15 @@ static int __mem_cgroup_try_charge(struc
->  		}
->  
->  		if (!nr_retries--) {
-> -			if (oom) {
-> -				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
-> -				record_last_oom(mem_over_limit);
-> +			if (!oom)
-> +				goto nomem;
-> +			if (mem_cgroup_handle_oom(mem_over_limit, gfp_mask)) {
-> +				nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> +				continue;
->  			}
-> -			goto nomem;
-> +			/* When we reach here, current task is dying .*/
-> +			css_put(&mem->css);
-> +			goto bypass;
->  		}
->  	}
->  	if (csize > PAGE_SIZE)
-> @@ -1572,6 +1624,9 @@ done:
->  nomem:
->  	css_put(&mem->css);
->  	return -ENOMEM;
-> +bypass:
-> +	*memcg = NULL;
-> +	return 0;
->  }
->  
->  /*
-> Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
-> ===================================================================
-> --- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
-> +++ mmotm-2.6.33-Feb11/mm/oom_kill.c
-> @@ -599,13 +599,6 @@ void pagefault_out_of_memory(void)
->  		/* Got some memory back in the last second. */
->  		return;
->  
-> -	/*
-> -	 * If this is from memcg, oom-killer is already invoked.
-> -	 * and not worth to go system-wide-oom.
-> -	 */
-> -	if (mem_cgroup_oom_called(current))
-> -		goto rest_and_return;
-> -
->  	if (sysctl_panic_on_oom)
->  		panic("out of memory from page fault. panic_on_oom is selected.\n");
->  
-> @@ -617,7 +610,6 @@ void pagefault_out_of_memory(void)
->  	 * Give "p" a good chance of killing itself before we
->  	 * retry to allocate memory.
->  	 */
-> -rest_and_return:
->  	if (!test_thread_flag(TIF_MEMDIE))
->  		schedule_timeout_uninterruptible(1);
->  }
+> In that case, rather than putting this conditional in the hot path, make
+> an inner __xen_evtchn_do_upcall which is wrapped by the PV and HVM
+> variants which do the appropriate things.  (And drop the pt_regs arg, I
+> think.)
+
+Sure.
+ 
+-- 
+regards
+Yang, Sheng
+
+> >   	do {
+> >   		unsigned long pending_words;
+> > @@ -662,8 +670,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+> >   	} while(count != 1);
+> >
+> >   out:
+> > -	irq_exit();
+> > -	set_irq_regs(old_regs);
+> > +	if (likely(!xen_hvm_pv_evtchn_enabled())) {
+> > +		irq_exit();
+> > +		set_irq_regs(old_regs);
+> > +	}
+> >
+> >   	put_cpu();
+> >   }
+> > @@ -944,3 +954,51 @@ void __init xen_init_IRQ(void)
+> >
+> >   	irq_ctx_init(smp_processor_id());
+> >   }
+> > +
+> > +void __init xen_hvm_pv_evtchn_init_IRQ(void)
+> > +{
+> > +	int i;
+> > +
+> > +	xen_init_IRQ();
+> > +	for (i = 0; i<  NR_IRQS_LEGACY; i++) {
+> > +		struct evtchn_bind_virq bind_virq;
+> > +		struct irq_desc *desc = irq_to_desc(i);
+> > +		int virq, evtchn;
+> > +
+> > +		virq = i + VIRQ_EMUL_PIN_START;
+> > +		bind_virq.virq = virq;
+> > +		bind_virq.vcpu = 0;
+> > +
+> > +		if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq,
+> > +						&bind_virq) != 0)
+> > +			BUG();
+> > +
+> > +		evtchn = bind_virq.port;
+> > +		evtchn_to_irq[evtchn] = i;
+> > +		irq_info[i] = mk_virq_info(evtchn, virq);
+> > +
+> > +		desc->status = IRQ_DISABLED;
+> > +		desc->action = NULL;
+> > +		desc->depth = 1;
+> > +
+> > +		/*
+> > +		 * 16 old-style INTA-cycle interrupts:
+> > +		 */
+> > +		set_irq_chip_and_handler_name(i,&xen_dynamic_chip,
+> > +					handle_level_irq, "event");
+> > +	}
+> > +
+> > +	/*
+> > +	 * Cover the whole vector space, no vector can escape
+> > +	 * us. (some of these will be overridden and become
+> > +	 * 'special' SMP interrupts)
+> > +	 */
+> > +	for (i = 0; i<  (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
+> > +		int vector = FIRST_EXTERNAL_VECTOR + i;
+> > +		if (vector != IA32_SYSCALL_VECTOR)
+> > +			set_intr_gate(vector, interrupt[i]);
+> > +	}
+> > +
+> > +	/* generic IPI for platform specific use, now used for HVM evtchn */
+> > +	alloc_intr_gate(X86_PLATFORM_IPI_VECTOR, x86_platform_ipi);
+> > +}
+> > diff --git a/include/xen/events.h b/include/xen/events.h
+> > index e68d59a..91755db 100644
+> > --- a/include/xen/events.h
+> > +++ b/include/xen/events.h
+> > @@ -56,4 +56,5 @@ void xen_poll_irq(int irq);
+> >   /* Determine the IRQ which is bound to an event channel */
+> >   unsigned irq_from_evtchn(unsigned int evtchn);
+> >
+> > +void xen_evtchn_do_upcall(struct pt_regs *regs);
+> >   #endif	/* _XEN_EVENTS_H */
+> > diff --git a/include/xen/hvm.h b/include/xen/hvm.h
+> > index 4ea8887..c66d788 100644
+> > --- a/include/xen/hvm.h
+> > +++ b/include/xen/hvm.h
+> > @@ -20,4 +20,9 @@ static inline unsigned long hvm_get_parameter(int idx)
+> >   	return xhv.value;
+> >   }
+> >
+> > +#define HVM_CALLBACK_VIA_TYPE_VECTOR 0x2
+> > +#define HVM_CALLBACK_VIA_TYPE_SHIFT 56
+> > +#define HVM_CALLBACK_VECTOR(x)
+> > (((uint64_t)HVM_CALLBACK_VIA_TYPE_VECTOR)<<\
+> > +				HVM_CALLBACK_VIA_TYPE_SHIFT | (x))
+> > +
+> >   #endif /* XEN_HVM_H__ */
+> > diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
+> > index 2befa3e..9282ff7 100644
+> > --- a/include/xen/interface/xen.h
+> > +++ b/include/xen/interface/xen.h
+> > @@ -90,7 +90,11 @@
+> >   #define VIRQ_ARCH_6    22
+> >   #define VIRQ_ARCH_7    23
+> >
+> > -#define NR_VIRQS       24
+> > +#define VIRQ_EMUL_PIN_START 24
+> > +#define VIRQ_EMUL_PIN_NUM 16
+> > +
+> > +#define NR_VIRQS       40
+> 
+> (VIRQ_EMUL_PIN_START + VIRQ_EMUL_PIN_NUM)?
+> 
+>      J
 > 
