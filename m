@@ -1,44 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342Ab0CBTVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 14:21:38 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:40481 "EHLO kernel.dk"
+	id S1752805Ab0CBT35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 14:29:57 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60333 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363Ab0CBTVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 14:21:37 -0500
-Date: Tue, 2 Mar 2010 20:21:35 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: walt <w41ter@gmail.com>, linux-kernel@vger.kernel.org,
-       Michael Breuer <mbreuer@majjas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dmonakhov@openvz.org
-Subject: Re: [GIT PULL] single block IO revert (Was "Re: Oops while booting
-	2.6.34-rc0 (block pull busted)")
-Message-ID: <20100302192135.GA5768@kernel.dk>
-References: <201003011615.31709.dmitry.torokhov@gmail.com> <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk> <hmiocs$p6h$1@dough.gmane.org> <4B8D41C7.1030404@majjas.com> <20100302174250.GA13131@goodmis.org> <20100302174939.GB13131@goodmis.org> <20100302182117.GW5768@kernel.dk> <1267557422.10871.23.camel@gandalf.stny.rr.com>
+	id S1751694Ab0CBT34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 14:29:56 -0500
+Date: Tue, 2 Mar 2010 11:29:42 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: Memory management woes - order 1 allocation failures
+Message-ID: <20100302192942.GA2953@suse.de>
+References: <alpine.DEB.2.00.1002261042020.7719@router.home>
+ <84144f021002260917q61f7c255rf994425f3a613819@mail.gmail.com>
+ <20100301103546.DD86.A69D9226@jp.fujitsu.com>
+ <20100302172606.GA11355@csn.ul.ie>
+ <20100302183451.75d44f03@lxorguk.ukuu.org.uk>
+ <20100302191110.GB11355@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267557422.10871.23.camel@gandalf.stny.rr.com>
+In-Reply-To: <20100302191110.GB11355@csn.ul.ie>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02 2010, Steven Rostedt wrote:
-> On Tue, 2010-03-02 at 19:21 +0100, Jens Axboe wrote:
-> > On Tue, Mar 02 2010, Steven Rostedt wrote:
-> 
+On Tue, Mar 02, 2010 at 07:11:10PM +0000, Mel Gorman wrote:
+> On Tue, Mar 02, 2010 at 06:34:51PM +0000, Alan Cox wrote:
+> > > For reasons that are not particularly clear to me, tty_buffer_alloc() is
+> > > called far more frequently in 2.6.33 than in 2.6.24. I instrumented the
+> > > function to print out the size of the buffers allocated, booted under
+> > > qemu and would just "cat /bin/ls" to see what buffers were allocated.
+> > > 2.6.33 allocates loads, including high-order allocations. 2.6.24
+> > > appeared to allocate once and keep silent.
 > > 
-> > We'll revert it asap, no point in wasting time debugging it first.
+> > The pty layer is using them now and didn't before. That will massively
+> > distort your numhers.
+> > 
 > 
-> Thanks!
+> That makes perfect sense. It explains why only one allocation showed up
+> because it must belong to the tty attached to the serial console.
 > 
-> Since I have a box that triggers this issue, let me know if there's a
-> git branch you would like me to test.
+> Thanks Alan.
+> 
+> > > While there have been snags recently with respect to high-order
+> > > allocation failures in recent kernels, this might be one of the cases
+> > > where it's due to subsystems requesting high-order allocations more.
+> > 
+> > The pty code certainly triggered more such allocations. I've sent Greg
+> > patches to make the tty buffering layer allocate sensible sizes as it
+> > doesn't need multiple page allocations in the first place.
+> > 
+> 
+> Greg, what's the story with these patches?
 
-Thanks, will let you know!
+They are in -next and will go to Linus later on today for .34.
 
--- 
-Jens Axboe
+thanks,
 
+greg k-h
