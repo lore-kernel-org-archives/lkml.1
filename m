@@ -1,59 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940Ab0CBJWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 04:22:21 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:13329 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618Ab0CBJWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 04:22:19 -0500
-X-IronPort-AV: E=Sophos;i="4.49,565,1262581200"; 
-   d="scan'208";a="86274862"
-Subject: Re: [Xen-devel] [PATCH 3/7] xen/hvm: Xen PV extension of  HVM
- initialization
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <201003020938.53630.sheng@linux.intel.com>
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
-	 <1267436315-24486-4-git-send-email-sheng@linux.intel.com>
-	 <4B8C63B0.2090507@goop.org>  <201003020938.53630.sheng@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Tue, 2 Mar 2010 09:22:15 +0000
-Message-ID: <1267521735.11737.23107.camel@zakaz.uk.xensource.com>
+	id S1751884Ab0CBJZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 04:25:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38804 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363Ab0CBJZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 04:25:10 -0500
+Date: Tue, 2 Mar 2010 20:25:02 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch] RFC directio: partial writes support
+Message-ID: <20100302092502.GD8653@laptop>
+References: <87iq9lxz3t.fsf@openvz.org>
+ <20100301152149.7ce78e14.akpm@linux-foundation.org>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100301152149.7ce78e14.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 01:38 +0000, Sheng Yang wrote:
+On Mon, Mar 01, 2010 at 03:21:49PM -0800, Andrew Morton wrote:
+> On Thu, 25 Feb 2010 15:45:58 +0300
+> Dmitry Monakhov <dmonakhov@openvz.org> wrote:
 > 
-> A annoy thing in pv drivers is that it would test if the domain type
-> is _NOT_ XEN_NATIVE. So set the domain to XEN_HVM_DOMAIN would result
-> in PV driver initialization then probably panic. 
+> > Can someone please describe me why directio deny partial writes.
+> > For example if someone try to write 100Mb but file system has less
+> > data it return ENOSPC in the middle of block allocation.
+> > All allocated blocks will be truncated (it may be 100Mb -4k) end
+> > ENOSPC will be returned. As far as i remember direct_io always act
+> > like this, but i never asked why?
+> > Why do we have to give up all the progress we made?
+> > In fact partial writes are possible in case of holes, when we 
+> > fall back to buffered write. XFS implemented partial writes.
+> 
+> The problem with direct-io writes is that the writes don't necessarily
+> complete in file-offset-ascending order.  So if we've issued 50 write
+> BIOs and then hit an EIO on a BIO then we could have a hunk of
+> unwritten data with newly-writted data either side of it.  If we get a
+> bunch of discontiguous EIO BIOs coming in then the problem gets even
+> messier - we have a span of disk which has a random mix of
+> correctly-written and not-correctly-written runs of sectors.  What do
+> we do with that?
 
-What _actually_ panics?
-
-Registration of the frontend devices should be completely harmless
-(apart from a little wasted RAM) unless a xenbus driver manages to come
-up and enumerate the xen bus and cause the ->probe function run.
-
-You should be gating the xenbus startup on the availability of PV
-functionality not the individual driver registrations. This keeps the
-test in a single easy to maintain place.
-
-Compare with pci_register_driver and all of the callers of that function
--- not a single one of them has an "is_pci_available" test anywhere.
-
-Ian.
+Hmm, what if we're filling in a hole with direct IO? I don't see where
+blocks allocated in DIO code will be trimmed on a failed write (because
+it's within isize). This could cause uninitalized data of the block to
+leak couldn't it?
 
