@@ -1,54 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746Ab0CBXlb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:41:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44744 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757724Ab0CBXl3 (ORCPT
+	id S1757907Ab0CBXmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:42:23 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:35855 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757894Ab0CBXmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:41:29 -0500
-Date: Tue, 2 Mar 2010 15:40:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@gmail.com>
-cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm request 2
-In-Reply-To: <21d7e9971003021527t41268786q302a218ffe410763@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1003021536280.3616@localhost.localdomain>
-References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain>  <alpine.LFD.2.00.1003021459450.3616@localhost.localdomain>  <alpine.DEB.2.00.1003022305070.4099@skynet.skynet.ie>
- <21d7e9971003021527t41268786q302a218ffe410763@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 2 Mar 2010 18:42:20 -0500
+Date: Tue, 2 Mar 2010 23:42:19 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@novell.com>,
+       Lennart Poettering <mzxreary@0pointer.de>
+Subject: Re: [PATCH 56/62] msi-laptop: Support standard ec 66/62 command on
+	MSI notebook and nebook
+Message-ID: <20100302234219.GC13739@srcf.ucam.org>
+References: <20100302230933.GA32287@kroah.com> <1267572541-410-56-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267572541-410-56-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 02, 2010 at 03:28:55PM -0800, Greg Kroah-Hartman wrote:
+> From: Lee, Chun-Yi <jlee@novell.com>
+> 
+> Suppport standard ec 66/62 command on MSI notebook and nebook. MSI
+> netbook and notebook already support 66/62 command, so, add new
+> get_state function, and put the old model to non-standard model, but
+> driver still support those old model.
+> 
+> Signed-off-by: Lee, Chun-Yi <jlee@novell.com>
+> Cc: Lennart Poettering <mzxreary@0pointer.de>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+ACKed-by: Matthew Garrett <mjg@redhat.com>
 
-
-On Wed, 3 Mar 2010, Dave Airlie wrote:
->
-> Did I mention that driver is in STAGING?
-
-Staging is for _improving_ the quality of the drivers, not for making it 
-worse.
-
-We still very much have quality standards. The staging tree is for things 
-to get in that don't quite _reach_ the standards we expect, but it's not a 
-blanket excuse for not testing things.
-
-And yes, I expect that stuff can be a bit rough during the merge window, 
-after all, the whole point is that we can fix things up. But quite 
-frankly, if _I_ find problems on the few machines I personally build and 
-test on, then what does that say about the bigger picture?
-
-IOW, I refuse to pull code that doesn't even work for me. If I did, where 
-would we end up? What do you think should be my minimal quality 
-requirements, if "Oh, it doesn't even build for me" is too much to ask 
-for?
-
-So if I find code that doesn't work, I'm not going to just say "whatever". 
-I'm going to reject it.
-
-			Linus
+Greg, could you send x86 platform drivers patches via me from now on? 
+There's some stuff in this patchset that isn't sane.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
