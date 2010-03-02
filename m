@@ -1,83 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882Ab0CBPZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 10:25:21 -0500
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:44494 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020Ab0CBPZT (ORCPT
+	id S1753510Ab0CBP0K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 10:26:10 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:49281 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020Ab0CBP0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 10:25:19 -0500
-Date: Tue, 2 Mar 2010 16:25:14 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>
-Cc: Aaro Koskinen <aaro.koskinen@nokia.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-Message-ID: <20100302162514.2548e185@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <alpine.LFD.2.00.1003021605570.4245@localhost.localdomain>
-References: <20090603152223.083010123@de.ibm.com>
-	<alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
-	<20090622162631.4b4dcee4@skybase>
-	<20090622144110.GA9771@elte.hu>
-	<20090622165936.0bb776e1@skybase>
-	<20090622150553.GA14363@elte.hu>
-	<20090622171834.0df64aea@skybase>
-	<20090622152937.GA17512@elte.hu>
-	<20090622173611.3b583c95@skybase>
-	<20090622154030.GA19076@elte.hu>
-	<20090624185100.6ca7e82a@skybase>
-	<4B8D1942.8060405@nokia.com>
-	<20100302160110.5fd14f5f@mschwide.boeblingen.de.ibm.com>
-	<alpine.LFD.2.00.1003021605570.4245@localhost.localdomain>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Mar 2010 10:26:08 -0500
+Date: Tue, 2 Mar 2010 20:56:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrea Righi <arighi@develer.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100302152600.GA16532@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
+ <1267537736.25158.54.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1267537736.25158.54.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 16:08:09 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+* Peter Zijlstra <peterz@infradead.org> [2010-03-02 14:48:56]:
 
-> On Tue, 2 Mar 2010, Martin Schwidefsky wrote:
+> This is ugly and broken.. I thought you'd agreed to something like:
 > 
-> > On Tue, 02 Mar 2010 15:57:22 +0200
-> > Aaro Koskinen <aaro.koskinen@nokia.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Martin Schwidefsky wrote:
-> > > > First version of the hrtimer patch for oprofile. I did not add the
-> > > > sysctl yet, if the sysctl is added in oprofile_timer_init it would not
-> > > > be available if some better profiling source is available. If it is
-> > > > added unconditionally it would only have an effect if the timer
-> > > > fallback is used. Both cases are not exactly nice for a user space
-> > > > interface.
-> > > 
-> > > I wonder what happened to this patch? Some platforms would need
-> > > this fix (i.e. the timer mode has to be used due to HW issues).
-> > 
-> > After SH removed their oprofile hook there is nothing left that would
-> > prevent us from converting oprofile to hrtimer. Just a matter of
-> > reminding me and have me try again ;-)
-> > 
-> > Patch against current git. Ingo, Thomas: one for the timer tree I guess.
+>  if (mem_cgroup_has_dirty_limit(cgroup))
+>    use mem_cgroup numbers
+>  else
+>    use global numbers
 > 
-> No objections from my side, but shouldn't that go via Robert ?
+> That allows for a 0 dirty limit (which should work and basically makes
+> all io synchronous).
+> 
+> Also, I'd put each of those in a separate function, like:
+> 
+> unsigned long reclaimable_pages(cgroup)
+> {
+>   if (mem_cgroup_has_dirty_limit(cgroup))
+>     return mem_cgroup_page_stat(MEMCG_NR_RECLAIM_PAGES);
+>   
+>   return global_page_state(NR_FILE_DIRTY) + global_page_state(NR_NFS_UNSTABLE);
+> }
+>
 
-Agreed, this should be handled by the oprofile maintainer.
-Robert, could you take care of the patch?
+I agree, I should have been more specific about the naming convention,
+this is what I meant - along these lines as we do with
+zone_nr_lru_pages(), etc.
+ 
+> Which raises another question, you should probably rebase on top of
+> Trond's patches, which removes BDI_RECLAIMABLE, suggesting you also
+> loose MEMCG_NR_RECLAIM_PAGES in favour of the DIRTY+UNSTABLE split.
+> 
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+	Three Cheers,
+	Balbir
