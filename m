@@ -1,58 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338Ab0CBDYH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 22:24:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:53053 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508Ab0CBDYD convert rfc822-to-8bit (ORCPT
+	id S1753367Ab0CBDY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 22:24:28 -0500
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:51430 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239Ab0CBDYZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 22:24:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,564,1262592000"; 
-   d="scan'208";a="600383842"
-From: "Dong, Eddie" <eddie.dong@intel.com>
-To: Sheng Yang <sheng@linux.intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>
-CC: xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>,
-       "Dong, Eddie" <eddie.dong@intel.com>
-Date: Tue, 2 Mar 2010 11:20:10 +0800
-Subject: RE: [Xen-devel] [PATCH 0/7][v4] PV extension of HVM (Hybrid) for Xen
-Thread-Topic: [Xen-devel] [PATCH 0/7][v4] PV extension of HVM (Hybrid) for
- Xen
-Thread-Index: Acq5p8tFb9J01QPRSaOxOSrdKjAUFAADwiNg
-Message-ID: <1A42CE6F5F474C41B63392A5F80372B21D43CEF0@shsmsx501.ccr.corp.intel.com>
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
-	<4B8C5ED9.1040109@goop.org> <201003020926.03512.sheng@linux.intel.com>
-In-Reply-To: <201003020926.03512.sheng@linux.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Mar 2010 22:24:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=b//TIwUnxR2LuW2fPXMq4mMhmM19dyaBoTERU86F/UbZ1dNIdIkqDoJvWbiRVnQFa5
+         VSeCCWg+TUNvuLsnfQDuWifuYRY/rbMiMOxlLEOxSSj4xZjWjYAAWBka+peLSOtiEmgT
+         7nK2F4RcoF2D9ctaSL6FQPQLzrpw7VIol3pVo=
 MIME-Version: 1.0
+In-Reply-To: <4B8C56F0.5090700@gmail.com>
+References: <4B8C56F0.5090700@gmail.com>
+Date: Tue, 2 Mar 2010 11:24:24 +0800
+Message-ID: <2375c9f91003011924k43f03649y5b4df405d6247a79@mail.gmail.com>
+Subject: Re: Notifier chains bug ?
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Oleg Kutkov <elenbert@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
->> Also, I'd like to see a clearer statement of what you're specifically
->> trying to optimise for here.  What is inefficient in an unmodified
->> HVM domain, and how do your patches address these things.  What
->> measurements have you made?
-> 
-> The key issue we want to address is the overhead of LAPIC, especially
-> EOI and other actions resulted in explicit vmexit. That is the
-> overhead we want to eliminate. And evtchn seems like a perfect choice
-> to us. 
-> 
+On Tue, Mar 2, 2010 at 8:08 AM, Oleg Kutkov <elenbert@gmail.com> wrote:
+> Hello.
+> I try to used notifier chains for monitoring network devices events.
+> All works perfectly when just i'm connecting/disconnecting network cable or
+> up/down interface via ifconfig.
+> But when i try to change interface address - nothing happens. Notifier is
+> don't send any events :(
 
-That is not complete. Linux timer in HVM is always annoying, and time to time make surprise to endusers. PV timer does help here. Eventchannel is nice to HVM as well. 
+I think you mean IP address? No, NETDEV_CHANGEADDR is for hardware
+address, not for IP address.
 
-Thx, Eddie
+If you were changing mac address, you will receive NETDEV_CHANGEADDR.
