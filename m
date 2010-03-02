@@ -1,62 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429Ab0CBWAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:00:37 -0500
-Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:43487 "EHLO
-	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562Ab0CBWAf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:00:35 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 8BIT
-Content-type: text/plain; charset=UTF-8
-Date: Tue, 02 Mar 2010 23:00:19 +0100
-From: Michael Thayer <Michael.Thayer@Sun.COM>
-Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
- emulation to the Lifebook driver
-In-reply-to: <20100302212812.GA13499@core.coreip.homeip.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <1267567219.2441.12.camel@michael-laptop>
-Organization: Sun Microsystems GmbH
-X-Mailer: Evolution 2.28.1
-References: <1266923615.3602.85.camel@michael-laptop>
- <20100223175852.GA11301@core.coreip.homeip.net>
- <1266958533.3602.128.camel@michael-laptop>
- <20100224100206.GA5598@core.coreip.homeip.net>
- <1267011989.2831.30.camel@michael-laptop>
- <20100225101705.GF10823@core.coreip.homeip.net>
- <1267562688.2441.7.camel@michael-laptop>
- <20100302212812.GA13499@core.coreip.homeip.net>
+	id S1753499Ab0CBWBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:01:42 -0500
+Received: from tundra.namei.org ([65.99.196.166]:55496 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752562Ab0CBWBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:01:40 -0500
+Date: Wed, 3 Mar 2010 09:01:22 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>, Mark Fasheh <mfasheh@suse.com>,
+       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
+       a.gruenbacher@computer.org
+Subject: Re: [PATCH 2/2] ocfs2: ensure trusted xattrs are not returned to
+ unprivileged users via listxattr
+In-Reply-To: <20100302092946.GA21180@mail.oracle.com>
+Message-ID: <alpine.LRH.2.00.1003030855400.14492@tundra.namei.org>
+References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org> <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org> <20100302092946.GA21180@mail.oracle.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 02 mars 2010 à 13:28 -0800, Dmitry Torokhov a écrit :
-> On Tue, Mar 02, 2010 at 09:44:48PM +0100, Michael Thayer wrote:
-> > it still provides a reasonable user experience until the user has installed our
-> > guest drivers.
+On Tue, 2 Mar 2010, Joel Becker wrote:
+
+> On Tue, Mar 02, 2010 at 07:02:22PM +1100, James Morris wrote:
+> > Ensure that trusted xattrs are not returned to unprivileged users
+> > via listxattr, in keeping with several other implmentations, such
+> > as ext3.
+> > 
+> > Signed-off-by: James Morris <jmorris@namei.org>
 > 
-> It is your call but I would much rather if you worked on fixeng evdev to
-> work with your virtual device rather than having to install a new X
-> driver and going through the hoops trying to detect which one should be
-> used on a particular box. At least on Linux...
-That wouldn't really help us much here, as we are talking about distributions
-shipping X.Org Server 1.4 and earlier, and those distributions are no longer
-going to get that sort of update (in those cases in which they are still
-getting updates at all).  Legacy support if you like.
+> If this is the standard expectation, why not lift it up into the vfs?
 
-Thanks again,
+The VFS doesn't know what's in the listxattr list.  When using generic 
+xattr handlers for synthetic xattrs, it's easy to determine the xattr 
+namespace (each namespace has a handler), although on-disk xattrs need to 
+be read from disk to determine if they're in the trusted namespace.
 
-Michael
+The VFS could possibly modify the listxattr results after the fact, 
+although it's very ugly, and it would not be able to correctly handle size 
+probes, where the VFS only sees a total size value from the FS.
+
+
+- James
 -- 
-Sun Microsystems GmbH        Michael Thayer
-Werkstrasse 24               VirtualBox engineer
-71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
-
-Sitz der Gesellschaft:
-Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
-Amtsgericht Muenchen: HRB 161028
-Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
-Vorsitzender des Aufsichtsrates: Martin Haering
-
+James Morris
+<jmorris@namei.org>
