@@ -1,64 +1,167 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472Ab0CBTez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 14:34:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50354 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449Ab0CBTex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 14:34:53 -0500
-Date: Tue, 2 Mar 2010 19:33:37 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       fengguang.wu@intel.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       fengguang.wu@intel.com
-In-Reply-To: <20100301135551.GA9998@localhost>
-References: <20100301135551.GA9998@localhost>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] resource: Fix broken indentation
-Message-ID: <tip-f41496607e03ab99f263b8e26689ad0fc853007f@git.kernel.org>
-Git-Commit-ID: f41496607e03ab99f263b8e26689ad0fc853007f
-X-Mailer: tip-git-log-daemon
+	id S1752713Ab0CBTnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 14:43:17 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:43165 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751694Ab0CBTnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 14:43:16 -0500
+Message-ID: <4B8D69D0.1050209@ru.mvista.com>
+Date: Tue, 02 Mar 2010 22:41:04 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 02 Mar 2010 19:33:37 +0000 (UTC)
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+CC: Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/12] ahci: Add platform driver
+References: <20100302182850.GA32057@oksana.dev.rtsoft.ru> <20100302182947.GL3445@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100302182947.GL3445@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f41496607e03ab99f263b8e26689ad0fc853007f
-Gitweb:     http://git.kernel.org/tip/f41496607e03ab99f263b8e26689ad0fc853007f
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Tue, 2 Mar 2010 11:21:09 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 2 Mar 2010 11:21:09 -0800
+Hello.
 
-resource: Fix broken indentation
+Anton Vorontsov wrote:
 
-Fix broken indentation in patch
-37b99dd5372cff42f83210c280f314f10f99138e.
+> This can be used for AHCI-compatible interfaces implemented inside
+> a System-On-Chip solutions, or AHCI devices connected via localbus.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+[...]
+> diff --git a/drivers/ata/ahci_platform.c b/drivers/ata/ahci_platform.c
+> new file mode 100644
+> index 0000000..f3f96d6
+> --- /dev/null
+> +++ b/drivers/ata/ahci_platform.c
+> @@ -0,0 +1,196 @@
+> +/*
+> + * AHCI SATA platform driver
+> + *
+> + * Copyright 2004-2005  Red Hat, Inc.
+> + *   Jeff Garzik <jgarzik@pobox.com>
+> + * Copyright 2010  MontaVista Software, LLC.
+> + *   Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2, or (at your option)
+> + * any later version.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/device.h>
+> +#include <linux/libata.h>
+> +#include <linux/platform_device.h>
+> +#include "ahci.h"
+> +#include "ahci_platform.h"
+> +
+> +static int __devinit ahci_probe(struct platform_device *pdev)
+>   
 
-Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-LKML-Reference: <20100301135551.GA9998@localhost>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- kernel/resource.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+  Does it make sense to make this driver hotplug capable?
 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 8f0e3d0..91f430f 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -287,7 +287,7 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 		end_pfn = (res.end + 1) >> PAGE_SHIFT;
- 		if (end_pfn > pfn)
--		    ret = (*func)(pfn, end_pfn - pfn, arg);
-+			ret = (*func)(pfn, end_pfn - pfn, arg);
- 		if (ret)
- 			break;
- 		res.start = res.end + 1;
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct ahci_platform_data *pdata = pdev->dev.platform_data;
+> +	struct ata_port_info pi = {
+> +		.flags		= AHCI_FLAG_COMMON,
+> +		.pio_mask	= ATA_PIO4,
+> +		.udma_mask	= ATA_UDMA6,
+> +		.port_ops	= &ahci_ops,
+> +	};
+> +	const struct ata_port_info *ppi[] = { &pi, NULL };
+> +	struct ahci_host_priv *hpriv;
+> +	struct ata_host *host;
+> +	struct resource *res;
+> +	int n_ports;
+> +	int i;
+> +	int rc;
+> +
+> +	WARN_ON(ATA_MAX_QUEUE > AHCI_MAX_CMDS);
+>   
+
+   Hm...
+
+> +	ahci_set_em_messages(hpriv, &pi);
+> +
+> +
+>   
+
+   Extra newline?
+
+> +
+> +
+>   
+
+  Another one?
+
+> +		/* disabled/not-implemented port */
+> +		if (!(hpriv->port_map & (1 << i)))
+> +			ap->ops = &ata_dummy_port_ops;
+> +	}
+> +
+> +	rc = ahci_reset_controller(host);
+> +	if (rc)
+> +		goto err0;
+> +
+> +	ahci_init_controller(host);
+> +	ahci_print_info(host, "platform");
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+>   
+
+   Could also use platform_get_irq()...
+
+> diff --git a/drivers/ata/ahci_platform.h b/drivers/ata/ahci_platform.h
+> new file mode 100644
+> index 0000000..f7dd576
+> --- /dev/null
+> +++ b/drivers/ata/ahci_platform.h
+>   
+
+   I doubt that it's good place for declaring the platform data which 
+will be used by the platform code. This file should be somewhere in 
+include/linux/, don't you think?
+
+> @@ -0,0 +1,29 @@
+> +/*
+> + * AHCI SATA platform driver
+> + *
+> + * Copyright 2004-2005  Red Hat, Inc.
+> + *   Jeff Garzik <jgarzik@pobox.com>
+> + * Copyright 2010  MontaVista Software, LLC.
+> + *   Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2, or (at your option)
+> + * any later version.
+> + */
+> +
+> +#ifndef _AHCI_PLATFORM_H
+> +#define _AHCI_PLATFORM_H
+> +
+> +struct device;
+> +struct ata_port_info;
+> +
+> +struct ahci_platform_data {
+> +	int (*init)(struct device *dev);
+> +	void (*exit)(struct device *dev);
+> +	const struct ata_port_info *ata_port_info;
+> +	unsigned int force_port_map;
+> +	unsigned int mask_port_map;
+> +};
+> +
+> +#endif /* _AHCI_PLATFORM_H */
+>   
+
+MBR, Sergei
+
