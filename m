@@ -1,89 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246Ab0CBOKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 09:10:00 -0500
-Received: from smtp.citrix.com ([66.165.176.89]:19599 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753056Ab0CBOJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 09:09:59 -0500
-X-IronPort-AV: E=Sophos;i="4.49,567,1262581200"; 
-   d="scan'208";a="7407373"
-Subject: Re: [LKML] [PATCH 7/7] xen: Enable grant table and xenbus for PV
- extension of HVM
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-CC: Sheng Yang <sheng@linux.intel.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100302134127.GA25893@phenom.dumpdata.com>
-References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
-	 <1267436315-24486-8-git-send-email-sheng@linux.intel.com>
-	 <20100301173858.GJ7881@phenom.dumpdata.com>
-	 <201003020921.43398.sheng@linux.intel.com>
-	 <20100302134127.GA25893@phenom.dumpdata.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Tue, 2 Mar 2010 14:09:55 +0000
-Message-ID: <1267538995.11737.24042.camel@zakaz.uk.xensource.com>
+	id S1753185Ab0CBOLA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 09:11:00 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:59915 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352Ab0CBOK7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 09:10:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=GhExPX7LZ/sx6eNz6gU+WGHFHM47Zo3Q+7HcEyAqkuyp6Bc+VkzFPPZYifEe+FNjx8
+         u72MCTZMUK3WAgPAVrcM0sq/+V/BgHIXU/Qw3CCZrlQyr4JKIndw4xvogFlAXu80Mc9p
+         ZUXddnkUVJOWBUHqDHPpwB5HR7wL8wJU7dN04=
 MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+Date: Tue, 2 Mar 2010 16:10:57 +0200
+Message-ID: <c1fb08351003020610q25b85b60hf9362aabc4b0126f@mail.gmail.com>
+Subject: Google Gerrit
+From: Anca Emanuel <anca.emanuel@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, sop <sop@google.com>,
+       git <git@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 13:41 +0000, Konrad Rzeszutek Wilk wrote:
-> On Tue, Mar 02, 2010 at 09:21:43AM +0800, Sheng Yang wrote:
-> > On Tuesday 02 March 2010 01:38:58 Konrad Rzeszutek Wilk wrote:
-> > > > +/* The region reserved by QEmu for Xen platform device */
-> > > > +#define GNTTAB_START	    0xf2000000ul
-> > > > +#define GNTTAB_SIZE	    0x20000ul
-> > > 
-> > > I thought that in the earlier review you said:
-> > > 
-> > > "> > +#define GNTTAB_START           0xfbfe0000ul
-> > > 
-> > > > > +#define GNTTAB_SIZE            0x20000ul
-> > > >
-> > > > Is it possible that there would be a PCI device that would be
-> > > > passed in the guest that would conflict with the above mentioned
-> > > > E820 region?
-> > > 
-> > > I would change them to a dedicated PCI MMIO address in the next version.
-> > > Thanks.
-> > > 
-> > > "
-> > > ?
-> > 
-> > And yes, this is the dedicated PCI MMIO address I mentioned.. I would update 
-> > the comments to get it more clear.
-> > 
-> > I don't think it's very clear solution, because the real good way to do this 
-> > is probe pci device and find out with one is the platform pci device then use 
-> > it. But the grant table initialization is quite earlier compared to the 
-> > possible probing now... I hardcode the position now, and hunting for a better 
-> 
-> Would it be possible to move the grant table initialization to later
-> phase? Past the PCI loading/initialization?
+Hi, what do you think about Google Gerrit ? http://code.google.com/p/gerrit/
 
-Or provide the address via an MSR, hypervisor specific CPUID leaf or IO
-port or by using the early_pci infrastructure in the kernel. I don't
-think we are short of options ;-)
+see it in action here: http://review.source.android.com
 
-Ian.
+quote:
+"Gerrit is a web based code review system, facilitating online code
+reviews for projects using the Git version control system.
+Gerrit makes reviews easier by showing changes in a side-by-side
+display, and allowing inline comments to be added by any reviewer.
+Gerrit simplifies Git based project maintainership by permitting any
+authorized user to submit changes to the master Git repository, rather
+than requiring all approved changes to be merged in by hand by the
+project maintainer. This functionality enables a more centralized
+usage of Git."
 
-> 
-> > idea.
-> > 
-> > Comments?
-> > 
-> > -- 
-> > regards
-> > Yang, Sheng
-> >  
+git needs an friendly UI, web based is the future.
 
-
+Maybe an integration with Wave.
