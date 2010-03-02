@@ -1,35 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750907Ab0CBFF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 00:05:57 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:40800 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772Ab0CBFF4 (ORCPT
+	id S1751001Ab0CBFUQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 00:20:16 -0500
+Received: from ip-85-161-92-63.eurotel.cz ([85.161.92.63]:60385 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750767Ab0CBFUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 00:05:56 -0500
-Subject: yaffs2 NAND fs
-From: Peter Paul <abnominales@web.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Mar 2010 06:05:54 +0100
-Message-ID: <1267506354.1618.4.camel@virtubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19ZNb4mMDhW6JQVamBBG2yF8fP3S1ooX4Px6+AP
-	y6V9DTPiTTfCGSHwNuekAwDrewgqov/91ovY/jxTFws1vgexKg
-	YOE0nmJ0k=
+	Tue, 2 Mar 2010 00:20:14 -0500
+Date: Tue, 2 Mar 2010 06:20:10 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/26] w35und: Remove unused struct _RXLAYER1
+Message-ID: <20100302052010.GB13798@elf.ucw.cz>
+References: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267455868-4533-1-git-send-email-penberg@cs.helsinki.fi>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I was wondering why the yaffs2 file system has not gone for mainline
-yet. It's rather popular flash file system in the embedded world, while
-it is rather easy to patch a kernel to have yaffs2 support [1] it would
-be even nicer if it was just in mainline.
-The source of the GPLv2 file system can be found at [2]
+On Mon 2010-03-01 17:04:03, Pekka Enberg wrote:
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-[1] http://www.yaffs.net/howto-incorporate-yaffs 
-[2] http://www.aleph1.co.uk/cgi-bin/viewcvs.cgi/yaffs2/
+ACK.
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
