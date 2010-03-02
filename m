@@ -1,107 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505Ab0CBWF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:05:56 -0500
-Received: from xenotime.net ([72.52.64.118]:40055 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753208Ab0CBWFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:05:55 -0500
-Message-ID: <4B8D8BC1.5000105@xenotime.net>
-Date: Tue, 02 Mar 2010 14:05:53 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: werner@guyane.dyn-o-saur.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-git6 problem (compal-laptop)
-References: <1267446083.16093@guyane.dyn-o-saur.com>
-In-Reply-To: <1267446083.16093@guyane.dyn-o-saur.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753621Ab0CBWLi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:11:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63145 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753535Ab0CBWLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:11:37 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Valerie Aurora <vaurora@redhat.com>
+Subject: [RFC PATCH 0/6] Union mount core rewrite v1
+Date: Tue,  2 Mar 2010 14:11:23 -0800
+Message-Id: <1267567889-4637-1-git-send-email-vaurora@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/10 04:21, werner@guyane.dyn-o-saur.com wrote:
-> before, these errors didn't occur
-> ....
->   CC      arch/x86/lib/strstr_32.o
->   AS      arch/x86/lib/thunk_32.o
->   CC      arch/x86/lib/usercopy_32.o
->   AR      arch/x86/lib/lib.a
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 9 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->   GEN     .version
->   CHK     include/generated/compile.h
->   UPD     include/generated/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `compal_rfkill_poll':
-> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
-> drivers/built-in.o: In function `compal_init':
-> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
-> drivers/built-in.o: In function `compal_cleanup':
-> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
-> make: [.tmp_vmlinux1] Error 1 (ignored)
->   KSYM    .tmp_kallsyms1.S
-> nm: '.tmp_vmlinux1': No such file
-> No valid symbol.
-> make: [.tmp_kallsyms1.S] Error 1 (ignored)
->   AS      .tmp_kallsyms1.o
->   LD      .tmp_vmlinux2
-> drivers/built-in.o: In function `compal_rfkill_poll':
-> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
-> drivers/built-in.o: In function `compal_init':
-> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
-> drivers/built-in.o: In function `compal_cleanup':
-> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
-> make: [.tmp_vmlinux2] Error 1 (ignored)
->   KSYM    .tmp_kallsyms2.S
-> nm: '.tmp_vmlinux2': No such file
-> No valid symbol.
-> make: [.tmp_kallsyms2.S] Error 1 (ignored)
->   AS      .tmp_kallsyms2.o
->   LD      vmlinux
-> drivers/built-in.o: In function `compal_rfkill_poll':
-> compal-laptop.c:(.text+0x6317cf): undefined reference to `rfkill_set_hw_state'
-> drivers/built-in.o: In function `compal_init':
-> compal-laptop.c:(.init.text+0x3967d): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x3968d): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396b2): undefined reference to `rfkill_alloc'
-> compal-laptop.c:(.init.text+0x396c7): undefined reference to `rfkill_register'
-> compal-laptop.c:(.init.text+0x396d7): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.init.text+0x396e1): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.init.text+0x396eb): undefined reference to `rfkill_destroy'
-> drivers/built-in.o: In function `compal_cleanup':
-> compal-laptop.c:(.exit.text+0x6b4b): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b55): undefined reference to `rfkill_destroy'
-> compal-laptop.c:(.exit.text+0x6b5f): undefined reference to `rfkill_unregister'
-> compal-laptop.c:(.exit.text+0x6b69): undefined reference to `rfkill_destroy'
+This is a major rewrite of parts of union mounts, in particular the
+pathname lookup code.  For more info about union mounts, see:
 
-Ingo posted a patch for this.  See  http://lkml.org/lkml/2010/3/2/153
+http://valerieaurora.org/union/
 
--- 
-~Randy
+The previous code had two important problems fixed in this series:
+
+- On file open, is_unionized() grabs vfsmount lock and walks up the
+  mount tree even for non-union mounts.
+
+- Pathname lookup required three cut-n-pasted versions of two complex
+  functions, one for each of cached/real/"hashed" lookups.
+
+This rewrite reduces the additional cost of a non-union lookup in a
+CONFIG_UNION_MOUNT kernel to either 1 or 2 mount flag tests (but adds
+the requirement that file systems be unioned only at their root
+directories).  This rewrite implements lookup with one lookup_union()
+function for all types of lookups.
+
+This posted patch series includes only the union lookup, mount, and
+readdir patches and not the relatively uncontroversial whiteout and
+fallthru code.  Rewrite of the in-kernel file copyup is next on my
+todo list.
+
+The entire patch set is against Viro's for-next branch, and available
+at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/val/linux-2.6.git
+
+Branch no_copyup.  Please review!  Thanks,
+
+-VAL
+
+Jan Blunck (3):
+  union-mount: Introduce union_mount structure and basic operations
+  union-mount: Drive the union cache via dcache
+  union-mount: Call do_whiteout() on unlink and rmdir in unions
+
+Valerie Aurora (3):
+  union-mount: Implement union lookup
+  union-mount: Support for mounting union mount file systems
+  union-mount: Copy up directory entries on first readdir()
+
+ fs/Kconfig             |   13 +
+ fs/Makefile            |    1 +
+ fs/dcache.c            |   17 ++
+ fs/namei.c             |  199 +++++++++++++++-
+ fs/namespace.c         |  123 ++++++++++-
+ fs/readdir.c           |    9 +
+ fs/union.c             |  629 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/dcache.h |   28 +++
+ include/linux/mount.h  |    3 +
+ include/linux/union.h  |   74 ++++++
+ 10 files changed, 1094 insertions(+), 2 deletions(-)
+ create mode 100644 fs/union.c
+ create mode 100644 include/linux/union.h
+
