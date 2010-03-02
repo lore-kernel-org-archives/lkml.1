@@ -1,75 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153Ab0CBXsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:48:42 -0500
-Received: from mail-iw0-f196.google.com ([209.85.223.196]:42292 "EHLO
-	mail-iw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921Ab0CBXsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:48:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GVbUohRIfuWrM+znMx6XQIvfgEGNbeZ4BLCT/D2JEwRbgHppjHPEfrWiKY50xQwK7A
-         hNEDhC8bF9WniVg9lcyu/yE2IYgVgB+rgUAdVI+TA2oH2cP6LvN1QO6Bh+uQYA0RoM6U
-         C0CUs96gQyEPEciOeCL0hbA72/WCir0VieF3I=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1003021536280.3616@localhost.localdomain>
-References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie>
-	 <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain>
-	 <alpine.LFD.2.00.1003021459450.3616@localhost.localdomain>
-	 <alpine.DEB.2.00.1003022305070.4099@skynet.skynet.ie>
-	 <21d7e9971003021527t41268786q302a218ffe410763@mail.gmail.com>
-	 <alpine.LFD.2.00.1003021536280.3616@localhost.localdomain>
-Date: Wed, 3 Mar 2010 09:48:36 +1000
-Message-ID: <21d7e9971003021548u7509651fyfc875d4e30472486@mail.gmail.com>
-Subject: Re: [git pull] drm request 2
-From: Dave Airlie <airlied@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754690Ab0CBXuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:50:15 -0500
+Received: from kroah.org ([198.145.64.141]:51606 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754361Ab0CBXg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:36:58 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Rakib Mullick <rakib.mullick@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 17/36] ip2: Add module parameter.
+Date: Tue,  2 Mar 2010 15:36:24 -0800
+Message-Id: <1267573003-782-17-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230956.GC32287@kroah.com>
+References: <20100302230956.GC32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 3, 2010 at 9:40 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Wed, 3 Mar 2010, Dave Airlie wrote:
->>
->> Did I mention that driver is in STAGING?
->
-> Staging is for _improving_ the quality of the drivers, not for making it
-> worse.
->
-> We still very much have quality standards. The staging tree is for things
-> to get in that don't quite _reach_ the standards we expect, but it's not a
-> blanket excuse for not testing things.
->
-> And yes, I expect that stuff can be a bit rough during the merge window,
-> after all, the whole point is that we can fix things up. But quite
-> frankly, if _I_ find problems on the few machines I personally build and
-> test on, then what does that say about the bigger picture?
->
-> IOW, I refuse to pull code that doesn't even work for me. If I did, where
-> would we end up? What do you think should be my minimal quality
-> requirements, if "Oh, it doesn't even build for me" is too much to ask
-> for?
->
-> So if I find code that doesn't work, I'm not going to just say "whatever".
-> I'm going to reject it.
+From: Rakib Mullick <rakib.mullick@gmail.com>
 
-So can we get linux-next builds to build with *your* Kconfig? This should
-cut down the amount of crap you see considerably.
+Stephen Rothwell found the following warning (x86_64 allmodconfig):
 
-I'm not saying we have too many configuration options and testing them all
-is insane, granted I admit I should have found this one since I do generally
-try and build with nouveau on here.
+drivers/char/ip2/ip2main.c:511: warning: 'ip2_setup' defined but not used
 
-I've sent a new pull, take it or not it builds here at least under
-staging/acpi/vga_switcheroo off
+This patch adds module parameter to fix the above warning.
 
-Dave.
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/char/ip2/ip2main.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
+index 2913d05..c2c915a 100644
+--- a/drivers/char/ip2/ip2main.c
++++ b/drivers/char/ip2/ip2main.c
+@@ -208,6 +208,7 @@ static int DumpFifoBuffer( char __user *, int);
+ 
+ static void ip2_init_board(int, const struct firmware *);
+ static unsigned short find_eisa_board(int);
++static int ip2_setup(char *str);
+ 
+ /***************/
+ /* Static Data */
+@@ -285,7 +286,10 @@ MODULE_AUTHOR("Doug McNash");
+ MODULE_DESCRIPTION("Computone IntelliPort Plus Driver");
+ MODULE_LICENSE("GPL");
+ 
++#define	MAX_CMD_STR	50
++
+ static int poll_only;
++static char cmd[MAX_CMD_STR];
+ 
+ static int Eisa_irq;
+ static int Eisa_slot;
+@@ -309,6 +313,8 @@ module_param_array(io, int, NULL, 0);
+ MODULE_PARM_DESC(io, "I/O ports for IntelliPort Cards");
+ module_param(poll_only, bool, 0);
+ MODULE_PARM_DESC(poll_only, "Do not use card interrupts");
++module_param_string(ip2, cmd, MAX_CMD_STR, 0);
++MODULE_PARM_DESC(ip2, "Contains module parameter passed with 'ip2='");
+ 
+ /* for sysfs class support */
+ static struct class *ip2_class;
+@@ -538,12 +544,19 @@ static int __init ip2_loadmain(void)
+ 	i2eBordStrPtr pB = NULL;
+ 	int rc = -1;
+ 	const struct firmware *fw = NULL;
++	char *str;
++
++	str = cmd;
+ 
+ 	if (poll_only) {
+ 		/* Hard lock the interrupts to zero */
+ 		irq[0] = irq[1] = irq[2] = irq[3] = poll_only = 0;
+ 	}
+ 
++	/* Check module parameter with 'ip2=' has been passed or not */
++	if (!poll_only && (!strncmp(str, "ip2=", 4)))
++		ip2_setup(str);
++
+ 	ip2trace(ITRC_NO_PORT, ITRC_INIT, ITRC_ENTER, 0);
+ 
+ 	/* process command line arguments to modprobe or
+-- 
+1.7.0.1
+
