@@ -1,59 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756Ab0CBICI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:02:08 -0500
-Received: from trinity.develer.com ([83.149.158.210]:57019 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753639Ab0CBICF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:02:05 -0500
-Date: Tue, 2 Mar 2010 09:01:58 +0100
-From: Andrea Righi <arighi@develer.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-ID: <20100302080056.GA1548@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
- <1267478620-5276-4-git-send-email-arighi@develer.com>
- <20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1753601Ab0CBIFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:05:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16016 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753408Ab0CBIFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:05:37 -0500
+Date: Tue, 2 Mar 2010 10:05:27 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, avi@redhat.com, mtosatti@redhat.com
+Subject: Re: use of setjmp/longjmp in x86 emulator.
+Message-ID: <20100302080527.GT16909@redhat.com>
+References: <20100301091819.GD16909@redhat.com>
+ <4B8BE7C1.40000@redhat.com>
+ <20100301174724.GA12867@redhat.com>
+ <4B8C09F5.9070506@redhat.com>
+ <20100301190341.GD12867@redhat.com>
+ <4B8C1320.6060602@redhat.com>
+ <4B8C4032.7080703@zytor.com>
+ <4B8C463B.7070900@zytor.com>
+ <4B8C4F12.8050009@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100302092309.bff454d7.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B8C4F12.8050009@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 09:23:09AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon,  1 Mar 2010 22:23:40 +0100
-> Andrea Righi <arighi@develer.com> wrote:
+On Mon, Mar 01, 2010 at 01:34:42PM -1000, Zachary Amsden wrote:
+> On 03/01/2010 12:56 PM, H. Peter Anvin wrote:
+> >On 03/01/2010 02:31 PM, H. Peter Anvin wrote:
+> >>On 03/01/2010 11:18 AM, Zachary Amsden wrote:
+> >>>It's going to be ugly to emulate segmentation, NX and write protect
+> >>>support without hardware to do this checking for you, but it's just what
+> >>>you have to do in this slow path - tedious, fully specified emulation.
+> >>>
+> >>>Just because it's tedious doesn't mean we need to use setjmp / longjmp.
+> >>>Throw / catch might be effective, but it's still pretty bizarre to do
+> >>>tricks like that in C.
+> >>>
+> >>Well, setjmp/longjmp really is not much more than exception handling in C.
+> >>
+> >For what it's worth, I think that setjmp/longjmp is not anywhere near as
+> >dangerous as people want to make it out to be.  gcc will warn for
+> >dangerous uses (and a lot of non-dangerous uses), but generally the
+> >difficult problems can be dealt with by moving the setjmp-protected code
+> >into a separate function.
 > 
-> > Apply the cgroup dirty pages accounting and limiting infrastructure to
-> > the opportune kernel functions.
-> > 
-> > Signed-off-by: Andrea Righi <arighi@develer.com>
+> I'd be curious to see if it would need to evolve it to preemptsetjmp
+> / irqlongjmp or some other more complex forms in time.
 > 
-> Seems nice.
-> 
-> Hmm. the last problem is moving account between memcg.
-> 
-> Right ?
+Just don't allow stupid usage of longjmp. Like everything else
+it can be abused.
 
-Correct. This was actually the last item of the TODO list. Anyway, I'm
-still considering if it's correct to move dirty pages when a task is
-migrated from a cgroup to another. Currently, dirty pages just remain in
-the original cgroup and are flushed depending on the original cgroup
-settings. That is not totally wrong... at least moving the dirty pages
-between memcgs should be optional (move_charge_at_immigrate?).
+> But I'd rather implement a new language where acquisition of
+> resources such as locks, dynamically allocated objects, and ref
+> counts are predicated in the function typing and are heavily
+> encouraged to possess defined inverses.  Then the closure of a
+> particular layer of nesting already has enough information to
+> provide release upon escape, and the compiler can easily take the
+> burden of checking for a large class of lock and resource violation.
+> 
+> And it would have to be prettier than the current languages that do
+> that, meaning operator overloading would be banned.  Although it
+> would define rational numbers, super-extended precision arithmetic,
+> imaginary numbers, quaternions and matrices as part of the spec, so
+> there would be no need to use arithmetic overrides anyway, and then
+> all the nonsensical operators could die, die, die, especially the
+> function () and logical operator overrides.
+> 
+Will you language have a lot of parentheses?
 
-Thanks for your ack and the detailed review!
-
--Andrea
+--
+			Gleb.
