@@ -1,63 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796Ab0CBAgl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Mar 2010 19:36:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37583 "EHLO smtps.tip.net.au"
+	id S1752840Ab0CBAhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Mar 2010 19:37:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30640 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694Ab0CBAgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Mar 2010 19:36:40 -0500
-Date: Tue, 2 Mar 2010 11:36:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: linux-next: build failure after merge of the ext3 tree
-Message-Id: <20100302113634.2c7f5e03.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__2_Mar_2010_11_36_34_+1100_7e.1yNpQWT63jmxs"
+	id S1751792Ab0CBAhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Mar 2010 19:37:46 -0500
+Message-ID: <4B8C5DD3.4060804@redhat.com>
+Date: Mon, 01 Mar 2010 18:37:39 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: EXT4 is ~2X as slow as XFS (593MB/s vs 304MB/s) for writes?
+References: <alpine.DEB.2.00.1002261922010.8247@p34.internal.lan> <4B8C56F8.70503@redhat.com>
+In-Reply-To: <4B8C56F8.70503@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__2_Mar_2010_11_36_34_+1100_7e.1yNpQWT63jmxs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Eric Sandeen wrote:
+> Justin Piszcz wrote:
+>> Hello,
+>>
+>> Is it possible to 'optimize' ext4 so it is as fast as XFS for writes?
+>> I see about half the performance as XFS for sequential writes.
+>>
+>> I have checked the doc and tried several options, a few of which are shown
+>> below (I have also tried the commit/journal_async/etc options but none
+>> of them get the write speeds anywhere near XFS)?
+>>
+>> Sure 'dd' is not a real benchmark, etc, etc, but with 10Gbps between 2
+>> hosts I get 550MiB/s+ on reads from EXT4 but only 100-200MiB/s write.
+>>
+>> When it was XFS I used to get 400-600MiB/s for writes for the same RAID
+>> volume.
+>>
+>> How do I 'speed' up ext4?  Is it possible?
+>>
+> 
+> FWIW I'm seeing similar things on fast storage (Fusion IO),
+> though this is under 2.6.31.  500MB/s+ for xfs, 300 for ext4.
+> 
+> Overwriting an existing file is no faster.   I don't think this
+> driver is blktraceable but I'll try a newer driver that should be I think.
 
-Hi Jan,
+FWIW, blktrace (I'm still on 2.6.31) is enlightening:
 
-After merging the ext3 tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+Total (xfs):
+ Reads Queued:           4,       16KiB	 Writes Queued:     122,567,   10,485MiB
+ Read Dispatches:        4,       16KiB	 Write Dispatches:   83,219,   10,485MiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        4,       16KiB	 Writes Completed:   83,219,   10,485MiB
+ Read Merges:            0,        0KiB	 Write Merges:       39,348,  314,804KiB
+ IO unplugs:           344        	 Timer unplugs:         338
 
-fs/jfs/jfs_xtree.c: In function 'xtSplitRoot':
-fs/jfs/jfs_xtree.c:1256: error: 'rec' undeclared (first use in this functio=
-n)
+Total (ext4):
+ Reads Queued:          14,       56KiB	 Writes Queued:       2,621K,   10,486MiB
+ Read Dispatches:       14,       56KiB	 Write Dispatches:  107,944,   10,486MiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:       14,       56KiB	 Writes Completed:  107,944,   10,486MiB
+ Read Merges:            0,        0KiB	 Write Merges:        2,513K,   10,054MiB
+ IO unplugs:         2,461        	 Timer unplugs:       2,020
 
-Caused by commit bff3333e868578990f6fe794a7cba0c74bd433ac ("dquot:
-cleanup space allocation / freeing routines").
 
-This is annoying ... this file system could be build tested on any
-architecture, so why wasn't it?
+See "Writes Queued"  See also submit_bio() calls in xfs.
 
-I have used the version of the ext3 tree from next-20100301 for today.
+ext4 doing things a block at a time is certainly giving the elevator a workout...
+I'd tend to chalk it up to that at first glance.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__2_Mar_2010_11_36_34_+1100_7e.1yNpQWT63jmxs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuMXZIACgkQjjKRsyhoI8zB6gCfQiUurYdliX+mQor1kI0inL4p
-HTwAoI/zvGpzfkiUJKTBSoG1kZx8ZGmh
-=nOQU
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Mar_2010_11_36_34_+1100_7e.1yNpQWT63jmxs--
+-Eric
