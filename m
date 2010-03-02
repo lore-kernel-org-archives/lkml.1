@@ -1,42 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854Ab0CBWP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 17:15:29 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55045 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753434Ab0CBWP2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 17:15:28 -0500
-Date: Tue, 2 Mar 2010 22:17:51 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Greg KH <gregkh@suse.de>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: Memory management woes - order 1 allocation failures
-Message-ID: <20100302221751.20addf02@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100302211603.GD11355@csn.ul.ie>
-References: <alpine.DEB.2.00.1002261042020.7719@router.home>
-	<84144f021002260917q61f7c255rf994425f3a613819@mail.gmail.com>
-	<20100301103546.DD86.A69D9226@jp.fujitsu.com>
-	<20100302172606.GA11355@csn.ul.ie>
-	<20100302183451.75d44f03@lxorguk.ukuu.org.uk>
-	<20100302191110.GB11355@csn.ul.ie>
-	<20100302192942.GA2953@suse.de>
-	<20100302211603.GD11355@csn.ul.ie>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753662Ab0CBWRK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:17:10 -0500
+Received: from tundra.namei.org ([65.99.196.166]:57717 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767Ab0CBWRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 17:17:06 -0500
+Date: Wed, 3 Mar 2010 09:17:03 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: wzt.wzt@gmail.com
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       sds@tycho.nsa.gov
+Subject: Re: [PATCH] Security: Add __init to register_security to disable
+ load a security module on runtime
+In-Reply-To: <20100226144955.GB2778@localhost.localdomain>
+Message-ID: <alpine.LRH.2.00.1003030916460.14492@tundra.namei.org>
+References: <20100226144955.GB2778@localhost.localdomain>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -#define TTY_BUFFER_PAGE		((PAGE_SIZE  - 256) / 2)
-> +#define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
+On Fri, 26 Feb 2010, wzt.wzt@gmail.com wrote:
 
-Yes agreed I missed a '-1'
+> Signed-off-by: Zhitong Wang <zhitong.wangzt@alibaba-inc.com>
+> 
 
-Alan
+
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-queue
+
+
+> ---
+>  security/security.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/security/security.c b/security/security.c
+> index 122b748..7da630a 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -110,7 +110,7 @@ int __init security_module_enable(struct security_operations *ops)
+>   * If there is already a security module registered with the kernel,
+>   * an error will be returned.  Otherwise %0 is returned on success.
+>   */
+> -int register_security(struct security_operations *ops)
+> +int __init register_security(struct security_operations *ops)
+>  {
+>  	if (verify(ops)) {
+>  		printk(KERN_DEBUG "%s could not verify "
+> -- 
+> 1.6.5.3
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
