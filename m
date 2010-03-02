@@ -1,149 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100Ab0CBXrv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:47:51 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:56631 "EHLO mail.cs.nmsu.edu"
+	id S1758094Ab0CBXs3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:48:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57722 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758020Ab0CBXrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:47:48 -0500
-Message-ID: <24ab70ff629c48b6d10ce0cf6dc5d64b.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <45a44e481003021523h4a05a9bfu9691f2c0f2f053c7@mail.gmail.com>
-References: <201003021848.o22ImLSS004394@mustang.cs.nmsu.edu>
-    <45a44e481003021523h4a05a9bfu9691f2c0f2f053c7@mail.gmail.com>
-Date: Tue, 2 Mar 2010 16:46:45 -0700
-Subject: Re: [PATCH] hid Logitech G13 Driver 0.0.5
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, pavel@ucw.cz,
-       linux-usb@vger.kernel.org, oliver@neukum.org,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com,
-       florianschandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org,
-       linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
-User-Agent: SquirrelMail/1.4.19
+	id S1757532Ab0CBXrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:47:46 -0500
+Date: Tue, 2 Mar 2010 15:46:14 -0800
+From: Greg KH <gregkh@suse.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@novell.com>,
+       Lennart Poettering <mzxreary@0pointer.de>
+Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that is
+ need load SCM
+Message-ID: <20100302234614.GA1680@suse.de>
+References: <20100302230933.GA32287@kroah.com>
+ <1267572541-410-58-git-send-email-gregkh@suse.de>
+ <20100302233929.GB13739@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302233929.GB13739@srcf.ucam.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 02, 2010 at 11:39:29PM +0000, Matthew Garrett wrote:
+> On Tue, Mar 02, 2010 at 03:28:57PM -0800, Greg Kroah-Hartman wrote:
+> > From: Lee, Chun-Yi <jlee@novell.com>
+> > 
+> > Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
+> > those netbook will load the SCM (windows app) to disable the original
+> > Wlan/Bluetooth control by BIOS when user press fn key, then control
+> > Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
+> > cann't on/off 3G module on those 3G netbook.
+> > On Linux, msi-laptop driver will do the same thing to disable the
+> > original BIOS control, then might need use HAL or other userland
+> > application to do the software control that simulate with SCM.
+> > e.g. MSI N034 netbook
+> 
+> How does the function key event get reported to userland? This should 
+> generate KEY_RFKILL and then just go through rfkill-input.
 
-Jaya Kumar wrote:
-> On Wed, Mar 3, 2010 at 2:48 AM, Rick L. Vinyard Jr.
-> <rvinyard@cs.nmsu.edu> wrote:
->> [PATCH] hid Logitech G13 Driver 0.0.5
->
-> Hi Rick,
->
-> Thanks for posting this. It has improved a lot.
->
->>
->> This driver relies on two patches:
->>  1. Bruno Prémont's [PATCH 2/3] hid: add suspend/resume hooks for hid
->> drivers
->>  2. [PATCH] Add sysfs support for fbdefio delay
->
-> Please help me understand in what way does this patch have to have the
-> global userspace exposure of defio delay in sysfs support. If that
-> sysfs patch was not accepted, I don't see this patch affected
-> negatively.
->
+I'm pretty sure that Joey is using rfkill here, but I didn't realize
+that it also supported an input device.
 
-It's in the deferred I/O struct definition with members delay_min and
-delay_max.
+This code is just detecting the keypress, and acting on it, I think,
+right Joey?  Isn't that the way this is supposed to work?  Or is it
+supposed to use rfkill-input, which then userspace turns around and
+calls the other rfkill interface to then disable the wireless?  If so, I
+think a number of laptop drivers need to be changed to do this.
 
-static struct fb_deferred_io g13_fb_defio = {
-	.delay = HZ / G13FB_UPDATE_RATE_DEFAULT,
-	.delay_min = HZ / 20,
-	.delay_max = HZ * 3,
-	.deferred_io = g13_fb_deferred_io,
-};
+thanks,
 
-
->> However, the driver does use the HID feature reports extensively to
->> control the backlight, LEDs, et. al.
->
-> Ok.
->
->> - Removed the update rate sysfs attribute as it is in the second patch
->> above.
->
-> Why? There is no consensus that exposing defio delay for _all_ fb
-> drivers is a good idea. I would rather you left that in here for now.
->
-
-If the consensus is that defio delay will be exposed on a driver by driver
-basis I can paste that back in here and modify the userspace g13 library
-accordingly.
-
->> +/*
->> + * This is a default logo to be loaded upon driver initialization
->> + * replacing the default Logitech G13 image loaded on device
->> + * initialization. This is to provide the user a cue that the
->> + * Linux driver is loaded and ready.
->> + *
->> + * This logo contains the text G13 in the center with two penguins
->> + * on each side of the text. The penguins are a 33x40 rendition of
->> + * the default framebuffer 80x80 monochrome image scaled down and
->> + * cleaned up to retain something that looks a little better than
->> + * a simple scaling.
->> + *
->> + * This logo is a simple xbm image created in GIMP and exported.
->> + * To view the image copy the following two #defines plus the
->> + * g13_lcd_bits to an ASCII text file and save with extension
->> + * .xbm, then open with GIMP or any other graphical editor
->> + * such as eog that recognizes the .xbm format.
->> + */
-> ...
->> +static unsigned char g13_lcd_bits[] = {
->> + 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
->> 0x00,
->
-> I think you'll agree above is not an elegant solution.
->
-
-I could make it a config option.
-
->> +
->> +static DEVICE_ATTR(rgb, 0666, g13_rgb_show, g13_rgb_store);
->
-> Reading above code, it looks like this new userspace sysfs attribute
-> is for backlight control. Could that be better exposed using the
-> existing backlight class?
->
-
-I looked at the backlight class and it didn't seem to be a very good fit.
-
-/* This structure defines all the properties of a backlight */
-struct backlight_properties {
-	/* Current User requested brightness (0 - max_brightness) */
-	int brightness;
-	/* Maximal value for brightness (read-only) */
-	int max_brightness;
-	/* Current FB Power mode (0: full on, 1..3: power saving
-	   modes; 4: full off), see FB_BLANK_XXX */
-	int power;
-	/* FB Blanking active? (values as for power) */
-	/* Due to be removed, please use (state & BL_CORE_FBBLANK) */
-	int fb_blank;
-	/* Flags used to signal drivers of state changes */
-	/* Upper 4 bits are reserved for driver internal use */
-	unsigned int state;
-};
-
-The g13's backlight doesn't support any of these properties. All you can
-set is an rgb value on the g13; no power modes, no brightness, etc. I
-could add a brightness attribute by scaling the rgb values, but I would
-prefer to do that from userspace rather than the driver since it's not
-supported in the device itself.
-
-And, we'd still have to have the rgb attribute since the backlight class
-doesn't have color.
-
--- 
-
-Rick
-
+greg k-h
