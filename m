@@ -1,57 +1,261 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094Ab0CBXs3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:48:29 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57722 "EHLO mx2.suse.de"
+	id S1758026Ab0CBXrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:47:48 -0500
+Received: from kroah.org ([198.145.64.141]:51636 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757532Ab0CBXrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:47:46 -0500
-Date: Tue, 2 Mar 2010 15:46:14 -0800
-From: Greg KH <gregkh@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@novell.com>,
-       Lennart Poettering <mzxreary@0pointer.de>
-Subject: Re: [PATCH 58/62] msi-laptop: Support some MSI 3G netbook that is
- need load SCM
-Message-ID: <20100302234614.GA1680@suse.de>
-References: <20100302230933.GA32287@kroah.com>
- <1267572541-410-58-git-send-email-gregkh@suse.de>
- <20100302233929.GB13739@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100302233929.GB13739@srcf.ucam.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755382Ab0CBXhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:37:05 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 26/36] sdio_uart: Use kfifo instead of the messy circ stuff
+Date: Tue,  2 Mar 2010 15:36:33 -0800
+Message-Id: <1267573003-782-26-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.7.0.1
+In-Reply-To: <20100302230956.GC32287@kroah.com>
+References: <20100302230956.GC32287@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 11:39:29PM +0000, Matthew Garrett wrote:
-> On Tue, Mar 02, 2010 at 03:28:57PM -0800, Greg Kroah-Hartman wrote:
-> > From: Lee, Chun-Yi <jlee@novell.com>
-> > 
-> > Some MSI 3G netbook only have one fn key to control Wlan/Bluetooth/3G,
-> > those netbook will load the SCM (windows app) to disable the original
-> > Wlan/Bluetooth control by BIOS when user press fn key, then control
-> > Wlan/Bluetooth/3G by SCM (software control by OS). Without SCM, user
-> > cann't on/off 3G module on those 3G netbook.
-> > On Linux, msi-laptop driver will do the same thing to disable the
-> > original BIOS control, then might need use HAL or other userland
-> > application to do the software control that simulate with SCM.
-> > e.g. MSI N034 netbook
-> 
-> How does the function key event get reported to userland? This should 
-> generate KEY_RFKILL and then just go through rfkill-input.
+From: Alan Cox <alan@linux.intel.com>
 
-I'm pretty sure that Joey is using rfkill here, but I didn't realize
-that it also supported an input device.
+Revised patch to use the new kfifo API. This replaces the one that was dropped
+from -next due to collisions with the kfifo API changes.
 
-This code is just detecting the keypress, and acting on it, I think,
-right Joey?  Isn't that the way this is supposed to work?  Or is it
-supposed to use rfkill-input, which then userspace turns around and
-calls the other rfkill interface to then disable the wireless?  If so, I
-think a number of laptop drivers need to be changed to do this.
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/mmc/card/sdio_uart.c |   93 +++++++++++++----------------------------
+ 1 files changed, 30 insertions(+), 63 deletions(-)
 
-thanks,
+diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
+index f537555..3fab78b 100644
+--- a/drivers/mmc/card/sdio_uart.c
++++ b/drivers/mmc/card/sdio_uart.c
+@@ -37,6 +37,7 @@
+ #include <linux/gfp.h>
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
++#include <linux/kfifo.h>
+ 
+ #include <linux/mmc/core.h>
+ #include <linux/mmc/card.h>
+@@ -47,19 +48,9 @@
+ #define UART_NR		8	/* Number of UARTs this driver can handle */
+ 
+ 
+-#define UART_XMIT_SIZE	PAGE_SIZE
++#define FIFO_SIZE	PAGE_SIZE
+ #define WAKEUP_CHARS	256
+ 
+-#define circ_empty(circ)	((circ)->head == (circ)->tail)
+-#define circ_clear(circ)	((circ)->head = (circ)->tail = 0)
+-
+-#define circ_chars_pending(circ) \
+-		(CIRC_CNT((circ)->head, (circ)->tail, UART_XMIT_SIZE))
+-
+-#define circ_chars_free(circ) \
+-		(CIRC_SPACE((circ)->head, (circ)->tail, UART_XMIT_SIZE))
+-
+-
+ struct uart_icount {
+ 	__u32	cts;
+ 	__u32	dsr;
+@@ -82,7 +73,7 @@ struct sdio_uart_port {
+ 	struct mutex		func_lock;
+ 	struct task_struct	*in_sdio_uart_irq;
+ 	unsigned int		regs_offset;
+-	struct circ_buf		xmit;
++	struct kfifo		xmit_fifo;
+ 	spinlock_t		write_lock;
+ 	struct uart_icount	icount;
+ 	unsigned int		uartclk;
+@@ -105,6 +96,8 @@ static int sdio_uart_add_port(struct sdio_uart_port *port)
+ 	kref_init(&port->kref);
+ 	mutex_init(&port->func_lock);
+ 	spin_lock_init(&port->write_lock);
++	if (kfifo_alloc(&port->xmit_fifo, FIFO_SIZE, GFP_KERNEL))
++		return -ENOMEM;
+ 
+ 	spin_lock(&sdio_uart_table_lock);
+ 	for (index = 0; index < UART_NR; index++) {
+@@ -140,6 +133,7 @@ static void sdio_uart_port_destroy(struct kref *kref)
+ {
+ 	struct sdio_uart_port *port =
+ 		container_of(kref, struct sdio_uart_port, kref);
++	kfifo_free(&port->xmit_fifo);
+ 	kfree(port);
+ }
+ 
+@@ -456,9 +450,11 @@ static void sdio_uart_receive_chars(struct sdio_uart_port *port,
+ 
+ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+ {
+-	struct circ_buf *xmit = &port->xmit;
++	struct kfifo *xmit = &port->xmit_fifo;
+ 	int count;
+ 	struct tty_struct *tty;
++	u8 iobuf[16];
++	int len;
+ 
+ 	if (port->x_char) {
+ 		sdio_out(port, UART_TX, port->x_char);
+@@ -469,27 +465,25 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+ 
+ 	tty = tty_port_tty_get(&port->port);
+ 
+-	if (tty == NULL || circ_empty(xmit) ||
++	if (tty == NULL || !kfifo_len(xmit) ||
+ 				tty->stopped || tty->hw_stopped) {
+ 		sdio_uart_stop_tx(port);
+ 		tty_kref_put(tty);
+ 		return;
+ 	}
+ 
+-	count = 16;
+-	do {
+-		sdio_out(port, UART_TX, xmit->buf[xmit->tail]);
+-		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
++	len = kfifo_out_locked(xmit, iobuf, 16, &port->write_lock);
++	for (count = 0; count < len; count++) {
++		sdio_out(port, UART_TX, iobuf[count]);
+ 		port->icount.tx++;
+-		if (circ_empty(xmit))
+-			break;
+-	} while (--count > 0);
++	}
+ 
+-	if (circ_chars_pending(xmit) < WAKEUP_CHARS)
++	len = kfifo_len(xmit);
++	if (len < WAKEUP_CHARS) {
+ 		tty_wakeup(tty);
+-
+-	if (circ_empty(xmit))
+-		sdio_uart_stop_tx(port);
++		if (len == 0)
++			sdio_uart_stop_tx(port);
++	}
+ 	tty_kref_put(tty);
+ }
+ 
+@@ -632,7 +626,6 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port =
+ 			container_of(tport, struct sdio_uart_port, port);
+-	unsigned long page;
+ 	int ret;
+ 
+ 	/*
+@@ -641,22 +634,17 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	 */
+ 	set_bit(TTY_IO_ERROR, &tty->flags);
+ 
+-	/* Initialise and allocate the transmit buffer. */
+-	page = __get_free_page(GFP_KERNEL);
+-	if (!page)
+-		return -ENOMEM;
+-	port->xmit.buf = (unsigned char *)page;
+-	circ_clear(&port->xmit);
++	kfifo_reset(&port->xmit_fifo);
+ 
+ 	ret = sdio_uart_claim_func(port);
+ 	if (ret)
+-		goto err1;
++		return ret;
+ 	ret = sdio_enable_func(port->func);
+ 	if (ret)
+-		goto err2;
++		goto err1;
+ 	ret = sdio_claim_irq(port->func, sdio_uart_irq);
+ 	if (ret)
+-		goto err3;
++		goto err2;
+ 
+ 	/*
+ 	 * Clear the FIFO buffers and disable them.
+@@ -700,12 +688,10 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	sdio_uart_release_func(port);
+ 	return 0;
+ 
+-err3:
+-	sdio_disable_func(port->func);
+ err2:
+-	sdio_uart_release_func(port);
++	sdio_disable_func(port->func);
+ err1:
+-	free_page((unsigned long)port->xmit.buf);
++	sdio_uart_release_func(port);
+ 	return ret;
+ }
+ 
+@@ -727,7 +713,7 @@ static void sdio_uart_shutdown(struct tty_port *tport)
+ 
+ 	ret = sdio_uart_claim_func(port);
+ 	if (ret)
+-		goto skip;
++		return;
+ 
+ 	sdio_uart_stop_rx(port);
+ 
+@@ -749,10 +735,6 @@ static void sdio_uart_shutdown(struct tty_port *tport)
+ 	sdio_disable_func(port->func);
+ 
+ 	sdio_uart_release_func(port);
+-
+-skip:
+-	/* Free the transmit buffer page. */
+-	free_page((unsigned long)port->xmit.buf);
+ }
+ 
+ /**
+@@ -822,27 +804,12 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
+ 			   int count)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	struct circ_buf *circ = &port->xmit;
+-	int c, ret = 0;
++	int ret;
+ 
+ 	if (!port->func)
+ 		return -ENODEV;
+ 
+-	spin_lock(&port->write_lock);
+-	while (1) {
+-		c = CIRC_SPACE_TO_END(circ->head, circ->tail, UART_XMIT_SIZE);
+-		if (count < c)
+-			c = count;
+-		if (c <= 0)
+-			break;
+-		memcpy(circ->buf + circ->head, buf, c);
+-		circ->head = (circ->head + c) & (UART_XMIT_SIZE - 1);
+-		buf += c;
+-		count -= c;
+-		ret += c;
+-	}
+-	spin_unlock(&port->write_lock);
+-
++	ret = kfifo_in_locked(&port->xmit_fifo, buf, count, &port->write_lock);
+ 	if (!(port->ier & UART_IER_THRI)) {
+ 		int err = sdio_uart_claim_func(port);
+ 		if (!err) {
+@@ -859,13 +826,13 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
+ static int sdio_uart_write_room(struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	return port ? circ_chars_free(&port->xmit) : 0;
++	return FIFO_SIZE - kfifo_len(&port->xmit_fifo);
+ }
+ 
+ static int sdio_uart_chars_in_buffer(struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	return port ? circ_chars_pending(&port->xmit) : 0;
++	return kfifo_len(&port->xmit_fifo);
+ }
+ 
+ static void sdio_uart_send_xchar(struct tty_struct *tty, char ch)
+-- 
+1.7.0.1
 
-greg k-h
