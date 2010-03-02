@@ -1,152 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753513Ab0CBVyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 16:54:21 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:27843 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753429Ab0CBVyT (ORCPT
+	id S1753429Ab0CBWAh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 17:00:37 -0500
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:43487 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752562Ab0CBWAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 16:54:19 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] staging/dt3155: remove unused global "registers"
-Date: Tue, 2 Mar 2010 14:54:15 -0700
-Cc: greg@kroah.com, ss@aao.gov.au
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201003021454.15651.hartleys@visionengravers.com>
+	Tue, 2 Mar 2010 17:00:35 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=UTF-8
+Date: Tue, 02 Mar 2010 23:00:19 +0100
+From: Michael Thayer <Michael.Thayer@Sun.COM>
+Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
+ emulation to the Lifebook driver
+In-reply-to: <20100302212812.GA13499@core.coreip.homeip.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <1267567219.2441.12.camel@michael-laptop>
+Organization: Sun Microsystems GmbH
+X-Mailer: Evolution 2.28.1
+References: <1266923615.3602.85.camel@michael-laptop>
+ <20100223175852.GA11301@core.coreip.homeip.net>
+ <1266958533.3602.128.camel@michael-laptop>
+ <20100224100206.GA5598@core.coreip.homeip.net>
+ <1267011989.2831.30.camel@michael-laptop>
+ <20100225101705.GF10823@core.coreip.homeip.net>
+ <1267562688.2441.7.camel@michael-laptop>
+ <20100302212812.GA13499@core.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes all the unused globally exposed copies of the boards
-registers. The others will be removed in a future patch.
+Le mardi 02 mars 2010 à 13:28 -0800, Dmitry Torokhov a écrit :
+> On Tue, Mar 02, 2010 at 09:44:48PM +0100, Michael Thayer wrote:
+> > it still provides a reasonable user experience until the user has installed our
+> > guest drivers.
+> 
+> It is your call but I would much rather if you worked on fixeng evdev to
+> work with your virtual device rather than having to install a new X
+> driver and going through the hoops trying to detect which one should be
+> used on a particular box. At least on Linux...
+That wouldn't really help us much here, as we are talking about distributions
+shipping X.Org Server 1.4 and earlier, and those distributions are no longer
+going to get that sort of update (in those cases in which they are still
+getting updates at all).  Legacy support if you like.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Greg Kroah-Hartman <greg@kroah.com>
-Cc: Scott Smedley <ss@aao.gov.au>
+Thanks again,
 
----
+Michael
+-- 
+Sun Microsystems GmbH        Michael Thayer
+Werkstrasse 24               VirtualBox engineer
+71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
 
-diff --git a/drivers/staging/dt3155/dt3155_io.c b/drivers/staging/dt3155/dt3155_io.c
-index 6b9c685..fb3a9d6 100644
---- a/drivers/staging/dt3155/dt3155_io.c
-+++ b/drivers/staging/dt3155/dt3155_io.c
-@@ -25,32 +25,17 @@
- #include "dt3155_io.h"
- #include "dt3155_drv.h"
- 
--
- /****** local copies of board's 32 bit registers ******/
- u32 even_dma_start_r;	/*  bit 0 should always be 0 */
- u32 odd_dma_start_r;	/*               .. */
- u32 even_dma_stride_r;	/*  bits 0&1 should always be 0 */
- u32 odd_dma_stride_r;	/*               .. */
--u32 even_pixel_fmt_r;
--u32 odd_pixel_fmt_r;
- 
--FIFO_TRIGGER_R		fifo_trigger_r;
--XFER_MODE_R		xfer_mode_r;
- CSR1_R			csr1_r;
--RETRY_WAIT_CNT_R	retry_wait_cnt_r;
- INT_CSR_R		int_csr_r;
- 
--u32 even_fld_mask_r;
--u32 odd_fld_mask_r;
--
--MASK_LENGTH_R		mask_length_r;
--FIFO_FLAG_CNT_R		fifo_flag_cnt_r;
--IIC_CLK_DUR_R		iic_clk_dur_r;
- IIC_CSR1_R		iic_csr1_r;
- IIC_CSR2_R		iic_csr2_r;
--DMA_UPPER_LMT_R		even_dma_upper_lmt_r;
--DMA_UPPER_LMT_R		odd_dma_upper_lmt_r;
--
- 
- 
- /******** local copies of board's 8 bit I2C registers ******/
-@@ -58,17 +43,6 @@ I2C_CSR2 i2c_csr2;
- I2C_EVEN_CSR i2c_even_csr;
- I2C_ODD_CSR i2c_odd_csr;
- I2C_CONFIG i2c_config;
--u8 i2c_dt_id;
--u8 i2c_x_clip_start;
--u8 i2c_y_clip_start;
--u8 i2c_x_clip_end;
--u8 i2c_y_clip_end;
--u8 i2c_ad_addr;
--u8 i2c_ad_lut;
--I2C_AD_CMD i2c_ad_cmd;
--u8 i2c_dig_out;
--u8 i2c_pm_lut_addr;
--u8 i2c_pm_lut_data;
- 
- /*
-  * wait_ibsyclr()
-diff --git a/drivers/staging/dt3155/dt3155_io.h b/drivers/staging/dt3155/dt3155_io.h
-index d1a2510..e8c3328 100644
---- a/drivers/staging/dt3155/dt3155_io.h
-+++ b/drivers/staging/dt3155/dt3155_io.h
-@@ -210,7 +210,6 @@ typedef union dma_upper_lmt_tag   {
- 	} fld;
- } DMA_UPPER_LMT_R;
- 
--
- /*
-  * Global declarations of local copies of boards' 32 bit registers
-  */
-@@ -218,26 +217,12 @@ extern u32 even_dma_start_r;		/*  bit 0 should always be 0 */
- extern u32 odd_dma_start_r;		/*               ..          */
- extern u32 even_dma_stride_r;	/*  bits 0&1 should always be 0 */
- extern u32 odd_dma_stride_r;		/*               ..             */
--extern u32 even_pixel_fmt_r;
--extern u32 odd_pixel_fmt_r;
- 
--extern FIFO_TRIGGER_R		fifo_trigger_r;
--extern XFER_MODE_R		xfer_mode_r;
- extern CSR1_R			csr1_r;
--extern RETRY_WAIT_CNT_R		retry_wait_cnt_r;
- extern INT_CSR_R		int_csr_r;
- 
--extern u32 even_fld_mask_r;
--extern u32 odd_fld_mask_r;
--
--extern MASK_LENGTH_R		mask_length_r;
--extern FIFO_FLAG_CNT_R		fifo_flag_cnt_r;
--extern IIC_CLK_DUR_R		iic_clk_dur_r;
- extern IIC_CSR1_R		iic_csr1_r;
- extern IIC_CSR2_R		iic_csr2_r;
--extern DMA_UPPER_LMT_R		even_dma_upper_lmt_r;
--extern DMA_UPPER_LMT_R		odd_dma_upper_lmt_r;
--
- 
- 
- /***************** 8 bit I2C register globals  ***********/
-@@ -329,24 +314,12 @@ typedef union i2c_ad_cmd_tag {
- 	} bt252_iout1;
- } I2C_AD_CMD;
- 
--
- /***** Global declarations of local copies of boards' 8 bit I2C registers ***/
- 
- extern I2C_CSR2			i2c_csr2;
- extern I2C_EVEN_CSR		i2c_even_csr;
- extern I2C_ODD_CSR		i2c_odd_csr;
- extern I2C_CONFIG		i2c_config;
--extern u8			i2c_dt_id;
--extern u8			i2c_x_clip_start;
--extern u8			i2c_y_clip_start;
--extern u8			i2c_x_clip_end;
--extern u8			i2c_y_clip_end;
--extern u8			i2c_ad_addr;
--extern u8			i2c_ad_lut;
--extern I2C_AD_CMD		i2c_ad_cmd;
--extern u8			i2c_dig_out;
--extern u8			i2c_pm_lut_addr;
--extern u8			i2c_pm_lut_data;
- 
- /* Functions for Global use */
- 
+Sitz der Gesellschaft:
+Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
+Amtsgericht Muenchen: HRB 161028
+Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
+Vorsitzender des Aufsichtsrates: Martin Haering
+
