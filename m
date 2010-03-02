@@ -1,159 +1,184 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368Ab0CBVuo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 16:50:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35162 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752834Ab0CBVum (ORCPT
+	id S1753319Ab0CBVuX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 16:50:23 -0500
+Received: from trinity.develer.com ([83.149.158.210]:55792 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224Ab0CBVuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 16:50:42 -0500
-Date: Tue, 2 Mar 2010 13:50:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: werner@guyane.dyn-o-saur.com
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.33 problems
-Message-Id: <20100302135032.e3d11bbf.akpm@linux-foundation.org>
-In-Reply-To: <1267290551.13148@guyane.dyn-o-saur.com>
-References: <1267290551.13148@guyane.dyn-o-saur.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Mar 2010 16:50:21 -0500
+Date: Tue, 2 Mar 2010 22:50:16 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 2/3] memcg: dirty pages accounting and limiting
+ infrastructure
+Message-ID: <20100302215016.GA2369@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-3-git-send-email-arighi@develer.com>
+ <20100302130223.GF3212@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302130223.GF3212@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Feb 2010 14:09:11 -0300 (GFT)
-werner@guyane.dyn-o-saur.com wrote:
+On Tue, Mar 02, 2010 at 06:32:24PM +0530, Balbir Singh wrote:
 
-> For better error searching / correction, I add below the whole syslog.
-> 
-> This is refered to 2.6.33  published (without patchs)
-> 
-> This are different errors.
-> 
-> The most of them exists since 2.6.33-rc1 or appr. -rc5.
-> 
-> I posted here already the whole syslog.bz2 but nobody toke care.
-> 
-> the boot_vga error occurs only after I start the grafics mode.  It's the mainboard's embedded nvidia grafics. I use the vesa framebuffer driver of X 1.8
-> 
-> the int6_init error occurs also in text mode. I think it have something to do with internet.
-> 
-> Also the printk errors occur only when start the computer in the grafics mode, but not when starting it in the text mode.
-> 
-> Below is also the kernel config. Its the same like since -rc7 (but the errors are also the same)
-> 
-> 
+[snip]
 
-Thanks.
+> > +extern long mem_cgroup_dirty_ratio(void);
+> > +extern unsigned long mem_cgroup_dirty_bytes(void);
+> > +extern long mem_cgroup_dirty_background_ratio(void);
+> > +extern unsigned long mem_cgroup_dirty_background_bytes(void);
+> > +
+> > +extern s64 mem_cgroup_page_stat(enum mem_cgroup_page_stat_item item);
+> > +
+> 
+> Docstyle comments for each function would be appreciated
 
->
-> ...
->
-> Feb 27 13:43:07 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> Feb 27 13:43:07 werner kernel: Pid: 5314, comm: modprobe Tainted: G         C 2.6.33 #1
-> Feb 27 13:43:07 werner kernel: Call Trace:
-> Feb 27 13:43:07 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> Feb 27 13:43:07 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> Feb 27 13:43:07 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> Feb 27 13:43:07 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> Feb 27 13:43:07 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> Feb 27 13:43:07 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> Feb 27 13:43:07 werner kernel:  [<fed105af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> Feb 27 13:43:07 werner kernel:  [<fd269000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> Feb 27 13:43:07 werner kernel:  [<fd2692ec>] addrconf_init+0x3b/0x11b [ipv6]
-> Feb 27 13:43:07 werner kernel:  [<fd269195>] inet6_init+0x195/0x2a2 [ipv6]
-> Feb 27 13:43:07 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> Feb 27 13:43:07 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> Feb 27 13:43:07 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> Feb 27 13:43:19 werner kdm_greet[5382]: Can't open default user face
-> Feb 27 13:44:24 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> Feb 27 13:44:24 werner kernel: Pid: 5737, comm: modprobe Tainted: G         C 2.6.33 #1
-> Feb 27 13:44:24 werner kernel: Call Trace:
-> Feb 27 13:44:24 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> Feb 27 13:44:24 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> Feb 27 13:44:24 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> Feb 27 13:44:24 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> Feb 27 13:44:24 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> Feb 27 13:44:24 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> Feb 27 13:44:24 werner kernel:  [<fed105af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> Feb 27 13:44:24 werner kernel:  [<f91bf000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> Feb 27 13:44:24 werner kernel:  [<f91bf2ec>] addrconf_init+0x3b/0x11b [ipv6]
-> Feb 27 13:44:24 werner kernel:  [<f91bf195>] inet6_init+0x195/0x2a2 [ipv6]
-> Feb 27 13:44:24 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> Feb 27 13:44:24 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> Feb 27 13:44:24 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> Feb 27 13:44:27 werner kernel: PERCPU: allocation failed, size=2048 align=8, failed to allocate new chunk
-> Feb 27 13:44:27 werner kernel: Pid: 5772, comm: modprobe Tainted: G         C 2.6.33 #1
-> Feb 27 13:44:27 werner kernel: Call Trace:
-> Feb 27 13:44:27 werner kernel:  [<c1c682ca>] ? printk+0x14/0x16
-> Feb 27 13:44:27 werner kernel:  [<c10bdfa3>] pcpu_alloc+0x6ba/0x73b
-> Feb 27 13:44:27 werner kernel:  [<c10bb0be>] ? get_slab+0x8/0x50
-> Feb 27 13:44:27 werner kernel:  [<c1b7283d>] ? neigh_parms_alloc+0x55/0xd1
-> Feb 27 13:44:27 werner kernel:  [<c10be047>] __alloc_percpu+0xf/0x14
-> Feb 27 13:44:27 werner kernel:  [<c1bb26cb>] snmp_mib_init+0x22/0x5a
-> Feb 27 13:44:27 werner kernel:  [<fee155af>] ipv6_add_dev+0x191/0x30b [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<f9185000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<f91852ec>] addrconf_init+0x3b/0x11b [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<f9185195>] inet6_init+0x195/0x2a2 [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<c1001143>] do_one_initcall+0x51/0x13f
-> Feb 27 13:44:27 werner kernel:  [<c1066570>] sys_init_module+0xac/0x1e0
-> Feb 27 13:44:27 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
+OK.
 
-Methinks Tejun's stuff broke, and then triggered a bug in a
-hitherto-untested networking error recovery codepath.
+> >  /*
+> >   * The memory controller data structure. The memory controller controls both
+> >   * page cache and RSS per cgroup. We would eventually like to provide
+> > @@ -205,6 +199,9 @@ struct mem_cgroup {
+> > 
+> >  	unsigned int	swappiness;
+> > 
+> > +	/* control memory cgroup dirty pages */
+> > +	unsigned long dirty_param[MEM_CGROUP_DIRTY_NPARAMS];
+> > +
+> 
+> Could you mention what protects this field, is it the reclaim_lock?
+
+Yes, it is.
+
+Actually, we could avoid the lock completely for dirty_param[], using a
+validation routine to check for incoherencies after any read with
+get_dirty_param(), and retry if the validation fails. In practice, the
+same approach we're using to read global vm_dirty_ratio, vm_dirty_bytes,
+etc...
+
+Considering that those values are rarely written and read often we can
+protect them in a RCU way.
 
 
-> Feb 27 13:44:27 werner kernel: BUG: unable to handle kernel paging request at fed348d4
-> Feb 27 13:44:27 werner kernel: IP: [<c1b68700>] unregister_pernet_operations+0x21/0x93
-> Feb 27 13:44:27 werner kernel: *pde = 360fc067 *pte = 00000000 
-> Feb 27 13:44:27 werner kernel: Oops: 0002 [#1] PREEMPT SMP 
-> Feb 27 13:44:27 werner kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:0d.0/boot_vga
-> Feb 27 13:44:27 werner kernel: Modules linked in: ipv6(+) bnep rfcomm hidp l2cap bluetooth snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device rt2860sta(C) uvcvideo usbvideo lp snd_hda_codec_analog rtc_cmos rtc_core rtc_lib rtl8187 tpm_tis tpm tpm_bios mac80211 led_class snd_hda_intel snd_hda_codec k8temp hwmon 8139too cfg80211 snd_hwdep snd_pcm rfkill snd_timer snd soundcore snd_page_alloc forcedeth i2c_nforce2
-> Feb 27 13:44:27 werner kernel: 
-> Feb 27 13:44:27 werner kernel: Pid: 5772, comm: modprobe Tainted: G         C 2.6.33 #1 M2N-VM DH/System Product Name
-> Feb 27 13:44:27 werner kernel: EIP: 0060:[<c1b68700>] EFLAGS: 00010246 CPU: 0
-> Feb 27 13:44:27 werner kernel: EIP is at unregister_pernet_operations+0x21/0x93
-> Feb 27 13:44:27 werner kernel: EAX: fed348d4 EBX: fee39850 ECX: f0d7bf58 EDX: fee398d4
-> Feb 27 13:44:27 werner kernel: ESI: fee39850 EDI: f9185000 EBP: f0d7bf6c ESP: f0d7bf58
-> Feb 27 13:44:27 werner kernel:  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> Feb 27 13:44:27 werner kernel: Process modprobe (pid: 5772, ti=f0d7a000 task=f0ccb660 task.ti=f0d7a000)
-> Feb 27 13:44:27 werner kernel: Stack:
-> Feb 27 13:44:27 werner kernel:  f0d7bf58 f0d7bf58 fee39850 00000000 f9185000 f0d7bf78 c1b687c6 fffffff4
-> Feb 27 13:44:27 werner kernel: <0> f0d7bf84 f9185257 fee3b834 f0d7bf9c c1001143 00000000 fee3b834 00000000
-> Feb 27 13:44:27 werner kernel: <0> 0805e188 f0d7bfac c1066570 b7516008 0805e138 f0d7a000 c1c6acec b7516008
-> Feb 27 13:44:27 werner kernel: Call Trace:
-> Feb 27 13:44:27 werner kernel:  [<f9185000>] ? inet6_init+0x0/0x2a2 [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<c1b687c6>] ? unregister_pernet_subsys+0x1c/0x29
-> Feb 27 13:44:27 werner kernel:  [<f9185257>] ? inet6_init+0x257/0x2a2 [ipv6]
-> Feb 27 13:44:27 werner kernel:  [<c1001143>] ? do_one_initcall+0x51/0x13f
-> Feb 27 13:44:27 werner kernel:  [<c1066570>] ? sys_init_module+0xac/0x1e0
-> Feb 27 13:44:27 werner kernel:  [<c1c6acec>] ? syscall_call+0x7/0xb
-> Feb 27 13:44:27 werner kernel: Code: c2 75 e5 e8 78 0a 51 ff eb 97 55 89 e5 57 56 53 83 ec 08 e8 03 b2 49 ff 89 c6 8d 4d ec 89 4d ec 89 4d f0 8b 10 8b 40 04 89 42 04 <89> 10 c7 06 00 01 10 00 c7 46 04 00 02 20 00 a1 b8 b7 10 c2 8d 
-> Feb 27 13:44:27 werner kernel: EIP: [<c1b68700>] unregister_pernet_operations+0x21/0x93 SS:ESP 0068:f0d7bf58
-> Feb 27 13:44:27 werner kernel: CR2: 00000000fed348d4
-> Feb 27 13:44:27 werner kernel: ---[ end trace 120df121853896c9 ]---
-> Feb 27 13:45:39 werner kernel: BUG: Bad page map in process kio_http  pte:fee39850 pmd:ace05067
-> Feb 27 13:45:39 werner kernel: addr:b6635000 vm_flags:08000075 anon_vma:(null) mapping:f20f434c index:5d
-> Feb 27 13:45:39 werner kernel: vma->vm_ops->fault: filemap_fault+0x0/0x2eb
-> Feb 27 13:45:39 werner kernel: vma->vm_file->f_op->mmap: generic_file_mmap+0x0/0x44
-> Feb 27 13:45:39 werner kernel: Pid: 5764, comm: kio_http Tainted: G      D  C 2.6.33 #1
-> Feb 27 13:45:39 werner kernel: Call Trace:
-> Feb 27 13:45:39 werner kernel:  [<c10a47c7>] print_bad_pte+0x17e/0x190
-> Feb 27 13:45:39 werner kernel:  [<c10a5782>] unmap_vmas+0x444/0x676
-> Feb 27 13:45:39 werner kernel:  [<c10a461d>] ? __do_fault+0x3bd/0x3e9
-> Feb 27 13:45:39 werner kernel:  [<c10988b9>] ? ____pagevec_lru_add+0x101/0x10f
-> Feb 27 13:45:39 werner kernel:  [<c10a9344>] exit_mmap+0xab/0x13a
-> Feb 27 13:45:39 werner kernel:  [<c1038cc1>] mmput+0x3a/0xb0
-> Feb 27 13:45:39 werner kernel:  [<c103c669>] exit_mm+0xec/0xf4
-> Feb 27 13:45:39 werner kernel:  [<c1c6a525>] ? _raw_spin_lock_irq+0xb/0x34
-> Feb 27 13:45:39 werner kernel:  [<c1c6a855>] ? _raw_spin_unlock_irq+0x8/0x27
-> Feb 27 13:45:39 werner kernel:  [<c103dbc1>] do_exit+0x1ad/0x605
-> Feb 27 13:45:39 werner kernel:  [<c105554c>] ? up_read+0x8/0x18
-> Feb 27 13:45:39 werner kernel:  [<c103e080>] do_group_exit+0x67/0x8a
-> Feb 27 13:45:39 werner kernel:  [<c103e0bb>] sys_exit_group+0x18/0x1c
-> Feb 27 13:45:39 werner kernel:  [<c1c6acec>] syscall_call+0x7/0xb
-> 
+> BTW, is unsigned long sufficient to represent dirty_param(s)?
 
+Yes, I think. It's the same type used for the equivalent global values.
+
+> 
+> >  	/* set when res.limit == memsw.limit */
+> >  	bool		memsw_is_minimum;
+> > 
+> > @@ -1021,6 +1018,164 @@ static unsigned int get_swappiness(struct mem_cgroup *memcg)
+> >  	return swappiness;
+> >  }
+> > 
+> > +static unsigned long get_dirty_param(struct mem_cgroup *memcg,
+> > +			enum mem_cgroup_dirty_param idx)
+> > +{
+> > +	unsigned long ret;
+> > +
+> > +	VM_BUG_ON(idx >= MEM_CGROUP_DIRTY_NPARAMS);
+> > +	spin_lock(&memcg->reclaim_param_lock);
+> > +	ret = memcg->dirty_param[idx];
+> > +	spin_unlock(&memcg->reclaim_param_lock);
+> 
+> Do we need a spinlock if we protect it using RCU? Is precise data very
+> important?
+
+See above.
+
+> > +unsigned long mem_cgroup_dirty_background_bytes(void)
+> > +{
+> > +	struct mem_cgroup *memcg;
+> > +	unsigned long ret = dirty_background_bytes;
+> > +
+> > +	if (mem_cgroup_disabled())
+> > +		return ret;
+> > +	rcu_read_lock();
+> > +	memcg = mem_cgroup_from_task(current);
+> > +	if (likely(memcg))
+> > +		ret = get_dirty_param(memcg, MEM_CGROUP_DIRTY_BACKGROUND_BYTES);
+> > +	rcu_read_unlock();
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static inline bool mem_cgroup_can_swap(struct mem_cgroup *memcg)
+> > +{
+> > +	return do_swap_account ?
+> > +			res_counter_read_u64(&memcg->memsw, RES_LIMIT) :
+> 
+> Shouldn't you do a res_counter_read_u64(...) > 0 for readability?
+
+OK.
+
+> What happens if memcg->res, RES_LIMIT == memcg->memsw, RES_LIMIT?
+
+OK, we should also check memcg->memsw_is_minimum.
+
+> >  static struct cgroup_subsys_state * __ref
+> >  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+> >  {
+> > @@ -3776,8 +4031,37 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+> >  	mem->last_scanned_child = 0;
+> >  	spin_lock_init(&mem->reclaim_param_lock);
+> > 
+> > -	if (parent)
+> > +	if (parent) {
+> >  		mem->swappiness = get_swappiness(parent);
+> > +
+> > +		spin_lock(&parent->reclaim_param_lock);
+> > +		copy_dirty_params(mem, parent);
+> > +		spin_unlock(&parent->reclaim_param_lock);
+> > +	} else {
+> > +		/*
+> > +		 * XXX: should we need a lock here? we could switch from
+> > +		 * vm_dirty_ratio to vm_dirty_bytes or vice versa but we're not
+> > +		 * reading them atomically. The same for dirty_background_ratio
+> > +		 * and dirty_background_bytes.
+> > +		 *
+> > +		 * For now, try to read them speculatively and retry if a
+> > +		 * "conflict" is detected.a
+> 
+> The do while loop is subtle, can we add a validate check,share it with
+> the write routine and retry if validation fails?
+
+Agreed.
+
+> 
+> > +		 */
+> > +		do {
+> > +			mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] =
+> > +						vm_dirty_ratio;
+> > +			mem->dirty_param[MEM_CGROUP_DIRTY_BYTES] =
+> > +						vm_dirty_bytes;
+> > +		} while (mem->dirty_param[MEM_CGROUP_DIRTY_RATIO] &&
+> > +			 mem->dirty_param[MEM_CGROUP_DIRTY_BYTES]);
+> > +		do {
+> > +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] =
+> > +						dirty_background_ratio;
+> > +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES] =
+> > +						dirty_background_bytes;
+> > +		} while (mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_RATIO] &&
+> > +			mem->dirty_param[MEM_CGROUP_DIRTY_BACKGROUND_BYTES]);
+> > +	}
+> >  	atomic_set(&mem->refcnt, 1);
+> >  	mem->move_charge_at_immigrate = 0;
+> >  	mutex_init(&mem->thresholds_lock);
+
+Many thanks for reviewing,
+-Andrea
