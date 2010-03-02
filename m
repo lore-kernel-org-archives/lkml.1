@@ -1,19 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625Ab0CBXhK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:37:10 -0500
-Received: from kroah.org ([198.145.64.141]:51603 "EHLO coco.kroah.org"
+	id S1757326Ab0CBXiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:38:46 -0500
+Received: from kroah.org ([198.145.64.141]:51655 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754468Ab0CBXg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:36:58 -0500
+	id S1754875Ab0CBXhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:37:11 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Rakib Mullick <rakib.mullick@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 16/36] ip2: remove #ifdef MODULE from ip2main.c
-Date: Tue,  2 Mar 2010 15:36:23 -0800
-Message-Id: <1267573003-782-16-git-send-email-gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 33/36] tty: Keep the default buffering to sub-page units
+Date: Tue,  2 Mar 2010 15:36:40 -0800
+Message-Id: <1267573003-782-33-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230956.GC32287@kroah.com>
 References: <20100302230956.GC32287@kroah.com>
@@ -21,95 +19,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rakib Mullick <rakib.mullick@gmail.com>
+From: Alan Cox <alan@linux.intel.com>
 
-On the kernel command line we can pass "module parameters".  So #ifdef
-MODULE is obsolute now.  Remove it completely.  When CONFIG_PCI=n and
-building ip2main.c then we are hit by the following warning.  So move
-*pdev into #ifdef CONFIG_PCI.
+We allocate during interrupts so while our buffering is normally diced up
+small anyway on some hardware at speed we can pressure the VM excessively
+for page pairs. We don't really need big buffers to be linear so don't try
+so hard.
 
-drivers/char/ip2/ip2main.c: In function `ip2_loadmain':
-drivers/char/ip2/ip2main.c:542: warning: unused variable `pdev'
+In order to make this work well we will tidy up excess callers to request_room,
+which cannot itself enforce this break up.
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-Acked-by: Michael H. Warfield <mhw@WittsEnd.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/ip2/ip2main.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ drivers/char/tty_buffer.c |    6 ++++--
+ include/linux/tty.h       |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
-index 517271c..2913d05 100644
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -263,7 +263,7 @@ static int tracewrap;
- /* Macros */
- /**********/
- 
--#if defined(MODULE) && defined(IP2DEBUG_OPEN)
-+#ifdef IP2DEBUG_OPEN
- #define DBG_CNT(s) printk(KERN_DEBUG "(%s): [%x] ttyc=%d, modc=%x -> %s\n", \
- 		    tty->name,(pCh->flags), \
- 		    tty->count,/*GET_USE_COUNT(module)*/0,s)
-@@ -487,7 +487,6 @@ static const struct firmware *ip2_request_firmware(void)
- 	return fw;
- }
- 
--#ifndef MODULE
- /******************************************************************************
-  *	ip2_setup:
-  *		str: kernel command line string
-@@ -531,7 +530,6 @@ static int __init ip2_setup(char *str)
- 	return 1;
- }
- __setup("ip2=", ip2_setup);
--#endif /* !MODULE */
- 
- static int __init ip2_loadmain(void)
+diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+index 66fa4e1..f27c4d6 100644
+--- a/drivers/char/tty_buffer.c
++++ b/drivers/char/tty_buffer.c
+@@ -247,7 +247,8 @@ int tty_insert_flip_string(struct tty_struct *tty, const unsigned char *chars,
  {
-@@ -539,7 +537,6 @@ static int __init ip2_loadmain(void)
- 	int err = 0;
- 	i2eBordStrPtr pB = NULL;
- 	int rc = -1;
--	struct pci_dev *pdev = NULL;
- 	const struct firmware *fw = NULL;
+ 	int copied = 0;
+ 	do {
+-		int space = tty_buffer_request_room(tty, size - copied);
++		int goal = min(size - copied, TTY_BUFFER_PAGE);
++		int space = tty_buffer_request_room(tty, goal);
+ 		struct tty_buffer *tb = tty->buf.tail;
+ 		/* If there is no space then tb may be NULL */
+ 		if (unlikely(space == 0))
+@@ -283,7 +284,8 @@ int tty_insert_flip_string_flags(struct tty_struct *tty,
+ {
+ 	int copied = 0;
+ 	do {
+-		int space = tty_buffer_request_room(tty, size - copied);
++		int goal = min(size - copied, TTY_BUFFER_PAGE);
++		int space = tty_buffer_request_room(tty, goal);
+ 		struct tty_buffer *tb = tty->buf.tail;
+ 		/* If there is no space then tb may be NULL */
+ 		if (unlikely(space == 0))
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 6abfcf5..d96e588 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -68,6 +68,16 @@ struct tty_buffer {
+ 	unsigned long data[0];
+ };
  
- 	if (poll_only) {
-@@ -612,6 +609,7 @@ static int __init ip2_loadmain(void)
- 		case PCI:
- #ifdef CONFIG_PCI
- 		{
-+			struct pci_dev *pdev = NULL;
- 			u32 addr;
- 			int status;
- 
-@@ -626,7 +624,7 @@ static int __init ip2_loadmain(void)
- 
- 			if (pci_enable_device(pdev)) {
- 				dev_err(&pdev->dev, "can't enable device\n");
--				break;
-+				goto out;
- 			}
- 			ip2config.type[i] = PCI;
- 			ip2config.pci_dev[i] = pci_dev_get(pdev);
-@@ -638,6 +636,8 @@ static int __init ip2_loadmain(void)
- 				dev_err(&pdev->dev, "I/O address error\n");
- 
- 			ip2config.irq[i] = pdev->irq;
-+out:
-+			pci_dev_put(pdev);
- 		}
- #else
- 			printk(KERN_ERR "IP2: PCI card specified but PCI "
-@@ -656,7 +656,6 @@ static int __init ip2_loadmain(void)
- 			break;
- 		}	/* switch */
- 	}	/* for */
--	pci_dev_put(pdev);
- 
- 	for (i = 0; i < IP2_MAX_BOARDS; ++i) {
- 		if (ip2config.addr[i]) {
++/*
++ * We default to dicing tty buffer allocations to this many characters
++ * in order to avoid multiple page allocations. We assume tty_buffer itself
++ * is under 256 bytes. See tty_buffer_find for the allocation logic this
++ * must match
++ */
++
++#define TTY_BUFFER_PAGE		((PAGE_SIZE  - 256) / 2)
++
++
+ struct tty_bufhead {
+ 	struct delayed_work work;
+ 	spinlock_t lock;
 -- 
 1.7.0.1
 
