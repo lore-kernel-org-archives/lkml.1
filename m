@@ -1,75 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448Ab0CBUm1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:42:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51420 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752538Ab0CBUm0 (ORCPT
+	id S1754480Ab0CBUpT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:45:19 -0500
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:42108 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754114Ab0CBUpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:42:26 -0500
-Date: Tue, 2 Mar 2010 12:42:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] binfmt_elf: plug a memory leak situation on dump_seek()
-Message-Id: <20100302124206.4e0a42b4.akpm@linux-foundation.org>
-In-Reply-To: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com>
-References: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Mar 2010 15:45:17 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=UTF-8
+Date: Tue, 02 Mar 2010 21:44:48 +0100
+From: Michael Thayer <Michael.Thayer@Sun.COM>
+Subject: Re: [PATCH 1/1]: input: add support for VirtualBox touchscreen
+ emulation to the Lifebook driver
+In-reply-to: <20100225101705.GF10823@core.coreip.homeip.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <1267562688.2441.7.camel@michael-laptop>
+Organization: Sun Microsystems GmbH
+X-Mailer: Evolution 2.28.1
+References: <1266923615.3602.85.camel@michael-laptop>
+ <20100223175852.GA11301@core.coreip.homeip.net>
+ <1266958533.3602.128.camel@michael-laptop>
+ <20100224100206.GA5598@core.coreip.homeip.net>
+ <1267011989.2831.30.camel@michael-laptop>
+ <20100225101705.GF10823@core.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Feb 2010 00:54:40 -0300
-Andr__ Goddard Rosa <andre.goddard@gmail.com> wrote:
+Hello Dmitry,
 
-> Signed-off-by: Andr__ Goddard Rosa <andre.goddard@gmail.com>
-> ---
->  fs/binfmt_elf.c |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
+Le jeudi 25 février 2010 à 02:17 -0800, Dmitry Torokhov a écrit :
+> On Wed, Feb 24, 2010 at 12:46:29PM +0100, Michael Thayer wrote:
+> > Le mercredi 24 février 2010 à 02:02 -0800, Dmitry Torokhov a écrit :
+> > > On Tue, Feb 23, 2010 at 09:55:33PM +0100, Michael Thayer wrote:
+> > > > I'm not sure, if we ended up doing a completely new device, how different it
+> > > > would end up being.  Emulating a touchscreen or a tablet makes sense for us as
+> > > > these are both something known, which will work with existing systems without
+> > > > too much tweaking
+> > > > [snip]
+> > > But the virtual mouse is not a touchscreen or a tablet, it behaves
+> > > differently.
+> > What would you suggest emulating that exists in the real world?
 > 
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index fd5b2ea..13b0845 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -1096,6 +1096,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
->  
->  static int dump_seek(struct file *file, loff_t off)
->  {
-> +	int ret = 1;
-> +
->  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
->  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
->  			return 0;
-> @@ -1107,13 +1109,15 @@ static int dump_seek(struct file *file, loff_t off)
->  			unsigned long n = off;
->  			if (n > PAGE_SIZE)
->  				n = PAGE_SIZE;
-> -			if (!dump_write(file, buf, n))
-> -				return 0;
-> +			if (!dump_write(file, buf, n)) {
-> +				ret = 0;
-> +				break;
-> +			}
->  			off -= n;
->  		}
->  		free_page((unsigned long)buf);
->  	}
-> -	return 1;
-> +	return ret;
->  }
+> There are not many real devices that have teh same characteristics as
+> virtual mouse generating absolute coordinates. Umm, the closest would be
+> a wacom tablet when used with its own mouse.
+We decided in the end to emulate a USB tablet, as some other virtualisers do.
+It works well out of the box with recent Linux distributions, and while older
+ones recognise it as a touchpad (in fact they use it through /dev/input/mice),
+it still provides a reasonable user experience until the user has installed our
+guest drivers.
 
-Please don't send unchangelogged patches.
+Thank you again for your comments and assistance.
 
-Explain the leak.
+Regards,
 
-Explain the user impact (ie: how it is triggered).
+Michael
+-- 
+Sun Microsystems GmbH        Michael Thayer
+Werkstrasse 24               VirtualBox engineer
+71384 Weinstadt, Germany     mailto:michael.thayer@sun.com
 
-Explain how the patch fixes it.
+Sitz der Gesellschaft:
+Sun Microsystems GmbH, Sonnenallee 1, 85551 Kirchheim-Heimstetten
+Amtsgericht Muenchen: HRB 161028
+Geschaeftsfuehrer: Thomas Schroeder, Wolfgang Engels
+Vorsitzender des Aufsichtsrates: Martin Haering
 
-Thanks.
