@@ -1,51 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534Ab0CBR1u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 12:27:50 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56324 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363Ab0CBR1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 12:27:48 -0500
-Date: Tue, 2 Mar 2010 18:27:57 +0100
-From: Jan Kara <jack@suse.cz>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jan Kara <jack@suse.cz>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: linux-next: build failure after merge of the ext3 tree
-Message-ID: <20100302172757.GE3829@quack.suse.cz>
-References: <20100302113634.2c7f5e03.sfr@canb.auug.org.au>
+	id S1752692Ab0CBReN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 12:34:13 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:59074 "EHLO
+	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084Ab0CBReK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 12:34:10 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100302113634.2c7f5e03.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19341.19446.356359.99958@stoffel.org>
+Date: Tue, 2 Mar 2010 12:33:42 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] nfs: use 4*rsize readahead size
+In-Reply-To: <1267539563.3099.43.camel@localhost.localdomain>
+References: <20100224024100.GA17048@localhost>
+	<20100224032934.GF16175@discord.disaster>
+	<20100224041822.GB27459@localhost>
+	<20100224052215.GH16175@discord.disaster>
+	<20100224061247.GA8421@localhost>
+	<20100224073940.GJ16175@discord.disaster>
+	<20100226074916.GA8545@localhost>
+	<20100302031021.GA14267@localhost>
+	<1267539563.3099.43.camel@localhost.localdomain>
+X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+>>>>> "Trond" == Trond Myklebust <Trond.Myklebust@netapp.com> writes:
 
-On Tue 02-03-10 11:36:34, Stephen Rothwell wrote:
-> After merging the ext3 tree, today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
-> 
-> fs/jfs/jfs_xtree.c: In function 'xtSplitRoot':
-> fs/jfs/jfs_xtree.c:1256: error: 'rec' undeclared (first use in this function)
-> 
-> Caused by commit bff3333e868578990f6fe794a7cba0c74bd433ac ("dquot:
-> cleanup space allocation / freeing routines").
-> 
-> This is annoying ... this file system could be build tested on any
-> architecture, so why wasn't it?
-  I'm sorry. It's my fault. I've modified Christoph's patch but I forgot to
-enable JFS in the test build. Since this isn't the first time something
-like this happened to me, I've changed the way I commit patches. They'll
-first go to for_testing branch and after a build machine runs them through
-allyesconfig and allmodconfig compiles they'll get moved to for_next
-branch. So hopefully stupid mistakes like this one should be avoided for
-future.
+Trond> On Tue, 2010-03-02 at 11:10 +0800, Wu Fengguang wrote: 
+>> Dave,
+>> 
+>> Here is one more test on a big ext4 disk file:
+>> 
+>> 16k	39.7 MB/s
+>> 32k	54.3 MB/s
+>> 64k	63.6 MB/s
+>> 128k	72.6 MB/s
+>> 256k	71.7 MB/s
+>> rsize ==> 512k  71.7 MB/s
+>> 1024k	72.2 MB/s
+>> 2048k	71.0 MB/s
+>> 4096k	73.0 MB/s
+>> 8192k	74.3 MB/s
+>> 16384k	74.5 MB/s
+>> 
+>> It shows that >=128k client side readahead is enough for single disk
+>> case :) As for RAID configurations, I guess big server side readahead
+>> should be enough.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Trond> There are lots of people who would like to use NFS on their
+Trond> company WAN, where you typically have high bandwidths (up to
+Trond> 10GigE), but often a high latency too (due to geographical
+Trond> dispersion).  My ping latency from here to a typical server in
+Trond> NetApp's Bangalore office is ~ 312ms. I read your test results
+Trond> with 10ms delays, but have you tested with higher than that?
+
+If you have that high a latency, the low level TCP protocol is going
+to kill your performance before you get to the NFS level.  You really
+need to open up the TCP window size at that point.  And it only gets
+worse as the bandwidth goes up too.  
+
+There's no good solution, because while you can get good throughput at
+points, latency is going to suffer no matter what.
+
+John
