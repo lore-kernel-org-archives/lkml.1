@@ -1,70 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517Ab0CBHwE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 02:52:04 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:49354 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408Ab0CBHwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 02:52:01 -0500
-Message-ID: <4B8CC43D.9000108@cs.wisc.edu>
-Date: Tue, 02 Mar 2010 01:54:37 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1753545Ab0CBHzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 02:55:21 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:50960 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753478Ab0CBHzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 02:55:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=OfPxngH/QspKkF7UcQ6hwO/0p0rePWOAqgReWCgAK2nuJ6Utu5xjMIPfrUfPSJPeUp
+         JKIKSJkX3EZyoGv0fhRJ7NHF0q7KnIhDWS+9L6bjSGxUYO/VvwHNDyxUfYLQL2vtKGHI
+         uppvTvVKD+m15b2J5XixXaA2sYT2vhnuLgeQ8=
+Date: Mon, 1 Mar 2010 23:55:13 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com,
+       linux-input@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+       Luotao Fu <l.fu@pengutronix.de>
+Subject: Re: [PATCH 2/6] input/mc13783-ts: Don't use deprecated mc13783 API
+ calls
+Message-ID: <20100302075513.GC17307@core.coreip.homeip.net>
+References: <1267440825-14694-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1267440825-14694-2-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: Hugh Daschbach <hdasch@broadcom.com>,
-       Chandra Seetharaman <sekharan@us.ibm.com>,
-       Eddie Williams <Eddie.Williams@steeleye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] Don't change direction flags in struct request.
-References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>	 <1268976690-3386-2-git-send-email-hdasch@broadcom.com> <1267507618.7936.11.camel@mulgrave.site>
-In-Reply-To: <1267507618.7936.11.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1267440825-14694-2-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/01/2010 11:26 PM, James Bottomley wrote:
-> On Thu, 2010-03-18 at 22:31 -0700, Hugh Daschbach wrote:
->> The EMC multipath device handler should not change the I/O direction
->> flags of its trespass command request.
->>
->> The CFQ elevator may BUG if the direction flags on an I/O request are
->> changed after allocation.  cfq_set_request() and cfq_put_request()
->> count READ and WRITE requests separately.  Changing the I/O request
->> direction after blk_get_request() allocates the request throws off
->> this CFQ accounting.
->
-> This description doesn't really match what the problem seems to be
-> below:
->
->> Signed-off-by: Hugh Daschbach<hdasch@broadcom.com>
->> ---
->>   drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
->>   1 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
->> index 6196675..3709342 100644
->> --- a/drivers/scsi/device_handler/scsi_dh_emc.c
->> +++ b/drivers/scsi/device_handler/scsi_dh_emc.c
->> @@ -269,10 +269,12 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
->>   				unsigned char *buffer)
->>   {
->>   	struct request *rq;
->> +	int mode = READ;
->>   	int len = 0;
->>
->> -	rq = blk_get_request(sdev->request_queue,
->> -			(cmd == MODE_SELECT) ? WRITE : READ, GFP_NOIO);
->> +	if (cmd == MODE_SELECT || cmd == MODE_SELECT_10)
->> +		mode = WRITE;
->> +	rq = blk_get_request(sdev->request_queue, mode, GFP_NOIO);
->
-> So the actual bug is failure to set WRITE for MODE_SELECT_10.
->
+On Mon, Mar 01, 2010 at 11:53:41AM +0100, Uwe Kleine-König wrote:
+> mc13783_ackirq is deprecated, use the drop in replacement mc13783_irq_ack.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-I think we have a fix for this and some len issues in that module that 
-was sent here:
-http://marc.info/?l=linux-scsi&m=125978574800618&w=2
+I assume it will go thourgh MFD tree?
+
+Acked-by: Dmitry Torokhov <dtor@mail.ru>
+
+> ---
+> Hello,
+> 
+> note this obviously depends on patch 1/6.
+> 
+> Best regards
+> Uwe
+> 
+>  drivers/input/touchscreen/mc13783_ts.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
+> index be115b3..be54fd6 100644
+> --- a/drivers/input/touchscreen/mc13783_ts.c
+> +++ b/drivers/input/touchscreen/mc13783_ts.c
+> @@ -44,7 +44,7 @@ static irqreturn_t mc13783_ts_handler(int irq, void *data)
+>  {
+>  	struct mc13783_ts_priv *priv = data;
+>  
+> -	mc13783_ackirq(priv->mc13783, irq);
+> +	mc13783_irq_ack(priv->mc13783, irq);
+>  
+>  	/*
+>  	 * Kick off reading coordinates. Note that if work happens already
+> @@ -135,7 +135,7 @@ static int mc13783_ts_open(struct input_dev *dev)
+>  
+>  	mc13783_lock(priv->mc13783);
+>  
+> -	mc13783_ackirq(priv->mc13783, MC13783_IRQ_TS);
+> +	mc13783_irq_ack(priv->mc13783, MC13783_IRQ_TS);
+>  
+>  	ret = mc13783_irq_request(priv->mc13783, MC13783_IRQ_TS,
+>  		mc13783_ts_handler, MC13783_TS_NAME, priv);
+> -- 
+> 1.7.0
+> 
+
+-- 
+Dmitry
