@@ -1,65 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091Ab0CBJaY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 04:30:24 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:65210 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737Ab0CBJaV (ORCPT
+	id S1752097Ab0CBJfz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 04:35:55 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:51627 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003Ab0CBJfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 04:30:21 -0500
-Date: Tue, 2 Mar 2010 01:29:47 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-Subject: Re: [PATCH 2/2] ocfs2: ensure trusted xattrs are not returned to
- unprivileged users via listxattr
-Message-ID: <20100302092946.GA21180@mail.oracle.com>
-Mail-Followup-To: James Morris <jmorris@namei.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-security-module@vger.kernel.org,
-	David Woodhouse <dwmw2@infradead.org>,
-	Mark Fasheh <mfasheh@suse.com>, Alex Elder <aelder@sgi.com>,
-	Chris Mason <chris.mason@oracle.com>, a.gruenbacher@computer.org
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
- <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org>
+	Tue, 2 Mar 2010 04:35:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sfmO7HcBEM9bexMsWw+F+l5HgpLP7blipN97XK5pxuq75l7kd0WkH7dTRDBaKf1PgU
+         5TiDEU5yvNkrnMuagNwQvBd2RHQxBNcR9i2rC/pAKwqsafTzLdLFDvkQ4Xb7x1N+Yu8v
+         hDB7d7ExRzYqJp/QiRCLjwTni8FeNQPT6oTAs=
+Date: Tue, 2 Mar 2010 01:35:48 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
+Message-ID: <20100302093548.GB21014@core.coreip.homeip.net>
+References: <201003011615.31709.dmitry.torokhov@gmail.com>
+ <20100302075656.GO5768@kernel.dk>
+ <20100302081547.GP5768@kernel.dk>
+ <20100302083906.GQ5768@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.1003021901530.1594@tundra.namei.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B8CDA9D.0058:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <20100302083906.GQ5768@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 07:02:22PM +1100, James Morris wrote:
-> Ensure that trusted xattrs are not returned to unprivileged users
-> via listxattr, in keeping with several other implmentations, such
-> as ext3.
+On Tue, Mar 02, 2010 at 09:39:07AM +0100, Jens Axboe wrote:
+> On Tue, Mar 02 2010, Jens Axboe wrote:
+> > On Tue, Mar 02 2010, Jens Axboe wrote:
+> > > On Mon, Mar 01 2010, Dmitry Torokhov wrote:
+> > > > Hi,
+> > > > 
+> > > > It looks like block tree that has been pulled today into mainline is
+> > > > busted, I am getting the Opps below on boot with the following commit:
+> > > > 
+> > > > commit b1bf9368407ae7e89d8a005bb40beb70a41df539
+> > > > Merge: 524df55 4671a13
+> > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > Date:   Mon Mar 1 09:00:29 2010 -0800
+> > > > 
+> > > >     Merge branch 'for-2.6.34' of git://git.kernel.dk/linux-2.6-block
+> > > >  
+> > > > 
+> > > > but not with the previous one:
+> > > > 
+> > > > commit 524df55725217b13d5a232fb5badb5846418ea0e
+> > > > Merge: 0f45339 6679ee1
+> > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > Date:   Mon Mar 1 08:58:44 2010 -0800
+> > > > 
+> > > >     Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
+> > > > 
+> > > > This is on plain Fedora 12 VM.
+> > > > 
+> > > > Thanks.
+> > > > 
+> > > > -- 
+> > > > Dmitry
+> > > > 
+> > > > sd 2:0:0:0: Attached scsi generic sg1 type 0
+> > > > sd 2:0:0:0: [sda] 16777216 512-byte logical blocks: (8.58 GB/8.00 GiB)
+> > > > sd 2:0:0:0: [sda] Write Protect is off
+> > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > >  sda: sda1 sda2
+> > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > > sd 2:0:0:0: [sda] Attached SCSI disk
+> > > > device-mapper: multipath: version 1.1.1 loaded
+> > > > dracut: Scanning devices sda2  for LVM volume groups 
+> > > > dracut: Reading all physical volumes. This may take a while...
+> > > > dracut: Found volume group "VolGroup" using metadata type lvm2
+> > > > dracut: 2 logical volume(s) in volume group "VolGroup" now active
+> > > > EXT4-fs (dm-0): mounted filesystem with ordered data mode
+> > > > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > > > IP: [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+> > > > PGD 3b776067 PUD 3b7b1067 PMD 0 
+> > > > Oops: 0002 [#1] SMP 
+> > > > last sysfs file: /sys/kernel/uevent_seqnum
+> > > > CPU 0 
+> > > > Modules linked in: dm_multipath mptspi mptscsih mptbase scsi_transport_spi floppy [last unloaded: scsi_wait_scan]
+> > > > 
+> > > > Pid: 1, comm: init Not tainted 2.6.33 #4 440BX Desktop Reference Platform/VMware Virtual Platform
+> > > > RIP: 0010:[<ffffffff81128ee1>]  [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+> > > 
+> > > Can you check where that is? Just do a gdb vmlinux and then an
+> > > l *mpage_end_io_read+0x45
+> > 
+> > I tried checking mine here, but we must be using vastly different gcc
+> > versions. So I'd like that output. Can you also try and see if reverting
+> > 9f7cdbc33f36d28e57eaba0093f68f0d14c38c5b makes it work?
 > 
-> Signed-off-by: James Morris <jmorris@namei.org>
+> OK, so disasm of that reveals that
+> 
+>   12:   3e 80 0f 08               orb    $0x8,%ds:(%rdi)
+> 
+> is the start of the faulting instruction. You are running UP. 0x8 is the
+> 4th bit, so I'd be surprised if that isn't SetPageUptodate(page).
+> 
 
-If this is the standard expectation, why not lift it up into the vfs?
-
-Acked-by: Joel Becker <joel.becker@oracle.com>
+Sorry, don't have access to that box at the moment... Will try checking
+tomorrow.
 
 -- 
-
-"The nearest approach to immortality on Earth is a government
- bureau."
-	- James F. Byrnes
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Dmitry
