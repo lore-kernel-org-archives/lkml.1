@@ -1,78 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487Ab0CBX3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:46 -0500
-Received: from kroah.org ([198.145.64.141]:38633 "EHLO coco.kroah.org"
+	id S1754561Ab0CBX3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:29:54 -0500
+Received: from kroah.org ([198.145.64.141]:38692 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420Ab0CBX3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:33 -0500
+	id S1754486Ab0CBX3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:46 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "Stanley.Miao" <stanley.miao@windriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Thery <benjamin.thery@bull.net>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/62] w1: move omap_hdq's probe function to .devinit.text
-Date: Tue,  2 Mar 2010 15:28:33 -0800
-Message-Id: <1267572541-410-34-git-send-email-gregkh@suse.de>
+Subject: [PATCH 51/62] sysfs: Implement sysfs_rename_link
+Date: Tue,  2 Mar 2010 15:28:50 -0800
+Message-Id: <1267572541-410-51-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-A pointer to omap_hdq_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Because of rename ordering problems we occassionally give false
+warnings about invalid sysfs operations.  So using sysfs_rename
+create a sysfs_rename_link function that doesn't need strange
+workarounds.
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Stanley.Miao <stanley.miao@windriver.com>
-Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/w1/masters/omap_hdq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ fs/sysfs/symlink.c    |   38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |    9 +++++++++
+ 2 files changed, 47 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/w1/masters/omap_hdq.c b/drivers/w1/masters/omap_hdq.c
-index 0d92969..22977d3 100644
---- a/drivers/w1/masters/omap_hdq.c
-+++ b/drivers/w1/masters/omap_hdq.c
-@@ -72,7 +72,7 @@ struct hdq_data {
- 	int			init_trans;
- };
- 
--static int __init omap_hdq_probe(struct platform_device *pdev);
-+static int __devinit omap_hdq_probe(struct platform_device *pdev);
- static int omap_hdq_remove(struct platform_device *pdev);
- 
- static struct platform_driver omap_hdq_driver = {
-@@ -558,7 +558,7 @@ static void omap_w1_write_byte(void *_hdq, u8 byte)
- 	return;
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index c5eff49..1b9a3a1 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -123,6 +123,44 @@ void sysfs_remove_link(struct kobject * kobj, const char * name)
+ 	sysfs_hash_and_remove(parent_sd, name);
  }
  
--static int __init omap_hdq_probe(struct platform_device *pdev)
-+static int __devinit omap_hdq_probe(struct platform_device *pdev)
++/**
++ *	sysfs_rename_link - rename symlink in object's directory.
++ *	@kobj:	object we're acting for.
++ *	@targ:	object we're pointing to.
++ *	@old:	previous name of the symlink.
++ *	@new:	new name of the symlink.
++ *
++ *	A helper function for the common rename symlink idiom.
++ */
++int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
++			const char *old, const char *new)
++{
++	struct sysfs_dirent *parent_sd, *sd = NULL;
++	int result;
++
++	if (!kobj)
++		parent_sd = &sysfs_root;
++	else
++		parent_sd = kobj->sd;
++
++	result = -ENOENT;
++	sd = sysfs_get_dirent(parent_sd, old);
++	if (!sd)
++		goto out;
++
++	result = -EINVAL;
++	if (sysfs_type(sd) != SYSFS_KOBJ_LINK)
++		goto out;
++	if (sd->s_symlink.target_sd->s_dir.kobj != targ)
++		goto out;
++
++	result = sysfs_rename(sd, parent_sd, new);
++
++out:
++	sysfs_put(sd);
++	return result;
++}
++
+ static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
+ 				 struct sysfs_dirent *target_sd, char *path)
  {
- 	struct hdq_data *hdq_data;
- 	struct resource *res;
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 5b8f80f..d77cde6 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -151,6 +151,9 @@ int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
+ 					  const char *name);
+ void sysfs_remove_link(struct kobject *kobj, const char *name);
+ 
++int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
++			const char *old_name, const char *new_name);
++
+ int __must_check sysfs_create_group(struct kobject *kobj,
+ 				    const struct attribute_group *grp);
+ int sysfs_update_group(struct kobject *kobj,
+@@ -255,6 +258,12 @@ static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+ {
+ }
+ 
++static inline int sysfs_rename_link(struct kobject *k, struct kobject *t,
++				    const char *old_name, const char *new_name)
++{
++	return 0;
++}
++
+ static inline int sysfs_create_group(struct kobject *kobj,
+ 				     const struct attribute_group *grp)
+ {
 -- 
 1.7.0.1
 
