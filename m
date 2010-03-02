@@ -1,74 +1,219 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719Ab0CBUNI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:13:08 -0500
-Received: from mail.df.lth.se ([194.47.250.12]:59648 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755937Ab0CBUNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:13:00 -0500
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH 5/5] DMAENGINE: COH 901 318 lli sg offset fix
-Date: Tue,  2 Mar 2010 21:12:56 +0100
-Message-Id: <1267560776-18092-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	id S1756461Ab0CBUOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:14:41 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:52675 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756880Ab0CBUOe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 15:14:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FTcKXKBfasfAnLWM6OTN7El76bs6pWKVBFYPzOsGsvvvQ+vCMvDe7JLT92bXRtyDTV
+         jsDXf55ZmIktluwn+rc5pqQly8kTnspOSwpbI3dX3hUSd41y1b9xH2yfK/2jcqHdm5bw
+         B7WuqzBLCkNVExswyAMJTb/hZGSuUE7heV2fE=
+MIME-Version: 1.0
+In-Reply-To: <20100302031021.GA14267@localhost>
+References: <20100224024100.GA17048@localhost>
+	 <20100224032934.GF16175@discord.disaster>
+	 <20100224041822.GB27459@localhost>
+	 <20100224052215.GH16175@discord.disaster>
+	 <20100224061247.GA8421@localhost>
+	 <20100224073940.GJ16175@discord.disaster>
+	 <20100226074916.GA8545@localhost> <20100302031021.GA14267@localhost>
+Date: Tue, 2 Mar 2010 12:14:33 -0800
+Message-ID: <dda83e781003021214g6721c142o7c66f409296cf5a@mail.gmail.com>
+Subject: Re: [RFC] nfs: use 4*rsize readahead size
+From: Bret Towe <magnade@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes the COH 901 318 respect the scatter offset field by using
-the sg_phys() rather than the sg_dma_address() so we get a pointer
-to the actual data we want to send rather than the beginning of the
-buffer. Also initialize the lli:s a bit more thoroughly.
+On Mon, Mar 1, 2010 at 7:10 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> Dave,
+>
+> Here is one more test on a big ext4 disk file:
+>
+>           16k  39.7 MB/s
+>           32k  54.3 MB/s
+>           64k  63.6 MB/s
+>          128k  72.6 MB/s
+>          256k  71.7 MB/s
+> rsize ==> 512k  71.7 MB/s
+>         1024k  72.2 MB/s
+>         2048k  71.0 MB/s
+>         4096k  73.0 MB/s
+>         8192k  74.3 MB/s
+>        16384k  74.5 MB/s
+>
+> It shows that >=128k client side readahead is enough for single disk
+> case :) As for RAID configurations, I guess big server side readahead
+> should be enough.
+>
+> #!/bin/sh
+>
+> file=/mnt/ext4_test/zero
+> BDI=0:24
+>
+> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+> do
+>        echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+>        echo readahead_size=${rasize}k
+>        fadvise $file 0 0 dontneed
+>        ssh p9 "fadvise $file 0 0 dontneed"
+>        dd if=$file of=/dev/null bs=4k count=402400
+> done
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
----
- drivers/dma/coh901318_lli.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+how do you determine which bdi to use? I skimmed thru
+the filesystem in /sys and didn't see anything that says which is what
 
-diff --git a/drivers/dma/coh901318_lli.c b/drivers/dma/coh901318_lli.c
-index 5f9af19..71d58c1 100644
---- a/drivers/dma/coh901318_lli.c
-+++ b/drivers/dma/coh901318_lli.c
-@@ -74,6 +74,8 @@ coh901318_lli_alloc(struct coh901318_pool *pool, unsigned int len)
- 
- 	lli = head;
- 	lli->phy_this = phy;
-+	lli->link_addr = 0x00000000;
-+	lli->virt_link_addr = 0x00000000U;
- 
- 	for (i = 1; i < len; i++) {
- 		lli_prev = lli;
-@@ -85,13 +87,13 @@ coh901318_lli_alloc(struct coh901318_pool *pool, unsigned int len)
- 
- 		DEBUGFS_POOL_COUNTER_ADD(pool, 1);
- 		lli->phy_this = phy;
-+		lli->link_addr = 0x00000000;
-+		lli->virt_link_addr = 0x00000000U;
- 
- 		lli_prev->link_addr = phy;
- 		lli_prev->virt_link_addr = lli;
- 	}
- 
--	lli->link_addr = 0x00000000U;
--
- 	spin_unlock(&pool->lock);
- 
- 	return head;
-@@ -268,10 +270,10 @@ coh901318_lli_fill_sg(struct coh901318_pool *pool,
- 
- 		if (dir == DMA_TO_DEVICE)
- 			/* increment source address */
--			src = sg_dma_address(sg);
-+			src = sg_phys(sg);
- 		else
- 			/* increment destination address */
--			dst =  sg_dma_address(sg);
-+			dst =  sg_phys(sg);
- 
- 		bytes_to_transfer = sg_dma_len(sg);
- 
--- 
-1.6.3.3
-
+> Thanks,
+> Fengguang
+>
+> On Fri, Feb 26, 2010 at 03:49:16PM +0800, Wu Fengguang wrote:
+>> On Wed, Feb 24, 2010 at 03:39:40PM +0800, Dave Chinner wrote:
+>> > On Wed, Feb 24, 2010 at 02:12:47PM +0800, Wu Fengguang wrote:
+>> > > On Wed, Feb 24, 2010 at 01:22:15PM +0800, Dave Chinner wrote:
+>> > > > What I'm trying to say is that while I agree with your premise that
+>> > > > a 7.8MB readahead window is probably far larger than was ever
+>> > > > intended, I disagree with your methodology and environment for
+>> > > > selecting a better default value.  The default readahead value needs
+>> > > > to work well in as many situations as possible, not just in perfect
+>> > > > 1:1 client/server environment.
+>> > >
+>> > > Good points. It's imprudent to change a default value based on one
+>> > > single benchmark. Need to collect more data, which may take time..
+>> >
+>> > Agreed - better to spend time now to get it right...
+>>
+>> I collected more data with large network latency as well as rsize=32k,
+>> and updates the readahead size accordingly to 4*rsize.
+>>
+>> ===
+>> nfs: use 2*rsize readahead size
+>>
+>> With default rsize=512k and NFS_MAX_READAHEAD=15, the current NFS
+>> readahead size 512k*15=7680k is too large than necessary for typical
+>> clients.
+>>
+>> On a e1000e--e1000e connection, I got the following numbers
+>> (this reads sparse file from server and involves no disk IO)
+>>
+>> readahead size        normal          1ms+1ms         5ms+5ms         10ms+10ms(*)
+>>          16k  35.5 MB/s        4.8 MB/s        2.1 MB/s       1.2 MB/s
+>>          32k  54.3 MB/s        6.7 MB/s        3.6 MB/s       2.3 MB/s
+>>          64k  64.1 MB/s       12.6 MB/s        6.5 MB/s       4.7 MB/s
+>>         128k  70.5 MB/s       20.1 MB/s       11.9 MB/s       8.7 MB/s
+>>         256k  74.6 MB/s       38.6 MB/s       21.3 MB/s      15.0 MB/s
+>> rsize ==> 512k        77.4 MB/s       59.4 MB/s       39.8 MB/s      25.5 MB/s
+>>        1024k  85.5 MB/s       77.9 MB/s       65.7 MB/s      43.0 MB/s
+>>        2048k  86.8 MB/s       81.5 MB/s       84.1 MB/s      59.7 MB/s
+>>        4096k  87.9 MB/s       77.4 MB/s       56.2 MB/s      59.2 MB/s
+>>        8192k  89.0 MB/s       81.2 MB/s       78.0 MB/s      41.2 MB/s
+>>       16384k  87.7 MB/s       85.8 MB/s       62.0 MB/s      56.5 MB/s
+>>
+>> readahead size        normal          1ms+1ms         5ms+5ms         10ms+10ms(*)
+>>          16k  37.2 MB/s        6.4 MB/s        2.1 MB/s        1.2 MB/s
+>> rsize ==>  32k        56.6 MB/s        6.8 MB/s        3.6 MB/s        2.3 MB/s
+>>          64k  66.1 MB/s       12.7 MB/s        6.6 MB/s        4.7 MB/s
+>>         128k  69.3 MB/s       22.0 MB/s       12.2 MB/s        8.9 MB/s
+>>         256k  69.6 MB/s       41.8 MB/s       20.7 MB/s       14.7 MB/s
+>>         512k  71.3 MB/s       54.1 MB/s       25.0 MB/s       16.9 MB/s
+>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>        1024k  71.5 MB/s       48.4 MB/s       26.0 MB/s       16.7 MB/s
+>>        2048k  71.7 MB/s       53.2 MB/s       25.3 MB/s       17.6 MB/s
+>>        4096k  71.5 MB/s       50.4 MB/s       25.7 MB/s       17.1 MB/s
+>>        8192k  71.1 MB/s       52.3 MB/s       26.3 MB/s       16.9 MB/s
+>>       16384k  70.2 MB/s       56.6 MB/s       27.0 MB/s       16.8 MB/s
+>>
+>> (*) 10ms+10ms means to add delay on both client & server sides with
+>>     # /sbin/tc qdisc change dev eth0 root netem delay 10ms
+>>     The total >=20ms delay is so large for NFS, that a simple `vi some.sh`
+>>     command takes a dozen seconds. Note that the actual delay reported
+>>     by ping is larger, eg. for the 1ms+1ms case:
+>>         rtt min/avg/max/mdev = 7.361/8.325/9.710/0.837 ms
+>>
+>>
+>> So it seems that readahead_size=4*rsize (ie. keep 4 RPC requests in
+>> flight) is able to get near full NFS bandwidth. Reducing the mulriple
+>> from 15 to 4 not only makes the client side readahead size more sane
+>> (2MB by default), but also reduces the disorderness of the server side
+>> RPC read requests, which yeilds better server side readahead behavior.
+>>
+>> To avoid small readahead when the client mount with "-o rsize=32k" or
+>> the server only supports rsize <= 32k, we take the max of 2*rsize and
+>> default_backing_dev_info.ra_pages. The latter defaults to 512K, and can
+>> be explicitly changed by user with kernel parameter "readahead=" and
+>> runtime tunable "/sys/devices/virtual/bdi/default/read_ahead_kb" (which
+>> takes effective for future NFS mounts).
+>>
+>> The test script is:
+>>
+>> #!/bin/sh
+>>
+>> file=/mnt/sparse
+>> BDI=0:15
+>>
+>> for rasize in 16 32 64 128 256 512 1024 2048 4096 8192 16384
+>> do
+>>       echo 3 > /proc/sys/vm/drop_caches
+>>       echo $rasize > /sys/devices/virtual/bdi/$BDI/read_ahead_kb
+>>       echo readahead_size=${rasize}k
+>>       dd if=$file of=/dev/null bs=4k count=1024000
+>> done
+>>
+>> CC: Dave Chinner <david@fromorbit.com>
+>> CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+>> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+>> ---
+>>  fs/nfs/client.c   |    4 +++-
+>>  fs/nfs/internal.h |    8 --------
+>>  2 files changed, 3 insertions(+), 9 deletions(-)
+>>
+>> --- linux.orig/fs/nfs/client.c        2010-02-26 10:10:46.000000000 +0800
+>> +++ linux/fs/nfs/client.c     2010-02-26 11:07:22.000000000 +0800
+>> @@ -889,7 +889,9 @@ static void nfs_server_set_fsinfo(struct
+>>       server->rpages = (server->rsize + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+>>
+>>       server->backing_dev_info.name = "nfs";
+>> -     server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
+>> +     server->backing_dev_info.ra_pages = max_t(unsigned long,
+>> +                                           default_backing_dev_info.ra_pages,
+>> +                                           4 * server->rpages);
+>>       server->backing_dev_info.capabilities |= BDI_CAP_ACCT_UNSTABLE;
+>>
+>>       if (server->wsize > max_rpc_payload)
+>> --- linux.orig/fs/nfs/internal.h      2010-02-26 10:10:46.000000000 +0800
+>> +++ linux/fs/nfs/internal.h   2010-02-26 11:07:07.000000000 +0800
+>> @@ -10,14 +10,6 @@
+>>
+>>  struct nfs_string;
+>>
+>> -/* Maximum number of readahead requests
+>> - * FIXME: this should really be a sysctl so that users may tune it to suit
+>> - *        their needs. People that do NFS over a slow network, might for
+>> - *        instance want to reduce it to something closer to 1 for improved
+>> - *        interactive response.
+>> - */
+>> -#define NFS_MAX_READAHEAD    (RPC_DEF_SLOT_TABLE - 1)
+>> -
+>>  /*
+>>   * Determine if sessions are in use.
+>>   */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
