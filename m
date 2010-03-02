@@ -1,91 +1,267 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384Ab0CBUcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:32:43 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:33007 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754285Ab0CBUcj convert rfc822-to-8bit (ORCPT
+	id S1757359Ab0CBUcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:32:19 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:47389 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979Ab0CBUa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:32:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jdZPubpXcUpJq5sxYY4bjhIEdlNYYgthoB+KjVdsp+egfu0peJADLWSsj0CAtMW7OQ
-         6VbpBCLjt+9Vdd0J7UWfdHCt5IGavI/evbCxfLitblT57caqQxj8c1Pv5KTHl40bPOXF
-         ioEdt/63MqkiS6bhD/0WHZtUWe0hGSDi6dQm0=
-MIME-Version: 1.0
-In-Reply-To: <1267461438.5157.9586.camel@thor.local>
-References: <1266761422-2921-1-git-send-email-zajec5@gmail.com>
-	 <b170af451002260238p29c7db97nd50154bf7288ef42@mail.gmail.com>
-	 <20100226081418.5902446f.akpm@linux-foundation.org>
-	 <b170af451002260933i6a7a5e1el619f8e71c3ae0bc8@mail.gmail.com>
-	 <20100226190100.GQ10145@sci.fi>
-	 <b170af451002270133v6c44a6bcnf5751a6338c61a63@mail.gmail.com>
-	 <1267461438.5157.9586.camel@thor.local>
-Date: Tue, 2 Mar 2010 21:32:37 +0100
-Message-ID: <b170af451003021232r7b4e961egbf572248d5784c26@mail.gmail.com>
-Subject: Re: [PATCH][RFC] time: add wait_interruptible_timeout macro to sleep 
-	(w. timeout) until wake_up
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Mar 2010 15:30:27 -0500
+From: Samir Bellabes <sam@synack.fr>
+To: linux-security-module@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, jamal <hadi@cyberus.ca>,
+       Patrick McHardy <kaber@trash.net>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Grzegorz Nosek <root@localdomain.pl>, Samir Bellabes <sam@synack.fr>
+Subject: [RFC v2 08/10] snet: introduce snet_verdict
+Date: Tue,  2 Mar 2010 21:23:12 +0100
+Message-Id: <1267561394-13626-9-git-send-email-sam@synack.fr>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267561394-13626-1-git-send-email-sam@synack.fr>
+References: <1267561394-13626-1-git-send-email-sam@synack.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-W dniu 1 marca 2010 17:37 użytkownik Michel Dänzer <michel@daenzer.net> napisał:
-> On Sat, 2010-02-27 at 10:33 +0100, Rafał Miłecki wrote:
->> W dniu 26 lutego 2010 20:01 użytkownik Ville Syrjälä <syrjala@sci.fi> napisał:
->> > Disabling the condition check doesn't make sense.
->> >
->> > You could use a completion.
->> >
->> > init_completion(vbl_irq);
->> > enable_vbl_irq();
->> > wait_for_completion(vbl_irq);
->> > disable_vbl_irq();
->> > and call complete(vbl_irq) in the interrupt handler.
->> >
->> > The same would of course work with just some flag or counter
->> > and a wait queue.
->>
->> Ouch, I can see it gone bad already.
->>
->> Firstly I simply just wanted to avoid condition in wait_event_*. It
->> looked unnecessary as I got interrupts (signals).
->
-> So this code runs in user process context? If so, it should return to
-> userspace ASAP on signal receipt, otherwise e.g. smoothness of X mouse
-> movement may suffer.
->
-> If that's a problem, then maybe the code should run in a different
-> context, e.g. a tasklet or some kind of worker kernel thread.
+This patch adds the snet's subsystem responsive of managing verdicts
 
-It has nothing to do with userspace. Please see my previous description:
+snet is using the word 'verdict' for the returning value of LSM hooks.
+Different states exist (grant/deny/pending/none).
 
+This patch introduces a hashtable 'verdict_hash' and operations (set/get/search..)
+in order to manage verdicts. Syscalls are waiting, inside a classical waitqueue,
+for theirs verdicts or for a timeout. Timeout value and the default verdict
+policy are configurable at boot or by the snet_netlink subsystem.
+With the help of the communication's subsystem, verdicts are coming from userspace
 
+Signed-off-by: Samir Bellabes <sam@synack.fr>
+---
+ security/snet/snet_verdict.c |  184 ++++++++++++++++++++++++++++++++++++++++++
+ security/snet/snet_verdict.h |   23 +++++
+ 2 files changed, 207 insertions(+), 0 deletions(-)
+ create mode 100644 security/snet/snet_verdict.c
+ create mode 100644 security/snet/snet_verdict.h
 
-W dniu 26 lutego 2010 13:16 użytkownik Rafał Miłecki <zajec5@gmail.com> napisał:
-> W dniu 26 lutego 2010 12:55 użytkownik Thomas Gleixner
->> Sleeping in the timer handler ? In which context runs this timer handler ?
->
-> We have our struct delayed_work which we first init and then we use
-> "queue_delayed_work" to start this "timer". So it's not real-real
-> timer as struct timer_list.
->
-> So this is actually delayed_work handler. Sorry (again) for my bad naming.
-
-
-
-It's delayed_work.
-
+diff --git a/security/snet/snet_verdict.c b/security/snet/snet_verdict.c
+new file mode 100644
+index 0000000..480a7f8
+--- /dev/null
++++ b/security/snet/snet_verdict.c
+@@ -0,0 +1,184 @@
++#include <linux/sched.h>
++#include <linux/spinlock.h>
++#include <linux/random.h>
++#include <linux/wait.h>
++#include <asm/atomic.h>
++#include <linux/snet.h>
++#include "snet_verdict.h"
++
++static struct list_head *snet_vdh;
++static rwlock_t snet_vdh_lock = __RW_LOCK_UNLOCKED();
++
++struct snet_verdict_entry {
++	struct list_head list;
++	u32 verdict_id;
++	enum snet_verdict verdict;
++};
++
++static atomic_t value = ATOMIC_INIT(1);
++
++/* when waiting for a verdict, process is added to this queue */
++static DECLARE_WAIT_QUEUE_HEAD(snet_wq);
++
++/* lookup for a verdict - before using this function, lock snet_vdh_lock */
++static struct snet_verdict_entry *__snet_verdict_lookup(const u32 verdict_id)
++{
++	unsigned int h = 0;
++	struct list_head *l = NULL;
++	struct snet_verdict_entry *s = NULL;
++
++	h = verdict_id % snet_vdh_size;
++	l = &snet_vdh[h];
++
++	list_for_each_entry(s, l, list) {
++		if (s->verdict_id == verdict_id) {
++			return s;
++		}
++	}
++	return NULL;
++}
++
++const enum snet_verdict snet_verdict_wait(const u32 verdict_id)
++{
++	enum snet_verdict verdict = SNET_VERDICT_NONE;
++	long ret = 0;
++
++	ret = wait_event_timeout(snet_wq,
++				 (verdict = snet_verdict_get(verdict_id))
++				 != SNET_VERDICT_PENDING,
++				 snet_verdict_delay * HZ);
++	if (ret)
++		return snet_verdict_get(verdict_id);
++	else
++		return SNET_VERDICT_NONE;
++}
++
++const enum snet_verdict snet_verdict_get(const u32 verdict_id)
++{
++	enum snet_verdict v = SNET_VERDICT_NONE;
++	struct snet_verdict_entry *data = NULL;
++
++	read_lock_bh(&snet_vdh_lock);
++	data = __snet_verdict_lookup(verdict_id);
++	if (data != NULL)
++		v = data->verdict;
++
++	read_unlock_bh(&snet_vdh_lock);
++	return v;
++}
++
++int snet_verdict_set(const u32 verdict_id, const enum snet_verdict verdict)
++{
++	struct snet_verdict_entry *data = NULL;
++	int ret = -EINVAL;
++
++	if (verdict >= SNET_NR_VERDICT_TYPES)
++		goto out;
++
++	write_lock_bh(&snet_vdh_lock);
++	data = __snet_verdict_lookup(verdict_id);
++	if (data != NULL) {
++		/* if verdict is already set because of
++		   timeout, we won't modify it */
++		if (data->verdict == SNET_VERDICT_PENDING) {
++			data->verdict = verdict;
++			ret = 0;
++		}
++	}
++	write_unlock_bh(&snet_vdh_lock);
++	wake_up(&snet_wq);
++out:
++	return ret;
++}
++
++int snet_verdict_remove(const u32 verdict_id)
++{
++	struct snet_verdict_entry *data = NULL;
++
++	write_lock_bh(&snet_vdh_lock);
++	data = __snet_verdict_lookup(verdict_id);
++	if (data == NULL) {
++		write_unlock_bh(&snet_vdh_lock);
++		return -EINVAL;
++	}
++	pr_debug("(verdict_id=%u)\n", data->verdict_id);
++	list_del(&data->list);
++	write_unlock_bh(&snet_vdh_lock);
++	kfree(data);
++	return 0;
++}
++
++int snet_verdict_insert(void)
++{
++	struct snet_verdict_entry *data = NULL;
++	unsigned int h = 0;
++	u32 verdict_id = 0;
++
++	data = kzalloc(sizeof(struct snet_verdict_entry), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	do {
++		verdict_id = atomic_inc_return(&value);
++	} while (verdict_id == 0);
++
++	data->verdict_id = verdict_id;
++	data->verdict = SNET_VERDICT_PENDING;
++	INIT_LIST_HEAD(&(data->list));
++	h = data->verdict_id % snet_vdh_size;
++
++	write_lock_bh(&snet_vdh_lock);
++	list_add_tail(&data->list, &snet_vdh[h]);
++	pr_debug("[%u]=(verdict_id=%u)\n", h, data->verdict_id);
++	write_unlock_bh(&snet_vdh_lock);
++
++	return verdict_id;
++}
++
++void snet_verdict_flush(void)
++{
++	unsigned int i = 0;
++
++	write_lock_bh(&snet_vdh_lock);
++	for (i = 0; i < snet_vdh_size; i++) {
++		struct snet_verdict_entry *data, *tmp;
++		list_for_each_entry_safe(data, tmp, &snet_vdh[i], list) {
++			list_del(&data->list);
++			kfree(data);
++		}
++	}
++	write_unlock_bh(&snet_vdh_lock);
++	return;
++}
++
++/* init function */
++int snet_verdict_init(void)
++{
++	int err = 0, i = 0;
++
++	snet_vdh = kzalloc(sizeof(struct list_head) * snet_vdh_size,
++			  GFP_KERNEL);
++	if (!snet_vdh) {
++		printk(KERN_WARNING
++		       "snet: can't alloc memory for verdict\n");
++		err = -ENOMEM;
++		goto out;
++	}
++
++	for (i = 0; i < snet_vdh_size; i++)
++		INIT_LIST_HEAD(&snet_vdh[i]);
++
++out:
++	return err;
++}
++
++/* exit function */
++void snet_verdict_exit(void)
++{
++	if (snet_vdh) {
++		kfree(snet_vdh);
++		snet_vdh = NULL;
++	}
++
++	return;
++}
+diff --git a/security/snet/snet_verdict.h b/security/snet/snet_verdict.h
+new file mode 100644
+index 0000000..07e8638
+--- /dev/null
++++ b/security/snet/snet_verdict.h
+@@ -0,0 +1,23 @@
++#ifndef _SNET_VERDICT_H
++#define _SNET_VERDICT_H
++
++extern unsigned int snet_vdh_size;
++extern unsigned int snet_verdict_delay;
++
++/* helper functions */
++const enum snet_verdict snet_verdict_wait(const u32 verdict_id);
++
++/* manipulate the verdicts hash table */
++const enum snet_verdict snet_verdict_get(const u32 verdict_id);
++int snet_verdict_set(const u32 verdict_id, const enum snet_verdict verdict);
++int snet_verdict_insert(void);
++int snet_verdict_remove(const u32 verdict_id);
++int snet_verdict_insert(void);
++void snet_verdict_flush(void);
++
++/* init function */
++int snet_verdict_init(void);
++/* exit function */
++void snet_verdict_exit(void);
++
++#endif /* _SNET_VERDICT_H */
 -- 
-Rafał
+1.6.3.3
+
