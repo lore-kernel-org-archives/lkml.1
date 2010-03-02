@@ -1,55 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864Ab0CBI2Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 03:28:25 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:63552 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832Ab0CBI2V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 03:28:21 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
-Date: Tue, 02 Mar 2010 01:28:15 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted'
- xattrs
-In-reply-to: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
-To: James Morris <jmorris@namei.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-Message-id: <2B059650-E1D4-4BED-84A6-64C3419E0ACF@sun.com>
-X-Mailer: Apple Mail (2.936)
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
+	id S1752043Ab0CBIbw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 03:31:52 -0500
+Received: from www.tglx.de ([62.245.132.106]:51985 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885Ab0CBIbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 03:31:51 -0500
+Date: Tue, 2 Mar 2010 09:31:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Ian Campbell <ijc@hellion.org.uk>, Yinghai Lu <yinghai@kernel.org>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [tip:x86/irq] x86: apic: Fix mismerge, add arch_probe_nr_irqs()
+ again
+In-Reply-To: <m1iq9fvh40.fsf@fess.ebiederm.org>
+Message-ID: <alpine.LFD.2.00.1003020930240.4245@localhost.localdomain>
+References: <20100207210250.GB8256@jenkins.home.ifup.org> <tip-f6a929eb62ef43cae16ba6d4e2c64b4e430fe7a4@git.kernel.org> <4B881097.1050505@kernel.org> <1267442545.11737.20718.camel@zakaz.uk.xensource.com> <m1d3zn7uwl.fsf@fess.ebiederm.org>
+ <1267479860.2785.843.camel@localhost.localdomain> <m1iq9fvh40.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-03-02, at 01:01, James Morris wrote:
-> I noticed that there are differences in the behavior of listxattr(2)  
-> for
-> xattrs in the trusted namespace.
->
-> Some filesystems, such as ext[234], require CAP_SYS_ADMIN for this,  
-> i.e.
-> trusted xattr names are hidden from unprivileged users.
+On Mon, 1 Mar 2010, Eric W. Biederman wrote:
+> Ian Campbell <ijc@hellion.org.uk> writes:
+> > On Mon, 2010-03-01 at 10:34 -0800, Eric W. Biederman wrote:
+> It is going to take a bit but our next big step for the irq methods
+> is to make them all take struct irq_desc pointers instead of unsigned
+> int irq, so we don't have to repeat the lookups.
 
-This matches my understanding of the trusted.* namespace.  It is  
-settable by the kernel and root (CAP_SYS_ADMIN) but not regular users.
+That should hit 2.6.35.
+ 
+> >> - Xen has an array irq_info[NR_IRQS] one of the last static arrays
+> >>   sized at NR_IRQs in the entire kernel.
+> >
+> > Hopefully the same info as is in that array could (and indeed should) be
+> > instead stored in irq_desc->chip_data. Would you object to
+> > arch_init_copy_chip_data and arch_free_chip_data becoming function
+> > pointers within the struct irq_chip?
+> 
+> No objections.  Now that I see those methods it looks like they always
+> should have been in irq_chip.
 
-> I'm not sure what the initial intention was for the behavior, although
-> given that several major filesystems are have been fielded with the
-> CAP_SYS_ADMIN check, it seems most prudent to make this the standard
-> behavior for all filesystems, in case any users are depending on it.
+Agreed.
 
+Thanks,
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+	tglx
