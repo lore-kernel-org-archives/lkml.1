@@ -1,140 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374Ab0CBUcY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 15:32:24 -0500
-Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:47388 "EHLO
-	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904Ab0CBUa1 (ORCPT
+	id S1757275Ab0CBUgo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 15:36:44 -0500
+Received: from mail-wy0-f174.google.com ([74.125.82.174]:48722 "EHLO
+	mail-wy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391Ab0CBUgm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 15:30:27 -0500
-From: Samir Bellabes <sam@synack.fr>
-To: linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, jamal <hadi@cyberus.ca>,
-       Patrick McHardy <kaber@trash.net>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Grzegorz Nosek <root@localdomain.pl>, Samir Bellabes <sam@synack.fr>
-Subject: [RFC v2 02/10] Revert "lsm: Remove the socket_post_accept() hook"
-Date: Tue,  2 Mar 2010 21:23:06 +0100
-Message-Id: <1267561394-13626-3-git-send-email-sam@synack.fr>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267561394-13626-1-git-send-email-sam@synack.fr>
-References: <1267561394-13626-1-git-send-email-sam@synack.fr>
+	Tue, 2 Mar 2010 15:36:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wXloQKzTTJKZNE+7X3dcJpVR3OIkWbyNfLBWYCt+pVOn/br2faU+6fs5k95wclm07P
+         25hNIB1kYtf2D9f/z2Zv9W/yefEnSkp10aKTzoIE/fKJrN2zeJ7wEzR31nt850zBI6Fg
+         EbirkJYq6B21fp212QY66HAT2MJdwna3GRg8c=
+MIME-Version: 1.0
+In-Reply-To: <10f740e81002221103h7408d52ajf5a67da39d6ae8dd@mail.gmail.com>
+References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
+	 <4B6B29DD.7060502@oracle.com> <4B7AC2A9.4070203@oracle.com>
+	 <20100216173326.091c1c77@hyperion.delvare>
+	 <4B7AC999.3060103@oracle.com> <4B82B28F.10104@oracle.com>
+	 <10f740e81002221103h7408d52ajf5a67da39d6ae8dd@mail.gmail.com>
+Date: Tue, 2 Mar 2010 21:36:40 +0100
+X-Google-Sender-Auth: 379675818169d911
+Message-ID: <10f740e81003021236i662aa20fs7e092295f07aecd4@mail.gmail.com>
+Subject: Re: [PATCH -next] i2c: fix xiic build error
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: ben-linux@fluff.org, Jean Delvare <khali@linux-fr.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit 8651d5c0b1f874c5b8307ae2b858bc40f9f02482.
+On Mon, Feb 22, 2010 at 20:03, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, Feb 22, 2010 at 17:36, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> On 02/16/10 08:36, Randy Dunlap wrote:
+>>> On 02/16/10 08:33, Jean Delvare wrote:
+>>>> On Tue, 16 Feb 2010 08:07:05 -0800, Randy Dunlap wrote:
+>>>>> On 02/04/10 12:11, Randy Dunlap wrote:
+>>>>>
+>>>>> This patch is still needed in linux-next-20100216.
+>>>>
+>>>> Nothing I can do about it, as the i2c-xiic driver is neither upstream
+>>>> nor in my tree.
+>>>
+>>> Thanks, Jean.
+>>>
+>>> Next/merge.log tells me:
+>>> Merge remote branch 'bjdooks-i2c/next-i2c'
+>>>
+>>> Ben??
+>>>
+>>
+>> ping Ben.
+>
+> Yes, please. Thx!
 
-snet needs to reintroduce this hook, as it was designed to be: a hook for
-updating security informations on objects.
+Ping? This build problem is almost one month old now...
 
-Signed-off-by: Samir Bellabes <sam@synack.fr>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
----
- include/linux/security.h |   13 +++++++++++++
- net/socket.c             |    2 ++
- security/capability.c    |    5 +++++
- security/security.c      |    5 +++++
- 4 files changed, 25 insertions(+), 0 deletions(-)
+>> Here's the patch again.
+>>
+>> ---
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Add header file to fix build error:
+>>
+>> drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of function 'mdelay'
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
+>> Cc: linux-i2c@vger.kernel.org
+>> ---
+>>  drivers/i2c/busses/i2c-xiic.c |    1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> --- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
+>> +++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
+>> @@ -31,6 +31,7 @@
+>>  #include <linux/module.h>
+>>  #include <linux/init.h>
+>>  #include <linux/errno.h>
+>> +#include <linux/delay.h>
+>>  #include <linux/platform_device.h>
+>>  #include <linux/i2c.h>
+>>  #include <linux/interrupt.h>
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 74e564b..d8ad624 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -938,6 +938,11 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  *	@sock contains the listening socket structure.
-  *	@newsock contains the newly created server socket for connection.
-  *	Return 0 if permission is granted.
-+ * @socket_post_accept:
-+ *	This hook allows a security module to copy security
-+ *	information into the newly created socket's inode.
-+ *	@sock contains the listening socket structure.
-+ *	@newsock contains the newly created server socket for connection.
-  * @socket_sendmsg:
-  *	Check permission before transmitting a message to another socket.
-  *	@sock contains the socket structure.
-@@ -1674,6 +1679,8 @@ struct security_operations {
- 			       struct sockaddr *address, int addrlen);
- 	int (*socket_listen) (struct socket *sock, int backlog);
- 	int (*socket_accept) (struct socket *sock, struct socket *newsock);
-+	void (*socket_post_accept) (struct socket *sock,
-+				    struct socket *newsock);
- 	int (*socket_sendmsg) (struct socket *sock,
- 			       struct msghdr *msg, int size);
- 	int (*socket_recvmsg) (struct socket *sock,
-@@ -2696,6 +2703,7 @@ int security_socket_bind(struct socket *sock, struct sockaddr *address, int addr
- int security_socket_connect(struct socket *sock, struct sockaddr *address, int addrlen);
- int security_socket_listen(struct socket *sock, int backlog);
- int security_socket_accept(struct socket *sock, struct socket *newsock);
-+void security_socket_post_accept(struct socket *sock, struct socket *newsock);
- int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size);
- int security_socket_recvmsg(struct socket *sock, struct msghdr *msg,
- 			    int size, int flags);
-@@ -2778,6 +2786,11 @@ static inline int security_socket_accept(struct socket *sock,
- 	return 0;
- }
- 
-+static inline void security_socket_post_accept(struct socket *sock,
-+					       struct socket *newsock)
-+{
-+}
-+
- static inline int security_socket_sendmsg(struct socket *sock,
- 					  struct msghdr *msg, int size)
- {
-diff --git a/net/socket.c b/net/socket.c
-index b4eb361..2e66a5a 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1538,6 +1538,8 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
- 	fd_install(newfd, newfile);
- 	err = newfd;
- 
-+	security_socket_post_accept(sock, newsock);
-+
- out_put:
- 	fput_light(sock->file, fput_needed);
- out:
-diff --git a/security/capability.c b/security/capability.c
-index a9810dc..61eae40 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -641,6 +641,10 @@ static int cap_socket_accept(struct socket *sock, struct socket *newsock)
- 	return 0;
- }
- 
-+static void cap_socket_post_accept(struct socket *sock, struct socket *newsock)
-+{
-+}
-+
- static int cap_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
- {
- 	return 0;
-@@ -1081,6 +1085,7 @@ void security_fixup_ops(struct security_operations *ops)
- 	set_to_cap_if_null(ops, socket_connect);
- 	set_to_cap_if_null(ops, socket_listen);
- 	set_to_cap_if_null(ops, socket_accept);
-+	set_to_cap_if_null(ops, socket_post_accept);
- 	set_to_cap_if_null(ops, socket_sendmsg);
- 	set_to_cap_if_null(ops, socket_recvmsg);
- 	set_to_cap_if_null(ops, socket_getsockname);
-diff --git a/security/security.c b/security/security.c
-index 288c3a8..673979f 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -1082,6 +1082,11 @@ int security_socket_accept(struct socket *sock, struct socket *newsock)
- 	return security_ops->socket_accept(sock, newsock);
- }
- 
-+void security_socket_post_accept(struct socket *sock, struct socket *newsock)
-+{
-+	security_ops->socket_post_accept(sock, newsock);
-+}
-+
- int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
- {
- 	return security_ops->socket_sendmsg(sock, msg, size);
--- 
-1.6.3.3
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
