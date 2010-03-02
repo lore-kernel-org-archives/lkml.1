@@ -1,45 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185Ab0CBOLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 09:11:00 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:59915 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352Ab0CBOK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 09:10:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=GhExPX7LZ/sx6eNz6gU+WGHFHM47Zo3Q+7HcEyAqkuyp6Bc+VkzFPPZYifEe+FNjx8
-         u72MCTZMUK3WAgPAVrcM0sq/+V/BgHIXU/Qw3CCZrlQyr4JKIndw4xvogFlAXu80Mc9p
-         ZUXddnkUVJOWBUHqDHPpwB5HR7wL8wJU7dN04=
+	id S1753111Ab0CBONt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 09:13:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41968 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390Ab0CBONs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 09:13:48 -0500
+Date: Tue, 2 Mar 2010 15:12:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu 1/2] rcu: suppress RCU lockdep warnings
+ during early boot
+Message-ID: <20100302141257.GA28917@elte.hu>
+References: <20100301190329.GA26892@linux.vnet.ibm.com>
+ <1267470234-27150-1-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20100302122059.GA8247@elte.hu>
+ <20100302132718.GB6821@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 2 Mar 2010 16:10:57 +0200
-Message-ID: <c1fb08351003020610q25b85b60hf9362aabc4b0126f@mail.gmail.com>
-Subject: Google Gerrit
-From: Anca Emanuel <anca.emanuel@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, sop <sop@google.com>,
-       git <git@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302132718.GB6821@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, what do you think about Google Gerrit ? http://code.google.com/p/gerrit/
 
-see it in action here: http://review.source.android.com
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-quote:
-"Gerrit is a web based code review system, facilitating online code
-reviews for projects using the Git version control system.
-Gerrit makes reviews easier by showing changes in a side-by-side
-display, and allowing inline comments to be added by any reviewer.
-Gerrit simplifies Git based project maintainership by permitting any
-authorized user to submit changes to the master Git repository, rather
-than requiring all approved changes to be merged in by hand by the
-project maintainer. This functionality enables a more centralized
-usage of Git."
+> On Tue, Mar 02, 2010 at 01:20:59PM +0100, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > +	if (!rcu_scheduler_active || !debug_locks)
+> > > +		return 1;
+> > > +	return lock_is_held(&rcu_lock_map);
+> > 
+> > > +	if (!rcu_scheduler_active || !debug_locks)
+> > > +		return 1;
+> > > +	return lock_is_held(&rcu_bh_lock_map);
+> > 
+> > i guess there could be a common helper here?
+> 
+> Will do!
+> 
+> > Also, could we clear rcu_scheduler_active when we clear debug_locks? That way 
+> > only a single test is needed, a generic 'is lock debugging active'.
+> 
+> Doing that will break synchronize_rcu(), which returns immediately if
+> !rcu_scheduler_active.
 
-git needs an friendly UI, web based is the future.
+Ok - then have an debug_rcu flag which is cleared appropriately - so that the 
+fastpath impact is reduced?
 
-Maybe an integration with Wave.
+	Ingo
