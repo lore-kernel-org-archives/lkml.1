@@ -1,478 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259Ab0CBX30 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:29:26 -0500
-Received: from kroah.org ([198.145.64.141]:38493 "EHLO coco.kroah.org"
+	id S1758107Ab0CBXx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:53:56 -0500
+Received: from kroah.org ([198.145.64.141]:38576 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118Ab0CBX3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:29:11 -0500
+	id S1754296Ab0CBX3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:29:30 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
+Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Dmitri Vorobiev <dmitri.vorobiev@movial.fi>,
+       Henrik Kretzschmar <henne@nachtwindheim.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, peter fuerst <post@pfrst.de>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 05/62] sysdev: Pass attribute in sysdev_class attributes show/store
-Date: Tue,  2 Mar 2010 15:28:04 -0800
-Message-Id: <1267572541-410-5-git-send-email-gregkh@suse.de>
+Subject: [PATCH 30/62] platform-drivers: move probe to .devinit.text in drivers/scsi
+Date: Tue,  2 Mar 2010 15:28:29 -0800
+Message-Id: <1267572541-410-30-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230933.GA32287@kroah.com>
 References: <20100302230933.GA32287@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Passing the attribute to the low level IO functions allows all kinds
-of cleanups, by sharing low level IO code without requiring
-an own function for every piece of data.
+A pointer to a probe callback is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
-Also drivers can extend the attributes with own data fields
-and use that in the low level function.
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
-Similar to sysdev_attributes and normal attributes.
-
-This is a tree-wide sweep, converting everything in one go.
-
-No functional changes in this patch other than passing the new
-argument everywhere.
-
-Tested on x86, the non x86 parts are uncompiled.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: peter fuerst <post@pfrst.de>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/mips/txx9/generic/7segled.c |    5 +++-
- arch/s390/kernel/smp.c           |    8 ++++-
- arch/s390/kernel/time.c          |   49 ++++++++++++++++++++++++++++---------
- drivers/base/cpu.c               |    9 ++++--
- drivers/base/node.c              |   17 +++++++++----
- drivers/base/sys.c               |    4 +-
- drivers/cpuidle/sysfs.c          |    4 +++
- include/linux/sysdev.h           |    6 +++-
- kernel/perf_event.c              |   13 +++++++--
- kernel/sched.c                   |    4 +++
- 10 files changed, 89 insertions(+), 30 deletions(-)
+ drivers/scsi/sgiwd93.c    |    2 +-
+ drivers/scsi/sni_53c710.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/txx9/generic/7segled.c b/arch/mips/txx9/generic/7segled.c
-index 727ab21..7f8416f 100644
---- a/arch/mips/txx9/generic/7segled.c
-+++ b/arch/mips/txx9/generic/7segled.c
-@@ -58,13 +58,16 @@ static ssize_t raw_store(struct sys_device *dev,
- static SYSDEV_ATTR(ascii, 0200, NULL, ascii_store);
- static SYSDEV_ATTR(raw, 0200, NULL, raw_store);
- 
--static ssize_t map_seg7_show(struct sysdev_class *class, char *buf)
-+static ssize_t map_seg7_show(struct sysdev_class *class,
-+			     struct sysdev_class_attribute *attr,
-+			     char *buf)
- {
- 	memcpy(buf, &txx9_seg7map, sizeof(txx9_seg7map));
- 	return sizeof(txx9_seg7map);
- }
- 
- static ssize_t map_seg7_store(struct sysdev_class *class,
-+			      struct sysdev_class_attribute *attr,
- 			      const char *buf, size_t size)
- {
- 	if (size != sizeof(txx9_seg7map))
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index 8b10127..e212109 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -1020,7 +1020,9 @@ out:
- 	return rc;
- }
- 
--static ssize_t __ref rescan_store(struct sysdev_class *class, const char *buf,
-+static ssize_t __ref rescan_store(struct sysdev_class *class,
-+				  struct sysdev_class_attribute *attr,
-+				  const char *buf,
- 				  size_t count)
- {
- 	int rc;
-@@ -1041,7 +1043,9 @@ static ssize_t dispatching_show(struct sysdev_class *class, char *buf)
- 	return count;
- }
- 
--static ssize_t dispatching_store(struct sysdev_class *dev, const char *buf,
-+static ssize_t dispatching_store(struct sysdev_class *dev,
-+				 struct sysdev_class_attribute *attr,
-+				 const char *buf,
- 				 size_t count)
- {
- 	int val, rc;
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index a8f93f1..75894c2 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -1116,14 +1116,18 @@ static struct sys_device etr_port1_dev = {
- /*
-  * ETR class attributes
-  */
--static ssize_t etr_stepping_port_show(struct sysdev_class *class, char *buf)
-+static ssize_t etr_stepping_port_show(struct sysdev_class *class,
-+					struct sysdev_class_attribute *attr,
-+					char *buf)
- {
- 	return sprintf(buf, "%i\n", etr_port0.esw.p);
- }
- 
- static SYSDEV_CLASS_ATTR(stepping_port, 0400, etr_stepping_port_show, NULL);
- 
--static ssize_t etr_stepping_mode_show(struct sysdev_class *class, char *buf)
-+static ssize_t etr_stepping_mode_show(struct sysdev_class *class,
-+				      	struct sysdev_class_attribute *attr,
-+					char *buf)
- {
- 	char *mode_str;
- 
-@@ -1584,7 +1588,9 @@ static struct sysdev_class stp_sysclass = {
- 	.name	= "stp",
+diff --git a/drivers/scsi/sgiwd93.c b/drivers/scsi/sgiwd93.c
+index 0807b26..fef0e3c 100644
+--- a/drivers/scsi/sgiwd93.c
++++ b/drivers/scsi/sgiwd93.c
+@@ -226,7 +226,7 @@ static struct scsi_host_template sgiwd93_template = {
+ 	.use_clustering		= DISABLE_CLUSTERING,
  };
  
--static ssize_t stp_ctn_id_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_ctn_id_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
+-static int __init sgiwd93_probe(struct platform_device *pdev)
++static int __devinit sgiwd93_probe(struct platform_device *pdev)
  {
- 	if (!stp_online)
- 		return -ENODATA;
-@@ -1594,7 +1600,9 @@ static ssize_t stp_ctn_id_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(ctn_id, 0400, stp_ctn_id_show, NULL);
- 
--static ssize_t stp_ctn_type_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_ctn_type_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online)
- 		return -ENODATA;
-@@ -1603,7 +1611,9 @@ static ssize_t stp_ctn_type_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(ctn_type, 0400, stp_ctn_type_show, NULL);
- 
--static ssize_t stp_dst_offset_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_dst_offset_show(struct sysdev_class *class,
-+				   struct sysdev_class_attribute *attr,
-+				   char *buf)
- {
- 	if (!stp_online || !(stp_info.vbits & 0x2000))
- 		return -ENODATA;
-@@ -1612,7 +1622,9 @@ static ssize_t stp_dst_offset_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(dst_offset, 0400, stp_dst_offset_show, NULL);
- 
--static ssize_t stp_leap_seconds_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_leap_seconds_show(struct sysdev_class *class,
-+					struct sysdev_class_attribute *attr,
-+					char *buf)
- {
- 	if (!stp_online || !(stp_info.vbits & 0x8000))
- 		return -ENODATA;
-@@ -1621,7 +1633,9 @@ static ssize_t stp_leap_seconds_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(leap_seconds, 0400, stp_leap_seconds_show, NULL);
- 
--static ssize_t stp_stratum_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_stratum_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online)
- 		return -ENODATA;
-@@ -1630,7 +1644,9 @@ static ssize_t stp_stratum_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(stratum, 0400, stp_stratum_show, NULL);
- 
--static ssize_t stp_time_offset_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_time_offset_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online || !(stp_info.vbits & 0x0800))
- 		return -ENODATA;
-@@ -1639,7 +1655,9 @@ static ssize_t stp_time_offset_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(time_offset, 0400, stp_time_offset_show, NULL);
- 
--static ssize_t stp_time_zone_offset_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_time_zone_offset_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online || !(stp_info.vbits & 0x4000))
- 		return -ENODATA;
-@@ -1649,7 +1667,9 @@ static ssize_t stp_time_zone_offset_show(struct sysdev_class *class, char *buf)
- static SYSDEV_CLASS_ATTR(time_zone_offset, 0400,
- 			 stp_time_zone_offset_show, NULL);
- 
--static ssize_t stp_timing_mode_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_timing_mode_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online)
- 		return -ENODATA;
-@@ -1658,7 +1678,9 @@ static ssize_t stp_timing_mode_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(timing_mode, 0400, stp_timing_mode_show, NULL);
- 
--static ssize_t stp_timing_state_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_timing_state_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	if (!stp_online)
- 		return -ENODATA;
-@@ -1667,12 +1689,15 @@ static ssize_t stp_timing_state_show(struct sysdev_class *class, char *buf)
- 
- static SYSDEV_CLASS_ATTR(timing_state, 0400, stp_timing_state_show, NULL);
- 
--static ssize_t stp_online_show(struct sysdev_class *class, char *buf)
-+static ssize_t stp_online_show(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
-+				char *buf)
- {
- 	return sprintf(buf, "%i\n", stp_online);
- }
- 
- static ssize_t stp_online_store(struct sysdev_class *class,
-+				struct sysdev_class_attribute *attr,
- 				const char *buf, size_t count)
- {
- 	unsigned int value;
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 958bd15..fd1b2f9 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -151,7 +151,8 @@ static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
- }
- 
- #define	print_cpus_func(type) \
--static ssize_t print_cpus_##type(struct sysdev_class *class, char *buf)	\
-+static ssize_t print_cpus_##type(struct sysdev_class *class, 		\
-+	 		struct sysdev_class_attribute *attr, char *buf)	\
- {									\
- 	return print_cpus_map(buf, cpu_##type##_mask);			\
- }									\
-@@ -165,7 +166,8 @@ print_cpus_func(present);
- /*
-  * Print values for NR_CPUS and offlined cpus
-  */
--static ssize_t print_cpus_kernel_max(struct sysdev_class *class, char *buf)
-+static ssize_t print_cpus_kernel_max(struct sysdev_class *class,
-+				     struct sysdev_class_attribute *attr, char *buf)
- {
- 	int n = snprintf(buf, PAGE_SIZE-2, "%d\n", NR_CPUS - 1);
- 	return n;
-@@ -175,7 +177,8 @@ static SYSDEV_CLASS_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
- /* arch-optional setting to enable display of offline cpus >= nr_cpu_ids */
- unsigned int total_cpus;
- 
--static ssize_t print_cpus_offline(struct sysdev_class *class, char *buf)
-+static ssize_t print_cpus_offline(struct sysdev_class *class,
-+				  struct sysdev_class_attribute *attr, char *buf)
- {
- 	int n = 0, len = PAGE_SIZE-2;
- 	cpumask_var_t offline;
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index 7012279..85c9d30 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -544,23 +544,29 @@ static ssize_t print_nodes_state(enum node_states state, char *buf)
- 	return n;
- }
- 
--static ssize_t print_nodes_possible(struct sysdev_class *class, char *buf)
-+static ssize_t print_nodes_possible(struct sysdev_class *class,
-+				    struct sysdev_class_attribute *attr, char *buf)
- {
- 	return print_nodes_state(N_POSSIBLE, buf);
- }
- 
--static ssize_t print_nodes_online(struct sysdev_class *class, char *buf)
-+static ssize_t print_nodes_online(struct sysdev_class *class,
-+				  struct sysdev_class_attribute *attr,
-+				  char *buf)
- {
- 	return print_nodes_state(N_ONLINE, buf);
- }
- 
- static ssize_t print_nodes_has_normal_memory(struct sysdev_class *class,
--						char *buf)
-+					     struct sysdev_class_attribute *attr,
-+					     char *buf)
- {
- 	return print_nodes_state(N_NORMAL_MEMORY, buf);
- }
- 
--static ssize_t print_nodes_has_cpu(struct sysdev_class *class, char *buf)
-+static ssize_t print_nodes_has_cpu(struct sysdev_class *class,
-+				   struct sysdev_class_attribute *attr,
-+				   char *buf)
- {
- 	return print_nodes_state(N_CPU, buf);
- }
-@@ -573,7 +579,8 @@ static SYSDEV_CLASS_ATTR(has_cpu, 0444, print_nodes_has_cpu, NULL);
- 
- #ifdef CONFIG_HIGHMEM
- static ssize_t print_nodes_has_high_memory(struct sysdev_class *class,
--						 char *buf)
-+					   struct sysdev_class_attribute *attr,
-+					   char *buf)
- {
- 	return print_nodes_state(N_HIGH_MEMORY, buf);
- }
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 0d90390..a38445c 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -89,7 +89,7 @@ static ssize_t sysdev_class_show(struct kobject *kobj, struct attribute *attr,
- 	struct sysdev_class_attribute *class_attr = to_sysdev_class_attr(attr);
- 
- 	if (class_attr->show)
--		return class_attr->show(class, buffer);
-+		return class_attr->show(class, class_attr, buffer);
- 	return -EIO;
- }
- 
-@@ -100,7 +100,7 @@ static ssize_t sysdev_class_store(struct kobject *kobj, struct attribute *attr,
- 	struct sysdev_class_attribute *class_attr = to_sysdev_class_attr(attr);
- 
- 	if (class_attr->store)
--		return class_attr->store(class, buffer, count);
-+		return class_attr->store(class, class_attr, buffer, count);
- 	return -EIO;
- }
- 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 97b0038..c9cefac 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -22,6 +22,7 @@ static int __init cpuidle_sysfs_setup(char *unused)
- __setup("cpuidle_sysfs_switch", cpuidle_sysfs_setup);
- 
- static ssize_t show_available_governors(struct sysdev_class *class,
-+					struct sysdev_class_attribute *attr,
- 					char *buf)
- {
- 	ssize_t i = 0;
-@@ -41,6 +42,7 @@ out:
- }
- 
- static ssize_t show_current_driver(struct sysdev_class *class,
-+				   struct sysdev_class_attribute *attr,
- 				   char *buf)
- {
- 	ssize_t ret;
-@@ -56,6 +58,7 @@ static ssize_t show_current_driver(struct sysdev_class *class,
- }
- 
- static ssize_t show_current_governor(struct sysdev_class *class,
-+				     struct sysdev_class_attribute *attr,
- 				     char *buf)
- {
- 	ssize_t ret;
-@@ -71,6 +74,7 @@ static ssize_t show_current_governor(struct sysdev_class *class,
- }
- 
- static ssize_t store_current_governor(struct sysdev_class *class,
-+				      struct sysdev_class_attribute *attr,
- 				      const char *buf, size_t count)
- {
- 	char gov_name[CPUIDLE_NAME_LEN];
-diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
-index f395bb3..c2458fa 100644
---- a/include/linux/sysdev.h
-+++ b/include/linux/sysdev.h
-@@ -41,8 +41,10 @@ struct sysdev_class {
- 
- struct sysdev_class_attribute {
- 	struct attribute attr;
--	ssize_t (*show)(struct sysdev_class *, char *);
--	ssize_t (*store)(struct sysdev_class *, const char *, size_t);
-+	ssize_t (*show)(struct sysdev_class *, struct sysdev_class_attribute *,
-+			char *);
-+	ssize_t (*store)(struct sysdev_class *, struct sysdev_class_attribute *,
-+			 const char *, size_t);
+ 	struct sgiwd93_platform_data *pd = pdev->dev.platform_data;
+ 	unsigned char *wdregs = pd->wdregs;
+diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
+index 37b3359..56cf0bb 100644
+--- a/drivers/scsi/sni_53c710.c
++++ b/drivers/scsi/sni_53c710.c
+@@ -64,7 +64,7 @@ static struct scsi_host_template snirm710_template = {
+ 	.module		= THIS_MODULE,
  };
  
- #define _SYSDEV_CLASS_ATTR(_name,_mode,_show,_store) 		\
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index a661e79..4bafeac 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -5481,13 +5481,16 @@ void __init perf_event_init(void)
- 	register_cpu_notifier(&perf_cpu_nb);
- }
- 
--static ssize_t perf_show_reserve_percpu(struct sysdev_class *class, char *buf)
-+static ssize_t perf_show_reserve_percpu(struct sysdev_class *class,
-+					struct sysdev_class_attribute *attr,
-+					char *buf)
+-static int __init snirm710_probe(struct platform_device *dev)
++static int __devinit snirm710_probe(struct platform_device *dev)
  {
- 	return sprintf(buf, "%d\n", perf_reserved_percpu);
- }
- 
- static ssize_t
- perf_set_reserve_percpu(struct sysdev_class *class,
-+			struct sysdev_class_attribute *attr,
- 			const char *buf,
- 			size_t count)
- {
-@@ -5516,13 +5519,17 @@ perf_set_reserve_percpu(struct sysdev_class *class,
- 	return count;
- }
- 
--static ssize_t perf_show_overcommit(struct sysdev_class *class, char *buf)
-+static ssize_t perf_show_overcommit(struct sysdev_class *class,
-+				    struct sysdev_class_attribute *attr,
-+				    char *buf)
- {
- 	return sprintf(buf, "%d\n", perf_overcommit);
- }
- 
- static ssize_t
--perf_set_overcommit(struct sysdev_class *class, const char *buf, size_t count)
-+perf_set_overcommit(struct sysdev_class *class,
-+		    struct sysdev_class_attribute *attr,
-+		    const char *buf, size_t count)
- {
- 	unsigned long val;
- 	int err;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 6a212c9..a678e08 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7406,11 +7406,13 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
- 
- #ifdef CONFIG_SCHED_MC
- static ssize_t sched_mc_power_savings_show(struct sysdev_class *class,
-+					   struct sysdev_class_attribute *attr,
- 					   char *page)
- {
- 	return sprintf(page, "%u\n", sched_mc_power_savings);
- }
- static ssize_t sched_mc_power_savings_store(struct sysdev_class *class,
-+					    struct sysdev_class_attribute *attr,
- 					    const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 0);
-@@ -7422,11 +7424,13 @@ static SYSDEV_CLASS_ATTR(sched_mc_power_savings, 0644,
- 
- #ifdef CONFIG_SCHED_SMT
- static ssize_t sched_smt_power_savings_show(struct sysdev_class *dev,
-+					    struct sysdev_class_attribute *attr,
- 					    char *page)
- {
- 	return sprintf(page, "%u\n", sched_smt_power_savings);
- }
- static ssize_t sched_smt_power_savings_store(struct sysdev_class *dev,
-+					     struct sysdev_class_attribute *attr,
- 					     const char *buf, size_t count)
- {
- 	return sched_power_savings_store(buf, count, 1);
+ 	unsigned long base;
+ 	struct NCR_700_Host_Parameters *hostdata;
 -- 
 1.7.0.1
 
