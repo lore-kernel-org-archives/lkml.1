@@ -1,88 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752480Ab0CBSmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 13:42:25 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:30781 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007Ab0CBSmY convert rfc822-to-8bit (ORCPT
+	id S1752313Ab0CBSq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 13:46:28 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35813 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541Ab0CBSq0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 13:42:24 -0500
-X-IronPort-AV: E=Sophos;i="4.49,568,1262592000"; 
-   d="scan'208";a="325313337"
-Subject: Re: [RFC] nfs: use 4*rsize readahead size
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: John Stoffel <john@stoffel.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <19341.19446.356359.99958@stoffel.org>
-References: <20100224024100.GA17048@localhost>
-	 <20100224032934.GF16175@discord.disaster>
-	 <20100224041822.GB27459@localhost>
-	 <20100224052215.GH16175@discord.disaster> <20100224061247.GA8421@localhost>
-	 <20100224073940.GJ16175@discord.disaster> <20100226074916.GA8545@localhost>
-	 <20100302031021.GA14267@localhost>
-	 <1267539563.3099.43.camel@localhost.localdomain>
-	 <19341.19446.356359.99958@stoffel.org>
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 2 Mar 2010 13:46:26 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 2 Mar 2010 19:45:51 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.33
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.671196999e56464f@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Tue, 02 Mar 2010 13:42:19 -0500
-Message-ID: <1267555339.3099.127.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-X-OriginalArrivalTime: 02 Mar 2010 18:42:20.0508 (UTC) FILETIME=[174911C0:01CABA38]
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 12:33 -0500, John Stoffel wrote: 
-> >>>>> "Trond" == Trond Myklebust <Trond.Myklebust@netapp.com> writes:
-> 
-> Trond> On Tue, 2010-03-02 at 11:10 +0800, Wu Fengguang wrote: 
-> >> Dave,
-> >> 
-> >> Here is one more test on a big ext4 disk file:
-> >> 
-> >> 16k	39.7 MB/s
-> >> 32k	54.3 MB/s
-> >> 64k	63.6 MB/s
-> >> 128k	72.6 MB/s
-> >> 256k	71.7 MB/s
-> >> rsize ==> 512k  71.7 MB/s
-> >> 1024k	72.2 MB/s
-> >> 2048k	71.0 MB/s
-> >> 4096k	73.0 MB/s
-> >> 8192k	74.3 MB/s
-> >> 16384k	74.5 MB/s
-> >> 
-> >> It shows that >=128k client side readahead is enough for single disk
-> >> case :) As for RAID configurations, I guess big server side readahead
-> >> should be enough.
-> 
-> Trond> There are lots of people who would like to use NFS on their
-> Trond> company WAN, where you typically have high bandwidths (up to
-> Trond> 10GigE), but often a high latency too (due to geographical
-> Trond> dispersion).  My ping latency from here to a typical server in
-> Trond> NetApp's Bangalore office is ~ 312ms. I read your test results
-> Trond> with 10ms delays, but have you tested with higher than that?
-> 
-> If you have that high a latency, the low level TCP protocol is going
-> to kill your performance before you get to the NFS level.  You really
-> need to open up the TCP window size at that point.  And it only gets
-> worse as the bandwidth goes up too.  
+Linus, please pull from the for-linus branch at
 
-Yes. You need to open the TCP window in addition to reading ahead
-aggressively.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-> There's no good solution, because while you can get good throughput at
-> points, latency is going to suffer no matter what.
+to receive the following IEEE 1394/ FireWire subsystem update.  There
+are minor fixes in it, improvements of the facility which relates bus
+time with local time, and minor refactoring.
 
-It depends upon your workload. Sequential read and write should still be
-doable if you have aggressive readahead and open up for lots of parallel
-write RPCs.
+Clemens Ladisch (2):
+      firewire: add fw_csr_string() helper function
+      firewire: ohci: work around cycle timer bugs on VIA controllers
 
-Cheers
-  Trond
+Németh Márton (1):
+      firewire: make PCI device id constant
+
+Stefan Richter (21):
+      firewire: core: fw_csr_string addendum
+      firewire: qualify config ROM cache pointers as const pointers
+      firewire: ohci: enable cycle timer fix on ALi and NEC controllers
+      firewire: get_cycle_timer optimization and cleanup
+      firewire: remove incomplete Bus_Time CSR support
+      Merge tag 'v2.6.33' for its firewire changes since last branch point
+      firewire: core: fix "giving up on config rom" with Panasonic AG-DV2500
+      firewire: core: don't fail device creation in case of too large config ROM blocks
+      firewire: core: increase stack size of config ROM reader
+      firewire: core: fix an information leak
+      firewire: core: rename an internal function
+      firewire: cdev: add more flexible cycle timer ioctl
+      firewire: cdev: increment ABI version number
+      firewire: core: change type of a data buffer
+      firewire: core: combine a bit of repeated code
+      firewire: ohci: remove unused dualbuffer IR code
+      firewire: ohci: reorder struct fw_ohci for better cache efficiency
+      firewire: ohci: use an ID table for quirks detection
+      firewire: ohci: add module parameter to activate quirk fixes
+      firewire: ohci: fix IR/IT context mask mixup
+      firewire: ohci: extend initialization log message
+
+ drivers/firewire/core-cdev.c            |  368 +++++++++++++++----------------
+ drivers/firewire/core-device.c          |  198 +++++++++++------
+ drivers/firewire/core-transaction.c     |   17 +-
+ drivers/firewire/core.h                 |    2 +-
+ drivers/firewire/ohci.c                 |  364 ++++++++++--------------------
+ drivers/firewire/sbp2.c                 |    5 +-
+ drivers/media/dvb/firewire/firedtv-fw.c |   39 +---
+ include/linux/firewire-cdev.h           |   40 +++-
+ include/linux/firewire.h                |   11 +-
+ include/linux/pci_ids.h                 |    1 -
+ 10 files changed, 493 insertions(+), 552 deletions(-)
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==-=- --== ---=-
+http://arcgraph.de/sr/
+
