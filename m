@@ -1,18 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139Ab0CBXsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 18:48:36 -0500
-Received: from kroah.org ([198.145.64.141]:51619 "EHLO coco.kroah.org"
+	id S1758112Ab0CBXsc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 18:48:32 -0500
+Received: from kroah.org ([198.145.64.141]:51634 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754921Ab0CBXhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 18:37:01 -0500
+	id S1755240Ab0CBXhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 18:37:04 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Graf Yang <graf.yang@analog.com>, Mike Frysinger <vapier@gentoo.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/36] serial: bfin_5xx: need to disable DMA TX interrupt too
-Date: Tue,  2 Mar 2010 15:36:28 -0800
-Message-Id: <1267573003-782-21-git-send-email-gregkh@suse.de>
+Cc: Maxime Bizon <mbizon@freebox.fr>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 25/36] serial: bcm63xx_uart: allow more than one uart to be registered.
+Date: Tue,  2 Mar 2010 15:36:32 -0800
+Message-Id: <1267573003-782-25-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.7.0.1
 In-Reply-To: <20100302230956.GC32287@kroah.com>
 References: <20100302230956.GC32287@kroah.com>
@@ -20,38 +19,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graf Yang <graf.yang@analog.com>
+From: Maxime Bizon <mbizon@freebox.fr>
 
-If we don't disable the DMA TX channel, an inopportune timeout will
-trigger the interrupt handler and may cause a dead lock with the spin_lock.
+The bcm6358 CPU has two uarts, make it possible to use the second one.
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Maxime Bizon <mbizon@freebox.fr>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/serial/bfin_5xx.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/serial/bcm63xx_uart.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 15843cc..b5a9b37 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -488,6 +488,7 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- {
- 	int x_pos, pos;
+diff --git a/drivers/serial/bcm63xx_uart.c b/drivers/serial/bcm63xx_uart.c
+index f78ede8..a1a0e55 100644
+--- a/drivers/serial/bcm63xx_uart.c
++++ b/drivers/serial/bcm63xx_uart.c
+@@ -35,7 +35,7 @@
+ #include <bcm63xx_regs.h>
+ #include <bcm63xx_io.h>
  
-+	dma_disable_irq(uart->tx_dma_channel);
- 	dma_disable_irq(uart->rx_dma_channel);
- 	spin_lock_bh(&uart->port.lock);
+-#define BCM63XX_NR_UARTS	1
++#define BCM63XX_NR_UARTS	2
  
-@@ -521,6 +522,7 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- 	}
+ static struct uart_port ports[BCM63XX_NR_UARTS];
  
- 	spin_unlock_bh(&uart->port.lock);
-+	dma_enable_irq(uart->tx_dma_channel);
- 	dma_enable_irq(uart->rx_dma_channel);
+@@ -784,7 +784,7 @@ static struct uart_driver bcm_uart_driver = {
+ 	.dev_name	= "ttyS",
+ 	.major		= TTY_MAJOR,
+ 	.minor		= 64,
+-	.nr		= 1,
++	.nr		= BCM63XX_NR_UARTS,
+ 	.cons		= BCM63XX_CONSOLE,
+ };
  
- 	mod_timer(&(uart->rx_dma_timer), jiffies + DMA_RX_FLUSH_JIFFIES);
+@@ -826,6 +826,7 @@ static int __devinit bcm_uart_probe(struct platform_device *pdev)
+ 	port->dev = &pdev->dev;
+ 	port->fifosize = 16;
+ 	port->uartclk = clk_get_rate(clk) / 2;
++	port->line = pdev->id;
+ 	clk_put(clk);
+ 
+ 	ret = uart_add_one_port(&bcm_uart_driver, port);
 -- 
 1.7.0.1
 
