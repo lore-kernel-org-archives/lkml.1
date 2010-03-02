@@ -1,46 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088Ab0CBQuS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 11:50:18 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:53213 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366Ab0CBQuQ (ORCPT
+	id S1751835Ab0CBQ4e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 11:56:34 -0500
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:34124 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751570Ab0CBQ4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 11:50:16 -0500
-Date: Tue, 02 Mar 2010 11:50:15 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
-In-reply-to: <hmiocs$p6h$1@dough.gmane.org>
-To: walt <w41ter@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4B8D41C7.1030404@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <201003011615.31709.dmitry.torokhov@gmail.com>
- <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk>
- <hmiocs$p6h$1@dough.gmane.org>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Tue, 2 Mar 2010 11:56:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=MH9UfDL59QO6/dnVJUcWTUzpWhRWlPVYj33SzVN32rp3bVbRREMA8jNjSIi64YW1h1
+         VniNtgYyY5tQo0sbogf+UMN8rZt3IIcryQeVlDb5fUqZy68OYfrzTeuS+B05LRMxUwH/
+         JVVMYg2YTAp5G2O6RaAIKAgttjpfJi6g8nZBI=
+MIME-Version: 1.0
+Date: Tue, 2 Mar 2010 22:26:32 +0530
+Message-ID: <b2ac5deb1003020856u37083469q160cebb780c24c58@mail.gmail.com>
+Subject: Booting kernel on 2nd Core
+From: Swapnil Pimpale <swapnil.pict@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/2/2010 5:13 AM, walt wrote:
-> On 03/02/2010 12:15 AM, Jens Axboe wrote:
->>> On Mon, Mar 01 2010, Dmitry Torokhov wrote:
->
->>>> It looks like block tree that has been pulled today into mainline is
->>>> busted, I am getting the Opps below on boot with the following commit:
->>>>
->>>> commit b1bf9368407ae7e89d8a005bb40beb70a41df539
->
->
->> ....Can you also try and see if reverting
->> 9f7cdbc33f36d28e57eaba0093f68f0d14c38c5b makes it work?
->
-> I'm getting the same oops and reverting that commit fixes it, thanks.
-> I'm happy to test patches, etc.
->
-Same here - was unable to boot - revert of this solved the issue.
+Hi all,
 
+I am working on Intel Core 2 Duo processor. As part of my academic
+project, I want to boot Linux Kernel from 2nd core. I have
+successfully jumped to the start address (1MB) of the kernel from 2nd
+core. But it gets stuck in the function calibrate_delay().
+If I comment the call to calibrate_delay and proceed with the kernel
+boot-up, it goes ahead and gets stuck at some other point (in
+acpi_ut_osi_implementation()).
+In the meanwhile I have put the 1st core in an infinite loop.
+I have configured the kernel to be an uni-processor kernel. (i.e.
+disabled SMP support)
+
+Could someone please let me know the reason for this problem. Will I
+have to make any changes to kernel code for it to boot on 2nd core?
+
+Thanks,
+Swapnil A. Pimpale.
