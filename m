@@ -1,59 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178Ab0CCDsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 22:48:41 -0500
-Received: from sh.osrg.net ([192.16.179.4]:35924 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266Ab0CCDsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 22:48:40 -0500
-Date: Wed, 3 Mar 2010 12:47:11 +0900
-To: benh@kernel.crashing.org
-Cc: catalin.marinas@arm.com, fujita.tomonori@lab.ntt.co.jp,
-       mdharm-kernel@one-eyed-alien.net, oliver@neukum.org,
-       linux@arm.linux.org.uk, greg@kroah.com, x0082077@ti.com,
-       sshtylyov@ru.mvista.com, bigeasy@linutronix.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, santosh.shilimkar@ti.com,
-       pavel@ucw.cz, tom.leiming@gmail.com,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: USB mass storage and ARM cache coherency
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1267572594.2173.25.camel@pasglop>
-References: <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	<1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	<1267572594.2173.25.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100303124624Z.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Mar 2010 12:47:17 +0900 (JST)
+	id S1752733Ab0CCDtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 22:49:50 -0500
+Received: from mail-bw0-f209.google.com ([209.85.218.209]:60364 "EHLO
+	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751598Ab0CCDts (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 22:49:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=uNY+r66xzJ42tK8EFyybkRbwmqytFMBDFtSSPLUlpZSUskL6dpJrs2LgjKCPfJD1um
+         wK6PgamQzXXOFQ/5G4KAzG2GL2NsY3sal0oh483a0l+nEMb5FPyAgO9zoHCSVv3ujwY2
+         bA1byZCHp3+P1fw+9KHLx+bLz1dN+8O/6FLwc=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
+	<20100228184634.GI5768@kernel.dk>
+Date: Wed, 03 Mar 2010 06:49:43 +0300
+In-Reply-To: <20100228184634.GI5768@kernel.dk> (Jens Axboe's message of "Sun,
+	28 Feb 2010 19:46:34 +0100")
+Message-ID: <874okyf4iw.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Mar 2010 10:29:54 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+--=-=-=
 
-> On Tue, 2010-03-02 at 17:05 +0000, Catalin Marinas wrote:
-> 
-> > The viable solutions so far:
-> > 
-> >      1. Implement a PIO mapping API similar to the DMA API which takes
-> >         care of the D-cache flushing. This means that PIO drivers would
-> >         need to be modified to use an API like pio_kmap()/pio_kunmap()
-> >         before writing to a page cache page.
-> >      2. Invert the meaning of PG_arch_1 to denote a clean page. This
-> >         means that by default newly allocated page cache pages are
-> >         considered dirty and even if there isn't a call to
-> >         flush_dcache_page(), update_mmu_cache() would flush the D-cache.
-> >         This is the PowerPC approach.
-> 
-> I don't see the point of a "PIO" API. I would thus vote for 2 :-) Note
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Yeah, as powerpc and ia64 do, arm can flush D cache and invalidate I
-cache when inserting a executable page to pte, IIUC. No need for the
-new API for I/D consistency.
+> On Sat, Feb 27 2010, Dmitry Monakhov wrote:
+>> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
+>> against this value. But in case of fs_optimization merge we compare
+>> with wrong value. This patch must be included in
+>>  b428cd6da7e6559aca69aa2e3a526037d3f20403
+>> But accidentally i've forgot to add this in the initial patch.
+>> To make things straight let's replace all such checks.
+>> In fact this makes code easy to understand.
+>
+> Agree, applied.
+Ohh.. as you already know this patch break dm-layer. Sorry.
+This is because dm->merge may return more than requested. So correct
+check must test against less what requested. Correct patch attached.
 
-The ways to improve the approach (introducing PG_arch_2 or marking a
-page clean on dma_unmap_* with DMA_FROM_DEVICE like ia64 does) is up
-to architectures.
+
+--=-=-=
+Content-Disposition: inline;
+ filename=0001-blkdev-fix-merge_bvec_fn-return-value-checks-v2.patch
+
+>From 145fb49bf2251f445ca29c5218333367448932d6 Mon Sep 17 00:00:00 2001
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+Date: Wed, 3 Mar 2010 06:28:06 +0300
+Subject: [PATCH] blkdev: fix merge_bvec_fn return value checks v2
+
+merge_bvec_fn() returns bvec->bv_len on success. So we have to check
+against this value. But in case of fs_optimization merge we compare
+with wrong value. This patch must be included in
+ b428cd6da7e6559aca69aa2e3a526037d3f20403
+But accidentally i've forgot to add this in the initial patch.
+To make things straight let's replace all such checks.
+In fact this makes code easy to understand.
+
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+---
+ fs/bio.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/bio.c b/fs/bio.c
+index 88094af..975657a 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -557,7 +557,7 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+ 					.bi_rw = bio->bi_rw,
+ 				};
+ 
+-				if (q->merge_bvec_fn(q, &bvm, prev) < len) {
++				if (q->merge_bvec_fn(q, &bvm, prev) < prev->bv_len) {
+ 					prev->bv_len -= len;
+ 					return 0;
+ 				}
+@@ -611,7 +611,7 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+ 		 * merge_bvec_fn() returns number of bytes it can accept
+ 		 * at this offset
+ 		 */
+-		if (q->merge_bvec_fn(q, &bvm, bvec) < len) {
++		if (q->merge_bvec_fn(q, &bvm, bvec) < bvec->bv_len) {
+ 			bvec->bv_page = NULL;
+ 			bvec->bv_len = 0;
+ 			bvec->bv_offset = 0;
+-- 
+1.6.6
+
+
+--=-=-=--
