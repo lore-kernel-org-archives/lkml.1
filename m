@@ -1,116 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753725Ab0CCHxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 02:53:30 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:49869 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622Ab0CCHx3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 02:53:29 -0500
-To: <linux-kernel@vger.kernel.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 02 Mar 2010 23:53:19 -0800
-Message-ID: <m1sk8hn8nk.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1754170Ab0CCICh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 03:02:37 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:49097 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753867Ab0CCICe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 03:02:34 -0500
+Date: Wed, 3 Mar 2010 08:59:44 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
+ deprecation)
+Message-ID: <20100303075944.GA23354@comet.dominikbrodowski.net>
+Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;<linux-kernel@vger.kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 TR_Symld_Words too many words that have symbols inside
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: [RFC][PATCH] init: Open /dev/console from rootfs
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-To avoid potential problems with an empty /dev open /dev/console
-from rootfs instead of waiting to mount our root filesystem and
-mounting it there.   This effectively guarantees that there will
-be a device node, and it won't be on a filesystem that we will
-ever unmount, so there are no issues with leaving /dev/console
-open and pinning the filesystem.
+a few more PCMCIA patches for 2.6.34 are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git master
 
-This is actually more effective than automatically mounting
-devtmpfs on /dev because it removes removes the occasionally
-problematic assumption that /dev/console exists from the boot
-code.
+The diffstat and list of changes is below, the individual diffs are sent
+(at least) to the linux-pcmcia list. This patchset includes one
+controversial patch, titled:
 
-With this patch I was able to throw busybox on my /boot partition
-(which has no /dev directory) and boot into userspace without
-problems.
+      pcmcia: disable pcmcia ioctl for !ARM, prepare for removal
 
-The only possible negative consequence I can think of is that
-someone out there deliberately used did not use a character device
-that is major 5 minor 2 for /dev/console.  Does anyone know of a
-situation in which that could make sense?
+Most notably, Russell King objects to it for reasons spelled out e.g. at
+http://lkml.org/lkml/2008/2/27/291 . I suspect the platform he is referring
+to actually does work with the PCMCIA ioctl disabled; Russell's offer from
+2008 to
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- init/do_mounts_initrd.c |    4 ----
- init/main.c             |   11 ++++++-----
- 2 files changed, 6 insertions(+), 9 deletions(-)
+   "spend some time [...] working out what it requires from the ioctl
+   interface - maybe we can have a cut-down ioctl interface that bolts straight
+   on as an "add on" to the new controls without being too invasive, while
+   still allowing its PCMCIA bits to work."
+   (http://lists.infradead.org/pipermail/linux-pcmcia/2008-April/005450.html)
 
-diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-index 614241b..2b10853 100644
---- a/init/do_mounts_initrd.c
-+++ b/init/do_mounts_initrd.c
-@@ -30,11 +30,7 @@ static int __init do_linuxrc(void * shell)
- 	extern char * envp_init[];
- 
- 	sys_close(old_fd);sys_close(root_fd);
--	sys_close(0);sys_close(1);sys_close(2);
- 	sys_setsid();
--	(void) sys_open("/dev/console",O_RDWR,0);
--	(void) sys_dup(0);
--	(void) sys_dup(0);
- 	return kernel_execve(shell, argv, envp_init);
- }
- 
-diff --git a/init/main.c b/init/main.c
-index 67e40fc..9ba505f 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -806,11 +806,6 @@ static noinline int init_post(void)
- 	system_state = SYSTEM_RUNNING;
- 	numa_default_policy();
- 
--	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
--		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
--
--	(void) sys_dup(0);
--	(void) sys_dup(0);
- 
- 	current->signal->flags |= SIGNAL_UNKILLABLE;
- 
-@@ -864,6 +859,12 @@ static int __init kernel_init(void * unused)
- 
- 	do_basic_setup();
- 
-+	/* Open the /dev/console on the rootfs, this should never fail */
-+	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
-+		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
-+
-+	(void) sys_dup(0);
-+	(void) sys_dup(0);
- 	/*
- 	 * check if there is an early userspace init.  If yes, let it do all
- 	 * the work
--- 
-1.6.5.2.143.g8cc62
+hasn't lead to any result so far; he has indicated he won't get to spending
+time on it soon. Because of the lack of progress in this regard, and for the
+other reasons spelled out in the patch, I picked up Alan's suggestion to
 
+   "[...] push[ing] it. If it matters someone will then fix up the problem
+   platform. If it isn't pushed then it lets one obscure platform stall
+   progress for everyone else."
+  (http://lists.infradead.org/pipermail/linux-pcmcia/2008-April/005453.html)
+
+Please pull from that location insofar as you agree to continue with the
+deprecation of the PCMCIA ioctl. Otherwise, I can prepare a branch
+_without_ this controversial patch to pull from.
+
+Thanks,
+        Dominik
+
+
+Dominik Brodowski (2):
+      pcmcia: CodingStyle fixes
+      pcmcia: disable pcmcia ioctl for !ARM, prepare for removal
+
+Komuro (1):
+      pcmcia: remove irq_list parameter from pd6729
+
+Manuel Lauss (1):
+      pcmcia: alchemy: fixup wrong comments
+
+Michal Pecio (1):
+      yenta_socket: ENE CB712 CardBus bridge needs special treatment with Echo Audio Indigo soundcards
+
+ Documentation/feature-removal-schedule.txt |   12 +-
+ drivers/pcmcia/Kconfig                     |   14 +-
+ drivers/pcmcia/cardbus.c                   |    2 +-
+ drivers/pcmcia/cistpl.c                    | 1908 ++++++++++++++--------------
+ drivers/pcmcia/db1xxx_ss.c                 |   19 +-
+ drivers/pcmcia/pd6729.c                    |   18 +-
+ drivers/pcmcia/rsrc_mgr.c                  |    3 +-
+ drivers/pcmcia/xxs1500_ss.c                |   16 +-
+ drivers/pcmcia/yenta_socket.c              |    8 +-
+ 9 files changed, 973 insertions(+), 1027 deletions(-)
