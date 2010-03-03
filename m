@@ -1,67 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033Ab0CCMLb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:11:31 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:34833 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986Ab0CCML1 convert rfc822-to-8bit (ORCPT
+	id S1752445Ab0CCMRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:17:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34058 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727Ab0CCMRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:11:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FO1QB3UiyxCqmgt5cGm5MMzoAZkL80zgh/tkhAKs9T6jp5pl1usFnqo+q1CqTucCwO
-         dw1/tRgzEnw3HmITCZtlOzm0nXDKfcQxLwxThi62Nw9/W1cadG8LEa2g8kniixQH9aP8
-         mh4mH9G4AX0O5InAIreS656avwTHzOw9mtZ60=
-MIME-Version: 1.0
-In-Reply-To: <4B3F8896E1733D4787DDB0EA1C7FF91F01163E1D@ukmail.uk.wirelessworld.airvananet.com>
-References: <4B3F8896E1733D4787DDB0EA1C7FF91F01163E1D@ukmail.uk.wirelessworld.airvananet.com>
-Date: Wed, 3 Mar 2010 14:11:24 +0200
-Message-ID: <413a6a951003030411y2c11c6eaj551c26e1bed3679d@mail.gmail.com>
-Subject: Re: do_loop_readv_writev() not as described for drivers implementing 
-	only write()?
-From: Daniel Baluta <daniel.baluta@gmail.com>
-To: Mike McTernan <mmcternan@airvana.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 3 Mar 2010 07:17:22 -0500
+Subject: Re: [PATCH 1/5] Add ID and STREAM_ID to recorded event data
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric B Munson <ebmunson@us.ibm.com>
+Cc: paulus@samba.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20100303120920.GA3502@us.ibm.com>
+References: <cover.1267537676.git.ebmunson@us.ibm.com>
+	 <71583fc64cb167adcdb0039b53b8bc76fed21f80.1267537676.git.ebmunson@us.ibm.com>
+	 <1267541905.25158.64.camel@laptop>  <20100303120920.GA3502@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 03 Mar 2010 13:17:19 +0100
+Message-ID: <1267618639.25158.87.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 2:55 PM, Mike McTernan <mmcternan@airvana.com> wrote:
-> Hi,
->
-> I'm using writev() with an old FPGA driver which only implements
-> write(), not aio_write().  I'm expecting the behaviour described in the
-> man page for writev():
->
-> "The  data  transfers  performed by readv() and writev() are atomic: the
-> data written by writev() is written as a single block that is not
-> intermingled with output from writes in other processes (but see pipe(7)
-> for an exception); analogously, readv() is guaranteed to read a
-> contiguous block of data from the file, regardless of read operations
-> performed in other threads or processes that have file descriptors
-> referring to the same open file description (see open(2))."
->
-> I appear to be observing intermingling of individual iovec entries that
-> are being written to the same fd from different threads i.e. each call
-> to writev() isn't producing a contiguous block to be output.  This is at
-> odds with the man page description.
->
-> Looking into the kernel sources (from around 2.6.28 to 2.6.33), the
-> driver doesn't implement aio_write(), so vfs_writev() gets handled by
-> do_loop_readv_writev() as a series of discrete calls to the driver's
-> write().
->
-> I can't see where any locking is applied to ensure each iovec is handled
-> serially without 'internmingling', which would awkwardly have to be
-> outside the driver in this case.
+On Wed, 2010-03-03 at 12:09 +0000, Eric B Munson wrote:
+> On Tue, 02 Mar 2010, Peter Zijlstra wrote:
+> 
+> > On Tue, 2010-03-02 at 14:42 +0000, Eric B Munson wrote:
+> > > Currently perf record does not write the ID or the STREAM_ID to disk
+> > > for events.  This doesn't allow report to tell if an event stream contains
+> > > one or more types of events.  This patch adds these two entries to the list
+> > > of data that record will write to disk.
+> > > 
+> > > Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+> > > ---
+> > >  tools/perf/builtin-record.c |    3 ++-
+> > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> > > index 771533c..35e4605 100644
+> > > --- a/tools/perf/builtin-record.c
+> > > +++ b/tools/perf/builtin-record.c
+> > > @@ -242,7 +242,8 @@ static void create_counter(int counter, int cpu, pid_t pid)
+> > >  				  PERF_FORMAT_TOTAL_TIME_RUNNING |
+> > >  				  PERF_FORMAT_ID;
+> > >  
+> > > -	attr->sample_type	|= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+> > > +	attr->sample_type	|= PERF_SAMPLE_IP | PERF_SAMPLE_TID |
+> > > +				   PERF_SAMPLE_ID | PERF_SAMPLE_STREAM_ID;
+> > >  
+> > >  	if (freq) {
+> > >  		attr->sample_type	|= PERF_SAMPLE_PERIOD;
+> > 
+> > can we make this conditional on there being more than one event, that
+> > saves a little space/time when recording
+> > 
+> 
+> The downside to this is report cannot print the name of the event being monitored
+> if we do not record the sample and stream id.  This is as report behaves currently
+> and if that is okay then I will put out V2 with that included today.
 
-I'm also interested about this topic. Can anyone help?
-I would say that the libc enforces atomicity, but I have to dig deeper for
-a real answer :).
+Well, if there's only one event, its clear what name to use, and if
+there's more than one event, we will include the ID.
 
-thanks,
-Daniel.
+BTW, I think you can do without the STREAM_ID, since that is only used
+to account throttled state iirc, and we don't actually do that.
+
