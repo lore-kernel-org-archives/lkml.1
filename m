@@ -1,104 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153Ab0CCKQf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 05:16:35 -0500
-Received: from www.tglx.de ([62.245.132.106]:46186 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751Ab0CCKQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 05:16:33 -0500
-Date: Wed, 3 Mar 2010 11:16:25 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Madhusudhan <madhu.cr@ti.com>
-cc: "'LKML'" <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org,
-       linux-mmc@vger.kernel.org
-Subject: RE: [PATCH] mmc: omap_hsmmc: Fix conditional locking
-In-Reply-To: <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
-Message-ID: <alpine.LFD.2.00.1003030756120.4245@localhost.localdomain>
-References: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain> <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752295Ab0CCKRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 05:17:20 -0500
+Received: from mailout1.samsung.com ([203.254.224.24]:45293 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751Ab0CCKRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 05:17:19 -0500
+Date: Wed, 03 Mar 2010 19:14:52 +0900
+From: Jaehoon Chung <jh80.chung@samsung.com>
+Subject: Re: [PATCH] rfkill bug fixed in rfkill_set_sw_state
+In-reply-to: <4B8E2DCD.6020308@tuffmail.co.uk>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Reply-to: jh80.chung@samsung.com
+Message-id: <4B8E369C.4080701@samsung.com>
+Organization: Samsung Electronics
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8)
+ Gecko/20100227 Thunderbird/3.0.3
+References: <000301cab69f$ec61ad00$c5250700$%chung@samsung.com>
+ <20100302125003.f7919c53.akpm@linux-foundation.org>
+ <4B8DB1A3.9060902@samsung.com> <4B8E2DCD.6020308@tuffmail.co.uk>
+X-OriginalArrivalTime: 03 Mar 2010 10:14:52.0612 (UTC)
+ FILETIME=[5D569840:01CABABA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010, Madhusudhan wrote:
-> > Conditional locking on (!in_interrupt()) is broken by design and there
-> > is no reason to keep the host->irq_lock across the call to
-> > mmc_request_done(). Also the host->protect_card magic hack does not
-> > depend on the context
-> > 
-> 
-> Can you please elaborate why the existing logic is broken?
+Alan Jenkins wrote:
+> Jaehoon Chung wrote:
+>> Ok Next time, i will add sutatble cc's scripts/get_maintainer.pl. 
+>> thanks..
+>>> Suitable cc's (from scripts/get_maintainer.pl) added.
+>>>
+>>> On Fri, 26 Feb 2010 13:55:31 +0900
+>>> _________<jh80.chung@samsung.com>  wrote:
+>>>
+>>>> Don___t work expected operation in __rfkill_set_sw_state.
+>>>> when rfkill initialized. Rfkill___s blocked&  unblocked is 
+>>>> operating on the
+>>>> contrary.
+>>>>
+>>>> Signed-off-by: Jaehoon Chung<jh80.chung@samsung.com>
+>>>>
+>>>> ---
+>>>>   net/rfkill/core.c |    2 +-
+>>>>   1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/net/rfkill/core.c b/net/rfkill/core.c
+>>>> index c224cb2..dcc2d38 100644
+>>>> --- a/net/rfkill/core.c
+>>>> +++ b/net/rfkill/core.c
+>>>> @@ -488,7 +488,7 @@ static void __rfkill_set_sw_state(struct rfkill
+>>>> *rfkill, bool blocked)
+>>>>       if (rfkill->state&  RFKILL_BLOCK_SW_SETCALL)
+>>>>           bit = RFKILL_BLOCK_SW_PREV;
+>>>>
+>>>> -    if (blocked)
+>>>> +    if (!blocked)
+>>>>           rfkill->state |= bit;
+>>>>       else
+>>>>           rfkill->state&= ~bit;
+>>> Are you sure?  What problems were you observing with the existing code?
+>>> Please fully describe your hardware and the driver's behaviour.
+>>>
+>>> The current code _looks_ OK to me.  If bool `blocked' is true, we set
+>>> the RFKILL_BLOCK_SW bit?
+>> I implemented the wlan driver using rfkill.
+>> In my source code, the wlan driver initalized to 
+>> RFKLL_USESR_STATE_UNBLOCKED..
+>> if that is correct, maybe do working the unblocked...but not work 
+>> "unblocked"
+>>
+>> below code is unblock's operation..right?
+>> rfkill_init_sw_state(wlan, RFKILL_USER_STATE_UNBLOCKED);
+>>
+>> but, do not operate unblocked.
+>> please check that source code..
+>
+> I see the problem :).  The hint is in the _USER_ - those constants are 
+> not for use by drivers.  You want this instead:
+>
+> rfkill_init_sw_state(wlan, false);
+>
+> (assuming you really want init_sw_state().  Please do check that your 
+> device state is persistent, as described by the comment in rfkill.h).
+>
+> Regards
+> Alan
+>
 
-Locks are only to be held to serialize data or state. 
+Oh...i checked the comment in rfkill.h. i didn't see that comment.
+thanks for your opinion..:)
 
-The mmc_request_done() call does _NOT_ require that at all. So
-dropping the lock there is the right thing to do.
-
-Also conditional locking on in_interrupt() is generally a nono as it
-relies on assumptions which are not necessarily true in all
-circumstances. Just one simple example: interrupt threading will make
-it explode nicely and it did already with the realtime patches
-applied.
-
-Such code constructs prevent us to do generic changes to the kernel
-behaviour without any real good reason.
-
-> It locks at the new request and unlocks just before issuing the cmd. Further
-> IRQ handler has these calls hence the !in_interrupt check.
-
-Aside of the conditional locking I have several issues with that code:
-
-1) The code flow is massively unreadable:
-
-   omap_hsmmc_start_command()
-   {
-	.....
-	if (!in_interrupt())
-	   spin_unlock_irq();
-   }
- 
-   omap_hsmmc_request()
-   {
-	if (!in_interrupt())
-	   spin_lock_irq();
-
-	omap_hsmmc_start_command();
-   }
-
-We generally want to see the lock/unlock pairs in one function and not
-having to figure out where the heck unlock happens.
-
-2) The point of unlocking is patently wrong
-
-   omap_hsmmc_start_command()
-   {
-	.....
-	if (!in_interrupt())
-	   spin_unlock_irq();
---->
-	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
---->
-        OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
-   }
-
-What happens, if you get a spurious interrupt here ? Same for SMP,
-though you are probably protected by the core mmc code request
-serialization there.
-
-> How does this patch improve that? In fact with your patch for a data
-> transfer cmd there are several lock-unlock calls.
-
-1) The patch simply removes conditional locking and moves the lock
-   sections to those places which protect something. Aside of that it
-   makes the code easier to understand.
-
-2) What's the point of not having those lock/unlocks ? On UP the
-   spinlock is a NOOP anyway, so you won't even notice. On SMP you
-   won't notice either, simply because the lock is cache hot and
-   almost never contended.
-
-Thanks,
-
-	tglx
+Regards
+Jaehoon Chung
