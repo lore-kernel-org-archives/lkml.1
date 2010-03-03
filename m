@@ -1,29 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185Ab0CCTOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:14:10 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:27599 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755053Ab0CCTN2 (ORCPT
+	id S1756157Ab0CCTNy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:13:54 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:54367
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753630Ab0CCTNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:13:28 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i2a8h87h6bh62h)
-X-Spam-TCS-SCL: 1:0
+	Wed, 3 Mar 2010 14:13:16 -0500
+X-SpamScore: 3
+X-BigFish: VPS3(z1039oz936eMab9bhzz1202hzzz32i6bh87h2a8h61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYQ01B-01-LM9-02
+X-WSS-ID: 0KYQ019-02-H59-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 07/18] KVM: SVM: Implement MMU helper functions for Nested Nested Paging
-Date: Wed, 3 Mar 2010 20:12:10 +0100
-Message-ID: <1267643541-451-8-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 10/18] KVM: MMU: Introduce generic walk_addr function
+Date: Wed, 3 Mar 2010 20:12:13 +0100
+Message-ID: <1267643541-451-11-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
 References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 03 Mar 2010 19:12:42.0657 (UTC) FILETIME=[7FC8B110:01CABB05]
+X-OriginalArrivalTime: 03 Mar 2010 19:12:42.0719 (UTC) FILETIME=[7FD226F0:01CABB05]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: ausb3extmailp02.amd.com
@@ -31,65 +31,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the helper functions which will be used in
-the mmu context for handling nested nested page faults.
+This is the first patch in the series towards a generic
+walk_addr implementation which could walk two-dimensional
+page tables in the end. In this first step the walk_addr
+function is renamed into walk_addr_generic which takes an
+mmu context as an additional parameter.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+ arch/x86/kvm/paging_tmpl.h |   30 ++++++++++++++++++++----------
+ 1 files changed, 20 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index a7a76f5..a6c08e0 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -91,6 +91,9 @@ struct nested_state {
- 	u32 intercept_exceptions;
- 	u64 intercept;
- 
-+	/* Nested Paging related state */
-+	u64 nested_cr3;
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 8608439..6c55a31 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -112,9 +112,10 @@ static unsigned FNAME(gpte_access)(struct kvm_vcpu *vcpu, pt_element_t gpte)
+ /*
+  * Fetch a guest pte for a guest virtual address
+  */
+-static int FNAME(walk_addr)(struct guest_walker *walker,
+-			    struct kvm_vcpu *vcpu, gva_t addr,
+-			    int write_fault, int user_fault, int fetch_fault)
++static int FNAME(walk_addr_generic)(struct guest_walker *walker,
++				    struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
++				    gva_t addr, int write_fault,
++				    int user_fault, int fetch_fault)
+ {
+ 	pt_element_t pte;
+ 	gfn_t table_gfn;
+@@ -125,10 +126,12 @@ static int FNAME(walk_addr)(struct guest_walker *walker,
+ 	trace_kvm_mmu_pagetable_walk(addr, write_fault, user_fault,
+ 				     fetch_fault);
+ walk:
+-	walker->level = vcpu->arch.mmu.root_level;
+-	pte = vcpu->arch.mmu.get_cr3(vcpu);
 +
- };
++	walker->level = mmu->root_level;
++	pte =           mmu->get_cr3(vcpu);
++
+ #if PTTYPE == 64
+-	if (vcpu->arch.mmu.root_level == PT32E_ROOT_LEVEL) {
++	if (walker->level == PT32E_ROOT_LEVEL) {
+ 		pte = kvm_pdptr_read(vcpu, (addr >> 30) & 3);
+ 		trace_kvm_mmu_paging_element(pte, walker->level);
+ 		if (!is_present_gpte(pte))
+@@ -137,7 +140,7 @@ walk:
+ 	}
+ #endif
+ 	ASSERT((!is_long_mode(vcpu) && is_pae(vcpu)) ||
+-	       (vcpu->arch.mmu.get_cr3(vcpu) & CR3_NONPAE_RESERVED_BITS) == 0);
++	       (mmu->get_cr3(vcpu) & CR3_NONPAE_RESERVED_BITS) == 0);
  
- #define MSRPM_OFFSETS	16
-@@ -1545,6 +1548,36 @@ static int vmmcall_interception(struct vcpu_svm *svm)
- 	return 1;
+ 	pt_access = ACC_ALL;
+ 
+@@ -158,8 +161,7 @@ walk:
+ 		if (!is_present_gpte(pte))
+ 			goto not_present;
+ 
+-		rsvd_fault = is_rsvd_bits_set(&vcpu->arch.mmu, pte,
+-					      walker->level);
++		rsvd_fault = is_rsvd_bits_set(mmu, pte, walker->level);
+ 		if (rsvd_fault)
+ 			goto access_error;
+ 
+@@ -195,7 +197,7 @@ walk:
+ 				(PTTYPE == 64 || is_pse(vcpu))) ||
+ 		    ((walker->level == PT_PDPE_LEVEL) &&
+ 				(pte & PT_PAGE_SIZE_MASK)  &&
+-				vcpu->arch.mmu.root_level == PT64_ROOT_LEVEL)) {
++				mmu->root_level == PT64_ROOT_LEVEL)) {
+ 			int lvl = walker->level;
+ 
+ 			walker->gfn = gpte_to_gfn_lvl(pte, lvl);
+@@ -253,6 +255,14 @@ err:
+ 	return 0;
  }
  
-+static unsigned long nested_svm_get_tdp_cr3(struct kvm_vcpu *vcpu)
++static int FNAME(walk_addr)(struct guest_walker *walker,
++			    struct kvm_vcpu *vcpu, gva_t addr,
++			    int write_fault, int user_fault, int fetch_fault)
 +{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	return svm->nested.nested_cr3;
++	return FNAME(walk_addr_generic)(walker, vcpu, &vcpu->arch.mmu, addr,
++				        write_fault, user_fault, fetch_fault);
 +}
 +
-+static void nested_svm_set_tdp_cr3(struct kvm_vcpu *vcpu,
-+				   unsigned long root)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	svm->vmcb->control.nested_cr3 = root;
-+	force_new_asid(vcpu);
-+}
-+
-+static void nested_svm_inject_npf_exit(struct kvm_vcpu *vcpu,
-+				       unsigned long addr,
-+				       u32 error_code)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	svm->vmcb->control.exit_code = SVM_EXIT_NPF;
-+	svm->vmcb->control.exit_code_hi = 0;
-+	svm->vmcb->control.exit_info_1 = error_code;
-+	svm->vmcb->control.exit_info_2 = addr;
-+
-+	nested_svm_vmexit(svm);
-+}
-+
- static int nested_svm_check_permissions(struct vcpu_svm *svm)
+ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 			      u64 *spte, const void *pte)
  {
- 	if (!(svm->vcpu.arch.efer & EFER_SVME)
 -- 
 1.7.0
 
