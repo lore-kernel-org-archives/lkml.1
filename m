@@ -1,62 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525Ab0CCSW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 13:22:27 -0500
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:28415 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755300Ab0CCSW0 (ORCPT
+	id S1755511Ab0CCSYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 13:24:08 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:16983 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755300Ab0CCSYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 13:22:26 -0500
-X-IronPort-AV: E=Sophos;i="4.49,574,1262563200"; 
-   d="scan'208";a="9767123"
-Date: Wed, 3 Mar 2010 18:26:12 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: Bastian Blank <waldi@debian.org>
-CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 4 of 4] Linux pvops: xen pci platform device
- driver
-In-Reply-To: <20100303161428.GB26656@wavehammer.waldi.eu.org>
-Message-ID: <alpine.DEB.2.00.1003031808310.4648@kaball-desktop>
-References: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop> <20100303121726.GA26656@wavehammer.waldi.eu.org> <alpine.DEB.2.00.1003031520320.4648@kaball-desktop> <20100303161428.GB26656@wavehammer.waldi.eu.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Mar 2010 13:24:07 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging/dt3155: fix build error caused by {write|read}l change
+Date: Wed, 3 Mar 2010 11:24:06 -0700
+Cc: greg@kroah.com, ss@aao.gov.au
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201003031124.06345.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Bastian Blank wrote:
-> > During the initialization of the xen pci device driver, we write to a
-> > magic ioport that causes qemu to unplug some emulated devices, disc and
-> > network in particular.
-> > This parameter is meant to present the user a choice about what emulated
-> > devices to unplug.
-> 
-> Somehow I don't think this belongs here. It looks like a workaround, you
-> can always ask qemu to not bind them at the beginning and the guest
-> system to not provide drivers.
-> 
+This fixes a build error caused by replacing {Write | Read}MReg with 
+{write | read}l.
 
-Most of the time you just want to unplug all or nothing, so removing the
-option is generally not a problem.
-However it can still be useful for debugging: let's say that blkfront
-doesn't work properly, if the xen pci platform driver unplugs the IDE
-disk at init time the guest won't be able to boot.
-This fact just made me realize that the xen pci platform driver should
-depend on netfront and blkfront too if we make "unplug all" the default.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>
+Cc: Scott Smedley <ss@aao.gov.au>
 
+---
 
-> > > > +#define XEN_IOPORT_BASE 0x10
-> > > 
-> > > Why are this constants defined in the driver themself? They only make
-> > > sense if there are two components making use of them.
-> > Yep, the other one is qemu.
-> 
-> Well, if it is a published interface move it into a header file.
-> 
-
-Good idea
-
+diff --git a/drivers/staging/dt3155/dt3155_io.c b/drivers/staging/dt3155/dt3155_io.c
+index 6b9c685..3df2ec7 100644
+--- a/drivers/staging/dt3155/dt3155_io.c
++++ b/drivers/staging/dt3155/dt3155_io.c
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include <linux/delay.h>
++#include <linux/io.h>
+ #include "dt3155.h"
+ #include "dt3155_io.h"
+ #include "dt3155_drv.h"
