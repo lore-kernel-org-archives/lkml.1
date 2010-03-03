@@ -1,65 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599Ab0CCRHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:07:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49487 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231Ab0CCRHa (ORCPT
+	id S1753793Ab0CCRJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:09:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33965 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753456Ab0CCRJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:07:30 -0500
-X-Authority-Analysis: v=1.0 c=1 a=JmiDjSKT-SYA:10 a=7U3hwN5JcxgA:10 a=QF5HcNAIr1wxC3HZ0lYA:9 a=E0zEotW1mdet4QwpUhbqvy_B3O4A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
- events
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <1267634258.25158.88.camel@laptop>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
-	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
-	 <1267632387.10871.59.camel@gandalf.stny.rr.com>
-	 <1267634258.25158.88.camel@laptop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 03 Mar 2010 12:07:26 -0500
-Message-ID: <1267636046.10871.74.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 12:09:16 -0500
+Date: Wed, 3 Mar 2010 09:08:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Alain Knaff <alain@knaff.lu>
+Subject: Re: [GIT PULL] Squashfs updates for 2.6.34
+In-Reply-To: <4B8C1873.1080700@lougher.demon.co.uk>
+Message-ID: <alpine.LFD.2.00.1003030904040.3627@localhost.localdomain>
+References: <4B8C1873.1080700@lougher.demon.co.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 17:37 +0100, Peter Zijlstra wrote:
 
-> > >  	/* Trace events already protected against recursion */
-> > >  	do_perf_sw_event(PERF_TYPE_TRACEPOINT, event_id, count, 1,
-> > > -				&data, regs);
-> > > +				&data, &regs);
-> > 
-> > Off-topic: Why is the above a perf sw event? Couldn't that also be a
-> > normal TRACE_EVENT()?
+
+On Mon, 1 Mar 2010, Phillip Lougher wrote:
+
 > 
-> Well, no, this is the stuff that transforms TRACE_EVENT() into perf
-> software events ;-)
-> 
+> Please pull the following Squashfs updates.  They add support
+> for lzma compressed file systems, plus there's also a couple of
+> trivial code tidy patches.
 
-oops, my bad :-), I thought this was in the x86 arch directory. For the
-University, I was helping them with adding trace points for page faults
-when I came across this in arch/x86/mm/fault.c:
+No. I'm not pulling this. 
 
-	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, 0, regs, address);
+>  include/linux/decompress/bunzip2_mm.h |   13 +++
+>  include/linux/decompress/inflate_mm.h |   13 +++
+>  include/linux/decompress/mm.h         |    4 -
+>  include/linux/decompress/unlzma_mm.h  |   20 +++++
+>  include/linux/decompress/unlzo_mm.h   |   13 +++
 
+What the _h*ll_ is the point of these totally illogical and ugly files? 
+The name makes no sense, and the _contents_ make zero sense either.
 
-This is what I actually was wondering about. Why is it a "perf only"
-trace point instead of a TRACE_EVENT()?
+Please. Don't add more ugly generic header files into the main include 
+directory. I realize that the ugliness is partly historical (that 
+"<linux/decompress/mm.h>" file sure as hell was messy to begin with), but 
+this just makes that crazy situation worse.
 
--- Steve
+Clean up the mess instead of making it even less understandable. Please. 
+That whole "#ifdef STATIC" crap needs to go - not get spread out even 
+more.
 
-
+		Linus
