@@ -1,141 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536Ab0CCUIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 15:08:34 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:54380 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756506Ab0CCUI1 convert rfc822-to-8bit (ORCPT
+	id S1756576Ab0CCUVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 15:21:55 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:39429 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860Ab0CCUVs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 15:08:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BYmVu99XjIRfETl12o9PeCQG//WINlZsIJXHxT6GENkdA9AlJVfEFQL82UV/PPiyKQ
-         WjHF3jEdM6lBKPUiUbwge3N0+375C4OgPwOcjxmd8OmdBfco4nZleTZq0t9CwOizQqPo
-         absi/Jba7Ti3Jczpsk6Eunjaqzq+cTBda+DrA=
-MIME-Version: 1.0
-In-Reply-To: <4B8EBC48.8060701@jic23.retrosnub.co.uk>
-References: <4B8C1867.7040201@cam.ac.uk>
-	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
-	 <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
-	 <20100303184132.GA11471@core.coreip.homeip.net>
-	 <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
-	 <4B8EB685.1060302@jic23.retrosnub.co.uk>
-	 <1a297b361003031129y6c19ad9cqe8658c2d85d8764@mail.gmail.com>
-	 <4B8EBC48.8060701@jic23.retrosnub.co.uk>
-Date: Thu, 4 Mar 2010 00:08:21 +0400
-Message-ID: <1a297b361003031208s1a4b6f1dm8aa3ac91f6b7ee73@mail.gmail.com>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-From: Manu Abraham <abraham.manu@gmail.com>
-To: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
+	Wed, 3 Mar 2010 15:21:48 -0500
+To: Kay Sievers <kay.sievers@vrfy.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-iio@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 19/62] Driver-Core: devtmpfs - remove EXPERIMENTAL and  enable it by default
+References: <20100302230933.GA32287@kroah.com>
+	<1267572541-410-19-git-send-email-gregkh@suse.de>
+	<m1635eow8a.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.1003030839550.3627@localhost.localdomain>
+	<ac3eb2511003031203t2b30bbbjcb9a05e9851667ea@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Mar 2010 12:21:44 -0800
+In-Reply-To: <ac3eb2511003031203t2b30bbbjcb9a05e9851667ea@mail.gmail.com> (Kay Sievers's message of "Wed\, 3 Mar 2010 10\:03\:19 -1000")
+Message-ID: <m1y6i9i2av.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 3, 2010 at 11:45 PM, Jonathan Cameron
-<kernel@jic23.retrosnub.co.uk> wrote:
-> Hi Manu,
->
-> ...
->> Maybe it make sense to put all Generic sensors into one whole lot,
->> where an application can
+Kay Sievers <kay.sievers@vrfy.org> writes:
+
+> On Wed, Mar 3, 2010 at 06:46, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+>> Greg, please shut down people like Kay that want to enable something by
+>> default. We want a _minimal_ Â working config, not a maximal. If somebody
+>> has a distro that needs this, they can enable it _then_. Not "let's try to
+>> make people enable it whether they need it or not, because they _might_".
 >>
->> - read the value from the driver (eg: 0 - 65535)
->>
->> - read from device static information (to identify how the application
->> should treat the values read back.)
->>
->>    - report what type of device it is (Light, Voltage, Acceleration
->> and what not, simple enumeration will help, mayeb you can even have
->> bitwise OR the types, so that you can have a driver with multiple
->> capabilities)
->>    - the max value it can go
->>    - the min value it can go
->>    - the number of steps (gradient) that the driver can do.
->>
->>
->> Maybe such a simplistic interface does help ?
->>
->> The application can simply read the static information from the driver
->> and decide whether it should really handle that driver class.
+>> Because "might need it" is simply not good enough. A "must have" is the
+>> only reason to do 'default y'.
 >
-> The more generic sensors are covered by IIO (in staging)
-> There is a lot more there as well as an equivalent of what you describe.
+> No problem, if that's he rule, then let's drop the "y".  I always
+> understood the defaults as the "usually needed to bring up a box"
+> setting. We had this discussion already with Arjan who stated the same
+> as you, but we kid of missed to take action on that, sorry.
 >
-> The simplest equivalent to this is the hwmon subsystem (from which IIO
-> has borrowed a lot of interfaces, as has ALS).
->
-> You have a sysfs file per channel, so taking als api as an example:
->
-> illuminance0 - Value of illuminance in lux.
->
-> If you want your other elements (though no driver provides them at the moment).
->
-> illuminance0_max
-> illuminance0_min
-> illuminance0_values
+> For the "must have", we will not be able to bootup the upcoming Ubuntu
+> and openSUSE development distros without it, not sure about Fedora,
+> the support is there, but it might still work without it. Some smaller
+> distros also already depend on it.
 
+Is this a case of the initial ramdisks won't work, or have you removed
+support from udev to create device nodes?
 
-Just as i thought:
-
-A Class with values to define floor and ceiling and the gradient in
-which the driver can provide such an information in a generic way,
-rather than limiting to Ambient Light Sensor.
-
-to make it a bit more stylistic, you could provide static information,
-such as driver name also alongwith. But in any case, i guess you
-wouldn't need more than these
-
-device_name
-max_val
-min_val
-gradient/steps
-
-
-as static information and a simple value that could be read back.
-
-
-In (some remote thought) addition, some devices could "possibly" have
-levels that you could set the levels at which the device could set of
-a trigger, in which case, you might want to write to the driver to set
-the value at which you want to trigger of some event. (Don't really
-know whether this is applicable, but I have seen it in some
-temperature sensors, such a feature)
-
-
-> For slow devices this is all you need.
-> If you are interested in fast devices, take a look at the recently posted IIO ABI spec.
-> That uses sysfs files to describe the data that can be read from a character device
-> that is fed from a buffer (either hardware or software). It also supports fairly
-> advanced event handling (similar to input, but without cross device aggregation)
-> and triggering of data capture from various 'interrupt' sources.
->
-> It is still somewhat unclear how exactly to marry the high speed data acquisition
-> requirements with other 'client' subsystems such as input. All suggestions on that
-> are welcome!
-
-I don't know how fast is "fast".
-
-"I think", (based on quick thought) all you might need is a trigger,
-whether the userspace application needs to be triggered to read the
-value from the driver, or do something exotic.
-
-ie the trigger is a binary only event, as I understand, right ? But in
-any case, you define the trigger mechanism in any way, similar to an
-interrupt
-
-The data to be read back could be just as generic, in any case, rather
-than defining a subsystem per device category..
-
-Regards,
-Manu
+Eric
