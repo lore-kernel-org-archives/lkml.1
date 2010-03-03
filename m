@@ -1,60 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793Ab0CCVxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:53:30 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:37083 "EHLO
+	id S1756796Ab0CCVyC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:54:02 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:37181 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756707Ab0CCVxZ (ORCPT
+	by vger.kernel.org with ESMTP id S1756707Ab0CCVx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:53:25 -0500
-Date: Wed, 3 Mar 2010 22:53:14 +0100
+	Wed, 3 Mar 2010 16:53:56 -0500
+Date: Wed, 3 Mar 2010 22:53:47 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next requirements
-Message-ID: <20100303215314.GC2579@ucw.cz>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com> <201002271323.14402.rjw@sisk.pl> <20100227124710.GA21164@elte.hu> <201002272007.43042.rjw@sisk.pl> <20100228072357.GB14205@elte.hu>
+To: Frantisek Rysanek <Frantisek.Rysanek@post.cz>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
+Subject: Re: Dynticks on Vortex86SX ? (Cx486SLC + just the standard i8254
+	PC timer)
+Message-ID: <20100303215347.GD2579@ucw.cz>
+References: <19335.44648.623680.272844@pilspetsen.it.uu.se> <4B87FBC3.23033.45BDAB1@Frantisek.Rysanek.post.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100228072357.GB14205@elte.hu>
+In-Reply-To: <4B87FBC3.23033.45BDAB1@Frantisek.Rysanek.post.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-> Today's stats, done amongst users who are willing to opt in to the Smolt 
-> daemon:
-> 
->        x86: 99.7%
->    powerpc: 0.3%
+> > Select HZ=100.
+> >
+> right
+> 1) to make the numbers decadic
+> 2) seems like the only true way for me to decrease the rate of PC 
+> timer interrupts :-)
 
-Lies, bad lies, statistics.
+Try HZ=20 :-).
 
-> And yes, there are millions of ARM (and MIPS) CPUs running Linux as well. 
-> (They are only as present as present their developers are: the users almost 
-> never show up on linux-kernel.)
+> I am aware that the PC timer has a limited resolution (16 bits for 
+> the single i8254 channel) and thus the maximum time you can possibly 
+> sleep without an interrupt is about 55 ms (18 Hz). Based on all the 
+> PR publicity the dynticks patch used to receive in its time, 
+> I thought that even on my puny hardware, the PC timer would 
+> automatically flex towards that maximum period. Apparently this is 
+> not the case...
 
-It cuts both ways. Maybe obscure architectures like alpha have more
-than their marketshare of interested lkml users...
+I guess nohz needs apic timer or something like that.
 
-> Plus, a kernel subsystem maintainer like me who does lots of kernel 
-> infrastructure work can have a pretty good gut feeling about which 
-> architectures are actively helping out Linux, and which are just hanging on to 
-> the bandwagon.
+> And perhaps the hunt for dynticks is not really worth the bother,
+> if the wakeup to serve IRQ0 comes once every 3 million CPU cycles :-)
+> (This board clocks the CPU at 300 MHz.) How many CPU cycles does it 
+> take before the idle loop calls HLT again? a hundred maybe?  So 
+> that's 1/30000 of time running out of HLT? :-)
 
-So instead of either fixing those architectures or marking them
-deprecated, you blame Stephen for too much testing?
+Well, on modern cpus, entering/exiting halt state takes *lomg* time.
+You are lucky.
 
-We are in middle of 'stable series', so regressions are not
-permitted. You'd like to cause some regressions. Fine, but definitely
-not Stephen's problem.
-								Pavel
+> There's another power-saving feature of the Vortex SoC: it can 
+> decrease the core clock down to 1/8th of the nominal clock. This can 
+> be configured by a simple IO instruction. This way, you can decrease 
+> consumption of the whole SoC by maybe 6.5% (= down to 93% of full 
+> throttle), at the cost of throttling the core clock by 87%. The 
+> standard PC104 boards don't have a Vcore regulator, so it just 
+> doesn't get any better than that. I can do the underclocking from 
+> userspace using IOperm, I was wondering how nice it would be to have 
+> a "clockmod" driver, but ultimately I guess saving 125 mW is not 
+> worth the bother, as the whole setup including some peripherials eats 
+> over 3 Watts...
+
+Yep, hooking it to cpufreq would be nice.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
