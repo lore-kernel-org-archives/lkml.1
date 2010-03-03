@@ -1,35 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004Ab0CCJHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 04:07:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55158
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754909Ab0CCJH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 04:07:28 -0500
-Date: Wed, 03 Mar 2010 01:07:46 -0800 (PST)
-Message-Id: <20100303.010746.134683403.davem@davemloft.net>
-To: error27@gmail.com
-Cc: netdev@vger.kernel.org, adobriyan@gmail.com, akpm@linux-foundation.org,
-       yanghy@cn.fujitsu.com, kaber@trash.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [patch] cassini: fix off by one
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100303082241.GA32640@bicker>
-References: <20100303082241.GA32640@bicker>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	id S1755125Ab0CCJQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 04:16:40 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:55586 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754984Ab0CCJQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 04:16:38 -0500
+Date: Wed, 3 Mar 2010 10:16:35 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "=?UTF-8?B?TcOhcnRvbiBOw6ltZXRo?=" <nm127@freemail.hu>
+Subject: Re: linux-next: manual merge of the mfd tree with the i2c tree
+Message-ID: <20100303101635.18443234@hyperion.delvare>
+In-Reply-To: <20100303144715.2b607ac1.sfr@canb.auug.org.au>
+References: <20100303144715.2b607ac1.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Carpenter <error27@gmail.com>
-Date: Wed, 3 Mar 2010 11:22:41 +0300
+Hi Stephen, Samuel,
 
-> There are only 6 link_modes.
+On Wed, 3 Mar 2010 14:47:15 +1100, Stephen Rothwell wrote:
+> Today's linux-next merge of the mfd tree got a conflict in
+> drivers/i2c/busses/i2c-isch.c between commit
+> 482b522a6ced62506aba1c139cb9d4b73e7312f5 ("i2c: Make PCI device ids
+> constant") from the i2c tree and commit
+> 1fc8fe094a8ebcc09817246277250898a8d2fc5a ("i2c: convert i2c-isch to
+> platform_device") from the mfd tree.
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> The latter removes the code modified by the former, so I used the latter.
 
-Applied.
+I have sent a pull request to Linus yesterday for my i2c tree, which
+includes the first patch mentioned above. As soon as Linus pulls from
+it, Samuel will have to adjust the second patch to make it apply again.
+
+-- 
+Jean Delvare
