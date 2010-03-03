@@ -1,95 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219Ab0CCNvb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 08:51:31 -0500
-Received: from airmail.airvana.com ([131.239.32.135]:55231 "EHLO
-	airmail.wirelessworld.airvananet.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754065Ab0CCNva convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 08:51:30 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1754402Ab0CCOCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 09:02:10 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:45916 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754362Ab0CCOCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 09:02:09 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Daniel Taylor" <Daniel.Taylor@wdc.com>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] msdos: add support for large disks
+References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com>
+	<20100301141335.395dc4c3.akpm@linux-foundation.org>
+Date: Wed, 03 Mar 2010 23:02:03 +0900
+In-Reply-To: <20100301141335.395dc4c3.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Mon, 1 Mar 2010 14:13:35 -0800")
+Message-ID: <873a0h1p2c.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: do_loop_readv_writev() not as described for drivers implementing only write()?
-Date: Wed, 3 Mar 2010 13:51:28 -0000
-Message-ID: <4B3F8896E1733D4787DDB0EA1C7FF91F011640FD@ukmail.uk.wirelessworld.airvananet.com>
-In-Reply-To: <413a6a951003030411y2c11c6eaj551c26e1bed3679d@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: do_loop_readv_writev() not as described for drivers implementing only write()?
-Thread-Index: Acq6yqe7RUMPvbW0SE2lYS5MuGzoVAABb5tA
-References: <4B3F8896E1733D4787DDB0EA1C7FF91F01163E1D@ukmail.uk.wirelessworld.airvananet.com> <413a6a951003030411y2c11c6eaj551c26e1bed3679d@mail.gmail.com>
-From: "Mike McTernan" <mmcternan@airvana.com>
-To: "Daniel Baluta" <daniel.baluta@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 03 Mar 2010 13:51:09.0825 (UTC) FILETIME=[945C2710:01CABAD8]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> I would say that the libc enforces atomicity, but I have to dig deeper
-for
-> a real answer :).
+> On Wed, 24 Feb 2010 19:17:47 -0800
+> "Daniel Taylor" <Daniel.Taylor@wdc.com> wrote:
+>
+>> In order to use disks larger than 2TiB on Windows XP, it is necessary to use
+>> 4096-byte logical sectors in an MBR.
 
-If libc did do it, it would have to be fancy since readv() and writev()
-are documented as being atomic between processes, as well as threads.
+BTW, you can use GPT instead?
 
-Still, all things being possible, I visually checked the glibc I'm
-using. 
+And to make sure, "4096-byte logical sectors in an MBR" is meaning, the
+storage must be supporting 4096B and is using it?
 
-glibc-2.8/sysdeps/unix/sysv/linux/writev.c:
+>> Although the kernel storage and functions called from msdos.c used
+>> "sector_t" internally, msdos.c still used u32 variables, which results in
+>> the ability to handle XP-compatible large disks.
+>> 
+>> This patch changes the internal variables to "sector_t".
+>> 
+>
+> Please Cc OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> and myself on
+> this work.
 
-ssize_t
-__libc_writev (fd, vector, count)
-     int fd;
-     const struct iovec *vector;
-     int count;
-{
-  if (SINGLE_THREAD_P)
-    return do_writev (fd, vector, count);
+BTW, to make sure, this is fs/partitions/, not fs/fat/. So, I'm not
+sure, my knowledge is enough or not, and/or you just missed
+fs/partitions/.
 
-  int oldtype = LIBC_CANCEL_ASYNC ();
+Well, I'll make time to check. BTW, basically it sounds good to me
+except implementation details. But, I'd like to compare and check other
+implement a bit if possible. IIRC, this is not a well defined
+specification.
 
-  ssize_t result = do_writev (fd, vector, count);
-
-  LIBC_CANCEL_RESET (oldtype);
-
-  return result;
-}
-
-So we end up in do_writev(), which is defined in the same file:
-
-static ssize_t
-do_writev (int fd, const struct iovec *vector, int count)
-{
-  ssize_t bytes_written;
-
-  bytes_written = INLINE_SYSCALL (writev, 3, fd, CHECK_N (vector,
-count), count);
-
-  if (bytes_written >= 0 || errno != EINVAL || count <= UIO_FASTIOV)
-    return bytes_written;
-
-  return __atomic_writev_replacement (fd, vector, count);
-}
-
-So assuming the syscall to writev() returns >= 0 (which is true for my
-driver), I can't see locking being provided here unless
-LIBC_CANCEL_ASYNC is doing something spectacular which I've overlooked.
-
-The other observation from this is that the kernel could detect a case
-where writev() is not supported by a driver (i.e. write() is implemented
-but aio_write() is not) and return -ENOSYS instead of calling
-do_loop_readv_writev().  This would allow the libc to use it's
-replacement function - __atomic_writev_replacement() in this case.  
-
-How writev() correctly works is still a mystery to me at this point.
-
-Regards,
-
-Mike
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
