@@ -1,87 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400Ab0CCIhZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 03:37:25 -0500
-Received: from mail-bw0-f212.google.com ([209.85.218.212]:62659 "EHLO
+	id S1753541Ab0CCIjz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 03:39:55 -0500
+Received: from mail-bw0-f212.google.com ([209.85.218.212]:34930 "EHLO
 	mail-bw0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864Ab0CCIhW (ORCPT
+	with ESMTP id S1752422Ab0CCIjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 03:37:22 -0500
+	Wed, 3 Mar 2010 03:39:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=UpD3lRnE+KaBhs3Pz3xR25f1yRzPY9aztSWA5NnfMLdhiGzWb/NmTWziqGnsAmYHpA
-         YtGSvPCrJZ9nhO6Ui50sFVUrstNWkL/K2s2BGfLFg87EchG5kq6sGLnow7tA5k7e3WB4
-         KOm94wv7ZpOP9xItRapKf/Xc3OmTx0dmvl5AI=
-Date: Wed, 3 Mar 2010 11:31:28 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: imunsie@au1.ibm.com
-Cc: linux-kernel@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andreas Eversberg <andreas@eversberg.eu>, Andreas Mohr <andi@lisas.de>
-Subject: Re: [PATCH] Explicitly ignore unused return value of
-	_hfcpci_softirq
-Message-ID: <20100303083128.GA17283@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>, imunsie@au1.ibm.com,
-	linux-kernel@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Eversberg <andreas@eversberg.eu>,
-	Andreas Mohr <andi@lisas.de>
-References: <1267574453-7228-1-git-send-email-imunsie@au.ibm.com>
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=qNSmOVV1AEIP3SYaqD0JorpsEQMaOEUrF+8C6m3yXEYeqWMJpdw0yD77IX0HpeSro8
+         nEOJAjlUKu+yzkU1TSFw+kEhiK8VbRMJcP/si3gWMcfsD4wGt9bRoYX9sO64C3r5CRVC
+         DYbQMT+Kds2ZABrTVsHY0xNOwm6WxIMUKSxUo=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
+	<20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
+	<20100303073014.GE5768@kernel.dk>
+Date: Wed, 03 Mar 2010 11:39:50 +0300
+In-Reply-To: <20100303073014.GE5768@kernel.dk> (Jens Axboe's message of "Wed,
+	3 Mar 2010 08:30:14 +0100")
+Message-ID: <87zl2per3d.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267574453-7228-1-git-send-email-imunsie@au.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 11:00:53AM +1100, imunsie@au1.ibm.com wrote:
-> From: Ian Munsie <imunsie@au.ibm.com>
-> 
-> The compiler throws the following warning during compilation:
-> 
-> drivers/isdn/hardware/mISDN/hfcpci.c:2319: warning: ignoring return value of 'driver_for_each_device', declared with attribute warn_unused_result
-> 
-> driver_for_each_device is being used to call _hfcpci_softirq for each
-> device, which will only ever return 0.
-> This patch explicitly ignores the return value to silence the warning.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
-> ---
->  drivers/isdn/hardware/mISDN/hfcpci.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
-> index 70e6b0e..1333d4a 100644
-> --- a/drivers/isdn/hardware/mISDN/hfcpci.c
-> +++ b/drivers/isdn/hardware/mISDN/hfcpci.c
-> @@ -2316,7 +2316,8 @@ _hfcpci_softirq(struct device *dev, void *arg)
->  static void
->  hfcpci_softirq(void *arg)
->  {
-> -	(void) driver_for_each_device(&hfc_driver.driver, NULL, arg,
-> +	int err;
-> +	err = driver_for_each_device(&hfc_driver.driver, NULL, arg,
->  					_hfcpci_softirq);
->  
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Could you name the variable "dummy" instead of "err"?  Every few months I go through 
-and look for code like what you have done here and it sucks to try figure out if 
-people are ignoring the errors on purpose or not.
-
-regards,
-dan carpenter
-
->  	/* if next event would be in the past ... */
-> -- 
-> 1.6.6.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> On Wed, Mar 03 2010, Dmitry Monakhov wrote:
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > On Sat, Feb 27 2010, Dmitry Monakhov wrote:
+>> >> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
+>> >> against this value. But in case of fs_optimization merge we compare
+>> >> with wrong value. This patch must be included in
+>> >>  b428cd6da7e6559aca69aa2e3a526037d3f20403
+>> >> But accidentally i've forgot to add this in the initial patch.
+>> >> To make things straight let's replace all such checks.
+>> >> In fact this makes code easy to understand.
+>> >
+>> > Agree, applied.
+>> Ohh.. as you already know this patch break dm-layer. Sorry.
+>> This is because dm->merge may return more than requested. So correct
+>> check must test against less what requested. Correct patch attached.
+>
+> Have you tested this with dm and md (ie actual users of the merge_bvec
+> functionality) this time?
+Yes. This time both md and dm are ok.
