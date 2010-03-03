@@ -1,280 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007Ab0CCQr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:47:29 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46190 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754642Ab0CCQpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:45:24 -0500
-Message-Id: <20100303164306.602529559@chello.nl>
-References: <20100303163936.906011640@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Wed, 03 Mar 2010 17:39:46 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
-       fweisbec@gmail.com, Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 10/11] perf, x86: use LBR for PEBS IP+1 fixup
-Content-Disposition: inline; filename=perf-pebs-lbr.patch
+	id S1754945Ab0CCQr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:47:26 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:43793 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754821Ab0CCQrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 11:47:22 -0500
+Date: Wed, 3 Mar 2010 18:00:00 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Paul Turner <pjt@google.com>,
+       Dario Faggioli <faggioli@gandalf.sssup.it>,
+       Michael Trimarchi <michael@evidence.eu.com>,
+       Dhaval Giani <dhaval@retis.sssup.it>,
+       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] sched: enforce per-cpu utilization limits on runtime
+ balancing
+Message-ID: <20100303170000.GO2490@gandalf.sssup.it>
+References: <cover.1266931410.git.fabio@helm.retis>
+ <91b76b9b7555024d9afd7264eeae1b2db6a5e74c.1266931410.git.fabio@helm.retis>
+ <1267129705.22519.561.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267129705.22519.561.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-10-28)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PEBS always reports the IP+1, that is the instruction after the one
-that got sampled, cure this by using the LBR to reliably rewind the
-instruction stream.
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Thu, Feb 25, 2010 09:28:25PM +0100
+>
+> On Tue, 2010-02-23 at 19:56 +0100, Fabio Checconi wrote:
+> > +static u64 from_ratio(unsigned long ratio, u64 period)
+> > +{
+> > +       return (ratio * period) >> 20;
+> > +}
+> > +
+> > +/*
+> > + * Try to move *diff units of runtime from src to dst, checking
+> > + * that the utilization does not exceed the global limits on the
+> > + * destination cpu.  Returns true if the migration succeeded, leaving
+> > + * in *diff the actual amount of runtime moved, false on failure, which
+> > + * means that no more bandwidth can be migrated to rt_rq.
+> > + */
+> > +static int rt_move_bw(struct rt_rq *src, struct rt_rq *dst,
+> > +                      s64 *diff, u64 rt_period)
+> > +{
+> > +       struct rq *rq = rq_of_rt_rq(dst), *src_rq = rq_of_rt_rq(src);
+> > +       struct rt_edf_tree *dtree = &rq->rt.rt_edf_tree;
+> > +       struct rt_edf_tree *stree = &src_rq->rt.rt_edf_tree;
+> > +       unsigned long bw_to_move;
+> > +       int ret = 0;
+> > +
+> > +       double_spin_lock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
+> > +
+> > +       if (dtree->rt_free_bw) {
+> > +               bw_to_move = to_ratio(rt_period, *diff);
+> > +               if (bw_to_move > dtree->rt_free_bw) {
+> > +                       bw_to_move = dtree->rt_free_bw;
+> > +                       *diff = from_ratio(bw_to_move, rt_period);
+> > +               }
+> > +
+> > +               stree->rt_free_bw -= bw_to_move;
+> > +               dtree->rt_free_bw += bw_to_move;
+> > +               ret = 1;
+> > +       }
+> > +
+> > +       double_spin_unlock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
+> > +
+> > +       return ret;
+> > +} 
+> 
+> The from_ratio() stuff smells like numerical instability for
+> ->rt_free_bw, I can't see anything that would, given sufficient balance
+> cycles keep the sum of rt_free_bw over the cpus equal to what it started
+> out with.
 
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/x86/kernel/cpu/perf_event.c          |   70 ++++++++++++-------------
- arch/x86/kernel/cpu/perf_event_intel.c    |    4 -
- arch/x86/kernel/cpu/perf_event_intel_ds.c |   81 +++++++++++++++++++++++++++++-
- 3 files changed, 116 insertions(+), 39 deletions(-)
+You're right...  What would you think about the following solution?
+It just keep tracks of the bw accounted for every rt_rq when it is
+updated, and that should be enough to avoid accumulating the errors.
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -29,6 +29,41 @@
- #include <asm/stacktrace.h>
- #include <asm/nmi.h>
- 
-+/*
-+ * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
-+ */
-+static unsigned long
-+copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
-+{
-+	unsigned long offset, addr = (unsigned long)from;
-+	int type = in_nmi() ? KM_NMI : KM_IRQ0;
-+	unsigned long size, len = 0;
-+	struct page *page;
-+	void *map;
-+	int ret;
-+
-+	do {
-+		ret = __get_user_pages_fast(addr, 1, 0, &page);
-+		if (!ret)
-+			break;
-+
-+		offset = addr & (PAGE_SIZE - 1);
-+		size = min(PAGE_SIZE - offset, n - len);
-+
-+		map = kmap_atomic(page, type);
-+		memcpy(to, map+offset, size);
-+		kunmap_atomic(map, type);
-+		put_page(page);
-+
-+		len  += size;
-+		to   += size;
-+		addr += size;
-+
-+	} while (len < n);
-+
-+	return len;
-+}
-+
- static u64 perf_event_mask __read_mostly;
- 
- struct event_constraint {
-@@ -1516,41 +1551,6 @@ perf_callchain_kernel(struct pt_regs *re
- 	dump_trace(NULL, regs, NULL, regs->bp, &backtrace_ops, entry);
- }
- 
--/*
-- * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
-- */
--static unsigned long
--copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
--{
--	unsigned long offset, addr = (unsigned long)from;
--	int type = in_nmi() ? KM_NMI : KM_IRQ0;
--	unsigned long size, len = 0;
--	struct page *page;
--	void *map;
--	int ret;
--
--	do {
--		ret = __get_user_pages_fast(addr, 1, 0, &page);
--		if (!ret)
--			break;
--
--		offset = addr & (PAGE_SIZE - 1);
--		size = min(PAGE_SIZE - offset, n - len);
--
--		map = kmap_atomic(page, type);
--		memcpy(to, map+offset, size);
--		kunmap_atomic(map, type);
--		put_page(page);
--
--		len  += size;
--		to   += size;
--		addr += size;
--
--	} while (len < n);
--
--	return len;
--}
--
- static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
- {
- 	unsigned long bytes;
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -547,7 +547,7 @@ static void intel_pmu_disable_event(stru
- 	x86_pmu_disable_event(event);
- 
- 	if (unlikely(event->attr.precise))
--		intel_pmu_pebs_disable(hwc);
-+		intel_pmu_pebs_disable(event);
- 
- 	if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK)
- 		intel_pmu_lbr_disable(event);
-@@ -603,7 +603,7 @@ static void intel_pmu_enable_event(struc
- 	}
- 
- 	if (unlikely(event->attr.precise))
--		intel_pmu_pebs_enable(hwc);
-+		intel_pmu_pebs_enable(event);
- 
- 	if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK)
- 		intel_pmu_lbr_enable(event);
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel_ds.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
-@@ -331,26 +331,32 @@ intel_pebs_constraints(struct perf_event
- 	return &emptyconstraint;
- }
- 
--static void intel_pmu_pebs_enable(struct hw_perf_event *hwc)
-+static void intel_pmu_pebs_enable(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	struct hw_perf_event *hwc = &event->hw;
- 	u64 val = cpuc->pebs_enabled;
- 
- 	hwc->config &= ~ARCH_PERFMON_EVENTSEL_INT;
- 
- 	val |= 1ULL << hwc->idx;
- 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
-+
-+	intel_pmu_lbr_enable(event);
- }
- 
--static void intel_pmu_pebs_disable(struct hw_perf_event *hwc)
-+static void intel_pmu_pebs_disable(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	struct hw_perf_event *hwc = &event->hw;
- 	u64 val = cpuc->pebs_enabled;
- 
- 	val &= ~(1ULL << hwc->idx);
- 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
- 
- 	hwc->config |= ARCH_PERFMON_EVENTSEL_INT;
-+
-+	intel_pmu_lbr_disable(event);
- }
- 
- static void intel_pmu_pebs_enable_all(void)
-@@ -415,6 +421,74 @@ do {						\
- 
- #endif
- 
-+#include <asm/insn.h>
-+
-+#define MAX_INSN_SIZE	16
-+
-+static void intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
-+{
-+#if 0
-+	/*
-+	 * Borken, makes the machine expode at times trying to
-+	 * derefence funny userspace addresses.
-+	 *
-+	 * Should we always fwd decode from @to, instead of trying
-+	 * to rewind as implemented?
-+	 */
-+
-+	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	unsigned long from = cpuc->lbr_entries[0].from;
-+	unsigned long to = cpuc->lbr_entries[0].to;
-+	unsigned long ip = regs->ip;
-+	u8 buf[2*MAX_INSN_SIZE];
-+	u8 *kaddr;
-+	int i;
-+
-+	if (from && to) {
-+		/*
-+		 * We sampled a branch insn, rewind using the LBR stack
-+		 */
-+		if (ip == to) {
-+			regs->ip = from;
-+			return;
-+		}
-+	}
-+
-+	if (user_mode(regs)) {
-+		int bytes = copy_from_user_nmi(buf,
-+				(void __user *)(ip - MAX_INSN_SIZE),
-+				2*MAX_INSN_SIZE);
-+
-+		/*
-+		 * If we fail to copy the insn stream, give up
-+		 */
-+		if (bytes != 2*MAX_INSN_SIZE)
-+			return;
-+
-+		kaddr = buf;
-+	} else
-+		kaddr = (void *)(ip - MAX_INSN_SIZE);
-+
-+	/*
-+	 * Try to find the longest insn ending up at the given IP
-+	 */
-+	for (i = MAX_INSN_SIZE; i > 0; i--) {
-+		struct insn insn;
-+
-+		kernel_insn_init(&insn, kaddr + MAX_INSN_SIZE - i);
-+		insn_get_length(&insn);
-+		if (insn.length == i) {
-+			regs->ip -= i;
-+			return;
-+		}
-+	}
-+
-+	/*
-+	 * We failed to find a match for the previous insn.. give up
-+	 */
-+#endif
-+}
-+
- static int intel_pmu_save_and_restart(struct perf_event *event);
- static void intel_pmu_disable_event(struct perf_event *event);
- 
-@@ -458,6 +532,8 @@ static void intel_pmu_drain_pebs_core(st
- 
- 	PEBS_TO_REGS(at, &regs);
- 
-+	intel_pmu_pebs_fixup_ip(&regs);
-+
- 	if (perf_event_overflow(event, 1, data, &regs))
- 		intel_pmu_disable_event(event);
- 
-@@ -519,6 +595,7 @@ static void intel_pmu_drain_pebs_nhm(str
- 		data->period = event->hw.last_period;
- 
- 		PEBS_TO_REGS(at, &regs);
-+		intel_pmu_pebs_fixup_ip(&regs);
- 
- 		if (perf_event_overflow(event, 1, data, &regs))
- 			intel_pmu_disable_event(event);
+static inline void rt_update_bw(struct rt_rq *rt_rq, struct rt_edf_tree *tree,
+                                s64 diff, u64 rt_period)
+{       
+	unsigned long bw;
 
--- 
+	rt_rq->rt_runtime += diff;
+	bw = to_ratio(rt_period, rt_rq->rt_runtime);
+	tree->rt_free_bw += bw - rt_rq->rt_bw;
+	rt_rq->rt_bw = bw;
+}
+ 
+static bool rt_move_bw(struct rt_rq *src, struct rt_rq *dst,
+		       s64 *diff, u64 rt_period)
+{
+	struct rq *rq = rq_of_rt_rq(dst), *src_rq = rq_of_rt_rq(src);
+	struct rt_edf_tree *dtree = &rq->rt.rt_edf_tree;
+	struct rt_edf_tree *stree = &src_rq->rt.rt_edf_tree;
+	unsigned long bw_to_move;
+	bool ret = false;
 
+	double_spin_lock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
+
+	if (dtree->rt_free_bw) {
+		bw_to_move = to_ratio(rt_period, *diff);
+		if (bw_to_move > dtree->rt_free_bw)
+			*diff = from_ratio(dtree->rt_free_bw, rt_period);
+
+		if (*diff) {
+			rt_update_bw(src, stree, -(*diff), rt_period);
+			rt_update_bw(dst, dtree, *diff, rt_period);
+
+			ret = true;
+		}
+	}
+
+	double_spin_unlock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
+
+	return ret;
+}
