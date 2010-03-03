@@ -1,88 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809Ab0CCLJH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 06:09:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:23327 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752335Ab0CCLJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 06:09:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,573,1262592000"; 
-   d="scan'208";a="600879499"
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] x86/mrst: Fix APB timer per cpu clockevent
-Date: Tue,  2 Mar 2010 21:01:34 -0800
-Message-Id: <1267592494-7723-1-git-send-email-jacob.jun.pan@linux.intel.com>
-X-Mailer: git-send-email 1.5.6.5
+	id S1753604Ab0CCLMf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 06:12:35 -0500
+Received: from mbox2.netikka.net ([213.250.81.203]:49308 "EHLO
+	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768Ab0CCLMd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 06:12:33 -0500
+Message-ID: <4B8E441F.5090701@mandriva.org>
+Date: Wed, 03 Mar 2010 13:12:31 +0200
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100302 Mandriva/3.0.3-1mdv2010.1 (2010.1) Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Dave Airlie <airlied@linux.ie>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm request 2
+References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain> <alpine.DEB.2.00.1003022300320.4099@skynet.skynet.ie>
+In-Reply-To: <alpine.DEB.2.00.1003022300320.4099@skynet.skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current APB timer code incorrectly registers the static copy of the
-clockevent device for boot CPU. The per cpu clockevent should be used
-instead.
+03.03.2010 01:02, Dave Airlie skrev:
+>>> x86 after PPC (I think I just validated Ingo).
+>>
+>> Why is VGA_SWITCHEROO enabled by default?
+>
+> because it does nothing on anything except the laptops in question and on
+> those it does nothing except add a control file in debugfs?
+>
+> So how am I supposed to indicate to distro vendors that something should
+> be turned on? If you think that distro kernel maintainers really
+> understand every config option that goes past, I've got a bridge.
+>
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- arch/x86/kernel/apb_timer.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+Yep. If the help-text for a new config option is well written, a kernel 
+maintainer will have no problem deciding what to do.
+(the help text for the config in question is wery well written, thanks
+  to whoever wrote that)
 
-diff --git a/arch/x86/kernel/apb_timer.c b/arch/x86/kernel/apb_timer.c
-index 1232fe7..6f20c6c 100644
---- a/arch/x86/kernel/apb_timer.c
-+++ b/arch/x86/kernel/apb_timer.c
-@@ -84,9 +84,10 @@ struct apbt_dev {
- 
- int disable_apbt_percpu __cpuinitdata;
- 
-+static DEFINE_PER_CPU(struct apbt_dev, cpu_apbt_dev);
-+
- #ifdef CONFIG_SMP
- static unsigned int apbt_num_timers_used;
--static DEFINE_PER_CPU(struct apbt_dev, cpu_apbt_dev);
- static struct apbt_dev *apbt_devs;
- #endif
- 
-@@ -302,6 +303,7 @@ static void apbt_disable_int(int n)
- static int __init apbt_clockevent_register(void)
- {
-        struct sfi_timer_table_entry *mtmr;
-+       struct apbt_dev *adev = &__get_cpu_var(cpu_apbt_dev);
- 
-        mtmr = sfi_get_mtmr(APBT_CLOCKEVENT0_NUM);
-        if (mtmr == NULL) {
-@@ -329,22 +331,24 @@ static int __init apbt_clockevent_register(void)
-         * global if not used for per cpu timer.
-         */
-        apbt_clockevent.cpumask = cpumask_of(smp_processor_id());
-+       adev->num = smp_processor_id();
-+       memcpy(&adev->evt, &apbt_clockevent, sizeof(struct clock_event_device));
- 
-        if (disable_apbt_percpu) {
-                apbt_clockevent.rating = APBT_CLOCKEVENT_RATING - 100;
--               global_clock_event = &apbt_clockevent;
-+		global_clock_event = &adev->evt;
-                printk(KERN_DEBUG "%s clockevent registered as global\n",
-                        global_clock_event->name);
-        }
- 
-        if (request_irq(apbt_clockevent.irq, apbt_interrupt_handler,
-                IRQF_TIMER | IRQF_DISABLED | IRQF_NOBALANCING,
--               apbt_clockevent.name, &apbt_clockevent)) {
-+		apbt_clockevent.name, adev)) {
-                printk(KERN_ERR "Failed request IRQ for APBT%d\n",
-                        apbt_clockevent.irq);
-        }
- 
--       clockevents_register_device(&apbt_clockevent);
-+       clockevents_register_device(&adev->evt);
-        /* Start APBT 0 interrupts */
-        apbt_enable_int(APBT_CLOCKEVENT0_NUM);
- 
--- 
-1.5.6.5
+And this specific option/feature is already requested by endusers, so no
+maintainer will be able to "miss it" :-)
 
+--
+Thomas
