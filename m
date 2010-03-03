@@ -1,52 +1,144 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629Ab0CCENU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 23:13:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41061 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752828Ab0CCENT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 23:13:19 -0500
-Message-ID: <4B8DE479.1030308@kernel.org>
-Date: Wed, 03 Mar 2010 13:24:25 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1753486Ab0CCEiw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 23:38:52 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:55703 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276Ab0CCEiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 23:38:51 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <20100302230933.GA32287@kroah.com>
+	<1267572541-410-19-git-send-email-gregkh@suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 02 Mar 2010 20:38:45 -0800
+In-Reply-To: <1267572541-410-19-git-send-email-gregkh@suse.de> (Greg Kroah-Hartman's message of "Tue\,  2 Mar 2010 15\:28\:18 -0800")
+Message-ID: <m1635eow8a.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: werner@guyane.dyn-o-saur.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33 problems
-References: <1267587210.10602@guyane.dyn-o-saur.com>
-In-Reply-To: <1267587210.10602@guyane.dyn-o-saur.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Mar 2010 04:13:14 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>, Linus Torvalds
+	<torvalds@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 19/62] Driver-Core: devtmpfs - remove EXPERIMENTAL and enable it by default
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Greg Kroah-Hartman <gregkh@suse.de> writes:
 
-On 03/03/2010 12:33 PM, werner@guyane.dyn-o-saur.com wrote:
-> dmesg isn't complete.  That's a general problem.  When we get 1 GB
-> dmesg buffer in the kernel config ????
+> From: Kay Sievers <kay.sievers@vrfy.org>
+>
+> All major distros enable devtmpfs on recent systems, so remove
+> the EXPERIMENTAL flag, and enable it by default to reflect how it
+> is used today.
 
-Kernel log can be incomplete for many reasons.  In your case klogd
-wasn't logging debug messages so I couldn't see pcpu debug info.
-dmesg w/ sufficiently large -s combined with large kernel buffer
-usually works.
+Default y?
 
-> Linux version 2.6.33-git7 (root@werner) (gcc version 4.3.3 (GCC) ) #1 SMP PREEMPT Tue Mar 2 06:15:19 GFT 2010
-...
-> setup_percpu: NR_CPUS:32 nr_cpumask_bits:32 nr_cpu_ids:2 nr_node_ids:1
-> PERCPU: Embedded 14 pages/cpu @c3c00000 s35876 r0 d21468 u2097152
-> pcpu-alloc: s35876 r0 d21468 u2097152 alloc=1*4194304
-> pcpu-alloc: [0] 0 1 
+Default y is the wrong thing for DEVTMPFS_MOUNT.  It changes the
+userspace semantics so I can't see how this is safe in the general
+case.
 
-Here, the unit size is 2M and the chunk size 4M for the two possible
-cpus.  This isn't excessive at all and i386 shouldn't have much
-problem accomodating it.  Have you tried percpu_alloc=page?
+I also looked and the most recent bleeding edge distro I have fedora
+core 12 doesn't even compile in devtmpfs so this extraordinary claim
+that all major distros are using devtmpfs is far from true today.  It
+is certainly rare enough that changing there is not yet justification
+for changing the default.
 
-Thanks.
+Eric
 
--- 
-tejun
+>
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/base/Kconfig |   45 ++++++++++++++++++++++++++++-----------------
+>  1 files changed, 28 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+> index ee37727..8497ce9 100644
+> --- a/drivers/base/Kconfig
+> +++ b/drivers/base/Kconfig
+> @@ -9,29 +9,40 @@ config UEVENT_HELPER_PATH
+>  	  every uevent.
+>  
+>  config DEVTMPFS
+> -	bool "Create a kernel maintained /dev tmpfs (EXPERIMENTAL)"
+> +	bool "Maintain a devtmpfs filesystem to mount at /dev"
+>  	depends on HOTPLUG && SHMEM && TMPFS
+> +	default y
+>  	help
+> -	  This creates a tmpfs filesystem, and mounts it at bootup
+> -	  and mounts it at /dev. The kernel driver core creates device
+> -	  nodes for all registered devices in that filesystem. All device
+> -	  nodes are owned by root and have the default mode of 0600.
+> -	  Userspace can add and delete the nodes as needed. This is
+> -	  intended to simplify bootup, and make it possible to delay
+> -	  the initial coldplug at bootup done by udev in userspace.
+> -	  It should also provide a simpler way for rescue systems
+> -	  to bring up a kernel with dynamic major/minor numbers.
+> -	  Meaningful symlinks, permissions and device ownership must
+> -	  still be handled by userspace.
+> -	  If unsure, say N here.
+> +	  This creates a tmpfs filesystem instance early at bootup.
+> +	  In this filesystem, the kernel driver core maintains device
+> +	  nodes with their default names and permissions for all
+> +	  registered devices with an assigned major/minor number.
+> +	  Userspace can modify the filesystem content as needed, add
+> +	  symlinks, and apply needed permissions.
+> +	  It provides a fully functional /dev directory, where usually
+> +	  udev runs on top, managing permissions and adding meaningful
+> +	  symlinks.
+> +	  In very limited environments, it may provide a sufficient
+> +	  functional /dev without any further help. It also allows simple
+> +	  rescue systems, and reliably handles dynamic major/minor numbers.
+> +	  If unsure, say Y here.
+>  
+>  config DEVTMPFS_MOUNT
+> -	bool "Automount devtmpfs at /dev"
+> +	bool "Automount devtmpfs at /dev, after the kernel mounted the rootfs"
+>  	depends on DEVTMPFS
+> +	default y
+>  	help
+> -	  This will mount devtmpfs at /dev if the kernel mounts the root
+> -	  filesystem. It will not affect initramfs based mounting.
+> -	  If unsure, say N here.
+> +	  This will instruct the kernel to automatically mount the
+> +	  devtmpfs filesystem at /dev, directly after the kernel has
+> +	  mounted the root filesystem. The behavior can be overridden
+> +	  with the commandline parameter: devtmpfs.mount=0|1.
+> +	  This option does not affect initramfs based booting, here
+> +	  the devtmpfs filesystem always needs to be mounted manually
+> +	  after the roots is mounted.
+> +	  With this option enabled, it allows to bring up a system in
+> +	  rescue mode with init=/bin/sh, even when the /dev directory
+> +	  on the rootfs is completely empty.
+> +	  If unsure, say Y here.
+>  
+>  config STANDALONE
+>  	bool "Select only drivers that don't need compile-time external firmware" if EXPERIMENTAL
+> -- 
+> 1.7.0.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
