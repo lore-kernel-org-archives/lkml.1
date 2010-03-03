@@ -1,96 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561Ab0CCAcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:32:17 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:34540 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754887Ab0CCAcP (ORCPT
+	id S1758348Ab0CCAdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:33:20 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55556 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754989Ab0CCAdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:32:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAEY9jUtGGOO+/2dsb2JhbACbC3S+RYR7BIMX
-Date: Tue, 2 Mar 2010 19:32:07 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
-	framework
-Message-ID: <20100303003207.GA7176@Krystal>
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6> <20100225152130.GB12635@Krystal> <4B8C7E23.1000302@redhat.com> <4B8DAAF2.203@redhat.com>
+	Tue, 2 Mar 2010 19:33:18 -0500
+Date: Wed, 3 Mar 2010 09:26:06 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       rientjes@google.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v2
+Message-Id: <20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
+References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
+	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4B8DAAF2.203@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 19:30:45 up 76 days,  8:49,  6 users,  load average: 0.47, 0.25,
-	0.19
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Masami Hiramatsu wrote:
-> > Mathieu Desnoyers wrote:
-> >> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> >>> Make insn_slot framework support various size slots.
-> >>> Current insn_slot just supports one-size instruction buffer slot. However,
-> >>> kprobes jump optimization needs larger size buffers.
-> >>
-> >> OK, so you end up having one insn slot cache for kprobes and one insn
-> >> slot (eventually) for the static jump patching (which needs larger
-> >> instruction slots than kprobes). That seems like a good way to ensure
-> >> you do not use more memory than necessary.
-> >>
-> >> We could possibly go even further and automatically use the right insn
-> >> slot cache given the size of the instruction entry that must be added (a
-> >> bit like the memory allocator which have different pools for each
-> >> allocation order).
-> > 
-> > Sure, that will be simpler interface.
-> > 
-> >> Possibly that using the terminology of "memory pools" rather than
-> >> "cache" could be a better fit too. So what this really becomes is an
-> >> instruction slot allocator and garbage collector.
-> > 
-> > Ah, right. It would be better to rename kprobe_insn_pool() :)
+> I'll test this patch all through this night, and check whether it doesn't trigger
+> global oom after memcg's oom.
 > 
-> Hmm, I tried it. And finally, I found that this doesn't help
-> to simplify code... Maybe it is better to postpone it until
-> another user needs this feature.
+O.K. It works well.
+Feel free to add my signs.
 
-I guess it's a tradeoff between the genericity of the API you provide
-and the complexity of the code that provides this API. So as you say,
-maybe it's better to wait until more users appears before improving the
-API.
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
 Thanks,
-
-Mathieu
-
-> 
-> Thank you,
-> 
-> -- 
-> Masami Hiramatsu
-> e-mail: mhiramat@redhat.com
-> 
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Daisuke Nishimura.
