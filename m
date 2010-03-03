@@ -1,70 +1,143 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367Ab0CCKuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 05:50:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35301
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753108Ab0CCKuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 05:50:08 -0500
-Date: Wed, 03 Mar 2010 02:50:26 -0800 (PST)
-Message-Id: <20100303.025026.243831910.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-CC: grant.likely@secretlab.ca
-Subject: [PATCH] uartlite: Fix build on sparc.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1753476Ab0CCKx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 05:53:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56849 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238Ab0CCKxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 05:53:23 -0500
+Message-ID: <4B8E3DAB.1090307@cn.fujitsu.com>
+Date: Wed, 03 Mar 2010 18:44:59 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>, Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       David Rientjes <rientjes@google.com>, Paul Menage <menage@google.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Subject: [PATCH 1/4] cpuset: fix the problem that cpuset_mem_spread_node()
+ returns an offline node(was: Re: [regression] cpuset,mm: update tasks' mems_allowed
+ in time (58568d2))
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+cpuset_mem_spread_node() returns an offline node, and causes an oops.
 
-We can get this driver enabled via MFD_TIMBERDALE which only
-requires GPIO to be on.
+This patch fixes it by initializing task->mems_allowed to
+node_states[N_HIGH_MEMORY], and updating task->mems_allowed when doing
+memory hotplug.
 
-But the of_address_to_resource() function is only present on
-powerpc and microblaze, so we have to conditionalize the
-CONFIG_OF probing bits on that.
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+---
+ init/main.c      |    2 +-
+ kernel/cpuset.c  |   30 ++++++++++++++++++++++--------
+ kernel/kthread.c |    2 +-
+ 3 files changed, 24 insertions(+), 10 deletions(-)
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index ab2ab3c..f0a6c61 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -19,7 +19,7 @@
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <asm/io.h>
--#if defined(CONFIG_OF)
-+#if defined(CONFIG_OF) && (defined(CONFIG_PPC32) || defined(CONFIG_MICROBLAZE))
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
-@@ -581,7 +581,7 @@ static struct platform_driver ulite_platform_driver = {
- /* ---------------------------------------------------------------------
-  * OF bus bindings
-  */
--#if defined(CONFIG_OF)
-+#if defined(CONFIG_OF) && (defined(CONFIG_PPC32) || defined(CONFIG_MICROBLAZE))
- static int __devinit
- ulite_of_probe(struct of_device *op, const struct of_device_id *match)
- {
-@@ -631,11 +631,11 @@ static inline void __exit ulite_of_unregister(void)
- {
- 	of_unregister_platform_driver(&ulite_of_driver);
- }
--#else /* CONFIG_OF */
--/* CONFIG_OF not enabled; do nothing helpers */
-+#else /* CONFIG_OF && (CONFIG_PPC32 || CONFIG_MICROBLAZE) */
-+/* Appropriate config not enabled; do nothing helpers */
- static inline int __init ulite_of_register(void) { return 0; }
- static inline void __exit ulite_of_unregister(void) { }
--#endif /* CONFIG_OF */
-+#endif /* CONFIG_OF && (CONFIG_PPC32 || CONFIG_MICROBLAZE) */
+diff --git a/init/main.c b/init/main.c
+index c75dcd6..acb4edf 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -848,7 +848,7 @@ static int __init kernel_init(void * unused)
+ 	/*
+ 	 * init can allocate pages on any node
+ 	 */
+-	set_mems_allowed(node_possible_map);
++	set_mems_allowed(node_states[N_HIGH_MEMORY]);
+ 	/*
+ 	 * init can run on any cpu.
+ 	 */
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index ba401fa..f732ff7 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -920,9 +920,6 @@ static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
+  *    call to guarantee_online_mems(), as we know no one is changing
+  *    our task's cpuset.
+  *
+- *    Hold callback_mutex around the two modifications of our tasks
+- *    mems_allowed to synchronize with cpuset_mems_allowed().
+- *
+  *    While the mm_struct we are migrating is typically from some
+  *    other task, the task_struct mems_allowed that we are hacking
+  *    is for our current task, which must allocate new pages for that
+@@ -936,9 +933,23 @@ static void cpuset_migrate_mm(struct mm_struct *mm, const nodemask_t *from,
  
- /* ---------------------------------------------------------------------
-  * Module setup/teardown
+ 	tsk->mems_allowed = *to;
+ 
++	/* 
++	 * After current->mems_allowed is set to a new value, current will
++	 * allocate new pages for the migrating memory region. So we must
++	 * ensure that update of current->mems_allowed have been completed
++	 * by this moment.
++	 */
++	smp_wmb();
+ 	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+ 
+ 	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
++
++	/* 
++	 * After doing migrate pages, current will allocate new pages for
++	 * itself not the other tasks. So we must ensure that update of
++	 * current->mems_allowed have been completed by this moment.
++	 */
++	smp_wmb();
+ }
+ 
+ /*
+@@ -1391,11 +1402,10 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+ 
+ 	if (cs == &top_cpuset) {
+ 		cpumask_copy(cpus_attach, cpu_possible_mask);
+-		to = node_possible_map;
+ 	} else {
+ 		guarantee_online_cpus(cs, cpus_attach);
+-		guarantee_online_mems(cs, &to);
+ 	}
++	guarantee_online_mems(cs, &to);
+ 
+ 	/* do per-task migration stuff possibly for each in the threadgroup */
+ 	cpuset_attach_task(tsk, &to, cs);
+@@ -2090,15 +2100,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
+ static int cpuset_track_online_nodes(struct notifier_block *self,
+ 				unsigned long action, void *arg)
+ {
++	nodemask_t oldmems;
++
+ 	cgroup_lock();
+ 	switch (action) {
+ 	case MEM_ONLINE:
+-	case MEM_OFFLINE:
++		oldmems = top_cpuset.mems_allowed;
+ 		mutex_lock(&callback_mutex);
+ 		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+ 		mutex_unlock(&callback_mutex);
+-		if (action == MEM_OFFLINE)
+-			scan_for_empty_cpusets(&top_cpuset);
++		update_tasks_nodemask(&top_cpuset, &oldmems, NULL);
++		break;
++	case MEM_OFFLINE:
++		scan_for_empty_cpusets(&top_cpuset);
+ 		break;
+ 	default:
+ 		break;
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 82ed0ea..83911c7 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -219,7 +219,7 @@ int kthreadd(void *unused)
+ 	set_task_comm(tsk, "kthreadd");
+ 	ignore_signals(tsk);
+ 	set_cpus_allowed_ptr(tsk, cpu_all_mask);
+-	set_mems_allowed(node_possible_map);
++	set_mems_allowed(node_states[N_HIGH_MEMORY]);
+ 
+ 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
+-- 
+1.6.5.2
+
+
