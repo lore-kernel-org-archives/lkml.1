@@ -1,62 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370Ab0CCRtT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:49:19 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:37795 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755342Ab0CCRtP (ORCPT
+	id S1755398Ab0CCRtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:49:40 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:17719 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755330Ab0CCRti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:49:15 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B8EA192.5070108@cam.ac.uk>
-Date: Wed, 03 Mar 2010 17:51:14 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+	Wed, 3 Mar 2010 12:49:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=SpF5+WoF6QHVuK0U5RBzsEMKTSVVTs7Fn4iOdqZ9EzJfKozvZMtefW/+f2O7fV7gC
+	6+SgXJpn6jWxOCjt+uiPA==
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Dima Zavin <dmitriyz@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-References: <4B8C1867.7040201@cam.ac.uk> <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com> <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1267637995.25158.96.camel@laptop>
+References: <20100303163936.906011640@chello.nl>
+	 <20100303164306.375353163@chello.nl>
+	 <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+	 <1267637995.25158.96.camel@laptop>
+Date: Wed, 3 Mar 2010 09:49:33 -0800
+Message-ID: <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
+Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc'ing Input list and maintainer.
-> 
-> On Tue, 2 Mar 2010, Dima Zavin wrote:
->>
->> I definitely see the need for what you guys are trying to accomplish.
->> For example, currently, we use an input device for reporting events,
->> and a separate misc device node for control
->> (enable/disable/configure). It's definitely suboptimal, but there
->> currently isn't anything there would let us do things cleanly.
-> 
-> I have to say, I personally don't see why something like an ambient light 
-> sensor _isn't_ just an input device. 
-> 
-> What's the difference between a physical "increase screen brightness" key, 
-> and a "ambient light sensor"? Absolutely none as far as I can tell.
-> 
-> And for something like an X server, it sounds a lot more natural to just 
-> have another input device than to have yet abother event reporting 
-> interface.
-> 
-> And quite frankly, the "explanations" I see in this thread for why it 
-> needs to be a subsystem of its own don't actually explain anything or make 
-> sense. They seem to boil down to "we just did it this way" without 
-> actually answering any of the issues brought up.
-> 
-> 		Linus
-> 
+On Wed, Mar 3, 2010 at 9:39 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2010-03-03 at 09:30 -0800, Stephane Eranian wrote:
+>> This assumes struct pt_regs is somehow exported to userland.
+>> Is that the case?
+>
+> I seems to have understood they were, and asm/ptrace.h seems to agree
+> with that, it has !__KERNEL__ definitions for struct pt_regs.
+>
+Seems to be the case, indeed.
 
+>> I would clearly spell out that the REGS are the interrupted REGS,
+>> not the overflow REGS. Maybe PERF_SAMPLE_IREGS.
+>
+> They can be both, for PEBS they are the overflow trap (until PEBS does
+> fault) regs.
+
+You're saying without PEBS= interrupted state, with PEBS=overflow state.
+That precludes requesting both interrupted + overflow state when PEBS is
+enabled. That may be interesting to look at differences, distances (in the IP).
