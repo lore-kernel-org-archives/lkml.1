@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559Ab0CCPrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:47:17 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48898 "EHLO e2.ny.us.ibm.com"
+	id S1753476Ab0CCPrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:47:15 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48887 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752382Ab0CCPrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:47:12 -0500
+	id S1752322Ab0CCPrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 10:47:11 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -13,10 +13,11 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/4] rcu: suppress RCU lockdep warnings during early boot
-Date: Wed,  3 Mar 2010 07:46:57 -0800
-Message-Id: <1267631219-8713-2-git-send-email-paulmck@linux.vnet.ibm.com>
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@lst.de>
+Subject: [PATCH tip/core/rcu 1/4] rcu: use wrapper function instead of exporting tasklist_lock
+Date: Wed,  3 Mar 2010 07:46:56 -0800
+Message-Id: <1267631219-8713-1-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100303154638.GA8576@linux.vnet.ibm.com>
 References: <20100303154638.GA8576@linux.vnet.ibm.com>
@@ -24,165 +25,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RCU is used during very early boot, before RCU and lockdep have been
-initialized.  So make the underlying primitives (rcu_read_lock_held(),
-rcu_read_lock_bh_held(), rcu_read_lock_sched_held(), and
-rcu_dereference_check()) check for early boot via the rcu_scheduler_active
-flag.  This will suppress false positives.
+Lockdep-RCU commit d11c563d exported tasklist_lock, which is not a good
+thing.  This patch instead exports a function that uses lockdep to check
+whether tasklist_lock is held.
 
-Also introduce a debug_lockdep_rcu_enabled() static inline helper
-function, which tags the CONTINUE_PROVE_RCU case as likely(), as suggested
-by Ingo Molnar.
-
+Suggested-by: Christoph Hellwig <hch@lst.de>
+Cc: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcupdate.h |   35 ++++++++++++++++++++++++++---------
- lib/locking-selftest.c   |    5 +++++
- 2 files changed, 31 insertions(+), 9 deletions(-)
+ include/linux/cred.h  |    2 +-
+ include/linux/sched.h |    4 ++++
+ kernel/exit.c         |    2 +-
+ kernel/fork.c         |    9 ++++++++-
+ kernel/pid.c          |    4 +++-
+ 5 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index c843736..fb80ce3 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -97,6 +97,11 @@ extern struct lockdep_map rcu_sched_lock_map;
- # define rcu_read_release_sched() \
- 		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 4db09f8..52507c3 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -280,7 +280,7 @@ static inline void put_cred(const struct cred *_cred)
+  * task or by holding tasklist_lock to prevent it from being unlinked.
+  */
+ #define __task_cred(task) \
+-	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock))))
++	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_tasklist_lock_is_held())))
  
-+static inline int debug_lockdep_rcu_enabled(void)
-+{
-+	return likely(rcu_scheduler_active && debug_locks);
-+}
+ /**
+  * get_task_cred - Get another task's objective credentials
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0eef87b..a47af20 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -258,6 +258,10 @@ extern spinlock_t mmlist_lock;
+ 
+ struct task_struct;
+ 
++#ifdef CONFIG_PROVE_RCU
++extern int lockdep_tasklist_lock_is_held(void);
++#endif /* #ifdef CONFIG_PROVE_RCU */
 +
- /**
-  * rcu_read_lock_held - might we be in RCU read-side critical section?
-  *
-@@ -104,12 +109,14 @@ extern struct lockdep_map rcu_sched_lock_map;
-  * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_lock_map);
--	return 1;
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
-+	return lock_is_held(&rcu_lock_map);
- }
+ extern void sched_init(void);
+ extern void sched_init_smp(void);
+ extern asmlinkage void schedule_tail(struct task_struct *prev);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 45ed043..fed3a4d 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -87,7 +87,7 @@ static void __exit_signal(struct task_struct *tsk)
  
- /**
-@@ -119,12 +126,14 @@ static inline int rcu_read_lock_held(void)
-  * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU-bh read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_bh_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_bh_lock_map);
--	return 1;
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
-+	return lock_is_held(&rcu_bh_lock_map);
- }
+ 	sighand = rcu_dereference_check(tsk->sighand,
+ 					rcu_read_lock_held() ||
+-					lockdep_is_held(&tasklist_lock));
++					lockdep_tasklist_lock_is_held());
+ 	spin_lock(&sighand->siglock);
  
- /**
-@@ -135,14 +144,18 @@ static inline int rcu_read_lock_bh_held(void)
-  * this assumes we are in an RCU-sched read-side critical section unless it
-  * can prove otherwise.  Note that disabling of preemption (including
-  * disabling irqs) counts as an RCU-sched read-side critical section.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_sched_held(void)
- {
- 	int lockdep_opinion = 0;
+ 	posix_cpu_timers_exit(tsk);
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 17bbf09..8691c54 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -86,7 +86,14 @@ int max_threads;		/* tunable limit on nr_threads */
+ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
  
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
- 	if (debug_locks)
- 		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
--	return lockdep_opinion || preempt_count() != 0 || !rcu_scheduler_active;
-+	return lockdep_opinion || preempt_count() != 0;
- }
- 
- #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -154,6 +167,10 @@ static inline int rcu_read_lock_sched_held(void)
- # define rcu_read_acquire_sched()	do { } while (0)
- # define rcu_read_release_sched()	do { } while (0)
- 
-+static inline void debug_lockdep_rcu_update(void)
-+{
-+}
+ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
+-EXPORT_SYMBOL_GPL(tasklist_lock);
 +
- static inline int rcu_read_lock_held(void)
++#ifdef CONFIG_PROVE_RCU
++int lockdep_tasklist_lock_is_held(void)
++{
++	return lockdep_is_held(&tasklist_lock);
++}
++EXPORT_SYMBOL_GPL(lockdep_tasklist_lock_is_held);
++#endif /* #ifdef CONFIG_PROVE_RCU */
+ 
+ int nr_processes(void)
  {
- 	return 1;
-@@ -166,7 +183,7 @@ static inline int rcu_read_lock_bh_held(void)
- 
- static inline int rcu_read_lock_sched_held(void)
- {
--	return preempt_count() != 0 || !rcu_scheduler_active;
-+	return !rcu_scheduler_active || preempt_count() != 0;
- }
- 
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -184,7 +201,7 @@ static inline int rcu_read_lock_sched_held(void)
-  */
- #define rcu_dereference_check(p, c) \
- 	({ \
--		if (debug_locks && !(c)) \
-+		if (debug_lockdep_rcu_enabled() && !(c)) \
- 			lockdep_rcu_dereference(__FILE__, __LINE__); \
- 		rcu_dereference_raw(p); \
- 	})
-diff --git a/lib/locking-selftest.c b/lib/locking-selftest.c
-index 619313e..5c549b8 100644
---- a/lib/locking-selftest.c
-+++ b/lib/locking-selftest.c
-@@ -21,6 +21,7 @@
- #include <linux/interrupt.h>
- #include <linux/debug_locks.h>
- #include <linux/irqflags.h>
-+#include <linux/rcupdate.h>
- 
- /*
-  * Change this to 1 if you want to see the failure printouts:
-@@ -1192,6 +1193,7 @@ void locking_selftest(void)
- 	if (unexpected_testcase_failures) {
- 		printk("-----------------------------------------------------------------\n");
- 		debug_locks = 0;
-+		debug_lockdep_rcu_update();
- 		printk("BUG: %3d unexpected failures (out of %3d) - debugging disabled! |\n",
- 			unexpected_testcase_failures, testcase_total);
- 		printk("-----------------------------------------------------------------\n");
-@@ -1201,18 +1203,21 @@ void locking_selftest(void)
- 			expected_testcase_failures, testcase_total);
- 		printk("----------------------------------------------------\n");
- 		debug_locks = 1;
-+		debug_lockdep_rcu_update();
- 	} else if (expected_testcase_failures && !testcase_successes) {
- 		printk("--------------------------------------------------------\n");
- 		printk("All %3d testcases failed, as expected. |\n",
- 			expected_testcase_failures);
- 		printk("----------------------------------------\n");
- 		debug_locks = 1;
-+		debug_lockdep_rcu_update();
- 	} else {
- 		printk("-------------------------------------------------------\n");
- 		printk("Good, all %3d testcases passed! |\n",
- 			testcase_successes);
- 		printk("---------------------------------\n");
- 		debug_locks = 1;
-+		debug_lockdep_rcu_update();
+diff --git a/kernel/pid.c b/kernel/pid.c
+index b08e697..b606440 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -367,7 +367,9 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+ 	struct task_struct *result = NULL;
+ 	if (pid) {
+ 		struct hlist_node *first;
+-		first = rcu_dereference_check(pid->tasks[type].first, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock));
++		first = rcu_dereference_check(pid->tasks[type].first,
++					      rcu_read_lock_held() ||
++					      lockdep_tasklist_lock_is_held());
+ 		if (first)
+ 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
  	}
- 	debug_locks_silent = 0;
- }
 -- 
 1.6.6
 
