@@ -1,50 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842Ab0CCRLu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:11:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43866 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751831Ab0CCRLs (ORCPT
+	id S1754103Ab0CCRQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:16:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35148 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753451Ab0CCRQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:11:48 -0500
-Date: Wed, 3 Mar 2010 09:10:46 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, "H. Peter Anvin" <hpa@linux.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Alok Kataria <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       =?ISO-8859-15?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
-Subject: Re: [GIT PULL] x86/mm fixes
-In-Reply-To: <20100303020845.GD6477@localhost>
-Message-ID: <alpine.LFD.2.00.1003030909590.3627@localhost.localdomain>
-References: <201003020010.o220Ax3Z025848@hera.kernel.org> <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain> <4B8D67A4.8080602@zytor.com> <20100303020845.GD6477@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Mar 2010 12:16:38 -0500
+Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
+ events
+From: Peter Zijlstra <peterz@infradead.org>
+To: rostedt@goodmis.org
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+In-Reply-To: <1267636046.10871.74.camel@gandalf.stny.rr.com>
+References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
+	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
+	 <1267632387.10871.59.camel@gandalf.stny.rr.com>
+	 <1267634258.25158.88.camel@laptop>
+	 <1267636046.10871.74.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 03 Mar 2010 18:16:35 +0100
+Message-ID: <1267636595.25158.93.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 3 Mar 2010, Wu Fengguang wrote:
+On Wed, 2010-03-03 at 12:07 -0500, Steven Rostedt wrote:
+> oops, my bad :-), I thought this was in the x86 arch directory. For the
+> University, I was helping them with adding trace points for page faults
+> when I came across this in arch/x86/mm/fault.c:
 > 
-> Anyway I just hacked /usr/share/quilt/refresh to automatically run the
-> kernel style checker:
+>         perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, 0, regs, address);
 > 
-> # wfg: check for kernel coding style
-> if [ -x scripts/checkpatch.pl ]; then
->         scripts/checkpatch.pl $patch_file
-> fi
+> 
+> This is what I actually was wondering about. Why is it a "perf only"
+> trace point instead of a TRACE_EVENT()?
 
-It's probably sensible to check things, but do remember that some of the 
-things checkpatch warns about are better left the way they are, rather 
-than make the code uglier just to make checkpatch happy.
+Because I wanted to make perf usable without having to rely on funny
+tracepoints. That is, I am less worried about committing software
+counters to ABI than I am about TRACE_EVENT(), which still gives me a
+terribly uncomfortable feeling.
 
-			Linus
+Also, building with all CONFIG_TRACE_*=n will still yield a usable perf,
+which is something the embedded people might fancy, all that TRACE stuff
+adds lots of code.
+
