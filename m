@@ -1,96 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740Ab0CCCyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 21:54:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55878 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430Ab0CCCyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 21:54:43 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 3 Mar 2010 11:51:10 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com
-Subject: Re: [patch] slab: add memory hotplug support
-Message-Id: <20100303115110.97361d5d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1003021836040.2205@chino.kir.corp.google.com>
-References: <20100215105253.GE21783@one.firstfloor.org>
-	<20100215110135.GN5723@laptop>
-	<alpine.DEB.2.00.1002191222320.26567@router.home>
-	<20100220090154.GB11287@basil.fritz.box>
-	<alpine.DEB.2.00.1002240949140.26771@router.home>
-	<4B862623.5090608@cs.helsinki.fi>
-	<alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002251228140.18861@router.home>
-	<20100226114136.GA16335@basil.fritz.box>
-	<alpine.DEB.2.00.1002260904311.6641@router.home>
-	<20100226155755.GE16335@basil.fritz.box>
-	<alpine.DEB.2.00.1002261123520.7719@router.home>
-	<alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
-	<4B8CA7F5.1030802@cs.helsinki.fi>
-	<alpine.DEB.2.00.1003021419020.30059@router.home>
-	<20100303102844.fe740203.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1003021836040.2205@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1753928Ab0CCC6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:58:39 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38173 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753684Ab0CCC6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 21:58:37 -0500
+Date: Wed, 3 Mar 2010 11:58:31 +0900
+To: akpm@linux-foundation.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH -mm 7/7] pci: move pci_set_dma_mask and
+ pci_set_consistent_dma_mask to pci-dma-compat.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100302182927.0099eb68.akpm@linux-foundation.org>
+References: <1265967212-9126-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1265967212-9126-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20100302182927.0099eb68.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100303115805Q.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Mar 2010 11:58:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 18:39:20 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+On Tue, 2 Mar 2010 18:29:27 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed, 3 Mar 2010, KAMEZAWA Hiroyuki wrote:
+> On Fri, 12 Feb 2010 18:33:32 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> > At node hot-add
+> > We can use pci-dma-compat.h to implement pci_set_dma_mask and
+> > pci_set_consistent_dma_mask as we do with the other PCI DMA API.
 > > 
-> >  * pgdat is allocated from other node (because we have no memory for "nid")
-> >  * memmap for the first section (and possiby others) will be allocated from
-> >    other nodes.
-> >  * Once a section for the node is onlined, any memory can be allocated localy.
-> > 
+> > We can remove HAVE_ARCH_PCI_SET_DMA_MASK too.
 > 
-> Correct, and the struct kmem_list3 is also alloacted from other nodes with 
-> my patch.
-> 
-> >    (Allocating memory from local node requires some new implementation as
-> >     bootmem allocater, we didn't that.)
-> > 
-> >  Before this patch, slab's control layer is allocated by cpuhotplug.
-> >  So, at least keeping this order,
-> >     memory online -> cpu online
-> >  slab's control layer is allocated from local node.
-> > 
-> >  When node-hotadd is done in this order
-> >     cpu online -> memory online
-> >  kmalloc_node() will allocate memory from other node via fallback.
-> > 
-> >  After this patch, slab's control layer is allocated by memory hotplug.
-> >  Then, in any order, slab's control will be allocated via fallback routine.
-> > 
-> 
-> Again, this addresses memory hotplug that requires a new node to be 
-> onlined that do not have corresponding cpus that are being onlined.  On 
-> x86, these represent ACPI_SRAT_MEM_HOT_PLUGGABLE regions that are onlined 
-> either by the acpi hotplug or done manually with CONFIG_ARCH_MEMORY_PROBE.  
-> On other architectures such as powerpc, this is done in different ways.
-> 
-> All of this is spelled out in the changelog for the patch.
-> 
-Ah, ok. for cpu-less node and kmallco_node() against that node.
+> i386 allnoconfig:
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Sorry about that.
 
-Thanks,
--Kame
+> include/asm-generic/pci-dma-compat.h:105: error: redefinition of 'pci_set_dma_mask'
+> include/linux/pci.h:1092: error: previous definition of 'pci_set_dma_mask' was here
+> include/asm-generic/pci-dma-compat.h:110: error: redefinition of 'pci_set_consistent_dma_mask'
+> include/linux/pci.h:1097: error: previous definition of 'pci_set_consistent_dma_mask' was here
+> 
+> In fact the whole of include/asm-generic/pci-dma-compat.h seems a bit
+> fishy when CONFIG_PCI=n.  Shouldn't all those functions be
+> EIO-returning stubs?
 
+Might be (and it should work). However, when CONFIG_PCI=n, we has
+silently converted the PCI DMA API to the generic DMA API.
 
+In the long term, we remove the pci_dma_* API.
 
+Can you fold this into the above patch?
+
+diff --git a/include/asm-generic/pci-dma-compat.h b/include/asm-generic/pci-dma-compat.h
+index ddfa9c5..1437b7d 100644
+--- a/include/asm-generic/pci-dma-compat.h
++++ b/include/asm-generic/pci-dma-compat.h
+@@ -101,6 +101,7 @@ pci_dma_mapping_error(struct pci_dev *pdev, dma_addr_t dma_addr)
+ 	return dma_mapping_error(&pdev->dev, dma_addr);
+ }
+ 
++#ifdef CONFIG_PCI
+ static inline int pci_set_dma_mask(struct pci_dev *dev, u64 mask)
+ {
+ 	return dma_set_mask(&dev->dev, mask);
+@@ -110,5 +111,6 @@ static inline int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)
+ {
+ 	return dma_set_coherent_mask(&dev->dev, mask);
+ }
++#endif
+ 
+ #endif
