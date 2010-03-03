@@ -1,156 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348Ab0CCXNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 18:13:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52188 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751787Ab0CCXNN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 18:13:13 -0500
-Date: Wed, 3 Mar 2010 15:12:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v3
-Message-Id: <20100303151257.f45ceffe.akpm@linux-foundation.org>
-In-Reply-To: <20100303162304.eaf49099.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
-	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
-	<20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
-	<20100303093844.cf768ea4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303162304.eaf49099.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754233Ab0CCXQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 18:16:26 -0500
+Received: from xenotime.net ([72.52.64.118]:46027 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754196Ab0CCXQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 18:16:09 -0500
+Message-ID: <4B8EEDB5.7060700@xenotime.net>
+Date: Wed, 03 Mar 2010 15:16:05 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] replace DECLARE_DMA_UNMAP_ADD_{ADDR,LEN} with DEFINE_DMA_UNMAP_ADD_{ADDR,LEN}
+References: <20100303134947G.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100303134947G.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 16:23:04 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On 03/02/10 20:50, FUJITA Tomonori wrote:
+> Seems that you missed the following patch?
+> 
+> http://lkml.org/lkml/2010/2/13/2
+> 
+> This can be fold into dma-mappingh-add-the-dma_unmap-state-api.patch.
+> 
+> Thanks,
+> 
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH -mm] replace DECLARE_DMA_UNMAP_ADD_{ADDR,LEN} with DEFINE_DMA_UNMAP_ADD_{ADDR,LEN}
+> 
+> Andrew pointed out:
+> 
+> - adding the semicolons at the end of DECLARE_DMA_UNMAP_{ADDR|LEN}
+>   confuses people.
 
-> In current page-fault code,
+Hm.  I'm (still) confused.  Why does this patch add semi-colons at the end
+of DECLARE_PCI_UNMAP_{ADDR|LEN} below then?  (other than it is spelled with
+letters "PCI" instead of "DMA")
+
+Thanks.
+
+
+> - they are "definitions", not "declarations".
 > 
-> 	handle_mm_fault()
-> 		-> ...
-> 		-> mem_cgroup_charge()
-> 		-> map page or handle error.
-> 	-> check return code.
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  Documentation/DMA-API.txt   |    8 +++-----
+>  include/linux/dma-mapping.h |    8 ++++----
+>  include/linux/pci-dma.h     |   12 ++++++------
+>  3 files changed, 13 insertions(+), 15 deletions(-)
 > 
-> If page fault's return code is VM_FAULT_OOM, page_fault_out_of_memory()
-> is called. But if it's caused by memcg, OOM should have been already
-> invoked.
-> Then, I added a patch: a636b327f731143ccc544b966cfd8de6cb6d72c6
-> 
-> That patch records last_oom_jiffies for memcg's sub-hierarchy and
-> prevents page_fault_out_of_memory from being invoked in near future.
-> 
-> But Nishimura-san reported that check by jiffies is not enough
-> when the system is terribly heavy. 
-> 
-> This patch changes memcg's oom logic as.
->  * If memcg causes OOM-kill, continue to retry.
->  * remove jiffies check which is used now.
->  * add memcg-oom-lock which works like perzone oom lock.
->  * If current is killed(as a process), bypass charge.
-> 
-> Something more sophisticated can be added but this pactch does
-> fundamental things.
-> TODO:
->  - add oom notifier
->  - add permemcg disable-oom-kill flag and freezer at oom.
->  - more chances for wake up oom waiter (when changing memory limit etc..)
-> 
-> ...
->
-> +static bool mem_cgroup_oom_lock(struct mem_cgroup *mem)
-> +{
-> +	int lock_count = 0;
-> +
-> +	mem_cgroup_walk_tree(mem, &lock_count, mem_cgroup_oom_lock_cb);
+> diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+> index d7d9eef..0fc5728 100644
+> --- a/Documentation/DMA-API.txt
+> +++ b/Documentation/DMA-API.txt
+> @@ -494,7 +494,7 @@ portable API) the following facilities are provided.
+>  Actually, instead of describing the macros one by one, we'll
+>  transform some example code.
 >  
-> -static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
-> +	if (lock_count == 1)
-> +		return true;
-> +	return false;
-> +}
-
-mem_cgroup_walk_tree() will visit all items, but it could have returned
-when it found the first "locked" item.  I minor inefficiency, I guess.
-
-> +static int mem_cgroup_oom_unlock_cb(struct mem_cgroup *mem, void *data)
->  {
-> -	mem->last_oom_jiffies = jiffies;
-> +	atomic_dec(&mem->oom_lock);
->  	return 0;
->  }
+> -1) Use DECLARE_DMA_UNMAP_{ADDR,LEN} in state saving structures.
+> +1) Use DEFINE_DMA_UNMAP_{ADDR,LEN} in state saving structures.
+>     Example, before:
 >  
-> -static void record_last_oom(struct mem_cgroup *mem)
-> +static void mem_cgroup_oom_unlock(struct mem_cgroup *mem)
->  {
-> -	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-> +	mem_cgroup_walk_tree(mem, NULL,	mem_cgroup_oom_unlock_cb);
-> +}
-> +
-> +static DEFINE_MUTEX(memcg_oom_mutex);
-> +static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
-> +
-> +/*
-> + * try to call OOM killer. returns false if we should exit memory-reclaim loop.
-> + */
-> +bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
-> +{
-> +	DEFINE_WAIT(wait);
-> +	bool locked;
-> +
-> +	/* At first, try to OOM lock hierarchy under mem.*/
-> +	mutex_lock(&memcg_oom_mutex);
-> +	locked = mem_cgroup_oom_lock(mem);
-> +	if (!locked)
-> +		prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (locked)
-> +		mem_cgroup_out_of_memory(mem, mask);
-> +	else {
-> +		schedule();
+>  	struct ring_state {
+> @@ -507,12 +507,10 @@ transform some example code.
+>  
+>  	struct ring_state {
+>  		struct sk_buff *skb;
+> -		DECLARE_DMA_UNMAP_ADDR(mapping)
+> -		DECLARE_DMA_UNMAP_LEN(len)
+> +		DEFINE_DMA_UNMAP_ADDR(mapping);
+> +		DEFINE_DMA_UNMAP_LEN(len);
+>  	};
+>  
+> -NOTE: DO NOT put a semicolon at the end of the DECLARE_*() macro.
+> -
+>  2) Use dma_unmap_{addr,len}_set to set these values.
+>     Example, before:
+>  
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index 599d8e4..e00c5c9 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -241,15 +241,15 @@ struct dma_attrs;
+>  #endif /* CONFIG_HAVE_DMA_ATTRS */
+>  
+>  #ifdef CONFIG_NEED_DMA_MAP_STATE
+> -#define DECLARE_DMA_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME;
+> -#define DECLARE_DMA_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME;
+> +#define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME
+> +#define DEFINE_DMA_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME
+>  #define dma_unmap_addr(PTR, ADDR_NAME)           ((PTR)->ADDR_NAME)
+>  #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  (((PTR)->ADDR_NAME) = (VAL))
+>  #define dma_unmap_len(PTR, LEN_NAME)             ((PTR)->LEN_NAME)
+>  #define dma_unmap_len_set(PTR, LEN_NAME, VAL)    (((PTR)->LEN_NAME) = (VAL))
+>  #else
+> -#define DECLARE_DMA_MAP_ADDR(ADDR_NAME)
+> -#define DECLARE_DMA_UNMAP_LEN(LEN_NAME)
+> +#define DEFINE_DMA_MAP_ADDR(ADDR_NAME)
+> +#define DEFINE_DMA_UNMAP_LEN(LEN_NAME)
+>  #define dma_unmap_addr(PTR, ADDR_NAME)           (0)
+>  #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  do { } while (0)
+>  #define dma_unmap_len(PTR, LEN_NAME)             (0)
+> diff --git a/include/linux/pci-dma.h b/include/linux/pci-dma.h
+> index 235a61e..549a041 100644
+> --- a/include/linux/pci-dma.h
+> +++ b/include/linux/pci-dma.h
+> @@ -1,11 +1,11 @@
+>  #ifndef _LINUX_PCI_DMA_H
+>  #define _LINUX_PCI_DMA_H
+>  
+> -#define DECLARE_PCI_UNMAP_ADDR    DECLARE_DMA_UNMAP_ADDR
+> -#define DECLARE_PCI_UNMAP_LEN     DECLARE_DMA_UNMAP_LEN
+> -#define pci_unmap_addr            dma_unmap_addr
+> -#define pci_unmap_addr_set        dma_unmap_addr_set
+> -#define pci_unmap_len             dma_unmap_len
+> -#define pci_unmap_len_set         dma_unmap_len_set
+> +#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME) DEFINE_DMA_UNMAP_ADDR(ADDR_NAME);
+> +#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)   DEFINE_DMA_UNMAP_LEN(LEN_NAME);
+> +#define pci_unmap_addr             dma_unmap_addr
+> +#define pci_unmap_addr_set         dma_unmap_addr_set
+> +#define pci_unmap_len              dma_unmap_len
+> +#define pci_unmap_len_set          dma_unmap_len_set
+>  
+>  #endif
 
-If the calling process has signal_pending() then the schedule() will
-immediately return.  A bug, I suspect.  Fixable by using
-TASK_UNINTERRUPTIBLE.
 
-
-> +		finish_wait(&memcg_oom_waitq, &wait);
-> +	}
-> +	mutex_lock(&memcg_oom_mutex);
-> +	mem_cgroup_oom_unlock(mem);
-> +	/*
-> + 	 * Here, we use global waitq .....more fine grained waitq ?
-> + 	 * Assume following hierarchy.
-> + 	 * A/
-> + 	 *   01
-> + 	 *   02
-> + 	 * assume OOM happens both in A and 01 at the same time. Tthey are
-> + 	 * mutually exclusive by lock. (kill in 01 helps A.)
-> + 	 * When we use per memcg waitq, we have to wake up waiters on A and 02
-> + 	 * in addtion to waiters on 01. We use global waitq for avoiding mess.
-> + 	 * It will not be a big problem.
-> + 	 */
-> +	wake_up_all(&memcg_oom_waitq);
-> +	mutex_unlock(&memcg_oom_mutex);
-> +
-> +	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
-> +		return false;
-> +	/* Give chance to dying process */
-> +	schedule_timeout(1);
-> +	return true;
->  }
-
+-- 
+~Randy
