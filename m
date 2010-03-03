@@ -1,46 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751860Ab0CCFPJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 00:15:09 -0500
-Received: from gate.crashing.org ([63.228.1.57]:47307 "EHLO gate.crashing.org"
+	id S1752462Ab0CCFXE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 00:23:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38194 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864Ab0CCFPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 00:15:07 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: catalin.marinas@arm.com, mdharm-kernel@one-eyed-alien.net,
-       oliver@neukum.org, linux@arm.linux.org.uk, greg@kroah.com,
-       x0082077@ti.com, sshtylyov@ru.mvista.com, bigeasy@linutronix.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, santosh.shilimkar@ti.com,
-       pavel@ucw.cz, tom.leiming@gmail.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100303124624Z.fujita.tomonori@lab.ntt.co.jp>
-References: <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <1267572594.2173.25.camel@pasglop>
-	 <20100303124624Z.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 16:10:32 +1100
-Message-ID: <1267593032.16696.1.camel@pasglop>
+	id S1751698Ab0CCFXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 00:23:00 -0500
+Date: Wed, 3 Mar 2010 16:22:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Denis Turischev <denis@compulab.co.il>
+Subject: linux-next: build warning after merge of the mfd tree
+Message-Id: <20100303162252.e7cf0e43.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 12:47 +0900, FUJITA Tomonori wrote:
-> The ways to improve the approach (introducing PG_arch_2 or marking a
-> page clean on dma_unmap_* with DMA_FROM_DEVICE like ia64 does) is up
-> to architectures. 
+--Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-How does the above work ? IE, the dma unmap will flush the D side but
-not the I side ... or is the ia64 flush primitive magic enough to do
-both ?
+Hi Sam,
 
+After merging the mfd tree, today's linux-next build (x86_64 allmodconfig)
+produced these warnings:
+
+drivers/gpio/sch_gpio.c: In function 'sch_gpio_probe':
+drivers/gpio/sch_gpio.c:232: warning: ignoring return value of 'gpiochip_re=
+move', declared with attribute warn_unused_result
+drivers/gpio/sch_gpio.c: In function 'sch_gpio_remove':
+drivers/gpio/sch_gpio.c:245: warning: ignoring return value of 'gpiochip_re=
+move', declared with attribute warn_unused_result
+drivers/gpio/sch_gpio.c:246: warning: ignoring return value of 'gpiochip_re=
+move', declared with attribute warn_unused_result
+
+Introduced by commit 4faabcde03a89836169f1437127226f4b0714070 ("gpio: add
+Intel SCH GPIO controller driver").
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuN8iwACgkQjjKRsyhoI8y2jACfeNaRdXlXYN98GgcDQltGugxp
+x8oAn11Pu7uuB0/rRuRBCmnk3yAd9K9Z
+=i5mG
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB--
