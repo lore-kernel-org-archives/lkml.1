@@ -1,107 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519Ab0CCSU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 13:20:29 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:51821 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755468Ab0CCSUZ convert rfc822-to-8bit (ORCPT
+	id S1755525Ab0CCSW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 13:22:27 -0500
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:28415 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755300Ab0CCSW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 13:20:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fSxD3TU4/dF9quR4s084MQHJC9OZ5bj25fNF5ewrlk0wYWhCBcG9kZ6QiY15qdknSy
-         46uZFZq8St+VaZK5E4ciyCXDikKakWDwxq/qKyNr9aJL2sEm4/1ulJQZjbeL9kzaeOMO
-         ggGX+TBjKXqa6HbC/oDTLmkfv2ckFgrNdpRgM=
+	Wed, 3 Mar 2010 13:22:26 -0500
+X-IronPort-AV: E=Sophos;i="4.49,574,1262563200"; 
+   d="scan'208";a="9767123"
+Date: Wed, 3 Mar 2010 18:26:12 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+X-X-Sender: sstabellini@kaball-desktop
+To: Bastian Blank <waldi@debian.org>
+CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 4 of 4] Linux pvops: xen pci platform device
+ driver
+In-Reply-To: <20100303161428.GB26656@wavehammer.waldi.eu.org>
+Message-ID: <alpine.DEB.2.00.1003031808310.4648@kaball-desktop>
+References: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop> <20100303121726.GA26656@wavehammer.waldi.eu.org> <alpine.DEB.2.00.1003031520320.4648@kaball-desktop> <20100303161428.GB26656@wavehammer.waldi.eu.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <874okyf4iw.fsf@openvz.org>
-References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
-	 <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
-Date: Wed, 3 Mar 2010 13:20:23 -0500
-X-Google-Sender-Auth: 66ec756d22aae46a
-Message-ID: <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
-Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
-From: Mike Snitzer <snitzer@redhat.com>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 2, 2010 at 10:49 PM, Dmitry Monakhov <dmonakhov@openvz.org> wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
->
->> On Sat, Feb 27 2010, Dmitry Monakhov wrote:
->>> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
->>> against this value. But in case of fs_optimization merge we compare
->>> with wrong value. This patch must be included in
->>>  b428cd6da7e6559aca69aa2e3a526037d3f20403
->>> But accidentally i've forgot to add this in the initial patch.
->>> To make things straight let's replace all such checks.
->>> In fact this makes code easy to understand.
->>
->> Agree, applied.
-> Ohh.. as you already know this patch break dm-layer. Sorry.
-> This is because dm->merge may return more than requested. So correct
-> check must test against less what requested. Correct patch attached.
+On Wed, 3 Mar 2010, Bastian Blank wrote:
+> > During the initialization of the xen pci device driver, we write to a
+> > magic ioport that causes qemu to unplug some emulated devices, disc and
+> > network in particular.
+> > This parameter is meant to present the user a choice about what emulated
+> > devices to unplug.
+> 
+> Somehow I don't think this belongs here. It looks like a workaround, you
+> can always ask qemu to not bind them at the beginning and the guest
+> system to not provide drivers.
+> 
 
-Yes, it is quite common for dm_merge_bvec() to return greater than the
-requested length.
+Most of the time you just want to unplug all or nothing, so removing the
+option is generally not a problem.
+However it can still be useful for debugging: let's say that blkfront
+doesn't work properly, if the xen pci platform driver unplugs the IDE
+disk at init time the guest won't be able to boot.
+This fact just made me realize that the xen pci platform driver should
+depend on netfront and blkfront too if we make "unplug all" the default.
 
-But dm_merge_bvec() returning a maximum length, rather than requested,
-isn't special.  All the other blk_queue_merge_bvec() callers' merge
-functions appear to return "maximum amount of bytes we can accept at
-this offset" too.
 
-__bio_add_page() only needs to care about whether the
-'q->merge_bvec_fn' return is _less than_ the requested length.
+> > > > +#define XEN_IOPORT_BASE 0x10
+> > > 
+> > > Why are this constants defined in the driver themself? They only make
+> > > sense if there are two components making use of them.
+> > Yep, the other one is qemu.
+> 
+> Well, if it is a published interface move it into a header file.
+> 
 
-> From 145fb49bf2251f445ca29c5218333367448932d6 Mon Sep 17 00:00:00 2001
-> From: Dmitry Monakhov <dmonakhov@openvz.org>
-> Date: Wed, 3 Mar 2010 06:28:06 +0300
-> Subject: [PATCH] blkdev: fix merge_bvec_fn return value checks v2
->
-> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
-> against this value. But in case of fs_optimization merge we compare
-> with wrong value. This patch must be included in
->  b428cd6da7e6559aca69aa2e3a526037d3f20403
-> But accidentally i've forgot to add this in the initial patch.
-> To make things straight let's replace all such checks.
-> In fact this makes code easy to understand.
->
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-> ---
->  fs/bio.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/fs/bio.c b/fs/bio.c
-> index 88094af..975657a 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -557,7 +557,7 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
->                                        .bi_rw = bio->bi_rw,
->                                };
->
-> -                               if (q->merge_bvec_fn(q, &bvm, prev) < len) {
-> +                               if (q->merge_bvec_fn(q, &bvm, prev) < prev->bv_len) {
->                                        prev->bv_len -= len;
->                                        return 0;
->                                }
-> @@ -611,7 +611,7 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
->                 * merge_bvec_fn() returns number of bytes it can accept
->                 * at this offset
->                 */
-> -               if (q->merge_bvec_fn(q, &bvm, bvec) < len) {
-> +               if (q->merge_bvec_fn(q, &bvm, bvec) < bvec->bv_len) {
->                        bvec->bv_page = NULL;
->                        bvec->bv_len = 0;
->                        bvec->bv_offset = 0;
+Good idea
 
-NOTE this 2nd hunk doesn't change anything at all because: bvec->bv_len = len;
-
-Mike
