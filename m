@@ -1,116 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336Ab0CCB4o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 20:56:44 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:62362 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653Ab0CCB4n (ORCPT
+	id S1753518Ab0CCCCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:02:15 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53068 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453Ab0CCCCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 20:56:43 -0500
-Message-Id: <201003030156.o231udx1023055@www262.sakura.ne.jp>
-Subject: Re: [RFC v2 00/10] snet: Security for NETwork syscalls
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: sam@synack.fr
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, hadi@cyberus.ca, kaber@trash.net,
-       zbr@ioremap.net, nhorman@tuxdriver.com, root@localdomain.pl,
-       linux-security-module@vger.kernel.org
+	Tue, 2 Mar 2010 21:02:12 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andre Goddard Rosa <andre.goddard@gmail.com>
+Subject: Re: [PATCH] binfmt_elf: plug a memory leak situation on dump_seek()
+Cc: kosaki.motohiro@jp.fujitsu.com, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20100302124206.4e0a42b4.akpm@linux-foundation.org>
+References: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com> <20100302124206.4e0a42b4.akpm@linux-foundation.org>
+Message-Id: <20100303105911.D63A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 03 Mar 2010 10:56:39 +0900
-References: <1267561394-13626-1-git-send-email-sam@synack.fr>
-In-Reply-To: <1267561394-13626-1-git-send-email-sam@synack.fr>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 02032010 #3461582, status: clean
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  3 Mar 2010 11:02:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> On Fri, 26 Feb 2010 00:54:40 -0300
+> Andr__ Goddard Rosa <andre.goddard@gmail.com> wrote:
+> 
+> > Signed-off-by: Andr__ Goddard Rosa <andre.goddard@gmail.com>
+> > ---
+> >  fs/binfmt_elf.c |   10 +++++++---
+> >  1 files changed, 7 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > index fd5b2ea..13b0845 100644
+> > --- a/fs/binfmt_elf.c
+> > +++ b/fs/binfmt_elf.c
+> > @@ -1096,6 +1096,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
+> >  
+> >  static int dump_seek(struct file *file, loff_t off)
+> >  {
+> > +	int ret = 1;
+> > +
+> >  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
+> >  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
+> >  			return 0;
+> > @@ -1107,13 +1109,15 @@ static int dump_seek(struct file *file, loff_t off)
+> >  			unsigned long n = off;
+> >  			if (n > PAGE_SIZE)
+> >  				n = PAGE_SIZE;
+> > -			if (!dump_write(file, buf, n))
+> > -				return 0;
+> > +			if (!dump_write(file, buf, n)) {
+> > +				ret = 0;
+> > +				break;
+> > +			}
+> >  			off -= n;
+> >  		}
+> >  		free_page((unsigned long)buf);
+> >  	}
+> > -	return 1;
+> > +	return ret;
+> >  }
+> 
+> Please don't send unchangelogged patches.
+> 
+> Explain the leak.
+> 
+> Explain the user impact (ie: how it is triggered).
+> 
+> Explain how the patch fixes it.
+> 
+> Thanks.
+
+Hi Andre, 
+
+plus, can you please rebase this patch onto -mmotm tree? it have lots elf core dump related
+fix and it is going to be merged at this merge window, maybe.
+
+I think your patch is correct. but I hope to avoid patch confliction.
+
+Thanks.
 
 
-
-Regarding [RFC v2 02/10] Revert "lsm: Remove the socket_post_accept() hook"
-@@ -1538,6 +1538,8 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
- 	fd_install(newfd, newfile);
- 	err = newfd;
- 
-+	security_socket_post_accept(sock, newsock);
-+
- out_put:
- 	fput_light(sock->file, fput_needed);
- out:
-
-Please move security_socket_post_accept() to before fd_install().
-Otherwise, other threads which share fd tables can use
-security-informations-not-yet-updated accept()ed sockets.
-
-
-
-
-
-Regarding [RFC v2 04/10] snet: introduce snet_core
-+static __init int snet_init(void)
-+{
-+	int ret;
-+
-+	pr_debug("initializing: event_hash_size=%u "
-+		 "verdict_hash_size=%u verdict_delay=%usecs "
-+		 "default_policy=%s\n",
-+		 snet_evh_size, snet_vdh_size, snet_verdict_delay,
-+		 snet_verdict_name(snet_verdict_policy));
-
-Why not to stop here if snet_evh_size == 0 or snet_vdh_size == 0 in order to
-avoid "division by 0".
-
-
-
-
-
-Regarding [RFC v2 05/10] snet: introduce snet_event
-+static rwlock_t snet_evh_lock = __RW_LOCK_UNLOCKED();
-
-You can use "static DEFINE_RWLOCK(snet_evh_lock);".
-
-+int snet_event_is_registered(const enum snet_syscall syscall, const u8 protocol)
-
-Maybe rcu_read_lock() is better than rw spinlock because this function is
-frequently called.
-
-
-
-
-
-Regarding [RFC v2 06/10] snet: introduce snet_hooks
-+                       if ((verdict = snet_ticket_check(&info)) != SNET_VERDICT_NONE)
-
-Please avoid assignment in "if" statement, as scripts/checkpatch.pl suggests.
-
-
-
-
-
-Regarding [RFC v2 09/10] snet: introduce snet_ticket
-+enum snet_verdict snet_ticket_check(struct snet_info *info)
-+{
-+       struct snet_ticket *st = NULL;
-+       unsigned int h = 0, verdict = SNET_VERDICT_NONE;
-+       struct list_head *l = NULL;
-+       struct snet_task_security *tsec = NULL;
-+
-+       if (snet_ticket_mode == SNET_TICKET_OFF)
-+               goto out;
-+
-+       tsec = (struct snet_task_security*) current_security();
-+
-+       h = jhash_2words(info->syscall, info->protocol, 0) % HSIZE;
-+       l = &tsec->hash[h];
-+
-+       read_lock_bh(&tsec->lock);
-
-Credentials are allocated for copy-on-write basis.
-Sharing "tsec" among multiple "struct task_struct" is what you intended?
-
-
-
-Regards.
