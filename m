@@ -1,121 +1,201 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429Ab0CCDaO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 22:30:14 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:14705 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787Ab0CCDaL convert rfc822-to-8bit (ORCPT
+	id S1754062Ab0CCDct (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 22:32:49 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38394 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709Ab0CCDcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 22:30:11 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Tue, 02 Mar 2010 19:30:10 -0800
-From: Wei Ni <wni@nvidia.com>
-To: "'Takashi Iwai'" <tiwai@suse.de>
-CC: "'Pavel Hofman'" <pavel.hofman@insite.cz>,
-       "'alsa-devel'" <alsa-devel@alsa-project.org>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'akpm'" <akpm@linux-foundation.org>
-Date: Wed, 3 Mar 2010 11:28:26 +0800
-Subject: RE: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Topic: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Index: Acq57pob8XJ0mHi/TSqof+yehfJzDQAkmZXg
-Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16A89A118@HKMAIL01.nvidia.com>
-References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
-	<s5hmxyrp311.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C068B2BA8C@HKMAIL01.nvidia.com>
- <s5heik3ujy0.wl%tiwai@suse.de>
-In-Reply-To: <s5heik3ujy0.wl%tiwai@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 2 Mar 2010 22:32:48 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 3 Mar 2010 12:29:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-Id: <20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	<1267478620-5276-4-git-send-email-arighi@develer.com>
+	<20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Takashi
-I still have a question about AZX_MAX_CODECS.
-In azx_command_addr() and azx_response_addr(), they use AZX_MAX_CODECS like
-If (addr >= AZX_MAX_CODECS) {
-    snd_BUG();
-    addr = 0;
-}
-The azx_max_codes[] could not be used in these functions.
-How could we do in these functions?
+On Wed, 3 Mar 2010 11:12:38 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Thanks
-Wei.
-
------Original Message-----
-From: Takashi Iwai [mailto:tiwai@suse.de] 
-Sent: Tuesday, March 02, 2010 5:55 PM
-To: Wei Ni
-Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-
-At Tue, 2 Mar 2010 17:43:28 +0800,
-Wei Ni wrote:
+> > diff --git a/mm/filemap.c b/mm/filemap.c
+> > index fe09e51..f85acae 100644
+> > --- a/mm/filemap.c
+> > +++ b/mm/filemap.c
+> > @@ -135,6 +135,7 @@ void __remove_from_page_cache(struct page *page)
+> >  	 * having removed the page entirely.
+> >  	 */
+> >  	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
+> > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, -1);
+> >  		dec_zone_page_state(page, NR_FILE_DIRTY);
+> >  		dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
+> >  	}
+> (snip)
+> > @@ -1096,6 +1113,7 @@ int __set_page_dirty_no_writeback(struct page *page)
+> >  void account_page_dirtied(struct page *page, struct address_space *mapping)
+> >  {
+> >  	if (mapping_cap_account_dirty(mapping)) {
+> > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, 1);
+> >  		__inc_zone_page_state(page, NR_FILE_DIRTY);
+> >  		__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
+> >  		task_dirty_inc(current);
+> As long as I can see, those two functions(at least) calls mem_cgroup_update_state(),
+> which acquires page cgroup lock, under mapping->tree_lock.
+> But as I fixed before in commit e767e056, page cgroup lock must not acquired under
+> mapping->tree_lock.
+> hmm, we should call those mem_cgroup_update_state() outside mapping->tree_lock,
+> or add local_irq_save/restore() around lock/unlock_page_cgroup() to avoid dead-lock.
 > 
-> Hi, Takashi
-> 1. About AZX_MAX_CODECS, on our new chipset, the codec_mask=0x31, it means
-> the codec connect on the slot0, slot4, slot5, and on some GT2xx, the codec
-> will connect to slot6 or slot7, although these chip at most have 4 codecs.
-> So I change the AZX_MAX_CODECS to 8 directly.
-> In hda_intel.c, the azx_command_addr(), azx_response_addr(), and
-> azx_codec_create() use the AZX_MAX_CODECS, if it set as 4, the driver will
-> not detect the codecs which connect to slot4~7.
+Ah, good catch! But hmmmmmm...
+This account_page_dirtted() seems to be called under IRQ-disabled.
+About  __remove_from_page_cache(), I think page_cgroup should have its own DIRTY flag,
+then, mem_cgroup_uncharge_page() can handle it automatically.
 
-Yeah, I understand it.  But, as mentioned, changing this to *all*
-controller chips is dangerous.
-We have already a quirk for controller chips to set max codecs depending
-on the chip model.  Right now, only teradici chip sets to 1.
+But. there are no guarantee that following never happens. 
+	lock_page_cgroup()
+	    <=== interrupt.
+	    -> mapping->tree_lock()
+Even if mapping->tree_lock is held with IRQ-disabled.
+Then, if we add local_irq_save(), we have to add it to all lock_page_cgroup().
 
-So, add "#define AZX_DEFAULT_CODECS 4", and use this value unless
-azx_max_codecs[] is defined.  And, for the new controller chip
-supporting more than 4, it can has 8 in azx_max_codecs[].
+Then, hm...some kind of new trick ? as..
+(Follwoing patch is not tested!!)
 
-Is it feasible?
+==
+---
+ include/linux/page_cgroup.h |   14 ++++++++++++++
+ mm/memcontrol.c             |   27 +++++++++++++++++----------
+ 2 files changed, 31 insertions(+), 10 deletions(-)
 
-> 2. yes, it's better to merge the hdmi common codes.
-> 3. About ELD, yes, we need to change the Makefile and Kconfig as well.
-> Could you help me to change it.
+Index: mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/include/linux/page_cgroup.h
++++ mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
+@@ -39,6 +39,7 @@ enum {
+ 	PCG_CACHE, /* charged as cache */
+ 	PCG_USED, /* this object is in use. */
+ 	PCG_ACCT_LRU, /* page has been accounted for */
++	PCG_MIGRATE, /* page cgroup is under memcg account migration */
+ };
+ 
+ #define TESTPCGFLAG(uname, lname)			\
+@@ -73,6 +74,8 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
+ TESTPCGFLAG(AcctLRU, ACCT_LRU)
+ TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
+ 
++TESTPCGFLAG(Migrate, MIGRATE)
++
+ static inline int page_cgroup_nid(struct page_cgroup *pc)
+ {
+ 	return page_to_nid(pc->page);
+@@ -93,6 +96,17 @@ static inline void unlock_page_cgroup(st
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
++static inline unsigned long page_cgroup_migration_lock(struct page_cgroup *pc)
++{
++	local_irq_save(flags);
++	bit_spin_lock(PCG_MIGRATE, &pc->flags);
++}
++static inline void
++page_cgroup_migration_lock(struct page_cgroup *pc, unsigned long flags)
++{
++	bit_spin_lock(PCG_MIGRATE, &pc->flags);
++	local_irq_restore(flags);
++}
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct page_cgroup;
+ 
+Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
++++ mmotm-2.6.33-Feb11/mm/memcontrol.c
+@@ -1321,7 +1321,7 @@ bool mem_cgroup_handle_oom(struct mem_cg
+  * Currently used to update mapped file statistics, but the routine can be
+  * generalized to update other statistics as well.
+  */
+-void mem_cgroup_update_file_mapped(struct page *page, int val)
++void mem_cgroup_update_file_mapped(struct page *page, int val, int locked)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc;
+@@ -1329,22 +1329,27 @@ void mem_cgroup_update_file_mapped(struc
+ 	pc = lookup_page_cgroup(page);
+ 	if (unlikely(!pc))
+ 		return;
+-
+-	lock_page_cgroup(pc);
++	/*
++	 * if locked==1, mapping->tree_lock is held. We don't have to take
++	 * care of charge/uncharge. just think about migration.
++	 */
++	if (!locked)
++		lock_page_cgroup(pc);
++	else
++		page_cgroup_migration_lock(pc);
+ 	mem = pc->mem_cgroup;
+-	if (!mem)
++	if (!mem || !PageCgroupUsed(pc))
+ 		goto done;
+-
+-	if (!PageCgroupUsed(pc))
+-		goto done;
+-
+ 	/*
+ 	 * Preemption is already disabled. We can use __this_cpu_xxx
+ 	 */
+ 	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+ 
+ done:
+-	unlock_page_cgroup(pc);
++	if (!locked)
++		lock_page_cgroup(pc);
++	else
++		page_cgroup_migration_unlock(pc);
+ }
+ 
+ /*
+@@ -1785,7 +1790,8 @@ static void __mem_cgroup_move_account(st
+ 	VM_BUG_ON(!PageCgroupLocked(pc));
+ 	VM_BUG_ON(!PageCgroupUsed(pc));
+ 	VM_BUG_ON(pc->mem_cgroup != from);
+-
++		
++	page_cgroup_migration_lock(pc);
+ 	page = pc->page;
+ 	if (page_mapped(page) && !PageAnon(page)) {
+ 		/* Update mapped_file data for mem_cgroup */
+@@ -1802,6 +1808,7 @@ static void __mem_cgroup_move_account(st
+ 	/* caller should have done css_get */
+ 	pc->mem_cgroup = to;
+ 	mem_cgroup_charge_statistics(to, pc, true);
++	page_cgroup_migration_lock(pc);
+ 	/*
+ 	 * We charges against "to" which may not have any tasks. Then, "to"
+ 	 * can be under rmdir(). But in current implementation, caller of
 
-In sound/pci/hda/Makefile, hda_eld.c is built into snd-hda-codec-intelhdmi
-by the following rule:
-
-snd-hda-codec-intelhdmi-objs :=	patch_intelhdmi.o hda_eld.o
-
-Since now hda_eld.c is used in two modules, this has to be in the common
-place, such as snd-hda-codec.  For this, uncomment the line:
-
-# snd-hda-codec-$(CONFIG_SND_HDA_ELD) += hda_eld.o
-
-and remove hda_eld.o from snd-hda-codec-intelhdmi-objs line.
-
-For Kconfig, right now we have the definition
-
-config SND_HDA_ELD
-	def_bool y
-	depends on SND_HDA_CODEC_INTELHDMI
-
-Change depends on like
-
-	depends on SND_HDA_CODEC_INTELHDMI || SND_HDA_CODEC_NVHDMI
-
-This can be done via "select" instead.  But, we'd merge all hdmi codes
-later, so which way to choose is no big matter.
 
 
-thanks,
 
-Takashi
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Thanks,
+-Kame
+
