@@ -1,57 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194Ab0CCPZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:25:41 -0500
-Received: from novprvlin0050.provo.novell.com ([137.65.248.33]:9150 "EHLO
-	novprvlin0050.provo.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751327Ab0CCPZk (ORCPT
-	<rfc822;groupwise-jlee@novell.com:4:1>);
-	Wed, 3 Mar 2010 10:25:40 -0500
-Message-Id: <4B8F1A220200002300014185@novprvlin0050.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 03 Mar 2010 08:25:38 -0700
-From: "Joey Lee" <jlee@novell.com>
-To: <mjg59@srcf.ucam.org>
-Cc: <mzxreary@0pointer.de>, <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 57/62] msi-laptop: Add threeg sysfs file for
-	 support query 3G state by standard 66/62 ec command
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1752700Ab0CCP3D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:29:03 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:37369 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709Ab0CCP3A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 10:29:00 -0500
+Date: Wed, 3 Mar 2010 15:28:54 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Joey Lee <jlee@novell.com>
+Cc: mzxreary@0pointer.de, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 57/62] msi-laptop: Add threeg sysfs file for support
+	query 3G state by standard 66/62 ec command
+Message-ID: <20100303152854.GA29979@srcf.ucam.org>
+References: <4B8F1A220200002300014185@novprvlin0050.provo.novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4B8F1A220200002300014185@novprvlin0050.provo.novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Wed, Mar 03, 2010 at 08:25:38AM -0700, Joey Lee wrote:
 
-於 三，2010-03-03 於 13:46 +0000，Matthew Garrett 提到：
-> On Tue, Mar 02, 2010 at 03:47:00PM -0800, Greg KH wrote:
-> > On Tue, Mar 02, 2010 at 11:36:16PM +0000, Matthew Garrett wrote:
-> > > On Tue, Mar 02, 2010 at 03:28:56PM -0800, Greg Kroah-Hartman wrote:
-> > > 
-> > > > Add threeg sysfs file for support query 3G state by standard 66/62 ec
-> > > > command, the MSI standard ec interface supported this feature.
-> > > 
-> > > No. Just use the rfkill interface.
-> > 
-> > Does rfkill support 3G?  I thought it was only for wireless (80211)
-> > stuff.
-> 
-> rfkill has types for the majority of radios. A later patch adds the 3g 
-> rfkill device, so this one should just be dropped - there's no reason to 
-> add a non-standard radio control file now.
-> 
+> So, "wwan" does not mean "3g"? or 3g is included in "wwan"?
+> And, does the "non-standard radio control file" mean like "threeg",
+> "wlan" or "bluetooth" in /sys/devices/platform/xxxxx ?
 
-So, "wwan" does not mean "3g"? or 3g is included in "wwan"?
-And, does the "non-standard radio control file" mean like "threeg",
-"wlan" or "bluetooth" in /sys/devices/platform/xxxxx ?
+wwan includes 3g, so it's the appropriate type to use here. The 
+non-standard ones are the threeg, wlan and bluetooth files.
 
-In current x86/platform, there have a bit driver still used the
-"non-standard control file". Does that mean we need replace all of 
-those control files by rfkill interface?
+> In current x86/platform, there have a bit driver still used the
+> "non-standard control file". Does that mean we need replace all of 
+> those control files by rfkill interface?
 
+Those are holdovers from before the rfkill interface was usable - we 
+should probably be deprecating them. I /think/ all the drivers that 
+provide them also provide an rfkill interface now, but if not we should 
+probably port them.
 
-Thank's
-Joey Lee
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
