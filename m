@@ -1,53 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422Ab0CCRzh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:55:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45657
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755406Ab0CCRzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:55:35 -0500
-Date: Wed, 03 Mar 2010 09:55:53 -0800 (PST)
-Message-Id: <20100303.095553.105186917.davem@davemloft.net>
-To: eranian@google.com
-Cc: peterz@infradead.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       paulus@samba.org, robert.richter@amd.com, fweisbec@gmail.com
-Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
-References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
-	<1267637995.25158.96.camel@laptop>
-	<bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	id S1755435Ab0CCRzn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:55:43 -0500
+Received: from mga14.intel.com ([143.182.124.37]:58104 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755406Ab0CCRzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 12:55:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,574,1262592000"; 
+   d="scan'208";a="250432232"
+Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
+ governor
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <20100303164007.GA31365@srcf.ucam.org>
+References: <20100303000649.757684000@intel.com>
+	 <20100303000849.278509000@intel.com> <20100303164007.GA31365@srcf.ucam.org>
+Content-Type: text/plain
+Date: Wed, 03 Mar 2010 09:55:38 -0800
+Message-Id: <1267638938.16916.957.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephane Eranian <eranian@google.com>
-Date: Wed, 3 Mar 2010 09:49:33 -0800
+On Wed, 2010-03-03 at 08:40 -0800, Matthew Garrett wrote:
+> Have you done any measurements with this bit being set dynamically by 
+> ondemand depending on the target frequency?
+> 
 
-> On Wed, Mar 3, 2010 at 9:39 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->> On Wed, 2010-03-03 at 09:30 -0800, Stephane Eranian wrote:
->>> This assumes struct pt_regs is somehow exported to userland.
->>> Is that the case?
->>
->> I seems to have understood they were, and asm/ptrace.h seems to agree
->> with that, it has !__KERNEL__ definitions for struct pt_regs.
->>
-> Seems to be the case, indeed.
+The not so good part about this feature is that its setting is opaque.
+Different CPUs can use this value for different optimizations. So, in
+future we may have to change the value of this MSR based on frequency or
+other metrics. But, for CPUs which support this MSR today, changing the
+value with frequency do not make any difference.
 
-BTW, how are you going to cope with compat systems?
+Thanks,
+Venki
 
-If I build 'perf' on a sparc64 kernel build, it's going to get the
-64-bit pt_regs.  So I can't then use that binary on a sparc box
-running a 32-bit kernel.
-
-And vice versa.
-
-And more generally aren't we supposed to be able to eventually analyze
-perf dumps on any platform not just the one 'perf' was built under?
-
-We'll need to do something about the encoding of pt_regs, therefore.
