@@ -1,63 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462Ab0CCFXE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 00:23:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38194 "EHLO smtps.tip.net.au"
+	id S1752722Ab0CCF0a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 00:26:30 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:39258 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751698Ab0CCFXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 00:23:00 -0500
-Date: Wed, 3 Mar 2010 16:22:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Denis Turischev <denis@compulab.co.il>
-Subject: linux-next: build warning after merge of the mfd tree
-Message-Id: <20100303162252.e7cf0e43.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB"
+	id S1751572Ab0CCF01 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 00:26:27 -0500
+From: "G, Manjunath Kondaiah" <manjugk@ti.com>
+To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       "S, Venkatraman" <svenkatr@ti.com>, Tony Lindgren <tony@atomide.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>, Greg KH <greg@kroah.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Olof Johansson <olof@lixom.net>
+Date: Wed, 3 Mar 2010 10:56:15 +0530
+Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Topic: [PATCH] serial: Add OMAP high-speed UART driver.
+Thread-Index: Acq6DrzxzzLj/+UaR0CqYftNXskKIAAAL3RwAABS3WAAAXrY4AAA+KogAB2QInA=
+Message-ID: <E0D41E29EB0DAC4E9F3FF173962E9E94026ED965F2@dbde02.ent.ti.com>
+References: <41322.192.168.10.89.1267454612.squirrel@dbdmail.itg.ti.com>
+	 <20100301184600.GC3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED95FC1@dbde02.ent.ti.com>
+	 <20100302060821.GI3389@atomide.com>
+	 <E0D41E29EB0DAC4E9F3FF173962E9E94026ED9600D@dbde02.ent.ti.com>
+	 <20100302065224.GL3389@atomide.com>
+ <618f0c911003020546mb7c8412o2bac4e86a081332b@mail.gmail.com>
+ <E0D41E29EB0DAC4E9F3FF173962E9E94026ED96358@dbde02.ent.ti.com>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02C44C22F6@dbde02.ent.ti.com>
+ <E0D41E29EB0DAC4E9F3FF173962E9E94026ED963B1@dbde02.ent.ti.com>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02C44C2348@dbde02.ent.ti.com>
+In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C44C2348@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Sam,
 
-After merging the mfd tree, today's linux-next build (x86_64 allmodconfig)
-produced these warnings:
+> -----Original Message-----
+> From: Shilimkar, Santosh 
+> Sent: Tuesday, March 02, 2010 8:43 PM
+> To: G, Manjunath Kondaiah; S, Venkatraman; Tony Lindgren; 
+> Raja, Govindraj; Greg KH; linux-serial@vger.kernel.org; 
+> linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Kevin Hilman; Olof Johansson
+> Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+> 
+> > -----Original Message-----
+> > From: G, Manjunath Kondaiah
+> > Sent: Tuesday, March 02, 2010 8:34 PM
+> > To: Shilimkar, Santosh; S, Venkatraman; Tony Lindgren; 
+> Raja, Govindraj; Greg KH; linux-
+> > serial@vger.kernel.org; linux-omap@vger.kernel.org; 
+> linux-kernel@vger.kernel.org; Kevin Hilman; Olof
+> > Johansson
+> > Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+> > 
+> > 
+> > Santosh,
+> > 
+> > > -----Original Message-----
+> > > From: Shilimkar, Santosh
+> > > Sent: Tuesday, March 02, 2010 7:34 PM
+> > > To: G, Manjunath Kondaiah; S, Venkatraman; Tony Lindgren;
+> > > Raja, Govindraj; Greg KH; linux-serial@vger.kernel.org;
+> > > linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > Kevin Hilman; Olof Johansson
+> > > Subject: RE: [PATCH] serial: Add OMAP high-speed UART driver.
+> > >
+> > > <snip snip>
+> > > > > > --
+> > > > > CDAC is a shadow register used for monitoring the DMA channel.
+> > > > >  I think it would be a lot
+> > > > > simpler if omap_start_dma() always resets CDAC to 0, and the
+> > > > > UART driver
+> > > > > just not set it explicitly.
+> > > >
+> > > > This seems to be better option than exposing CDAC read/write API
+> > > > to other drivers since user need to write '0' before
+> > > starting any DMA
+> > > > transfer which can be be done in omap_start_dma().
+> > > >
+> > > > I am wondering how other drivers are using DMA transfer
+> > > API's without
+> > > > resetting CDAC to zero.
+> > > >
+> > > It's needed only if some one is interested in that count.
+> > > UART seems to
+> > > using this counter where as other driver don't.
+> > >
+> > > Why do you think drivers need to know about counter value ?
+> > 
+> > Reading of non zero value(after reset to zero and enabling 
+> dma channel)
+> > from CDAC register indicates that, DMA transfer has started 
+> and user can
+> > rely on DMA4_CCENi and DMA4_CCFNi element and frame counters.
+> > 
+> > If the CDAC value is zero even after starting DMA channel, indicates
+> > error.
+> Not necessary. The DMA can still wait for the hw sync signal 
+> and the CDAC
+> can remain 0 if the hw sync in not received. This will be any 
+> way returned 
+> by DMA error ( SYNC lost)
+> 
+> This register was mainly suppose to be used for debug purposes.
 
-drivers/gpio/sch_gpio.c: In function 'sch_gpio_probe':
-drivers/gpio/sch_gpio.c:232: warning: ignoring return value of 'gpiochip_re=
-move', declared with attribute warn_unused_result
-drivers/gpio/sch_gpio.c: In function 'sch_gpio_remove':
-drivers/gpio/sch_gpio.c:245: warning: ignoring return value of 'gpiochip_re=
-move', declared with attribute warn_unused_result
-drivers/gpio/sch_gpio.c:246: warning: ignoring return value of 'gpiochip_re=
-move', declared with attribute warn_unused_result
+As per TRM, CDAC can also be used for monitoring synchroized data 
+transfer apart from hw sync signal monitoring.
 
-Introduced by commit 4faabcde03a89836169f1437127226f4b0714070 ("gpio: add
-Intel SCH GPIO controller driver").
+Anyway, we have are aligned to set this register to zero in 
+omap_start_dma() which will over ride this patch.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuN8iwACgkQjjKRsyhoI8y2jACfeNaRdXlXYN98GgcDQltGugxp
-x8oAn11Pu7uuB0/rRuRBCmnk3yAd9K9Z
-=i5mG
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Mar_2010_16_22_52_+1100_BYbEqRQdlF.0IueB--
+Regards,
+Manjunath
