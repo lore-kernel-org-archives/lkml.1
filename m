@@ -1,62 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204Ab0CCAax (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:30:53 -0500
-Received: from xenotime.net ([72.52.64.118]:58972 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754456Ab0CCAav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:30:51 -0500
-Message-ID: <4B8DADB9.1040302@xenotime.net>
-Date: Tue, 02 Mar 2010 16:30:49 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: venkatesh.pallipadi@intel.com
-CC: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq governor
-References: <20100303000649.757684000@intel.com> <20100303000849.278509000@intel.com>
-In-Reply-To: <20100303000849.278509000@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757561Ab0CCAcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:32:17 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:34540 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754887Ab0CCAcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:32:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAEY9jUtGGOO+/2dsb2JhbACbC3S+RYR7BIMX
+Date: Tue, 2 Mar 2010 19:32:07 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
+	framework
+Message-ID: <20100303003207.GA7176@Krystal>
+References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6> <20100225152130.GB12635@Krystal> <4B8C7E23.1000302@redhat.com> <4B8DAAF2.203@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4B8DAAF2.203@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 19:30:45 up 76 days,  8:49,  6 users,  load average: 0.47, 0.25,
+	0.19
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02/10 16:06, venkatesh.pallipadi@intel.com wrote:
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Masami Hiramatsu wrote:
+> > Mathieu Desnoyers wrote:
+> >> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> >>> Make insn_slot framework support various size slots.
+> >>> Current insn_slot just supports one-size instruction buffer slot. However,
+> >>> kprobes jump optimization needs larger size buffers.
+> >>
+> >> OK, so you end up having one insn slot cache for kprobes and one insn
+> >> slot (eventually) for the static jump patching (which needs larger
+> >> instruction slots than kprobes). That seems like a good way to ensure
+> >> you do not use more memory than necessary.
+> >>
+> >> We could possibly go even further and automatically use the right insn
+> >> slot cache given the size of the instruction entry that must be added (a
+> >> bit like the memory allocator which have different pools for each
+> >> allocation order).
+> > 
+> > Sure, that will be simpler interface.
+> > 
+> >> Possibly that using the terminology of "memory pools" rather than
+> >> "cache" could be a better fit too. So what this really becomes is an
+> >> instruction slot allocator and garbage collector.
+> > 
+> > Ah, right. It would be better to rename kprobe_insn_pool() :)
+> 
+> Hmm, I tried it. And finally, I found that this doesn't help
+> to simplify code... Maybe it is better to postpone it until
+> another user needs this feature.
 
-{bah, more difficult to review an attachment, so no leading '>'}
+I guess it's a tradeoff between the genericity of the API you provide
+and the complexity of the code that provides this API. So as you say,
+maybe it's better to wait until more users appears before improving the
+API.
 
+Thanks,
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 8c666d8..4945add 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -749,6 +749,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Default value is 0.
- 			Value can be changed at runtime via /selinux/enforce.
- 
-+	epb		[X86] Control IA32_ENERGY_PERF_BIAS setting
-+			"disable" - Kernel will not modify this MSR
-+			<0..15> - Kernel will set this MSR to i/p static value
-+
+Mathieu
 
+> 
+> Thank you,
+> 
+> -- 
+> Masami Hiramatsu
+> e-mail: mhiramat@redhat.com
+> 
 
-Should be more like:
-
-	epb=		[X86] Control IA32_ENERGY_PERF_BIAS setting
-			Format: { disable | <0...15> }
-			"disable" - Kernel will not modify this MSR
-			<0..15> - Kernel will set this MSR to i/p static value
-
-
-But what is "i/p"?  Use whatever word it should be, please.
-What do the values mean?
-And what does IA32 have to do with this?  does it not apply to x86_64?
-
-thanks,
 -- 
-~Randy
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
