@@ -1,280 +1,1171 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167Ab0CCAxi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:53:38 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:54177 "EHLO
+	id S1758639Ab0CCAxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:53:43 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:54181 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754769Ab0CCAqp (ORCPT
+	with ESMTP id S1754902Ab0CCAqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Mar 2010 19:46:45 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 00/26] ceph distributed file system client
-Date: Tue,  2 Mar 2010 16:46:31 -0800
-Message-Id: <1267577217-31923-1-git-send-email-sage@newdream.net>
+Subject: [PATCH 03/26] ceph: client types
+Date: Tue,  2 Mar 2010 16:46:34 -0800
+Message-Id: <1267577217-31923-4-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267577217-31923-1-git-send-email-sage@newdream.net>
+References: <1267577217-31923-1-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+We first define constants, types, and prototypes for the kernel client
+proper.
 
-This is the latest patchset for the Ceph distributed file system client.  
-I've broken it down into individual files for ease of review.  
-Alternatively, the ceph-client.git tree includes a full history (from 
-mid-October).  A shortlog for changes since the last time I sent this 
-out (during the 2.6.33 merge window) at the end of this email.
+A few subsystems are defined separately later: the MDS, OSD, and
+monitor clients, and the messaging layer.
 
-We've been hammering on this steadily for the past few weeks and are 
-pretty happy with the stability at this point.  We would definitely 
-benefit from the broader testing that would come from inclusion in 
-2.6.34.  If there are no major complaints, I will send this to Linus 
-again shortly.
-
-Questions, comments, review, etc. are all welcome.  :)
-
-Thanks-
-sage
-
-Git tree:
-	git://git.kernel.org/pub/scm/linux/kernel/git/sage/ceph-client.git for-linus
-
-Server-side git:
-	git://ceph.newdream.net/ceph.git
-
-
+Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- Documentation/filesystems/ceph.txt   |  139 ++
- Documentation/ioctl/ioctl-number.txt |    1 +
- MAINTAINERS                          |    9 +
- fs/Kconfig                           |    1 +
- fs/Makefile                          |    1 +
- fs/ceph/Kconfig                      |   27 +
- fs/ceph/Makefile                     |   39 +
- fs/ceph/README                       |   20 +
- fs/ceph/addr.c                       | 1188 +++++++++++++
- fs/ceph/armor.c                      |   99 ++
- fs/ceph/auth.c                       |  257 +++
- fs/ceph/auth.h                       |   84 +
- fs/ceph/auth_none.c                  |  121 ++
- fs/ceph/auth_none.h                  |   28 +
- fs/ceph/auth_x.c                     |  656 ++++++++
- fs/ceph/auth_x.h                     |   49 +
- fs/ceph/auth_x_protocol.h            |   90 +
- fs/ceph/buffer.c                     |   78 +
- fs/ceph/buffer.h                     |   39 +
- fs/ceph/caps.c                       | 2925 ++++++++++++++++++++++++++++++++
- fs/ceph/ceph_debug.h                 |   37 +
- fs/ceph/ceph_frag.c                  |   21 +
- fs/ceph/ceph_frag.h                  |  109 ++
- fs/ceph/ceph_fs.c                    |   74 +
- fs/ceph/ceph_fs.h                    |  651 ++++++++
- fs/ceph/ceph_hash.c                  |  118 ++
- fs/ceph/ceph_hash.h                  |   13 +
- fs/ceph/ceph_strings.c               |  176 ++
- fs/ceph/crush/crush.c                |  151 ++
- fs/ceph/crush/crush.h                |  180 ++
- fs/ceph/crush/hash.c                 |  149 ++
- fs/ceph/crush/hash.h                 |   17 +
- fs/ceph/crush/mapper.c               |  596 +++++++
- fs/ceph/crush/mapper.h               |   20 +
- fs/ceph/crypto.c                     |  408 +++++
- fs/ceph/crypto.h                     |   48 +
- fs/ceph/debugfs.c                    |  483 ++++++
- fs/ceph/decode.h                     |  194 +++
- fs/ceph/dir.c                        | 1220 ++++++++++++++
- fs/ceph/export.c                     |  223 +++
- fs/ceph/file.c                       |  937 +++++++++++
- fs/ceph/inode.c                      | 1750 ++++++++++++++++++++
- fs/ceph/ioctl.c                      |  160 ++
- fs/ceph/ioctl.h                      |   40 +
- fs/ceph/mds_client.c                 | 3021 ++++++++++++++++++++++++++++++++++
- fs/ceph/mds_client.h                 |  335 ++++
- fs/ceph/mdsmap.c                     |  174 ++
- fs/ceph/mdsmap.h                     |   54 +
- fs/ceph/messenger.c                  | 2240 +++++++++++++++++++++++++
- fs/ceph/messenger.h                  |  254 +++
- fs/ceph/mon_client.c                 |  834 ++++++++++
- fs/ceph/mon_client.h                 |  119 ++
- fs/ceph/msgpool.c                    |  186 +++
- fs/ceph/msgpool.h                    |   27 +
- fs/ceph/msgr.h                       |  158 ++
- fs/ceph/osd_client.c                 | 1537 +++++++++++++++++
- fs/ceph/osd_client.h                 |  166 ++
- fs/ceph/osdmap.c                     | 1019 ++++++++++++
- fs/ceph/osdmap.h                     |  125 ++
- fs/ceph/pagelist.c                   |   54 +
- fs/ceph/pagelist.h                   |   54 +
- fs/ceph/rados.h                      |  374 +++++
- fs/ceph/snap.c                       |  904 ++++++++++
- fs/ceph/super.c                      | 1030 ++++++++++++
- fs/ceph/super.h                      |  900 ++++++++++
- fs/ceph/types.h                      |   29 +
- fs/ceph/xattr.c                      |  844 ++++++++++
- 67 files changed, 28064 insertions(+), 0 deletions(-)
+ fs/ceph/ceph_debug.h |   37 ++
+ fs/ceph/ceph_frag.c  |   21 ++
+ fs/ceph/ceph_frag.h  |  109 ++++++
+ fs/ceph/super.h      |  900 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/types.h      |   29 ++
+ 5 files changed, 1096 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/ceph_debug.h
+ create mode 100644 fs/ceph/ceph_frag.c
+ create mode 100644 fs/ceph/ceph_frag.h
+ create mode 100644 fs/ceph/super.h
+ create mode 100644 fs/ceph/types.h
 
-
-Below is a shortlog of changes since v0.18, the last patchset sent out 
-to LKML/fsdevel for review.  The main items are support for client and 
-server authentication (auth_x), some support for easing future protocol 
-changes, and a variety of bug fixes.  The full history is available at
-
-	http://ceph.newdream.net/git/?p=ceph-client.git;a=shortlog;h=unstable
-
- fs/ceph/Kconfig           |    1 +
- fs/ceph/Makefile          |    4 +-
- fs/ceph/addr.c            |  153 ++++++++---
- fs/ceph/armor.c           |   99 +++++++
- fs/ceph/auth.c            |   70 ++++--
- fs/ceph/auth.h            |    7 +
- fs/ceph/auth_none.c       |    1 +
- fs/ceph/auth_x.c          |  656 +++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/auth_x.h          |   49 ++++
- fs/ceph/auth_x_protocol.h |   90 ++++++
- fs/ceph/buffer.c          |   54 ++++-
- fs/ceph/buffer.h          |   30 +--
- fs/ceph/caps.c            |  310 +++++++++++++---------
- fs/ceph/ceph_fs.h         |   23 +-
- fs/ceph/crypto.c          |  408 ++++++++++++++++++++++++++++
- fs/ceph/crypto.h          |   48 ++++
- fs/ceph/debugfs.c         |   93 +++++--
- fs/ceph/decode.h          |   35 +++
- fs/ceph/dir.c             |   14 +-
- fs/ceph/file.c            |   95 +++++---
- fs/ceph/inode.c           |  188 +++++++++++---
- fs/ceph/mds_client.c      |  607 ++++++++++++++++++++++-------------------
- fs/ceph/mds_client.h      |   20 +-
- fs/ceph/mdsmap.c          |    4 +
- fs/ceph/messenger.c       |  507 ++++++++++++++++++++++-------------
- fs/ceph/messenger.h       |   37 ++--
- fs/ceph/mon_client.c      |  173 +++++++++---
- fs/ceph/mon_client.h      |    8 +-
- fs/ceph/msgpool.c         |    9 +-
- fs/ceph/msgr.h            |   23 +--
- fs/ceph/osd_client.c      |  525 ++++++++++++++++++++++++------------
- fs/ceph/osd_client.h      |   30 ++-
- fs/ceph/osdmap.c          |  223 +++++++++++----
- fs/ceph/osdmap.h          |    7 +-
- fs/ceph/pagelist.c        |   54 ++++
- fs/ceph/pagelist.h        |   54 ++++
- fs/ceph/rados.h           |   16 +-
- fs/ceph/snap.c            |   69 +++--
- fs/ceph/super.c           |   76 +++++-
- fs/ceph/super.h           |   47 ++--
- fs/ceph/xattr.c           |    8 +-
- 41 files changed, 3731 insertions(+), 1194 deletions(-)
-
-Alexander Beregalov (1):
-      ceph: move dereference after NULL test
-
-Julia Lawall (1):
-      ceph: remove duplicate variable initialization
-
-Sage Weil (80):
-      ceph: use kref for ceph_buffer
-      ceph: simplify ceph_buffer interface
-      ceph: use kref for struct ceph_mds_request
-      ceph: use kref for ceph_osd_request
-      ceph: use kref for ceph_msg
-      ceph: do not feed bad device ids to crush
-      ceph: fix leak of monc mutex
-      ceph: carry explicit msg reference for currently sending message
-      ceph: plug msg leak in con_fault
-      ceph: detect lossy state of connection
-      ceph: don't save sent messages on lossy connections
-      ceph: hex dump corrupt server data to KERN_DEBUG
-      ceph: plug leak of incoming message during connection fault/close
-      ceph: make mds ops interruptible
-      ceph: include link to bdi in debugfs
-      ceph: ensure rename target dentry fails revalidation
-      ceph: do not drop lease during revalidate
-      ceph: fix error paths for corrupt osdmap messages
-      ceph: fix incremental osdmap pg_temp decoding bug
-      ceph: do not touch_caps while iterating over caps list
-      ceph: only unregister registered bdi
-      ceph: unregister canceled/timed out osd requests
-      ceph: use connection mutex to protect read and write stages
-      ceph: control access to page vector for incoming data
-      ceph: more informative msgpool errors
-      ceph: include transaction id in ceph_msg_header (protocol change)
-      ceph: add feature bits to connection handshake (protocol change)
-      ceph: support ceph_pagelist for message payload
-      ceph: use ceph_pagelist for mds reconnect message; change encoding (protocol change)
-      ceph: remove unused erank field
-      ceph: display pgid in debugfs osd request dump
-      ceph: mark MDS CREATE as a write op
-      ceph: properly handle aborted mds requests
-      ceph: precede encoded ceph_pg_pool struct with version
-      ceph: include type in ceph_entity_addr, filepath
-      ceph: release all pages after successful osd write response
-      ceph: buffer decoding helpers
-      ceph: aes crypto and base64 encode/decode helpers
-      ceph: allow renewal of auth credentials
-      ceph: add struct version to auth encoding
-      ceph: add support for auth_x authentication protocol
-      ceph: add uid field to ceph_pg_pool
-      ceph: cap revocation fixes
-      ceph: do not retain caps that are being revoked
-      ceph: fix sync read eof check deadlock
-      ceph: cleanup async writeback, truncation, invalidate helpers
-      ceph: invalidate pages even if truncate is pending
-      ceph: remove bogus invalidate_mapping_pages
-      ceph: fix msgr to keep sent messages until acked
-      ceph: reset osd connections after fault
-      ceph: allow connection to be reopened by fault callback
-      ceph: cancel delayed work when closing connection
-      ceph: use rbtree for mds requests
-      ceph: use rbtree for snap_realms
-      ceph: use rbtree for mon statfs requests
-      ceph: fix authentication races, auth_none oops
-      ceph: clean up readdir caps reservation
-      ceph: fix iterate_caps removal race
-      ceph: fix memory leak when destroying osdmap with pg_temp mappings
-      ceph: use rbtree for pg pools; decode new osdmap format
-      ceph: v0.19 release
-      ceph: fix typo in ceph_queue_writeback debug output
-      ceph: fix check for invalidate_mapping_pages success
-      ceph: fix up unexpected message handling
-      ceph: fix comments, locking in destroy_inode
-      ceph: drop messages on unregistered mds sessions; cleanup
-      ceph: fix client_request_forward decoding
-      ceph: invalidate_authorizer without con->mutex held
-      ceph: fix connection fault STANDBY check
-      ceph: remove fragile __map_osds optimization
-      ceph: remove bogus mds forward warning
-      ceph: reset bits on connection close
-      ceph: use single osd op reply msg
-      ceph: fix snaptrace decoding on cap migration between mds
-      ceph: reset front len on return to msgpool; BUG on mismatched front iov
-      ceph: set osd request message front length correctly
-      ceph: return EBADF if waiting for caps on closed file
-      ceph: fix osdmap decoding when pools include (removed) snaps
-      ceph: include migrating caps in issued set
-      ceph: fix flush_dirty_caps race with caps migration
-
-Yehuda Sadeh (23):
-      ceph: fix msgpool reservation leak
-      ceph: remove unaccessible code
-      ceph: writepage grabs and releases inode
-      ceph: writeback congestion control
-      ceph: fix copy_user_to_page_vector()
-      ceph: change dentry offset and position after splice_dentry
-      ceph: allocate middle of message before stating to read
-      ceph: refactor messages data section allocation
-      ceph: alloc message data pages and check if tid exists
-      ceph: keep reserved replies on the request structure
-      ceph: remove unreachable code
-      ceph: always send truncation info with read and write osd ops
-      ceph: remove unused variable
-      ceph: put unused osd connections on lru
-      ceph: fix short synchronous reads
-      ceph: refactor ceph_write_begin, fix ceph_page_mkwrite
-      ceph: fix truncation when not holding caps
-      ceph: sync read/write considers page cache
-      ceph: remove page upon writeback completion if lost cache cap
-      ceph: don't truncate dirty pages in invalidate work thread
-      ceph: cleanup redundant code in handle_cap_grant
-      ceph: don't clobber write return value when using O_SYNC
-      ceph: reset osd after relevant messages timed out
+diff --git a/fs/ceph/ceph_debug.h b/fs/ceph/ceph_debug.h
+new file mode 100644
+index 0000000..1818c23
+--- /dev/null
++++ b/fs/ceph/ceph_debug.h
+@@ -0,0 +1,37 @@
++#ifndef _FS_CEPH_DEBUG_H
++#define _FS_CEPH_DEBUG_H
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#ifdef CONFIG_CEPH_FS_PRETTYDEBUG
++
++/*
++ * wrap pr_debug to include a filename:lineno prefix on each line.
++ * this incurs some overhead (kernel size and execution time) due to
++ * the extra function call at each call site.
++ */
++
++# if defined(DEBUG) || defined(CONFIG_DYNAMIC_DEBUG)
++extern const char *ceph_file_part(const char *s, int len);
++#  define dout(fmt, ...)						\
++	pr_debug(" %12.12s:%-4d : " fmt,				\
++		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
++		 __LINE__, ##__VA_ARGS__)
++# else
++/* faux printk call just to see any compiler warnings. */
++#  define dout(fmt, ...)	do {				\
++		if (0)						\
++			printk(KERN_DEBUG fmt, ##__VA_ARGS__);	\
++	} while (0)
++# endif
++
++#else
++
++/*
++ * or, just wrap pr_debug
++ */
++# define dout(fmt, ...)	pr_debug(" " fmt, ##__VA_ARGS__)
++
++#endif
++
++#endif
+diff --git a/fs/ceph/ceph_frag.c b/fs/ceph/ceph_frag.c
+new file mode 100644
+index 0000000..ab6cf35
+--- /dev/null
++++ b/fs/ceph/ceph_frag.c
+@@ -0,0 +1,21 @@
++/*
++ * Ceph 'frag' type
++ */
++#include "types.h"
++
++int ceph_frag_compare(__u32 a, __u32 b)
++{
++	unsigned va = ceph_frag_value(a);
++	unsigned vb = ceph_frag_value(b);
++	if (va < vb)
++		return -1;
++	if (va > vb)
++		return 1;
++	va = ceph_frag_bits(a);
++	vb = ceph_frag_bits(b);
++	if (va < vb)
++		return -1;
++	if (va > vb)
++		return 1;
++	return 0;
++}
+diff --git a/fs/ceph/ceph_frag.h b/fs/ceph/ceph_frag.h
+new file mode 100644
+index 0000000..793f50c
+--- /dev/null
++++ b/fs/ceph/ceph_frag.h
+@@ -0,0 +1,109 @@
++#ifndef _FS_CEPH_FRAG_H
++#define _FS_CEPH_FRAG_H
++
++/*
++ * "Frags" are a way to describe a subset of a 32-bit number space,
++ * using a mask and a value to match against that mask.  Any given frag
++ * (subset of the number space) can be partitioned into 2^n sub-frags.
++ *
++ * Frags are encoded into a 32-bit word:
++ *   8 upper bits = "bits"
++ *  24 lower bits = "value"
++ * (We could go to 5+27 bits, but who cares.)
++ *
++ * We use the _most_ significant bits of the 24 bit value.  This makes
++ * values logically sort.
++ *
++ * Unfortunately, because the "bits" field is still in the high bits, we
++ * can't sort encoded frags numerically.  However, it does allow you
++ * to feed encoded frags as values into frag_contains_value.
++ */
++static inline __u32 ceph_frag_make(__u32 b, __u32 v)
++{
++	return (b << 24) |
++		(v & (0xffffffu << (24-b)) & 0xffffffu);
++}
++static inline __u32 ceph_frag_bits(__u32 f)
++{
++	return f >> 24;
++}
++static inline __u32 ceph_frag_value(__u32 f)
++{
++	return f & 0xffffffu;
++}
++static inline __u32 ceph_frag_mask(__u32 f)
++{
++	return (0xffffffu << (24-ceph_frag_bits(f))) & 0xffffffu;
++}
++static inline __u32 ceph_frag_mask_shift(__u32 f)
++{
++	return 24 - ceph_frag_bits(f);
++}
++
++static inline int ceph_frag_contains_value(__u32 f, __u32 v)
++{
++	return (v & ceph_frag_mask(f)) == ceph_frag_value(f);
++}
++static inline int ceph_frag_contains_frag(__u32 f, __u32 sub)
++{
++	/* is sub as specific as us, and contained by us? */
++	return ceph_frag_bits(sub) >= ceph_frag_bits(f) &&
++	       (ceph_frag_value(sub) & ceph_frag_mask(f)) == ceph_frag_value(f);
++}
++
++static inline __u32 ceph_frag_parent(__u32 f)
++{
++	return ceph_frag_make(ceph_frag_bits(f) - 1,
++			 ceph_frag_value(f) & (ceph_frag_mask(f) << 1));
++}
++static inline int ceph_frag_is_left_child(__u32 f)
++{
++	return ceph_frag_bits(f) > 0 &&
++		(ceph_frag_value(f) & (0x1000000 >> ceph_frag_bits(f))) == 0;
++}
++static inline int ceph_frag_is_right_child(__u32 f)
++{
++	return ceph_frag_bits(f) > 0 &&
++		(ceph_frag_value(f) & (0x1000000 >> ceph_frag_bits(f))) == 1;
++}
++static inline __u32 ceph_frag_sibling(__u32 f)
++{
++	return ceph_frag_make(ceph_frag_bits(f),
++		      ceph_frag_value(f) ^ (0x1000000 >> ceph_frag_bits(f)));
++}
++static inline __u32 ceph_frag_left_child(__u32 f)
++{
++	return ceph_frag_make(ceph_frag_bits(f)+1, ceph_frag_value(f));
++}
++static inline __u32 ceph_frag_right_child(__u32 f)
++{
++	return ceph_frag_make(ceph_frag_bits(f)+1,
++	      ceph_frag_value(f) | (0x1000000 >> (1+ceph_frag_bits(f))));
++}
++static inline __u32 ceph_frag_make_child(__u32 f, int by, int i)
++{
++	int newbits = ceph_frag_bits(f) + by;
++	return ceph_frag_make(newbits,
++			 ceph_frag_value(f) | (i << (24 - newbits)));
++}
++static inline int ceph_frag_is_leftmost(__u32 f)
++{
++	return ceph_frag_value(f) == 0;
++}
++static inline int ceph_frag_is_rightmost(__u32 f)
++{
++	return ceph_frag_value(f) == ceph_frag_mask(f);
++}
++static inline __u32 ceph_frag_next(__u32 f)
++{
++	return ceph_frag_make(ceph_frag_bits(f),
++			 ceph_frag_value(f) + (0x1000000 >> ceph_frag_bits(f)));
++}
++
++/*
++ * comparator to sort frags logically, as when traversing the
++ * number space in ascending order...
++ */
++int ceph_frag_compare(__u32 a, __u32 b);
++
++#endif
+diff --git a/fs/ceph/super.h b/fs/ceph/super.h
+new file mode 100644
+index 0000000..02c0ddc
+--- /dev/null
++++ b/fs/ceph/super.h
+@@ -0,0 +1,900 @@
++#ifndef _FS_CEPH_SUPER_H
++#define _FS_CEPH_SUPER_H
++
++#include "ceph_debug.h"
++
++#include <asm/unaligned.h>
++#include <linux/backing-dev.h>
++#include <linux/completion.h>
++#include <linux/exportfs.h>
++#include <linux/fs.h>
++#include <linux/mempool.h>
++#include <linux/pagemap.h>
++#include <linux/wait.h>
++
++#include "types.h"
++#include "messenger.h"
++#include "msgpool.h"
++#include "mon_client.h"
++#include "mds_client.h"
++#include "osd_client.h"
++#include "ceph_fs.h"
++
++/* f_type in struct statfs */
++#define CEPH_SUPER_MAGIC 0x00c36400
++
++/* large granularity for statfs utilization stats to facilitate
++ * large volume sizes on 32-bit machines. */
++#define CEPH_BLOCK_SHIFT   20  /* 1 MB */
++#define CEPH_BLOCK         (1 << CEPH_BLOCK_SHIFT)
++
++/*
++ * mount options
++ */
++#define CEPH_OPT_FSID             (1<<0)
++#define CEPH_OPT_NOSHARE          (1<<1) /* don't share client with other sbs */
++#define CEPH_OPT_MYIP             (1<<2) /* specified my ip */
++#define CEPH_OPT_DIRSTAT          (1<<4) /* funky `cat dirname` for stats */
++#define CEPH_OPT_RBYTES           (1<<5) /* dir st_bytes = rbytes */
++#define CEPH_OPT_NOCRC            (1<<6) /* no data crc on writes */
++#define CEPH_OPT_NOASYNCREADDIR   (1<<7) /* no dcache readdir */
++
++#define CEPH_OPT_DEFAULT   (CEPH_OPT_RBYTES)
++
++#define ceph_set_opt(client, opt) \
++	(client)->mount_args->flags |= CEPH_OPT_##opt;
++#define ceph_test_opt(client, opt) \
++	(!!((client)->mount_args->flags & CEPH_OPT_##opt))
++
++
++struct ceph_mount_args {
++	int sb_flags;
++	int num_mon;
++	struct ceph_entity_addr *mon_addr;
++	int flags;
++	int mount_timeout;
++	int osd_idle_ttl;
++	int caps_wanted_delay_min, caps_wanted_delay_max;
++	struct ceph_fsid fsid;
++	struct ceph_entity_addr my_addr;
++	int wsize;
++	int rsize;            /* max readahead */
++	int max_readdir;      /* max readdir size */
++	int congestion_kb;      /* max readdir size */
++	int osd_timeout;
++	int osd_keepalive_timeout;
++	char *snapdir_name;   /* default ".snap" */
++	char *name;
++	char *secret;
++	int cap_release_safety;
++};
++
++/*
++ * defaults
++ */
++#define CEPH_MOUNT_TIMEOUT_DEFAULT  60
++#define CEPH_OSD_TIMEOUT_DEFAULT    60  /* seconds */
++#define CEPH_OSD_KEEPALIVE_DEFAULT  5
++#define CEPH_OSD_IDLE_TTL_DEFAULT    60
++#define CEPH_MOUNT_RSIZE_DEFAULT    (512*1024) /* readahead */
++
++#define CEPH_MSG_MAX_FRONT_LEN	(16*1024*1024)
++#define CEPH_MSG_MAX_DATA_LEN	(16*1024*1024)
++
++#define CEPH_SNAPDIRNAME_DEFAULT ".snap"
++#define CEPH_AUTH_NAME_DEFAULT   "guest"
++
++/*
++ * Delay telling the MDS we no longer want caps, in case we reopen
++ * the file.  Delay a minimum amount of time, even if we send a cap
++ * message for some other reason.  Otherwise, take the oppotunity to
++ * update the mds to avoid sending another message later.
++ */
++#define CEPH_CAPS_WANTED_DELAY_MIN_DEFAULT      5  /* cap release delay */
++#define CEPH_CAPS_WANTED_DELAY_MAX_DEFAULT     60  /* cap release delay */
++
++
++/* mount state */
++enum {
++	CEPH_MOUNT_MOUNTING,
++	CEPH_MOUNT_MOUNTED,
++	CEPH_MOUNT_UNMOUNTING,
++	CEPH_MOUNT_UNMOUNTED,
++	CEPH_MOUNT_SHUTDOWN,
++};
++
++/*
++ * subtract jiffies
++ */
++static inline unsigned long time_sub(unsigned long a, unsigned long b)
++{
++	BUG_ON(time_after(b, a));
++	return (long)a - (long)b;
++}
++
++/*
++ * per-filesystem client state
++ *
++ * possibly shared by multiple mount points, if they are
++ * mounting the same ceph filesystem/cluster.
++ */
++struct ceph_client {
++	struct ceph_fsid fsid;
++	bool have_fsid;
++
++	struct mutex mount_mutex;       /* serialize mount attempts */
++	struct ceph_mount_args *mount_args;
++
++	struct super_block *sb;
++
++	unsigned long mount_state;
++	wait_queue_head_t auth_wq;
++
++	int auth_err;
++
++	int min_caps;                  /* min caps i added */
++
++	struct ceph_messenger *msgr;   /* messenger instance */
++	struct ceph_mon_client monc;
++	struct ceph_mds_client mdsc;
++	struct ceph_osd_client osdc;
++
++	/* writeback */
++	mempool_t *wb_pagevec_pool;
++	struct workqueue_struct *wb_wq;
++	struct workqueue_struct *pg_inv_wq;
++	struct workqueue_struct *trunc_wq;
++	atomic_long_t writeback_count;
++
++	struct backing_dev_info backing_dev_info;
++
++#ifdef CONFIG_DEBUG_FS
++	struct dentry *debugfs_monmap;
++	struct dentry *debugfs_mdsmap, *debugfs_osdmap;
++	struct dentry *debugfs_dir, *debugfs_dentry_lru, *debugfs_caps;
++	struct dentry *debugfs_congestion_kb;
++	struct dentry *debugfs_bdi;
++#endif
++};
++
++static inline struct ceph_client *ceph_client(struct super_block *sb)
++{
++	return sb->s_fs_info;
++}
++
++
++/*
++ * File i/o capability.  This tracks shared state with the metadata
++ * server that allows us to cache or writeback attributes or to read
++ * and write data.  For any given inode, we should have one or more
++ * capabilities, one issued by each metadata server, and our
++ * cumulative access is the OR of all issued capabilities.
++ *
++ * Each cap is referenced by the inode's i_caps rbtree and by per-mds
++ * session capability lists.
++ */
++struct ceph_cap {
++	struct ceph_inode_info *ci;
++	struct rb_node ci_node;          /* per-ci cap tree */
++	struct ceph_mds_session *session;
++	struct list_head session_caps;   /* per-session caplist */
++	int mds;
++	u64 cap_id;       /* unique cap id (mds provided) */
++	int issued;       /* latest, from the mds */
++	int implemented;  /* implemented superset of issued (for revocation) */
++	int mds_wanted;
++	u32 seq, issue_seq, mseq;
++	u32 cap_gen;      /* active/stale cycle */
++	unsigned long last_used;
++	struct list_head caps_item;
++};
++
++#define CHECK_CAPS_NODELAY    1  /* do not delay any further */
++#define CHECK_CAPS_AUTHONLY   2  /* only check auth cap */
++#define CHECK_CAPS_FLUSH      4  /* flush any dirty caps */
++
++/*
++ * Snapped cap state that is pending flush to mds.  When a snapshot occurs,
++ * we first complete any in-process sync writes and writeback any dirty
++ * data before flushing the snapped state (tracked here) back to the MDS.
++ */
++struct ceph_cap_snap {
++	atomic_t nref;
++	struct ceph_inode_info *ci;
++	struct list_head ci_item, flushing_item;
++
++	u64 follows, flush_tid;
++	int issued, dirty;
++	struct ceph_snap_context *context;
++
++	mode_t mode;
++	uid_t uid;
++	gid_t gid;
++
++	void *xattr_blob;
++	int xattr_len;
++	u64 xattr_version;
++
++	u64 size;
++	struct timespec mtime, atime, ctime;
++	u64 time_warp_seq;
++	int writing;   /* a sync write is still in progress */
++	int dirty_pages;     /* dirty pages awaiting writeback */
++};
++
++static inline void ceph_put_cap_snap(struct ceph_cap_snap *capsnap)
++{
++	if (atomic_dec_and_test(&capsnap->nref))
++		kfree(capsnap);
++}
++
++/*
++ * The frag tree describes how a directory is fragmented, potentially across
++ * multiple metadata servers.  It is also used to indicate points where
++ * metadata authority is delegated, and whether/where metadata is replicated.
++ *
++ * A _leaf_ frag will be present in the i_fragtree IFF there is
++ * delegation info.  That is, if mds >= 0 || ndist > 0.
++ */
++#define CEPH_MAX_DIRFRAG_REP 4
++
++struct ceph_inode_frag {
++	struct rb_node node;
++
++	/* fragtree state */
++	u32 frag;
++	int split_by;         /* i.e. 2^(split_by) children */
++
++	/* delegation and replication info */
++	int mds;              /* -1 if same authority as parent */
++	int ndist;            /* >0 if replicated */
++	int dist[CEPH_MAX_DIRFRAG_REP];
++};
++
++/*
++ * We cache inode xattrs as an encoded blob until they are first used,
++ * at which point we parse them into an rbtree.
++ */
++struct ceph_inode_xattr {
++	struct rb_node node;
++
++	const char *name;
++	int name_len;
++	const char *val;
++	int val_len;
++	int dirty;
++
++	int should_free_name;
++	int should_free_val;
++};
++
++struct ceph_inode_xattrs_info {
++	/*
++	 * (still encoded) xattr blob. we avoid the overhead of parsing
++	 * this until someone actually calls getxattr, etc.
++	 *
++	 * blob->vec.iov_len == 4 implies there are no xattrs; blob ==
++	 * NULL means we don't know.
++	*/
++	struct ceph_buffer *blob, *prealloc_blob;
++
++	struct rb_root index;
++	bool dirty;
++	int count;
++	int names_size;
++	int vals_size;
++	u64 version, index_version;
++};
++
++/*
++ * Ceph inode.
++ */
++#define CEPH_I_COMPLETE  1  /* we have complete directory cached */
++#define CEPH_I_NODELAY   4  /* do not delay cap release */
++#define CEPH_I_FLUSH     8  /* do not delay flush of dirty metadata */
++#define CEPH_I_NOFLUSH  16  /* do not flush dirty caps */
++
++struct ceph_inode_info {
++	struct ceph_vino i_vino;   /* ceph ino + snap */
++
++	u64 i_version;
++	u32 i_time_warp_seq;
++
++	unsigned i_ceph_flags;
++	unsigned long i_release_count;
++
++	struct ceph_file_layout i_layout;
++	char *i_symlink;
++
++	/* for dirs */
++	struct timespec i_rctime;
++	u64 i_rbytes, i_rfiles, i_rsubdirs;
++	u64 i_files, i_subdirs;
++	u64 i_max_offset;  /* largest readdir offset, set with I_COMPLETE */
++
++	struct rb_root i_fragtree;
++	struct mutex i_fragtree_mutex;
++
++	struct ceph_inode_xattrs_info i_xattrs;
++
++	/* capabilities.  protected _both_ by i_lock and cap->session's
++	 * s_mutex. */
++	struct rb_root i_caps;           /* cap list */
++	struct ceph_cap *i_auth_cap;     /* authoritative cap, if any */
++	unsigned i_dirty_caps, i_flushing_caps;     /* mask of dirtied fields */
++	struct list_head i_dirty_item, i_flushing_item;
++	u64 i_cap_flush_seq;
++	/* we need to track cap writeback on a per-cap-bit basis, to allow
++	 * overlapping, pipelined cap flushes to the mds.  we can probably
++	 * reduce the tid to 8 bits if we're concerned about inode size. */
++	u16 i_cap_flush_last_tid, i_cap_flush_tid[CEPH_CAP_BITS];
++	wait_queue_head_t i_cap_wq;      /* threads waiting on a capability */
++	unsigned long i_hold_caps_min; /* jiffies */
++	unsigned long i_hold_caps_max; /* jiffies */
++	struct list_head i_cap_delay_list;  /* for delayed cap release to mds */
++	int i_cap_exporting_mds;         /* to handle cap migration between */
++	unsigned i_cap_exporting_mseq;   /*  mds's. */
++	unsigned i_cap_exporting_issued;
++	struct ceph_cap_reservation i_cap_migration_resv;
++	struct list_head i_cap_snaps;   /* snapped state pending flush to mds */
++	struct ceph_snap_context *i_head_snapc;  /* set if wr_buffer_head > 0 */
++	unsigned i_snap_caps;           /* cap bits for snapped files */
++
++	int i_nr_by_mode[CEPH_FILE_MODE_NUM];  /* open file counts */
++
++	u32 i_truncate_seq;        /* last truncate to smaller size */
++	u64 i_truncate_size;       /*  and the size we last truncated down to */
++	int i_truncate_pending;    /*  still need to call vmtruncate */
++
++	u64 i_max_size;            /* max file size authorized by mds */
++	u64 i_reported_size; /* (max_)size reported to or requested of mds */
++	u64 i_wanted_max_size;     /* offset we'd like to write too */
++	u64 i_requested_max_size;  /* max_size we've requested */
++
++	/* held references to caps */
++	int i_pin_ref;
++	int i_rd_ref, i_rdcache_ref, i_wr_ref;
++	int i_wrbuffer_ref, i_wrbuffer_ref_head;
++	u32 i_shared_gen;       /* increment each time we get FILE_SHARED */
++	u32 i_rdcache_gen;      /* we increment this each time we get
++				   FILE_CACHE.  If it's non-zero, we
++				   _may_ have cached pages. */
++	u32 i_rdcache_revoking; /* RDCACHE gen to async invalidate, if any */
++
++	struct list_head i_unsafe_writes; /* uncommitted sync writes */
++	struct list_head i_unsafe_dirops; /* uncommitted mds dir ops */
++	spinlock_t i_unsafe_lock;
++
++	struct ceph_snap_realm *i_snap_realm; /* snap realm (if caps) */
++	int i_snap_realm_counter; /* snap realm (if caps) */
++	struct list_head i_snap_realm_item;
++	struct list_head i_snap_flush_item;
++
++	struct work_struct i_wb_work;  /* writeback work */
++	struct work_struct i_pg_inv_work;  /* page invalidation work */
++
++	struct work_struct i_vmtruncate_work;
++
++	struct inode vfs_inode; /* at end */
++};
++
++static inline struct ceph_inode_info *ceph_inode(struct inode *inode)
++{
++	return container_of(inode, struct ceph_inode_info, vfs_inode);
++}
++
++static inline void ceph_i_clear(struct inode *inode, unsigned mask)
++{
++	struct ceph_inode_info *ci = ceph_inode(inode);
++
++	spin_lock(&inode->i_lock);
++	ci->i_ceph_flags &= ~mask;
++	spin_unlock(&inode->i_lock);
++}
++
++static inline void ceph_i_set(struct inode *inode, unsigned mask)
++{
++	struct ceph_inode_info *ci = ceph_inode(inode);
++
++	spin_lock(&inode->i_lock);
++	ci->i_ceph_flags |= mask;
++	spin_unlock(&inode->i_lock);
++}
++
++static inline bool ceph_i_test(struct inode *inode, unsigned mask)
++{
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	bool r;
++
++	smp_mb();
++	r = (ci->i_ceph_flags & mask) == mask;
++	return r;
++}
++
++
++/* find a specific frag @f */
++extern struct ceph_inode_frag *__ceph_find_frag(struct ceph_inode_info *ci,
++						u32 f);
++
++/*
++ * choose fragment for value @v.  copy frag content to pfrag, if leaf
++ * exists
++ */
++extern u32 ceph_choose_frag(struct ceph_inode_info *ci, u32 v,
++			    struct ceph_inode_frag *pfrag,
++			    int *found);
++
++/*
++ * Ceph dentry state
++ */
++struct ceph_dentry_info {
++	struct ceph_mds_session *lease_session;
++	u32 lease_gen, lease_shared_gen;
++	u32 lease_seq;
++	unsigned long lease_renew_after, lease_renew_from;
++	struct list_head lru;
++	struct dentry *dentry;
++	u64 time;
++	u64 offset;
++};
++
++static inline struct ceph_dentry_info *ceph_dentry(struct dentry *dentry)
++{
++	return (struct ceph_dentry_info *)dentry->d_fsdata;
++}
++
++static inline loff_t ceph_make_fpos(unsigned frag, unsigned off)
++{
++	return ((loff_t)frag << 32) | (loff_t)off;
++}
++
++/*
++ * ino_t is <64 bits on many architectures, blech.
++ *
++ * don't include snap in ino hash, at least for now.
++ */
++static inline ino_t ceph_vino_to_ino(struct ceph_vino vino)
++{
++	ino_t ino = (ino_t)vino.ino;  /* ^ (vino.snap << 20); */
++#if BITS_PER_LONG == 32
++	ino ^= vino.ino >> (sizeof(u64)-sizeof(ino_t)) * 8;
++	if (!ino)
++		ino = 1;
++#endif
++	return ino;
++}
++
++static inline int ceph_set_ino_cb(struct inode *inode, void *data)
++{
++	ceph_inode(inode)->i_vino = *(struct ceph_vino *)data;
++	inode->i_ino = ceph_vino_to_ino(*(struct ceph_vino *)data);
++	return 0;
++}
++
++static inline struct ceph_vino ceph_vino(struct inode *inode)
++{
++	return ceph_inode(inode)->i_vino;
++}
++
++/* for printf-style formatting */
++#define ceph_vinop(i) ceph_inode(i)->i_vino.ino, ceph_inode(i)->i_vino.snap
++
++static inline u64 ceph_ino(struct inode *inode)
++{
++	return ceph_inode(inode)->i_vino.ino;
++}
++static inline u64 ceph_snap(struct inode *inode)
++{
++	return ceph_inode(inode)->i_vino.snap;
++}
++
++static inline int ceph_ino_compare(struct inode *inode, void *data)
++{
++	struct ceph_vino *pvino = (struct ceph_vino *)data;
++	struct ceph_inode_info *ci = ceph_inode(inode);
++	return ci->i_vino.ino == pvino->ino &&
++		ci->i_vino.snap == pvino->snap;
++}
++
++static inline struct inode *ceph_find_inode(struct super_block *sb,
++					    struct ceph_vino vino)
++{
++	ino_t t = ceph_vino_to_ino(vino);
++	return ilookup5(sb, t, ceph_ino_compare, &vino);
++}
++
++
++/*
++ * caps helpers
++ */
++static inline bool __ceph_is_any_real_caps(struct ceph_inode_info *ci)
++{
++	return !RB_EMPTY_ROOT(&ci->i_caps);
++}
++
++extern int __ceph_caps_issued(struct ceph_inode_info *ci, int *implemented);
++extern int __ceph_caps_issued_mask(struct ceph_inode_info *ci, int mask, int t);
++extern int __ceph_caps_issued_other(struct ceph_inode_info *ci,
++				    struct ceph_cap *cap);
++
++static inline int ceph_caps_issued(struct ceph_inode_info *ci)
++{
++	int issued;
++	spin_lock(&ci->vfs_inode.i_lock);
++	issued = __ceph_caps_issued(ci, NULL);
++	spin_unlock(&ci->vfs_inode.i_lock);
++	return issued;
++}
++
++static inline int ceph_caps_issued_mask(struct ceph_inode_info *ci, int mask,
++					int touch)
++{
++	int r;
++	spin_lock(&ci->vfs_inode.i_lock);
++	r = __ceph_caps_issued_mask(ci, mask, touch);
++	spin_unlock(&ci->vfs_inode.i_lock);
++	return r;
++}
++
++static inline int __ceph_caps_dirty(struct ceph_inode_info *ci)
++{
++	return ci->i_dirty_caps | ci->i_flushing_caps;
++}
++extern void __ceph_mark_dirty_caps(struct ceph_inode_info *ci, int mask);
++
++extern int ceph_caps_revoking(struct ceph_inode_info *ci, int mask);
++extern int __ceph_caps_used(struct ceph_inode_info *ci);
++
++extern int __ceph_caps_file_wanted(struct ceph_inode_info *ci);
++
++/*
++ * wanted, by virtue of open file modes AND cap refs (buffered/cached data)
++ */
++static inline int __ceph_caps_wanted(struct ceph_inode_info *ci)
++{
++	int w = __ceph_caps_file_wanted(ci) | __ceph_caps_used(ci);
++	if (w & CEPH_CAP_FILE_BUFFER)
++		w |= CEPH_CAP_FILE_EXCL;  /* we want EXCL if dirty data */
++	return w;
++}
++
++/* what the mds thinks we want */
++extern int __ceph_caps_mds_wanted(struct ceph_inode_info *ci);
++
++extern void ceph_caps_init(void);
++extern void ceph_caps_finalize(void);
++extern void ceph_adjust_min_caps(int delta);
++extern int ceph_reserve_caps(struct ceph_cap_reservation *ctx, int need);
++extern int ceph_unreserve_caps(struct ceph_cap_reservation *ctx);
++extern void ceph_reservation_status(struct ceph_client *client,
++				    int *total, int *avail, int *used,
++				    int *reserved, int *min);
++
++static inline struct ceph_client *ceph_inode_to_client(struct inode *inode)
++{
++	return (struct ceph_client *)inode->i_sb->s_fs_info;
++}
++
++static inline struct ceph_client *ceph_sb_to_client(struct super_block *sb)
++{
++	return (struct ceph_client *)sb->s_fs_info;
++}
++
++
++/*
++ * we keep buffered readdir results attached to file->private_data
++ */
++struct ceph_file_info {
++	int fmode;     /* initialized on open */
++
++	/* readdir: position within the dir */
++	u32 frag;
++	struct ceph_mds_request *last_readdir;
++	int at_end;
++
++	/* readdir: position within a frag */
++	unsigned offset;       /* offset of last chunk, adjusted for . and .. */
++	u64 next_offset;       /* offset of next chunk (last_name's + 1) */
++	char *last_name;       /* last entry in previous chunk */
++	struct dentry *dentry; /* next dentry (for dcache readdir) */
++	unsigned long dir_release_count;
++
++	/* used for -o dirstat read() on directory thing */
++	char *dir_info;
++	int dir_info_len;
++};
++
++
++
++/*
++ * snapshots
++ */
++
++/*
++ * A "snap context" is the set of existing snapshots when we
++ * write data.  It is used by the OSD to guide its COW behavior.
++ *
++ * The ceph_snap_context is refcounted, and attached to each dirty
++ * page, indicating which context the dirty data belonged when it was
++ * dirtied.
++ */
++struct ceph_snap_context {
++	atomic_t nref;
++	u64 seq;
++	int num_snaps;
++	u64 snaps[];
++};
++
++static inline struct ceph_snap_context *
++ceph_get_snap_context(struct ceph_snap_context *sc)
++{
++	/*
++	printk("get_snap_context %p %d -> %d\n", sc, atomic_read(&sc->nref),
++	       atomic_read(&sc->nref)+1);
++	*/
++	if (sc)
++		atomic_inc(&sc->nref);
++	return sc;
++}
++
++static inline void ceph_put_snap_context(struct ceph_snap_context *sc)
++{
++	if (!sc)
++		return;
++	/*
++	printk("put_snap_context %p %d -> %d\n", sc, atomic_read(&sc->nref),
++	       atomic_read(&sc->nref)-1);
++	*/
++	if (atomic_dec_and_test(&sc->nref)) {
++		/*printk(" deleting snap_context %p\n", sc);*/
++		kfree(sc);
++	}
++}
++
++/*
++ * A "snap realm" describes a subset of the file hierarchy sharing
++ * the same set of snapshots that apply to it.  The realms themselves
++ * are organized into a hierarchy, such that children inherit (some of)
++ * the snapshots of their parents.
++ *
++ * All inodes within the realm that have capabilities are linked into a
++ * per-realm list.
++ */
++struct ceph_snap_realm {
++	u64 ino;
++	atomic_t nref;
++	struct rb_node node;
++
++	u64 created, seq;
++	u64 parent_ino;
++	u64 parent_since;   /* snapid when our current parent became so */
++
++	u64 *prior_parent_snaps;      /* snaps inherited from any parents we */
++	int num_prior_parent_snaps;   /*  had prior to parent_since */
++	u64 *snaps;                   /* snaps specific to this realm */
++	int num_snaps;
++
++	struct ceph_snap_realm *parent;
++	struct list_head children;       /* list of child realms */
++	struct list_head child_item;
++
++	struct list_head empty_item;     /* if i have ref==0 */
++
++	/* the current set of snaps for this realm */
++	struct ceph_snap_context *cached_context;
++
++	struct list_head inodes_with_caps;
++	spinlock_t inodes_with_caps_lock;
++};
++
++
++
++/*
++ * calculate the number of pages a given length and offset map onto,
++ * if we align the data.
++ */
++static inline int calc_pages_for(u64 off, u64 len)
++{
++	return ((off+len+PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT) -
++		(off >> PAGE_CACHE_SHIFT);
++}
++
++
++
++/* snap.c */
++struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
++					       u64 ino);
++extern void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
++				struct ceph_snap_realm *realm);
++extern void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
++				struct ceph_snap_realm *realm);
++extern int ceph_update_snap_trace(struct ceph_mds_client *m,
++				  void *p, void *e, bool deletion);
++extern void ceph_handle_snap(struct ceph_mds_client *mdsc,
++			     struct ceph_mds_session *session,
++			     struct ceph_msg *msg);
++extern void ceph_queue_cap_snap(struct ceph_inode_info *ci,
++				struct ceph_snap_context *snapc);
++extern int __ceph_finish_cap_snap(struct ceph_inode_info *ci,
++				  struct ceph_cap_snap *capsnap);
++extern void ceph_cleanup_empty_realms(struct ceph_mds_client *mdsc);
++
++/*
++ * a cap_snap is "pending" if it is still awaiting an in-progress
++ * sync write (that may/may not still update size, mtime, etc.).
++ */
++static inline bool __ceph_have_pending_cap_snap(struct ceph_inode_info *ci)
++{
++	return !list_empty(&ci->i_cap_snaps) &&
++		list_entry(ci->i_cap_snaps.prev, struct ceph_cap_snap,
++			   ci_item)->writing;
++}
++
++
++/* super.c */
++extern struct kmem_cache *ceph_inode_cachep;
++extern struct kmem_cache *ceph_cap_cachep;
++extern struct kmem_cache *ceph_dentry_cachep;
++extern struct kmem_cache *ceph_file_cachep;
++
++extern const char *ceph_msg_type_name(int type);
++extern int ceph_check_fsid(struct ceph_client *client, struct ceph_fsid *fsid);
++
++#define FSID_FORMAT "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-" \
++	"%02x%02x%02x%02x%02x%02x"
++#define PR_FSID(f) (f)->fsid[0], (f)->fsid[1], (f)->fsid[2], (f)->fsid[3], \
++		(f)->fsid[4], (f)->fsid[5], (f)->fsid[6], (f)->fsid[7],    \
++		(f)->fsid[8], (f)->fsid[9], (f)->fsid[10], (f)->fsid[11],  \
++		(f)->fsid[12], (f)->fsid[13], (f)->fsid[14], (f)->fsid[15]
++
++/* inode.c */
++extern const struct inode_operations ceph_file_iops;
++
++extern struct inode *ceph_alloc_inode(struct super_block *sb);
++extern void ceph_destroy_inode(struct inode *inode);
++
++extern struct inode *ceph_get_inode(struct super_block *sb,
++				    struct ceph_vino vino);
++extern struct inode *ceph_get_snapdir(struct inode *parent);
++extern int ceph_fill_file_size(struct inode *inode, int issued,
++			       u32 truncate_seq, u64 truncate_size, u64 size);
++extern void ceph_fill_file_time(struct inode *inode, int issued,
++				u64 time_warp_seq, struct timespec *ctime,
++				struct timespec *mtime, struct timespec *atime);
++extern int ceph_fill_trace(struct super_block *sb,
++			   struct ceph_mds_request *req,
++			   struct ceph_mds_session *session);
++extern int ceph_readdir_prepopulate(struct ceph_mds_request *req,
++				    struct ceph_mds_session *session);
++
++extern int ceph_inode_holds_cap(struct inode *inode, int mask);
++
++extern int ceph_inode_set_size(struct inode *inode, loff_t size);
++extern void __ceph_do_pending_vmtruncate(struct inode *inode);
++extern void ceph_queue_vmtruncate(struct inode *inode);
++
++extern void ceph_queue_invalidate(struct inode *inode);
++extern void ceph_queue_writeback(struct inode *inode);
++
++extern int ceph_do_getattr(struct inode *inode, int mask);
++extern int ceph_permission(struct inode *inode, int mask);
++extern int ceph_setattr(struct dentry *dentry, struct iattr *attr);
++extern int ceph_getattr(struct vfsmount *mnt, struct dentry *dentry,
++			struct kstat *stat);
++
++/* xattr.c */
++extern int ceph_setxattr(struct dentry *, const char *, const void *,
++			 size_t, int);
++extern ssize_t ceph_getxattr(struct dentry *, const char *, void *, size_t);
++extern ssize_t ceph_listxattr(struct dentry *, char *, size_t);
++extern int ceph_removexattr(struct dentry *, const char *);
++extern void __ceph_build_xattrs_blob(struct ceph_inode_info *ci);
++extern void __ceph_destroy_xattrs(struct ceph_inode_info *ci);
++
++/* caps.c */
++extern const char *ceph_cap_string(int c);
++extern void ceph_handle_caps(struct ceph_mds_session *session,
++			     struct ceph_msg *msg);
++extern int ceph_add_cap(struct inode *inode,
++			struct ceph_mds_session *session, u64 cap_id,
++			int fmode, unsigned issued, unsigned wanted,
++			unsigned cap, unsigned seq, u64 realmino, int flags,
++			struct ceph_cap_reservation *caps_reservation);
++extern void __ceph_remove_cap(struct ceph_cap *cap);
++static inline void ceph_remove_cap(struct ceph_cap *cap)
++{
++	struct inode *inode = &cap->ci->vfs_inode;
++	spin_lock(&inode->i_lock);
++	__ceph_remove_cap(cap);
++	spin_unlock(&inode->i_lock);
++}
++extern void ceph_put_cap(struct ceph_cap *cap);
++
++extern void ceph_queue_caps_release(struct inode *inode);
++extern int ceph_write_inode(struct inode *inode, int unused);
++extern int ceph_fsync(struct file *file, struct dentry *dentry, int datasync);
++extern void ceph_kick_flushing_caps(struct ceph_mds_client *mdsc,
++				    struct ceph_mds_session *session);
++extern int ceph_get_cap_mds(struct inode *inode);
++extern void ceph_get_cap_refs(struct ceph_inode_info *ci, int caps);
++extern void ceph_put_cap_refs(struct ceph_inode_info *ci, int had);
++extern void ceph_put_wrbuffer_cap_refs(struct ceph_inode_info *ci, int nr,
++				       struct ceph_snap_context *snapc);
++extern void __ceph_flush_snaps(struct ceph_inode_info *ci,
++			       struct ceph_mds_session **psession);
++extern void ceph_check_caps(struct ceph_inode_info *ci, int flags,
++			    struct ceph_mds_session *session);
++extern void ceph_check_delayed_caps(struct ceph_mds_client *mdsc);
++extern void ceph_flush_dirty_caps(struct ceph_mds_client *mdsc);
++
++extern int ceph_encode_inode_release(void **p, struct inode *inode,
++				     int mds, int drop, int unless, int force);
++extern int ceph_encode_dentry_release(void **p, struct dentry *dn,
++				      int mds, int drop, int unless);
++
++extern int ceph_get_caps(struct ceph_inode_info *ci, int need, int want,
++			 int *got, loff_t endoff);
++
++/* for counting open files by mode */
++static inline void __ceph_get_fmode(struct ceph_inode_info *ci, int mode)
++{
++	ci->i_nr_by_mode[mode]++;
++}
++extern void ceph_put_fmode(struct ceph_inode_info *ci, int mode);
++
++/* addr.c */
++extern const struct address_space_operations ceph_aops;
++extern int ceph_mmap(struct file *file, struct vm_area_struct *vma);
++
++/* file.c */
++extern const struct file_operations ceph_file_fops;
++extern const struct address_space_operations ceph_aops;
++extern int ceph_open(struct inode *inode, struct file *file);
++extern struct dentry *ceph_lookup_open(struct inode *dir, struct dentry *dentry,
++				       struct nameidata *nd, int mode,
++				       int locked_dir);
++extern int ceph_release(struct inode *inode, struct file *filp);
++extern void ceph_release_page_vector(struct page **pages, int num_pages);
++
++/* dir.c */
++extern const struct file_operations ceph_dir_fops;
++extern const struct inode_operations ceph_dir_iops;
++extern struct dentry_operations ceph_dentry_ops, ceph_snap_dentry_ops,
++	ceph_snapdir_dentry_ops;
++
++extern int ceph_handle_notrace_create(struct inode *dir, struct dentry *dentry);
++extern struct dentry *ceph_finish_lookup(struct ceph_mds_request *req,
++					 struct dentry *dentry, int err);
++
++extern void ceph_dentry_lru_add(struct dentry *dn);
++extern void ceph_dentry_lru_touch(struct dentry *dn);
++extern void ceph_dentry_lru_del(struct dentry *dn);
++
++/*
++ * our d_ops vary depending on whether the inode is live,
++ * snapshotted (read-only), or a virtual ".snap" directory.
++ */
++int ceph_init_dentry(struct dentry *dentry);
++
++
++/* ioctl.c */
++extern long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
++
++/* export.c */
++extern const struct export_operations ceph_export_ops;
++
++/* debugfs.c */
++extern int ceph_debugfs_init(void);
++extern void ceph_debugfs_cleanup(void);
++extern int ceph_debugfs_client_init(struct ceph_client *client);
++extern void ceph_debugfs_client_cleanup(struct ceph_client *client);
++
++static inline struct inode *get_dentry_parent_inode(struct dentry *dentry)
++{
++	if (dentry && dentry->d_parent)
++		return dentry->d_parent->d_inode;
++
++	return NULL;
++}
++
++#endif /* _FS_CEPH_SUPER_H */
+diff --git a/fs/ceph/types.h b/fs/ceph/types.h
+new file mode 100644
+index 0000000..28b35a0
+--- /dev/null
++++ b/fs/ceph/types.h
+@@ -0,0 +1,29 @@
++#ifndef _FS_CEPH_TYPES_H
++#define _FS_CEPH_TYPES_H
++
++/* needed before including ceph_fs.h */
++#include <linux/in.h>
++#include <linux/types.h>
++#include <linux/fcntl.h>
++#include <linux/string.h>
++
++#include "ceph_fs.h"
++#include "ceph_frag.h"
++#include "ceph_hash.h"
++
++/*
++ * Identify inodes by both their ino AND snapshot id (a u64).
++ */
++struct ceph_vino {
++	u64 ino;
++	u64 snap;
++};
++
++
++/* context for the caps reservation mechanism */
++struct ceph_cap_reservation {
++	int count;
++};
++
++
++#endif
+-- 
+1.7.0
 
