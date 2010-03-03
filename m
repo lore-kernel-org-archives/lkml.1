@@ -1,200 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168Ab0CCBhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 20:37:53 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:57547 "EHLO bear.ext.ti.com"
+	id S1755328Ab0CCBnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 20:43:53 -0500
+Received: from mga09.intel.com ([134.134.136.24]:60957 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752335Ab0CCBhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 20:37:51 -0500
-From: "Madhusudhan" <madhu.cr@ti.com>
-To: "'Thomas Gleixner'" <tglx@linutronix.de>,
-       "'LKML'" <linux-kernel@vger.kernel.org>
-Cc: <linux-omap@vger.kernel.org>, <linux-mmc@vger.kernel.org>
-References: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain>
-Subject: RE: [PATCH] mmc: omap_hsmmc: Fix conditional locking
-Date: Tue, 2 Mar 2010 19:37:42 -0600
-Message-ID: <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	id S1752701Ab0CCBnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 20:43:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,570,1262592000"; 
+   d="scan'208";a="600745064"
+Subject: Re: [PATCH 2/2] ACPI, APEI, PCIE AER, use general HEST table
+ parsing in AER firmware_first setup
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+In-Reply-To: <4B8CF0D0.2000704@jp.fujitsu.com>
+References: <1267494902-7193-1-git-send-email-ying.huang@intel.com>
+	 <1267494902-7193-2-git-send-email-ying.huang@intel.com>
+	 <4B8CC7BD.5020206@jp.fujitsu.com>
+	 <1267521207.1640.130.camel@yhuang-dev.sh.intel.com>
+	 <4B8CF0D0.2000704@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 03 Mar 2010 09:43:49 +0800
+Message-ID: <1267580629.1640.142.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: Acq5ccm01hwLtk7mSZaMXb9C1DpuIwA/44nw
-In-Reply-To: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-03-02 at 19:04 +0800, Hidetoshi Seto wrote:
+> (2010/03/02 18:13), Huang Ying wrote:
+> > On Tue, 2010-03-02 at 16:09 +0800, Hidetoshi Seto wrote:
+> >> The aer_init() will be called for root ports, but not for end point
+> >> devices or so on.  So please remain the firmware_first setup code in
+> >> PCI core.  Otherwise endpoint drivers will get success on call of
+> >> pci_enable_pcie_error_reporting() regardless of the firmware first.
+> > 
+> > Or we can call firmware_first setup code in
+> > pci_enable_pcie_error_reporting(), because
+> > 
+> > 1. I think AER related code should be put in drivers/pci/pcie/aer
+> > instead of PCI core or drivers/acpi, if it is possible.
+> > 
+> > 2. pci_setup_device is called so early, so that it is hard to do some
+> > HEST related initialization (such as checking bad format) before it.
+> 
+> I understands the feeling, but before agreeing with your
+> proposal, I'd like to have an answer of a question:
+> 
+>  - Is it necessary to setup the firmware_first flag
+>    for an endpoint even if the endpoint's driver never
+>    call pci_enable_pcie_error_reporting()?
+> 
+> According to the current implementation, there are no
+> driver referring the firmware_first flag other than that
+> it owns.  However I guess that the flag will be necessary
+> for AER driver (i.e. aerdrv_core) in near future, because
+> we can use the flag to determine whether the AER driver
+> can check the device or not, when it is required to walk
+> pci bus hierarchy to find an erroneous device.
+> 
+> For example, assume that there are 2 endpoints under a same
+> root port.  One is (likely on-board) "firmware first" endpoint,
+> with driver which does not call pci_enable_pcie_error_reporting()
+> (because of no interest in AER, or just not implemented yet,
+> anyway).  The other is (likely card seated on a slot) not
+> firmware first, with better driver which can handle it's AER.
+> If my understanding is correct and if everything goes well,
+> errors on one should be reported via APEI while the other should
+> be reported via AER driver.
 
+Yes. I think this should be supported. How about something as follow?
 
-> -----Original Message-----
-> From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-
-> owner@vger.kernel.org] On Behalf Of Thomas Gleixner
-> Sent: Monday, March 01, 2010 1:02 PM
-> To: LKML
-> Cc: linux-omap@vger.kernel.org; linux-mmc@vger.kernel.org
-> Subject: [PATCH] mmc: omap_hsmmc: Fix conditional locking
-> 
-> Conditional locking on (!in_interrupt()) is broken by design and there
-> is no reason to keep the host->irq_lock across the call to
-> mmc_request_done(). Also the host->protect_card magic hack does not
-> depend on the context
-> 
+struct pci_dev {
+	...
+	unsigned int __firmware_first:2;
+	...
+};
 
-Can you please elaborate why the existing logic is broken?
+int pcie_aer_get_firmware_first(struct pci_dev *dev)
+{
+	if (!dev->__firmware_first)
+		aer_set_firmware_first(dev);
+	return dev->__firmware_first & 0x1;
+}
 
-It locks at the new request and unlocks just before issuing the cmd. Further
-IRQ handler has these calls hence the !in_interrupt check.
+Then we use pcie_aer_get_firmware_first() instead of dev->firmware_first
+directly.
 
-How does this patch improve that? In fact with your patch for a data
-transfer cmd there are several lock-unlock calls.
+Best Regards,
+Huang Ying
 
-> Fix the mess by dropping host->irq_lock before calling
-> mmc_request_done().
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-> index 4b23225..99a3383 100644
-> --- a/drivers/mmc/host/omap_hsmmc.c
-> +++ b/drivers/mmc/host/omap_hsmmc.c
-> @@ -468,14 +468,6 @@ omap_hsmmc_start_command(struct omap_hsmmc_host
-> *host, struct mmc_command *cmd,
->  	if (host->use_dma)
->  		cmdreg |= DMA_EN;
-> 
-> -	/*
-> -	 * In an interrupt context (i.e. STOP command), the spinlock is
-> unlocked
-> -	 * by the interrupt handler, otherwise (i.e. for a new request) it
-> is
-> -	 * unlocked here.
-> -	 */
-> -	if (!in_interrupt())
-> -		spin_unlock_irqrestore(&host->irq_lock, host->flags);
-> -
->  	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
->  	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
->  }
-> @@ -506,7 +498,9 @@ omap_hsmmc_xfer_done(struct omap_hsmmc_host *host,
-> struct mmc_data *data)
->  		}
-> 
->  		host->mrq = NULL;
-> +		spin_unlock(&host->irq_lock);
->  		mmc_request_done(host->mmc, mrq);
-> +		spin_lock(&host->irq_lock);
->  		return;
->  	}
-> 
-> @@ -523,7 +517,9 @@ omap_hsmmc_xfer_done(struct omap_hsmmc_host *host,
-> struct mmc_data *data)
-> 
->  	if (!data->stop) {
->  		host->mrq = NULL;
-> +		spin_unlock(&host->irq_lock);
->  		mmc_request_done(host->mmc, data->mrq);
-> +		spin_lock(&host->irq_lock);
->  		return;
->  	}
->  	omap_hsmmc_start_command(host, data->stop, NULL);
-> @@ -551,7 +547,9 @@ omap_hsmmc_cmd_done(struct omap_hsmmc_host *host,
-> struct mmc_command *cmd)
->  	}
->  	if ((host->data == NULL && !host->response_busy) || cmd->error) {
->  		host->mrq = NULL;
-> +		spin_unlock(&host->irq_lock);
->  		mmc_request_done(host->mmc, cmd->mrq);
-> +		spin_lock(&host->irq_lock);
->  	}
->  }
-> 
-> @@ -1077,37 +1075,31 @@ static void omap_hsmmc_request(struct mmc_host
-> *mmc, struct mmc_request *req)
->  	struct omap_hsmmc_host *host = mmc_priv(mmc);
->  	int err;
-> 
-> +	spin_lock_irqsave(&host->irq_lock, host->flags);
->  	/*
-> -	 * Prevent races with the interrupt handler because of unexpected
-> -	 * interrupts, but not if we are already in interrupt context i.e.
-> -	 * retries.
-> +	 * Protect the card from I/O if there is a possibility
-> +	 * it can be removed.
->  	 */
-> -	if (!in_interrupt()) {
-> -		spin_lock_irqsave(&host->irq_lock, host->flags);
-> -		/*
-> -		 * Protect the card from I/O if there is a possibility
-> -		 * it can be removed.
-> -		 */
-> -		if (host->protect_card) {
-> -			if (host->reqs_blocked < 3) {
-> -				/*
-> -				 * Ensure the controller is left in a
-consistent
-> -				 * state by resetting the command and data
-state
-> -				 * machines.
-> -				 */
-> -				omap_hsmmc_reset_controller_fsm(host, SRD);
-> -				omap_hsmmc_reset_controller_fsm(host, SRC);
-> -				host->reqs_blocked += 1;
-> -			}
-> -			req->cmd->error = -EBADF;
-> -			if (req->data)
-> -				req->data->error = -EBADF;
-> -			spin_unlock_irqrestore(&host->irq_lock,
-host->flags);
-> -			mmc_request_done(mmc, req);
-> -			return;
-> -		} else if (host->reqs_blocked)
-> -			host->reqs_blocked = 0;
-> -	}
-> +	if (host->protect_card) {
-> +		if (host->reqs_blocked < 3) {
-> +			/*
-> +			 * Ensure the controller is left in a consistent
-> +			 * state by resetting the command and data state
-> +			 * machines.
-> +			 */
-> +			omap_hsmmc_reset_controller_fsm(host, SRD);
-> +			omap_hsmmc_reset_controller_fsm(host, SRC);
-> +			host->reqs_blocked += 1;
-> +		}
-> +		req->cmd->error = -EBADF;
-> +		if (req->data)
-> +			req->data->error = -EBADF;
-> +		spin_unlock_irqrestore(&host->irq_lock, host->flags);
-> +		mmc_request_done(mmc, req);
-> +		return;
-> +	} else if (host->reqs_blocked)
-> +		host->reqs_blocked = 0;
-> +
->  	WARN_ON(host->mrq != NULL);
->  	host->mrq = req;
->  	err = omap_hsmmc_prepare_data(host, req);
-> @@ -1116,13 +1108,13 @@ static void omap_hsmmc_request(struct mmc_host
-> *mmc, struct mmc_request *req)
->  		if (req->data)
->  			req->data->error = err;
->  		host->mrq = NULL;
-> -		if (!in_interrupt())
-> -			spin_unlock_irqrestore(&host->irq_lock,
-host->flags);
-> +		spin_unlock_irqrestore(&host->irq_lock, host->flags);
->  		mmc_request_done(mmc, req);
->  		return;
->  	}
-> 
->  	omap_hsmmc_start_command(host, req->cmd, req->data);
-> +	spin_unlock_irqrestore(&host->irq_lock, host->flags);
->  }
-> 
->  /* Routine to configure clock values. Exposed API to core */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
