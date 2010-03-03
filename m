@@ -1,70 +1,201 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757942Ab0CCATi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:19:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60255 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729Ab0CCATf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:19:35 -0500
-Message-ID: <4B8DAAF2.203@redhat.com>
-Date: Tue, 02 Mar 2010 19:18:58 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 02/18] kprobes: Introduce generic insn_slot
- framework
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133358.6725.82430.stgit@localhost6.localdomain6> <20100225152130.GB12635@Krystal> <4B8C7E23.1000302@redhat.com>
-In-Reply-To: <4B8C7E23.1000302@redhat.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1758225Ab0CCATp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:19:45 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:49349 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757282Ab0CCATk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:19:40 -0500
+Subject: [PATCH] time: remove xtime_cache (take 2)
+From: john stultz <johnstul@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Petr =?UTF-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 02 Mar 2010 16:19:18 -0800
+Message-ID: <1267575558.2496.202.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Mathieu Desnoyers wrote:
->> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->>> Make insn_slot framework support various size slots.
->>> Current insn_slot just supports one-size instruction buffer slot. However,
->>> kprobes jump optimization needs larger size buffers.
->>
->> OK, so you end up having one insn slot cache for kprobes and one insn
->> slot (eventually) for the static jump patching (which needs larger
->> instruction slots than kprobes). That seems like a good way to ensure
->> you do not use more memory than necessary.
->>
->> We could possibly go even further and automatically use the right insn
->> slot cache given the size of the instruction entry that must be added (a
->> bit like the memory allocator which have different pools for each
->> allocation order).
-> 
-> Sure, that will be simpler interface.
-> 
->> Possibly that using the terminology of "memory pools" rather than
->> "cache" could be a better fit too. So what this really becomes is an
->> instruction slot allocator and garbage collector.
-> 
-> Ah, right. It would be better to rename kprobe_insn_pool() :)
+Thomas, Ingo,
+	Just wanted to send this out for inclusion into the -tip tree for
+testing. This doesn't need to go in immediately, so you might queue it
+up for the 2.6.35 release window.
 
-Hmm, I tried it. And finally, I found that this doesn't help
-to simplify code... Maybe it is better to postpone it until
-another user needs this feature.
+Petr: If you get a chance to verify this doesn't cause issues on your
+box, I'd appreciate it. 
 
-Thank you,
+thanks
+-john
 
+
+
+With the earlier logarithmic time accumulation patch, xtime will now
+always be within one "tick" of the current time, instead of possibly
+half a second off.
+
+This removes the need for the xtime_cache value, which always stored the
+time at the last interrupt, so this patch cleans that up removing the
+xtime_cache related code.
+
+This patch also addresses an issue with an earlier version of this change,
+where xtime_cache was normalizing xtime, which could in some cases be
+not valid (ie: tv_nsec == NSEC_PER_SEC). This is fixed by handling
+the edge case in update_wall_time().
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+---
+ include/linux/time.h      |    1 -
+ kernel/time.c             |    1 -
+ kernel/time/timekeeping.c |   35 ++++++++++++++++-------------------
+ 3 files changed, 16 insertions(+), 21 deletions(-)
+
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 6e026e4..ea3559f 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -150,7 +150,6 @@ extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+ extern int timekeeping_valid_for_hres(void);
+ extern u64 timekeeping_max_deferment(void);
+ extern void update_wall_time(void);
+-extern void update_xtime_cache(u64 nsec);
+ extern void timekeeping_leap_insert(int leapsecond);
+ 
+ struct tms;
+diff --git a/kernel/time.c b/kernel/time.c
+index 8047980..c6324d9 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -136,7 +136,6 @@ static inline void warp_clock(void)
+ 	write_seqlock_irq(&xtime_lock);
+ 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
+ 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
+-	update_xtime_cache(0);
+ 	write_sequnlock_irq(&xtime_lock);
+ 	clock_was_set();
+ }
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 1673637..b6c3c4d 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -165,13 +165,6 @@ struct timespec raw_time;
+ /* flag for if timekeeping is suspended */
+ int __read_mostly timekeeping_suspended;
+ 
+-static struct timespec xtime_cache __attribute__ ((aligned (16)));
+-void update_xtime_cache(u64 nsec)
+-{
+-	xtime_cache = xtime;
+-	timespec_add_ns(&xtime_cache, nsec);
+-}
+-
+ /* must hold xtime_lock */
+ void timekeeping_leap_insert(int leapsecond)
+ {
+@@ -332,8 +325,6 @@ int do_settimeofday(struct timespec *tv)
+ 
+ 	xtime = *tv;
+ 
+-	update_xtime_cache(0);
+-
+ 	timekeeper.ntp_error = 0;
+ 	ntp_clear();
+ 
+@@ -559,7 +550,6 @@ void __init timekeeping_init(void)
+ 	}
+ 	set_normalized_timespec(&wall_to_monotonic,
+ 				-boot.tv_sec, -boot.tv_nsec);
+-	update_xtime_cache(0);
+ 	total_sleep_time.tv_sec = 0;
+ 	total_sleep_time.tv_nsec = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+@@ -593,7 +583,6 @@ static int timekeeping_resume(struct sys_device *dev)
+ 		wall_to_monotonic = timespec_sub(wall_to_monotonic, ts);
+ 		total_sleep_time = timespec_add_safe(total_sleep_time, ts);
+ 	}
+-	update_xtime_cache(0);
+ 	/* re-base the last cycle value */
+ 	timekeeper.clock->cycle_last = timekeeper.clock->read(timekeeper.clock);
+ 	timekeeper.ntp_error = 0;
+@@ -788,7 +777,6 @@ void update_wall_time(void)
+ {
+ 	struct clocksource *clock;
+ 	cycle_t offset;
+-	u64 nsecs;
+ 	int shift = 0, maxshift;
+ 
+ 	/* Make sure we're fully resumed: */
+@@ -846,7 +834,9 @@ void update_wall_time(void)
+ 		timekeeper.ntp_error += neg << timekeeper.ntp_error_shift;
+ 	}
+ 
+-	/* store full nanoseconds into xtime after rounding it up and
++
++	/*
++	 * Store full nanoseconds into xtime after rounding it up and
+ 	 * add the remainder to the error difference.
+ 	 */
+ 	xtime.tv_nsec =	((s64) timekeeper.xtime_nsec >> timekeeper.shift) + 1;
+@@ -854,8 +844,15 @@ void update_wall_time(void)
+ 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
+ 				timekeeper.ntp_error_shift;
+ 
+-	nsecs = clocksource_cyc2ns(offset, timekeeper.mult, timekeeper.shift);
+-	update_xtime_cache(nsecs);
++	/*
++	 * Finally, make sure that after the rounding 
++	 * xtime.tv_nsec isn't larger then NSEC_PER_SEC
++	 */
++	if (unlikely(xtime.tv_nsec >= NSEC_PER_SEC)) {
++		xtime.tv_nsec -= NSEC_PER_SEC;
++		xtime.tv_sec++;
++		second_overflow();
++	}
+ 
+ 	/* check to see if there is a new clocksource to use */
+ 	update_vsyscall(&xtime, timekeeper.clock, timekeeper.mult);
+@@ -895,13 +892,13 @@ EXPORT_SYMBOL_GPL(monotonic_to_bootbased);
+ 
+ unsigned long get_seconds(void)
+ {
+-	return xtime_cache.tv_sec;
++	return xtime.tv_sec;
+ }
+ EXPORT_SYMBOL(get_seconds);
+ 
+ struct timespec __current_kernel_time(void)
+ {
+-	return xtime_cache;
++	return xtime;
+ }
+ 
+ struct timespec current_kernel_time(void)
+@@ -912,7 +909,7 @@ struct timespec current_kernel_time(void)
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+ 
+-		now = xtime_cache;
++		now = xtime;
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+ 	return now;
+@@ -927,7 +924,7 @@ struct timespec get_monotonic_coarse(void)
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+ 
+-		now = xtime_cache;
++		now = xtime;
+ 		mono = wall_to_monotonic;
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
 -- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+1.6.0.4
+
+
+
