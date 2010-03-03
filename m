@@ -1,41 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319Ab0CCPuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:50:24 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:45109 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279Ab0CCPuX (ORCPT
+	id S1753773Ab0CCPvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:51:49 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:48696 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000Ab0CCPvs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:50:23 -0500
-Date: Wed, 3 Mar 2010 09:46:34 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Andi Kleen <andi@firstfloor.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] slab: add memory hotplug support
-In-Reply-To: <20100303143450.GA25500@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.1003030946140.17922@router.home>
-References: <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box>
- <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com> <20100302125306.GD19208@basil.fritz.box> <84144f021003020704s3abafc24t9b8ab34234094b79@mail.gmail.com>
- <20100303143450.GA25500@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Mar 2010 10:51:48 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20100303.025026.243831910.davem@davemloft.net>
+References: <20100303.025026.243831910.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Mar 2010 08:51:27 -0700
+X-Google-Sender-Auth: 06327d54fc9cc3d8
+Message-ID: <fa686aa41003030751x6fbf4cc2t119f225e31bd45c8@mail.gmail.com>
+Subject: Re: [PATCH] uartlite: Fix build on sparc.
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Andi Kleen wrote:
-
-> > But anyway, if you have real technical concerns over the patch, please
-> > make them known; otherwise I'd much appreciate a Tested-by tag from
-> > you for David's patch.
+On Wed, Mar 3, 2010 at 3:50 AM, David Miller <davem@davemloft.net> wrote:
 >
-> If it works it would be ok for me. The main concern would be to actually
-> get it fixed.
+> We can get this driver enabled via MFD_TIMBERDALE which only
+> requires GPIO to be on.
+>
+> But the of_address_to_resource() function is only present on
+> powerpc and microblaze, so we have to conditionalize the
+> CONFIG_OF probing bits on that.
+>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+> diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+> index ab2ab3c..f0a6c61 100644
+> --- a/drivers/serial/uartlite.c
+> +++ b/drivers/serial/uartlite.c
+> @@ -19,7 +19,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/init.h>
+>  #include <asm/io.h>
+> -#if defined(CONFIG_OF)
+> +#if defined(CONFIG_OF) && (defined(CONFIG_PPC32) || defined(CONFIG_MICROBLAZE))
 
-You do not have a testcase? This is a result of code review?
+ARM will probably end up using this driver.  How about simply
+defined(CONFIG_OF) && !defined(CONFIG_SPARC)?
 
+Or if you prefer, I could expedite my patch that moves
+of_address_to_resource() into common code (it's currently in my test
+branch).  I wasn't planning to merge it until 2.6.35, but it is pretty
+low risk so I'd be comfortable merging it now.
+
+g.
