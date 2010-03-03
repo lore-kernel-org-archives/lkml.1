@@ -1,52 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418Ab0CCMVv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:21:51 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:39358 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884Ab0CCMVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:21:49 -0500
-Date: Wed, 3 Mar 2010 13:21:48 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
-Message-ID: <20100303122148.GS5768@kernel.dk>
-References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org> <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org> <20100303073014.GE5768@kernel.dk> <87zl2per3d.fsf@openvz.org>
+	id S1753770Ab0CCMos (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:44:48 -0500
+Received: from mailgw9.se.ericsson.net ([193.180.251.57]:48303 "EHLO
+	mailgw9.se.ericsson.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559Ab0CCMor convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 07:44:47 -0500
+X-AuditID: c1b4fb39-b7c2dae000007b99-3c-4b8e59bd22a4
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zl2per3d.fsf@openvz.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] rtc-coh901331: Fix braces in resume code.
+Date: Wed, 3 Mar 2010 13:44:41 +0100
+Message-ID: <A6D19A13FE030A409EC4362C172E091F0E9EE76C@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] rtc-coh901331: Fix braces in resume code.
+Thread-Index: Acq6yGUss0KaVJ1HTD6H+mFBPaknaQABsuXg
+References: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
+From: "Linus Walleij" <linus.walleij@stericsson.com>
+To: "James Hogan" <james@albanarts.com>,
+       "Alessandro Zummo" <a.zummo@towertech.it>,
+       "Paul Gortmaker" <p_gortmaker@yahoo.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Russell King" <rmk+kernel@arm.linux.org.uk>,
+       <rtc-linux@googlegroups.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 03 Mar 2010 12:44:45.0223 (UTC) FILETIME=[4D5A2370:01CABACF]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03 2010, Dmitry Monakhov wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
+[James]
+> The else part of the if statement is indented but does not have braces
+> around it. It clearly should since it uses clk_enable and clk_disable
+> which are supposed to balance.
 > 
-> > On Wed, Mar 03 2010, Dmitry Monakhov wrote:
-> >> Jens Axboe <jens.axboe@oracle.com> writes:
-> >> 
-> >> > On Sat, Feb 27 2010, Dmitry Monakhov wrote:
-> >> >> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
-> >> >> against this value. But in case of fs_optimization merge we compare
-> >> >> with wrong value. This patch must be included in
-> >> >>  b428cd6da7e6559aca69aa2e3a526037d3f20403
-> >> >> But accidentally i've forgot to add this in the initial patch.
-> >> >> To make things straight let's replace all such checks.
-> >> >> In fact this makes code easy to understand.
-> >> >
-> >> > Agree, applied.
-> >> Ohh.. as you already know this patch break dm-layer. Sorry.
-> >> This is because dm->merge may return more than requested. So correct
-> >> check must test against less what requested. Correct patch attached.
-> >
-> > Have you tested this with dm and md (ie actual users of the merge_bvec
-> > functionality) this time?
-> Yes. This time both md and dm are ok.
+> Signed-off-by: James Hogan <james@albanarts.com>
 
-Good, I'll queue it up for testing.
+OMG, thanks for spotting this!
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
 
--- 
-Jens Axboe
-
+Yours,
+Linus Walleij
