@@ -1,49 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604Ab0CCLMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 06:12:35 -0500
-Received: from mbox2.netikka.net ([213.250.81.203]:49308 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768Ab0CCLMd (ORCPT
+	id S1752382Ab0CCLRK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 06:17:10 -0500
+Received: from av7-1-sn3.vrr.skanova.net ([81.228.9.181]:44975 "EHLO
+	av7-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402Ab0CCLRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 06:12:33 -0500
-Message-ID: <4B8E441F.5090701@mandriva.org>
-Date: Wed, 03 Mar 2010 13:12:31 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100302 Mandriva/3.0.3-1mdv2010.1 (2010.1) Thunderbird/3.0.3
+	Wed, 3 Mar 2010 06:17:09 -0500
+X-Greylist: delayed 1965 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Mar 2010 06:17:09 EST
+Message-ID: <4B8E3D83.3080809@pelagicore.com>
+Date: Wed, 03 Mar 2010 11:44:19 +0100
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@pelagicore.com>
+Organization: Pelagicore AB
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100121 Iceowl/1.0b1 Icedove/3.0.1
 MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm request 2
-References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain> <alpine.DEB.2.00.1003022300320.4099@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.2.00.1003022300320.4099@skynet.skynet.ie>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] timbgpio: Fix build.
+References: <20100303.015929.79253256.davem@davemloft.net>
+In-Reply-To: <20100303.015929.79253256.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-03.03.2010 01:02, Dave Airlie skrev:
->>> x86 after PPC (I think I just validated Ingo).
->>
->> Why is VGA_SWITCHEROO enabled by default?
+On 03/03/2010 10:59 AM, David Miller wrote:
 >
-> because it does nothing on anything except the laptops in question and on
-> those it does nothing except add a control file in debugfs?
+> Use of get_irq_chip_data() et al. requires including
+> linux/irq.h
 >
-> So how am I supposed to indicate to distro vendors that something should
-> be turned on? If you think that distro kernel maintainers really
-> understand every config option that goes past, I've got a bridge.
+> Signed-off-by: David S. Miller<davem@davemloft.net>
+
+Acked-by: Richard Röjfors <richard.rojfors@pelagicore.com>
+
 >
-
-Yep. If the help-text for a new config option is well written, a kernel 
-maintainer will have no problem deciding what to do.
-(the help text for the config in question is wery well written, thanks
-  to whoever wrote that)
-
-And this specific option/feature is already requested by endusers, so no
-maintainer will be able to "miss it" :-)
-
---
-Thomas
+> diff --git a/drivers/gpio/timbgpio.c b/drivers/gpio/timbgpio.c
+> index a4d344b..d941f45 100644
+> --- a/drivers/gpio/timbgpio.c
+> +++ b/drivers/gpio/timbgpio.c
+> @@ -23,6 +23,7 @@
+>   #include<linux/module.h>
+>   #include<linux/gpio.h>
+>   #include<linux/platform_device.h>
+> +#include<linux/irq.h>
+>   #include<linux/io.h>
+>   #include<linux/timb_gpio.h>
+>   #include<linux/interrupt.h>
