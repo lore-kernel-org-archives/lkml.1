@@ -1,61 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552Ab0CCXEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 18:04:48 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.31.32]:60465 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427Ab0CCXEl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 18:04:41 -0500
-Date: Thu, 4 Mar 2010 00:04:38 +0100
-From: M G Berberich <berberic@fmi.uni-passau.de>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.33 dies on modprobe
-Message-ID: <20100303230438.GA3363@invalid>
-References: <fa.S/rvLm1aQlDSqPwVJz5B+5vHjbM@ifi.uio.no>
- <fa.+Pg2gFpQSg5k/1mCpBdt8xMXeqY@ifi.uio.no>
- <fa.0/xGeZctWXDyX0DAp6opgP1HP7w@ifi.uio.no>
- <fa.kPSENj9DWu0Q8xolQMDkRvAwxQ0@ifi.uio.no>
- <fa.JUJQsT7bECqtd8JSoNY+SBdASCE@ifi.uio.no>
- <fa.Lya/54V1PJgwjc8uy1Yk4NyYUh4@ifi.uio.no>
+	id S1753382Ab0CCXF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 18:05:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42803 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751787Ab0CCXFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 18:05:23 -0500
+Message-ID: <4B8EEB2D.4090106@zytor.com>
+Date: Wed, 03 Mar 2010 15:05:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa.Lya/54V1PJgwjc8uy1Yk4NyYUh4@ifi.uio.no>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Df-Sender: 311801
+To: Daniel Taylor <Daniel.Taylor@wdc.com>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] msdos: add support for large disks
+References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD2D@wdscexbe01.sc.wdc.com><20100301141335.395dc4c3.akpm@linux-foundation.org> <873a0h1p2c.fsf@devron.myhome.or.jp> <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD53@wdscexbe01.sc.wdc.com>
+In-Reply-To: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD53@wdscexbe01.sc.wdc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Am Mittwoch, den 03. März schrieb Américo Wang:
-> On Wed, Mar 3, 2010 at 5:08 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> > On Wed, Mar 3, 2010 at 4:58 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> >> Ok, below is my patch, I am not sure it could fix the BUG for you,
-> >> but it could fix the WARNING. But perhaps they are related.
-> >>
-> >> Please give it a try.
-> >>
-> >
-> > Oops! Ignore the patch, it should not be correct, I will send a
-> > correct version soon.
-> > Sorry.
-> >
+On 03/03/2010 02:50 PM, Daniel Taylor wrote:
 > 
-> Here we go:
+> The drives report physical/logical sector sizes of 4096 bytes, which the
+> kernel correctly detects.  32-bit fields in the MBR are then sufficient for
+> storage capacites >2TiB (up to 16 TiB), and the storage in struct
+> parsed_partitions is already sector_t.
+> 
 
-Seems to fix the warning, but not the modprobe-Oops.
+It's probably worth noting that such media:
 
-	MfG
-	bmg
+a) will not work with anything that is based on disk images;
+b) will not be bootable on most existing systems.
 
--- 
-„Des is völlig wurscht, was heut beschlos- | M G Berberich
- sen wird: I bin sowieso dagegn!“          | berberic@fmi.uni-passau.de
-(SPD-Stadtrat Kurt Schindler; Regensburg)  | www.fmi.uni-passau.de/~berberic
+Both of these are going to be issues for people in real-life use (and
+yes, people boot from USB disks -- trust me, when it doesn't work they
+send the bug reports to *me* rather than to the hw/bios vendors.)  Of
+course, so is XP compatibility.
+
+	-hpa
