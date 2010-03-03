@@ -1,46 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920Ab0CCMHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:07:31 -0500
-Received: from oceanic.CalvaEDI.COM ([89.202.194.168]:58450 "EHLO
-	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742Ab0CCMHa (ORCPT
+	id S1753935Ab0CCMJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:09:26 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:59195 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753876Ab0CCMJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:07:30 -0500
-Message-ID: <4B8E59CC.2030004@Calva.COM>
-Date: Wed, 03 Mar 2010 13:45:00 +0100
-From: John Hughes <john@Calva.COM>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Wed, 3 Mar 2010 07:09:25 -0500
+Date: Wed, 3 Mar 2010 12:09:20 +0000
+From: Eric B Munson <ebmunson@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulus@samba.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Add ID and STREAM_ID to recorded event data
+Message-ID: <20100303120920.GA3502@us.ibm.com>
+References: <cover.1267537676.git.ebmunson@us.ibm.com>
+ <71583fc64cb167adcdb0039b53b8bc76fed21f80.1267537676.git.ebmunson@us.ibm.com>
+ <1267541905.25158.64.camel@laptop>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 15426] New: Running many copies of bonnie++
- on different filesystems seems to deadlock in sync
-References: <bug-15426-10286@http.bugzilla.kernel.org/> <20100302161627.bf02d0a2.akpm@linux-foundation.org> <4B8E517E.3010702@Calva.COM> <20100303115015.GN5768@kernel.dk> <4B8E5805.30505@Calva.COM> <20100303120317.GP5768@kernel.dk>
-In-Reply-To: <20100303120317.GP5768@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
+Content-Disposition: inline
+In-Reply-To: <1267541905.25158.64.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Mar 03 2010, John Hughes wrote:
->   
->> Just a thought.  What exactly is sync(2) supposed to do - block until  
->> there are no more dirty pages, or block until all pages that were dirty  
->> when the sync was done are clean?  In other words is the problem simply  
->> that pages are being dirtied faster than the sync is writing them out?
->>     
->
-> Our sync is currently broken in that regard, since it'll wait for too
-> long. We have a debated patch going, I have included it below. Any
-> chance you could give it a whirl?
->
-> The semantics of sync are supposed to be 'wait for dirty IO generated
-> BEFORE this sync call'.
->   
-Ok, I will try this patch and get back to you.
 
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 02 Mar 2010, Peter Zijlstra wrote:
+
+> On Tue, 2010-03-02 at 14:42 +0000, Eric B Munson wrote:
+> > Currently perf record does not write the ID or the STREAM_ID to disk
+> > for events.  This doesn't allow report to tell if an event stream conta=
+ins
+> > one or more types of events.  This patch adds these two entries to the =
+list
+> > of data that record will write to disk.
+> >=20
+> > Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+> > ---
+> >  tools/perf/builtin-record.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> >=20
+> > diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> > index 771533c..35e4605 100644
+> > --- a/tools/perf/builtin-record.c
+> > +++ b/tools/perf/builtin-record.c
+> > @@ -242,7 +242,8 @@ static void create_counter(int counter, int cpu, pi=
+d_t pid)
+> >  				  PERF_FORMAT_TOTAL_TIME_RUNNING |
+> >  				  PERF_FORMAT_ID;
+> > =20
+> > -	attr->sample_type	|=3D PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+> > +	attr->sample_type	|=3D PERF_SAMPLE_IP | PERF_SAMPLE_TID |
+> > +				   PERF_SAMPLE_ID | PERF_SAMPLE_STREAM_ID;
+> > =20
+> >  	if (freq) {
+> >  		attr->sample_type	|=3D PERF_SAMPLE_PERIOD;
+>=20
+> can we make this conditional on there being more than one event, that
+> saves a little space/time when recording
+>=20
+
+The downside to this is report cannot print the name of the event being mon=
+itored
+if we do not record the sample and stream id.  This is as report behaves cu=
+rrently
+and if that is okay then I will put out V2 with that included today.
+
+--=20
+Eric B Munson
+IBM Linux Technology Center
+ebmunson@us.ibm.com
+
+
+--nFreZHaLTZJo0R7j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkuOUXAACgkQsnv9E83jkzpmHwCfYYJyL0W0ixgA2MwUZIczy4fP
+q3oAn2EPqif6gXzPcbEPUISAZwvbO5RH
+=YNQ3
+-----END PGP SIGNATURE-----
+
+--nFreZHaLTZJo0R7j--
