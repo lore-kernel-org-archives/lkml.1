@@ -1,62 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752480Ab0CCCYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 21:24:36 -0500
-Received: from mail-pv0-f174.google.com ([74.125.83.174]:38182 "EHLO
-	mail-pv0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969Ab0CCCYe convert rfc822-to-8bit (ORCPT
+	id S1753226Ab0CCCaB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:30:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47086 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753044Ab0CCCaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 21:24:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IN3Uacf8p1jcrVdVFCVQjUSrWVJEafXLyQn1d7n9BnC7aloUPTOxogu3oOwq9m9wjV
-         AuOLcRr++u4BCkq1RuGOiet7/SGfuF0jjXPX/ZxC/Lld/gul5LkvAAknUt16JaC9j2kJ
-         ULyGDm9Xsju3c0NR97mxz/NqsFUN3NB+4ORTI=
-MIME-Version: 1.0
-In-Reply-To: <20100303105911.D63A.A69D9226@jp.fujitsu.com>
-References: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com> 
-	<20100302124206.4e0a42b4.akpm@linux-foundation.org> <20100303105911.D63A.A69D9226@jp.fujitsu.com>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Tue, 2 Mar 2010 23:17:54 -0300
-Message-ID: <b8bf37781003021817v31591ca6gedd6eedb0255d3c@mail.gmail.com>
-Subject: Re: [PATCH] binfmt_elf: plug a memory leak situation on dump_seek()
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Mar 2010 21:30:00 -0500
+Date: Tue, 2 Mar 2010 18:29:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH -mm 7/7] pci: move pci_set_dma_mask and
+ pci_set_consistent_dma_mask to pci-dma-compat.h
+Message-Id: <20100302182927.0099eb68.akpm@linux-foundation.org>
+In-Reply-To: <1265967212-9126-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1265967212-9126-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1265967212-9126-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kosaki Motohiro, Andrew,
+On Fri, 12 Feb 2010 18:33:32 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
->> Please don't send unchangelogged patches.
->>
->> Explain the leak.
->>
->> Explain the user impact (ie: how it is triggered).
->>
->> Explain how the patch fixes it.
->>
->> Thanks.
->
-> Hi Andre,
->
-> plus, can you please rebase this patch onto -mmotm tree? it have lots elf core dump related
-> fix and it is going to be merged at this merge window, maybe.
->
-> I think your patch is correct. but I hope to avoid patch confliction.
->
-> Thanks.
->
+> We can use pci-dma-compat.h to implement pci_set_dma_mask and
+> pci_set_consistent_dma_mask as we do with the other PCI DMA API.
+> 
+> We can remove HAVE_ARCH_PCI_SET_DMA_MASK too.
 
-    Sure, I'm going to include a proper changelog, rebase it on top of
--mmotm tree and send a new patch soon.
+i386 allnoconfig:
 
-Thank you,
-André
+include/asm-generic/pci-dma-compat.h:105: error: redefinition of 'pci_set_dma_mask'
+include/linux/pci.h:1092: error: previous definition of 'pci_set_dma_mask' was here
+include/asm-generic/pci-dma-compat.h:110: error: redefinition of 'pci_set_consistent_dma_mask'
+include/linux/pci.h:1097: error: previous definition of 'pci_set_consistent_dma_mask' was here
+
+In fact the whole of include/asm-generic/pci-dma-compat.h seems a bit
+fishy when CONFIG_PCI=n.  Shouldn't all those functions be
+EIO-returning stubs?
+
+
