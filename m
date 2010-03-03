@@ -1,76 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925Ab0CCWYC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 17:24:02 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56001 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752963Ab0CCWX5 (ORCPT
+	id S1756951Ab0CCWYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 17:24:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756394Ab0CCWYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 17:23:57 -0500
-Date: Wed, 3 Mar 2010 17:23:56 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-In-Reply-To: <20100303215056.GB2579@ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Mar 2010 17:24:35 -0500
+Date: Wed, 3 Mar 2010 14:24:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: M G Berberich <berberic@fmi.uni-passau.de>
+Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: 2.6.33 dies on modprobe
+Message-Id: <20100303142420.accf985e.akpm@linux-foundation.org>
+In-Reply-To: <20100303221602.GA3264@invalid>
+References: <20100228221257.GA8858@invalid>
+	<2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
+	<20100302185213.43a1a0d7.akpm@linux-foundation.org>
+	<20100303221602.GA3264@invalid>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Pavel Machek wrote:
+On Wed, 3 Mar 2010 23:16:02 +0100
+M G Berberich <berberic@fmi.uni-passau.de> wrote:
 
-> Hi!
+> Hello,
 > 
-> > > > The reason for freezing those tasks is to avoid writebacks at random
-> > > > times during a system sleep transition, when the underlying device may
-> > > > already be suspended, right?
-> > > 
-> > > It is also there to avoid inconsistency between in-filesystem data and
-> > > snapshot in hibernation image.
+> Am Dienstag, den 02. M__rz schrieb Andrew Morton:
+> 
+> > It could be that some kobject on that list has become invalid (memory
+> > was freed, module was unloaded, etc) and later code stumbled across the
+> > now-invalid object on that list and then crashed.
 > > 
-> > A good point, although in this case I think it won't matter.  Writing
-> > out a dirty page twice (once right after taking the snapshot and then
-> > again after resuming from hibernation) will leave the disk in a correct
-> > state.
+> > What we can do to find this is to add a diagnostic each time an object
+> > is registered, and a diagnostic each time kset_find_obj() looks at the
+> > objects.  Then we'll see which kobject caused the crash, then we can
+> > look back and see where that kobject was registered from.
 > 
-> No, I don't think so. Have you considered all the various journalling
-> systems?
+> [...]
 > 
-> Definitely not in presence of I/O errors. Commit block can only be
-> written after previous blocks are successfully writen to the journal.
+> > This will generate a lot of output and we don't want to lose any of it.
+> >  I'd suggest setting up netconsole so all the output can be reliably
+> > saved: Documentation/networking/netconsole.txt
 > 
-> So lets see:
-> 
-> <snapshot>
-> 
-> Write previous block, write commit block, write more blocks
-> 
-> <hibernation powerdown, restart>
-> 
-> Error writing previous block (block now contains garbage), leading to
-> kernel panic
-> 
-> <restart>
-> 
-> journalling assumptions broken: commit block is there, but previous
-> blocks are not intact. Data loss.
-> 
-> ...and that was the first I could think about. Lets not do
->  this. Barriers were invented for a reason.
+> I have a serial connection to a netbook. Log attached.
 
-Very well.  Then we still need a solution to the original problem:  
-Devices sometimes need to be unregistered during resume, but
-del_gendisk() blocks on the writeback thread, which is frozen until
-after the resume finishes.  How do you suggest this be fixed?
+drat, my patch didn't work.  Can you try this one please?
 
-Alan Stern
+--- a/lib/kobject.c~a
++++ a/lib/kobject.c
+@@ -126,6 +126,8 @@ static void kobj_kset_join(struct kobjec
+ 
+ 	kset_get(kobj->kset);
+ 	spin_lock(&kobj->kset->list_lock);
++	printk("kobj_kset_join:%p\n", kobj);
++	dump_stack();
+ 	list_add_tail(&kobj->entry, &kobj->kset->list);
+ 	spin_unlock(&kobj->kset->list_lock);
+ }
+@@ -751,9 +753,12 @@ struct kobject *kset_find_obj(struct kse
+ 
+ 	spin_lock(&kset->list_lock);
+ 	list_for_each_entry(k, &kset->list, entry) {
+-		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
+-			ret = kobject_get(k);
+-			break;
++		if (kobject_name(k)) {
++			printk("kset_find_obj:%p\n", k);
++			if (!strcmp(kobject_name(k), name)) {
++				ret = kobject_get(k);
++				break;
++			}
+ 		}
+ 	}
+ 	spin_unlock(&kset->list_lock);
+_
 
