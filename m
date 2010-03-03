@@ -1,76 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038Ab0CCQGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:06:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49163 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695Ab0CCQGb (ORCPT
+	id S1753602Ab0CCQOg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:14:36 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:41936 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099Ab0CCQOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:06:31 -0500
-X-Authority-Analysis: v=1.0 c=1 a=JmiDjSKT-SYA:10 a=7U3hwN5JcxgA:10 a=y3nEGyS_QmGolIyZiwcA:9 a=RQvQhO2qMEUEkMWswbgA:7 a=u1BePbFJrU2Xmg_x_Q56J7opEPIA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
- events
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
-	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 03 Mar 2010 11:06:27 -0500
-Message-ID: <1267632387.10871.59.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 11:14:35 -0500
+Date: Wed, 3 Mar 2010 17:14:28 +0100
+From: Bastian Blank <waldi@debian.org>
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 4 of 4] Linux pvops: xen pci platform
+	device driver
+Message-ID: <20100303161428.GB26656@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <waldi@debian.org>,
+	Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+	"xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop> <20100303121726.GA26656@wavehammer.waldi.eu.org> <alpine.DEB.2.00.1003031520320.4648@kaball-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1003031520320.4648@kaball-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 07:55 +0100, Frederic Weisbecker wrote:
+On Wed, Mar 03, 2010 at 03:52:07PM +0000, Stefano Stabellini wrote:
+> On Wed, 3 Mar 2010, Bastian Blank wrote:
+> > Why is version 1 grant table the default on HVM?
+> Because version 2 is known not to work on HVM, fixing this is on my TODO
+> list.
 
-> +/*
->   * Output
->   */
->  static bool perf_output_space(struct perf_mmap_data *data, unsigned long tail,
-> @@ -4337,6 +4347,8 @@ static const struct pmu perf_ops_task_clock = {
->  void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
->  			  int entry_size)
->  {
-> +	struct pt_regs regs;
-> +
->  	struct perf_raw_record raw = {
->  		.size = entry_size,
->  		.data = record,
-> @@ -4347,14 +4359,11 @@ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
->  		.raw = &raw,
->  	};
->  
-> -	struct pt_regs *regs = get_irq_regs();
-> -
-> -	if (!regs)
-> -		regs = task_pt_regs(current);
-> +	PERF_SAVE_REGS(&regs);
->  
->  	/* Trace events already protected against recursion */
->  	do_perf_sw_event(PERF_TYPE_TRACEPOINT, event_id, count, 1,
-> -				&data, regs);
-> +				&data, &regs);
+Well, then the later modification to 2 in the hvm case is bogus.
 
-Off-topic: Why is the above a perf sw event? Couldn't that also be a
-normal TRACE_EVENT()?
+> > > +/* NB. [aux-]ide-disks options do not unplug IDE CD-ROM drives. */
+> > > +/* NB. aux-ide-disks is equiv to ide-disks except ignores primary master. */
+> > > +static char *dev_unplug;
+> > > +module_param(dev_unplug, charp, 0644);
+> > > +MODULE_PARM_DESC(dev_unplug, "Emulated devices to unplug: "
+> > > +		 "[all,][ide-disks,][aux-ide-disks,][nics]\n");
+> > 
+> > What is this parameter about?
+> 
+> During the initialization of the xen pci device driver, we write to a
+> magic ioport that causes qemu to unplug some emulated devices, disc and
+> network in particular.
+> This parameter is meant to present the user a choice about what emulated
+> devices to unplug.
 
--- Steve
+Somehow I don't think this belongs here. It looks like a workaround, you
+can always ask qemu to not bind them at the beginning and the guest
+system to not provide drivers.
 
->  }
->  EXPORT_SYMBOL_GPL(perf_tp_event);
->  
+> > > +#define XEN_IOPORT_BASE 0x10
+> > 
+> > Why are this constants defined in the driver themself? They only make
+> > sense if there are two components making use of them.
+> Yep, the other one is qemu.
 
+Well, if it is a published interface move it into a header file.
 
+> > > +	if (request_mem_region(mmio_addr, mmio_len, DRV_NAME) == NULL) {
+> > > +		printk(KERN_ERR ":MEM I/O resource 0x%lx @ 0x%lx busy\n",
+> > > +		       mmio_addr, mmio_len);
+> > > +		return -EBUSY;
+> > 
+> > Why is this a sign of busy?
+> 
+> I think we were just trying to follow the behaviour of the other drivers
+> of real pci devices.
+> I am not sure how this condition could happen on Xen.
+
+I checked again. There are many different return values used, but EBUSY
+seems to be the most.
+
+Bastian
+
+-- 
+The heart is not a logical organ.
+		-- Dr. Janet Wallace, "The Deadly Years", stardate 3479.4
