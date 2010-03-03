@@ -1,55 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894Ab0CCWHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 17:07:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43300 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430Ab0CCWHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 17:07:33 -0500
-Date: Wed, 3 Mar 2010 14:04:50 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 19/62] Driver-Core: devtmpfs - remove EXPERIMENTAL and
- enable it by default
-Message-ID: <20100303220450.GA10391@suse.de>
-References: <20100302230933.GA32287@kroah.com>
- <1267572541-410-19-git-send-email-gregkh@suse.de>
- <m1635eow8a.fsf@fess.ebiederm.org>
- <alpine.LFD.2.00.1003030839550.3627@localhost.localdomain>
- <20100303212236.GA9732@suse.de>
- <alpine.LFD.2.00.1003031340570.3599@localhost.localdomain>
+	id S1756908Ab0CCWNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 17:13:35 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:59858
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756854Ab0CCWN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 17:13:29 -0500
+X-SpamScore: -29
+X-BigFish: VPS-29(zz1432R98dN936eM9371Pzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B8EDC86.20806@am.sony.com>
+Date: Wed, 3 Mar 2010 14:02:46 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003031340570.3599@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Levand, Geoffrey" <Geoffrey.Levand@am.sony.com>
+CC: Andy Shevchenko <andy.shevchenko@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: Re: [PATCHv2] drivers: net: optimize hex2bin()
+References: <4B8C485A.8000409@am.sony.com> <1267516766-25977-1-git-send-email-andy.shevchenko@gmail.com> <4B8D370A.4030609@am.sony.com>
+In-Reply-To: <4B8D370A.4030609@am.sony.com>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Mar 2010 22:02:46.0513 (UTC) FILETIME=[41C18E10:01CABB1D]
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 01:48:08PM -0800, Linus Torvalds wrote:
+Hi,
+
+On 03/02/2010 08:04 AM, Levand, Geoffrey wrote:
+> On 03/01/2010 11:59 PM, Andy Shevchenko wrote:
+>> Optimize hex2bin() function used in ps3_gelic_wireless.c. It requires to have
+>> hex_to_bin() implementation introduced by starter patch [1] in series.
+>> 
+>> [1] http://patchwork.kernel.org/patch/81224/
+>> 
+>> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+>> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+>> ---
+>>  drivers/net/ps3_gelic_wireless.c |   13 +++++--------
+>>  1 files changed, 5 insertions(+), 8 deletions(-)
 > 
-> Anyway, I don't know whether you picked a good spot to do your series or 
-> not, but it _looked_ like a pretty random spot. It might be perfectly 
-> good. But just in general, since you always generate your trees from a 
-> quilt series anyway, I suspect we migth be better off (at least for the 
-> initial merge window series) to base them on the closest thing we have to 
-> a "known good" base, namely the previous release. Rather than some "maybe 
-> fine" point in the middle of the merge window.
+> Looks good, thanks.
+> 
+> Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-I originally did the create from the 2.6.33 release, and then did a
-merge to test that it would be easy for you, but there were a number of
-conflicts due to other trees touching some driver core stuff (that I
-knew was going to happen.)  So I did take a merge point after that had
-happened, and did test it out here on my machines.
+Sorry, this is now a NAK.
 
-But hey, if you want to have to handle merge conflicts, I'll gladly base
-them on known-common points in the future :)
+Some PS3 driver clean-ups were merged, and Andy's change
+is no longer needed.  Here is the commit:
 
-In the future I'll try to pick better merge points.
+ c1596b75c29eb5b32c65ef1e186c8b08c289bf05 - ps3_gelic_wireless: Remove PS3 gelic legacy wpa support
 
-thanks,
+Sorry for asking for an updated patch when this
+other change was queued.
 
-greg k-h
+-Geoff 
+
