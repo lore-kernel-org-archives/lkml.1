@@ -1,70 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770Ab0CCVut (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:50:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43203 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756752Ab0CCVuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:50:32 -0500
-Date: Wed, 3 Mar 2010 16:49:52 -0500
-From: Valerie Aurora <vaurora@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>, jblunck@suse.de
-Cc: viro@zeniv.linux.org.uk, hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] union-mount: Drive the union cache via dcache
-Message-ID: <20100303214952.GD19689@shell>
-References: <1267567889-4637-1-git-send-email-vaurora@redhat.com> <1267567889-4637-2-git-send-email-vaurora@redhat.com> <1267567889-4637-3-git-send-email-vaurora@redhat.com> <E1NmsUF-0003u0-19@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1NmsUF-0003u0-19@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.4.2.2i
+	id S1756786Ab0CCVvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:51:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44885 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756723Ab0CCVva (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 16:51:30 -0500
+Date: Wed, 3 Mar 2010 13:51:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dima Zavin <dmitriyz@google.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+In-Reply-To: <404ea8001003031338j34847961jd8a7114bbc45603a@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1003031348510.3599@localhost.localdomain>
+References: <4B8C1867.7040201@cam.ac.uk>  <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>  <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>  <20100303184132.GA11471@core.coreip.homeip.net>  <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+  <20100303190753.GB11471@core.coreip.homeip.net> <404ea8001003031338j34847961jd8a7114bbc45603a@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 06:35:55PM +0100, Miklos Szeredi wrote:
-> On Tue,  2 Mar 2010, Valerie Aurora wrote:
-> > +/*
-> > + * This must be called after __d_drop_unions() without holding any locks.
-> > + * Note: The dentry might still be reachable via a lookup but at that time it
-> > + * already a negative dentry. Otherwise it would be unhashed. The union_mount
-> > + * structure itself is still reachable through mnt->mnt_unions (which we
-> > + * protect against with union_lock).
-> > + *
-> > + * We were worried about a recursive dput() call through:
-> > + *
-> > + * dput()->d_kill()->shrink_d_unions()->union_put()->dput()
-> > + *
-> > + * But this path can only be reached if the dentry is unhashed when we
-> > + * enter the first dput(), and it can only be unhashed if it was
-> > + * rmdir()'d, and d_delete() calls shrink_d_unions() for us.
-> > + */
-> > +void shrink_d_unions(struct dentry *dentry)
-> > +{
-> > +	struct union_mount *this, *next;
-> > +
-> > +repeat:
-> > +	spin_lock(&union_lock);
-> > +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
-> > +		BUG_ON(!hlist_unhashed(&this->u_hash));
-> > +		BUG_ON(!hlist_unhashed(&this->u_rhash));
-> > +		list_del(&this->u_unions);
-> > +		this->u_next.dentry->d_unionized--;
-> > +		spin_unlock(&union_lock);
-> > +		union_put(this);
-> > +		goto repeat;
+
+
+On Wed, 3 Mar 2010, Dima Zavin wrote:
 > 
-> This loop is weird.  That list_for_each_entry_safe is just used to
-> initialize "this", since it unconditionally restarts from the
-> beginning.
+> Actually, accelerometers fit into that model fine. They have some
+> variable number of absolute axes (3, 6, etc.).
 
-This loop is definitely weird, but the alternative is so simple
-(replace the goto with a spin_lock()) that I suspect Jan had a reason
-to write it this way.  Jan, do you recall?
+In fact, they obviouslya also do end up being used exactly like joysticks 
+in real life, and joysticks are commonly starting to have accelerometers 
+in them (ie any modern game console controller).
 
-Unfortunately it has not been tested on more than one element in the
-list (although multiple layers now seem a possibility with the current
-code).
+So treating an accelerometer like a joystick - regardless of whether it 
+happens to be internal to the device or happens to be external in a 
+separate controller - is not all that far-fetched anyway.
 
--VAL
+			Linus
