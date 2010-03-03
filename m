@@ -1,88 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389Ab0CCG2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:28:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50086 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213Ab0CCG2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:28:09 -0500
-Message-ID: <4B8E000F.7050207@cn.fujitsu.com>
-Date: Wed, 03 Mar 2010 14:22:07 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-CC: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] io-controller: Document for blkio.policy
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754432Ab0CCGbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:31:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44343 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754012Ab0CCGbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 01:31:34 -0500
+Date: Wed, 3 Mar 2010 17:31:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: build failure after merge of the driver-core tree
+Message-Id: <20100303173125.1aa2d004.sfr@canb.auug.org.au>
+In-Reply-To: <20100303171432.bee7ae0c.sfr@canb.auug.org.au>
+References: <20100303171432.bee7ae0c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Mar_2010_17_31_25_+1100_m+P6fFmUSnn5xcvs"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the document for blkio.policy.
+--Signature=_Wed__3_Mar_2010_17_31_25_+1100_m+P6fFmUSnn5xcvs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- Documentation/cgroups/blkio-controller.txt |   35 +++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletions(-)
+Hi all,
 
-diff --git a/Documentation/cgroups/blkio-controller.txt b/Documentation/cgroups/blkio-controller.txt
-index 630879c..f29f206 100644
---- a/Documentation/cgroups/blkio-controller.txt
-+++ b/Documentation/cgroups/blkio-controller.txt
-@@ -76,7 +76,9 @@ CONFIG_DEBUG_BLK_CGROUP
- Details of cgroup files
- =======================
- - blkio.weight
--	- Specifies per cgroup weight.
-+	- Specifies per cgroup weight. This is default weight of the group
-+	  on all the devices until and unless overridden by per device rule.
-+	  (See blkio.policy).
- 
- 	  Currently allowed range of weights is from 100 to 1000.
- 
-@@ -99,6 +101,37 @@ Details of cgroup files
- 	  and minor number of the device and third field specifies the number
- 	  of times a group was dequeued from a particular device.
- 
-+- blkio.policy
-+	- One can specify per cgroup per device rules using this interface.
-+	  These rules override the default value of group weight as specified
-+	  by blkio.weight.
-+
-+	  Following is the format.
-+
-+	  #echo dev_maj:dev_minor weight > /patch/to/cgroup/blkio.policy
-+
-+	  weight=0 means removing a policy.
-+
-+	  Examples:
-+	  Configure weight=300 on /dev/sdb (8:16) in this cgroup
-+	  # echo 8:16 300 > blkio.policy
-+	  # cat blkio.policy
-+	  dev     weight
-+	  8:16    300
-+
-+	  Configure weight=500 on /dev/sda (8:0) in this cgroup
-+	  # echo 8:0 500 > blkio.policy
-+	  # cat blkio.policy
-+	  dev     weight
-+	  8:0     500
-+	  8:16    300
-+
-+	  Remove the policy for /dev/sda in this cgroup
-+	  # echo 8:0 0 > blkio.policy
-+	  # cat blkio.policy
-+	  dev     weight
-+	  8:16    300
-+
- CFQ sysfs tunable
- =================
- /sys/block/<disk>/queue/iosched/group_isolation
--- 
-1.5.4.rc3
+On Wed, 3 Mar 2010 17:14:32 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> John, Johannes, device_lock/unlock() already exist in Linus' tree, so you
+> should be able to apply this to the wireless tree already.
 
+This is not correct, sorry.  I was thinking of something else.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__3_Mar_2010_17_31_25_+1100_m+P6fFmUSnn5xcvs
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuOAj0ACgkQjjKRsyhoI8w5DgCcCoxwgb8MNUpuKD6iLJ/GYVWB
+kygAoJz8W8VUZ+PUcVL9vE9HXejqvv7H
+=dFuN
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Mar_2010_17_31_25_+1100_m+P6fFmUSnn5xcvs--
