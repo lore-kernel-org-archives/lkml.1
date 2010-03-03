@@ -1,52 +1,154 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413Ab0CCSAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 13:00:48 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:44402 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490Ab0CCSAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 13:00:46 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
-       akpm@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl
-Subject: Re: [PATCH] kconfig: place git SHA1 in .config output if in SCM
-In-Reply-To: <20100303021624.GE6786@linux.vnet.ibm.com> (Paul E. McKenney's
-	message of "Tue, 2 Mar 2010 18:16:24 -0800")
-References: <20100303011858.GA17651@linux.vnet.ibm.com>
-	<alpine.LFD.2.00.1003021725170.3616@localhost.localdomain>
-	<20100303021624.GE6786@linux.vnet.ibm.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Wed, 03 Mar 2010 12:28:38 -0500
-Message-ID: <m37hptl3fl.fsf@lugabout.jhcloos.org>
+	id S1755437Ab0CCSHm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 13:07:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9476 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755383Ab0CCSHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 13:07:41 -0500
+Message-ID: <4B8EA4D9.6000505@redhat.com>
+Date: Wed, 03 Mar 2010 13:05:13 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:30:100303:paulmck@linux.vnet.ibm.com::PHWuCj6J+PzoWOgj:0000000000000000000000000000000000CIPYj
-X-Hashcash: 1:30:100303:torvalds@linux-foundation.org::iL8LDWclN//yu0Aj:0000000000000000000000000000000p0h61
-X-Hashcash: 1:30:100303:linux-kernel@vger.kernel.org::BET//MYeh2vJtN4t:00000000000000000000000000000000ZdjV+
-X-Hashcash: 1:30:100303:zippel@linux-m68k.org::/j0DYBO+UxwX9NNC:000000000000000000000000000000000000000iMdE0
-X-Hashcash: 1:30:100303:mingo@elte.hu::pORFu6WLZz9ypeQS:000rBPvJ
-X-Hashcash: 1:30:100303:akpm@linux-foundation.org::IV+ZaQim5g7dznnv:00000000000000000000000000000000000eb4OX
-X-Hashcash: 1:30:100303:geert@linux-m68k.org::V/rssOvD6UdbKIow:0000000000000000000000000000000000000000D9xwt
-X-Hashcash: 1:30:100303:elendil@planet.nl::aejh3+vQrej8TM0L:0000000000000000000000000000000000000000000NN3ct
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       eranian@google.com, robert.richter@amd.com, fweisbec@gmail.com
+Subject: Re: [RFC][PATCH 10/11] perf, x86: use LBR for PEBS IP+1 fixup
+References: <20100303163936.906011640@chello.nl> <20100303164306.602529559@chello.nl>
+In-Reply-To: <20100303164306.602529559@chello.nl>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doesn't this patch simply duplicate CONFIG_LOCALVERSION_AUTO's
-functionality, now that it calls scripts/setlocalversion?
+Peter Zijlstra wrote:
+> PEBS always reports the IP+1, that is the instruction after the one
+> that got sampled, cure this by using the LBR to reliably rewind the
+> instruction stream.
 
-I'd still like to get the hash and only elide the dirty check.
+Hmm, does PEBS always report one byte after the end address of the
+sampled instruction? Or the instruction which will be executed next
+step?
 
--JimC
+[...]
+> +#include <asm/insn.h>
+> +
+> +#define MAX_INSN_SIZE	16
+
+Hmm, we'd better integrate these kinds of definitions into
+asm/insn.h... (several features define it)
+
+> +
+> +static void intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
+> +{
+> +#if 0
+> +	/*
+> +	 * Borken, makes the machine expode at times trying to
+> +	 * derefence funny userspace addresses.
+> +	 *
+> +	 * Should we always fwd decode from @to, instead of trying
+> +	 * to rewind as implemented?
+> +	 */
+> +
+> +	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+> +	unsigned long from = cpuc->lbr_entries[0].from;
+> +	unsigned long to = cpuc->lbr_entries[0].to;
+
+Ah, I see. For branch instruction case, we can use LBR to
+find previous IP...
+
+> +	unsigned long ip = regs->ip;
+> +	u8 buf[2*MAX_INSN_SIZE];
+> +	u8 *kaddr;
+> +	int i;
+> +
+> +	if (from && to) {
+> +		/*
+> +		 * We sampled a branch insn, rewind using the LBR stack
+> +		 */
+> +		if (ip == to) {
+> +			regs->ip = from;
+> +			return;
+> +		}
+> +	}
+> +
+> +	if (user_mode(regs)) {
+> +		int bytes = copy_from_user_nmi(buf,
+> +				(void __user *)(ip - MAX_INSN_SIZE),
+> +				2*MAX_INSN_SIZE);
+> +
+
+maybe, you'd better check the source address range is within
+the user address range. e.g. ip < MAX_INSN_SIZE. 
+
+> +		/*
+> +		 * If we fail to copy the insn stream, give up
+> +		 */
+> +		if (bytes != 2*MAX_INSN_SIZE)
+> +			return;
+> +
+> +		kaddr = buf;
+> +	} else
+> +		kaddr = (void *)(ip - MAX_INSN_SIZE);
+
+It also needs to be checked this address within kernel text.
+
+> +
+> +	/*
+> +	 * Try to find the longest insn ending up at the given IP
+> +	 */
+> +	for (i = MAX_INSN_SIZE; i > 0; i--) {
+> +		struct insn insn;
+> +
+> +		kernel_insn_init(&insn, kaddr + MAX_INSN_SIZE - i);
+> +		insn_get_length(&insn);
+> +		if (insn.length == i) {
+> +			regs->ip -= i;
+> +			return;
+> +		}
+> +	}
+
+Hmm, this will not work correctly on x86, since the decoder can
+miss-decode the tail bytes of previous instruction as prefix bytes. :(
+
+Thus, if you want to rewind instruction stream, you need to decode
+a function (or basic block) entirely.
+
+Thank you,
+
+> +
+> +	/*
+> +	 * We failed to find a match for the previous insn.. give up
+> +	 */
+> +#endif
+> +}
+> +
+>  static int intel_pmu_save_and_restart(struct perf_event *event);
+>  static void intel_pmu_disable_event(struct perf_event *event);
+>  
+> @@ -458,6 +532,8 @@ static void intel_pmu_drain_pebs_core(st
+>  
+>  	PEBS_TO_REGS(at, &regs);
+>  
+> +	intel_pmu_pebs_fixup_ip(&regs);
+> +
+>  	if (perf_event_overflow(event, 1, data, &regs))
+>  		intel_pmu_disable_event(event);
+>  
+> @@ -519,6 +595,7 @@ static void intel_pmu_drain_pebs_nhm(str
+>  		data->period = event->hw.last_period;
+>  
+>  		PEBS_TO_REGS(at, &regs);
+> +		intel_pmu_pebs_fixup_ip(&regs);
+>  
+>  		if (perf_event_overflow(event, 1, data, &regs))
+>  			intel_pmu_disable_event(event);
+> 
+> -- 
+
 -- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
