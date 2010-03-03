@@ -1,69 +1,656 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758003Ab0CCA0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:26:55 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:34945 "HELO
-	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754723Ab0CCA0x (ORCPT
+	id S1758342Ab0CCA23 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:28:29 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:53872 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755134Ab0CCA21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:26:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=V84aGPiPVXXo2S3ky28gHXvZBaBX5w3u/L8VtbUBuSjLAtgkvCd1FP9HI1awZQx4hrNgk+axMlrCQaFfXjzxOCaq3gsXt0T2404XRUqXN9MYu88Mgrndd+WZUkNoAjIj;
-Date: Tue, 2 Mar 2010 16:26:49 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: imunsie@au1.ibm.com, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] Avoid implicit constant truncation
-Message-ID: <20100302162649.055c998b@jbarnes-piketon>
-In-Reply-To: <4B8DA809.1040205@xenotime.net>
-References: <1267574468-7609-1-git-send-email-imunsie@au.ibm.com>
-	<4B8DA809.1040205@xenotime.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Tue, 2 Mar 2010 19:28:27 -0500
+Subject: Re: [PATCH 2/3] arm: Convert arm to arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20100302160724.8544ba53.akpm@linux-foundation.org>
+References: <1267483897.4216.91.camel@localhost.localdomain>
+	 <1267484054.4216.94.camel@localhost.localdomain>
+	 <20100302160724.8544ba53.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 02 Mar 2010 16:28:01 -0800
+Message-ID: <1267576081.2496.206.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Mar 2010 16:06:33 -0800
-Randy Dunlap <rdunlap@xenotime.net> wrote:
+On Tue, 2010-03-02 at 16:07 -0800, Andrew Morton wrote:
+> On Mon, 01 Mar 2010 14:54:14 -0800
+> john stultz <johnstul@us.ibm.com> wrote:
+> 
+> > This patch converts arm to use GENERIC_TIME via the arch_getoffset()
+> > infrastructure, reducing the amount of arch specific code we need to
+> > maintain.
+> 
+> It runs afoul of the pending changes in linux-next:
 
-> On 03/02/10 16:01, imunsie@au1.ibm.com wrote:
-> > From: Ian Munsie <imunsie@au.ibm.com>
-> > 
-> > When building on 64 bit platforms, the compiler throws the following
-> > warning:
-> > 
-> > drivers/pci/probe.c:197: warning: large integer implicitly
-> > truncated to unsigned type
-> > 
-> > This patch adds an explicit truncation to silence the compiler
-> > warning.
-> 
-> 
-> Please see/read/use Documentation/SubmittingPatches.  E.g.:
-> 
-> The canonical patch subject line is:
-> 
->     Subject: [PATCH 001/123] subsystem: summary phrase
-> 
-> I.e., the subject: should tell us that this is a PCI: patch.
-> 
-> (or even pci: -- i don't care which)
+Sigh. Yea, there's a lot of simple changes in Kconfig, and as long as
+this stays out of the upstream tree, its going to be a bit of a
+treadmill. 
 
-No need to resubmit though; I usually have to fix up the summary and
-changelog a bit when applying anyway.
+Russell, any help here would be appreciated!
 
-That said, this patch rings a bell; I think the warning is signalling a
-real bug in the ppc code.  IIRC Ben was going to look at it awhile
-back, but I think it's mostly harmless so it's probably low on his list.
+Here's the patch against linux-next.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+thanks
+-john
+
+
+
+This patch converts arm to use GENERIC_TIME via the arch_getoffset()
+infrastructure, reducing the amount of arch specific code we need to
+maintain.
+
+The arm architecture is one of the last 2 arches that need to be
+converted.
+
+This patch applies on top the current -next tree
+
+I've taken my best swing at converting this, but I'm not 100% confident
+I got it right. My cross-compiler is now out of date (gcc4.2) so I
+wasn't able to check if it compiled. Any assistance from arch
+maintainers or testers to get this merged would be great.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index adbbaf3..6ebe0cd 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -42,6 +42,11 @@ config GENERIC_GPIO
+ 
+ config GENERIC_TIME
+ 	bool
++	default y
++
++config ARCH_USES_GETTIMEOFFSET
++	bool
++	default n
+ 
+ config GENERIC_CLOCKEVENTS
+ 	bool
+@@ -224,6 +229,7 @@ config ARCH_AAEC2000
+ 	select CPU_ARM920T
+ 	select ARM_AMBA
+ 	select HAVE_CLK
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This enables support for systems based on the Agilent AAEC-2000
+ 
+@@ -234,7 +240,6 @@ config ARCH_INTEGRATOR
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ICST
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_VERSATILE
+ 	help
+@@ -246,7 +251,6 @@ config ARCH_REALVIEW
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ICST
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select PLAT_VERSATILE
+@@ -261,7 +265,6 @@ config ARCH_VERSATILE
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ICST
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select PLAT_VERSATILE
+@@ -276,7 +279,6 @@ config ARCH_VEXPRESS
+ 	select ARM_TIMER_SP804
+ 	select COMMON_CLKDEV
+ 	select GENERIC_CLOCKEVENTS
+-	select GENERIC_TIME
+ 	select HAVE_CLK
+ 	select ICST
+ 	select PLAT_VERSATILE
+@@ -288,6 +290,7 @@ config ARCH_AT91
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select HAVE_CLK
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This enables support for systems based on the Atmel AT91RM9200,
+ 	  AT91SAM9 and AT91CAP9 processors.
+@@ -295,6 +298,7 @@ config ARCH_AT91
+ config ARCH_CLPS711X
+ 	bool "Cirrus Logic CLPS711x/EP721x-based"
+ 	select CPU_ARM720T
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Cirrus Logic 711x/721x based boards.
+ 
+@@ -303,6 +307,7 @@ config ARCH_GEMINI
+ 	select CPU_FA526
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for the Cortina Systems Gemini family SoCs
+ 
+@@ -311,6 +316,7 @@ config ARCH_EBSA110
+ 	select CPU_SA110
+ 	select ISA
+ 	select NO_IOPORT
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This is an evaluation board for the StrongARM processor available
+ 	  from Digital. It has limited hardware on-board, including an
+@@ -327,6 +333,7 @@ config ARCH_EP93XX
+ 	select COMMON_CLKDEV
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select ARCH_HAS_HOLES_MEMORYMODEL
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This enables support for the Cirrus EP93xx series of CPUs.
+ 
+@@ -334,13 +341,13 @@ config ARCH_FOOTBRIDGE
+ 	bool "FootBridge"
+ 	select CPU_SA110
+ 	select FOOTBRIDGE
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for systems based on the DC21285 companion chip
+ 	  ("FootBridge"), such as the Simtec CATS and the Rebel NetWinder.
+ 
+ config ARCH_MXC
+ 	bool "Freescale MXC/iMX-based"
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select HAVE_CLK
+@@ -354,7 +361,6 @@ config ARCH_STMP3XXX
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_GPIO
+ 	select USB_ARCH_HAS_EHCI
+@@ -366,7 +372,6 @@ config ARCH_NETX
+ 	select CPU_ARM926T
+ 	select ARM_VIC
+ 	select GENERIC_CLOCKEVENTS
+-	select GENERIC_TIME
+ 	help
+ 	  This enables support for systems based on the Hilscher NetX Soc
+ 
+@@ -374,6 +379,7 @@ config ARCH_H720X
+ 	bool "Hynix HMS720x-based"
+ 	select CPU_ARM720T
+ 	select ISA_DMA_API
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This enables support for systems based on the Hynix HMS720x
+ 
+@@ -384,7 +390,6 @@ config ARCH_NOMADIK
+ 	select CPU_ARM926T
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -399,6 +404,7 @@ config ARCH_IOP13XX
+ 	select PCI
+ 	select ARCH_SUPPORTS_MSI
+ 	select VMSPLIT_1G
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Intel's IOP13XX (XScale) family of processors.
+ 
+@@ -410,6 +416,7 @@ config ARCH_IOP32X
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Intel's 80219 and IOP32X (XScale) family of
+ 	  processors.
+@@ -422,6 +429,7 @@ config ARCH_IOP33X
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Intel's IOP33X (XScale) family of processors.
+ 
+@@ -430,6 +438,7 @@ config ARCH_IXP23XX
+ 	depends on MMU
+ 	select CPU_XSC3
+  	select PCI
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Intel's IXP23xx (XScale) family of processors.
+ 
+@@ -438,6 +447,7 @@ config ARCH_IXP2000
+ 	depends on MMU
+ 	select CPU_XSCALE
+ 	select PCI
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Intel's IXP2400/2800 (XScale) family of processors.
+ 
+@@ -446,7 +456,6 @@ config ARCH_IXP4XX
+ 	depends on MMU
+ 	select CPU_XSCALE
+ 	select GENERIC_GPIO
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select DMABOUNCE if PCI
+ 	help
+@@ -456,6 +465,7 @@ config ARCH_L7200
+ 	bool "LinkUp-L7200"
+ 	select CPU_ARM720T
+ 	select FIQ
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Say Y here if you intend to run this kernel on a LinkUp Systems
+ 	  L7200 Software Development Board which uses an ARM720T processor.
+@@ -471,7 +481,6 @@ config ARCH_DOVE
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_ORION
+ 	help
+@@ -483,7 +492,6 @@ config ARCH_KIRKWOOD
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_ORION
+ 	help
+@@ -493,7 +501,6 @@ config ARCH_KIRKWOOD
+ config ARCH_LOKI
+ 	bool "Marvell Loki (88RC8480)"
+ 	select CPU_FEROCEON
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_ORION
+ 	help
+@@ -505,7 +512,6 @@ config ARCH_MV78XX0
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_ORION
+ 	help
+@@ -519,7 +525,6 @@ config ARCH_ORION5X
+ 	select PCI
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select PLAT_ORION
+ 	help
+@@ -534,7 +539,6 @@ config ARCH_MMP
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select TICK_ONESHOT
+ 	select PLAT_PXA
+@@ -546,6 +550,7 @@ config ARCH_KS8695
+ 	select CPU_ARM922T
+ 	select GENERIC_GPIO
+         select ARCH_REQUIRE_GPIOLIB
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for Micrel/Kendin KS8695 "Centaur" (ARM922T) based
+ 	  System-on-Chip devices.
+@@ -554,7 +559,6 @@ config ARCH_NS9XXX
+ 	bool "NetSilicon NS9xxx"
+ 	select CPU_ARM926T
+ 	select GENERIC_GPIO
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_CLK
+ 	help
+@@ -570,7 +574,6 @@ config ARCH_W90X900
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	help
+ 	  Support for Nuvoton (Winbond logic dept.) ARM9 processor,
+@@ -595,6 +598,7 @@ config ARCH_PNX4008
+ 	select CPU_ARM926T
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  This enables support for Philips PNX4008 mobile platform.
+ 
+@@ -607,7 +611,6 @@ config ARCH_PXA
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+ 	select ARCH_REQUIRE_GPIOLIB
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select TICK_ONESHOT
+ 	select PLAT_PXA
+@@ -617,7 +620,6 @@ config ARCH_PXA
+ config ARCH_MSM
+ 	bool "Qualcomm MSM"
+ 	select GENERIC_GPIO
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	help
+ 	  Support for Qualcomm MSM/QSD based systems.  This runs on the
+@@ -641,6 +643,7 @@ config ARCH_RPC
+ 	select ISA_DMA_API
+ 	select NO_IOPORT
+ 	select ARCH_SPARSEMEM_ENABLE
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  On the Acorn Risc-PC, Linux can support the internal IDE disk and
+ 	  CD-ROM interface, serial and parallel port, and the floppy drive.
+@@ -654,7 +657,6 @@ config ARCH_SA1100
+ 	select ARCH_HAS_CPUFREQ
+ 	select CPU_FREQ
+ 	select GENERIC_GPIO
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_CLK
+ 	select TICK_ONESHOT
+@@ -667,6 +669,7 @@ config ARCH_S3C2410
+ 	select GENERIC_GPIO
+ 	select ARCH_HAS_CPUFREQ
+ 	select HAVE_CLK
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Samsung S3C2410X CPU based systems, such as the Simtec Electronics
+ 	  BAST (<http://www.simtec.co.uk/products/EB110ITX/>), the IPAQ 1940 or
+@@ -679,6 +682,7 @@ config ARCH_S3C64XX
+ 	select GENERIC_GPIO
+ 	select ARM_VIC
+ 	select HAVE_CLK
++	select ARCH_USES_GETTIMEOFFSET
+ 	select NO_IOPORT
+ 	select ARCH_HAS_CPUFREQ
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -736,6 +740,7 @@ config ARCH_SHARK
+ 	select ISA_DMA
+ 	select ZONE_DMA
+ 	select PCI
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Support for the StrongARM based Digital DNARD machine, also known
+ 	  as "Shark" (<http://www.shark-linux.de/shark.html>).
+@@ -745,6 +750,7 @@ config ARCH_LH7A40X
+ 	select CPU_ARM922T
+ 	select ARCH_DISCONTIGMEM_ENABLE if !LH7A40X_CONTIGMEM
+ 	select ARCH_SPARSEMEM_ENABLE if !LH7A40X_CONTIGMEM
++	select ARCH_USES_GETTIMEOFFSET
+ 	help
+ 	  Say Y here for systems based on one of the Sharp LH7A40X
+ 	  System on a Chip processors.  These CPUs include an ARM922T
+@@ -758,7 +764,6 @@ config ARCH_U300
+ 	select HAVE_TCM
+ 	select ARM_AMBA
+ 	select ARM_VIC
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_CLK
+ 	select COMMON_CLKDEV
+@@ -769,7 +774,6 @@ config ARCH_U300
+ config ARCH_DAVINCI
+ 	bool "TI DaVinci"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+@@ -788,7 +792,6 @@ config ARCH_OMAP
+ 	select HAVE_CLK
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select ARCH_HAS_CPUFREQ
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_HAS_HOLES_MEMORYMODEL
+ 	help
+@@ -800,7 +803,6 @@ config ARCH_BCMRING
+ 	select CPU_V6
+ 	select ARM_AMBA
+ 	select COMMON_CLKDEV
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	help
+@@ -810,7 +812,6 @@ config ARCH_U8500
+ 	bool "ST-Ericsson U8500 Series"
+ 	select CPU_V7
+ 	select ARM_AMBA
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select COMMON_CLKDEV
+ 	help
+@@ -940,7 +941,6 @@ config ARCH_ACORN
+ config PLAT_IOP
+ 	bool
+ 	select GENERIC_CLOCKEVENTS
+-	select GENERIC_TIME
+ 
+ config PLAT_ORION
+ 	bool
+diff --git a/arch/arm/include/asm/mach/time.h b/arch/arm/include/asm/mach/time.h
+index 8bffc3f..35d408f 100644
+--- a/arch/arm/include/asm/mach/time.h
++++ b/arch/arm/include/asm/mach/time.h
+@@ -38,7 +38,7 @@ struct sys_timer {
+ 	void			(*init)(void);
+ 	void			(*suspend)(void);
+ 	void			(*resume)(void);
+-#ifndef CONFIG_GENERIC_TIME
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
+ 	unsigned long		(*offset)(void);
+ #endif
+ };
+diff --git a/arch/arm/kernel/time.c b/arch/arm/kernel/time.c
+index 2875380..38c261f 100644
+--- a/arch/arm/kernel/time.c
++++ b/arch/arm/kernel/time.c
+@@ -72,12 +72,15 @@ unsigned long profile_pc(struct pt_regs *regs)
+ EXPORT_SYMBOL(profile_pc);
+ #endif
+ 
+-#ifndef CONFIG_GENERIC_TIME
+-static unsigned long dummy_gettimeoffset(void)
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
++u32 arch_gettimeoffset(void)
+ {
++	if (system_timer->offset != NULL)
++		return system_timer->offset() * 1000;
++
+ 	return 0;
+ }
+-#endif
++#endif /* CONFIG_ARCH_USES_GETTIMEOFFSET */
+ 
+ #ifdef CONFIG_LEDS_TIMER
+ static inline void do_leds(void)
+@@ -93,63 +96,6 @@ static inline void do_leds(void)
+ #define	do_leds()
+ #endif
+ 
+-#ifndef CONFIG_GENERIC_TIME
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = system_timer->offset();
+-		sec = xtime.tv_sec;
+-		usec += xtime.tv_nsec / 1000;
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	/* usec may have gone up a lot: be safe */
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq(&xtime_lock);
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * done, and then undo it!
+-	 */
+-	nsec -= system_timer->offset() * NSEC_PER_USEC;
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-#endif /* !CONFIG_GENERIC_TIME */
+ 
+ #ifndef CONFIG_GENERIC_CLOCKEVENTS
+ /*
+@@ -214,10 +160,6 @@ device_initcall(timer_init_sysfs);
+ 
+ void __init time_init(void)
+ {
+-#ifndef CONFIG_GENERIC_TIME
+-	if (system_timer->offset == NULL)
+-		system_timer->offset = dummy_gettimeoffset;
+-#endif
+ 	system_timer->init();
+ }
+ 
+diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
+index 2db43a5..2d040a4 100644
+--- a/arch/arm/mach-at91/Kconfig
++++ b/arch/arm/mach-at91/Kconfig
+@@ -23,14 +23,12 @@ choice
+ config ARCH_AT91RM9200
+ 	bool "AT91RM9200"
+ 	select CPU_ARM920T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
+ 
+ config ARCH_AT91SAM9260
+ 	bool "AT91SAM9260 or AT91SAM9XE"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
+ 	select HAVE_AT91_USART4
+@@ -39,28 +37,24 @@ config ARCH_AT91SAM9260
+ config ARCH_AT91SAM9261
+ 	bool "AT91SAM9261"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9G10
+ 	bool "AT91SAM9G10"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9263
+ 	bool "AT91SAM9263"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9RL
+ 	bool "AT91SAM9RL"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
+ 	select HAVE_FB_ATMEL
+@@ -68,7 +62,6 @@ config ARCH_AT91SAM9RL
+ config ARCH_AT91SAM9G20
+ 	bool "AT91SAM9G20"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
+ 	select HAVE_AT91_USART4
+@@ -77,7 +70,6 @@ config ARCH_AT91SAM9G20
+ config ARCH_AT91SAM9G45
+ 	bool "AT91SAM9G45"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
+ 	select HAVE_FB_ATMEL
+@@ -85,18 +77,17 @@ config ARCH_AT91SAM9G45
+ config ARCH_AT91CAP9
+ 	bool "AT91CAP9"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT572D940HF
+ 	bool "AT572D940HF"
+ 	select CPU_ARM926T
+-	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 
+ config ARCH_AT91X40
+ 	bool "AT91x40"
++	select ARCH_USES_GETTIMEOFFSET
+ 
+ endchoice
+ 
+
+
