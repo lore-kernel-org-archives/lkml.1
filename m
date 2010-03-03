@@ -1,131 +1,179 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232Ab0CCArP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:47:15 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:3470 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758157Ab0CCArM convert rfc822-to-8bit (ORCPT
+	id S1755216Ab0CCAqt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:46:49 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:54183 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754920Ab0CCAqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:47:12 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-From: "Hugh Daschbach" <hdasch@broadcom.com>
-To: "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Tue, 2 Mar 2010 16:47:01 -0800
-Subject: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Topic: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Index: Acq6atKjmzCil9iRSlGVDvW920/xrQ==
-Message-ID: <233671224A0FED4688218FFDBED26E1A517AC38638@IRVEXCHCCR01.corp.ad.broadcom.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-MIME-Version: 1.0
-X-WSS-ID: 67936E0D20S46839187-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Mar 2010 19:46:45 -0500
+From: Sage Weil <sage@newdream.net>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sage Weil <sage@newdream.net>
+Subject: [PATCH 04/26] ceph: hash function
+Date: Tue,  2 Mar 2010 16:46:35 -0800
+Message-Id: <1267577217-31923-5-git-send-email-sage@newdream.net>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267577217-31923-1-git-send-email-sage@newdream.net>
+References: <1267577217-31923-1-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The system may fail to boot when the kernel's devices_kset->list gets
-written by another thread while device_shutdown() is traversing the
-list.  Though not common, this is fairly reproducible for some SCSI
-Fibre Channel topologies; particularly so with FCoE configurations.
+Define the hash functions used for placing dentries in directories
+and for mapping objects into placement groups.
 
-The reboot thread calls device_shutdown() as part of system shutdown.
-device_shutdown() loops through devices_kset->list, shutting down each
-system device.  But devices_kset->list isn't protected from other
-writers while device_shutdown() traverses the list.
-
-One such secondary writer is the SCI Fibre Channel workqueue.  When
-fc_wq_N removes a device that device_shutdown() holds in it's "devn"
-(list traversal iterator) variable, device_shutdown() stalls, chasing
-what is essentially a broken link.
-
-This is not a common occurrence.  But FC SCSI devices associated with a
-link that has gone down cause a race between device_shutdown() running
-in reboot's process and scsi_remove_target() running in a SCSI FC
-workqueue (fc_wq_N).
-
-Network attached FC devices are particularly vulnerable because SysV
-init scripts shut network interfaces down before proceeding with the
-reboot request.  So by the time reboot is called, the link to the FC
-devices is already down.
-
-When the link is down device_shutdown() stalls (in sd_shutdown() --
-which issues cache flush CDBs to what are, by that time, inaccessible
-devices).  The stall ends when the fc rport timer expires.  But the
-timer expiration also initiates fc_starget_delete() in the fc workqueue,
-causing the race with device_shutdown().
-
-The attached patch detects and attempts to recover from the
-corruption.  But this can hardly be considered a fix, as it does not
-address the race between device_shutdown() and scsi_remove_target().
-
-Perhaps converting the list_for_each_entry_safe_reverse() to something
-like.
-
-        while (!list_empty(&devices_kset->list)) {
-                dev = list_last_entry(...);
-                ...
-        }
-
-might be appropriate.  But I have no idea if any devices don't fully
-remove themselves from the list when shutdown.
-
-Does anyone have any guidance for what would make a more appropriate
-fix?
-
-Thanks,
-Hugh
-
->From ff59be003a016ed1f638f89658bcbb17d69b2983 Mon Sep 17 00:00:00 2001
-From: Hugh Daschbach <hdasch@broadcom.com>
-Date: Mon, 1 Mar 2010 17:01:48 -0800
-Subject: [PATCH] Fix Cont00045892: bnx2fc 0.2.3: Cannot shutdown a system
-
-Detect and attempt recovery from devices_kset->list corruption.
-
-The list gets corrupted during reboot by a race between
-device_shutdown() and scsi_remove_target().
-
-Signed-off-by: Hugh Daschbach <hdasch@broadcom.com>
+Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- drivers/base/core.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ fs/ceph/ceph_hash.c |  118 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/ceph_hash.h |   13 ++++++
+ 2 files changed, 131 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/ceph_hash.c
+ create mode 100644 fs/ceph/ceph_hash.h
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 2820257..07851e9 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1733,6 +1733,7 @@ void device_shutdown(void)
- {
- 	struct device *dev, *devn;
-
-+retry:
- 	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
- 				kobj.entry) {
- 		if (dev->bus && dev->bus->shutdown) {
-@@ -1742,6 +1743,9 @@ void device_shutdown(void)
- 			dev_dbg(dev, "shutdown\n");
- 			dev->driver->shutdown(dev);
- 		}
-+		if (devn->kobj.entry.next == devn->kobj.entry.prev &&
-+		    devn->kobj.entry.next != &devices_kset->list)
-+			goto retry;
- 	}
- 	async_synchronize_full();
- }
+diff --git a/fs/ceph/ceph_hash.c b/fs/ceph/ceph_hash.c
+new file mode 100644
+index 0000000..bd57001
+--- /dev/null
++++ b/fs/ceph/ceph_hash.c
+@@ -0,0 +1,118 @@
++
++#include "types.h"
++
++/*
++ * Robert Jenkin's hash function.
++ * http://burtleburtle.net/bob/hash/evahash.html
++ * This is in the public domain.
++ */
++#define mix(a, b, c)						\
++	do {							\
++		a = a - b;  a = a - c;  a = a ^ (c >> 13);	\
++		b = b - c;  b = b - a;  b = b ^ (a << 8);	\
++		c = c - a;  c = c - b;  c = c ^ (b >> 13);	\
++		a = a - b;  a = a - c;  a = a ^ (c >> 12);	\
++		b = b - c;  b = b - a;  b = b ^ (a << 16);	\
++		c = c - a;  c = c - b;  c = c ^ (b >> 5);	\
++		a = a - b;  a = a - c;  a = a ^ (c >> 3);	\
++		b = b - c;  b = b - a;  b = b ^ (a << 10);	\
++		c = c - a;  c = c - b;  c = c ^ (b >> 15);	\
++	} while (0)
++
++unsigned ceph_str_hash_rjenkins(const char *str, unsigned length)
++{
++	const unsigned char *k = (const unsigned char *)str;
++	__u32 a, b, c;  /* the internal state */
++	__u32 len;      /* how many key bytes still need mixing */
++
++	/* Set up the internal state */
++	len = length;
++	a = 0x9e3779b9;      /* the golden ratio; an arbitrary value */
++	b = a;
++	c = 0;               /* variable initialization of internal state */
++
++	/* handle most of the key */
++	while (len >= 12) {
++		a = a + (k[0] + ((__u32)k[1] << 8) + ((__u32)k[2] << 16) +
++			 ((__u32)k[3] << 24));
++		b = b + (k[4] + ((__u32)k[5] << 8) + ((__u32)k[6] << 16) +
++			 ((__u32)k[7] << 24));
++		c = c + (k[8] + ((__u32)k[9] << 8) + ((__u32)k[10] << 16) +
++			 ((__u32)k[11] << 24));
++		mix(a, b, c);
++		k = k + 12;
++		len = len - 12;
++	}
++
++	/* handle the last 11 bytes */
++	c = c + length;
++	switch (len) {            /* all the case statements fall through */
++	case 11:
++		c = c + ((__u32)k[10] << 24);
++	case 10:
++		c = c + ((__u32)k[9] << 16);
++	case 9:
++		c = c + ((__u32)k[8] << 8);
++		/* the first byte of c is reserved for the length */
++	case 8:
++		b = b + ((__u32)k[7] << 24);
++	case 7:
++		b = b + ((__u32)k[6] << 16);
++	case 6:
++		b = b + ((__u32)k[5] << 8);
++	case 5:
++		b = b + k[4];
++	case 4:
++		a = a + ((__u32)k[3] << 24);
++	case 3:
++		a = a + ((__u32)k[2] << 16);
++	case 2:
++		a = a + ((__u32)k[1] << 8);
++	case 1:
++		a = a + k[0];
++		/* case 0: nothing left to add */
++	}
++	mix(a, b, c);
++
++	return c;
++}
++
++/*
++ * linux dcache hash
++ */
++unsigned ceph_str_hash_linux(const char *str, unsigned length)
++{
++	unsigned long hash = 0;
++	unsigned char c;
++
++	while (length--) {
++		c = *str++;
++		hash = (hash + (c << 4) + (c >> 4)) * 11;
++	}
++	return hash;
++}
++
++
++unsigned ceph_str_hash(int type, const char *s, unsigned len)
++{
++	switch (type) {
++	case CEPH_STR_HASH_LINUX:
++		return ceph_str_hash_linux(s, len);
++	case CEPH_STR_HASH_RJENKINS:
++		return ceph_str_hash_rjenkins(s, len);
++	default:
++		return -1;
++	}
++}
++
++const char *ceph_str_hash_name(int type)
++{
++	switch (type) {
++	case CEPH_STR_HASH_LINUX:
++		return "linux";
++	case CEPH_STR_HASH_RJENKINS:
++		return "rjenkins";
++	default:
++		return "unknown";
++	}
++}
+diff --git a/fs/ceph/ceph_hash.h b/fs/ceph/ceph_hash.h
+new file mode 100644
+index 0000000..5ac470c
+--- /dev/null
++++ b/fs/ceph/ceph_hash.h
+@@ -0,0 +1,13 @@
++#ifndef _FS_CEPH_HASH_H
++#define _FS_CEPH_HASH_H
++
++#define CEPH_STR_HASH_LINUX      0x1  /* linux dcache hash */
++#define CEPH_STR_HASH_RJENKINS   0x2  /* robert jenkins' */
++
++extern unsigned ceph_str_hash_linux(const char *s, unsigned len);
++extern unsigned ceph_str_hash_rjenkins(const char *s, unsigned len);
++
++extern unsigned ceph_str_hash(int type, const char *s, unsigned len);
++extern const char *ceph_str_hash_name(int type);
++
++#endif
 -- 
-1.7.0.rc0.48.gdace5
-
+1.7.0
 
