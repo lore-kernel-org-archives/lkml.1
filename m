@@ -1,23 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0CCCwW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 21:52:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60684 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848Ab0CCCwU (ORCPT
+	id S1753740Ab0CCCyp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:54:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55878 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430Ab0CCCyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 21:52:20 -0500
-Date: Tue, 2 Mar 2010 18:52:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: M G Berberich <berberic@fmi.uni-passau.de>, linux-kernel@vger.kernel.org,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: 2.6.33 dies on modprobe
-Message-Id: <20100302185213.43a1a0d7.akpm@linux-foundation.org>
-In-Reply-To: <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
-References: <20100228221257.GA8858@invalid>
-	<2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 2 Mar 2010 21:54:43 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 3 Mar 2010 11:51:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, haicheng.li@intel.com
+Subject: Re: [patch] slab: add memory hotplug support
+Message-Id: <20100303115110.97361d5d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1003021836040.2205@chino.kir.corp.google.com>
+References: <20100215105253.GE21783@one.firstfloor.org>
+	<20100215110135.GN5723@laptop>
+	<alpine.DEB.2.00.1002191222320.26567@router.home>
+	<20100220090154.GB11287@basil.fritz.box>
+	<alpine.DEB.2.00.1002240949140.26771@router.home>
+	<4B862623.5090608@cs.helsinki.fi>
+	<alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002251228140.18861@router.home>
+	<20100226114136.GA16335@basil.fritz.box>
+	<alpine.DEB.2.00.1002260904311.6641@router.home>
+	<20100226155755.GE16335@basil.fritz.box>
+	<alpine.DEB.2.00.1002261123520.7719@router.home>
+	<alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
+	<4B8CA7F5.1030802@cs.helsinki.fi>
+	<alpine.DEB.2.00.1003021419020.30059@router.home>
+	<20100303102844.fe740203.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1003021836040.2205@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -25,88 +45,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Mar 2010 12:22:59 +0800 Am__rico Wang <xiyou.wangcong@gmail.com> wrote:
+On Tue, 2 Mar 2010 18:39:20 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
+> On Wed, 3 Mar 2010, KAMEZAWA Hiroyuki wrote:
 > 
-> You snipped too much. The full backtrace is useful:
+> > At node hot-add
+> > 
+> >  * pgdat is allocated from other node (because we have no memory for "nid")
+> >  * memmap for the first section (and possiby others) will be allocated from
+> >    other nodes.
+> >  * Once a section for the node is onlined, any memory can be allocated localy.
+> > 
 > 
-> BUG: unable to handle kernel paging request at ffffffffa001b57f
-> IP: [<ffffffff811895db>] strcmp+0xb/0x30
-> PGD 1498067 PUD 149c063 PMD 12daf2067 PTE 0
-> Oops: 0000 [#1] SMP
-> last sysfs file:
-> /sys/devices/pci0000:00/0000:00:05.0/host0/target0:0:0/0:0:0:0/type
-> CPU 1
-> Pid: 1249, comm: modprobe Not tainted 2.6.33-bmg #1 M55S-S3/
-> RIP: 0010:[<ffffffff811895db>]  [<ffffffff811895db>] strcmp+0xb/0x30
-> RSP: 0018:ffff88012ebe9e58  EFLAGS: 00010282
-> RAX: 0000000000000070 RBX: ffff88012f8f4f00 RCX: 00000000ffffffff
-> RDX: ffff88012f808800 RSI: ffffffffa001b57f RDI: ffff88012fab2420
-> RBP: ffff88012ebe9e58 R08: 0000000000000000 R09: 0000000000000000
-> R10: ffff8800284017c0 R11: dead000000200200 R12: ffff88012f9a29c8
-> R13: ffff88012f8842a0 R14: ffffffffa001b57f R15: 000000000081c050
-> FS:  00007f16bd8916f0(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: ffffffffa001b57f CR3: 000000012da7c000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process modprobe (pid: 1249, threadinfo ffff88012ebe8000, task ffff88012edec0a0)
-> Stack:
->  ffff88012ebe9e88 ffffffff811852e8 ffffffffa0013080 ffffffffa00130e0
-> <0> 000000000081e970 000000000081e970 ffff88012ebe9e98 ffffffff81236b87
-> <0> ffff88012ebe9ed8 ffffffff81236ca7 0000000000000021 0000000000000021
-> Call Trace:
->  [<ffffffff811852e8>] kset_find_obj+0x38/0x80
->  [<ffffffff81236b87>] driver_find+0x17/0x30
->  [<ffffffff81236ca7>] driver_register+0x67/0x140
->  [<ffffffff8119b771>] __pci_register_driver+0x51/0xd0
->  [<ffffffffa0017000>] ? init_nic+0x0/0x20 [forcedeth]
->  [<ffffffffa001701e>] init_nic+0x1e/0x20 [forcedeth]
+> Correct, and the struct kmem_list3 is also alloacted from other nodes with 
+> my patch.
 > 
+> >    (Allocating memory from local node requires some new implementation as
+> >     bootmem allocater, we didn't that.)
+> > 
+> >  Before this patch, slab's control layer is allocated by cpuhotplug.
+> >  So, at least keeping this order,
+> >     memory online -> cpu online
+> >  slab's control layer is allocated from local node.
+> > 
+> >  When node-hotadd is done in this order
+> >     cpu online -> memory online
+> >  kmalloc_node() will allocate memory from other node via fallback.
+> > 
+> >  After this patch, slab's control layer is allocated by memory hotplug.
+> >  Then, in any order, slab's control will be allocated via fallback routine.
+> > 
 > 
+> Again, this addresses memory hotplug that requires a new node to be 
+> onlined that do not have corresponding cpus that are being onlined.  On 
+> x86, these represent ACPI_SRAT_MEM_HOT_PLUGGABLE regions that are onlined 
+> either by the acpi hotplug or done manually with CONFIG_ARCH_MEMORY_PROBE.  
+> On other architectures such as powerpc, this is done in different ways.
+> 
+> All of this is spelled out in the changelog for the patch.
+> 
+Ah, ok. for cpu-less node and kmallco_node() against that node.
 
-It could be that some kobject on that list has become invalid (memory
-was freed, module was unloaded, etc) and later code stumbled across the
-now-invalid object on that list and then crashed.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-What we can do to find this is to add a diagnostic each time an object
-is registered, and a diagnostic each time kset_find_obj() looks at the
-objects.  Then we'll see which kobject caused the crash, then we can
-look back and see where that kobject was registered from.
+Thanks,
+-Kame
 
-Something like this:
 
---- a/lib/kobject.c~a
-+++ a/lib/kobject.c
-@@ -717,6 +717,8 @@ int kset_register(struct kset *k)
- 		return -EINVAL;
- 
- 	kset_init(k);
-+	printk("kset_register:%p\n", &k->kobj);
-+	dump_stack();
- 	err = kobject_add_internal(&k->kobj);
- 	if (err)
- 		return err;
-@@ -751,9 +753,12 @@ struct kobject *kset_find_obj(struct kse
- 
- 	spin_lock(&kset->list_lock);
- 	list_for_each_entry(k, &kset->list, entry) {
--		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
--			ret = kobject_get(k);
--			break;
-+		if (kobject_name(k)) {
-+			printk("kset_find_obj:%p\n", k);
-+			if (!strcmp(kobject_name(k), name)) {
-+				ret = kobject_get(k);
-+				break;
-+			}
- 		}
- 	}
- 	spin_unlock(&kset->list_lock);
-_
 
-This will generate a lot of output and we don't want to lose any of it.
- I'd suggest setting up netconsole so all the output can be reliably
-saved: Documentation/networking/netconsole.txt
-
-Thanks.
