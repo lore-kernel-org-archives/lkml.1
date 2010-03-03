@@ -1,38 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905Ab0CCGzd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:55:33 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:44170 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754864Ab0CCGzb (ORCPT
+	id S1754767Ab0CCGzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:55:11 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:50449 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754646Ab0CCGzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:55:31 -0500
-Date: Wed, 3 Mar 2010 07:55:30 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Chihau Chau <chihau@gmail.com>
-Cc: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Staging: dream: pmem: fix some code style issues
-Message-ID: <20100303065530.GD25144@atrey.karlin.mff.cuni.cz>
-References: <1267599191-10327-1-git-send-email-chihau@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267599191-10327-1-git-send-email-chihau@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Mar 2010 01:55:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mgaid/ZjC1COJYL+PtHV7GKsGDX7+Z4Y8sdCGHKQ+Mxtr9yd0OqW4WCaWmKXmt3aa5
+         tFPvtfigLjSEaf/vhw8ZtOaipxXNAWOadKiccGxWzqA3Jr9vifRQ9d/n8nZ9TlEEmKKq
+         RDPHnE2fTENn9o54E5I2VHgkPzvV9CJPHRBu8=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [GIT PULL] perf updates
+Date: Wed,  3 Mar 2010 07:54:59 +0100
+Message-Id: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Chihau Chau <chihau@gmail.com>
-> 
-> This fixes some code style issues like some braces {} deleted becouse
-> are not necessary for a single statement blocks and to include KERN_
-> facility level in the printk() functions.
-> 
-> Signed-off-by: Chihau Chau <chihau@gmail.com>
+There is an rfc patch in this set, so may be it's not that
+pullable.
 
-ACK.
+But for those who want to test or something, the set is in the
+perf/core branch that can be found at:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	perf/core
+
+Thanks,
+	Frederic
+---
+
+Frederic Weisbecker (3):
+      lockdep: Move lock events under lockdep recursion protection
+      perf: Take a hot regs snapshot for trace events
+      perf/x86-64: Use frame pointer to walk on irq and process stacks
+
+
+ arch/x86/include/asm/asm.h        |    1 +
+ arch/x86/include/asm/perf_event.h |   25 +++++++++++++++++++++++++
+ arch/x86/kernel/dumpstack_64.c    |    4 ++--
+ kernel/lockdep.c                  |    9 +++------
+ kernel/perf_event.c               |   19 ++++++++++++++-----
+ 5 files changed, 45 insertions(+), 13 deletions(-)
