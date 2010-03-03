@@ -1,64 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382Ab0CCJlJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 04:41:09 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58904 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754359Ab0CCJlH (ORCPT
+	id S1755368Ab0CCJpH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 04:45:07 -0500
+Received: from mailgw10.se.ericsson.net ([193.180.251.61]:47624 "EHLO
+	mailgw10.se.ericsson.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405Ab0CCJpF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 04:41:07 -0500
-Date: Wed, 3 Mar 2010 09:36:50 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       catalin.marinas@arm.com, mdharm-kernel@one-eyed-alien.net,
-       oliver@neukum.org, greg@kroah.com, x0082077@ti.com,
-       sshtylyov@ru.mvista.com, bigeasy@linutronix.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       santosh.shilimkar@ti.com, pavel@ucw.cz, tom.leiming@gmail.com,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100303093650.GA22482@n2100.arm.linux.org.uk>
-References: <20100302211049V.fujita.tomonori@lab.ntt.co.jp> <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com> <1267572594.2173.25.camel@pasglop> <20100303124624Z.fujita.tomonori@lab.ntt.co.jp> <1267593032.16696.1.camel@pasglop> <1267594809.4383.27.camel@mulgrave.site>
+	Wed, 3 Mar 2010 04:45:05 -0500
+X-AuditID: c1b4fb3d-b7c72ae00000040e-b4-4b8e2f9fbc67
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267594809.4383.27.camel@mulgrave.site>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/5] DMAENGINE: COH 901 318 cleanups
+Date: Wed, 3 Mar 2010 10:45:00 +0100
+Message-ID: <A6D19A13FE030A409EC4362C172E091F0E9EE3FA@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <e9c3a7c21003021321h7df40afep2a3c82c6d429cf47@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/5] DMAENGINE: COH 901 318 cleanups
+Thread-Index: Acq6TlvtK+1sT//FRo2sbzgHNBKicwAZ6NuQ
+References: <1267560734-17001-1-git-send-email-linus.walleij@stericsson.com> <e9c3a7c21003021306w3546521dsd1ad50893f1ea44b@mail.gmail.com> <e9c3a7c21003021321h7df40afep2a3c82c6d429cf47@mail.gmail.com>
+From: "Linus Walleij" <linus.walleij@stericsson.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 03 Mar 2010 09:45:03.0150 (UTC) FILETIME=[32BC5CE0:01CABAB6]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 11:10:09AM +0530, James Bottomley wrote:
-> On Wed, 2010-03-03 at 16:10 +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2010-03-03 at 12:47 +0900, FUJITA Tomonori wrote:
-> > > The ways to improve the approach (introducing PG_arch_2 or marking a
-> > > page clean on dma_unmap_* with DMA_FROM_DEVICE like ia64 does) is up
-> > > to architectures. 
-> > 
-> > How does the above work ? IE, the dma unmap will flush the D side but
-> > not the I side ... or is the ia64 flush primitive magic enough to do
-> > both ?
+[Dan Williams]
+> On Tue, Mar 2, 2010 at 2:06 PM, Dan Williams 
+> <dan.j.williams@intel.com> wrote:
+> > On Tue, Mar 2, 2010 at 1:12 PM, Linus Walleij
+> > <linus.walleij@stericsson.com> wrote:
+> >>        if (cohc->nbr_active_done)
+> >> +       /*
+> >> +        * If another interrupt fired while the tasklet 
+> was scheduling,
+> >> +        * we don't get called twice, so we have this 
+> number of active
+> >> +        * counter that keep track of the number of IRQs 
+> expected to
+> >> +        * be handled for this channel. If there happen to 
+> be more than
+> >> +        * one IRQ to be ack:ed, we simply schedule this 
+> tasklet again.
+> >> +        */
+> >>                cohc->nbr_active_done--;
+> >
+> > Checkpatch made a justifiable wimper about this.  It looks like you
+> > wanted to delete that if() according to the previous unified patch?
+> >
 > 
-> The point is that in a well regulated system, the I cache shouldn't need
-> extra flushing in the kernel.  We should only be faulting in R-X pages.
+> Looks like it gets deleted later on in patch #3.  I took a stab at
+> fixing it up[1], or you can just send me a new series if that does not
+> look right to you.
 
-James, that's a pipedream.  If you have a processor which doesn't support
-NX, then the kernel marks all regions executable, even if the app only
-asks for RW protection.
+That's perfect, thanks Dan. I was splitting the patch up using
+some iterative kdiff3 excercises, I just checkpatch.pl:ed the
+end result, sorry.
 
-You end up with the protection masks always having VM_EXEC set in them,
-so there's no way to distinguish from the kernel POV which pages are
-going to be executed and those which aren't.
-
-And if you can't do that, you have to _always_ flush the I cache for
-every page fault, because you don't know if the I cache is out of sync
-with the page that you've just read in from disk - and therefore you
-may end up executing bad code instead of the glibc text that was
-intended.
-
-So here's the question: in a system where the responsibility for I-cache
-flushing is in userspace, how do you ensure that you can execute code
-in userspace to do this I-cache flushing without first having flushed
-the (speculatively prefetching) I-cache?
+Yours,
+Linus Walleij
