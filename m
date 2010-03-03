@@ -1,75 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096Ab0CCNOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 08:14:50 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:32810 "HELO
+	id S1754140Ab0CCNPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 08:15:14 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:40642 "HELO
 	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753994Ab0CCNOs (ORCPT
+	with SMTP id S1754105Ab0CCNPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 08:14:48 -0500
-Date: Wed, 3 Mar 2010 16:14:46 +0300
+	Wed, 3 Mar 2010 08:15:06 -0500
+Date: Wed, 3 Mar 2010 16:15:04 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12] ahci: Add platform driver
-Message-ID: <20100303131446.GA890@oksana.dev.rtsoft.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC 0/12] ahci: Add support for non-PCI devices
+Message-ID: <20100303131504.GA25973@oksana.dev.rtsoft.ru>
 Reply-To: avorontsov@ru.mvista.com
 References: <20100302182850.GA32057@oksana.dev.rtsoft.ru>
- <20100302182947.GL3445@oksana.dev.rtsoft.ru>
- <4B8D69D0.1050209@ru.mvista.com>
+ <4B8D846F.3080400@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4B8D69D0.1050209@ru.mvista.com>
+In-Reply-To: <4B8D846F.3080400@garzik.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 10:41:04PM +0300, Sergei Shtylyov wrote:
+On Tue, Mar 02, 2010 at 04:34:39PM -0500, Jeff Garzik wrote:
 [...]
-> >+static int __devinit ahci_probe(struct platform_device *pdev)
+> As demonstrated in libata-dev.git#libahci, I think the best route is
+> to move generic code into libahci.  In #libahci you will see
 > 
->  Does it make sense to make this driver hotplug capable?
-
-Probably not, at least for now. Will correct.
-
-[...]
-> >+	WARN_ON(ATA_MAX_QUEUE > AHCI_MAX_CMDS);
+> 	libahci -> common code
+> 	ahci -> standard PCI driver, req's libahci
+> 	mv-ahci -> Marvell AHCI driver, req's libahci
+> 	acard-ahci -> ACard AHCI driver, req's libahci
 > 
->   Hm...
-
-That was copied from the PCI driver.
-
-> >+	ahci_set_em_messages(hpriv, &pi);
-> >+
-> >+
+> and to this we could easily add
 > 
->   Extra newline?
-
-Yeah, that's all directly copied from the PCI driver. Will correct.
-
-[...]
-> >+	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+> 	platform-ahci -> platform AHCI driver, req's libahci
 > 
->   Could also use platform_get_irq()...
+> WARNING:  #libahci should not be used directly, it is meant for
+> illustration purposes only.  It has not been properly updated for
+> several recent ahci.c changes upstream, which implies that the
+> trivial-and-obvious task of moving generic code from ahci.c to
+> libahci.c must be redone.
 
-OK.
+Well, do I understand correctly that the only issue is the
+file names? I.e. in my patches, instead of keeping the library
+code in ahci.c, I should move the library code into libahci.c,
+and keep the PCI code in ahci.c?
 
-> >diff --git a/drivers/ata/ahci_platform.h b/drivers/ata/ahci_platform.h
-> >new file mode 100644
-> >index 0000000..f7dd576
-> >--- /dev/null
-> >+++ b/drivers/ata/ahci_platform.h
+Because, as far as I can see, the result of my patches is pretty
+much the same as in #libahci, except the file names and more
+things that can be reused (i.e. ahci_sht, ahci_ops -- I kept
+all this in the library part, since we want to share it with
+the platform driver).
+
+Also, I don't export function that aren't currently used
+by PCI or platform drivers, but in #libahci there are all
+exported. Should I keep it my way, or should I export all the
+functions (even if there are no any users of these)?
+
+> P.S.  Please use the email addresses in MAINTAINERS,
 > 
->   I doubt that it's good place for declaring the platform data which
-> will be used by the platform code. This file should be somewhere in
-> include/linux/, don't you think?
+> 	M:      Jeff Garzik <jgarzik@pobox.com>
+> 	L:      linux-ide@vger.kernel.org
+> 
+> The redhat.com email address is only used for legal (sign-off)
+> purposes, not normal use.
 
-Will change.
-
-Thanks!
+Got it, thanks!
 
 -- 
 Anton Vorontsov
