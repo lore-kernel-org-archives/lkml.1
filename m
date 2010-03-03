@@ -1,93 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642Ab0CCVgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:36:23 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:57589 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753284Ab0CCVgQ (ORCPT
+	id S1756665Ab0CCVhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:37:32 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:39325 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284Ab0CCVhY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:36:16 -0500
-Date: Wed, 3 Mar 2010 16:36:14 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip 2/2] x86: Issue at least one memory barrier in
-	stop_machine_text_poke().
-Message-ID: <20100303213614.GA29880@Krystal>
-References: <20100303212656.25645.48466.stgit@localhost6.localdomain6> <20100303212703.25645.50986.stgit@localhost6.localdomain6>
+	Wed, 3 Mar 2010 16:37:24 -0500
+Date: Wed, 3 Mar 2010 13:37:43 -0800 (PST)
+From: Sage Weil <sage@newdream.net>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 23/26] ceph: nfs re-export support
+In-Reply-To: <20100303074814.GA1030@infradead.org>
+Message-ID: <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net>
+References: <1267577217-31923-1-git-send-email-sage@newdream.net>
+ <1267577217-31923-24-git-send-email-sage@newdream.net> <20100303074814.GA1030@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100303212703.25645.50986.stgit@localhost6.localdomain6>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 16:33:02 up 40 days, 10 min,  6 users,  load average: 1.29, 0.60,
-	0.64
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Fix stop_machine_text_poke() to issue smp_mb() before exiting waiting
-> loop. Also, use ACCESS_ONCE() to check a flag according to Mathieu's
-> comment.
+On Wed, 3 Mar 2010, Christoph Hellwig wrote:
+> On Tue, Mar 02, 2010 at 04:46:54PM -0800, Sage Weil wrote:
+> > Basic NFS re-export support is included.  This mostly works.  However,
+> > Ceph's MDS design precludes the ability to generate a (small)
+> > filehandle that will be valid forever, so this is of limited utility.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jason Baron <jbaron@redhat.com>
-> ---
-> 
->  arch/x86/kernel/alternative.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-> index 635e4f4..3236a11 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -596,9 +596,9 @@ static int __kprobes stop_machine_text_poke(void *data)
->  		smp_wmb();	/* Make sure other cpus see that this has run */
->  		wrote_text = 1;
->  	} else {
-> -		while (!wrote_text)
-> -			smp_rmb();
-> -		sync_core();
-> +		while (!ACCESS_ONCE(wrote_text))
+> So don't include it if it's broken by design.
 
-Well, cpu_relax() has a "memory" clobber, so the access once is not required to
-ensure the variable is re-read. And, sorry to contradict my previous statement
-somewhat, but given that we don't care if the compiler fetches wrote_text in
-chunks or not, ACCESS_ONCE() is not required here. So rather than leaving people
-wondering why we put an ACCESS_ONCE() here, it's probably better to leave it
-out.
+Well, there are changes we can make to the MDS to make it work that are on 
+the roadmap (they'll also help with disaster recovery).  They will require 
+some change on the client side, though, so it's not like the current 
+implementation will suddenly work perfectly with a server-side upgrade.
 
-Thanks,
+That said, I don't think Ceph is the only filesystem that has this problem 
+(fat? fuse? cifs?), and it is still useful in its current state.  But I 
+can leave it off by default (via Kconfig option), or include a kern.log 
+warning, or leave it out entirely, if that's what people prefer.
 
-Mathieu
-
-> +			cpu_relax();
-> +		smp_mb();	/* Load wrote_text before following execution */
->  	}
->  
->  	flush_icache_range((unsigned long)tpp->addr,
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
+sage
