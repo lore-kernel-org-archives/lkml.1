@@ -1,43 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418Ab0CCXkL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 18:40:11 -0500
-Received: from kroah.org ([198.145.64.141]:54024 "EHLO coco.kroah.org"
+	id S1753845Ab0CCXo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 18:44:59 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46058 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938Ab0CCXkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 18:40:07 -0500
-Date: Wed, 3 Mar 2010 15:39:58 -0800
-From: Greg KH <greg@kroah.com>
-To: Hank Janssen <hjanssen@microsoft.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: Ringbuffer usage in Linux Hyper-V drivers
-Message-ID: <20100303233958.GA16513@kroah.com>
-References: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
- <20100217235223.GG12197@kroah.com>
- <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
-MIME-Version: 1.0
+	id S1753153Ab0CCXov convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 18:44:51 -0500
+Subject: Re: [PATCH 0/18][RFC] Nested Paging support for Nested SVM (aka NPT-Virtualization)
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+Date: Thu, 4 Mar 2010 00:44:48 +0100
+Cc: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <1282BA89-D8EB-499B-BC49-E50CA64E408D@suse.de>
+References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 04:42:27PM +0000, Hank Janssen wrote:
-> The ring buffer in the Hyper-V Linux drivers is used to communicate with the 
-> parent partition running Server 2008 Hyper-V. The ring buffer functionality on 
-> the Hyper-V Linux drivers is written to be functionally compatible with" the 
-> ring buffer functionality on the Hyper-V Server. Consequently, it is not 
-> possible to make any changes that might break the compatibility with server 
-> side ring buffer implementation.  
 
-Ok, that makes sense, feel free to remove that TODO item.
+On 03.03.2010, at 20:12, Joerg Roedel wrote:
 
-thanks for looking into this.
+> Hi,
+> 
+> here are the patches that implement nested paging support for nested
+> svm. They are somewhat intrusive to the soft-mmu so I post them as RFC
+> in the first round to get feedback about the general direction of the
+> changes.  Nevertheless I am proud to report that with these patches the
+> famous kernel-compile benchmark runs only 4% slower in the l2 guest as
+> in the l1 guest when l2 is single-processor. With SMP guests the
+> situation is very different. The more vcpus the guest has the more is
+> the performance drop from l1 to l2. 
+> Anyway, this post is to get feedback about the overall concept of these
+> patches.  Please review and give feedback :-)
 
-greg k-h
+Nice job! It's great to see you finally got around to it :-).
+
+Have you tracked what slows down SMP l2 guests yet? So far I've been assuming that IPIs just completely kill the performance, but I guess it shouldn't be that bad, especially now where you have sped up the #VMEXIT path that much.
+
+
+Alex
