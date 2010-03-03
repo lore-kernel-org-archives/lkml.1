@@ -1,125 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753741Ab0CCLIa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 06:08:30 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:55578 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399Ab0CCLI3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 06:08:29 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B8E43A2.20203@cam.ac.uk>
-Date: Wed, 03 Mar 2010 11:10:26 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
-MIME-Version: 1.0
-To: Dima Zavin <dmitriyz@google.com>
-CC: Jean Delvare <khali@linux-fr.org>, torvalds@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-References: <4B8C1867.7040201@cam.ac.uk>	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>	 <20100303103405.127020d8@hyperion.delvare> <404ea8001003030229j7b22329bgd24ac39255e78bde@mail.gmail.com>
-In-Reply-To: <404ea8001003030229j7b22329bgd24ac39255e78bde@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753809Ab0CCLJH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 06:09:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:23327 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752335Ab0CCLJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 06:09:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,573,1262592000"; 
+   d="scan'208";a="600879499"
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH] x86/mrst: Fix APB timer per cpu clockevent
+Date: Tue,  2 Mar 2010 21:01:34 -0800
+Message-Id: <1267592494-7723-1-git-send-email-jacob.jun.pan@linux.intel.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-> Jean,
-> 
-> Thanks for the prompt reply.
-> 
->>> I definitely see the need for what you guys are trying to accomplish.
->>> For example, currently, we use an input device for reporting events,
->>> and a separate misc device node for control
->>> (enable/disable/configure). It's definitely suboptimal, but there
->>> currently isn't anything there would let us do things cleanly.
->>>
->>> What I would love to see is a more generic sensors framework that
->>> handles different kinds of sensor devices, and different data
->>> acquisition schemes (sampled vs. change notifications).
->>>
->>> I would love to work with you to design something more generic.
->>
->> This can happen later, I see no reason to block the creation of the ALS
->> subsystem. Having a common framework for all ambient light sensor
->> drivers will already be a step forward compared to the current
-> 
-> Following the logic of putting the ALS subsystem under drivers/als, we
-> would then put the proximity subsystem under drivers/proximity, and
-> then an accelerometer subsystem under drivers/accelerometer, etc.
-> Each
-> with their own implementation of very similar set of interfaces. Is
-> that what you envision? I just figured that instead of creating
-> one-off interfaces for some subset of environmental sensors such as
-> als, we can add a sensors subsystem of which als is just an instance.
-> 
->> situation. If improvements are needed on top of this, this can happen
->> later.
-> 
-> I'm just concerned that instead of solving the actual problem, you are
-> adding what is essentially a temporary solution. This will only make
-> it harder to solve the real issue by introducing new interfaces which
-> will need to be obsoleted unless they are designed with care. What you
-> are proposing already needs improvements since there are plenty of
-> drivers floating out there from many OEMs/vendors that are not ALSs,
-> but essentially need a similar interface (e.g. proximity sensor).
-Actually, the reason we hived off ambient light sensors into their own
-subsystem was mainly that they typically have extremely simple interfaces
-and run at rather low rates.  I'm personally extremely interested in
-how to support other forms of sensor.  That is what my primary
-work at the moment on the IIO subsystem in staging is directed towards.
-Initially we did have light sensors within there (and there is one left
-at the moment).
+The current APB timer code incorrectly registers the static copy of the
+clockevent device for boot CPU. The per cpu clockevent should be used
+instead.
 
-However, having said that, we concluded that IIO was massive overkill for
-this particular form of sensor.  The typical read rate for these is a
-couple of Hz.  IIO is intended to handle the much more sophisticated
-devices and right now its still a fair way from being ready for an
-attempt at merging with the mainline kernel.  It is getting plenty
-of new drivers, but the core still needs some work.  Basically the usual
-argument of do things the simple way if you can came to the fore here.
-There was little if any overlap with functionality or interface with other
-sensor types in IIO so it didn't really make sense to have them there.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ arch/x86/kernel/apb_timer.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-Note there are many other complexities in how to handle the other sensors
-you mention. If you have a chance to take a look at the current form of
-IIO (and perhaps follow the discussions on linux-iio@vger.kernel.org)
-we would appreciate any comments on how we are going about it.
-> 
-> Furthermore, are there more patches coming for this subsystem? Based
-> on the above tree, it just seems to be a class device (without any
-> standard attributes) and a register/unregister function. It doesn't
-> seem to actually be doing anything. Registering with the als subsystem
-> at the moment buys the driver nothing. So, in its current state, I'm
-> not sure I see what this new common framework actually provides us,
-> and thus I'm not sure that it's actually a step forward. The drivers
-> are still responsible to provide all their own non-standard,
-> incompatible sysfs interfaces for exporting the sensor values.
-No the aren't.  The sysfs interface specification is exactly the reason this
-subsystem exists.  We could have taken the heavy weight route and done
-everything via callbacks etc to try and enforce naming, but instead went
-with the one that has been very successful for hwmon, that of a formal
-specification and driver review to ensure that all devices are compatible.
-
-In a sense, this subsystem is merely providing an alternative to hwmon for
-these devices seeing as they do not fall within the scope of hardware
-monitoring.
-> If
-> there are other patches for the als subsys that are then used by the
-> two drivers that got moved into drivers/als, I'd love to take a look
-> at them.
-The subsystem is deliberately kept simple, but there are patches for
-ACPI that add a further driver and a plan to move the tls2563 driver
-from IIO to als.  Note that some of these may involve extending the
-sysfs specification as appropriate to provide new functionality.
-
-Thanks,
-
-Jonathan
+diff --git a/arch/x86/kernel/apb_timer.c b/arch/x86/kernel/apb_timer.c
+index 1232fe7..6f20c6c 100644
+--- a/arch/x86/kernel/apb_timer.c
++++ b/arch/x86/kernel/apb_timer.c
+@@ -84,9 +84,10 @@ struct apbt_dev {
+ 
+ int disable_apbt_percpu __cpuinitdata;
+ 
++static DEFINE_PER_CPU(struct apbt_dev, cpu_apbt_dev);
++
+ #ifdef CONFIG_SMP
+ static unsigned int apbt_num_timers_used;
+-static DEFINE_PER_CPU(struct apbt_dev, cpu_apbt_dev);
+ static struct apbt_dev *apbt_devs;
+ #endif
+ 
+@@ -302,6 +303,7 @@ static void apbt_disable_int(int n)
+ static int __init apbt_clockevent_register(void)
+ {
+        struct sfi_timer_table_entry *mtmr;
++       struct apbt_dev *adev = &__get_cpu_var(cpu_apbt_dev);
+ 
+        mtmr = sfi_get_mtmr(APBT_CLOCKEVENT0_NUM);
+        if (mtmr == NULL) {
+@@ -329,22 +331,24 @@ static int __init apbt_clockevent_register(void)
+         * global if not used for per cpu timer.
+         */
+        apbt_clockevent.cpumask = cpumask_of(smp_processor_id());
++       adev->num = smp_processor_id();
++       memcpy(&adev->evt, &apbt_clockevent, sizeof(struct clock_event_device));
+ 
+        if (disable_apbt_percpu) {
+                apbt_clockevent.rating = APBT_CLOCKEVENT_RATING - 100;
+-               global_clock_event = &apbt_clockevent;
++		global_clock_event = &adev->evt;
+                printk(KERN_DEBUG "%s clockevent registered as global\n",
+                        global_clock_event->name);
+        }
+ 
+        if (request_irq(apbt_clockevent.irq, apbt_interrupt_handler,
+                IRQF_TIMER | IRQF_DISABLED | IRQF_NOBALANCING,
+-               apbt_clockevent.name, &apbt_clockevent)) {
++		apbt_clockevent.name, adev)) {
+                printk(KERN_ERR "Failed request IRQ for APBT%d\n",
+                        apbt_clockevent.irq);
+        }
+ 
+-       clockevents_register_device(&apbt_clockevent);
++       clockevents_register_device(&adev->evt);
+        /* Start APBT 0 interrupts */
+        apbt_enable_int(APBT_CLOCKEVENT0_NUM);
+ 
+-- 
+1.5.6.5
 
