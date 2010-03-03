@@ -1,67 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107Ab0CCNQw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 08:16:52 -0500
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:44659 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753874Ab0CCNQu (ORCPT
+	id S1754151Ab0CCNSE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 08:18:04 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:51191 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753999Ab0CCNSB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 08:16:50 -0500
-Subject: Re: [RFC][PATCH 0/2] Correct behavior for listxattr and 'trusted'
- xattrs
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       Alex Elder <aelder@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       a.gruenbacher@computer.org
-In-Reply-To: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
-References: <alpine.LRH.2.00.1003021845310.1594@tundra.namei.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 03 Mar 2010 08:02:58 -0500
-Message-Id: <1267621378.3436.15.camel@moss-pluto.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 08:18:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kjiTA5xCVO99hp6pyLaA8Yw2l0HcrpM7u2WRGTT6+clPCtrwNH6GGhPHEXhzcAiIG8
+         Xm393M/RyLBedwGnag6DQWg96yWOcoi1W+DkNoFxiVWEZCMPcyOMgtdazXbziaawBsbh
+         DiwnFQFq6DugLVOS56TwllBIJDSMTuTV4Fkfo=
+MIME-Version: 1.0
+In-Reply-To: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>
+References: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>
+Date: Wed, 3 Mar 2010 14:17:59 +0100
+Message-ID: <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>
+Subject: Re: Gspca USB driver zc3xx and STV06xx probe the same device ..
+From: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jean-Francois Moine <moinejf@free.fr>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 19:01 +1100, James Morris wrote:
-> I noticed that there are differences in the behavior of listxattr(2) for 
-> xattrs in the trusted namespace.
-> 
-> Some filesystems, such as ext[234], require CAP_SYS_ADMIN for this, i.e. 
-> trusted xattr names are hidden from unprivileged users.
-> 
-> I audited the kernel for users of the trusted xattr namespace, and found 
-> the following filesystems not checking for CAP_SYS_ADMIN:
-> 
->   - jffs2
->   - ocfs2
->   - btrfs
->   - xfs
-> 
-> I've created patches for jffs2 (tested) and ocfs2 (not tested) to add the 
-> check -- see following emails. btrfs and xfs have custom listxattr 
-> operations and will need a bit more work to fix.
-> 
-> I'm not sure what the initial intention was for the behavior, although 
-> given that several major filesystems are have been fielded with the 
-> CAP_SYS_ADMIN check, it seems most prudent to make this the standard 
-> behavior for all filesystems, in case any users are depending on it.
-> 
-> Thoughts?
+2010/3/3 Gabriel C <nix.or.die@googlemail.com>:
+> Hello,
+>
+> I own a QuickCam Messanger webcam.. I didn't used it in ages but today
+> I plugged it in..
+> ( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
+>
+> Now zc3xx and stv06xx are starting both to probe the device .. In
+> 2.6.33 that result in a not working webcam.
+> ( rmmod both && modprobe zc3xx one seems to fix that )
+>
+> On current git head zc3xx works fine even when both are probing the device.
+>
+> Also I noticed stv06xx fails anyway for my webcam with this error:
+> ....
+>
+> [  360.910243] STV06xx: Configuring camera
+> [  360.910244] STV06xx: st6422 sensor detected
+> [  360.910245] STV06xx: Initializing camera
+> [  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
+> [  361.161976] usbcore: registered new interface driver STV06xx
+> [  361.161978] STV06xx: registered
+> .....
+>
+> Next thing is stv06xx tells it is an st6422 sensor and does not work
+> with it while zc3xx tells it is an HV7131R(c) sensor and works fine
+> with it.
+>
+> What is right ?
 
-Should it be using has_capability_noaudit() rather than capable() so
-that merely calling listxattr() on a file that happens to have trusted
-xattrs does not set PF_SUPERPRIV on the task and does not trigger an
-audit message?
+Hans,
+As you added support for the st6422 sensor to the stv06xx subdriver I
+imagine you best know what's going on.
 
--- 
-Stephen Smalley
-National Security Agency
+Best regards,
+Erik
 
+>
+>
+> Best Regards,
+>
+> Gabriel C
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
