@@ -1,74 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451Ab0CCRzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:55:49 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:56910 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755431Ab0CCRzn (ORCPT
+	id S1755466Ab0CCRzy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:55:54 -0500
+Received: from oceanic.CalvaEDI.COM ([89.202.194.168]:65026 "EHLO
+	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755431Ab0CCRzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:55:43 -0500
-Message-ID: <4B8EA21A.2040601@ru.mvista.com>
-Date: Wed, 03 Mar 2010 20:53:30 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Mar 2010 12:55:50 -0500
+Message-ID: <4B8EAB94.4090304@Calva.COM>
+Date: Wed, 03 Mar 2010 19:33:56 +0100
+From: John Hughes <john@Calva.COM>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, Sergei Shtylyov <sshtylyov@mvista.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/11] ahci: Export generic AHCI symbols, turn libahci
- into a separate module
-References: <20100303171713.GA6322@oksana.dev.rtsoft.ru> <20100303171749.GJ12362@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100303171749.GJ12362@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 15426] New: Running many copies of bonnie++
+ on different filesystems seems to deadlock in sync
+References: <bug-15426-10286@http.bugzilla.kernel.org/> <20100302161627.bf02d0a2.akpm@linux-foundation.org> <4B8E517E.3010702@Calva.COM> <20100303115015.GN5768@kernel.dk> <4B8E5805.30505@Calva.COM> <20100303120317.GP5768@kernel.dk>
+In-Reply-To: <20100303120317.GP5768@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Anton Vorontsov wrote:
-
-> This is needed for non-PCI drivers that will be added soon.
+Jens Axboe wrote:
+> Our sync is currently broken in that regard, since it'll wait for too
+> long. We have a debated patch going, I have included it below. Any
+> chance you could give it a whirl?
 >
-> Since the symbols are exported now, libahci and ahci can be built as
-> a separate modules.
+> The semantics of sync are supposed to be 'wait for dirty IO generated
+> BEFORE this sync call'.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/ata/Kconfig   |    8 +++++++-
->  drivers/ata/Makefile  |    3 ++-
->  drivers/ata/libahci.c |   20 ++++++++++++++++++++
->  3 files changed, 29 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index 01c52c4..365a9da 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -59,12 +59,18 @@ config SATA_PMP
->  
->  config SATA_AHCI
->  	tristate "AHCI SATA support"
-> -	depends on PCI
->  	help
->  	  This option enables support for AHCI Serial ATA.
->  
->  	  If unsure, say N.
->  
-> +config SATA_AHCI_PCI
-> +	tristate "PCI AHCI SATA support"
-> +	depends on SATA_AHCI && PCI
 >   
-
-   Perhaps it's worth to turn that into select SATA_AHCI and make 
-SATA_AHCI invisible to users instead, so that each particular AHCI 
-implementation could select it.
-
-> +	default y
->   
-
-   Why force the default "y" if the predecessor option SATA_AHCI didn't 
-do it?
-
-MBR, Sergei
+This patch doesn't seem to change things.  It's a bit late here, I'll 
+check my results tomorrow.
 
