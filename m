@@ -1,89 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886Ab0CCFcX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 00:32:23 -0500
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:51607 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093Ab0CCFcV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 00:32:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Nxv2ca9g56dQ0WmI/JUPKHn5per9sdVGC6RYOacwc034YICCtBY3jfCzs7llhmv1u/
-         nBqNI/JwRyD3+8PcX6ppu7bB6u+SPNq5qFWEXkoD+HWrCHmfWIAHOLPJ0uhVY7PPKSmq
-         fLX9YpxOjTrS41ZkUJMaqle/U2g0SoQ0ksr3E=
-MIME-Version: 1.0
-In-Reply-To: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-Date: Wed, 3 Mar 2010 00:32:20 -0500
-Message-ID: <b4198de61003022132q2c5f307cwaf9bd1d655ae5a4@mail.gmail.com>
-Subject: Re: [PATCH] alpha: use __ratelimit
-From: Matt Turner <mattst88@gmail.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1753115Ab0CCFeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 00:34:50 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47216 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752006Ab0CCFes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 00:34:48 -0500
+Date: Wed, 3 Mar 2010 16:34:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: build warning after merge of the pcmcia tree
+Message-Id: <20100303163443.97767036.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Mar_2010_16_34_43_+1100_H0Zoikr1XXZAu13."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 28, 2010 at 5:58 AM, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> Replace open-coded rate limiting logic with __ratelimit().
->
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Richard Henderson <rth@twiddle.net>
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Matt Turner <mattst88@gmail.com>
-> Cc: linux-alpha@vger.kernel.org
-> ---
->  arch/alpha/kernel/traps.c |   10 +++-------
->  1 files changed, 3 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/alpha/kernel/traps.c b/arch/alpha/kernel/traps.c
-> index 6ee7655..b14f015 100644
-> --- a/arch/alpha/kernel/traps.c
-> +++ b/arch/alpha/kernel/traps.c
-> @@ -17,6 +17,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/kallsyms.h>
-> +#include <linux/ratelimit.h>
->
->  #include <asm/gentrap.h>
->  #include <asm/uaccess.h>
-> @@ -771,8 +772,7 @@ asmlinkage void
->  do_entUnaUser(void __user * va, unsigned long opcode,
->              unsigned long reg, struct pt_regs *regs)
->  {
-> -       static int cnt = 0;
-> -       static unsigned long last_time;
-> +       static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
->
->        unsigned long tmp1, tmp2, tmp3, tmp4;
->        unsigned long fake_reg, *reg_addr = &fake_reg;
-> @@ -783,15 +783,11 @@ do_entUnaUser(void __user * va, unsigned long opcode,
->           with the unaliged access.  */
->
->        if (!test_thread_flag (TIF_UAC_NOPRINT)) {
-> -               if (cnt >= 5 && time_after(jiffies, last_time + 5 * HZ)) {
-> -                       cnt = 0;
-> -               }
-> -               if (++cnt < 5) {
-> +               if (__ratelimit(&ratelimit)) {
->                        printk("%s(%d): unaligned trap at %016lx: %p %lx %ld\n",
->                               current->comm, task_pid_nr(current),
->                               regs->pc - 4, va, opcode, reg);
->                }
-> -               last_time = jiffies;
->        }
->        if (test_thread_flag (TIF_UAC_SIGBUS))
->                goto give_sigbus;
-> --
-> 1.6.0.6
+--Signature=_Wed__3_Mar_2010_16_34_43_+1100_H0Zoikr1XXZAu13.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks, applied.
+Hi Dominik,
 
-Matt
+After merging the pcmcia tree, today's linux-next build (x86_64
+allmodconfig) produced this warning:
+
+drivers/pcmcia/cistpl.c: In function 'pccard_get_tuple_data':
+drivers/pcmcia/cistpl.c:650: warning: comparison of distinct pointer types =
+lacks a cast
+
+Introduced by commit d40701ddae35b6594a7366ab5617abe3c24c17e1 ("pcmcia:
+CodingStyle fixes").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Mar_2010_16_34_43_+1100_H0Zoikr1XXZAu13.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuN9PMACgkQjjKRsyhoI8zkFgCcDSmGzcbRpe2rQCI1uag1Qn5f
+FwIAn1CfCEbuiTwT4VP1MpzvEtOlCY9v
+=ciAI
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Mar_2010_16_34_43_+1100_H0Zoikr1XXZAu13.--
