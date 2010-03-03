@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517Ab0CCPjB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:39:01 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:62443 "EHLO
+	id S1753613Ab0CCPj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:39:29 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:35833 "EHLO
 	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325Ab0CCPij (ORCPT
+	with ESMTP id S1753219Ab0CCPii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:38:39 -0500
+	Wed, 3 Mar 2010 10:38:38 -0500
 From: Eric B Munson <ebmunson@us.ibm.com>
 To: a.p.zijlstra@chello.nl
 Cc: paulus@samba.org, mingo@elte.hu, acme@redhat.com,
        linux-kernel@vger.kernel.org, Eric B Munson <ebmunson@us.ibm.com>
-Subject: [PATCH 2/5] Change add_hist_entry to take the tree root instead of session
-Date: Wed,  3 Mar 2010 15:38:24 +0000
-Message-Id: <2e334e4fdc4bf960759b03f3a2700ba46fee4320.1267630395.git.ebmunson@us.ibm.com>
+Subject: [PATCH 3/5] Add storage for seperating event types in report
+Date: Wed,  3 Mar 2010 15:38:25 +0000
+Message-Id: <238b8862a0cf50fef7803c4bcb5246c53c64098d.1267630395.git.ebmunson@us.ibm.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <cover.1267630395.git.ebmunson@us.ibm.com>
 References: <cover.1267630395.git.ebmunson@us.ibm.com>
@@ -23,103 +23,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to minimize the impact of storing multiple events in a report
-this function will now take the root of the histogram tree so that the
-logic for selecting the proper tree can be inserted before the call.
+This patch adds the structures necessary to count each event type
+independently in perf report.
 
 Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
 ---
- tools/perf/builtin-annotate.c |    2 +-
- tools/perf/builtin-diff.c     |    3 ++-
- tools/perf/builtin-report.c   |    3 ++-
- tools/perf/util/hist.c        |    6 +++---
- tools/perf/util/hist.h        |    3 ++-
- 5 files changed, 10 insertions(+), 7 deletions(-)
+ tools/perf/util/event.h   |    9 +++++++++
+ tools/perf/util/session.c |    1 +
+ tools/perf/util/session.h |    1 +
+ 3 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 5ec5de9..4b734c7 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -116,7 +116,7 @@ static int perf_session__add_hist_entry(struct perf_session *self,
- 		return 0;
- 	}
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index 50a7132..a33b949 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -99,6 +99,15 @@ struct events_stats {
+ 	u64 lost;
+ };
  
--	he = __perf_session__add_hist_entry(self, al, NULL, count, &hit);
-+	he = __perf_session__add_hist_entry(&self->hists, al, NULL, count, &hit);
- 	if (he == NULL)
- 		return -ENOMEM;
++struct event_stat_id {
++	struct rb_node		rb_node;
++	struct rb_root		hists;
++	struct events_stats	stats;
++	u64			config;
++	u64			event_stream;
++	u32			type;
++};
++
+ void event__print_totals(void);
  
-diff --git a/tools/perf/builtin-diff.c b/tools/perf/builtin-diff.c
-index 18b3f50..20df735 100644
---- a/tools/perf/builtin-diff.c
-+++ b/tools/perf/builtin-diff.c
-@@ -26,7 +26,8 @@ static int perf_session__add_hist_entry(struct perf_session *self,
- 					struct addr_location *al, u64 count)
- {
- 	bool hit;
--	struct hist_entry *he = __perf_session__add_hist_entry(self, al, NULL,
-+	struct hist_entry *he = __perf_session__add_hist_entry(&self->hists,
-+							       al, NULL,
- 							       count, &hit);
- 	if (he == NULL)
- 		return -ENOMEM;
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index cfc655d..cd16e6a 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -56,7 +56,8 @@ static int perf_session__add_hist_entry(struct perf_session *self,
- 	if ((sort__has_parent || symbol_conf.use_callchain) && chain)
- 		syms = perf_session__resolve_callchain(self, al->thread,
- 						       chain, &parent);
--	he = __perf_session__add_hist_entry(self, al, parent, count, &hit);
-+	he = __perf_session__add_hist_entry(&self->hists, al, parent,
-+					    count, &hit);
- 	if (he == NULL)
- 		return -ENOMEM;
+ struct perf_session;
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 0de7258..eed1cb8 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -70,6 +70,7 @@ struct perf_session *perf_session__new(const char *filename, int mode, bool forc
  
-diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
-index e8daf5c..55dd911 100644
---- a/tools/perf/util/hist.c
-+++ b/tools/perf/util/hist.c
-@@ -12,12 +12,12 @@ struct callchain_param	callchain_param = {
-  * histogram, sorted on item, collects counts
-  */
- 
--struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
-+struct hist_entry *__perf_session__add_hist_entry(struct rb_root *hists,
- 						  struct addr_location *al,
- 						  struct symbol *sym_parent,
- 						  u64 count, bool *hit)
- {
--	struct rb_node **p = &self->hists.rb_node;
-+	struct rb_node **p = &hists->rb_node;
- 	struct rb_node *parent = NULL;
- 	struct hist_entry *he;
- 	struct hist_entry entry = {
-@@ -53,7 +53,7 @@ struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
- 		return NULL;
- 	*he = entry;
- 	rb_link_node(&he->rb_node, parent, p);
--	rb_insert_color(&he->rb_node, &self->hists);
-+	rb_insert_color(&he->rb_node, hists);
- 	*hit = false;
- 	return he;
- }
-diff --git a/tools/perf/util/hist.h b/tools/perf/util/hist.h
-index e5f99b2..7b48590 100644
---- a/tools/perf/util/hist.h
-+++ b/tools/perf/util/hist.h
-@@ -10,8 +10,9 @@ struct perf_session;
- struct hist_entry;
- struct addr_location;
- struct symbol;
-+struct rb_root;
- 
--struct hist_entry *__perf_session__add_hist_entry(struct perf_session *self,
-+struct hist_entry *__perf_session__add_hist_entry(struct rb_root *hists,
- 						  struct addr_location *al,
- 						  struct symbol *parent,
- 						  u64 count, bool *hit);
+ 	memcpy(self->filename, filename, len);
+ 	self->threads = RB_ROOT;
++	self->stats_by_id = RB_ROOT;
+ 	self->last_match = NULL;
+ 	self->mmap_window = 32;
+ 	self->cwd = NULL;
+diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
+index 31950fc..5c33417 100644
+--- a/tools/perf/util/session.h
++++ b/tools/perf/util/session.h
+@@ -20,6 +20,7 @@ struct perf_session {
+ 	struct thread		*last_match;
+ 	struct map		*vmlinux_maps[MAP__NR_TYPES];
+ 	struct events_stats	events_stats;
++	struct rb_root		stats_by_id;
+ 	unsigned long		event_total[PERF_RECORD_MAX];
+ 	unsigned long		unknown_events;
+ 	struct rb_root		hists;
 -- 
 1.6.3.3
 
