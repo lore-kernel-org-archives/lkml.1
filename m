@@ -1,62 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704Ab0CCOe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 09:34:59 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44507 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754188Ab0CCOe6 (ORCPT
+	id S1754604Ab0CCOnJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 09:43:09 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:54388 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754424Ab0CCOnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 09:34:58 -0500
-Date: Wed, 3 Mar 2010 15:34:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [patch] slab: add memory hotplug support
-Message-ID: <20100303143450.GA25500@basil.fritz.box>
-References: <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box> <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com> <20100302125306.GD19208@basil.fritz.box> <84144f021003020704s3abafc24t9b8ab34234094b79@mail.gmail.com>
+	Wed, 3 Mar 2010 09:43:05 -0500
+Date: Wed, 3 Mar 2010 22:42:40 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Steffen Klassert <steffen.klassert@secunet.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: tip: origin tree boot crash
+Message-ID: <20100303144240.GA14373@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20091204135530.GA29371@gondor.apana.org.au> <20100226004914.GA20812@gondor.apana.org.au> <20100301075024.GA4753@elte.hu> <20100301145519.GB20729@secunet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f021003020704s3abafc24t9b8ab34234094b79@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20100301145519.GB20729@secunet.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The patch looks far more complicated than my simple fix.
+On Mon, Mar 01, 2010 at 03:55:19PM +0100, Steffen Klassert wrote:
 > 
-> I wouldn't exactly call the fallback_alloc() games "simple".
-
-I have to disagree on that.  It was the most simple fix I could
-come up with, least intrusive to legacy like slab is.
-
-> > Is more complicated now better?
+> On Mon, Mar 01, 2010 at 08:50:24AM +0100, Ingo Molnar wrote:
+> > 
+> > * Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> > 
+> > >       crypto: pcrypt - Add pcrypt crypto parallelization wrapper
+> > 
+> > -tip testing started triggering the following frequent boot crash yesterday, 
+> > on 64-bit x86:
+> > 
+> >  |  calling  pcrypt_init+0x0/0xee @ 1
+> >  |  BUG: unable to handle kernel NULL pointer dereference at (null)
+> >  |  IP: [<ffffffff8126550b>] memcpy+0xb/0xb0
+> >  |  Call Trace:
+> >  |   [<ffffffff810c2f38>] ? padata_alloc+0x98/0x150
+> >  |   [<ffffffff82158c51>] ? pcrypt_init+0x0/0xee
+> >  |   [<ffffffff82158ccc>] pcrypt_init+0x7b/0xee
+> > 
 > 
-> Heh, heh. You can't post the oops, you don't want to rework your
+> Ugh, it seems that I forgot to allocate one of the cpumasks. Looking at the
+> configs of my test systems I noticed, that CONFIG_CPUMASK_OFFSTACK was
+> not set on all the configs, so I did not notice it.
+> 
+> The patch below fixes the boot crash if CONFIG_CPUMASK_OFFSTACK is
+> enabled on my test systems. Does the patch fix it for you too?
 
-The missing oops was about the timer race, not about this one.
+Ingo, any luck with this patch from Steffen?
 
-> patches as per review comments, and now you complain about David's
-> patch without one bit of technical content. I'm sorry but I must
-
-Well sorry I'm just a bit frustrated about the glacial progress on what
-should be relatively straight forward fixes.
-
-IMHO something like my patch should have gone into .33 and any more
-complicated reworks like this into .34.
-
-> But anyway, if you have real technical concerns over the patch, please
-> make them known; otherwise I'd much appreciate a Tested-by tag from
-> you for David's patch.
-
-If it works it would be ok for me. The main concern would be to actually
-get it fixed.
-
--Andi
-
+Cheers,
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
