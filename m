@@ -1,118 +1,186 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244Ab0CCVIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:08:48 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:41411 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162Ab0CCVIn (ORCPT
+	id S1755382Ab0CCVJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:09:00 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:53984 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755263Ab0CCVIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:08:43 -0500
-Subject: [PATCH] Forcing capacity sizes for block devices (RFC)
-From: Clemens Fruhwirth <clemens@endorphin.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Wed, 03 Mar 2010 22:08:25 +0100
-Message-ID: <1267650505.29681.20.camel@ghanima>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 16:08:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LYlHWmQUX/eeAjhvf+MoVreduESacyditjpT0XHzCyBr6NPtBp0BZ4pgP1buwV5wYg
+         6wmIW6ise3t/orPEOijOxBClN0CDbdW8SR37u8EYmak1oDrGvzncjGSRrwz6w1mnCRA6
+         qQlx+0z7RVrs1oIprPyD+nKYcLqzDmsPah2/I=
+Date: Wed, 3 Mar 2010 22:08:49 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       eranian@google.com, robert.richter@amd.com
+Subject: Re: [RFC][PATCH 09/11] perf, x86: Implement
+	PERF_SAMPLE_BRANCH_STACK
+Message-ID: <20100303210846.GD5194@nowhere>
+References: <20100303163936.906011640@chello.nl> <20100303164306.526626387@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303164306.526626387@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this mail I like to restart a discussion about a patch I proposed
-on linux-scsi. Unfortunately my attempt to restart the discussion there
-failed. That is why I like to try it with a broader audience.
+On Wed, Mar 03, 2010 at 05:39:45PM +0100, Peter Zijlstra wrote:
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  arch/x86/kernel/cpu/perf_event.c           |   14 +++-------
+>  arch/x86/kernel/cpu/perf_event_intel.c     |   10 ++++++-
+>  arch/x86/kernel/cpu/perf_event_intel_ds.c  |   16 ++++--------
+>  arch/x86/kernel/cpu/perf_event_intel_lbr.c |   20 ++++++++-------
+>  include/linux/perf_event.h                 |   27 +++++++++++++++++---
+>  kernel/perf_event.c                        |   38 ++++++++++++++++++++++-------
+>  6 files changed, 83 insertions(+), 42 deletions(-)
+> 
+> Index: linux-2.6/include/linux/perf_event.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/perf_event.h
+> +++ linux-2.6/include/linux/perf_event.h
+> @@ -126,8 +126,9 @@ enum perf_event_sample_format {
+>  	PERF_SAMPLE_STREAM_ID			= 1U << 9,
+>  	PERF_SAMPLE_RAW				= 1U << 10,
+>  	PERF_SAMPLE_REGS			= 1U << 11,
+> +	PERF_SAMPLE_BRANCH_STACK		= 1U << 12,
+>  
+> -	PERF_SAMPLE_MAX = 1U << 12,		/* non-ABI */
+> +	PERF_SAMPLE_MAX = 1U << 13,		/* non-ABI */
+>  };
+>  
+>  /*
+> @@ -395,9 +396,14 @@ enum perf_event_type {
+>  	 *	{ struct read_format	values;	  } && PERF_SAMPLE_READ
+>  	 * 	{ struct pt_regs	regs;	  } && PERF_SAMPLE_REGS
+>  	 *
+> -	 *	{ u64			nr,
+> +	 *	{ u64			nr;
+>  	 *	  u64			ips[nr];  } && PERF_SAMPLE_CALLCHAIN
+>  	 *
+> +	 * 	{ u64			nr;
+> +	 * 	  { u64 from, to, flags;
+> +	 * 	  }			lbr[nr];  } && PERF_SAMPLE_BRANCH_STACK
+> +	 *
+> +	 *
+>  	 *	#
+>  	 *	# The RAW record below is opaque data wrt the ABI
+>  	 *	#
+> @@ -469,6 +475,17 @@ struct perf_raw_record {
+>  	void				*data;
+>  };
+>  
+> +struct perf_branch_entry {
+> +	__u64				from;
+> +	__u64				to;
+> +	__u64				flags;
+> +};
+> +
+> +struct perf_branch_stack {
+> +	__u64				nr;
+> +	struct perf_branch_entry	entries[0];
+> +};
+> +
+>  struct task_struct;
+>  
+>  /**
+> @@ -803,13 +820,15 @@ struct perf_sample_data {
+>  	struct perf_callchain_entry	*callchain;
+>  	struct perf_raw_record		*raw;
+>  	struct pt_regs			*regs;
+> +	struct perf_branch_stack	*branches;
+>  };
+>  
+>  static inline
+>  void perf_sample_data_init(struct perf_sample_data *data, u64 addr)
+>  {
+> -	data->addr = addr;
+> -	data->raw  = NULL;
+> +	data->addr     = addr;
+> +	data->raw      = NULL;
+> +	data->branches = NULL;
+>  }
+>  
+>  extern void perf_output_sample(struct perf_output_handle *handle,
+> Index: linux-2.6/kernel/perf_event.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/perf_event.c
+> +++ linux-2.6/kernel/perf_event.c
+> @@ -3189,12 +3189,9 @@ void perf_output_sample(struct perf_outp
+>  
+>  	if (sample_type & PERF_SAMPLE_CALLCHAIN) {
+>  		if (data->callchain) {
+> -			int size = 1;
+> +			int size = sizeof(u64);
+>  
+> -			if (data->callchain)
+> -				size += data->callchain->nr;
+> -
+> -			size *= sizeof(u64);
+> +			size += data->callchain->nr * sizeof(u64);
+>  
+>  			perf_output_copy(handle, data->callchain, size);
+>  		} else {
+> @@ -3203,6 +3200,20 @@ void perf_output_sample(struct perf_outp
+>  		}
+>  	}
+>  
+> +	if (sample_type & PERF_SAMPLE_BRANCH_STACK) {
+> +		if (data->branches) {
+> +			int size = sizeof(u64);
+> +
+> +			size += data->branches->nr *
+> +				sizeof(struct perf_branch_entry);
+> +
+> +			perf_output_copy(handle, data->branches, size);
+> +		} else {
+> +			u64 nr = 0;
+> +			perf_output_put(handle, nr);
+> +		}
+> +	}
+> +
+>  	if (sample_type & PERF_SAMPLE_RAW) {
+>  		if (data->raw) {
+>  			perf_output_put(handle, data->raw->size);
+> @@ -3291,14 +3302,25 @@ void perf_prepare_sample(struct perf_eve
+>  	}
+>  
+>  	if (sample_type & PERF_SAMPLE_CALLCHAIN) {
+> -		int size = 1;
+> +		int size = sizeof(u64);
+>  
+>  		data->callchain = perf_callchain(regs);
+>  
+>  		if (data->callchain)
+> -			size += data->callchain->nr;
+> +			size += data->callchain->nr * sizeof(u64);
+> +
+> +		header->size += size;
+> +	}
+>  
+> -		header->size += size * sizeof(u64);
+> +	if (sample_type & PERF_SAMPLE_BRANCH_STACK) {
+> +		int size = sizeof(u64);
+> +
+> +		if (data->branches) {
+> +			size += data->branches->nr *
+> +				sizeof(struct perf_branch_entry);
+> +		}
+> +
+> +		header->size += size;
+>  	}
 
-My problem starts with my SD card reader, which is kind of broken in the
-sense that it fails to detect the SD card size properly. My first mail
-to linux-scsi http://marc.info/?l=linux-scsi&m=125555540311307&w=2
-explains why it is broken (ignored additional device flags) and also
-contains a patch to force the block device to a certain size. After the
-kernel internal limit on device addresses is removed, my SD card --
-despite not knowing the correct size -- is able to handle the write
-requests correctly. 
 
-My initial attempt was to patch the SCSI layer to raise the kernel
-internal device address limit to the correct size (using a new ioctl
-call + a little user space program). Grant Grundler gave the good
-suggestion to make the "size" attribute of the block device in /sys
-writable instead of using a new interface. I rewrote the patch:
-http://marc.info/?l=linux-scsi&m=126098230006530&w=2 
 
-Bartlomiej Zolnier joined
-http://marc.info/?l=linux-scsi&m=126143291721837&w=2 and expressed his
-preference for an automatic solution instead of manual intervention. He
-favored to use the partition table to get the device sizes (iirc that's
-the behavior we see on Windows). I tried to explain why this is a bad
-idea http://marc.info/?l=linux-scsi&m=126166205514087&w=2 and why manual
-intervention is still necessary, i.e. for unformated cards. 
-
-The problem that is still open in my opinion is that the 
-
-   p->nr_sects = val;
-
-line in the following patch should be replaced by something that
-properly informs the block layer about the size change. set_capacity
-from include/linux/genhd.h is a potential candidate, which also sets
-nr_sects but only after dereferencing a gendisk structure, so it is no
-drop-in replacement for that line above.
-
-Feedback is appreciated. Original patch below. 
-
-Make the size attribute of block devices writable via sysfs. This allows userspace to force
-device boundaries in cases where the device driver is unable to detect the correct size, as
-with spec-incompliant SD card readers.
-
-diff -uprN -X linux-2.6.32-vanilla/Documentation/dontdiff linux-2.6.32-vanilla/block/genhd.c linux-2.6.32-patched/block/genhd.c
---- linux-2.6.32-vanilla/block/genhd.c	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.32-patched/block/genhd.c	2009-12-15 14:38:24.962463446 +0100
-@@ -865,7 +865,7 @@ static DEVICE_ATTR(range, S_IRUGO, disk_
- static DEVICE_ATTR(ext_range, S_IRUGO, disk_ext_range_show, NULL);
- static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
- static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
--static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
-+static DEVICE_ATTR(size, S_IRUGO | S_IWUSR, part_size_show, part_size_set);
- static DEVICE_ATTR(alignment_offset, S_IRUGO, disk_alignment_offset_show, NULL);
- static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
- static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
-diff -uprN -X linux-2.6.32-vanilla/Documentation/dontdiff linux-2.6.32-vanilla/fs/partitions/check.c linux-2.6.32-patched/fs/partitions/check.c
---- linux-2.6.32-vanilla/fs/partitions/check.c	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.32-patched/fs/partitions/check.c	2009-12-19 10:38:58.745294907 +0100
-@@ -219,6 +219,18 @@ ssize_t part_size_show(struct device *de
- 	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
- }
- 
-+ssize_t part_size_set(struct device *dev,
-+		      struct device_attribute *attr, char *buf, size_t len)
-+{
-+	struct hd_struct *p = dev_to_part(dev);
-+	unsigned long long val;
-+	if (strict_strtoull(buf, 0, &val))
-+		return -EINVAL;
-+
-+	p->nr_sects = val;
-+	return len;
-+}
-+
- ssize_t part_alignment_offset_show(struct device *dev,
- 				   struct device_attribute *attr, char *buf)
- {
-diff -uprN -X linux-2.6.32-vanilla/Documentation/dontdiff linux-2.6.32-vanilla/include/linux/genhd.h linux-2.6.32-patched/include/linux/genhd.h
---- linux-2.6.32-vanilla/include/linux/genhd.h	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.32-patched/include/linux/genhd.h	2009-12-19 10:40:30.900871273 +0100
-@@ -549,6 +549,9 @@ extern void blk_unregister_region(dev_t 
- 
- extern ssize_t part_size_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf);
-+extern ssize_t part_size_set(struct device *dev,
-+			     struct device_attribute *attr, char *buf,
-+			     size_t len);
- extern ssize_t part_stat_show(struct device *dev,
- 			      struct device_attribute *attr, char *buf);
- extern ssize_t part_inflight_show(struct device *dev,
-
-Signed-off-by: Clemens Fruhwirth <clemens@endorphin.org>
-Reviewed-by: Grant Grundler <grundler@google.com>
-
+That looks good to me, (at least the generic part, as I don't
+know enough the x86 part to tell).
 
