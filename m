@@ -1,69 +1,246 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404Ab0CCQhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:37:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47280 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754348Ab0CCQho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:37:44 -0500
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
- events
-From: Peter Zijlstra <peterz@infradead.org>
-To: rostedt@goodmis.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <1267632387.10871.59.camel@gandalf.stny.rr.com>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
-	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
-	 <1267632387.10871.59.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 17:37:38 +0100
-Message-ID: <1267634258.25158.88.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1754511Ab0CCQiC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:38:02 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55248 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754460Ab0CCQh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 11:37:56 -0500
+Date: Wed, 3 Mar 2010 11:37:15 -0500
+From: Josef Bacik <josef@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] cleanup __generic_block_fiemap and fix a few minor issues
+Message-ID: <20100303163715.GB2215@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 11:06 -0500, Steven Rostedt wrote:
-> On Wed, 2010-03-03 at 07:55 +0100, Frederic Weisbecker wrote:
-> 
-> > +/*
-> >   * Output
-> >   */
-> >  static bool perf_output_space(struct perf_mmap_data *data, unsigned long tail,
-> > @@ -4337,6 +4347,8 @@ static const struct pmu perf_ops_task_clock = {
-> >  void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
-> >  			  int entry_size)
-> >  {
-> > +	struct pt_regs regs;
-> > +
-> >  	struct perf_raw_record raw = {
-> >  		.size = entry_size,
-> >  		.data = record,
-> > @@ -4347,14 +4359,11 @@ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
-> >  		.raw = &raw,
-> >  	};
-> >  
-> > -	struct pt_regs *regs = get_irq_regs();
-> > -
-> > -	if (!regs)
-> > -		regs = task_pt_regs(current);
-> > +	PERF_SAVE_REGS(&regs);
-> >  
-> >  	/* Trace events already protected against recursion */
-> >  	do_perf_sw_event(PERF_TYPE_TRACEPOINT, event_id, count, 1,
-> > -				&data, regs);
-> > +				&data, &regs);
-> 
-> Off-topic: Why is the above a perf sw event? Couldn't that also be a
-> normal TRACE_EVENT()?
+This patch keeps getting lost, so I'm posting it again.  Andrew has complained
+several times about the format of this function, the type'ing used and such, so
+this patch fixes all of this.  Also it addresses 2 issues
 
-Well, no, this is the stuff that transforms TRACE_EVENT() into perf
-software events ;-)
+1) Some filesystems (gfs2) do not like being given non-block-aligned b_size's to
+map, so make sure we block align the b_size.
+
+2) If you have a file with say 50 blocks, and ask to map 25 of those blocks, and
+block 23 is a hole and block 24 is data, block 24 will get dropped.  This fixes
+the problem by making sure we add the extent to the fieinfo before returning.
+
+I've tested this patch with my fiemap-tester, and it runs fine.  I also tested
+with a file that was < blocksize (which is where gfs2 was having problems) and
+it worked fine.  I also tested this with a 1 terabyte file, and it worked fine.
+
+Signed-off-by: Josef Bacik <josef@redhat.com>
+---
+ fs/ioctl.c         |   88 ++++++++++++++++++++++++++++++++-------------------
+ include/linux/fs.h |    5 ++-
+ 2 files changed, 58 insertions(+), 35 deletions(-)
+
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index 6c75110..4ebdc41 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+ 
+ #ifdef CONFIG_BLOCK
+ 
+-#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+-#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
++static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
++{
++	return (offset >> inode->i_blkbits);
++}
++
++static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
++{
++	return (blk << inode->i_blkbits);
++}
+ 
+ /**
+  * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+  * @inode - the inode to map
+- * @arg - the pointer to userspace where we copy everything to
++ * @fieinfo - the fiemap info struct that will be passed back to userspace
++ * @start - where to start mapping in the inode
++ * @len - how much space to map
+  * @get_block - the fs's get_block function
+  *
+  * This does FIEMAP for block based inodes.  Basically it will just loop
+@@ -250,46 +259,55 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+  */
+ 
+ int __generic_block_fiemap(struct inode *inode,
+-			   struct fiemap_extent_info *fieinfo, u64 start,
+-			   u64 len, get_block_t *get_block)
++			   struct fiemap_extent_info *fieinfo, loff_t start,
++			   loff_t len, get_block_t *get_block)
+ {
+-	struct buffer_head tmp;
+-	unsigned long long start_blk;
+-	long long length = 0, map_len = 0;
++	struct buffer_head map_bh;
++	sector_t start_blk;
++	loff_t map_end;
+ 	u64 logical = 0, phys = 0, size = 0;
+ 	u32 flags = FIEMAP_EXTENT_MERGED;
+-	int ret = 0, past_eof = 0, whole_file = 0;
++	bool past_eof = false, whole_file = false;
++	int ret = 0;
+ 
+-	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
++	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
++	if (ret)
+ 		return ret;
+ 
+ 	start_blk = logical_to_blk(inode, start);
+ 
+-	length = (long long)min_t(u64, len, i_size_read(inode));
+-	if (length < len)
+-		whole_file = 1;
++	if (len >= i_size_read(inode)) {
++		whole_file = true;
++		len = i_size_read(inode);
++	}
+ 
+-	map_len = length;
++	/*
++	 * Some filesystems (gfs2) don't deal with being told to map lengths
++	 * that are not blocksize aligned, so make the length blocksized
++	 * aligned, since b_size should always just come back as the real len.
++	 */
++	len = (len + (1 << inode->i_blkbits) - 1) &
++		~((1 << inode->i_blkbits) - 1);
++	map_end = start + len;
+ 
+ 	do {
+ 		/*
+ 		 * we set b_size to the total size we want so it will map as
+ 		 * many contiguous blocks as possible at once
+ 		 */
+-		memset(&tmp, 0, sizeof(struct buffer_head));
+-		tmp.b_size = map_len;
++		memset(&map_bh, 0, sizeof(struct buffer_head));
++		map_bh.b_size = len;
+ 
+-		ret = get_block(inode, start_blk, &tmp, 0);
++		ret = get_block(inode, start_blk, &map_bh, 0);
+ 		if (ret)
+ 			break;
+ 
+ 		/* HOLE */
+-		if (!buffer_mapped(&tmp)) {
+-			length -= blk_to_logical(inode, 1);
++		if (!buffer_mapped(&map_bh)) {
+ 			start_blk++;
+ 
+ 			/*
+-			 * we want to handle the case where there is an
++			 * We want to handle the case where there is an
+ 			 * allocated block at the front of the file, and then
+ 			 * nothing but holes up to the end of the file properly,
+ 			 * to make sure that extent at the front gets properly
+@@ -297,11 +315,11 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 */
+ 			if (!past_eof &&
+ 			    blk_to_logical(inode, start_blk) >=
+-			    blk_to_logical(inode, 0)+i_size_read(inode))
++			    blk_to_logical(inode, 0) + i_size_read(inode))
+ 				past_eof = 1;
+ 
+ 			/*
+-			 * first hole after going past the EOF, this is our
++			 * First hole after going past the EOF, this is our
+ 			 * last extent
+ 			 */
+ 			if (past_eof && size) {
+@@ -309,15 +327,19 @@ int __generic_block_fiemap(struct inode *inode,
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+-				break;
++			} else if (size) {
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size, flags);
++				size = 0;
+ 			}
+ 
+ 			/* if we have holes up to/past EOF then we're done */
+-			if (length <= 0 || past_eof)
++			if (blk_to_logical(inode, start_blk) > map_end ||
++			    past_eof || ret)
+ 				break;
+ 		} else {
+ 			/*
+-			 * we have gone over the length of what we wanted to
++			 * We have gone over the length of what we wanted to
+ 			 * map, and it wasn't the entire file, so add the extent
+ 			 * we got last time and exit.
+ 			 *
+@@ -331,7 +353,8 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 * are good to go, just add the extent to the fieinfo
+ 			 * and break
+ 			 */
+-			if (length <= 0 && !whole_file) {
++			if (blk_to_logical(inode, start_blk) > map_end &&
++			    !whole_file) {
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+@@ -351,11 +374,10 @@ int __generic_block_fiemap(struct inode *inode,
+ 			}
+ 
+ 			logical = blk_to_logical(inode, start_blk);
+-			phys = blk_to_logical(inode, tmp.b_blocknr);
+-			size = tmp.b_size;
++			phys = blk_to_logical(inode, map_bh.b_blocknr);
++			size = map_bh.b_size;
+ 			flags = FIEMAP_EXTENT_MERGED;
+ 
+-			length -= tmp.b_size;
+ 			start_blk += logical_to_blk(inode, size);
+ 
+ 			/*
+@@ -364,14 +386,14 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 * is marked with FIEMAP_EXTENT_LAST
+ 			 */
+ 			if (!past_eof &&
+-			    logical+size >=
+-			    blk_to_logical(inode, 0)+i_size_read(inode))
+-				past_eof = 1;
++			    logical + size >=
++			    blk_to_logical(inode, 0) + i_size_read(inode))
++				past_eof = true;
+ 		}
+ 		cond_resched();
+ 	} while (1);
+ 
+-	/* if ret is 1 then we just hit the end of the extent array */
++	/* If ret is 1 then we just hit the end of the extent array */
+ 	if (ret == 1)
+ 		ret = 0;
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index ebb1cd5..7e6e47f 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2313,8 +2313,9 @@ extern int vfs_fstatat(int , char __user *, struct kstat *, int);
+ extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		    unsigned long arg);
+ extern int __generic_block_fiemap(struct inode *inode,
+-				  struct fiemap_extent_info *fieinfo, u64 start,
+-				  u64 len, get_block_t *get_block);
++				  struct fiemap_extent_info *fieinfo,
++				  loff_t start, loff_t len,
++				  get_block_t *get_block);
+ extern int generic_block_fiemap(struct inode *inode,
+ 				struct fiemap_extent_info *fieinfo, u64 start,
+ 				u64 len, get_block_t *get_block);
+-- 
+1.6.5.rc2
 
