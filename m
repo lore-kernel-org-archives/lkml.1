@@ -1,56 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395Ab0CCH3z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 02:29:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38471 "EHLO hera.kernel.org"
+	id S1752811Ab0CCHaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 02:30:18 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45342 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750969Ab0CCH3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 02:29:53 -0500
-Message-ID: <4B8E0FBC.7080702@kernel.org>
-Date: Wed, 03 Mar 2010 16:29:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752257Ab0CCHaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 02:30:16 -0500
+Date: Wed, 3 Mar 2010 08:30:14 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
+Message-ID: <20100303073014.GE5768@kernel.dk>
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org> <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>
-Subject: [GIT PULL] workqueue changes for 2.6.34-rc1
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Mar 2010 07:29:03 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874okyf4iw.fsf@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Linus.
+On Wed, Mar 03 2010, Dmitry Monakhov wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> > On Sat, Feb 27 2010, Dmitry Monakhov wrote:
+> >> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
+> >> against this value. But in case of fs_optimization merge we compare
+> >> with wrong value. This patch must be included in
+> >>  b428cd6da7e6559aca69aa2e3a526037d3f20403
+> >> But accidentally i've forgot to add this in the initial patch.
+> >> To make things straight let's replace all such checks.
+> >> In fact this makes code easy to understand.
+> >
+> > Agree, applied.
+> Ohh.. as you already know this patch break dm-layer. Sorry.
+> This is because dm->merge may return more than requested. So correct
+> check must test against less what requested. Correct patch attached.
 
-Please pull from the following workqueue branch.
+Have you tested this with dm and md (ie actual users of the merge_bvec
+functionality) this time?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-linus
+-- 
+Jens Axboe
 
-As cmwq still is going through reviews, the branch contains only two
-minor changes - one to beef up comment, the other to make
-flush_workqueue() return when sure deadlock can be predicted.
-
-Merging into 3a5b27bf6f29574d667230c7e76e4b83fe3014e0 doesn't cause
-any conflict.
-
-Thanks.
-
-==================
-Summary of changes
-==================
-
-Alan Stern (1):
-      workqueue: warn about flush_scheduled_work()
-
-Simon Kagstrom (1):
-      workqueue: return on workqueue recursion
-
- kernel/workqueue.c |   27 ++++++++++++++++++++++++++-
- 1 files changed, 26 insertions(+), 1 deletions(-)
-
---
-tejun
