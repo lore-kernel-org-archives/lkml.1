@@ -1,411 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893Ab0CCGHk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:07:40 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45701 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753661Ab0CCGHj (ORCPT
+	id S1753931Ab0CCGKH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:10:07 -0500
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:38739 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043Ab0CCGKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:07:39 -0500
-Date: Wed, 3 Mar 2010 15:01:37 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Righi <arighi@develer.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-Id: <20100303150137.f56d7084.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
-	<1267478620-5276-4-git-send-email-arighi@develer.com>
-	<20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
-	<20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 01:10:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Uy8USYbfDi0/PMa43b3IXjESB20UfVvQvJw76hXjJ6o8zERP+SD7zRNekyOhTkyq9k
+         tBxqBfP6pJNSqkgmdGBTfWt1M0t2YW65MCPBugdmhzmPPTgum8LtVOdWwFHtbHgk47wI
+         WN7GbT0+5eq4FeVu2tRRelfBMDo93oI5qzBS0=
+Date: Tue, 2 Mar 2010 22:09:56 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Lennart Poettering <mzxreary@0pointer.de>,
+       "Lee, Chun-Yi" <jlee@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 61/62] msi-laptop: depends on RFKILL
+Message-ID: <20100303060955.GA2244@core.coreip.homeip.net>
+References: <20100302230933.GA32287@kroah.com>
+ <1267572541-410-61-git-send-email-gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267572541-410-61-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 12:29:06 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 3 Mar 2010 11:12:38 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Tue, Mar 02, 2010 at 03:29:00PM -0800, Greg Kroah-Hartman wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> > > diff --git a/mm/filemap.c b/mm/filemap.c
-> > > index fe09e51..f85acae 100644
-> > > --- a/mm/filemap.c
-> > > +++ b/mm/filemap.c
-> > > @@ -135,6 +135,7 @@ void __remove_from_page_cache(struct page *page)
-> > >  	 * having removed the page entirely.
-> > >  	 */
-> > >  	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
-> > > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, -1);
-> > >  		dec_zone_page_state(page, NR_FILE_DIRTY);
-> > >  		dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-> > >  	}
-> > (snip)
-> > > @@ -1096,6 +1113,7 @@ int __set_page_dirty_no_writeback(struct page *page)
-> > >  void account_page_dirtied(struct page *page, struct address_space *mapping)
-> > >  {
-> > >  	if (mapping_cap_account_dirty(mapping)) {
-> > > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, 1);
-> > >  		__inc_zone_page_state(page, NR_FILE_DIRTY);
-> > >  		__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-> > >  		task_dirty_inc(current);
-> > As long as I can see, those two functions(at least) calls mem_cgroup_update_state(),
-> > which acquires page cgroup lock, under mapping->tree_lock.
-> > But as I fixed before in commit e767e056, page cgroup lock must not acquired under
-> > mapping->tree_lock.
-> > hmm, we should call those mem_cgroup_update_state() outside mapping->tree_lock,
-> > or add local_irq_save/restore() around lock/unlock_page_cgroup() to avoid dead-lock.
-> > 
-> Ah, good catch! But hmmmmmm...
-> This account_page_dirtted() seems to be called under IRQ-disabled.
-> About  __remove_from_page_cache(), I think page_cgroup should have its own DIRTY flag,
-> then, mem_cgroup_uncharge_page() can handle it automatically.
+> msi-laptop uses rfkill*() interfaces so it should depend on RFKILL.
 > 
-> But. there are no guarantee that following never happens. 
-> 	lock_page_cgroup()
-> 	    <=== interrupt.
-> 	    -> mapping->tree_lock()
-> Even if mapping->tree_lock is held with IRQ-disabled.
-> Then, if we add local_irq_save(), we have to add it to all lock_page_cgroup().
+> msi-laptop.c:(.text+0x1fcd1b): undefined reference to `rfkill_alloc'
+> msi-laptop.c:(.text+0x1fcd76): undefined reference to `rfkill_register'
+> msi-laptop.c:(.text+0x1fcdc8): undefined reference to `rfkill_destroy'
+> msi-laptop.c:(.text+0x1fcdd9): undefined reference to `rfkill_unregister'
 > 
-> Then, hm...some kind of new trick ? as..
-> (Follwoing patch is not tested!!)
+> This repairs "msi-laptop: Detect 3G device exists by standard ec command",
+> which is in some gregkh tree.
 > 
-If we can verify that all callers of mem_cgroup_update_stat() have always either aquired
-or not aquired tree_lock, this direction will work fine.
-But if we can't, we have to add local_irq_save() to lock_page_cgroup() like below.
-
-===
- include/linux/page_cgroup.h |    8 ++++++--
- mm/memcontrol.c             |   43 +++++++++++++++++++++++++------------------
- 2 files changed, 31 insertions(+), 20 deletions(-)
-
-diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
-index 30b0813..51da916 100644
---- a/include/linux/page_cgroup.h
-+++ b/include/linux/page_cgroup.h
-@@ -83,15 +83,19 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
- 	return page_zonenum(pc->page);
- }
- 
--static inline void lock_page_cgroup(struct page_cgroup *pc)
-+static inline void __lock_page_cgroup(struct page_cgroup *pc)
- {
- 	bit_spin_lock(PCG_LOCK, &pc->flags);
- }
-+#define lock_page_cgroup(pc, flags) \
-+  do { local_irq_save(flags); __lock_page_cgroup(pc); } while (0)
- 
--static inline void unlock_page_cgroup(struct page_cgroup *pc)
-+static inline void __unlock_page_cgroup(struct page_cgroup *pc)
- {
- 	bit_spin_unlock(PCG_LOCK, &pc->flags);
- }
-+#define unlock_page_cgroup(pc, flags) \
-+  do { __unlock_page_cgroup(pc); local_irq_restore(flags); } while (0)
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct page_cgroup;
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 00ed4b1..40b9be4 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1327,12 +1327,13 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
- {
- 	struct mem_cgroup *mem;
- 	struct page_cgroup *pc;
-+	unsigned long flags;
- 
- 	pc = lookup_page_cgroup(page);
- 	if (unlikely(!pc))
- 		return;
- 
--	lock_page_cgroup(pc);
-+	lock_page_cgroup(pc, flags);
- 	mem = pc->mem_cgroup;
- 	if (!mem)
- 		goto done;
-@@ -1346,7 +1347,7 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
- 	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
- 
- done:
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- }
- 
- /*
-@@ -1680,11 +1681,12 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
- 	struct page_cgroup *pc;
- 	unsigned short id;
- 	swp_entry_t ent;
-+	unsigned long flags;
- 
- 	VM_BUG_ON(!PageLocked(page));
- 
- 	pc = lookup_page_cgroup(page);
--	lock_page_cgroup(pc);
-+	lock_page_cgroup(pc, flags);
- 	if (PageCgroupUsed(pc)) {
- 		mem = pc->mem_cgroup;
- 		if (mem && !css_tryget(&mem->css))
-@@ -1698,7 +1700,7 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
- 			mem = NULL;
- 		rcu_read_unlock();
- 	}
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 	return mem;
- }
- 
-@@ -1711,13 +1713,15 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
- 				     struct page_cgroup *pc,
- 				     enum charge_type ctype)
- {
-+	unsigned long flags;
-+
- 	/* try_charge() can return NULL to *memcg, taking care of it. */
- 	if (!mem)
- 		return;
- 
--	lock_page_cgroup(pc);
-+	lock_page_cgroup(pc, flags);
- 	if (unlikely(PageCgroupUsed(pc))) {
--		unlock_page_cgroup(pc);
-+		unlock_page_cgroup(pc, flags);
- 		mem_cgroup_cancel_charge(mem);
- 		return;
- 	}
-@@ -1747,7 +1751,7 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
- 
- 	mem_cgroup_charge_statistics(mem, pc, true);
- 
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 	/*
- 	 * "charge_statistics" updated event counter. Then, check it.
- 	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
-@@ -1817,12 +1821,13 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
- 		struct mem_cgroup *from, struct mem_cgroup *to, bool uncharge)
- {
- 	int ret = -EINVAL;
--	lock_page_cgroup(pc);
-+	unsigned long flags;
-+	lock_page_cgroup(pc, flags);
- 	if (PageCgroupUsed(pc) && pc->mem_cgroup == from) {
- 		__mem_cgroup_move_account(pc, from, to, uncharge);
- 		ret = 0;
- 	}
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 	/*
- 	 * check events
- 	 */
-@@ -1949,17 +1954,17 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
- 	 */
- 	if (!(gfp_mask & __GFP_WAIT)) {
- 		struct page_cgroup *pc;
--
-+		unsigned long flags;
- 
- 		pc = lookup_page_cgroup(page);
- 		if (!pc)
- 			return 0;
--		lock_page_cgroup(pc);
-+		lock_page_cgroup(pc, flags);
- 		if (PageCgroupUsed(pc)) {
--			unlock_page_cgroup(pc);
-+			unlock_page_cgroup(pc, flags);
- 			return 0;
- 		}
--		unlock_page_cgroup(pc);
-+		unlock_page_cgroup(pc, flags);
- 	}
- 
- 	if (unlikely(!mm && !mem))
-@@ -2141,6 +2146,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
- 	struct page_cgroup *pc;
- 	struct mem_cgroup *mem = NULL;
- 	struct mem_cgroup_per_zone *mz;
-+	unsigned long flags;
- 
- 	if (mem_cgroup_disabled())
- 		return NULL;
-@@ -2155,7 +2161,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
- 	if (unlikely(!pc || !PageCgroupUsed(pc)))
- 		return NULL;
- 
--	lock_page_cgroup(pc);
-+	lock_page_cgroup(pc, flags);
- 
- 	mem = pc->mem_cgroup;
- 
-@@ -2194,7 +2200,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
- 	 */
- 
- 	mz = page_cgroup_zoneinfo(pc);
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 
- 	memcg_check_events(mem, page);
- 	/* at swapout, this memcg will be accessed to record to swap */
-@@ -2204,7 +2210,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
- 	return mem;
- 
- unlock_out:
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 	return NULL;
- }
- 
-@@ -2392,17 +2398,18 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
- 	struct page_cgroup *pc;
- 	struct mem_cgroup *mem = NULL;
- 	int ret = 0;
-+	unsigned long flags;
- 
- 	if (mem_cgroup_disabled())
- 		return 0;
- 
- 	pc = lookup_page_cgroup(page);
--	lock_page_cgroup(pc);
-+	lock_page_cgroup(pc, flags);
- 	if (PageCgroupUsed(pc)) {
- 		mem = pc->mem_cgroup;
- 		css_get(&mem->css);
- 	}
--	unlock_page_cgroup(pc);
-+	unlock_page_cgroup(pc, flags);
- 
- 	if (mem) {
- 		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
-
-
-> ==
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Lennart Poettering <mzxreary@0pointer.de>
+> Cc: Lee, Chun-Yi <jlee@novell.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > ---
->  include/linux/page_cgroup.h |   14 ++++++++++++++
->  mm/memcontrol.c             |   27 +++++++++++++++++----------
->  2 files changed, 31 insertions(+), 10 deletions(-)
+>  drivers/platform/x86/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> Index: mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.33-Feb11.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
-> @@ -39,6 +39,7 @@ enum {
->  	PCG_CACHE, /* charged as cache */
->  	PCG_USED, /* this object is in use. */
->  	PCG_ACCT_LRU, /* page has been accounted for */
-> +	PCG_MIGRATE, /* page cgroup is under memcg account migration */
->  };
->  
->  #define TESTPCGFLAG(uname, lname)			\
-> @@ -73,6 +74,8 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  
-> +TESTPCGFLAG(Migrate, MIGRATE)
-> +
->  static inline int page_cgroup_nid(struct page_cgroup *pc)
->  {
->  	return page_to_nid(pc->page);
-> @@ -93,6 +96,17 @@ static inline void unlock_page_cgroup(st
->  	bit_spin_unlock(PCG_LOCK, &pc->flags);
->  }
->  
-> +static inline unsigned long page_cgroup_migration_lock(struct page_cgroup *pc)
-> +{
-> +	local_irq_save(flags);
-> +	bit_spin_lock(PCG_MIGRATE, &pc->flags);
-> +}
-> +static inline void
-> +page_cgroup_migration_lock(struct page_cgroup *pc, unsigned long flags)
-> +{
-> +	bit_spin_lock(PCG_MIGRATE, &pc->flags);
-> +	local_irq_restore(flags);
-> +}
->  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
->  struct page_cgroup;
->  
-> Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
-> +++ mmotm-2.6.33-Feb11/mm/memcontrol.c
-> @@ -1321,7 +1321,7 @@ bool mem_cgroup_handle_oom(struct mem_cg
->   * Currently used to update mapped file statistics, but the routine can be
->   * generalized to update other statistics as well.
->   */
-> -void mem_cgroup_update_file_mapped(struct page *page, int val)
-> +void mem_cgroup_update_file_mapped(struct page *page, int val, int locked)
->  {
->  	struct mem_cgroup *mem;
->  	struct page_cgroup *pc;
-> @@ -1329,22 +1329,27 @@ void mem_cgroup_update_file_mapped(struc
->  	pc = lookup_page_cgroup(page);
->  	if (unlikely(!pc))
->  		return;
-> -
-> -	lock_page_cgroup(pc);
-> +	/*
-> +	 * if locked==1, mapping->tree_lock is held. We don't have to take
-> +	 * care of charge/uncharge. just think about migration.
-> +	 */
-> +	if (!locked)
-> +		lock_page_cgroup(pc);
-> +	else
-> +		page_cgroup_migration_lock(pc);
->  	mem = pc->mem_cgroup;
-> -	if (!mem)
-> +	if (!mem || !PageCgroupUsed(pc))
->  		goto done;
-> -
-> -	if (!PageCgroupUsed(pc))
-> -		goto done;
-> -
->  	/*
->  	 * Preemption is already disabled. We can use __this_cpu_xxx
->  	 */
->  	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
->  
->  done:
-> -	unlock_page_cgroup(pc);
-> +	if (!locked)
-> +		lock_page_cgroup(pc);
-> +	else
-> +		page_cgroup_migration_unlock(pc);
->  }
->  
->  /*
-> @@ -1785,7 +1790,8 @@ static void __mem_cgroup_move_account(st
->  	VM_BUG_ON(!PageCgroupLocked(pc));
->  	VM_BUG_ON(!PageCgroupUsed(pc));
->  	VM_BUG_ON(pc->mem_cgroup != from);
-> -
-> +		
-> +	page_cgroup_migration_lock(pc);
->  	page = pc->page;
->  	if (page_mapped(page) && !PageAnon(page)) {
->  		/* Update mapped_file data for mem_cgroup */
-> @@ -1802,6 +1808,7 @@ static void __mem_cgroup_move_account(st
->  	/* caller should have done css_get */
->  	pc->mem_cgroup = to;
->  	mem_cgroup_charge_statistics(to, pc, true);
-> +	page_cgroup_migration_lock(pc);
->  	/*
->  	 * We charges against "to" which may not have any tasks. Then, "to"
->  	 * can be under rmdir(). But in current implementation, caller of
-> 
-> 
-> 
-> 
-> Thanks,
-> -Kame
-> 
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index 6848f21..d911de3 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -148,6 +148,7 @@ config MSI_LAPTOP
+>  	tristate "MSI Laptop Extras"
+>  	depends on ACPI
+>  	depends on BACKLIGHT_CLASS_DEVICE
+> +	depends on RFKILL
+
+I must say I really dislike when "depends" is used with drivers like
+this for high-level subsystems. How would a user (advanced, I agree)
+know about existence of such a driver when doing make oldconfig unless
+he examines entirety of the pull (new rc patch, tarball, whatever)? And
+even if he is aware of the new driver he needs to know exact config name
+to see the dependencies (even if he knows how)...
+
+We all know dangers of "select" but I think it is useful when used
+judiciously, for entire subsystems only (like selecting serio,
+backlight, leds, etc) that do not have additional dependencies.
+
+Thanks.
+
+-- 
+Dmitry
