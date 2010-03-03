@@ -1,94 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266Ab0CCTQh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:16:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63124 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756281Ab0CCTQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:16:25 -0500
-Date: Wed, 3 Mar 2010 14:16:13 -0500
-From: Mike Snitzer <snitzer@redhat.com>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
-Message-ID: <20100303191613.GB18480@redhat.com>
-References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
- <20100228184634.GI5768@kernel.dk>
- <874okyf4iw.fsf@openvz.org>
- <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
- <87wrxtkzwu.fsf@openvz.org>
+	id S1754963Ab0CCTO6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:14:58 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:8275 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756127Ab0CCTNg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 14:13:36 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh2a8h87h64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYQ018-01-LM1-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 05/18] KVM: MMU: Introduce get_cr3 function pointer
+Date: Wed, 3 Mar 2010 20:12:08 +0100
+Message-ID: <1267643541-451-6-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 03 Mar 2010 19:12:42.0657 (UTC) FILETIME=[7FC8B110:01CABB05]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87wrxtkzwu.fsf@openvz.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03 2010 at  1:45pm -0500,
-Dmitry Monakhov <dmonakhov@openvz.org> wrote:
+This function pointer in the MMU context is required to
+implement Nested Nested Paging.
 
-> Mike Snitzer <snitzer@redhat.com> writes:
-> 
-> > On Tue, Mar 2, 2010 at 10:49 PM, Dmitry Monakhov <dmonakhov@openvz.org> wrote:
-> >> Jens Axboe <jens.axboe@oracle.com> writes:
-> >>
-> >>> On Sat, Feb 27 2010, Dmitry Monakhov wrote:
-> >>>> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
-> >>>> against this value. But in case of fs_optimization merge we compare
-> >>>> with wrong value. This patch must be included in
-> >>>>  b428cd6da7e6559aca69aa2e3a526037d3f20403
-> >>>> But accidentally i've forgot to add this in the initial patch.
-> >>>> To make things straight let's replace all such checks.
-> >>>> In fact this makes code easy to understand.
-> >>>
-> >>> Agree, applied.
-> >> Ohh.. as you already know this patch break dm-layer. Sorry.
-> >> This is because dm->merge may return more than requested. So correct
-> >> check must test against less what requested. Correct patch attached.
-> >
-> > Yes, it is quite common for dm_merge_bvec() to return greater than the
-> > requested length.
-> >
-> > But dm_merge_bvec() returning a maximum length, rather than requested,
-> > isn't special.  All the other blk_queue_merge_bvec() callers' merge
-> > functions appear to return "maximum amount of bytes we can accept at
-> > this offset" too.
-> What for? Does it allow us to make some optimization?
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/mmu.c              |    9 ++++++++-
+ arch/x86/kvm/paging_tmpl.h      |    4 ++--
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-I wasn't suggesting the behavior of the current merge functions
-returning maximum is important or useful.  I was just pointing out what
-the interface is and that dm_merge_bvec() is no different than the
-others.
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 1bf8501..37d0145 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -242,6 +242,7 @@ struct kvm_pio_request {
+ struct kvm_mmu {
+ 	void (*new_cr3)(struct kvm_vcpu *vcpu);
+ 	void (*set_cr3)(struct kvm_vcpu *vcpu, unsigned long root);
++	unsigned long (*get_cr3)(struct kvm_vcpu *vcpu);
+ 	int (*page_fault)(struct kvm_vcpu *vcpu, gva_t gva, u32 err);
+ 	void (*free)(struct kvm_vcpu *vcpu);
+ 	gpa_t (*gva_to_gpa)(struct kvm_vcpu *vcpu, gva_t gva, u32 access,
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 84e3209..189c68d 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -2071,7 +2071,7 @@ static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ 	int direct = 0;
+ 	u64 pdptr;
+ 
+-	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
++	root_gfn = vcpu->arch.mmu.get_cr3(vcpu) >> PAGE_SHIFT;
+ 
+ 	if (vcpu->arch.mmu.shadow_root_level == PT64_ROOT_LEVEL) {
+ 		hpa_t root = vcpu->arch.mmu.root_hpa;
+@@ -2254,6 +2254,11 @@ static void paging_new_cr3(struct kvm_vcpu *vcpu)
+ 	mmu_free_roots(vcpu);
+ }
+ 
++static unsigned long get_cr3(struct kvm_vcpu *vcpu)
++{
++	return vcpu->arch.cr3;
++}
++
+ static void inject_page_fault(struct kvm_vcpu *vcpu,
+ 			      u64 addr,
+ 			      u32 err_code)
+@@ -2399,6 +2404,7 @@ static int init_kvm_tdp_mmu(struct kvm_vcpu *vcpu)
+ 	context->root_hpa = INVALID_PAGE;
+ 	vcpu->arch.mmu.tdp_enabled = true;
+ 	vcpu->arch.mmu.set_cr3 = kvm_x86_ops->set_tdp_cr3;
++	vcpu->arch.mmu.get_cr3 = get_cr3;
+ 
+ 	if (!is_paging(vcpu)) {
+ 		context->gva_to_gpa = nonpaging_gva_to_gpa;
+@@ -2439,6 +2445,7 @@ static int init_kvm_softmmu(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.mmu.base_role.glevels = vcpu->arch.mmu.root_level;
+ 	vcpu->arch.mmu.tdp_enabled       = false;
+ 	vcpu->arch.mmu.set_cr3           = kvm_x86_ops->set_cr3;
++	vcpu->arch.mmu.get_cr3           = get_cr3;
+ 
+ 	return r;
+ }
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 92b6bb5..1149daa 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -126,7 +126,7 @@ static int FNAME(walk_addr)(struct guest_walker *walker,
+ 				     fetch_fault);
+ walk:
+ 	walker->level = vcpu->arch.mmu.root_level;
+-	pte = vcpu->arch.cr3;
++	pte = vcpu->arch.mmu.get_cr3(vcpu);
+ #if PTTYPE == 64
+ 	if (vcpu->arch.mmu.root_level == PT32E_ROOT_LEVEL) {
+ 		pte = kvm_pdptr_read(vcpu, (addr >> 30) & 3);
+@@ -137,7 +137,7 @@ walk:
+ 	}
+ #endif
+ 	ASSERT((!is_long_mode(vcpu) && is_pae(vcpu)) ||
+-	       (vcpu->arch.cr3 & CR3_NONPAE_RESERVED_BITS) == 0);
++	       (vcpu->arch.mmu.get_cr3(vcpu) & CR3_NONPAE_RESERVED_BITS) == 0);
+ 
+ 	pt_access = ACC_ALL;
+ 
+-- 
+1.7.0
 
-> For example like follows:
-> bio_add_pageS(bio, **pages) {
->    /* call merge_fn only one untill all space exhausted */                
->    ret = merge_fn()  (this returns huge value (1024*1024))
->    while (ret) { 
->           bio->bi_io_vec[bio->bi_vcnt - 1].bv_page = page;
->           ...
->           ret -= PAGE_SIZE;
->           bio->bi_vcnt++;
->    }
-> }
-> IMHO the answer is *NO*, this code will unlikely to work.
 
-Conversely, I see no value in imposing that these 'q->merge_bvec_fn'
-functions return at most the requested length.  Can't even really see it
-making the __bio_add_page() code more readable.
-
-> > __bio_add_page() only needs to care about whether the
-> > 'q->merge_bvec_fn' return is _less than_ the requested length.
-
-Linux has all sorts of internal interfaces that are "odd"... the current
-'q->merge_bvec_fn' interface included.  But odd is not a problem (nor is
-it "broken") unless you make changes that don't consider how the current
-interface is defined.
-
-But I digress...
-
-Mike
