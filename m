@@ -1,186 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456Ab0CCXin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 18:38:43 -0500
-Received: from xenotime.net ([72.52.64.118]:36646 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752938Ab0CCXig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 18:38:36 -0500
-Message-ID: <4B8EF2F7.2020805@xenotime.net>
-Date: Wed, 03 Mar 2010 15:38:31 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1755418Ab0CCXkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 18:40:11 -0500
+Received: from kroah.org ([198.145.64.141]:54024 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752938Ab0CCXkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 18:40:07 -0500
+Date: Wed, 3 Mar 2010 15:39:58 -0800
+From: Greg KH <greg@kroah.com>
+To: Hank Janssen <hjanssen@microsoft.com>
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Hashir Abdi <habdi@microsoft.com>
+Subject: Re: Ringbuffer usage in Linux Hyper-V drivers
+Message-ID: <20100303233958.GA16513@kroah.com>
+References: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
+ <20100217235223.GG12197@kroah.com>
+ <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] replace DECLARE_DMA_UNMAP_ADD_{ADDR,LEN} with DEFINE_DMA_UNMAP_ADD_{ADDR,LEN}
-References: <20100303134947G.fujita.tomonori@lab.ntt.co.jp>	<4B8EEDB5.7060700@xenotime.net> <20100304082837J.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100304082837J.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/10 15:28, FUJITA Tomonori wrote:
-> On Wed, 03 Mar 2010 15:16:05 -0800
-> Randy Dunlap <rdunlap@xenotime.net> wrote:
-> 
->> On 03/02/10 20:50, FUJITA Tomonori wrote:
->>> Seems that you missed the following patch?
->>>
->>> http://lkml.org/lkml/2010/2/13/2
->>>
->>> This can be fold into dma-mappingh-add-the-dma_unmap-state-api.patch.
->>>
->>> Thanks,
->>>
->>> =
->>> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>> Subject: [PATCH -mm] replace DECLARE_DMA_UNMAP_ADD_{ADDR,LEN} with DEFINE_DMA_UNMAP_ADD_{ADDR,LEN}
->>>
->>> Andrew pointed out:
->>>
->>> - adding the semicolons at the end of DECLARE_DMA_UNMAP_{ADDR|LEN}
->>>   confuses people.
->>
->> Hm.  I'm (still) confused.  Why does this patch add semi-colons at the end
->> of DECLARE_PCI_UNMAP_{ADDR|LEN} below then?  (other than it is spelled with
->> letters "PCI" instead of "DMA")
-> 
-> Are you taking about this part, right?
+On Wed, Mar 03, 2010 at 04:42:27PM +0000, Hank Janssen wrote:
+> The ring buffer in the Hyper-V Linux drivers is used to communicate with the 
+> parent partition running Server 2008 Hyper-V. The ring buffer functionality on 
+> the Hyper-V Linux drivers is written to be functionally compatible with" the 
+> ring buffer functionality on the Hyper-V Server. Consequently, it is not 
+> possible to make any changes that might break the compatibility with server 
+> side ring buffer implementation.  
 
-Yes.
+Ok, that makes sense, feel free to remove that TODO item.
 
-> +#define DECLARE_PCI_UNMAP_ADDR	(ADDR_NAME) DEFINE_DMA_UNMAP_ADDR(ADDR_NAME);
-> +#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)   DEFINE_DMA_UNMAP_LEN(LEN_NAME);
-> 
-> Currently, we have:
-> 
-> #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME;
-> 
-> And PCI-DMA-mapping.txt says:
-> 
-> 	struct ring_state {
-> 		struct sk_buff *skb;
-> 		DECLARE_PCI_UNMAP_ADDR(mapping)
-> 		DECLARE_PCI_UNMAP_LEN(len)
-> 	};
-> 
->    NOTE: DO NOT put a semicolon at the end of the DECLARE_*()
->          macro.
+thanks for looking into this.
 
-Argh.  That is just wrong.
-Thanks for cleaning it all up.
-
-
-> However, this confuses people. Some drivers already use this macro
-> with a semicolon like, DECLARE_PCI_UNMAP_ADDR(mapping);
-> 
-> To avoid the above confusion, the new DEFINE_DMA_ macros doesn't have
-> a semicolon (users need to use a semicolon):
-> 
-> #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME
-> #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME
-> 
-> So we need to define DECLARE_PCI_* macro in the following way
-> (otherwise we break the existing drivers):
-> 
-> #define DECLARE_PCI_UNMAP_ADDR	(ADDR_NAME) DEFINE_DMA_UNMAP_ADDR(ADDR_NAME);
-> #define DECLARE_PCI_UNMAP_LEN(LEN_NAME)   DEFINE_DMA_UNMAP_LEN(LEN_NAME);
-> 
-> 
-> In the long term, I'll remove DECLARE_PCI_* macros.
-
-I see.  That's good, although I don't quite see the problem with doing
-it all at once.
-
-
->>> - they are "definitions", not "declarations".
->>>
->>> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>> ---
->>>  Documentation/DMA-API.txt   |    8 +++-----
->>>  include/linux/dma-mapping.h |    8 ++++----
->>>  include/linux/pci-dma.h     |   12 ++++++------
->>>  3 files changed, 13 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
->>> index d7d9eef..0fc5728 100644
->>> --- a/Documentation/DMA-API.txt
->>> +++ b/Documentation/DMA-API.txt
->>> @@ -494,7 +494,7 @@ portable API) the following facilities are provided.
->>>  Actually, instead of describing the macros one by one, we'll
->>>  transform some example code.
->>>  
->>> -1) Use DECLARE_DMA_UNMAP_{ADDR,LEN} in state saving structures.
->>> +1) Use DEFINE_DMA_UNMAP_{ADDR,LEN} in state saving structures.
->>>     Example, before:
->>>  
->>>  	struct ring_state {
->>> @@ -507,12 +507,10 @@ transform some example code.
->>>  
->>>  	struct ring_state {
->>>  		struct sk_buff *skb;
->>> -		DECLARE_DMA_UNMAP_ADDR(mapping)
->>> -		DECLARE_DMA_UNMAP_LEN(len)
->>> +		DEFINE_DMA_UNMAP_ADDR(mapping);
->>> +		DEFINE_DMA_UNMAP_LEN(len);
->>>  	};
->>>  
->>> -NOTE: DO NOT put a semicolon at the end of the DECLARE_*() macro.
->>> -
->>>  2) Use dma_unmap_{addr,len}_set to set these values.
->>>     Example, before:
->>>  
->>> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
->>> index 599d8e4..e00c5c9 100644
->>> --- a/include/linux/dma-mapping.h
->>> +++ b/include/linux/dma-mapping.h
->>> @@ -241,15 +241,15 @@ struct dma_attrs;
->>>  #endif /* CONFIG_HAVE_DMA_ATTRS */
->>>  
->>>  #ifdef CONFIG_NEED_DMA_MAP_STATE
->>> -#define DECLARE_DMA_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME;
->>> -#define DECLARE_DMA_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME;
->>> +#define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME
->>> +#define DEFINE_DMA_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME
->>>  #define dma_unmap_addr(PTR, ADDR_NAME)           ((PTR)->ADDR_NAME)
->>>  #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  (((PTR)->ADDR_NAME) = (VAL))
->>>  #define dma_unmap_len(PTR, LEN_NAME)             ((PTR)->LEN_NAME)
->>>  #define dma_unmap_len_set(PTR, LEN_NAME, VAL)    (((PTR)->LEN_NAME) = (VAL))
->>>  #else
->>> -#define DECLARE_DMA_MAP_ADDR(ADDR_NAME)
->>> -#define DECLARE_DMA_UNMAP_LEN(LEN_NAME)
->>> +#define DEFINE_DMA_MAP_ADDR(ADDR_NAME)
->>> +#define DEFINE_DMA_UNMAP_LEN(LEN_NAME)
->>>  #define dma_unmap_addr(PTR, ADDR_NAME)           (0)
->>>  #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  do { } while (0)
->>>  #define dma_unmap_len(PTR, LEN_NAME)             (0)
->>> diff --git a/include/linux/pci-dma.h b/include/linux/pci-dma.h
->>> index 235a61e..549a041 100644
->>> --- a/include/linux/pci-dma.h
->>> +++ b/include/linux/pci-dma.h
->>> @@ -1,11 +1,11 @@
->>>  #ifndef _LINUX_PCI_DMA_H
->>>  #define _LINUX_PCI_DMA_H
->>>  
->>> -#define DECLARE_PCI_UNMAP_ADDR    DECLARE_DMA_UNMAP_ADDR
->>> -#define DECLARE_PCI_UNMAP_LEN     DECLARE_DMA_UNMAP_LEN
->>> -#define pci_unmap_addr            dma_unmap_addr
->>> -#define pci_unmap_addr_set        dma_unmap_addr_set
->>> -#define pci_unmap_len             dma_unmap_len
->>> -#define pci_unmap_len_set         dma_unmap_len_set
->>> +#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME) DEFINE_DMA_UNMAP_ADDR(ADDR_NAME);
->>> +#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)   DEFINE_DMA_UNMAP_LEN(LEN_NAME);
->>> +#define pci_unmap_addr             dma_unmap_addr
->>> +#define pci_unmap_addr_set         dma_unmap_addr_set
->>> +#define pci_unmap_len              dma_unmap_len
->>> +#define pci_unmap_len_set          dma_unmap_len_set
->>>  
->>>  #endif
-
-
--- 
-~Randy
+greg k-h
