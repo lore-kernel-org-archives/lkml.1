@@ -1,262 +1,154 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406Ab0CCAsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:48:10 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:54215 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755242Ab0CCAqv (ORCPT
+	id S1758423Ab0CCAs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:48:26 -0500
+Received: from mail.openrapids.net ([64.15.138.104]:44078 "EHLO
+	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755254Ab0CCAsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:46:51 -0500
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 24/26] ceph: ioctls
-Date: Tue,  2 Mar 2010 16:46:55 -0800
-Message-Id: <1267577217-31923-25-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267577217-31923-1-git-send-email-sage@newdream.net>
-References: <1267577217-31923-1-git-send-email-sage@newdream.net>
+	Tue, 2 Mar 2010 19:48:20 -0500
+Date: Tue, 2 Mar 2010 19:48:15 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip v3&10 07/18] x86: Add text_poke_smp for SMP cross
+	modifying code
+Message-ID: <20100303004814.GA15029@Krystal>
+References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133438.6725.80273.stgit@localhost6.localdomain6> <20100225153305.GC12635@Krystal> <4B8745AC.2070702@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8745AC.2070702@redhat.com>
+X-Editor: vi
+X-Info: http://www.efficios.com
+X-Operating-System: Linux/2.6.26-2-686 (i686)
+X-Uptime: 19:36:36 up 39 days,  3:14,  4 users,  load average: 1.12, 1.73,
+	1.78
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few Ceph ioctls for getting and setting file layout (striping)
-parameters, and learning the identity and network address of the OSD a
-given region of a file is stored on.
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Mathieu Desnoyers wrote:
+> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> [...]
+> >> +
+> >> +/*
+> >> + * Cross-modifying kernel text with stop_machine().
+> >> + * This code originally comes from immediate value.
+> >> + */
+> >> +static atomic_t stop_machine_first;
+> >> +static int wrote_text;
+> >> +
+> >> +struct text_poke_params {
+> >> +	void *addr;
+> >> +	const void *opcode;
+> >> +	size_t len;
+> >> +};
+> >> +
+> >> +static int __kprobes stop_machine_text_poke(void *data)
+> >> +{
+> >> +	struct text_poke_params *tpp = data;
+> >> +
+> >> +	if (atomic_dec_and_test(&stop_machine_first)) {
+> >> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+> >> +		smp_wmb();	/* Make sure other cpus see that this has run */
+> >> +		wrote_text = 1;
+> >> +	} else {
+> >> +		while (!wrote_text)
+> >> +			smp_rmb();
+> >> +		sync_core();
+> >
+> > Hrm, there is a problem in there. The last loop, when wrote_text becomes
+> > true, does not perform any smp_mb(), so you end up in a situation where
+> > cpus in the "else" branch may never issue any memory barrier. I'd rather
+> > do:
+> 
+> Hmm, so how about this? :)
+> ---
+> } else {
+> 	do {
+> 		smp_rmb();
+> 	while (!wrote_text);
+> 	sync_core();
+> }
+> ---
+> 
 
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- Documentation/ioctl/ioctl-number.txt |    1 +
- fs/ceph/ioctl.c                      |  160 ++++++++++++++++++++++++++++++++++
- fs/ceph/ioctl.h                      |   40 +++++++++
- 3 files changed, 201 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/ioctl.c
- create mode 100644 fs/ceph/ioctl.h
+The ordering we are looking for here are:
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 35cf64d..e07e5b5 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -292,6 +292,7 @@ Code  Seq#(hex)	Include File		Comments
- 0x92	00-0F	drivers/usb/mon/mon_bin.c
- 0x93	60-7F	linux/auto_fs.h
- 0x94	all	fs/btrfs/ioctl.h
-+0x97    00-7F   fs/ceph/ioctl.h         Ceph file system
- 0x99	00-0F				537-Addinboard driver
- 					<mailto:buk@buks.ipn.de>
- 0xA0	all	linux/sdp/sdp.h		Industrial Device Project
-diff --git a/fs/ceph/ioctl.c b/fs/ceph/ioctl.c
-new file mode 100644
-index 0000000..8a5bcae
---- /dev/null
-+++ b/fs/ceph/ioctl.c
-@@ -0,0 +1,160 @@
-+#include <linux/in.h>
-+
-+#include "ioctl.h"
-+#include "super.h"
-+#include "ceph_debug.h"
-+
-+
-+/*
-+ * ioctls
-+ */
-+
-+/*
-+ * get and set the file layout
-+ */
-+static long ceph_ioctl_get_layout(struct file *file, void __user *arg)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(file->f_dentry->d_inode);
-+	struct ceph_ioctl_layout l;
-+	int err;
-+
-+	err = ceph_do_getattr(file->f_dentry->d_inode, CEPH_STAT_CAP_LAYOUT);
-+	if (!err) {
-+		l.stripe_unit = ceph_file_layout_su(ci->i_layout);
-+		l.stripe_count = ceph_file_layout_stripe_count(ci->i_layout);
-+		l.object_size = ceph_file_layout_object_size(ci->i_layout);
-+		l.data_pool = le32_to_cpu(ci->i_layout.fl_pg_pool);
-+		l.preferred_osd =
-+			(s32)le32_to_cpu(ci->i_layout.fl_pg_preferred);
-+		if (copy_to_user(arg, &l, sizeof(l)))
-+			return -EFAULT;
-+	}
-+
-+	return err;
-+}
-+
-+static long ceph_ioctl_set_layout(struct file *file, void __user *arg)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct inode *parent_inode = file->f_dentry->d_parent->d_inode;
-+	struct ceph_mds_client *mdsc = &ceph_sb_to_client(inode->i_sb)->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_ioctl_layout l;
-+	int err, i;
-+
-+	/* copy and validate */
-+	if (copy_from_user(&l, arg, sizeof(l)))
-+		return -EFAULT;
-+
-+	if ((l.object_size & ~PAGE_MASK) ||
-+	    (l.stripe_unit & ~PAGE_MASK) ||
-+	    !l.stripe_unit ||
-+	    (l.object_size &&
-+	     (unsigned)l.object_size % (unsigned)l.stripe_unit))
-+		return -EINVAL;
-+
-+	/* make sure it's a valid data pool */
-+	if (l.data_pool > 0) {
-+		mutex_lock(&mdsc->mutex);
-+		err = -EINVAL;
-+		for (i = 0; i < mdsc->mdsmap->m_num_data_pg_pools; i++)
-+			if (mdsc->mdsmap->m_data_pg_pools[i] == l.data_pool) {
-+				err = 0;
-+				break;
-+			}
-+		mutex_unlock(&mdsc->mutex);
-+		if (err)
-+			return err;
-+	}
-+
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SETLAYOUT,
-+				       USE_AUTH_MDS);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_inode = igrab(inode);
-+	req->r_inode_drop = CEPH_CAP_FILE_SHARED | CEPH_CAP_FILE_EXCL;
-+
-+	req->r_args.setlayout.layout.fl_stripe_unit =
-+		cpu_to_le32(l.stripe_unit);
-+	req->r_args.setlayout.layout.fl_stripe_count =
-+		cpu_to_le32(l.stripe_count);
-+	req->r_args.setlayout.layout.fl_object_size =
-+		cpu_to_le32(l.object_size);
-+	req->r_args.setlayout.layout.fl_pg_pool = cpu_to_le32(l.data_pool);
-+	req->r_args.setlayout.layout.fl_pg_preferred =
-+		cpu_to_le32(l.preferred_osd);
-+
-+	err = ceph_mdsc_do_request(mdsc, parent_inode, req);
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
-+
-+/*
-+ * Return object name, size/offset information, and location (OSD
-+ * number, network address) for a given file offset.
-+ */
-+static long ceph_ioctl_get_dataloc(struct file *file, void __user *arg)
-+{
-+	struct ceph_ioctl_dataloc dl;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_osd_client *osdc = &ceph_client(inode->i_sb)->osdc;
-+	u64 len = 1, olen;
-+	u64 tmp;
-+	struct ceph_object_layout ol;
-+	struct ceph_pg pgid;
-+
-+	/* copy and validate */
-+	if (copy_from_user(&dl, arg, sizeof(dl)))
-+		return -EFAULT;
-+
-+	down_read(&osdc->map_sem);
-+	ceph_calc_file_object_mapping(&ci->i_layout, dl.file_offset, &len,
-+				      &dl.object_no, &dl.object_offset, &olen);
-+	dl.file_offset -= dl.object_offset;
-+	dl.object_size = ceph_file_layout_object_size(ci->i_layout);
-+	dl.block_size = ceph_file_layout_su(ci->i_layout);
-+
-+	/* block_offset = object_offset % block_size */
-+	tmp = dl.object_offset;
-+	dl.block_offset = do_div(tmp, dl.block_size);
-+
-+	snprintf(dl.object_name, sizeof(dl.object_name), "%llx.%08llx",
-+		 ceph_ino(inode), dl.object_no);
-+	ceph_calc_object_layout(&ol, dl.object_name, &ci->i_layout,
-+				osdc->osdmap);
-+
-+	pgid = ol.ol_pgid;
-+	dl.osd = ceph_calc_pg_primary(osdc->osdmap, pgid);
-+	if (dl.osd >= 0) {
-+		struct ceph_entity_addr *a =
-+			ceph_osd_addr(osdc->osdmap, dl.osd);
-+		if (a)
-+			memcpy(&dl.osd_addr, &a->in_addr, sizeof(dl.osd_addr));
-+	} else {
-+		memset(&dl.osd_addr, 0, sizeof(dl.osd_addr));
-+	}
-+	up_read(&osdc->map_sem);
-+
-+	/* send result back to user */
-+	if (copy_to_user(arg, &dl, sizeof(dl)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	dout("ioctl file %p cmd %u arg %lu\n", file, cmd, arg);
-+	switch (cmd) {
-+	case CEPH_IOC_GET_LAYOUT:
-+		return ceph_ioctl_get_layout(file, (void __user *)arg);
-+
-+	case CEPH_IOC_SET_LAYOUT:
-+		return ceph_ioctl_set_layout(file, (void __user *)arg);
-+
-+	case CEPH_IOC_GET_DATALOC:
-+		return ceph_ioctl_get_dataloc(file, (void __user *)arg);
-+	}
-+	return -ENOTTY;
-+}
-diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
-new file mode 100644
-index 0000000..25e4f1a
---- /dev/null
-+++ b/fs/ceph/ioctl.h
-@@ -0,0 +1,40 @@
-+#ifndef FS_CEPH_IOCTL_H
-+#define FS_CEPH_IOCTL_H
-+
-+#include <linux/ioctl.h>
-+#include <linux/types.h>
-+
-+#define CEPH_IOCTL_MAGIC 0x97
-+
-+/* just use u64 to align sanely on all archs */
-+struct ceph_ioctl_layout {
-+	__u64 stripe_unit, stripe_count, object_size;
-+	__u64 data_pool;
-+	__s64 preferred_osd;
-+};
-+
-+#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1,		\
-+				   struct ceph_ioctl_layout)
-+#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2,		\
-+				   struct ceph_ioctl_layout)
-+
-+/*
-+ * Extract identity, address of the OSD and object storing a given
-+ * file offset.
-+ */
-+struct ceph_ioctl_dataloc {
-+	__u64 file_offset;           /* in+out: file offset */
-+	__u64 object_offset;         /* out: offset in object */
-+	__u64 object_no;             /* out: object # */
-+	__u64 object_size;           /* out: object size */
-+	char object_name[64];        /* out: object name */
-+	__u64 block_offset;          /* out: offset in block */
-+	__u64 block_size;            /* out: block length */
-+	__s64 osd;                   /* out: osd # */
-+	struct sockaddr_storage osd_addr; /* out: osd address */
-+};
-+
-+#define CEPH_IOC_GET_DATALOC _IOWR(CEPH_IOCTL_MAGIC, 3,	\
-+				   struct ceph_ioctl_dataloc)
-+
-+#endif
+Write-side: smp_wmb() orders text_poke stores before store to wrote_text.
+
+Read-side: order wrote_text load before subsequent execution of modified
+           instructions.
+
+Here again, strictly speaking, wrote_text load is not ordered with respect to
+following instructions. So maybe it's fine on x86-TSO specifically, but I would
+not count on this kind of synchronization to work in the general case.
+
+Given the very small expected performance impact of this code path, I would
+recomment using the more solid/generic alternative below. If there is really a
+gain to get by creating this weird wait loop with strange memory barrier
+semantics, fine, otherwise I'd be reluctant to accept your proposals as
+obviously correct.
+
+If you really, really want to go down the route of proving the correctness of
+your memory barrier usage, I can recommend looking at the memory barrier formal
+verification framework I did as part of my thesis. But, really, in this case,
+the performance gain is just not there, so there is no point in spending time
+trying to prove this.
+
+Thanks,
+
+Mathieu
+
+> >
+> > +static volatile int wrote_text;
+> >
+> > ...
+> >
+> > +static int __kprobes stop_machine_text_poke(void *data)
+> > +{
+> > +	struct text_poke_params *tpp = data;
+> > +
+> > +	if (atomic_dec_and_test(&stop_machine_first)) {
+> > +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+> > +		smp_wmb();	/* order text_poke stores before store to wrote_text */
+> > +		wrote_text = 1;
+> > +	} else {
+> > +		while (!wrote_text)
+> > +			cpu_relax();
+> > +		smp_mb();	/* order wrote_text load before following execution */
+> > +	}
+> >
+> > If you don't like the "volatile int" definition of wrote_text, then we
+> > should probably use the ACCESS_ONCE() macro instead.
+> 
+> hm, yeah, volatile will be required.
+> 
+> Thank you,
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> e-mail: mhiramat@redhat.com
+> 
+> 
+> 
+
 -- 
-1.7.0
-
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
