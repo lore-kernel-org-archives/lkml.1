@@ -1,50 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751426Ab0CCPT0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:19:26 -0500
-Received: from elettra.colt-to.towertech.it ([213.215.222.70]:40578 "EHLO
-	elettra.colt-to.towertech.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750830Ab0CCPTZ (ORCPT
+	id S1752032Ab0CCPTu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:19:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38201
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751327Ab0CCPTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:19:25 -0500
-Date: Wed, 3 Mar 2010 16:19:20 +0100
-From: Alessandro Zummo <a.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: james@albanarts.com, Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH] rtc-coh901331: Fix braces in resume code.
-Message-ID: <20100303161920.2dbdb3f7@linux.lan.towertech.it>
-In-Reply-To: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
-References: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Wed, 3 Mar 2010 10:19:48 -0500
+Date: Wed, 03 Mar 2010 07:20:07 -0800 (PST)
+Message-Id: <20100303.072007.170106625.davem@davemloft.net>
+To: tytso@mit.edu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] X doesn't work with 2.6.33 (can't find any input
+ devices)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100303151720.GA3191@thunk.org>
+References: <20100303151720.GA3191@thunk.org>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 11:55:15 +0000
-James Hogan <james@albanarts.com> wrote:
+From: tytso@mit.edu
+Date: Wed, 3 Mar 2010 10:17:20 -0500
 
-> The else part of the if statement is indented but does not have braces
-> around it. It clearly should since it uses clk_enable and clk_disable
-> which are supposed to balance.
-> 
-> Signed-off-by: James Hogan <james@albanarts.com>
+> It worked just *fine* using 2.6.33-rc4.  I have no xorg.conf file (X
+> is autoconfiguring itself) and I'm using an Ubuntu 9.10 userspace.
 
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+X uses udev events to find input devices these days, so it's probably
+the same problem preventing your lvm devices from showing up correctly
+from initramfs.
