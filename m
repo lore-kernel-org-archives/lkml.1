@@ -1,66 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703Ab0CCVmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:42:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36386 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756620Ab0CCVmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:42:47 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip] x86: Issue at least one memory barrier in
-	stop_machine_text_poke().
-To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>
-Date: Wed, 03 Mar 2010 16:48:47 -0500
-Message-ID: <20100303214847.26177.98280.stgit@localhost6.localdomain6>
-In-Reply-To: <20100303213614.GA29880@Krystal>
-References: <20100303213614.GA29880@Krystal>
-User-Agent: StGIT/0.14.3
+	id S1756715Ab0CCVsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:48:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41393 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756696Ab0CCVsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 16:48:14 -0500
+Date: Wed, 3 Mar 2010 13:48:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <gregkh@suse.de>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 19/62] Driver-Core: devtmpfs - remove EXPERIMENTAL and
+ enable it by default
+In-Reply-To: <20100303212236.GA9732@suse.de>
+Message-ID: <alpine.LFD.2.00.1003031340570.3599@localhost.localdomain>
+References: <20100302230933.GA32287@kroah.com> <1267572541-410-19-git-send-email-gregkh@suse.de> <m1635eow8a.fsf@fess.ebiederm.org> <alpine.LFD.2.00.1003030839550.3627@localhost.localdomain> <20100303212236.GA9732@suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix stop_machine_text_poke() to issue smp_mb() before exiting waiting
-loop, and use cpu_relax() for waiting.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>
----
-
- arch/x86/kernel/alternative.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index 635e4f4..3a4bf35 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -597,8 +597,8 @@ static int __kprobes stop_machine_text_poke(void *data)
- 		wrote_text = 1;
- 	} else {
- 		while (!wrote_text)
--			smp_rmb();
--		sync_core();
-+			cpu_relax();
-+		smp_mb();	/* Load wrote_text before following execution */
- 	}
- 
- 	flush_icache_range((unsigned long)tpp->addr,
 
 
--- 
-Masami Hiramatsu
+On Wed, 3 Mar 2010, Greg KH wrote:
+> 
+> Ok, I'll change this.  Do you want me to redo the whole series, or just
+> add another patch to revert the 'default y' option here?
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+I'm ok with just changing the default. I wanted to make a stink over it 
+just to make people aware that we already have kernels too big by default, 
+and we shouldn't change the default semantics of making a config without 
+some major reasons.
 
-e-mail: mhiramat@redhat.com
+Btw, I do think that when you do pull requests during the merge window, 
+you should seriously think about basing them on top of some known-stable 
+kernel (ie the previous release) rather than some random 
+kernel-of-the-day like you seem to.
+
+It's much easier to bisect problems if you'er not fighting multiple 
+overlapping bugs, for example - and since you move from quilt to git 
+apparently just based on whatever was the most recent git tree when you do 
+that move, it really means that in case the kernel you picked was 
+unstable, it's going to be a _bitch_ to bisect any problems introduced in 
+your series.
+
+Why? Say that the base you picked happened to simply not boot at all (or 
+had something like the PCI problem that I encountered that made X not run 
+on my machine) for somebody. Now _all_ those commits you did in that 
+series are going to be essentially untestable on such a machine - and 
+think about what happens if the problem happens mainly on the same 
+machines that had the other bug too?
+
+Anyway, I don't know whether you picked a good spot to do your series or 
+not, but it _looked_ like a pretty random spot. It might be perfectly 
+good. But just in general, since you always generate your trees from a 
+quilt series anyway, I suspect we migth be better off (at least for the 
+initial merge window series) to base them on the closest thing we have to 
+a "known good" base, namely the previous release. Rather than some "maybe 
+fine" point in the middle of the merge window.
+
+			Linus
