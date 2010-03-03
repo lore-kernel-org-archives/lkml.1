@@ -1,43 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792Ab0CCAHy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:07:54 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58431 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661Ab0CCAHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:07:50 -0500
-Date: Tue, 2 Mar 2010 16:02:05 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ari Entlich <atrigent@ccs.neu.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 34/36] tty: Add a new VT mode which is like VT_PROCESS
- but doesn't require a VT_RELDISP ioctl call
-Message-ID: <20100303000205.GA2891@suse.de>
-References: <14018832.317861267574035528.JavaMail.root@zimbra>
- <12806278.317911267574120161.JavaMail.root@zimbra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12806278.317911267574120161.JavaMail.root@zimbra>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754664Ab0CCAIR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:08:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59050 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754175Ab0CCAIO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:08:14 -0500
+Date: Tue, 2 Mar 2010 16:07:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Russell King <rmk@arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 2/3] arm: Convert arm to arch_gettimeoffset()
+Message-Id: <20100302160724.8544ba53.akpm@linux-foundation.org>
+In-Reply-To: <1267484054.4216.94.camel@localhost.localdomain>
+References: <1267483897.4216.91.camel@localhost.localdomain>
+	<1267484054.4216.94.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 06:55:20PM -0500, Ari Entlich wrote:
-> Hello!
-> 
-> Could you please remove this patch from your 2.6.34 tty pull request?
-> Andrew Morton questioned whether this should actually be used yet[1],
-> and I responded confirming his suspicions[2]. In addition, this patch
-> has not "been in the linux-next and -mm releases for a number of
-> weeks now", as you suggest in your pull request.
+On Mon, 01 Mar 2010 14:54:14 -0800
+john stultz <johnstul@us.ibm.com> wrote:
 
-Hm, it's been there for over a week from what I can tell, right?
+> This patch converts arm to use GENERIC_TIME via the arch_getoffset()
+> infrastructure, reducing the amount of arch specific code we need to
+> maintain.
 
-I'll revert it after this batch goes into Linus's tree.  Next time, warn
-me a bit earlier :)
+It runs afoul of the pending changes in linux-next:
 
-thanks,
-
-greg k-h
+patching file arch/arm/Kconfig
+Hunk #3 FAILED at 240.
+Hunk #4 FAILED at 250.
+Hunk #5 FAILED at 262.
+Hunk #6 succeeded at 293 (offset 21 lines).
+Hunk #7 succeeded at 301 (offset 21 lines).
+Hunk #8 succeeded at 310 (offset 21 lines).
+Hunk #9 succeeded at 319 (offset 21 lines).
+Hunk #10 succeeded at 336 (offset 21 lines).
+Hunk #11 FAILED at 344.
+Hunk #12 succeeded at 364 (offset 20 lines).
+Hunk #13 succeeded at 375 (offset 20 lines).
+Hunk #14 succeeded at 382 (offset 20 lines).
+Hunk #15 succeeded at 393 (offset 20 lines).
+Hunk #16 succeeded at 407 (offset 20 lines).
+Hunk #17 succeeded at 419 (offset 20 lines).
+Hunk #18 succeeded at 432 (offset 20 lines).
+Hunk #19 succeeded at 441 (offset 20 lines).
+Hunk #20 succeeded at 450 (offset 20 lines).
+Hunk #21 succeeded at 459 (offset 20 lines).
+Hunk #22 succeeded at 468 (offset 20 lines).
+Hunk #23 succeeded at 484 (offset 20 lines).
+Hunk #24 succeeded at 495 (offset 20 lines).
+Hunk #25 succeeded at 504 (offset 20 lines).
+Hunk #26 succeeded at 515 (offset 20 lines).
+Hunk #27 succeeded at 528 (offset 20 lines).
+Hunk #28 succeeded at 542 (offset 20 lines).
+Hunk #29 succeeded at 553 (offset 20 lines).
+Hunk #30 succeeded at 562 (offset 20 lines).
+Hunk #31 succeeded at 577 (offset 20 lines).
+Hunk #32 succeeded at 601 (offset 20 lines).
+Hunk #33 succeeded at 614 (offset 20 lines).
+Hunk #34 FAILED at 623.
+Hunk #35 succeeded at 646 (offset 26 lines).
+Hunk #36 succeeded at 660 (offset 26 lines).
+Hunk #37 succeeded at 672 (offset 26 lines).
+Hunk #38 FAILED at 682.
+Hunk #39 succeeded at 743 (offset 66 lines).
+Hunk #40 succeeded at 753 (offset 66 lines).
+Hunk #41 succeeded at 767 (offset 66 lines).
+Hunk #42 succeeded at 777 (offset 66 lines).
+Hunk #43 succeeded at 795 (offset 66 lines).
+Hunk #44 succeeded at 806 (offset 66 lines).
+Hunk #45 succeeded at 815 (offset 66 lines).
+Hunk #46 succeeded at 944 (offset 73 lines).
+6 out of 46 hunks FAILED -- saving rejects to file arch/arm/Kconfig.rej
