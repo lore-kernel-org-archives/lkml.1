@@ -1,89 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579Ab0CCPuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:50:40 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:50862 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753398Ab0CCPuh (ORCPT
+	id S1753708Ab0CCPvB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:51:01 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:44696 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195Ab0CCPu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:50:37 -0500
-Date: Wed, 3 Mar 2010 10:50:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Hugh Daschbach <hdasch@broadcom.com>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, David Vrabel <david.vrabel@csr.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-In-Reply-To: <233671224A0FED4688218FFDBED26E1A517AC38638@IRVEXCHCCR01.corp.ad.broadcom.com>
-Message-ID: <Pine.LNX.4.44L0.1003031046370.2821-100000@iolanthe.rowland.org>
+	Wed, 3 Mar 2010 10:50:59 -0500
+Date: Wed, 3 Mar 2010 16:51:10 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Doug Thompson <norsk5@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] amd64_edac fix for .34
+Message-ID: <20100303155110.GA18681@aftab>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010, Hugh Daschbach wrote:
+Hi Linus,
 
-> The system may fail to boot when the kernel's devices_kset->list gets
-> written by another thread while device_shutdown() is traversing the
-> list.  Though not common, this is fairly reproducible for some SCSI
-> Fibre Channel topologies; particularly so with FCoE configurations.
-> 
-> The reboot thread calls device_shutdown() as part of system shutdown.
-> device_shutdown() loops through devices_kset->list, shutting down each
-> system device.  But devices_kset->list isn't protected from other
-> writers while device_shutdown() traverses the list.
-> 
-> One such secondary writer is the SCI Fibre Channel workqueue.  When
-> fc_wq_N removes a device that device_shutdown() holds in it's "devn"
-> (list traversal iterator) variable, device_shutdown() stalls, chasing
-> what is essentially a broken link.
-> 
-> This is not a common occurrence.  But FC SCSI devices associated with a
-> link that has gone down cause a race between device_shutdown() running
-> in reboot's process and scsi_remove_target() running in a SCSI FC
-> workqueue (fc_wq_N).
-> 
-> Network attached FC devices are particularly vulnerable because SysV
-> init scripts shut network interfaces down before proceeding with the
-> reboot request.  So by the time reboot is called, the link to the FC
-> devices is already down.
-> 
-> When the link is down device_shutdown() stalls (in sd_shutdown() --
-> which issues cache flush CDBs to what are, by that time, inaccessible
-> devices).  The stall ends when the fc rport timer expires.  But the
-> timer expiration also initiates fc_starget_delete() in the fc workqueue,
-> causing the race with device_shutdown().
-> 
-> The attached patch detects and attempts to recover from the
-> corruption.  But this can hardly be considered a fix, as it does not
-> address the race between device_shutdown() and scsi_remove_target().
-> 
-> Perhaps converting the list_for_each_entry_safe_reverse() to something
-> like.
-> 
->         while (!list_empty(&devices_kset->list)) {
->                 dev = list_last_entry(...);
->                 ...
->         }
-> 
-> might be appropriate.  But I have no idea if any devices don't fully
-> remove themselves from the list when shutdown.
+please pull the following fix for .34.
 
-You can't make any assumptions about that.  Probably most of them 
-don't.
+Thanks.
 
-> Does anyone have any guidance for what would make a more appropriate
-> fix?
+The following changes since commit 60b341b778cc2929df16c0a504c91621b3c6a4ad:
+  Linus Torvalds (1):
+        Linux 2.6.33
 
-Your suggestion above ought to work out okay, if you remove each device
-from the list yourself as you come to it.  (I don't think that will
-cause problems elsewhere, but I could be wrong.)  However, struct kset
-contains a spinlock which is supposed to protect the list.  This loop
-should be using the spinlock.
+are available in the git repository at:
 
-Alan Stern
+  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
 
+Borislav Petkov (1):
+      amd64_edac: Simplify ECC override handling
+
+ drivers/edac/amd64_edac.c |   37 +++++++++++++++++++------------------
+ drivers/edac/amd64_edac.h |    3 ++-
+ 2 files changed, 21 insertions(+), 19 deletions(-)
+
+-- 
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
