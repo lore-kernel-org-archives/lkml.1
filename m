@@ -1,124 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945Ab0CCQr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:47:26 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:43793 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754821Ab0CCQrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:47:22 -0500
-Date: Wed, 3 Mar 2010 18:00:00 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Paul Turner <pjt@google.com>,
-       Dario Faggioli <faggioli@gandalf.sssup.it>,
-       Michael Trimarchi <michael@evidence.eu.com>,
-       Dhaval Giani <dhaval@retis.sssup.it>,
-       Tommaso Cucinotta <t.cucinotta@sssup.it>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] sched: enforce per-cpu utilization limits on runtime
- balancing
-Message-ID: <20100303170000.GO2490@gandalf.sssup.it>
-References: <cover.1266931410.git.fabio@helm.retis>
- <91b76b9b7555024d9afd7264eeae1b2db6a5e74c.1266931410.git.fabio@helm.retis>
- <1267129705.22519.561.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267129705.22519.561.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-10-28)
+	id S1754974Ab0CCQr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:47:27 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46193 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754650Ab0CCQpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 11:45:24 -0500
+Message-Id: <20100303163936.906011640@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Mar 2010 17:39:36 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
+       fweisbec@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC][PATCH 00/11] Another stab at PEBS and LBR support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Thu, Feb 25, 2010 09:28:25PM +0100
->
-> On Tue, 2010-02-23 at 19:56 +0100, Fabio Checconi wrote:
-> > +static u64 from_ratio(unsigned long ratio, u64 period)
-> > +{
-> > +       return (ratio * period) >> 20;
-> > +}
-> > +
-> > +/*
-> > + * Try to move *diff units of runtime from src to dst, checking
-> > + * that the utilization does not exceed the global limits on the
-> > + * destination cpu.  Returns true if the migration succeeded, leaving
-> > + * in *diff the actual amount of runtime moved, false on failure, which
-> > + * means that no more bandwidth can be migrated to rt_rq.
-> > + */
-> > +static int rt_move_bw(struct rt_rq *src, struct rt_rq *dst,
-> > +                      s64 *diff, u64 rt_period)
-> > +{
-> > +       struct rq *rq = rq_of_rt_rq(dst), *src_rq = rq_of_rt_rq(src);
-> > +       struct rt_edf_tree *dtree = &rq->rt.rt_edf_tree;
-> > +       struct rt_edf_tree *stree = &src_rq->rt.rt_edf_tree;
-> > +       unsigned long bw_to_move;
-> > +       int ret = 0;
-> > +
-> > +       double_spin_lock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
-> > +
-> > +       if (dtree->rt_free_bw) {
-> > +               bw_to_move = to_ratio(rt_period, *diff);
-> > +               if (bw_to_move > dtree->rt_free_bw) {
-> > +                       bw_to_move = dtree->rt_free_bw;
-> > +                       *diff = from_ratio(bw_to_move, rt_period);
-> > +               }
-> > +
-> > +               stree->rt_free_bw -= bw_to_move;
-> > +               dtree->rt_free_bw += bw_to_move;
-> > +               ret = 1;
-> > +       }
-> > +
-> > +       double_spin_unlock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
-> > +
-> > +       return ret;
-> > +} 
-> 
-> The from_ratio() stuff smells like numerical instability for
-> ->rt_free_bw, I can't see anything that would, given sufficient balance
-> cycles keep the sum of rt_free_bw over the cpus equal to what it started
-> out with.
 
-You're right...  What would you think about the following solution?
-It just keep tracks of the bw accounted for every rt_rq when it is
-updated, and that should be enough to avoid accumulating the errors.
+Sorta works, the PEBS-LBR-fixup stuff makes my machine unhappy, but I could
+have made a silly mistake there..
 
-static inline void rt_update_bw(struct rt_rq *rt_rq, struct rt_edf_tree *tree,
-                                s64 diff, u64 rt_period)
-{       
-	unsigned long bw;
+Can be tested using the below patchlet and something like: perf top -e r00c0p
 
-	rt_rq->rt_runtime += diff;
-	bw = to_ratio(rt_period, rt_rq->rt_runtime);
-	tree->rt_free_bw += bw - rt_rq->rt_bw;
-	rt_rq->rt_bw = bw;
-}
- 
-static bool rt_move_bw(struct rt_rq *src, struct rt_rq *dst,
-		       s64 *diff, u64 rt_period)
-{
-	struct rq *rq = rq_of_rt_rq(dst), *src_rq = rq_of_rt_rq(src);
-	struct rt_edf_tree *dtree = &rq->rt.rt_edf_tree;
-	struct rt_edf_tree *stree = &src_rq->rt.rt_edf_tree;
-	unsigned long bw_to_move;
-	bool ret = false;
+---
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 05d0c5c..f8314e6 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -656,6 +656,11 @@ parse_raw_event(const char **strp, struct perf_event_attr *attr)
+ 		return EVT_FAILED;
+ 	n = hex2u64(str + 1, &config);
+ 	if (n > 0) {
++		if (str[n+1] == 'p') {
++			attr->precise = 1;
++			printf("precise\n");
++			n++;
++		}
+ 		*strp = str + n + 1;
+ 		attr->type = PERF_TYPE_RAW;
+ 		attr->config = config;
 
-	double_spin_lock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
 
-	if (dtree->rt_free_bw) {
-		bw_to_move = to_ratio(rt_period, *diff);
-		if (bw_to_move > dtree->rt_free_bw)
-			*diff = from_ratio(dtree->rt_free_bw, rt_period);
-
-		if (*diff) {
-			rt_update_bw(src, stree, -(*diff), rt_period);
-			rt_update_bw(dst, dtree, *diff, rt_period);
-
-			ret = true;
-		}
-	}
-
-	double_spin_unlock(&dtree->rt_bw_lock, &stree->rt_bw_lock);
-
-	return ret;
-}
