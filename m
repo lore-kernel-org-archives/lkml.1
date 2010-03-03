@@ -1,229 +1,280 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755031Ab0CCQrb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:47:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46187 "EHLO
+	id S1755007Ab0CCQr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:47:29 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46190 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754637Ab0CCQpX (ORCPT
+	with ESMTP id S1754642Ab0CCQpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:45:23 -0500
-Message-Id: <20100303164306.678437077@chello.nl>
+	Wed, 3 Mar 2010 11:45:24 -0500
+Message-Id: <20100303164306.602529559@chello.nl>
 References: <20100303163936.906011640@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Mar 2010 17:39:47 +0100
+Date: Wed, 03 Mar 2010 17:39:46 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
-       fweisbec@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 11/11] perf, x86: Clean up IA32_PERF_CAPABILITIES usage
-Content-Disposition: inline; filename=perf-capabilities.patch
+       fweisbec@gmail.com, Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC][PATCH 10/11] perf, x86: use LBR for PEBS IP+1 fixup
+Content-Disposition: inline; filename=perf-pebs-lbr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Saner PERF_CAPABILITIES support
+PEBS always reports the IP+1, that is the instruction after the one
+that got sampled, cure this by using the LBR to reliably rewind the
+instruction stream.
 
+CC: Masami Hiramatsu <mhiramat@redhat.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/x86/kernel/cpu/perf_event.c           |   15 +++++++++++++--
- arch/x86/kernel/cpu/perf_event_intel.c     |   10 ++++++++++
- arch/x86/kernel/cpu/perf_event_intel_ds.c  |   26 +++++++++++++-------------
- arch/x86/kernel/cpu/perf_event_intel_lbr.c |   18 ++++--------------
- 4 files changed, 40 insertions(+), 29 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c          |   70 ++++++++++++-------------
+ arch/x86/kernel/cpu/perf_event_intel.c    |    4 -
+ arch/x86/kernel/cpu/perf_event_intel_ds.c |   81 +++++++++++++++++++++++++++++-
+ 3 files changed, 116 insertions(+), 39 deletions(-)
 
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -154,6 +154,17 @@ struct cpu_hw_events {
- #define for_each_event_constraint(e, c)	\
- 	for ((e) = (c); (e)->cmask; (e)++)
+@@ -29,6 +29,41 @@
+ #include <asm/stacktrace.h>
+ #include <asm/nmi.h>
  
-+union perf_capabilities {
-+	struct {
-+		u64	lbr_format    : 6;
-+		u64	pebs_trap     : 1;
-+		u64	pebs_arch_reg : 1;
-+		u64	pebs_format   : 4;
-+		u64	smm_freeze    : 1;
-+	};
-+	u64	capabilities;
-+};
++/*
++ * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
++ */
++static unsigned long
++copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
++{
++	unsigned long offset, addr = (unsigned long)from;
++	int type = in_nmi() ? KM_NMI : KM_IRQ0;
++	unsigned long size, len = 0;
++	struct page *page;
++	void *map;
++	int ret;
 +
- /*
-  * struct x86_pmu - generic x86 pmu
-  */
-@@ -190,7 +201,8 @@ struct x86_pmu {
- 	/*
- 	 * Intel Arch Perfmon v2+
- 	 */
--	u64		intel_ctrl;
-+	u64			intel_ctrl;
-+	union perf_capabilities intel_perf_capabilities;
++	do {
++		ret = __get_user_pages_fast(addr, 1, 0, &page);
++		if (!ret)
++			break;
++
++		offset = addr & (PAGE_SIZE - 1);
++		size = min(PAGE_SIZE - offset, n - len);
++
++		map = kmap_atomic(page, type);
++		memcpy(to, map+offset, size);
++		kunmap_atomic(map, type);
++		put_page(page);
++
++		len  += size;
++		to   += size;
++		addr += size;
++
++	} while (len < n);
++
++	return len;
++}
++
+ static u64 perf_event_mask __read_mostly;
  
- 	/*
- 	 * Intel DebugStore bits
-@@ -205,7 +217,6 @@ struct x86_pmu {
- 	 */
- 	unsigned long	lbr_tos, lbr_from, lbr_to; /* MSR base regs       */
- 	int		lbr_nr;			   /* hardware stack size */
--	int		lbr_format;		   /* hardware format     */
- };
+ struct event_constraint {
+@@ -1516,41 +1551,6 @@ perf_callchain_kernel(struct pt_regs *re
+ 	dump_trace(NULL, regs, NULL, regs->bp, &backtrace_ops, entry);
+ }
  
- static struct x86_pmu x86_pmu __read_mostly;
+-/*
+- * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
+- */
+-static unsigned long
+-copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
+-{
+-	unsigned long offset, addr = (unsigned long)from;
+-	int type = in_nmi() ? KM_NMI : KM_IRQ0;
+-	unsigned long size, len = 0;
+-	struct page *page;
+-	void *map;
+-	int ret;
+-
+-	do {
+-		ret = __get_user_pages_fast(addr, 1, 0, &page);
+-		if (!ret)
+-			break;
+-
+-		offset = addr & (PAGE_SIZE - 1);
+-		size = min(PAGE_SIZE - offset, n - len);
+-
+-		map = kmap_atomic(page, type);
+-		memcpy(to, map+offset, size);
+-		kunmap_atomic(map, type);
+-		put_page(page);
+-
+-		len  += size;
+-		to   += size;
+-		addr += size;
+-
+-	} while (len < n);
+-
+-	return len;
+-}
+-
+ static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
+ {
+ 	unsigned long bytes;
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -840,6 +840,16 @@ static __init int intel_pmu_init(void)
- 	if (version > 1)
- 		x86_pmu.num_events_fixed = max((int)edx.split.num_events_fixed, 3);
+@@ -547,7 +547,7 @@ static void intel_pmu_disable_event(stru
+ 	x86_pmu_disable_event(event);
  
-+	/*
-+	 * v2 and above have a perf capabilities MSR
-+	 */
-+	if (version > 1) {
-+		u64 capabilities;
-+
-+		rdmsrl(MSR_IA32_PERF_CAPABILITIES, capabilities);
-+		x86_pmu.intel_perf_capabilities.capabilities = capabilities;
-+	}
-+
- 	intel_ds_init();
+ 	if (unlikely(event->attr.precise))
+-		intel_pmu_pebs_disable(hwc);
++		intel_pmu_pebs_disable(event);
  
- 	/*
+ 	if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK)
+ 		intel_pmu_lbr_disable(event);
+@@ -603,7 +603,7 @@ static void intel_pmu_enable_event(struc
+ 	}
+ 
+ 	if (unlikely(event->attr.precise))
+-		intel_pmu_pebs_enable(hwc);
++		intel_pmu_pebs_enable(event);
+ 
+ 	if (event->attr.sample_type & PERF_SAMPLE_BRANCH_STACK)
+ 		intel_pmu_lbr_enable(event);
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel_ds.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
-@@ -444,6 +444,12 @@ static void intel_pmu_pebs_fixup_ip(stru
- 	u8 *kaddr;
- 	int i;
- 
-+	/*
-+	 * We don't need to fixup if the PEBS assist is fault like
-+	 */
-+	if (!x86_pmu.intel_perf_capabilities.pebs_trap)
-+		return;
-+
- 	if (from && to) {
- 		/*
- 		 * We sampled a branch insn, rewind using the LBR stack
-@@ -619,34 +625,28 @@ static void intel_ds_init(void)
- 	x86_pmu.bts  = boot_cpu_has(X86_FEATURE_BTS);
- 	x86_pmu.pebs = boot_cpu_has(X86_FEATURE_PEBS);
- 	if (x86_pmu.pebs) {
--		int format = 0;
--
--		if (x86_pmu.version > 1) {
--			u64 capabilities;
--			/*
--			 * v2+ has a PEBS format field
--			 */
--			rdmsrl(MSR_IA32_PERF_CAPABILITIES, capabilities);
--			format = (capabilities >> 8) & 0xf;
--		}
-+		int format = x86_pmu.intel_perf_capabilities.pebs_format;
-+		char pebs_type =
-+			x86_pmu.intel_perf_capabilities.pebs_trap ?  '+' : '-';
- 
- 		switch (format) {
- 		case 0:
--			printk(KERN_CONT "PEBS v0, ");
-+			printk(KERN_CONT "PEBS fmt0%c, ", pebs_type);
- 			x86_pmu.pebs_record_size = sizeof(struct pebs_record_core);
- 			x86_pmu.drain_pebs = intel_pmu_drain_pebs_core;
- 			x86_pmu.pebs_constraints = intel_core_pebs_events;
- 			break;
- 
- 		case 1:
--			printk(KERN_CONT "PEBS v1, ");
-+			printk(KERN_CONT "PEBS fmt1%c, ", pebs_type);
- 			x86_pmu.pebs_record_size = sizeof(struct pebs_record_nhm);
- 			x86_pmu.drain_pebs = intel_pmu_drain_pebs_nhm;
- 			x86_pmu.pebs_constraints = intel_nehalem_pebs_events;
- 			break;
- 
- 		default:
--			printk(KERN_CONT "PEBS unknown format: %d, ", format);
-+			printk(KERN_CONT "no PEBS fmt%d%c, ",
-+					format, pebs_type);
- 			x86_pmu.pebs = 0;
- 			break;
- 		}
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel_lbr.c
-@@ -53,7 +53,7 @@ static void intel_pmu_lbr_reset_64(void)
- 
- static void intel_pmu_lbr_reset(void)
- {
--	if (x86_pmu.lbr_format == LBR_FORMAT_32)
-+	if (x86_pmu.intel_perf_capabilities.lbr_format == LBR_FORMAT_32)
- 		intel_pmu_lbr_reset_32();
- 	else
- 		intel_pmu_lbr_reset_64();
-@@ -155,6 +155,7 @@ static void intel_pmu_lbr_read_32(struct
- static void intel_pmu_lbr_read_64(struct cpu_hw_events *cpuc)
- {
- 	unsigned long mask = x86_pmu.lbr_nr - 1;
-+	int lbr_format = x86_pmu.intel_perf_capabilities.lbr_format;
- 	u64 tos = intel_pmu_lbr_tos();
- 	int i;
- 
-@@ -165,7 +166,7 @@ static void intel_pmu_lbr_read_64(struct
- 		rdmsrl(x86_pmu.lbr_from + lbr_idx, from);
- 		rdmsrl(x86_pmu.lbr_to   + lbr_idx, to);
- 
--		if (x86_pmu.lbr_format == LBR_FORMAT_EIP_FLAGS) {
-+		if (lbr_format == LBR_FORMAT_EIP_FLAGS) {
- 			flags = !!(from & LBR_FROM_FLAG_MISPRED);
- 			from = (u64)((((s64)from) << 1) >> 1);
- 		}
-@@ -184,7 +185,7 @@ static void intel_pmu_lbr_read(struct pe
- 	if (!cpuc->lbr_users)
- 		return;
- 
--	if (x86_pmu.lbr_format == LBR_FORMAT_32)
-+	if (x86_pmu.intel_perf_capabilities.lbr_format == LBR_FORMAT_32)
- 		intel_pmu_lbr_read_32(cpuc);
- 	else
- 		intel_pmu_lbr_read_64(cpuc);
-@@ -192,17 +193,8 @@ static void intel_pmu_lbr_read(struct pe
- 	data->branches = &cpuc->lbr_stack;
+@@ -331,26 +331,32 @@ intel_pebs_constraints(struct perf_event
+ 	return &emptyconstraint;
  }
  
--static int intel_pmu_lbr_format(void)
--{
--	u64 capabilities;
--
--	rdmsrl(MSR_IA32_PERF_CAPABILITIES, capabilities);
--	return capabilities & 0x1f;
--}
--
- static void intel_pmu_lbr_init_core(void)
+-static void intel_pmu_pebs_enable(struct hw_perf_event *hwc)
++static void intel_pmu_pebs_enable(struct perf_event *event)
  {
--	x86_pmu.lbr_format = intel_pmu_lbr_format();
- 	x86_pmu.lbr_nr     = 4;
- 	x86_pmu.lbr_tos    = 0x01c9;
- 	x86_pmu.lbr_from   = 0x40;
-@@ -211,7 +203,6 @@ static void intel_pmu_lbr_init_core(void
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val = cpuc->pebs_enabled;
  
- static void intel_pmu_lbr_init_nhm(void)
- {
--	x86_pmu.lbr_format = intel_pmu_lbr_format();
- 	x86_pmu.lbr_nr     = 16;
- 	x86_pmu.lbr_tos    = 0x01c9;
- 	x86_pmu.lbr_from   = 0x680;
-@@ -220,7 +211,6 @@ static void intel_pmu_lbr_init_nhm(void)
+ 	hwc->config &= ~ARCH_PERFMON_EVENTSEL_INT;
  
- static void intel_pmu_lbr_init_atom(void)
+ 	val |= 1ULL << hwc->idx;
+ 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
++
++	intel_pmu_lbr_enable(event);
+ }
+ 
+-static void intel_pmu_pebs_disable(struct hw_perf_event *hwc)
++static void intel_pmu_pebs_disable(struct perf_event *event)
  {
--	x86_pmu.lbr_format = intel_pmu_lbr_format();
- 	x86_pmu.lbr_nr	   = 8;
- 	x86_pmu.lbr_tos    = 0x01c9;
- 	x86_pmu.lbr_from   = 0x40;
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val = cpuc->pebs_enabled;
+ 
+ 	val &= ~(1ULL << hwc->idx);
+ 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
+ 
+ 	hwc->config |= ARCH_PERFMON_EVENTSEL_INT;
++
++	intel_pmu_lbr_disable(event);
+ }
+ 
+ static void intel_pmu_pebs_enable_all(void)
+@@ -415,6 +421,74 @@ do {						\
+ 
+ #endif
+ 
++#include <asm/insn.h>
++
++#define MAX_INSN_SIZE	16
++
++static void intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
++{
++#if 0
++	/*
++	 * Borken, makes the machine expode at times trying to
++	 * derefence funny userspace addresses.
++	 *
++	 * Should we always fwd decode from @to, instead of trying
++	 * to rewind as implemented?
++	 */
++
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	unsigned long from = cpuc->lbr_entries[0].from;
++	unsigned long to = cpuc->lbr_entries[0].to;
++	unsigned long ip = regs->ip;
++	u8 buf[2*MAX_INSN_SIZE];
++	u8 *kaddr;
++	int i;
++
++	if (from && to) {
++		/*
++		 * We sampled a branch insn, rewind using the LBR stack
++		 */
++		if (ip == to) {
++			regs->ip = from;
++			return;
++		}
++	}
++
++	if (user_mode(regs)) {
++		int bytes = copy_from_user_nmi(buf,
++				(void __user *)(ip - MAX_INSN_SIZE),
++				2*MAX_INSN_SIZE);
++
++		/*
++		 * If we fail to copy the insn stream, give up
++		 */
++		if (bytes != 2*MAX_INSN_SIZE)
++			return;
++
++		kaddr = buf;
++	} else
++		kaddr = (void *)(ip - MAX_INSN_SIZE);
++
++	/*
++	 * Try to find the longest insn ending up at the given IP
++	 */
++	for (i = MAX_INSN_SIZE; i > 0; i--) {
++		struct insn insn;
++
++		kernel_insn_init(&insn, kaddr + MAX_INSN_SIZE - i);
++		insn_get_length(&insn);
++		if (insn.length == i) {
++			regs->ip -= i;
++			return;
++		}
++	}
++
++	/*
++	 * We failed to find a match for the previous insn.. give up
++	 */
++#endif
++}
++
+ static int intel_pmu_save_and_restart(struct perf_event *event);
+ static void intel_pmu_disable_event(struct perf_event *event);
+ 
+@@ -458,6 +532,8 @@ static void intel_pmu_drain_pebs_core(st
+ 
+ 	PEBS_TO_REGS(at, &regs);
+ 
++	intel_pmu_pebs_fixup_ip(&regs);
++
+ 	if (perf_event_overflow(event, 1, data, &regs))
+ 		intel_pmu_disable_event(event);
+ 
+@@ -519,6 +595,7 @@ static void intel_pmu_drain_pebs_nhm(str
+ 		data->period = event->hw.last_period;
+ 
+ 		PEBS_TO_REGS(at, &regs);
++		intel_pmu_pebs_fixup_ip(&regs);
+ 
+ 		if (perf_event_overflow(event, 1, data, &regs))
+ 			intel_pmu_disable_event(event);
 
 -- 
 
