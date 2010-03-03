@@ -1,89 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777Ab0CCS4M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 13:56:12 -0500
-Received: from mail-gw0-f46.google.com ([74.125.83.46]:52720 "EHLO
-	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701Ab0CCS4K convert rfc822-to-8bit (ORCPT
+	id S1750804Ab0CCTIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:08:11 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:61748 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756001Ab0CCTIC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 13:56:10 -0500
+	Wed, 3 Mar 2010 14:08:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tZDLAIL0OBONlTHTtD7MX0kWu01hYk/0MGtz0x6OsHEsGrd0Cc4agC1m+lPEf7WcXp
+         IowWgPQzwAV/VCWGXLcG/oWj/eqZ28vIgD2zeA49I6KVB2UnW7CRQ9ufZ4z05x4InXyR
+         q59Tc2GbXu7/pIrZkIvMOSJoEEQBsfmxGCnnQ=
+Date: Wed, 3 Mar 2010 11:07:54 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+Message-ID: <20100303190753.GB11471@core.coreip.homeip.net>
+References: <4B8C1867.7040201@cam.ac.uk>
+ <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
+ <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
+ <20100303184132.GA11471@core.coreip.homeip.net>
+ <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20100303.025026.243831910.davem@davemloft.net>
-References: <20100303.025026.243831910.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 3 Mar 2010 11:55:49 -0700
-X-Google-Sender-Auth: 8ddf2a1953b5f30b
-Message-ID: <fa686aa41003031055o25fd62b6u3c68d6b69d7c6d1@mail.gmail.com>
-Subject: Re: [PATCH] uartlite: Fix build on sparc.
-To: David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 3, 2010 at 3:50 AM, David Miller <davem@davemloft.net> wrote:
->
-> We can get this driver enabled via MFD_TIMBERDALE which only
-> requires GPIO to be on.
->
-> But the of_address_to_resource() function is only present on
-> powerpc and microblaze, so we have to conditionalize the
-> CONFIG_OF probing bits on that.
->
-> Signed-off-by: David S. Miller <davem@davemloft.net>
+On Wed, Mar 03, 2010 at 10:52:43AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 3 Mar 2010, Dmitry Torokhov wrote:
+> 
+> > On Wed, Mar 03, 2010 at 09:03:16AM -0800, Linus Torvalds wrote:
+> > > 
+> > > What's the difference between a physical "increase screen brightness" key, 
+> > > and a "ambient light sensor"? Absolutely none as far as I can tell.
+> > 
+> > Because in general ambient light sensor may have nothing to do with the
+> > screen brightness. The fact that all current uses are tied to
+> > controlling screen brightness is coincidential. You could use it as well
+> > to turn on the lights in the kitchen if it is getting too dark...
+> 
+> But my point is, it acts pretty much like a key on a keyboard 
+> _regardless_. 
+> 
+> Sure, you migth use it to turn up the lights too. But how is that 
+> different from having a switch to do the same? Again, it doesn't sound 
+> that different from a key to me.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+I guess for me the distinction is that the event was not caused by an
+action of a human being but by change in environment.
 
-Linus or Greg, can you please pick this bug fix up?
+Also, if we decide that input layer is the best place for such devices,
+it should not be a key but absolute event, ABS_LIGHT_LEVEL or something.
 
-Thanks,
-g.
+> 
+> > Yes, it is easier, but it is not necessarily the right interface. I
+> > still believe in using input layer for human iteraction events, and not
+> > as generic transport a-la netlink or uevent. Voltage measurements,
+> > network cable presence notifications, ambient light/temperature sensors,
+> > and so forth do not belong here.
+> 
+> The thing is, if the choice is about a whole new subsystem just for some 
+> silly light sensor logic, I'd _much_ rather see the much simpler - and 
+> more useful - approach of just considering it an input event.
+> 
+> It happens in the same kind of situations, it has the same kinds of timing 
+> issues (ie we're not talking streaming megabytes of data), and it has the 
+> same kind of users (ie a lightsensor really would be used along with 
+> something that cares about input).
+> 
+> I agree that that's not true in many other situations. A cable insertion 
+> event is about the networking, not about some independent input. The kind 
+> of application that cares about network cable presense is _not_ the kind 
+> of app that would care about keyboard input. Same goes for voltage.
 
->
-> diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-> index ab2ab3c..f0a6c61 100644
-> --- a/drivers/serial/uartlite.c
-> +++ b/drivers/serial/uartlite.c
-> @@ -19,7 +19,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/init.h>
->  #include <asm/io.h>
-> -#if defined(CONFIG_OF)
-> +#if defined(CONFIG_OF) && (defined(CONFIG_PPC32) || defined(CONFIG_MICROBLAZE))
->  #include <linux/of.h>
->  #include <linux/of_device.h>
->  #include <linux/of_platform.h>
-> @@ -581,7 +581,7 @@ static struct platform_driver ulite_platform_driver = {
->  /* ---------------------------------------------------------------------
->  * OF bus bindings
->  */
-> -#if defined(CONFIG_OF)
-> +#if defined(CONFIG_OF) && (defined(CONFIG_PPC32) || defined(CONFIG_MICROBLAZE))
->  static int __devinit
->  ulite_of_probe(struct of_device *op, const struct of_device_id *match)
->  {
-> @@ -631,11 +631,11 @@ static inline void __exit ulite_of_unregister(void)
->  {
->        of_unregister_platform_driver(&ulite_of_driver);
->  }
-> -#else /* CONFIG_OF */
-> -/* CONFIG_OF not enabled; do nothing helpers */
-> +#else /* CONFIG_OF && (CONFIG_PPC32 || CONFIG_MICROBLAZE) */
-> +/* Appropriate config not enabled; do nothing helpers */
->  static inline int __init ulite_of_register(void) { return 0; }
->  static inline void __exit ulite_of_unregister(void) { }
-> -#endif /* CONFIG_OF */
-> +#endif /* CONFIG_OF && (CONFIG_PPC32 || CONFIG_MICROBLAZE) */
->
->  /* ---------------------------------------------------------------------
->  * Module setup/teardown
+What about magnetometers, accelerometers and so forth? I still do not
+think they are pure input layer devices although it is possible to build
+a bridge modules so they could plug into input framework if desired.
+
+> 
+> That said, I'm not married to the whole "it has to be input layer". But I 
+> _do_ think that it's crazy to start doing new subsystems for every little 
+> thing. That way lies madness. 
 >
 
-
+I was hoping IIO would fill the niche of framework for generic data
+acquisition devices, regardless of how fast or slow they are.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Dmitry
