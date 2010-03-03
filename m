@@ -1,48 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398Ab0CCLrb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 06:47:31 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50531 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751709Ab0CCLra (ORCPT
+	id S1753266Ab0CCLrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 06:47:08 -0500
+Received: from trinity.develer.com ([83.149.158.210]:59757 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709Ab0CCLrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 06:47:30 -0500
-Date: Wed, 3 Mar 2010 11:50:12 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mike Hayward <hayward@loup.net>
-Cc: linux-kernel@vger.kernel.org, kasey.erickson@gmail.com
-Subject: Re: O_NONBLOCK is NOOP on block devices
-Message-ID: <20100303115012.51ac89c7@lxorguk.ukuu.org.uk>
-In-Reply-To: <201003030826.o238QWXK015588@alien.loup.net>
-References: <201003030826.o238QWXK015588@alien.loup.net>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 06:47:06 -0500
+Date: Wed, 3 Mar 2010 12:47:03 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100303114703.GA1990@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
+ <20100301220208.GH3109@redhat.com>
+ <20100301221830.GA5460@linux>
+ <20100302150529.GA12855@redhat.com>
+ <20100302222248.GD2369@linux>
+ <20100302235932.GA3007@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302235932.GA3007@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If O_NONBLOCK is meaningful whatsoever (see man page docs for
-> semantics) against block devices, one would expect a nonblocking io
+On Tue, Mar 02, 2010 at 06:59:32PM -0500, Vivek Goyal wrote:
+> On Tue, Mar 02, 2010 at 11:22:48PM +0100, Andrea Righi wrote:
+> > On Tue, Mar 02, 2010 at 10:05:29AM -0500, Vivek Goyal wrote:
+> > > On Mon, Mar 01, 2010 at 11:18:31PM +0100, Andrea Righi wrote:
+> > > > On Mon, Mar 01, 2010 at 05:02:08PM -0500, Vivek Goyal wrote:
+> > > > > > @@ -686,10 +699,14 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+> > > > > >                   */
+> > > > > >                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+> > > > > >  
+> > > > > > -                if (global_page_state(NR_UNSTABLE_NFS) +
+> > > > > > -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> > > > > > -                        	break;
+> > > > > > -                congestion_wait(BLK_RW_ASYNC, HZ/10);
+> > > > > > +
+> > > > > > +		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> > > > > > +		if (dirty < 0)
+> > > > > > +			dirty = global_page_state(NR_UNSTABLE_NFS) +
+> > > > > > +				global_page_state(NR_WRITEBACK);
+> > > > > 
+> > > > > dirty is unsigned long. As mentioned last time, above will never be true?
+> > > > > In general these patches look ok to me. I will do some testing with these.
+> > > > 
+> > > > Re-introduced the same bug. My bad. :(
+> > > > 
+> > > > The value returned from mem_cgroup_page_stat() can be negative, i.e.
+> > > > when memory cgroup is disabled. We could simply use a long for dirty,
+> > > > the unit is in # of pages so s64 should be enough. Or cast dirty to long
+> > > > only for the check (see below).
+> > > > 
+> > > > Thanks!
+> > > > -Andrea
+> > > > 
+> > > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > > > ---
+> > > >  mm/page-writeback.c |    2 +-
+> > > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > > 
+> > > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > > index d83f41c..dbee976 100644
+> > > > --- a/mm/page-writeback.c
+> > > > +++ b/mm/page-writeback.c
+> > > > @@ -701,7 +701,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+> > > >  
+> > > >  
+> > > >  		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> > > > -		if (dirty < 0)
+> > > > +		if ((long)dirty < 0)
+> > > 
+> > > This will also be problematic as on 32bit systems, your uppper limit of
+> > > dirty memory will be 2G?
+> > > 
+> > > I guess, I will prefer one of the two.
+> > > 
+> > > - return the error code from function and pass a pointer to store stats
+> > >   in as function argument.
+> > > 
+> > > - Or Peter's suggestion of checking mem_cgroup_has_dirty_limit() and if
+> > >   per cgroup dirty control is enabled, then use per cgroup stats. In that
+> > >   case you don't have to return negative values.
+> > > 
+> > >   Only tricky part will be careful accouting so that none of the stats go
+> > >   negative in corner cases of migration etc.
+> > 
+> > What do you think about Peter's suggestion + the locking stuff? (see the
+> > previous email). Otherwise, I'll choose the other solution, passing a
+> > pointer and always return the error code is not bad.
+> > 
+> 
+> Ok, so you are worried about that by the we finish mem_cgroup_has_dirty_limit()
+> call, task might change cgroup and later we might call
+> mem_cgroup_get_page_stat() on a different cgroup altogether which might or
+> might not have dirty limits specified?
 
-It isn't...
+Correct.
 
-The manual page says "When possible, the file is opened in non-blocking
-mode" . Your write is probably not blocking - but the memory allocation
-for it is forcing other data to disk to make room. ie it didn't block it
-was just "slow".
+> 
+> But in what cases you don't want to use memory cgroup specified limit? I
+> thought cgroup disabled what the only case where we need to use global
+> limits. Otherwise a memory cgroup will have either dirty_bytes specified
+> or by default inherit global dirty_ratio which is a valid number. If
+> that's the case then you don't have to take rcu_lock() outside
+> get_page_stat()?
+> 
+> IOW, apart from cgroup being disabled, what are the other cases where you
+> expect to not use cgroup's page stat and use global stats?
 
-O_NONBLOCK on a regular file does influence how it responds to leases and
-mandatory locks.
+At boot, when mem_cgroup_from_task() may return NULL. But this is not
+related to the RCU acquisition.
 
-> probably be documented for clarity and it would be straight forward
-> for it to return an error if these contradictory behaviors are
-> simultaneously specified, unintentionally of course.
+Anyway, probably the RCU protection is not so critical for this
+particular case, and we can simply get rid of it. In this way we can
+easily implement the interface proposed by Peter.
 
-and risk breaking existing apps.
-
-> Thoughts anyone?
-
-
-Alan
+-Andrea
