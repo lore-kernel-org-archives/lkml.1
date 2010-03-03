@@ -1,29 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150Ab0CCTNu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:13:50 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:9689 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754584Ab0CCTNM (ORCPT
+	id S1756169Ab0CCTOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:14:00 -0500
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:26994 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754803Ab0CCTNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:13:12 -0500
+	Wed, 3 Mar 2010 14:13:20 -0500
 X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh2a8h87h65h)
-X-Spam-TCS-SCL: 4:0
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh2a8h87h64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYQ01C-01-LMG-02
+X-WSS-ID: 0KYQ01B-02-H5F-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 12/18] KVM: MMU: Implement nested gva_to_gpa functions
-Date: Wed, 3 Mar 2010 20:12:15 +0100
-Message-ID: <1267643541-451-13-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 15/18] KVM: MMU: Propagate the right fault back to the guest after gva_to_gpa
+Date: Wed, 3 Mar 2010 20:12:18 +0100
+Message-ID: <1267643541-451-16-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
 References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 03 Mar 2010 19:12:42.0751 (UTC) FILETIME=[7FD708F0:01CABB05]
+X-OriginalArrivalTime: 03 Mar 2010 19:12:42.0813 (UTC) FILETIME=[7FE07ED0:01CABB05]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: ausb3extmailp02.amd.com
@@ -31,98 +31,82 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the functions to do a nested l2_gva to
-l1_gpa page table walk.
+This patch implements logic to make sure that either a
+page-fault/page-fault-vmexit or a nested-page-fault-vmexit
+is propagated back to the guest.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm_host.h |    3 +++
- arch/x86/kvm/mmu.c              |    8 ++++++++
- arch/x86/kvm/paging_tmpl.h      |   31 +++++++++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 0 deletions(-)
+ arch/x86/kvm/mmu.h         |    1 +
+ arch/x86/kvm/paging_tmpl.h |    2 ++
+ arch/x86/kvm/x86.c         |   15 ++++++++++++++-
+ 3 files changed, 17 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 76c8b5f..20dd1ce 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -295,6 +295,9 @@ struct kvm_vcpu_arch {
- 	bool tpr_access_reporting;
+diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
+index 64f619b..b42b27e 100644
+--- a/arch/x86/kvm/mmu.h
++++ b/arch/x86/kvm/mmu.h
+@@ -47,6 +47,7 @@
+ #define PFERR_USER_MASK (1U << 2)
+ #define PFERR_RSVD_MASK (1U << 3)
+ #define PFERR_FETCH_MASK (1U << 4)
++#define PFERR_NESTED_MASK (1U << 31)
  
- 	struct kvm_mmu mmu;
-+
-+	struct kvm_mmu nested_mmu;
-+
- 	/* only needed in kvm_pv_mmu_op() path, but it's hot so
- 	 * put it here to avoid allocation */
- 	struct kvm_pv_mmu_op_buffer mmu_op_buffer;
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index ec3830c..c831955 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2162,6 +2162,14 @@ static gpa_t nonpaging_gva_to_gpa(struct kvm_vcpu *vcpu, gva_t vaddr,
- 	return vaddr;
- }
- 
-+static gpa_t nonpaging_gva_to_gpa_nested(struct kvm_vcpu *vcpu, gva_t vaddr,
-+					 u32 access, u32 *error)
-+{
-+	if (error)
-+		*error = 0;
-+	return vcpu->arch.nested_mmu.translate_gpa(vcpu, vaddr, error);
-+}
-+
- static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				u32 error_code)
- {
+ int kvm_mmu_get_spte_hierarchy(struct kvm_vcpu *vcpu, u64 addr, u64 sptes[4]);
+ int kvm_init_shadow_mmu(struct kvm_vcpu *vcpu, struct kvm_mmu *context);
 diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index a72d5ea..c0158d8 100644
+index c0158d8..9fc5fb1 100644
 --- a/arch/x86/kvm/paging_tmpl.h
 +++ b/arch/x86/kvm/paging_tmpl.h
-@@ -282,6 +282,16 @@ static int FNAME(walk_addr)(struct guest_walker *walker,
- 				        write_fault, user_fault, fetch_fault);
+@@ -154,6 +154,7 @@ walk:
+ 
+ 		pte_gpa = mmu->translate_gpa(vcpu, pte_gpa, &error);
+ 		if (pte_gpa == UNMAPPED_GVA) {
++			error |= PFERR_NESTED_MASK;
+ 			walker->error_code = error;
+ 			return 0;
+ 		}
+@@ -223,6 +224,7 @@ walk:
+ 			pte_gpa = gfn_to_gpa(walker->gfn);
+ 			pte_gpa = mmu->translate_gpa(vcpu, pte_gpa, &error);
+ 			if (pte_gpa == UNMAPPED_GVA) {
++				error |= PFERR_NESTED_MASK;
+ 				walker->error_code = error;
+ 				return 0;
+ 			}
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 2883ce8..9f8b02d 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -314,6 +314,19 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+ 	kvm_queue_exception_e(vcpu, PF_VECTOR, error_code);
  }
  
-+static int FNAME(walk_addr_nested)(struct guest_walker *walker,
-+				   struct kvm_vcpu *vcpu, gva_t addr,
-+				   int write_fault, int user_fault,
-+				   int fetch_fault)
++void kvm_propagate_fault(struct kvm_vcpu *vcpu, unsigned long addr, u32 error_code)
 +{
-+	return FNAME(walk_addr_generic)(walker, vcpu, &vcpu->arch.nested_mmu,
-+					addr, write_fault, user_fault,
-+					fetch_fault);
++	u32 nested, error;
++
++	nested = error_code &  PFERR_NESTED_MASK;
++	error  = error_code & ~PFERR_NESTED_MASK;
++
++	if (vcpu->arch.mmu.nested && !(error_code && PFERR_NESTED_MASK))
++		vcpu->arch.nested_mmu.inject_page_fault(vcpu, addr, error);
++	else
++		vcpu->arch.mmu.inject_page_fault(vcpu, addr, error);
 +}
 +
- static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
- 			      u64 *spte, const void *pte)
+ void kvm_inject_nmi(struct kvm_vcpu *vcpu)
  {
-@@ -541,6 +551,27 @@ static gpa_t FNAME(gva_to_gpa)(struct kvm_vcpu *vcpu, gva_t vaddr, u32 access,
- 	return gpa;
- }
+ 	vcpu->arch.nmi_pending = 1;
+@@ -3546,7 +3559,7 @@ static int pio_copy_data(struct kvm_vcpu *vcpu)
+ 		ret = kvm_read_guest_virt(q, p, bytes, vcpu, &error_code);
  
-+static gpa_t FNAME(gva_to_gpa_nested)(struct kvm_vcpu *vcpu, gva_t vaddr,
-+				      u32 access, u32 *error)
-+{
-+	struct guest_walker walker;
-+	gpa_t gpa = UNMAPPED_GVA;
-+	int r;
-+
-+	r = FNAME(walk_addr_nested)(&walker, vcpu, vaddr,
-+				    !!(access & PFERR_WRITE_MASK),
-+				    !!(access & PFERR_USER_MASK),
-+				    !!(access & PFERR_FETCH_MASK));
-+
-+	if (r) {
-+		gpa = gfn_to_gpa(walker.gfn);
-+		gpa |= vaddr & ~PAGE_MASK;
-+	} else if (error)
-+		*error = walker.error_code;
-+
-+	return gpa;
-+}
-+
- static void FNAME(prefetch_page)(struct kvm_vcpu *vcpu,
- 				 struct kvm_mmu_page *sp)
- {
+ 	if (ret == X86EMUL_PROPAGATE_FAULT)
+-		kvm_inject_page_fault(vcpu, q, error_code);
++		kvm_propagate_fault(vcpu, q, error_code);
+ 
+ 	return ret;
+ }
 -- 
 1.7.0
 
