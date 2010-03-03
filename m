@@ -1,88 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938Ab0CCK3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 05:29:21 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:35029 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266Ab0CCK3T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 05:29:19 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=sjGiZ3OCNq5QZucYqJwbc9XcwzxE/Hj7pfN5J/mSJUy45CbHHamrYdV8KrqAtnzZ9
-	y4uz2pxS4uXTYJcweJiCw==
-MIME-Version: 1.0
-In-Reply-To: <20100303103405.127020d8@hyperion.delvare>
-References: <4B8C1867.7040201@cam.ac.uk>
-	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
-	 <20100303103405.127020d8@hyperion.delvare>
-Date: Wed, 3 Mar 2010 02:29:09 -0800
-Message-ID: <404ea8001003030229j7b22329bgd24ac39255e78bde@mail.gmail.com>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-From: Dima Zavin <dmitriyz@google.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, torvalds@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+	id S1753000Ab0CCKaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 05:30:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57685 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751506Ab0CCKaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 05:30:05 -0500
+Subject: Re: [PATCH] Don't change direction flags in struct request.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Hugh Daschbach <hdasch@broadcom.com>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Eddie Williams <Eddie.Williams@steeleye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>
+In-Reply-To: <4B8CC43D.9000108@cs.wisc.edu>
+References: <1268976690-3386-1-git-send-email-hdasch@broadcom.com>
+	 <1268976690-3386-2-git-send-email-hdasch@broadcom.com>
+	 <1267507618.7936.11.camel@mulgrave.site>  <4B8CC43D.9000108@cs.wisc.edu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 03 Mar 2010 15:59:50 +0530
+Message-ID: <1267612190.15025.60.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean,
+On Tue, 2010-03-02 at 01:54 -0600, Mike Christie wrote:
+> On 03/01/2010 11:26 PM, James Bottomley wrote:
+> > On Thu, 2010-03-18 at 22:31 -0700, Hugh Daschbach wrote:
+> >> The EMC multipath device handler should not change the I/O direction
+> >> flags of its trespass command request.
+> >>
+> >> The CFQ elevator may BUG if the direction flags on an I/O request are
+> >> changed after allocation.  cfq_set_request() and cfq_put_request()
+> >> count READ and WRITE requests separately.  Changing the I/O request
+> >> direction after blk_get_request() allocates the request throws off
+> >> this CFQ accounting.
+> >
+> > This description doesn't really match what the problem seems to be
+> > below:
+> >
+> >> Signed-off-by: Hugh Daschbach<hdasch@broadcom.com>
+> >> ---
+> >>   drivers/scsi/device_handler/scsi_dh_emc.c |    8 ++++----
+> >>   1 files changed, 4 insertions(+), 4 deletions(-)
+> >>
+> >> diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
+> >> index 6196675..3709342 100644
+> >> --- a/drivers/scsi/device_handler/scsi_dh_emc.c
+> >> +++ b/drivers/scsi/device_handler/scsi_dh_emc.c
+> >> @@ -269,10 +269,12 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
+> >>   				unsigned char *buffer)
+> >>   {
+> >>   	struct request *rq;
+> >> +	int mode = READ;
+> >>   	int len = 0;
+> >>
+> >> -	rq = blk_get_request(sdev->request_queue,
+> >> -			(cmd == MODE_SELECT) ? WRITE : READ, GFP_NOIO);
+> >> +	if (cmd == MODE_SELECT || cmd == MODE_SELECT_10)
+> >> +		mode = WRITE;
+> >> +	rq = blk_get_request(sdev->request_queue, mode, GFP_NOIO);
+> >
+> > So the actual bug is failure to set WRITE for MODE_SELECT_10.
+> >
+> 
+> I think we have a fix for this and some len issues in that module that 
+> was sent here:
+> http://marc.info/?l=linux-scsi&m=125978574800618&w=2
 
-Thanks for the prompt reply.
+Yes, you did ... the need to change the From: field caused me to mark it
+in a different way and ultimately lose it ... I'll add it this time ...
 
->> I definitely see the need for what you guys are trying to accomplish.
->> For example, currently, we use an input device for reporting events,
->> and a separate misc device node for control
->> (enable/disable/configure). It's definitely suboptimal, but there
->> currently isn't anything there would let us do things cleanly.
->>
->> What I would love to see is a more generic sensors framework that
->> handles different kinds of sensor devices, and different data
->> acquisition schemes (sampled vs. change notifications).
->>
->> I would love to work with you to design something more generic.
->
-> This can happen later, I see no reason to block the creation of the ALS
-> subsystem. Having a common framework for all ambient light sensor
-> drivers will already be a step forward compared to the current
+James
 
-Following the logic of putting the ALS subsystem under drivers/als, we
-would then put the proximity subsystem under drivers/proximity, and
-then an accelerometer subsystem under drivers/accelerometer, etc. Each
-with their own implementation of very similar set of interfaces. Is
-that what you envision? I just figured that instead of creating
-one-off interfaces for some subset of environmental sensors such as
-als, we can add a sensors subsystem of which als is just an instance.
 
-> situation. If improvements are needed on top of this, this can happen
-> later.
-
-I'm just concerned that instead of solving the actual problem, you are
-adding what is essentially a temporary solution. This will only make
-it harder to solve the real issue by introducing new interfaces which
-will need to be obsoleted unless they are designed with care. What you
-are proposing already needs improvements since there are plenty of
-drivers floating out there from many OEMs/vendors that are not ALSs,
-but essentially need a similar interface (e.g. proximity sensor).
-
-Furthermore, are there more patches coming for this subsystem? Based
-on the above tree, it just seems to be a class device (without any
-standard attributes) and a register/unregister function. It doesn't
-seem to actually be doing anything. Registering with the als subsystem
-at the moment buys the driver nothing. So, in its current state, I'm
-not sure I see what this new common framework actually provides us,
-and thus I'm not sure that it's actually a step forward. The drivers
-are still responsible to provide all their own non-standard,
-incompatible sysfs interfaces for exporting the sensor values. If
-there are other patches for the als subsys that are then used by the
-two drivers that got moved into drivers/als, I'd love to take a look
-at them.
-
-Thanks again.
-
---Dima
