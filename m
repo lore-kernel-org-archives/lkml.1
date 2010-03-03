@@ -1,25 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755238Ab0CCRkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:40:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37389 "EHLO
+	id S1755297Ab0CCRmw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:42:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56710 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371Ab0CCRj7 (ORCPT
+	with ESMTP id S1754969Ab0CCRmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:39:59 -0500
-Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
+	Wed, 3 Mar 2010 12:42:51 -0500
+Subject: Re: [RFC][PATCH 06/11] perf, x86: PEBS infrastructure
 From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
+To: Robert Richter <robert.richter@amd.com>
 Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       robert.richter@amd.com, fweisbec@gmail.com,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+       eranian@google.com, fweisbec@gmail.com
+In-Reply-To: <20100303173802.GL13205@erda.amd.com>
 References: <20100303163936.906011640@chello.nl>
-	 <20100303164306.375353163@chello.nl>
-	 <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+	 <20100303164306.299625712@chello.nl>  <20100303173802.GL13205@erda.amd.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 18:39:55 +0100
-Message-ID: <1267637995.25158.96.camel@laptop>
+Date: Wed, 03 Mar 2010 18:42:48 +0100
+Message-ID: <1267638168.25158.98.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -27,16 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 09:30 -0800, Stephane Eranian wrote:
-> This assumes struct pt_regs is somehow exported to userland.
-> Is that the case?
+On Wed, 2010-03-03 at 18:38 +0100, Robert Richter wrote:
+> > +     fake_cpuc = kmalloc(sizeof(*fake_cpuc), GFP_KERNEL | __GFP_ZERO);
+> > +     if (!fake_cpuc)
+> > +             return -ENOMEM;
+> > +
+> > +     c = x86_pmu.get_event_constraints(fake_cpuc, event);
+> > +
+> > +     if (!c || !c->weight)
+> > +             ret = -ENOSPC;
+> > +
+> > +     if (x86_pmu.put_event_constraints)
+> > +             x86_pmu.put_event_constraints(fake_cpuc, event);
+> 
+> A fake cpu with the struct filled with zeros will cause a null pointer
+> exception in amd_get_event_constraints():
+> 
+>         struct amd_nb *nb = cpuc->amd_nb;
 
-I seems to have understood they were, and asm/ptrace.h seems to agree
-with that, it has !__KERNEL__ definitions for struct pt_regs.
+That should result in nb == NULL, right? which is checked slightly
+further in the function.
 
-> I would clearly spell out that the REGS are the interrupted REGS,
-> not the overflow REGS. Maybe PERF_SAMPLE_IREGS. 
+> Shouldn't x86_schedule_events() sufficient to decide if a single
+> counter is available? I did not yet look at group events, this might
+> happen there too.
 
-They can be both, for PEBS they are the overflow trap (until PEBS does
-fault) regs.
+Sure, but we will only attempt scheduling them at enable time, this is a
+creation time check, failing to create an unschedulable event seems
+prudent.
 
