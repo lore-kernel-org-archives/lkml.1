@@ -1,23 +1,31 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449Ab0CCFhT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 00:37:19 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:37353 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181Ab0CCFhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 00:37:15 -0500
-Subject: Re: [PATCH -next] scsi: RAID_ATTRS depends on SCSI
-From: James Bottomley <James.Bottomley@suse.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-next@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20100221194636.ef885e5a.rdunlap@xenotime.net>
-References: <20100219174711.5e7cc7be.sfr@canb.auug.org.au>
-	 <4B7EC8AE.60200@oracle.com>  <20100221194636.ef885e5a.rdunlap@xenotime.net>
+	id S1753529Ab0CCFk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 00:40:29 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:41379 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752596Ab0CCFk2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 00:40:28 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, catalin.marinas@arm.com,
+       mdharm-kernel@one-eyed-alien.net, oliver@neukum.org,
+       linux@arm.linux.org.uk, greg@kroah.com, x0082077@ti.com,
+       sshtylyov@ru.mvista.com, bigeasy@linutronix.de,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, pavel@ucw.cz, tom.leiming@gmail.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1267593032.16696.1.camel@pasglop>
+References: <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <1267572594.2173.25.camel@pasglop>
+	 <20100303124624Z.fujita.tomonori@lab.ntt.co.jp>
+	 <1267593032.16696.1.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 11:06:56 +0530
-Message-ID: <1267594617.4383.24.camel@mulgrave.site>
+Date: Wed, 03 Mar 2010 11:10:09 +0530
+Message-ID: <1267594809.4383.27.camel@mulgrave.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -25,102 +33,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-21 at 19:46 -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 2010-03-03 at 16:10 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2010-03-03 at 12:47 +0900, FUJITA Tomonori wrote:
+> > The ways to improve the approach (introducing PG_arch_2 or marking a
+> > page clean on dma_unmap_* with DMA_FROM_DEVICE like ia64 does) is up
+> > to architectures. 
 > 
-> raid_class uses scsi interfaces, so it should depend on SCSI.
-> Otherwise build errors occur when RAID_ATTRS=y and SCSI=m:
-> 
-> ERROR: "raid_class_release" [drivers/scsi/mpt2sas/mpt2sas.ko] undefined!
-> ERROR: "raid_class_attach" [drivers/scsi/mpt2sas/mpt2sas.ko] undefined!
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/scsi/Kconfig |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> --- linux-next-20100219.orig/drivers/scsi/Kconfig
-> +++ linux-next-20100219/drivers/scsi/Kconfig
-> @@ -1,12 +1,5 @@
->  menu "SCSI device support"
->  
-> -config RAID_ATTRS
-> -	tristate "RAID Transport Class"
-> -	default n
-> -	depends on BLOCK
-> -	---help---
-> -	  Provides RAID
-> -
->  config SCSI
->  	tristate "SCSI device support"
->  	depends on BLOCK
-> @@ -34,6 +27,13 @@ config SCSI_DMA
->  	bool
->  	default n
->  
-> +config RAID_ATTRS
-> +	tristate "RAID Transport Class"
-> +	default n
-> +	depends on BLOCK && SCSI
-> +	---help---
-> +	  Provides RAID
-> +
+> How does the above work ? IE, the dma unmap will flush the D side but
+> not the I side ... or is the ia64 flush primitive magic enough to do
+> both ?
 
-This will fix the error, but it's not quite the right thing to do.  the
-RAID class should be independent of SCSI, but it wants to do a SCSI
-check if SCSI is compiled in the matching routines.  This gives us a
-nasty dependency, the condition being that the raid class must be m if
-SCSI is m.
+The point is that in a well regulated system, the I cache shouldn't need
+extra flushing in the kernel.  We should only be faulting in R-X pages.
+If we're operating on RWX pages (i.e. self modifying code), it's the job
+of userspace to keep I/D coherency.
 
-I think this patch does the right thing.  Can someone test it on the
-config checker?  Or I can just put it in linux-next and have Stephen's
-builds do it.
-
-Thanks,
+So the only case the kernel needs to worry about is the R-X fault case
+for executable text code.
 
 James
-
----
-
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index 9191d1e..75f2336 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -1,9 +1,15 @@
- menu "SCSI device support"
- 
-+config SCSI_MOD
-+       tristate
-+       default y if SCSI=n || SCSI=y
-+       default m if SCSI=m
-+
- config RAID_ATTRS
- 	tristate "RAID Transport Class"
- 	default n
- 	depends on BLOCK
-+	depends on SCSI_MOD
- 	---help---
- 	  Provides RAID
- 
-diff --git a/drivers/scsi/raid_class.c b/drivers/scsi/raid_class.c
-index bd88349..2c146b4 100644
---- a/drivers/scsi/raid_class.c
-+++ b/drivers/scsi/raid_class.c
-@@ -63,6 +63,7 @@ static int raid_match(struct attribute_container *cont, struct device *dev)
- 	 * emulated RAID devices, so start with SCSI */
- 	struct raid_internal *i = ac_to_raid_internal(cont);
- 
-+#if defined(CONFIG_SCSI) || defined(CONFIG_SCSI_MODULE)
- 	if (scsi_is_sdev_device(dev)) {
- 		struct scsi_device *sdev = to_scsi_device(dev);
- 
-@@ -71,6 +72,7 @@ static int raid_match(struct attribute_container *cont, struct device *dev)
- 
- 		return i->f->is_raid(dev);
- 	}
-+#endif
- 	/* FIXME: look at other subsystems too */
- 	return 0;
- }
 
 
