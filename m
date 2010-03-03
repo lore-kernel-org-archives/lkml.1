@@ -1,43 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665Ab0CCVhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:37:32 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:39325 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284Ab0CCVhY (ORCPT
+	id S1756679Ab0CCViZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:38:25 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:49379 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284Ab0CCViS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:37:24 -0500
-Date: Wed, 3 Mar 2010 13:37:43 -0800 (PST)
-From: Sage Weil <sage@newdream.net>
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 23/26] ceph: nfs re-export support
-In-Reply-To: <20100303074814.GA1030@infradead.org>
-Message-ID: <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net>
-References: <1267577217-31923-1-git-send-email-sage@newdream.net>
- <1267577217-31923-24-git-send-email-sage@newdream.net> <20100303074814.GA1030@infradead.org>
+	Wed, 3 Mar 2010 16:38:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=jy9wsRJHVPfpp/62iH5hCtaET/sOYWpwrBr3XqcHRlpUdhn3FA42jh5+6tP/nAtzh
+	vGs8vas9aViWSsDV4tTPA==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20100303190753.GB11471@core.coreip.homeip.net>
+References: <4B8C1867.7040201@cam.ac.uk>
+	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
+	 <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
+	 <20100303184132.GA11471@core.coreip.homeip.net>
+	 <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+	 <20100303190753.GB11471@core.coreip.homeip.net>
+Date: Wed, 3 Mar 2010 13:38:12 -0800
+Message-ID: <404ea8001003031338j34847961jd8a7114bbc45603a@mail.gmail.com>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+From: Dima Zavin <dmitriyz@google.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Christoph Hellwig wrote:
-> On Tue, Mar 02, 2010 at 04:46:54PM -0800, Sage Weil wrote:
-> > Basic NFS re-export support is included.  This mostly works.  However,
-> > Ceph's MDS design precludes the ability to generate a (small)
-> > filehandle that will be valid forever, so this is of limited utility.
-> 
-> So don't include it if it's broken by design.
+>> Sure, you migth use it to turn up the lights too. But how is that
+>> different from having a switch to do the same? Again, it doesn't sound
+>> that different from a key to me.
+>
+> I guess for me the distinction is that the event was not caused by an
+> action of a human being but by change in environment.
+>
+> Also, if we decide that input layer is the best place for such devices,
+> it should not be a key but absolute event, ABS_LIGHT_LEVEL or something.
 
-Well, there are changes we can make to the MDS to make it work that are on 
-the roadmap (they'll also help with disaster recovery).  They will require 
-some change on the client side, though, so it's not like the current 
-implementation will suddenly work perfectly with a server-side upgrade.
+Agreed, a key is not the best approach. We currently have been hacking
+around it by using ABS_MISC, which I know is wrong.
 
-That said, I don't think Ceph is the only filesystem that has this problem 
-(fat? fuse? cifs?), and it is still useful in its current state.  But I 
-can leave it off by default (via Kconfig option), or include a kern.log 
-warning, or leave it out entirely, if that's what people prefer.
+>> The thing is, if the choice is about a whole new subsystem just for some
+>> silly light sensor logic, I'd _much_ rather see the much simpler - and
+>> more useful - approach of just considering it an input event.
+>>
+>> It happens in the same kind of situations, it has the same kinds of timing
+>> issues (ie we're not talking streaming megabytes of data), and it has the
+>> same kind of users (ie a lightsensor really would be used along with
+>> something that cares about input).
+>>
+>> I agree that that's not true in many other situations. A cable insertion
+>> event is about the networking, not about some independent input. The kind
+>> of application that cares about network cable presense is _not_ the kind
+>> of app that would care about keyboard input. Same goes for voltage.
+>
+> What about magnetometers, accelerometers and so forth? I still do not
+> think they are pure input layer devices although it is possible to build
+> a bridge modules so they could plug into input framework if desired.
 
-sage
+Actually, accelerometers fit into that model fine. They have some
+variable number of absolute axes (3, 6, etc.).
+
+--Dima
