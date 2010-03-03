@@ -1,109 +1,200 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293Ab0CCBcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 20:32:21 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36381 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007Ab0CCBcU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 20:32:20 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 3 Mar 2010 10:28:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, haicheng.li@intel.com
-Subject: Re: [patch] slab: add memory hotplug support
-Message-Id: <20100303102844.fe740203.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1003021419020.30059@router.home>
-References: <20100215105253.GE21783@one.firstfloor.org>
-	<20100215110135.GN5723@laptop>
-	<alpine.DEB.2.00.1002191222320.26567@router.home>
-	<20100220090154.GB11287@basil.fritz.box>
-	<alpine.DEB.2.00.1002240949140.26771@router.home>
-	<4B862623.5090608@cs.helsinki.fi>
-	<alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002251228140.18861@router.home>
-	<20100226114136.GA16335@basil.fritz.box>
-	<alpine.DEB.2.00.1002260904311.6641@router.home>
-	<20100226155755.GE16335@basil.fritz.box>
-	<alpine.DEB.2.00.1002261123520.7719@router.home>
-	<alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com>
-	<4B8CA7F5.1030802@cs.helsinki.fi>
-	<alpine.DEB.2.00.1003021419020.30059@router.home>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755168Ab0CCBhx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 20:37:53 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:57547 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752335Ab0CCBhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 20:37:51 -0500
+From: "Madhusudhan" <madhu.cr@ti.com>
+To: "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'LKML'" <linux-kernel@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>, <linux-mmc@vger.kernel.org>
+References: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain>
+Subject: RE: [PATCH] mmc: omap_hsmmc: Fix conditional locking
+Date: Tue, 2 Mar 2010 19:37:42 -0600
+Message-ID: <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: Acq5ccm01hwLtk7mSZaMXb9C1DpuIwA/44nw
+In-Reply-To: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Mar 2010 14:20:06 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
 
+
+> -----Original Message-----
+> From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-
+> owner@vger.kernel.org] On Behalf Of Thomas Gleixner
+> Sent: Monday, March 01, 2010 1:02 PM
+> To: LKML
+> Cc: linux-omap@vger.kernel.org; linux-mmc@vger.kernel.org
+> Subject: [PATCH] mmc: omap_hsmmc: Fix conditional locking
 > 
-> Not sure how this would sync with slab use during node bootstrap and
-> shutdown. Kame-san?
-> 
-> Otherwise
-> 
-> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> Conditional locking on (!in_interrupt()) is broken by design and there
+> is no reason to keep the host->irq_lock across the call to
+> mmc_request_done(). Also the host->protect_card magic hack does not
+> depend on the context
 > 
 
-What this patch fixes ? Maybe I miss something...
+Can you please elaborate why the existing logic is broken?
 
-At node hot-add
+It locks at the new request and unlocks just before issuing the cmd. Further
+IRQ handler has these calls hence the !in_interrupt check.
 
- * pgdat is allocated from other node (because we have no memory for "nid")
- * memmap for the first section (and possiby others) will be allocated from
-   other nodes.
- * Once a section for the node is onlined, any memory can be allocated localy.
+How does this patch improve that? In fact with your patch for a data
+transfer cmd there are several lock-unlock calls.
 
-   (Allocating memory from local node requires some new implementation as
-    bootmem allocater, we didn't that.)
-
- Before this patch, slab's control layer is allocated by cpuhotplug.
- So, at least keeping this order,
-    memory online -> cpu online
- slab's control layer is allocated from local node.
-
- When node-hotadd is done in this order
-    cpu online -> memory online
- kmalloc_node() will allocate memory from other node via fallback.
-
- After this patch, slab's control layer is allocated by memory hotplug.
- Then, in any order, slab's control will be allocated via fallback routine.
-
-If this patch is an alternative fix for Andi's this logic
-==
-Index: linux-2.6.32-memhotadd/mm/slab.c
-===================================================================
---- linux-2.6.32-memhotadd.orig/mm/slab.c
-+++ linux-2.6.32-memhotadd/mm/slab.c
-@@ -4093,6 +4093,9 @@ static void cache_reap(struct work_struc
- 		 * we can do some work if the lock was obtained.
- 		 */
- 		l3 = searchp->nodelists[node];
-+		/* Note node yet set up */
-+		if (!l3)
-+			break;
-==
-I'm not sure this really happens.
-
-cache_reap() is for checking local node. The caller is set up by
-CPU_ONLINE. searchp->nodelists[] is filled by CPU_PREPARE.
-
-Then, cpu for the node should be onlined. (and it's done under proper mutex.)
-
-I'm sorry if I miss something important. But how anyone cause this ?
-
-Thanks,
--Kame
-
-
+> Fix the mess by dropping host->irq_lock before calling
+> mmc_request_done().
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+> index 4b23225..99a3383 100644
+> --- a/drivers/mmc/host/omap_hsmmc.c
+> +++ b/drivers/mmc/host/omap_hsmmc.c
+> @@ -468,14 +468,6 @@ omap_hsmmc_start_command(struct omap_hsmmc_host
+> *host, struct mmc_command *cmd,
+>  	if (host->use_dma)
+>  		cmdreg |= DMA_EN;
+> 
+> -	/*
+> -	 * In an interrupt context (i.e. STOP command), the spinlock is
+> unlocked
+> -	 * by the interrupt handler, otherwise (i.e. for a new request) it
+> is
+> -	 * unlocked here.
+> -	 */
+> -	if (!in_interrupt())
+> -		spin_unlock_irqrestore(&host->irq_lock, host->flags);
+> -
+>  	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
+>  	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
+>  }
+> @@ -506,7 +498,9 @@ omap_hsmmc_xfer_done(struct omap_hsmmc_host *host,
+> struct mmc_data *data)
+>  		}
+> 
+>  		host->mrq = NULL;
+> +		spin_unlock(&host->irq_lock);
+>  		mmc_request_done(host->mmc, mrq);
+> +		spin_lock(&host->irq_lock);
+>  		return;
+>  	}
+> 
+> @@ -523,7 +517,9 @@ omap_hsmmc_xfer_done(struct omap_hsmmc_host *host,
+> struct mmc_data *data)
+> 
+>  	if (!data->stop) {
+>  		host->mrq = NULL;
+> +		spin_unlock(&host->irq_lock);
+>  		mmc_request_done(host->mmc, data->mrq);
+> +		spin_lock(&host->irq_lock);
+>  		return;
+>  	}
+>  	omap_hsmmc_start_command(host, data->stop, NULL);
+> @@ -551,7 +547,9 @@ omap_hsmmc_cmd_done(struct omap_hsmmc_host *host,
+> struct mmc_command *cmd)
+>  	}
+>  	if ((host->data == NULL && !host->response_busy) || cmd->error) {
+>  		host->mrq = NULL;
+> +		spin_unlock(&host->irq_lock);
+>  		mmc_request_done(host->mmc, cmd->mrq);
+> +		spin_lock(&host->irq_lock);
+>  	}
+>  }
+> 
+> @@ -1077,37 +1075,31 @@ static void omap_hsmmc_request(struct mmc_host
+> *mmc, struct mmc_request *req)
+>  	struct omap_hsmmc_host *host = mmc_priv(mmc);
+>  	int err;
+> 
+> +	spin_lock_irqsave(&host->irq_lock, host->flags);
+>  	/*
+> -	 * Prevent races with the interrupt handler because of unexpected
+> -	 * interrupts, but not if we are already in interrupt context i.e.
+> -	 * retries.
+> +	 * Protect the card from I/O if there is a possibility
+> +	 * it can be removed.
+>  	 */
+> -	if (!in_interrupt()) {
+> -		spin_lock_irqsave(&host->irq_lock, host->flags);
+> -		/*
+> -		 * Protect the card from I/O if there is a possibility
+> -		 * it can be removed.
+> -		 */
+> -		if (host->protect_card) {
+> -			if (host->reqs_blocked < 3) {
+> -				/*
+> -				 * Ensure the controller is left in a
+consistent
+> -				 * state by resetting the command and data
+state
+> -				 * machines.
+> -				 */
+> -				omap_hsmmc_reset_controller_fsm(host, SRD);
+> -				omap_hsmmc_reset_controller_fsm(host, SRC);
+> -				host->reqs_blocked += 1;
+> -			}
+> -			req->cmd->error = -EBADF;
+> -			if (req->data)
+> -				req->data->error = -EBADF;
+> -			spin_unlock_irqrestore(&host->irq_lock,
+host->flags);
+> -			mmc_request_done(mmc, req);
+> -			return;
+> -		} else if (host->reqs_blocked)
+> -			host->reqs_blocked = 0;
+> -	}
+> +	if (host->protect_card) {
+> +		if (host->reqs_blocked < 3) {
+> +			/*
+> +			 * Ensure the controller is left in a consistent
+> +			 * state by resetting the command and data state
+> +			 * machines.
+> +			 */
+> +			omap_hsmmc_reset_controller_fsm(host, SRD);
+> +			omap_hsmmc_reset_controller_fsm(host, SRC);
+> +			host->reqs_blocked += 1;
+> +		}
+> +		req->cmd->error = -EBADF;
+> +		if (req->data)
+> +			req->data->error = -EBADF;
+> +		spin_unlock_irqrestore(&host->irq_lock, host->flags);
+> +		mmc_request_done(mmc, req);
+> +		return;
+> +	} else if (host->reqs_blocked)
+> +		host->reqs_blocked = 0;
+> +
+>  	WARN_ON(host->mrq != NULL);
+>  	host->mrq = req;
+>  	err = omap_hsmmc_prepare_data(host, req);
+> @@ -1116,13 +1108,13 @@ static void omap_hsmmc_request(struct mmc_host
+> *mmc, struct mmc_request *req)
+>  		if (req->data)
+>  			req->data->error = err;
+>  		host->mrq = NULL;
+> -		if (!in_interrupt())
+> -			spin_unlock_irqrestore(&host->irq_lock,
+host->flags);
+> +		spin_unlock_irqrestore(&host->irq_lock, host->flags);
+>  		mmc_request_done(mmc, req);
+>  		return;
+>  	}
+> 
+>  	omap_hsmmc_start_command(host, req->cmd, req->data);
+> +	spin_unlock_irqrestore(&host->irq_lock, host->flags);
+>  }
+> 
+>  /* Routine to configure clock values. Exposed API to core */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
