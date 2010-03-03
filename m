@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320Ab0CCHGj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 02:06:39 -0500
-Received: from mail-yw0-f197.google.com ([209.85.211.197]:42230 "EHLO
-	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755086Ab0CCHFk (ORCPT
+	id S1755231Ab0CCHHA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 02:07:00 -0500
+Received: from mail-gw0-f46.google.com ([74.125.83.46]:58581 "EHLO
+	mail-gw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754977Ab0CCHFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 02:05:40 -0500
+	Wed, 3 Mar 2010 02:05:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=PI75Ln731eObppjlIQGxw8Uxb9xSecE3jigUAD7EtLDi0BYUT7x+EGhdHhyQ123KIx
-         W+Bhs05cgB4mAdTDabFAA0zfCQuPvfeC4HucnH4PrMKCJdtlFQ2D3M8Gb6ow5LFcQhkQ
-         n5qd8ytKYVCFAL8x2aAlYBV8R0d+a/H92fbgI=
+        b=dj7xWEUPCyW3XDaICbtQvsDFTms5ZZ0I2u9VuVaGrdSwM5gl3usla6exdERwTWJLt8
+         Joy84PdwvfNDKsnHV4H6sOK4XYlB2k4/8Rw7wqab2+YQqSY5eA4VxRYrrJycQ11Nfxhh
+         y3do8EVMCZ4gZHv4ISq8F+Yffnwg1zT4lxlyc=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
        k-keiichi@bx.jp.nec.com
-Subject: [RFC PATCH 5/7] perf: convert perf tracing data into a tracing_data event
-Date: Wed,  3 Mar 2010 01:05:27 -0600
-Message-Id: <1267599929-8310-6-git-send-email-tzanussi@gmail.com>
+Subject: [RFC PATCH 2/7] perf: add pipe-specific header read/write and event processing code
+Date: Wed,  3 Mar 2010 01:05:24 -0600
+Message-Id: <1267599929-8310-3-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1267599929-8310-1-git-send-email-tzanussi@gmail.com>
 References: <1267599929-8310-1-git-send-email-tzanussi@gmail.com>
@@ -27,310 +27,370 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bypasses the tracing_data perf header code and replaces it with a
-synthesized event and processing function that accomplishes the same
-thing, used when reading/writing perf data to/from a pipe.
+This patch makes several changes to allow the perf event stream to be
+sent and received over a pipe:
 
-The tracing data is pretty large, and this patch doesn't attempt to
-break it down into component events.  The tracing_data event itself
-doesn't actually contain the tracing data, rather it arranges for the
-event processing code to skip over it after it's read, using the
-'action' added in a previous patch; in this case the action is 'skip'.
+- adds pipe-specific versions of the header read/write code
+
+- adds pipe-specific version of the event processing code
+
+- adds a range of event types to be used for header or other pseudo
+  events, above the range used by the kernel
+
+- adds code to interpret return values >0 from event processing
+  functions as 'actions'.  The first action defined is for stopping
+  the event-processing loop at the first non-header event.  So
+  initially there's still a restriction that header events come first
+  in the event stream.
+
+Note that none of this affects the existing perf data file format or
+processing - this code only comes into play if perf output is sent to
+stdout (or is read from stdin).
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/builtin-record.c        |   16 ++++++
- tools/perf/util/event.h            |    7 +++
- tools/perf/util/header.c           |   53 +++++++++++++++++++++
- tools/perf/util/header.h           |    6 ++
- tools/perf/util/session.c          |   14 ++++++
- tools/perf/util/session.h          |    3 +-
- tools/perf/util/trace-event-info.c |   24 ++++++++++
- tools/perf/util/trace-event-read.c |   89 ++++++++++++++++++------------------
- tools/perf/util/trace-event.h      |    4 +-
- 9 files changed, 170 insertions(+), 46 deletions(-)
+ tools/perf/builtin-record.c |    8 ++-
+ tools/perf/builtin-report.c |   10 +++
+ tools/perf/builtin-trace.c  |   11 +++
+ tools/perf/util/event.h     |    4 +
+ tools/perf/util/header.c    |   62 ++++++++++++++++++-
+ tools/perf/util/header.h    |    8 ++-
+ tools/perf/util/session.c   |  145 +++++++++++++++++++++++++++++++++++++++---
+ tools/perf/util/session.h   |   16 +++++
+ 8 files changed, 249 insertions(+), 15 deletions(-)
 
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 0e3d4cd..95bccdc 100644
+index 4fe87e3..b676689 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -101,6 +101,11 @@ static void mmap_write_tail(struct mmap_data *md, unsigned long tail)
- 	pc->data_tail = tail;
- }
- 
-+static void advance_output(size_t size)
-+{
-+	bytes_written += size;
-+}
-+
- static void write_output(void *buf, size_t size)
- {
- 	while (size) {
-@@ -581,6 +586,17 @@ static int __cmd_record(int argc, const char **argv)
- 			pr_err("Couldn't synthesize event_types.\n");
- 			return err;
- 		}
-+
-+		err = event__synthesize_tracing_data(output, attrs,
-+						     nr_counters,
-+						     process_synthesized_event,
-+						     session);
-+		if (err <= 0) {
-+			pr_err("Couldn't record tracing data.\n");
-+			return err;
-+		}
-+
-+		advance_output(err);
+@@ -475,7 +475,7 @@ static int __cmd_record(int argc, const char **argv)
  	}
  
- 	err = event__synthesize_kernel_mmap(process_synthesized_event,
+ 	if (!file_new) {
+-		err = perf_header__read(&session->header, output);
++		err = perf_header__read(session, output);
+ 		if (err < 0)
+ 			return err;
+ 	}
+@@ -554,7 +554,11 @@ static int __cmd_record(int argc, const char **argv)
+ 			open_counters(i, target_pid);
+ 	}
+ 
+-	if (file_new) {
++	if (pipe_output) {
++		err = perf_header__write_pipe(&session->header, output);
++		if (err < 0)
++			return err;
++	} else if (file_new) {
+ 		err = perf_header__write(&session->header, output, false);
+ 		if (err < 0)
+ 			return err;
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index ca12efa..603f705 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -193,11 +193,21 @@ static struct perf_event_ops event_ops = {
+ 	.read	= process_read_event,
+ };
+ 
++extern volatile int done;
++
++static void sig_handler(int sig __attribute__((__unused__)))
++{
++	done = 1;
++}
++
+ static int __cmd_report(void)
+ {
+ 	int ret = -EINVAL;
+ 	struct perf_session *session;
+ 
++	signal(SIGCHLD, sig_handler);
++	signal(SIGINT, sig_handler);
++
+ 	session = perf_session__new(input_name, O_RDONLY, force);
+ 	if (session == NULL)
+ 		return -ENOMEM;
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index 407041d..2a56dda 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -106,8 +106,18 @@ static struct perf_event_ops event_ops = {
+ 	.comm	= event__process_comm,
+ };
+ 
++extern volatile int done;
++
++static void sig_handler(int sig __unused)
++{
++	done = 1;
++}
++
+ static int __cmd_trace(struct perf_session *session)
+ {
++	signal(SIGCHLD, sig_handler);
++	signal(SIGINT, sig_handler);
++
+ 	return perf_session__process_events(session, &event_ops);
+ }
+ 
+@@ -609,6 +619,7 @@ int cmd_trace(int argc, const char **argv, const char *prefix __used)
+ 			return -1;
+ 		}
+ 
++		perf_header__read(session, input);
+ 		err = scripting_ops->generate_script("perf-trace");
+ 		goto out;
+ 	}
 diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index dc6d27b..c111358 100644
+index 50a7132..cec3067 100644
 --- a/tools/perf/util/event.h
 +++ b/tools/perf/util/event.h
-@@ -86,6 +86,7 @@ struct build_id_event {
- enum perf_header_event_type { /* above any possible kernel type */
- 	PERF_RECORD_HEADER_ATTR			= 64,
- 	PERF_RECORD_HEADER_EVENT_TYPE		= 65,
-+	PERF_RECORD_HEADER_TRACING_DATA		= 66,
- 	PERF_RECORD_HEADER_MAX
+@@ -83,6 +83,10 @@ struct build_id_event {
+ 	char			 filename[];
  };
  
-@@ -107,6 +108,11 @@ struct event_type_event {
- 	struct perf_trace_event_type event_type;
- };
- 
-+struct tracing_data_event {
-+	struct perf_event_header header;
-+	u32 size;
++enum perf_header_event_type { /* above any possible kernel type */
++	PERF_RECORD_HEADER_MAX			= 64,
 +};
 +
  typedef union event_union {
  	struct perf_event_header	header;
  	struct ip_event			ip;
-@@ -118,6 +124,7 @@ typedef union event_union {
- 	struct sample_event		sample;
- 	struct attr_event		attr;
- 	struct event_type_event		event_type;
-+	struct tracing_data_event	tracing_data;
- } event_t;
- 
- struct events_stats {
 diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index cb75e66..5910aee 100644
+index 6c9aa16..75b8a4c 100644
 --- a/tools/perf/util/header.c
 +++ b/tools/perf/util/header.c
-@@ -708,6 +708,7 @@ static int perf_header__read_pipe(struct perf_session *session, int fd)
- 	perf_event_ops__fill_stop(&header_ops);
- 	header_ops.attr = event__process_attr;
- 	header_ops.event_type = event__process_event_type;
-+	header_ops.tracing_data = event__process_tracing_data;
- 	session->fd = fd;
- 
- 	return perf_session__process_events(session, &header_ops);
-@@ -954,3 +955,55 @@ int event__process_event_type(event_t *self,
- 
- 	return 0;
+@@ -427,6 +427,26 @@ out_free:
+ 	return err;
  }
-+
-+int event__synthesize_tracing_data(int fd, struct perf_event_attr *pattrs,
-+				   int nb_events,
-+				   event__handler_t process,
-+				   struct perf_session *session __unused)
+ 
++int perf_header__write_pipe(struct perf_header *self, int fd)
 +{
-+	event_t ev;
-+	ssize_t size = 0, aligned_size = 0, padding;
-+	int err = 0;
++	struct perf_file_header_pipe f_header;
++	int err;
 +
-+	memset(&ev, 0, sizeof(ev));
++	f_header = (struct perf_file_header_pipe){
++		.magic	   = PERF_MAGIC,
++		.size	   = sizeof(f_header),
++	};
 +
-+	ev.tracing_data.header.type = PERF_RECORD_HEADER_TRACING_DATA;
-+	size = read_tracing_data_size(fd, pattrs, nb_events);
-+	if (size <= 0)
-+		return size;
-+	aligned_size = ALIGN(size, sizeof(u64));
-+	padding = aligned_size - size;
-+	ev.tracing_data.header.size = sizeof(ev.tracing_data);
-+	ev.tracing_data.size = aligned_size;
-+
-+	process(&ev, session);
-+
-+	err = read_tracing_data(fd, pattrs, nb_events);
-+	write_padded(fd, NULL, 0, padding);
-+
-+	return aligned_size;
-+}
-+
-+int event__process_tracing_data(event_t *self,
-+				struct perf_session *session)
-+{
-+	ssize_t size_read, padding, size = self->tracing_data.size;
-+	off_t offset = lseek(session->fd, 0, SEEK_CUR);
-+	char buf[BUFSIZ];
-+
-+	/* setup for reading amidst mmap */
-+	lseek(session->fd, offset + sizeof(struct tracing_data_event),
-+	      SEEK_SET);
-+
-+	size_read = trace_report(session->fd);
-+
-+	padding = ALIGN(size_read, sizeof(u64)) - size_read;
-+
-+	if (read(session->fd, buf, padding) < 0)
-+		die("reading input file");
-+
-+	if (size_read + padding != size)
-+		die("tracing data size mismatch");
-+
-+	return size_read + padding;
-+}
-diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
-index 9d18c9b..a83f375 100644
---- a/tools/perf/util/header.h
-+++ b/tools/perf/util/header.h
-@@ -111,5 +111,11 @@ int event__synthesize_event_types(event__handler_t process,
- int event__process_event_type(event_t *self,
- 			      struct perf_session *session);
- 
-+int event__synthesize_tracing_data(int fd, struct perf_event_attr *pattrs,
-+				   int nb_events,
-+				   event__handler_t process,
-+				   struct perf_session *session);
-+int event__process_tracing_data(event_t *self,
-+				struct perf_session *session);
- 
- #endif /* __PERF_HEADER_H */
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index d704bdf..74e9646 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -213,6 +213,8 @@ static void perf_event_ops__fill_defaults(struct perf_event_ops *handler)
- 		handler->attr = process_event_stub;
- 	if (handler->event_type == NULL)
- 		handler->event_type = process_event_stub;
-+	if (handler->tracing_data == NULL)
-+		handler->tracing_data = process_event_stub;
- }
- 
- static int process_event_stop(event_t *event __used,
-@@ -235,6 +237,7 @@ void perf_event_ops__fill_stop(struct perf_event_ops *handler)
- 	handler->unthrottle = process_event_stop;
- 	handler->attr = process_event_stop;
- 	handler->event_type = process_event_stop;
-+	handler->tracing_data = process_event_stop;
- }
- 
- static const char *event__name[] = {
-@@ -250,6 +253,7 @@ static const char *event__name[] = {
- 	[PERF_RECORD_SAMPLE]	 = "SAMPLE",
- 	[PERF_RECORD_HEADER_ATTR]	 = "ATTR",
- 	[PERF_RECORD_HEADER_EVENT_TYPE]	 = "EVENT_TYPE",
-+	[PERF_RECORD_HEADER_TRACING_DATA]	 = "TRACING_DATA",
- };
- 
- unsigned long event__total[PERF_RECORD_HEADER_MAX];
-@@ -342,6 +346,11 @@ static void event__event_type_swap(event_t *self)
- 		bswap_64(self->event_type.event_type.event_id);
- }
- 
-+static void event__tracing_data_swap(event_t *self)
-+{
-+	self->tracing_data.size = bswap_32(self->tracing_data.size);
-+}
-+
- typedef void (*event__swap_op)(event_t *self);
- 
- static event__swap_op event__swap_ops[] = {
-@@ -354,6 +363,7 @@ static event__swap_op event__swap_ops[] = {
- 	[PERF_RECORD_SAMPLE] = event__all64_swap,
- 	[PERF_RECORD_HEADER_ATTR]   = event__attr_swap,
- 	[PERF_RECORD_HEADER_EVENT_TYPE]   = event__event_type_swap,
-+	[PERF_RECORD_HEADER_TRACING_DATA]   = event__tracing_data_swap,
- 	[PERF_RECORD_HEADER_MAX]    = NULL,
- };
- 
-@@ -398,6 +408,10 @@ static int perf_session__process_event(struct perf_session *self,
- 		return ops->attr(event, self);
- 	case PERF_RECORD_HEADER_EVENT_TYPE:
- 		return ops->event_type(event, self);
-+	case PERF_RECORD_HEADER_TRACING_DATA:
-+		/* setup for reading amidst mmap */
-+		lseek(self->fd, offset + head, SEEK_SET);
-+		return ops->tracing_data(event, self);
- 	default:
- 		self->unknown_events++;
- 		return -1;
-diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
-index ea9eb4a..a648af0 100644
---- a/tools/perf/util/session.h
-+++ b/tools/perf/util/session.h
-@@ -45,7 +45,8 @@ struct perf_event_ops {
- 		 throttle,
- 		 unthrottle,
- 		 attr,
--		 event_type;
-+		 event_type,
-+		 tracing_data;
- };
- 
- /*
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 5ea8973..30cd9b5 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -154,10 +154,17 @@ static void put_tracing_file(char *file)
- 	free(file);
- }
- 
-+static ssize_t calc_data_size;
-+
- static ssize_t write_or_die(const void *buf, size_t len)
- {
- 	int ret;
- 
-+	if (calc_data_size) {
-+		calc_data_size += len;
-+		return len;
++	err = do_write(fd, &f_header, sizeof(f_header));
++	if (err < 0) {
++		pr_debug("failed to write perf pipe header\n");
++		return err;
 +	}
 +
- 	ret = write(output_fd, buf, len);
- 	if (ret < 0)
- 		die("writing to '%s'", output_file);
-@@ -526,3 +533,20 @@ int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events)
- 
++	self->frozen = 1;
++	return 0;
++}
++
+ int perf_header__write(struct perf_header *self, int fd, bool at_exit)
+ {
+ 	struct perf_file_header f_header;
+@@ -662,13 +682,53 @@ static int perf_file_section__process(struct perf_file_section *self,
  	return 0;
  }
-+
-+ssize_t read_tracing_data_size(int fd, struct perf_event_attr *pattrs,
-+			       int nb_events)
+ 
+-int perf_header__read(struct perf_header *self, int fd)
++static int perf_file_header__read_pipe(struct perf_file_header_pipe *self,
++				       struct perf_header *ph, int fd)
 +{
-+	ssize_t size;
-+	int err = 0;
++	if (do_read(fd, self, sizeof(*self)) ||
++	    memcmp(&self->magic, __perf_magic, sizeof(self->magic)))
++		return -1;
 +
-+	calc_data_size = 1;
-+	err = read_tracing_data(fd, pattrs, nb_events);
-+	size = calc_data_size - 1;
-+	calc_data_size = 0;
++	if (self->size != sizeof(*self)) {
++		u64 size = bswap_64(self->size);
 +
-+	if (err < 0)
-+		return err;
++		if (size != sizeof(*self))
++			return -1;
 +
-+	return size;
++		ph->needs_swap = true;
++	}
++
++	return 0;
 +}
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index 7cd1193..44889c9 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -50,14 +50,37 @@ static int long_size;
- 
- static unsigned long	page_size;
- 
-+static ssize_t calc_data_size;
 +
-+static int do_read(int fd, void *buf, int size)
++static int perf_header__read_pipe(struct perf_session *session, int fd)
+ {
++	struct perf_header *self = &session->header;
++	struct perf_file_header_pipe f_header;
++	struct perf_event_ops header_ops;
++
++	if (perf_file_header__read_pipe(&f_header, self, fd) < 0) {
++		pr_debug("incompatible file format\n");
++		return -EINVAL;
++	}
++
++	perf_event_ops__fill_stop(&header_ops);
++	session->fd = fd;
++
++	return perf_session__process_events(session, &header_ops);
++}
++
++int perf_header__read(struct perf_session *session, int fd)
 +{
-+	int rsize = size;
++	struct perf_header *self = &session->header;
+ 	struct perf_file_header	f_header;
+ 	struct perf_file_attr	f_attr;
+ 	u64			f_id;
+ 	int nr_attrs, nr_ids, i, j;
+ 
++	if (session->fd_pipe)
++		return perf_header__read_pipe(session, fd);
 +
+ 	if (perf_file_header__read(&f_header, self, fd) < 0) {
+ 		pr_debug("incompatible file format\n");
+ 		return -EINVAL;
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 82a6af7..714b1d5 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -39,6 +39,11 @@ struct perf_file_header {
+ 	DECLARE_BITMAP(adds_features, HEADER_FEAT_BITS);
+ };
+ 
++struct perf_file_header_pipe {
++	u64				magic;
++	u64				size;
++};
++
+ struct perf_header;
+ 
+ int perf_file_header__read(struct perf_file_header *self,
+@@ -60,8 +65,9 @@ struct perf_header {
+ int perf_header__init(struct perf_header *self);
+ void perf_header__exit(struct perf_header *self);
+ 
+-int perf_header__read(struct perf_header *self, int fd);
++int perf_header__read(struct perf_session *session, int fd);
+ int perf_header__write(struct perf_header *self, int fd, bool at_exit);
++int perf_header__write_pipe(struct perf_header *self, int fd);
+ 
+ int perf_header__add_attr(struct perf_header *self,
+ 			  struct perf_header_attr *attr);
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index dd1e923..3a3db33 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -18,7 +18,7 @@ static int perf_session__open(struct perf_session *self, bool force)
+ 		self->fd_pipe = true;
+ 		self->fd = STDIN_FILENO;
+ 
+-		if (perf_header__read(&self->header, self->fd) < 0)
++		if (perf_header__read(self, self->fd) < 0)
+ 			pr_err("incompatible file format");
+ 
+ 		return 0;
+@@ -48,12 +48,13 @@ static int perf_session__open(struct perf_session *self, bool force)
+ 		goto out_close;
+ 	}
+ 
+-	if (perf_header__read(&self->header, self->fd) < 0) {
++	self->size = input_stat.st_size;
++
++	if (perf_header__read(self, self->fd) < 0) {
+ 		pr_err("incompatible file format");
+ 		goto out_close;
+ 	}
+ 
+-	self->size = input_stat.st_size;
+ 	return 0;
+ 
+ out_close:
+@@ -67,6 +68,11 @@ static inline int perf_session__create_kernel_maps(struct perf_session *self)
+ 	return map_groups__create_kernel_maps(&self->kmaps, self->vmlinux_maps);
+ }
+ 
++void perf_session__update_sample_type(struct perf_session *self)
++{
++	self->sample_type = perf_header__sample_type(&self->header);
++}
++
+ struct perf_session *perf_session__new(const char *filename, int mode, bool force)
+ {
+ 	size_t len = filename ? strlen(filename) + 1 : 0;
+@@ -99,7 +105,7 @@ struct perf_session *perf_session__new(const char *filename, int mode, bool forc
+ 			goto out_delete;
+ 	}
+ 
+-	self->sample_type = perf_header__sample_type(&self->header);
++	perf_session__update_sample_type(self);
+ out:
+ 	return self;
+ out_free:
+@@ -205,6 +211,26 @@ static void perf_event_ops__fill_defaults(struct perf_event_ops *handler)
+ 		handler->unthrottle = process_event_stub;
+ }
+ 
++static int process_event_stop(event_t *event __used,
++			      struct perf_session *session __used)
++{
++	dump_printf(": stop!\n");
++	return PERF_PROCESS_EVENT_STOP;
++}
++
++void perf_event_ops__fill_stop(struct perf_event_ops *handler)
++{
++	handler->sample = process_event_stop;
++	handler->mmap = process_event_stop;
++	handler->comm = process_event_stop;
++	handler->fork = process_event_stop;
++	handler->exit = process_event_stop;
++	handler->lost = process_event_stop;
++	handler->read = process_event_stop;
++	handler->throttle = process_event_stop;
++	handler->unthrottle = process_event_stop;
++}
++
+ static const char *event__name[] = {
+ 	[0]			 = "TOTAL",
+ 	[PERF_RECORD_MMAP]	 = "MMAP",
+@@ -218,14 +244,17 @@ static const char *event__name[] = {
+ 	[PERF_RECORD_SAMPLE]	 = "SAMPLE",
+ };
+ 
+-unsigned long event__total[PERF_RECORD_MAX];
++unsigned long event__total[PERF_RECORD_HEADER_MAX];
+ 
+ void event__print_totals(void)
+ {
+ 	int i;
+-	for (i = 0; i < PERF_RECORD_MAX; ++i)
++	for (i = 0; i < PERF_RECORD_HEADER_MAX; ++i) {
++		if (!event__name[i])
++			continue;
+ 		pr_info("%10s events: %10ld\n",
+ 			event__name[i], event__total[i]);
++	}
+ }
+ 
+ void mem_bswap_64(void *src, int byte_size)
+@@ -289,7 +318,7 @@ static event__swap_op event__swap_ops[] = {
+ 	[PERF_RECORD_LOST]   = event__all64_swap,
+ 	[PERF_RECORD_READ]   = event__read_swap,
+ 	[PERF_RECORD_SAMPLE] = event__all64_swap,
+-	[PERF_RECORD_MAX]    = NULL,
++	[PERF_RECORD_HEADER_MAX]    = NULL,
+ };
+ 
+ static int perf_session__process_event(struct perf_session *self,
+@@ -299,7 +328,7 @@ static int perf_session__process_event(struct perf_session *self,
+ {
+ 	trace_event(event);
+ 
+-	if (event->header.type < PERF_RECORD_MAX) {
++	if (event->header.type < PERF_RECORD_HEADER_MAX) {
+ 		dump_printf("%#Lx [%#x]: PERF_RECORD_%s",
+ 			    offset + head, event->header.size,
+ 			    event__name[event->header.type]);
+@@ -394,6 +423,96 @@ static struct thread *perf_session__register_idle_thread(struct perf_session *se
+ 	return thread;
+ }
+ 
++static int do_read(int fd, void *buf, size_t size)
++{
 +	while (size) {
 +		int ret = read(fd, buf, size);
 +
@@ -341,155 +401,136 @@ index 7cd1193..44889c9 100644
 +		buf += ret;
 +	}
 +
-+	return rsize;
++	return 0;
 +}
 +
- static int read_or_die(void *data, int size)
++#define is_done()	(*(volatile int *)(&done))
++volatile int done;
++
++static int __perf_session__process_events_pipe(struct perf_session *self,
++					       struct perf_event_ops *ops)
++{
++	int action = 0;
++	event_t event;
++	uint32_t size;
++	u64 head;
++	int err;
++	void *p;
++
++	perf_event_ops__fill_defaults(ops);
++
++	head = 0;
++more:
++	err = do_read(self->fd, &event, sizeof(struct perf_event_header));
++	if (err) {
++		pr_err("failed to read event header\n");
++		goto out_err;
++	}
++
++	if (self->header.needs_swap)
++		perf_event_header__bswap(&event.header);
++
++	size = event.header.size;
++	if (size == 0)
++		size = 8;
++
++	p = &event;
++	p += sizeof(struct perf_event_header);
++
++	err = do_read(self->fd, p, size - sizeof(struct perf_event_header));
++	if (err) {
++		pr_err("failed to read event payload\n");
++		goto out_err;
++	}
++
++	if (size == 0 ||
++	    (action = perf_session__process_event(self, &event, ops,
++						  0, head)) < 0) {
++		dump_printf("%#Lx [%#x]: skipping unknown header type: %d\n",
++			    head, event.header.size, event.header.type);
++		/*
++		 * assume we lost track of the stream, check alignment, and
++		 * increment a single u64 in the hope to catch on again 'soon'.
++		 */
++		if (unlikely(head & 7))
++			head &= ~7ULL;
++
++		size = 8;
++	}
++
++	head += size;
++
++	dump_printf("\n%#Lx [%#x]: event: %d\n",
++		    head, event.header.size, event.header.type);
++
++	if (action == PERF_PROCESS_EVENT_STOP) {
++		self->header.data_offset = head;
++		goto done;
++	}
++
++	if (action >= PERF_PROCESS_EVENT_MAX)
++		head += action;
++
++	if (!is_done())
++		goto more;
++done:
++	err = 0;
++out_err:
++	return err;
++}
++
+ int __perf_session__process_events(struct perf_session *self,
+ 				   u64 data_offset, u64 data_size,
+ 				   u64 file_size, struct perf_event_ops *ops)
+@@ -511,9 +630,13 @@ out_getcwd_err:
+ 		self->cwdlen = strlen(self->cwd);
+ 	}
+ 
+-	err = __perf_session__process_events(self, self->header.data_offset,
+-					     self->header.data_size,
+-					     self->size, ops);
++	if (!self->fd_pipe)
++		err = __perf_session__process_events(self,
++						     self->header.data_offset,
++						     self->header.data_size,
++						     self->size, ops);
++	else
++		err = __perf_session__process_events_pipe(self, ops);
+ out_err:
+ 	return err;
+ }
+diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
+index dbfb74a..ab1fcbf 100644
+--- a/tools/perf/util/session.h
++++ b/tools/perf/util/session.h
+@@ -46,6 +46,18 @@ struct perf_event_ops {
+ 		 unthrottle;
+ };
+ 
++/*
++ * interpret process_event return values as actions.
++ * PERF_PROCESS_EVENT_MAX or greater is interpreted as 'skip ahead
++ * that many bytes'.  Since that can never be less than
++ * sizeof(perf_event_header), 1 through sizeof(perf_event_header) can
++ * be interpreted as 'actions'.
++*/
++enum perf_process_event_action {
++	PERF_PROCESS_EVENT_STOP			= 1,
++	PERF_PROCESS_EVENT_MAX
++};
++
+ struct perf_session *perf_session__new(const char *filename, int mode, bool force);
+ void perf_session__delete(struct perf_session *self);
+ 
+@@ -86,4 +98,8 @@ static inline struct map *
  {
- 	int r;
- 
--	r = read(input_fd, data, size);
--	if (r != size)
-+	r = do_read(input_fd, data, size);
-+	if (r <= 0)
- 		die("reading input file (size expected=%d received=%d)",
- 		    size, r);
-+
-+	if (calc_data_size)
-+		calc_data_size += r;
-+
- 	return r;
+ 	return map_groups__new_module(&self->kmaps, start, filename);
  }
- 
-@@ -82,56 +105,28 @@ static char *read_string(void)
- 	char buf[BUFSIZ];
- 	char *str = NULL;
- 	int size = 0;
--	int i;
- 	off_t r;
-+	char c;
- 
- 	for (;;) {
--		r = read(input_fd, buf, BUFSIZ);
-+		r = read(input_fd, &c, 1);
- 		if (r < 0)
- 			die("reading input file");
- 
- 		if (!r)
- 			die("no data");
- 
--		for (i = 0; i < r; i++) {
--			if (!buf[i])
--				break;
--		}
--		if (i < r)
--			break;
-+		buf[size++] = c;
- 
--		if (str) {
--			size += BUFSIZ;
--			str = realloc(str, size);
--			if (!str)
--				die("malloc of size %d", size);
--			memcpy(str + (size - BUFSIZ), buf, BUFSIZ);
--		} else {
--			size = BUFSIZ;
--			str = malloc_or_die(size);
--			memcpy(str, buf, size);
--		}
-+		if (!c)
-+			break;
- 	}
- 
--	/* trailing \0: */
--	i++;
--
--	/* move the file descriptor to the end of the string */
--	r = lseek(input_fd, -(r - i), SEEK_CUR);
--	if (r == (off_t)-1)
--		die("lseek");
--
--	if (str) {
--		size += i;
--		str = realloc(str, size);
--		if (!str)
--			die("malloc of size %d", size);
--		memcpy(str + (size - i), buf, i);
--	} else {
--		size = i;
--		str = malloc_or_die(i);
--		memcpy(str, buf, i);
--	}
-+	if (calc_data_size)
-+		calc_data_size += size;
 +
-+	str = malloc_or_die(size);
-+	memcpy(str, buf, size);
- 
- 	return str;
- }
-@@ -459,7 +454,7 @@ struct record *trace_read_data(int cpu)
- 	return data;
- }
- 
--void trace_report(int fd)
-+ssize_t trace_report(int fd)
- {
- 	char buf[BUFSIZ];
- 	char test[] = { 23, 8, 68 };
-@@ -467,6 +462,9 @@ void trace_report(int fd)
- 	int show_version = 0;
- 	int show_funcs = 0;
- 	int show_printk = 0;
-+	ssize_t size;
++void perf_session__update_sample_type(struct perf_session *self);
++void perf_event_ops__fill_stop(struct perf_event_ops *handler);
 +
-+	calc_data_size = 1;
- 
- 	input_fd = fd;
- 
-@@ -499,14 +497,17 @@ void trace_report(int fd)
- 	read_proc_kallsyms();
- 	read_ftrace_printk();
- 
-+	size = calc_data_size - 1;
-+	calc_data_size = 0;
-+
- 	if (show_funcs) {
- 		print_funcs();
--		return;
-+		return size;
- 	}
- 	if (show_printk) {
- 		print_printk();
--		return;
-+		return size;
- 	}
- 
--	return;
-+	return size;
- }
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index c3269b9..0cb5866 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -162,7 +162,7 @@ struct record *trace_read_data(int cpu);
- 
- void parse_set_info(int nr_cpus, int long_sz);
- 
--void trace_report(int fd);
-+ssize_t trace_report(int fd);
- 
- void *malloc_or_die(unsigned int size);
- 
-@@ -258,6 +258,8 @@ void *raw_field_ptr(struct event *event, const char *name, void *data);
- unsigned long long eval_flag(const char *flag);
- 
- int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events);
-+ssize_t read_tracing_data_size(int fd, struct perf_event_attr *pattrs,
-+			       int nb_events);
- 
- /* taken from kernel/trace/trace.h */
- enum trace_flag_type {
+ #endif /* __PERF_SESSION_H */
 -- 
 1.6.4.GIT
 
