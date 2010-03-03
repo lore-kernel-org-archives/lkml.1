@@ -1,82 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752066Ab0CCSw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 13:52:29 -0500
-Received: from nereida.gnuservers.com.ar ([207.192.69.134]:51680 "EHLO
-	nereida.gnuservers.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427Ab0CCSw2 (ORCPT
+	id S1751787Ab0CCSxV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 13:53:21 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:58390 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125Ab0CCSxU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 13:52:28 -0500
-X-Greylist: delayed 557 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Mar 2010 13:52:27 EST
-Date: Wed, 3 Mar 2010 15:42:47 -0300
-From: Maximiliano Curia <maxy@debian.org>
-To: David Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Zhao Yakui <yakui.zhao@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Dave Airlie <airlied@redhat.com>, Zhenyu Wang <zhenyuw@linux.intel.com>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [BUG #15248] Please apply the suggested fix
-Message-ID: <20100303184247.GD16262@maxy.com.ar>
+	Wed, 3 Mar 2010 13:53:20 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100303.084811.228955847.davem@davemloft.net>
+References: <fa686aa41003030751x6fbf4cc2t119f225e31bd45c8@mail.gmail.com> 
+	<20100303.080449.172546594.davem@davemloft.net> <fa686aa41003030840u45021b53y639464a7e831a63d@mail.gmail.com> 
+	<20100303.084811.228955847.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Mar 2010 11:52:59 -0700
+X-Google-Sender-Auth: 59f50f93a7936fe2
+Message-ID: <fa686aa41003031052p59fdd7d9vee6c56b20a90930f@mail.gmail.com>
+Subject: Re: [PATCH] uartlite: Fix build on sparc.
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 3, 2010 at 9:48 AM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Wed, 3 Mar 2010 09:40:14 -0700
+>
+>> On Wed, Mar 3, 2010 at 9:04 AM, David Miller <davem@davemloft.net> wrote:
+>>> From: Grant Likely <grant.likely@secretlab.ca>
+>>> Date: Wed, 3 Mar 2010 08:51:27 -0700
+>>>
+>>>> Or if you prefer, I could expedite my patch that moves
+>>>> of_address_to_resource() into common code (it's currently in my test
+>>>> branch).  I wasn't planning to merge it until 2.6.35, but it is pretty
+>>>> low risk so I'd be comfortable merging it now.
+>>>
+>>> I prefer if you deal with it this way.
+>>
+>> Hmmm... on second look my patch depends on a bunch of other stuff that
+>> doesn't work with sparc yet.  grumble.  Sorry, this isn't going to
+>> work yet.  I'll have to block out the uartlite driver instead.  In the
+>> mean time I'll change the Kconfig to omit uartlite on sparc.
+>
+> BTW, while looking at this I can provide something similar to the
+> of_address_to_resource() interface on sparc but it would need
+> to provide the of_device pointer not the device_node one.
+>
+> I precompute all of the IRQs and I/O addresses of OF nodes and stick
+> them into of_device->resource[] and of_device->irq[].
+>
+> So if I have the of_device pointer I can just:
+>
+>        memset(res, op->resource[n], sizeof(*res));
+>
+> as my implementation.
 
-My notebook has an I855GME video card, this video card is one of the affected
-by the bug #15248 which produces a hard freeze shorly after the load of the i915
-kernel module.
+Cool.
 
-A git bisect showed that the affecting patch producing the hard freeze was:
+I'm actually hoping to do much the same with the other OF
+architectures, so hopefully of_address_to_resource() will become only
+used in arch code when talking to hardware before the devices are
+registered.
 
-commit b42d4c5c6a872815d711e5d51a600f5122c38eee
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Thu Sep 10 15:28:04 2009 -0700
+I also need to look at merging the bus address translation code.  It
+looks like sparc and ppc are using variations on the same codebase,
+but they seem to have diverged quite a lot.
 
-    drm/i915: use ACPI LID status for LVDS ->detect hook
-    
-    We can't load or hotplug detect LVDS like we can other outputs, but if
-    there's a lid device present we can use it as a proxy.  This allows the
-    LFP state to be determined at ->detect time, making configurations
-    requiring manual intervention today "just work" assuming the lid device
-    status is correct.
-    
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
+g.
 
-Afterwards, I realized this had already been reverted in a patch present only
-in git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git :
-
-commit 7b9c5abee98c54f85bcc04bd4d7ec8d5094c73f4
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Fri Feb 12 09:30:00 2010 -0800
-
-    drm/i915: give up on 8xx lid status
-    
-    These old machines more often than not lie about their lid state.  So
-    don't use it to detect LVDS presence, but leave the event handler to
-    deal with lid open/close, when we might need to reset the mode.
-    
-    Fixes kernel bug #15248
-    
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Cc: stable@kernel.org
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-
-This patch is suggested as fix for #15248, but it may have got lost in the
-noise.
-
-After applying this patch (and only this patch), my computer worked perfectly
-again, with kms enabled.
-
-Please do apply this patch in the mainline kernel.
-
-Thanks,
 -- 
-"The use of COBOL cripples the mind; its teaching should, therefore, be
-regarded as a criminal offense." -- Edsger W. Dijkstra
-Saludos /\/\ /\ >< `/
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
