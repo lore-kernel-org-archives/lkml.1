@@ -1,66 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769Ab0CCOq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 09:46:56 -0500
-Received: from mail.gmx.net ([213.165.64.20]:48823 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754467Ab0CCOqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 09:46:54 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+V1Aou62aVfEaI6R9kbCUti3UHJ1yyz4OHlGTF7d
-	QEGRncISBriMlW
-Subject: Re: [rfc/rft][patch] should use scheduler sync hint in
- tcp_prequeue()?
-From: Mike Galbraith <efault@gmx.de>
-To: David Miller <davem@davemloft.net>
-Cc: eric.dumazet@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <20100303.060529.195713861.davem@davemloft.net>
-References: <1267522901.25906.101.camel@marge.simson.net>
-	 <1267529273.2964.111.camel@edumazet-laptop>
-	 <20100303.060529.195713861.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 03 Mar 2010 15:46:50 +0100
-Message-Id: <1267627610.6264.21.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46999999999999997
+	id S1754777Ab0CCOuw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 09:50:52 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:46993 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754554Ab0CCOuu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 09:50:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fE8tV0e6Un/EZ4baX2mYk6d8GgMuI1SEUQSIO89NeJoY9vhCQM629RqguSfgzzWz3F
+         K9NjpsEGQ4+qaZz9VBEKUlyJ6mZggUe2muD5ZYJ8uCAAG/v4iv6SmDNd3klQNVtnmGqa
+         LewVKinYOFeh3yLPNTpKz0IwgLv8hCwLfGkJ4=
+Date: Wed, 3 Mar 2010 15:50:46 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Greg KH <greg@kroah.com>, Peter Feuerer <peter@piie.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] usb-serial / pl2302 corrupted receive
+Message-ID: <20100303145046.GB15162@localhost>
+References: <cone.1267466820.296261.3385.1000@deskpiie>
+ <20100302235353.GB2196@kroah.com>
+ <20100303121441.622e271f@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303121441.622e271f@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 06:05 -0800, David Miller wrote:
-
-> It definitely looks like an oversight to me and we should add
-> be using wake_up_interruptible_sync_poll() in tcp_prequeue()
-> as above.
+On Wed, Mar 03, 2010 at 12:14:41PM +0000, Alan Cox wrote:
+> > > Terminal1:
+> > > cat /dev/ttyUSB1
+> > > 
+> > > Terminal2:
+> > > while true; do echo 123456789012345678901234567890 > /dev/ttyUSB0 ; done
+> > 
+> > cat and echo are known to not work well with usb to serial devices.  Can
+> > you duplicate this with a "real" tty program like minicom or something
+> > else?
 > 
-> Ingo?
+> That should no longer be the case. The kfifo buffering implementation
+> fixed all the broken internal buffering in the usb tty code - or should
+> have done.
 
-Implied ack from network maintainer implies ship it to me.
+Actually, the per-bulk-out-point allocated kfifo is currently unsused for most
+drivers, including the pl2303.
 
-net: add scheduler sync hint to tcp_prequeue().
+I'm responding to this mail with a patch (against 2.6.33) which replaces
+the custom fifo-based write implementation in pl2303 with the generic
+kfifo based one. I've used it for quite a while now without any problems
+(just haven't got around to submitting it).
 
-Decreases the odds wakee will suffer from frequent cache misses.
+If Alan's correct, this might solve the echo/cat issue, but either way
+it should be applied at some point as it removes a lot of duplicate code.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: David Miller <davem@davemloft.net>
-LKML-Reference: <new-submission>
-
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 34f5cc2..ba3fc64 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -939,7 +939,7 @@ static inline int tcp_prequeue(struct sock *sk, struct sk_buff *skb)
- 
- 		tp->ucopy.memory = 0;
- 	} else if (skb_queue_len(&tp->ucopy.prequeue) == 1) {
--		wake_up_interruptible_poll(sk->sk_sleep,
-+		wake_up_interruptible_sync_poll(sk->sk_sleep,
- 					   POLLIN | POLLRDNORM | POLLRDBAND);
- 		if (!inet_csk_ack_scheduled(sk))
- 			inet_csk_reset_xmit_timer(sk, ICSK_TIME_DACK,
-
+/Johan
 
