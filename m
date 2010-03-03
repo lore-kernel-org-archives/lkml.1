@@ -1,46 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875Ab0CCBZK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 20:25:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60011 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754075Ab0CCBZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 20:25:08 -0500
-Message-ID: <4B8DBD10.3030506@kernel.org>
-Date: Wed, 03 Mar 2010 10:36:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 43/62] sysfs: Only take active references on attributes.
-References: <20100302230933.GA32287@kroah.com> <1267572541-410-43-git-send-email-gregkh@suse.de>
-In-Reply-To: <1267572541-410-43-git-send-email-gregkh@suse.de>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754075Ab0CCBZY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 20:25:24 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:49901 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907Ab0CCBZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 20:25:18 -0500
+Subject: Re: linux-next: Tree for March 1 (bluetooth/hci_sysfs)
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, randy.dunlap@oracle.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20100301.181415.266447389.davem@davemloft.net>
+References: <20100301210210.c6f465e6.sfr@canb.auug.org.au>
+	 <4B8C2CC5.8000603@oracle.com>
+	 <20100302121526.36a1ea88.sfr@canb.auug.org.au>
+	 <20100301.181415.266447389.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Mar 2010 17:23:37 -0800
+Message-ID: <1267579417.29510.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Mar 2010 01:25:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2010 08:28 AM, Greg Kroah-Hartman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> If we exclude directories and symlinks from the set of sysfs
-> dirents where we need active references we are left with
-> sysfs attributes (binary or not).
-> 
-> - Tweak sysfs_deactivate to only do something on attributes
-> - Move lockdep initialization into sysfs_file_add_mode to
->   limit it to just attributes.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Hi Dave,
 
-Acked-by: Tejun Heo <tj@kernel.org>
+> >> static ssize_t inquiry_cache_read(struct file *file, char __user *userbuf,
+> >> 						size_t count, loff_t *ppos)
+> >> {
+> >> 	struct hci_dev *hdev = file->private_data;
+> >> 	struct inquiry_cache *cache = &hdev->inq_cache;
+> >> 	struct inquiry_entry *e;
+> >> 	char buf[4096]; // <<<<<<<<<<<<<<<<<<<<<<<<<<< huh? don't do that on stack.
+> >> 	int n = 0;
+> > 
+> > Dave Miller is following up on that.
+> 
+> This looks like a job for.... SEQ FILE! :-)
+> 
+> I'm testing the following fix.
 
--- 
-tejun
+I have a working and tested patch that uses single_open(). Will send a
+patch with commit message and everything in a bit so you can apply it.
+
+Regards
+
+Marcel
+
+
