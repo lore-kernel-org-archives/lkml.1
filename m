@@ -1,226 +1,265 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842Ab0CCQpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:45:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42737 "EHLO
+	id S1754730Ab0CCQp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:45:26 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42720 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754821Ab0CCQpc (ORCPT
+	with ESMTP id S1754131Ab0CCQpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:45:32 -0500
-Message-Id: <20100303164306.222595079@chello.nl>
+	Wed, 3 Mar 2010 11:45:23 -0500
+Message-Id: <20100303164306.072186867@chello.nl>
 References: <20100303163936.906011640@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Mar 2010 17:39:41 +0100
+Date: Wed, 03 Mar 2010 17:39:39 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
-       fweisbec@gmail.com, Jamie Iles <jamie.iles@picochip.com>,
-       Jean Pihet <jpihet@mvista.com>, "David S. Miller" <davem@davemloft.net>,
-       stable@kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 05/11] perf: Generic perf_sample_data initialization
-Content-Disposition: inline; filename=perf-fixup-data.patch
+       fweisbec@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC][PATCH 03/11] perf, x86: Change x86_pmu.{enable,disable} calling convention
+Content-Disposition: inline; filename=perf-x86-cleanup-args2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes it easier to extend perf_sample_data and fixes a bug on
-arm and sparc, which failed to set ->raw to NULL, which can cause
-crashes when combined with PERF_SAMPLE_RAW.
+Pass the ful perf_event into the x86_pmu functions so that those may
+make use of more than the hw_perf_event, and while doing this, remove
+the superfluous second argument.
 
-It also optimizes PowerPC and tracepoint, because the struct
-initialization is forced to zero out the whole structure.
-
-CC: Jamie Iles <jamie.iles@picochip.com>
-CC: Jean Pihet <jpihet@mvista.com>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: David S. Miller <davem@davemloft.net>
-CC: Stephane Eranian <eranian@google.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>
-CC: stable@kernel.org
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/arm/kernel/perf_event.c           |    4 ++--
- arch/powerpc/kernel/perf_event.c       |    8 ++++----
- arch/sparc/kernel/perf_event.c         |    2 +-
- arch/x86/kernel/cpu/perf_event.c       |    3 +--
- arch/x86/kernel/cpu/perf_event_intel.c |    6 ++----
- include/linux/perf_event.h             |    7 +++++++
- kernel/perf_event.c                    |   21 ++++++++-------------
- 7 files changed, 25 insertions(+), 26 deletions(-)
+ arch/x86/kernel/cpu/perf_event.c       |   31 +++++++++++++++----------------
+ arch/x86/kernel/cpu/perf_event_intel.c |   30 +++++++++++++++++-------------
+ arch/x86/kernel/cpu/perf_event_p6.c    |   10 ++++++----
+ 3 files changed, 38 insertions(+), 33 deletions(-)
 
-Index: linux-2.6/arch/arm/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/perf_event.c
-+++ linux-2.6/arch/arm/kernel/perf_event.c
-@@ -965,7 +965,7 @@ armv6pmu_handle_irq(int irq_num,
- 	 */
- 	armv6_pmcr_write(pmcr);
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
-@@ -1945,7 +1945,7 @@ static irqreturn_t armv7pmu_handle_irq(i
- 	 */
- 	regs = get_irq_regs();
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
-Index: linux-2.6/arch/powerpc/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/perf_event.c
-+++ linux-2.6/arch/powerpc/kernel/perf_event.c
-@@ -1164,10 +1164,10 @@ static void record_and_restart(struct pe
- 	 * Finally record data if requested.
- 	 */
- 	if (record) {
--		struct perf_sample_data data = {
--			.addr	= ~0ULL,
--			.period	= event->hw.last_period,
--		};
-+		struct perf_sample_data data;
-+
-+		perf_sample_data_init(&data, ~0ULL);
-+		data.period = event->hw.last_period;
- 
- 		if (event->attr.sample_type & PERF_SAMPLE_ADDR)
- 			perf_get_data_addr(regs, &data.addr);
-Index: linux-2.6/arch/sparc/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/perf_event.c
-+++ linux-2.6/arch/sparc/kernel/perf_event.c
-@@ -1189,7 +1189,7 @@ static int __kprobes perf_event_nmi_hand
- 
- 	regs = args->regs;
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -1096,8 +1096,7 @@ static int x86_pmu_handle_irq(struct pt_
- 	int idx, handled = 0;
- 	u64 val;
+@@ -133,8 +133,8 @@ struct x86_pmu {
+ 	int		(*handle_irq)(struct pt_regs *);
+ 	void		(*disable_all)(void);
+ 	void		(*enable_all)(void);
+-	void		(*enable)(struct hw_perf_event *, int);
+-	void		(*disable)(struct hw_perf_event *, int);
++	void		(*enable)(struct perf_event *);
++	void		(*disable)(struct perf_event *);
+ 	unsigned	eventsel;
+ 	unsigned	perfctr;
+ 	u64		(*event_map)(int);
+@@ -840,7 +840,7 @@ void hw_perf_enable(void)
+ 			set_bit(hwc->idx, cpuc->active_mask);
+ 			cpuc->events[hwc->idx] = event;
  
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
+-			x86_pmu.enable(hwc, hwc->idx);
++			x86_pmu.enable(event);
+ 			perf_event_update_userpage(event);
+ 		}
+ 		cpuc->n_added = 0;
+@@ -853,15 +853,16 @@ void hw_perf_enable(void)
+ 	x86_pmu.enable_all();
+ }
  
- 	cpuc = &__get_cpu_var(cpu_hw_events);
+-static inline void __x86_pmu_enable_event(struct hw_perf_event *hwc, int idx)
++static inline void __x86_pmu_enable_event(struct hw_perf_event *hwc)
+ {
+-	(void)checking_wrmsrl(hwc->config_base + idx,
++	(void)checking_wrmsrl(hwc->config_base + hwc->idx,
+ 			      hwc->config | ARCH_PERFMON_EVENTSEL_ENABLE);
+ }
  
+-static inline void x86_pmu_disable_event(struct hw_perf_event *hwc, int idx)
++static inline void x86_pmu_disable_event(struct perf_event *event)
+ {
+-	(void)checking_wrmsrl(hwc->config_base + idx, hwc->config);
++	struct hw_perf_event *hwc = &event->hw;
++	(void)checking_wrmsrl(hwc->config_base + hwc->idx, hwc->config);
+ }
+ 
+ static DEFINE_PER_CPU(u64 [X86_PMC_IDX_MAX], pmc_prev_left);
+@@ -922,11 +923,11 @@ x86_perf_event_set_period(struct perf_ev
+ 	return ret;
+ }
+ 
+-static void x86_pmu_enable_event(struct hw_perf_event *hwc, int idx)
++static void x86_pmu_enable_event(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	if (cpuc->enabled)
+-		__x86_pmu_enable_event(hwc, idx);
++		__x86_pmu_enable_event(&event->hw);
+ }
+ 
+ /*
+@@ -969,13 +970,11 @@ static int x86_pmu_enable(struct perf_ev
+ 
+ static int x86_pmu_start(struct perf_event *event)
+ {
+-	struct hw_perf_event *hwc = &event->hw;
+-
+-	if (hwc->idx == -1)
++	if (event->hw.idx == -1)
+ 		return -EAGAIN;
+ 
+ 	x86_perf_event_set_period(event);
+-	x86_pmu.enable(hwc, hwc->idx);
++	x86_pmu.enable(event);
+ 
+ 	return 0;
+ }
+@@ -989,7 +988,7 @@ static void x86_pmu_unthrottle(struct pe
+ 				cpuc->events[hwc->idx] != event))
+ 		return;
+ 
+-	x86_pmu.enable(hwc, hwc->idx);
++	x86_pmu.enable(event);
+ }
+ 
+ void perf_event_print_debug(void)
+@@ -1054,7 +1053,7 @@ static void x86_pmu_stop(struct perf_eve
+ 	 * could reenable again:
+ 	 */
+ 	clear_bit(idx, cpuc->active_mask);
+-	x86_pmu.disable(hwc, idx);
++	x86_pmu.disable(event);
+ 
+ 	/*
+ 	 * Drain the remaining delta count out of a event
+@@ -1123,7 +1122,7 @@ static int x86_pmu_handle_irq(struct pt_
+ 			continue;
+ 
+ 		if (perf_event_overflow(event, 1, &data, regs))
+-			x86_pmu.disable(hwc, idx);
++			x86_pmu.disable(event);
+ 	}
+ 
+ 	if (handled)
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -590,10 +590,9 @@ static void intel_pmu_drain_bts_buffer(v
+@@ -548,9 +548,9 @@ static inline void intel_pmu_ack_status(
+ }
  
- 	ds->bts_index = ds->bts_buffer_base;
- 
-+	perf_sample_data_init(&data, 0);
- 
- 	data.period	= event->hw.last_period;
--	data.addr	= 0;
--	data.raw	= NULL;
- 	regs.ip		= 0;
- 
- 	/*
-@@ -740,8 +739,7 @@ static int intel_pmu_handle_irq(struct p
- 	int bit, loops;
- 	u64 ack, status;
- 
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
-Index: linux-2.6/include/linux/perf_event.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_event.h
-+++ linux-2.6/include/linux/perf_event.h
-@@ -801,6 +801,13 @@ struct perf_sample_data {
- 	struct perf_raw_record		*raw;
- };
- 
-+static inline
-+void perf_sample_data_init(struct perf_sample_data *data, u64 addr)
-+{
-+	data->addr = addr;
-+	data->raw  = NULL;
-+}
-+
- extern void perf_output_sample(struct perf_output_handle *handle,
- 			       struct perf_event_header *header,
- 			       struct perf_sample_data *data,
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -4108,8 +4108,7 @@ void __perf_sw_event(u32 event_id, u64 n
- 	if (rctx < 0)
- 		return;
- 
--	data.addr = addr;
--	data.raw  = NULL;
-+	perf_sample_data_init(&data, addr);
- 
- 	do_perf_sw_event(PERF_TYPE_SOFTWARE, event_id, nr, nmi, &data, regs);
- 
-@@ -4154,11 +4153,10 @@ static enum hrtimer_restart perf_swevent
- 	struct perf_event *event;
- 	u64 period;
- 
--	event	= container_of(hrtimer, struct perf_event, hw.hrtimer);
-+	event = container_of(hrtimer, struct perf_event, hw.hrtimer);
- 	event->pmu->read(event);
- 
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
- 	data.period = event->hw.last_period;
- 	regs = get_irq_regs();
- 	/*
-@@ -4322,17 +4320,15 @@ static const struct pmu perf_ops_task_cl
- void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
- 			  int entry_size)
+ static inline void
+-intel_pmu_disable_fixed(struct hw_perf_event *hwc, int __idx)
++intel_pmu_disable_fixed(struct hw_perf_event *hwc)
  {
-+	struct pt_regs *regs = get_irq_regs();
-+	struct perf_sample_data data;
- 	struct perf_raw_record raw = {
- 		.size = entry_size,
- 		.data = record,
- 	};
+-	int idx = __idx - X86_PMC_IDX_FIXED;
++	int idx = hwc->idx - X86_PMC_IDX_FIXED;
+ 	u64 ctrl_val, mask;
  
--	struct perf_sample_data data = {
--		.addr = addr,
--		.raw = &raw,
--	};
--
--	struct pt_regs *regs = get_irq_regs();
-+	perf_sample_data_init(&data, addr);
-+	data.raw = &raw;
+ 	mask = 0xfULL << (idx * 4);
+@@ -622,26 +622,28 @@ static void intel_pmu_drain_bts_buffer(v
+ }
  
- 	if (!regs)
- 		regs = task_pt_regs(current);
-@@ -4448,8 +4444,7 @@ void perf_bp_event(struct perf_event *bp
- 	struct perf_sample_data sample;
- 	struct pt_regs *regs = data;
+ static inline void
+-intel_pmu_disable_event(struct hw_perf_event *hwc, int idx)
++intel_pmu_disable_event(struct perf_event *event)
+ {
+-	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
++	struct hw_perf_event *hwc = &event->hw;
++
++	if (unlikely(hwc->idx == X86_PMC_IDX_FIXED_BTS)) {
+ 		intel_pmu_disable_bts();
+ 		intel_pmu_drain_bts_buffer();
+ 		return;
+ 	}
  
--	sample.raw = NULL;
--	sample.addr = bp->attr.bp_addr;
-+	perf_sample_data_init(&sample, bp->attr.bp_addr);
+ 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
+-		intel_pmu_disable_fixed(hwc, idx);
++		intel_pmu_disable_fixed(hwc);
+ 		return;
+ 	}
  
- 	if (!perf_exclude_event(bp, regs))
- 		perf_swevent_add(bp, 1, 1, &sample, regs);
+-	x86_pmu_disable_event(hwc, idx);
++	x86_pmu_disable_event(event);
+ }
+ 
+ static inline void
+-intel_pmu_enable_fixed(struct hw_perf_event *hwc, int __idx)
++intel_pmu_enable_fixed(struct hw_perf_event *hwc)
+ {
+-	int idx = __idx - X86_PMC_IDX_FIXED;
++	int idx = hwc->idx - X86_PMC_IDX_FIXED;
+ 	u64 ctrl_val, bits, mask;
+ 	int err;
+ 
+@@ -671,9 +673,11 @@ intel_pmu_enable_fixed(struct hw_perf_ev
+ 	err = checking_wrmsrl(hwc->config_base, ctrl_val);
+ }
+ 
+-static void intel_pmu_enable_event(struct hw_perf_event *hwc, int idx)
++static void intel_pmu_enable_event(struct perf_event *event)
+ {
+-	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
++	struct hw_perf_event *hwc = &event->hw;
++
++	if (unlikely(hwc->idx == X86_PMC_IDX_FIXED_BTS)) {
+ 		if (!__get_cpu_var(cpu_hw_events).enabled)
+ 			return;
+ 
+@@ -682,11 +686,11 @@ static void intel_pmu_enable_event(struc
+ 	}
+ 
+ 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
+-		intel_pmu_enable_fixed(hwc, idx);
++		intel_pmu_enable_fixed(hwc);
+ 		return;
+ 	}
+ 
+-	__x86_pmu_enable_event(hwc, idx);
++	__x86_pmu_enable_event(hwc);
+ }
+ 
+ /*
+@@ -774,7 +778,7 @@ again:
+ 		data.period = event->hw.last_period;
+ 
+ 		if (perf_event_overflow(event, 1, &data, regs))
+-			intel_pmu_disable_event(&event->hw, bit);
++			intel_pmu_disable_event(event);
+ 	}
+ 
+ 	intel_pmu_ack_status(ack);
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event_p6.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_p6.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event_p6.c
+@@ -77,27 +77,29 @@ static void p6_pmu_enable_all(void)
+ }
+ 
+ static inline void
+-p6_pmu_disable_event(struct hw_perf_event *hwc, int idx)
++p6_pmu_disable_event(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val = P6_NOP_EVENT;
+ 
+ 	if (cpuc->enabled)
+ 		val |= ARCH_PERFMON_EVENTSEL_ENABLE;
+ 
+-	(void)checking_wrmsrl(hwc->config_base + idx, val);
++	(void)checking_wrmsrl(hwc->config_base + hwc->idx, val);
+ }
+ 
+-static void p6_pmu_enable_event(struct hw_perf_event *hwc, int idx)
++static void p6_pmu_enable_event(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val;
+ 
+ 	val = hwc->config;
+ 	if (cpuc->enabled)
+ 		val |= ARCH_PERFMON_EVENTSEL_ENABLE;
+ 
+-	(void)checking_wrmsrl(hwc->config_base + idx, val);
++	(void)checking_wrmsrl(hwc->config_base + hwc->idx, val);
+ }
+ 
+ static __initconst struct x86_pmu p6_pmu = {
 
 -- 
 
