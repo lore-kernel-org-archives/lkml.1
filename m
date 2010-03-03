@@ -1,69 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185Ab0CCXbl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 18:31:41 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:50202 "EHLO e9.ny.us.ibm.com"
+	id S1755302Ab0CCXd4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 18:33:56 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46645 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357Ab0CCXbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 18:31:35 -0500
-Subject: Re: Nick's vfs-scalability patches ported to 2.6.33-rt
-From: john stultz <johnstul@us.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
-       Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-In-Reply-To: <20100226060109.GH9738@laptop>
-References: <1267163608.2002.9.camel@work-vm> <20100226060109.GH9738@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 15:31:30 -0800
-Message-ID: <1267659090.4317.67.camel@localhost.localdomain>
+	id S1753357Ab0CCXdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 18:33:49 -0500
+Date: Thu, 4 Mar 2010 10:33:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the arm tree with Linus' tree
+Message-Id: <20100304103343.4627a27c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__4_Mar_2010_10_33_43_+1100_oPx350FF=g_SeXLa"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-26 at 17:01 +1100, Nick Piggin wrote:
-> On Thu, Feb 25, 2010 at 09:53:28PM -0800, john stultz wrote:
-> > Hey Thomas, Nick,
-> > 	I just wanted to let you know I've just finished forward porting Nick's
-> > patches to 2.6.33-rc8-rt2.  Luckily my forward port of Nick's patches to
-> > 2.6.33 applies on top of the -rt tree without any collisions, and I've
-> > added a handful of maybe sketchy fixups to get it working with -rt.
-> > 
-> > You can find the patchset here:
-> > http://sr71.net/~jstultz/dbench-scalability/patches/2.6.33-rc8-rt2/vfs-scale.33-rt.tar.bz2
-> > 
-> > Here's a chart showing how much these patches help dbench numbers on
-> > ramfs:
-> > http://sr71.net/~jstultz/dbench-scalability/graphs/2.6.33/ramfs-dbench.png
-> > 
-> > I've not done any serious stress testing with the patchset yet, but
-> > wanted to post it for your review.
-> > 
-> > Nick: I'd appreciate any feedback as to if any of my forward porting has
-> > gone awry. I'm still very green with respect to the vfs, so I don't
-> > doubt there are some issues hiding here.
-> 
-> BTW there are a few issues Al pointed out. We have to synchronize RCU
-> after unregistering a filesystem so d_ops/i_ops doesn't go away, and
-> mntput can sleep so we can't do it under RCU read lock.
+--Signature=_Thu__4_Mar_2010_10_33_43_+1100_oPx350FF=g_SeXLa
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Does the following address this issue properly?
+Hi Russell,
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Today's linux-next merge of the arm tree got a conflict in
+arch/arm/mach-mx25/clock.c between commit
+ac0f6f927db539e03e1f3f61bcd4ed57d5cde7a9 ("Merge branch 'for-linus' of
+master.kernel.org:/home/rmk/linux-2.6-arm") from Linus' tree (this looks
+like the same merge ed1e01c8cf4772aabe013716353a7a0f879dbf5e ("Merge
+branch 'master' into versatile") that is in the arm tree) and commit
+04a03e5fe3d337242e5c0a9c93d2fd24cff545ef ("mx25: add platform support for
+imxfb") from the arm tree.
 
-diff --git a/fs/filesystems.c b/fs/filesystems.c
-index a24c58e..3448e7c 100644
---- a/fs/filesystems.c
-+++ b/fs/filesystems.c
-@@ -110,6 +110,7 @@ int unregister_filesystem(struct file_system_type * fs)
- 			*tmp = fs->next;
- 			fs->next = NULL;
- 			write_unlock(&file_systems_lock);
-+			synchronize_rcu();
- 			return 0;
- 		}
- 		tmp = &(*tmp)->next;
+I fixed it up (using the arm tree version) an can carry the fix as
+necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__4_Mar_2010_10_33_43_+1100_oPx350FF=g_SeXLa
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkuO8dcACgkQjjKRsyhoI8zDAgCdFiWairz9AOnyeQ63qG7HpeBs
+8DsAnioX3fIsEvRLCf2WzgSt+DPaDoEj
+=MXp1
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__4_Mar_2010_10_33_43_+1100_oPx350FF=g_SeXLa--
