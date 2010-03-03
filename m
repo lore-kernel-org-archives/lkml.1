@@ -1,88 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518Ab0CCCCP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 21:02:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53068 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453Ab0CCCCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 21:02:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andre Goddard Rosa <andre.goddard@gmail.com>
-Subject: Re: [PATCH] binfmt_elf: plug a memory leak situation on dump_seek()
-Cc: kosaki.motohiro@jp.fujitsu.com, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>, WANG Cong <amwang@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100302124206.4e0a42b4.akpm@linux-foundation.org>
-References: <322581998527c77c89d6fb91b8cbe02b5637c6dc.1267156293.git.andre.goddard@gmail.com> <20100302124206.4e0a42b4.akpm@linux-foundation.org>
-Message-Id: <20100303105911.D63A.A69D9226@jp.fujitsu.com>
+	id S1752306Ab0CCCJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:09:50 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18435 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987Ab0CCCJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 21:09:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,570,1262592000"; 
+   d="scan'208";a="497205395"
+Date: Wed, 3 Mar 2010 10:08:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@linux.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sachin Sant <sachinp@in.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Alok Kataria <akataria@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Pasi =?utf-8?B?S8Okcmtrw6RpbmVu?= <pasik@iki.fi>
+Subject: Re: [GIT PULL] x86/mm fixes
+Message-ID: <20100303020845.GD6477@localhost>
+References: <201003020010.o220Ax3Z025848@hera.kernel.org> <alpine.LFD.2.00.1003021038410.3616@localhost.localdomain> <4B8D67A4.8080602@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  3 Mar 2010 11:02:08 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8D67A4.8080602@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 26 Feb 2010 00:54:40 -0300
-> Andr__ Goddard Rosa <andre.goddard@gmail.com> wrote:
-> 
-> > Signed-off-by: Andr__ Goddard Rosa <andre.goddard@gmail.com>
-> > ---
-> >  fs/binfmt_elf.c |   10 +++++++---
-> >  1 files changed, 7 insertions(+), 3 deletions(-)
+On Wed, Mar 03, 2010 at 03:31:48AM +0800, H. Peter Anvin wrote:
+> On 03/02/2010 10:39 AM, Linus Torvalds wrote:
 > > 
-> > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> > index fd5b2ea..13b0845 100644
-> > --- a/fs/binfmt_elf.c
-> > +++ b/fs/binfmt_elf.c
-> > @@ -1096,6 +1096,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
-> >  
-> >  static int dump_seek(struct file *file, loff_t off)
-> >  {
-> > +	int ret = 1;
-> > +
-> >  	if (file->f_op->llseek && file->f_op->llseek != no_llseek) {
-> >  		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
-> >  			return 0;
-> > @@ -1107,13 +1109,15 @@ static int dump_seek(struct file *file, loff_t off)
-> >  			unsigned long n = off;
-> >  			if (n > PAGE_SIZE)
-> >  				n = PAGE_SIZE;
-> > -			if (!dump_write(file, buf, n))
-> > -				return 0;
-> > +			if (!dump_write(file, buf, n)) {
-> > +				ret = 0;
-> > +				break;
-> > +			}
-> >  			off -= n;
-> >  		}
-> >  		free_page((unsigned long)buf);
-> >  	}
-> > -	return 1;
-> > +	return ret;
-> >  }
+> > 
+> > On Tue, 2 Mar 2010, H. Peter Anvin wrote:
+> >> +		pfn = (res.start + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> >> +		end_pfn = (res.end + 1) >> PAGE_SHIFT;
+> >> +		if (end_pfn > pfn)
+> >> +		    ret = (*func)(pfn, end_pfn - pfn, arg);
+> >>  		if (ret)
+> >>  			break;
+> >>  		res.start = res.end + 1;
+> > 
+> > What kind of messed-up indentation is that? We don't use 4-char indents.
+> > 
 > 
-> Please don't send unchangelogged patches.
-> 
-> Explain the leak.
-> 
-> Explain the user impact (ie: how it is triggered).
-> 
-> Explain how the patch fixes it.
-> 
-> Thanks.
+> Branch updated with an indentation patch.  Sorry about that.
 
-Hi Andre, 
+Sorry! Wondering I didn't do the indent with the vim '=='.
 
-plus, can you please rebase this patch onto -mmotm tree? it have lots elf core dump related
-fix and it is going to be merged at this merge window, maybe.
+Anyway I just hacked /usr/share/quilt/refresh to automatically run the
+kernel style checker:
 
-I think your patch is correct. but I hope to avoid patch confliction.
+# wfg: check for kernel coding style
+if [ -x scripts/checkpatch.pl ]; then
+        scripts/checkpatch.pl $patch_file
+fi
 
-Thanks.
-
-
+Thanks,
+Fengguang
