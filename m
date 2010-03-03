@@ -1,103 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750804Ab0CCTIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:08:11 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:61748 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756001Ab0CCTIC (ORCPT
+	id S1753185Ab0CCTKZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:10:25 -0500
+Received: from h1355771.stratoserver.net ([85.214.105.140]:35874 "EHLO
+	h1355771.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502Ab0CCTKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:08:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tZDLAIL0OBONlTHTtD7MX0kWu01hYk/0MGtz0x6OsHEsGrd0Cc4agC1m+lPEf7WcXp
-         IowWgPQzwAV/VCWGXLcG/oWj/eqZ28vIgD2zeA49I6KVB2UnW7CRQ9ufZ4z05x4InXyR
-         q59Tc2GbXu7/pIrZkIvMOSJoEEQBsfmxGCnnQ=
-Date: Wed, 3 Mar 2010 11:07:54 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-Message-ID: <20100303190753.GB11471@core.coreip.homeip.net>
-References: <4B8C1867.7040201@cam.ac.uk>
- <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
- <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
- <20100303184132.GA11471@core.coreip.homeip.net>
- <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Wed, 3 Mar 2010 14:10:17 -0500
+X-Greylist: delayed 2291 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Mar 2010 14:10:17 EST
+Date: Wed, 3 Mar 2010 19:31:56 +0100
+From: Andreas Kemnade <andreas@kemnade.info>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: peter@piie.net, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [BUG] usb-serial / pl2302 corrupted receive
+Message-ID: <20100303193156.78127498@kemnade.info>
+In-Reply-To: <20100303141718.GA15162@localhost>
+References: <cone.1267466820.296261.3385.1000@deskpiie>
+	<20100302235353.GB2196@kroah.com>
+	<20100303114705.33716f9pnen8a8kc@webmail.df.eu>
+	<20100303141718.GA15162@localhost>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/Yh63hESCI0y0SgizQaittG2";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 10:52:43AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 3 Mar 2010, Dmitry Torokhov wrote:
-> 
-> > On Wed, Mar 03, 2010 at 09:03:16AM -0800, Linus Torvalds wrote:
-> > > 
-> > > What's the difference between a physical "increase screen brightness" key, 
-> > > and a "ambient light sensor"? Absolutely none as far as I can tell.
-> > 
-> > Because in general ambient light sensor may have nothing to do with the
-> > screen brightness. The fact that all current uses are tied to
-> > controlling screen brightness is coincidential. You could use it as well
-> > to turn on the lights in the kitchen if it is getting too dark...
-> 
-> But my point is, it acts pretty much like a key on a keyboard 
-> _regardless_. 
-> 
-> Sure, you migth use it to turn up the lights too. But how is that 
-> different from having a switch to do the same? Again, it doesn't sound 
-> that different from a key to me.
+--Sig_/Yh63hESCI0y0SgizQaittG2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I guess for me the distinction is that the event was not caused by an
-action of a human being but by change in environment.
+Hi,
 
-Also, if we decide that input layer is the best place for such devices,
-it should not be a key but absolute event, ABS_LIGHT_LEVEL or something.
+On Wed, 3 Mar 2010 15:17:18 +0100
+Johan Hovold <jhovold@gmail.com> wrote:
 
-> 
-> > Yes, it is easier, but it is not necessarily the right interface. I
-> > still believe in using input layer for human iteraction events, and not
-> > as generic transport a-la netlink or uevent. Voltage measurements,
-> > network cable presence notifications, ambient light/temperature sensors,
-> > and so forth do not belong here.
-> 
-> The thing is, if the choice is about a whole new subsystem just for some 
-> silly light sensor logic, I'd _much_ rather see the much simpler - and 
-> more useful - approach of just considering it an input event.
-> 
-> It happens in the same kind of situations, it has the same kinds of timing 
-> issues (ie we're not talking streaming megabytes of data), and it has the 
-> same kind of users (ie a lightsensor really would be used along with 
-> something that cares about input).
-> 
-> I agree that that's not true in many other situations. A cable insertion 
-> event is about the networking, not about some independent input. The kind 
-> of application that cares about network cable presense is _not_ the kind 
-> of app that would care about keyboard input. Same goes for voltage.
+> On Wed, Mar 03, 2010 at 11:47:05AM +0100, peter@piie.net wrote:
+> > Quoting Greg KH <greg@kroah.com>:
+> > > On Mon, Mar 01, 2010 at 07:07:00PM +0100, Peter Feuerer wrote:
+> > >> I connected two pls2302 usb-serial converters to two different
+> > >> usb-ports of my machine and connected them with a rs232-nullmodem
+> > >> cable to each other.
+> > >>
+> > >> Terminal1:
+> > >> cat /dev/ttyUSB1
+> > >>
+> > >> Terminal2:
+> > >> while true; do echo 123456789012345678901234567890 > /dev/ttyUSB0 ; =
+done
+> > >
+> > > cat and echo are known to not work well with usb to serial devices.  =
+Can
+> > > you duplicate this with a "real" tty program like minicom or something
+> > > else?
+> >=20
+> > I will try to set up a test use-case which uses kermit.
+> >=20
+> > But there is a calltrace in kernel log when using cat & echo, so =20
+> > something in the driver went wrong.
+> > Thus there is a bug which can be reproduced and it should be fixed, =20
+> > don't you agree?
+>=20
+> Not necessarily. The warning you attached to your first post is a false
+> one (it has been fixed in 2.6.33) and is not directly related to the
+> problem you describe.
+>=20
+Are udev rules around which attach gpsd to the usb to serial adapter?
+That might interfere.
+I had problems with pl2302 adaptors due to that reason. I wondered why
+stty -F /dev/ttyUSBx showed different things than on earlier calls.
 
-What about magnetometers, accelerometers and so forth? I still do not
-think they are pure input layer devices although it is possible to build
-a bridge modules so they could plug into input framework if desired.
+Greetings
+Andreas Kemnade
 
-> 
-> That said, I'm not married to the whole "it has to be input layer". But I 
-> _do_ think that it's crazy to start doing new subsystems for every little 
-> thing. That way lies madness. 
->
+--Sig_/Yh63hESCI0y0SgizQaittG2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-I was hoping IIO would fill the niche of framework for generic data
-acquisition devices, regardless of how fast or slow they are.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-Dmitry
+iEYEARECAAYFAkuOqxwACgkQvUy8S31NDea+fwCdHS8xD+BpJf8Ei41Sr/WTmt5c
+btIAn0MC54GG7bqDnONpmpUXuTu3MXzx
+=sejS
+-----END PGP SIGNATURE-----
+
+--Sig_/Yh63hESCI0y0SgizQaittG2--
