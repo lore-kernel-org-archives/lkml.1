@@ -1,49 +1,192 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700Ab0CCP3D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:29:03 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:37369 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709Ab0CCP3A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:29:00 -0500
-Date: Wed, 3 Mar 2010 15:28:54 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Joey Lee <jlee@novell.com>
-Cc: mzxreary@0pointer.de, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 57/62] msi-laptop: Add threeg sysfs file for support
-	query 3G state by standard 66/62 ec command
-Message-ID: <20100303152854.GA29979@srcf.ucam.org>
-References: <4B8F1A220200002300014185@novprvlin0050.provo.novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B8F1A220200002300014185@novprvlin0050.provo.novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	id S1752883Ab0CCPbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:31:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19822 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752454Ab0CCPbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 10:31:21 -0500
+From: Amit Shah <amit.shah@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Amit Shah <amit.shah@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH v2] hvc_console: Fix race between hvc_close and hvc_remove
+Date: Wed,  3 Mar 2010 20:59:48 +0530
+Message-Id: <1267630188-30824-1-git-send-email-amit.shah@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 08:25:38AM -0700, Joey Lee wrote:
+Alan pointed out a race in the code where hvc_remove is invoked. The
+recent virtio_console work is the first user of hvc_remove().
 
-> So, "wwan" does not mean "3g"? or 3g is included in "wwan"?
-> And, does the "non-standard radio control file" mean like "threeg",
-> "wlan" or "bluetooth" in /sys/devices/platform/xxxxx ?
+Alan describes it thus:
 
-wwan includes 3g, so it's the appropriate type to use here. The 
-non-standard ones are the threeg, wlan and bluetooth files.
+The hvc_console assumes that a close and remove call can't occur at the
+same time.
 
-> In current x86/platform, there have a bit driver still used the
-> "non-standard control file". Does that mean we need replace all of 
-> those control files by rfkill interface?
+In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+itself....
 
-Those are holdovers from before the rfkill interface was usable - we 
-should probably be deprecating them. I /think/ all the drivers that 
-provide them also provide an rfkill interface now, but if not we should 
-probably port them.
+So this can happen
 
+        hvc_close                               hvc_remove
+        hung up ? - no
+                                                lock
+                                                tty = hp->tty
+                                                unlock
+        lock
+        hp->tty = NULL
+        unlock
+        notify del
+        kref_put the hvc struct
+        close completes
+        tty is destroyed
+                                                tty_hangup dead tty
+                                                tty->ops will be NULL
+                                                NULL->...
+
+This patch adds some tty krefs and also converts to using tty_vhangup().
+
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linuxppc-dev@ozlabs.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+---
+
+Alan, how does this version look?
+
+I've tested with multiple virtio_console ports.
+
+There's some other bug in the hvc_remove code that's unrelated:
+hot-removal of one console port results in all other hvc consoles to
+stop working. I'll look at that once this is finalised.
+
+ drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 4c3b59b..7e94b3c 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->count++ > 0) {
++		tty_kref_get(tty);
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 		hvc_kick();
+ 		return 0;
+@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 
+ 	tty->driver_data = hp;
+ 
+-	hp->tty = tty;
++	hp->tty = tty_kref_get(tty);
+ 
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
++		tty_kref_put(tty);
+ 		tty->driver_data = NULL;
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		return;
+ 
+ 	hp = tty->driver_data;
++
+ 	spin_lock_irqsave(&hp->lock, flags);
++	tty_kref_get(tty);
+ 
+ 	if (--hp->count == 0) {
+ 		/* We are done with the tty pointer now. */
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
++		/* Put the ref obtained in hvc_open() */
++		tty_kref_put(tty);
++
+ 		if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
+ 
+@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 	}
+ 
++	tty_kref_put(tty);
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ }
+ 
+@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+ 	if (hp->ops->notifier_hangup)
+-			hp->ops->notifier_hangup(hp, hp->data);
++		hp->ops->notifier_hangup(hp, hp->data);
+ 
+ 	while(temp_open_count) {
+ 		--temp_open_count;
++		tty_kref_put(tty);
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 	}
+ }
+@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 	}
+ 
+ 	/* No tty attached, just skip */
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 	if (tty == NULL)
+ 		goto bail;
+ 
+@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
+ 
+ 		tty_flip_buffer_push(tty);
+ 	}
++	if (tty)
++		tty_kref_put(tty);
+ 
+ 	return poll_mask;
+ }
+@@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	struct tty_struct *tty;
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+@@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
+ 	/*
+ 	 * We 'put' the instance that was grabbed when the kref instance
+ 	 * was initialized using kref_init().  Let the last holder of this
+-	 * kref cause it to be removed, which will probably be the tty_hangup
++	 * kref cause it to be removed, which will probably be the tty_vhangup
+ 	 * below.
+ 	 */
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ 
+ 	/*
+-	 * This function call will auto chain call hvc_hangup.  The tty should
+-	 * always be valid at this time unless a simultaneous tty close already
+-	 * cleaned up the hvc_struct.
++	 * This function call will auto chain call hvc_hangup.
+ 	 */
+-	if (tty)
+-		tty_hangup(tty);
++	if (tty) {
++		tty_vhangup(tty);
++		tty_kref_put(tty);
++	}
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(hvc_remove);
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.2.5
+
