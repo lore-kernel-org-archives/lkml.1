@@ -1,265 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672Ab0CCKx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 05:53:59 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54253 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753335Ab0CCKxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 05:53:23 -0500
-Message-ID: <4B8E3EDB.3010600@cn.fujitsu.com>
-Date: Wed, 03 Mar 2010 18:50:03 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+	id S1753584Ab0CCKx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 05:53:56 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.31.32]:53803 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447Ab0CCKxx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 05:53:53 -0500
+X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Mar 2010 05:53:53 EST
+Message-ID: <20100303114705.33716f9pnen8a8kc@webmail.df.eu>
+Date: Wed, 03 Mar 2010 11:47:05 +0100
+From: peter@piie.net
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] usb-serial / pl2302 corrupted receive
+References: <cone.1267466820.296261.3385.1000@deskpiie>
+ <20100302235353.GB2196@kroah.com>
+In-Reply-To: <20100302235353.GB2196@kroah.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Paul Menage <menage@google.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4] cpuset: alloc nodemask_t at heap not stack
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Dynamic Internet Messaging Program (DIMP) H3 (1.1.2)
+X-Originating-IP: 80.82.223.8
+X-Df-Sender: 650477
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocating nodemask_t at heap instead of stack.
+Hi Greg,
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
----
- kernel/cpuset.c |   93 ++++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 65 insertions(+), 28 deletions(-)
+Quoting Greg KH <greg@kroah.com>:
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index f732ff7..c6edd06 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -984,15 +984,20 @@ static void cpuset_change_nodemask(struct task_struct *p,
- 	struct cpuset *cs;
- 	int migrate;
- 	const nodemask_t *oldmem = scan->data;
--	nodemask_t newmems;
-+	NODEMASK_ALLOC(nodemask_t, newmems, GFP_KERNEL);
-+
-+	if (!newmems)
-+		return;
- 
- 	cs = cgroup_cs(scan->cg);
--	guarantee_online_mems(cs, &newmems);
-+	guarantee_online_mems(cs, newmems);
- 
- 	task_lock(p);
--	cpuset_change_task_nodemask(p, &newmems);
-+	cpuset_change_task_nodemask(p, newmems);
- 	task_unlock(p);
- 
-+	NODEMASK_FREE(newmems);
-+
- 	mm = get_task_mm(p);
- 	if (!mm)
- 		return;
-@@ -1062,16 +1067,21 @@ static void update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem,
- static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- 			   const char *buf)
- {
--	nodemask_t oldmem;
-+	NODEMASK_ALLOC(nodemask_t, oldmem, GFP_KERNEL);
- 	int retval;
- 	struct ptr_heap heap;
- 
-+	if (!oldmem)
-+		return -ENOMEM;
-+
- 	/*
- 	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
- 	 * it's read-only
- 	 */
--	if (cs == &top_cpuset)
--		return -EACCES;
-+	if (cs == &top_cpuset) {
-+		retval = -EACCES;
-+		goto done;
-+	}
- 
- 	/*
- 	 * An empty mems_allowed is ok iff there are no tasks in the cpuset.
-@@ -1087,11 +1097,13 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- 			goto done;
- 
- 		if (!nodes_subset(trialcs->mems_allowed,
--				node_states[N_HIGH_MEMORY]))
--			return -EINVAL;
-+				node_states[N_HIGH_MEMORY])) {
-+			retval =  -EINVAL;
-+			goto done;
-+		}
- 	}
--	oldmem = cs->mems_allowed;
--	if (nodes_equal(oldmem, trialcs->mems_allowed)) {
-+	*oldmem = cs->mems_allowed;
-+	if (nodes_equal(*oldmem, trialcs->mems_allowed)) {
- 		retval = 0;		/* Too easy - nothing to do */
- 		goto done;
- 	}
-@@ -1107,10 +1119,11 @@ static int update_nodemask(struct cpuset *cs, struct cpuset *trialcs,
- 	cs->mems_allowed = trialcs->mems_allowed;
- 	mutex_unlock(&callback_mutex);
- 
--	update_tasks_nodemask(cs, &oldmem, &heap);
-+	update_tasks_nodemask(cs, oldmem, &heap);
- 
- 	heap_free(&heap);
- done:
-+	NODEMASK_FREE(oldmem);
- 	return retval;
- }
- 
-@@ -1395,39 +1408,46 @@ static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
- 			  struct cgroup *oldcont, struct task_struct *tsk,
- 			  bool threadgroup)
- {
--	nodemask_t from, to;
- 	struct mm_struct *mm;
- 	struct cpuset *cs = cgroup_cs(cont);
- 	struct cpuset *oldcs = cgroup_cs(oldcont);
-+	NODEMASK_ALLOC(nodemask_t, from, GFP_KERNEL);
-+	NODEMASK_ALLOC(nodemask_t, to, GFP_KERNEL);
-+
-+	if (from == NULL || to == NULL)
-+		return;
- 
- 	if (cs == &top_cpuset) {
- 		cpumask_copy(cpus_attach, cpu_possible_mask);
- 	} else {
- 		guarantee_online_cpus(cs, cpus_attach);
- 	}
--	guarantee_online_mems(cs, &to);
-+	guarantee_online_mems(cs, to);
- 
- 	/* do per-task migration stuff possibly for each in the threadgroup */
--	cpuset_attach_task(tsk, &to, cs);
-+	cpuset_attach_task(tsk, to, cs);
- 	if (threadgroup) {
- 		struct task_struct *c;
- 		rcu_read_lock();
- 		list_for_each_entry_rcu(c, &tsk->thread_group, thread_group) {
--			cpuset_attach_task(c, &to, cs);
-+			cpuset_attach_task(c, to, cs);
- 		}
- 		rcu_read_unlock();
- 	}
- 
- 	/* change mm; only needs to be done once even if threadgroup */
--	from = oldcs->mems_allowed;
--	to = cs->mems_allowed;
-+	*from = oldcs->mems_allowed;
-+	*to = cs->mems_allowed;
- 	mm = get_task_mm(tsk);
- 	if (mm) {
--		mpol_rebind_mm(mm, &to);
-+		mpol_rebind_mm(mm, to);
- 		if (is_memory_migrate(cs))
--			cpuset_migrate_mm(mm, &from, &to);
-+			cpuset_migrate_mm(mm, from, to);
- 		mmput(mm);
- 	}
-+
-+	NODEMASK_FREE(from);
-+	NODEMASK_FREE(to);
- }
- 
- /* The various types of files and directories in a cpuset file system */
-@@ -1572,13 +1592,21 @@ static int cpuset_sprintf_cpulist(char *page, struct cpuset *cs)
- 
- static int cpuset_sprintf_memlist(char *page, struct cpuset *cs)
- {
--	nodemask_t mask;
-+	NODEMASK_ALLOC(nodemask_t, mask, GFP_KERNEL);
-+	int retval;
-+
-+	if (mask == NULL)
-+		return -ENOMEM;
- 
- 	mutex_lock(&callback_mutex);
--	mask = cs->mems_allowed;
-+	*mask = cs->mems_allowed;
- 	mutex_unlock(&callback_mutex);
- 
--	return nodelist_scnprintf(page, PAGE_SIZE, mask);
-+	retval = nodelist_scnprintf(page, PAGE_SIZE, *mask);
-+
-+	NODEMASK_FREE(mask);
-+
-+	return retval;
- }
- 
- static ssize_t cpuset_common_file_read(struct cgroup *cont,
-@@ -2007,7 +2035,10 @@ static void scan_for_empty_cpusets(struct cpuset *root)
- 	struct cpuset *cp;	/* scans cpusets being updated */
- 	struct cpuset *child;	/* scans child cpusets of cp */
- 	struct cgroup *cont;
--	nodemask_t oldmems;
-+	NODEMASK_ALLOC(nodemask_t, oldmems, GFP_KERNEL);
-+
-+	if (oldmems == NULL)
-+		return;
- 
- 	list_add_tail((struct list_head *)&root->stack_list, &queue);
- 
-@@ -2024,7 +2055,7 @@ static void scan_for_empty_cpusets(struct cpuset *root)
- 		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
- 			continue;
- 
--		oldmems = cp->mems_allowed;
-+		*oldmems = cp->mems_allowed;
- 
- 		/* Remove offline cpus and mems from this cpuset. */
- 		mutex_lock(&callback_mutex);
-@@ -2040,9 +2071,10 @@ static void scan_for_empty_cpusets(struct cpuset *root)
- 			remove_tasks_in_empty_cpuset(cp);
- 		else {
- 			update_tasks_cpumask(cp, NULL);
--			update_tasks_nodemask(cp, &oldmems, NULL);
-+			update_tasks_nodemask(cp, oldmems, NULL);
- 		}
- 	}
-+	NODEMASK_FREE(oldmems);
- }
- 
- /*
-@@ -2100,16 +2132,19 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
- static int cpuset_track_online_nodes(struct notifier_block *self,
- 				unsigned long action, void *arg)
- {
--	nodemask_t oldmems;
-+	NODEMASK_ALLOC(nodemask_t, oldmems, GFP_KERNEL);
-+
-+	if (oldmems == NULL)
-+		return NOTIFY_DONE;
- 
- 	cgroup_lock();
- 	switch (action) {
- 	case MEM_ONLINE:
--		oldmems = top_cpuset.mems_allowed;
-+		*oldmems = top_cpuset.mems_allowed;
- 		mutex_lock(&callback_mutex);
- 		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
- 		mutex_unlock(&callback_mutex);
--		update_tasks_nodemask(&top_cpuset, &oldmems, NULL);
-+		update_tasks_nodemask(&top_cpuset, oldmems, NULL);
- 		break;
- 	case MEM_OFFLINE:
- 		scan_for_empty_cpusets(&top_cpuset);
-@@ -2118,6 +2153,8 @@ static int cpuset_track_online_nodes(struct notifier_block *self,
- 		break;
- 	}
- 	cgroup_unlock();
-+
-+	NODEMASK_FREE(oldmems);
- 	return NOTIFY_OK;
- }
- #endif
--- 
-1.6.5.2
+> On Mon, Mar 01, 2010 at 07:07:00PM +0100, Peter Feuerer wrote:
+>> I connected two pls2302 usb-serial converters to two different
+>> usb-ports of my machine and connected them with a rs232-nullmodem
+>> cable to each other.
+>>
+>> Terminal1:
+>> cat /dev/ttyUSB1
+>>
+>> Terminal2:
+>> while true; do echo 123456789012345678901234567890 > /dev/ttyUSB0 ; done
+>
+> cat and echo are known to not work well with usb to serial devices.  Can
+> you duplicate this with a "real" tty program like minicom or something
+> else?
+
+I will try to set up a test use-case which uses kermit.
+
+But there is a calltrace in kernel log when using cat & echo, so  
+something in the driver went wrong.
+Thus there is a bug which can be reproduced and it should be fixed,  
+don't you agree?
+
+best regards,
+--peter
+
 
 
