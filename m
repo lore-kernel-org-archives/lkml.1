@@ -1,88 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755286Ab0CCJc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 04:32:56 -0500
-Received: from compulab.co.il ([67.18.134.219]:49315 "EHLO compulab.co.il"
+	id S1755340Ab0CCJeL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 04:34:11 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:60548 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405Ab0CCJcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 04:32:54 -0500
-Message-ID: <4B8E2CE9.3050001@compulab.co.il>
-Date: Wed, 03 Mar 2010 11:33:29 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>
-Subject: sch_gpio: fix compilation warning "ignoring return value of gpiochip_remove"
-References: <20100303162252.e7cf0e43.sfr@canb.auug.org.au>
-In-Reply-To: <20100303162252.e7cf0e43.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754359Ab0CCJeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 04:34:07 -0500
+Date: Wed, 3 Mar 2010 10:34:05 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Dima Zavin <dmitriyz@google.com>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>, torvalds@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+Message-ID: <20100303103405.127020d8@hyperion.delvare>
+In-Reply-To: <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
+References: <4B8C1867.7040201@cam.ac.uk>
+	<404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Denis Turischev <denis@compulab.co.il>
----
- drivers/gpio/sch_gpio.c |   25 +++++++++++++++++++++----
- 1 files changed, 21 insertions(+), 4 deletions(-)
+On Tue, 2 Mar 2010 22:13:21 -0800, Dima Zavin wrote:
+> Sorry if I'm jumping in a little late, but I'm concerned that adding
+> ALS as a separate "framework" is going to set the wrong precedent. ALS
+> is just one example of a class of sensors that are present on modern
+> mobile devices (e.g. ALS, proximity, compass/magnetometer,
+> accelerometer, etc.). Also, how does this deal with hybrid devices?
 
-diff --git a/drivers/gpio/sch_gpio.c b/drivers/gpio/sch_gpio.c
-index 761071a..a89c02d 100644
---- a/drivers/gpio/sch_gpio.c
-+++ b/drivers/gpio/sch_gpio.c
-@@ -229,7 +229,12 @@ static int __devinit sch_gpio_probe(struct platform_device *pdev)
- 	return 0;
+Hybrid devices are common and how they can be handled is completely
+unrelated to the ALS subsystem. They are usually handled by the mfd
+subsystem, and then each separate function can go to the relevant
+subsystem.
 
- err_sch_gpio_resume:
--	gpiochip_remove(&sch_gpio_core);
-+	err = gpiochip_remove(&sch_gpio_core);
-+	if (err) {
-+		dev_err(&pdev->dev, "%s failed, %d\n",
-+				"gpiochip_remove()", err);
-+		return err;
-+	}
+> Many ALS devices have a proximity sensor on the same package. You'll
+> need to deal with enabling/disabling them separately, but likely share
+> a power function at the board file level (at least for arch/arm
+> systems).
+> 
+> I definitely see the need for what you guys are trying to accomplish.
+> For example, currently, we use an input device for reporting events,
+> and a separate misc device node for control
+> (enable/disable/configure). It's definitely suboptimal, but there
+> currently isn't anything there would let us do things cleanly.
+> 
+> What I would love to see is a more generic sensors framework that
+> handles different kinds of sensor devices, and different data
+> acquisition schemes (sampled vs. change notifications).
+> 
+> I would love to work with you to design something more generic.
 
- err_sch_gpio_core:
- 	release_region(res->start, resource_size(res));
-@@ -240,11 +245,23 @@ err_sch_gpio_core:
+This can happen later, I see no reason to block the creation of the ALS
+subsystem. Having a common framework for all ambient light sensor
+drivers will already be a step forward compared to the current
+situation. If improvements are needed on top of this, this can happen
+later.
 
- static int __devexit sch_gpio_remove(struct platform_device *pdev)
- {
-+	int err_c, err_r;
- 	struct resource *res;
- 	if (gpio_ba) {
--		gpiochip_remove(&sch_gpio_core);
--		gpiochip_remove(&sch_gpio_resume);
--
-+		err_c = gpiochip_remove(&sch_gpio_core);
-+		
-+		err_r = gpiochip_remove(&sch_gpio_resume);
-+
-+		if (err_c) {
-+			dev_err(&pdev->dev, "%s failed, %d\n",
-+					"gpiochip_remove()", err_c);
-+			return err_c;
-+		}
-+		if (err_r) {
-+			dev_err(&pdev->dev, "%s failed, %d\n",
-+					"gpiochip_remove()", err_r);
-+			return err_r;
-+		}
- 		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-
- 		release_region(res->start, resource_size(res));
 -- 
-1.6.3.3
-
+Jean Delvare
