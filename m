@@ -1,45 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752165Ab0CCPIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 10:08:46 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:60603 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574Ab0CCPIn convert rfc822-to-8bit (ORCPT
+	id S1752027Ab0CCPKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 10:10:21 -0500
+Received: from mail-yw0-f197.google.com ([209.85.211.197]:46291 "EHLO
+	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272Ab0CCPKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 10:08:43 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Johan Hovold <jhovold@gmail.com>
-Subject: Re: [PATCH] USB: pl2303: switch to generic write implementation
-Date: Wed, 3 Mar 2010 16:08:20 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-0.1-default; KDE/4.3.5; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Feuerer <peter@piie.net>
-References: <20100303145046.GB15162@localhost> <1267628493-30080-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1267628493-30080-1-git-send-email-jhovold@gmail.com>
+	Wed, 3 Mar 2010 10:10:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=WWfmN8D11jvaOHgCnZP4CICRCxP47TnulH5iBRY96VwzKGyat4nLtN45ucovPGeU8O
+         mNWRPknfUVIqZjCdHjfHRamPp5GBNLRAZT2FBm+pS7d2ISWKmu1XySyB+dwGjhb5iTiA
+         4aj8kI07I/wuyXuq5Bl8PSBhDtr78vfu0Mvbw=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201003031608.20277.oliver@neukum.org>
+In-Reply-To: <20100303.010746.134683403.davem@davemloft.net>
+References: <20100303082241.GA32640@bicker>
+	 <20100303.010746.134683403.davem@davemloft.net>
+Date: Wed, 3 Mar 2010 20:40:18 +0530
+Message-ID: <3f9a31f41003030710p4209fa1dq37d14a67b12657d@mail.gmail.com>
+Subject: Re: [patch] cassini: fix off by one
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: error27@gmail.com, netdev@vger.kernel.org, adobriyan@gmail.com,
+       akpm@linux-foundation.org, yanghy@cn.fujitsu.com, kaber@trash.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 3. März 2010 16:01:33 schrieb Johan Hovold:
-> @@ -941,10 +665,8 @@ static void pl2303_release(struct usb_serial *serial)
->  
->         for (i = 0; i < serial->num_ports; ++i) {
->                 priv = usb_get_serial_port_data(serial->port[i]);
-> -               if (priv) {
-> -                       pl2303_buf_free(priv->buf);
-> +               if (priv)
->                         kfree(priv);
-> -               }
->         }
->  }
+Hello Dave and Dan,
 
-No need to test for NULL.
+On Wed, Mar 3, 2010 at 2:37 PM, David Miller <davem@davemloft.net> wrote:
+> From: Dan Carpenter <error27@gmail.com>
+> Date: Wed, 3 Mar 2010 11:22:41 +0300
+>
+>> There are only 6 link_modes.
+>>
+>> Signed-off-by: Dan Carpenter <error27@gmail.com>
+>
+> Applied.
 
-	Regards
-		Oliver
+I am curious should we add these kind of email address in git log.
+error27 seems error to me ;-)
+
+Can we make Signed-off address little bit more sensible.
+
+Thanks,
+--
+Jaswinder
