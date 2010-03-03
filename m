@@ -1,129 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296Ab0CCAZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:25:55 -0500
-Received: from sh.osrg.net ([192.16.179.4]:49210 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754953Ab0CCAZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:25:54 -0500
-Date: Wed, 3 Mar 2010 09:25:38 +0900
-To: michael@ellerman.id.au
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org, arnd@arndb.de,
-       davem@davemloft.net
-Subject: Re: [PATCH] powerpc: remove IOMMU_VMERGE config option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1267575232.7814.21.camel@concordia>
-References: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-	<1267575232.7814.21.camel@concordia>
+	id S1758003Ab0CCA0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:26:55 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:34945 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754723Ab0CCA0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:26:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=V84aGPiPVXXo2S3ky28gHXvZBaBX5w3u/L8VtbUBuSjLAtgkvCd1FP9HI1awZQx4hrNgk+axMlrCQaFfXjzxOCaq3gsXt0T2404XRUqXN9MYu88Mgrndd+WZUkNoAjIj;
+Date: Tue, 2 Mar 2010 16:26:49 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: imunsie@au1.ibm.com, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] Avoid implicit constant truncation
+Message-ID: <20100302162649.055c998b@jbarnes-piketon>
+In-Reply-To: <4B8DA809.1040205@xenotime.net>
+References: <1267574468-7609-1-git-send-email-imunsie@au.ibm.com>
+	<4B8DA809.1040205@xenotime.net>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20100303092518X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Mar 2010 09:25:39 +0900 (JST)
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Mar 2010 11:13:52 +1100
-Michael Ellerman <michael@ellerman.id.au> wrote:
+On Tue, 02 Mar 2010 16:06:33 -0800
+Randy Dunlap <rdunlap@xenotime.net> wrote:
 
-> On Wed, 2010-03-03 at 08:54 +0900, FUJITA Tomonori wrote:
-> > Seems that IOMMU_VMERGE option description gives the false
-> > information:
+> On 03/02/10 16:01, imunsie@au1.ibm.com wrote:
+> > From: Ian Munsie <imunsie@au.ibm.com>
 > > 
-> > http://marc.info/?l=linux-sparc&m=126753808727669&w=2
-> > http://marc.info/?l=linux-sparc&m=126753880528825&w=2
+> > When building on 64 bit platforms, the compiler throws the following
+> > warning:
 > > 
-> > IOMMU_VMERGE is unnecessary nowadays so how about removing it?
+> > drivers/pci/probe.c:197: warning: large integer implicitly
+> > truncated to unsigned type
+> > 
+> > This patch adds an explicit truncation to silence the compiler
+> > warning.
 > 
-> Except you didn't remove it, you just made it uneditable? Why not get
-> rid of it entirely.
+> 
+> Please see/read/use Documentation/SubmittingPatches.  E.g.:
+> 
+> The canonical patch subject line is:
+> 
+>     Subject: [PATCH 001/123] subsystem: summary phrase
+> 
+> I.e., the subject: should tell us that this is a PCI: patch.
+> 
+> (or even pci: -- i don't care which)
 
-Oops, yeah, I should have. Here's the second version.
+No need to resubmit though; I usually have to fix up the summary and
+changelog a bit when applying anyway.
 
-Thanks,
+That said, this patch rings a bell; I think the warning is signalling a
+real bug in the ppc code.  IIRC Ben was going to look at it awhile
+back, but I think it's mostly harmless so it's probably low on his list.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
-
-The description says:
-
- Cause IO segments sent to a device for DMA to be merged virtually
- by the IOMMU when they happen to have been allocated contiguously.
- This doesn't add pressure to the IOMMU allocator. However, some
- drivers don't support getting large merged segments coming back
- from *_map_sg().
-
- Most drivers don't have this problem; it is safe to say Y here.
-
-It's out of date. Long ago, drivers didn't have a way to tell IOMMUs
-about their segment length limit (that is, the maximum segment length
-that they can handle). So IOMMUs merged as many segments as possible
-and gave too large segments to drivers.
-
-dma_get_max_seg_size() was introduced to solve the above
-problem. Device drives can use the API to tell IOMMU about the maximum
-segment length that they can handle. In addition, the default limit
-(64K) should be safe for everyone.
-
-So this config option seems to be unnecessary.
-
-Note that this config option just enables users to disable the virtual
-merging by default. Users can still disable the virtual merging by the
-boot parameter.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/Kconfig        |   13 -------------
- arch/powerpc/kernel/iommu.c |    7 +------
- 2 files changed, 1 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 155d571..c984bc5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -313,19 +313,6 @@ config 8XX_MINIMAL_FPEMU
- 
- 	  It is recommended that you build a soft-float userspace instead.
- 
--config IOMMU_VMERGE
--	bool "Enable IOMMU virtual merging"
--	depends on PPC64
--	default y
--	help
--	  Cause IO segments sent to a device for DMA to be merged virtually
--	  by the IOMMU when they happen to have been allocated contiguously.
--	  This doesn't add pressure to the IOMMU allocator. However, some
--	  drivers don't support getting large merged segments coming back
--	  from *_map_sg().
--
--	  Most drivers don't have this problem; it is safe to say Y here.
--
- config IOMMU_HELPER
- 	def_bool PPC64
- 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 5547ae6..ec94f90 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -42,12 +42,7 @@
- 
- #define DBG(...)
- 
--#ifdef CONFIG_IOMMU_VMERGE
--static int novmerge = 0;
--#else
--static int novmerge = 1;
--#endif
--
-+static int novmerge;
- static int protect4gb = 1;
- 
- static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned int);
 -- 
-1.6.5
-
-
-
+Jesse Barnes, Intel Open Source Technology Center
