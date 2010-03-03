@@ -1,78 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354Ab0CCCcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 21:32:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54750 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753044Ab0CCCcO (ORCPT
+	id S1753470Ab0CCCjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 21:39:32 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:3903 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293Ab0CCCjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 21:32:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B8DC9DB.5090307@jp.fujitsu.com>
-Date: Wed, 03 Mar 2010 11:30:51 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.8) Gecko/20100216 Thunderbird/3.0.2
+	Tue, 2 Mar 2010 21:39:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=LWTEmiSd0Z3fPT6LNpb9CDby1fOSwWkXgZrZb8uVLJ1NMDqQDgXneUoen7hzGFONV
+	ttrKoPZCIn07X1S7pFC5A==
+Date: Tue, 2 Mar 2010 18:39:20 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, haicheng.li@intel.com
+Subject: Re: [patch] slab: add memory hotplug support
+In-Reply-To: <20100303102844.fe740203.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1003021836040.2205@chino.kir.corp.google.com>
+References: <20100215105253.GE21783@one.firstfloor.org> <20100215110135.GN5723@laptop> <alpine.DEB.2.00.1002191222320.26567@router.home> <20100220090154.GB11287@basil.fritz.box> <alpine.DEB.2.00.1002240949140.26771@router.home> <4B862623.5090608@cs.helsinki.fi>
+ <alpine.DEB.2.00.1002242357450.26099@chino.kir.corp.google.com> <alpine.DEB.2.00.1002251228140.18861@router.home> <20100226114136.GA16335@basil.fritz.box> <alpine.DEB.2.00.1002260904311.6641@router.home> <20100226155755.GE16335@basil.fritz.box>
+ <alpine.DEB.2.00.1002261123520.7719@router.home> <alpine.DEB.2.00.1002261555030.32111@chino.kir.corp.google.com> <alpine.DEB.2.00.1003010224170.26824@chino.kir.corp.google.com> <4B8CA7F5.1030802@cs.helsinki.fi> <alpine.DEB.2.00.1003021419020.30059@router.home>
+ <20100303102844.fe740203.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 2/2] ACPI, APEI, PCIE AER, use general HEST table parsing
- in AER firmware_first setup
-References: <1267494902-7193-1-git-send-email-ying.huang@intel.com>	 <1267494902-7193-2-git-send-email-ying.huang@intel.com>	 <4B8CC7BD.5020206@jp.fujitsu.com>	 <1267521207.1640.130.camel@yhuang-dev.sh.intel.com>	 <4B8CF0D0.2000704@jp.fujitsu.com> <1267580629.1640.142.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1267580629.1640.142.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(2010/03/03 10:43), Huang Ying wrote:
->> For example, assume that there are 2 endpoints under a same
->> root port.  One is (likely on-board) "firmware first" endpoint,
->> with driver which does not call pci_enable_pcie_error_reporting()
->> (because of no interest in AER, or just not implemented yet,
->> anyway).  The other is (likely card seated on a slot) not
->> firmware first, with better driver which can handle it's AER.
->> If my understanding is correct and if everything goes well,
->> errors on one should be reported via APEI while the other should
->> be reported via AER driver.
+On Wed, 3 Mar 2010, KAMEZAWA Hiroyuki wrote:
+
+> At node hot-add
 > 
-> Yes. I think this should be supported. How about something as follow?
+>  * pgdat is allocated from other node (because we have no memory for "nid")
+>  * memmap for the first section (and possiby others) will be allocated from
+>    other nodes.
+>  * Once a section for the node is onlined, any memory can be allocated localy.
 > 
-> struct pci_dev {
-> 	...
-> 	unsigned int __firmware_first:2;
-> 	...
-> };
+
+Correct, and the struct kmem_list3 is also alloacted from other nodes with 
+my patch.
+
+>    (Allocating memory from local node requires some new implementation as
+>     bootmem allocater, we didn't that.)
 > 
-> int pcie_aer_get_firmware_first(struct pci_dev *dev)
-> {
-> 	if (!dev->__firmware_first)
-> 		aer_set_firmware_first(dev);
-> 	return dev->__firmware_first & 0x1;
-> }
+>  Before this patch, slab's control layer is allocated by cpuhotplug.
+>  So, at least keeping this order,
+>     memory online -> cpu online
+>  slab's control layer is allocated from local node.
 > 
-> Then we use pcie_aer_get_firmware_first() instead of dev->firmware_first
-> directly.
+>  When node-hotadd is done in this order
+>     cpu online -> memory online
+>  kmalloc_node() will allocate memory from other node via fallback.
+> 
+>  After this patch, slab's control layer is allocated by memory hotplug.
+>  Then, in any order, slab's control will be allocated via fallback routine.
+> 
 
-Looks reasonable.  I think the following is more straightforward:
+Again, this addresses memory hotplug that requires a new node to be 
+onlined that do not have corresponding cpus that are being onlined.  On 
+x86, these represent ACPI_SRAT_MEM_HOT_PLUGGABLE regions that are onlined 
+either by the acpi hotplug or done manually with CONFIG_ARCH_MEMORY_PROBE.  
+On other architectures such as powerpc, this is done in different ways.
 
-struct pci_dev {
-	...
-	unsigned int __firmware_first_valid:1;
-	unsigned int __firmware_first:1;
-	...
-};
-
-int pcie_aer_get_firmware_first(struct pci_dev *dev)
-{
-	if (!dev->__firmware_first_valid)
-		aer_set_firmware_first(dev);
-	return dev->__firmware_first;
-}
-
-
-Thanks,
-H.Seto
-
+All of this is spelled out in the changelog for the patch.
