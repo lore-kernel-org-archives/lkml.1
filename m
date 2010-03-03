@@ -1,64 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403Ab0CCRz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:55:27 -0500
-Received: from borg.medozas.de ([188.40.89.202]:37806 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754969Ab0CCRzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:55:24 -0500
-Date: Wed, 3 Mar 2010 18:55:22 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Samir Bellabes <sam@synack.fr>
-cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       jamal <hadi@cyberus.ca>, Patrick McHardy <kaber@trash.net>,
-       Evgeniy Polyakov <zbr@ioremap.net>, Neil Horman <nhorman@tuxdriver.com>,
-       Grzegorz Nosek <root@localdomain.pl>
-Subject: Re: [RFC v2 10/10] snet: introduce snet_utils
-In-Reply-To: <1267561394-13626-11-git-send-email-sam@synack.fr>
-Message-ID: <alpine.LSU.2.01.1003031854530.23267@obet.zrqbmnf.qr>
-References: <1267561394-13626-1-git-send-email-sam@synack.fr> <1267561394-13626-11-git-send-email-sam@synack.fr>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755422Ab0CCRzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:55:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45657
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755406Ab0CCRzf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 12:55:35 -0500
+Date: Wed, 03 Mar 2010 09:55:53 -0800 (PST)
+Message-Id: <20100303.095553.105186917.davem@davemloft.net>
+To: eranian@google.com
+Cc: peterz@infradead.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       paulus@samba.org, robert.richter@amd.com, fweisbec@gmail.com
+Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
+References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+	<1267637995.25158.96.camel@laptop>
+	<bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Stephane Eranian <eranian@google.com>
+Date: Wed, 3 Mar 2010 09:49:33 -0800
 
-On Tuesday 2010-03-02 21:23, Samir Bellabes wrote:
+> On Wed, Mar 3, 2010 at 9:39 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Wed, 2010-03-03 at 09:30 -0800, Stephane Eranian wrote:
+>>> This assumes struct pt_regs is somehow exported to userland.
+>>> Is that the case?
+>>
+>> I seems to have understood they were, and asm/ptrace.h seems to agree
+>> with that, it has !__KERNEL__ definitions for struct pt_regs.
+>>
+> Seems to be the case, indeed.
 
->This patch provides helper functions for other subsystems
+BTW, how are you going to cope with compat systems?
 
-What subsystems would that be? (Just trying to prevent premature code 
-bloat.)
+If I build 'perf' on a sparc64 kernel build, it's going to get the
+64-bit pt_regs.  So I can't then use that binary on a sparc box
+running a 32-bit kernel.
 
-> security/snet/snet_utils.c |   38 ++++++++++++++++++++++++++++++++++++++
-> security/snet/snet_utils.h |   10 ++++++++++
-> 2 files changed, 48 insertions(+), 0 deletions(-)
-> create mode 100644 security/snet/snet_utils.c
-> create mode 100644 security/snet/snet_utils.h
->
->diff --git a/security/snet/snet_utils.c b/security/snet/snet_utils.c
->new file mode 100644
->index 0000000..e9178d7
->--- /dev/null
->+++ b/security/snet/snet_utils.c
->@@ -0,0 +1,38 @@
->+#include <linux/types.h>
->+#include <linux/snet.h>
->+
->+const char *snet_verdict_name(const enum snet_verdict cmd)
->+{
->+	static const char *const verdict_name[] = {
->+		[SNET_VERDICT_GRANT]	= "Grant",
->+		[SNET_VERDICT_DENY]	= "Deny",
->+		[SNET_VERDICT_PENDING]	= "Pending",
->+		[SNET_VERDICT_NONE]	= "None",
->+	};
->+
->+	if (cmd >= SNET_NR_VERDICT_TYPES)
->+		return "INVALID";
->+	else
->+		return verdict_name[cmd];
->+}
+And vice versa.
+
+And more generally aren't we supposed to be able to eventually analyze
+perf dumps on any platform not just the one 'perf' was built under?
+
+We'll need to do something about the encoding of pt_regs, therefore.
