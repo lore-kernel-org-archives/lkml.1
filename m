@@ -1,51 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153Ab0CCId6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 03:33:58 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51005 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200Ab0CCId5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 03:33:57 -0500
-Date: Wed, 3 Mar 2010 08:30:11 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: torvalds@osdl.org, akpm@osdl.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [git pull] more PCMCIA updates for 2.6.34 (including ioctl
-	deprecation)
-Message-ID: <20100303083010.GA22928@flint.arm.linux.org.uk>
-Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Jaswinder Singh Rajput <jaswinder@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <20100303075944.GA23354@comet.dominikbrodowski.net>
+	id S1753284Ab0CCIfR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 03:35:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53410 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325Ab0CCIfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 03:35:14 -0500
+Message-ID: <4B8E1F34.7030604@zytor.com>
+Date: Wed, 03 Mar 2010 00:35:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100303075944.GA23354@comet.dominikbrodowski.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC][PATCH] init: Open /dev/console from rootfs
+References: <m1sk8hn8nk.fsf@fess.ebiederm.org>
+In-Reply-To: <m1sk8hn8nk.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 08:59:44AM +0100, Dominik Brodowski wrote:
-> Please pull from that location insofar as you agree to continue with the
-> deprecation of the PCMCIA ioctl. Otherwise, I can prepare a branch
-> _without_ this controversial patch to pull from.
+On 03/02/2010 11:53 PM, Eric W. Biederman wrote:
+> 
+> To avoid potential problems with an empty /dev open /dev/console
+> from rootfs instead of waiting to mount our root filesystem and
+> mounting it there.   This effectively guarantees that there will
+> be a device node, and it won't be on a filesystem that we will
+> ever unmount, so there are no issues with leaving /dev/console
+> open and pinning the filesystem.
+> 
+> This is actually more effective than automatically mounting
+> devtmpfs on /dev because it removes removes the occasionally
+> problematic assumption that /dev/console exists from the boot
+> code.
+> 
+> With this patch I was able to throw busybox on my /boot partition
+> (which has no /dev directory) and boot into userspace without
+> problems.
+> 
+> The only possible negative consequence I can think of is that
+> someone out there deliberately used did not use a character device
+> that is major 5 minor 2 for /dev/console.  Does anyone know of a
+> situation in which that could make sense?
+> 
 
-So you believe that disabling the button in the graphical environment
-to allow PCMCIA cards to be removed (such as CF cards) - leaving the
-user to merely pull out the CF card, while the FS is mounted, is a
-good idea?
+There probably are ... but if so, they can just re-open their new
+console of choice after creating it, and/or use an initramfs which
+overrides the default /dev/console.
 
-Sounds to me like a data loss scenario.
+As such, this makes a lot of sense to me.
 
-User APIs changing always breaks stuff.
+	-hpa
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
