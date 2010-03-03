@@ -1,74 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099Ab0CCT4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:56:51 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:39688 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122Ab0CCT4q (ORCPT
+	id S1756413Ab0CCT5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:57:25 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40833 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122Ab0CCT5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:56:46 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-03-02 - kernel BUG at fs/direct-io.c:630
-In-Reply-To: Your message of "Wed, 03 Mar 2010 21:55:10 +0300."
-             <87pr3lkzg1.fsf@openvz.org>
-From: Valdis.Kletnieks@vt.edu
-References: <201003030305.o2335F1F015917@imap1.linux-foundation.org> <10679.1267639769@localhost>
-            <87pr3lkzg1.fsf@openvz.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1267646150_4777P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 03 Mar 2010 14:55:50 -0500
-Message-ID: <5057.1267646150@localhost>
-X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020207.4B8EBEC7.0014,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Wed, 3 Mar 2010 14:57:18 -0500
+Date: Wed, 3 Mar 2010 19:57:16 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC][PATCH] init: Open /dev/console from rootfs
+Message-ID: <20100303195716.GT30031@ZenIV.linux.org.uk>
+References: <m1sk8hn8nk.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1sk8hn8nk.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1267646150_4777P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 03 Mar 2010 21:55:10 +0300, Dmitry Monakhov said:
-> Valdis.Kletnieks@vt.edu writes:
+On Tue, Mar 02, 2010 at 11:53:19PM -0800, Eric W. Biederman wrote:
 > 
-> > On Tue, 02 Mar 2010 18:39:07 PST, akpm@linux-foundation.org said:
-> >> The mm-of-the-moment snapshot 2010-03-02-18-38 has been uploaded to
-> >> 
-> >>    http://userweb.kernel.org/~akpm/mmotm/
-> >
-> > This goes kersplat at boot for me. x86_64 on a Dell Latitude E6500.
-> http://bugzilla.kernel.org/show_bug.cgi?id=15424
-> already fixed.
+> To avoid potential problems with an empty /dev open /dev/console
+> from rootfs instead of waiting to mount our root filesystem and
+> mounting it there.   This effectively guarantees that there will
+> be a device node, and it won't be on a filesystem that we will
+> ever unmount, so there are no issues with leaving /dev/console
+> open and pinning the filesystem.
+> 
+> This is actually more effective than automatically mounting
+> devtmpfs on /dev because it removes removes the occasionally
+> problematic assumption that /dev/console exists from the boot
+> code.
 
-Confirming that fixed it, thanks.  Am now up on 33-mmotm0302.
-
-
---==_Exmh_1267646150_4777P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLjr7GcC3lWbTT17ARAi2rAJ4vHRoZgn0IM4RjZ5zSQ9GwGlASWQCfZZKG
-W60U40k4jTZqtcGV3JOt07s=
-=fPgk
------END PGP SIGNATURE-----
-
---==_Exmh_1267646150_4777P--
-
+Hell, yeah.  Applied, with thanks.
