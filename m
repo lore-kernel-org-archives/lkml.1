@@ -1,42 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630Ab0CCQpR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 11:45:17 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:61288 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754588Ab0CCQpM (ORCPT
+	id S1754784Ab0CCQp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 11:45:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42718 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754588Ab0CCQpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 11:45:12 -0500
-Date: Wed, 03 Mar 2010 11:45:18 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Regression - panic booting 2.6.33- 04130-gc9658bf
-To: linux-kernel@vger.kernel.org
-Message-id: <4B8E921E.7050009@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Wed, 3 Mar 2010 11:45:22 -0500
+Message-Id: <20100303164305.989486318@chello.nl>
+References: <20100303163936.906011640@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Mar 2010 17:39:38 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
+       fweisbec@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC][PATCH 02/11] perf, x86: Remove superfluous arguments to x86_perf_event_update()
+Content-Disposition: inline; filename=perf-x86-cleanup-args1.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't have time to bisect today - 2.6.33-02468-g98b3188 booted yesterday 
-with commit 9f7cdbc reverted.
+The second and third argument to x86_perf_event_update() are
+superfluous since they are simple expressions of the first argument.
+Hence remove them.
 
-I grabbed the panic with a cell camera - not much, so typing it here:
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ arch/x86/kernel/cpu/perf_event.c       |   11 ++++++-----
+ arch/x86/kernel/cpu/perf_event_intel.c |   10 ++--------
+ 2 files changed, 8 insertions(+), 13 deletions(-)
 
-Kernel panic - not syncing: VFS: Unable to mount root fs ...
-Pid: 1, comm: swapper Tainted: G      W 2.6.33-04130 ... etc
-Call Trace:
-[<ffffffff815333d9>] panic+0x78/0x145
-[<ffffffff81b2e241>] mount_block_root+0x1e7/0x29b
-[<ffffffff81002930>] ? trace_kmalloc+0x1f0/0x8c0
-[<ffffffff81b2e34b>] mount_root+0x56/0x5a
-[<ffffffff81b2e4bf>] prepare_namespace+0x170/0x19d
-[<ffffffff81b2d77c>] kernel_init+0x1b1/0x1c1
-[<ffffffff8100bf24>] kernel_thread_helper+0x4/0x10
-[<ffffffff81536b7d>] ? restore_args+0x0/0x30
-[<ffffffff81b2d5cb>] ? kernel_init+0x0/0x1c1
-[<ffffffff8100bf20>] ? kernel_thread_helper+0x0/0x10
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+@@ -188,11 +188,12 @@ static u64 __read_mostly hw_cache_event_
+  * Returns the delta events processed.
+  */
+ static u64
+-x86_perf_event_update(struct perf_event *event,
+-			struct hw_perf_event *hwc, int idx)
++x86_perf_event_update(struct perf_event *event)
+ {
++	struct hw_perf_event *hwc = &event->hw;
+ 	int shift = 64 - x86_pmu.event_bits;
+ 	u64 prev_raw_count, new_raw_count;
++	int idx = hwc->idx;
+ 	s64 delta;
+ 
+ 	if (idx == X86_PMC_IDX_FIXED_BTS)
+@@ -1059,7 +1060,7 @@ static void x86_pmu_stop(struct perf_eve
+ 	 * Drain the remaining delta count out of a event
+ 	 * that we are disabling:
+ 	 */
+-	x86_perf_event_update(event, hwc, idx);
++	x86_perf_event_update(event);
+ 
+ 	cpuc->events[idx] = NULL;
+ }
+@@ -1108,7 +1109,7 @@ static int x86_pmu_handle_irq(struct pt_
+ 		event = cpuc->events[idx];
+ 		hwc = &event->hw;
+ 
+-		val = x86_perf_event_update(event, hwc, idx);
++		val = x86_perf_event_update(event);
+ 		if (val & (1ULL << (x86_pmu.event_bits - 1)))
+ 			continue;
+ 
+@@ -1419,7 +1420,7 @@ void __init init_hw_perf_events(void)
+ 
+ static inline void x86_pmu_read(struct perf_event *event)
+ {
+-	x86_perf_event_update(event, &event->hw, event->hw.idx);
++	x86_perf_event_update(event);
+ }
+ 
+ static const struct pmu pmu = {
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+@@ -695,14 +695,8 @@ static void intel_pmu_enable_event(struc
+  */
+ static int intel_pmu_save_and_restart(struct perf_event *event)
+ {
+-	struct hw_perf_event *hwc = &event->hw;
+-	int idx = hwc->idx;
+-	int ret;
+-
+-	x86_perf_event_update(event, hwc, idx);
+-	ret = x86_perf_event_set_period(event);
+-
+-	return ret;
++	x86_perf_event_update(event);
++	return x86_perf_event_set_period(event);
+ }
+ 
+ static void intel_pmu_reset(void)
+
+-- 
 
