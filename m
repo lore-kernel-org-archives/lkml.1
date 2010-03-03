@@ -1,329 +1,411 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797Ab0CCGE2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:04:28 -0500
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:61767 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754Ab0CCGEY (ORCPT
+	id S1753893Ab0CCGHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:07:40 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45701 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753661Ab0CCGHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:04:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=ZHUx7IwU0dau2B/lZhWctvwRzFfWVFep9QRbe3RhgmuamfBMra9+Y4DpQ4D3WhTi3a
-         qxVrv96o1dTixGc6lLxKr5mdmzy4tBYVbZOe15L8hm9TxYFnjA/b6bFZv5kxRzBAfMgG
-         pgdrHnsssleJ/K7y17TFIulLh/3Mj+ho15cmY=
-MIME-Version: 1.0
-Date: Wed, 3 Mar 2010 14:04:23 +0800
-Message-ID: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
-Subject: 2.6.33: ftrace triggers soft lockup
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: multipart/mixed; boundary=00163630ed9d0153d80480df4145
+	Wed, 3 Mar 2010 01:07:39 -0500
+Date: Wed, 3 Mar 2010 15:01:37 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrea Righi <arighi@develer.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-Id: <20100303150137.f56d7084.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	<1267478620-5276-4-git-send-email-arighi@develer.com>
+	<20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
+	<20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00163630ed9d0153d80480df4145
-Content-Type: text/plain; charset=UTF-8
+On Wed, 3 Mar 2010 12:29:06 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 3 Mar 2010 11:12:38 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > > diff --git a/mm/filemap.c b/mm/filemap.c
+> > > index fe09e51..f85acae 100644
+> > > --- a/mm/filemap.c
+> > > +++ b/mm/filemap.c
+> > > @@ -135,6 +135,7 @@ void __remove_from_page_cache(struct page *page)
+> > >  	 * having removed the page entirely.
+> > >  	 */
+> > >  	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
+> > > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, -1);
+> > >  		dec_zone_page_state(page, NR_FILE_DIRTY);
+> > >  		dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
+> > >  	}
+> > (snip)
+> > > @@ -1096,6 +1113,7 @@ int __set_page_dirty_no_writeback(struct page *page)
+> > >  void account_page_dirtied(struct page *page, struct address_space *mapping)
+> > >  {
+> > >  	if (mapping_cap_account_dirty(mapping)) {
+> > > +		mem_cgroup_update_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, 1);
+> > >  		__inc_zone_page_state(page, NR_FILE_DIRTY);
+> > >  		__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
+> > >  		task_dirty_inc(current);
+> > As long as I can see, those two functions(at least) calls mem_cgroup_update_state(),
+> > which acquires page cgroup lock, under mapping->tree_lock.
+> > But as I fixed before in commit e767e056, page cgroup lock must not acquired under
+> > mapping->tree_lock.
+> > hmm, we should call those mem_cgroup_update_state() outside mapping->tree_lock,
+> > or add local_irq_save/restore() around lock/unlock_page_cgroup() to avoid dead-lock.
+> > 
+> Ah, good catch! But hmmmmmm...
+> This account_page_dirtted() seems to be called under IRQ-disabled.
+> About  __remove_from_page_cache(), I think page_cgroup should have its own DIRTY flag,
+> then, mem_cgroup_uncharge_page() can handle it automatically.
+> 
+> But. there are no guarantee that following never happens. 
+> 	lock_page_cgroup()
+> 	    <=== interrupt.
+> 	    -> mapping->tree_lock()
+> Even if mapping->tree_lock is held with IRQ-disabled.
+> Then, if we add local_irq_save(), we have to add it to all lock_page_cgroup().
+> 
+> Then, hm...some kind of new trick ? as..
+> (Follwoing patch is not tested!!)
+> 
+If we can verify that all callers of mem_cgroup_update_stat() have always either aquired
+or not aquired tree_lock, this direction will work fine.
+But if we can't, we have to add local_irq_save() to lock_page_cgroup() like below.
 
-Hi, Steven, Frederic, Ingo,
+===
+ include/linux/page_cgroup.h |    8 ++++++--
+ mm/memcontrol.c             |   43 +++++++++++++++++++++++++------------------
+ 2 files changed, 31 insertions(+), 20 deletions(-)
 
-I am not sure if this is ftrace's fault, but it is ftrace who triggers
-the soft lockup. On my machine, it is pretty easy, just run:
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 30b0813..51da916 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -83,15 +83,19 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+ 	return page_zonenum(pc->page);
+ }
+ 
+-static inline void lock_page_cgroup(struct page_cgroup *pc)
++static inline void __lock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_lock(PCG_LOCK, &pc->flags);
+ }
++#define lock_page_cgroup(pc, flags) \
++  do { local_irq_save(flags); __lock_page_cgroup(pc); } while (0)
+ 
+-static inline void unlock_page_cgroup(struct page_cgroup *pc)
++static inline void __unlock_page_cgroup(struct page_cgroup *pc)
+ {
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
++#define unlock_page_cgroup(pc, flags) \
++  do { __unlock_page_cgroup(pc); local_irq_restore(flags); } while (0)
+ 
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct page_cgroup;
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 00ed4b1..40b9be4 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1327,12 +1327,13 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc;
++	unsigned long flags;
+ 
+ 	pc = lookup_page_cgroup(page);
+ 	if (unlikely(!pc))
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	mem = pc->mem_cgroup;
+ 	if (!mem)
+ 		goto done;
+@@ -1346,7 +1347,7 @@ void mem_cgroup_update_file_mapped(struct page *page, int val)
+ 	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+ 
+ done:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ }
+ 
+ /*
+@@ -1680,11 +1681,12 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 	struct page_cgroup *pc;
+ 	unsigned short id;
+ 	swp_entry_t ent;
++	unsigned long flags;
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		if (mem && !css_tryget(&mem->css))
+@@ -1698,7 +1700,7 @@ struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ 			mem = NULL;
+ 		rcu_read_unlock();
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return mem;
+ }
+ 
+@@ -1711,13 +1713,15 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 				     struct page_cgroup *pc,
+ 				     enum charge_type ctype)
+ {
++	unsigned long flags;
++
+ 	/* try_charge() can return NULL to *memcg, taking care of it. */
+ 	if (!mem)
+ 		return;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (unlikely(PageCgroupUsed(pc))) {
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 		mem_cgroup_cancel_charge(mem);
+ 		return;
+ 	}
+@@ -1747,7 +1751,7 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 
+ 	mem_cgroup_charge_statistics(mem, pc, true);
+ 
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * "charge_statistics" updated event counter. Then, check it.
+ 	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+@@ -1817,12 +1821,13 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
+ 		struct mem_cgroup *from, struct mem_cgroup *to, bool uncharge)
+ {
+ 	int ret = -EINVAL;
+-	lock_page_cgroup(pc);
++	unsigned long flags;
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc) && pc->mem_cgroup == from) {
+ 		__mem_cgroup_move_account(pc, from, to, uncharge);
+ 		ret = 0;
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	/*
+ 	 * check events
+ 	 */
+@@ -1949,17 +1954,17 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+ 	 */
+ 	if (!(gfp_mask & __GFP_WAIT)) {
+ 		struct page_cgroup *pc;
+-
++		unsigned long flags;
+ 
+ 		pc = lookup_page_cgroup(page);
+ 		if (!pc)
+ 			return 0;
+-		lock_page_cgroup(pc);
++		lock_page_cgroup(pc, flags);
+ 		if (PageCgroupUsed(pc)) {
+-			unlock_page_cgroup(pc);
++			unlock_page_cgroup(pc, flags);
+ 			return 0;
+ 		}
+-		unlock_page_cgroup(pc);
++		unlock_page_cgroup(pc, flags);
+ 	}
+ 
+ 	if (unlikely(!mm && !mem))
+@@ -2141,6 +2146,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	struct mem_cgroup_per_zone *mz;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return NULL;
+@@ -2155,7 +2161,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	if (unlikely(!pc || !PageCgroupUsed(pc)))
+ 		return NULL;
+ 
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 
+ 	mem = pc->mem_cgroup;
+ 
+@@ -2194,7 +2200,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	 */
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	memcg_check_events(mem, page);
+ 	/* at swapout, this memcg will be accessed to record to swap */
+@@ -2204,7 +2210,7 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	return mem;
+ 
+ unlock_out:
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 	return NULL;
+ }
+ 
+@@ -2392,17 +2398,18 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
+ 	struct page_cgroup *pc;
+ 	struct mem_cgroup *mem = NULL;
+ 	int ret = 0;
++	unsigned long flags;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return 0;
+ 
+ 	pc = lookup_page_cgroup(page);
+-	lock_page_cgroup(pc);
++	lock_page_cgroup(pc, flags);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+ 	}
+-	unlock_page_cgroup(pc);
++	unlock_page_cgroup(pc, flags);
+ 
+ 	if (mem) {
+ 		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
 
-echo function_graph > current_tracer
 
-I found this when 2.6.33-rc7, but forgot to report here. I just tried today's
-Linus tree, it still has this problem.
-
-Attached are the full soft lockup warnings.
-
-Below is my related configs:
-
-CONFIG_STACKTRACE_SUPPORT=y
-# CONFIG_RCU_TRACE is not set
-# CONFIG_TREE_RCU_TRACE is not set
-CONFIG_TRACEPOINTS=y
-CONFIG_HAVE_ARCH_TRACEHOOK=y
-# CONFIG_NF_CONNTRACK is not set
-# CONFIG_NETFILTER_XT_TARGET_TRACE is not set
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_STACKTRACE=y
-# CONFIG_BACKTRACE_SELF_TEST is not set
-CONFIG_USER_STACKTRACE_SUPPORT=y
-CONFIG_NOP_TRACER=y
-CONFIG_HAVE_FTRACE_NMI_ENTER=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
-CONFIG_FTRACE_NMI_ENTER=y
-CONFIG_EVENT_TRACING=y
-CONFIG_CONTEXT_SWITCH_TRACER=y
-CONFIG_TRACING=y
-CONFIG_GENERIC_TRACER=y
-CONFIG_TRACING_SUPPORT=y
-CONFIG_FTRACE=y
-CONFIG_FUNCTION_TRACER=y
-CONFIG_FUNCTION_GRAPH_TRACER=y
-# CONFIG_IRQSOFF_TRACER is not set
-# CONFIG_SYSPROF_TRACER is not set
-# CONFIG_SCHED_TRACER is not set
-# CONFIG_FTRACE_SYSCALLS is not set
-# CONFIG_BOOT_TRACER is not set
-# CONFIG_KSYM_TRACER is not set
-# CONFIG_STACK_TRACER is not set
-# CONFIG_KMEMTRACE is not set
-# CONFIG_WORKQUEUE_TRACER is not set
-CONFIG_BLK_DEV_IO_TRACE=y
-CONFIG_DYNAMIC_FTRACE=y
-CONFIG_FTRACE_MCOUNT_RECORD=y
-# CONFIG_FTRACE_STARTUP_TEST is not set
-# CONFIG_MMIOTRACE is not set
-CONFIG_SAMPLE_TRACEPOINTS=m
-# CONFIG_SAMPLE_TRACE_EVENTS is not set
-CONFIG_HAVE_MMIOTRACE_SUPPORT=y
-
-Sorry that I don't have time to look into this. If you need other info,
-just say.
-
-Thanks!
-
---00163630ed9d0153d80480df4145
-Content-Type: text/plain; charset=US-ASCII; name="ftrace-soft-lockup.txt"
-Content-Disposition: attachment; filename="ftrace-soft-lockup.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g6bq56mm0
-
-TWFyICAzIDEzOjM0OjM3IGRoY3AtNjYtNzAtNSBrZXJuZWw6IEJVRzogc29mdCBsb2NrdXAgLSBD
-UFUjMyBzdHVjayBmb3IgNjFzISBba3N0b3AvMzo0ODc2XQpNYXIgIDMgMTM6MzQ6MzcgZGhjcC02
-Ni03MC01IGtlcm5lbDogTW9kdWxlcyBsaW5rZWQgaW46IGlwdF9SRUpFQ1QgeHRfdGNwdWRwIHhf
-dGFibGVzIGJyaWRnZSBzdHAgZGVmbGF0ZSB6bGliX2RlZmxhdGUgY3RyIGNhc3Q1IGNyeXB0b19u
-dWxsIGNjbSBzZXJwZW50IGJsb3dmaXNoIHR3b2Zpc2ggdHdvZmlzaF9jb21tb24gZWNiIHhjYmMg
-Y2JjIG1kNSBzaGEyNTZfZ2VuZXJpYyBzaGE1MTJfZ2VuZXJpYyBkZXNfZ2VuZXJpYyBhZXNfeDg2
-XzY0IGFlc19nZW5lcmljIGFoNiBhaDQgZXNwNiBlc3A0IHhmcm00X3R1bm5lbCB0dW5uZWw0IHhm
-cm00X21vZGVfdHVubmVsIHhmcm00X21vZGVfdHJhbnNwb3J0IHhmcm02X21vZGVfdHJhbnNwb3J0
-IHhmcm02X21vZGVfYmVldCB4ZnJtNl9tb2RlX3R1bm5lbCBpcGNvbXAgaXBjb21wNiB4ZnJtX2lw
-Y29tcCB4ZnJtNl90dW5uZWwgdHVubmVsNiBhZl9rZXkgYXV0b2ZzNCBoaWRwIHJmY29tbSBsMmNh
-cCBjcmMxNiBibHVldG9vdGggbG9ja2Qgc3VucnBjIGliX2lzZXIgcmRtYV9jbSBpYl9jbSBpd19j
-bSBpYl9zYSBpYl9tYWQgaWJfYWRkciBpc2NzaV90Y3AgYm54MmkgY25pYyB1aW8gaXB2NiBjeGdi
-M2kgaXdfY3hnYjMgaWJfY29yZSBjeGdiMyBtZGlvIGxpYmlzY3NpX3RjcCBsaWJpc2NzaSBzY3Np
-X3RyYW5zcG9ydF9pc2NzaSBjcHVmcmVxX29uZGVtYW5kIHBvd2Vybm93X2s4IGZyZXFfdGFibGUg
-ZG1fbXVsdGlwYXRoIHNjc2lfZGggdmlkZW8gb3V0cHV0IHNicyBzYnNoYyBwb3dlcl9tZXRlciBo
-d21vbiBiYXR0ZXJ5IGFjcGlfbWVtaG90cGx1ZyBhYyBwYXJwb3J0X3BjIGxwIHBhcnBvcnQgc2cg
-ZGNkYmFzIHNyX21vZCBjZHJvbSBzZXJpb19yYXcgcnRjX2Ntb3MgcnRjX2NvcmUgcnRjX2xpYiB0
-cG1fdGlzIHRwbSB0cG1fYmlvcyBidXR0b24gdGczIGxpYnBoeSBzaHBjaHAgaTJjX25mb3JjZTIg
-aTJjX2NvcmUgcGNzcGtyIGRtX3NuYXBzaG90IGRtX3plcm8gZG1fbWlycm9yIGRtX3JlZ2lvbl9o
-YXNoIGRtX2xvZyBkbV9tb2Qgc2F0YV9udiBsaWJhdGEgc2RfbW9kIHMKTWFyICAzIDEzOjM0OjM3
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6IHNpX21vZCBleHQzIGpiZCB1aGNpX2hjZCBvaGNpX2hjZCBl
-aGNpX2hjZCBbbGFzdCB1bmxvYWRlZDogaXBfdGFibGVzXQpNYXIgIDMgMTM6MzQ6MzcgZGhjcC02
-Ni03MC01IGtlcm5lbDogaXJxIGV2ZW50IHN0YW1wOiA1MTM5NwpNYXIgIDMgMTM6MzQ6MzcgZGhj
-cC02Ni03MC01IGtlcm5lbDogaGFyZGlycXMgbGFzdCAgZW5hYmxlZCBhdCAoNTEzOTYpOiBbPGZm
-ZmZmZmZmODE1NTI4N2M+XSByZXN0b3JlX2FyZ3MrMHgwLzB4MzAKTWFyICAzIDEzOjM0OjM3IGRo
-Y3AtNjYtNzAtNSBrZXJuZWw6IGhhcmRpcnFzIGxhc3QgZGlzYWJsZWQgYXQgKDUxMzk3KTogWzxm
-ZmZmZmZmZjgxMDAzOTE3Pl0gc2F2ZV9hcmdzKzB4NjcvMHg3MApNYXIgIDMgMTM6MzQ6MzcgZGhj
-cC02Ni03MC01IGtlcm5lbDogc29mdGlycXMgbGFzdCAgZW5hYmxlZCBhdCAoNjUzNik6IFs8ZmZm
-ZmZmZmY4MTAwMzg4MT5dIHJldHVybl90b19oYW5kbGVyKzB4MC8weDJmCk1hciAgMyAxMzozNDoz
-NyBkaGNwLTY2LTcwLTUga2VybmVsOiBzb2Z0aXJxcyBsYXN0IGRpc2FibGVkIGF0ICg2NTY3KTog
-WzxmZmZmZmZmZjgxMDAzODgxPl0gcmV0dXJuX3RvX2hhbmRsZXIrMHgwLzB4MmYKTWFyICAzIDEz
-OjM0OjM3IGRoY3AtNjYtNzAtNSBrZXJuZWw6IENQVSAzIApNYXIgIDMgMTM6MzQ6MzcgZGhjcC02
-Ni03MC01IGtlcm5lbDogTW9kdWxlcyBsaW5rZWQgaW46IGlwdF9SRUpFQ1QgeHRfdGNwdWRwIHhf
-dGFibGVzIGJyaWRnZSBzdHAgZGVmbGF0ZSB6bGliX2RlZmxhdGUgY3RyIGNhc3Q1IGNyeXB0b19u
-dWxsIGNjbSBzZXJwZW50IGJsb3dmaXNoIHR3b2Zpc2ggdHdvZmlzaF9jb21tb24gZWNiIHhjYmMg
-Y2JjIG1kNSBzaGEyNTZfZ2VuZXJpYyBzaGE1MTJfZ2VuZXJpYyBkZXNfZ2VuZXJpYyBhZXNfeDg2
-XzY0IGFlc19nZW5lcmljIGFoNiBhaDQgZXNwNiBlc3A0IHhmcm00X3R1bm5lbCB0dW5uZWw0IHhm
-cm00X21vZGVfdHVubmVsIHhmcm00X21vZGVfdHJhbnNwb3J0IHhmcm02X21vZGVfdHJhbnNwb3J0
-IHhmcm02X21vZGVfYmVldCB4ZnJtNl9tb2RlX3R1bm5lbCBpcGNvbXAgaXBjb21wNiB4ZnJtX2lw
-Y29tcCB4ZnJtNl90dW5uZWwgdHVubmVsNiBhZl9rZXkgYXV0b2ZzNCBoaWRwIHJmY29tbSBsMmNh
-cCBjcmMxNiBibHVldG9vdGggbG9ja2Qgc3VucnBjIGliX2lzZXIgcmRtYV9jbSBpYl9jbSBpd19j
-bSBpYl9zYSBpYl9tYWQgaWJfYWRkciBpc2NzaV90Y3AgYm54MmkgY25pYyB1aW8gaXB2NiBjeGdi
-M2kgaXdfY3hnYjMgaWJfY29yZSBjeGdiMyBtZGlvIGxpYmlzY3NpX3RjcCBsaWJpc2NzaSBzY3Np
-X3RyYW5zcG9ydF9pc2NzaSBjcHVmcmVxX29uZGVtYW5kIHBvd2Vybm93X2s4IGZyZXFfdGFibGUg
-ZG1fbXVsdGlwYXRoIHNjc2lfZGggdmlkZW8gb3V0cHV0IHNicyBzYnNoYyBwb3dlcl9tZXRlciBo
-d21vbiBiYXR0ZXJ5IGFjcGlfbWVtaG90cGx1ZyBhYyBwYXJwb3J0X3BjIGxwIHBhcnBvcnQgc2cg
-ZGNkYmFzIHNyX21vZCBjZHJvbSBzZXJpb19yYXcgcnRjX2Ntb3MgcnRjX2NvcmUgcnRjX2xpYiB0
-cG1fdGlzIHRwbSB0cG1fYmlvcyBidXR0b24gdGczIGxpYnBoeSBzaHBjaHAgaTJjX25mb3JjZTIg
-aTJjX2NvcmUgcGNzcGtyIGRtX3NuYXBzaG90IGRtX3plcm8gZG1fbWlycm9yIGRtX3JlZ2lvbl9o
-YXNoIGRtX2xvZyBkbV9tb2Qgc2F0YV9udiBsaWJhdGEgc2RfbW9kIHMKTWFyICAzIDEzOjM0OjM3
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6IHNpX21vZCBleHQzIGpiZCB1aGNpX2hjZCBvaGNpX2hjZCBl
-aGNpX2hjZCBbbGFzdCB1bmxvYWRlZDogaXBfdGFibGVzXQpNYXIgIDMgMTM6MzQ6MzcgZGhjcC02
-Ni03MC01IGtlcm5lbDogCk1hciAgMyAxMzozNDozOCBkaGNwLTY2LTcwLTUga2VybmVsOiBQaWQ6
-IDQ4NzYsIGNvbW06IGtzdG9wLzMgTm90IHRhaW50ZWQgMi42LjMzICMzMSAwSjAwMUsvUG93ZXJF
-ZGdlIFQxMDUgCk1hciAgMyAxMzozNDozOCBkaGNwLTY2LTcwLTUga2VybmVsOiBSSVA6IDAwMTA6
-WzxmZmZmZmZmZjgxMDBkM2Q3Pl0gIFs8ZmZmZmZmZmY4MTAwZDNkNz5dIG5hdGl2ZV9zY2hlZF9j
-bG9jaysweDJhLzB4NjkKTWFyICAzIDEzOjM0OjM4IGRoY3AtNjYtNzAtNSBrZXJuZWw6IFJTUDog
-MDAxODpmZmZmODgwMDJmZTAzZGEwICBFRkxBR1M6IDAwMDAwMjQ2Ck1hciAgMyAxMzozNDozOCBk
-aGNwLTY2LTcwLTUga2VybmVsOiBSQVg6IDAwMDAwMDAwYjI0ZTNlNzggUkJYOiBmZmZmODgwMDJm
-ZTAzZGEwIFJDWDogZmZmZjg4MDAyZmUwM2VlMApNYXIgIDMgMTM6MzQ6MzkgZGhjcC02Ni03MC01
-IGtlcm5lbDogUkRYOiAwMDAwMDAwMDAwMDAwMDUzIFJTSTogZmZmZmZmZmY4MTBkZmRlNiBSREk6
-IGZmZmZmZmZmODEwZTEzOGQKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6IFJC
-UDogZmZmZmZmZmY4MTAwMzg4MSBSMDg6IDAwMDAwMDAwMDAwMDAxMTAgUjA5OiBmZmZmZmZmZjgx
-MDAzODk2Ck1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiBSMTA6IGZmZmY4ODAy
-MTY5N2RmZDggUjExOiAwMDAwMDAwMDAwMDAwMDAwIFIxMjogZmZmZjg4MDAyZmUwM2QyMApNYXIg
-IDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogUjEzOiBmZmZmZmZmZjgxMGUxMzhkIFIx
-NDogZmZmZjg4MDIyODdhNjY4MCBSMTU6IGZmZmZmZmZmODEwMDM4ODEKTWFyICAzIDEzOjM0OjQx
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6IEZTOiAgMDAwMDdmZDlkYjIzYTcyMCgwMDAwKSBHUzpmZmZm
-ODgwMDJmZTAwMDAwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAwMDAwMDAKTWFyICAzIDEzOjM0OjQx
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6IENTOiAgMDAxMCBEUzogMDAwMCBFUzogMDAwMCBDUjA6IDAw
-MDAwMDAwODAwNTAwM2IKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6IENSMjog
-MDAwMDAwMDAwMDhlNDJjMCBDUjM6IDAwMDAwMDAyMTlkOTAwMDAgQ1I0OiAwMDAwMDAwMDAwMDAw
-NmUwCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiBEUjA6IDAwMDAwMDAwMDAw
-MDAwMDAgRFIxOiAwMDAwMDAwMDAwMDAwMDAwIERSMjogMDAwMDAwMDAwMDAwMDAwMApNYXIgIDMg
-MTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogRFIzOiAwMDAwMDAwMDAwMDAwMDAwIERSNjog
-MDAwMDAwMDBmZmZmMGZmMCBEUjc6IDAwMDAwMDAwMDAwMDA0MDAKTWFyICAzIDEzOjM0OjQxIGRo
-Y3AtNjYtNzAtNSBrZXJuZWw6IFByb2Nlc3Mga3N0b3AvMyAocGlkOiA0ODc2LCB0aHJlYWRpbmZv
-IGZmZmY4ODAyMTY5N2MwMDAsIHRhc2sgZmZmZjg4MDIyODdhNjY4MCkKTWFyICAzIDEzOjM0OjQx
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6IFN0YWNrOgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01
-IGtlcm5lbDogIGZmZmY4ODAwMmZlMDNkYjAgZmZmZmZmZmY4MTBlNzQwNyBmZmZmODgwMDJmZTAz
-ZGYwIGZmZmZmZmZmODEwZmYzMzEKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6
-IDwwPiBmZmZmODgwMDJmZmNlZWMwIGZmZmY4ODAwMmZlMDNlOTggZmZmZmZmZmY4MTBlMTM4ZCBm
-ZmZmODgwMjI4N2E2NjgwCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiA8MD4g
-ZmZmZjg4MDAyZmUwM2UwMCBmZmZmZmZmZjgxMGRmZGU2IGZmZmY4ODAwMmZlMDNlNDAgZmZmZmZm
-ZmY4MTAyY2Q5NwpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogQ2FsbCBUcmFj
-ZToKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICA8SVJRPiAKTWFyICAzIDEz
-OjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwZTc0MDc+XSA/IHRyYWNl
-X2Nsb2NrX2xvY2FsKzB4MmMvMHg0MwpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5l
-bDogIFs8ZmZmZmZmZmY4MTBmZjMzMT5dID8gZnRyYWNlX3B1c2hfcmV0dXJuX3RyYWNlKzB4YWMv
-MHgxN2EKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEw
-ZTEzOGQ+XSA/IF9fcmN1X3Byb2Nlc3NfY2FsbGJhY2tzKzB4MWQ0LzB4NGE5Ck1hciAgMyAxMzoz
-NDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMGRmZGU2Pl0gPyBjcHVfbmVl
-ZHNfYW5vdGhlcl9ncCsweDQvMHg0NgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5l
-bDogIFs8ZmZmZmZmZmY4MTAyY2Q5Nz5dID8gcHJlcGFyZV9mdHJhY2VfcmV0dXJuKzB4ZGEvMHgx
-MzgKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDM4
-NWE+XSA/IGZ0cmFjZV9ncmFwaF9jYWxsZXIrMHg0YS8weDcxCk1hciAgMyAxMzozNDo0MSBkaGNw
-LTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODk2Pl0gPyByZXR1cm5fdG9faGFuZGxl
-cisweDE1LzB4MmYKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZm
-ZmZmODEwZGZkZWI+XSA/IGNwdV9uZWVkc19hbm90aGVyX2dwKzB4OS8weDQ2Ck1hciAgMyAxMzoz
-NDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyByZXR1cm5f
-dG9faGFuZGxlcisweDAvMHgyZgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDog
-IFs8ZmZmZmZmZmY4MTAwOGQzYz5dIHByaW50X2NvbnRleHRfc3RhY2srMHhiNi8weDE0NApNYXIg
-IDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4MT5dID8g
-cmV0dXJuX3RvX2hhbmRsZXIrMHgwLzB4MmYKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBr
-ZXJuZWw6ICBbPGZmZmZmZmZmODEwMDczNzU+XSBkdW1wX3RyYWNlKzB4MzIwLzB4M2JmCk1hciAg
-MyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyBy
-ZXR1cm5fdG9faGFuZGxlcisweDAvMHgyZgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtl
-cm5lbDogIFs8ZmZmZmZmZmY4MTAwODk3OT5dIHNob3dfdHJhY2VfbG9nX2x2bCsweDVmLzB4NzIK
-TWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwODU2OGQ+
-XSA/IHdvcmtlcl90aHJlYWQrMHgwLzB4NDZjCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUg
-a2VybmVsOiAgWzxmZmZmZmZmZjgxMDdkZTJhPl0gPyBleGl0X3NpZ25hbHMrMHg3LzB4MjUzCk1h
-ciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0g
-PyByZXR1cm5fdG9faGFuZGxlcisweDAvMHgyZgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01
-IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwNzAzZj5dIHNob3dfc3RhY2tfbG9nX2x2bCsweDE4NS8w
-eDE5YgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAw
-NmQ1MD5dID8gZG9fc29mdGlycSsweDhjLzB4MTgxCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcw
-LTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyByZXR1cm5fdG9faGFuZGxlcisweDAv
-MHgyZgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAw
-NzUxNj5dIHNob3dfcmVnaXN0ZXJzKzB4MTAyLzB4M2FjCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2
-LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyByZXR1cm5fdG9faGFuZGxlcisw
-eDAvMHgyZgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4
-MTAwZTczOT5dIHNob3dfcmVncysweDFkLzB4NTMKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAt
-NSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDM4ODE+XSA/IHJldHVybl90b19oYW5kbGVyKzB4MC8w
-eDJmCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMGRh
-NjQ5Pl0gc29mdGxvY2t1cF90aWNrKzB4MjY4LzB4MmQyCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2
-LTcwLTUga2VybmVsOiAgPEVPST4gCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVs
-OiAgWzxmZmZmZmZmZjgxMDdkZTJhPl0gPyBleGl0X3NpZ25hbHMrMHg3LzB4MjUzCk1hciAgMyAx
-MzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDJjY2U3Pl0gPyBwcmVw
-YXJlX2Z0cmFjZV9yZXR1cm4rMHgyYS8weDEzOApNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01
-IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA2NjAzNT5dID8gZG9fZXhpdCsweDE2MC8weGFkMApNYXIg
-IDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA4NTY4ZD5dID8g
-d29ya2VyX3RocmVhZCsweDAvMHg0NmMKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJu
-ZWw6ICBbPGZmZmZmZmZmODEwODU2OGQ+XSA/IHdvcmtlcl90aHJlYWQrMHgwLzB4NDZjCk1hciAg
-MyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODVhPl0gPyBm
-dHJhY2VfZ3JhcGhfY2FsbGVyKzB4NGEvMHg3MQpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01
-IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA3ZGUyZj5dID8gZXhpdF9zaWduYWxzKzB4Yy8weDI1MwpN
-YXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA2NjA0ND5d
-ID8gZG9fZXhpdCsweDE2Zi8weGFkMApNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03MC01IGtlcm5l
-bDogIFs8ZmZmZmZmZmY4MTA4YWIyMT5dID8gYXV0b3JlbW92ZV93YWtlX2Z1bmN0aW9uKzB4MC8w
-eDUyCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDg1
-NjhkPl0gPyB3b3JrZXJfdGhyZWFkKzB4MC8weDQ2YwpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02Ni03
-MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4MT5dID8gcmV0dXJuX3RvX2hhbmRsZXIrMHgw
-LzB4MmYKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEw
-NzYzMjc+XSBydW5fbG9jYWxfdGltZXJzKzB4MzIvMHgzYgpNYXIgIDMgMTM6MzQ6NDEgZGhjcC02
-Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4MT5dID8gcmV0dXJuX3RvX2hhbmRsZXIr
-MHgwLzB4MmYKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZm
-ODEwNzY1NDc+XSB1cGRhdGVfcHJvY2Vzc190aW1lcysweDUxLzB4YTUKTWFyICAzIDEzOjM0OjQx
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDQ4ZDQ+XSA/IGtlcm5lbF90aHJl
-YWRfaGVscGVyKzB4NC8weDEwCk1hciAgMyAxMzozNDo0MSBkaGNwLTY2LTcwLTUga2VybmVsOiAg
-WzxmZmZmZmZmZjgxNTUyODdjPl0gPyByZXN0b3JlX2FyZ3MrMHgwLzB4MzAKTWFyICAzIDEzOjM0
-OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwOGE0Yzk+XSA/IGt0aHJlYWQr
-MHgwLzB4ZWMKTWFyICAzIDEzOjM0OjQxIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZm
-ODEwMDQ4ZDA+XSA/IGtlcm5lbF90aHJlYWRfaGVscGVyKzB4MC8weDEwCk1hciAgMyAxMzozNDo0
-MSBkaGNwLTY2LTcwLTUga2VybmVsOiBDb2RlOiBjMyA4MyAzZCBiMCA4MCBhZiAwMCAwMCA1NSA0
-OCA4OSBlNSA3NCAxYiA0OCA2OSAxNSBiYiBkNCBhZiAwMCA0MCA0MiAwZiAwMCA0OCBiOCAwMCBi
-OCA2NCBkOSAwNSBiZSBmMCBmZiA0OCA4ZCAzNCAwMiBlYiAzYyAwZiAzMSA8ODk+IGM3IDg5IGQ2
-IDQ4IGM3IGMyIGQwIGI0IDAwIDAwIDY1IDhiIDA0IDI1IDg4IGQyIDAwIDAwIDQ4IDk4IApNYXIg
-IDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogQ2FsbCBUcmFjZToKTWFyICAzIDEzOjM0
-OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICA8SVJRPiAgWzxmZmZmZmZmZjgxMGU3NDA3Pl0gPyB0
-cmFjZV9jbG9ja19sb2NhbCsweDJjLzB4NDMKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBr
-ZXJuZWw6ICBbPGZmZmZmZmZmODEwZmYzMzE+XSA/IGZ0cmFjZV9wdXNoX3JldHVybl90cmFjZSsw
-eGFjLzB4MTdhCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZm
-ZjgxMGUxMzhkPl0gPyBfX3JjdV9wcm9jZXNzX2NhbGxiYWNrcysweDFkNC8weDRhOQpNYXIgIDMg
-MTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTBkZmRlNj5dID8gY3B1
-X25lZWRzX2Fub3RoZXJfZ3ArMHg0LzB4NDYKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBr
-ZXJuZWw6ICBbPGZmZmZmZmZmODEwMmNkOTc+XSA/IHByZXBhcmVfZnRyYWNlX3JldHVybisweGRh
-LzB4MTM4Ck1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgx
-MDAzODVhPl0gPyBmdHJhY2VfZ3JhcGhfY2FsbGVyKzB4NGEvMHg3MQpNYXIgIDMgMTM6MzQ6NDIg
-ZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg5Nj5dID8gcmV0dXJuX3RvX2hh
-bmRsZXIrMHgxNS8weDJmCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxm
-ZmZmZmZmZjgxMGRmZGViPl0gPyBjcHVfbmVlZHNfYW5vdGhlcl9ncCsweDkvMHg0NgpNYXIgIDMg
-MTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4MT5dID8gcmV0
-dXJuX3RvX2hhbmRsZXIrMHgwLzB4MmYKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBrZXJu
-ZWw6ICBbPGZmZmZmZmZmODEwMDhkM2M+XSBwcmludF9jb250ZXh0X3N0YWNrKzB4YjYvMHgxNDQK
-TWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDM4ODE+
-XSA/IHJldHVybl90b19oYW5kbGVyKzB4MC8weDJmCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcw
-LTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDA3Mzc1Pl0gZHVtcF90cmFjZSsweDMyMC8weDNiZgpN
-YXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4MT5d
-ID8gcmV0dXJuX3RvX2hhbmRsZXIrMHgwLzB4MmYKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAt
-NSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDg5Nzk+XSBzaG93X3RyYWNlX2xvZ19sdmwrMHg1Zi8w
-eDcyCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDg1
-NjhkPl0gPyB3b3JrZXJfdGhyZWFkKzB4MC8weDQ2YwpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03
-MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA3ZGUyYT5dID8gZXhpdF9zaWduYWxzKzB4Ny8weDI1
-MwpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwMzg4
-MT5dID8gcmV0dXJuX3RvX2hhbmRsZXIrMHgwLzB4MmYKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYt
-NzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDg5YTg+XSBzaG93X3RyYWNlKzB4MWMvMHgyNQpN
-YXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwNmQ1MD5d
-ID8gZG9fc29mdGlycSsweDhjLzB4MTgxCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2Vy
-bmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyByZXR1cm5fdG9faGFuZGxlcisweDAvMHgyZgpN
-YXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAwZTc2Mz5d
-IHNob3dfcmVncysweDQ3LzB4NTMKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6
-ICBbPGZmZmZmZmZmODEwMDM4ODE+XSA/IHJldHVybl90b19oYW5kbGVyKzB4MC8weDJmCk1hciAg
-MyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMGRhNjQ5Pl0gc29m
-dGxvY2t1cF90aWNrKzB4MjY4LzB4MmQyCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2Vy
-bmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyByZXR1cm5fdG9faGFuZGxlcisweDAvMHgyZgpN
-YXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTA3NjMyNz5d
-IHJ1bl9sb2NhbF90aW1lcnMrMHgzMi8weDNiCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUg
-a2VybmVsOiAgPEVPST4gIFs8ZmZmZmZmZmY4MTA3ZGUyYT5dID8gZXhpdF9zaWduYWxzKzB4Ny8w
-eDI1MwpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTAy
-Y2NlNz5dID8gcHJlcGFyZV9mdHJhY2VfcmV0dXJuKzB4MmEvMHgxMzgKTWFyICAzIDEzOjM0OjQy
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwNjYwMzU+XSA/IGRvX2V4aXQrMHgx
-NjAvMHhhZDAKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZm
-ODEwODU2OGQ+XSA/IHdvcmtlcl90aHJlYWQrMHgwLzB4NDZjCk1hciAgMyAxMzozNDo0MiBkaGNw
-LTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDg1NjhkPl0gPyB3b3JrZXJfdGhyZWFkKzB4
-MC8weDQ2YwpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8ZmZmZmZmZmY4
-MTAwMzg1YT5dID8gZnRyYWNlX2dyYXBoX2NhbGxlcisweDRhLzB4NzEKTWFyICAzIDEzOjM0OjQy
-IGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwN2RlMmY+XSA/IGV4aXRfc2lnbmFs
-cysweGMvMHgyNTMKTWFyICAzIDEzOjM0OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZm
-ZmZmODEwNjYwNDQ+XSA/IGRvX2V4aXQrMHgxNmYvMHhhZDAKTWFyICAzIDEzOjM0OjQyIGRoY3At
-NjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwOGFiMjE+XSA/IGF1dG9yZW1vdmVfd2FrZV9m
-dW5jdGlvbisweDAvMHg1MgpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtlcm5lbDogIFs8
-ZmZmZmZmZmY4MTA4NTY4ZD5dID8gd29ya2VyX3RocmVhZCsweDAvMHg0NmMKTWFyICAzIDEzOjM0
-OjQyIGRoY3AtNjYtNzAtNSBrZXJuZWw6ICBbPGZmZmZmZmZmODEwMDM4ODE+XSA/IHJldHVybl90
-b19oYW5kbGVyKzB4MC8weDJmCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAg
-WzxmZmZmZmZmZjgxMDc2NTQ3Pl0gdXBkYXRlX3Byb2Nlc3NfdGltZXMrMHg1MS8weGE1Ck1hciAg
-MyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDAzODgxPl0gPyBy
-ZXR1cm5fdG9faGFuZGxlcisweDAvMHgyZgpNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01IGtl
-cm5lbDogIFs8ZmZmZmZmZmY4MTA5Yzk3ND5dIHRpY2tfcGVyaW9kaWMrMHg5OS8weGIzCk1hciAg
-MyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDA0OGQ0Pl0gPyBr
-ZXJuZWxfdGhyZWFkX2hlbHBlcisweDQvMHgxMApNYXIgIDMgMTM6MzQ6NDIgZGhjcC02Ni03MC01
-IGtlcm5lbDogIFs8ZmZmZmZmZmY4MTU1Mjg3Yz5dID8gcmVzdG9yZV9hcmdzKzB4MC8weDMwCk1h
-ciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAgWzxmZmZmZmZmZjgxMDhhNGM5Pl0g
-PyBrdGhyZWFkKzB4MC8weGVjCk1hciAgMyAxMzozNDo0MiBkaGNwLTY2LTcwLTUga2VybmVsOiAg
-WzxmZmZmZmZmZjgxMDA0OGQwPl0gPyBrZXJuZWxfdGhyZWFkX2hlbHBlcisweDAvMHgxMAoK
---00163630ed9d0153d80480df4145--
+> ==
+> ---
+>  include/linux/page_cgroup.h |   14 ++++++++++++++
+>  mm/memcontrol.c             |   27 +++++++++++++++++----------
+>  2 files changed, 31 insertions(+), 10 deletions(-)
+> 
+> Index: mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
+> ===================================================================
+> --- mmotm-2.6.33-Feb11.orig/include/linux/page_cgroup.h
+> +++ mmotm-2.6.33-Feb11/include/linux/page_cgroup.h
+> @@ -39,6 +39,7 @@ enum {
+>  	PCG_CACHE, /* charged as cache */
+>  	PCG_USED, /* this object is in use. */
+>  	PCG_ACCT_LRU, /* page has been accounted for */
+> +	PCG_MIGRATE, /* page cgroup is under memcg account migration */
+>  };
+>  
+>  #define TESTPCGFLAG(uname, lname)			\
+> @@ -73,6 +74,8 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
+>  TESTPCGFLAG(AcctLRU, ACCT_LRU)
+>  TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
+>  
+> +TESTPCGFLAG(Migrate, MIGRATE)
+> +
+>  static inline int page_cgroup_nid(struct page_cgroup *pc)
+>  {
+>  	return page_to_nid(pc->page);
+> @@ -93,6 +96,17 @@ static inline void unlock_page_cgroup(st
+>  	bit_spin_unlock(PCG_LOCK, &pc->flags);
+>  }
+>  
+> +static inline unsigned long page_cgroup_migration_lock(struct page_cgroup *pc)
+> +{
+> +	local_irq_save(flags);
+> +	bit_spin_lock(PCG_MIGRATE, &pc->flags);
+> +}
+> +static inline void
+> +page_cgroup_migration_lock(struct page_cgroup *pc, unsigned long flags)
+> +{
+> +	bit_spin_lock(PCG_MIGRATE, &pc->flags);
+> +	local_irq_restore(flags);
+> +}
+>  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+>  struct page_cgroup;
+>  
+> Index: mmotm-2.6.33-Feb11/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.33-Feb11.orig/mm/memcontrol.c
+> +++ mmotm-2.6.33-Feb11/mm/memcontrol.c
+> @@ -1321,7 +1321,7 @@ bool mem_cgroup_handle_oom(struct mem_cg
+>   * Currently used to update mapped file statistics, but the routine can be
+>   * generalized to update other statistics as well.
+>   */
+> -void mem_cgroup_update_file_mapped(struct page *page, int val)
+> +void mem_cgroup_update_file_mapped(struct page *page, int val, int locked)
+>  {
+>  	struct mem_cgroup *mem;
+>  	struct page_cgroup *pc;
+> @@ -1329,22 +1329,27 @@ void mem_cgroup_update_file_mapped(struc
+>  	pc = lookup_page_cgroup(page);
+>  	if (unlikely(!pc))
+>  		return;
+> -
+> -	lock_page_cgroup(pc);
+> +	/*
+> +	 * if locked==1, mapping->tree_lock is held. We don't have to take
+> +	 * care of charge/uncharge. just think about migration.
+> +	 */
+> +	if (!locked)
+> +		lock_page_cgroup(pc);
+> +	else
+> +		page_cgroup_migration_lock(pc);
+>  	mem = pc->mem_cgroup;
+> -	if (!mem)
+> +	if (!mem || !PageCgroupUsed(pc))
+>  		goto done;
+> -
+> -	if (!PageCgroupUsed(pc))
+> -		goto done;
+> -
+>  	/*
+>  	 * Preemption is already disabled. We can use __this_cpu_xxx
+>  	 */
+>  	__this_cpu_add(mem->stat->count[MEM_CGROUP_STAT_FILE_MAPPED], val);
+>  
+>  done:
+> -	unlock_page_cgroup(pc);
+> +	if (!locked)
+> +		lock_page_cgroup(pc);
+> +	else
+> +		page_cgroup_migration_unlock(pc);
+>  }
+>  
+>  /*
+> @@ -1785,7 +1790,8 @@ static void __mem_cgroup_move_account(st
+>  	VM_BUG_ON(!PageCgroupLocked(pc));
+>  	VM_BUG_ON(!PageCgroupUsed(pc));
+>  	VM_BUG_ON(pc->mem_cgroup != from);
+> -
+> +		
+> +	page_cgroup_migration_lock(pc);
+>  	page = pc->page;
+>  	if (page_mapped(page) && !PageAnon(page)) {
+>  		/* Update mapped_file data for mem_cgroup */
+> @@ -1802,6 +1808,7 @@ static void __mem_cgroup_move_account(st
+>  	/* caller should have done css_get */
+>  	pc->mem_cgroup = to;
+>  	mem_cgroup_charge_statistics(to, pc, true);
+> +	page_cgroup_migration_lock(pc);
+>  	/*
+>  	 * We charges against "to" which may not have any tasks. Then, "to"
+>  	 * can be under rmdir(). But in current implementation, caller of
+> 
+> 
+> 
+> 
+> Thanks,
+> -Kame
+> 
