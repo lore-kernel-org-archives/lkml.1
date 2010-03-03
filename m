@@ -1,57 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192Ab0CCAmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:42:24 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48978 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766Ab0CCAmX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:42:23 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 3 Mar 2010 09:38:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v2
-Message-Id: <20100303093844.cf768ea4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
-References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
-	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
-	<20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754876Ab0CCAms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:42:48 -0500
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:49392 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754250Ab0CCAmq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:42:46 -0500
+From: Frans Pop <elendil@planet.nl>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC] kconfig: place git SHA1 in .config output if in git tree
+Date: Wed, 3 Mar 2010 01:42:41 +0100
+User-Agent: KMail/1.9.9
+References: <20100301042249.GA12289@linux.vnet.ibm.com> <201003021619.34793.elendil@planet.nl> <20100303000134.GD6786@linux.vnet.ibm.com>
+In-Reply-To: <20100303000134.GD6786@linux.vnet.ibm.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <201003030142.43310.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Mar 2010 00:42:44.0242 (UTC) FILETIME=[70090720:01CABA6A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 09:26:06 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Wednesday 03 March 2010, Paul E. McKenney wrote:
+> > Wouldn't it be more logical to include the line in the dmesg output?
+> > My preference would be a separate line below the existing (Linux
+> > version) line. That line could only be output if the kernel was built
+> > from a VCS. It could then even be repeated in oops output.
+>
+> My concern with only putting it in the dmesg output is that people do
+> not always capture that.  The oops output is more often captured, but
+> the kernel only has this information if CONFIG_LOCALVERSION_AUTO is set.
 
-> > I'll test this patch all through this night, and check whether it doesn't trigger
-> > global oom after memcg's oom.
-> > 
-> O.K. It works well.
-> Feel free to add my signs.
-> 
-> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
+Yes, my suggestion is exactly because IMO it should be independent of 
+CONFIG_LOCALVERSION_AUTO.
 
-Thank you !
+I hugely dislike that option because it makes the git version part of the 
+kernel version and thus affects how the kernel gets installed (names of 
+files in /boot, name of the directory in /lib/modules, name of the Debian 
+package created using the deb-pkg target, etc.).
+For all those things I want a "clean" kernel version and thus I will never 
+enable CONFIG_LOCALVERSION_AUTO.
 
-I'll apply Balbir's comment and post v3.
+But I do see the value of a reliable and consistent identification of what 
+exact source a kernel was built from. Including the git version separately 
+from the kernel version would allow that.
 
-Thanks,
--Kame
-
-
+Cheers,
+FJP
