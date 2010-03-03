@@ -1,157 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042Ab0CCA5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:57:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10310 "EHLO mx1.redhat.com"
+	id S1753733Ab0CCBTA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 20:19:00 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39399 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301Ab0CCA5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:57:40 -0500
-Message-ID: <4B8DB3D0.6070408@redhat.com>
-Date: Tue, 02 Mar 2010 19:56:48 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1751402Ab0CCBS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 20:18:59 -0500
+Date: Tue, 2 Mar 2010 17:18:58 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl,
+       cloos@jhcloos.com
+Subject: [PATCH] kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100303011858.GA17651@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3&10 07/18] x86: Add text_poke_smp for SMP cross
- modifying code
-References: <20100225133342.6725.26971.stgit@localhost6.localdomain6> <20100225133438.6725.80273.stgit@localhost6.localdomain6> <20100225153305.GC12635@Krystal> <4B8745AC.2070702@redhat.com> <20100303004814.GA15029@Krystal>
-In-Reply-To: <20100303004814.GA15029@Krystal>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch appends the localversion string to the Linux kernel version.
+For example, in a git tree with uncommitted changes, the .config file
+might start as follows (but with leading hash marks):
 
+	Automatically generated make config: don't edit
+	Linux kernel version: 2.6.33-01836-g90a6501-dirty
+	Mon Mar  1 17:05:59 2010
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Mathieu Desnoyers wrote:
->>> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> [...]
->>>> +
->>>> +/*
->>>> + * Cross-modifying kernel text with stop_machine().
->>>> + * This code originally comes from immediate value.
->>>> + */
->>>> +static atomic_t stop_machine_first;
->>>> +static int wrote_text;
->>>> +
->>>> +struct text_poke_params {
->>>> +	void *addr;
->>>> +	const void *opcode;
->>>> +	size_t len;
->>>> +};
->>>> +
->>>> +static int __kprobes stop_machine_text_poke(void *data)
->>>> +{
->>>> +	struct text_poke_params *tpp = data;
->>>> +
->>>> +	if (atomic_dec_and_test(&stop_machine_first)) {
->>>> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
->>>> +		smp_wmb();	/* Make sure other cpus see that this has run */
->>>> +		wrote_text = 1;
->>>> +	} else {
->>>> +		while (!wrote_text)
->>>> +			smp_rmb();
->>>> +		sync_core();
->>>
->>> Hrm, there is a problem in there. The last loop, when wrote_text becomes
->>> true, does not perform any smp_mb(), so you end up in a situation where
->>> cpus in the "else" branch may never issue any memory barrier. I'd rather
->>> do:
->>
->> Hmm, so how about this? :)
->> ---
->> } else {
->> 	do {
->> 		smp_rmb();
->> 	while (!wrote_text);
->> 	sync_core();
->> }
->> ---
->>
-> 
-> The ordering we are looking for here are:
-> 
-> Write-side: smp_wmb() orders text_poke stores before store to wrote_text.
-> 
-> Read-side: order wrote_text load before subsequent execution of modified
->            instructions.
-> 
-> Here again, strictly speaking, wrote_text load is not ordered with respect to
-> following instructions. So maybe it's fine on x86-TSO specifically, but I would
-> not count on this kind of synchronization to work in the general case.
-> 
-> Given the very small expected performance impact of this code path, I would
-> recomment using the more solid/generic alternative below. If there is really a
-> gain to get by creating this weird wait loop with strange memory barrier
-> semantics, fine, otherwise I'd be reluctant to accept your proposals as
-> obviously correct.
-> 
-> If you really, really want to go down the route of proving the correctness of
-> your memory barrier usage, I can recommend looking at the memory barrier formal
-> verification framework I did as part of my thesis. But, really, in this case,
-> the performance gain is just not there, so there is no point in spending time
-> trying to prove this.
+The "-01836-g90a6501-dirty" string is added by this patch.
 
-OK, that was my misunderstand. and cpu_relax() will be better for HT processors.
-I'll update it according to your code below.
+This version of the patch incorporates feedback from Geert Uytterhoeven,
+Linus Torvalds, Frans Pop, and James Cloos:
 
-Thank you,
+o	Fixed to work correctly with the "O=" Makefile argument and
+	the KBUILD_OUTPUT environment variable, so that .config files
+	created in directories outside of the source tree are tagged
+	correctly.
 
-> 
-> Thanks,
-> 
-> Mathieu
-> 
->>>
->>> +static volatile int wrote_text;
->>>
->>> ...
->>>
->>> +static int __kprobes stop_machine_text_poke(void *data)
->>> +{
->>> +	struct text_poke_params *tpp = data;
->>> +
->>> +	if (atomic_dec_and_test(&stop_machine_first)) {
->>> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
->>> +		smp_wmb();	/* order text_poke stores before store to wrote_text */
->>> +		wrote_text = 1;
->>> +	} else {
->>> +		while (!wrote_text)
->>> +			cpu_relax();
->>> +		smp_mb();	/* order wrote_text load before following execution */
->>> +	}
->>>
->>> If you don't like the "volatile int" definition of wrote_text, then we
->>> should probably use the ACCESS_ONCE() macro instead.
->>
->> hm, yeah, volatile will be required.
->>
->> Thank you,
->>
->>
->> -- 
->> Masami Hiramatsu
->> e-mail: mhiramat@redhat.com
->>
->>
->>
-> 
+o	Uses scripts/setlocalversion, which handles not only git, but
+	also mercurial and svn.
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+o	Make the new behavior default-off, as scripts/setlocalversion
+	has significant latency.  A new environment variable named
+	"KBUILD_CONFIG_LOCALVERSION" must be set to enable the
+	"-01836-g90a6501-dirty" style of string.
+
+	This is intended to address James Cloos's concern that this
+	feature will slow down casual kernel builds.
+
+It has been suggested that this string be output at boot and oops time.
+If there is general agreement, this will be the subject of a separate
+patch.
+
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Suggested-by: Frans Pop <elendil@planet.nl>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Frans Pop <elendil@planet.nl>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ confdata.c |   22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index c4dec80..ea7e750 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -399,10 +399,12 @@ int conf_read(const char *name)
+ int conf_write(const char *name)
+ {
+ 	FILE *out;
++	FILE *slv;
+ 	struct symbol *sym;
+ 	struct menu *menu;
+ 	const char *basename;
+-	char dirname[128], tmpname[128], newname[128];
++	char dirname[128], tmpname[128], newname[128], localversion[128];
++	char cmdline[PATH_MAX * 2 + 128];
+ 	int type, l;
+ 	const char *str;
+ 	time_t now;
+@@ -450,12 +452,28 @@ int conf_write(const char *name)
+ 	if (env && *env)
+ 		use_timestamp = 0;
+ 
++	localversion[0] = '\0';
++	if (getenv("KBUILD_CONFIG_LOCALVERSION")) {
++		env = getenv(SRCTREE);
++		if (env) {
++			sprintf(cmdline,
++				"%s/scripts/setlocalversion %s 2> /dev/null",
++				env, env);
++			slv = popen(cmdline, "r");
++			if (slv != NULL) {
++				fscanf(slv, " %127s ", localversion);
++				pclose(slv);
++			}
++		}
++	}
++
+ 	fprintf(out, _("#\n"
+ 		       "# Automatically generated make config: don't edit\n"
+-		       "# Linux kernel version: %s\n"
++		       "# Linux kernel version: %s%s\n"
+ 		       "%s%s"
+ 		       "#\n"),
+ 		     sym_get_string_value(sym),
++		     localversion[0] != '\0' ? localversion : "",
+ 		     use_timestamp ? "# " : "",
+ 		     use_timestamp ? ctime(&now) : "");
+ 
