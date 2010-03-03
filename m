@@ -1,85 +1,151 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951Ab0CCWYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 17:24:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58125 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756394Ab0CCWYf (ORCPT
+	id S1752989Ab0CCWjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 17:39:17 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:61307 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022Ab0CCWjJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 17:24:35 -0500
-Date: Wed, 3 Mar 2010 14:24:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: M G Berberich <berberic@fmi.uni-passau.de>
-Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: 2.6.33 dies on modprobe
-Message-Id: <20100303142420.accf985e.akpm@linux-foundation.org>
-In-Reply-To: <20100303221602.GA3264@invalid>
-References: <20100228221257.GA8858@invalid>
-	<2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
-	<20100302185213.43a1a0d7.akpm@linux-foundation.org>
-	<20100303221602.GA3264@invalid>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 17:39:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=k2pyOHmfBYJXNEMCH+xKtBwwF0DagDq06m9Kuoi8JqMrYIRQaZ+28EAnHzHsTKjBov
+         hrkOBDtcFvZeTlSmPp4eHGbG313BZ2OcpR+tHzI4gFd6oiDMalB3bS18zH6KftcaPeTb
+         7cXpgF7/2gO29jqli5QRI7giW3mff3tcQxmDk=
+MIME-Version: 1.0
+In-Reply-To: <4e5e476b1003011501h7b4ed638w3a620fa26ffec522@mail.gmail.com>
+References: <1267296340-3820-1-git-send-email-czoccolo@gmail.com>
+	 <20100301163552.GA3109@redhat.com>
+	 <4e5e476b1003011501h7b4ed638w3a620fa26ffec522@mail.gmail.com>
+Date: Wed, 3 Mar 2010 23:39:05 +0100
+Message-ID: <4e5e476b1003031439y5d92c7ch5d0d529d261f8945@mail.gmail.com>
+Subject: Re: [RFC, PATCH 0/2] Reworking seeky detection for 2.6.34
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>, #@redhat.com,
+       This@redhat.com, line@redhat.com, is@redhat.com, "ignored."@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 23:16:02 +0100
-M G Berberich <berberic@fmi.uni-passau.de> wrote:
+On Tue, Mar 2, 2010 at 12:01 AM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> Hi Vivek,
+> On Mon, Mar 1, 2010 at 5:35 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>> On Sat, Feb 27, 2010 at 07:45:38PM +0100, Corrado Zoccolo wrote:
+>>>
+>>> Hi, I'm resending the rework seeky detection patch, together with
+>>> the companion patch for SSDs, in order to get some testing on more
+>>> hardware.
+>>>
+>>> The first patch in the series fixes a regression introduced in 2.6.33
+>>> for random mmap reads of more than one page, when multiple processes
+>>> are competing for the disk.
+>>> There is at least one HW RAID controller where it reduces performance,
+>>> though (but this controller generally performs worse with CFQ than
+>>> with NOOP, probably because it is performing non-work-conserving
+>>> I/O scheduling inside), so more testing on RAIDs is appreciated.
+>>>
+>>
+>> Hi Corrado,
+>>
+>> This time I don't have the machine where I had previously reported
+>> regressions. But somebody has exported me two Lun from an storage box
+>> over SAN and I have done my testing on that. With this seek patch applied,
+>> I still see the regressions.
+>>
+>> iosched=cfq     Filesz=1G   bs=64K
+>>
+>>                        2.6.33              2.6.33-seek
+>> workload  Set NR  RDBW(KB/s)  WRBW(KB/s)  RDBW(KB/s)  WRBW(KB/s)    %Rd %Wr
+>> --------  --- --  ----------  ----------  ----------  ----------   ---- ----
+>> brrmmap   3   1   7113        0           7044        0              0% 0%
+>> brrmmap   3   2   6977        0           6774        0             -2% 0%
+>> brrmmap   3   4   7410        0           6181        0            -16% 0%
+>> brrmmap   3   8   9405        0           6020        0            -35% 0%
+>> brrmmap   3   16  11445       0           5792        0            -49% 0%
+>>
+>>                        2.6.33              2.6.33-seek
+>> workload  Set NR  RDBW(KB/s)  WRBW(KB/s)  RDBW(KB/s)  WRBW(KB/s)    %Rd %Wr
+>> --------  --- --  ----------  ----------  ----------  ----------   ---- ----
+>> drrmmap   3   1   7195        0           7337        0              1% 0%
+>> drrmmap   3   2   7016        0           6855        0             -2% 0%
+>> drrmmap   3   4   7438        0           6103        0            -17% 0%
+>> drrmmap   3   8   9298        0           6020        0            -35% 0%
+>> drrmmap   3   16  11576       0           5827        0            -49% 0%
+>>
+>>
+>> I have run buffered random reads on mmaped files (brrmmap) and direct
+>> random reads on mmaped files (drrmmap) using fio. I have run these for
+>> increasing number of threads and did this for 3 times and took average of
+>> three sets for reporting.
 
-> Hello,
-> 
-> Am Dienstag, den 02. M__rz schrieb Andrew Morton:
-> 
-> > It could be that some kobject on that list has become invalid (memory
-> > was freed, module was unloaded, etc) and later code stumbled across the
-> > now-invalid object on that list and then crashed.
-> > 
-> > What we can do to find this is to add a diagnostic each time an object
-> > is registered, and a diagnostic each time kset_find_obj() looks at the
-> > objects.  Then we'll see which kobject caused the crash, then we can
-> > look back and see where that kobject was registered from.
-> 
-> [...]
-> 
-> > This will generate a lot of output and we don't want to lose any of it.
-> >  I'd suggest setting up netconsole so all the output can be reliably
-> > saved: Documentation/networking/netconsole.txt
-> 
-> I have a serial connection to a netbook. Log attached.
+BTW, I think O_DIRECT doesn't affect mmap operation.
 
-drat, my patch didn't work.  Can you try this one please?
-
---- a/lib/kobject.c~a
-+++ a/lib/kobject.c
-@@ -126,6 +126,8 @@ static void kobj_kset_join(struct kobjec
- 
- 	kset_get(kobj->kset);
- 	spin_lock(&kobj->kset->list_lock);
-+	printk("kobj_kset_join:%p\n", kobj);
-+	dump_stack();
- 	list_add_tail(&kobj->entry, &kobj->kset->list);
- 	spin_unlock(&kobj->kset->list_lock);
- }
-@@ -751,9 +753,12 @@ struct kobject *kset_find_obj(struct kse
- 
- 	spin_lock(&kset->list_lock);
- 	list_for_each_entry(k, &kset->list, entry) {
--		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
--			ret = kobject_get(k);
--			break;
-+		if (kobject_name(k)) {
-+			printk("kset_find_obj:%p\n", k);
-+			if (!strcmp(kobject_name(k), name)) {
-+				ret = kobject_get(k);
-+				break;
-+			}
- 		}
- 	}
- 	spin_unlock(&kset->list_lock);
-_
-
+>>
+>> I have used filesize 1G and bz=64K and ran each test sample for 30
+>> seconds.
+>>
+>> Because with new seek logic, we will mark above type of cfqq as non seeky
+>> and will idle on these, I take a significant hit in performance on storage
+>> boxes which have more than 1 spindle.
+Thinking about this, can you check if your disks have a non-zero
+/sys/block/sda/queue/optimal_io_size ?
+>From the comment in blk-settings.c, I see this should be non-zero for
+RAIDs, so it may help discriminating the cases we want to optimize
+for.
+It could also help in identifying the correct threshold.
+>
+> Thanks for testing on a different setup.
+> I wonder if the wrong part for multi-spindle is the 64kb threshold.
+> Can you run with larger bs, and see if there is a value for which
+> idling is better?
+> For example on a 2 disk raid 0 I would expect  that a bs larger than
+> the stripe will still benefit by idling.
+>
+>>
+>> So basically, the regression is not only on that particular RAID card but
+>> on other kind of devices which can support more than one spindle.
+Ok makes sense. If the number of sequential pages read before jumping
+to a random address is smaller than the raid stripe, we are wasting
+potential parallelism.
+>>
+>> I will run some test on single SATA disk also where this patch should
+>> benefit.
+>>
+>> Based on testing results so far, I am not a big fan of marking these mmap
+>> queues as sync-idle. I guess if this patch really benefits, then we need
+>> to first put in place some kind of logic to detect whether if it is single
+>> spindle SATA disk and then on these disks, mark mmap queues as sync.
+>>
+>> Apart from synthetic workloads, in practice, where this patch is helping you?
+>
+> The synthetic workload mimics the page fault patterns that can be seen
+> on program startup, and that is the target of my optimization. In
+> 2.6.32, we went the direction of enabling idling also for seeky
+> queues, while 2.6.33 tried to be more friendly with parallel storage
+> by usually allowing more parallel requests. Unfortunately, this
+> impacted this peculiar access pattern, so we need to fix it somehow.
+>
+> Thanks,
+> Corrado
+>
+>>
+>> Thanks
+>> Vivek
+>>
+>>
+>>> The second patch changes the seeky detection logic to be meaningful
+>>> also for SSDs. A seeky request is one that doesn't utilize the full
+>>> bandwidth for the device. For SSDs, this happens for small requests,
+>>> regardless of their location.
+>>> With this change, the grouping of "seeky" requests done by CFQ can
+>>> result in a fairer distribution of disk service time among processes.
+>>
+>
