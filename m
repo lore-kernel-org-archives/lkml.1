@@ -1,178 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116Ab0CCAqr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:46:47 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:54176 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754904Ab0CCAqp (ORCPT
+	id S1758232Ab0CCArP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:47:15 -0500
+Received: from mms1.broadcom.com ([216.31.210.17]:3470 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758157Ab0CCArM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:46:45 -0500
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 01/26] ceph: documentation
-Date: Tue,  2 Mar 2010 16:46:32 -0800
-Message-Id: <1267577217-31923-2-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1267577217-31923-1-git-send-email-sage@newdream.net>
-References: <1267577217-31923-1-git-send-email-sage@newdream.net>
+	Tue, 2 Mar 2010 19:47:12 -0500
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+From: "Hugh Daschbach" <hdasch@broadcom.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Tue, 2 Mar 2010 16:47:01 -0800
+Subject: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Topic: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Index: Acq6atKjmzCil9iRSlGVDvW920/xrQ==
+Message-ID: <233671224A0FED4688218FFDBED26E1A517AC38638@IRVEXCHCCR01.corp.ad.broadcom.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+MIME-Version: 1.0
+X-WSS-ID: 67936E0D20S46839187-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mount options, syntax.
+The system may fail to boot when the kernel's devices_kset->list gets
+written by another thread while device_shutdown() is traversing the
+list.  Though not common, this is fairly reproducible for some SCSI
+Fibre Channel topologies; particularly so with FCoE configurations.
 
-Signed-off-by: Sage Weil <sage@newdream.net>
+The reboot thread calls device_shutdown() as part of system shutdown.
+device_shutdown() loops through devices_kset->list, shutting down each
+system device.  But devices_kset->list isn't protected from other
+writers while device_shutdown() traverses the list.
+
+One such secondary writer is the SCI Fibre Channel workqueue.  When
+fc_wq_N removes a device that device_shutdown() holds in it's "devn"
+(list traversal iterator) variable, device_shutdown() stalls, chasing
+what is essentially a broken link.
+
+This is not a common occurrence.  But FC SCSI devices associated with a
+link that has gone down cause a race between device_shutdown() running
+in reboot's process and scsi_remove_target() running in a SCSI FC
+workqueue (fc_wq_N).
+
+Network attached FC devices are particularly vulnerable because SysV
+init scripts shut network interfaces down before proceeding with the
+reboot request.  So by the time reboot is called, the link to the FC
+devices is already down.
+
+When the link is down device_shutdown() stalls (in sd_shutdown() --
+which issues cache flush CDBs to what are, by that time, inaccessible
+devices).  The stall ends when the fc rport timer expires.  But the
+timer expiration also initiates fc_starget_delete() in the fc workqueue,
+causing the race with device_shutdown().
+
+The attached patch detects and attempts to recover from the
+corruption.  But this can hardly be considered a fix, as it does not
+address the race between device_shutdown() and scsi_remove_target().
+
+Perhaps converting the list_for_each_entry_safe_reverse() to something
+like.
+
+        while (!list_empty(&devices_kset->list)) {
+                dev = list_last_entry(...);
+                ...
+        }
+
+might be appropriate.  But I have no idea if any devices don't fully
+remove themselves from the list when shutdown.
+
+Does anyone have any guidance for what would make a more appropriate
+fix?
+
+Thanks,
+Hugh
+
+>From ff59be003a016ed1f638f89658bcbb17d69b2983 Mon Sep 17 00:00:00 2001
+From: Hugh Daschbach <hdasch@broadcom.com>
+Date: Mon, 1 Mar 2010 17:01:48 -0800
+Subject: [PATCH] Fix Cont00045892: bnx2fc 0.2.3: Cannot shutdown a system
+
+Detect and attempt recovery from devices_kset->list corruption.
+
+The list gets corrupted during reboot by a race between
+device_shutdown() and scsi_remove_target().
+
+Signed-off-by: Hugh Daschbach <hdasch@broadcom.com>
 ---
- Documentation/filesystems/ceph.txt |  139 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 139 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/ceph.txt
+ drivers/base/core.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/ceph.txt b/Documentation/filesystems/ceph.txt
-new file mode 100644
-index 0000000..6e03917
---- /dev/null
-+++ b/Documentation/filesystems/ceph.txt
-@@ -0,0 +1,139 @@
-+Ceph Distributed File System
-+============================
-+
-+Ceph is a distributed network file system designed to provide good
-+performance, reliability, and scalability.
-+
-+Basic features include:
-+
-+ * POSIX semantics
-+ * Seamless scaling from 1 to many thousands of nodes
-+ * High availability and reliability.  No single points of failure.
-+ * N-way replication of data across storage nodes
-+ * Fast recovery from node failures
-+ * Automatic rebalancing of data on node addition/removal
-+ * Easy deployment: most FS components are userspace daemons
-+
-+Also,
-+ * Flexible snapshots (on any directory)
-+ * Recursive accounting (nested files, directories, bytes)
-+
-+In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely
-+on symmetric access by all clients to shared block devices, Ceph
-+separates data and metadata management into independent server
-+clusters, similar to Lustre.  Unlike Lustre, however, metadata and
-+storage nodes run entirely as user space daemons.  Storage nodes
-+utilize btrfs to store data objects, leveraging its advanced features
-+(checksumming, metadata replication, etc.).  File data is striped
-+across storage nodes in large chunks to distribute workload and
-+facilitate high throughputs.  When storage nodes fail, data is
-+re-replicated in a distributed fashion by the storage nodes themselves
-+(with some minimal coordination from a cluster monitor), making the
-+system extremely efficient and scalable.
-+
-+Metadata servers effectively form a large, consistent, distributed
-+in-memory cache above the file namespace that is extremely scalable,
-+dynamically redistributes metadata in response to workload changes,
-+and can tolerate arbitrary (well, non-Byzantine) node failures.  The
-+metadata server takes a somewhat unconventional approach to metadata
-+storage to significantly improve performance for common workloads.  In
-+particular, inodes with only a single link are embedded in
-+directories, allowing entire directories of dentries and inodes to be
-+loaded into its cache with a single I/O operation.  The contents of
-+extremely large directories can be fragmented and managed by
-+independent metadata servers, allowing scalable concurrent access.
-+
-+The system offers automatic data rebalancing/migration when scaling
-+from a small cluster of just a few nodes to many hundreds, without
-+requiring an administrator carve the data set into static volumes or
-+go through the tedious process of migrating data between servers.
-+When the file system approaches full, new nodes can be easily added
-+and things will "just work."
-+
-+Ceph includes flexible snapshot mechanism that allows a user to create
-+a snapshot on any subdirectory (and its nested contents) in the
-+system.  Snapshot creation and deletion are as simple as 'mkdir
-+.snap/foo' and 'rmdir .snap/foo'.
-+
-+Ceph also provides some recursive accounting on directories for nested
-+files and bytes.  That is, a 'getfattr -d foo' on any directory in the
-+system will reveal the total number of nested regular files and
-+subdirectories, and a summation of all nested file sizes.  This makes
-+the identification of large disk space consumers relatively quick, as
-+no 'du' or similar recursive scan of the file system is required.
-+
-+
-+Mount Syntax
-+============
-+
-+The basic mount syntax is:
-+
-+ # mount -t ceph monip[:port][,monip2[:port]...]:/[subdir] mnt
-+
-+You only need to specify a single monitor, as the client will get the
-+full list when it connects.  (However, if the monitor you specify
-+happens to be down, the mount won't succeed.)  The port can be left
-+off if the monitor is using the default.  So if the monitor is at
-+1.2.3.4,
-+
-+ # mount -t ceph 1.2.3.4:/ /mnt/ceph
-+
-+is sufficient.  If /sbin/mount.ceph is installed, a hostname can be
-+used instead of an IP address.
-+
-+
-+
-+Mount Options
-+=============
-+
-+  ip=A.B.C.D[:N]
-+	Specify the IP and/or port the client should bind to locally.
-+	There is normally not much reason to do this.  If the IP is not
-+	specified, the client's IP address is determined by looking at the
-+	address it's connection to the monitor originates from.
-+
-+  wsize=X
-+	Specify the maximum write size in bytes.  By default there is no
-+	maximu.  Ceph will normally size writes based on the file stripe
-+	size.
-+
-+  rsize=X
-+	Specify the maximum readahead.
-+
-+  mount_timeout=X
-+	Specify the timeout value for mount (in seconds), in the case
-+	of a non-responsive Ceph file system.  The default is 30
-+	seconds.
-+
-+  rbytes
-+	When stat() is called on a directory, set st_size to 'rbytes',
-+	the summation of file sizes over all files nested beneath that
-+	directory.  This is the default.
-+
-+  norbytes
-+	When stat() is called on a directory, set st_size to the
-+	number of entries in that directory.
-+
-+  nocrc
-+	Disable CRC32C calculation for data writes.  If set, the OSD
-+	must rely on TCP's error correction to detect data corruption
-+	in the data payload.
-+
-+  noasyncreaddir
-+	Disable client's use its local cache to satisfy	readdir
-+	requests.  (This does not change correctness; the client uses
-+	cached metadata only when a lease or capability ensures it is
-+	valid.)
-+
-+
-+More Information
-+================
-+
-+For more information on Ceph, see the home page at
-+	http://ceph.newdream.net/
-+
-+The Linux kernel client source tree is available at
-+	git://ceph.newdream.net/linux-ceph-client.git
-+
-+and the source for the full system is at
-+	git://ceph.newdream.net/ceph.git
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 2820257..07851e9 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1733,6 +1733,7 @@ void device_shutdown(void)
+ {
+ 	struct device *dev, *devn;
+
++retry:
+ 	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+ 				kobj.entry) {
+ 		if (dev->bus && dev->bus->shutdown) {
+@@ -1742,6 +1743,9 @@ void device_shutdown(void)
+ 			dev_dbg(dev, "shutdown\n");
+ 			dev->driver->shutdown(dev);
+ 		}
++		if (devn->kobj.entry.next == devn->kobj.entry.prev &&
++		    devn->kobj.entry.next != &devices_kset->list)
++			goto retry;
+ 	}
+ 	async_synchronize_full();
+ }
 -- 
-1.7.0
+1.7.0.rc0.48.gdace5
+
 
