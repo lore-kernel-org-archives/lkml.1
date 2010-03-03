@@ -1,50 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770Ab0CCMos (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:44:48 -0500
-Received: from mailgw9.se.ericsson.net ([193.180.251.57]:48303 "EHLO
-	mailgw9.se.ericsson.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559Ab0CCMor convert rfc822-to-8bit (ORCPT
+	id S1753955Ab0CCMpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:45:06 -0500
+Received: from mail-bw0-f212.google.com ([209.85.218.212]:56598 "EHLO
+	mail-bw0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753874Ab0CCMpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:44:47 -0500
-X-AuditID: c1b4fb39-b7c2dae000007b99-3c-4b8e59bd22a4
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 3 Mar 2010 07:45:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=p6hi0pjcDVcawEmKCXkHfvl8/p7etADFK0wrJ8hlGBviBSc35GjuLidzTOd9A3J7vD
+         oTUacsUuf4wqM+gjgh16pDSFruiNNxvyBfCSvCVEZh1441q1jpAuSsShY4NWTcmf5Mg5
+         cFf4wG/fDODuFVlsi1shl0f0R2zQAXyTBcMeA=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] rtc-coh901331: Fix braces in resume code.
-Date: Wed, 3 Mar 2010 13:44:41 +0100
-Message-ID: <A6D19A13FE030A409EC4362C172E091F0E9EE76C@eseldmw101.eemea.ericsson.se>
-In-Reply-To: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] rtc-coh901331: Fix braces in resume code.
-Thread-Index: Acq6yGUss0KaVJ1HTD6H+mFBPaknaQABsuXg
-References: <6a4b170b1003030355p44dd277fpedae0da7a76ed739@mail.gmail.com>
-From: "Linus Walleij" <linus.walleij@stericsson.com>
-To: "James Hogan" <james@albanarts.com>,
-       "Alessandro Zummo" <a.zummo@towertech.it>,
-       "Paul Gortmaker" <p_gortmaker@yahoo.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Russell King" <rmk+kernel@arm.linux.org.uk>,
-       <rtc-linux@googlegroups.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 03 Mar 2010 12:44:45.0223 (UTC) FILETIME=[4D5A2370:01CABACF]
-X-Brightmail-Tracker: AAAAAA==
+Date: Wed, 3 Mar 2010 13:45:00 +0100
+Message-ID: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>
+Subject: Gspca USB driver zc3xx and STV06xx probe the same device ..
+From: Gabriel C <nix.or.die@googlemail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[James]
-> The else part of the if statement is indented but does not have braces
-> around it. It clearly should since it uses clk_enable and clk_disable
-> which are supposed to balance.
-> 
-> Signed-off-by: James Hogan <james@albanarts.com>
+Hello,
 
-OMG, thanks for spotting this!
-Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+I own a QuickCam Messanger webcam.. I didn't used it in ages but today
+I plugged it in..
+( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
 
-Yours,
-Linus Walleij
+Now zc3xx and stv06xx are starting both to probe the device .. In
+2.6.33 that result in a not working webcam.
+( rmmod both && modprobe zc3xx one seems to fix that )
+
+On current git head zc3xx works fine even when both are probing the device.
+
+Also I noticed stv06xx fails anyway for my webcam with this error:
+....
+
+[  360.910243] STV06xx: Configuring camera
+[  360.910244] STV06xx: st6422 sensor detected
+[  360.910245] STV06xx: Initializing camera
+[  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
+[  361.161976] usbcore: registered new interface driver STV06xx
+[  361.161978] STV06xx: registered
+.....
+
+Next thing is stv06xx tells it is an st6422 sensor and does not work
+with it while zc3xx tells it is an HV7131R(c) sensor and works fine
+with it.
+
+What is right ?
+
+
+Best Regards,
+
+Gabriel C
