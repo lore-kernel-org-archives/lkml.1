@@ -1,45 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811Ab0CCHaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 02:30:18 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45342 "EHLO kernel.dk"
+	id S1752964Ab0CCHbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 02:31:38 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:57475 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257Ab0CCHaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 02:30:16 -0500
-Date: Wed, 3 Mar 2010 08:30:14 +0100
+	id S1751568Ab0CCHbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 02:31:37 -0500
+Date: Wed, 3 Mar 2010 08:31:35 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] blkdev: fix merge_bvec_fn return value checks
-Message-ID: <20100303073014.GE5768@kernel.dk>
-References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org> <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Oops while booting 2.6.34-rc0 (block pull busted)
+Message-ID: <20100303073135.GF5768@kernel.dk>
+References: <201003011615.31709.dmitry.torokhov@gmail.com> <20100302075656.GO5768@kernel.dk> <20100302081547.GP5768@kernel.dk> <20100302083906.GQ5768@kernel.dk> <20100302093548.GB21014@core.coreip.homeip.net> <20100302225159.GD13499@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <874okyf4iw.fsf@openvz.org>
+In-Reply-To: <20100302225159.GD13499@core.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03 2010, Dmitry Monakhov wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
+On Tue, Mar 02 2010, Dmitry Torokhov wrote:
+> On Tue, Mar 02, 2010 at 01:35:48AM -0800, Dmitry Torokhov wrote:
+> > On Tue, Mar 02, 2010 at 09:39:07AM +0100, Jens Axboe wrote:
+> > > On Tue, Mar 02 2010, Jens Axboe wrote:
+> > > > On Tue, Mar 02 2010, Jens Axboe wrote:
+> > > > > On Mon, Mar 01 2010, Dmitry Torokhov wrote:
+> > > > > > Hi,
+> > > > > > 
+> > > > > > It looks like block tree that has been pulled today into mainline is
+> > > > > > busted, I am getting the Opps below on boot with the following commit:
+> > > > > > 
+> > > > > > commit b1bf9368407ae7e89d8a005bb40beb70a41df539
+> > > > > > Merge: 524df55 4671a13
+> > > > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > > > Date:   Mon Mar 1 09:00:29 2010 -0800
+> > > > > > 
+> > > > > >     Merge branch 'for-2.6.34' of git://git.kernel.dk/linux-2.6-block
+> > > > > >  
+> > > > > > 
+> > > > > > but not with the previous one:
+> > > > > > 
+> > > > > > commit 524df55725217b13d5a232fb5badb5846418ea0e
+> > > > > > Merge: 0f45339 6679ee1
+> > > > > > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > > > Date:   Mon Mar 1 08:58:44 2010 -0800
+> > > > > > 
+> > > > > >     Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
+> > > > > > 
+> > > > > > This is on plain Fedora 12 VM.
+> > > > > > 
+> > > > > > Thanks.
+> > > > > > 
+> > > > > > -- 
+> > > > > > Dmitry
+> > > > > > 
+> > > > > > sd 2:0:0:0: Attached scsi generic sg1 type 0
+> > > > > > sd 2:0:0:0: [sda] 16777216 512-byte logical blocks: (8.58 GB/8.00 GiB)
+> > > > > > sd 2:0:0:0: [sda] Write Protect is off
+> > > > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > > > >  sda: sda1 sda2
+> > > > > > sd 2:0:0:0: [sda] Cache data unavailable
+> > > > > > sd 2:0:0:0: [sda] Assuming drive cache: write through
+> > > > > > sd 2:0:0:0: [sda] Attached SCSI disk
+> > > > > > device-mapper: multipath: version 1.1.1 loaded
+> > > > > > dracut: Scanning devices sda2  for LVM volume groups 
+> > > > > > dracut: Reading all physical volumes. This may take a while...
+> > > > > > dracut: Found volume group "VolGroup" using metadata type lvm2
+> > > > > > dracut: 2 logical volume(s) in volume group "VolGroup" now active
+> > > > > > EXT4-fs (dm-0): mounted filesystem with ordered data mode
+> > > > > > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > > > > > IP: [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+> > > > > > PGD 3b776067 PUD 3b7b1067 PMD 0 
+> > > > > > Oops: 0002 [#1] SMP 
+> > > > > > last sysfs file: /sys/kernel/uevent_seqnum
+> > > > > > CPU 0 
+> > > > > > Modules linked in: dm_multipath mptspi mptscsih mptbase scsi_transport_spi floppy [last unloaded: scsi_wait_scan]
+> > > > > > 
+> > > > > > Pid: 1, comm: init Not tainted 2.6.33 #4 440BX Desktop Reference Platform/VMware Virtual Platform
+> > > > > > RIP: 0010:[<ffffffff81128ee1>]  [<ffffffff81128ee1>] mpage_end_io_read+0x45/0x6f
+> > > > > 
+> > > > > Can you check where that is? Just do a gdb vmlinux and then an
+> > > > > l *mpage_end_io_read+0x45
+> > > > 
+> > > > I tried checking mine here, but we must be using vastly different gcc
+> > > > versions. So I'd like that output. Can you also try and see if reverting
+> > > > 9f7cdbc33f36d28e57eaba0093f68f0d14c38c5b makes it work?
+> > > 
+> > > OK, so disasm of that reveals that
+> > > 
+> > >   12:   3e 80 0f 08               orb    $0x8,%ds:(%rdi)
+> > > 
+> > > is the start of the faulting instruction. You are running UP. 0x8 is the
+> > > 4th bit, so I'd be surprised if that isn't SetPageUptodate(page).
+> > > 
+> > 
+> > Sorry, don't have access to that box at the moment... Will try checking
+> > tomorrow.
+> > 
 > 
-> > On Sat, Feb 27 2010, Dmitry Monakhov wrote:
-> >> merge_bvec_fn() returns bvec->bv_len on success. So we have to check
-> >> against this value. But in case of fs_optimization merge we compare
-> >> with wrong value. This patch must be included in
-> >>  b428cd6da7e6559aca69aa2e3a526037d3f20403
-> >> But accidentally i've forgot to add this in the initial patch.
-> >> To make things straight let's replace all such checks.
-> >> In fact this makes code easy to understand.
-> >
-> > Agree, applied.
-> Ohh.. as you already know this patch break dm-layer. Sorry.
-> This is because dm->merge may return more than requested. So correct
-> check must test against less what requested. Correct patch attached.
+> You are absolutely right, it crashes in SetPageUptodate():
 
-Have you tested this with dm and md (ie actual users of the merge_bvec
-functionality) this time?
+I think what happens here is that since the add_page logic got borked,
+mpage_end_io_read() barfs on a bio that doesn't actually contain any
+pages. It's reverted now, so everything should be fine in current -git.
 
 -- 
 Jens Axboe
