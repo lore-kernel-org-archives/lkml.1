@@ -1,63 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030Ab0CCNGm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 08:06:42 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:35422 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742Ab0CCNGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 08:06:41 -0500
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: akpm@linux-foundation.org, linux-mmc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       wolfgang.mues@auerswald.de, avictor.za@gmail.com,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] mmc: at91_mci: correct kunmap_atomic()
-Date: Wed,  3 Mar 2010 15:17:35 +0100
-Message-Id: <1267625855-32695-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20100302133434.761df661.akpm@linux-foundation.org>
-References: <20100302133434.761df661.akpm@linux-foundation.org>
+	id S1754096Ab0CCNOu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 08:14:50 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:32810 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753994Ab0CCNOs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 08:14:48 -0500
+Date: Wed, 3 Mar 2010 16:14:46 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@mvista.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/12] ahci: Add platform driver
+Message-ID: <20100303131446.GA890@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100302182850.GA32057@oksana.dev.rtsoft.ru>
+ <20100302182947.GL3445@oksana.dev.rtsoft.ru>
+ <4B8D69D0.1050209@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4B8D69D0.1050209@ru.mvista.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kunmap_atomic() accepts a pointer to any location in the page so we do not need
-the subtraction and cast.
+On Tue, Mar 02, 2010 at 10:41:04PM +0300, Sergei Shtylyov wrote:
+[...]
+> >+static int __devinit ahci_probe(struct platform_device *pdev)
+> 
+>  Does it make sense to make this driver hotplug capable?
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-Andrew,
-I created a new patch that you can stack at the top of the previous
-patch series. I guess that you cannot fold it in other patches as the
-kunmap_atomic() correction impacts two different patches.
+Probably not, at least for now. Will correct.
 
-Thanks.
+[...]
+> >+	WARN_ON(ATA_MAX_QUEUE > AHCI_MAX_CMDS);
+> 
+>   Hm...
 
- drivers/mmc/host/at91_mci.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+That was copied from the PCI driver.
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 55507da..91dc60c 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -248,7 +248,7 @@ static inline void at91_mci_sg_to_dma(struct at91mci_host *host, struct mmc_data
- 			dmabuf = (unsigned *)tmpv;
- 		}
- 
--		kunmap_atomic(((void *)sgbuffer) - sg->offset, KM_BIO_SRC_IRQ);
-+		kunmap_atomic(sgbuffer, KM_BIO_SRC_IRQ);
- 
- 		if (size == 0)
- 			break;
-@@ -313,7 +313,7 @@ static void at91_mci_post_dma_read(struct at91mci_host *host)
- 			dmabuf = (unsigned *)tmpv;
- 		}
- 
--		kunmap_atomic(((void *)sgbuffer)-sg->offset, KM_BIO_SRC_IRQ);
-+		kunmap_atomic(sgbuffer, KM_BIO_SRC_IRQ);
- 		dmac_flush_range((void *)sgbuffer, ((void *)sgbuffer) + amount);
- 		data->bytes_xfered += amount;
- 		if (size == 0)
+> >+	ahci_set_em_messages(hpriv, &pi);
+> >+
+> >+
+> 
+>   Extra newline?
+
+Yeah, that's all directly copied from the PCI driver. Will correct.
+
+[...]
+> >+	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+> 
+>   Could also use platform_get_irq()...
+
+OK.
+
+> >diff --git a/drivers/ata/ahci_platform.h b/drivers/ata/ahci_platform.h
+> >new file mode 100644
+> >index 0000000..f7dd576
+> >--- /dev/null
+> >+++ b/drivers/ata/ahci_platform.h
+> 
+>   I doubt that it's good place for declaring the platform data which
+> will be used by the platform code. This file should be somewhere in
+> include/linux/, don't you think?
+
+Will change.
+
+Thanks!
+
 -- 
-1.5.6.5
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
