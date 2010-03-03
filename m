@@ -1,85 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986Ab0CCGOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:14:36 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:52581 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043Ab0CCGOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:14:34 -0500
-Date: Wed, 3 Mar 2010 17:14:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: linux-next: build failure after merge of the driver-core tree
-Message-Id: <20100303171432.bee7ae0c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754054Ab0CCGQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:16:34 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:36180 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825Ab0CCGQc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 01:16:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=XJ5NNfARAtzSXk5+xZDKuzRJR0zJZJ3qZmCkiqUpUOq2xk0hcxKZgL1qSmkof5jLo
+	xVkdXmJYnm2NTmUlLypew==
+MIME-Version: 1.0
+In-Reply-To: <1267552492.25158.71.camel@laptop>
+References: <tip-b622d644c7d61a5cb95b74e7b143c263bed21f0a@git.kernel.org>
+	 <bd4cb8901003020826w6540ffebje2cee53b52f1ff27@mail.gmail.com>
+	 <1267552492.25158.71.camel@laptop>
+Date: Tue, 2 Mar 2010 22:16:26 -0800
+Message-ID: <bd4cb8901003022216u281d279ak5d9933f5da3bb6e6@mail.gmail.com>
+Subject: Re: [tip:perf/core] perf_events, x86: Fixup fixed counter constraints
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-After merging the driver-core tree, today's linux-next build (x86_64 allmodconfig)
-failed like this:
-
-drivers/net/wireless/ath/ar9170/usb.c: In function 'ar9170_usb_firmware_failed':
-drivers/net/wireless/ath/ar9170/usb.c:729: error: 'struct device' has no member named 'sem'
-drivers/net/wireless/ath/ar9170/usb.c:732: error: 'struct device' has no member named 'sem'
-
-Caused by commit 535765179fd4e8af26b69d2240d7ec33702a370a ("ar9170: load
-firmware asynchronously") from the wireless tree interacting with
-commitf989226577d096eb9ebbf95da1d0e8303ecc660c ("drivers/base: Convert
-dev->sem to mutex") from the driver-core tree.
-
-I applied the following patch for today.
-
-John, Johannes, device_lock/unlock() already exist in Linus' tree, so you
-should be able to apply this to the wireless tree already.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 3 Mar 2010 17:08:11 +1100
-Subject: [PATCH] ar9170: fix for driver-core ABI change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/net/wireless/ath/ar9170/usb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/wireless/ath/ar9170/usb.c b/drivers/net/wireless/ath/ar9170/usb.c
-index 4e30197..7fc1034 100644
---- a/drivers/net/wireless/ath/ar9170/usb.c
-+++ b/drivers/net/wireless/ath/ar9170/usb.c
-@@ -41,6 +41,7 @@
- #include <linux/usb.h>
- #include <linux/firmware.h>
- #include <linux/etherdevice.h>
-+#include <linux/mutex.h>
- #include <net/mac80211.h>
- #include "ar9170.h"
- #include "cmd.h"
-@@ -726,10 +727,10 @@ static void ar9170_usb_firmware_failed(struct ar9170_usb *aru)
- 
- 	/* unbind anything failed */
- 	if (parent)
--		down(&parent->sem);
-+		device_lock(parent);
- 	device_release_driver(&aru->udev->dev);
- 	if (parent)
--		up(&parent->sem);
-+		device_unlock(parent);
- }
- 
- static void ar9170_usb_firmware_finish(const struct firmware *fw, void *context)
--- 
-1.7.0
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Tue, Mar 2, 2010 at 9:54 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, 2010-03-02 at 17:26 +0100, Stephane Eranian wrote:
+>> > @@ -37,14 +43,16 @@ static struct event_constraint intel_core2_event_constraints[] =
+>> >        INTEL_EVENT_CONSTRAINT(0x18, 0x1), /* IDLE_DURING_DIV */
+>> >        INTEL_EVENT_CONSTRAINT(0x19, 0x2), /* DELAYED_BYPASS */
+>> >        INTEL_EVENT_CONSTRAINT(0xa1, 0x1), /* RS_UOPS_DISPATCH_CYCLES */
+>> > +       INTEL_EVENT_CONSTRAINT(0xc9, 0x1), /* ITLB_MISS_RETIRED (T30-9) */
+>>
+>> Where does the constraint on ITLB_MISS_RETIRED come from?
+>
+> Intel® 64 and IA-32 Architectures Software Developer’s Manual
+> Volume 3B: System Programming Guide, Part 2
+>
+> Dec 2009 (253669)
+>
+> Section 30.4.3, Table 30-9
+>
+I am not so sure about this one. I will double check.
