@@ -1,32 +1,29 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822Ab0CCGzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 01:55:13 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:61084 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754678Ab0CCGzH (ORCPT
+	id S1754881Ab0CCG4A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 01:56:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:5060 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722Ab0CCGzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 01:55:07 -0500
+	Wed, 3 Mar 2010 01:55:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=N62tveimZtedbt5fLc5b/CqzVjOBhl+0c6xpA0TF0TUYgv19xb5qCVGtwF1320LP12
-         xl3K5Y2etXmY4bK8Z2dkKOh1CwSR0QhLRIe1cQwevbF9Z2aUq1P6Jc/L2yZ/srmdHNkj
-         VYAzmojhvyHODUEgOXmJ1LYlXDwvh/VWDxP7U=
+        b=rwOKxSQj6VnB3k1BBGVXXsvhoSvklIsznI/1l0ZWQ1Zwtdx6iab5rAmB86EQeQu+ZA
+         piZkfxQEl3UaP3fWRyIu0kZRVCPTrI5revUcmSMrDpu68VhX4ouUjGOgalwEdaRuSbT9
+         ieRBflt327OZfWAugCndscuNSp9WBHkPMI9L8=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 1/3] lockdep: Move lock events under lockdep recursion protection
-Date: Wed,  3 Mar 2010 07:55:00 +0100
-Message-Id: <1267599302-2886-2-git-send-regression-fweisbec@gmail.com>
+       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace events
+Date: Wed,  3 Mar 2010 07:55:01 +0100
+Message-Id: <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
 References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
@@ -34,144 +31,164 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are rcu locked read side areas in the path where we submit
-a trace event. And these rcu_read_(un)lock() trigger lock events,
-which create recursive events.
+We are taking a wrong regs snapshot when a trace event triggers.
+Either we use get_irq_regs(), which gives us the interrupted
+registers if we are in an interrupt, or we use task_pt_regs()
+which gives us the state before we entered the kernel, assuming
+we are lucky enough to be no kernel thread, in which case
+task_pt_regs() returns the initial set of regs when the kernel
+thread was started.
 
-One pair in do_perf_sw_event:
+What we want is different. We need a hot snapshot of the regs,
+so that we can get the instruction pointer to record in the
+sample, the frame pointer for the callchain, and some other
+things.
 
-__lock_acquire
-      |
-      |--96.11%-- lock_acquire
-      |          |
-      |          |--27.21%-- do_perf_sw_event
-      |          |          perf_tp_event
-      |          |          |
-      |          |          |--49.62%-- ftrace_profile_lock_release
-      |          |          |          lock_release
-      |          |          |          |
-      |          |          |          |--33.85%-- _raw_spin_unlock
+In order to achieve that, we introduce PERF_SAVE_REGS() that
+takes a live snapshot of the regs we are interested in, and
+we use it from perf_tp_event().
 
-Another pair in perf_output_begin/end:
+Comparison with perf record -e lock: -R -a -f -g
+Before:
 
-__lock_acquire
-      |--23.40%-- perf_output_begin
-      |          |          __perf_event_overflow
-      |          |          perf_swevent_overflow
-      |          |          perf_swevent_add
-      |          |          perf_swevent_ctx_event
-      |          |          do_perf_sw_event
-      |          |          perf_tp_event
-      |          |          |
-      |          |          |--55.37%-- ftrace_profile_lock_acquire
-      |          |          |          lock_acquire
-      |          |          |          |
-      |          |          |          |--37.31%-- _raw_spin_lock
-
-The problem is not that much the trace recursion itself, as we have a
-recursion protection already (though it's always wasteful to recurse).
-But the trace events are outside the lockdep recursion protection, then
-each lockdep event triggers a lock trace, which will trigger two
-other lockdep events. Here the recursive lock trace event won't
-be taken because of the trace recursion, so the recursion stops there
-but lockdep will still analyse these new events:
-
-To sum up, for each lockdep events we have:
-
-	lock_*()
-	     |
-             trace lock_acquire
+        perf  [kernel]                   [k] __do_softirq
+               |
+               --- __do_softirq
                   |
-                  ----- rcu_read_lock()
-                  |          |
-                  |          lock_acquire()
-                  |          |
-                  |          trace_lock_acquire() (stopped)
-                  |          |
-		  |          lockdep analyze
+                  |--55.16%-- __open
                   |
-                  ----- rcu_read_unlock()
-                             |
-                             lock_release
-                             |
-                             trace_lock_release() (stopped)
-                             |
-                             lockdep analyze
+                   --44.84%-- __write_nocancel
 
-And you can repeat the above two times as we have two rcu read side
-sections when we submit an event.
+After:
 
-This is fixed in this patch by moving the lock trace event under
-the lockdep recursion protection.
+            perf  [kernel]           [k] perf_tp_event
+               |
+               --- perf_tp_event
+                  |
+                  |--41.07%-- ftrace_profile_lock_acquire
+                  |          lock_acquire
+                  |          |
+                  |          |--39.36%-- _raw_spin_lock
+                  |          |          |
+                  |          |          |--7.81%-- hrtimer_interrupt
+                  |          |          |          smp_apic_timer_interrupt
+                  |          |          |          apic_timer_interrupt
+
+The old case was producing unreliable callchains. Now having
+right frame and instruction pointers, we have the trace we
+want. We can even think about implementing a "skip" field in
+PERF_SAVE_REGS() to rewind to the caller "n" (here n would
+be equal to 2 so that we start on lock_acquire()).
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- kernel/lockdep.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/asm.h        |    1 +
+ arch/x86/include/asm/perf_event.h |   25 +++++++++++++++++++++++++
+ kernel/perf_event.c               |   19 ++++++++++++++-----
+ 3 files changed, 40 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index c62ec14..3de6085 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3211,8 +3211,6 @@ void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+diff --git a/arch/x86/include/asm/asm.h b/arch/x86/include/asm/asm.h
+index b3ed1e1..d86e7dc 100644
+--- a/arch/x86/include/asm/asm.h
++++ b/arch/x86/include/asm/asm.h
+@@ -27,6 +27,7 @@
+ #define _ASM_ADD	__ASM_SIZE(add)
+ #define _ASM_SUB	__ASM_SIZE(sub)
+ #define _ASM_XADD	__ASM_SIZE(xadd)
++#define _ASM_POP	__ASM_SIZE(pop)
+ 
+ #define _ASM_AX		__ASM_REG(ax)
+ #define _ASM_BX		__ASM_REG(bx)
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index befd172..a166fa5 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -122,6 +122,31 @@ union cpuid10_edx {
+ extern void init_hw_perf_events(void);
+ extern void perf_events_lapic_init(void);
+ 
++/*
++ * Take a snapshot of the regs. We only need a few of them:
++ * ip for PERF_SAMPLE_IP
++ * cs for user_mode() tests
++ * bp for callchains
++ * eflags, for future purposes, just in case
++ */
++#define PERF_SAVE_REGS(regs)				{\
++	memset((regs), 0, sizeof(*(regs)));		\
++	(regs)->cs = __KERNEL_CS;			\
++							\
++	asm volatile(					\
++		"call 1f\n"				\
++		"1:\n"					\
++		_ASM_POP " %[ip]\n"			\
++		_ASM_MOV "%%" _ASM_BP ", %[bp]\n"	\
++		"pushf\n"				\
++		_ASM_POP " %[flags]\n"			\
++		:  [ip]    "=m" ((regs)->ip),		\
++		   [bp]    "=m" ((regs)->bp),		\
++		   [flags] "=m" ((regs)->flags)		\
++		:: "memory"				\
++	);						\
++}
++
+ #define PERF_EVENT_INDEX_OFFSET			0
+ 
+ #else
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index a661e79..f412be1 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -2807,6 +2807,16 @@ __weak struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
+ }
+ 
+ /*
++ * Hot regs snapshot support -- arch specific
++ * This needs to be a macro because we want the current
++ * frame pointer.
++ */
++#ifndef PERF_SAVE_REGS
++#define PERF_SAVE_REGS(regs)	memset(regs, 0, sizeof(*regs));
++#endif
++
++
++/*
+  * Output
+  */
+ static bool perf_output_space(struct perf_mmap_data *data, unsigned long tail,
+@@ -4337,6 +4347,8 @@ static const struct pmu perf_ops_task_clock = {
+ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
+ 			  int entry_size)
  {
- 	unsigned long flags;
++	struct pt_regs regs;
++
+ 	struct perf_raw_record raw = {
+ 		.size = entry_size,
+ 		.data = record,
+@@ -4347,14 +4359,11 @@ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
+ 		.raw = &raw,
+ 	};
  
--	trace_lock_acquire(lock, subclass, trylock, read, check, nest_lock, ip);
+-	struct pt_regs *regs = get_irq_regs();
 -
- 	if (unlikely(current->lockdep_recursion))
- 		return;
+-	if (!regs)
+-		regs = task_pt_regs(current);
++	PERF_SAVE_REGS(&regs);
  
-@@ -3220,6 +3218,7 @@ void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 	check_flags(flags);
+ 	/* Trace events already protected against recursion */
+ 	do_perf_sw_event(PERF_TYPE_TRACEPOINT, event_id, count, 1,
+-				&data, regs);
++				&data, &regs);
+ }
+ EXPORT_SYMBOL_GPL(perf_tp_event);
  
- 	current->lockdep_recursion = 1;
-+	trace_lock_acquire(lock, subclass, trylock, read, check, nest_lock, ip);
- 	__lock_acquire(lock, subclass, trylock, read, check,
- 		       irqs_disabled_flags(flags), nest_lock, ip, 0);
- 	current->lockdep_recursion = 0;
-@@ -3232,14 +3231,13 @@ void lock_release(struct lockdep_map *lock, int nested,
- {
- 	unsigned long flags;
- 
--	trace_lock_release(lock, nested, ip);
--
- 	if (unlikely(current->lockdep_recursion))
- 		return;
- 
- 	raw_local_irq_save(flags);
- 	check_flags(flags);
- 	current->lockdep_recursion = 1;
-+	trace_lock_release(lock, nested, ip);
- 	__lock_release(lock, nested, ip);
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
-@@ -3413,8 +3411,6 @@ void lock_contended(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
--	trace_lock_contended(lock, ip);
--
- 	if (unlikely(!lock_stat))
- 		return;
- 
-@@ -3424,6 +3420,7 @@ void lock_contended(struct lockdep_map *lock, unsigned long ip)
- 	raw_local_irq_save(flags);
- 	check_flags(flags);
- 	current->lockdep_recursion = 1;
-+	trace_lock_contended(lock, ip);
- 	__lock_contended(lock, ip);
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
 -- 
 1.6.2.3
 
