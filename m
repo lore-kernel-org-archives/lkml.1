@@ -1,48 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309Ab0CCI6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 03:58:15 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51475 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753328Ab0CCI6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 03:58:10 -0500
-X-Sasl-enc: 9OQa580B8p4XSWONugTZQnO0/pTNva6Uyd39XLoBIcoo 1267606688
-Message-ID: <4B8E249E.2090806@ladisch.de>
-Date: Wed, 03 Mar 2010 09:58:06 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1754661Ab0CCJBL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 04:01:11 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:42165 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405Ab0CCJBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 04:01:10 -0500
+Date: Wed, 3 Mar 2010 10:01:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/1] io-controller: Add a new interface "policy" for IO
+	Controller
+Message-ID: <20100303090108.GL5768@kernel.dk>
+References: <4B8DFFD7.2000908@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
-       Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [alsa-devel] [patch] oxygen: change || to &&
-References: <20100303070818.GD5086@bicker>
-In-Reply-To: <20100303070818.GD5086@bicker>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4B8DFFD7.2000908@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Carpenter wrote:
-> In the original code the condition was always true (hopefully) because
-> WM8776_HPLVOL is zero.
+On Wed, Mar 03 2010, Gui Jianfeng wrote:
+> Currently, IO Controller makes use of blkio.weight to assign weight for
+> all devices. Here a new user interface "blkio.policy" is introduced to 
+> assign different weights for different devices. blkio.weight becomes the
+> default value for devices which are not configured by blkio.policy.
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> You can use the following format to assigned specific weight for a given
+> device:
+> #echo "major:minor weight" > blkio.policy
+> 
+> major:minor represents device number.
+> 
+> And you can remove a policy as following:
+> #echo "major:minor 0" > blkio.policy
 
-Thanks; applied.
+Looks good to me. Vivek, any objections?
 
-> diff --git a/sound/pci/oxygen/xonar_wm87x6.c b/sound/pci/oxygen/xonar_wm87x6.c
-> index 7754db1..dbc4b89 100644
-> --- a/sound/pci/oxygen/xonar_wm87x6.c
-> +++ b/sound/pci/oxygen/xonar_wm87x6.c
-> @@ -68,7 +68,7 @@ static void wm8776_write(struct oxygen *chip,
->  			 OXYGEN_SPI_CEN_LATCH_CLOCK_LO,
->  			 (reg << 9) | value);
->  	if (reg < ARRAY_SIZE(data->wm8776_regs)) {
-> -		if (reg >= WM8776_HPLVOL || reg <= WM8776_DACMASTER)
-> +		if (reg >= WM8776_HPLVOL && reg <= WM8776_DACMASTER)
->  			value &= ~WM8776_UPDATE;
->  		data->wm8776_regs[reg] = value;
->  	}
+-- 
+Jens Axboe
+
