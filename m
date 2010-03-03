@@ -1,64 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222Ab0CCTSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:18:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57327 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330Ab0CCTSe (ORCPT
+	id S1756248Ab0CCTRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:17:30 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:1466 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736Ab0CCTRR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:18:34 -0500
-Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: eranian@google.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       paulus@samba.org, robert.richter@amd.com, fweisbec@gmail.com
-In-Reply-To: <20100303.095553.105186917.davem@davemloft.net>
-References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
-	 <1267637995.25158.96.camel@laptop>
-	 <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
-	 <20100303.095553.105186917.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 20:18:30 +0100
-Message-ID: <1267643910.25158.101.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 14:17:17 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+From: "Hugh Daschbach" <hdasch@broadcom.com>
+To: "Greg KH" <gregkh@suse.de>
+cc: "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "james Bottomley" <James.Bottomley@suse.de>,
+       "James Smart" <james.smart@emulex.com>
+Date: Wed, 3 Mar 2010 11:16:57 -0800
+Subject: RE: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Topic: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Index: Acq6jaRTYqLsEQ9mRZeoHrdfhJ5AxQAdlZvw
+Message-ID: <233671224A0FED4688218FFDBED26E1A517AC38AB8@IRVEXCHCCR01.corp.ad.broadcom.com>
+References: <233671224A0FED4688218FFDBED26E1A517AC38638@IRVEXCHCCR01.corp.ad.broadcom.com>
+ <20100303045433.GA27847@suse.de>
+In-Reply-To: <20100303045433.GA27847@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+MIME-Version: 1.0
+X-WSS-ID: 67906A2131G49156466-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 09:55 -0800, David Miller wrote:
-> From: Stephane Eranian <eranian@google.com>
-> Date: Wed, 3 Mar 2010 09:49:33 -0800
-> 
-> > On Wed, Mar 3, 2010 at 9:39 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >> On Wed, 2010-03-03 at 09:30 -0800, Stephane Eranian wrote:
-> >>> This assumes struct pt_regs is somehow exported to userland.
-> >>> Is that the case?
-> >>
-> >> I seems to have understood they were, and asm/ptrace.h seems to agree
-> >> with that, it has !__KERNEL__ definitions for struct pt_regs.
-> >>
-> > Seems to be the case, indeed.
-> 
-> BTW, how are you going to cope with compat systems?
-> 
-> If I build 'perf' on a sparc64 kernel build, it's going to get the
-> 64-bit pt_regs.  So I can't then use that binary on a sparc box
-> running a 32-bit kernel.
-> 
-> And vice versa.
-> 
-> And more generally aren't we supposed to be able to eventually analyze
-> perf dumps on any platform not just the one 'perf' was built under?
-> 
-> We'll need to do something about the encoding of pt_regs, therefore.
++ James Bottomley
++ James Smart
 
-Hrm, yes,.. what I can do for the moment is 'cheat' and make the raw
-PEBS record available through PERF_SAMPLE_RAW (that also has CAP_ADMIN,
-which I guess is a good idea for full reg sets), and then we can work
-out how to expose pt_regs later.
+As the discussion tilts toward SCSI device shutdown.
 
-If someone has a better suggestion than this, which is basically blurp
-out host native pt_regs and cope, please tell ;-)
+Greg KH [mailto:gregkh@suse.de] writes:
 
+> On Tue, Mar 02, 2010 at 04:47:01PM -0800, Hugh Daschbach wrote:
+>> The system may fail to boot when the kernel's devices_kset->list gets
+>> written by another thread while device_shutdown() is traversing the
+>> list.  Though not common, this is fairly reproducible for some SCSI
+>> Fibre Channel topologies; particularly so with FCoE configurations.
+>
+> Really?  What a mess :(
+>
+>> The reboot thread calls device_shutdown() as part of system shutdown.
+>> device_shutdown() loops through devices_kset->list, shutting down each
+>> system device.  But devices_kset->list isn't protected from other
+>> writers while device_shutdown() traverses the list.
+>
+> Can't we just protect the list?  What is wanting to write to the list
+> while shutdown is happening?
+
+Indeed, Alan suggested holding the kset spinlock while iterating the
+list.  Unfortunately, the device shutdown routines may sleep.  At least
+the SCSI sd_shutdown routine issues I/O to the device as part of
+flushing device caches.  I would guess other subsystems sleep as well.
+
+>> One such secondary writer is the SCI Fibre Channel workqueue.  When
+>> fc_wq_N removes a device that device_shutdown() holds in it's "devn"
+>> (list traversal iterator) variable, device_shutdown() stalls, chasing
+>> what is essentially a broken link.
+>> 
+>> This is not a common occurrence.  But FC SCSI devices associated with a
+>> link that has gone down cause a race between device_shutdown() running
+>> in reboot's process and scsi_remove_target() running in a SCSI FC
+>> workqueue (fc_wq_N).
+>> 
+>> Network attached FC devices are particularly vulnerable because SysV
+>> init scripts shut network interfaces down before proceeding with the
+>> reboot request.  So by the time reboot is called, the link to the FC
+>> devices is already down.
+>> 
+>> When the link is down device_shutdown() stalls (in sd_shutdown() --
+>> which issues cache flush CDBs to what are, by that time, inaccessible
+>> devices).  The stall ends when the fc rport timer expires.  But the
+>> timer expiration also initiates fc_starget_delete() in the fc workqueue,
+>> causing the race with device_shutdown().
+>
+> Can't you just not do this?
+
+I'm not sure.  I'd punt this question to the SCSI maintainers.  From the
+FC transport point of view, the rport timeout simply looks like a device
+unplug event.  Should the unplug be handled differently if the system
+is already shutting down?
+
+Presumably any other subsystem that supports device unplug (usb, for
+example) could enter the same race.  But, FCoE devices seem uniquely
+poised to provoke the issue in a semi-repeatable fashion.
+
+...
+
+>> Does anyone have any guidance for what would make a more appropriate
+>> fix?
+>
+> So the scsi core is trying to remove a device at the same time shutdown
+> is happening, right?  So we need to protect the list somehow, maybe just
+> switch it over to use a klist which should handle this for us instead?
+> Can you try that?
+
+I'll try klist.  That looks like a good mediator between traversal and
+removal.
+
+Thanks,
+Hugh
