@@ -1,118 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248Ab0CCTRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:17:30 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:1466 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754736Ab0CCTRR convert rfc822-to-8bit (ORCPT
+	id S1756271Ab0CCTSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:18:49 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:56251 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753215Ab0CCTSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:17:17 -0500
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-From: "Hugh Daschbach" <hdasch@broadcom.com>
-To: "Greg KH" <gregkh@suse.de>
-cc: "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "james Bottomley" <James.Bottomley@suse.de>,
-       "James Smart" <james.smart@emulex.com>
-Date: Wed, 3 Mar 2010 11:16:57 -0800
-Subject: RE: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Topic: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Index: Acq6jaRTYqLsEQ9mRZeoHrdfhJ5AxQAdlZvw
-Message-ID: <233671224A0FED4688218FFDBED26E1A517AC38AB8@IRVEXCHCCR01.corp.ad.broadcom.com>
-References: <233671224A0FED4688218FFDBED26E1A517AC38638@IRVEXCHCCR01.corp.ad.broadcom.com>
- <20100303045433.GA27847@suse.de>
-In-Reply-To: <20100303045433.GA27847@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Wed, 3 Mar 2010 14:18:34 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B8EB685.1060302@jic23.retrosnub.co.uk>
+Date: Wed, 03 Mar 2010 19:20:37 +0000
+From: Jonathan Cameron <kernel@jic23.retrosnub.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
 MIME-Version: 1.0
-X-WSS-ID: 67906A2131G49156466-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dima Zavin <dmitriyz@google.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+References: <4B8C1867.7040201@cam.ac.uk> <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com> <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain> <20100303184132.GA11471@core.coreip.homeip.net> <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-+ James Bottomley
-+ James Smart
+On 03/03/10 18:52, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 3 Mar 2010, Dmitry Torokhov wrote:
+> 
+>> On Wed, Mar 03, 2010 at 09:03:16AM -0800, Linus Torvalds wrote:
+>>>
+>>> What's the difference between a physical "increase screen brightness" key, 
+>>> and a "ambient light sensor"? Absolutely none as far as I can tell.
+>>
+>> Because in general ambient light sensor may have nothing to do with the
+>> screen brightness. The fact that all current uses are tied to
+>> controlling screen brightness is coincidential. You could use it as well
+>> to turn on the lights in the kitchen if it is getting too dark...
+> 
+> But my point is, it acts pretty much like a key on a keyboard 
+> _regardless_. 
+Just one small clarification here.  It behaves a lot more like the axis of
+a joystick.  These sensors report illuminance, not merely a binary result.
+Some of them do have sophisticated threshold type logic, but
+all of them we have seen so far allow direct reading of the value.  Typical
+uses include things like long term environmental monitoring as
+well as screen brightness.  I have at least one Mote on my desk that has a
+ambient light sensor and no ability whatsoever to drive a screen.
+(Not that this effects whether input would make sense anyway!)
+> 
+> Sure, you migth use it to turn up the lights too. But how is that 
+> different from having a switch to do the same? Again, it doesn't sound 
+> that different from a key to me. 
+> 
+>> Yes, it is easier, but it is not necessarily the right interface. I
+>> still believe in using input layer for human iteraction events, and not
+>> as generic transport a-la netlink or uevent. Voltage measurements,
+>> network cable presence notifications, ambient light/temperature sensors,
+>> and so forth do not belong here.
+> 
+> The thing is, if the choice is about a whole new subsystem just for some 
+> silly light sensor logic, I'd _much_ rather see the much simpler - and 
+> more useful - approach of just considering it an input event.
+> 
+> It happens in the same kind of situations, it has the same kinds of timing 
+> issues (ie we're not talking streaming megabytes of data), and it has the 
+> same kind of users (ie a lightsensor really would be used along with 
+> something that cares about input).
+> 
+> I agree that that's not true in many other situations. A cable insertion 
+> event is about the networking, not about some independent input. The kind 
+> of application that cares about network cable presense is _not_ the kind 
+> of app that would care about keyboard input. Same goes for voltage.
+> 
+> That said, I'm not married to the whole "it has to be input layer". But I 
+> _do_ think that it's crazy to start doing new subsystems for every little 
+> thing. That way lies madness. 
 
-As the discussion tilts toward SCSI device shutdown.
+In principle I agree, but the current situation was also causing problems.  Within
+the mainline and other incoming trees there were 4 drivers for light sensors.
+Each one was in a different 'subsystem' (one was in misc) and each was exporting
+data to userspace via different interface causing all sorts of fun for userspace
+developers.  The core of the subsystem is really just a small amount of
+documentation and a class to give a common location (which we could drop;
+it is merely a convenience for userspace). Perhaps we just provide the documentation
+and move the lot into misc?
 
-Greg KH [mailto:gregkh@suse.de] writes:
-
-> On Tue, Mar 02, 2010 at 04:47:01PM -0800, Hugh Daschbach wrote:
->> The system may fail to boot when the kernel's devices_kset->list gets
->> written by another thread while device_shutdown() is traversing the
->> list.  Though not common, this is fairly reproducible for some SCSI
->> Fibre Channel topologies; particularly so with FCoE configurations.
->
-> Really?  What a mess :(
->
->> The reboot thread calls device_shutdown() as part of system shutdown.
->> device_shutdown() loops through devices_kset->list, shutting down each
->> system device.  But devices_kset->list isn't protected from other
->> writers while device_shutdown() traverses the list.
->
-> Can't we just protect the list?  What is wanting to write to the list
-> while shutdown is happening?
-
-Indeed, Alan suggested holding the kset spinlock while iterating the
-list.  Unfortunately, the device shutdown routines may sleep.  At least
-the SCSI sd_shutdown routine issues I/O to the device as part of
-flushing device caches.  I would guess other subsystems sleep as well.
-
->> One such secondary writer is the SCI Fibre Channel workqueue.  When
->> fc_wq_N removes a device that device_shutdown() holds in it's "devn"
->> (list traversal iterator) variable, device_shutdown() stalls, chasing
->> what is essentially a broken link.
->> 
->> This is not a common occurrence.  But FC SCSI devices associated with a
->> link that has gone down cause a race between device_shutdown() running
->> in reboot's process and scsi_remove_target() running in a SCSI FC
->> workqueue (fc_wq_N).
->> 
->> Network attached FC devices are particularly vulnerable because SysV
->> init scripts shut network interfaces down before proceeding with the
->> reboot request.  So by the time reboot is called, the link to the FC
->> devices is already down.
->> 
->> When the link is down device_shutdown() stalls (in sd_shutdown() --
->> which issues cache flush CDBs to what are, by that time, inaccessible
->> devices).  The stall ends when the fc rport timer expires.  But the
->> timer expiration also initiates fc_starget_delete() in the fc workqueue,
->> causing the race with device_shutdown().
->
-> Can't you just not do this?
-
-I'm not sure.  I'd punt this question to the SCSI maintainers.  From the
-FC transport point of view, the rport timeout simply looks like a device
-unplug event.  Should the unplug be handled differently if the system
-is already shutting down?
-
-Presumably any other subsystem that supports device unplug (usb, for
-example) could enter the same race.  But, FCoE devices seem uniquely
-poised to provoke the issue in a semi-repeatable fashion.
-
-...
-
->> Does anyone have any guidance for what would make a more appropriate
->> fix?
->
-> So the scsi core is trying to remove a device at the same time shutdown
-> is happening, right?  So we need to protect the list somehow, maybe just
-> switch it over to use a klist which should handle this for us instead?
-> Can you try that?
-
-I'll try klist.  That looks like a good mediator between traversal and
-removal.
-
-Thanks,
-Hugh
+Jonathan
