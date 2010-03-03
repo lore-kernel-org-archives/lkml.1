@@ -1,85 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884Ab0CCKHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 05:07:52 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36220 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694Ab0CCKHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 05:07:47 -0500
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrea Righi <arighi@develer.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Trond Myklebust <trond.myklebust@fys.uio.no>
-In-Reply-To: <20100302221434.GB2369@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
-	 <1267478620-5276-4-git-send-email-arighi@develer.com>
-	 <1267537736.25158.54.camel@laptop>  <20100302221434.GB2369@linux>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Mar 2010 11:07:35 +0100
-Message-ID: <1267610855.25158.82.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1752153Ab0CCKQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 05:16:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:46186 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751751Ab0CCKQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 05:16:33 -0500
+Date: Wed, 3 Mar 2010 11:16:25 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Madhusudhan <madhu.cr@ti.com>
+cc: "'LKML'" <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+Subject: RE: [PATCH] mmc: omap_hsmmc: Fix conditional locking
+In-Reply-To: <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
+Message-ID: <alpine.LFD.2.00.1003030756120.4245@localhost.localdomain>
+References: <alpine.LFD.2.00.1003011952470.4245@localhost.localdomain> <010101caba72$1dd1d790$544ff780@am.dhcp.ti.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-03-02 at 23:14 +0100, Andrea Righi wrote:
-> 
-> I agree mem_cgroup_has_dirty_limit() is nicer. But we must do that under
-> RCU, so something like:
-> 
->         rcu_read_lock();
->         if (mem_cgroup_has_dirty_limit())
->                 mem_cgroup_get_page_stat()
->         else
->                 global_page_state()
->         rcu_read_unlock();
-> 
-> That is bad when mem_cgroup_has_dirty_limit() always returns false
-> (e.g., when memory cgroups are disabled). So I fallback to the old
-> interface.
-
-Why is it that mem_cgroup_has_dirty_limit() needs RCU when
-mem_cgroup_get_page_stat() doesn't? That is, simply make
-mem_cgroup_has_dirty_limit() not require RCU in the same way
-*_get_page_stat() doesn't either.
-
-> What do you think about:
-> 
->         mem_cgroup_lock();
->         if (mem_cgroup_has_dirty_limit())
->                 mem_cgroup_get_page_stat()
->         else
->                 global_page_state()
->         mem_cgroup_unlock();
-> 
-> Where mem_cgroup_read_lock/unlock() simply expand to nothing when
-> memory cgroups are disabled.
-
-I think you're engineering the wrong way around.
-
+On Tue, 2 Mar 2010, Madhusudhan wrote:
+> > Conditional locking on (!in_interrupt()) is broken by design and there
+> > is no reason to keep the host->irq_lock across the call to
+> > mmc_request_done(). Also the host->protect_card magic hack does not
+> > depend on the context
 > > 
-> > That allows for a 0 dirty limit (which should work and basically makes
-> > all io synchronous).
 > 
-> IMHO it is better to reserve 0 for the special value "disabled" like the
-> global settings. A synchronous IO can be also achieved using a dirty
-> limit of 1.
+> Can you please elaborate why the existing logic is broken?
 
-Why?! 0 clearly states no writeback cache, IOW sync writes, a 1
-byte/page writeback cache effectively reduces to the same thing, but its
-not the same thing conceptually. If you want to put the size and enable
-into a single variable pick -1 for disable or so.
+Locks are only to be held to serialize data or state. 
 
+The mmc_request_done() call does _NOT_ require that at all. So
+dropping the lock there is the right thing to do.
 
+Also conditional locking on in_interrupt() is generally a nono as it
+relies on assumptions which are not necessarily true in all
+circumstances. Just one simple example: interrupt threading will make
+it explode nicely and it did already with the realtime patches
+applied.
 
+Such code constructs prevent us to do generic changes to the kernel
+behaviour without any real good reason.
+
+> It locks at the new request and unlocks just before issuing the cmd. Further
+> IRQ handler has these calls hence the !in_interrupt check.
+
+Aside of the conditional locking I have several issues with that code:
+
+1) The code flow is massively unreadable:
+
+   omap_hsmmc_start_command()
+   {
+	.....
+	if (!in_interrupt())
+	   spin_unlock_irq();
+   }
+ 
+   omap_hsmmc_request()
+   {
+	if (!in_interrupt())
+	   spin_lock_irq();
+
+	omap_hsmmc_start_command();
+   }
+
+We generally want to see the lock/unlock pairs in one function and not
+having to figure out where the heck unlock happens.
+
+2) The point of unlocking is patently wrong
+
+   omap_hsmmc_start_command()
+   {
+	.....
+	if (!in_interrupt())
+	   spin_unlock_irq();
+--->
+	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
+--->
+        OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
+   }
+
+What happens, if you get a spurious interrupt here ? Same for SMP,
+though you are probably protected by the core mmc code request
+serialization there.
+
+> How does this patch improve that? In fact with your patch for a data
+> transfer cmd there are several lock-unlock calls.
+
+1) The patch simply removes conditional locking and moves the lock
+   sections to those places which protect something. Aside of that it
+   makes the code easier to understand.
+
+2) What's the point of not having those lock/unlocks ? On UP the
+   spinlock is a NOOP anyway, so you won't even notice. On SMP you
+   won't notice either, simply because the lock is cache hot and
+   almost never contended.
+
+Thanks,
+
+	tglx
