@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078Ab0CCAui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:50:38 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:54189 "EHLO
+	id S1758493Ab0CCAtA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:49:00 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:54193 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199Ab0CCAqt (ORCPT
+	with ESMTP id S1755223Ab0CCAqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:46:49 -0500
+	Tue, 2 Mar 2010 19:46:51 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 17/26] ceph: trivial 'auth_none' authentication scheme
-Date: Tue,  2 Mar 2010 16:46:48 -0800
-Message-Id: <1267577217-31923-18-git-send-email-sage@newdream.net>
+Subject: [PATCH 23/26] ceph: nfs re-export support
+Date: Tue,  2 Mar 2010 16:46:54 -0800
+Message-Id: <1267577217-31923-24-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <1267577217-31923-1-git-send-email-sage@newdream.net>
 References: <1267577217-31923-1-git-send-email-sage@newdream.net>
@@ -20,178 +20,245 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements a trivial authentication scheme that provides
-no actual authentication.
+Basic NFS re-export support is included.  This mostly works.  However,
+Ceph's MDS design precludes the ability to generate a (small)
+filehandle that will be valid forever, so this is of limited utility.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/auth_none.c |  121 +++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/auth_none.h |   28 ++++++++++++
- 2 files changed, 149 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/auth_none.c
- create mode 100644 fs/ceph/auth_none.h
+ fs/ceph/export.c |  223 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 223 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/export.c
 
-diff --git a/fs/ceph/auth_none.c b/fs/ceph/auth_none.c
+diff --git a/fs/ceph/export.c b/fs/ceph/export.c
 new file mode 100644
-index 0000000..b4ef6f0
+index 0000000..fc68e39
 --- /dev/null
-+++ b/fs/ceph/auth_none.c
-@@ -0,0 +1,121 @@
-+
++++ b/fs/ceph/export.c
+@@ -0,0 +1,223 @@
 +#include "ceph_debug.h"
 +
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/random.h>
++#include <linux/exportfs.h>
++#include <asm/unaligned.h>
 +
-+#include "auth_none.h"
-+#include "auth.h"
-+#include "decode.h"
++#include "super.h"
 +
-+static void reset(struct ceph_auth_client *ac)
++/*
++ * NFS export support
++ *
++ * NFS re-export of a ceph mount is, at present, only semireliable.
++ * The basic issue is that the Ceph architectures doesn't lend itself
++ * well to generating filehandles that will remain valid forever.
++ *
++ * So, we do our best.  If you're lucky, your inode will be in the
++ * client's cache.  If it's not, and you have a connectable fh, then
++ * the MDS server may be able to find it for you.  Otherwise, you get
++ * ESTALE.
++ *
++ * There are ways to this more reliable, but in the non-connectable fh
++ * case, we won't every work perfectly, and in the connectable case,
++ * some changes are needed on the MDS side to work better.
++ */
++
++/*
++ * Basic fh
++ */
++struct ceph_nfs_fh {
++	u64 ino;
++} __attribute__ ((packed));
++
++/*
++ * Larger 'connectable' fh that includes parent ino and name hash.
++ * Use this whenever possible, as it works more reliably.
++ */
++struct ceph_nfs_confh {
++	u64 ino, parent_ino;
++	u32 parent_name_hash;
++} __attribute__ ((packed));
++
++static int ceph_encode_fh(struct dentry *dentry, u32 *rawfh, int *max_len,
++			  int connectable)
 +{
-+	struct ceph_auth_none_info *xi = ac->private;
++	struct ceph_nfs_fh *fh = (void *)rawfh;
++	struct ceph_nfs_confh *cfh = (void *)rawfh;
++	struct dentry *parent = dentry->d_parent;
++	struct inode *inode = dentry->d_inode;
++	int type;
 +
-+	xi->starting = true;
-+	xi->built_authorizer = false;
-+}
++	/* don't re-export snaps */
++	if (ceph_snap(inode) != CEPH_NOSNAP)
++		return -EINVAL;
 +
-+static void destroy(struct ceph_auth_client *ac)
-+{
-+	kfree(ac->private);
-+	ac->private = NULL;
-+}
-+
-+static int is_authenticated(struct ceph_auth_client *ac)
-+{
-+	struct ceph_auth_none_info *xi = ac->private;
-+
-+	return !xi->starting;
++	if (*max_len >= sizeof(*cfh)) {
++		dout("encode_fh %p connectable\n", dentry);
++		cfh->ino = ceph_ino(dentry->d_inode);
++		cfh->parent_ino = ceph_ino(parent->d_inode);
++		cfh->parent_name_hash = parent->d_name.hash;
++		*max_len = sizeof(*cfh);
++		type = 2;
++	} else if (*max_len > sizeof(*fh)) {
++		if (connectable)
++			return -ENOSPC;
++		dout("encode_fh %p\n", dentry);
++		fh->ino = ceph_ino(dentry->d_inode);
++		*max_len = sizeof(*fh);
++		type = 1;
++	} else {
++		return -ENOSPC;
++	}
++	return type;
 +}
 +
 +/*
-+ * the generic auth code decode the global_id, and we carry no actual
-+ * authenticate state, so nothing happens here.
++ * convert regular fh to dentry
++ *
++ * FIXME: we should try harder by querying the mds for the ino.
 + */
-+static int handle_reply(struct ceph_auth_client *ac, int result,
-+			void *buf, void *end)
++static struct dentry *__fh_to_dentry(struct super_block *sb,
++				     struct ceph_nfs_fh *fh)
 +{
-+	struct ceph_auth_none_info *xi = ac->private;
++	struct inode *inode;
++	struct dentry *dentry;
++	struct ceph_vino vino;
++	int err;
 +
-+	xi->starting = false;
-+	return result;
++	dout("__fh_to_dentry %llx\n", fh->ino);
++	vino.ino = fh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode)
++		return ERR_PTR(-ESTALE);
++
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("fh_to_dentry %llx -- inode %p but ENOMEM\n",
++		       fh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("__fh_to_dentry %llx %p dentry %p\n", fh->ino, inode, dentry);
++	return dentry;
 +}
 +
 +/*
-+ * build an 'authorizer' with our entity_name and global_id.  we can
-+ * reuse a single static copy since it is identical for all services
-+ * we connect to.
++ * convert connectable fh to dentry
 + */
-+static int ceph_auth_none_create_authorizer(
-+	struct ceph_auth_client *ac, int peer_type,
-+	struct ceph_authorizer **a,
-+	void **buf, size_t *len,
-+	void **reply_buf, size_t *reply_len)
++static struct dentry *__cfh_to_dentry(struct super_block *sb,
++				      struct ceph_nfs_confh *cfh)
 +{
-+	struct ceph_auth_none_info *ai = ac->private;
-+	struct ceph_none_authorizer *au = &ai->au;
-+	void *p, *end;
-+	int ret;
++	struct ceph_mds_client *mdsc = &ceph_client(sb)->mdsc;
++	struct inode *inode;
++	struct dentry *dentry;
++	struct ceph_vino vino;
++	int err;
 +
-+	if (!ai->built_authorizer) {
-+		p = au->buf;
-+		end = p + sizeof(au->buf);
-+		ceph_encode_8(&p, 1);
-+		ret = ceph_entity_name_encode(ac->name, &p, end - 8);
-+		if (ret < 0)
-+			goto bad;
-+		ceph_decode_need(&p, end, sizeof(u64), bad2);
-+		ceph_encode_64(&p, ac->global_id);
-+		au->buf_len = p - (void *)au->buf;
-+		ai->built_authorizer = true;
-+		dout("built authorizer len %d\n", au->buf_len);
++	dout("__cfh_to_dentry %llx (%llx/%x)\n",
++	     cfh->ino, cfh->parent_ino, cfh->parent_name_hash);
++
++	vino.ino = cfh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode) {
++		struct ceph_mds_request *req;
++
++		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LOOKUPHASH,
++					       USE_ANY_MDS);
++		if (IS_ERR(req))
++			return ERR_PTR(PTR_ERR(req));
++
++		req->r_ino1 = vino;
++		req->r_ino2.ino = cfh->parent_ino;
++		req->r_ino2.snap = CEPH_NOSNAP;
++		req->r_path2 = kmalloc(16, GFP_NOFS);
++		snprintf(req->r_path2, 16, "%d", cfh->parent_name_hash);
++		req->r_num_caps = 1;
++		err = ceph_mdsc_do_request(mdsc, NULL, req);
++		ceph_mdsc_put_request(req);
++		inode = ceph_find_inode(sb, vino);
++		if (!inode)
++			return ERR_PTR(err ? err : -ESTALE);
 +	}
 +
-+	*a = (struct ceph_authorizer *)au;
-+	*buf = au->buf;
-+	*len = au->buf_len;
-+	*reply_buf = au->reply_buf;
-+	*reply_len = sizeof(au->reply_buf);
-+	return 0;
-+
-+bad2:
-+	ret = -ERANGE;
-+bad:
-+	return ret;
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("cfh_to_dentry %llx -- inode %p but ENOMEM\n",
++		       cfh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("__cfh_to_dentry %llx %p dentry %p\n", cfh->ino, inode, dentry);
++	return dentry;
 +}
 +
-+static void ceph_auth_none_destroy_authorizer(struct ceph_auth_client *ac,
-+				      struct ceph_authorizer *a)
++static struct dentry *ceph_fh_to_dentry(struct super_block *sb, struct fid *fid,
++					int fh_len, int fh_type)
 +{
-+	/* nothing to do */
++	if (fh_type == 1)
++		return __fh_to_dentry(sb, (struct ceph_nfs_fh *)fid->raw);
++	else
++		return __cfh_to_dentry(sb, (struct ceph_nfs_confh *)fid->raw);
 +}
-+
-+static const struct ceph_auth_client_ops ceph_auth_none_ops = {
-+	.reset = reset,
-+	.destroy = destroy,
-+	.is_authenticated = is_authenticated,
-+	.handle_reply = handle_reply,
-+	.create_authorizer = ceph_auth_none_create_authorizer,
-+	.destroy_authorizer = ceph_auth_none_destroy_authorizer,
-+};
-+
-+int ceph_auth_none_init(struct ceph_auth_client *ac)
-+{
-+	struct ceph_auth_none_info *xi;
-+
-+	dout("ceph_auth_none_init %p\n", ac);
-+	xi = kzalloc(sizeof(*xi), GFP_NOFS);
-+	if (!xi)
-+		return -ENOMEM;
-+
-+	xi->starting = true;
-+	xi->built_authorizer = false;
-+
-+	ac->protocol = CEPH_AUTH_NONE;
-+	ac->private = xi;
-+	ac->ops = &ceph_auth_none_ops;
-+	return 0;
-+}
-+
-diff --git a/fs/ceph/auth_none.h b/fs/ceph/auth_none.h
-new file mode 100644
-index 0000000..56c0553
---- /dev/null
-+++ b/fs/ceph/auth_none.h
-@@ -0,0 +1,28 @@
-+#ifndef _FS_CEPH_AUTH_NONE_H
-+#define _FS_CEPH_AUTH_NONE_H
-+
-+#include "auth.h"
 +
 +/*
-+ * null security mode.
++ * get parent, if possible.
 + *
-+ * we use a single static authorizer that simply encodes our entity name
-+ * and global id.
++ * FIXME: we could do better by querying the mds to discover the
++ * parent.
 + */
++static struct dentry *ceph_fh_to_parent(struct super_block *sb,
++					 struct fid *fid,
++					int fh_len, int fh_type)
++{
++	struct ceph_nfs_confh *cfh = (void *)fid->raw;
++	struct ceph_vino vino;
++	struct inode *inode;
++	struct dentry *dentry;
++	int err;
 +
-+struct ceph_none_authorizer {
-+	char buf[128];
-+	int buf_len;
-+	char reply_buf[0];
++	if (fh_type == 1)
++		return ERR_PTR(-ESTALE);
++
++	pr_debug("fh_to_parent %llx/%d\n", cfh->parent_ino,
++		 cfh->parent_name_hash);
++
++	vino.ino = cfh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode)
++		return ERR_PTR(-ESTALE);
++
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("fh_to_parent %llx -- inode %p but ENOMEM\n",
++		       cfh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("fh_to_parent %llx %p dentry %p\n", cfh->ino, inode, dentry);
++	return dentry;
++}
++
++const struct export_operations ceph_export_ops = {
++	.encode_fh = ceph_encode_fh,
++	.fh_to_dentry = ceph_fh_to_dentry,
++	.fh_to_parent = ceph_fh_to_parent,
 +};
-+
-+struct ceph_auth_none_info {
-+	bool starting;
-+	bool built_authorizer;
-+	struct ceph_none_authorizer au;   /* we only need one; it's static */
-+};
-+
-+extern int ceph_auth_none_init(struct ceph_auth_client *ac);
-+
-+#endif
-+
 -- 
 1.7.0
 
