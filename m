@@ -1,46 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348Ab0CCAdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:33:20 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55556 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989Ab0CCAdS (ORCPT
+	id S1753694Ab0CCAej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:34:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45628 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751343Ab0CCAeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:33:18 -0500
-Date: Wed, 3 Mar 2010 09:26:06 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v2
-Message-Id: <20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
-References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
-	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Mar 2010 19:34:37 -0500
+Date: Tue, 2 Mar 2010 16:34:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@gmail.com>
+cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [git pull] drm request 2
+In-Reply-To: <21d7e9971003021548u7509651fyfc875d4e30472486@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1003021630250.3616@localhost.localdomain>
+References: <alpine.DEB.2.00.1003012345440.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003021451130.3616@localhost.localdomain>  <alpine.LFD.2.00.1003021459450.3616@localhost.localdomain>  <alpine.DEB.2.00.1003022305070.4099@skynet.skynet.ie> 
+ <21d7e9971003021527t41268786q302a218ffe410763@mail.gmail.com>  <alpine.LFD.2.00.1003021536280.3616@localhost.localdomain> <21d7e9971003021548u7509651fyfc875d4e30472486@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'll test this patch all through this night, and check whether it doesn't trigger
-> global oom after memcg's oom.
+
+
+On Wed, 3 Mar 2010, Dave Airlie wrote:
 > 
-O.K. It works well.
-Feel free to add my signs.
+> So can we get linux-next builds to build with *your* Kconfig? This should
+> cut down the amount of crap you see considerably.
 
-	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+No.
 
-Thanks,
-Daisuke Nishimura.
+Dave, _think_ about what you're saying.
+
+The absolute last thing we want to do is to make it easier for crap to 
+flow through the system.
+
+We don't want to make it easier to hide problems. 
+
+I think we might want to instead extend on the tests that linux-next does. 
+For example, STAGING should generally always compile.
+
+There are exceptions - major "change the world" changes where staging 
+drivers might not be updated in as timely a manner as other drivers, but 
+they should be exceptions, not the rule.
+
+If a driver really doesn't even compile, it should be marked BROKEN, not 
+STAGING.
+
+			Linus
