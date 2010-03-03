@@ -1,42 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413Ab0CCT5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 14:57:25 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40833 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122Ab0CCT5S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 14:57:18 -0500
-Date: Wed, 3 Mar 2010 19:57:16 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC][PATCH] init: Open /dev/console from rootfs
-Message-ID: <20100303195716.GT30031@ZenIV.linux.org.uk>
-References: <m1sk8hn8nk.fsf@fess.ebiederm.org>
+	id S1756459Ab0CCT6Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 14:58:16 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:47127 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219Ab0CCT6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 14:58:09 -0500
+Date: Wed, 3 Mar 2010 11:58:04 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: James Cloos <cloos@jhcloos.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu,
+       akpm@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl
+Subject: Re: [PATCH] kconfig: place git SHA1 in .config output if in SCM
+Message-ID: <20100303195804.GE6804@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100303011858.GA17651@linux.vnet.ibm.com> <alpine.LFD.2.00.1003021725170.3616@localhost.localdomain> <20100303021624.GE6786@linux.vnet.ibm.com> <m37hptl3fl.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1sk8hn8nk.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <m37hptl3fl.fsf@lugabout.jhcloos.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 11:53:19PM -0800, Eric W. Biederman wrote:
+On Wed, Mar 03, 2010 at 12:28:38PM -0500, James Cloos wrote:
+> Doesn't this patch simply duplicate CONFIG_LOCALVERSION_AUTO's
+> functionality, now that it calls scripts/setlocalversion?
 > 
-> To avoid potential problems with an empty /dev open /dev/console
-> from rootfs instead of waiting to mount our root filesystem and
-> mounting it there.   This effectively guarantees that there will
-> be a device node, and it won't be on a filesystem that we will
-> ever unmount, so there are no issues with leaving /dev/console
-> open and pinning the filesystem.
-> 
-> This is actually more effective than automatically mounting
-> devtmpfs on /dev because it removes removes the occasionally
-> problematic assumption that /dev/console exists from the boot
-> code.
+> I'd still like to get the hash and only elide the dirty check.
 
-Hell, yeah.  Applied, with thanks.
+Would you be OK with having to set an environment variable to suppress
+the dirty check?
+
+							Thanx, Paul
