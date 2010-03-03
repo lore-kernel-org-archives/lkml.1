@@ -1,73 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679Ab0CCViZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 16:38:25 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:49379 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284Ab0CCViS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 16:38:18 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=jy9wsRJHVPfpp/62iH5hCtaET/sOYWpwrBr3XqcHRlpUdhn3FA42jh5+6tP/nAtzh
-	vGs8vas9aViWSsDV4tTPA==
+	id S1756694Ab0CCVjr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 16:39:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39481 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753284Ab0CCVjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 16:39:40 -0500
+Message-ID: <4B8ED702.8070403@redhat.com>
+Date: Wed, 03 Mar 2010 16:39:14 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-In-Reply-To: <20100303190753.GB11471@core.coreip.homeip.net>
-References: <4B8C1867.7040201@cam.ac.uk>
-	 <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>
-	 <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
-	 <20100303184132.GA11471@core.coreip.homeip.net>
-	 <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>
-	 <20100303190753.GB11471@core.coreip.homeip.net>
-Date: Wed, 3 Mar 2010 13:38:12 -0800
-Message-ID: <404ea8001003031338j34847961jd8a7114bbc45603a@mail.gmail.com>
-Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
-From: Dima Zavin <dmitriyz@google.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       Jean Delvare <khali@linux-fr.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH -tip 2/2] x86: Issue at least one memory barrier in	stop_machine_text_poke().
+References: <20100303212656.25645.48466.stgit@localhost6.localdomain6> <20100303212703.25645.50986.stgit@localhost6.localdomain6> <20100303213614.GA29880@Krystal>
+In-Reply-To: <20100303213614.GA29880@Krystal>
+X-Enigmail-Version: 1.0.1
 Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Sure, you migth use it to turn up the lights too. But how is that
->> different from having a switch to do the same? Again, it doesn't sound
->> that different from a key to me.
->
-> I guess for me the distinction is that the event was not caused by an
-> action of a human being but by change in environment.
->
-> Also, if we decide that input layer is the best place for such devices,
-> it should not be a key but absolute event, ABS_LIGHT_LEVEL or something.
-
-Agreed, a key is not the best approach. We currently have been hacking
-around it by using ABS_MISC, which I know is wrong.
-
->> The thing is, if the choice is about a whole new subsystem just for some
->> silly light sensor logic, I'd _much_ rather see the much simpler - and
->> more useful - approach of just considering it an input event.
+Mathieu Desnoyers wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+>> Fix stop_machine_text_poke() to issue smp_mb() before exiting waiting
+>> loop. Also, use ACCESS_ONCE() to check a flag according to Mathieu's
+>> comment.
 >>
->> It happens in the same kind of situations, it has the same kinds of timing
->> issues (ie we're not talking streaming megabytes of data), and it has the
->> same kind of users (ie a lightsensor really would be used along with
->> something that cares about input).
+>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Jason Baron <jbaron@redhat.com>
+>> ---
 >>
->> I agree that that's not true in many other situations. A cable insertion
->> event is about the networking, not about some independent input. The kind
->> of application that cares about network cable presense is _not_ the kind
->> of app that would care about keyboard input. Same goes for voltage.
->
-> What about magnetometers, accelerometers and so forth? I still do not
-> think they are pure input layer devices although it is possible to build
-> a bridge modules so they could plug into input framework if desired.
+>>  arch/x86/kernel/alternative.c |    6 +++---
+>>  1 files changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+>> index 635e4f4..3236a11 100644
+>> --- a/arch/x86/kernel/alternative.c
+>> +++ b/arch/x86/kernel/alternative.c
+>> @@ -596,9 +596,9 @@ static int __kprobes stop_machine_text_poke(void *data)
+>>  		smp_wmb();	/* Make sure other cpus see that this has run */
+>>  		wrote_text = 1;
+>>  	} else {
+>> -		while (!wrote_text)
+>> -			smp_rmb();
+>> -		sync_core();
+>> +		while (!ACCESS_ONCE(wrote_text))
+> 
+> Well, cpu_relax() has a "memory" clobber, so the access once is not required to
+> ensure the variable is re-read. And, sorry to contradict my previous statement
+> somewhat, but given that we don't care if the compiler fetches wrote_text in
+> chunks or not, ACCESS_ONCE() is not required here. So rather than leaving people
+> wondering why we put an ACCESS_ONCE() here, it's probably better to leave it
+> out.
 
-Actually, accelerometers fit into that model fine. They have some
-variable number of absolute axes (3, 6, etc.).
+Ah, OK. Indeed, volatile is for compiler...
 
---Dima
+Thank you,
+
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
