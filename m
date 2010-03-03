@@ -1,164 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166Ab0CCMRg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:17:36 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:57571 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531Ab0CCMRa (ORCPT
+	id S1752979Ab0CCMSY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:18:24 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:49961 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954Ab0CCMSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:17:30 -0500
-Date: Wed, 3 Mar 2010 13:17:26 +0100
-From: Bastian Blank <waldi@debian.org>
-To: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-Subject: Re: [Xen-devel] [PATCH 4 of 4] Linux pvops: xen pci platform
-	device driver
-Message-ID: <20100303121726.GA26656@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>,
-	xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop>
+	Wed, 3 Mar 2010 07:18:21 -0500
+Date: Wed, 3 Mar 2010 05:18:19 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dan Carpenter <error27@gmail.com>, Greg KH <greg@kroah.com>,
+       tim@weberpafrica.com, gregkh@suse.de, devel@driverdev.osuosl.org,
+       Tim Schofield <tim.schofield1960@googlemail.com>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: verifying whitespace patches don't change anything was Re:
+	[PATCH] Staging:rtl8192e: fix comments
+Message-ID: <20100303121819.GH6567@parisc-linux.org>
+References: <1266338116-27482-1-git-send-email-tim@weberpafrica.com> <20100218160547.GJ21785@kroah.com> <20100303071023.GF5086@bicker>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop>
+In-Reply-To: <20100303071023.GF5086@bicker>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 06:31:10PM +0000, Stefano Stabellini wrote:
-> +config XEN_PLATFORM_PCI
-> +	bool "xen platform pci device driver"
+On Wed, Mar 03, 2010 at 10:10:23AM +0300, Dan Carpenter wrote:
+> On Thu, Feb 18, 2010 at 08:05:47AM -0800, Greg KH wrote:
+> > On Tue, Feb 16, 2010 at 04:35:16PM +0000, tim@weberpafrica.com wrote:
+> > > From: Tim Schofield <tim.schofield1960@googlemail.com>
+> > > 
+> > > ---
+> > >  drivers/staging/rtl8192e/r8180_93cx6.c |   22 ++++++++++++++--------
+> > >  1 files changed, 14 insertions(+), 8 deletions(-)
+> > > 
+> > > diff --git a/drivers/staging/rtl8192e/r8180_93cx6.c b/drivers/staging/rtl8192e/r8180_93cx6.c
+> > > index 262ed5f..60fba80 100644
+> > > --- a/drivers/staging/rtl8192e/r8180_93cx6.c
+> > > +++ b/drivers/staging/rtl8192e/r8180_93cx6.c
+> > > @@ -23,12 +23,14 @@
+> > >  static void eprom_cs(struct net_device *dev, short bit)
+> > >  {
+> > >  	if (bit)
+> > > +		/* enable EPROM */
+> > >  		write_nic_byte(dev, EPROM_CMD,
+> > >  			       (1<<EPROM_CS_SHIFT) | \
+> > > -			       read_nic_byte(dev, EPROM_CMD)); //enable EPROM
+> > > +			       read_nic_byte(dev, EPROM_CMD));
+> > >  	else
+> > > +		/* disable EPROM */
+> > >  		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
+> > > -			       &~(1<<EPROM_CS_SHIFT)); //disable EPROM
+> > > +			       &~(1<<EPROM_CS_SHIFT));
+> > 
+> > This does not do what you think it does (hint, you need {} if you want
+> > to have more than one line in an if statement...)
 
-Case? Why does this need to be built-in?
+Sorry, Greg, you're wrong in this case.  /* */ does not count as a line.
+Here's an example:
 
-> +	depends on XEN
-> +	select XEN_XENBUS_FRONTEND
-> +	help
-> +	  Necessary to run Xen PV drivers in Xen HVM domains.
+$ cat foo.c 
+#include <stdio.h>
 
-A little bit short.
+int main(void)
+{
+        if (0)
+                /* foo */
+                printf("Hello, World\n");
+        return 0;
+}
 
-> -	gsv.version = 2;
-> +	if (xen_hvm_domain())
-> +		gsv.version = 1;
-> +	else
-> +		gsv.version = 2;
->  	rc = HYPERVISOR_grant_table_op(GNTTABOP_set_version, &gsv, 1);
->  	if (rc == 0)
-> -		grant_table_version = 2;
-> +		grant_table_version = xen_hvm_domain() ? 1 : 2;
+$ gcc -o foo foo.c -W -Wall -O2 -g
+$ ./foo
+[no output]
 
-Why is version 1 grant table the default on HVM?
 
-> -		grant_table_version = 1;
-> +		grant_table_version = xen_hvm_domain() ? 2 : 1;
+I think a much more cogent criticism of this patch would be that the comment
+is entirely unnecessary for this function with a simple change:
 
-But then, this makes no sense for me.
+-static void eprom_cs(struct net_device *dev, short bit)
++static void eprom_cs(struct net_device *dev, short enable)
+ {
+-	if (bit)
++	if (enable)
+ 		write_nic_byte(dev, EPROM_CMD,
+ 			       (1<<EPROM_CS_SHIFT) | \
+-			       read_nic_byte(dev, EPROM_CMD)); //enable EPROM
++			       read_nic_byte(dev, EPROM_CMD));
+ 	else
+ 		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
+-			       &~(1<<EPROM_CS_SHIFT)); //disable EPROM
++			       &~(1<<EPROM_CS_SHIFT));
 
-> -static int __devinit gnttab_init(void)
-> +int gnttab_init(void)
-
-I miss an export for this function.
-
-> -core_initcall(gnttab_init);
-> +static int __devinit __gnttab_init(void)
-> +{
-> +	if (!xen_domain())
-> +		return -ENODEV;
-
-Shouldn't this read xen_pv_domain?
-
-> +/* NB. [aux-]ide-disks options do not unplug IDE CD-ROM drives. */
-> +/* NB. aux-ide-disks is equiv to ide-disks except ignores primary master. */
-> +static char *dev_unplug;
-> +module_param(dev_unplug, charp, 0644);
-> +MODULE_PARM_DESC(dev_unplug, "Emulated devices to unplug: "
-> +		 "[all,][ide-disks,][aux-ide-disks,][nics]\n");
-
-What is this parameter about?
-
-> +#define XEN_IOPORT_BASE 0x10
-
-Why are this constants defined in the driver themself? They only make
-sense if there are two components making use of them.
-
-> +#define XEN_IOPORT_PLATFLAGS	(XEN_IOPORT_BASE + 0) /* 1 byte access (R/W) */
-> +#define XEN_IOPORT_MAGIC	(XEN_IOPORT_BASE + 0) /* 2 byte access (R) */
-> +#define XEN_IOPORT_UNPLUG	(XEN_IOPORT_BASE + 0) /* 2 byte access (W) */
-> +#define XEN_IOPORT_DRVVER	(XEN_IOPORT_BASE + 0) /* 4 byte access (W) */
-> +
-> +#define XEN_IOPORT_SYSLOG	(XEN_IOPORT_BASE + 2) /* 1 byte access (W) */
-> +#define XEN_IOPORT_PROTOVER	(XEN_IOPORT_BASE + 2) /* 1 byte access (R) */
-> +#define XEN_IOPORT_PRODNUM	(XEN_IOPORT_BASE + 2) /* 2 byte access (W) */
-> +
-> +#define XEN_IOPORT_MAGIC_VAL 0x49d2
-> +#define XEN_IOPORT_LINUX_PRODNUM 0xffff /* NB: register a proper one */
-
-What does this "register a proper one" mean?
-
-> +#define XEN_IOPORT_LINUX_DRVVER  ((LINUX_VERSION_CODE << 8) + 0x0)
-> +
-> +#define UNPLUG_ALL_IDE_DISKS 1
-> +#define UNPLUG_ALL_NICS 2
-> +#define UNPLUG_AUX_IDE_DISKS 4
-> +#define UNPLUG_ALL 7
-> +
-> +static int check_platform_magic(struct device *dev, long ioaddr, long iolen)
-> +{
-> +	short magic, unplug = 0;
-> +	char protocol, *p, *q, *err;
-> +
-> +	for (p = dev_unplug; p; p = q) {
-> +		q = strchr(dev_unplug, ',');
-> +		if (q)
-> +			*q++ = '\0';
-> +		if (!strcmp(p, "all"))
-> +			unplug |= UNPLUG_ALL;
-> +		else if (!strcmp(p, "ide-disks"))
-> +			unplug |= UNPLUG_ALL_IDE_DISKS;
-> +		else if (!strcmp(p, "aux-ide-disks"))
-> +			unplug |= UNPLUG_AUX_IDE_DISKS;
-> +		else if (!strcmp(p, "nics"))
-> +			unplug |= UNPLUG_ALL_NICS;
-> +		else
-> +			dev_warn(dev, "unrecognised option '%s' "
-> +				 "in module parameter 'dev_unplug'\n", p);
-> +	}
-
-Usually this is done during the parameter setup.
-
-> +	if (request_mem_region(mmio_addr, mmio_len, DRV_NAME) == NULL) {
-> +		printk(KERN_ERR ":MEM I/O resource 0x%lx @ 0x%lx busy\n",
-> +		       mmio_addr, mmio_len);
-> +		return -EBUSY;
-
-Why is this a sign of busy?
-
-> +	if ((ret = gnttab_init()))
-> +		goto out;
-> +
-> +	if ((ret = xenbus_probe_init()))
-> +		goto out;
-> +
-> + out:
-> +	if (ret) {
-> +		release_mem_region(mmio_addr, mmio_len);
-> +		release_region(ioaddr, iolen);
-
-If xenbus inits, this does not undo the gnttab init?
-
-> +#define XEN_PLATFORM_VENDOR_ID 0x5853
-> +#define XEN_PLATFORM_DEVICE_ID 0x0001
-> +static struct pci_device_id platform_pci_tbl[] __devinitdata = {
-> +	{XEN_PLATFORM_VENDOR_ID, XEN_PLATFORM_DEVICE_ID,
-> +	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> +	/* Continue to recognise the old ID for now */
-> +	{0xfffd, 0x0101, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-
-What is the reasoning for this?
-
-> +static int pci_device_registered;
-
-What is this for?
-
-Bastian
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
