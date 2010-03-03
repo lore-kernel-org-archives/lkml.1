@@ -1,66 +1,230 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255Ab0CCRgB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:36:01 -0500
-Received: from mail-bw0-f209.google.com ([209.85.218.209]:34829 "EHLO
-	mail-bw0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754971Ab0CCRf7 (ORCPT
+	id S1755270Ab0CCRgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:36:04 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48463 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755022Ab0CCRf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Mar 2010 12:35:59 -0500
-Message-ID: <4B8E9D7B.6040709@ru.mvista.com>
-Date: Wed, 03 Mar 2010 20:33:47 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, Sergei Shtylyov <sshtylyov@mvista.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/11] ahci: Move generic code into libahci
-References: <20100303171713.GA6322@oksana.dev.rtsoft.ru> <20100303171747.GI12362@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100303171747.GI12362@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Valerie Aurora <vaurora@redhat.com>
+CC: viro@zeniv.linux.org.uk, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jblunck@suse.de, vaurora@redhat.com
+In-reply-to: <1267567889-4637-3-git-send-email-vaurora@redhat.com> (message
+	from Valerie Aurora on Tue, 2 Mar 2010 14:11:25 -0800)
+Subject: Re: [PATCH 2/6] union-mount: Drive the union cache via dcache
+References: <1267567889-4637-1-git-send-email-vaurora@redhat.com>
+ <1267567889-4637-2-git-send-email-vaurora@redhat.com> <1267567889-4637-3-git-send-email-vaurora@redhat.com>
+Message-Id: <E1NmsUF-0003u0-19@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 03 Mar 2010 18:35:55 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Anton Vorontsov wrote:
-
-> This patch should contain no functional changes, just moves code
-> around.
->
-> Currently libahci.c and ahci.c are built into a single module,
-> so there is no need for EXPORT_SYMBOL_GPL()s, yet. Exports will be
-> added in a subsequent patch.
->   
-
-   This is not true anymore, so the exports are probably needed.
-
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Tue,  2 Mar 2010, Valerie Aurora wrote:
+> From: Jan Blunck <jblunck@suse.de>
+> 
+> If a dentry is removed from dentry cache because its usage count drops to
+> zero, the references to the underlying layer of the unions the dentry is in
+> are dropped too. Therefore the union cache is driven by the dentry cache.
+> 
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 > ---
->  drivers/ata/Makefile  |    2 +-
->  drivers/ata/ahci.c    | 2271 +------------------------------------------------
->  drivers/ata/libahci.c | 2059 ++++++++++++++++++++++++++++++++++++++++++++
->  drivers/ata/libahci.h |  330 +++++++
->  4 files changed, 2391 insertions(+), 2271 deletions(-)
->  create mode 100644 drivers/ata/libahci.c
->  create mode 100644 drivers/ata/libahci.h
->
-> diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-> index b7d4923..75e3abd 100644
-> --- a/drivers/ata/Makefile
-> +++ b/drivers/ata/Makefile
-> @@ -1,7 +1,7 @@
+>  fs/dcache.c            |   13 +++++++++++
+>  fs/union.c             |   56 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/dcache.h |    8 ++++++
+>  include/linux/union.h  |    4 +++
+>  4 files changed, 81 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 0c2dd32..fc37f7a 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/string.h>
+>  #include <linux/mm.h>
+>  #include <linux/fs.h>
+> +#include <linux/union.h>
+>  #include <linux/fsnotify.h>
+>  #include <linux/slab.h>
+>  #include <linux/init.h>
+> @@ -175,6 +176,8 @@ static struct dentry *d_kill(struct dentry *dentry)
+>  	dentry_stat.nr_dentry--;	/* For d_free, below */
+>  	/*drops the locks, at that point nobody can reach this dentry */
+>  	dentry_iput(dentry);
+> +	/* If the dentry was in an union delete them */
+> +	shrink_d_unions(dentry);
+>  	if (IS_ROOT(dentry))
+>  		parent = NULL;
+>  	else
+> @@ -696,6 +699,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+>  					iput(inode);
+>  			}
 >  
->  obj-$(CONFIG_ATA)		+= libata.o
+> +			shrink_d_unions(dentry);
+>  			d_free(dentry);
 >  
-> -obj-$(CONFIG_SATA_AHCI)		+= ahci.o
-> +obj-$(CONFIG_SATA_AHCI)		+= libahci.o ahci.o
->   
+>  			/* finished when we fall off the top of the tree,
+> @@ -1536,7 +1540,9 @@ void d_delete(struct dentry * dentry)
+>  	spin_lock(&dentry->d_lock);
+>  	isdir = S_ISDIR(dentry->d_inode->i_mode);
+>  	if (atomic_read(&dentry->d_count) == 1) {
+> +		__d_drop_unions(dentry);
+>  		dentry_iput(dentry);
+> +		shrink_d_unions(dentry);
+>  		fsnotify_nameremove(dentry, isdir);
+>  		return;
+>  	}
+> @@ -1547,6 +1553,13 @@ void d_delete(struct dentry * dentry)
+>  	spin_unlock(&dentry->d_lock);
+>  	spin_unlock(&dcache_lock);
+>  
+> +	/*
+> +	 * Remove any associated unions.  While someone still has this
+> +	 * directory open (ref count > 0), we could not have deleted
+> +	 * it unless it was empty, and therefore has no references to
+> +	 * directories below it.  So we don't need the unions.
+> +	 */
+> +	shrink_d_unions(dentry);
+>  	fsnotify_nameremove(dentry, isdir);
+>  }
+>  EXPORT_SYMBOL(d_delete);
+> diff --git a/fs/union.c b/fs/union.c
+> index 2e005d9..182ca91 100644
+> --- a/fs/union.c
+> +++ b/fs/union.c
+> @@ -14,6 +14,7 @@
+>  
+>  #include <linux/bootmem.h>
+>  #include <linux/init.h>
+> +#include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/hash.h>
+>  #include <linux/fs.h>
+> @@ -236,6 +237,8 @@ int append_to_union(struct vfsmount *upper_mnt, struct dentry *upper_dentry,
+>  		union_put(new);
+>  		return 0;
+>  	}
+> +	list_add(&new->u_unions, &upper_dentry->d_unions);
+> +	lower_dentry->d_unionized++;
+>  	__union_hash(new);
+>  	spin_unlock(&union_lock);
+>  	return 0;
+> @@ -288,3 +291,56 @@ int union_down_one(struct vfsmount **mnt, struct dentry **dentry)
+>  	}
+>  	return 0;
+>  }
+> +
+> +/**
+> + * __d_drop_unions  -  remove all this dentry's unions from the union hash table
+> + *
+> + * @dentry - topmost dentry in the union stack to remove
+> + *
+> + * This must be called after unhashing a dentry. This is called with
+> + * dcache_lock held and unhashes all the unions this dentry is
+> + * attached to.
+> + */
+> +void __d_drop_unions(struct dentry *dentry)
+> +{
+> +	struct union_mount *this, *next;
+> +
+> +	spin_lock(&union_lock);
+> +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions)
+> +		__union_unhash(this);
+> +	spin_unlock(&union_lock);
+> +}
+> +EXPORT_SYMBOL_GPL(__d_drop_unions);
+> +
+> +/*
+> + * This must be called after __d_drop_unions() without holding any locks.
+> + * Note: The dentry might still be reachable via a lookup but at that time it
+> + * already a negative dentry. Otherwise it would be unhashed. The union_mount
+> + * structure itself is still reachable through mnt->mnt_unions (which we
+> + * protect against with union_lock).
+> + *
+> + * We were worried about a recursive dput() call through:
+> + *
+> + * dput()->d_kill()->shrink_d_unions()->union_put()->dput()
+> + *
+> + * But this path can only be reached if the dentry is unhashed when we
+> + * enter the first dput(), and it can only be unhashed if it was
+> + * rmdir()'d, and d_delete() calls shrink_d_unions() for us.
+> + */
+> +void shrink_d_unions(struct dentry *dentry)
+> +{
+> +	struct union_mount *this, *next;
+> +
+> +repeat:
+> +	spin_lock(&union_lock);
+> +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+> +		BUG_ON(!hlist_unhashed(&this->u_hash));
+> +		BUG_ON(!hlist_unhashed(&this->u_rhash));
+> +		list_del(&this->u_unions);
+> +		this->u_next.dentry->d_unionized--;
+> +		spin_unlock(&union_lock);
+> +		union_put(this);
+> +		goto repeat;
 
-   This means 2 different modules: libahci.ko and ahci.ko.
+This loop is weird.  That list_for_each_entry_safe is just used to
+initialize "this", since it unconditionally restarts from the
+beginning.
 
-MBR, Sergei
-
+> +	}
+> +	spin_unlock(&union_lock);
+> +}
+> diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+> index d6c1da2..bfa8f97 100644
+> --- a/include/linux/dcache.h
+> +++ b/include/linux/dcache.h
+> @@ -227,12 +227,20 @@ extern seqlock_t rename_lock;
+>   * __d_drop requires dentry->d_lock.
+>   */
+>  
+> +#ifdef CONFIG_UNION_MOUNT
+> +extern void __d_drop_unions(struct dentry *);
+> +#endif
+> +
+>  static inline void __d_drop(struct dentry *dentry)
+>  {
+>  	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
+>  		dentry->d_flags |= DCACHE_UNHASHED;
+>  		hlist_del_rcu(&dentry->d_hash);
+>  	}
+> +#ifdef CONFIG_UNION_MOUNT
+> +	/* remove dentry from the union hashtable */
+> +	__d_drop_unions(dentry);
+> +#endif
+>  }
+>  
+>  static inline void d_drop(struct dentry *dentry)
+> diff --git a/include/linux/union.h b/include/linux/union.h
+> index 71dc35a..0ab0a2f 100644
+> --- a/include/linux/union.h
+> +++ b/include/linux/union.h
+> @@ -42,12 +42,16 @@ struct union_mount {
+>  extern int append_to_union(struct vfsmount *, struct dentry *,
+>  			   struct vfsmount *, struct dentry *);
+>  extern int union_down_one(struct vfsmount **, struct dentry **);
+> +extern void __d_drop_unions(struct dentry *);
+> +extern void shrink_d_unions(struct dentry *);
+>  
+>  #else /* CONFIG_UNION_MOUNT */
+>  
+>  #define IS_MNT_UNION(x)			(0)
+>  #define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
+>  #define union_down_one(x, y)		({ (0); })
+> +#define __d_drop_unions(x)		do { } while (0)
+> +#define shrink_d_unions(x)		do { } while (0)
+>  
+>  #endif	/* CONFIG_UNION_MOUNT */
+>  #endif	/* __KERNEL__ */
+> -- 
+> 1.5.6.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
