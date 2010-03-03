@@ -1,72 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327Ab0CCDdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 22:33:33 -0500
-Received: from hqemgate04.nvidia.com ([216.228.121.35]:18066 "EHLO
-	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752716Ab0CCDdb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 22:33:31 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp04.nvidia.com on Tue, 02 Mar 2010 19:33:29 -0800
-From: Wei Ni <wni@nvidia.com>
-To: "'Wu Fengguang'" <fengguang.wu@intel.com>
-CC: "'Takashi Iwai'" <tiwai@suse.de>, "'akpm'" <akpm@linux-foundation.org>,
-       "'alsa-devel'" <alsa-devel@alsa-project.org>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'Pavel Hofman'" <pavel.hofman@insite.cz>
-Date: Wed, 3 Mar 2010 11:33:25 +0800
-Subject: RE: [alsa-devel]  [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Topic: [alsa-devel]  [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Index: Acq6enP43xh2l0EeRWiwqbctPMhAbAAB2/dQ
-Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16A89A119@HKMAIL01.nvidia.com>
-References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
- <20100302054307.GA6165@localhost>
-In-Reply-To: <20100302054307.GA6165@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1752219Ab0CCDrX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 22:47:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55560 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266Ab0CCDrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 22:47:22 -0500
+Date: Wed, 3 Mar 2010 14:47:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?UTF-8?B?Ik3DoXJ0b24gTsOpbWV0aCI=?= <nm127@freemail.hu>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: linux-next: manual merge of the mfd tree with the i2c tree
+Message-Id: <20100303144715.2b607ac1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Mar_2010_14_47_15_+1100_sJP=Xg3jDV4pqNyw"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Because there have no common codes for standard HDMI operation,
-So in my patch file, there have some codes same as patch_intelhdmi.c
-I think we could merge them later.
+--Signature=_Wed__3_Mar_2010_14_47_15_+1100_sJP=Xg3jDV4pqNyw
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Wei.
+Hi Samuel,
 
------Original Message-----
-From: Wu Fengguang [mailto:fengguang.wu@intel.com] 
-Sent: Tuesday, March 02, 2010 1:43 PM
-To: Wei Ni
-Cc: 'Takashi Iwai'; 'akpm'; 'alsa-devel'; 'linux-kernel'; 'Pavel Hofman'
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+Today's linux-next merge of the mfd tree got a conflict in
+drivers/i2c/busses/i2c-isch.c between commit
+482b522a6ced62506aba1c139cb9d4b73e7312f5 ("i2c: Make PCI device ids
+constant") from the i2c tree and commit
+1fc8fe094a8ebcc09817246277250898a8d2fc5a ("i2c: convert i2c-isch to
+platform_device") from the mfd tree.
 
-On Mon, Mar 01, 2010 at 07:27:53PM +0800, Wei Ni wrote:
-> Hi, Takashi
-> I developed the hdmi audio driver for new chipset MCP89 and GT21x.
-> The new HAD controller and codec support standard HDMI operation.
-> 
-> I attached the patch file, please check it.
+The latter removes the code modified by the former, so I used the latter.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Wei Ni,
+--Signature=_Wed__3_Mar_2010_14_47_15_+1100_sJP=Xg3jDV4pqNyw
+Content-Type: application/pgp-signature
 
-Can we avoid the big copy&paste and do more code reuse?
-This benefits all of us in long term.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Thanks,
-Fengguang
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+iEYEARECAAYFAkuN28MACgkQjjKRsyhoI8xL4QCfUyoHHCGCz4jahtp/RqAYKlU6
+B3YAnixikyNeiau+yg0jaxdw2i09iVY+
+=w4to
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Mar_2010_14_47_15_+1100_sJP=Xg3jDV4pqNyw--
