@@ -1,104 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897Ab0CCMF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 07:05:56 -0500
-Received: from trinity.develer.com ([83.149.158.210]:34700 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742Ab0CCMFy (ORCPT
+	id S1753920Ab0CCMHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 07:07:31 -0500
+Received: from oceanic.CalvaEDI.COM ([89.202.194.168]:58450 "EHLO
+	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742Ab0CCMHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 07:05:54 -0500
-Date: Wed, 3 Mar 2010 13:05:51 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-ID: <20100303120551.GB16239@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
- <1267478620-5276-4-git-send-email-arighi@develer.com>
- <1267537736.25158.54.camel@laptop>
- <20100302221434.GB2369@linux>
- <1267610855.25158.82.camel@laptop>
+	Wed, 3 Mar 2010 07:07:30 -0500
+Message-ID: <4B8E59CC.2030004@Calva.COM>
+Date: Wed, 03 Mar 2010 13:45:00 +0100
+From: John Hughes <john@Calva.COM>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267610855.25158.82.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 15426] New: Running many copies of bonnie++
+ on different filesystems seems to deadlock in sync
+References: <bug-15426-10286@http.bugzilla.kernel.org/> <20100302161627.bf02d0a2.akpm@linux-foundation.org> <4B8E517E.3010702@Calva.COM> <20100303115015.GN5768@kernel.dk> <4B8E5805.30505@Calva.COM> <20100303120317.GP5768@kernel.dk>
+In-Reply-To: <20100303120317.GP5768@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 11:07:35AM +0100, Peter Zijlstra wrote:
-> On Tue, 2010-03-02 at 23:14 +0100, Andrea Righi wrote:
-> > 
-> > I agree mem_cgroup_has_dirty_limit() is nicer. But we must do that under
-> > RCU, so something like:
-> > 
-> >         rcu_read_lock();
-> >         if (mem_cgroup_has_dirty_limit())
-> >                 mem_cgroup_get_page_stat()
-> >         else
-> >                 global_page_state()
-> >         rcu_read_unlock();
-> > 
-> > That is bad when mem_cgroup_has_dirty_limit() always returns false
-> > (e.g., when memory cgroups are disabled). So I fallback to the old
-> > interface.
-> 
-> Why is it that mem_cgroup_has_dirty_limit() needs RCU when
-> mem_cgroup_get_page_stat() doesn't? That is, simply make
-> mem_cgroup_has_dirty_limit() not require RCU in the same way
-> *_get_page_stat() doesn't either.
+Jens Axboe wrote:
+> On Wed, Mar 03 2010, John Hughes wrote:
+>   
+>> Just a thought.  What exactly is sync(2) supposed to do - block until  
+>> there are no more dirty pages, or block until all pages that were dirty  
+>> when the sync was done are clean?  In other words is the problem simply  
+>> that pages are being dirtied faster than the sync is writing them out?
+>>     
+>
+> Our sync is currently broken in that regard, since it'll wait for too
+> long. We have a debated patch going, I have included it below. Any
+> chance you could give it a whirl?
+>
+> The semantics of sync are supposed to be 'wait for dirty IO generated
+> BEFORE this sync call'.
+>   
+Ok, I will try this patch and get back to you.
 
-OK, I agree we can get rid of RCU protection here (see my previous
-email).
-
-BTW the point was that after mem_cgroup_has_dirty_limit() the task might
-be moved to another cgroup, but also in this case mem_cgroup_has_dirty_limit()
-will be always true, so mem_cgroup_get_page_stat() is always coherent.
-
-> 
-> > What do you think about:
-> > 
-> >         mem_cgroup_lock();
-> >         if (mem_cgroup_has_dirty_limit())
-> >                 mem_cgroup_get_page_stat()
-> >         else
-> >                 global_page_state()
-> >         mem_cgroup_unlock();
-> > 
-> > Where mem_cgroup_read_lock/unlock() simply expand to nothing when
-> > memory cgroups are disabled.
-> 
-> I think you're engineering the wrong way around.
-> 
-> > > 
-> > > That allows for a 0 dirty limit (which should work and basically makes
-> > > all io synchronous).
-> > 
-> > IMHO it is better to reserve 0 for the special value "disabled" like the
-> > global settings. A synchronous IO can be also achieved using a dirty
-> > limit of 1.
-> 
-> Why?! 0 clearly states no writeback cache, IOW sync writes, a 1
-> byte/page writeback cache effectively reduces to the same thing, but its
-> not the same thing conceptually. If you want to put the size and enable
-> into a single variable pick -1 for disable or so.
-
-I might agree, and actually I prefer this solution.. but in this way we
-would use a different interface respect to the equivalent vm_dirty_ratio
-/ vm_dirty_bytes global settings (as well as dirty_background_ratio /
-dirty_background_bytes).
-
-IMHO it's better to use the same interface to avoid user
-misunderstandings.
-
-Thanks,
--Andrea
