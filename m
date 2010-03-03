@@ -1,84 +1,242 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199Ab0CCAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Mar 2010 19:13:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:53869 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884Ab0CCANz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Mar 2010 19:13:55 -0500
-Subject: Re: [PATCH] powerpc: remove IOMMU_VMERGE config option
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.or, arnd@arndb.de, davem@davemloft.net
-In-Reply-To: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-References: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-wpioZUw2UKI5VfpEQVHU"
-Date: Wed, 03 Mar 2010 11:13:52 +1100
-Message-ID: <1267575232.7814.21.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755117Ab0CCAOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Mar 2010 19:14:46 -0500
+Received: from xenotime.net ([72.52.64.118]:47486 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753017Ab0CCAOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Mar 2010 19:14:44 -0500
+Message-ID: <4B8DA9F3.2090407@xenotime.net>
+Date: Tue, 02 Mar 2010 16:14:43 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: imunsie@au1.ibm.com
+CC: linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Patrick Boettcher <pboettcher@kernellabs.com>,
+       Olivier Grenie <olivier.grenie@dibcom.fr>,
+       Martin Samek <martin@marsark.sytes.net>, linux-media@vger.kernel.org
+Subject: Re: [PATCH] Remove large struct from stack in DVB dib3000mc and dib7000p
+ drivers
+References: <1267574404-5874-1-git-send-email-imunsie@au.ibm.com>
+In-Reply-To: <1267574404-5874-1-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 03/02/10 16:00, imunsie@au1.ibm.com wrote:
+> From: Ian Munsie <imunsie@au.ibm.com>
+> 
+> Compiling these drivers results in the following compiler warnings on
+> PowerPC 64 bit:
+> 
+> drivers/media/dvb/frontends/dib3000mc.c:853: warning: the frame size of 2208 bytes is larger than 2048 bytes
+> drivers/media/dvb/frontends/dib7000p.c:1367: warning: the frame size of 2288 bytes is larger than 2048 bytes
+> 
+> The <driver>_i2c_enumeration functions use a large struct to hold the
+> state, which is stored on the stack.
+> 
+> This patch allocates that structure dynamically instead, thereby
+> conserving the driver's use of the stack.
 
---=-wpioZUw2UKI5VfpEQVHU
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Is this the same as the already-submitted patches?
 
-On Wed, 2010-03-03 at 08:54 +0900, FUJITA Tomonori wrote:
-> Seems that IOMMU_VMERGE option description gives the false
-> information:
->=20
-> http://marc.info/?l=3Dlinux-sparc&m=3D126753808727669&w=3D2
-> http://marc.info/?l=3Dlinux-sparc&m=3D126753880528825&w=3D2
->=20
-> IOMMU_VMERGE is unnecessary nowadays so how about removing it?
+Please see http://patchwork.kernel.org/patch/77892/
+and http://patchwork.kernel.org/patch/77891/
 
-Except you didn't remove it, you just made it uneditable? Why not get
-rid of it entirely.
+and in general, use http://patchwork.kernel.org/ and
+http://patchwork.ozlabs.org/ and/or mailing lists to see if patches
+have already been submitted so that you don't waste time.
+Or you could comments on my patches. ;)
 
-cheers
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 155d571..2dfa83b 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -314,17 +314,8 @@ config 8XX_MINIMAL_FPEMU
->  	  It is recommended that you build a soft-float userspace instead.
-> =20
->  config IOMMU_VMERGE
-> -	bool "Enable IOMMU virtual merging"
-> +	def_bool y
->  	depends on PPC64
-> -	default y
-> -	help
-> -	  Cause IO segments sent to a device for DMA to be merged virtually
-> -	  by the IOMMU when they happen to have been allocated contiguously.
-> -	  This doesn't add pressure to the IOMMU allocator. However, some
-> -	  drivers don't support getting large merged segments coming back
-> -	  from *_map_sg().
+> There is now the possibility that these functions will return -ENOMEM in
+> case the dynamic memory allocation fails and while a useful message will
+> show up in dmesg, at the moment the -ENOMEM condition is not relayed
+> all the way back to userspace and it will receive an -ENODEV instead.
+> Is it worth pursuing returning the correct error all the way up to
+> userspace?
+> 
+> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+> ---
+>  drivers/media/dvb/frontends/dib3000mc.c |   43 +++++++++++++++++++-----------
+>  drivers/media/dvb/frontends/dib7000p.c  |   44 +++++++++++++++++++-----------
+>  2 files changed, 55 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/media/dvb/frontends/dib3000mc.c b/drivers/media/dvb/frontends/dib3000mc.c
+> index fa85160..78c2813 100644
+> --- a/drivers/media/dvb/frontends/dib3000mc.c
+> +++ b/drivers/media/dvb/frontends/dib3000mc.c
+> @@ -13,6 +13,7 @@
+>  
+>  #include <linux/kernel.h>
+>  #include <linux/i2c.h>
+> +#include <linux/slab.h>
+>  
+>  #include "dvb_frontend.h"
+>  
+> @@ -813,43 +814,53 @@ EXPORT_SYMBOL(dib3000mc_set_config);
+>  
+>  int dib3000mc_i2c_enumeration(struct i2c_adapter *i2c, int no_of_demods, u8 default_addr, struct dib3000mc_config cfg[])
+>  {
+> -	struct dib3000mc_state st = { .i2c_adap = i2c };
+> +	struct dib3000mc_state *st;
+>  	int k;
+>  	u8 new_addr;
 > -
-> -	  Most drivers don't have this problem; it is safe to say Y here.
-> =20
->  config IOMMU_HELPER
->  	def_bool PPC64
+>  	static u8 DIB3000MC_I2C_ADDRESS[] = {20,22,24,26};
+> +	int ret = 0;
+> +
+> +	st = kzalloc(sizeof(struct dib3000mc_state), GFP_KERNEL);
+> +	if (!st) {
+> +		dprintk(KERN_ERR "Out of memory allocating dib3000mc_state in %s", __func__);
+> +		return -ENOMEM;
+> +	}
+> +	st->i2c_adap = i2c;
+>  
+>  	for (k = no_of_demods-1; k >= 0; k--) {
+> -		st.cfg = &cfg[k];
+> +		st->cfg = &cfg[k];
+>  
+>  		/* designated i2c address */
+>  		new_addr          = DIB3000MC_I2C_ADDRESS[k];
+> -		st.i2c_addr = new_addr;
+> -		if (dib3000mc_identify(&st) != 0) {
+> -			st.i2c_addr = default_addr;
+> -			if (dib3000mc_identify(&st) != 0) {
+> +		st->i2c_addr = new_addr;
+> +		if (dib3000mc_identify(st) != 0) {
+> +			st->i2c_addr = default_addr;
+> +			if (dib3000mc_identify(st) != 0) {
+>  				dprintk("-E-  DiB3000P/MC #%d: not identified\n", k);
+> -				return -ENODEV;
+> +				ret = -ENODEV;
+> +				goto out;
+>  			}
+>  		}
+>  
+> -		dib3000mc_set_output_mode(&st, OUTMODE_MPEG2_PAR_CONT_CLK);
+> +		dib3000mc_set_output_mode(st, OUTMODE_MPEG2_PAR_CONT_CLK);
+>  
+>  		// set new i2c address and force divstr (Bit 1) to value 0 (Bit 0)
+> -		dib3000mc_write_word(&st, 1024, (new_addr << 3) | 0x1);
+> -		st.i2c_addr = new_addr;
+> +		dib3000mc_write_word(st, 1024, (new_addr << 3) | 0x1);
+> +		st->i2c_addr = new_addr;
+>  	}
+>  
+>  	for (k = 0; k < no_of_demods; k++) {
+> -		st.cfg = &cfg[k];
+> -		st.i2c_addr = DIB3000MC_I2C_ADDRESS[k];
+> +		st->cfg = &cfg[k];
+> +		st->i2c_addr = DIB3000MC_I2C_ADDRESS[k];
+>  
+> -		dib3000mc_write_word(&st, 1024, st.i2c_addr << 3);
+> +		dib3000mc_write_word(st, 1024, st->i2c_addr << 3);
+>  
+>  		/* turn off data output */
+> -		dib3000mc_set_output_mode(&st, OUTMODE_HIGH_Z);
+> +		dib3000mc_set_output_mode(st, OUTMODE_HIGH_Z);
+>  	}
+> -	return 0;
+> +out:
+> +	kfree(st);
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(dib3000mc_i2c_enumeration);
+>  
+> diff --git a/drivers/media/dvb/frontends/dib7000p.c b/drivers/media/dvb/frontends/dib7000p.c
+> index 750ae61..08d47f2 100644
+> --- a/drivers/media/dvb/frontends/dib7000p.c
+> +++ b/drivers/media/dvb/frontends/dib7000p.c
+> @@ -9,6 +9,7 @@
+>   */
+>  #include <linux/kernel.h>
+>  #include <linux/i2c.h>
+> +#include <linux/slab.h>
+>  
+>  #include "dvb_math.h"
+>  #include "dvb_frontend.h"
+> @@ -1323,47 +1324,58 @@ EXPORT_SYMBOL(dib7000p_pid_filter);
+>  
+>  int dib7000p_i2c_enumeration(struct i2c_adapter *i2c, int no_of_demods, u8 default_addr, struct dib7000p_config cfg[])
+>  {
+> -	struct dib7000p_state st = { .i2c_adap = i2c };
+> +	struct dib7000p_state *st;
+>  	int k = 0;
+>  	u8 new_addr = 0;
+> +	int ret = 0;
+> +
+> +	st = kzalloc(sizeof(struct dib7000p_state), GFP_KERNEL);
+> +	if (!st) {
+> +		dprintk(KERN_ERR "Out of memory allocating dib7000p_state in %s", __func__);
+> +		return -ENOMEM;
+> +	}
+> +	st->i2c_adap = i2c;
+>  
+>  	for (k = no_of_demods-1; k >= 0; k--) {
+> -		st.cfg = cfg[k];
+> +		st->cfg = cfg[k];
+>  
+>  		/* designated i2c address */
+>  		new_addr          = (0x40 + k) << 1;
+> -		st.i2c_addr = new_addr;
+> -		dib7000p_write_word(&st, 1287, 0x0003); /* sram lead in, rdy */
+> -		if (dib7000p_identify(&st) != 0) {
+> -			st.i2c_addr = default_addr;
+> -			dib7000p_write_word(&st, 1287, 0x0003); /* sram lead in, rdy */
+> -			if (dib7000p_identify(&st) != 0) {
+> +		st->i2c_addr = new_addr;
+> +		dib7000p_write_word(st, 1287, 0x0003); /* sram lead in, rdy */
+> +		if (dib7000p_identify(st) != 0) {
+> +			st->i2c_addr = default_addr;
+> +			dib7000p_write_word(st, 1287, 0x0003); /* sram lead in, rdy */
+> +			if (dib7000p_identify(st) != 0) {
+>  				dprintk("DiB7000P #%d: not identified\n", k);
+> -				return -EIO;
+> +				ret = -EIO;
+> +				goto out;
+>  			}
+>  		}
+>  
+>  		/* start diversity to pull_down div_str - just for i2c-enumeration */
+> -		dib7000p_set_output_mode(&st, OUTMODE_DIVERSITY);
+> +		dib7000p_set_output_mode(st, OUTMODE_DIVERSITY);
+>  
+>  		/* set new i2c address and force divstart */
+> -		dib7000p_write_word(&st, 1285, (new_addr << 2) | 0x2);
+> +		dib7000p_write_word(st, 1285, (new_addr << 2) | 0x2);
+>  
+>  		dprintk("IC %d initialized (to i2c_address 0x%x)", k, new_addr);
+>  	}
+>  
+>  	for (k = 0; k < no_of_demods; k++) {
+> -		st.cfg = cfg[k];
+> -		st.i2c_addr = (0x40 + k) << 1;
+> +		st->cfg = cfg[k];
+> +		st->i2c_addr = (0x40 + k) << 1;
+>  
+>  		// unforce divstr
+> -		dib7000p_write_word(&st, 1285, st.i2c_addr << 2);
+> +		dib7000p_write_word(st, 1285, st->i2c_addr << 2);
+>  
+>  		/* deactivate div - it was just for i2c-enumeration */
+> -		dib7000p_set_output_mode(&st, OUTMODE_HIGH_Z);
+> +		dib7000p_set_output_mode(st, OUTMODE_HIGH_Z);
+>  	}
+>  
+> -	return 0;
+> +out:
+> +	kfree(st);
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(dib7000p_i2c_enumeration);
+>  
 
 
-
---=-wpioZUw2UKI5VfpEQVHU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkuNqboACgkQdSjSd0sB4dIQrwCfX8idcGbc4vLkHhYgq4Yn64Ul
-GloAn2ATMOaBvF7cbtEVTwCPOOLCNsnB
-=FP/9
------END PGP SIGNATURE-----
-
---=-wpioZUw2UKI5VfpEQVHU--
-
+-- 
+~Randy
