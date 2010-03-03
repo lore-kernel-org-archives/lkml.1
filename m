@@ -1,70 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828Ab0CCLzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 06:55:32 -0500
-Received: from mail2.picochip.com ([82.111.145.34]:58040 "EHLO
-	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753734Ab0CCLzY (ORCPT
+	id S1753791Ab0CCL41 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 06:56:27 -0500
+Received: from trinity.develer.com ([83.149.158.210]:51718 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753135Ab0CCL40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 06:55:24 -0500
-Date: Wed, 3 Mar 2010 11:56:31 +0000
-From: Jamie Iles <jamie.iles@picochip.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Jamie Iles <jamie.iles@picochip.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] ARM: perf: modify kuser rmb() call to compile for
-	Thumb-2
-Message-ID: <20100303115631.GC3928@wear.picochip.com>
-References: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
+	Wed, 3 Mar 2010 06:56:26 -0500
+Date: Wed, 3 Mar 2010 12:56:23 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-ID: <20100303115623.GA16239@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+ <1267478620-5276-4-git-send-email-arighi@develer.com>
+ <20100301220208.GH3109@redhat.com>
+ <20100301221830.GA5460@linux>
+ <20100302150529.GA12855@redhat.com>
+ <20100302222248.GD2369@linux>
+ <20100302235932.GA3007@redhat.com>
+ <20100303114703.GA1990@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Wed, 03 Mar 2010 11:55:04 +0000 (GMT)
+In-Reply-To: <20100303114703.GA1990@linux>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 11:47:58AM +0000, Will Deacon wrote:
-> The Thumb-2 instruction set does not provide an encoding
-> for sub pc, r0, #95 as present in the rmb() definition used
-> by perf. This results in compilation failure when using a
-> compiler targetting an instruction set other than ARM.
+On Wed, Mar 03, 2010 at 12:47:03PM +0100, Andrea Righi wrote:
+> On Tue, Mar 02, 2010 at 06:59:32PM -0500, Vivek Goyal wrote:
+> > On Tue, Mar 02, 2010 at 11:22:48PM +0100, Andrea Righi wrote:
+> > > On Tue, Mar 02, 2010 at 10:05:29AM -0500, Vivek Goyal wrote:
+> > > > On Mon, Mar 01, 2010 at 11:18:31PM +0100, Andrea Righi wrote:
+> > > > > On Mon, Mar 01, 2010 at 05:02:08PM -0500, Vivek Goyal wrote:
+> > > > > > > @@ -686,10 +699,14 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+> > > > > > >                   */
+> > > > > > >                  dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+> > > > > > >  
+> > > > > > > -                if (global_page_state(NR_UNSTABLE_NFS) +
+> > > > > > > -			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+> > > > > > > -                        	break;
+> > > > > > > -                congestion_wait(BLK_RW_ASYNC, HZ/10);
+> > > > > > > +
+> > > > > > > +		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> > > > > > > +		if (dirty < 0)
+> > > > > > > +			dirty = global_page_state(NR_UNSTABLE_NFS) +
+> > > > > > > +				global_page_state(NR_WRITEBACK);
+> > > > > > 
+> > > > > > dirty is unsigned long. As mentioned last time, above will never be true?
+> > > > > > In general these patches look ok to me. I will do some testing with these.
+> > > > > 
+> > > > > Re-introduced the same bug. My bad. :(
+> > > > > 
+> > > > > The value returned from mem_cgroup_page_stat() can be negative, i.e.
+> > > > > when memory cgroup is disabled. We could simply use a long for dirty,
+> > > > > the unit is in # of pages so s64 should be enough. Or cast dirty to long
+> > > > > only for the check (see below).
+> > > > > 
+> > > > > Thanks!
+> > > > > -Andrea
+> > > > > 
+> > > > > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > > > > ---
+> > > > >  mm/page-writeback.c |    2 +-
+> > > > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > > > 
+> > > > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > > > index d83f41c..dbee976 100644
+> > > > > --- a/mm/page-writeback.c
+> > > > > +++ b/mm/page-writeback.c
+> > > > > @@ -701,7 +701,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+> > > > >  
+> > > > >  
+> > > > >  		dirty = mem_cgroup_page_stat(MEMCG_NR_DIRTY_WRITEBACK_PAGES);
+> > > > > -		if (dirty < 0)
+> > > > > +		if ((long)dirty < 0)
+> > > > 
+> > > > This will also be problematic as on 32bit systems, your uppper limit of
+> > > > dirty memory will be 2G?
+> > > > 
+> > > > I guess, I will prefer one of the two.
+> > > > 
+> > > > - return the error code from function and pass a pointer to store stats
+> > > >   in as function argument.
+> > > > 
+> > > > - Or Peter's suggestion of checking mem_cgroup_has_dirty_limit() and if
+> > > >   per cgroup dirty control is enabled, then use per cgroup stats. In that
+> > > >   case you don't have to return negative values.
+> > > > 
+> > > >   Only tricky part will be careful accouting so that none of the stats go
+> > > >   negative in corner cases of migration etc.
+> > > 
+> > > What do you think about Peter's suggestion + the locking stuff? (see the
+> > > previous email). Otherwise, I'll choose the other solution, passing a
+> > > pointer and always return the error code is not bad.
+> > > 
+> > 
+> > Ok, so you are worried about that by the we finish mem_cgroup_has_dirty_limit()
+> > call, task might change cgroup and later we might call
+> > mem_cgroup_get_page_stat() on a different cgroup altogether which might or
+> > might not have dirty limits specified?
 > 
-> This patch redefines rmb() for ARM by casting the address
-> of the kuser helper to a function pointer, therefore getting
-> the compiler to take care of making the call.
+> Correct.
 > 
-> Patch taken against tip/master.
+> > 
+> > But in what cases you don't want to use memory cgroup specified limit? I
+> > thought cgroup disabled what the only case where we need to use global
+> > limits. Otherwise a memory cgroup will have either dirty_bytes specified
+> > or by default inherit global dirty_ratio which is a valid number. If
+> > that's the case then you don't have to take rcu_lock() outside
+> > get_page_stat()?
+> > 
+> > IOW, apart from cgroup being disabled, what are the other cases where you
+> > expect to not use cgroup's page stat and use global stats?
 > 
-> Signed-off-by: Will Deacon <will.deacon@arm.com>
-> Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Cc: Jamie Iles <jamie.iles@picochip.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  tools/perf/perf.h |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
-> 
-> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-> index 75f941b..6fb379b 100644
-> --- a/tools/perf/perf.h
-> +++ b/tools/perf/perf.h
-> @@ -65,9 +65,7 @@
->   * Use the __kuser_memory_barrier helper in the CPU helper page. See
->   * arch/arm/kernel/entry-armv.S in the kernel source for details.
->   */
-> -#define rmb()		asm volatile("mov r0, #0xffff0fff; mov lr, pc;" \
-> -				     "sub pc, r0, #95" ::: "r0", "lr", "cc", \
-> -				     "memory")
-> +#define rmb()		((void(*)(void))0xffff0fa0)()
-This will take care of doing the CPU barrier but don't we still need a
-compiler memory barrier? I guess you could do:
+> At boot, when mem_cgroup_from_task() may return NULL. But this is not
+> related to the RCU acquisition.
 
-#define rmb() ({ \
-		((void(*)(void))0xffff0fa0)(); \
-		asm volatile("" ::: "memory"); \
-	})
+Nevermind. You're right. In any case even if a task is migrated to a
+different cgroup it will always have mem_cgroup_has_dirty_limit() ==
+true.
 
-Jamie
+So RCU protection is not needed outside these functions.
+
+OK, I'll go with the Peter's suggestion.
+
+Thanks!
+-Andrea
