@@ -1,59 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337Ab0CCRtJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 12:49:09 -0500
-Received: from claw.goop.org ([74.207.240.146]:55466 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279Ab0CCRtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 12:49:07 -0500
-Message-ID: <4B8EA110.1040200@goop.org>
-Date: Wed, 03 Mar 2010 09:49:04 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1755370Ab0CCRtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 12:49:19 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:37795 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755342Ab0CCRtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 12:49:15 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B8EA192.5070108@cam.ac.uk>
+Date: Wed, 03 Mar 2010 17:51:14 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
 MIME-Version: 1.0
-To: Hank Janssen <hjanssen@microsoft.com>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: Ringbuffer usage in Linux Hyper-V drivers
-References: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>	<20100217235223.GG12197@kroah.com> <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212EE39C0@TK5EX14MBXC116.redmond.corp.microsoft.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Dima Zavin <dmitriyz@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+References: <4B8C1867.7040201@cam.ac.uk> <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com> <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2010 08:42 AM, Hank Janssen wrote:
-> There is a pretty good chance that ring buffer on Hyper-V will change to support
-> additional functionality. I did further investigations to check on other
-> virtualization technologies. And this same things seems to be true for XEN,
-> they also implemented their own ring buffer implementation on the guest side
-> because of their host side implementation.
->    
+Cc'ing Input list and maintainer.
+> 
+> On Tue, 2 Mar 2010, Dima Zavin wrote:
+>>
+>> I definitely see the need for what you guys are trying to accomplish.
+>> For example, currently, we use an input device for reporting events,
+>> and a separate misc device node for control
+>> (enable/disable/configure). It's definitely suboptimal, but there
+>> currently isn't anything there would let us do things cleanly.
+> 
+> I have to say, I personally don't see why something like an ambient light 
+> sensor _isn't_ just an input device. 
+> 
+> What's the difference between a physical "increase screen brightness" key, 
+> and a "ambient light sensor"? Absolutely none as far as I can tell.
+> 
+> And for something like an X server, it sounds a lot more natural to just 
+> have another input device than to have yet abother event reporting 
+> interface.
+> 
+> And quite frankly, the "explanations" I see in this thread for why it 
+> needs to be a subsystem of its own don't actually explain anything or make 
+> sense. They seem to boil down to "we just did it this way" without 
+> actually answering any of the issues brought up.
+> 
+> 		Linus
+> 
 
-Yes.  The cross-domain producer-consumer ringbuffer is a pretty specific 
-protocol.  Not only is the data format an ABI, but the exact protocol 
-for what pointers get updated when, etc.  Its not at all obvious how we 
-could reuse the kernel ringbuffer implementation, since it assumes its 
-implementing both the producer and consumer ends.
-
-> So my question is to the community at large, am I missing something that would
-> enable me to use an existing ring buffer functionality somehow in the kernel?
-> If not, I want to remove the line from the TODO file that is requesting to use the
-> in-kernel ring buffer functionality.
->
-> Finally, while checking this out, I looked at a bunch of non virtualization device
-> drivers currently in the kernel. And all the ones I looked at have
-> implemented their own ring buffer. Is there a reason why this might be the case?
->    
-
-linux/ring_buffer.h is relatively new, and probably post-dates most of 
-the driver ringbuffers.  If the ringbuffer is entirely within the kernel 
-(say, between an ISR and the rest of the kernel) then I guess it might 
-be possible to use the standard functions.  But if half the ringbuffer 
-is being managed by the device itself, then that will define the protocol.
-
-     J
