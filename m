@@ -1,44 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125Ab0CCJQk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 04:16:40 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:55586 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754984Ab0CCJQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 04:16:38 -0500
-Date: Wed, 3 Mar 2010 10:16:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+	id S1755192Ab0CCJSt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 04:18:49 -0500
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:50038 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754996Ab0CCJSr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 04:18:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=BogunZ5vRpj8NsGwwL2F6FCRYohI4xguebO3Yr3nhTGvzLGEJqqMXoHa2fYVgTBeCY
+         +fb7/kQa4tTiefQk7MOofxKDBCvneN52xRO8NUuI7WQQ/mjV7tSw4XdrKblCZerVFexh
+         TZVqlwSg8+7gUq49b4rhFGcKJiIZebAirXxbQ=
+MIME-Version: 1.0
+In-Reply-To: <2375c9f91003030108h43973d0cw713d1004dd912389@mail.gmail.com>
+References: <20100228221257.GA8858@invalid>
+	 <2375c9f91002282022n29e83858jd8cadbb2e664b436@mail.gmail.com>
+	 <20100301090708.GF17929@forwiss.uni-passau.de>
+	 <2375c9f91003030058h7456b5e1odc8ca958f5af2c0d@mail.gmail.com>
+	 <2375c9f91003030108h43973d0cw713d1004dd912389@mail.gmail.com>
+Date: Wed, 3 Mar 2010 17:18:45 +0800
+Message-ID: <2375c9f91003030118x144a47d3n1dd5a08e88c144d3@mail.gmail.com>
+Subject: Re: 2.6.33 dies on modprobe
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
        linux-kernel@vger.kernel.org,
-       "=?UTF-8?B?TcOhcnRvbiBOw6ltZXRo?=" <nm127@freemail.hu>
-Subject: Re: linux-next: manual merge of the mfd tree with the i2c tree
-Message-ID: <20100303101635.18443234@hyperion.delvare>
-In-Reply-To: <20100303144715.2b607ac1.sfr@canb.auug.org.au>
-References: <20100303144715.2b607ac1.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Content-Type: multipart/mixed; boundary=0016363b82f0254d150480e1f8c6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen, Samuel,
+--0016363b82f0254d150480e1f8c6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 3 Mar 2010 14:47:15 +1100, Stephen Rothwell wrote:
-> Today's linux-next merge of the mfd tree got a conflict in
-> drivers/i2c/busses/i2c-isch.c between commit
-> 482b522a6ced62506aba1c139cb9d4b73e7312f5 ("i2c: Make PCI device ids
-> constant") from the i2c tree and commit
-> 1fc8fe094a8ebcc09817246277250898a8d2fc5a ("i2c: convert i2c-isch to
-> platform_device") from the mfd tree.
-> 
-> The latter removes the code modified by the former, so I used the latter.
+On Wed, Mar 3, 2010 at 5:08 PM, Am=C3=A9rico Wang <xiyou.wangcong@gmail.com=
+> wrote:
+> On Wed, Mar 3, 2010 at 4:58 PM, Am=C3=A9rico Wang <xiyou.wangcong@gmail.c=
+om> wrote:
+>> On Mon, Mar 1, 2010 at 5:07 PM, M G Berberich
+>> <berberic@fmi.uni-passau.de> wrote:
+>>> Hello,
+>>>
+>>> Am Montag, den 01. M=C3=A4rz schrieb Am=C3=A9rico Wang:
+>>>> On Mon, Mar 1, 2010 at 6:12 AM, M G Berberich
+>>>> <berberic@fmi.uni-passau.de> wrote:
+>>>
+>>>> > I tried to build a 2.6.33 kernel but on boot it dies on modprobe
+>>>> > (kernel-Oops). This might be the result of faulty config, but I'm
+>>>> > totaly clueless what's the fault.
+>>>> >
+>>>> > The kernel starts up fine and mounts the root-filesystem, but then
+>>>> > dies on the first modprobe executed. I can boot it with init=3D/bin/=
+bash
+>>>> > and get a working bash (until I do modprobe on any module).
+>>>> >
+>>>> > System is a Gigabyte M55S-S3 rev 2.0 (nForce 550) with an AMD Athlon=
+64
+>>>> > X2 5000+ and amd64-kernel architecture. kernel-sources are from
+>>>> > kernel.org.
+>>>
+>>>> It seems something is wrong with forcedeth code or PCI code.
+>>>> Adding some Cc's.
+>>>
+>>> I don't think it's forcedeth. forcedeth just happens to be the first
+>>> module that get's loaded in startup. It crashes with any other module
+>>> too (I tried ohci_hcd).
+>>>
+>>
+>> Ok, below is my patch, I am not sure it could fix the BUG for you,
+>> but it could fix the WARNING. But perhaps they are related.
+>>
+>> Please give it a try.
+>>
+>
+> Oops! Ignore the patch, it should not be correct, I will send a
+> correct version soon.
+> Sorry.
+>
 
-I have sent a pull request to Linus yesterday for my i2c tree, which
-includes the first patch mentioned above. As soon as Linus pulls from
-it, Samuel will have to adjust the second patch to make it apply again.
+Here we go:
 
--- 
-Jean Delvare
+--------------------->
+
+It looks really odd that we do class_put() in non-failure path of
+__class_register(). This seems wrong.
+
+To fix this, just remove class_get() in __class_register(), we don't need
+to call class_get() to get ref of cls->p->class_subsys, because
+kset_register() has already done this for us.
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+
+--0016363b82f0254d150480e1f8c6
+Content-Type: text/plain; charset=US-ASCII; name="drivers-base-class_c-move-class_put.diff"
+Content-Disposition: attachment; 
+	filename="drivers-base-class_c-move-class_put.diff"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g6bx4d9e0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9jbGFzcy5jIGIvZHJpdmVycy9iYXNlL2NsYXNzLmMK
+aW5kZXggNmUyYzNiMC4uNjk1ZDYyNCAxMDA2NDQKLS0tIGEvZHJpdmVycy9iYXNlL2NsYXNzLmMK
+KysrIGIvZHJpdmVycy9iYXNlL2NsYXNzLmMKQEAgLTE5MSw4ICsxOTEsNyBAQCBpbnQgX19jbGFz
+c19yZWdpc3RlcihzdHJ1Y3QgY2xhc3MgKmNscywgc3RydWN0IGxvY2tfY2xhc3Nfa2V5ICprZXkp
+CiAJCWtmcmVlKGNwKTsKIAkJcmV0dXJuIGVycm9yOwogCX0KLQllcnJvciA9IGFkZF9jbGFzc19h
+dHRycyhjbGFzc19nZXQoY2xzKSk7Ci0JY2xhc3NfcHV0KGNscyk7CisJZXJyb3IgPSBhZGRfY2xh
+c3NfYXR0cnMoY2xzKTsKIAlyZXR1cm4gZXJyb3I7CiB9CiBFWFBPUlRfU1lNQk9MX0dQTChfX2Ns
+YXNzX3JlZ2lzdGVyKTsK
+--0016363b82f0254d150480e1f8c6--
