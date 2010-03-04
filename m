@@ -1,51 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173Ab0CDPlp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:41:45 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52090 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754842Ab0CDPlo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:41:44 -0500
-Date: Fri, 5 Mar 2010 00:41:03 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       benh@kernel.crashing.org, linux@arm.linux.org.uk,
-       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
-       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
-       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
-       santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100304154103.GA9384@linux-sh.org>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk> <1267316072.23523.1842.camel@pasglop> <1267333263.2762.11.camel@mulgrave.site> <20100302211049V.fujita.tomonori@lab.ntt.co.jp> <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com> <20100303215437.GF2579@ucw.cz> <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com> <20100304135128.GA12191@atrey.karlin.mff.cuni.cz> <1267712512.31654.176.camel@mulgrave.site> <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
+	id S1755247Ab0CDPmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:42:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33160 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754895Ab0CDPmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 10:42:43 -0500
+Date: Thu, 4 Mar 2010 16:36:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace events
+Message-ID: <20100304153606.GA32496@elte.hu>
+References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
+ <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
+ <1267632387.10871.59.camel@gandalf.stny.rr.com>
+ <1267634258.25158.88.camel@laptop>
+ <1267636046.10871.74.camel@gandalf.stny.rr.com>
+ <1267636595.25158.93.camel@laptop>
+ <20100304112531.GF21977@elte.hu>
+ <1267715801.10871.191.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1267715801.10871.191.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 03:29:38PM +0000, Catalin Marinas wrote:
-> On Thu, 2010-03-04 at 14:21 +0000, James Bottomley wrote:
-> > The thing which was discovered in this thread is basically that ARM is
-> > handling deferred flushing (for D/I coherency) in a slightly different
-> > way from everyone else ... 
-> 
-> Doing a grep for PG_dcache_dirty defined in terms of PG_arch_1 reveals
-> that MIPS, Parisc, Score, SH and SPARC do similar things to ARM. PowerPC
-> and IA-64 use PG_arch_1 as a clean rather than dirty bit.
-> 
-SH used to use it as a PG_mapped which was roughly similar to the
-PG_dcache_clean approach, at which point things like flushing for the PIO
-case in the HCD wasn't necessary. It did result in rather aggressive over
-flushing though, which is one of the reasons we elected to switch to
-PG_dcache_dirty.
 
-Note that the PG_dcache_dirty semantics are also outlined in
-Documentation/cachetlb.txt for PG_arch_1 usage, so it's hardly esoteric.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> On Thu, 2010-03-04 at 12:25 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Wed, 2010-03-03 at 12:07 -0500, Steven Rostedt wrote:
+> > > > oops, my bad :-), I thought this was in the x86 arch directory. For the
+> > > > University, I was helping them with adding trace points for page faults
+> > > > when I came across this in arch/x86/mm/fault.c:
+> > > > 
+> > > >         perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, 0, regs, address);
+> > > > 
+> > > > 
+> > > > This is what I actually was wondering about. Why is it a "perf only" trace 
+> > > > point instead of a TRACE_EVENT()?
+> > > 
+> > > Because I wanted to make perf usable without having to rely on funny 
+> > > tracepoints. That is, I am less worried about committing software counters 
+> > > to ABI than I am about TRACE_EVENT(), which still gives me a terribly 
+> > > uncomfortable feeling.
+> > 
+> > I'd still like a much less error-prone and work-intense way of doing it.
+> > 
+> > I'd suggest we simply add a TRACE_EVENT_ABI() for such cases, where we 
+> > really want to expose a tracepoint to tooling, programmatically. Maybe 
+> > even change the usage sites to trace_foo_ABI(), to make it really clear 
+> > and to make people aware of the consequences.
+> 
+> Would this still be available as a normal trace event?
+
+Yeah, of course. It would not result in any usage or flexibility restriction.
+
+( In the future we might want to add some sort of automated signature thing to 
+  make sure that an event that has been declared an 'ABI' isnt changed - at 
+  least as far as the record format goes. )
+
+> > 
+> > > Also, building with all CONFIG_TRACE_*=n will still yield a usable perf, 
+> > > which is something the embedded people might fancy, all that TRACE stuff 
+> > > adds lots of code.
+> > 
+> > Not a real issue i suspect when you do lock profiling ...
+> > 
+> > Or if it is, some debloating might be in order - and the detaching of event 
+> > enumeration and ftrace TRACE_EVENT infrastructure from other ftrace bits. (i 
+> > suggested an '/eventfs' special filesystem before, for nicely layed out 
+> > hierarchy of ftrace/perf events.)
+> 
+> Actually, we already have a way to decouple it.
+> 
+> include/trace/define_trace.h is the file that just adds the tracepoint
+> that is needed.
+> 
+> include/trace/ftrace.h is the file that does the magic and adds the code
+> for callbacks and tracing.
+> 
+> The perf hooks probably should not have gone in that file and been put
+> into a include/trace/perf.h file, and then in define_trace.h we would
+> add:
+> 
+>  #ifdef CONFIG_EVENT_TRACING
+>  #include <trace/ftrace.h>
+>  #endif
+> 
+> +#ifdef CONFIG_PERF_EVENTS
+> +#include <trace/perf.h>
+> +#endif
+> 
+> This should be done anyway. But it would also let you decouple ftrace trace 
+> events from perf trace events but still let the two use the same trace 
+> points.
+
+I think the main thing would be to have a decoupled /eventfs - basically 
+/debug/tracing/events/ moved to "/eventfs" or maybe to "/proc/events/". This 
+would make them available more widely, and in a standardized way.
+
+Thanks,
+
+	Ingo
