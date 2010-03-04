@@ -1,72 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803Ab0CDSTL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:19:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49595 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754140Ab0CDSS5 (ORCPT
+	id S1754825Ab0CDSUP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:20:15 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:40423 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753763Ab0CDSUM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:18:57 -0500
-Date: Thu, 4 Mar 2010 10:18:03 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@linux.ie>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-Message-ID: <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Mar 2010 13:20:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=q+CkgSTVuXfb3cui3DPUfmOee2ssiT8NO4f1ujQiwSVaTL9xKA8Rs9PP4O668i+ntS
+         glRcJ6jJm5iS6cNL0IziMlD5OAnfSHFQhGfvYppTMAAc5rVhfWqVrTG0ViOEJuBLHSDx
+         y56PFc+MGQ/fF4OrJG+pBpHpIkn9dr7pxDBC4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4B8FF2C3.1060808@teksavvy.com>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
+	 <4B8FC6AC.4060801@teksavvy.com>
+	 <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
+	 <4B8FF2C3.1060808@teksavvy.com>
+Date: Thu, 4 Mar 2010 13:20:11 -0500
+Message-ID: <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+From: s ponnusa <foosaa@gmail.com>
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Greg Freemyer <greg.freemyer@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+SMART data consists only the count of remapped sectors, seek failures,
+raw read error rate, uncorrectable sector counts, crc errors etc., and
+technically one should be aware of the error during write operation as
+well.
 
+As per the ATAPI specifications, the media will report error for both
+read / write operations. It times out / sends out error code for both
+read and write operations. Correct me if I am wrong. What happens if
+all the available free sectors are remapped and there are no more
+sectors to map? In that atleast the drive should return an error
+right? When using the O_DIRECT more, the i/o error, media bad,
+softreset, hardreset error messages are starting to fill up dmesg
+almost immediately after the write call.
 
-Hmm. What the hell am I supposed to do about
+It just tries in a continous loop and then finally returns success
+(even without remapping). I don't know how to change the behavior of
+libata / or other such driver which does it. All I want to do it to
+know the error in my program while it is reporting it in the syslog at
+kernel / driver level.
 
-	(II) NOUVEAU(0): [drm] nouveau interface version: 0.0.16
-	(EE) NOUVEAU(0): [drm] wrong version, expecting 0.0.15
-	(EE) NOUVEAU(0): 879:
+Thank you.
 
-now?
-
-What happened to the whole backwards compatibility thing? I wasn't even 
-warned that this breaks existing user space. That makes it impossible to 
-_test_ new kernels. Upgrading X and the kernel in lock-step is not a valid 
-model, lots of people are just using some random distribution (F12 in my 
-case), and you just broke it.
-
-I see the commit that does this was very aware of it:
-
-	commit a1606a9596e54da90ad6209071b357a4c1b0fa82
-	Author: Ben Skeggs <bskeggs@redhat.com>
-	Date:   Fri Feb 12 10:27:35 2010 +1000
-
-	    drm/nouveau: new gem pushbuf interface, bump to 0.0.16
-
-	    This commit breaks the userspace interface, and requires a new libdrm for
-	    nouveau to operate again.
-
-	    The multiple GEM_PUSHBUF ioctls that were present in 0.0.15 for
-	    compatibility purposes are now gone, and replaced with the new ioctl which
-	    allows for multiple push buffers to be submitted (necessary for hw index
-	    buffers in the nv50 3d driver) and relocations to be applied on any buffer.
-
-	    A number of other ioctls (CARD_INIT, GEM_PIN, GEM_UNPIN) that were needed
-	    for userspace modesetting have also been removed.
-
-	    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
-	    Signed-off-by: Francisco Jerez <currojerez@riseup.net>
-
-but why the hell wasn't I made aware of it before-hand? Quite frankly, I 
-probably wouldn't have pulled it.
-
-We can't just go around breaking peoples setups. This driver is, like it 
-or not, used by Fedora-12 (and probably other distros). It may say 
-"staging", but that doesn't change the fact that it's in production use by 
-huge distributions. Flag days aren't acceptable.
-
-		Linus
+On Thu, Mar 4, 2010 at 12:49 PM, Mark Lord <kernel@teksavvy.com> wrote:
+> On 03/04/10 10:33, foo saa wrote:
+> ..
+>>
+>> hdparm is good, but I don't want to use the internal ATA SECURE ERASE
+>> because I can never get the amount of bad sectors the drive had.
+>
+> ..
+>
+> Oh.. but isn't that information in the S.M.A.R.T. data ??
+>
+> You'll not find the bad sectors by writing -- a true WRITE nearly never
+> reports a media error.  Instead, the drive simply remaps to a good sector
+> on the fly and returns success.
+>
+> Generally, only READs report media errors.
+>
+> Cheers
+>
