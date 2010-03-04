@@ -1,85 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914Ab0CDLsB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:48:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46558 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755519Ab0CDLsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:48:00 -0500
-Date: Thu, 4 Mar 2010 06:47:48 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: device-mapper development <dm-devel@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-cc: Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
- checks
-In-Reply-To: <20100303200734.GW5768@kernel.dk>
-Message-ID: <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
-References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
- <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
- <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
- <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com>
- <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755924Ab0CDLvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:51:07 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:55218 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850Ab0CDLvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 06:51:05 -0500
+To: Sage Weil <sage@newdream.net>
+CC: hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net> (message
+	from Sage Weil on Wed, 3 Mar 2010 13:37:43 -0800 (PST))
+Subject: Re: [PATCH 23/26] ceph: nfs re-export support
+References: <1267577217-31923-1-git-send-email-sage@newdream.net>
+ <1267577217-31923-24-git-send-email-sage@newdream.net> <20100303074814.GA1030@infradead.org> <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net>
+Message-Id: <E1Nn9Zu-0005dZ-LC@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 04 Mar 2010 12:50:54 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 3 Mar 2010, Jens Axboe wrote:
-
-> On Wed, Mar 03 2010, Dmitry Monakhov wrote:
-> > Mike Snitzer <snitzer@redhat.com> writes:
+On Wed, 3 Mar 2010, Sage Weil wrote:
+> On Wed, 3 Mar 2010, Christoph Hellwig wrote:
+> > On Tue, Mar 02, 2010 at 04:46:54PM -0800, Sage Weil wrote:
+> > > Basic NFS re-export support is included.  This mostly works.  However,
+> > > Ceph's MDS design precludes the ability to generate a (small)
+> > > filehandle that will be valid forever, so this is of limited utility.
 > > 
-> > > Linux has all sorts of internal interfaces that are "odd"... the current
-> > > 'q->merge_bvec_fn' interface included.  But odd is not a problem (nor is
-> > > it "broken") unless you make changes that don't consider how the current
-> > > interface is defined.
-> > Ok. then cant you please explain more historical questions
-> > 1) Why bio_add_page() can not add less data than requested?
-> >    Seems that it doesn't make caller's code much complicate
-> >    Off course barrier bio is special case. I don't consider it here.
+> > So don't include it if it's broken by design.
 > 
-> Because the caller may not expect that, a partial add may not make any
-> sense to the caller. The bio code obviously doesn't care. And it
-> certainly could complicate the caller a lot, if they need to now issue
-> and wait for several bio's instead of just a single one. Now a single
-> completion queue and wait_for_completion() is not enough.
+> Well, there are changes we can make to the MDS to make it work that are on 
+> the roadmap (they'll also help with disaster recovery).  They will require 
+> some change on the client side, though, so it's not like the current 
+> implementation will suddenly work perfectly with a server-side upgrade.
+> 
+> That said, I don't think Ceph is the only filesystem that has this problem 
+> (fat? fuse? cifs?), and it is still useful in its current state.  But I 
+> can leave it off by default (via Kconfig option), or include a kern.log 
+> warning, or leave it out entirely, if that's what people prefer.
 
-The whole thing is lame by design.
+Fuse uses a fixed 64bit handle on the userspace/kernel API and on the
+"low level" userspace API, so that's NFS export compatible.
 
-As a consequence, the code for splitting these page-sized bios is being 
-duplicated in md, dm and request-based device (and maybe in other drivers).
+On the "high level" API fuse uses path strings, which are not so
+suitable for NFS exporting.  Despite that, people have been exporting
+these fuse filesystems over NFS and dealing with the occasional ESTALE
+if the inode has been evicted from the cache on the server side but
+the client still holds a file handle.
 
-And there is a long standing unfixable bug --- adding a device to raid1 
-may fail if the device has smaller request size than the other raid1 leg.
-Think about this:
+CIFS doesn't seem to have any export capability.  FAT tries, but is
+also not guaranteed to work if the inodes are no longer in the cache.
 
-* thread 1:
-bio_add_page() -> returns ok
-...
-bio_add_page() -> returns ok
-* scheduling to thread 2 *
-* thread 2:
-add a raid1 leg to the block device
-* scheduling to thread 1 *
-* thread 1:
-submit_bio() --- the bio already oversized for the new raid1 leg and there 
-is no way to shrink it.
-
-
-I think it should be redesigned in this way:
-* the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
-* the code for splitting bios should be just at one place --- in the 
-generic block layer and it should work with all drivers. I.e.
-q->make_request_fn will return that the request is too big for the given 
-driver and the generic code will allocate few another bios from 
-per-request_queue mempool and split the bio.
-* then, we would fix the raid1 bug and we would also simplify md and dm 
---- remove the splitting code.
-
-Mikulas
+Thanks,
+Miklos
