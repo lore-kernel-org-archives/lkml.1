@@ -1,170 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983Ab0CDNcI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 08:32:08 -0500
-Received: from mail.df.lth.se ([194.47.250.12]:43917 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755960Ab0CDNcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 08:32:04 -0500
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH 2/2] DMAENGINE: COH 901 318 fix bytesleft
-Date: Thu,  4 Mar 2010 14:31:58 +0100
-Message-Id: <1267709518-5015-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	id S1755946Ab0CDNgF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 08:36:05 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:65495 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752777Ab0CDNgB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 08:36:01 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James.Bottomley@HansenPartnership.com, benh@kernel.crashing.org,
+       linux@arm.linux.org.uk, mdharm-kernel@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
+       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
+       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20100303215437.GF2579@ucw.cz>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Thu, 04 Mar 2010 13:35:56 +0000
+Message-ID: <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Mar 2010 13:35:57.0453 (UTC) FILETIME=[9EF4FBD0:01CABB9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes the function to get the number of bytes left in the
-ongoing DMA transaction actually work: the old code did not take
-neither lli:s nor queued jobs into account. Also fix a missing
-spinlock while we're at it.
+On Wed, 2010-03-03 at 21:54 +0000, Pavel Machek wrote:
+> > With some drivers (those doing PIO) or subsystems (SCSI mass storage
+> > over USB HCD), there is no call to flush_dcache_page() for page cache
+> > pages, hence the ARM implementation of update_mmu_cache() doesn't flush
+> > the D-cache (and only invalidating the I-cache doesn't help).
+> >
+> > The viable solutions so far:
+> >
+> >      1. Implement a PIO mapping API similar to the DMA API which takes
+> >         care of the D-cache flushing. This means that PIO drivers would
+> >         need to be modified to use an API like pio_kmap()/pio_kunmap()
+> >         before writing to a page cache page.
+> >      2. Invert the meaning of PG_arch_1 to denote a clean page. This
+> >         means that by default newly allocated page cache pages are
+> >         considered dirty and even if there isn't a call to
+> >         flush_dcache_page(), update_mmu_cache() would flush the D-cache.
+> >         This is the PowerPC approach.
+> 
+> What about option
+> 
+> 3. Forget about PG_arch_1 and always do the flush?
+> 
+> How big is the performance impact? Note that current code does not
+> even *work* so working, 10% slower code will be an improvement.
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
----
- drivers/dma/coh901318.c |   97 +++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 89 insertions(+), 8 deletions(-)
+The driver fix is as simple as calling a flush_dcache_page() and I've
+been carrying such patches in my tree for some time now. The question is
+whether we need to do it in the driver or not (would need to update
+Documentation/cachetlb.txt as well).
 
-diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
-index 20889c9..672517b 100644
---- a/drivers/dma/coh901318.c
-+++ b/drivers/dma/coh901318.c
-@@ -408,25 +408,101 @@ coh901318_first_queued(struct coh901318_chan *cohc)
- 	return d;
- }
- 
-+static inline u32 coh901318_get_bytes_in_lli(struct coh901318_lli *in_lli)
-+{
-+	struct coh901318_lli *lli = in_lli;
-+	u32 bytes = 0;
-+
-+	while (lli) {
-+		bytes += lli->control & COH901318_CX_CTRL_TC_VALUE_MASK;
-+		lli = lli->virt_link_addr;
-+	}
-+	return bytes;
-+}
-+
- /*
-- * DMA start/stop controls
-+ * Get the number of bytes left to transfer on this channel,
-+ * it is unwise to call this before stopping the channel for
-+ * absolute measures, but for a rough guess you can still call
-+ * it.
-  */
- u32 coh901318_get_bytes_left(struct dma_chan *chan)
- {
--	unsigned long flags;
--	u32 ret;
- 	struct coh901318_chan *cohc = to_coh901318_chan(chan);
-+	struct coh901318_desc *cohd;
-+	struct list_head *pos;
-+	unsigned long flags;
-+	u32 left = 0;
-+	int i = 0;
- 
- 	spin_lock_irqsave(&cohc->lock, flags);
- 
--	/* Read transfer count value */
--	ret = readl(cohc->base->virtbase +
--		    COH901318_CX_CTRL+COH901318_CX_CTRL_SPACING *
--		    cohc->id) & COH901318_CX_CTRL_TC_VALUE_MASK;
-+	/*
-+	 * If there are many queued jobs, we iterate and add the
-+	 * size of them all. We take a special look on the first
-+	 * job though, since it is probably active.
-+	 */
-+	list_for_each(pos, &cohc->active) {
-+		/*
-+		 * The first job in the list will be working on the
-+		 * hardware. The job can be stopped but still active,
-+		 * so that the transfer counter is somewhere inside
-+		 * the buffer.
-+		 */
-+		cohd = list_entry(pos, struct coh901318_desc, node);
-+
-+		if (i == 0) {
-+			struct coh901318_lli *lli;
-+			dma_addr_t ladd;
-+
-+			pr_err("DMA count first entry\n");
-+			/* Read current transfer count value */
-+			left = readl(cohc->base->virtbase +
-+				     COH901318_CX_CTRL +
-+				     COH901318_CX_CTRL_SPACING * cohc->id) &
-+				COH901318_CX_CTRL_TC_VALUE_MASK;
-+
-+			/* See if the transfer is linked... */
-+			ladd = readl(cohc->base->virtbase +
-+				     COH901318_CX_LNK_ADDR +
-+				     COH901318_CX_LNK_ADDR_SPACING *
-+				     cohc->id) &
-+				~COH901318_CX_LNK_LINK_IMMEDIATE;
-+			/* Single transaction */
-+			if (!ladd)
-+				continue;
-+
-+			/*
-+			 * Linked transaction, follow the lli, find the
-+			 * currently processing lli, and proceed to the next
-+			 */
-+			lli = cohd->lli;
-+			while (lli && lli->link_addr != ladd)
-+				lli = lli->virt_link_addr;
-+
-+			if (lli)
-+				lli = lli->virt_link_addr;
-+
-+			/*
-+			 * Follow remaining lli links around to count the total
-+			 * number of bytes left
-+			 */
-+			left += coh901318_get_bytes_in_lli(lli);
-+		} else {
-+			left += coh901318_get_bytes_in_lli(cohd->lli);
-+		}
-+		i++;
-+	}
-+
-+	/* Also count bytes in the queued jobs */
-+	list_for_each(pos, &cohc->queue) {
-+		cohd = list_entry(pos, struct coh901318_desc, node);
-+		left += coh901318_get_bytes_in_lli(cohd->lli);
-+	}
- 
- 	spin_unlock_irqrestore(&cohc->lock, flags);
- 
--	return ret;
-+	return left;
- }
- EXPORT_SYMBOL(coh901318_get_bytes_left);
- 
-@@ -831,6 +907,7 @@ static irqreturn_t dma_irq_handler(int irq, void *dev_id)
- static int coh901318_alloc_chan_resources(struct dma_chan *chan)
- {
- 	struct coh901318_chan	*cohc = to_coh901318_chan(chan);
-+	unsigned long flags;
- 
- 	dev_vdbg(COHC_2_DEV(cohc), "[%s] DMA channel %d\n",
- 		 __func__, cohc->id);
-@@ -838,11 +915,15 @@ static int coh901318_alloc_chan_resources(struct dma_chan *chan)
- 	if (chan->client_count > 1)
- 		return -EBUSY;
- 
-+	spin_lock_irqsave(&cohc->lock, flags);
-+
- 	coh901318_config(cohc, NULL);
- 
- 	cohc->allocated = 1;
- 	cohc->completed = chan->cookie = 1;
- 
-+	spin_unlock_irqrestore(&cohc->lock, flags);
-+
- 	return 1;
- }
- 
+The reason I'm not in favour always doing the flush is that we penalise
+DMA drivers where there is no need for extra D-cache flushing (already
+handled by the DMA API; option 1 above is similar, just that it is meant
+for PIO usage). An ARM patch I proposed for inverting the meaning of
+PG_arch_1 also marks a page as clean in the dma_map_* functions.
+
 -- 
-1.6.3.3
+Catalin
 
