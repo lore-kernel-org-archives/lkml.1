@@ -1,84 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792Ab0CDQhc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:37:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46554 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755369Ab0CDQhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:37:31 -0500
-Date: Thu, 4 Mar 2010 16:33:38 GMT
-From: tip-bot for Will Deacon <will.deacon@arm.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       will.deacon@arm.com, efault@gmx.de, jamie.iles@picochip.com,
-       fweisbec@gmail.com, linux@arm.linux.org.uk, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, will.deacon@arm.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, jamie.iles@picochip.com,
-       fweisbec@gmail.com, linux@arm.linux.org.uk, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
-References: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/pebs] perf, ARM: Modify kuser rmb() call to compile for Thumb-2
-Message-ID: <tip-da7196e1f986c846ffa8b2ec385223fad38e8518@git.kernel.org>
-Git-Commit-ID: da7196e1f986c846ffa8b2ec385223fad38e8518
-X-Mailer: tip-git-log-daemon
+	id S1756028Ab0CDQhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:37:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47941 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755922Ab0CDQhg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:37:36 -0500
+Date: Thu, 4 Mar 2010 08:34:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
+ barrier (v9)
+In-Reply-To: <20100304122304.GA6864@elte.hu>
+Message-ID: <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
+References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:33:41 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  da7196e1f986c846ffa8b2ec385223fad38e8518
-Gitweb:     http://git.kernel.org/tip/da7196e1f986c846ffa8b2ec385223fad38e8518
-Author:     Will Deacon <will.deacon@arm.com>
-AuthorDate: Wed, 3 Mar 2010 11:47:58 +0000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Mar 2010 12:13:28 +0100
 
-perf, ARM: Modify kuser rmb() call to compile for Thumb-2
 
-The Thumb-2 instruction set does not provide an encoding
-for sub pc, r0, #95 as present in the rmb() definition used
-by perf. This results in compilation failure when using a
-compiler targetting an instruction set other than ARM.
+On Thu, 4 Mar 2010, Ingo Molnar wrote:
+> 
+>  - SA_NOFPU: on x86 to skip the FPU/SSE save/restore, for such fast in/out special 
+>    purpose signal handlers? (can whip up a quick patch for you if you want)
 
-This patch redefines rmb() for ARM by casting the address
-of the kuser helper to a function pointer, therefore getting
-the compiler to take care of making the call.
+I'd love to do this, but it's wrong.
 
-Patch taken against tip/master.
+It's too damn easy to use the FPU by mistake in user land, without ever 
+being aware of it. memset()/memcpy are obvious potential users SSE, but 
+they might be called in non-obvious ways implicitly by the compiler (ie 
+structure copy and setup).
 
-Signed-off-by: Will Deacon <will.deacon@arm.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jamie Iles <jamie.iles@picochip.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/perf.h |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+And modern glibc ends up using SSE4 even for things like strstr and 
+strlen, so it really is creeping into all kinds of trivial helper 
+functions that might not be obvious. So SA_NOFPU is a lovely idea, but 
+it's also an idea that sucks rotten eggs in practice, with quite possibly 
+the same _binary_ working or not working depending on what kind of CPU and 
+what shared library it happens to be using.
 
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index 75f941b..6fb379b 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -65,9 +65,7 @@
-  * Use the __kuser_memory_barrier helper in the CPU helper page. See
-  * arch/arm/kernel/entry-armv.S in the kernel source for details.
-  */
--#define rmb()		asm volatile("mov r0, #0xffff0fff; mov lr, pc;" \
--				     "sub pc, r0, #95" ::: "r0", "lr", "cc", \
--				     "memory")
-+#define rmb()		((void(*)(void))0xffff0fa0)()
- #define cpu_relax()	asm volatile("":::"memory")
- #endif
- 
+Too damn fragile, in other words.
+
+(Now, if it's accompanied by the kernel actually _testing_ that there is 
+no FPU activity, by setting the TS flag and checking at fault time and 
+causing a SIGFPE, then that would be better. At least you'd get a nice 
+clear signal rather than random FPU state corruption. But you're still in 
+the situation that now the binary might work on some machines and setups, 
+and not on others.
+
+>  - SA_RUNNING: a way to signal only running threads - as a way for user-space 
+>    based concurrency control mechanisms to deschedule running threads (or, like
+>    in your case, to implement barrier / garbage collection schemes).
+
+Hmm. This sounds less fundamentally broken, but at the same time also 
+_way_ more invasive in the signal handling layer. It's already one of our 
+more "exciting" layers out there.
+
+		Linus
