@@ -1,78 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995Ab0CDPdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:33:55 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:54333 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754708Ab0CDPdy convert rfc822-to-8bit (ORCPT
+	id S1755125Ab0CDPfg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:35:36 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57739 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755074Ab0CDPfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:33:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OV2eNSwYV1ls/137imC6pwFccjDKXI3EJj75/bjNmHYSHdLdJEHAs4+0aOin3e62Tk
-         Lzpudw10J1F1Y6VQn4BTqf5UxKLg8LmQAbwSF+32U5UsODFj4GpAC08Mz34fjritSEER
-         8afVN1ZN5Srb7AibDQGPIsVDE18Vu8O1hGhZ8=
+	Thu, 4 Mar 2010 10:35:34 -0500
+Date: Thu, 4 Mar 2010 15:34:10 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       benh@kernel.crashing.org, mdharm-kernel@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
+       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
+       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100304153410.GC6622@n2100.arm.linux.org.uk>
+References: <1267316072.23523.1842.camel@pasglop> <1267333263.2762.11.camel@mulgrave.site> <20100302211049V.fujita.tomonori@lab.ntt.co.jp> <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com> <20100303215437.GF2579@ucw.cz> <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com> <20100304135128.GA12191@atrey.karlin.mff.cuni.cz> <1267712512.31654.176.camel@mulgrave.site> <20100304142704.GB6622@n2100.arm.linux.org.uk> <1267716323.6526.479.camel@e102109-lin.cambridge.arm.com>
 MIME-Version: 1.0
-In-Reply-To: <4B8FC6AC.4060801@teksavvy.com>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
-	 <4B8FC6AC.4060801@teksavvy.com>
-Date: Thu, 4 Mar 2010 10:33:52 -0500
-Message-ID: <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: foo saa <foosaa@gmail.com>
-To: Mark Lord <kernel@teksavvy.com>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267716323.6526.479.camel@e102109-lin.cambridge.arm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am using 4k aligned buffers for writing and reading.
+On Thu, Mar 04, 2010 at 03:25:23PM +0000, Catalin Marinas wrote:
+> On Thu, 2010-03-04 at 14:27 +0000, Russell King - ARM Linux wrote:
+> > On Thu, Mar 04, 2010 at 07:51:52PM +0530, James Bottomley wrote:
+> > > On Thu, 2010-03-04 at 14:51 +0100, Pavel Machek wrote:
+> > > > Seems like ARM has requirement other architectures do not, that is
+> > > > a) not documented anywhere
+> > > > b) causes problems
+> > > >
+> > > > You could argue that performance improvement (how big is it, anyway?)
+> > > > is worth it, but this should be agreed to by wider community...
+> > >
+> > > Performance is always worth it provided we don't sacrifice correctness.
+> > > The thing which was discovered in this thread is basically that ARM is
+> > > handling deferred flushing (for D/I coherency) in a slightly different
+> > > way from everyone else ... once that's fixed, ARM will likely not have
+> > > the D/I problem, but we'll still have the libata (and other PIO systems)
+> > > D flushing issue.
+> > 
+> > I think you've got that backwards.
+> > 
+> > Reversing the meaning of PG_arch_1 will probably fix the D aliasing issue -
+> > since we'll interpret '0' to mean "page is dirty, it needs flushing before
+> > hitting userspace", whereas '1' means "page has been cleaned; there are no
+> > aliases."
+> > 
+> > This doesn not address the I/D coherency issue, where the Icache needs
+> > attention to get rid of speculatively loaded cache lines while old data
+> > was present in the cache.
+> 
+> The I-cache flushing is already handled in update_mmu_cache (or
+> set_pte_at in a future patch; I'm not talking about other issues on
+> ARM11MPCore here).
 
-Kernel / driver catches the error during the write cycle and I can get
-the error messages about the media being bad or sector i/o errors. But
-it is not propagated to the program and write always passes (even in
-the case of the device being out of control. (i.e., the device fails
-to respond to any further open / read / write queries and inaccessible
-from the core). Isn't the error has to be notified to the program that
-makes the call?
-
-Reading is a completely different scenario and I am disabling the
-read-ahead cache completely with fadvise call.
-
-hdparm is good, but I don't want to use the internal ATA SECURE ERASE
-because I can never get the amount of bad sectors the drive had.
-
-On Thu, Mar 4, 2010 at 9:41 AM, Mark Lord <kernel@teksavvy.com> wrote:
-> On 03/04/10 09:17, Greg Freemyer wrote:
-> ..
->>
->> I think / suspect your major problem is you say above that you use a
->> 512-byte buffer to wipe with.  The kernel is using 4K pages.  So when
->> you write to a 4K section of the drive for the first time, the kernel
->> implements read-modify-write logic.
->>
->> Your i/o failures are almost certainly on the read cycle of the above,
->> not the write cycle.  You need to move to 4K buffers and you need to
->> ensure your 4K writes are aligned with how the kernel is working with
->> the disk.  ie. You need your 4K buffer to perfectly align with the
->> kernels 4K block handling so you never have a read-modify-write cycle.
->
-> ..
->
-> You'll also need to disable Linux read-ahead for the drive,
-> or it may try reading beyond even the 4KB block.
->
-> But really.. isn't "hdparm --security-erase NULL /dev/sdX" good enough ???
->
-> Cheers
->
+You may not have been; my message was addressed to James to correct
+his message, which seems to have the issues confused.
