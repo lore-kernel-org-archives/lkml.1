@@ -1,44 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932229Ab0CDT3X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:29:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47127 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756188Ab0CDT3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:29:21 -0500
-Message-ID: <4B9009D4.8060404@kernel.org>
-Date: Thu, 04 Mar 2010 11:28:20 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: no boot with NO_BOOTMEM=y [was: mmotm 2010-03-02-18-38 uploaded]
-References: <201003030305.o2335F1F015917@imap1.linux-foundation.org> <4B8FC98E.3070203@gmail.com> <4B8FCC4D.6040202@gmail.com>
-In-Reply-To: <4B8FCC4D.6040202@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+	id S1756937Ab0CDTdG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:33:06 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:59604 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753581Ab0CDTdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:33:04 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=RmMPtDsReg4XnIewbrtT6fXsz7Y4+oX35Nx7FDkK3bG5Lkl4Cgd2Dr5CkxLa0KlismABtjyvbOXytTZ+++3+8VyUmhw+IkW+5OUdJiJrprU7V1E6Tf/WMNntQfI6i3T5;
+Date: Thu, 4 Mar 2010 11:33:06 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100304113306.6c4fd782@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	<alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+	<20100304103655.0b14343f@jbarnes-piketon>
+	<20100304103929.6eb81d45@jbarnes-piketon>
+	<alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+	<20100304105624.70fe845e@jbarnes-piketon>
+	<alpine.LFD.2.00.1003041101390.3751@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/2010 07:05 AM, Jiri Slaby wrote:
-> Subject fixed.
+On Thu, 4 Mar 2010 11:08:07 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> The thing is, they clearly didn't even _try_ to make anything compatible. 
+> See how all the ioctl numbers were moved around. 
 > 
-> On 03/04/2010 03:54 PM, Jiri Slaby wrote:
->> On 03/03/2010 03:39 AM, akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2010-03-02-18-38 has been uploaded to
->>
->> Hi, the kernel does not boot in qemu-kvm with NO_BOOTMEM=y. The last
->> message is 'Booting the kernel.'
-> 
+> And if you can't make if backwards compatible, at least you should make it 
+> forwards-compatible. Is it even that? I don't know. I'm kind of afraid it 
+> isn't. The new libdrm required for it certainly hasn't been pushed to 
+> Fedora-12. Will it ever be? And if it is, can you still run an old kernel 
+> on it?
 
-can you check current linus tree or tip/master?
+Sure, but both kinds of compat come at a cost, a potentially large one
+in this case, so why take it on before absolutely necessary?  I know
+you can see both sides of this...
 
-also can you send out .config?
+> And btw, I'd complain about breaking backwards compatibility even if it 
+> wasn't just my own machine. I can pretty much guarantee that I'm not going 
+> to be the only one hitting this issue.
 
-Thanks
+Right, but OTOH it's a development driver.  If you're running Fedora,
+things will work as long as you stick to the distro packages.  And if
+you're building your own kernels, you ought to be taking care with
+staging drivers, right?
 
-Yinghai
+> So practically speaking: what _do_ you suggest we do about all the 
+> regressions this will cause?
+
+Before this thread I thought the policy was "let people muddle through"
+with staging drivers until their staging status is cleared.  If that's
+not the case, then really what's the point of staging?  I'm sure there
+are other examples of this type of breakage in staging drivers, though
+admittedly nouveau is probably the biggest in terms of user interest.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
