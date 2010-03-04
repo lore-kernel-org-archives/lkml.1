@@ -1,53 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622Ab0CDNzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 08:55:17 -0500
-Received: from perec.tyrell.hu ([66.197.149.104]:55111 "EHLO perec.tyrell.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939Ab0CDNzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 08:55:15 -0500
-Message-ID: <4B8FBBBA.8070308@maroy.hu>
-Date: Thu, 04 Mar 2010 14:55:06 +0100
-From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
-Organization: Tyrell Corporation
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752979Ab0CDOAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:00:11 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54000 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122Ab0CDOAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 09:00:09 -0500
+Date: Thu, 4 Mar 2010 09:00:04 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>
+Subject: Re: [GIT PULL] exofs changes for 2.6.34
+Message-ID: <20100304140004.GA10838@infradead.org>
+References: <4B8FA351.9030000@panasas.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 8087:0020
-References: <Pine.LNX.4.44L0.1002251020100.1686-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002251020100.1686-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8FA351.9030000@panasas.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+On Thu, Mar 04, 2010 at 02:10:57PM +0200, Boaz Harrosh wrote:
+>  Next changes will be support for raid5 and raid6
 
-in this thread, earlier I wrote:
-
->> By the way, I noticed above that you have xhci-hcd installed.  As far 
->> as I know, that driver does not yet support system suspend.  You should 
->> try unloading xhci-hcd before doing the suspend (both with and without 
->> CONFIG_USB_DEBUG).
-> 
-> wow, rmmod xhci - and the suspend goes through fine!
-
-now, I re-installed the system, and suspend doesn't work anymore.
-
-if I have the xhci module loaded, it fails and returns to the screen
-right away.
-
-if I unload the xhci module, I get to the character console, and then
-the machine hangs there - nothing happens anymore. only a power cycle helps.
-
-I don't know what was different when at least suspend worked :(
-
-I'll try to do some more debugging..
-
-
-Akos
+Err, you're not pushing another bloody copy of raid algorithms in, are
+you?
 
