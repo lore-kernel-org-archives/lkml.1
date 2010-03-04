@@ -1,131 +1,201 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097Ab0CDPv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:51:56 -0500
-Received: from fn.samba.org ([216.83.154.106]:37124 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475Ab0CDPvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:51:54 -0500
-Subject: Re: [linux-cifs-client] [RFC PATCH] CIFS posix acl permission
- checking
-From: simo <idra@samba.org>
-To: Jon Severinsson <jon@severinsson.net>
-Cc: linux-cifs-client@lists.samba.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <201003041621.44577.jon@severinsson.net>
-References: <201003041150.08341.jon@severinsson.net>
-	 <1267710262.2375.280.camel@localhost>
-	 <201003041621.44577.jon@severinsson.net>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Samba Team
-Date: Thu, 04 Mar 2010 10:51:53 -0500
-Message-ID: <1267717913.2375.298.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	id S1755265Ab0CDPwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:52:24 -0500
+Received: from mail.openrapids.net ([64.15.138.104]:44019 "EHLO
+	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755204Ab0CDPwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 10:52:22 -0500
+Date: Thu, 4 Mar 2010 10:52:19 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
+	barrier (v9)
+Message-ID: <20100304155218.GA26468@Krystal>
+References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100304122304.GA6864@elte.hu>
+X-Editor: vi
+X-Info: http://www.efficios.com
+X-Operating-System: Linux/2.6.26-2-686 (i686)
+X-Uptime: 10:15:25 up 40 days, 17:52,  7 users,  load average: 1.33, 0.55,
+	0.67
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 16:21 +0100, Jon Severinsson wrote:
-> Den Thursday 04 March 2010 14:44:22 skrev du:
-> > although you did a good job with the code itself, I have to say that I
-> > think the approach is just wrong. Checking ACLs on the client is simply
-> > the wrong way to go. It is just racy and it is not authoritative anyway.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> The problem with this approach is that the server checks the permissions using 
-> the credentials of the user doing the mount, not the user trying to access the 
-> file. This leaves a big gaping security hole on any multiuser system, and even 
-> on single user systems you sill loose any benefits from privilege separation 
-> (such as running system daemons as an unprivileged user).
-
-Letting a different user access the mount point *is* a security
-violation in itself. The CIFS security model lies in per user sessions.
-The right way to fix the problem is multi-session mounts. Allowing a
-different user to use a user session is a violation of the security
-model of CIFS.
-
-Trying to put a bandaid on a gross policy and security violation is not
-really useful :)
-
-> So while it is possible to do it that way (by including the noperm mount 
-> option when mounting), it is generally a bad idea to do so.
+> * Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
 > 
-> As you are going to do permission checking on the client side anyway,
-
-This is the problem, you shouldn't. CIFS is not NFS, you are abusing
-your access credentials simply because they are stored in the kernel.
-
->  I do not 
-> see the problem consulting the acl when doing so. As not consulting the acl 
-> only restricts access to files I'm supposed to have access to (and indeed has 
-> access to if using smbclient), it only results in me being forced to use the 
-> uid, gid, file_mode, and/or dir_mode mount options, at witch point I can't see 
-> whether I have access or not other than by trying to do the access, as it will 
-> always look as if I have access.
-
-Sorry, but just piling up errors on top of other errors does not really
-make the situation better.
-
-> > And we are not counting the problem that with CIFS (and samba in
-> > particular) the client have no way to know what are the real credentials
-> > assigned to the session and that the client may have no idea what the
-> > users and groups in the ACL are (if client and server do not use exactly
-> > the same user database).
+> > I am proposing this patch for the 2.6.34 merge window, as I think it is 
+> > ready for inclusion.
 > 
-> Of course this only works as intended if the client and server shares the same 
-> user database. In my case that is through ldap, but could as well be nis, 
-> winbind or some other similar nss module. However, that is the case already, 
-> without any acl, as UNIX permission bits have exactly the same problem. If you 
-> are mounting something from a server with a different user database, you'll 
-> need to use the uid, gid, file_mode, and/or dir_mode mount options, but that is 
-> no different from the situation without this patch.
+> It's a bit late for this merge window i think.
 
-Yes, the current situation is not right either, and definitely need
-fixing.
+OK, no problem. Thanks for taking time to review the patch. See below for
+response to your comments.
 
-> > The right way is to let the server enforce ACLs, and use multisessions
-> > mounts if multiple users are involved. Time would be better spent
-> > working in that direction IMO.
 > 
-> If by multisession mounts you mean something like nfs, where the client tells 
-> the server what user is trying to do the access, that can only work if either 
-> the server blindly trusts the client (as in nfs3) or with some complex 
-> cryptographic token infrastructure (as in nfs4 with kerberos authentication). 
+> > Here is an implementation of a new system call, sys_membarrier(), which 
+> > executes a memory barrier on all threads of the current process. It can be 
+> > used to distribute the cost of user-space memory barriers asymmetrically by 
+> > transforming pairs of memory barriers into pairs consisting of 
+> > sys_membarrier() and a compiler barrier. For synchronization primitives that 
+> > distinguish between read-side and write-side (e.g. userspace RCU, rwlocks), 
+> > the read-side can be accelerated significantly by moving the bulk of the 
+> > memory barrier overhead to the write-side.
+> 
+> Why is this such a low level and still special-purpose facility?
+> 
+> Synchronization facilities for high-performance threading may want to do a bit 
+> more than just execute a barrier instruction on another CPU that has a 
+> relevant thread running.
 
-No, you cannot "tell" the server who you are like in NFS, this is the
-main point. CIFS has a security model that is different from (old) NFS.
-In CIFS each session is authenticated, that's why you should have
-multi-session if you want to access the same mount point as different
-users. Like NFSv4 you should authenticate each user first, create it's
-own session and then let him in, or deny access completely (or degrade
-access to the guest user if the remote server allow you so).
+Yep, I'm aware of that.
 
-> The first case is simply not very secure,
+> 
+> You cited signal based numbers:
+> 
+>  > (what we have now, with dynamic sys_membarrier check, expedited scheme)
+>  > memory barriers in reader: 907693804 reads, 817793 writes
+>  > sys_membarrier scheme:    4316818891 reads, 503790 writes
+>  >
+>  > (dynamic sys_membarrier check, non-expedited scheme)
+>  > memory barriers in reader: 907693804 reads, 817793 writes
+>  > sys_membarrier scheme:    8698725501 reads,    313 writes
+> 
+> Much of that signal handler overhead is i think due to:
+> 
+>  - FPU/SSE context save/restore
+>  - the need to wake up, run and deschedule all threads
 
-The first case is simply not possible with CIFS.
+This second point hurts, especially if we have more threads than processors.
 
->  and a cryptographic token infrastructure is needlessly complex.
+> 
+> Instead i'd suggest for you to try to implement user-space RCU speedups not 
+> via the new sys_membarrier() syscall, but via two new signal extensions:
+> 
+>  - SA_NOFPU: on x86 to skip the FPU/SSE save/restore, for such fast in/out special 
+>    purpose signal handlers? (can whip up a quick patch for you if you want)
 
-Yet there is no real alternative, short of changing the CIFS model to
-allow the server to trust the client machine.
+This could help.
 
-> If someone were to work on making 
-> setting up a cryptographic token infrastructure simpler I would love that, but 
-> I'm not even remotely qualified to do so, and in the meantime the current samba 
-> infrastructure fulfils all my need, except that the cifs module erroneously 
-> refuses me the rights I'm granted through an acl.
+> 
+>  - SA_RUNNING: a way to signal only running threads - as a way for user-space 
+>    based concurrency control mechanisms to deschedule running threads (or, like
+>    in your case, to implement barrier / garbage collection schemes).
+> 
+>    ( Note: to properly sync back you'll also need an sa_info field to tell
+>      target tasks how many tasks were woken up. That way a futex can be used 
+>      as a semaphore to signal back to the issuing thread, and make it all 
+>      properly event triggered and nicely scalable. Also, queued signals are a 
+>      must for such a scheme. )
 
-We already have the cifs.upcall thing, which is the prerequisite to get
-multi-session work at least with kerberos. And it can be easily extended
-to allow also to use NTLM cached credentials.
+Ah, nice! I wondered how you'd propose to deal with that one. It was actually my
+main problem: how to wait for all running threads to complete their execution.
+This added sa_info count and futex usage will indeed deal with the problem. And
+rt_sigqueueinfo() will ensure that we don't collapse multiple concurrent
+requests for execution of the same signal. For syncing back, I think we can do
+this without modifying sa_info. Simply passing a pointer to the counter to
+increment in the sigval value to rt_sigqueueinfo() should do the trick.
 
-That is a goal that would be better pursuing.
+> 
+> My estimation is that it will be _much_ faster than the naive signal based 
+> approach - maybe even quite comparable to an open-coded sys_membarrier():
 
-Simo.
+Yes, especially given that your proposal permits to send all signals in in
+"broadcast to all running threads" mode, in a single system call.
+
+> 
+>  - as most of the overhead in a real scenario ought to be the IPI sending and 
+>    latency - not the syscall entry/exit. (with a signal approach we'd still go
+>    into target thread user-mode, so one more syscall exit+re-entry)
+> 
+>  - or for the common case where there are no other threads running, we are 
+>    just in/out of SA_RUNNING without having to do any synchronization. In that
+>    case it should be quite close to sys_membarrier() - modulo some minimal 
+>    signal API overhead. [which we could optimize some more, if it's visible in
+>    your benchmarks.]
+> 
+> Signals per se are pretty scalable these days - now that most of the fastpaths 
+> are decoupled from tasklist_lock and everything is RCU-ized.
+> 
+> Further benefits are:
+> 
+>  - both SA_NOFPU and SA_RUNNING could be used by a _lot_ more user-space 
+>    facilities than just user-space RCU.
+> 
+>  - synergetic effects: growing some real high-performance facility based on 
+>    signals would ensure further signal speedups in the future as well. 
+>    Currently any server app that runs into signal limitations tends to shy 
+>    away from them and use some different (and often inferior) signalling 
+>    scheme. It would be better extend signals with 'lightweight' capabilities 
+>    as well.
+> 
+> All in one, signals are used by like 99.9% of Linux apps, while 
+> sys_membarrier() would be used only by [WAG] 0.00001% of them.
+> 
+> So before we can merge this (at least via the RCU tree, which you have sent it 
+> to), i'd like to see you try _much_, _MUCH_ harder to fix the very obvious 
+> signal overhead performance problems you have demoed via the numbers above so 
+> nicely.
+
+I think we can start with the SA_RUNNING+modified sa_info approach to signal
+only running threads. I expect that much of the benefit will come from there.
+Then, from that point, we can see if SA_NOFPU provides a significant performance
+improvement.
+
+Now, a very basic questions: in the signal-based approach I currently use, I
+reserve SIGUSR1 _from my liburcu library_ (yeah, that's pretty ugly). The
+problem is: how can I reserve new signal numbers from a library point of view
+without having the applications using it too ? We have room left in the rt
+signals numbers, so maybe this is a lesser problem than with standard signals,
+which are quite full, but the problem of making sure the application does not
+conflict stays.
+
+> 
+> If _that_ fails, and if we get all the fruits of that, _then_ we might 
+> perhaps, with a lot of hesitation, concede defeat and think about adding yet 
+> another syscall.
+> 
+> I know it's cool to add a brand new syscall - but, unfortunately, in practice 
+> it doesnt help Linux apps all that much. (at least until we have tools/klibc/ 
+> or so.)
+> 
+> [ There's also a few small cleanliness details i noticed in your patch: enums
+>   are a tiny bit nicer for ABIs than #define's, the #ifdef SMP is ugly, etc. - 
+>   but it doesnt really matter much as i think we should concentrate on the
+>   scalability problems of signals first. ]
+
+OK, let's do that.
+
+Thanks,
+
+Mathieu
+
+> 
+> Thanks,
+> 
+> 	Ingo
 
 -- 
-Simo Sorce
-Samba Team GPL Compliance Officer <simo@samba.org>
-Principal Software Engineer at Red Hat, Inc. <simo@redhat.com>
-
+Mathieu Desnoyers
+Operating System Efficiency Consultant
+EfficiOS Inc.
+http://www.efficios.com
