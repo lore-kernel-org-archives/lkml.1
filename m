@@ -1,73 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836Ab0CDTOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:14:14 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:40571 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755274Ab0CDTON (ORCPT
+	id S1756885Ab0CDTOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:14:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33182 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755235Ab0CDTOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:14:13 -0500
-To: Cong Wang <amwang@redhat.com>
-Cc: David Miller <davem@davemloft.net>, opurdila@ixiacom.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nhorman@tuxdriver.com, eric.dumazet@gmail.com
-Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
-References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com>
-	<20100227.033230.196838696.davem@davemloft.net>
-	<4B8F6FF0.5000306@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 04 Mar 2010 11:14:07 -0800
-In-Reply-To: <4B8F6FF0.5000306@redhat.com> (Cong Wang's message of "Thu\, 04 Mar 2010 16\:31\:44 +0800")
-Message-ID: <m1vddbdhmo.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 4 Mar 2010 14:14:50 -0500
+Date: Thu, 4 Mar 2010 11:14:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+In-Reply-To: <20100304190450.GA23807@srcf.ucam.org>
+Message-ID: <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain> <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain> <20100304185002.GA23532@srcf.ucam.org> <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
+ <20100304190450.GA23807@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cong Wang <amwang@redhat.com> writes:
-
-> David Miller wrote:
->> Eric B., could you look over the first two patches (which touch the
->> sysctl core) and give some review and ACK/NACK?
->>
->
-> ping Eric W. Biederman ... :)
-
-I have looked and it is not easy to tell by simple review if
-correctness has been maintained in the proc cleanup patch.
-Furthermore the code even after the cleanups still feels like code
-that is trying too hard to do too much.
 
 
-I think the example set by bitmap_parse_user in it's user interface is
-a good example to follow when constructing bitmap helper functions.
-Including having the actual parsing code should live in lib/bitmap.c
+On Thu, 4 Mar 2010, Matthew Garrett wrote:
+> 
+> If you'd made it clear that you wanted the interface to be stable 
+> before it got merged, I suspect that it simply wouldn't have been merged 
+> until the interface was stable.
 
-The users of bitmap_parse_user do something very nice.  They allocate
-a temporary bitmap.  Parse the userspace value into the temporary
-bitmap, and then move that new bitmap into the kernel data structures.
-For your large bitmap this seems like the idea way to handle it.  That
-guarantees no weird intermediate failure states, and really makes the
-the bitmap feel like a single value.
+What kind of excuse is that? It's "we did bad things, but if we didn't do 
+those bad things, we'd have done _other_ bad things"?
 
-I would add the restriction that the values in the list of ranges
-always must be increasing, and in general restrict the set of accepted
-values as much as possible.  If we don't accept it now we don't have
-to worry about some userspace application relying on some unitended
-side effect a few years into the future.
+Two wrong choices don't make a right.
 
+Nobody has even answered me whether this is _forwards_compatible. It 
+clearly isn't backwards-compatible. IOW, is there _any_ way to move 
+back-and-forth over that commit, even if I can find a new libdrm?
 
-I think it is a serious bug that you clear the destination bitmap
-in the middle of parsing it.  That will either open or close all
-ports in the middle of parsing, and I can't see how that would
-ever be a good thing.
+IOW, we know we have a problem here. But what's the solution? I know I can 
+revert it (I tried, I'm running that kernel now, nouveau works). That's 
+not a good solution, I know. But can you offer me a _better_ one? One that 
+doesn't involve "upgrade all the way to rawhide, and lose the ability to 
+bisect anything, or run plain 2.6.33".
 
-Eric
+So yes, I'm complaining. But I at least have mentioned one solution. You, 
+in contast, are just making excuses with no solutions.
 
-
+			Linus
