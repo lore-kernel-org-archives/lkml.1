@@ -1,62 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087Ab0CDSnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:43:06 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:34410 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755575Ab0CDSnB convert rfc822-to-8bit (ORCPT
+	id S1756059Ab0CDSnq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:43:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38170 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753835Ab0CDSnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:43:01 -0500
+	Thu, 4 Mar 2010 13:43:45 -0500
+Date: Thu, 4 Mar 2010 10:43:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@linux.ie>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+In-Reply-To: <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-class: 
-From: "Kalra Ashish-B00888" <B00888@freescale.com>
-Message-ID: <292801cabbca$829e365e$2303d30a@fsl.freescale.net>
-Subject: RE: Linux kernel - Libata bad block error handling to user mode  program
-Date: Fri, 5 Mar 2010 00:11:01 +0530
-Importance: normal
-X-Priority: 3
-Thread-Topic: Linux kernel - Libata bad block error handling to user mode  program
-Thread-Index: Acq7yoKeZy5tcPu9TueFj9t2uW9HjA==
-To: "Mark Lord" <kernel@teksavvy.com>, "foo saa" <foosaa@gmail.com>
-Cc: "Greg Freemyer" <greg.freemyer@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>, <linux-mm@kvack.org>
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain;
-	charset="utf-8"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Sent from my HTC
+On Thu, 4 Mar 2010, Linus Torvalds wrote:
+> 
+> I see the commit that does this was very aware of it:
+> 
+> 	commit a1606a9596e54da90ad6209071b357a4c1b0fa82
+> 	Author: Ben Skeggs <bskeggs@redhat.com>
+> 	Date:   Fri Feb 12 10:27:35 2010 +1000
+> 
+> 	    drm/nouveau: new gem pushbuf interface, bump to 0.0.16
+> 
+> 	    This commit breaks the userspace interface, and requires a new libdrm for
+> 	    nouveau to operate again.
 
------Original Message-----
-From: Mark Lord <kernel@teksavvy.com>
-Sent: 04 March 2010 11:20 PM
-To: foo saa <foosaa@gmail.com>
-Cc: Greg Freemyer <greg.freemyer@gmail.com>; Andrew Morton <akpm@linux-foundation.org>; linux-kernel@vger.kernel.org <linux-kernel@vger.kernel.org>; linux-ide@vger.kernel.org <linux-ide@vger.kernel.org>; Jens Axboe <jens.axboe@oracle.com>; linux-mm@kvack.org <linux-mm@kvack.org>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode  program
+Quite frankly, the more I look at that commit, the worse it looks.
 
-On 03/04/10 10:33, foo saa wrote:
-..
-> hdparm is good, but I don't want to use the internal ATA SECURE ERASE
-> because I can never get the amount of bad sectors the drive had.
-..
+That commit seems to _on_purpose_ try to avoid at all cost being 
+compatible. It not only removes some old entry-points, it literally 
+re-numbers all the ioctl numbers as it does so, apparently entirely in 
+order to just make it difficult to have some libdrm that can handle both 
+versions.
 
-Oh.. but isn't that information in the S.M.A.R.T. data ??
+This all means that I literally cannot test the current -git tree. 
 
-You'll not find the bad sectors by writing -- a true WRITE nearly never
-reports a media error.  Instead, the drive simply remaps to a good sector
-on the fly and returns success.
+I suspect I have to revert it. 
 
-Generally, only READs report media errors.
+Or is there a version of X that can handle _both_ the 0.0.15 and the 
+0.0.16 interfaces?
 
-Cheers
---
-To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+That's absolutely required - so that it's not a flag-day any more to 
+upgrade the kernel, and so that people (including very much me) can test 
+and bisect other things without having to worry about basic functionality 
+coming and going as you bisect things,
 
+			Linus
