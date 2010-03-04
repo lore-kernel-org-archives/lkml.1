@@ -1,44 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863Ab0CDOfJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:35:09 -0500
-Received: from lo.gmane.org ([80.91.229.12]:36015 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493Ab0CDOfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:35:07 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Thorsten Glaser <tg@debian.org>
-Subject: Re: [REGRESSION] Can't boot lvm on root (Ubuntu 9.10 userspace) with 2.6.33
-Date: Thu, 4 Mar 2010 13:54:58 +0000 (UTC)
-Message-ID: <loom.20100304T145423-538@post.gmane.org>
-References: <E1Nmppq-0000sA-E1@closure.thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@dough.gmane.org
-X-Gmane-NNTP-Posting-Host: sea.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 87.139.34.156 (Lynx/2.8.7dev.7 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/1.6.3)
+	id S1753919Ab0CDOf1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:35:27 -0500
+Received: from pindarots.xs4all.nl ([80.101.128.228]:53497 "EHLO
+	pindarots.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753410Ab0CDOfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 09:35:25 -0500
+Message-ID: <4B8FC4F1.70605@xs4all.nl>
+Date: Thu, 04 Mar 2010 15:34:25 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100225 Fedora/3.0.2-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.2
+MIME-Version: 1.0
+To: Andre Prendel <andre.prendel@gmx.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] 2.6.33 on jetway nc81-lf board
+References: <4B8C0598.2060000@xs4all.nl> <20100302213709.951ee97b.akpm@linux-foundation.org> <20100304091741.GA1995@andre-laptop>
+In-Reply-To: <20100304091741.GA1995@andre-laptop>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Ts'o <tytso <at> mit.edu> writes:
+On 03/04/2010 10:17 AM, Andre Prendel wrote:
+> On Tue, Mar 02, 2010 at 09:37:09PM -0800, Andrew Morton wrote:
+>> (cc lm-sensors)
+>>
+>> On Mon, 01 Mar 2010 19:21:12 +0100 Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+(....)
+>>> No other sensor-related modules are loaded.
+>>>
+>>> What could be wrong?
+> 
+> See lm-sensors FAQ Chapter3 #39:
+> 
+>   http://www.lm-sensors.org/wiki/FAQ/Chapter3#Mysensorshavestoppedworkinginkernel2.6.31
 
-> a failed initramfs.   And of course, the initramfs environment is so
-> crappy that there are no debugging aids --- not even a working pager.
+Thanks, but the explanation implies no real fix other than more
+consciously choosing to put system stability at risk.
+Is a better fix in the making?
 
-While not a pager (could probably easily be added), I’ve got patches
-for klibc that let an almost full-featured mksh build against it… and
-it’s not much bigger (40K or so) than ash.
-
-bye,
-//mirabilos
--- 
-«MyISAM tables -will- get corrupted eventually. This is a fact of life. »
-“mysql is about as much database as ms access” – “MSSQL at least descends
-from a database” “it's a rebranded SyBase” “MySQL however was born from a
-flatfile and went downhill from there” – “at least jetDB doesn’t claim to
-be a database”	(#nosec)    ‣‣‣ Please let MySQL and MariaDB finally die!
-
+Kind regards,
+Udo
