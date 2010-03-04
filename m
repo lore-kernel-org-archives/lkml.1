@@ -1,84 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818Ab0CDDsx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:48:53 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53508 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757Ab0CDDsr (ORCPT
+	id S1754831Ab0CDDuA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:50:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37167 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754759Ab0CDDtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:48:47 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Mar 2010 12:45:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Greg@smtp1.linux-foundation.org,
-       Suleiman Souhlal <suleiman@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
-Message-Id: <20100304124505.394a058e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100303220319.GA2706@linux>
-References: <1267478620-5276-1-git-send-email-arighi@develer.com>
-	<1267478620-5276-4-git-send-email-arighi@develer.com>
-	<20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
-	<20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303150137.f56d7084.nishimura@mxp.nes.nec.co.jp>
-	<20100303151549.5d3d686a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303172132.fc6d9387.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303220319.GA2706@linux>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Mar 2010 22:49:55 -0500
+Date: Wed, 3 Mar 2010 19:49:24 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Alain Knaff <alain@knaff.lu>,
+       Peter Anvin <hpa@zytor.com>
+Subject: Re: [GIT PULL] Squashfs updates for 2.6.34
+In-Reply-To: <4B8F0A42.5070405@lougher.demon.co.uk>
+Message-ID: <alpine.LFD.2.00.1003031925540.7046@localhost.localdomain>
+References: <4B8C1873.1080700@lougher.demon.co.uk> <alpine.LFD.2.00.1003030904040.3627@localhost.localdomain> <4B8F0A42.5070405@lougher.demon.co.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 23:03:19 +0100
-Andrea Righi <arighi@develer.com> wrote:
 
-> On Wed, Mar 03, 2010 at 05:21:32PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Wed, 3 Mar 2010 15:15:49 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
- 
-> > +	preempt_disable();
-> > +	lock_page_cgroup_migrate(pc);
-> >  	page = pc->page;
-> >  	if (page_mapped(page) && !PageAnon(page)) {
-> >  		/* Update mapped_file data for mem_cgroup */
-> > -		preempt_disable();
-> >  		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> >  		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
-> > -		preempt_enable();
-> >  	}
-> >  	mem_cgroup_charge_statistics(from, pc, false);
-> > +	move_acct_information(from, to, pc);
+
+On Thu, 4 Mar 2010, Phillip Lougher wrote:
 > 
-> Kame-san, a question. According to is_target_pte_for_mc() it seems we
-> don't move file pages across cgroups for now. 
+> In my defence with these patches I was trying for the best solution while
+> touching as little of the mess as possible.  As that's not acceptable, I'll
+> go away and try and fix some of the mess, before trying for another merge.
 
-yes. It's just in plan.
+I know, I understand. The whole thing is messy as hell, I just don't want 
+that mess to spread even more.
 
-> If !PageAnon(page) we just return 0 and the page won't be selected for migration in
-> mem_cgroup_move_charge_pte_range().
-> 
-> So, if I've understood well the code is correct in perspective, but
-> right now it's unnecessary. File pages are not moved on task migration
-> across cgroups and, at the moment, there's no way for file page
-> accounted statistics to go negative.
-> 
-> Or am I missing something?
-> 
+Let's ask Peter for help. He's been involved with that whole crazy init 
+loader decompressor thing.
 
-At rmdir(), remainging file caches in a cgroup is moved to
-its parent. Then, all file caches are moved to its parent at rmdir().
+Peter, see the thread and my unhappiness on lkml (if you don't have any 
+other archives, see for example http://lkml.org/lkml/2010/3/3/275).
 
-This behavior is for avoiding to lose too much file caches at removing cgroup.
+That whole crazy "let's hide a crappy malloc implementation in a header 
+file, and then make things depend on '#ifdef STATIC'" just makes me puke. 
+And I'm sure Phillip has been gouging his eyes out too, while he was 
+spreading it out into those _new_ crazy header file fragments for each 
+decompressor.
 
-Thanks,
--Kame
+So rather than have those crazy header file tricks, can we just add a 
+kmalloc() _library_ file for the crazy bootloader crud, so that the 
+bootloader could just share header files with the regular kernel, and not 
+do that crazy thing?
 
+It's insane having that malloc() implementation, and those STATIC games, 
+in a header file, and the games we play with "error()" sometimes being a 
+function pointer and sometimes being a function. Crazy, crazy.
 
+So Phillip split up these things:
+
+	#ifdef STATIC
+	/* Code active when included from pre-boot environment: */
+	#define INIT
+	#else
+	/* Compile for initramfs/initrd code only */
+	#define INIT __init
+	static void(*error)(char *m);
+	#endif
+
+and I refuse to see three new copies of that disgusting thing (bunzip, 
+inflate, lzma). So I'd really _really_ want for the pre-boot environment 
+to have that same __init declaration, and the _same_ indirect error() 
+handler model, so that we don't have this kind of thing spreading.
+
+It was ugly enough in <compress/mm.h> (which really should be nuked from 
+orbit - it's the only way to be sure), but when I see it spreading, I go 
+into full zombie-attack mode, and want to start up the chainsaw and run 
+around naked.
+
+		Linus
