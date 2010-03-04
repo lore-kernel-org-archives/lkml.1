@@ -1,67 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932256Ab0CDUID (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:08:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41750 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756189Ab0CDUIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:08:00 -0500
-Date: Thu, 4 Mar 2010 12:07:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <20100304195302.GA24856@srcf.ucam.org>
-Message-ID: <alpine.LFD.2.00.1003041202240.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain> <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain> <20100304185002.GA23532@srcf.ucam.org> <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
- <20100304190450.GA23807@srcf.ucam.org> <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain> <20100304192524.GA24253@srcf.ucam.org> <alpine.LFD.2.00.1003041131490.3751@localhost.localdomain> <20100304195302.GA24856@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S932327Ab0CDUIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 15:08:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49231 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932258Ab0CDUIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 15:08:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
+Date: Thu, 4 Mar 2010 21:11:32 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "colin.king@canonical.com" <colin.king@canonical.com>
+References: <1267665799-670-1-git-send-email-shaohua.li@intel.com> <20100304024141.GA29235@sli10-desk.sh.intel.com> <201003042049.46240.rjw@sisk.pl>
+In-Reply-To: <201003042049.46240.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003042111.32481.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Mar 2010, Matthew Garrett wrote:
+On Thursday 04 March 2010, Rafael J. Wysocki wrote:
+> On Thursday 04 March 2010, Shaohua Li wrote:
+> > On Thu, Mar 04, 2010 at 10:30:02AM +0800, H. Peter Anvin wrote:
+> > > On 03/03/2010 05:23 PM, Shaohua Li wrote:
+> > > > Colin reported a strange oops in S4 resume code path (see below). The test
+> > > > system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+> > > > The oops always happen a virtual address 0xc03ff000, which is mapped to the
+> > > > last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+> > > > 
+> > > > EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+> > > > EIP is at copy_loop+0xe/0x15
+> > > > EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+> > > > ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+> > > >  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> > > > ...
+> > > > ...
+> > > > CR2: 00000000c03ff000
+> > > > 
+> > > > Tested-by: Colin Ian King <colin.king@canonical.com>
+> > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > > > ---
+> > > >  arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
+> > > >  1 files changed, 11 insertions(+), 0 deletions(-)
+> > > > 
+> > > > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+> > > > index b641388..9e4ef64 100644
+> > > > --- a/arch/x86/power/hibernate_asm_32.S
+> > > > +++ b/arch/x86/power/hibernate_asm_32.S
+> > > > @@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
+> > > >  	ret
+> > > >  
+> > > >  ENTRY(restore_image)
+> > > > +	movl	mmu_cr4_features, %ecx
+> > > >  	movl	resume_pg_dir, %eax
+> > > >  	subl	$__PAGE_OFFSET, %eax
+> > > >  	movl	%eax, %cr3
+> > > >  
+> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > > > +	movl	%ecx, %edx
+> > > > +	andl	$~(X86_CR4_PGE), %edx
+> > > > +	movl	%edx, %cr4;  # turn off PGE
+> > > > +1:
+> > > > +	movl	%cr3, %eax;  # flush TLB
+> > > > +	movl	%eax, %cr3
+> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > > > +	movl	%ecx, %cr4;  # turn PGE back on
+> > > > +1:
+> > > >  	movl	restore_pblist, %edx
+> > > >  	.p2align 4,,7
+> > > >  
+> > > 
+> > > Since we're about to do another global page flush a bit further down in
+> > > the same code, why not just leave PGE off until then?
+> > sure, updated patch.
+> > 
+> > 
+> > i386: do a global tlb flush in S4 resume
+> > 
+> >     Colin reported a strange oops in S4 resume code path (see below). The test
+> >     system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+> >     The oops always happen a virtual address 0xc03ff000, which is mapped to the
+> >     last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+> > 
+> >     EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+> >     EIP is at copy_loop+0xe/0x15
+> >     EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+> >     ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+> >      DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> >     ...
+> >     ...
+> >     CR2: 00000000c03ff000
+> > 
+> >     Tested-by: Colin Ian King <colin.king@canonical.com>
+> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > 
+> > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+> > index b641388..cd5e878 100644
+> > --- a/arch/x86/power/hibernate_asm_32.S
+> > +++ b/arch/x86/power/hibernate_asm_32.S
+> > @@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
+> >  	ret
+> >  
+> >  ENTRY(restore_image)
+> > +	movl	mmu_cr4_features, %ecx
+> >  	movl	resume_pg_dir, %eax
+> >  	subl	$__PAGE_OFFSET, %eax
+> >  	movl	%eax, %cr3
+> >  
+> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > +	andl	$~(X86_CR4_PGE), %ecx
+> > +	movl	%ecx, %cr4;  # turn off PGE
+> > +	movl	%cr3, %eax;  # flush TLB
+> > +	movl	%eax, %cr3
+> > +1:
+> >  	movl	restore_pblist, %edx
+> >  	.p2align 4,,7
 > 
-> > IOW, we have a real technical problem here. Are you just going to continue 
-> > to make excuses about it?
-> 
-> I'm not questioning the fact that it would be preferable to provide 
-> compatibility. But that compatibility doesn't come for free - someone 
-> has to implement it, and when your developer base is almost entirely 
-> made up of people who are doing this because they find it fun and 
-> interesting rather than because they're paid to, who's going to do it 
-> and what functionality is going to be delayed as a result?
+> In that case please also remove the turning GPE off down the road.
 
-The thing is, I violently disagree with your basic premise.
+s/GPE/PGE/
 
-The way things are done now, that developer base actually just makes 
-things _harder_ for themselves. They may not be aware that they do so, and 
-they may _think_ that it's easier to just ignore versioning, but they are 
-wrong.
+doh, too much ACPI programming lately.
 
-And I say that from personal experience. Doing incompatible changes in any 
-code base makes everything harder. It results in users staying on old 
-versions that you _know_ you don't want to support, but because of the 
-incompatible change, they can't sanely upgrade. 
-
-Seriously. 
-
-So I bet we could do that "wrapper nouveau.so" that literally just does 
-the "get version, and dlopen the _real_ nouveau-<version>.so".
-
-Quite frankly, I don't know the XAA interfaces (or whatever they are in X 
-these days), but somebody who does know them should be able to cook up 
-such a wrapper in five minutes (and then spend a day testing it because of 
-some silly bug, but whatever..)
-
-Do you seriously think that that wouldn't make life easier EVEN FOR THOSE 
-DEVELOPERS that you claim to speak up for?
-
-			Linus
+Rafael
