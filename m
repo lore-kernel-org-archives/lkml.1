@@ -1,24 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678Ab0CDDcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:32:39 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:65072 "EHLO mx1.redhat.com"
+	id S1754702Ab0CDDct (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:32:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15540 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754529Ab0CDDcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:32:33 -0500
+	id S1754642Ab0CDDce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 22:32:34 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v2 2/2] x86: Issue at least one memory barrier in
-	stop_machine_text_poke().
+Subject: [PATCH -tip v2 1/2] perf probe: Correct probe syntax on command line
+	help
 To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>
-Date: Wed, 03 Mar 2010 22:38:50 -0500
-Message-ID: <20100304033850.3819.74590.stgit@localhost6.localdomain6>
-In-Reply-To: <20100304033843.3819.10087.stgit@localhost6.localdomain6>
-References: <20100304033843.3819.10087.stgit@localhost6.localdomain6>
+       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Date: Wed, 03 Mar 2010 22:38:43 -0500
+Message-ID: <20100304033843.3819.10087.stgit@localhost6.localdomain6>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,36 +28,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix stop_machine_text_poke() to issue smp_mb() before exiting waiting
-loop, and use cpu_relax() for waiting.
-
-Changes in v2:
- - Don't use ACCESS_ONCE().
+Move @SRC right after FUNC in syntax according to syntax change
+on command line help.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/alternative.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ tools/perf/builtin-probe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index 635e4f4..3a4bf35 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -597,8 +597,8 @@ static int __kprobes stop_machine_text_poke(void *data)
- 		wrote_text = 1;
- 	} else {
- 		while (!wrote_text)
--			smp_rmb();
--		sync_core();
-+			cpu_relax();
-+		smp_mb();	/* Load wrote_text before following execution */
- 	}
- 
- 	flush_icache_range((unsigned long)tpp->addr,
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index e3dfd0d..c30a335 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -177,7 +177,7 @@ static const struct option options[] = {
+ #ifdef NO_DWARF_SUPPORT
+ 		"[EVENT=]FUNC[+OFF|%return] [ARG ...]",
+ #else
+-		"[EVENT=]FUNC[+OFF|%return|:RL|;PT][@SRC]|SRC:AL|SRC;PT"
++		"[EVENT=]FUNC[@SRC][+OFF|%return|:RL|;PT]|SRC:AL|SRC;PT"
+ 		" [ARG ...]",
+ #endif
+ 		"probe point definition, where\n"
 
 
 -- 
