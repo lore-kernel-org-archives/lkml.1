@@ -1,267 +1,123 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468Ab0CDOEo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:04:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39703 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006Ab0CDOB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:01:56 -0500
-Message-Id: <20100304140100.165166129@chello.nl>
-References: <20100304140046.596569763@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Mar 2010 15:00:49 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
-       fweisbec@gmail.com, Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 03/14] perf, x86: Change x86_pmu.{enable,disable} calling convention
-Content-Disposition: inline; filename=perf-x86-cleanup-args2.patch
+	id S1751275Ab0CDOJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:09:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48064 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745Ab0CDOJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 09:09:34 -0500
+Date: Thu, 4 Mar 2010 15:08:22 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lennart Poettering <lennart@poettering.net>
+Cc: linux-kernel@vger.kernel.org, Americo Wang <xiyou.wangcong@gmail.com>,
+       James Morris <jmorris@namei.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Kyle McMartin <kyle@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
+	for child processes
+Message-ID: <20100304140822.GA458@redhat.com>
+References: <20100202120457.GA19605@omega>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202120457.GA19605@omega>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the full perf_event into the x86_pmu functions so that those may
-make use of more than the hw_perf_event, and while doing this, remove
-the superfluous second argument.
+On 02/02, Lennart Poettering wrote:
+>
+> This patch adds a simple flag for each process that marks it as an
+> "anchor" process for all its children and grandchildren. If a child of
+> such an anchor dies all its children will not be reparented to init, but
+> instead to this anchor, escaping this anchor process is not possible. A
+> task with this flag set hence acts is little "sub-init".
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
----
- arch/x86/kernel/cpu/perf_event.c       |   31 +++++++++++++++----------------
- arch/x86/kernel/cpu/perf_event_intel.c |   30 +++++++++++++++++-------------
- arch/x86/kernel/cpu/perf_event_p6.c    |   10 ++++++----
- 3 files changed, 38 insertions(+), 33 deletions(-)
+Lennart, this patch adds a noticeable linux-only feature. I see
+your point, but imho your idea needs the "strong" acks. I cc'ed
+some heavyweights, if someone dislikes your idea he can nack it
+right now.
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -133,8 +133,8 @@ struct x86_pmu {
- 	int		(*handle_irq)(struct pt_regs *);
- 	void		(*disable_all)(void);
- 	void		(*enable_all)(void);
--	void		(*enable)(struct hw_perf_event *, int);
--	void		(*disable)(struct hw_perf_event *, int);
-+	void		(*enable)(struct perf_event *);
-+	void		(*disable)(struct perf_event *);
- 	unsigned	eventsel;
- 	unsigned	perfctr;
- 	u64		(*event_map)(int);
-@@ -840,7 +840,7 @@ void hw_perf_enable(void)
- 			set_bit(hwc->idx, cpuc->active_mask);
- 			cpuc->events[hwc->idx] = event;
- 
--			x86_pmu.enable(hwc, hwc->idx);
-+			x86_pmu.enable(event);
- 			perf_event_update_userpage(event);
- 		}
- 		cpuc->n_added = 0;
-@@ -853,15 +853,16 @@ void hw_perf_enable(void)
- 	x86_pmu.enable_all();
- }
- 
--static inline void __x86_pmu_enable_event(struct hw_perf_event *hwc, int idx)
-+static inline void __x86_pmu_enable_event(struct hw_perf_event *hwc)
- {
--	(void)checking_wrmsrl(hwc->config_base + idx,
-+	(void)checking_wrmsrl(hwc->config_base + hwc->idx,
- 			      hwc->config | ARCH_PERFMON_EVENTSEL_ENABLE);
- }
- 
--static inline void x86_pmu_disable_event(struct hw_perf_event *hwc, int idx)
-+static inline void x86_pmu_disable_event(struct perf_event *event)
- {
--	(void)checking_wrmsrl(hwc->config_base + idx, hwc->config);
-+	struct hw_perf_event *hwc = &event->hw;
-+	(void)checking_wrmsrl(hwc->config_base + hwc->idx, hwc->config);
- }
- 
- static DEFINE_PER_CPU(u64 [X86_PMC_IDX_MAX], pmc_prev_left);
-@@ -922,11 +923,11 @@ x86_perf_event_set_period(struct perf_ev
- 	return ret;
- }
- 
--static void x86_pmu_enable_event(struct hw_perf_event *hwc, int idx)
-+static void x86_pmu_enable_event(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
- 	if (cpuc->enabled)
--		__x86_pmu_enable_event(hwc, idx);
-+		__x86_pmu_enable_event(&event->hw);
- }
- 
- /*
-@@ -969,13 +970,11 @@ static int x86_pmu_enable(struct perf_ev
- 
- static int x86_pmu_start(struct perf_event *event)
- {
--	struct hw_perf_event *hwc = &event->hw;
--
--	if (hwc->idx == -1)
-+	if (event->hw.idx == -1)
- 		return -EAGAIN;
- 
- 	x86_perf_event_set_period(event);
--	x86_pmu.enable(hwc, hwc->idx);
-+	x86_pmu.enable(event);
- 
- 	return 0;
- }
-@@ -989,7 +988,7 @@ static void x86_pmu_unthrottle(struct pe
- 				cpuc->events[hwc->idx] != event))
- 		return;
- 
--	x86_pmu.enable(hwc, hwc->idx);
-+	x86_pmu.enable(event);
- }
- 
- void perf_event_print_debug(void)
-@@ -1054,7 +1053,7 @@ static void x86_pmu_stop(struct perf_eve
- 	 * could reenable again:
- 	 */
- 	clear_bit(idx, cpuc->active_mask);
--	x86_pmu.disable(hwc, idx);
-+	x86_pmu.disable(event);
- 
- 	/*
- 	 * Drain the remaining delta count out of a event
-@@ -1123,7 +1122,7 @@ static int x86_pmu_handle_irq(struct pt_
- 			continue;
- 
- 		if (perf_event_overflow(event, 1, &data, regs))
--			x86_pmu.disable(hwc, idx);
-+			x86_pmu.disable(event);
- 	}
- 
- 	if (handled)
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -548,9 +548,9 @@ static inline void intel_pmu_ack_status(
- }
- 
- static inline void
--intel_pmu_disable_fixed(struct hw_perf_event *hwc, int __idx)
-+intel_pmu_disable_fixed(struct hw_perf_event *hwc)
- {
--	int idx = __idx - X86_PMC_IDX_FIXED;
-+	int idx = hwc->idx - X86_PMC_IDX_FIXED;
- 	u64 ctrl_val, mask;
- 
- 	mask = 0xfULL << (idx * 4);
-@@ -622,26 +622,28 @@ static void intel_pmu_drain_bts_buffer(v
- }
- 
- static inline void
--intel_pmu_disable_event(struct hw_perf_event *hwc, int idx)
-+intel_pmu_disable_event(struct perf_event *event)
- {
--	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+	struct hw_perf_event *hwc = &event->hw;
-+
-+	if (unlikely(hwc->idx == X86_PMC_IDX_FIXED_BTS)) {
- 		intel_pmu_disable_bts();
- 		intel_pmu_drain_bts_buffer();
- 		return;
- 	}
- 
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
--		intel_pmu_disable_fixed(hwc, idx);
-+		intel_pmu_disable_fixed(hwc);
- 		return;
- 	}
- 
--	x86_pmu_disable_event(hwc, idx);
-+	x86_pmu_disable_event(event);
- }
- 
- static inline void
--intel_pmu_enable_fixed(struct hw_perf_event *hwc, int __idx)
-+intel_pmu_enable_fixed(struct hw_perf_event *hwc)
- {
--	int idx = __idx - X86_PMC_IDX_FIXED;
-+	int idx = hwc->idx - X86_PMC_IDX_FIXED;
- 	u64 ctrl_val, bits, mask;
- 	int err;
- 
-@@ -671,9 +673,11 @@ intel_pmu_enable_fixed(struct hw_perf_ev
- 	err = checking_wrmsrl(hwc->config_base, ctrl_val);
- }
- 
--static void intel_pmu_enable_event(struct hw_perf_event *hwc, int idx)
-+static void intel_pmu_enable_event(struct perf_event *event)
- {
--	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+	struct hw_perf_event *hwc = &event->hw;
-+
-+	if (unlikely(hwc->idx == X86_PMC_IDX_FIXED_BTS)) {
- 		if (!__get_cpu_var(cpu_hw_events).enabled)
- 			return;
- 
-@@ -682,11 +686,11 @@ static void intel_pmu_enable_event(struc
- 	}
- 
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
--		intel_pmu_enable_fixed(hwc, idx);
-+		intel_pmu_enable_fixed(hwc);
- 		return;
- 	}
- 
--	__x86_pmu_enable_event(hwc, idx);
-+	__x86_pmu_enable_event(hwc);
- }
- 
- /*
-@@ -774,7 +778,7 @@ again:
- 		data.period = event->hw.last_period;
- 
- 		if (perf_event_overflow(event, 1, &data, regs))
--			intel_pmu_disable_event(&event->hw, bit);
-+			intel_pmu_disable_event(event);
- 	}
- 
- 	intel_pmu_ack_status(ack);
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_p6.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_p6.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_p6.c
-@@ -77,27 +77,29 @@ static void p6_pmu_enable_all(void)
- }
- 
- static inline void
--p6_pmu_disable_event(struct hw_perf_event *hwc, int idx)
-+p6_pmu_disable_event(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	struct hw_perf_event *hwc = &event->hw;
- 	u64 val = P6_NOP_EVENT;
- 
- 	if (cpuc->enabled)
- 		val |= ARCH_PERFMON_EVENTSEL_ENABLE;
- 
--	(void)checking_wrmsrl(hwc->config_base + idx, val);
-+	(void)checking_wrmsrl(hwc->config_base + hwc->idx, val);
- }
- 
--static void p6_pmu_enable_event(struct hw_perf_event *hwc, int idx)
-+static void p6_pmu_enable_event(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-+	struct hw_perf_event *hwc = &event->hw;
- 	u64 val;
- 
- 	val = hwc->config;
- 	if (cpuc->enabled)
- 		val |= ARCH_PERFMON_EVENTSEL_ENABLE;
- 
--	(void)checking_wrmsrl(hwc->config_base + idx, val);
-+	(void)checking_wrmsrl(hwc->config_base + hwc->idx, val);
- }
- 
- static __initconst struct x86_pmu p6_pmu = {
 
--- 
+Security. This is beyond my understanding, hopefully the cc'ed
+experts can help.
+
+Should we clear ->child_anchor flags when the "sub-init" execs? Or,
+at least, when the task changes its credentials? Probably not, but
+dunno.
+
+The more problematic case is when the descendant of the "sub-init"
+execs the setuid application. Should we allow the reparenting to
+!/sbin/init task in this case?
+
+Should we clear ->pdeath_signal after reparenting to sub-init ?
+
+Do we need the new security_operations->task_reparent() method ?
+Or, perhaps we can reuse ->task_wait() if we add the "parent"
+argument?
+
+Something else we should think about?
+
+
+As for the patch itself,
+
+>  static struct task_struct *find_new_reaper(struct task_struct *father)
+>  {
+>  	struct pid_namespace *pid_ns = task_active_pid_ns(father);
+> -	struct task_struct *thread;
+> +	struct task_struct *thread, *anchor;
+>
+>  	thread = father;
+>  	while_each_thread(father, thread) {
+> @@ -715,6 +715,11 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
+>  		return thread;
+>  	}
+>
+> +	/* find the first ancestor which is marked child_anchor */
+> +	for (anchor = father->parent; anchor != &init_task; anchor = anchor->parent)
+> +		if (anchor->child_anchor)
+> +			return anchor;
+> +
+>  	if (unlikely(pid_ns->child_reaper == father)) {
+>  		write_unlock_irq(&tasklist_lock);
+>  		if (unlikely(pid_ns == &init_pid_ns))
+
+This is not exactly right:
+
+	- We can race with the exiting anchor. IOW, we must not reparent
+	  to anchor if it has already passed exit_notify(). You can check
+	  PF_EXITING flag like while_each_thread() above does.
+
+	- "anchor != &init_task" is not correct, the task must not escape
+	  its container. We should stop checking the ->parent list when we
+	  hit ->child_reaper, not init_task
+
+	- if a sub-namespace init dies, we shouldn't skip zap_pid_ns_processes()
+	  logic, move the "for" loop below. This also closes another possible
+	  race, the anchor can be already dead when we take tasklist again.
+
+> @@ -1578,6 +1578,13 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+>  			else
+>  				error = PR_MCE_KILL_DEFAULT;
+>  			break;
+> +		case PR_SET_ANCHOR:
+> +			me->child_anchor = !!arg2;
+> +			error = 0;
+> +			break;
+
+It is a bit strange that PR_SET_ANCHOR acts per-thread, not per process.
+
+Suppose that a task A does prtcl(PR_SET_ANCHOR) and marks itself as a local
+child reaper. Then its sub-thread B forks() the process C which also forks
+the child X. When C dies, X will be re-parented to init. Is this what we
+really want?
+
+To me, it looks more natural if PR_SET_ANCHOR marks the whole process as
+a local reaper, not only the thread which called PR_SET_ANCHOR.
+
+Oleg.
 
