@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311Ab0CDD63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:58:29 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46708 "EHLO
+	id S1755357Ab0CDD6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:58:50 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46741 "EHLO
 	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755117Ab0CDD5u (ORCPT
+	with ESMTP id S1754793Ab0CDD6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:57:50 -0500
+	Wed, 3 Mar 2010 22:58:04 -0500
 From: John Stultz <johnstul@us.ibm.com>
 To: "	lkml" <linux-kernel@vger.kernel.org>
-Cc: John Stultz <johnstul@us.ibm.com>, Mike Frysinger <vapier@gentoo.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 09/14] blackfin: Convert blackfin to use read/update_persistent_clock
-Date: Wed,  3 Mar 2010 19:57:24 -0800
-Message-Id: <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
+Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <linux@arm.linux.org.uk>
+Subject: [PATCH 14/14] arm: Convert arm to use read_persistent_clock
+Date: Wed,  3 Mar 2010 19:57:29 -0800
+Message-Id: <1267675049-12337-15-git-send-email-johnstul@us.ibm.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1267675049-12337-9-git-send-email-johnstul@us.ibm.com>
+In-Reply-To: <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
 References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
@@ -26,132 +26,62 @@ References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-7-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-8-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-9-git-send-email-johnstul@us.ibm.com>
+ <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
+ <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
+ <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
+ <1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
+ <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts the blackfin architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
+This patch converts the arm architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
+
+Also removes a direct xtime access, replacing it with current_kernel_time()
 
 I have not built or tested this patch, so help from arch maintainers would be appreciated.
 
-Cc: Mike Frysinger <vapier@gentoo.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-
+Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/blackfin/kernel/time-ts.c |   13 +++++++------
- arch/blackfin/kernel/time.c    |   39 ++++++---------------------------------
- 2 files changed, 13 insertions(+), 39 deletions(-)
+ arch/arm/Kconfig       |    3 +++
+ arch/arm/kernel/time.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/kernel/time-ts.c b/arch/blackfin/kernel/time-ts.c
-index 17c38c5..08dd3e8 100644
---- a/arch/blackfin/kernel/time-ts.c
-+++ b/arch/blackfin/kernel/time-ts.c
-@@ -348,9 +348,15 @@ static int __init bfin_clockevent_init(void)
- 	return 0;
- }
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 3b18128..b70929d 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -43,6 +43,9 @@ config GENERIC_GPIO
+ config GENERIC_TIME
+ 	bool
  
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
- {
- 	time_t secs_since_1970 = (365 * 37 + 9) * 24 * 60 * 60;	/* 1 Jan 2007 */
-+	ts->tv_sec = secs_since_1970;
-+	ts->tv_nsec = 0;
++config GENERIC_CMOS_UPDATE
++        def_bool y
++
+ config GENERIC_CLOCKEVENTS
+ 	bool
+ 
+diff --git a/arch/arm/kernel/time.c b/arch/arm/kernel/time.c
+index 2875380..eebe8f5 100644
+--- a/arch/arm/kernel/time.c
++++ b/arch/arm/kernel/time.c
+@@ -79,6 +79,13 @@ static unsigned long dummy_gettimeoffset(void)
+ }
+ #endif
+ 
++int update_persistent_clock(struct timespec now)
++{
++	if (set_rtc == NULL)
++		return -1;
++	return set_rtc(now);
 +}
 +
-+void __init time_init(void)
-+{
- 
- #ifdef CONFIG_RTC_DRV_BFIN
- 	/* [#2663] hack to filter junk RTC values that would cause
-@@ -363,11 +369,6 @@ void __init time_init(void)
- 	}
- #endif
- 
--	/* Initialize xtime. From now on, xtime is updated with timer interrupts */
--	xtime.tv_sec = secs_since_1970;
--	xtime.tv_nsec = 0;
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
--
- 	bfin_cs_cycles_init();
- 	bfin_cs_gptimer0_init();
- 	bfin_clockevent_init();
-diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
-index 13c1ee3..c911361 100644
---- a/arch/blackfin/kernel/time.c
-+++ b/arch/blackfin/kernel/time.c
-@@ -112,11 +112,6 @@ u32 arch_gettimeoffset(void)
- }
- #endif
- 
--static inline int set_rtc_mmss(unsigned long nowtime)
--{
--	return 0;
--}
--
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick
-@@ -126,29 +121,8 @@ __attribute__((l1_text))
- #endif
- irqreturn_t timer_interrupt(int irq, void *dummy)
+ #ifdef CONFIG_LEDS_TIMER
+ static inline void do_leds(void)
  {
--	/* last time the cmos clock got updated */
--	static long last_rtc_update;
--
- 	write_seqlock(&xtime_lock);
- 	do_timer(1);
--
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 */
--	if (ntp_synced() &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / NSEC_PER_USEC) >=
--	    500000 - ((unsigned)TICK_SIZE) / 2
--	    && (xtime.tv_nsec / NSEC_PER_USEC) <=
--	    500000 + ((unsigned)TICK_SIZE) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			/* Do it again in 60s. */
--			last_rtc_update = xtime.tv_sec - 600;
--	}
- 	write_sequnlock(&xtime_lock);
- 
- #ifdef CONFIG_IPIPE
-@@ -161,10 +135,15 @@ irqreturn_t timer_interrupt(int irq, void *dummy)
- 	return IRQ_HANDLED;
- }
- 
--void __init time_init(void)
-+void read_persistent_clock(struct timespec *ts)
- {
- 	time_t secs_since_1970 = (365 * 37 + 9) * 24 * 60 * 60;	/* 1 Jan 2007 */
-+	ts->tv_sec = secs_since_1970;
-+	ts->tv_nsec = 0;
-+}
- 
-+void __init time_init(void)
-+{
- #ifdef CONFIG_RTC_DRV_BFIN
- 	/* [#2663] hack to filter junk RTC values that would cause
- 	 * userspace to have to deal with time values greater than
-@@ -176,11 +155,5 @@ void __init time_init(void)
- 	}
- #endif
- 
--	/* Initialize xtime. From now on, xtime is updated with timer interrupts */
--	xtime.tv_sec = secs_since_1970;
--	xtime.tv_nsec = 0;
--
--	wall_to_monotonic.tv_sec = -xtime.tv_sec;
--
- 	time_sched_init(timer_interrupt);
- }
 -- 
 1.6.0.4
 
