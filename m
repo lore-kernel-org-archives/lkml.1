@@ -1,55 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423Ab0CDKSx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 05:18:53 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:48832 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753442Ab0CDKSt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1755330Ab0CDKSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 05:18:52 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:44001 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752480Ab0CDKSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Mar 2010 05:18:49 -0500
-Subject: Re: kmemleak issue on ARM target
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: naveen yadav <yad.naveen@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <9bde694e1003040113k3b573957h1b831c8d25205d22@mail.gmail.com>
-References: <9bde694e1003040113k3b573957h1b831c8d25205d22@mail.gmail.com>
+X-IronPort-AV: E=Sophos;i="4.49,580,1262581200"; 
+   d="scan'208";a="7438093"
+Subject: Re: [Xen-devel] [PATCH 3/7] xen/hvm: Xen PV extension of  HVM
+ initialization
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Sheng Yang <sheng@linux.intel.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.1003031741080.4648@kaball-desktop>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com>
+	 <1267436315-24486-4-git-send-email-sheng@linux.intel.com>
+	 <4B8C63B0.2090507@goop.org>  <201003020938.53630.sheng@linux.intel.com>
+	 <1267521735.11737.23107.camel@zakaz.uk.xensource.com>
+	 <4B8D7248.5070807@goop.org>
+	 <alpine.DEB.2.00.1003031132550.4648@kaball-desktop>
+	 <4B8E9DD7.6020408@goop.org>
+	 <alpine.DEB.2.00.1003031741080.4648@kaball-desktop>
 Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Thu, 04 Mar 2010 10:18:44 +0000
-Message-ID: <1267697924.6526.5.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Organization: Citrix Systems, Inc.
+Date: Thu, 4 Mar 2010 10:18:45 +0000
+Message-ID: <1267697925.11737.32107.camel@zakaz.uk.xensource.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2010 10:18:44.0729 (UTC) FILETIME=[121A9690:01CABB84]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 09:13 +0000, naveen yadav wrote:
-> W am facing one issue on ARM target, we have 512 MB ram on our target,
-> we port your patch of
-> kmemleak(http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg11830.html)
+On Wed, 2010-03-03 at 17:41 +0000, Stefano Stabellini wrote:
+> On Wed, 3 Mar 2010, Jeremy Fitzhardinge wrote:
+> > On 03/03/2010 03:35 AM, Stefano Stabellini wrote:
+> > > Give a look at the fourth patch of the series I just posted: it
+> > > introduces a simple driver for the Xen PCI platform device to initialize
+> > > xenbus and gran table later on when running in a HVM domain, at the same
+> > > time leaving the PV case as it is.
+> > >    
+> > 
+> > Yes, I noticed that.  Do the PV drivers cope with having the PCI 
+> > probe/xenbus setup after their init functions have been called, or do 
+> > you make sure the PCI probe happens early?
+> > 
 > 
-> We are facing problem in DEBUG_KMEMLEAK_EARLY_LOG_SIZE we cannot
-> increase its size above 1000 because of our kernel Image size for
-> embedded board
-> has some limit that if it increase we cannot execute it. so is there
-> any implementaion possible using vmalloc and not statically allocating
-> the log of array or else any suggestion.
+> Nope, they seem to cope fine so far.
 
-Not really. This buffer needs to be static because it is used before
-kmemleak is fully initialised. It's also tracking bootmem allocations.
+xenbus_frontend_register is basically just driver_register so it should
+be safe to call even before the register_bus(xenbusfoo) call. Things
+shouldn't kick off until xen_probe() is called which either happens
+explicitly in xenbus_probe_init() or via probe_work which contains a
+xenstored_ready check.
 
-But this size should not increase the Image file size as it should go in
-the BSS section.
-
-An additional question - why do you need to increase this size? I found
-400 to be enough usually. Do you get any errors?
-
-Since you backported kmemleak, please make sure that you check the
-latest code in mm/kmemleak.c as there are some bug-fixes.
-
-
--- 
-Catalin
+Ian.
 
