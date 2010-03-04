@@ -1,107 +1,279 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932107Ab0CDRMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:12:17 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54072 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932078Ab0CDRMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:12:14 -0500
-Date: Fri, 5 Mar 2010 02:11:35 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.34-rc1, part 2.
-Message-ID: <20100304171134.GB26618@linux-sh.org>
+	id S1756962Ab0CDRNG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:13:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51755 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756040Ab0CDRND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 12:13:03 -0500
+Date: Thu, 4 Mar 2010 12:12:54 -0500
+From: Josef Bacik <josef@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Josef Bacik <josef@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cleanup __generic_block_fiemap and fix a few minor
+	issues
+Message-ID: <20100304171253.GB5722@localhost.localdomain>
+References: <20100303163715.GB2215@localhost.localdomain> <alpine.LFD.2.00.1003040754150.7046@localhost.localdomain> <20100304162039.GA5722@localhost.localdomain> <20100304085021.1b4e5c58.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100304085021.1b4e5c58.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Thu, Mar 04, 2010 at 08:50:21AM -0800, Randy Dunlap wrote:
+> On Thu, 4 Mar 2010 11:20:40 -0500 Josef Bacik wrote:
+> 
+> > Ahh yes thats much nicer, thank you.  Here is my updated patch with your
+> > suggestions.  Thanks,
+> > 
+> > Signed-off-by: Josef Bacik <josef@redhat.com>
+> > ---
+> >  fs/ioctl.c         |   81 +++++++++++++++++++++++++++++----------------------
+> >  include/linux/fs.h |    5 ++-
+> >  2 files changed, 49 insertions(+), 37 deletions(-)
+> > 
+> > diff --git a/fs/ioctl.c b/fs/ioctl.c
+> > index 6c75110..64fed0b 100644
+> > --- a/fs/ioctl.c
+> > +++ b/fs/ioctl.c
+> > @@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+> >  
+> >  #ifdef CONFIG_BLOCK
+> >  
+> > -#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+> > -#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
+> > +static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
+> > +{
+> > +	return (offset >> inode->i_blkbits);
+> > +}
+> > +
+> > +static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
+> > +{
+> > +	return (blk << inode->i_blkbits);
+> > +}
+> >  
+> >  /**
+> >   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+> >   * @inode - the inode to map
+> > - * @arg - the pointer to userspace where we copy everything to
+> > + * @fieinfo - the fiemap info struct that will be passed back to userspace
+> > + * @start - where to start mapping in the inode
+> > + * @len - how much space to map
+> >   * @get_block - the fs's get_block function
+> >   *
+> >   * This does FIEMAP for block based inodes.  Basically it will just loop
+> 
+> Please fix the kernel-doc notation.  Function parameter notation is like:
+> 
+>  * @start: where to start mapping in the inode
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+Sounds good, fixed below.  Thanks,
 
-Which contains:
+Signed-off-by: Josef Bacik <josef@redhat.com>
+---
+ fs/ioctl.c         |   85 +++++++++++++++++++++++++++++----------------------
+ include/linux/fs.h |    5 ++-
+ 2 files changed, 51 insertions(+), 39 deletions(-)
 
-Andrea Gelmini (2):
-      arch/sh/lib/libgcc.h: Checkpatch cleanup
-      arch/sh/boot/compressed/cache.c: Checkpatch cleanup
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index 6c75110..f330fec 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -228,14 +228,23 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+ 
+ #ifdef CONFIG_BLOCK
+ 
+-#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+-#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
++static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
++{
++	return (offset >> inode->i_blkbits);
++}
++
++static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
++{
++	return (blk << inode->i_blkbits);
++}
+ 
+ /**
+  * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+- * @inode - the inode to map
+- * @arg - the pointer to userspace where we copy everything to
+- * @get_block - the fs's get_block function
++ * @inode: the inode to map
++ * @fieinfo: the fiemap info struct that will be passed back to userspace
++ * @start: where to start mapping in the inode
++ * @len: how much space to map
++ * @get_block: the fs's get_block function
+  *
+  * This does FIEMAP for block based inodes.  Basically it will just loop
+  * through get_block until we hit the number of extents we want to map, or we
+@@ -250,46 +259,46 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+  */
+ 
+ int __generic_block_fiemap(struct inode *inode,
+-			   struct fiemap_extent_info *fieinfo, u64 start,
+-			   u64 len, get_block_t *get_block)
++			   struct fiemap_extent_info *fieinfo, loff_t start,
++			   loff_t len, get_block_t *get_block)
+ {
+-	struct buffer_head tmp;
+-	unsigned long long start_blk;
+-	long long length = 0, map_len = 0;
++	struct buffer_head map_bh;
++	sector_t start_blk, last_blk;
+ 	u64 logical = 0, phys = 0, size = 0;
+ 	u32 flags = FIEMAP_EXTENT_MERGED;
+-	int ret = 0, past_eof = 0, whole_file = 0;
++	bool past_eof = false, whole_file = false;
++	int ret = 0;
+ 
+-	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
++	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
++	if (ret)
+ 		return ret;
+ 
+-	start_blk = logical_to_blk(inode, start);
+-
+-	length = (long long)min_t(u64, len, i_size_read(inode));
+-	if (length < len)
+-		whole_file = 1;
++	if (len >= i_size_read(inode)) {
++		whole_file = true;
++		len = i_size_read(inode);
++	}
+ 
+-	map_len = length;
++	start_blk = logical_to_blk(inode, start);
++	last_blk = logical_to_blk(inode, start + len - 1);
+ 
+ 	do {
+ 		/*
+ 		 * we set b_size to the total size we want so it will map as
+ 		 * many contiguous blocks as possible at once
+ 		 */
+-		memset(&tmp, 0, sizeof(struct buffer_head));
+-		tmp.b_size = map_len;
++		memset(&map_bh, 0, sizeof(struct buffer_head));
++		map_bh.b_size = len;
+ 
+-		ret = get_block(inode, start_blk, &tmp, 0);
++		ret = get_block(inode, start_blk, &map_bh, 0);
+ 		if (ret)
+ 			break;
+ 
+ 		/* HOLE */
+-		if (!buffer_mapped(&tmp)) {
+-			length -= blk_to_logical(inode, 1);
++		if (!buffer_mapped(&map_bh)) {
+ 			start_blk++;
+ 
+ 			/*
+-			 * we want to handle the case where there is an
++			 * We want to handle the case where there is an
+ 			 * allocated block at the front of the file, and then
+ 			 * nothing but holes up to the end of the file properly,
+ 			 * to make sure that extent at the front gets properly
+@@ -297,11 +306,11 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 */
+ 			if (!past_eof &&
+ 			    blk_to_logical(inode, start_blk) >=
+-			    blk_to_logical(inode, 0)+i_size_read(inode))
++			    blk_to_logical(inode, 0) + i_size_read(inode))
+ 				past_eof = 1;
+ 
+ 			/*
+-			 * first hole after going past the EOF, this is our
++			 * First hole after going past the EOF, this is our
+ 			 * last extent
+ 			 */
+ 			if (past_eof && size) {
+@@ -309,15 +318,18 @@ int __generic_block_fiemap(struct inode *inode,
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+-				break;
++			} else if (size) {
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size, flags);
++				size = 0;
+ 			}
+ 
+ 			/* if we have holes up to/past EOF then we're done */
+-			if (length <= 0 || past_eof)
++			if (start_blk > last_blk || past_eof || ret)
+ 				break;
+ 		} else {
+ 			/*
+-			 * we have gone over the length of what we wanted to
++			 * We have gone over the length of what we wanted to
+ 			 * map, and it wasn't the entire file, so add the extent
+ 			 * we got last time and exit.
+ 			 *
+@@ -331,7 +343,7 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 * are good to go, just add the extent to the fieinfo
+ 			 * and break
+ 			 */
+-			if (length <= 0 && !whole_file) {
++			if (start_blk > last_blk && !whole_file) {
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+@@ -351,11 +363,10 @@ int __generic_block_fiemap(struct inode *inode,
+ 			}
+ 
+ 			logical = blk_to_logical(inode, start_blk);
+-			phys = blk_to_logical(inode, tmp.b_blocknr);
+-			size = tmp.b_size;
++			phys = blk_to_logical(inode, map_bh.b_blocknr);
++			size = map_bh.b_size;
+ 			flags = FIEMAP_EXTENT_MERGED;
+ 
+-			length -= tmp.b_size;
+ 			start_blk += logical_to_blk(inode, size);
+ 
+ 			/*
+@@ -364,14 +375,14 @@ int __generic_block_fiemap(struct inode *inode,
+ 			 * is marked with FIEMAP_EXTENT_LAST
+ 			 */
+ 			if (!past_eof &&
+-			    logical+size >=
+-			    blk_to_logical(inode, 0)+i_size_read(inode))
+-				past_eof = 1;
++			    logical + size >=
++			    blk_to_logical(inode, 0) + i_size_read(inode))
++				past_eof = true;
+ 		}
+ 		cond_resched();
+ 	} while (1);
+ 
+-	/* if ret is 1 then we just hit the end of the extent array */
++	/* If ret is 1 then we just hit the end of the extent array */
+ 	if (ret == 1)
+ 		ret = 0;
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index ebb1cd5..7e6e47f 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2313,8 +2313,9 @@ extern int vfs_fstatat(int , char __user *, struct kstat *, int);
+ extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		    unsigned long arg);
+ extern int __generic_block_fiemap(struct inode *inode,
+-				  struct fiemap_extent_info *fieinfo, u64 start,
+-				  u64 len, get_block_t *get_block);
++				  struct fiemap_extent_info *fieinfo,
++				  loff_t start, loff_t len,
++				  get_block_t *get_block);
+ extern int generic_block_fiemap(struct inode *inode,
+ 				struct fiemap_extent_info *fieinfo, u64 start,
+ 				u64 len, get_block_t *get_block);
+-- 
+1.6.5.rc2
 
-Guennadi Liakhovetski (10):
-      sh: add DMA slave definitions and SIU platform data to sh7722 setup
-      sh: audio support for the sh7722 Migo-R board
-      dmaengine: shdma: fix DMA error handling.
-      dmaengine: shdma: convert to platform device resources
-      dmaengine: shdma: separate DMA headers.
-      dmaengine: shdma: add runtime PM support.
-      sh: activate runtime PM for dmaengine on sh7722 and sh7724
-      sh: merge sh7722 and sh7724 DMA register definitions
-      dmaengine: shdma: extend .device_terminate_all() to record partial transfer
-      serial: sh-sci: Add DMA support.
-
-John Stultz (1):
-      sh: Convert sh to use read/update_persistent_clock
-
-Paul Mundt (11):
-      sh: hw-breakpoints: Accept breakpoints on NULL addresses.
-      sh: Fix up ctrl_read/write stragglers in migor setup.
-      serial: sh-sci: Tidy up build warnings.
-      sh: Fix up cpumask_of_pcibus() for the NUMA build.
-      sh: reworked dynamic PMB mapping.
-      sh: make pmb iomapping configurable.
-      sh: fixed virt/phys mapping helpers for PMB.
-      sh: check for existing mappings for bolted PMB entries.
-      sh: establish PMB mappings for NUMA nodes.
-      sh: fix up MMU reset with variable PMB mapping sizes.
-      sh: Fix up flush_cache_vmap() on SMP.
-
-Pawel Moll (1):
-      sh: Move PMB debugfs entry initialization to later stage
-
-Robert P. J. Day (1):
-      sh: No need to explicitly include <linux/rwlock.h>.
-
- arch/sh/boards/mach-migor/setup.c          |   16 +
- arch/sh/boot/compressed/cache.c            |    2 +-
- arch/sh/include/asm/cacheflush.h           |    4 +-
- arch/sh/include/asm/dma-register.h         |   51 +++
- arch/sh/include/asm/dma-sh.h               |   88 +----
- arch/sh/include/asm/dmaengine.h            |   93 +++++
- arch/sh/include/asm/io.h                   |   23 +-
- arch/sh/include/asm/mmu.h                  |   31 ++-
- arch/sh/include/asm/siu.h                  |    2 +-
- arch/sh/include/asm/topology.h             |    2 +-
- arch/sh/include/cpu-sh3/cpu/dma-register.h |   41 ++
- arch/sh/include/cpu-sh3/cpu/dma.h          |   27 --
- arch/sh/include/cpu-sh4/cpu/dma-register.h |  112 +++++
- arch/sh/include/cpu-sh4/cpu/dma-sh4a.h     |   62 ---
- arch/sh/include/cpu-sh4/cpu/dma.h          |   36 +--
- arch/sh/include/mach-migor/mach/migor.h    |    1 +
- arch/sh/kernel/cpu/sh4a/setup-sh7722.c     |  190 ++++++++-
- arch/sh/kernel/cpu/sh4a/setup-sh7724.c     |  186 ++++++++-
- arch/sh/kernel/cpu/sh4a/setup-sh7780.c     |  134 ++++++-
- arch/sh/kernel/cpu/sh4a/setup-sh7785.c     |  134 ++++++-
- arch/sh/kernel/hw_breakpoint.c             |   30 +--
- arch/sh/kernel/setup.c                     |    3 +-
- arch/sh/kernel/time.c                      |    6 +-
- arch/sh/lib/libgcc.h                       |    3 +-
- arch/sh/mm/ioremap.c                       |   70 +---
- arch/sh/mm/ioremap_fixed.c                 |   11 +-
- arch/sh/mm/numa.c                          |    3 +
- arch/sh/mm/pmb.c                           |  412 +++++++++++++------
- drivers/dma/shdma.c                        |  500 ++++++++++++++---------
- drivers/dma/shdma.h                        |   26 +-
- drivers/serial/Kconfig                     |    4 +
- drivers/serial/sh-sci.c                    |  616 +++++++++++++++++++++++++--
- include/linux/serial_sci.h                 |    6 +
- sound/soc/sh/siu.h                         |    2 +-
- sound/soc/sh/siu_pcm.c                     |    2 +-
- 35 files changed, 2201 insertions(+), 728 deletions(-)
- create mode 100644 arch/sh/include/asm/dma-register.h
- create mode 100644 arch/sh/include/asm/dmaengine.h
- create mode 100644 arch/sh/include/cpu-sh3/cpu/dma-register.h
- create mode 100644 arch/sh/include/cpu-sh4/cpu/dma-register.h
