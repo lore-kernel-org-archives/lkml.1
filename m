@@ -1,80 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552Ab0CDHUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 02:20:32 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:50335 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347Ab0CDHUb (ORCPT
+	id S1753583Ab0CDHWo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 02:22:44 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:61711 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753485Ab0CDHWn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 02:20:31 -0500
-Date: Thu, 4 Mar 2010 01:20:07 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, wylda@volny.cz, gregkh@suse.de,
-       jkosina@suse.cz, Linus Torvalds <torvalds@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pid_ns: zap_pid_ns_processes: use SEND_SIG_NOINFO
- instead	of force_sig()
-Message-ID: <20100304072007.GA16398@us.ibm.com>
-References: <20100302201646.GA10734@redhat.com>
- <alpine.LFD.2.00.1003021223060.3616@localhost.localdomain>
- <20100303013227.4FFDE89EB@magilla.sf.frob.com>
- <alpine.LFD.2.00.1003021740560.3616@localhost.localdomain>
- <20100303112343.B89802F@magilla.sf.frob.com>
- <alpine.LFD.2.00.1003030930100.3627@localhost.localdomain>
- <20100303184412.GA7816@redhat.com>
- <alpine.LFD.2.00.1003031053050.3599@localhost.localdomain>
- <20100303193003.GA10734@redhat.com>
- <20100303202650.GA15521@redhat.com>
+	Thu, 4 Mar 2010 02:22:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=JJocy4/GUKSKkTQrkMhpCaigpOtJEt3xEyBHiqWaQw59FNUKxj4tvB0hUNPghCiDmi
+         +N0Omx8oatu+TVa+t1/i1Mw5ZE0QtxAMfLLKNlgTd6QL1YX3viGC7Twa5lwY6C6ubvDC
+         m+dCYFvg4qJqoR/bqokHqFTkOdWKXnwGKhZ7Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100303202650.GA15521@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267673633.6416.7.camel@marge.simson.net>
+References: <40a4ed591003031245g79cca873t89e90545337a9067@mail.gmail.com>
+	 <1267673633.6416.7.camel@marge.simson.net>
+Date: Thu, 4 Mar 2010 08:22:41 +0100
+Message-ID: <40a4ed591003032322l4ad2dc00sd3de718b5a76089b@mail.gmail.com>
+Subject: Re: evdev keyboard driver stopped working after upgrading from Kernel 
+	2.6.33-rc8 to 2.6.33 (official release)
+From: Zeno Davatz <zdavatz@gmail.com>
+To: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@redhat.com):
-> zap_pid_ns_processes() uses force_sig(SIGKILL) to ensure SIGKILL
-> will be delivered to sub-namespace inits as well. This is correct,
-> but we are going to change force_sig_info() semantics.
-> See http://bugzilla.kernel.org/show_bug.cgi?id=15395#c31
-> 
-> We can use send_sig_info(SEND_SIG_NOINFO) instead, since
-> 614c517d7c00af1b26ded20646b329397d6f51a1 SEND_SIG_NOINFO means
-> "from user" and therefore send_signal() will get the correct
-> from_ancestor_ns = T flag.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+On Thu, Mar 4, 2010 at 4:33 AM, Mike Galbraith <efault@gmx.de> wrote:
+> On Wed, 2010-03-03 at 21:45 +0100, Zeno Davatz wrote:
 
-Justification makes sense, and (in some superficial testing, killing some
-nested pid_ns's) the patch seems to do the right thing.
+>> I am always updating to the latest rc Kernel Release, that Linus shares via Git.
+>>
+>> I also upgraded to the latest stable kernel version after rc-8, to
+>> 2.6.33. But since I am on 2.6.33 my Xorg evdev-Driver stopped working.
+>> I can hit any key on the keyboard, but nothing will happen. The mouse
+>> and the graphics are just fine and work well.
+>>
+>> I have an Asus Eeepc 1101HA, with Gentoo and the psb-kmod driver compiled.
+>>
+>> Xorg starts just fine, does not crash but the keyboard does not react.
+>>
+>> Everything worked fine on 2.6.33-rc8.
+>>
+>> Any hints what changed from 2.6.33-rc8 to 2.6.33 stable that made my
+>> keyboard stop reacting?
+>>
+>> Let me know and I will test.
+>
+> I don't see any obvious candidates rc8->final.  There's _very_ little
+> for input.
+>
+> On the bright side, there are only 225 commits, so a bisection should be
+> almost painless.  That's probably your best bet for rapid resolution.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Is there a possibility that something changed between rc2 and final,
+something that would concern the evdev driver or the keyboard input?
+It seems that /dev/input/event5 where the keyboard is found does not
+pass anything on to Xorg.
 
-> ---
-> 
->  kernel/pid_namespace.c |    7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> --- mm/kernel/pid_namespace.c~NS_DONT_ABUSE_FORCE	2010-02-25 15:22:13.000000000 +0100
-> +++ mm/kernel/pid_namespace.c	2010-03-03 20:58:12.000000000 +0100
-> @@ -161,13 +161,12 @@ void zap_pid_ns_processes(struct pid_nam
->  		rcu_read_lock();
-> 
->  		/*
-> -		 * Use force_sig() since it clears SIGNAL_UNKILLABLE ensuring
-> -		 * any nested-container's init processes don't ignore the
-> -		 * signal
-> +		 * Any nested-container's init processes won't ignore the
-> +		 * SEND_SIG_NOINFO signal, see send_signal()->si_fromuser().
->  		 */
->  		task = pid_task(find_vpid(nr), PIDTYPE_PID);
->  		if (task)
-> -			force_sig(SIGKILL, task);
-> +			send_sig_info(SIGKILL, SEND_SIG_NOINFO, task);
-> 
->  		rcu_read_unlock();
-> 
+I did not change anything else on my system except upgrading the kernel.
+
+Best
+Zeno
