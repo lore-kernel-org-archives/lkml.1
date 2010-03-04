@@ -1,54 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885Ab0CDTOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:14:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33182 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755235Ab0CDTOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:14:50 -0500
-Date: Thu, 4 Mar 2010 11:14:11 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <20100304190450.GA23807@srcf.ucam.org>
-Message-ID: <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain> <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain> <20100304185002.GA23532@srcf.ucam.org> <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
- <20100304190450.GA23807@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1756877Ab0CDTSB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:18:01 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49029 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756134Ab0CDTR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:17:59 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC driver and suspend process (rev. 3)
+Date: Thu, 4 Mar 2010 20:20:54 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Len Brown <lenb@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+References: <201002272140.36891.rjw@sisk.pl> <alpine.LFD.2.00.1003040047310.1741@localhost.localdomain> <9b2b86521003040132v168399ct9241f3ad9ff8c4c7@mail.gmail.com>
+In-Reply-To: <9b2b86521003040132v168399ct9241f3ad9ff8c4c7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003042020.54715.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 04 March 2010, Alan Jenkins wrote:
+> On 3/4/10, Len Brown <lenb@kernel.org> wrote:
+> > Isn't the problem at hand that the boot-kernel stops
+> > in mid-transaction, and the resumed hibernate image
+> > then blunders forward with its first transaction
+> > only to find the EC in an intermediate state?
+> >
+> > If yes, I then making the transaction atomic WRT
+> > the boot kernel stopping should fix the problem.
+> >
+> > The patch sets a FROZEN bit, and subsequent
+> > requests for EC transactions simply fail.
+> > How do we know that we set the bit at the right time?
 
+Well, setting it later simply doesn't make sense and setting it earlier might
+disturb things.
 
-On Thu, 4 Mar 2010, Matthew Garrett wrote:
+> > What transactions or parts of transactions will fail,
+> > and what are the consequences of those failures?
 > 
-> If you'd made it clear that you wanted the interface to be stable 
-> before it got merged, I suspect that it simply wouldn't have been merged 
-> until the interface was stable.
+> The problem transactions on my machine were probably started by
+> ec_check_sci().  I.e. QUERY transactions which read the value of an
+> event raised by the EC.  (I triggered the problem by pressing ACPI
+> hotkeys, although I haven't been able to reproduce it since).
+> 
+> That might explain why the transactions can be asynchronous with the
+> s2disk task - because these transactions are run in the ACPI
+> workqueue.  Perhaps the workqueue needs to be flushed after the EC GPE
+> is disabled?
 
-What kind of excuse is that? It's "we did bad things, but if we didn't do 
-those bad things, we'd have done _other_ bad things"?
+Yes, and that's what the patch does.  It calls acpi_os_wait_events_complete()
+to flush the workqueue (actually, two of them) and _then_ sets the FROZEN
+bit.
 
-Two wrong choices don't make a right.
+Dropping stuff on the floor after the FROZEN bit has been set doesn't change
+things too much, because we're going to turn interrupts off shortly after that.
+However, the FROZEN bit is set under the EC mutex, which automatically makes
+us wait if any transaction is in progress while we're trying to set the FROZEN
+bit.
 
-Nobody has even answered me whether this is _forwards_compatible. It 
-clearly isn't backwards-compatible. IOW, is there _any_ way to move 
-back-and-forth over that commit, even if I can find a new libdrm?
-
-IOW, we know we have a problem here. But what's the solution? I know I can 
-revert it (I tried, I'm running that kernel now, nouveau works). That's 
-not a good solution, I know. But can you offer me a _better_ one? One that 
-doesn't involve "upgrade all the way to rawhide, and lose the ability to 
-bisect anything, or run plain 2.6.33".
-
-So yes, I'm complaining. But I at least have mentioned one solution. You, 
-in contast, are just making excuses with no solutions.
-
-			Linus
+Rafael
