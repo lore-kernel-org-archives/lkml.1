@@ -1,155 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180Ab0CDORZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:17:25 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:62777 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721Ab0CDORX convert rfc822-to-8bit (ORCPT
+	id S1751784Ab0CDOWH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:22:07 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:48781 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751225Ab0CDOWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:17:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TnhnhirAWvgzFSTJLQTh+apVqRo1XHYEvY0Vr0Li/+f8B584fPKWlu/trqFYYRANuy
-         IC3aTC8NozZ9tGrwQzBF7hk8hLoP1aTVnZZloATr9efhNCXJyT2nBi9ImCKe3IJUOB7H
-         EgEfKs1EiHx/bx26PgeYZpo7zem+TGRGtW098=
-MIME-Version: 1.0
-In-Reply-To: <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-Date: Thu, 4 Mar 2010 09:17:19 -0500
-Message-ID: <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: foo saa <foosaa@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Mar 2010 09:22:05 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       benh@kernel.crashing.org, linux@arm.linux.org.uk,
+       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
+       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Mar 2010 19:51:52 +0530
+Message-ID: <1267712512.31654.176.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 1:42 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> (lots of cc's added)
->
-> On Wed, 3 Mar 2010 23:52:20 -0500 foo saa <foosaa@gmail.com> wrote:
->
->> hi everyone,
->>
->> I am in the process of writing a disk erasure application in C. The
->> program does zerofill the drive (Good or Bad) before someone destroys
->> it. During the erasure process, I need to record the number of bad
->> sectors during the zerofill operation.
->>
->> The method used to write to the hdd involves opening the appropriate
->> /dev block device using open() call with O_WRONLY flag, start issuing
->> write() calls to fill the sectors. A 512 byte buffer filled with
->> zero's is used. All calls are of 64bit enabled. (I am using
->> _LARGEFILE64_SOURCE define).
->>
->> The problem is (mostly with the bad hdd's), when the write call
->> encounters a bad sector, it takes a bit longer than usual and writes
->> the sector without any errors. (dmesg shows a lot of error messages
->> embedded in the LIBATA error handling code!). The call never fails for
->> any reason.
->>
->> I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
->> have tried upto 2.6.30.10 and multiple distros with similar behavior.
->>
->> Here is a summary of things I have attempted.
->>
->> I know about the bad sector and it's location on the hdd, since it has
->> been verified by using Windows based hex editor utilities, DOS based
->> erasure applications, MHDD and many other HDD utilities.
->>
->> I have tried using O_DIRECT with aligned buffers, but still could not
->> identify the bad sectors during the writing process.
->>
->> I have tried using fadvise, posix_fadvise functions to get of the
->> caching, but still failed.
->>
->> I have tried using SG_IO and SAT translation (direct ATA commands with
->> device addressing) and it fails too. Raw devices is out of question
->> now.
->>
->> The libata is not letting / informing the user mode program (executing
->> under root) about the media / write errors / bad blocks and failures,
->> though it notifies the kernel and logs to syslog. It also tries to
->> reallocate, softreset, hardreset the block device which is evident
->> from the dmesg logs.
->>
->> What has to be done for my program to identify / receive the bad block
->> / sector information during the read / write process?
->>
->> How can I receive the bad sector / physical and media write errors in
->> my program? This is my only requirement and question.
->>
->> I am currently out of options unless anyone from here can show some
->> new direction!
->>
->> My only option is to recompile the kernel with libata customization
->> and changes according to my requirement. (Can I instruct to libata to
->> skip the error handling process and pass certain errors to my
->> program?).
->>
->> Is this a good approach and recommended one? If not what should be
->> done to achieve it? If yes, can somebody throw some light on it?
->>
->> Please let me know if you have any queries in my above explanation.
->>
->
-> OK, this is bad.
->
-> Did you try running fsync() after a write(), check the return value?
->
-> I doubt if this is a VFS bug.  As O_DIRECT writes are also failing to
-> report errors, I'd suspect that the driver or block layers really are
-> failing to propagate the error back.
->
-> Do the ata guys know of a way of deliberately injecting errors to test
-> these codepaths?  If we don't have that, something using the
-> fault-injection code would be nice.  As low-level as possible,
-> preferably at interrupt time.
+On Thu, 2010-03-04 at 14:51 +0100, Pavel Machek wrote:
+> > On Wed, 2010-03-03 at 21:54 +0000, Pavel Machek wrote:
+> > > > With some drivers (those doing PIO) or subsystems (SCSI mass storage
+> > > > over USB HCD), there is no call to flush_dcache_page() for page cache
+> > > > pages, hence the ARM implementation of update_mmu_cache() doesn't flush
+> > > > the D-cache (and only invalidating the I-cache doesn't help).
+> > > >
+> > > > The viable solutions so far:
+> > > >
+> > > >      1. Implement a PIO mapping API similar to the DMA API which takes
+> > > >         care of the D-cache flushing. This means that PIO drivers would
+> > > >         need to be modified to use an API like pio_kmap()/pio_kunmap()
+> > > >         before writing to a page cache page.
+> > > >      2. Invert the meaning of PG_arch_1 to denote a clean page. This
+> > > >         means that by default newly allocated page cache pages are
+> > > >         considered dirty and even if there isn't a call to
+> > > >         flush_dcache_page(), update_mmu_cache() would flush the D-cache.
+> > > >         This is the PowerPC approach.
+> > > 
+> > > What about option
+> > > 
+> > > 3. Forget about PG_arch_1 and always do the flush?
+> > > 
+> > > How big is the performance impact? Note that current code does not
+> > > even *work* so working, 10% slower code will be an improvement.
+> > 
+> > The driver fix is as simple as calling a flush_dcache_page() and I've
+> > been carrying such patches in my tree for some time now. The question is
+> > whether we need to do it in the driver or not (would need to update
+> > Documentation/cachetlb.txt as well).
+> > 
+> > The reason I'm not in favour always doing the flush is that we penalise
+> > DMA drivers where there is no need for extra D-cache flushing (already
+> > handled by the DMA API; option 1 above is similar, just that it is meant
+> > for PIO usage). An ARM patch I proposed for inverting the meaning of
+> > PG_arch_1 also marks a page as clean in the dma_map_* functions.
+> 
+> But you are not fixing driver bug, are you?
 
-I think / suspect your major problem is you say above that you use a
-512-byte buffer to wipe with.  The kernel is using 4K pages.  So when
-you write to a 4K section of the drive for the first time, the kernel
-implements read-modify-write logic.
+Technically, he is.  In the old days, most VI architectures were high
+end enough not to require PIO transfers.  The only exception was an IDE
+driver used by sparc, which lead to the arch specific ide in/out string
+instructions, in which sparc actually did all the necessary flushing.
 
-Your i/o failures are almost certainly on the read cycle of the above,
-not the write cycle.  You need to move to 4K buffers and you need to
-ensure your 4K writes are aligned with how the kernel is working with
-the disk.  ie. You need your 4K buffer to perfectly align with the
-kernels 4K block handling so you never have a read-modify-write cycle.
+So no other drivers than old IDE grew up with cache flushing in the PIO
+case (and almost no high end VI hardware had an IDE interface, so they
+rarely got implemented in the arch layer).  However, recently, with the
+transition from old IDE to libata and the prevalence of ARM with more
+commodity hardware, the deficiency is becoming exposed.  Even the PA8000
+workstations now come with an IDE CD, which means we're starting to have
+problems with them as well.
 
-Effectively you need your code to do something very similar to:
+> Seems like ARM has requirement other architectures do not, that is
+> a) not documented anywhere
+> b) causes problems
+> 
+> You could argue that performance improvement (how big is it, anyway?)
+> is worth it, but this should be agreed to by wider community...
 
-dd if=/dev/zero of=/dev/sda bs=4K conv=sync,noerror
+Performance is always worth it provided we don't sacrifice correctness.
+The thing which was discovered in this thread is basically that ARM is
+handling deferred flushing (for D/I coherency) in a slightly different
+way from everyone else ... once that's fixed, ARM will likely not have
+the D/I problem, but we'll still have the libata (and other PIO systems)
+D flushing issue.
 
-== more background
+James
 
-1) In general disks do not have media errors on write.  They perform a
-blind write that is assumed to work.  Errors do occur on read.  When
-that happens the sector is tagged for relocation and on the next write
-to that sector an alternate sector from the spares area is used.
 
-If a drive has run out of spare sectors and a write is performed to a
-sector tagged for relocation you will get a write error.  But it
-should be a fast failure, there is nothing to retry.
-
-2) For testing read i/o error logic, hdparm has the --make-bad-sector
-command that will set the above mentioned flag.  It does it by forcing
-the crc on the media to be bad.  All reads will therefore fail.
-
-There is a corresponding clear bad sector that restores things to normal.
-
-3) Modern drives to have a way to adjust the read timeout time.  I
-don't recall the specifics right now, but since you should only be
-writing, it wont help you anyway.
-
-Good Luck
-Greg
