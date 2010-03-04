@@ -1,70 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269Ab0CDDSe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:18:34 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45035 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083Ab0CDDS3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:18:29 -0500
-X-Authority-Analysis: v=1.0 c=1 a=u-VO3dv88eYA:10 a=7U3hwN5JcxgA:10 a=krKWriI0gw7vnKiC0CIA:9 a=Pz1XQ8aT35CUW2vUMPUA:7 a=AmF7C567ypSloAVdz_JyrIZqWkwA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <2375c9f91003031901v19c00c21k4a5d46bbe9ade3f@mail.gmail.com>
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com>
-	 <20100304014641.GH5194@nowhere>
-	 <2375c9f91003031901v19c00c21k4a5d46bbe9ade3f@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 03 Mar 2010 22:18:26 -0500
-Message-ID: <1267672706.10871.97.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 8bit
+	id S1754422Ab0CDDUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:20:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50894 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753953Ab0CDDTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 22:19:55 -0500
+Date: Thu, 4 Mar 2010 04:18:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: rdunlap@xenotime.net, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       bridge@lists.linux-foundation.org, netdev@vger.kernel.org
+Subject: Re: [PATCH -next] bridge: depends on INET
+Message-ID: <20100304031847.GA22683@elte.hu>
+References: <20100302180915.1388d3f3.sfr@canb.auug.org.au>
+ <4B8D4607.8070603@xenotime.net>
+ <20100303.012359.66790294.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303.012359.66790294.davem@davemloft.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 11:01 +0800, Américo Wang wrote:
 
-> >
-> > So it is stuck in stop machine. I wonder where exactly. I see some do_exit
-> > at the top but I wonder how much they are reliable.
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Randy Dunlap <rdunlap@xenotime.net>
+> Date: Tue, 02 Mar 2010 09:08:23 -0800
 > 
-> Well, I think 'kstop' is just random, sometimes I got 'watchdog' or some other
-> process.
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > br_multicast calls ip_send_check(), so it should depend on INET.
+> > 
+> > built-in:
+> > br_multicast.c:(.text+0x88cf4): undefined reference to `ip_send_check'
+> > 
+> > or modular:
+> > ERROR: "ip_send_check" [net/bridge/bridge.ko] undefined!
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> >
-> > Anyway, as Steve said, we really need a full config to reproduce it.
-> >
+> Applied, but I almost lost this patch.
 > 
-> Done in another reply.
+> You need to CC: netdev on all networking patches so that it
+> gets properly tracked in patchwork and therefore does not get
+> lost.
 
-Thanks!
+I suspect Randy went by the MAINTAINERS entry - you might want to add netdev 
+as a second 'L:' line:
 
-Frederic, I notice that lockdep is on, did anything change that might
-slow down the code in lockdep, or is the function graph tracer doing
-more locking?
+ ETHERNET BRIDGE
+ M:      Stephen Hemminger <shemminger@linux-foundation.org>
+ L:      bridge@lists.linux-foundation.org
+ W:      http://www.linux-foundation.org/en/Net:Bridge
+ S:      Maintained
+ F:      include/linux/netfilter_bridge/
+ F:      net/bridge/
 
-I'm betting that we are hitting a live lock. That is, an interrupt goes
-off, it is being traced, and the function graph is tracing it, but some
-locking is happening (although it also tracks disabling of interrupts)
-and this slows the interrupt handler down enough that when it finishes,
-another interrupt goes off.
-
-Américo,
-
-Could you disable LOCKDEP and see if you still encounter this lockup?
+To make it really clear that netdev must be Cc:-ed for those patches.
 
 Thanks,
 
--- Steve
-
-
+	Ingo
