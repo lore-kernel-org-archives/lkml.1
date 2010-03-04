@@ -1,60 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131Ab0CDDLd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:11:33 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35867 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334Ab0CDDL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:11:27 -0500
+	id S1754185Ab0CDDLl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:11:41 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:39319 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753684Ab0CDDLc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 22:11:32 -0500
 From: John Stultz <johnstul@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Zankel <chris@zankel.net>
-Subject: [PATCH] xtensa: Fix unnecessary setting of xtime
-Date: Wed,  3 Mar 2010 19:11:20 -0800
-Message-Id: <1267672280-21386-3-git-send-email-johnstul@us.ibm.com>
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] time: Cleanup warp_clock
+Date: Wed,  3 Mar 2010 19:11:18 -0800
+Message-Id: <1267672280-21386-1-git-send-email-johnstul@us.ibm.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1267672280-21386-2-git-send-email-johnstul@us.ibm.com>
-References: <1267672280-21386-1-git-send-email-johnstul@us.ibm.com>
- <1267672280-21386-2-git-send-email-johnstul@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Not critical, 2.6.35 material.
 
-xtensa supports read_persisitent_clock(), so there is no reason for
-the arch specific code to be setting xtime. Setting xtime will be done
-by the generic timekeeping code.
-
-Please let me know if this is some sort of a workaround for an issue
-instead of just an oversight.
+warp_clock() currently accesses timekeeping internal state directly, which
+is unnecessary. Convert it to use the proper timekeeping interfaces.
 
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Zankel <chris@zankel.net>
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/xtensa/kernel/time.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ kernel/time.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/xtensa/kernel/time.c b/arch/xtensa/kernel/time.c
-index 19f7df3..19df764 100644
---- a/arch/xtensa/kernel/time.c
-+++ b/arch/xtensa/kernel/time.c
-@@ -60,11 +60,6 @@ static struct irqaction timer_irqaction = {
- 
- void __init time_init(void)
+diff --git a/kernel/time.c b/kernel/time.c
+index 8047980..abe1c1b 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -133,12 +133,11 @@ SYSCALL_DEFINE2(gettimeofday, struct timeval __user *, tv,
+  */
+ static inline void warp_clock(void)
  {
--	/* FIXME: xtime&wall_to_monotonic are set in timekeeping_init. */
--	read_persistent_clock(&xtime);
--	set_normalized_timespec(&wall_to_monotonic,
--		-xtime.tv_sec, -xtime.tv_nsec);
--
- #ifdef CONFIG_XTENSA_CALIBRATE_CCOUNT
- 	printk("Calibrating CPU frequency ");
- 	platform_calibrate_ccount();
+-	write_seqlock_irq(&xtime_lock);
+-	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
+-	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
+-	update_xtime_cache(0);
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
++	struct timespec delta, adjust;
++	delta.tv_sec = sys_tz.tz_minuteswest * 60;
++	delta.tv_nsec = 0;
++	adjust = timespec_add_safe(current_kernel_time(), delta);	
++	do_settimeofday(&adjust);
+ }
+ 
+ /*
 -- 
 1.6.0.4
 
