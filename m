@@ -1,68 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974Ab0CDMLD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 07:11:03 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:61853 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755785Ab0CDMLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 07:11:00 -0500
-Message-ID: <4B8FA351.9030000@panasas.com>
-Date: Thu, 04 Mar 2010 14:10:57 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1753840Ab0CDMTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 07:19:34 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:59597 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751962Ab0CDMTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 07:19:33 -0500
+Date: Thu, 4 Mar 2010 13:19:31 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+	checks
+Message-ID: <20100304121931.GB5768@kernel.dk>
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org> <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org> <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com> <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-Subject: [GIT PULL] exofs changes for 2.6.34
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2010 12:10:58.0896 (UTC) FILETIME=[BFFAED00:01CABB93]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 04 2010, Mikulas Patocka wrote:
+> 
+> 
+> On Wed, 3 Mar 2010, Jens Axboe wrote:
+> 
+> > On Wed, Mar 03 2010, Dmitry Monakhov wrote:
+> > > Mike Snitzer <snitzer@redhat.com> writes:
+> > > 
+> > > > Linux has all sorts of internal interfaces that are "odd"... the current
+> > > > 'q->merge_bvec_fn' interface included.  But odd is not a problem (nor is
+> > > > it "broken") unless you make changes that don't consider how the current
+> > > > interface is defined.
+> > > Ok. then cant you please explain more historical questions
+> > > 1) Why bio_add_page() can not add less data than requested?
+> > >    Seems that it doesn't make caller's code much complicate
+> > >    Off course barrier bio is special case. I don't consider it here.
+> > 
+> > Because the caller may not expect that, a partial add may not make any
+> > sense to the caller. The bio code obviously doesn't care. And it
+> > certainly could complicate the caller a lot, if they need to now issue
+> > and wait for several bio's instead of just a single one. Now a single
+> > completion queue and wait_for_completion() is not enough.
+> 
+> The whole thing is lame by design.
+> 
+> As a consequence, the code for splitting these page-sized bios is being 
+> duplicated in md, dm and request-based device (and maybe in other drivers).
+> 
+> And there is a long standing unfixable bug --- adding a device to raid1 
+> may fail if the device has smaller request size than the other raid1 leg.
+> Think about this:
+> 
+> * thread 1:
+> bio_add_page() -> returns ok
+> ...
+> bio_add_page() -> returns ok
+> * scheduling to thread 2 *
+> * thread 2:
+> add a raid1 leg to the block device
+> * scheduling to thread 1 *
+> * thread 1:
+> submit_bio() --- the bio already oversized for the new raid1 leg and there 
+> is no way to shrink it.
+> 
+> 
+> I think it should be redesigned in this way:
+> * the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
+> * the code for splitting bios should be just at one place --- in the 
+> generic block layer and it should work with all drivers. I.e.
+> q->make_request_fn will return that the request is too big for the given 
+> driver and the generic code will allocate few another bios from 
+> per-request_queue mempool and split the bio.
+> * then, we would fix the raid1 bug and we would also simplify md and dm 
+> --- remove the splitting code.
 
-Linus please pull the following changes since commit:
+The design certainly isn't perfect, but neither is the one that you
+suggest. For instance, what would the point of building bigger bios just
+to split them _everytime_ be? That's not good design, and it's certainly
+not helping performance much.
 
-  Linux 2.6.33-rc6
+Alasdair had an idea for doing a map/unmap like interface instead, which
+I think is a lot better. I don't think he ever coded it up, though.
+Perhaps talk to him, if you want to improve our situation in this area.
 
-They are available in the git repository at:
+-- 
+Jens Axboe
 
-  git://git.open-osd.org/linux-open-osd.git for-linus
-
-Boaz Harrosh (11):
-      exofs: debug print even less
-      exofs: Micro-optimize exofs_i_info
-      exofs: Recover in the case of read-passed-end-of-file
-      exofs: Move layout related members to a layout structure
-      exofs: unindent exofs_sbi_read
-      exofs: Define on-disk per-inode optional layout attribute
-      exofs: RAID0 support
-      exofs: convert io_state to use pages array instead of bio at input
-      exofs: Error recovery if object is missing from storage
-      exofs: Prepare for groups
-      exofs: groups support
-
- fs/exofs/common.h |   39 ++++
- fs/exofs/exofs.h  |   53 ++++-
- fs/exofs/inode.c  |  194 +++++++++++-------
- fs/exofs/ios.c    |  575 +++++++++++++++++++++++++++++++++++++++++++++--------
- fs/exofs/super.c  |  121 +++++++++---
- 5 files changed, 779 insertions(+), 203 deletions(-)
-
-What's new:
-  The main changes are support for data striping and *striping-groups*.
-striping-groups is a nice option when there are lots of devices in the
-system, but the striping of each file is confined to fewer devices, so
-not to keep all devices busy on each IO. For example a 10 out of 100
-striping means each file is striped across 10 devices out of 100 total
-devices in the full system.
-  Note that exofs has a unique layout structure that enables Mirrors
-orthogonal to any striping/raid arrangement.
-
- Next changes will be support for raid5 and raid6
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
