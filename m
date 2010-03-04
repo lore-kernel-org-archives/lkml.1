@@ -1,65 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134Ab0CDW24 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 17:28:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28155 "EHLO mx1.redhat.com"
+	id S1756191Ab0CDWdI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 17:33:08 -0500
+Received: from mms2.broadcom.com ([216.31.210.18]:4714 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754525Ab0CDW2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 17:28:54 -0500
-Subject: Re: [git pull] drm request 3
-From: Adam Jackson <ajax@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-	 <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
-	 <20100304185002.GA23532@srcf.ucam.org>
-	 <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
-	 <20100304190450.GA23807@srcf.ucam.org>
-	 <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-uPw9A73lFMj79koI8iwv"
-Date: Thu, 04 Mar 2010 17:28:17 -0500
-Message-Id: <1267741697.1316.16.camel@atropine.boston.devel.redhat.com>
-Mime-Version: 1.0
+	id S1754525Ab0CDWdF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 17:33:05 -0500
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+From: "Hugh Daschbach" <hdasch@broadcom.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+cc: "Greg KH" <gregkh@suse.de>, "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "james Bottomley" <James.Bottomley@suse.de>,
+       "James Smart" <james.smart@emulex.com>
+Date: Thu, 4 Mar 2010 14:32:52 -0800
+Subject: RE: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Topic: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+Thread-Index: Acq70Bi0BPWdLxFmQwW79Nr4k4HewwAGXQ4g
+Message-ID: <233671224A0FED4688218FFDBED26E1A5181BF12E4@IRVEXCHCCR01.corp.ad.broadcom.com>
+References: <233671224A0FED4688218FFDBED26E1A5181BF12D1@IRVEXCHCCR01.corp.ad.broadcom.com>
+ <Pine.LNX.4.44L0.1003041420510.1742-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1003041420510.1742-100000@iolanthe.rowland.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+MIME-Version: 1.0
+X-WSS-ID: 678EEA9C38O132453933-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern [mailto:stern@rowland.harvard.edu] writes:
 
---=-uPw9A73lFMj79koI8iwv
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> On Thu, 4 Mar 2010, Hugh Daschbach wrote:
+>
+>> Is there some way I can detect that devn no longer points to a valid
+>> device upon return from dev->*->shutdown(dev)?  Or, where else can I
+>> look to better understand your suggestion?
+>
+> Did you read the patch in my previous message?  You didn't quote it.  
+> It removes the devn variable, so the problem you're worried about
+> cannot occur.
+>
+> Alan Stern
 
-On Thu, 2010-03-04 at 11:14 -0800, Linus Torvalds wrote:=20
-> On Thu, 4 Mar 2010, Matthew Garrett wrote:
-> > If you'd made it clear that you wanted the interface to be stable=20
-> > before it got merged, I suspect that it simply wouldn't have been merge=
-d=20
-> > until the interface was stable.
->=20
-> What kind of excuse is that? It's "we did bad things, but if we didn't do=
-=20
-> those bad things, we'd have done _other_ bad things"?
->=20
-> Two wrong choices don't make a right.
+Mea culpa.  I looked but did not see.  I have tested your patch.  It
+does solve my problem.  I've attached my version, with comments as you
+suggested, below.
 
-So unmerge it.
+I have added get_device()/put_device() to ensure there's the device
+hasn't fully disappeared before calling list_del_init().  Is this
+needed?  If so, there's "might_sleep()" commented out in put_device().
+Do I need to release the lock before calling put_device()?
 
-- ajax
+Thanks for you patience.
 
---=-uPw9A73lFMj79koI8iwv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Hugh
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkuQNAAACgkQW4otUKDs0NNf0gCgnyFfhOz4+hSjKAR/OwDwnebh
-eZ0AniQDRIyTvy7IKLVYWfmBdSiOTLeh
-=bwK0
------END PGP SIGNATURE-----
-
---=-uPw9A73lFMj79koI8iwv--
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 2820257..1133d7a 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1731,10 +1731,20 @@ EXPORT_SYMBOL_GPL(device_move);
+  */
+ void device_shutdown(void)
+ {
+-	struct device *dev, *devn;
++	struct device *dev;
++
++	spin_lock(&devices_kset->list_lock);
++	/* 
++	 * Walk the devices list backward, shutting down each in turn.
++	 * Beware that device unplug events may also start pulling
++	 * devices offline, even as the system is shutting down.
++	 */
++	while (!list_empty(&devices_kset->list)) {
++		dev = list_entry(devices_kset->list.prev, struct device,
++				kobj.entry);
++		get_device(dev);
++		spin_unlock(&devices_kset->list_lock);
+ 
+-	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+-				kobj.entry) {
+ 		if (dev->bus && dev->bus->shutdown) {
+ 			dev_dbg(dev, "shutdown\n");
+ 			dev->bus->shutdown(dev);
+@@ -1742,6 +1752,15 @@ void device_shutdown(void)
+ 			dev_dbg(dev, "shutdown\n");
+ 			dev->driver->shutdown(dev);
+ 		}
++
++		/*
++		 * Make sure the device iss off the kset list, in the
++		 * event that dev->*->shutdown() didn't remove it.
++		 */
++		spin_lock(&devices_kset->list_lock);
++		list_del_init(&dev->kobj.entry);
++		put_device(dev);
+ 	}
++	spin_unlock(&devices_kset->list_lock);
+ 	async_synchronize_full();
+ }
 
