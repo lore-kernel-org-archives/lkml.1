@@ -1,33 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545Ab0CDJgW (ORCPT <rfc822;w@1wt.eu>);
+	id S1755568Ab0CDJg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 04:36:26 -0500
+Received: from mga02.intel.com ([134.134.136.20]:55758 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755541Ab0CDJgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Mar 2010 04:36:22 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37917 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755355Ab0CDJgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 04:36:16 -0500
-Date: Thu, 4 Mar 2010 09:36:00 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: John Stultz <johnstul@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 14/14] arm: Convert arm to use read_persistent_clock
-Message-ID: <20100304093600.GA4154@n2100.arm.linux.org.uk>
-References: <1267675049-12337-6-git-send-email-johnstul@us.ibm.com> <1267675049-12337-7-git-send-email-johnstul@us.ibm.com> <1267675049-12337-8-git-send-email-johnstul@us.ibm.com> <1267675049-12337-9-git-send-email-johnstul@us.ibm.com> <1267675049-12337-10-git-send-email-johnstul@us.ibm.com> <1267675049-12337-11-git-send-email-johnstul@us.ibm.com> <1267675049-12337-12-git-send-email-johnstul@us.ibm.com> <1267675049-12337-13-git-send-email-johnstul@us.ibm.com> <1267675049-12337-14-git-send-email-johnstul@us.ibm.com> <1267675049-12337-15-git-send-email-johnstul@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267675049-12337-15-git-send-email-johnstul@us.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,580,1262592000"; 
+   d="scan'208";a="497682401"
+From: Sheng Yang <sheng@linux.intel.com>
+To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>, linux-kernel@vger.kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@citrix.com>,
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 2/7] xen: Import cpuid.h from Xen
+Date: Thu,  4 Mar 2010 17:36:51 +0800
+Message-Id: <1267695416-14988-3-git-send-email-sheng@linux.intel.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
+References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 07:57:29PM -0800, John Stultz wrote:
-> This patch converts the arm architecture to use the generic
-> read_persistent_clock and update_persistent_clock interfaces,
-> reducing the amount of arch specific code we have to maintain,
-> and allowing for further cleanups in the future.
+From: Keir Fraser <keir.fraser@citrix.com>
 
-Have you checked Linus' latest tree?  set_rtc() no longer exists there.
+Which would be used by CPUID detection later
+
+Signed-off-by: Keir Fraser <keir.fraser@citrix.com>
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+---
+ arch/x86/include/asm/xen/cpuid.h |   68 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 68 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/include/asm/xen/cpuid.h
+
+diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
+new file mode 100644
+index 0000000..8787f03
+--- /dev/null
++++ b/arch/x86/include/asm/xen/cpuid.h
+@@ -0,0 +1,68 @@
++/******************************************************************************
++ * arch/include/asm/xen/cpuid.h
++ *
++ * CPUID interface to Xen.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Copyright (c) 2007 Citrix Systems, Inc.
++ *
++ * Authors:
++ *    Keir Fraser <keir.fraser@citrix.com>
++ */
++
++#ifndef __ASM_X86_XEN_CPUID_H__
++#define __ASM_X86_XEN_CPUID_H__
++
++/* Xen identification leaves start at 0x40000000. */
++#define XEN_CPUID_FIRST_LEAF 0x40000000
++#define XEN_CPUID_LEAF(i)    (XEN_CPUID_FIRST_LEAF + (i))
++
++/*
++ * Leaf 1 (0x40000000)
++ * EAX: Largest Xen-information leaf. All leaves up to an including @EAX
++ *      are supported by the Xen host.
++ * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
++ *      of a Xen host.
++ */
++#define XEN_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
++#define XEN_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
++#define XEN_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
++
++/*
++ * Leaf 2 (0x40000001)
++ * EAX[31:16]: Xen major version.
++ * EAX[15: 0]: Xen minor version.
++ * EBX-EDX: Reserved (currently all zeroes).
++ */
++
++/*
++ * Leaf 3 (0x40000002)
++ * EAX: Number of hypercall transfer pages. This register is always guaranteed
++ *      to specify one hypercall page.
++ * EBX: Base address of Xen-specific MSRs.
++ * ECX: Features 1. Unused bits are set to zero.
++ * EDX: Features 2. Unused bits are set to zero.
++ */
++
++/* Does the host support MMU_PT_UPDATE_PRESERVE_AD for this guest? */
++#define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
++#define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
++
++#endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
+-- 
+1.5.4.5
+
