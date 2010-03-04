@@ -1,75 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662Ab0CDVtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:49:22 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:9303 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751166Ab0CDVtU (ORCPT
+	id S1753229Ab0CDVvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:51:07 -0500
+Received: from trinity.develer.com ([83.149.158.210]:57986 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394Ab0CDVvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:49:20 -0500
-X-SpamScore: -16
-X-BigFish: VPS-16(zz154dM1432R10d1I14e1Izz1202hzzz32i6bh2a8h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KYS1XZ-01-5PK-02
-X-M-MSG: 
-Date: Thu, 4 Mar 2010 22:49:21 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mark Langsdorf <mark.langsdorf@amd.com>, <linux-kernel@vger.kernel.org>,
-       <cpufreq@vger.kernel.org>, <bhavna.sarathy@amd.com>,
-       <joachim.deguara@amd.com>
-Subject: Re: [PATCH 3/3] cpufreq: add sysfs knob for toggling core
- performance boost
-Message-ID: <20100304214921.GB29002@aftab>
-References: <201003031459.27757.mark.langsdorf@amd.com>
- <20100304132743.e2b731da.akpm@linux-foundation.org>
+	Thu, 4 Mar 2010 16:51:05 -0500
+Date: Thu, 4 Mar 2010 22:51:01 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 4/4] memcg: dirty pages instrumentation
+Message-ID: <20100304215101.GB4787@linux>
+References: <1267699215-4101-1-git-send-email-arighi@develer.com>
+ <1267699215-4101-5-git-send-email-arighi@develer.com>
+ <20100304194144.GE18786@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100304132743.e2b731da.akpm@linux-foundation.org>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+In-Reply-To: <20100304194144.GE18786@redhat.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 04 Mar 2010 21:49:05.0755 (UTC) FILETIME=[82F592B0:01CABBE4]
-X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, Mar 04, 2010 at 01:27:43PM -0800
-
-> The lack of any changelog in a patch is usually a good sign that the
-> patch needs a changelog :(
-
-See my earlier mail.
-
-[..]
-
-> Well I've read the code and I've read the code comments and I've read
-> the changelogs and I still have no clue what this thing does. 
-> Apparently it allows me to toggle something called "APERF/MPERF".  I
-> guess if I were patient enough, teh goog might tell me what that is,
-> and why I might want it.  But this is all terribly inefficient.
+On Thu, Mar 04, 2010 at 02:41:44PM -0500, Vivek Goyal wrote:
+> On Thu, Mar 04, 2010 at 11:40:15AM +0100, Andrea Righi wrote:
 > 
-> I think you'd find that your feature is more useful and will be used by
-> more people if you tell them (and us) what it does.
+> [..]
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index 5a0f8f3..c5d14ea 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -137,13 +137,16 @@ static struct prop_descriptor vm_dirties;
+> >   */
+> >  static int calc_period_shift(void)
+> >  {
+> > +	struct dirty_param dirty_param;
+> >  	unsigned long dirty_total;
+> >  
+> > -	if (vm_dirty_bytes)
+> > -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
+> > +	get_dirty_param(&dirty_param);
+> > +
+> > +	if (dirty_param.dirty_bytes)
+> > +		dirty_total = dirty_param.dirty_bytes / PAGE_SIZE;
+> >  	else
+> > -		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
+> > -				100;
+> > +		dirty_total = (dirty_param.dirty_ratio *
+> > +				determine_dirtyable_memory()) / 100;
+> >  	return 2 + ilog2(dirty_total - 1);
+> >  }
+> >  
+> 
+> Hmm.., I have been staring at this for some time and I think something is
+> wrong. I don't fully understand the way floating proportions are working
+> but this function seems to be calculating the period over which we need
+> to measuer the proportions. (vm_completion proportion and vm_dirties
+> proportions).
+> 
+> And we this period (shift), when admin updates dirty_ratio or dirty_bytes
+> etc. In that case we recalculate the global dirty limit and take log2 and
+> use that as period over which we monitor and calculate proportions.
+> 
+> If yes, then it should be global and not per cgroup (because all our 
+> accouting of bdi completion is global and not per cgroup).
+> 
+> PeterZ, can tell us more about it. I am just raising the flag here to be
+> sure.
+> 
+> Thanks
+> Vivek
 
-Basically, this is a knob for toggling of a core boosting feature
-we have in Fam10h, rev.E CPUs. I'll have a proper changelog with a
-hopefully understandable explanation soon :).
+Hi Vivek,
 
-Thanks.
+I tend to agree, we must use global dirty values here.
 
--- 
-Regards/Gruss,
-Boris.
+BTW, update_completion_period() is called from dirty_* handlers, so it's
+totally unrelated to use the current memcg. That's the memcg where the
+admin is running, so probably it's the root memcg almost all the time,
+but it's wrong in principle. In conclusion this patch shouldn't touch
+calc_period_shift().
 
--
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
-
+Thanks,
+-Andrea
