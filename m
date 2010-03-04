@@ -1,279 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962Ab0CDRNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:13:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51755 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756040Ab0CDRND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:13:03 -0500
-Date: Thu, 4 Mar 2010 12:12:54 -0500
-From: Josef Bacik <josef@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Josef Bacik <josef@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cleanup __generic_block_fiemap and fix a few minor
-	issues
-Message-ID: <20100304171253.GB5722@localhost.localdomain>
-References: <20100303163715.GB2215@localhost.localdomain> <alpine.LFD.2.00.1003040754150.7046@localhost.localdomain> <20100304162039.GA5722@localhost.localdomain> <20100304085021.1b4e5c58.randy.dunlap@oracle.com>
+	id S1756980Ab0CDRNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:13:32 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56302 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756930Ab0CDRNa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 12:13:30 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18izHsWDWgiIIDsHzYmWVUU1nSw8DNIQVG/fXt3dP
+	YR6hqpu6rbTNyJ
+Date: Thu, 4 Mar 2010 18:13:38 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] V4L/DVB: mx1-camera: compile fix
+In-Reply-To: <1267721687-19697-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.1003041811160.4825@axis700.grange>
+References: <1267721687-19697-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100304085021.1b4e5c58.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46000000000000002
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 08:50:21AM -0800, Randy Dunlap wrote:
-> On Thu, 4 Mar 2010 11:20:40 -0500 Josef Bacik wrote:
-> 
-> > Ahh yes thats much nicer, thank you.  Here is my updated patch with your
-> > suggestions.  Thanks,
-> > 
-> > Signed-off-by: Josef Bacik <josef@redhat.com>
-> > ---
-> >  fs/ioctl.c         |   81 +++++++++++++++++++++++++++++----------------------
-> >  include/linux/fs.h |    5 ++-
-> >  2 files changed, 49 insertions(+), 37 deletions(-)
-> > 
-> > diff --git a/fs/ioctl.c b/fs/ioctl.c
-> > index 6c75110..64fed0b 100644
-> > --- a/fs/ioctl.c
-> > +++ b/fs/ioctl.c
-> > @@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
-> >  
-> >  #ifdef CONFIG_BLOCK
-> >  
-> > -#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
-> > -#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
-> > +static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
-> > +{
-> > +	return (offset >> inode->i_blkbits);
-> > +}
-> > +
-> > +static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
-> > +{
-> > +	return (blk << inode->i_blkbits);
-> > +}
-> >  
-> >  /**
-> >   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
-> >   * @inode - the inode to map
-> > - * @arg - the pointer to userspace where we copy everything to
-> > + * @fieinfo - the fiemap info struct that will be passed back to userspace
-> > + * @start - where to start mapping in the inode
-> > + * @len - how much space to map
-> >   * @get_block - the fs's get_block function
-> >   *
-> >   * This does FIEMAP for block based inodes.  Basically it will just loop
-> 
-> Please fix the kernel-doc notation.  Function parameter notation is like:
-> 
->  * @start: where to start mapping in the inode
+Hi Uwe
 
-Sounds good, fixed below.  Thanks,
+On Thu, 4 Mar 2010, Uwe Kleine-König wrote:
 
-Signed-off-by: Josef Bacik <josef@redhat.com>
+> This is a regression of
+> 
+> 	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+> Hello,
+> 
+> this went unnoticed up to now as mx1_defconfig doesn't include support
+> for mx1-camera.
+> I have a patch pending to change that though.
+> 
+> Best regards
+> Uwe
+> 
+>  drivers/media/video/mx1_camera.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
+> index 2ba14fb..38e5315 100644
+> --- a/drivers/media/video/mx1_camera.c
+> +++ b/drivers/media/video/mx1_camera.c
+> @@ -45,6 +45,9 @@
+>  #include <mach/hardware.h>
+>  #include <mach/mx1_camera.h>
+>  
+> +#undef DMA_BASE 
+> +#define DMA_BASE MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR)
+
+I don't like this. Why the "undef"? Is DMA_BASE already defined? where and 
+what is it? If it is - we better use a different name, if not - just 
+remove the undef, please.
+
+> +
+>  /*
+>   * CSI registers
+>   */
+> @@ -783,7 +786,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+>  			       pcdev);
+>  
+>  	imx_dma_config_channel(pcdev->dma_chan, IMX_DMA_TYPE_FIFO,
+> -			       IMX_DMA_MEMSIZE_32, DMA_REQ_CSI_R, 0);
+> +			       IMX_DMA_MEMSIZE_32, MX1_DMA_REQ_CSI_R, 0);
+>  	/* burst length : 16 words = 64 bytes */
+>  	imx_dma_config_burstlen(pcdev->dma_chan, 0);
+>  
+> -- 
+> 1.7.0
+> 
+
+Thanks
+Guennadi
 ---
- fs/ioctl.c         |   85 +++++++++++++++++++++++++++++----------------------
- include/linux/fs.h |    5 ++-
- 2 files changed, 51 insertions(+), 39 deletions(-)
-
-diff --git a/fs/ioctl.c b/fs/ioctl.c
-index 6c75110..f330fec 100644
---- a/fs/ioctl.c
-+++ b/fs/ioctl.c
-@@ -228,14 +228,23 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
- 
- #ifdef CONFIG_BLOCK
- 
--#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
--#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
-+static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
-+{
-+	return (offset >> inode->i_blkbits);
-+}
-+
-+static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
-+{
-+	return (blk << inode->i_blkbits);
-+}
- 
- /**
-  * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
-- * @inode - the inode to map
-- * @arg - the pointer to userspace where we copy everything to
-- * @get_block - the fs's get_block function
-+ * @inode: the inode to map
-+ * @fieinfo: the fiemap info struct that will be passed back to userspace
-+ * @start: where to start mapping in the inode
-+ * @len: how much space to map
-+ * @get_block: the fs's get_block function
-  *
-  * This does FIEMAP for block based inodes.  Basically it will just loop
-  * through get_block until we hit the number of extents we want to map, or we
-@@ -250,46 +259,46 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
-  */
- 
- int __generic_block_fiemap(struct inode *inode,
--			   struct fiemap_extent_info *fieinfo, u64 start,
--			   u64 len, get_block_t *get_block)
-+			   struct fiemap_extent_info *fieinfo, loff_t start,
-+			   loff_t len, get_block_t *get_block)
- {
--	struct buffer_head tmp;
--	unsigned long long start_blk;
--	long long length = 0, map_len = 0;
-+	struct buffer_head map_bh;
-+	sector_t start_blk, last_blk;
- 	u64 logical = 0, phys = 0, size = 0;
- 	u32 flags = FIEMAP_EXTENT_MERGED;
--	int ret = 0, past_eof = 0, whole_file = 0;
-+	bool past_eof = false, whole_file = false;
-+	int ret = 0;
- 
--	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
-+	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
-+	if (ret)
- 		return ret;
- 
--	start_blk = logical_to_blk(inode, start);
--
--	length = (long long)min_t(u64, len, i_size_read(inode));
--	if (length < len)
--		whole_file = 1;
-+	if (len >= i_size_read(inode)) {
-+		whole_file = true;
-+		len = i_size_read(inode);
-+	}
- 
--	map_len = length;
-+	start_blk = logical_to_blk(inode, start);
-+	last_blk = logical_to_blk(inode, start + len - 1);
- 
- 	do {
- 		/*
- 		 * we set b_size to the total size we want so it will map as
- 		 * many contiguous blocks as possible at once
- 		 */
--		memset(&tmp, 0, sizeof(struct buffer_head));
--		tmp.b_size = map_len;
-+		memset(&map_bh, 0, sizeof(struct buffer_head));
-+		map_bh.b_size = len;
- 
--		ret = get_block(inode, start_blk, &tmp, 0);
-+		ret = get_block(inode, start_blk, &map_bh, 0);
- 		if (ret)
- 			break;
- 
- 		/* HOLE */
--		if (!buffer_mapped(&tmp)) {
--			length -= blk_to_logical(inode, 1);
-+		if (!buffer_mapped(&map_bh)) {
- 			start_blk++;
- 
- 			/*
--			 * we want to handle the case where there is an
-+			 * We want to handle the case where there is an
- 			 * allocated block at the front of the file, and then
- 			 * nothing but holes up to the end of the file properly,
- 			 * to make sure that extent at the front gets properly
-@@ -297,11 +306,11 @@ int __generic_block_fiemap(struct inode *inode,
- 			 */
- 			if (!past_eof &&
- 			    blk_to_logical(inode, start_blk) >=
--			    blk_to_logical(inode, 0)+i_size_read(inode))
-+			    blk_to_logical(inode, 0) + i_size_read(inode))
- 				past_eof = 1;
- 
- 			/*
--			 * first hole after going past the EOF, this is our
-+			 * First hole after going past the EOF, this is our
- 			 * last extent
- 			 */
- 			if (past_eof && size) {
-@@ -309,15 +318,18 @@ int __generic_block_fiemap(struct inode *inode,
- 				ret = fiemap_fill_next_extent(fieinfo, logical,
- 							      phys, size,
- 							      flags);
--				break;
-+			} else if (size) {
-+				ret = fiemap_fill_next_extent(fieinfo, logical,
-+							      phys, size, flags);
-+				size = 0;
- 			}
- 
- 			/* if we have holes up to/past EOF then we're done */
--			if (length <= 0 || past_eof)
-+			if (start_blk > last_blk || past_eof || ret)
- 				break;
- 		} else {
- 			/*
--			 * we have gone over the length of what we wanted to
-+			 * We have gone over the length of what we wanted to
- 			 * map, and it wasn't the entire file, so add the extent
- 			 * we got last time and exit.
- 			 *
-@@ -331,7 +343,7 @@ int __generic_block_fiemap(struct inode *inode,
- 			 * are good to go, just add the extent to the fieinfo
- 			 * and break
- 			 */
--			if (length <= 0 && !whole_file) {
-+			if (start_blk > last_blk && !whole_file) {
- 				ret = fiemap_fill_next_extent(fieinfo, logical,
- 							      phys, size,
- 							      flags);
-@@ -351,11 +363,10 @@ int __generic_block_fiemap(struct inode *inode,
- 			}
- 
- 			logical = blk_to_logical(inode, start_blk);
--			phys = blk_to_logical(inode, tmp.b_blocknr);
--			size = tmp.b_size;
-+			phys = blk_to_logical(inode, map_bh.b_blocknr);
-+			size = map_bh.b_size;
- 			flags = FIEMAP_EXTENT_MERGED;
- 
--			length -= tmp.b_size;
- 			start_blk += logical_to_blk(inode, size);
- 
- 			/*
-@@ -364,14 +375,14 @@ int __generic_block_fiemap(struct inode *inode,
- 			 * is marked with FIEMAP_EXTENT_LAST
- 			 */
- 			if (!past_eof &&
--			    logical+size >=
--			    blk_to_logical(inode, 0)+i_size_read(inode))
--				past_eof = 1;
-+			    logical + size >=
-+			    blk_to_logical(inode, 0) + i_size_read(inode))
-+				past_eof = true;
- 		}
- 		cond_resched();
- 	} while (1);
- 
--	/* if ret is 1 then we just hit the end of the extent array */
-+	/* If ret is 1 then we just hit the end of the extent array */
- 	if (ret == 1)
- 		ret = 0;
- 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index ebb1cd5..7e6e47f 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2313,8 +2313,9 @@ extern int vfs_fstatat(int , char __user *, struct kstat *, int);
- extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
- 		    unsigned long arg);
- extern int __generic_block_fiemap(struct inode *inode,
--				  struct fiemap_extent_info *fieinfo, u64 start,
--				  u64 len, get_block_t *get_block);
-+				  struct fiemap_extent_info *fieinfo,
-+				  loff_t start, loff_t len,
-+				  get_block_t *get_block);
- extern int generic_block_fiemap(struct inode *inode,
- 				struct fiemap_extent_info *fieinfo, u64 start,
- 				u64 len, get_block_t *get_block);
--- 
-1.6.5.rc2
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
