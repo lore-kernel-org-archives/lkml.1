@@ -1,51 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565Ab0CDBuL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 20:50:11 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46966 "EHLO e6.ny.us.ibm.com"
+	id S1755607Ab0CDBu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 20:50:28 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52023 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755320Ab0CDBuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 20:50:04 -0500
-Date: Wed, 3 Mar 2010 17:50:01 -0800
+	id S1755573Ab0CDBuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 20:50:22 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH tip/core/rcu 0/3] rcu: fix !PREEMPT, __mpol_dup(), and
-	ftrace_perf_buf_prepare() RCU lockdep splats
-Message-ID: <20100304015001.GA32190@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>
+Subject: [PATCH tip/core/rcu 2/3] rcu: suppress __mpol_dup() false positive from RCU lockdep
+Date: Wed,  3 Mar 2010 17:50:17 -0800
+Message-Id: <1267667418-32233-2-git-send-email-paulmck@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100304015001.GA32190@linux.vnet.ibm.com>
+References: <20100304015001.GA32190@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Common code is used during task creation and after the task has started
+running.  RCU protection is not needed during task creation because no
+other CPU has access to the under-construction task.  Provide the RCU
+protection anyway to suppress the false positive, as there does not
+appear to be a good way for the common code to recognize that the task
+is only accessible to the CPU creating it.
 
-This patch fixes three RCU lockdep issues:
+Cc: Paul Menage <menage@google.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ mm/mempolicy.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-1.	Makes rcu_read_lock_sched_held() correctly handle !PREEMPT
-	kernels.
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 290fb5b..3cec080 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -1730,10 +1730,12 @@ struct mempolicy *__mpol_dup(struct mempolicy *old)
+ 
+ 	if (!new)
+ 		return ERR_PTR(-ENOMEM);
++	rcu_read_lock();
+ 	if (current_cpuset_is_being_rebound()) {
+ 		nodemask_t mems = cpuset_mems_allowed(current);
+ 		mpol_rebind_policy(old, &mems);
+ 	}
++	rcu_read_unlock();
+ 	*new = *old;
+ 	atomic_set(&new->refcnt, 1);
+ 	return new;
+-- 
+1.6.6
 
-2.	Suppresses __mpol_dup() false positive.
-
-3.	Converts a pair of rcu_dereference() calls in
-	ftrace_perf_buf_prepare() to rcu_dereference_sched().
-
-There are probably more where these came from.  ;-)
-
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
- include/linux/rcupdate.h           |   15 ++++++++++++++-
- include/trace/ftrace.h             |    4 ++--
- kernel/trace/trace_event_profile.c |    5 ++---
- mm/mempolicy.c                     |    3 ++-
- 4 files changed, 20 insertions(+), 7 deletions(-)
