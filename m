@@ -1,59 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985Ab0CDTtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:49:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49160 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756228Ab0CDTtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:49:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michal Hocko <mstsxfx@gmail.com>
-Subject: Re: unable to handle kernel paging request on resume with 2.6.33-00001-gbaac35c
-Date: Thu, 4 Mar 2010 20:52:39 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>, linux-mm@kvack.org
-References: <20100301175256.GA4034@tiehlicka.suse.cz> <20100304090207.GA4640@tiehlicka.suse.cz> <201003042014.09444.rjw@sisk.pl>
-In-Reply-To: <201003042014.09444.rjw@sisk.pl>
+	id S932278Ab0CDTuz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:50:55 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:63141 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932149Ab0CDTuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:50:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=AeKlh5P0KZz2mieXmoagVsnXoWJJIw4h8ciy76e4+h8S1uuR0ivaU5w81MyvpxecIF
+         drh/o94UTx/SjmWnUmOduuGifp4wRJw01VQFEdu3tkO5S8WokzL42KvPPlkGAqbpJmZW
+         98TcBxAaQCQpQffIhNiLuJ3a+z9CkQZF+c9eU=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003042052.39625.rjw@sisk.pl>
+In-Reply-To: <87f94c371003041141y1bcd30fdkdca7349eea5930b4@mail.gmail.com>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
+	 <4B8FC6AC.4060801@teksavvy.com>
+	 <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
+	 <4B8FF2C3.1060808@teksavvy.com>
+	 <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
+	 <87f94c371003041141y1bcd30fdkdca7349eea5930b4@mail.gmail.com>
+Date: Thu, 4 Mar 2010 14:50:53 -0500
+Message-ID: <f875e2fe1003041150k2e29c813w4149c73277c051d@mail.gmail.com>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+From: s ponnusa <foosaa@gmail.com>
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Mark Lord <kernel@teksavvy.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 March 2010, Rafael J. Wysocki wrote:
-> On Thursday 04 March 2010, Michal Hocko wrote:
-> > On Wed, Mar 03, 2010 at 10:04:51PM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday 03 March 2010, Michal Hocko wrote:
-> > > > On Tue, Mar 02, 2010 at 09:01:21PM +0100, Rafael J. Wysocki wrote:
-> > > > > On Tuesday 02 March 2010, Michal Hocko wrote:
-> > > ...
-> > > > > So this is just plain 2.6.33 plus one commit.
-> > > > > 
-> > > > > Hmm.  There are only a few changes directly related to hibernation in that
-> > > > > kernel and none of them can possibly introduce a problem like that.
-> > > > 
-> > > > My previous kernel was vmlinux-2.6.33-rc8-00164-gaea187c and it didn't
-> > > > show the problem.
-> > > 
-> > > Well, I have no idea which of the commits between -rc8 and .33 final might
-> > > introduce such a problem.
-> > > 
-> > > What graphics is there in the affected box?
-> > 
-> > 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-> > 943/940GML Express Integrated Graphics Controller (rev 03))
-> 
-> Well, no clue.
-> 
-> The problem appears to be 32-bit specific, though, because I'm unable to
-> reproduce it on any of my 64-bit boxes.
+Oops! ATA Specifications! It is a block device. HDD.
 
-Well, this patch from Shaohua might help:
-
-http://patchwork.kernel.org/patch/83497/
-
-Rafael
+On Thu, Mar 4, 2010 at 2:41 PM, Greg Freemyer <greg.freemyer@gmail.com> wrote:
+> On Thu, Mar 4, 2010 at 1:20 PM, s ponnusa <foosaa@gmail.com> wrote:
+>> SMART data consists only the count of remapped sectors, seek failures,
+>> raw read error rate, uncorrectable sector counts, crc errors etc., and
+>> technically one should be aware of the error during write operation as
+>> well.
+>>
+>> As per the ATAPI specifications\
+>
+>
+> ATAPI?
+>
+> What sort of device is this?
+>
+> Greg
+>
