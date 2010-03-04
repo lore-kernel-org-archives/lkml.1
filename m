@@ -1,25 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382Ab0CDJhG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 04:37:06 -0500
-Received: from mga11.intel.com ([192.55.52.93]:12490 "EHLO mga11.intel.com"
+	id S1755640Ab0CDJhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 04:37:13 -0500
+Received: from mga11.intel.com ([192.55.52.93]:41614 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755369Ab0CDJgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755367Ab0CDJgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Mar 2010 04:36:06 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,580,1262592000"; 
-   d="scan'208";a="545981756"
+   d="scan'208";a="777868097"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Cc: Keir Fraser <keir.fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
        Ian Pratt <Ian.Pratt@eu.citrix.com>,
        Ian Campbell <Ian.Campbell@citrix.com>, linux-kernel@vger.kernel.org,
        xen-devel <xen-devel@lists.xensource.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>
-Subject: [PATCH 4/7] xen/hvm: Xen PV extension of HVM initialization
-Date: Thu,  4 Mar 2010 17:36:53 +0800
-Message-Id: <1267695416-14988-5-git-send-email-sheng@linux.intel.com>
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 5/7] x86/xen: The entrance for PV extension of HVM
+Date: Thu,  4 Mar 2010 17:36:54 +0800
+Message-Id: <1267695416-14988-6-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
 References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
@@ -27,244 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PV extended HVM(once known as Hybrid) is started from real mode like
-HVM guest, but also with a component based PV feature selection(e.g. PV halt,
-PV timer, event channel, then PV drivers). So guest can takes the advantages
-of both H/W virtualization and Para-Virtualization.
-
-This patch introduced the PV extension of HVM guest initialization.
-
-Guest would detect the capability using CPUID 0x40000002.edx, then call
-HVMOP_enable_pv hypercall to enable pv support in hypervisor.
+xen_guest_init() would setup the environment.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
 ---
- arch/x86/include/asm/xen/cpuid.h   |    5 ++
- arch/x86/xen/Kconfig               |    8 ++
- arch/x86/xen/Makefile              |    1 +
- arch/x86/xen/hvmpv.c               |  133 ++++++++++++++++++++++++++++++++++++
- include/xen/interface/hvm/hvm_op.h |    8 ++
- include/xen/xen.h                  |    9 +++
- 6 files changed, 164 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/xen/hvmpv.c
+ arch/x86/include/asm/xen/hypervisor.h |    6 ++++++
+ arch/x86/kernel/setup.c               |    4 ++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
-index 8787f03..a93c851 100644
---- a/arch/x86/include/asm/xen/cpuid.h
-+++ b/arch/x86/include/asm/xen/cpuid.h
-@@ -65,4 +65,9 @@
- #define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
- #define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
- 
-+#define _XEN_CPUID_FEAT2_HVM_PV 0
-+#define XEN_CPUID_FEAT2_HVM_PV (1u<<0)
-+#define _XEN_CPUID_FEAT2_HVM_PV_EVTCHN 1
-+#define XEN_CPUID_FEAT2_HVM_PV_EVTCHN (1u<<1)
-+
- #endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index b83e119..af3c7a0 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -36,3 +36,11 @@ config XEN_DEBUG_FS
- 	help
- 	  Enable statistics output and various tuning options in debugfs.
- 	  Enabling this option may incur a significant performance overhead.
-+
-+config XEN_HVM_PV
-+	bool "PV extension of HVM"
-+	depends on XEN && X86_64
-+	default n
-+	help
-+	  Enable the PV extension of HVM, so that HVM guest would benefit from
-+	  PV features like PV timer and evtchn.
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3bb4fc2..73bd5db 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -17,4 +17,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PARAVIRT_SPINLOCKS)+= spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_HVM_PV)	+= hvmpv.o
- 
-diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
-new file mode 100644
-index 0000000..7a741ed
---- /dev/null
-+++ b/arch/x86/xen/hvmpv.c
-@@ -0,0 +1,133 @@
-+/*
-+ * PV extension of HVM implementation.
-+ *
-+ * Sheng Yang <sheng@linux.intel.com>, Intel Corporation, 2010
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/percpu.h>
-+#include <linux/module.h>
-+
-+#include <xen/xen.h>
-+#include <xen/features.h>
-+#include <xen/events.h>
-+#include <xen/hvm.h>
-+#include <xen/interface/xen.h>
-+#include <xen/interface/version.h>
-+#include <xen/interface/memory.h>
-+
-+#include <asm/xen/cpuid.h>
-+#include <asm/xen/hypercall.h>
-+#include <asm/xen/hypervisor.h>
-+
-+#include "xen-ops.h"
-+
-+u32 xen_hvm_pv_features;
-+EXPORT_SYMBOL_GPL(xen_hvm_pv_features);
-+
-+static const struct pv_info xen_hvm_pv_info __initdata = {
-+	.paravirt_enabled = 1,
-+	.shared_kernel_pmd = 0,
-+	.kernel_rpl = 0,
-+	.name = "Xen",
-+};
-+
-+static void __init xen_hvm_pv_banner(void)
-+{
-+	unsigned version = HYPERVISOR_xen_version(XENVER_version, NULL);
-+	struct xen_extraversion extra;
-+	HYPERVISOR_xen_version(XENVER_extraversion, &extra);
-+
-+	printk(KERN_INFO "Booting PV extended HVM kernel on %s\n",
-+		pv_info.name);
-+	printk(KERN_INFO "Xen version: %d.%d%s\n",
-+		version >> 16, version & 0xffff, extra.extraversion);
-+}
-+
-+static int __init xen_para_available(void)
-+{
-+	uint32_t eax, ebx, ecx, edx;
-+	cpuid(XEN_CPUID_LEAF(0), &eax, &ebx, &ecx, &edx);
-+
-+	if (ebx == XEN_CPUID_SIGNATURE_EBX &&
-+	    ecx == XEN_CPUID_SIGNATURE_ECX &&
-+	    edx == XEN_CPUID_SIGNATURE_EDX &&
-+	    ((eax - XEN_CPUID_LEAF(0)) >= 2))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int __init enable_hvm_pv(u64 flags)
-+{
-+	struct xen_hvm_pv_type a;
-+
-+	a.domid = DOMID_SELF;
-+	a.flags = flags;
-+	return HYPERVISOR_hvm_op(HVMOP_enable_pv, &a);
-+}
-+
-+static int __init init_hvm_pv_info(void)
-+{
-+	uint32_t ecx, edx, pages, msr;
-+	u64 pfn;
-+
-+	if (!xen_para_available())
-+		return -EINVAL;
-+
-+	cpuid(XEN_CPUID_LEAF(2), &pages, &msr, &ecx, &edx);
-+
-+	/* Check if hvm_pv mode is supported */
-+	if (!(edx & XEN_CPUID_FEAT2_HVM_PV))
-+		return -ENODEV;
-+
-+	/* We only support 1 page of hypercall for now */
-+	if (pages != 1)
-+		return -ENOMEM;
-+
-+	pfn = __pa(hypercall_page);
-+	wrmsrl(msr, pfn);
-+
-+	xen_setup_features();
-+
-+	x86_init.oem.banner = xen_hvm_pv_banner;
-+	pv_info = xen_hvm_pv_info;
-+
-+	xen_domain_type = XEN_HVM_DOMAIN;
-+
-+	return 0;
-+}
-+
-+static struct shared_info shared_info_page __page_aligned_bss;
-+
-+static void __init init_shared_info(void)
-+{
-+	struct xen_add_to_physmap xatp;
-+
-+	xatp.domid = DOMID_SELF;
-+	xatp.idx = 0;
-+	xatp.space = XENMAPSPACE_shared_info;
-+	xatp.gpfn = __pa(&shared_info_page) >> PAGE_SHIFT;
-+	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &xatp))
-+		BUG();
-+
-+	HYPERVISOR_shared_info = (struct shared_info *)&shared_info_page;
-+
-+	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
-+}
-+
-+void __init xen_guest_init(void)
-+{
-+	int r;
-+
-+	/* Ensure the we won't confused with others */
-+	if (xen_domain_type != XEN_NATIVE)
-+		return;
-+
-+	r = init_hvm_pv_info();
-+	if (r < 0)
-+		return;
-+
-+	init_shared_info();
-+}
-diff --git a/include/xen/interface/hvm/hvm_op.h b/include/xen/interface/hvm/hvm_op.h
-index 7c74ba4..3f0b118 100644
---- a/include/xen/interface/hvm/hvm_op.h
-+++ b/include/xen/interface/hvm/hvm_op.h
-@@ -69,4 +69,12 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_link_route);
- /* Flushes all VCPU TLBs: @arg must be NULL. */
- #define HVMOP_flush_tlbs          5
- 
-+#define HVMOP_enable_pv 9
-+struct xen_hvm_pv_type {
-+	domid_t domid;
-+	uint32_t flags;
-+#define HVM_PV_CLOCK  (1ull<<0)
-+#define HVM_PV_EVTCHN (1ull<<1)
-+};
-+
- #endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
-diff --git a/include/xen/xen.h b/include/xen/xen.h
-index a164024..11f5ced 100644
---- a/include/xen/xen.h
-+++ b/include/xen/xen.h
-@@ -19,6 +19,15 @@ extern enum xen_domain_type xen_domain_type;
- #define xen_hvm_domain()	(xen_domain() &&			\
- 				 xen_domain_type == XEN_HVM_DOMAIN)
+diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+index 396ff4c..13e089a 100644
+--- a/arch/x86/include/asm/xen/hypervisor.h
++++ b/arch/x86/include/asm/xen/hypervisor.h
+@@ -37,4 +37,10 @@
+ extern struct shared_info *HYPERVISOR_shared_info;
+ extern struct start_info *xen_start_info;
  
 +#ifdef CONFIG_XEN_HVM_PV
++void __init xen_guest_init(void);
++#else
++static inline void xen_guest_init(void) {};
++#endif
 +
-+#define XEN_HVM_PV_EVTCHN_ENABLED   (1u << 1)
-+extern u32 xen_hvm_pv_features;
+ #endif /* _ASM_X86_XEN_HYPERVISOR_H */
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 5d9e40c..1cc4786 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -113,6 +113,8 @@
+ #endif
+ #include <asm/mce.h>
+ 
++#include <asm/xen/hypervisor.h>
 +
-+#define xen_hvm_pv_evtchn_enabled() \
-+		(xen_hvm_pv_features & XEN_HVM_PV_EVTCHN_ENABLED)
-+#endif /* CONFIG_XEN_HVM_PV */
+ /*
+  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
+  * The direct mapping extends to max_pfn_mapped, so that we can directly access
+@@ -740,6 +742,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	x86_init.oem.arch_setup();
+ 
++	xen_guest_init();
 +
- #ifdef CONFIG_XEN_DOM0
- #include <xen/interface/xen.h>
- #include <asm/xen/hypervisor.h>
+ 	setup_memory_map();
+ 	parse_setup_data();
+ 	/* update the e820_saved too */
 -- 
 1.5.4.5
 
