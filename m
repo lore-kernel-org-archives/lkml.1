@@ -1,64 +1,143 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931Ab0CDDLu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:11:50 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:48063 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753943Ab0CDDLk (ORCPT
+	id S1753529Ab0CDDMF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:12:05 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:56388 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753943Ab0CDDLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:11:40 -0500
-From: John Stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: John Stultz <johnstul@us.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] time: Cleanup direct xtime usage in xen
-Date: Wed,  3 Mar 2010 19:11:19 -0800
-Message-Id: <1267672280-21386-2-git-send-email-johnstul@us.ibm.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1267672280-21386-1-git-send-email-johnstul@us.ibm.com>
-References: <1267672280-21386-1-git-send-email-johnstul@us.ibm.com>
+	Wed, 3 Mar 2010 22:11:54 -0500
+Date: Wed, 3 Mar 2010 22:11:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm@lists.linux-foundation.org,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Mark Brown <broonie@sirena.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [PATCH] PM: add dpm_use_runtime_{suspend, resume}
+ helper functions
+In-Reply-To: <201003040156.58763.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.1003032151581.6963-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not critical, 2.6.35 material.
+On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
 
-Cleanup xen's direct use of internal timekeeping values.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Provide generic subsystem-level callbacks
+> 
+> There are subsystems whose power management callbacks only need to
+> invoke the callbacks provided by device drivers.  Still, their system
+> sleep PM callbacks should play well with the runtime PM callbacks,
+> so that devices suspended at run time can be left in that state for
+> a system sleep transition.
+> 
+> Provide a set of generic PM callbacks for such subsystems and
+> define convenience macros for populating dev_pm_ops structures.
 
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
- arch/x86/xen/time.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+This looks pretty good, just a few minor typos and things that could be 
+worded better.
 
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 0d3f07c..6365df9 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -475,6 +475,7 @@ void xen_timer_resume(void)
- __init void xen_time_init(void)
- {
- 	int cpu = smp_processor_id();
-+	struct timespec tp;
- 
- 	clocksource_register(&xen_clocksource);
- 
-@@ -486,9 +487,8 @@ __init void xen_time_init(void)
- 	}
- 
- 	/* Set initial system time with full resolution */
--	xen_read_wallclock(&xtime);
--	set_normalized_timespec(&wall_to_monotonic,
--				-xtime.tv_sec, -xtime.tv_nsec);
-+	xen_read_wallclock(&tp);
-+	do_settimeofday(&tp);
- 
- 	setup_force_cpu_cap(X86_FEATURE_TSC);
- 
--- 
-1.6.0.4
+> +/**
+> + * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
+> + * @dev: Device to suspend.
+> + *
+> + * If PM operations are defined for the driver of @dev and they include
+
+for @dev's driver
+
+> + * ->runtime_suspend(), execute it and return the error code returned by it.
+
+and return its error code.
+
+> + * Otherwise, return zero.
+
+Otherwise, return -EINVAL.
+
+> +/**
+> + * pm_generic_runtime_resume - Generic runtime resume callback for subsystems.
+> + * @dev: Device to resume.
+> + *
+> + * If PM operations are defined for the driver of @dev and they include
+> + * ->runtime_resume(), execute it and return the error code returned by it.
+> + * Otherwise, return zero.
+
+Same as above.
+
+> +/**
+> + * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
+> + * @dev: Device to handle.
+> + * @event: PM transition of the system under way.
+> + *
+> + * If the device has not been suspended at run time, execute the
+> + * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
+> + * return the error code returned by it.  Otherwise, return zero.
+
+return its error code.
+
+> +/**
+> + * __pm_generic_resume - Generic resume/restore callback for subsystems.
+> + * @dev: Device to handle.
+> + * @event: PM transition of the system under way.
+> + *
+> + * Execute the resume/resotre callback provided by the driver of @dev, if
+
+restore, @dev's driver
+
+> + * defined.  If it returns 0, change the device's runtime PM status to 'active'.
+> + * Return the error code returned by it.
+
+Return the callback's error code.
+
+> --- linux-2.6.orig/Documentation/power/runtime_pm.txt
+> +++ linux-2.6/Documentation/power/runtime_pm.txt
+> @@ -335,6 +335,10 @@ drivers/base/power/runtime.c and include
+>        'power.runtime_error' is set or 'power.disable_depth' is greater than
+>        zero)
+>  
+> +  bool pm_runtime_suspended(struct device *dev);
+> +    - return true if the devices runtime PM status is 'suspended' or false
+> +      otherwise
+
+device's run-time, comma before "or"
+
+> +7. Generic subsystem callbacks
+> +
+> +Subsystems may wish to conserve code space by using the set of generic power
+> +management callbacks provided by the PM core, defined in
+> +driver/base/power/generic_ops.c:
+> +
+> +  int pm_generic_runtime_idle(struct device *dev);
+> +    - invoke the ->runtime_idle() callback provided by the driver of this
+> +      device, if defined, and execute pm_runtime_suspend() for it
+
+and call pm_runtime_suspend() for this device if the return value is 0
+or the callback isn't defined
+
+> +  int pm_generic_runtime_suspend(struct device *dev);
+> +    - invoke the ->runtime_suspend() callback provided by the driver of this
+> +      device and return its result, or return -EINVAL if not defined
+> +
+> +  int pm_generic_runtime_resume(struct device *dev);
+> +    - invoke the ->runtime_resume() callback provided by the driver of this
+> +      device and return its result, or return -EINVAL if not defined
+> +
+> +  int pm_generic_suspend(struct device *dev);
+> +    - if the device has not been suspended at run time, invoke the ->suspend()
+> +      callback provided by its driver and return the result returned by it, or
+
+return its result (same change for the other functions below)
+
+> +Device drivers that wish to use the same function as a system suspend, freeze,
+> +poweroff and run-time suspend callback, and similarly for system resume, thaw,
+> +restore, and run-time resume, can achieve this with the help of the
+> +UNIVERSAL_DEV_PM_OPS macro defined in include/linux/pm.h, possibly passing NULL
+> +as the last argument of it.
+
+(possibly setting its last argument to NULL).
+
+Alan Stern
 
