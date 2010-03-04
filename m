@@ -1,107 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786Ab0CDTJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:09:15 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:2550 "EHLO mms1.broadcom.com"
+	id S1756818Ab0CDTJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:09:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48973 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755274Ab0CDTJN convert rfc822-to-8bit (ORCPT
+	id S1755274Ab0CDTJ5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:09:13 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-From: "Hugh Daschbach" <hdasch@broadcom.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-cc: "Greg KH" <gregkh@suse.de>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Jan Blunck" <jblunck@suse.de>, "David Vrabel" <david.vrabel@csr.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "james Bottomley" <James.Bottomley@suse.de>,
-       "James Smart" <james.smart@emulex.com>
-Date: Thu, 4 Mar 2010 11:09:01 -0800
-Subject: RE: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Topic: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-Thread-Index: Acq7rfUBWFmjM6zGQxaeuOLdbKZMIAAHUb+w
-Message-ID: <233671224A0FED4688218FFDBED26E1A5181BF12D1@IRVEXCHCCR01.corp.ad.broadcom.com>
-References: <233671224A0FED4688218FFDBED26E1A517AC38CA5@IRVEXCHCCR01.corp.ad.broadcom.com>
- <Pine.LNX.4.44L0.1003041005530.1657-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003041005530.1657-100000@iolanthe.rowland.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Thu, 4 Mar 2010 14:09:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM notifier
+Date: Thu, 4 Mar 2010 20:12:36 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <201003040125.30091.rjw@sisk.pl> <b170af451003040311g3cea44caj1cd0e23e55814696@mail.gmail.com>
+In-Reply-To: <b170af451003040311g3cea44caj1cd0e23e55814696@mail.gmail.com>
 MIME-Version: 1.0
-X-WSS-ID: 678EDAC420S48631481-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Message-Id: <201003042012.36416.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern [mailto:stern@rowland.harvard.edu] writes:
+On Thursday 04 March 2010, Rafał Miłecki wrote:
+> 2010/3/4 Rafael J. Wysocki <rjw@sisk.pl>:
+> > There is a problem with the ACPI video resume routine that it's
+> > executed before the GPU that may be accessed by it.  To fix this
+> > issue, move the ACPI video resume to a power management notifier,
+> > so that it's executed after resuming all devices, including the GPU.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> 
+> Tested-by: Rafał Miłecki <zajec5@gmail.com>
 
-> On Wed, 3 Mar 2010, Hugh Daschbach wrote:
->
->> Alan Stern [mailto:stern@rowland.harvard.edu] writes:
->> 
->> > On Wed, 3 Mar 2010, Hugh Daschbach wrote:
->> >
->> >> > Can't we just protect the list?  What is wanting to write to the list
->> >> > while shutdown is happening?
->> >> 
->> >> Indeed, Alan suggested holding the kset spinlock while iterating the
-...
->> > What I meant was that you should hold the spinlock while finding and 
->> > unlinking the last device on the list.  Clearly you shouldn't hold it 
->> > while calling the device shutdown routine.
->> 
->> I misunderstood.  But I believe insertion and deletion is properly
->> serliaized.  It looks to me like the list structure is intact.  It's the
->> iterator that's been driven off into the weeds.
-...
->> Just to be clear, the list we're talking about is "list" in "struct
->> kset"  And the nodes of the list are chained by "entry" in "struct
->> kobject".
-...
->> At a minimum the change looks something like the patch below.
-...
-> If you really want to do this then you should remove the lock member 
-> from struct kset.  However this seems like an awful lot of work 
-> compared to my original suggestion -- something like this (untested, 
-> and you'll want to add comments):
-...
+Thanks!
 
-I'm not sure I do want to pursue this.  It does seem particularly
-invasive at a fundamental level of a core data structure.
+> It partially fixes bugzilla bug #15096 and it first needed step to fix
+> it completely.
 
-Apparently I still don't understand your original suggestion.  I'd
-prefer to, especially if it leads to a simpler fix.  The loop in
-device_shutdown() looks something like:
+To fix that completely we'd need to avoid calling acpi_video_resume() in the
+non-KMS case, but it's not clear how to tell the ACPI driver which case we're
+in.  It's not certain how to reliably distinguish the KMS and non-KMS cases at
+this level in the first place.
 
-       struct device *dev, *devn;
+> Can we send this to stable for .32 and .33?
 
-        list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
-                                kobj.entry) {
-                if (dev->bus && dev->bus->shutdown) {
-                        dev->bus->shutdown(dev);
-                } else if (dev->driver && dev->driver->shutdown) {
-                        dev->driver->shutdown(dev);
-                }
-        }
+That depends on Len.
 
-*dev gets delinked kobj_kset_leave() indirectly called from
-dev->*->shutdown(dev).  This is protected by the spinlock.
-
-The secondary thread similarly calls kobj_kset_leave().  But when the
-secondary thread calls the shutdown routine for the device that devn
-points to, the loop hangs.
-
-Is there some way I can detect that devn no longer points to a valid
-device upon return from dev->*->shutdown(dev)?  Or, where else can I
-look to better understand your suggestion?
-
-Thanks,
-Hugh
-
+Rafael
