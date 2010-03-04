@@ -1,53 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275Ab0CDTl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:41:58 -0500
-Received: from mail-iw0-f175.google.com ([209.85.223.175]:58354 "EHLO
-	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932257Ab0CDTlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:41:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=eZpeJc27fsdNTeHEv1Hpe+bwoOspviYg1iruAbQj3Mkzc8lS3hKTeUZJYbgKQZAMRs
-         KBVSRb9uiDzeQvB36slA6JtAFk2Am6yp7LDRSCSbd29vsNkLRsOf4EL02rK1sHSIrCT/
-         fqb4FOYbull/+//BNcoZj+6MSq+ZKXMUzcIZM=
+	id S932287Ab0CDTmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:42:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3478 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932121Ab0CDTma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:42:30 -0500
+Date: Thu, 4 Mar 2010 14:41:44 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 4/4] memcg: dirty pages instrumentation
+Message-ID: <20100304194144.GE18786@redhat.com>
+References: <1267699215-4101-1-git-send-email-arighi@develer.com> <1267699215-4101-5-git-send-email-arighi@develer.com>
 MIME-Version: 1.0
-In-Reply-To: <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
-	 <4B8FC6AC.4060801@teksavvy.com>
-	 <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-	 <4B8FF2C3.1060808@teksavvy.com>
-	 <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-Date: Thu, 4 Mar 2010 14:41:53 -0500
-Message-ID: <87f94c371003041141y1bcd30fdkdca7349eea5930b4@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: s ponnusa <foosaa@gmail.com>
-Cc: Mark Lord <kernel@teksavvy.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267699215-4101-5-git-send-email-arighi@develer.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 1:20 PM, s ponnusa <foosaa@gmail.com> wrote:
-> SMART data consists only the count of remapped sectors, seek failures,
-> raw read error rate, uncorrectable sector counts, crc errors etc., and
-> technically one should be aware of the error during write operation as
-> well.
->
-> As per the ATAPI specifications\
+On Thu, Mar 04, 2010 at 11:40:15AM +0100, Andrea Righi wrote:
 
+[..]
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 5a0f8f3..c5d14ea 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -137,13 +137,16 @@ static struct prop_descriptor vm_dirties;
+>   */
+>  static int calc_period_shift(void)
+>  {
+> +	struct dirty_param dirty_param;
+>  	unsigned long dirty_total;
+>  
+> -	if (vm_dirty_bytes)
+> -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
+> +	get_dirty_param(&dirty_param);
+> +
+> +	if (dirty_param.dirty_bytes)
+> +		dirty_total = dirty_param.dirty_bytes / PAGE_SIZE;
+>  	else
+> -		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
+> -				100;
+> +		dirty_total = (dirty_param.dirty_ratio *
+> +				determine_dirtyable_memory()) / 100;
+>  	return 2 + ilog2(dirty_total - 1);
+>  }
+>  
 
-ATAPI?
+Hmm.., I have been staring at this for some time and I think something is
+wrong. I don't fully understand the way floating proportions are working
+but this function seems to be calculating the period over which we need
+to measuer the proportions. (vm_completion proportion and vm_dirties
+proportions).
 
-What sort of device is this?
+And we this period (shift), when admin updates dirty_ratio or dirty_bytes
+etc. In that case we recalculate the global dirty limit and take log2 and
+use that as period over which we monitor and calculate proportions.
 
-Greg
+If yes, then it should be global and not per cgroup (because all our 
+accouting of bdi completion is global and not per cgroup).
+
+PeterZ, can tell us more about it. I am just raising the flag here to be
+sure.
+
+Thanks
+Vivek
