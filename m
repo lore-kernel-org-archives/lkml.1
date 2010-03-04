@@ -1,60 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150Ab0CDATo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 19:19:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43740 "EHLO smtps.tip.net.au"
+	id S1754341Ab0CDAUt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 19:20:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44887 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753326Ab0CDATh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 19:19:37 -0500
-Date: Thu, 4 Mar 2010 11:19:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: build warning after merge of the xfs tree
-Message-Id: <20100304111930.86f7cc62.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Mar_2010_11_19_30_+1100_6ihG1sh=QK944ARd"
+	id S1753153Ab0CDAUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 19:20:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while userspace is frozen?
+Date: Thu, 4 Mar 2010 01:23:13 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003040123.13617.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Mar_2010_11_19_30_+1100_6ihG1sh=QK944ARd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 03 March 2010, Alan Stern wrote:
+> On Wed, 3 Mar 2010, Pavel Machek wrote:
+> 
+> > Hi!
+> > 
+> > > > > The reason for freezing those tasks is to avoid writebacks at random
+> > > > > times during a system sleep transition, when the underlying device may
+> > > > > already be suspended, right?
+> > > > 
+> > > > It is also there to avoid inconsistency between in-filesystem data and
+> > > > snapshot in hibernation image.
+> > > 
+> > > A good point, although in this case I think it won't matter.  Writing
+> > > out a dirty page twice (once right after taking the snapshot and then
+> > > again after resuming from hibernation) will leave the disk in a correct
+> > > state.
+> > 
+> > No, I don't think so. Have you considered all the various journalling
+> > systems?
+> > 
+> > Definitely not in presence of I/O errors. Commit block can only be
+> > written after previous blocks are successfully writen to the journal.
+> > 
+> > So lets see:
+> > 
+> > <snapshot>
+> > 
+> > Write previous block, write commit block, write more blocks
+> > 
+> > <hibernation powerdown, restart>
+> > 
+> > Error writing previous block (block now contains garbage), leading to
+> > kernel panic
+> > 
+> > <restart>
+> > 
+> > journalling assumptions broken: commit block is there, but previous
+> > blocks are not intact. Data loss.
+> > 
+> > ...and that was the first I could think about. Lets not do
+> >  this. Barriers were invented for a reason.
+> 
+> Very well.  Then we still need a solution to the original problem:  
+> Devices sometimes need to be unregistered during resume, but
+> del_gendisk() blocks on the writeback thread, which is frozen until
+> after the resume finishes.  How do you suggest this be fixed?
 
-Hi Dave,
+I thought about thawing the writeback thread earlier in such cases.
 
-After merging the xfs tree, today's linux-next build (x86_64 allmodconfig)
-produced this warning:
+Would that makes sense / is it doable at all?
 
-fs/xfs/linux-2.6/xfs_aops.c: In function 'xfs_end_io':
-fs/xfs/linux-2.6/xfs_aops.c:232: warning: 'error' may be used uninitialized=
- in this function
-
-Introduced by commit 77d7a0c2eeb285c9069e15396703d0cb9690ac50 ("xfs:
-Non-blocking inode locking in IO completion").
-
-I can't tell if this is a false positive.  If the first two "if"
-statement bodies are skipped, then error is tested uninitialised.  It is
-possible that at least one of them has to be executed.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__4_Mar_2010_11_19_30_+1100_6ihG1sh=QK944ARd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkuO/JMACgkQjjKRsyhoI8wpoACgoa9CTghmVHeH2QnVMO+CS3ig
-N4UAoLxVvvQpltR5R19OrPubd/yz3eiB
-=tzWo
------END PGP SIGNATURE-----
-
---Signature=_Thu__4_Mar_2010_11_19_30_+1100_6ihG1sh=QK944ARd--
+Rafael
