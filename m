@@ -1,90 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942Ab0CDL43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:56:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35895 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755880Ab0CDL42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:56:28 -0500
-Message-ID: <4B8F9FC6.9030105@redhat.com>
-Date: Thu, 04 Mar 2010 12:55:50 +0100
-From: Hans de Goede <hdegoede@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc13 Thunderbird/3.0.1
+	id S1755974Ab0CDMLD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 07:11:03 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:61853 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755785Ab0CDMLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 07:11:00 -0500
+Message-ID: <4B8FA351.9030000@panasas.com>
+Date: Thu, 04 Mar 2010 14:10:57 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Jean-Francois Moine <moinejf@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Gspca USB driver zc3xx and STV06xx probe the same device ..
-References: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com>	 <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>	 <4B8F974A.4090001@redhat.com> <62e5edd41003040336x16253369ycb1905a9938432db@mail.gmail.com>
-In-Reply-To: <62e5edd41003040336x16253369ycb1905a9938432db@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>
+Subject: [GIT PULL] exofs changes for 2.6.34
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Mar 2010 12:10:58.0896 (UTC) FILETIME=[BFFAED00:01CABB93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On 03/04/2010 12:36 PM, Erik Andrén wrote:
-> 2010/3/4 Hans de Goede<hdegoede@redhat.com>:
->> Hi,
->>
->> On 03/03/2010 02:17 PM, Erik Andrén wrote:
->>>
->>> 2010/3/3 Gabriel C<nix.or.die@googlemail.com>:
->>>>
->>>> Hello,
->>>>
->>>> I own a QuickCam Messanger webcam.. I didn't used it in ages but today
->>>> I plugged it in..
->>>> ( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
->>>>
->>>> Now zc3xx and stv06xx are starting both to probe the device .. In
->>>> 2.6.33 that result in a not working webcam.
->>>> ( rmmod both&&    modprobe zc3xx one seems to fix that )
->>>>
->>>> On current git head zc3xx works fine even when both are probing the
->>>> device.
->>>>
->>>> Also I noticed stv06xx fails anyway for my webcam with this error:
->>>> ....
->>>>
->>>> [  360.910243] STV06xx: Configuring camera
->>>> [  360.910244] STV06xx: st6422 sensor detected
->>>> [  360.910245] STV06xx: Initializing camera
->>>> [  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
->>>> [  361.161976] usbcore: registered new interface driver STV06xx
->>>> [  361.161978] STV06xx: registered
->>>> .....
->>>>
->>>> Next thing is stv06xx tells it is an st6422 sensor and does not work
->>>> with it while zc3xx tells it is an HV7131R(c) sensor and works fine
->>>> with it.
->>>>
->>>> What is right ?
->>>
->>> Hans,
->>> As you added support for the st6422 sensor to the stv06xx subdriver I
->>> imagine you best know what's going on.
->>>
->>
->> I took the USB-ID in question from the out of tree v4l1 driver I was basing
->> my
->> st6422 work on. Looking at the other ID's (which are very close together)
->> and
->> combining that with this bug report, I think it is safe to say that the
->> USB-ID
->> in question should be removed from the stv06xx driver.
->>
->> Erik will you handle this, or shall I ?
->>
-> Either way is fine by me.
-> I can try to do it tonight.
->
+Linus please pull the following changes since commit:
 
-If you could take care of this that would be great!
+  Linux 2.6.33-rc6
 
-Thanks,
+They are available in the git repository at:
 
-Hans
+  git://git.open-osd.org/linux-open-osd.git for-linus
+
+Boaz Harrosh (11):
+      exofs: debug print even less
+      exofs: Micro-optimize exofs_i_info
+      exofs: Recover in the case of read-passed-end-of-file
+      exofs: Move layout related members to a layout structure
+      exofs: unindent exofs_sbi_read
+      exofs: Define on-disk per-inode optional layout attribute
+      exofs: RAID0 support
+      exofs: convert io_state to use pages array instead of bio at input
+      exofs: Error recovery if object is missing from storage
+      exofs: Prepare for groups
+      exofs: groups support
+
+ fs/exofs/common.h |   39 ++++
+ fs/exofs/exofs.h  |   53 ++++-
+ fs/exofs/inode.c  |  194 +++++++++++-------
+ fs/exofs/ios.c    |  575 +++++++++++++++++++++++++++++++++++++++++++++--------
+ fs/exofs/super.c  |  121 +++++++++---
+ 5 files changed, 779 insertions(+), 203 deletions(-)
+
+What's new:
+  The main changes are support for data striping and *striping-groups*.
+striping-groups is a nice option when there are lots of devices in the
+system, but the striping of each file is confined to fewer devices, so
+not to keep all devices busy on each IO. For example a 10 out of 100
+striping means each file is striped across 10 devices out of 100 total
+devices in the full system.
+  Note that exofs has a unique layout structure that enables Mirrors
+orthogonal to any striping/raid arrangement.
+
+ Next changes will be support for raid5 and raid6
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
