@@ -1,72 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940Ab0CDXEW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 18:04:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37463 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752803Ab0CDXEV (ORCPT
+	id S1756530Ab0CDXFQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 18:05:16 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:48527 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754137Ab0CDXFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 18:04:21 -0500
-Date: Thu, 4 Mar 2010 15:03:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Adam Jackson <ajax@redhat.com>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+	Thu, 4 Mar 2010 18:05:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=ja9IXkQC3/UKv8OFmcRqHkLnwiypkmA9zWlJ/KgflLZ1KTbftqm6Zfr/SzHclFx3rrB9DZob/eV7p2k1Qi1ZL8MdQtsLtF5QmWobZZgoVnDNFQtvA9Qj4II48R07V6dK;
+Date: Thu, 4 Mar 2010 15:05:19 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephane Marchesin <stephane.marchesin@gmail.com>,
+       Dave Airlie <airlied@linux.ie>, Matthew Garrett <mjg59@srcf.ucam.org>,
        linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
 Subject: Re: [git pull] drm request 3
-In-Reply-To: <1267741697.1316.16.camel@atropine.boston.devel.redhat.com>
-Message-ID: <alpine.LFD.2.00.1003041458140.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>  <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>  <20100304185002.GA23532@srcf.ucam.org>  <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
-  <20100304190450.GA23807@srcf.ucam.org>  <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain> <1267741697.1316.16.camel@atropine.boston.devel.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20100304150519.7d7345b0@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.1003041449380.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	<alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+	<20100304185002.GA23532@srcf.ucam.org>
+	<alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
+	<20100304190450.GA23807@srcf.ucam.org>
+	<alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>
+	<20100304192524.GA24253@srcf.ucam.org>
+	<alpine.LFD.2.00.1003041131490.3751@localhost.localdomain>
+	<20100304195302.GA24856@srcf.ucam.org>
+	<alpine.LFD.2.00.1003041202240.3751@localhost.localdomain>
+	<6a89f9d51003041257j39fde3b6y8bd3336d77f7cf7a@mail.gmail.com>
+	<alpine.LFD.2.00.1003041449380.3751@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Mar 2010 14:54:03 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-
-On Thu, 4 Mar 2010, Adam Jackson wrote:
-
-> On Thu, 2010-03-04 at 11:14 -0800, Linus Torvalds wrote: 
-> > On Thu, 4 Mar 2010, Matthew Garrett wrote:
-> > > If you'd made it clear that you wanted the interface to be stable 
-> > > before it got merged, I suspect that it simply wouldn't have been merged 
-> > > until the interface was stable.
-> > 
-> > What kind of excuse is that? It's "we did bad things, but if we didn't do 
-> > those bad things, we'd have done _other_ bad things"?
-> > 
-> > Two wrong choices don't make a right.
 > 
-> So unmerge it.
+> 
+> On Thu, 4 Mar 2010, Stephane Marchesin wrote:
+> > 
+> > In short, the "don't break user space interfaces" principle is making
+> > user space code quality worse for everyone. And it makes our lives as
+> > graphics developers pretty miserable actually
+> 
+> And _my_ point is that if you did a half-way decent job on versioning, you 
+> wouldn't be in the crappy situation you are now.
+> 
+> For chissake, the DRM versioning model is a total disaster. The reason you 
+> can never ever break user space interfaces is exactly because when you 
+> break them, X stops working.
+> 
+> What I suggested is to _keep_ a working model across different versions, 
+> so that you can get out of the rat-hole you are in now (and the rat-hole 
+> you put your users into, and the distributions).
+> 
+> It's simply _not_ acceptable to tie the X server and the kernel version so 
+> tightly together as the crazy DRM model does right now. It's not all that 
+> different from us requiring people to install a new glibc every once in a 
+> while, just because we added a new filesystem. Everybody understands that 
+> that would be totally insane.
+> 
+> Why does the X community not understand simple library versioning?
 
-That's what I told people I can do (I'd just revert that commit).
+We use versioning on the Intel side, but in the form of feature flags
+as new things are added (we've had a handful since GEM was added in
+2.6.28).  It's a pain to handle the various code paths, but no more so
+than having lots of separate library versions to support.  That would
+be nice from one perspective, but it would only save work if we
+abandoned the old versions quickly and kept a big shared component
+between library versions.
 
-I can do that. But it's not very productive, is it? What about the people 
-who _do_ want to run the rawhide tree?
-
-Seriously - what's wrong with my suggestion to just version things 
-properly? What's wrong with _fixing_ a stupid technical problem? What's 
-wrong with people that you can't see that there are actual _solutions_ to 
-the f*cking mess that is the current situation?
-
-I can solve it for my own use, and I already stated so. But while kernel 
-developers should be scratching their own itches, a kernel developer that 
-can't see past his own small sandbox is pretty damn worthless. We do need 
-to fix this - and I'm bringing it up and complaining about it, because the 
-nouveau people have _not_ done anything remotely sane. 
-
-The current situation causes problems for people. Anybody who disputes 
-that is in denial. Can somebody come up with a _better_ solution than the 
-one I suggested? Feel free to do so, but in the meantime, I have to say 
-that your reply and that of Matthew and others have been totally 
-pointless, and making excuses rather than trying to actually face the fact 
-that there is a problem.
-
-So man up, guys. Face the problem, rather than say "well, it's staging", 
-or "well, we can revert it". Neither of those really solve anything in the 
-short run _or_ the long run.
-
-			Linus
+-- 
+Jesse Barnes, Intel Open Source Technology Center
