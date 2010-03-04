@@ -1,74 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821Ab0CDLSl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:18:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39596 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755454Ab0CDLSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:18:39 -0500
-Message-ID: <4B8F974A.4090001@redhat.com>
-Date: Thu, 04 Mar 2010 12:19:38 +0100
-From: Hans de Goede <hdegoede@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc13 Thunderbird/3.0.1
+	id S1755828Ab0CDLTv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:19:51 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:40266 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755454Ab0CDLTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 06:19:49 -0500
+Message-ID: <4B8F97E8.6020806@oss.ntt.co.jp>
+Date: Thu, 04 Mar 2010 20:22:16 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Jean-Francois Moine <moinejf@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Gspca USB driver zc3xx and STV06xx probe the same device ..
-References: <1820d69d1003030445n18b35839r407d4d277b1bf48d@mail.gmail.com> <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>
-In-Reply-To: <62e5edd41003030517g6fa9b64awdf18578d6c5db7e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+CC: vgoyal@redhat.com, jens.axboe@oracle.com,
+       Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>
+Subject: Re: [PATCH 2/2 V2] io-controller: Document for blkio.weight_device
+References: <4B8DFFD7.2000908@cn.fujitsu.com>	 <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com>	 <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com> <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com> <4B8F27BD.2020704@cn.fujitsu.com> <4B8F62C7.10500@cn.fujitsu.com>
+In-Reply-To: <4B8F62C7.10500@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi, I found a typo.
 
-On 03/03/2010 02:17 PM, Erik Andrén wrote:
-> 2010/3/3 Gabriel C<nix.or.die@googlemail.com>:
->> Hello,
->>
->> I own a QuickCam Messanger webcam.. I didn't used it in ages but today
->> I plugged it in..
->> ( Device 002: ID 046d:08da Logitech, Inc. QuickCam Messanger )
->>
->> Now zc3xx and stv06xx are starting both to probe the device .. In
->> 2.6.33 that result in a not working webcam.
->> ( rmmod both&&  modprobe zc3xx one seems to fix that )
->>
->> On current git head zc3xx works fine even when both are probing the device.
->>
->> Also I noticed stv06xx fails anyway for my webcam with this error:
->> ....
->>
->> [  360.910243] STV06xx: Configuring camera
->> [  360.910244] STV06xx: st6422 sensor detected
->> [  360.910245] STV06xx: Initializing camera
->> [  361.161948] STV06xx: probe of 6-1:1.0 failed with error -32
->> [  361.161976] usbcore: registered new interface driver STV06xx
->> [  361.161978] STV06xx: registered
->> .....
->>
->> Next thing is stv06xx tells it is an st6422 sensor and does not work
->> with it while zc3xx tells it is an HV7131R(c) sensor and works fine
->> with it.
->>
->> What is right ?
->
-> Hans,
-> As you added support for the st6422 sensor to the stv06xx subdriver I
-> imagine you best know what's going on.
->
+Gui Jianfeng wrote:
+> +- blkio.weight_device
+> +	- One can specify per cgroup per device rules using this interface.
+> +	  These rules override the default value of group weight as specified
+> +	  by blkio.weight.
+> +
+> +	  Following is the format.
+> +
+> +	  #echo dev_maj:dev_minor weight > /patch/to/cgroup/blkio.weight_device
 
-I took the USB-ID in question from the out of tree v4l1 driver I was basing my
-st6422 work on. Looking at the other ID's (which are very close together) and
-combining that with this bug report, I think it is safe to say that the USB-ID
-in question should be removed from the stv06xx driver.
+                                   You mean "path to"?
 
-Erik will you handle this, or shall I ?
+Thanks,
+   Takuya
 
-Regards,
+> +
+> +	  weight=0 means removing weight on a given device.
+> +
+> +	  Examples:
+> +	  Configure weight=300 on /dev/sdb (8:16) in this cgroup
+> +	  # echo 8:16 300 > blkio.weight_device
+> +	  # cat blkio.weight_device
+> +	  dev     weight
+> +	  8:16    300
+> +
+> +	  Configure weight=500 on /dev/sda (8:0) in this cgroup
+> +	  # echo 8:0 500 > blkio.weight_device
+> +	  # cat blkio.weight_device
+> +	  dev     weight
+> +	  8:0     500
+> +	  8:16    300
+> +
+> +	  Remove specific weight for /dev/sda in this cgroup
+> +	  # echo 8:0 0 > blkio.weight_device
+> +	  # cat blkio.weight_device
+> +	  dev     weight
+> +	  8:16    300
+> +
+>  CFQ sysfs tunable
+>  =================
+>  /sys/block/<disk>/queue/iosched/group_isolation
 
-Hans
