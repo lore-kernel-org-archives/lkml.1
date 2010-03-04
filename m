@@ -1,64 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716Ab0CDEGr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:06:47 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:56005 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755464Ab0CDEGo (ORCPT
+	id S1755510Ab0CDEIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 23:08:11 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:33026 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755079Ab0CDEII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:06:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=bFdi72akGGDEdJV9ifu7JSgmauKho6GQr2r7yf0TF5Q4A9VXscAVpO5u6Jf9OQ+HXZ
-         cFy/yrC0LZKzFyHwShKxWsMf09fr7Z5zUFsw8WchxaEgA3VGshb73sRUAVqQ3BoiwTpk
-         HRx1zWtfrvPhVHwd098fWh8NNlgJ6ibxeDwJw=
-Date: Thu, 4 Mar 2010 05:06:41 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 2.6.33: ftrace triggers soft lockup
-Message-ID: <20100304040640.GB14460@nowhere>
-References: <2375c9f91003022204p5bdab1fdj3b3500998575fc28@mail.gmail.com> <20100304014641.GH5194@nowhere> <2375c9f91003031901v19c00c21k4a5d46bbe9ade3f@mail.gmail.com> <1267672706.10871.97.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1267672706.10871.97.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Mar 2010 23:08:08 -0500
+Date: Thu, 4 Mar 2010 13:04:06 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       rientjes@google.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v3
+Message-Id: <20100304130406.95789929.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100303162304.eaf49099.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
+	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
+	<20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
+	<20100303093844.cf768ea4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100303162304.eaf49099.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 10:18:26PM -0500, Steven Rostedt wrote:
-> On Thu, 2010-03-04 at 11:01 +0800, Américo Wang wrote:
+On Wed, 3 Mar 2010 16:23:04 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 3 Mar 2010 09:38:44 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> > >
-> > > So it is stuck in stop machine. I wonder where exactly. I see some do_exit
-> > > at the top but I wonder how much they are reliable.
+> > On Wed, 3 Mar 2010 09:26:06 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > > 
-> > Well, I think 'kstop' is just random, sometimes I got 'watchdog' or some other
-> > process.
+> > > > I'll test this patch all through this night, and check whether it doesn't trigger
+> > > > global oom after memcg's oom.
+> > > > 
+> > > O.K. It works well.
+> > > Feel free to add my signs.
+> > > 
+> > > 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > 	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > 
 > > 
-> > >
-> > > Anyway, as Steve said, we really need a full config to reproduce it.
-> > >
+> > Thank you !
 > > 
-> > Done in another reply.
+> > I'll apply Balbir's comment and post v3.
+> > 
 > 
-> Thanks!
+> rebased onto mmotm-Mar2.
+> tested on x86-64.
 > 
-> Frederic, I notice that lockdep is on, did anything change that might
-> slow down the code in lockdep, or is the function graph tracer doing
-> more locking?
+I found a small race problem. This is the fix for it.
 
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-No,
-there doesn't seem to be intrusive changes in lockdep between .32 and .33
-And the function graph tracer is still fully lockless (and hopefully
-it will be forever).
+We must avoid making oom_lock of a newly created child be negative.
 
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/memcontrol.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 3ce8c5b..9e25400 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1272,7 +1272,12 @@ static bool mem_cgroup_oom_lock(struct mem_cgroup *mem)
+ 
+ static int mem_cgroup_oom_unlock_cb(struct mem_cgroup *mem, void *data)
+ {
+-	atomic_dec(&mem->oom_lock);
++	/*
++	 * There is a small race window where a new child can be created after
++	 * we called mem_cgroup_oom_lock(). Use atomic_add_unless() to avoid
++	 * making oom_lock of such a child be negative.
++	 */
++	atomic_add_unless(&mem->oom_lock, -1, 0);
+ 	return 0;
+ }
+ 
+-- 
+1.6.4
