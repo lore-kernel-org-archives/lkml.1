@@ -1,50 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534Ab0CDNxj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 08:53:39 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:34505 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750939Ab0CDNxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 08:53:38 -0500
-Date: Thu, 4 Mar 2010 14:53:37 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Message-ID: <20100304135337.GC12191@atrey.karlin.mff.cuni.cz>
-References: <20100303215056.GB2579@ucw.cz> <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
+	id S1752622Ab0CDNzR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 08:55:17 -0500
+Received: from perec.tyrell.hu ([66.197.149.104]:55111 "EHLO perec.tyrell.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750939Ab0CDNzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 08:55:15 -0500
+Message-ID: <4B8FBBBA.8070308@maroy.hu>
+Date: Thu, 04 Mar 2010 14:55:06 +0100
+From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
+Organization: Tyrell Corporation
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>
+Subject: Re: pm_op(): usb_dev_suspend+0x0/0x10 returns -2 on USB device 8087:0020
+References: <Pine.LNX.4.44L0.1002251020100.1686-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002251020100.1686-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Alan,
 
-> > journalling assumptions broken: commit block is there, but previous
-> > blocks are not intact. Data loss.
-> > 
-> > ...and that was the first I could think about. Lets not do
-> >  this. Barriers were invented for a reason.
+in this thread, earlier I wrote:
+
+>> By the way, I noticed above that you have xhci-hcd installed.  As far 
+>> as I know, that driver does not yet support system suspend.  You should 
+>> try unloading xhci-hcd before doing the suspend (both with and without 
+>> CONFIG_USB_DEBUG).
 > 
-> Very well.  Then we still need a solution to the original problem:  
-> Devices sometimes need to be unregistered during resume, but
-> del_gendisk() blocks on the writeback thread, which is frozen until
-> after the resume finishes.  How do you suggest this be fixed?
+> wow, rmmod xhci - and the suspend goes through fine!
 
-Avoid unregistering device during resume. Instead, return errors until
-resume is done and you can call del_gendisk? 
-									Pavel
+now, I re-installed the system, and suspend doesn't work anymore.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+if I have the xhci module loaded, it fails and returns to the screen
+right away.
+
+if I unload the xhci module, I get to the character console, and then
+the machine hangs there - nothing happens anymore. only a power cycle helps.
+
+I don't know what was different when at least suspend worked :(
+
+I'll try to do some more debugging..
+
+
+Akos
+
