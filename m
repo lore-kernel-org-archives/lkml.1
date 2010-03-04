@@ -1,82 +1,174 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150Ab0CDQuc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:50:32 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53097 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756109Ab0CDQu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:50:27 -0500
-Date: Thu, 4 Mar 2010 08:50:20 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100304165020.GH6768@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu> <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
+	id S1756161Ab0CDQuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:50:13 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:29229
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756130Ab0CDQtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:49:51 -0500
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i87h2a8h6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KYRO27-02-MPE-02
+X-M-MSG: 
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH 7/9] oprofile/x86: return -EBUSY if counters are already reserved
+Date: Thu, 4 Mar 2010 16:22:09 +0100
+Message-ID: <1267716131-17908-8-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
+References: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
+X-OriginalArrivalTime: 04 Mar 2010 16:49:14.0332 (UTC) FILETIME=[9F3C49C0:01CABBBA]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 08:34:16AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 4 Mar 2010, Ingo Molnar wrote:
-> > 
-> >  - SA_NOFPU: on x86 to skip the FPU/SSE save/restore, for such fast in/out special 
-> >    purpose signal handlers? (can whip up a quick patch for you if you want)
-> 
-> I'd love to do this, but it's wrong.
-> 
-> It's too damn easy to use the FPU by mistake in user land, without ever 
-> being aware of it. memset()/memcpy are obvious potential users SSE, but 
-> they might be called in non-obvious ways implicitly by the compiler (ie 
-> structure copy and setup).
-> 
-> And modern glibc ends up using SSE4 even for things like strstr and 
-> strlen, so it really is creeping into all kinds of trivial helper 
-> functions that might not be obvious. So SA_NOFPU is a lovely idea, but 
-> it's also an idea that sucks rotten eggs in practice, with quite possibly 
-> the same _binary_ working or not working depending on what kind of CPU and 
-> what shared library it happens to be using.
-> 
-> Too damn fragile, in other words.
-> 
-> (Now, if it's accompanied by the kernel actually _testing_ that there is 
-> no FPU activity, by setting the TS flag and checking at fault time and 
-> causing a SIGFPE, then that would be better. At least you'd get a nice 
-> clear signal rather than random FPU state corruption. But you're still in 
-> the situation that now the binary might work on some machines and setups, 
-> and not on others.
+In case a counter is already reserved by the watchdog or perf_event
+subsystem, oprofile ignored this counters silently. This case is
+handled now and oprofile_setup() now reports an error.
 
-I was assuming that using the FPE in the special handler would result in
-a SIGFPE -- but that it would not affect normal signal handlers, only
-those invoked by this user-level-RCU acceleration mechanism.
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/oprofile/nmi_int.c       |    5 ++++-
+ arch/x86/oprofile/op_model_amd.c  |   10 +++++++++-
+ arch/x86/oprofile/op_model_p4.c   |   15 ++++++++++++++-
+ arch/x86/oprofile/op_model_ppro.c |   10 +++++++++-
+ arch/x86/oprofile/op_x86_model.h  |    2 +-
+ 5 files changed, 37 insertions(+), 5 deletions(-)
 
-							Thanx, Paul
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index c0c21f2..9f001d9 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -357,7 +357,10 @@ static int nmi_setup(void)
+ 	 */
+ 
+ 	/* Assume saved/restored counters are the same on all CPUs */
+-	model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
++	err = model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
++	if (err)
++		goto fail;
++
+ 	for_each_possible_cpu(cpu) {
+ 		if (!cpu)
+ 			continue;
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index 905995d..128d84c 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -129,7 +129,9 @@ static void op_mux_switch_ctrl(struct op_x86_model_spec const *model,
+ 
+ /* functions for op_amd_spec */
+ 
+-static void op_amd_fill_in_addresses(struct op_msrs * const msrs)
++static void op_amd_shutdown(struct op_msrs const * const msrs);
++
++static int op_amd_fill_in_addresses(struct op_msrs * const msrs)
+ {
+ 	int i;
+ 
+@@ -137,8 +139,14 @@ static void op_amd_fill_in_addresses(struct op_msrs * const msrs)
+ 		if (reserve_perfctr(i)) {
+ 			msrs->counters[i].addr = MSR_K7_PERFCTR0 + i;
+ 			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + i;
++		} else if (counter_config[i].enabled) {
++			op_x86_warn_reserved(i);
++			op_amd_shutdown(msrs);
++			return -EBUSY;
+ 		}
+ 	}
++
++	return 0;
+ }
+ 
+ static void op_amd_setup_ctrs(struct op_x86_model_spec const *model,
+diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
+index e6a160a..599fcae 100644
+--- a/arch/x86/oprofile/op_model_p4.c
++++ b/arch/x86/oprofile/op_model_p4.c
+@@ -385,8 +385,9 @@ static unsigned int get_stagger(void)
+ 
+ static unsigned long reset_value[NUM_COUNTERS_NON_HT];
+ 
++static void p4_shutdown(struct op_msrs const * const msrs);
+ 
+-static void p4_fill_in_addresses(struct op_msrs * const msrs)
++static int p4_fill_in_addresses(struct op_msrs * const msrs)
+ {
+ 	unsigned int i;
+ 	unsigned int addr, cccraddr, stag;
+@@ -468,6 +469,18 @@ static void p4_fill_in_addresses(struct op_msrs * const msrs)
+ 			msrs->controls[i++].addr = MSR_P4_CRU_ESCR5;
+ 		}
+ 	}
++
++	for (i = 0; i < num_counters; ++i) {
++		if (!counter_config[i].enabled)
++			continue;
++		if (msrs->controls[i].addr)
++			continue;
++		op_x86_warn_reserved(i);
++		p4_shutdown(msrs);
++		return -EBUSY;
++	}
++
++	return 0;
+ }
+ 
+ 
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index a838ee4..3cf4e2f 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -30,7 +30,9 @@ static int counter_width = 32;
+ 
+ static u64 *reset_value;
+ 
+-static void ppro_fill_in_addresses(struct op_msrs * const msrs)
++static void ppro_shutdown(struct op_msrs const * const msrs);
++
++static int ppro_fill_in_addresses(struct op_msrs * const msrs)
+ {
+ 	int i;
+ 
+@@ -38,8 +40,14 @@ static void ppro_fill_in_addresses(struct op_msrs * const msrs)
+ 		if (reserve_perfctr(i)) {
+ 			msrs->counters[i].addr = MSR_P6_PERFCTR0 + i;
+ 			msrs->controls[i].addr = MSR_P6_EVNTSEL0 + i;
++		} else if (counter_config[i].enabled) {
++			op_x86_warn_reserved(i);
++			ppro_shutdown(msrs);
++			return -EBUSY;
+ 		}
+ 	}
++
++	return 0;
+ }
+ 
+ 
+diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
+index ff82a75..5514013 100644
+--- a/arch/x86/oprofile/op_x86_model.h
++++ b/arch/x86/oprofile/op_x86_model.h
+@@ -41,7 +41,7 @@ struct op_x86_model_spec {
+ 	u16		event_mask;
+ 	int		(*init)(struct oprofile_operations *ops);
+ 	void		(*exit)(void);
+-	void		(*fill_in_addresses)(struct op_msrs * const msrs);
++	int		(*fill_in_addresses)(struct op_msrs * const msrs);
+ 	void		(*setup_ctrs)(struct op_x86_model_spec const *model,
+ 				      struct op_msrs const * const msrs);
+ 	int		(*check_ctrs)(struct pt_regs * const regs,
+-- 
+1.7.0
 
-> >  - SA_RUNNING: a way to signal only running threads - as a way for user-space 
-> >    based concurrency control mechanisms to deschedule running threads (or, like
-> >    in your case, to implement barrier / garbage collection schemes).
-> 
-> Hmm. This sounds less fundamentally broken, but at the same time also 
-> _way_ more invasive in the signal handling layer. It's already one of our 
-> more "exciting" layers out there.
-> 
-> 		Linus
+
