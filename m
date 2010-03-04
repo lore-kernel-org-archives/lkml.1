@@ -1,232 +1,400 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774Ab0CDCbD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:31:03 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51265 "EHLO e6.ny.us.ibm.com"
+	id S1752962Ab0CDCbO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:31:14 -0500
+Received: from mga11.intel.com ([192.55.52.93]:7027 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178Ab0CDCas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:30:48 -0500
-Message-ID: <4B8F1B58.5000702@linux.vnet.ibm.com>
-Date: Wed, 03 Mar 2010 18:30:48 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic event
- names to "perf stat"
-Content-Type: multipart/mixed;
- boundary="------------080205060905080606000707"
+	id S1752238Ab0CDCat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 21:30:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,577,1262592000"; 
+   d="scan'208";a="545890441"
+From: Huang Ying <ying.huang@intel.com>
+To: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
+       Huang Ying <ying.huang@intel.com>
+Subject: [PATCH -v2 2/2] ACPI, APEI, PCIE AER, use general HEST table parsing in AER firmware_first setup
+Date: Thu,  4 Mar 2010 10:30:34 +0800
+Message-Id: <1267669834-30630-3-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1267669834-30630-2-git-send-email-ying.huang@intel.com>
+References: <1267669834-30630-1-git-send-email-ying.huang@intel.com>
+ <1267669834-30630-2-git-send-email-ying.huang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080205060905080606000707
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Now, a dedicated HEST tabling parsing code is used for PCIE AER
+firmware_first setup. It is rebased on general HEST tabling parsing
+code of APEI. The firmware_first setup code is moved from PCI core to
+AER driver too, because it is only AER related.
 
-For your review, this patch adds support for arch-dependent symbolic event names 
-to the "perf stat" tool, and could be expanded to other "perf *" commands fairly 
-easily, I suspect.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ drivers/acpi/Makefile              |    1 
+ drivers/acpi/hest.c                |  135 -------------------------------------
+ drivers/pci/pcie/aer/aerdrv.h      |    9 ++
+ drivers/pci/pcie/aer/aerdrv_acpi.c |   70 +++++++++++++++++++
+ drivers/pci/pcie/aer/aerdrv_core.c |   15 +++-
+ drivers/pci/probe.c                |    8 --
+ include/acpi/acpi_hest.h           |   12 ---
+ include/linux/pci.h                |    3 
+ 8 files changed, 92 insertions(+), 161 deletions(-)
+ delete mode 100644 drivers/acpi/hest.c
+ delete mode 100644 include/acpi/acpi_hest.h
 
-To support arch-dependent event names without adding arch-dependent code to 
-perf, I added a callout mechanism whereby perf will look for the environment 
-variable: PERF_ARCH_DEP_LIB, and if it exists, it will try to open it as a 
-shared object.  If that succeeds, it looks for the symbol 
-"parse_arch_dep_event".  If that exists, that function will be called by 
-parse_events() before all of the other event parsing functions in 
-parse-events.c.  It is passed the same arguments as the other parse_*_event 
-functions, namely the event string and a pointer to an event attribute structure.
-
-As the code existed, "perf stat" would print out the count results, but for raw 
-events (which is how arch-dependent events are supported in perf_events), it 
-would just print out a raw code.  This is not acceptable, especially when a 
-symbolic name was placed on the command line.  So I changed the code to save 
-away the event name that was passed on the command line, rather than doing a 
-reverse translation to an event string based on the event type and config fields 
-of the attr structure.  In this way, there's no need for a reverse translation 
-function in the arch-dependent library; only a event string->attr struct 
-function is needed.
-
-I could well be missing something, but I don't understand why reverse 
-translation is ever needed in perf, as long as the tool keeps track of the 
-original event strings.
-
-Thanks for your consideration,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
-
-
---------------080205060905080606000707
-Content-Type: text/plain;
- name="perf_symbolic_event.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="perf_symbolic_event.diff"
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 54a5b50..20d3255 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -199,7 +199,7 @@ ifndef PERF_DEBUG
- endif
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -20,7 +20,6 @@ obj-y				+= acpi.o \
+ # All the builtin files are in the "acpi." module_param namespace.
+ acpi-y				+= osl.o utils.o reboot.o
+ acpi-y				+= atomicio.o
+-acpi-y				+= hest.o
  
- CFLAGS = -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS) $(EXTRA_CFLAGS)
--EXTLIBS = -lpthread -lrt -lelf -lm
-+EXTLIBS = -lpthread -lrt -lelf -lm -ldl
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
- STRIP ?= strip
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 05d0c5c..ba4a663 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -8,11 +8,13 @@
- #include "cache.h"
- #include "header.h"
- #include "debugfs.h"
-+#include "dlfcn.h"
- 
- int				nr_counters;
- 
- struct perf_event_attr		attrs[MAX_COUNTERS];
- char				*filters[MAX_COUNTERS];
-+char 				*event_names[MAX_COUNTERS];
- 
- struct event_symbol {
- 	u8		type;
-@@ -267,10 +269,7 @@ static char *event_cache_name(u8 cache_type, u8 cache_op, u8 cache_result)
- 
- const char *event_name(int counter)
- {
--	u64 config = attrs[counter].config;
--	int type = attrs[counter].type;
+ # sleep related files
+ acpi-y				+= wakeup.o
+--- a/drivers/acpi/hest.c
++++ /dev/null
+@@ -1,135 +0,0 @@
+-#include <linux/acpi.h>
+-#include <linux/pci.h>
 -
--	return __event_name(type, config);
-+	return event_names[counter];
+-#define PREFIX "ACPI: "
+-
+-static inline unsigned long parse_acpi_hest_ia_machine_check(struct acpi_hest_ia_machine_check *p)
+-{
+-	return sizeof(*p) +
+-		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
+-}
+-
+-static inline unsigned long parse_acpi_hest_ia_corrected(struct acpi_hest_ia_corrected *p)
+-{
+-	return sizeof(*p) +
+-		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
+-}
+-
+-static inline unsigned long parse_acpi_hest_ia_nmi(struct acpi_hest_ia_nmi *p)
+-{
+-	return sizeof(*p);
+-}
+-
+-static inline unsigned long parse_acpi_hest_generic(struct acpi_hest_generic *p)
+-{
+-	return sizeof(*p);
+-}
+-
+-static inline unsigned int hest_match_pci(struct acpi_hest_aer_common *p, struct pci_dev *pci)
+-{
+-	return	(0           == pci_domain_nr(pci->bus) &&
+-		 p->bus      == pci->bus->number &&
+-		 p->device   == PCI_SLOT(pci->devfn) &&
+-		 p->function == PCI_FUNC(pci->devfn));
+-}
+-
+-static unsigned long parse_acpi_hest_aer(void *hdr, int type, struct pci_dev *pci, int *firmware_first)
+-{
+-	struct acpi_hest_aer_common *p = hdr + sizeof(struct acpi_hest_header);
+-	unsigned long rc=0;
+-	u8 pcie_type = 0;
+-	u8 bridge = 0;
+-	switch (type) {
+-	case ACPI_HEST_TYPE_AER_ROOT_PORT:
+-		rc = sizeof(struct acpi_hest_aer_root);
+-		pcie_type = PCI_EXP_TYPE_ROOT_PORT;
+-		break;
+-	case ACPI_HEST_TYPE_AER_ENDPOINT:
+-		rc = sizeof(struct acpi_hest_aer);
+-		pcie_type = PCI_EXP_TYPE_ENDPOINT;
+-		break;
+-	case ACPI_HEST_TYPE_AER_BRIDGE:
+-		rc = sizeof(struct acpi_hest_aer_bridge);
+-		if ((pci->class >> 16) == PCI_BASE_CLASS_BRIDGE)
+-			bridge = 1;
+-		break;
+-	}
+-
+-	if (p->flags & ACPI_HEST_GLOBAL) {
+-		if ((pci->is_pcie && (pci->pcie_type == pcie_type)) || bridge)
+-			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
+-	}
+-	else
+-		if (hest_match_pci(p, pci))
+-			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
+-	return rc;
+-}
+-
+-static int acpi_hest_firmware_first(struct acpi_table_header *stdheader, struct pci_dev *pci)
+-{
+-	struct acpi_table_hest *hest = (struct acpi_table_hest *)stdheader;
+-	void *p = (void *)hest + sizeof(*hest); /* defined by the ACPI 4.0 spec */
+-	struct acpi_hest_header *hdr = p;
+-
+-	int i;
+-	int firmware_first = 0;
+-	static unsigned char printed_unused = 0;
+-	static unsigned char printed_reserved = 0;
+-
+-	for (i=0, hdr=p; p < (((void *)hest) + hest->header.length) && i < hest->error_source_count; i++) {
+-		switch (hdr->type) {
+-		case ACPI_HEST_TYPE_IA32_CHECK:
+-			p += parse_acpi_hest_ia_machine_check(p);
+-			break;
+-		case ACPI_HEST_TYPE_IA32_CORRECTED_CHECK:
+-			p += parse_acpi_hest_ia_corrected(p);
+-			break;
+-		case ACPI_HEST_TYPE_IA32_NMI:
+-			p += parse_acpi_hest_ia_nmi(p);
+-			break;
+-		/* These three should never appear */
+-		case ACPI_HEST_TYPE_NOT_USED3:
+-		case ACPI_HEST_TYPE_NOT_USED4:
+-		case ACPI_HEST_TYPE_NOT_USED5:
+-			if (!printed_unused) {
+-				printk(KERN_DEBUG PREFIX
+-				       "HEST Error Source list contains an obsolete type (%d).\n", hdr->type);
+-				printed_unused = 1;
+-			}
+-			break;
+-		case ACPI_HEST_TYPE_AER_ROOT_PORT:
+-		case ACPI_HEST_TYPE_AER_ENDPOINT:
+-		case ACPI_HEST_TYPE_AER_BRIDGE:
+-			p += parse_acpi_hest_aer(p, hdr->type, pci, &firmware_first);
+-			break;
+-		case ACPI_HEST_TYPE_GENERIC_ERROR:
+-			p += parse_acpi_hest_generic(p);
+-			break;
+-		/* These should never appear either */
+-		case ACPI_HEST_TYPE_RESERVED:
+-		default:
+-			if (!printed_reserved) {
+-				printk(KERN_DEBUG PREFIX
+-				       "HEST Error Source list contains a reserved type (%d).\n", hdr->type);
+-				printed_reserved = 1;
+-			}
+-			break;
+-		}
+-	}
+-	return firmware_first;
+-}
+-
+-int acpi_hest_firmware_first_pci(struct pci_dev *pci)
+-{
+-	acpi_status status = AE_NOT_FOUND;
+-	struct acpi_table_header *hest = NULL;
+-	status = acpi_get_table(ACPI_SIG_HEST, 1, &hest);
+-
+-	if (ACPI_SUCCESS(status)) {
+-		if (acpi_hest_firmware_first(hest, pci)) {
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(acpi_hest_firmware_first_pci);
+--- a/drivers/pci/pcie/aer/aerdrv.h
++++ b/drivers/pci/pcie/aer/aerdrv.h
+@@ -134,4 +134,13 @@ static inline int aer_osc_setup(struct p
  }
+ #endif
  
- const char *__event_name(int type, u64 config)
-@@ -324,6 +323,38 @@ const char *__event_name(int type, u64 config)
- 	return "unknown";
- }
- 
-+#define PERF_ARCH_DEP_LIB_ENV_VAR "PERF_ARCH_DEP_LIB"
-+
-+static int arch_dep_lib_initialized = 0;
-+static int (*parse_arch_dep_event_callout)(const char **strp,
-+				   	   struct perf_event_attr *attr) = NULL;
-+
-+static void initialize_arch_dep_lib(void)
++#ifdef CONFIG_ACPI_APEI
++extern void aer_set_firmware_first(struct pci_dev *pci_dev);
++#else
++static inline void aer_set_firmware_first(struct pci_dev *pci_dev)
 +{
-+	char *lib_name = getenv(PERF_ARCH_DEP_LIB_ENV_VAR);
-+	void *lib_handle;
++	pci_dev->__aer_firmware_first_valid = 1;
++}
++#endif
 +
-+	if (!lib_name)
-+		return;
+ #endif /* _AERDRV_H_ */
+--- a/drivers/pci/pcie/aer/aerdrv_acpi.c
++++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+@@ -16,6 +16,7 @@
+ #include <linux/acpi.h>
+ #include <linux/pci-acpi.h>
+ #include <linux/delay.h>
++#include <acpi/apei.h>
+ #include "aerdrv.h"
+ 
+ /**
+@@ -53,3 +54,72 @@ int aer_osc_setup(struct pcie_device *pc
+ 
+ 	return 0;
+ }
 +
-+	lib_handle = dlopen(lib_name, RTLD_NOW);
-+	if (!lib_handle) {
-+		fprintf(stderr, "The environment variable %s is set to %s, "
-+				"but we couldn't open it.  error: %s\n",
-+				PERF_ARCH_DEP_LIB_ENV_VAR, lib_name, dlerror());
-+		exit(1);
-+	}
-+	parse_arch_dep_event_callout = dlsym(lib_handle, "parse_arch_dep_event");
-+	if (!parse_arch_dep_event_callout) {
-+		fprintf(stderr, "The environment variable %s is set to %s, "
-+				"but we couldn't obtain from it the required function - "
-+				"parse_arch_dep_event.  error: %s\n",
-+				PERF_ARCH_DEP_LIB_ENV_VAR, lib_name, dlerror());
-+		exit(1);
-+	}
-+	arch_dep_lib_initialized = 1;
++#ifdef CONFIG_ACPI_APEI
++static inline int hest_match_pci(struct acpi_hest_aer_common *p, struct pci_dev *pci)
++{
++	return	(0           == pci_domain_nr(pci->bus) &&
++		 p->bus      == pci->bus->number &&
++		 p->device   == PCI_SLOT(pci->devfn) &&
++		 p->function == PCI_FUNC(pci->devfn));
 +}
 +
- static int parse_aliases(const char **str, const char *names[][MAX_ALIASES], int size)
- {
- 	int i, j;
-@@ -686,6 +717,18 @@ parse_numeric_event(const char **strp, struct perf_event_attr *attr)
- 	return EVT_FAILED;
- }
- 
-+static int
-+parse_arch_dep_event(const char **strp, struct perf_event_attr *attr)
++struct aer_hest_parse_info
 +{
-+	if (! arch_dep_lib_initialized)
-+		initialize_arch_dep_lib();
++	struct pci_dev *pci_dev;
++	int firmware_first;
++};
 +
-+	if (arch_dep_lib_initialized)
-+		return parse_arch_dep_event_callout(strp, attr);
-+	else
++static int aer_hest_parse(struct acpi_hest_header *hest_hdr, void *data)
++{
++	struct aer_hest_parse_info *info = data;
++	struct acpi_hest_aer_common *p;
++	u8 pcie_type = 0;
++	u8 bridge = 0;
++	int ff = 0;
++
++	switch (hest_hdr->type) {
++	case ACPI_HEST_TYPE_AER_ROOT_PORT:
++		pcie_type = PCI_EXP_TYPE_ROOT_PORT;
++		break;
++	case ACPI_HEST_TYPE_AER_ENDPOINT:
++		pcie_type = PCI_EXP_TYPE_ENDPOINT;
++		break;
++	case ACPI_HEST_TYPE_AER_BRIDGE:
++		if ((info->pci_dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
++			bridge = 1;
++		break;
++	default:
 +		return 0;
++	}
++
++	p = (struct acpi_hest_aer_common *)(hest_hdr + 1);
++	if (p->flags & ACPI_HEST_GLOBAL) {
++		if ((info->pci_dev->is_pcie &&
++		     info->pci_dev->pcie_type == pcie_type) || bridge)
++			ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
++	} else
++		if (hest_match_pci(p, info->pci_dev))
++			ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
++	info->firmware_first = ff;
++
++	return 0;
 +}
 +
- static enum event_result
- parse_event_modifier(const char **strp, struct perf_event_attr *attr)
- {
-@@ -724,6 +767,11 @@ parse_event_symbols(const char **str, struct perf_event_attr *attr)
- {
- 	enum event_result ret;
- 
-+	ret = parse_arch_dep_event(str, attr);
-+	if (ret != EVT_FAILED)
-+		/* modifiers are already processed */
-+		return ret;
++void aer_set_firmware_first(struct pci_dev *pci_dev)
++{
++	int rc;
++	struct aer_hest_parse_info info = {
++		.pci_dev	= pci_dev,
++		.firmware_first	= 0,
++	};
 +
- 	ret = parse_tracepoint_event(str, attr);
- 	if (ret != EVT_FAILED)
- 		goto modifier;
-@@ -784,6 +832,17 @@ static int store_event_type(const char *orgname)
- 	return perf_header__push_event(id, orgname);
++	rc = apei_hest_parse(aer_hest_parse, &info);
++
++	if (rc)
++		pci_dev->__aer_firmware_first = 0;
++	else
++		pci_dev->__aer_firmware_first = info.firmware_first;
++	pci_dev->__aer_firmware_first_valid = 1;
++}
++#endif
+--- a/drivers/pci/pcie/aer/aerdrv_core.c
++++ b/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -30,12 +30,19 @@ static int nosourceid;
+ module_param(forceload, bool, 0);
+ module_param(nosourceid, bool, 0);
+ 
++static int pcie_aer_get_firmware_first(struct pci_dev *dev)
++{
++	if (!dev->__aer_firmware_first_valid)
++		aer_set_firmware_first(dev);
++	return dev->__aer_firmware_first;
++}
++
+ int pci_enable_pcie_error_reporting(struct pci_dev *dev)
+ {
+ 	u16 reg16 = 0;
+ 	int pos;
+ 
+-	if (dev->aer_firmware_first)
++	if (pcie_aer_get_firmware_first(dev))
+ 		return -EIO;
+ 
+ 	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+@@ -63,7 +70,7 @@ int pci_disable_pcie_error_reporting(str
+ 	u16 reg16 = 0;
+ 	int pos;
+ 
+-	if (dev->aer_firmware_first)
++	if (pcie_aer_get_firmware_first(dev))
+ 		return -EIO;
+ 
+ 	pos = pci_pcie_cap(dev);
+@@ -858,7 +865,7 @@ void aer_delete_rootport(struct aer_rpc
+  */
+ int aer_init(struct pcie_device *dev)
+ {
+-	if (dev->port->aer_firmware_first) {
++	if (pcie_aer_get_firmware_first(dev->port)) {
+ 		dev_printk(KERN_DEBUG, &dev->device,
+ 			   "PCIe errors handled by platform firmware.\n");
+ 		goto out;
+@@ -872,7 +879,7 @@ out:
+ 	if (forceload) {
+ 		dev_printk(KERN_DEBUG, &dev->device,
+ 			   "aerdrv forceload requested.\n");
+-		dev->port->aer_firmware_first = 0;
++		dev->port->__aer_firmware_first = 0;
+ 		return 0;
+ 	}
+ 	return -ENXIO;
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -10,7 +10,6 @@
+ #include <linux/module.h>
+ #include <linux/cpumask.h>
+ #include <linux/pci-aspm.h>
+-#include <acpi/acpi_hest.h>
+ #include "pci.h"
+ 
+ #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
+@@ -900,12 +899,6 @@ void set_pcie_hotplug_bridge(struct pci_
+ 		pdev->is_hotplug_bridge = 1;
  }
  
-+static char *make_substr(char *start, char *end)
-+{
-+	int length = end - start;
-+	char *result = malloc(length + 1);
-+
-+	strncpy(result, start, length);
-+	result[length] = '\0';
-+
-+	return result;
-+}
-+
- int parse_events(const struct option *opt __used, const char *str, int unset __used)
- {
- 	struct perf_event_attr attr;
-@@ -794,19 +853,23 @@ int parse_events(const struct option *opt __used, const char *str, int unset __u
- 			return -1;
+-static void set_pci_aer_firmware_first(struct pci_dev *pdev)
+-{
+-	if (acpi_hest_firmware_first_pci(pdev))
+-		pdev->aer_firmware_first = 1;
+-}
+-
+ #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
  
- 	for (;;) {
-+		char *start, *end;
- 		if (nr_counters == MAX_COUNTERS)
- 			return -1;
+ /**
+@@ -935,7 +928,6 @@ int pci_setup_device(struct pci_dev *dev
+ 	dev->multifunction = !!(hdr_type & 0x80);
+ 	dev->error_state = pci_channel_io_normal;
+ 	set_pcie_port_type(dev);
+-	set_pci_aer_firmware_first(dev);
  
- 		memset(&attr, 0, sizeof(attr));
-+		start = (char *)str;
- 		ret = parse_event_symbols(&str, &attr);
- 		if (ret == EVT_FAILED)
- 			return -1;
+ 	list_for_each_entry(slot, &dev->bus->slots, list)
+ 		if (PCI_SLOT(dev->devfn) == slot->number)
+--- a/include/acpi/acpi_hest.h
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#ifndef __ACPI_HEST_H
+-#define __ACPI_HEST_H
+-
+-#include <linux/pci.h>
+-
+-#ifdef CONFIG_ACPI
+-extern int acpi_hest_firmware_first_pci(struct pci_dev *pci);
+-#else
+-static inline int acpi_hest_firmware_first_pci(struct pci_dev *pci) { return 0; }
+-#endif
+-
+-#endif
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -311,7 +311,8 @@ struct pci_dev {
+ 	unsigned int	is_virtfn:1;
+ 	unsigned int	reset_fn:1;
+ 	unsigned int    is_hotplug_bridge:1;
+-	unsigned int    aer_firmware_first:1;
++	unsigned int    __aer_firmware_first_valid:1;
++	unsigned int	__aer_firmware_first:1;
+ 	pci_dev_flags_t dev_flags;
+ 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
  
- 		if (!(*str == 0 || *str == ',' || isspace(*str)))
- 			return -1;
-+		end = (char *)str;
- 
- 		if (ret != EVT_HANDLED_ALL) {
- 			attrs[nr_counters] = attr;
-+			event_names[nr_counters] = make_substr(start, end);
- 			nr_counters++;
- 		}
- 
-
---------------080205060905080606000707--
-
