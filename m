@@ -1,100 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719Ab0CDCVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:21:48 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:7001 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755716Ab0CDCVm convert rfc822-to-8bit (ORCPT
+	id S1755743Ab0CDCZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:25:57 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:4257 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979Ab0CDCZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:21:42 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Wed, 03 Mar 2010 18:21:41 -0800
-From: Wei Ni <wni@nvidia.com>
-To: "'Takashi Iwai'" <tiwai@suse.de>
-CC: "'Pavel Hofman'" <pavel.hofman@insite.cz>,
-       "'alsa-devel'" <alsa-devel@alsa-project.org>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'akpm'" <akpm@linux-foundation.org>
-Date: Thu, 4 Mar 2010 10:21:39 +0800
-Subject: RE: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Topic: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Index: Acq7G2MmdCDVKmsbStukiqr1IEInhAAI6Fsg
-Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16B1AD54C@HKMAIL01.nvidia.com>
-References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
-	<s5hmxyrp311.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C068B2BA8C@HKMAIL01.nvidia.com>
-	<s5heik3ujy0.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A118@HKMAIL01.nvidia.com>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11A@HKMAIL01.nvidia.com>
-	<s5haaupoqew.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11C@HKMAIL01.nvidia.com>
- <s5htysxm5yo.wl%tiwai@suse.de>
-In-Reply-To: <s5htysxm5yo.wl%tiwai@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 3 Mar 2010 21:25:52 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=iUfxiU9wTNuxZH8RBkKv2NG/7jJTE/MfND5M7IIKPDIkOZ+wJU3HIDkOUMUJITgMa
+	x58bqmaYmEw+YY9XBK43A==
 MIME-Version: 1.0
+In-Reply-To: <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com>
+References: <4B8DFFD7.2000908@cn.fujitsu.com>
+	 <20100303143311.GA2866@redhat.com> <20100303154748.GC2866@redhat.com>
+	 <e98e18941003031519v14d4f79cg33da5c3cf1f5ac03@mail.gmail.com>
+Date: Wed, 3 Mar 2010 18:25:44 -0800
+Message-ID: <1786ab031003031825m5467c86jf5c355df10001dd2@mail.gmail.com>
+Subject: Re: [PATCH 2/1] io-controller: Add a new interface "policy" for IO 
+	Controller
+From: Chad Talbott <ctalbott@google.com>
+To: guijianfeng@cn.fujitsu.com
+Cc: vgoyal@redhat.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       Nauman Rafique <nauman@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Takashi
-1. Yes, it can works for all Nvidia controller.
-2. The hda_eld.o doesn't export any symbols.
-I tried to put hda_eld.o to snd-had-codec-*, and remove had_eldo.o
-from snd-had-codec-intelhdmi-objs, but it will build error. It need
-to modify hda_eld.c to export symbols, it will add many changes.
+On Wed, Mar 3, 2010 at 3:19 PM, Nauman Rafique <nauman@google.com> wrote:
+> On Wed, Mar 03, 2010 at 09:33:11AM -0500, Vivek Goyal wrote:
+>> On Wed, Mar 03, 2010 at 02:21:11PM +0800, Gui Jianfeng wrote:
+>> > You can use the following format to assigned specific weight for a given
+>> > device:
+>> > #echo "major:minor weight" > blkio.policy
 
-Thanks
-Wei.
-nvpublic
+>> Can we use a different name for per device weight file name than "blkio.policy".
+>> May be "blkio.weight_device" or "blkio.weight_per_device" etc.
 
------Original Message-----
-From: Takashi Iwai [mailto:tiwai@suse.de] 
-Sent: Thursday, March 04, 2010 5:49 AM
-To: Wei Ni
-Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+I agree with Vivek here, and his reasoning below.  This becomes more
+important as more attributes are added.
 
-At Wed, 3 Mar 2010 15:21:12 +0800,
-Wei Ni wrote:
-> 
-> Hi, Takashi
-> I generate the new patch file, please check it.
+>> The reason being that "blkio.policy" name might be more suitable to switch
+>> between differnt kind of BW control policies (proportional, max bandwidth etc),
+>> once we implement some kind of max BW controlling policies also. So it
+>> might be a good idea to not use that file name for specifying per device
+>> weights.
+>
+> Well, thinking more about it, what kind of policy you implement on a block
+> device will not be a per cgroup property. It will not be the case that on
+> a device you are implementing max-bw for one cgroup and proportional
+> weight for other cgroup. It probably will be a per device attribute and
+> if need be should be controlled by /sys/block/<dev> interface.
+>
+> Still, being very clear what a particular cgroup file does makes sense. So
+> that in future for max-bw control, we can bring in more cgroup files like
+> blkio.max_bw or blkio.max_iops etc which can co-exist with blkio.weight_device
+> etc.
 
-Thanks.  Review comments below:
+Agreed.  I'd like to add that since we are already thinking about
+expanding the policy with more attributes, perhaps
+blkio_update_group_weight_fn in blkio_policy_ops should be renamed to
+blkio_policy_updated_fn.  Then it could be called if the user changed
+any part of the policy.  Further, instead of storing "weight" in
+blkio_cgroup, we could store a blkio_policy_node there instead.  Then
+the handling of whole-cgroup and per-block-device policy items could
+be more regular.
 
-> @@ -1367,6 +1368,7 @@ static void azx_bus_reset(struct hda_bus *bus)
->  
->  /* number of codec slots for each chipset: 0 = default slots (i.e. 4) */
->  static unsigned int azx_max_codecs[AZX_NUM_DRIVERS] __devinitdata = {
-> +	[AZX_DRIVER_NVIDIA] = 8,
+Some quick code comments:
 
-Are you sure that this works for all Nvidia controller chips including
-the old nForce chipset?
+policy_parse_and_set() could be simplified with scanf, like:
 
- 
-> diff --git a/sound/pci/hda/Makefile b/sound/pci/hda/Makefile
-> index 315a1c4..199f440 100644
-> --- a/sound/pci/hda/Makefile
-> +++ b/sound/pci/hda/Makefile
-> @@ -17,7 +17,7 @@ snd-hda-codec-cirrus-objs :=	patch_cirrus.o
->  snd-hda-codec-ca0110-objs :=	patch_ca0110.o
->  snd-hda-codec-conexant-objs :=	patch_conexant.o
->  snd-hda-codec-via-objs :=	patch_via.o
-> -snd-hda-codec-nvhdmi-objs :=	patch_nvhdmi.o
-> +snd-hda-codec-nvhdmi-objs :=	patch_nvhdmi.o hda_eld.o
->  snd-hda-codec-intelhdmi-objs :=	patch_intelhdmi.o hda_eld.o
+if (sscanf(buf, "%d:%d %d", &major, &minor, &temp) != 3)
+        return -EINVAL;
 
-This is buggy.  You cannot create multiple modules containing the
-same *.o file that exports symbols.
+blkcg_get_weight() might better be blkcg_get_policy() and it could
+return a per-disk policy node, or fall back to the cgroup policy if
+none existed for this dev.  This would be across policy attributes,
+rather than just weight.
 
-Instead, put hda_eld.o to snd-hda-codec-* (currently commented out),
-and remove hda_eld.o from snd-hda-codec-intelhdmi-objs.
-
-
-Takashi
+Thanks,
+Chad
