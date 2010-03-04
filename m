@@ -1,175 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902Ab0CDLqZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:46:25 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:2727 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755519Ab0CDLqX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:46:23 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Thu, 04 Mar 2010 03:46:17 -0800
-From: Wei Ni <wni@nvidia.com>
-To: "'Takashi Iwai'" <tiwai@suse.de>
-CC: "'Pavel Hofman'" <pavel.hofman@insite.cz>,
-       "'alsa-devel'" <alsa-devel@alsa-project.org>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'akpm'" <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Date: Thu, 4 Mar 2010 19:46:17 +0800
-Subject: RE: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Topic: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Index: Acq7kA9bnG8zz0XOSQah7kNsC0LybgAAC9Yw
-Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16B1AD557@HKMAIL01.nvidia.com>
-References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
-	<s5hmxyrp311.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C068B2BA8C@HKMAIL01.nvidia.com>
-	<s5heik3ujy0.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A118@HKMAIL01.nvidia.com>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11A@HKMAIL01.nvidia.com>
-	<s5haaupoqew.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11C@HKMAIL01.nvidia.com>
-	<s5htysxm5yo.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD54C@HKMAIL01.nvidia.com>
-	<s5hzl2ol8qu.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD554@HKMAIL01.nvidia.com>
-	<s5h1vg0qrrr.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD555@HKMAIL01.nvidia.com>
-	<s5hwrxspblg.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD556@HKMAIL01.nvidia.com>
- <s5htyswpb18.wl%tiwai@suse.de>
-In-Reply-To: <s5htyswpb18.wl%tiwai@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1755914Ab0CDLsB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:48:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46558 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755519Ab0CDLsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 06:48:00 -0500
+Date: Thu, 4 Mar 2010 06:47:48 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: device-mapper development <dm-devel@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+cc: Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+ checks
+In-Reply-To: <20100303200734.GW5768@kernel.dk>
+Message-ID: <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
+ <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
+ <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
+ <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com>
+ <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, I will give you the patch tomorrow.
 
 
------Original Message-----
-From: Takashi Iwai [mailto:tiwai@suse.de] 
-Sent: Thursday, March 04, 2010 7:44 PM
-To: Wei Ni
-Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'; Wu Fengguang
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+On Wed, 3 Mar 2010, Jens Axboe wrote:
 
-At Thu, 4 Mar 2010 19:37:52 +0800,
-Wei Ni wrote:
+> On Wed, Mar 03 2010, Dmitry Monakhov wrote:
+> > Mike Snitzer <snitzer@redhat.com> writes:
+> > 
+> > > Linux has all sorts of internal interfaces that are "odd"... the current
+> > > 'q->merge_bvec_fn' interface included.  But odd is not a problem (nor is
+> > > it "broken") unless you make changes that don't consider how the current
+> > > interface is defined.
+> > Ok. then cant you please explain more historical questions
+> > 1) Why bio_add_page() can not add less data than requested?
+> >    Seems that it doesn't make caller's code much complicate
+> >    Off course barrier bio is special case. I don't consider it here.
 > 
-> Do you mean you will check in my patch first, and then I give you the
-> additional patch for adding EXPORT_SYMBOL() in hda_eld.c?
+> Because the caller may not expect that, a partial add may not make any
+> sense to the caller. The bio code obviously doesn't care. And it
+> certainly could complicate the caller a lot, if they need to now issue
+> and wait for several bio's instead of just a single one. Now a single
+> completion queue and wait_for_completion() is not enough.
 
-Yes.  I need the integration tests first.
-Meanwhile, prepare your patch on the top of your current patches.
-Feel free to post it at any time.
+The whole thing is lame by design.
 
-After that, we can merge Fengguang's patch_hdmi.c change on that.
+As a consequence, the code for splitting these page-sized bios is being 
+duplicated in md, dm and request-based device (and maybe in other drivers).
+
+And there is a long standing unfixable bug --- adding a device to raid1 
+may fail if the device has smaller request size than the other raid1 leg.
+Think about this:
+
+* thread 1:
+bio_add_page() -> returns ok
+...
+bio_add_page() -> returns ok
+* scheduling to thread 2 *
+* thread 2:
+add a raid1 leg to the block device
+* scheduling to thread 1 *
+* thread 1:
+submit_bio() --- the bio already oversized for the new raid1 leg and there 
+is no way to shrink it.
 
 
-thanks,
+I think it should be redesigned in this way:
+* the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
+* the code for splitting bios should be just at one place --- in the 
+generic block layer and it should work with all drivers. I.e.
+q->make_request_fn will return that the request is too big for the given 
+driver and the generic code will allocate few another bios from 
+per-request_queue mempool and split the bio.
+* then, we would fix the raid1 bug and we would also simplify md and dm 
+--- remove the splitting code.
 
-Takashi
-
-
-> -----Original Message-----
-> From: Takashi Iwai [mailto:tiwai@suse.de] 
-> Sent: Thursday, March 04, 2010 7:31 PM
-> To: Wei Ni
-> Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-> Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-> 
-> At Thu, 4 Mar 2010 19:09:29 +0800,
-> Wei Ni wrote:
-> > 
-> > Hi, Takashi
-> > I test my patch, it build successful when CONFIG_SND_HDA_*=y.
-> > Could you give me your build error messages?
-> 
-> Sorry, it's CONFIG_SND_HDA*=m.  Then load two modules, so you'll have
-> two identical objects in different modules.
-> 
-> OTOH, if it's no exported symbol, it might coexist.  Hmm.
-> 
-> If you get no errors with it, then it's fine as an intermediate state.
-> Please give the additional patch on them for further fixes.
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
-> > 
-> > Thanks
-> > Wei.
-> > nvpublic
-> > 
-> > -----Original Message-----
-> > From: Takashi Iwai [mailto:tiwai@suse.de] 
-> > Sent: Thursday, March 04, 2010 6:57 PM
-> > To: Wei Ni
-> > Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-> > Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-> > 
-> > At Thu, 4 Mar 2010 18:46:59 +0800,
-> > Wei Ni wrote:
-> > > 
-> > > Hi, Takashi
-> > > I think we can submit my patch first,
-> > 
-> > But your patch breaks the build when CONFIG_SND_HDA_*=y.
-> > So, it should be fixed in your patch.
-> > 
-> > 
-> > thanks,
-> > 
-> > Takashi
-> > 
-> > > then generate another patch
-> > > to add EXPORT_SYMBOL() in hda_eld.c, and change Makefile to remove
-> > > hda_eld.o from snd-hda-codec-xxhdmi-objs.
-> > > 
-> > > Thanks
-> > > Wei.
-> > > nvpublic
-> > > 
-> > > -----Original Message-----
-> > > From: Takashi Iwai [mailto:tiwai@suse.de] 
-> > > Sent: Thursday, March 04, 2010 5:47 PM
-> > > To: Wei Ni
-> > > Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-> > > Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-> > > 
-> > > At Thu, 4 Mar 2010 10:21:39 +0800,
-> > > Wei Ni wrote:
-> > > > 
-> > > > Hi, Takashi
-> > > > 1. Yes, it can works for all Nvidia controller.
-> > > 
-> > > OK.
-> > > 
-> > > > 2. The hda_eld.o doesn't export any symbols.
-> > > > I tried to put hda_eld.o to snd-had-codec-*, and remove had_eldo.o
-> > > > from snd-had-codec-intelhdmi-objs, but it will build error. It need
-> > > > to modify hda_eld.c to export symbols, it will add many changes.
-> > > 
-> > > Yes, this is unavoidable.  Please add EXPORT_SYMBOL()'s
-> > > appropriately.
-> > > 
-> > > We can reduce them again once after all HDMI stuff is merged into
-> > > one.
-> > > 
-> > > 
-> > > thanks,
-> > > 
-> > > Takashi
-> > > 
-> > 
-> 
+Mikulas
