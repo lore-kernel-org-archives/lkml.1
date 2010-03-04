@@ -1,196 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132Ab0CDVUi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:20:38 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:46770 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756378Ab0CDVUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:20:36 -0500
-Date: Thu, 4 Mar 2010 15:20:34 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Tejun Heo <tj@kernel.org>
-Subject: [PATCH] improve stop_machine performance
-Message-ID: <20100304212034.GA3171@sgi.com>
+	id S1757145Ab0CDVVr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:21:47 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:49047 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753243Ab0CDVVp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:21:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NBHdY9Qg6nHmaQitNJHEGYbqPjU7rW4u0ym7U8mrJhU+mEqdgTxBcBY6ASPY0dYB2Z
+         HfP9RiTQUo35u9UKmZhg6C61CBE7yDiPbIzDkxq+sGwRPCHZWkTn95HC5MbwJNpG5H19
+         /g1g7rkTXdKvv46TOjNOL27TVGGMdSVj9LRv4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+Date: Thu, 4 Mar 2010 22:21:43 +0100
+Message-ID: <6d4bc9fc1003041321g4190a4b4na665560a494877b0@mail.gmail.com>
+Subject: Re: [git pull] drm request 3
+From: Maarten Maathuis <madman2003@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On systems with large cpu counts, we've been seeing long bootup times
-associated with stop_machine operations.  I've noticed that by simply
-removing the creation of the workqueue and associated percpu variables
-in subsequent stop_machine calls, we can reduce boot times on a
-1024 processor SGI UV system from 25-30 (or more) minutes down to 12
-minutes.
+On Thu, Mar 4, 2010 at 7:18 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> Hmm. What the hell am I supposed to do about
+>
+>        (II) NOUVEAU(0): [drm] nouveau interface version: 0.0.16
+>        (EE) NOUVEAU(0): [drm] wrong version, expecting 0.0.15
+>        (EE) NOUVEAU(0): 879:
+>
+> now?
+>
+> What happened to the whole backwards compatibility thing? I wasn't even
+> warned that this breaks existing user space. That makes it impossible to
+> _test_ new kernels. Upgrading X and the kernel in lock-step is not a valid
+> model, lots of people are just using some random distribution (F12 in my
+> case), and you just broke it.
+>
+> I see the commit that does this was very aware of it:
+>
+>        commit a1606a9596e54da90ad6209071b357a4c1b0fa82
+>        Author: Ben Skeggs <bskeggs@redhat.com>
+>        Date:   Fri Feb 12 10:27:35 2010 +1000
+>
+>            drm/nouveau: new gem pushbuf interface, bump to 0.0.16
+>
+>            This commit breaks the userspace interface, and requires a new libdrm for
+>            nouveau to operate again.
+>
+>            The multiple GEM_PUSHBUF ioctls that were present in 0.0.15 for
+>            compatibility purposes are now gone, and replaced with the new ioctl which
+>            allows for multiple push buffers to be submitted (necessary for hw index
+>            buffers in the nv50 3d driver) and relocations to be applied on any buffer.
+>
+>            A number of other ioctls (CARD_INIT, GEM_PIN, GEM_UNPIN) that were needed
+>            for userspace modesetting have also been removed.
+>
+>            Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+>            Signed-off-by: Francisco Jerez <currojerez@riseup.net>
+>
+> but why the hell wasn't I made aware of it before-hand? Quite frankly, I
+> probably wouldn't have pulled it.
+>
+> We can't just go around breaking peoples setups. This driver is, like it
+> or not, used by Fedora-12 (and probably other distros). It may say
+> "staging", but that doesn't change the fact that it's in production use by
+> huge distributions. Flag days aren't acceptable.
+>
+>                Linus
+>
+> ------------------------------------------------------------------------------
+> Download Intel&#174; Parallel Studio Eval
+> Try the new software tools for yourself. Speed compiling, find bugs
+> proactively, and fine-tune applications for parallel performance.
+> See why Intel Parallel Studio got high marks during beta.
+> http://p.sf.net/sfu/intel-sw-dev
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+>
 
-The attached patch does this in a simple way by removing the
-stop_machine_destroy interface, thereby by leaving the workqueues and
-percpu variables for later use once they are created.
+What i'm about to say is my personal opinion, not that of nouveau as a
+whole (not even sure if such a thing exists).
 
-If people are against having these areas around after boot, maybe there
-are some alternatives that will still allow for this optimization:
+1. We are in staging because our abi isn't final yet.
+2. We (already) adjusted our way of working to ensure we have a usable
+and proper codebase by the time we are ready for mainline.
+3. Redhat through Ben Skeggs contributes to nouveau (quite a bit i agree).
+4. You are forcing red hat to force something on the rest of us.
+5. I for one am happy we keep a clean api.
+6. We keep an internal kernel tree that is tested to some degree (in
+this case the abi break was in there for a few weeks iirc) none of the
+developers asked for a revert.
+7. Everyone (users, distros) are (or should) be aware of the nature of
+this driver, our userspace interface is experimental for that very
+reason.
+8. Experience has tought me that in the case of nouveau, if a
+developer isn't using a codepath it will bitrot.
 
- - Set a timer to go off after a configurable number of minutes, at
-   which point the workqueue areas will be deleted.
+So please, also take into consideration that this project isn't solely
+made by red hat and it's usually the other people that get to keep the
+pieces.
 
- - Keep the stop_machine_destroy function, but somehow run it at the tail
-   end of boot (after modules have loaded), rather than running it at
-   every stop_machine call.
+Sincerely,
 
-
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-
----
-
- drivers/xen/manage.c         |    1 -
- include/linux/stop_machine.h |    9 ---------
- kernel/cpu.c                 |    2 --
- kernel/module.c              |    1 -
- kernel/stop_machine.c        |   25 +++++--------------------
- 5 files changed, 5 insertions(+), 33 deletions(-)
-
-Index: linux/kernel/stop_machine.c
-===================================================================
---- linux.orig/kernel/stop_machine.c
-+++ linux/kernel/stop_machine.c
-@@ -38,10 +38,8 @@ struct stop_machine_data {
- static unsigned int num_threads;
- static atomic_t thread_ack;
- static DEFINE_MUTEX(lock);
--/* setup_lock protects refcount, stop_machine_wq and stop_machine_work. */
-+/* setup_lock protects stop_machine_wq and stop_machine_work. */
- static DEFINE_MUTEX(setup_lock);
--/* Users of stop_machine. */
--static int refcount;
- static struct workqueue_struct *stop_machine_wq;
- static struct stop_machine_data active, idle;
- static const struct cpumask *active_cpus;
-@@ -115,7 +113,7 @@ static int chill(void *unused)
- int stop_machine_create(void)
- {
- 	mutex_lock(&setup_lock);
--	if (refcount)
-+	if (stop_machine_wq)
- 		goto done;
- 	stop_machine_wq = create_rt_workqueue("kstop");
- 	if (!stop_machine_wq)
-@@ -124,31 +122,19 @@ int stop_machine_create(void)
- 	if (!stop_machine_work)
- 		goto err_out;
- done:
--	refcount++;
- 	mutex_unlock(&setup_lock);
- 	return 0;
- 
- err_out:
--	if (stop_machine_wq)
-+	if (stop_machine_wq) {
- 		destroy_workqueue(stop_machine_wq);
-+		stop_machine_wq = NULL;
-+	}
- 	mutex_unlock(&setup_lock);
- 	return -ENOMEM;
- }
- EXPORT_SYMBOL_GPL(stop_machine_create);
- 
--void stop_machine_destroy(void)
--{
--	mutex_lock(&setup_lock);
--	refcount--;
--	if (refcount)
--		goto done;
--	destroy_workqueue(stop_machine_wq);
--	free_percpu(stop_machine_work);
--done:
--	mutex_unlock(&setup_lock);
--}
--EXPORT_SYMBOL_GPL(stop_machine_destroy);
--
- int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
- {
- 	struct work_struct *sm_work;
-@@ -193,7 +179,6 @@ int stop_machine(int (*fn)(void *), void
- 	get_online_cpus();
- 	ret = __stop_machine(fn, data, cpus);
- 	put_online_cpus();
--	stop_machine_destroy();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(stop_machine);
-Index: linux/drivers/xen/manage.c
-===================================================================
---- linux.orig/drivers/xen/manage.c
-+++ linux/drivers/xen/manage.c
-@@ -138,7 +138,6 @@ out_thaw:
- 
- out_destroy_sm:
- #endif
--	stop_machine_destroy();
- 
- out:
- 	shutting_down = SHUTDOWN_INVALID;
-Index: linux/include/linux/stop_machine.h
-===================================================================
---- linux.orig/include/linux/stop_machine.h
-+++ linux/include/linux/stop_machine.h
-@@ -45,14 +45,6 @@ int __stop_machine(int (*fn)(void *), vo
-  */
- int stop_machine_create(void);
- 
--/**
-- * stop_machine_destroy: destroy all stop_machine threads
-- *
-- * Description: This causes all stop_machine threads which were created with
-- * stop_machine_create to be destroyed again.
-- */
--void stop_machine_destroy(void);
--
- #else
- 
- static inline int stop_machine(int (*fn)(void *), void *data,
-@@ -66,7 +58,6 @@ static inline int stop_machine(int (*fn)
- }
- 
- static inline int stop_machine_create(void) { return 0; }
--static inline void stop_machine_destroy(void) { }
- 
- #endif /* CONFIG_SMP */
- #endif /* _LINUX_STOP_MACHINE */
-Index: linux/kernel/cpu.c
-===================================================================
---- linux.orig/kernel/cpu.c
-+++ linux/kernel/cpu.c
-@@ -285,7 +285,6 @@ int __ref cpu_down(unsigned int cpu)
- 
- out:
- 	cpu_maps_update_done();
--	stop_machine_destroy();
- 	return err;
- }
- EXPORT_SYMBOL(cpu_down);
-@@ -399,7 +398,6 @@ int disable_nonboot_cpus(void)
- 		printk(KERN_ERR "Non-boot CPUs are not disabled\n");
- 	}
- 	cpu_maps_update_done();
--	stop_machine_destroy();
- 	return error;
- }
- 
-Index: linux/kernel/module.c
-===================================================================
---- linux.orig/kernel/module.c
-+++ linux/kernel/module.c
-@@ -731,7 +731,6 @@ SYSCALL_DEFINE2(delete_module, const cha
-  out:
- 	mutex_unlock(&module_mutex);
- out_stop:
--	stop_machine_destroy();
- 	return ret;
- }
- 
+Maarten Maathuis.
