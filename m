@@ -1,158 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873Ab0CDQf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:35:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46507 "EHLO hera.kernel.org"
+	id S1755792Ab0CDQhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:37:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46554 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755384Ab0CDQf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:35:27 -0500
-Date: Thu, 4 Mar 2010 16:33:23 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1267631219-8713-2-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <1267631219-8713-2-git-send-email-paulmck@linux.vnet.ibm.com>
+	id S1755369Ab0CDQhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:37:31 -0500
+Date: Thu, 4 Mar 2010 16:33:38 GMT
+From: tip-bot for Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       will.deacon@arm.com, efault@gmx.de, jamie.iles@picochip.com,
+       fweisbec@gmail.com, linux@arm.linux.org.uk, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, will.deacon@arm.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, jamie.iles@picochip.com,
+       fweisbec@gmail.com, linux@arm.linux.org.uk, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
+References: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] rcu: Suppress RCU lockdep warnings during early boot
-Message-ID: <tip-54dbf96c921513bf98484a20ef366d51944a4c4d@git.kernel.org>
-Git-Commit-ID: 54dbf96c921513bf98484a20ef366d51944a4c4d
+Subject: [tip:perf/pebs] perf, ARM: Modify kuser rmb() call to compile for Thumb-2
+Message-ID: <tip-da7196e1f986c846ffa8b2ec385223fad38e8518@git.kernel.org>
+Git-Commit-ID: da7196e1f986c846ffa8b2ec385223fad38e8518
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:33:23 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:33:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  54dbf96c921513bf98484a20ef366d51944a4c4d
-Gitweb:     http://git.kernel.org/tip/54dbf96c921513bf98484a20ef366d51944a4c4d
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 07:46:57 -0800
+Commit-ID:  da7196e1f986c846ffa8b2ec385223fad38e8518
+Gitweb:     http://git.kernel.org/tip/da7196e1f986c846ffa8b2ec385223fad38e8518
+Author:     Will Deacon <will.deacon@arm.com>
+AuthorDate: Wed, 3 Mar 2010 11:47:58 +0000
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Mar 2010 12:09:19 +0100
+CommitDate: Thu, 4 Mar 2010 12:13:28 +0100
 
-rcu: Suppress RCU lockdep warnings during early boot
+perf, ARM: Modify kuser rmb() call to compile for Thumb-2
 
-RCU is used during very early boot, before RCU and lockdep have
-been initialized.  So make the underlying primitives
-(rcu_read_lock_held(), rcu_read_lock_bh_held(),
-rcu_read_lock_sched_held(), and rcu_dereference_check()) check
-for early boot via the rcu_scheduler_active flag.  This will
-suppress false positives.
+The Thumb-2 instruction set does not provide an encoding
+for sub pc, r0, #95 as present in the rmb() definition used
+by perf. This results in compilation failure when using a
+compiler targetting an instruction set other than ARM.
 
-Also introduce a debug_lockdep_rcu_enabled() static inline
-helper function, which tags the CONTINUE_PROVE_RCU case as
-likely(), as suggested by Ingo Molnar.
+This patch redefines rmb() for ARM by casting the address
+of the kuser helper to a function pointer, therefore getting
+the compiler to take care of making the call.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <1267631219-8713-2-git-send-email-paulmck@linux.vnet.ibm.com>
-[ v2: removed incomplete debug_lockdep_rcu_update() bits ]
+Patch taken against tip/master.
+
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Iles <jamie.iles@picochip.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1267616878-2154-1-git-send-email-will.deacon@arm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/rcupdate.h |   31 ++++++++++++++++++++++---------
- 1 files changed, 22 insertions(+), 9 deletions(-)
+ tools/perf/perf.h |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index e22960e..75921b8 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -97,6 +97,11 @@ extern struct lockdep_map rcu_sched_lock_map;
- # define rcu_read_release_sched() \
- 		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
- 
-+static inline int debug_lockdep_rcu_enabled(void)
-+{
-+	return likely(rcu_scheduler_active && debug_locks);
-+}
-+
- /**
-  * rcu_read_lock_held - might we be in RCU read-side critical section?
-  *
-@@ -104,12 +109,14 @@ extern struct lockdep_map rcu_sched_lock_map;
-  * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index 75f941b..6fb379b 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -65,9 +65,7 @@
+  * Use the __kuser_memory_barrier helper in the CPU helper page. See
+  * arch/arm/kernel/entry-armv.S in the kernel source for details.
   */
- static inline int rcu_read_lock_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_lock_map);
--	return 1;
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
-+	return lock_is_held(&rcu_lock_map);
- }
+-#define rmb()		asm volatile("mov r0, #0xffff0fff; mov lr, pc;" \
+-				     "sub pc, r0, #95" ::: "r0", "lr", "cc", \
+-				     "memory")
++#define rmb()		((void(*)(void))0xffff0fa0)()
+ #define cpu_relax()	asm volatile("":::"memory")
+ #endif
  
- /**
-@@ -119,12 +126,14 @@ static inline int rcu_read_lock_held(void)
-  * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
-  * this assumes we are in an RCU-bh read-side critical section unless it can
-  * prove otherwise.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- static inline int rcu_read_lock_bh_held(void)
- {
--	if (debug_locks)
--		return lock_is_held(&rcu_bh_lock_map);
--	return 1;
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
-+	return lock_is_held(&rcu_bh_lock_map);
- }
- 
- /**
-@@ -135,15 +144,19 @@ static inline int rcu_read_lock_bh_held(void)
-  * this assumes we are in an RCU-sched read-side critical section unless it
-  * can prove otherwise.  Note that disabling of preemption (including
-  * disabling irqs) counts as an RCU-sched read-side critical section.
-+ *
-+ * Check rcu_scheduler_active to prevent false positives during boot.
-  */
- #ifdef CONFIG_PREEMPT
- static inline int rcu_read_lock_sched_held(void)
- {
- 	int lockdep_opinion = 0;
- 
-+	if (!debug_lockdep_rcu_enabled())
-+		return 1;
- 	if (debug_locks)
- 		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
--	return lockdep_opinion || preempt_count() != 0 || !rcu_scheduler_active;
-+	return lockdep_opinion || preempt_count() != 0;
- }
- #else /* #ifdef CONFIG_PREEMPT */
- static inline int rcu_read_lock_sched_held(void)
-@@ -174,7 +187,7 @@ static inline int rcu_read_lock_bh_held(void)
- #ifdef CONFIG_PREEMPT
- static inline int rcu_read_lock_sched_held(void)
- {
--	return preempt_count() != 0 || !rcu_scheduler_active;
-+	return !rcu_scheduler_active || preempt_count() != 0;
- }
- #else /* #ifdef CONFIG_PREEMPT */
- static inline int rcu_read_lock_sched_held(void)
-@@ -198,7 +211,7 @@ static inline int rcu_read_lock_sched_held(void)
-  */
- #define rcu_dereference_check(p, c) \
- 	({ \
--		if (debug_locks && !(c)) \
-+		if (debug_lockdep_rcu_enabled() && !(c)) \
- 			lockdep_rcu_dereference(__FILE__, __LINE__); \
- 		rcu_dereference_raw(p); \
- 	})
