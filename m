@@ -1,62 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174Ab0CDRZG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:25:06 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:29982 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932148Ab0CDRZE (ORCPT
+	id S932190Ab0CDR0F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:26:05 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:55260 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932078Ab0CDR0B convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:25:04 -0500
-Date: Thu, 4 Mar 2010 09:23:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Josef Bacik <josef@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cleanup __generic_block_fiemap and fix a few minor
- issues
-Message-Id: <20100304092320.12b09851.randy.dunlap@oracle.com>
-In-Reply-To: <20100304171253.GB5722@localhost.localdomain>
-References: <20100303163715.GB2215@localhost.localdomain>
-	<alpine.LFD.2.00.1003040754150.7046@localhost.localdomain>
-	<20100304162039.GA5722@localhost.localdomain>
-	<20100304085021.1b4e5c58.randy.dunlap@oracle.com>
-	<20100304171253.GB5722@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B8FECD7.0063:SCFMA4539814,ss=1,fgs=0
+	Thu, 4 Mar 2010 12:26:01 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=KiHN1hrD2zA+2yXwiFW/KioDpWVwGbovRLAcc74xZMURn+0x+ATGBOVnmgyYPsPdg
+	m3uis+1NlUlmbbFN+4HeQ==
+MIME-Version: 1.0
+In-Reply-To: <20100304113212.GG21977@elte.hu>
+References: <1267575705-10054-1-git-send-email-eranian@google.com>
+	 <20100304113212.GG21977@elte.hu>
+Date: Thu, 4 Mar 2010 09:25:56 -0800
+Message-ID: <bd4cb8901003040925t28ddcc5bmfce11dcfa8b9b0ba@mail.gmail.com>
+Subject: Re: [PATCH] perf_events: add sampling period randomization support 
+	(v2)
+From: Stephane Eranian <eranian@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, paulus@samba.org,
+       fweisbec@gmail.com, perfmon2-devel@lists.sf.net, robert.richter@amd.com,
+       eranian@gmail.com, davem@davemloft.net,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 12:12:54 -0500 Josef Bacik wrote:
+On Thu, Mar 4, 2010 at 3:32 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * eranian@google.com <eranian@google.com> wrote:
+>
+>> This patch adds support for randomizing the sampling period.  Randomization
+>> is very useful to mitigate the bias that exists with sampling. The random
+>> number generator does not need to be sophisticated. This patch uses the
+>> builtin random32() generator.
+>
+>> +     if (width > 63 || attr->freq)
+>> +             return -EINVAL;
+>
+> Why not for freq counters? Those are semi-randomized already, but it might
+> make sense to make them 'more' randomized in special circumstances. That would
+> also allow us to enable the randomization in perf top and perf record, by
+> default.
+>
+What's the goal of freq?
+Achieve and maintain the target interrupt/rate.
+In doing so, it has to adjust the period (not randomly).
 
-> diff --git a/fs/ioctl.c b/fs/ioctl.c
-> index 6c75110..f330fec 100644
-> --- a/fs/ioctl.c
-> +++ b/fs/ioctl.c
-> @@ -228,14 +228,23 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
->  
->  
->  /**
->   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
-> - * @inode - the inode to map
-> - * @arg - the pointer to userspace where we copy everything to
-> - * @get_block - the fs's get_block function
-> + * @inode: the inode to map
-> + * @fieinfo: the fiemap info struct that will be passed back to userspace
-> + * @start: where to start mapping in the inode
-> + * @len: how much space to map
-> + * @get_block: the fs's get_block function
->   *
->   * This does FIEMAP for block based inodes.  Basically it will just loop
->   * through get_block until we hit the number of extents we want to map, or we
+Randomization may prevent achieving the rate, or it may slow
+it down. What's the value add of that?
 
-That's good.  Thank you.
+> Without that we'd have no immediate usecase and no way to ensure that this
+> code works as intended.
+>
+Why?
+With perf you also have fixed sampling period (-c option), you simply need to
+express the fact you want it randomized.
 
----
-~Randy
+> Thanks,
+>
+>        Ingo
+>
+
+
+
+-- 
+Stephane Eranian  | EMEA Software Engineering
+Google France | 38 avenue de l'Opéra | 75002 Paris
+Tel : +33 (0) 1 42 68 53 00
+This email may be confidential or privileged. If you received this
+communication by mistake, please
+don't forward it to anyone else, please erase all copies and
+attachments, and please let me know that
+it went to the wrong person. Thanks
