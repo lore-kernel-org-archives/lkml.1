@@ -1,123 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751275Ab0CDOJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:09:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48064 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745Ab0CDOJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:09:34 -0500
-Date: Thu, 4 Mar 2010 15:08:22 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Lennart Poettering <lennart@poettering.net>
-Cc: linux-kernel@vger.kernel.org, Americo Wang <xiyou.wangcong@gmail.com>,
-       James Morris <jmorris@namei.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Kyle McMartin <kyle@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
-	for child processes
-Message-ID: <20100304140822.GA458@redhat.com>
-References: <20100202120457.GA19605@omega>
+	id S1752180Ab0CDORZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:17:25 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:62777 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721Ab0CDORX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 09:17:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TnhnhirAWvgzFSTJLQTh+apVqRo1XHYEvY0Vr0Li/+f8B584fPKWlu/trqFYYRANuy
+         IC3aTC8NozZ9tGrwQzBF7hk8hLoP1aTVnZZloATr9efhNCXJyT2nBi9ImCKe3IJUOB7H
+         EgEfKs1EiHx/bx26PgeYZpo7zem+TGRGtW098=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202120457.GA19605@omega>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+Date: Thu, 4 Mar 2010 09:17:19 -0500
+Message-ID: <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: foo saa <foosaa@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/02, Lennart Poettering wrote:
+On Thu, Mar 4, 2010 at 1:42 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> (lots of cc's added)
 >
-> This patch adds a simple flag for each process that marks it as an
-> "anchor" process for all its children and grandchildren. If a child of
-> such an anchor dies all its children will not be reparented to init, but
-> instead to this anchor, escaping this anchor process is not possible. A
-> task with this flag set hence acts is little "sub-init".
-
-Lennart, this patch adds a noticeable linux-only feature. I see
-your point, but imho your idea needs the "strong" acks. I cc'ed
-some heavyweights, if someone dislikes your idea he can nack it
-right now.
-
-
-Security. This is beyond my understanding, hopefully the cc'ed
-experts can help.
-
-Should we clear ->child_anchor flags when the "sub-init" execs? Or,
-at least, when the task changes its credentials? Probably not, but
-dunno.
-
-The more problematic case is when the descendant of the "sub-init"
-execs the setuid application. Should we allow the reparenting to
-!/sbin/init task in this case?
-
-Should we clear ->pdeath_signal after reparenting to sub-init ?
-
-Do we need the new security_operations->task_reparent() method ?
-Or, perhaps we can reuse ->task_wait() if we add the "parent"
-argument?
-
-Something else we should think about?
-
-
-As for the patch itself,
-
->  static struct task_struct *find_new_reaper(struct task_struct *father)
->  {
->  	struct pid_namespace *pid_ns = task_active_pid_ns(father);
-> -	struct task_struct *thread;
-> +	struct task_struct *thread, *anchor;
+> On Wed, 3 Mar 2010 23:52:20 -0500 foo saa <foosaa@gmail.com> wrote:
 >
->  	thread = father;
->  	while_each_thread(father, thread) {
-> @@ -715,6 +715,11 @@ static struct task_struct *find_new_reaper(struct task_struct *father)
->  		return thread;
->  	}
+>> hi everyone,
+>>
+>> I am in the process of writing a disk erasure application in C. The
+>> program does zerofill the drive (Good or Bad) before someone destroys
+>> it. During the erasure process, I need to record the number of bad
+>> sectors during the zerofill operation.
+>>
+>> The method used to write to the hdd involves opening the appropriate
+>> /dev block device using open() call with O_WRONLY flag, start issuing
+>> write() calls to fill the sectors. A 512 byte buffer filled with
+>> zero's is used. All calls are of 64bit enabled. (I am using
+>> _LARGEFILE64_SOURCE define).
+>>
+>> The problem is (mostly with the bad hdd's), when the write call
+>> encounters a bad sector, it takes a bit longer than usual and writes
+>> the sector without any errors. (dmesg shows a lot of error messages
+>> embedded in the LIBATA error handling code!). The call never fails for
+>> any reason.
+>>
+>> I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
+>> have tried upto 2.6.30.10 and multiple distros with similar behavior.
+>>
+>> Here is a summary of things I have attempted.
+>>
+>> I know about the bad sector and it's location on the hdd, since it has
+>> been verified by using Windows based hex editor utilities, DOS based
+>> erasure applications, MHDD and many other HDD utilities.
+>>
+>> I have tried using O_DIRECT with aligned buffers, but still could not
+>> identify the bad sectors during the writing process.
+>>
+>> I have tried using fadvise, posix_fadvise functions to get of the
+>> caching, but still failed.
+>>
+>> I have tried using SG_IO and SAT translation (direct ATA commands with
+>> device addressing) and it fails too. Raw devices is out of question
+>> now.
+>>
+>> The libata is not letting / informing the user mode program (executing
+>> under root) about the media / write errors / bad blocks and failures,
+>> though it notifies the kernel and logs to syslog. It also tries to
+>> reallocate, softreset, hardreset the block device which is evident
+>> from the dmesg logs.
+>>
+>> What has to be done for my program to identify / receive the bad block
+>> / sector information during the read / write process?
+>>
+>> How can I receive the bad sector / physical and media write errors in
+>> my program? This is my only requirement and question.
+>>
+>> I am currently out of options unless anyone from here can show some
+>> new direction!
+>>
+>> My only option is to recompile the kernel with libata customization
+>> and changes according to my requirement. (Can I instruct to libata to
+>> skip the error handling process and pass certain errors to my
+>> program?).
+>>
+>> Is this a good approach and recommended one? If not what should be
+>> done to achieve it? If yes, can somebody throw some light on it?
+>>
+>> Please let me know if you have any queries in my above explanation.
+>>
 >
-> +	/* find the first ancestor which is marked child_anchor */
-> +	for (anchor = father->parent; anchor != &init_task; anchor = anchor->parent)
-> +		if (anchor->child_anchor)
-> +			return anchor;
-> +
->  	if (unlikely(pid_ns->child_reaper == father)) {
->  		write_unlock_irq(&tasklist_lock);
->  		if (unlikely(pid_ns == &init_pid_ns))
+> OK, this is bad.
+>
+> Did you try running fsync() after a write(), check the return value?
+>
+> I doubt if this is a VFS bug.  As O_DIRECT writes are also failing to
+> report errors, I'd suspect that the driver or block layers really are
+> failing to propagate the error back.
+>
+> Do the ata guys know of a way of deliberately injecting errors to test
+> these codepaths?  If we don't have that, something using the
+> fault-injection code would be nice.  As low-level as possible,
+> preferably at interrupt time.
 
-This is not exactly right:
+I think / suspect your major problem is you say above that you use a
+512-byte buffer to wipe with.  The kernel is using 4K pages.  So when
+you write to a 4K section of the drive for the first time, the kernel
+implements read-modify-write logic.
 
-	- We can race with the exiting anchor. IOW, we must not reparent
-	  to anchor if it has already passed exit_notify(). You can check
-	  PF_EXITING flag like while_each_thread() above does.
+Your i/o failures are almost certainly on the read cycle of the above,
+not the write cycle.  You need to move to 4K buffers and you need to
+ensure your 4K writes are aligned with how the kernel is working with
+the disk.  ie. You need your 4K buffer to perfectly align with the
+kernels 4K block handling so you never have a read-modify-write cycle.
 
-	- "anchor != &init_task" is not correct, the task must not escape
-	  its container. We should stop checking the ->parent list when we
-	  hit ->child_reaper, not init_task
+Effectively you need your code to do something very similar to:
 
-	- if a sub-namespace init dies, we shouldn't skip zap_pid_ns_processes()
-	  logic, move the "for" loop below. This also closes another possible
-	  race, the anchor can be already dead when we take tasklist again.
+dd if=/dev/zero of=/dev/sda bs=4K conv=sync,noerror
 
-> @@ -1578,6 +1578,13 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
->  			else
->  				error = PR_MCE_KILL_DEFAULT;
->  			break;
-> +		case PR_SET_ANCHOR:
-> +			me->child_anchor = !!arg2;
-> +			error = 0;
-> +			break;
+== more background
 
-It is a bit strange that PR_SET_ANCHOR acts per-thread, not per process.
+1) In general disks do not have media errors on write.  They perform a
+blind write that is assumed to work.  Errors do occur on read.  When
+that happens the sector is tagged for relocation and on the next write
+to that sector an alternate sector from the spares area is used.
 
-Suppose that a task A does prtcl(PR_SET_ANCHOR) and marks itself as a local
-child reaper. Then its sub-thread B forks() the process C which also forks
-the child X. When C dies, X will be re-parented to init. Is this what we
-really want?
+If a drive has run out of spare sectors and a write is performed to a
+sector tagged for relocation you will get a write error.  But it
+should be a fast failure, there is nothing to retry.
 
-To me, it looks more natural if PR_SET_ANCHOR marks the whole process as
-a local reaper, not only the thread which called PR_SET_ANCHOR.
+2) For testing read i/o error logic, hdparm has the --make-bad-sector
+command that will set the above mentioned flag.  It does it by forcing
+the crc on the media to be bad.  All reads will therefore fail.
 
-Oleg.
+There is a corresponding clear bad sector that restores things to normal.
 
+3) Modern drives to have a way to adjust the read timeout time.  I
+don't recall the specifics right now, but since you should only be
+writing, it wont help you anyway.
+
+Good Luck
+Greg
