@@ -1,97 +1,205 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449Ab0CDSgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:36:54 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:56002 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751797Ab0CDSgw (ORCPT
+	id S1755765Ab0CDShA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:37:00 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:62399 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755517Ab0CDSg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:36:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Ut3oerIWDJM2+AHaAOG9PMk0gLeWaCTW39xtdRwLtnXLCP+Mc/oiT4gR6n4puP2/eeekmGbfxLZI7Jwq+wEpyZR3xY1+fPQ+I4vwfhWlsNoNsPftgqxeg537C8x6HFHG;
-Date: Thu, 4 Mar 2010 10:36:55 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-Message-ID: <20100304103655.0b14343f@jbarnes-piketon>
-In-Reply-To: <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	<alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Thu, 4 Mar 2010 13:36:57 -0500
+Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20100304164416.GD13417@n2100.arm.linux.org.uk>
+References: <20100302172947.27766.61539.stgit@e102109-lin.cambridge.arm.com>
+	 <20100304164416.GD13417@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Thu, 04 Mar 2010 18:36:42 +0000
+Message-ID: <1267727802.6526.545.camel@e102109-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-OriginalArrivalTime: 04 Mar 2010 18:36:43.0614 (UTC) FILETIME=[A34E9FE0:01CABBC9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 10:18:03 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 2010-03-04 at 16:44 +0000, Russell King - ARM Linux wrote:
+> On Tue, Mar 02, 2010 at 05:34:29PM +0000, Catalin Marinas wrote:
+> > There are places in Linux where writes to newly allocated page cache
+> > pages happen without a subsequent call to flush_dcache_page() (several
+> > PIO drivers including USB HCD). This patch changes the meaning of
+> > PG_arch_1 to be PG_dcache_clean and always flush the D-cache for a newly
+> > mapped page in update_mmu_cache().
+> >
+> > The patch also sets the PG_arch_1 bit in the DMA cache maintenance
+> > function to avoid additional cache flushing in update_mmu_cache().
+> ...
+> >  arch/arm/include/asm/cacheflush.h |    6 +++---
+> >  arch/arm/mm/copypage-v6.c         |    2 +-
+> >  arch/arm/mm/dma-mapping.c         |    5 +++++
+> >  arch/arm/mm/fault-armv.c          |    2 +-
+> >  arch/arm/mm/flush.c               |    2 +-
+> >  5 files changed, 11 insertions(+), 6 deletions(-)
+> 
+> Could you please send for RFC a fuller patch which covers all places that
+> PG_dcache_dirty is used and/or mentioned?
 
-> 
-> 
-> Hmm. What the hell am I supposed to do about
-> 
-> 	(II) NOUVEAU(0): [drm] nouveau interface version: 0.0.16
-> 	(EE) NOUVEAU(0): [drm] wrong version, expecting 0.0.15
-> 	(EE) NOUVEAU(0): 879:
-> 
-> now?
-> 
-> What happened to the whole backwards compatibility thing? I wasn't even 
-> warned that this breaks existing user space. That makes it impossible to 
-> _test_ new kernels. Upgrading X and the kernel in lock-step is not a valid 
-> model, lots of people are just using some random distribution (F12 in my 
-> case), and you just broke it.
-> 
-> I see the commit that does this was very aware of it:
-> 
-> 	commit a1606a9596e54da90ad6209071b357a4c1b0fa82
-> 	Author: Ben Skeggs <bskeggs@redhat.com>
-> 	Date:   Fri Feb 12 10:27:35 2010 +1000
-> 
-> 	    drm/nouveau: new gem pushbuf interface, bump to 0.0.16
-> 
-> 	    This commit breaks the userspace interface, and requires a new libdrm for
-> 	    nouveau to operate again.
-> 
-> 	    The multiple GEM_PUSHBUF ioctls that were present in 0.0.15 for
-> 	    compatibility purposes are now gone, and replaced with the new ioctl which
-> 	    allows for multiple push buffers to be submitted (necessary for hw index
-> 	    buffers in the nv50 3d driver) and relocations to be applied on any buffer.
-> 
-> 	    A number of other ioctls (CARD_INIT, GEM_PIN, GEM_UNPIN) that were needed
-> 	    for userspace modesetting have also been removed.
-> 
-> 	    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
-> 	    Signed-off-by: Francisco Jerez <currojerez@riseup.net>
-> 
-> but why the hell wasn't I made aware of it before-hand? Quite frankly, I 
-> probably wouldn't have pulled it.
-> 
-> We can't just go around breaking peoples setups. This driver is, like it 
-> or not, used by Fedora-12 (and probably other distros). It may say 
-> "staging", but that doesn't change the fact that it's in production use by 
-> huge distributions. Flag days aren't acceptable.
+ARM: Assume new page cache pages have dirty D-cache
 
-Whoa, so breaking ABI in staging drivers isn't ok?  Lots of other
-staging drivers are shipped by distros with compatible userspaces, but I
-thought the whole point of staging was to fix up ABIs before they
-became mainstream and had backwards compat guarantees, meaning that
-breakage was to be expected?
+From: Catalin Marinas <catalin.marinas@arm.com>
 
-Yes, it sucks, but what else should the nouveau developers have done?
-They didn't want to push nouveau into mainline because they weren't
-happy with the ABI yet, but it ended up getting pushed anyway as a
-staging driver at your request, and now they're stuck?  Sorry this
-whole thing is a bit of a wtf...
+There are places in Linux where writes to newly allocated page cache
+pages happen without a subsequent call to flush_dcache_page() (several
+PIO drivers including USB HCD). This patch changes the meaning of
+PG_arch_1 to be PG_dcache_clean and always flush the D-cache for a newly
+mapped page in update_mmu_cache().
 
-Yes Dave probably should have mentioned it in his pull request, but
-that doesn't seem to be a good reason not to pull imo...
+The patch also sets the PG_arch_1 bit in the DMA cache maintenance
+function to avoid additional cache flushing in update_mmu_cache().
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/arm/include/asm/cacheflush.h |    6 +++---
+ arch/arm/include/asm/tlbflush.h   |    2 +-
+ arch/arm/mm/copypage-v4mc.c       |    2 +-
+ arch/arm/mm/copypage-v6.c         |    2 +-
+ arch/arm/mm/copypage-xscale.c     |    2 +-
+ arch/arm/mm/dma-mapping.c         |    5 +++++
+ arch/arm/mm/fault-armv.c          |    4 ++--
+ arch/arm/mm/flush.c               |    2 +-
+ 8 files changed, 15 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/include/asm/cacheflush.h b/arch/arm/include/asm/cacheflush.h
+index ed7d289..96d666f 100644
+--- a/arch/arm/include/asm/cacheflush.h
++++ b/arch/arm/include/asm/cacheflush.h
+@@ -137,10 +137,10 @@
+ #endif
+ 
+ /*
+- * This flag is used to indicate that the page pointed to by a pte
+- * is dirty and requires cleaning before returning it to the user.
++ * This flag is used to indicate that the page pointed to by a pte is clean
++ * and does not require cleaning before returning it to the user.
+  */
+-#define PG_dcache_dirty PG_arch_1
++#define PG_dcache_clean PG_arch_1
+ 
+ /*
+  *	MM Cache Management
+diff --git a/arch/arm/include/asm/tlbflush.h b/arch/arm/include/asm/tlbflush.h
+index c2f1605..ccc3a2a 100644
+--- a/arch/arm/include/asm/tlbflush.h
++++ b/arch/arm/include/asm/tlbflush.h
+@@ -525,7 +525,7 @@ extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
+ #endif
+ 
+ /*
+- * if PG_dcache_dirty is set for the page, we need to ensure that any
++ * If PG_dcache_clean is not set for the page, we need to ensure that any
+  * cache entries for the kernels virtual memory range are written
+  * back to the page.
+  */
+diff --git a/arch/arm/mm/copypage-v4mc.c b/arch/arm/mm/copypage-v4mc.c
+index 7370a71..34c9fe5 100644
+--- a/arch/arm/mm/copypage-v4mc.c
++++ b/arch/arm/mm/copypage-v4mc.c
+@@ -73,7 +73,7 @@ void v4_mc_copy_user_highpage(struct page *to, struct page *from,
+ {
+ 	void *kto = kmap_atomic(to, KM_USER1);
+ 
+-	if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
++	if (!test_and_set_bit(PG_dcache_clean, &from->flags))
+ 		__flush_dcache_page(page_mapping(from), from);
+ 
+ 	spin_lock(&minicache_lock);
+diff --git a/arch/arm/mm/copypage-v6.c b/arch/arm/mm/copypage-v6.c
+index 0fa1319..7e0a050 100644
+--- a/arch/arm/mm/copypage-v6.c
++++ b/arch/arm/mm/copypage-v6.c
+@@ -86,7 +86,7 @@ static void v6_copy_user_highpage_aliasing(struct page *to,
+ 	unsigned int offset = CACHE_COLOUR(vaddr);
+ 	unsigned long kfrom, kto;
+ 
+-	if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
++	if (!test_and_set_bit(PG_dcache_clean, &from->flags))
+ 		__flush_dcache_page(page_mapping(from), from);
+ 
+ 	/* FIXME: not highmem safe */
+diff --git a/arch/arm/mm/copypage-xscale.c b/arch/arm/mm/copypage-xscale.c
+index 76824d3..4c94ea3 100644
+--- a/arch/arm/mm/copypage-xscale.c
++++ b/arch/arm/mm/copypage-xscale.c
+@@ -95,7 +95,7 @@ void xscale_mc_copy_user_highpage(struct page *to, struct page *from,
+ {
+ 	void *kto = kmap_atomic(to, KM_USER1);
+ 
+-	if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
++	if (!test_and_set_bit(PG_dcache_clean, &from->flags))
+ 		__flush_dcache_page(page_mapping(from), from);
+ 
+ 	spin_lock(&minicache_lock);
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index dcf1ecc..105a3a9 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -478,6 +478,11 @@ static void dma_cache_maint_contiguous(struct page *page, unsigned long offset,
+ 
+ 	paddr = page_to_phys(page) + offset;
+ 	outer_op(paddr, paddr + size);
++
++	/*
++	 * Mark the D-cache clean for this page to avoid extra flushing.
++	 */
++	set_bit(PG_dcache_clean, &page->flags);
+ }
+ 
+ void dma_cache_maint_page(struct page *page, unsigned long offset,
+diff --git a/arch/arm/mm/fault-armv.c b/arch/arm/mm/fault-armv.c
+index 8b755ff..baa5742 100644
+--- a/arch/arm/mm/fault-armv.c
++++ b/arch/arm/mm/fault-armv.c
+@@ -136,7 +136,7 @@ make_coherent(struct address_space *mapping, struct vm_area_struct *vma, unsigne
+  * a page table, or changing an existing PTE.  Basically, there are two
+  * things that we need to take care of:
+  *
+- *  1. If PG_dcache_dirty is set for the page, we need to ensure
++ *  1. If PG_dcache_clean is not set for the page, we need to ensure
+  *     that any cache entries for the kernels virtual memory
+  *     range are written back to the page.
+  *  2. If we have multiple shared mappings of the same space in
+@@ -162,7 +162,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long addr, pte_t pte)
+ 		return;
+ 
+ 	mapping = page_mapping(page);
+-	if (test_and_clear_bit(PG_dcache_dirty, &page->flags))
++	if (!test_and_set_bit(PG_dcache_clean, &page->flags))
+ 		__flush_dcache_page(mapping, page);
+ 	if (mapping) {
+ 		if (cache_is_vivt())
+diff --git a/arch/arm/mm/flush.c b/arch/arm/mm/flush.c
+index 834db87..b829d30 100644
+--- a/arch/arm/mm/flush.c
++++ b/arch/arm/mm/flush.c
+@@ -209,7 +209,7 @@ void flush_dcache_page(struct page *page)
+ 
+ 	if (!cache_ops_need_broadcast() &&
+ 	    !PageHighMem(page) && mapping && !mapping_mapped(mapping))
+-		set_bit(PG_dcache_dirty, &page->flags);
++		clear_bit(PG_dcache_clean, &page->flags);
+ 	else {
+ 		__flush_dcache_page(mapping, page);
+ 		if (mapping && cache_is_vivt())
+
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Catalin
+
