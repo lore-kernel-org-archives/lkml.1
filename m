@@ -1,95 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841Ab0CDQdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:33:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46393 "EHLO hera.kernel.org"
+	id S1755715Ab0CDQeY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:34:24 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45496 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755460Ab0CDQdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:33:38 -0500
-Date: Thu, 4 Mar 2010 16:33:07 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1267667418-32233-3-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <1267667418-32233-3-git-send-email-paulmck@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] rcu, ftrace: Fix RCU lockdep splat in ftrace_perf_buf_prepare()
-Message-ID: <tip-8d53dd546f36073e0d29b0cfc24c665db301e3e7@git.kernel.org>
-Git-Commit-ID: 8d53dd546f36073e0d29b0cfc24c665db301e3e7
-X-Mailer: tip-git-log-daemon
+	id S1755432Ab0CDQeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:34:22 -0500
+Date: Fri, 5 Mar 2010 03:34:18 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Miao Xie <miaox@cn.fujitsu.com>, David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>, tglx <tglx@linutronix.de>
+Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
+ and mems_allowed
+Message-ID: <20100304163417.GS8653@laptop>
+References: <4B8E3F77.6070201@cn.fujitsu.com>
+ <20100304033017.GN8653@laptop>
+ <1267714704.25158.199.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:33:07 +0000 (UTC)
+In-Reply-To: <1267714704.25158.199.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8d53dd546f36073e0d29b0cfc24c665db301e3e7
-Gitweb:     http://git.kernel.org/tip/8d53dd546f36073e0d29b0cfc24c665db301e3e7
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Wed, 3 Mar 2010 17:50:18 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Mar 2010 12:07:35 +0100
+On Thu, Mar 04, 2010 at 03:58:24PM +0100, Peter Zijlstra wrote:
+> On Thu, 2010-03-04 at 14:30 +1100, Nick Piggin wrote:
+> > 
+> > Thanks for working on this. However, rwlocks are pretty nasty to use
+> > when you have short critical sections and hot read-side (they're twice
+> > as heavy as even spinlocks in that case). 
+> 
+> Should we add a checkpatch.pl warning for them? 
 
-rcu, ftrace: Fix RCU lockdep splat in ftrace_perf_buf_prepare()
+Yes I think it could be useful.
 
-Change the pair of rcu_dereference() calls in
-ftrace_perf_buf_prepare() to rcu_dereference_sched().
+Most people agree rwlock is *almost* always the wrong thing to do. Or at
+least, they can easily be used wrongly because they seem like a great
+idea for read-mostly data.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1267667418-32233-3-git-send-email-paulmck@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/trace/ftrace.h             |    4 ++--
- kernel/trace/trace_event_profile.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> There really rarely is a good case for using rwlock_t, for as you say
+> they're a pain and often more expensive than a spinlock_t, and if
+> possible RCU has the best performance.
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 0804cd5..601ad77 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -699,9 +699,9 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
-  *	__cpu = smp_processor_id();
-  *
-  *	if (in_nmi())
-- *		trace_buf = rcu_dereference(perf_trace_buf_nmi);
-+ *		trace_buf = rcu_dereference_sched(perf_trace_buf_nmi);
-  *	else
-- *		trace_buf = rcu_dereference(perf_trace_buf);
-+ *		trace_buf = rcu_dereference_sched(perf_trace_buf);
-  *
-  *	if (!trace_buf)
-  *		goto end;
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index f0d6930..c1cc3ab 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -138,9 +138,9 @@ __kprobes void *ftrace_perf_buf_prepare(int size, unsigned short type,
- 	cpu = smp_processor_id();
- 
- 	if (in_nmi())
--		trace_buf = rcu_dereference(perf_trace_buf_nmi);
-+		trace_buf = rcu_dereference_sched(perf_trace_buf_nmi);
- 	else
--		trace_buf = rcu_dereference(perf_trace_buf);
-+		trace_buf = rcu_dereference_sched(perf_trace_buf);
- 
- 	if (!trace_buf)
- 		goto err;
+Yep. Not to mention they starve writers (and don't FIFO like spinlocks).
+
+Between normal spinlocks, RCU, percpu, and seqlocks, there's not much
+room for rwlocks. Even tasklist lock should be RCUable if the effort is
+put into it.
+
