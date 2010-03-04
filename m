@@ -1,72 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116Ab0CDBYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 20:24:17 -0500
-Received: from mga01.intel.com ([192.55.52.88]:19907 "EHLO mga01.intel.com"
+	id S1755220Ab0CDB3E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 20:29:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59847 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754770Ab0CDBYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 20:24:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,577,1262592000"; 
-   d="scan'208";a="545875273"
-From: Shaohua Li <shaohua.li@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: rjw@sisk.pl, mingo@elte.hu, hpa@zytor.com, colin.king@canonical.com,
-       Shaohua Li <shaohua.li@intel.com>
-Subject: [PATCH] i386: do a global tlb flush in S4 resume
-Date: Thu,  4 Mar 2010 09:23:19 +0800
-Message-Id: <1267665799-670-1-git-send-email-shaohua.li@intel.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S1754770Ab0CDB24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 20:28:56 -0500
+Message-ID: <4B8F0CD0.1040507@kernel.org>
+Date: Thu, 04 Mar 2010 10:28:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Sachin Sant <sachinp@in.ibm.com>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: -next March 3: Boot failure on x86 (Oops)
+References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com>
+In-Reply-To: <4B8E83D4.6090507@in.ibm.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 01:28:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Colin reported a strange oops in S4 resume code path (see below). The test
-system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-The oops always happen a virtual address 0xc03ff000, which is mapped to the
-last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+On 03/04/2010 12:44 AM, Sachin Sant wrote:
+> Today's next failed to boot on x86 box with following trace
+> 
+> Unpacking initramfs...
+> Freeing initrd memory: 10584k freed
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<c01a6b12>] pcpu_alloc+0x1cb/0x75e
+> *pdpt = 00000000005dd001 *pde = 0000000000000000
+> Oops: 0000 [#1] SMP
+> last sysfs file:
+> Modules linked in:
+> 
+> Pid: 1, comm: swapper Not tainted 2.6.33-autotest-next-20100303 #1
+> /eserver xSeries 235 -[86717AX]-
+> EIP: 0060:[<c01a6b12>] EFLAGS: 00010002 CPU: 1
+> EIP is at pcpu_alloc+0x1cb/0x75e
+> EAX: 00000000 EBX: c05c4100 ECX: cccccccc EDX: 00000000
+> ESI: 000000b0 EDI: 00000005 EBP: f5c69fa8 ESP: f5c69f2c
+> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 1, ti=f5c68000 task=f5c66ce0 task.ti=f5c68000)
+> Stack:
+> 00000000 00000005 61746164 0a383d29 5f656400 61746164 00000004 000000b0
+> <0> 000a3036 00000286 61637061 29656863 0a36313d c0579100 c058da30 f5c69f94
+> <0> c01310be c05c41cc 00000028 c058da30 f5c69fa4 c0116a73 c0492091 c0492089
+> Call Trace:
+> [<c058da30>] ? crash_save_vmcoreinfo_init+0x0/0x31a
+> [<c01310be>] ? log_buf_kexec_setup+0x3f/0x67
+> [<c058da30>] ? crash_save_vmcoreinfo_init+0x0/0x31a
+> [<c0116a73>] ? arch_crash_save_vmcoreinfo+0x37/0x3c
+> [<c058d9ff>] ? crash_notes_memory_init+0x0/0x31
+> [<c01a70be>] ? __alloc_percpu+0xa/0xc
+> [<c058da11>] ? crash_notes_memory_init+0x12/0x31
+> [<c0101139>] ? do_one_initcall+0x4c/0x131
+> [<c057b352>] ? kernel_init+0x127/0x178
+> [<c057b22b>] ? kernel_init+0x0/0x178
+> [<c0102df6>] ? kernel_thread_helper+0x6/0x10
+> Code: 45 a8 e9 65 ff ff ff 8b 4d 9c 8b 55 a0 8b 45 84 e8 31 fa ff ff 85
+> c0 89 45 a4 0f 89 fd 00 00 00 8b 45 84 8b 00 89 45 84 8b 55 84 <8b> 02
+> 0f 18 00 90 8b 45 cc 03 05 a0 9b 57 c0 39 c2 0f 85 67 ff
+> EIP: [<c01a6b12>] pcpu_alloc+0x1cb/0x75e SS:ESP 0068:f5c69f2c
+> CR2: 0000000000000000
+> ---[ end trace a7919e7f17c0a725 ]---
+> 
+> x86_64 boots fine. Have attached dmesg log.
 
-EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-EIP is at copy_loop+0xe/0x15
-EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
- DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-...
-...
-CR2: 00000000c03ff000
+Can you please feed the address to gdb and get the line number?  Also,
+is it reproducible on mainline?
 
-Tested-by: Colin Ian King <colin.king@canonical.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+Thanks.
 
-diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-index b641388..9e4ef64 100644
---- a/arch/x86/power/hibernate_asm_32.S
-+++ b/arch/x86/power/hibernate_asm_32.S
-@@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
- 	ret
- 
- ENTRY(restore_image)
-+	movl	mmu_cr4_features, %ecx
- 	movl	resume_pg_dir, %eax
- 	subl	$__PAGE_OFFSET, %eax
- 	movl	%eax, %cr3
- 
-+	jecxz	1f	# cr4 Pentium and higher, skip if zero
-+	movl	%ecx, %edx
-+	andl	$~(X86_CR4_PGE), %edx
-+	movl	%edx, %cr4;  # turn off PGE
-+1:
-+	movl	%cr3, %eax;  # flush TLB
-+	movl	%eax, %cr3
-+	jecxz	1f	# cr4 Pentium and higher, skip if zero
-+	movl	%ecx, %cr4;  # turn PGE back on
-+1:
- 	movl	restore_pblist, %edx
- 	.p2align 4,,7
- 
 -- 
-1.6.3.3
-
+tejun
