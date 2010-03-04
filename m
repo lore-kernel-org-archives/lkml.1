@@ -1,42 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751593Ab0CDFba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 00:31:30 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:48436 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750995Ab0CDFb2 (ORCPT
+	id S1751891Ab0CDFgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 00:36:53 -0500
+Received: from mga10.intel.com ([192.55.52.92]:49074 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751699Ab0CDFgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 00:31:28 -0500
-Date: Thu, 4 Mar 2010 13:31:04 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steffen Klassert <steffen.klassert@secunet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: tip: origin tree boot crash
-Message-ID: <20100304053104.GA21530@gondor.apana.org.au>
-References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20091204135530.GA29371@gondor.apana.org.au> <20100226004914.GA20812@gondor.apana.org.au> <20100301075024.GA4753@elte.hu> <20100301145519.GB20729@secunet.com> <20100303144240.GA14373@gondor.apana.org.au> <20100304030052.GD23633@elte.hu>
+	Thu, 4 Mar 2010 00:36:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,579,1262592000"; 
+   d="scan'208";a="777818139"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Xen-devel] [PATCH 5/7] xen: Make event channel work with PV extension of HVM
+Date: Thu, 4 Mar 2010 13:37:26 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; x86_64; ; )
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>, linux-kernel@vger.kernel.org,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-6-git-send-email-sheng@linux.intel.com> <4B8C6C0D.3070005@goop.org>
+In-Reply-To: <4B8C6C0D.3070005@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100304030052.GD23633@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003041337.26229.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 04:00:52AM +0100, Ingo Molnar wrote:
+On Tuesday 02 March 2010 09:38:21 Jeremy Fitzhardinge wrote:
+> On 03/01/2010 01:38 AM, Sheng Yang wrote:
+> > +
+> > +		x86_platform.calibrate_tsc = xen_tsc_khz;
+> > +		x86_platform.get_wallclock = xen_get_wallclock;
+> > +		x86_platform.set_wallclock = xen_set_wallclock;
+> > +
+> > +		pv_apic_ops = xen_apic_ops;
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +		/*
+> > +		 * set up the basic apic ops.
+> > +		 */
+> > +		set_xen_basic_apic_ops();
+> > +		apic->write = xen_hvm_pv_evtchn_apic_write;
 > 
-> I'm still busy with the merge window - please dont wait for me and consider it 
-> fixed, i'll re-report if there's still any problems.
+> I'd just change the xen_apic_write to remove the WARN_ON, since you
+> don't seem to care about it either.
 
-OK, I'll apply the patch.
+So which code base I should make these patches against? We expect the patchset 
+can be accepted in the Linux upstream soon after you pick it up.
+> 
+> >
+> > -	exit_idle();
+> > -	irq_enter();
+> > +	/*
+> > +	 * If is PV featured HVM, these have already been done
+> > +	 */
+> > +	if (likely(!xen_hvm_pv_evtchn_enabled())) {
+> > +		exit_idle();
+> > +		irq_enter();
+> > +	}
+> 
+> In that case, rather than putting this conditional in the hot path, make
+> an inner __xen_evtchn_do_upcall which is wrapped by the PV and HVM
+> variants which do the appropriate things.  (And drop the pt_regs arg, I
+> think.)
 
-Thanks,
+Seems we still need pt_regs to for handle_irq()?
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+regards
+Yang, Sheng
