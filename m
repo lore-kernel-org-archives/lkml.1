@@ -1,96 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605Ab0CDE6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:58:17 -0500
-Received: from sh.osrg.net ([192.16.179.4]:33493 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954Ab0CDE6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:58:14 -0500
-Date: Thu, 4 Mar 2010 13:58:06 +0900
-To: hancockrwd@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-usb@vger.kernel.org, davem@davemloft.net, bzolnier@gmail.com
-Subject: Re: [PATCH RFC] fix problems with NETIF_F_HIGHDMA in networking
- drivers v2
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B8F213B.40603@gmail.com>
-References: <4B8F213B.40603@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100304135738C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Mar 2010 13:58:07 +0900 (JST)
+	id S1750918Ab0CDFKU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 00:10:20 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:34315 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806Ab0CDFKR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 00:10:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Cr5osNwJPT5vS+MGww7oFeoD4u6OY+fsECCjnpok9gORJ1mMUHyHvCKqaq6xntdcxS
+         Wu3370OK6jzA0iiN96uRIetQO0kNRZsCN5HoQjeO52esvE0XwQnvWmflNgAPixODwjSR
+         yZf7TMdVPulDcUCbq4MODOD4zdKiQQ/3GQE28=
+MIME-Version: 1.0
+In-Reply-To: <1267664353.10407.1960.camel@localhost.localdomain>
+References: <43e72e891003031643u353c72dcj23bf429363a16ec8@mail.gmail.com> 
+	<1267664353.10407.1960.camel@localhost.localdomain>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 3 Mar 2010 21:09:55 -0800
+Message-ID: <43e72e891003032109v59f1ff52odb60de6111cfec53@mail.gmail.com>
+Subject: Re: Linux Bluetooth Coexistence documentation in general and for 
+	ath9k
+To: Bastien Nocera <hadess@hadess.net>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-bluetooth <linux-bluetooth@vger.kernel.org>,
+       linux-kernel@vger.kernel.org,
+       "Kevin Hayes\" <kevin@atheros.com>, \"Dan Tian\"" 
+	<Dan.Tian@atheros.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Mar 2010 20:55:55 -0600
-Robert Hancock <hancockrwd@gmail.com> wrote:
+On Wed, Mar 3, 2010 at 4:59 PM, Bastien Nocera <hadess@hadess.net> wrote:
+> On Wed, 2010-03-03 at 16:43 -0800, Luis R. Rodriguez wrote:
+>> Marcel, a question for you below.
+>>
+>> The question of Bluetooth coexistence pops up here, on IRC and on bug
+>> reports quite too often so I've stuffed what I could onto a page with
+>> a few references / code and about ath9k's schemes for BT coexistence,
+>> feel free to extend or correct:
+> <snip>
+>> I do wonder if this could be useful to network applets like network
+>> manager/connman.
+>
+> Not really. To me, it sounds like a "make it work" button. The kernel
+> bits of Bluetooth should already have an idea of when a device is
+> connected, so the kernel should be able to "do the right thing".
+>
+> Having options over what "the right thing" is is probably a good idea
+> whilst the kinks are worked out from the default behaviour, but this is
+> not something that should be advertised to users.
 
-> Many networking drivers have issues with the use of the NETIF_F_HIGHDMA flag.
-> This flag actually indicates whether or not the device/driver can handle
-> skbs located in high memory (as opposed to lowmem). If the flag isn't set and
-> the skb is located in highmem, it needs to be copied. 
-> There are two problems with this flag:
-> 
-> -Many drivers only set the flag when they detect they can use 64-bit DMA,
-> since otherwise they could receive DMA addresses that they can't handle
-> (which on platforms without IOMMU/SWIOTLB support is fatal). This means that if
-> 64-bit support isn't available, even buffers located below 4GB will get copied
-> unnecessarily.
-> 
-> -Some drivers set the flag even though they can't actually handle 64-bit DMA,
-> which would mean that on platforms without IOMMU/SWIOTLB they would get a DMA
-> mapping error if the memory they received happened to be located above 4GB.
-> 
-> In order to fix this problem, the existing NETIF_F_HIGHDMA flag is split into
-> two new flags:
-> 
-> NETIF_F_DMA_HIGH - indicates if the driver can do DMA to highmem at all
-> NETIF_F_DMA_64BIT - indicates the driver can do DMA to 64-bit memory
+I wasn't really thinking of buttons for BT coex, but instead just
+information exposed out and making it available. Reason for this is
+users tend to be blind about btcoex stuff and it would be nice if we
+had a way to inform the user of the btcoex mechanisms that actually
+are being used. Does that change your answer?
 
-Why can't you use dev->dma_mask here like the following?
-
-Then you can fix drivers that use the NETIF_F_HIGHDMA flag to indicate
-that they don't support 64bit DMA.
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index bcc490c..b15f94b 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -129,6 +129,7 @@
- #include <linux/jhash.h>
- #include <linux/random.h>
- #include <trace/events/napi.h>
-+#include <linux/pci.h>
- 
- #include "net-sysfs.h"
- 
-@@ -1787,14 +1788,21 @@ static inline int illegal_highdma(struct net_device *dev, struct sk_buff *skb)
- {
- #ifdef CONFIG_HIGHMEM
- 	int i;
-+	if (!(dev->features & NETIF_F_HIGHDMA)) {
-+		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
-+			if (PageHighMem(skb_shinfo(skb)->frags[i].page))
-+				return 1;
-+	}
- 
--	if (dev->features & NETIF_F_HIGHDMA)
--		return 0;
--
--	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
--		if (PageHighMem(skb_shinfo(skb)->frags[i].page))
--			return 1;
-+	if (PCI_DMA_BUS_IS_PHYS) {
-+		struct device *pdev = dev->dev.parent;
- 
-+		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
-+			dma_addr_t addr = page_to_phys(skb_shinfo(skb)->frags[i].page);
-+			if (!pdev->dma_mask || addr + PAGE_SIZE - 1 > *pdev->dma_mask)
-+				return 1;
-+		}
-+	}
- #endif
- 	return 0;
- }
+  Luis
