@@ -1,62 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015Ab0CDBSF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 20:18:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:46845 "EHLO www.tglx.de"
+	id S1755013Ab0CDBXM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 20:23:12 -0500
+Received: from sh.osrg.net ([192.16.179.4]:34902 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754890Ab0CDBR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 20:17:57 -0500
-Date: Thu, 4 Mar 2010 02:17:13 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, roland@redhat.com,
-       suresh.b.siddha@intel.com, hjl.tools@gmail.com,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next requirements
-In-Reply-To: <20100303164202.3e5b7435.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.1003040212110.2014@localhost.localdomain>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com> <201002271323.14402.rjw@sisk.pl> <20100227124710.GA21164@elte.hu> <201002272007.43042.rjw@sisk.pl> <20100228072357.GB14205@elte.hu> <20100303215314.GC2579@ucw.cz> <alpine.LFD.2.00.1003032312000.2014@localhost.localdomain>
- <20100303164202.3e5b7435.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754770Ab0CDBXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 20:23:06 -0500
+Date: Thu, 4 Mar 2010 10:22:54 +0900
+To: randy.dunlap@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: mmotm 2010-03-02-18-38 uploaded (dma unmapping)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B8EEEBA.70001@oracle.com>
+References: <4B8EB65F.9060800@oracle.com>
+	<20100304080822V.fujita.tomonori@lab.ntt.co.jp>
+	<4B8EEEBA.70001@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100304102217B.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Mar 2010 10:22:55 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Andrew Morton wrote:
+On Wed, 03 Mar 2010 15:20:26 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> On Thu, 4 Mar 2010 01:35:43 +0100 (CET) Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > As a side note: We created checkpatch.pl, to have a tool which helps
-> > us to alert developers about stuff which is deprecated and as a
-> > byproduct the coding style rules. I think it's a useful tool in
-> > general, just the outcome is an utter trainwreck:
+> >> drivers/net/chelsio/sge.c:164: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
+> >> drivers/net/chelsio/sge.c:170: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
+> >>
+> >> drivers/infiniband/hw/amso1100/c2_mq.h:74: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
+> >> drivers/infiniband/hw/amso1100/c2_provider.h:53: error: expected specifier-qualifier-list before 'DECLARE_DMA_U
+> >> NMAP_ADDR'
+> >>
+> >> drivers/net/cxgb3/sge.c:120: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
+> >> drivers/net/cxgb3/sge.c:210: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
 > > 
-> > We have hordes of whitespace, spelling and codingstyle cleanup
-> > maniacs, while the hard stuff of replacing deprecated interfaces like
-> > semaphore based mutexes / completions, cleaning up the BKL horror,
-> > etc. is left to a few already overworked people who care.
-> > 
-> > What's even worse is it that developers of new code and the
-> > maintainers who are merging it simply ignore its existance for
-> > whatever reasons. I can accept the whitespace argument, but I have no
-> > grasp why deprecation warnings are ignored at will.
+> > Sorry. I can't reproduce this here. Can you send .config?
 > 
-> um, write checkpatch rules to detect new additions of deprecated features.
 > 
-> I take patches.
+> Sure (attached), but there is a different config file for each driver case above.
+> 
+> chelsio == config-r8176
+> 
+> amso1100 == config-r8179
+> 
+> cxgb3 == config=r8186
+> 
+> All are ARCH=i386 builds.
 
-Guess what ? There are rules already which warn about init_MUTEX,
-init_MUTEX_locked for quite a while and that's why I'm ranting at both
-developers and maintainers submitting resp. merging code containing
-exactly that shit.
+Ah, somehow I put my silly typo... really sorry about that.
 
-But yeah we do not have one for lock/unlock_kernel, will send one.
+The following patch can be applied to mm after applying another
+dma_unmap fix:
 
-Thanks,
+http://marc.info/?l=linux-kernel&m=126759183815898&w=2
 
-	tglx
+
+Andrew, can you apply the following patch. This should be fold into
+dma-mappingh-add-the-dma_unmap-state-api.patch after
+dma-mappingh-add-the-dma_unmap-state-api-fix.patch.
+
+
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] fix DECLARE_DMA_UNMAP_ADD_ADDR typo with CONFIG_NEED_DMA_MAP_STATE disabled
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ include/linux/dma-mapping.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index e00c5c9..ca32ed7 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -248,7 +248,7 @@ struct dma_attrs;
+ #define dma_unmap_len(PTR, LEN_NAME)             ((PTR)->LEN_NAME)
+ #define dma_unmap_len_set(PTR, LEN_NAME, VAL)    (((PTR)->LEN_NAME) = (VAL))
+ #else
+-#define DEFINE_DMA_MAP_ADDR(ADDR_NAME)
++#define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
+ #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)
+ #define dma_unmap_addr(PTR, ADDR_NAME)           (0)
+ #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  do { } while (0)
+-- 
+1.6.5
+
+
+
