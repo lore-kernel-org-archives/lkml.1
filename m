@@ -1,61 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953Ab0CDI1e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 03:27:34 -0500
-Received: from mail-ew0-f220.google.com ([209.85.219.220]:64119 "EHLO
-	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900Ab0CDI1b (ORCPT
+	id S1753793Ab0CDI2A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 03:28:00 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54093
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752587Ab0CDI16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 03:27:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=TnbggHg4MJk6PWRmizSeJHYoNQujt9DLBrEYpZs9Tm8uZd1xF6l3+Uo9xZzHwcSOsO
-         smcuv8FLXLs0jZOJQ4soFGpR2/ohtBAqzss69375T6FkjzTcj72I4YUujlVIv0vPwCP1
-         8jAJQDPtp3EG7hpSmpqIDOMbhdjB+gUZyKRX4=
-MIME-Version: 1.0
-In-Reply-To: <1267689791.10101.4.camel@marge.simson.net>
-References: <40a4ed591003031245g79cca873t89e90545337a9067@mail.gmail.com>
-	 <1267673633.6416.7.camel@marge.simson.net>
-	 <40a4ed591003032322l4ad2dc00sd3de718b5a76089b@mail.gmail.com>
-	 <1267688823.7029.8.camel@marge.simson.net>
-	 <40a4ed591003032355t46e356f8qadfded7450934b51@mail.gmail.com>
-	 <1267689791.10101.4.camel@marge.simson.net>
-Date: Thu, 4 Mar 2010 09:27:29 +0100
-Message-ID: <40a4ed591003040027u560cdf52q2615868bbc4c7a00@mail.gmail.com>
-Subject: Re: evdev keyboard driver stopped working after upgrading from Kernel 
-	2.6.33-rc8 to 2.6.33 (official release)
-From: Zeno Davatz <zdavatz@gmail.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Mar 2010 03:27:58 -0500
+Date: Thu, 04 Mar 2010 00:28:17 -0800 (PST)
+Message-Id: <20100304.002817.98885540.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 9:03 AM, Mike Galbraith <efault@gmx.de> wrote:
-> On Thu, 2010-03-04 at 08:55 +0100, Zeno Davatz wrote:
->
->> Ok, I will try that. Can you give a short input of how I should start bisecting?
->
-> git bisect start
-> git bisect good v2.6.33-rc8
-> git bisect bad v2.6.33
->
-> build and test each iteration, should be quick/painless if it's rc8.
 
-So I do:
+1) Fix long standing bootup wedge wrt. NMIs, we need to disable NMIs
+   when we enter the firmware for two reasons.  One so we don't
+   deadlock on the PROM spinlock if we try to print things to the
+   firmware console from an NMI.  Two, because many of OpenFirmware's
+   routines do not like to be interrupted at all.  The latter can
+   cause garbage characters over serial consoles and crashes.
 
-git bisect start
-git bisect good v2.6.33-rc8
-make
-copy bzImge
-lilo
-reboot
-see if it works
+   I'll be pushing this one to -stable.
 
-correct?
+2) Kill off the dinky sys_perfctr, perf_events should be used.
 
-best
-Zeno
+3) Fix some driver builds by providing big-endian io{read,write}*().
+
+Please pull, thanks a lot!
+
+The following changes since commit 3a5b27bf6f29574d667230c7e76e4b83fe3014e0:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://gitorious.org/linux-omap-dss2/linux
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+David S. Miller (4):
+      sparc: Provide io{read,write}{16,32}be().
+      sparc: Update defconfigs.
+      sparc64: Kill off old sys_perfctr system call and state.
+      sparc64: Make prom entry spinlock NMI safe.
+
+ arch/sparc/configs/sparc32_defconfig    |   56 ++++++++++++++---
+ arch/sparc/configs/sparc64_defconfig    |   34 ++++++----
+ arch/sparc/include/asm/io_32.h          |    4 +
+ arch/sparc/include/asm/io_64.h          |    4 +
+ arch/sparc/include/asm/perfctr.h        |    4 +-
+ arch/sparc/include/asm/system_64.h      |   15 +----
+ arch/sparc/include/asm/thread_info_64.h |   25 ++-----
+ arch/sparc/kernel/entry.h               |    1 -
+ arch/sparc/kernel/process_64.c          |   23 -------
+ arch/sparc/kernel/rtrap_64.S            |   54 +---------------
+ arch/sparc/kernel/sys32.S               |    1 -
+ arch/sparc/kernel/sys_sparc_64.c        |  104 -------------------------------
+ arch/sparc/kernel/syscalls.S            |   23 +------
+ arch/sparc/kernel/systbls.h             |    2 -
+ arch/sparc/kernel/systbls_64.S          |    4 +-
+ arch/sparc/kernel/traps_64.c            |    9 ---
+ arch/sparc/prom/p1275.c                 |   12 ++--
+ 17 files changed, 99 insertions(+), 276 deletions(-)
