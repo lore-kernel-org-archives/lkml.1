@@ -1,45 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199Ab0CDVhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:37:54 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:53940 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083Ab0CDVhu (ORCPT
+	id S1754989Ab0CDVhl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:37:41 -0500
+Received: from trinity.develer.com ([83.149.158.210]:41772 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754887Ab0CDVhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:37:50 -0500
-Date: Thu, 4 Mar 2010 13:37:20 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Bret Towe <magnade@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       reiserfs-devel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: reiserfs issue with 2.6.32.8
-In-Reply-To: <dda83e781003031900x3ca243d9kba1df3a8b0e04105@mail.gmail.com>
-Message-ID: <alpine.DEB.2.01.1003041335540.3144@bogon.housecafe.de>
-References: <dda83e781002141023t2abe95b8w83f59d6f411f68a2@mail.gmail.com>  <alpine.DEB.2.01.1002142229470.28195@bogon.housecafe.de>  <dda83e781002232131i53b59c8eu7192257fc4e4f3e0@mail.gmail.com>  <alpine.DEB.2.01.1002232249440.28195@bogon.housecafe.de>
- <dda83e781003031900x3ca243d9kba1df3a8b0e04105@mail.gmail.com>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Thu, 4 Mar 2010 16:37:39 -0500
+Date: Thu, 4 Mar 2010 22:37:34 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 0/4] memcg: per cgroup dirty limit (v4)
+Message-ID: <20100304213734.GA4787@linux>
+References: <1267699215-4101-1-git-send-email-arighi@develer.com>
+ <20100304171143.GG3073@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX198ae4U6BdyD4iWvtKucfhHrgX3RAWn/osmD8Y
- DB4Ih9Nt1F4rzUpyA6XKXEJfUiR5AYezE9mmd7ksXbFXl9DwkK
- tJkMVQALdqjM8cfgOZCSw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100304171143.GG3073@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 at 19:00, Bret Towe wrote:
-> well the hardware update ended up changing more than I thought it would
-> now on 32bit from 64bit so config is completely new also for the kernel
-> end result tho is I'm on a 2.6.33 kernel and no issues
+On Thu, Mar 04, 2010 at 10:41:43PM +0530, Balbir Singh wrote:
+> * Andrea Righi <arighi@develer.com> [2010-03-04 11:40:11]:
+> 
+> > Control the maximum amount of dirty pages a cgroup can have at any given time.
+> > 
+> > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
+> > page cache used by any cgroup. So, in case of multiple cgroup writers, they
+> > will not be able to consume more than their designated share of dirty pages and
+> > will be forced to perform write-out if they cross that limit.
+> > 
+> > The overall design is the following:
+> > 
+> >  - account dirty pages per cgroup
+> >  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
+> >    and memory.dirty_background_ratio / memory.dirty_background_bytes in
+> >    cgroupfs
+> >  - start to write-out (background or actively) when the cgroup limits are
+> >    exceeded
+> > 
+> > This feature is supposed to be strictly connected to any underlying IO
+> > controller implementation, so we can stop increasing dirty pages in VM layer
+> > and enforce a write-out before any cgroup will consume the global amount of
+> > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
+> > /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
+> > 
+> > Changelog (v3 -> v4)
+> > ~~~~~~~~~~~~~~~~~~~~~~
+> >  * handle the migration of tasks across different cgroups
+> >    NOTE: at the moment we don't move charges of file cache pages, so this
+> >    functionality is not immediately necessary. However, since the migration of
+> >    file cache pages is in plan, it is better to start handling file pages
+> >    anyway.
+> >  * properly account dirty pages in nilfs2
+> >    (thanks to Kirill A. Shutemov <kirill@shutemov.name>)
+> >  * lockless access to dirty memory parameters
+> >  * fix: page_cgroup lock must not be acquired under mapping->tree_lock
+> >    (thanks to Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> and
+> >     KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>)
+> >  * code restyling
+> >
+> 
+> This seems to be converging, what sort of tests are you running on
+> this patchset? 
 
-If there are still no issues after some time, maybe we can then close the 
-bugzilla ticket?
+A very simple test at the moment, just some parallel dd's running in
+different cgroups. For example:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=15309
+ - cgroup A: low dirty limits (writes are almost sync)
+   echo 1000 > /cgroups/A/memory.dirty_bytes
+   echo 1000 > /cgroups/A/memory.dirty_background_bytes
 
-Thanks,
-Christian.
--- 
-BOFH excuse #351:
+ - cgroup B: high dirty limits (writes are all buffered in page cache)
+   echo 100 > /cgroups/B/memory.dirty_ratio
+   echo 50  > /cgroups/B/memory.dirty_background_ratio
 
-PEBKAC (Problem Exists Between Keyboard And Chair)
+Then run the dd's and look at memory.stat:
+  - cgroup A: # dd if=/dev/zero of=A bs=1M count=1000
+  - cgroup B: # dd if=/dev/zero of=B bs=1M count=1000
+
+A random snapshot during the writes:
+
+# grep "dirty\|writeback" /cgroups/[AB]/memory.stat
+/cgroups/A/memory.stat:filedirty 0
+/cgroups/A/memory.stat:writeback 0
+/cgroups/A/memory.stat:writeback_tmp 0
+/cgroups/A/memory.stat:dirty_pages 0
+/cgroups/A/memory.stat:writeback_pages 0
+/cgroups/A/memory.stat:writeback_temp_pages 0
+/cgroups/B/memory.stat:filedirty 67226
+/cgroups/B/memory.stat:writeback 136
+/cgroups/B/memory.stat:writeback_tmp 0
+/cgroups/B/memory.stat:dirty_pages 67226
+/cgroups/B/memory.stat:writeback_pages 136
+/cgroups/B/memory.stat:writeback_temp_pages 0
+
+I plan to run more detailed IO benchmark soon.
+
+-Andrea
