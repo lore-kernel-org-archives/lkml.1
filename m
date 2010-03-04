@@ -1,102 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534Ab0CDV1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:27:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48965 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754630Ab0CDV1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:27:48 -0500
-Date: Thu, 4 Mar 2010 13:27:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: <linux-kernel@vger.kernel.org>, <cpufreq@vger.kernel.org>,
-       <bhavna.sarathy@amd.com>, <joachim.deguara@amd.com>,
-       <borislav.petkov@amd.com>
-Subject: Re: [PATCH 3/3] cpufreq: add sysfs knob for toggling core
- performance boost
-Message-Id: <20100304132743.e2b731da.akpm@linux-foundation.org>
-In-Reply-To: <201003031459.27757.mark.langsdorf@amd.com>
-References: <201003031459.27757.mark.langsdorf@amd.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	id S1753904Ab0CDV3z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:29:55 -0500
+Received: from mail.perches.com ([173.55.12.10]:1390 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826Ab0CDV3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:29:54 -0500
+Subject: Re: [RFC PATCH] printk: Convert pr_<level> macros to functions
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20100304124943.ce7c1a63.akpm@linux-foundation.org>
+References: <1267629618.8926.73.camel@Joe-Laptop.home>
+	 <20100304124943.ce7c1a63.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Mar 2010 13:29:52 -0800
+Message-ID: <1267738192.12993.48.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 14:59:27 -0600
-Mark Langsdorf <mark.langsdorf@amd.com> wrote:
+On Thu, 2010-03-04 at 12:49 -0800, Andrew Morton wrote:
+> On Wed, 03 Mar 2010 07:20:18 -0800 Joe Perches <joe@perches.com> wrote:
+> > Maybe moving printed_len to file scope is racy somehow?
+> Yes, printed_len will get corrupted when multiple CPU's are running
+> printk/vprintk simultaneously.  That'll need to be fixed.
 
-> >From 1ba7af20a37b72a4375d3e3ddd33a033f204ee21 Mon Sep 17 00:00:00 2001
-> From: Mark Langsdorf <mark.langsdorf@amd.com>
-> Date: Wed, 3 Mar 2010 14:34:47 -0600
-> Subject: [PATCH 2/2] cpufreq: add sysfs knob for toggling core performance boost
-> 
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> Tested-by: Mark Langsdorf <mark.langsdorf@amd.com>
+I think it'll be easier to use the %pV construct that
+I posted today:
 
-The lack of any changelog in a patch is usually a good sign that the
-patch needs a changelog :(
+http://lkml.org/lkml/2010/3/4/19
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 67bc2ec..e0fe93f 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -662,6 +662,30 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
->  	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
->  }
->  
-> +static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
-> +				 size_t count)
-> +{
-> +	int ret = -EINVAL;
-> +	unsigned long val = 0;
-> +
-> +	ret = strict_strtoul(buf, 10, &val);
-> +	if (!ret && (val == 0 || val == 1))
-> +		policy->flags.cpb = val;
-> +	else
-> +		return -EINVAL;
-> +
-> +	ret = __cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
-> +{
-> +	return sprintf(buf, "%u\n", policy->flags.cpb);
-> +}
-> +
->  #define define_one_ro(_name) \
->  static struct freq_attr _name = \
->  __ATTR(_name, 0444, show_##_name, NULL)
-> @@ -688,6 +712,7 @@ define_one_rw(scaling_min_freq);
->  define_one_rw(scaling_max_freq);
->  define_one_rw(scaling_governor);
->  define_one_rw(scaling_setspeed);
-> +define_one_rw(cpb);
->  
->  static struct attribute *default_attrs[] = {
->  	&cpuinfo_min_freq.attr,
-> @@ -701,6 +726,7 @@ static struct attribute *default_attrs[] = {
->  	&scaling_driver.attr,
->  	&scaling_available_governors.attr,
->  	&scaling_setspeed.attr,
-> +	&cpb.attr,
->  	NULL
->  };
+> Is it possible to reduce the amount of
+> code movement in the patch, make it a bit easier to follow?
 
-Well I've read the code and I've read the code comments and I've read
-the changelogs and I still have no clue what this thing does. 
-Apparently it allows me to toggle something called "APERF/MPERF".  I
-guess if I were patient enough, teh goog might tell me what that is,
-and why I might want it.  But this is all terribly inefficient.
+I can do the move-around separately.
 
-I think you'd find that your feature is more useful and will be used by
-more people if you tell them (and us) what it does.
+I think it'll be better as:
+
+asmlinkage int pr_emerg(const char *fmt, ...)
+{
+	struct va_format vaf;
+	va_list args;
+
+	va_start(args, fmt);
+	vaf.fmt = fmt;
+	vaf.va = &args;
+	r = printk(KERN_EMERG "%pV", &vaf);
+	va_end(args);
+
+	return r;
+}
+EXPORT_SYMBOL(pr_emerg);
+
+I believe that avoids any racing.
+
+> I think it would be justifiable to cook up a freaky macro and expand it
+> eight times to avoid this duplication.  Ugly, but better than lots of
+> duplication.
+
+Maybe something like:
+
+#define define_pr_level(function, level)	\
+asmlinkage int function(const char *fmt, ...)	\
+{						\
+	struct va_format vaf;			\
+	va_list args;				\
+						\
+	va_start(args, fmt);			\
+	vaf.fmt = fmt;				\
+	vaf.va = &args;				\
+	r = printk(level "%pV", &vaf);		\
+	va_end(args);				\
+						\
+	return r;				\
+}						\
+EXPORT_SYMBOL(function)
+
+define_pr_level(pr_emerg,	KERN_EMERG);
+define_pr_level(pr_alert,	KERN_ALERT);
+define_pr_level(pr_crit,	KERN_CRIT);
+define_pr_level(pr_err,		KERN_ERR);
+define_pr_level(pr_warning,	KERN_WARNING);
+define_pr_level(pr_notice,	KERN_NOTICE);
+define_pr_level(pr_info,	KERN_INFO);
+
+I think that's a bit ugly though myself.
+
+> Or perhaps we can do it via a helper function which takes the
+> additional argument?
+> asmlinkage int pr_everything(char levelchar, const char *fmt, ...)
+
+I believe that could not work.
+The symbol names to link against wouldn't be found.
+
 
