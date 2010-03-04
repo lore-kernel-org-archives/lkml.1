@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140Ab0CDAdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 19:33:40 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63645 "EHLO song.cn.fujitsu.com"
+	id S1754256Ab0CDAft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 19:35:49 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61280 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753725Ab0CDAdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 19:33:33 -0500
-Message-ID: <4B8EFE6E.2060509@cn.fujitsu.com>
-Date: Thu, 04 Mar 2010 08:27:26 +0800
+	id S1751463Ab0CDAfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 19:35:43 -0500
+Message-ID: <4B8EFEF5.2020809@cn.fujitsu.com>
+Date: Thu, 04 Mar 2010 08:29:41 +0800
 From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
@@ -16,15 +16,13 @@ CC: Jens Axboe <jens.axboe@oracle.com>,
        linux kernel mailing list <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH 2/1] io-controller: Add a new interface "policy" for IO
  Controller
-References: <4B8DFFD7.2000908@cn.fujitsu.com> <20100303143311.GA2866@redhat.com>
-In-Reply-To: <20100303143311.GA2866@redhat.com>
+References: <4B8DFFD7.2000908@cn.fujitsu.com> <20100303153635.GB2866@redhat.com>
+In-Reply-To: <20100303153635.GB2866@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Hi Vivek,
 
 Vivek Goyal wrote:
 > On Wed, Mar 03, 2010 at 02:21:11PM +0800, Gui Jianfeng wrote:
@@ -37,43 +35,6 @@ Vivek Goyal wrote:
 >> device:
 >> #echo "major:minor weight" > blkio.policy
 >>
-> 
-> Hi Gui,
-> 
-> Can we use a different name for per device weight file name than "blkio.policy".
-> May be "blkio.weight_device" or "blkio.weight_per_device" etc.
-
-  ok, will change.
-
-> 
-> The reason being that "blkio.policy" name might be more suitable to switch
-> between differnt kind of BW control policies (proportional, max bandwidth etc),
-> once we implement some kind of max BW controlling policies also. So it
-> might be a good idea to not use that file name for specifying per device
-> weights.
-> 
-> Secondly, where is it useful. I mean do you have a scenario where you will
-> use it. Why I am asking is that we never had ioprio per device kind of
-> interface. ioprio was associated with task and was global and same on
-> every device in the system.
-> 
-> I am wondering, what are the scenarios where an application is more important
-> on one device and less important on other device to warrant different weights
-> on different devices.
-
-  Imaging that, if most of user's data stores on sdb, and most of system data stores
-  on sda for system application. So we can assign more weight on sdb and less weight
-  on sda for that user. So that user application achieve high speed on sdb, and will
-  not stall system application when accessing into sda.
-
-Thanks
-Gui
-
-> 
-> Thanks
-> Vivek
->  
->  
 >> major:minor represents device number.
 >>
 >> And you can remove a policy as following:
@@ -104,11 +65,39 @@ Gui
 >>  
 >> +static inline void policy_insert_node(struct blkio_cgroup *blkcg,
 >> +				      struct io_policy_node *pn);
+> 					     ^^^^^^^^^^
+> How about blkio_policy_node?
+> 
+> So this structure will represent per cgroup per device policy as specified
+> by user. We can re-use the same structure if there are more per cgroup
+> per device policies down the line. 
+> 
 >> +static inline void policy_delete_node(struct io_policy_node *pn);
 >> +static struct io_policy_node *policy_search_node(const struct blkio_cgroup *blkcg,
 >> +						 dev_t dev);
+> 
+> Not very sure about it but may be a good idea to prefix "blkio_" or
+> "blkcg_" before all the functions you are defining. Just some uniformity in
+> function names like cfq.
+> 
 >> +
 >>  bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
+> 
+> You might want to rebase it on Jen's for-linus branch as blkiocg_css_tryget()
+> is gone in that branch
+> 
+> Apart from above minor nits, this patch looks good to me. Will do some
+> testing on it.
+
+Thanks for the comments vivek, will post V2.
+
+Thanks
+Gui
+
+> 
+> Thanks
+> Vivek
+> 
 >>  {
 >>  	if (!css_tryget(&blkcg->css))
 >> @@ -142,6 +149,7 @@ blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
@@ -129,6 +118,10 @@ Gui
 >> +
 >> +		if (pn)
 >> +			continue;
+> 
+> Ok, so if we have specified a weight for a device, then blkio.weight
+> update does not affect the weight on that device. Makes sense.
+> 
 >> +
 >>  		list_for_each_entry(blkiop, &blkio_list, list)
 >>  			blkiop->ops.blkio_update_group_weight_fn(blkg,
