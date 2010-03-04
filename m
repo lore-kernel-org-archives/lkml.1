@@ -1,76 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963Ab0CDKSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 05:18:18 -0500
-Received: from mail-ew0-f172.google.com ([209.85.219.172]:51161 "EHLO
-	mail-ew0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826Ab0CDKSP (ORCPT
+	id S1755423Ab0CDKSx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 05:18:53 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:48832 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753442Ab0CDKSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 05:18:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=EAuABaoEIMkLjFmcLteQOPqKBpob753SAmjxD9xtQ1Kk+R2YKf3mAGPD6UtkjII+LU
-         mOybhEn9PDnznePqC41On29FQ/2BaJpWn1VDutKtHTWU6fCE80XuIkead6CfnSMRf8EJ
-         EktS0Xkzv3Pf0gri7NnnOjY8LSMuofr3OJUl4=
-Subject: Re: Linux Bluetooth Coexistence documentation in general and for 
- ath9k
-From: Bastien Nocera <hadess@hadess.net>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-bluetooth <linux-bluetooth@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Kevin Hayes\" <kevin@atheros.com>, \"Dan Tian\"" 
-	<Dan.Tian@atheros.com>
-In-Reply-To: <43e72e891003032109v59f1ff52odb60de6111cfec53@mail.gmail.com>
-References: <43e72e891003031643u353c72dcj23bf429363a16ec8@mail.gmail.com>
-	 <1267664353.10407.1960.camel@localhost.localdomain>
-	 <43e72e891003032109v59f1ff52odb60de6111cfec53@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Thu, 04 Mar 2010 10:18:11 +0000
-Message-ID: <1267697891.10407.3082.camel@localhost.localdomain>
+	Thu, 4 Mar 2010 05:18:49 -0500
+Subject: Re: kmemleak issue on ARM target
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: naveen yadav <yad.naveen@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <9bde694e1003040113k3b573957h1b831c8d25205d22@mail.gmail.com>
+References: <9bde694e1003040113k3b573957h1b831c8d25205d22@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: ARM Limited
+Date: Thu, 04 Mar 2010 10:18:44 +0000
+Message-ID: <1267697924.6526.5.camel@e102109-lin.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.90 (2.29.90-2.fc13)
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Mar 2010 10:18:44.0729 (UTC) FILETIME=[121A9690:01CABB84]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 21:09 -0800, Luis R. Rodriguez wrote:
-> On Wed, Mar 3, 2010 at 4:59 PM, Bastien Nocera <hadess@hadess.net> wrote:
-> > On Wed, 2010-03-03 at 16:43 -0800, Luis R. Rodriguez wrote:
-> >> Marcel, a question for you below.
-> >>
-> >> The question of Bluetooth coexistence pops up here, on IRC and on bug
-> >> reports quite too often so I've stuffed what I could onto a page with
-> >> a few references / code and about ath9k's schemes for BT coexistence,
-> >> feel free to extend or correct:
-> > <snip>
-> >> I do wonder if this could be useful to network applets like network
-> >> manager/connman.
-> >
-> > Not really. To me, it sounds like a "make it work" button. The kernel
-> > bits of Bluetooth should already have an idea of when a device is
-> > connected, so the kernel should be able to "do the right thing".
-> >
-> > Having options over what "the right thing" is is probably a good idea
-> > whilst the kinks are worked out from the default behaviour, but this is
-> > not something that should be advertised to users.
+On Thu, 2010-03-04 at 09:13 +0000, naveen yadav wrote:
+> W am facing one issue on ARM target, we have 512 MB ram on our target,
+> we port your patch of
+> kmemleak(http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg11830.html)
 > 
-> I wasn't really thinking of buttons for BT coex, but instead just
-> information exposed out and making it available. Reason for this is
-> users tend to be blind about btcoex stuff and it would be nice if we
-> had a way to inform the user of the btcoex mechanisms that actually
-> are being used. Does that change your answer?
+> We are facing problem in DEBUG_KMEMLEAK_EARLY_LOG_SIZE we cannot
+> increase its size above 1000 because of our kernel Image size for
+> embedded board
+> has some limit that if it increase we cannot execute it. so is there
+> any implementaion possible using vmalloc and not statically allocating
+> the log of array or else any suggestion.
 
-No, not really. It could be useful as a debugging statement in the
-kernel, or in bluetoothd might be helpful, but I'm not sure why users
-would need to be told about the BT coex support, or what type is being
-used.
+Not really. This buffer needs to be static because it is used before
+kmemleak is fully initialised. It's also tracking bootmem allocations.
 
-It's probably too much information for the users. Though if it's
-available in the kernel, one could get it fairly easily if enquiring.
+But this size should not increase the Image file size as it should go in
+the BSS section.
 
-Cheers
+An additional question - why do you need to increase this size? I found
+400 to be enough usually. Do you get any errors?
+
+Since you backported kmemleak, please make sure that you check the
+latest code in mm/kmemleak.c as there are some bug-fixes.
+
+
+-- 
+Catalin
 
