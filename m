@@ -1,102 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400Ab0CDQZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:25:21 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47347 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869Ab0CDQZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:25:18 -0500
-To: Valerie Aurora <vaurora@redhat.com>
-CC: miklos@szeredi.hu, viro@zeniv.linux.org.uk, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jblunck@suse.de
-In-reply-to: <20100303204513.GC19689@shell> (message from Valerie Aurora on
-	Wed, 3 Mar 2010 15:45:13 -0500)
-Subject: Re: [PATCH 1/6] union-mount: Introduce union_mount structure and basic operations
-References: <1267567889-4637-1-git-send-email-vaurora@redhat.com> <1267567889-4637-2-git-send-email-vaurora@redhat.com> <E1NmsRk-0003tE-BO@pomaz-ex.szeredi.hu> <20100303204513.GC19689@shell>
-Message-Id: <E1NnDr7-00067s-NJ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Mar 2010 17:24:57 +0100
+	id S1755347Ab0CDQZG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:25:06 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:58709 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754295Ab0CDQZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:25:04 -0500
+Subject: Re: [PATCH] Re: linux-next: build warning after merge of the xfs
+ tree
+From: Alex Elder <aelder@sgi.com>
+Reply-To: aelder@sgi.com
+To: Dave Chinner <david@fromorbit.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, xfs-masters@oss.sgi.com,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+In-Reply-To: <20100304005709.GE14317@discord.disaster>
+References: <20100304111930.86f7cc62.sfr@canb.auug.org.au>
+	 <20100304005709.GE14317@discord.disaster>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Mar 2010 10:24:24 -0600
+Message-ID: <1267719864.3998.22.camel@doink>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Mar 2010 16:24:25.0944 (UTC) FILETIME=[28164D80:01CABBB7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Valerie Aurora wrote:
-> On Wed, Mar 03, 2010 at 06:33:20PM +0100, Miklos Szeredi wrote:
-> > On Tue,  2 Mar 2010, Valerie Aurora wrote:
-> > > +struct union_mount *union_alloc(struct dentry *this, struct vfsmount *this_mnt,
-> > > +				struct dentry *next, struct vfsmount *next_mnt)
+On Thu, 2010-03-04 at 11:57 +1100, Dave Chinner wrote:
+> On Thu, Mar 04, 2010 at 11:19:30AM +1100, Stephen Rothwell wrote:
+> > Hi Dave,
 > > 
+> > After merging the xfs tree, today's linux-next build (x86_64 allmodconfig)
+> > produced this warning:
 > > 
-> > Why doesn't union_alloc, append_to_union, union_lookup,
-> > union_down_one, etc use "struct path *" arg instead of separate
-> > vfsmount and dentry pointers?
-> 
-> I'd prefer that too, but it isn't a clear win.  For append_to_union(),
-> the reason is that we call it when a file system is mounted, using mnt
-> and mnt->mnt_root as the first args:
-> 
-> int attach_mnt_union(struct vfsmount *mnt, struct vfsmount *dest_mnt,
-> 		     struct dentry *dest_dentry)
-> {
-> 	if (!IS_MNT_UNION(mnt))
-> 		return 0;
-> 
-> 	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry);
-> }
-> 
-> Same thing happens in detach_mnt_union() with union_lookup().  That
-> trickles down into the rest.  I suppose I could create a temporary
-> path variable for those two functions and then we'd be paths
-> everywhere else.  What do you think?
-
-If it's just two temporary vars, then IMO it's a win.  It's much
-easier to read the functions if it has half the arguments.
-
-> 
-> > > +     um = kmem_cache_alloc(union_cache, GFP_ATOMIC);
-> > > +     if (!um)
-> > > +             return NULL;
-> > > +
-> > > +     atomic_set(&um->u_count, 1);
+> > fs/xfs/linux-2.6/xfs_aops.c: In function 'xfs_end_io':
+> > fs/xfs/linux-2.6/xfs_aops.c:232: warning: 'error' may be used uninitialized in this function
 > > 
-> > Why is u_count not a "struct kref"?
-> 
-> We stole this from the inode cache code, so for the same reason inodes
-> have i_count as atomic_t instead of a kref (whatever that is). :)
-
-i_count does some tricky things.  If you just want plain an simple
-refcounting then you should be using krefs.
-
-> > > > +/*
-> > > + * WARNING! Confusing terminology alert.
-> > > + *
-> > > + * Note that the directions "up" and "down" in union mounts are the
-> > > + * opposite of "up" and "down" in normal VFS operation terminology.
-> > > + * "up" in the rest of the VFS means "towards the root of the mount
-> > > + * tree."  If you mount B on top of A, following B "up" will get you
-> > > + * A.  In union mounts, "up" means "towards the most recently mounted
-> > > + * layer of the union stack."  If you union mount B on top of A,
-> > > + * following A "up" will get you to B.  Another way to put it is that
-> > > + * "up" in the VFS means going from this mount towards the direction
-> > > + * of its mnt->mnt_parent pointer, but "up" in union mounts means
-> > > + * going in the opposite direction (until you run out of union
-> > > + * layers).
-> > > + */
+> > Introduced by commit 77d7a0c2eeb285c9069e15396703d0cb9690ac50 ("xfs:
+> > Non-blocking inode locking in IO completion").
 > > 
-> > So if this is confusing, why not use a different terminology for union
-> > layers?  Like "next" and "prev" like it is already used in the
-> > structures.
+> > I can't tell if this is a false positive.  If the first two "if"
+> > statement bodies are skipped, then error is tested uninitialised.  It is
+> > possible that at least one of them has to be executed.
 > 
-> Unfortunately, "upper" and "lower" are fairly well established
-> concepts in layering file systems and seem to be the most natural way
-> for programmers to think about unioned file systems.  It's only the
-> VFS (which most people never touch) that uses "up" and "down" in the
-> opposite sense.  I think the better path is to replace "next" and
-> "prev" in the structure.
+> Right, there is a warning being generated there - I thought I fixed
+> that immediately after posting the first version of the patch. The
+> second version:
+> 
+> http://oss.sgi.com/archives/xfs/2010-02/msg00340.html
+> 
+> definitely had it fixed.
+> 
+> Alex, can you make sure you take the entire patch rather than
+> cutting and pasting bits from one patch version to another?  That
+> way you don't miss small changes to the patch that might have been
+> forgotten about....
 
-Okay.
+(Sorry if this gets duplicated--I was using a web-based mail
+interface yesterday and my first attempt got bounced back
+as potential spam.)
 
-Thanks,
-Miklos
+I didn't expect you would change the patch content, only
+the description.  I had already tested the previous code
+so just grabbed the new description when you re-posted.
+Sorry about the warning slipping through.  I'll incorporate
+your fix soon.
+        
+                                       -Alex
+        
+
+
+
