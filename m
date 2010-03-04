@@ -1,83 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922Ab0CDSj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:39:29 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:53285 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755335Ab0CDSj1 (ORCPT
+	id S1755517Ab0CDSm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:42:58 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:34392 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276Ab0CDSm4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:39:27 -0500
-Message-ID: <4B8FFE55.5070008@linux.vnet.ibm.com>
-Date: Thu, 04 Mar 2010 10:39:17 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+	Thu, 4 Mar 2010 13:42:56 -0500
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
- event names to "perf stat"
-References: <4B8F1B58.5000702@linux.vnet.ibm.com>
-In-Reply-To: <4B8F1B58.5000702@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-class: 
+From: "Kalra Ashish-B00888" <B00888@freescale.com>
+Message-ID: <292701cabbca$7f5e1ef2$2303d30a@fsl.freescale.net>
+Subject: RE: Linux kernel - Libata bad block error handling to user mode  program
+Date: Fri, 5 Mar 2010 00:10:42 +0530
+Importance: normal
+X-Priority: 3
+Thread-Topic: Linux kernel - Libata bad block error handling to user mode  program
+Thread-Index: Acq7yn9e8QJ5ctChTje7VzjCe75fgA==
+To: "Mark Lord" <kernel@teksavvy.com>, "foo saa" <foosaa@gmail.com>
+Cc: "Greg Freemyer" <greg.freemyer@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>, <linux-mm@kvack.org>
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+	charset="utf-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/3/2010 6:30 PM, Corey Ashford wrote:
-> For your review, this patch adds support for arch-dependent symbolic
-> event names to the "perf stat" tool, and could be expanded to other
-> "perf *" commands fairly easily, I suspect.
->
-> To support arch-dependent event names without adding arch-dependent code
-> to perf, I added a callout mechanism whereby perf will look for the
-> environment variable: PERF_ARCH_DEP_LIB, and if it exists, it will try
-> to open it as a shared object. If that succeeds, it looks for the symbol
-> "parse_arch_dep_event". If that exists, that function will be called by
-> parse_events() before all of the other event parsing functions in
-> parse-events.c. It is passed the same arguments as the other
-> parse_*_event functions, namely the event string and a pointer to an
-> event attribute structure.
->
-> As the code existed, "perf stat" would print out the count results, but
-> for raw events (which is how arch-dependent events are supported in
-> perf_events), it would just print out a raw code. This is not
-> acceptable, especially when a symbolic name was placed on the command
-> line. So I changed the code to save away the event name that was passed
-> on the command line, rather than doing a reverse translation to an event
-> string based on the event type and config fields of the attr structure.
-> In this way, there's no need for a reverse translation function in the
-> arch-dependent library; only a event string->attr struct function is
-> needed.
->
-> I could well be missing something, but I don't understand why reverse
-> translation is ever needed in perf, as long as the tool keeps track of
-> the original event strings.
 
-A couple of follow-up comments on this patch:
 
-This functionality was designed to provide a generalized interface to an 
-external event name -> attr struct library, such as libpfm4.  libpfm4 has an 
-interface that nearly exactly matches parse_*_event() profiles, so it's quite 
-easy to write a small wrapper function to call libpfm4's function.
+Sent from my HTC
 
-Ingo Molnar discussed adding some visibility to the arch-dependent event names 
-through some other interface, such as through /sys/devices/pmus perhaps, but 
-that discussion is a long way (as far as I know) from having something usable 
-today.  So you could think of this external library approach to be a stop-gap 
-until something better is developed.  When/if that new event naming mechanism 
-becomes available, we can easily remove this external library support from perf.
+-----Original Message-----
+From: Mark Lord <kernel@teksavvy.com>
+Sent: 04 March 2010 11:20 PM
+To: foo saa <foosaa@gmail.com>
+Cc: Greg Freemyer <greg.freemyer@gmail.com>; Andrew Morton <akpm@linux-foundation.org>; linux-kernel@vger.kernel.org <linux-kernel@vger.kernel.org>; linux-ide@vger.kernel.org <linux-ide@vger.kernel.org>; Jens Axboe <jens.axboe@oracle.com>; linux-mm@kvack.org <linux-mm@kvack.org>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode  program
 
--- 
-Regards,
+On 03/04/10 10:33, foo saa wrote:
+..
+> hdparm is good, but I don't want to use the internal ATA SECURE ERASE
+> because I can never get the amount of bad sectors the drive had.
+..
 
-- Corey
+Oh.. but isn't that information in the S.M.A.R.T. data ??
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+You'll not find the bad sectors by writing -- a true WRITE nearly never
+reports a media error.  Instead, the drive simply remaps to a good sector
+on the fly and returns success.
 
+Generally, only READs report media errors.
+
+Cheers
+--
+To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
