@@ -1,96 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178Ab0CDPgB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:36:01 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:43715 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755028Ab0CDPf7 (ORCPT
+	id S1755054Ab0CDPkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:40:49 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:59500 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871Ab0CDPkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:35:59 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James.Bottomley@HansenPartnership.com, benh@kernel.crashing.org,
-       linux@arm.linux.org.uk, mdharm-kernel@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, x0082077@ti.com, sshtylyov@ru.mvista.com,
-       tom.leiming@gmail.com, bigeasy@linutronix.de, oliver@neukum.org,
-       linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, greg@kroah.com,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
-	 <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Thu, 04 Mar 2010 15:35:56 +0000
-Message-ID: <1267716956.6526.491.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2010 15:35:57.0612 (UTC) FILETIME=[62960EC0:01CABBB0]
+	Thu, 4 Mar 2010 10:40:47 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 4 Mar 2010 07:40:45 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: bert hubert <bert.hubert@netherlabs.nl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: epoll clarification sought: multithreaded epoll_wait for UDP
+ sockets?
+In-Reply-To: <20100303212942.GB24601@xs.powerdns.com>
+Message-ID: <alpine.DEB.2.00.1003040731170.10593@makko.or.mcafeemobile.com>
+References: <20100303212942.GB24601@xs.powerdns.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 13:51 +0000, Pavel Machek wrote:
-> > On Wed, 2010-03-03 at 21:54 +0000, Pavel Machek wrote:
-> > > > With some drivers (those doing PIO) or subsystems (SCSI mass storage
-> > > > over USB HCD), there is no call to flush_dcache_page() for page cache
-> > > > pages, hence the ARM implementation of update_mmu_cache() doesn't flush
-> > > > the D-cache (and only invalidating the I-cache doesn't help).
-> > > >
-> > > > The viable solutions so far:
-> > > >
-> > > >      1. Implement a PIO mapping API similar to the DMA API which takes
-> > > >         care of the D-cache flushing. This means that PIO drivers would
-> > > >         need to be modified to use an API like pio_kmap()/pio_kunmap()
-> > > >         before writing to a page cache page.
-> > > >      2. Invert the meaning of PG_arch_1 to denote a clean page. This
-> > > >         means that by default newly allocated page cache pages are
-> > > >         considered dirty and even if there isn't a call to
-> > > >         flush_dcache_page(), update_mmu_cache() would flush the D-cache.
-> > > >         This is the PowerPC approach.
-> > >
-> > > What about option
-> > >
-> > > 3. Forget about PG_arch_1 and always do the flush?
-> > >
-> > > How big is the performance impact? Note that current code does not
-> > > even *work* so working, 10% slower code will be an improvement.
-> >
-> > The driver fix is as simple as calling a flush_dcache_page() and I've
-> > been carrying such patches in my tree for some time now. The question is
-> > whether we need to do it in the driver or not (would need to update
-> > Documentation/cachetlb.txt as well).
-> >
-> > The reason I'm not in favour always doing the flush is that we penalise
-> > DMA drivers where there is no need for extra D-cache flushing (already
-> > handled by the DMA API; option 1 above is similar, just that it is meant
-> > for PIO usage). An ARM patch I proposed for inverting the meaning of
-> > PG_arch_1 also marks a page as clean in the dma_map_* functions.
+On Wed, 3 Mar 2010, bert hubert wrote:
+
+> Dear kernel people, dear Davide,
 > 
-> But you are not fixing driver bug, are you?
+> I am currently debugging performance issues in the PowerDNS Recursor, and it
+> turns out I have been using epoll_wait() sub-optimally. And I need your help
+> to improve this. I'm more than happy to update the epoll_wait() manpage to
+> reflect your advice.
+> 
+> Essentially, what I would like to have is a way to distribute incoming UDP DNS
+> queries to various threads automatically.  Right now, there is one
+> fd that multiple threads wait on, using epoll() or select() and subsequently
+> recvfrom(). Crucially, each thread has its own epoll fd set (which is
+> wrong).
+> 
+> The hope is that each thread hogs a single CPU, and that UDP DNS queries
+> coming in arrive at a single thread that is currently in epoll_wait(), ie
+> not doing other things. 
+> 
+> As indicated by the manpage of epoll however, my setup means that threads
+> get woken up unnecessarily when a new packet comes in.  This results in lots
+> of recvfrom() calls returning EAGAIN (basically on most of the other
+> threads).
+> 
+> (this can be observed in
+> http://svn.powerdns.com/snapshots/rc2/pdns-recursor-3.2-rc2.tar.bz2 )
+> 
+> The alternative appears to be to create a single epoll set, and have all
+> threads call epoll_wait on that same set. 
+> 
+> The epoll() manpage however is silent on what this will do exactly, although
+> several LKML posts indicate that this might cause 'thundering herd'
+> problems.
+> 
+> My question is: what is your recommendation for achieving the scenario
+> outlined above? In other words, that is the 'best current practice' on
+> modern Linux kernels to get each packet to arrive at a single thread?
+> 
+> Epoll offers 'edge triggered' behaviour, would this make sense? Would it be
+> smart to cal epoll_wait with only a single event to be returned to prevent
+> starvation? Might it be useful to dup() the single fd, once for each thread? 
+> I also tried SO_REUSEADDR, so I could bind() multiple times to the same IP
+> address & port, but this does not distribute incoming queries.
+> 
+> Many thanks for your time, and whatever advice you might have I will be sure
+> to contribute to the epoll manpage or perhaps a blog post that search
+> engines can find.
 
-Some drivers I fixed already: db8516f61b481e8, 2d68b7fe55d9e19.
+Use a single epoll fd, and a UDP DNS server, I'd use EPOLLET and 
+EPOLLONESHOT.
+The most frequent mistake that people using epoll with threads do, is to 
+fetch an fd out of the ready set, handle it to a thread, and then at the 
+next epoll_wait+dispatch iteration, they refetch the same fd and handle it 
+to another thread (while the other one is still handling it).
+Using multiple threads, you have to mark the context of the fd as "in use" 
+(or you use EPOLLONESHOT), while another thread is handling that session.
+Another solution is to have a single epoll_wait() fetcher, with a queue 
+from where other threads feed. At that point it is fetcher responsibility 
+to mark the context associated with the fd as "in use" (and notice the 
+condition when fetching+dispatching following events), before feeding it 
+to the queue.  When the handling thread finished with an fd (because the 
+session is over, or because it got EAGAIN), the thread would give back the 
+fd to the feeder, which will clear the "in use" bit in the fd's context 
+(and resubmit to epoll, if necessary).
 
-> Seems like ARM has requirement other architectures do not, that is
-> a) not documented anywhere
-> b) causes problems
 
-Well, ARM is pretty similar to other architectures in this respect. And
-I'm sure other architectures have similar problems, only that they only
-become visible in some circumstances they may not have encountered (i.e.
-PIO drivers + filesystem that doesn't call flush_dcache_page like ext*).
-Some other architectures may do heavier flushing
+- Davide
 
-Of course, a Documentation/arm/cachetlb.txt file would make sense.
-
--- 
-Catalin
 
