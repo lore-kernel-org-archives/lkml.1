@@ -1,186 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256Ab0CDECl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:02:41 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54029 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754896Ab0CDECg (ORCPT
+	id S1755156Ab0CDECw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 23:02:52 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:47734 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016Ab0CDECi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:02:36 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Mar 2010 12:59:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       rientjes@google.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom kill behavior v3
-Message-Id: <20100304125900.ad457cd2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100303151257.f45ceffe.akpm@linux-foundation.org>
-References: <20100302115834.c0045175.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302135524.afe2f7ab.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302143738.5cd42026.nishimura@mxp.nes.nec.co.jp>
-	<20100302145644.0f8fbcca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100302151544.59c23678.nishimura@mxp.nes.nec.co.jp>
-	<20100303092606.2e2152fc.nishimura@mxp.nes.nec.co.jp>
-	<20100303093844.cf768ea4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303162304.eaf49099.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100303151257.f45ceffe.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Mar 2010 23:02:38 -0500
+Message-ID: <4B8F3056.1010109@oracle.com>
+Date: Wed, 03 Mar 2010 20:00:22 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH -next] bridge: depends on INET
+References: <20100302180915.1388d3f3.sfr@canb.auug.org.au> <4B8D4607.8070603@xenotime.net> <20100303.012359.66790294.davem@davemloft.net> <20100304031847.GA22683@elte.hu>
+In-Reply-To: <20100304031847.GA22683@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B0201.4B8F30C3.0034:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010 15:12:57 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 3 Mar 2010 16:23:04 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On 03/03/10 19:18, Ingo Molnar wrote:
 > 
-> > In current page-fault code,
-> > 
-> > 	handle_mm_fault()
-> > 		-> ...
-> > 		-> mem_cgroup_charge()
-> > 		-> map page or handle error.
-> > 	-> check return code.
-> > 
-> > If page fault's return code is VM_FAULT_OOM, page_fault_out_of_memory()
-> > is called. But if it's caused by memcg, OOM should have been already
-> > invoked.
-> > Then, I added a patch: a636b327f731143ccc544b966cfd8de6cb6d72c6
-> > 
-> > That patch records last_oom_jiffies for memcg's sub-hierarchy and
-> > prevents page_fault_out_of_memory from being invoked in near future.
-> > 
-> > But Nishimura-san reported that check by jiffies is not enough
-> > when the system is terribly heavy. 
-> > 
-> > This patch changes memcg's oom logic as.
-> >  * If memcg causes OOM-kill, continue to retry.
-> >  * remove jiffies check which is used now.
-> >  * add memcg-oom-lock which works like perzone oom lock.
-> >  * If current is killed(as a process), bypass charge.
-> > 
-> > Something more sophisticated can be added but this pactch does
-> > fundamental things.
-> > TODO:
-> >  - add oom notifier
-> >  - add permemcg disable-oom-kill flag and freezer at oom.
-> >  - more chances for wake up oom waiter (when changing memory limit etc..)
-> > 
-> > ...
-> >
-> > +static bool mem_cgroup_oom_lock(struct mem_cgroup *mem)
-> > +{
-> > +	int lock_count = 0;
-> > +
-> > +	mem_cgroup_walk_tree(mem, &lock_count, mem_cgroup_oom_lock_cb);
-> >  
-> > -static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
-> > +	if (lock_count == 1)
-> > +		return true;
-> > +	return false;
-> > +}
+> * David Miller <davem@davemloft.net> wrote:
 > 
-> mem_cgroup_walk_tree() will visit all items, but it could have returned
-> when it found the first "locked" item.  I minor inefficiency, I guess.
+>> From: Randy Dunlap <rdunlap@xenotime.net>
+>> Date: Tue, 02 Mar 2010 09:08:23 -0800
+>>
+>>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>>
+>>> br_multicast calls ip_send_check(), so it should depend on INET.
+>>>
+>>> built-in:
+>>> br_multicast.c:(.text+0x88cf4): undefined reference to `ip_send_check'
+>>>
+>>> or modular:
+>>> ERROR: "ip_send_check" [net/bridge/bridge.ko] undefined!
+>>>
+>>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Applied, but I almost lost this patch.
+>>
+>> You need to CC: netdev on all networking patches so that it
+>> gets properly tracked in patchwork and therefore does not get
+>> lost.
 > 
-Perhaps. but considering unlock, this walk-all seems simpler because we don't
-have to remember what we locked. Hmm...but create/remove cgroup while
-we do oom-lock can cause bug. I'll add a check or re-design this lock.
-
-
-> > +static int mem_cgroup_oom_unlock_cb(struct mem_cgroup *mem, void *data)
-> >  {
-> > -	mem->last_oom_jiffies = jiffies;
-> > +	atomic_dec(&mem->oom_lock);
-> >  	return 0;
-> >  }
-> >  
-> > -static void record_last_oom(struct mem_cgroup *mem)
-> > +static void mem_cgroup_oom_unlock(struct mem_cgroup *mem)
-> >  {
-> > -	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-> > +	mem_cgroup_walk_tree(mem, NULL,	mem_cgroup_oom_unlock_cb);
-> > +}
-> > +
-> > +static DEFINE_MUTEX(memcg_oom_mutex);
-> > +static DECLARE_WAIT_QUEUE_HEAD(memcg_oom_waitq);
-> > +
-> > +/*
-> > + * try to call OOM killer. returns false if we should exit memory-reclaim loop.
-> > + */
-> > +bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
-> > +{
-> > +	DEFINE_WAIT(wait);
-> > +	bool locked;
-> > +
-> > +	/* At first, try to OOM lock hierarchy under mem.*/
-> > +	mutex_lock(&memcg_oom_mutex);
-> > +	locked = mem_cgroup_oom_lock(mem);
-> > +	if (!locked)
-> > +		prepare_to_wait(&memcg_oom_waitq, &wait, TASK_INTERRUPTIBLE);
-> > +	mutex_unlock(&memcg_oom_mutex);
-> > +
-> > +	if (locked)
-> > +		mem_cgroup_out_of_memory(mem, mask);
-> > +	else {
-> > +		schedule();
+> I suspect Randy went by the MAINTAINERS entry - you might want to add netdev 
+> as a second 'L:' line:
 > 
-> If the calling process has signal_pending() then the schedule() will
-> immediately return.  A bug, I suspect.  Fixable by using
-> TASK_UNINTERRUPTIBLE.
+>  ETHERNET BRIDGE
+>  M:      Stephen Hemminger <shemminger@linux-foundation.org>
+>  L:      bridge@lists.linux-foundation.org
+>  W:      http://www.linux-foundation.org/en/Net:Bridge
+>  S:      Maintained
+>  F:      include/linux/netfilter_bridge/
+>  F:      net/bridge/
 > 
-Hmm..If it doen't sleep, it continue to reclaim memory. But we have no
-return path to the caller in memcg's charge function even if signal_pending,
-allowing continue reclaim just wastes cpu.
+> To make it really clear that netdev must be Cc:-ed for those patches.
 
-Sure, I'll update this to be TASK_UNINTERRUPTIBLE.
-But I'll revisit this when we implement oom-notifier and oom-kill-disable.
+Ack that.  I also expected Stephen to merge it...
 
-Thank you for review. I'll post v4.
-
-Regards,
--Kame
-
-
-
-
-
-
-
-> > +		finish_wait(&memcg_oom_waitq, &wait);
-> > +	}
-> > +	mutex_lock(&memcg_oom_mutex);
-> > +	mem_cgroup_oom_unlock(mem);
-> > +	/*
-> > + 	 * Here, we use global waitq .....more fine grained waitq ?
-> > + 	 * Assume following hierarchy.
-> > + 	 * A/
-> > + 	 *   01
-> > + 	 *   02
-> > + 	 * assume OOM happens both in A and 01 at the same time. Tthey are
-> > + 	 * mutually exclusive by lock. (kill in 01 helps A.)
-> > + 	 * When we use per memcg waitq, we have to wake up waiters on A and 02
-> > + 	 * in addtion to waiters on 01. We use global waitq for avoiding mess.
-> > + 	 * It will not be a big problem.
-> > + 	 */
-> > +	wake_up_all(&memcg_oom_waitq);
-> > +	mutex_unlock(&memcg_oom_mutex);
-> > +
-> > +	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
-> > +		return false;
-> > +	/* Give chance to dying process */
-> > +	schedule_timeout(1);
-> > +	return true;
-> >  }
-> 
-> 
-
+-- 
+~Randy
