@@ -1,55 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452Ab0CDC7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:59:34 -0500
-Received: from mail-pw0-f46.google.com ([209.85.160.46]:37930 "EHLO
-	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753267Ab0CDC7c convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:59:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rPQycVNDIemLKSIFQdpr9ji/wcY7XMrAxf+dX6TN5AFHUUTzkJEp6wOWrcIi8lK8dn
-         ASTDrSte4UP/mYpb6ULNwFM9dnYwwCenHBfAakHNuCZHaeRQXLHp2vS0z7x9dlfYZLqP
-         ufKTMVqahjVr+MJTYTU39bNQp4/Z2kmQRCStM=
+	id S1753576Ab0CDC7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:59:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41386 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753206Ab0CDC7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 21:59:38 -0500
+Date: Thu, 4 Mar 2010 03:59:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: eranian@google.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       paulus@samba.org, robert.richter@amd.com, fweisbec@gmail.com
+Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
+Message-ID: <20100304025908.GC23633@elte.hu>
+References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+ <1267637995.25158.96.camel@laptop>
+ <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
+ <20100303.095553.105186917.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <4B8B901E.4050302@ladisch.de>
-References: <be233a491002282130m3c637cfbw6648a77548241a64@mail.gmail.com>
-	 <4B8B901E.4050302@ladisch.de>
-Date: Wed, 3 Mar 2010 18:59:31 -0800
-Message-ID: <be233a491003031859s7d409e11k599a319ce04b7696@mail.gmail.com>
-Subject: Re: [PATCH] hpet: factor timer allocate from open
-From: Magnus Lynch <maglyx@gmail.com>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: venkatesh.pallipadi@intel.com, vojtech@suse.cz,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303.095553.105186917.davem@davemloft.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 1, 2010 at 1:59 AM, Clemens Ladisch <clemens@ladisch.de> wrote:
->> @@ -438,6 +469,17 @@ hpet_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
->>  {
->>        struct hpet_dev *devp;
->>
->> +       switch (cmd) {
->> +       case HPET_INFO:
->> +               break;
->> +       default:
->> +               {
->> +                       int r = hpet_alloc_timer(file);
->
-> Applications might want to use HPET_INFO to find out which timer they
-> got, so I think the driver cannot avoid allocating a timer in this case.
 
-Oh, I missed commenting this in my first reply. I chose to make
-HPET_INFO specify timer -1 in case a timer isn't currently allocated.
-You think there are extant cases of programs depending on open then
-immediate HPET_INFO having a timer allocated? Seems obscure to me. If
-so I can change that. I did add the explicit form of allocating timers
-to accomodate such a case hypothetically (open, allocate timer, get
-info).
+* David Miller <davem@davemloft.net> wrote:
+
+> And more generally aren't we supposed to be able to eventually analyze perf 
+> dumps on any platform not just the one 'perf' was built under?
+
+A aidenote: in this cycle Arnaldo improved this aspect of perf (and those 
+changes are now upstream). In theory you should be able to do a 'perf record' 
++ 'perf archive' on your Sparc box and then analyze it via 'perf report' on an 
+x86 box - and vice versa.
+
+( Note, it was not tested in that specific combination - another combination
+  was tested by Arnaldo: 32-bit PA-RISC profile interpreted on 64-bit x86. )
+
+So yes, i agree that at minimum perf should be able to tell apart the nature 
+of any recording and flag combinations it cannot handle (yet).
+
+Btw, i think the most popular use of PEBS is its precise nature, not the 
+register dumping aspect per se. If the kernel can provide that transparently 
+then that's a usecase that does not need a register dump (in user-space that 
+is). It's borderline doable on x86 ...
+
+Thanks,
+
+	Ingo
