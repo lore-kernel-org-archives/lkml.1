@@ -1,456 +1,408 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430Ab0CDKMA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 05:12:00 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:51075 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754176Ab0CDKKR (ORCPT
+	id S1755310Ab0CDKLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 05:11:52 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57433 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754271Ab0CDKKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 05:10:17 -0500
+	Thu, 4 Mar 2010 05:10:19 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Thu, 04 Mar 2010 02:08:48 -0800
+Date: Thu, 04 Mar 2010 02:08:54 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 01/12] x86: fix out of order of gsi - full
+Subject: [PATCH 07/12] genericirq: make hpet_msi/ht/msi/dmar_msi to take desc
 In-reply-to: <1267697339-5491-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
        Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Renninger <trenn@suse.de>,
-       len.brown@intel.com
-Message-id: <1267697339-5491-2-git-send-email-yinghai@kernel.org>
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1267697339-5491-8-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1267697339-5491-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Iranna D Ankad reported that IBM x3950 systems have boot problems
-after this commit:
+also keep the old interface.
 
- |
- | commit b9c61b70075c87a8612624736faf4a2de5b1ed30
- |
- |    x86/pci: update pirq_enable_irq() to setup io apic routing
- |
-  ACPI: IOAPIC (id[0x10] address[0xfecff000] gsi_base[0])
-  IOAPIC[0]: apic_id 16, version 0, address 0xfecff000, GSI 0-2
-  ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[3])
-  IOAPIC[1]: apic_id 15, version 0, address 0xfec00000, GSI 3-38
-  ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[39])
-  IOAPIC[2]: apic_id 14, version 0, address 0xfec01000, GSI 39-74
-
-  As explained in the previous patch ("x86: Fix out of order gsi)
-
-  need to remap those gsis
-
-  This patch adds boot_ioapic_idx and gsi_to_irq/irq_to_gsi
-  So we could make sure for those kind of system will have
-        irq: 0 - 15 for legacy irq
-        irq:  16 after will be gsi + 16
-
- -v13: move gsi_to_irq/irq_to_gsi to acpi/boot.c
-
-Reported-by: Iranna D Ankad <iranna.ankad@in.ibm.com>
-Bisected-by: Iranna D Ankad <iranna.ankad@in.ibm.com>
-Tested-by: Gary Hade <garyhade@us.ibm.com>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: len.brown@intel.com
 ---
- arch/x86/include/asm/io_apic.h |    2 +-
- arch/x86/include/asm/mpspec.h  |   12 +++++++
- arch/x86/kernel/acpi/boot.c    |   64 ++++++++++++++++++++++++++++++------
- arch/x86/kernel/apic/io_apic.c |   70 +++++++++++++++++++++++++++++-----------
- drivers/pnp/pnpacpi/rsparser.c |    4 ++
- 5 files changed, 121 insertions(+), 31 deletions(-)
+ arch/x86/include/asm/hpet.h                 |    4 ++
+ arch/x86/kernel/hpet.c                      |   40 ++++++++++++++++++----
+ drivers/infiniband/hw/ipath/ipath_iba6110.c |    2 +-
+ drivers/pci/dmar.c                          |   33 ++++++++++++++----
+ drivers/pci/htirq.c                         |   47 ++++++++++++++++++++-------
+ drivers/pci/msi.c                           |   17 +++++++--
+ include/linux/dmar.h                        |    4 ++
+ include/linux/htirq.h                       |    7 +++-
+ 8 files changed, 120 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 35832a0..c4683b9 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -158,7 +158,7 @@ extern int io_apic_get_redir_entries(int ioapic);
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
- 		 struct io_apic_irq_attr *irq_attr);
--void setup_IO_APIC_irq_extra(u32 gsi);
-+void setup_IO_APIC_irq_extra(u32 gsi, unsigned int *irq);
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- extern void ioapic_insert_resources(void);
-diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
-index d8bf23a..6aee824 100644
---- a/arch/x86/include/asm/mpspec.h
-+++ b/arch/x86/include/asm/mpspec.h
-@@ -97,6 +97,7 @@ static inline void early_reserve_e820_mpc_new(void) { }
- #endif
+diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
+index 1d5c08a..9b9318d 100644
+--- a/arch/x86/include/asm/hpet.h
++++ b/arch/x86/include/asm/hpet.h
+@@ -78,6 +78,10 @@ extern void hpet_msi_unmask(unsigned int irq);
+ extern void hpet_msi_mask(unsigned int irq);
+ extern void hpet_msi_write(unsigned int irq, struct msi_msg *msg);
+ extern void hpet_msi_read(unsigned int irq, struct msi_msg *msg);
++extern void hpet_msi_unmask_desc(struct irq_desc *);
++extern void hpet_msi_mask_desc(struct irq_desc *);
++extern void hpet_msi_write_desc(struct irq_desc *desc, struct msi_msg *msg);
++extern void hpet_msi_read_desc(struct irq_desc *desc, struct msi_msg *msg);
  
- void __cpuinit generic_processor_info(int apicid, int version);
-+extern int gsi_delta;
- #ifdef CONFIG_ACPI
- extern void mp_register_ioapic(int id, u32 address, u32 gsi_base);
- extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
-@@ -106,6 +107,8 @@ struct device;
- extern int mp_register_gsi(struct device *dev, u32 gsi, int edge_level,
- 				 int active_high_low);
- extern int acpi_probe_gsi(void);
-+int gsi_to_irq(unsigned int gsi);
-+unsigned int irq_to_gsi(int irq);
- #ifdef CONFIG_X86_IO_APIC
- extern int mp_find_ioapic(int gsi);
- extern int mp_find_ioapic_pin(int ioapic, int gsi);
-@@ -115,6 +118,15 @@ static inline int acpi_probe_gsi(void)
+ #ifdef CONFIG_PCI_MSI
+ extern int arch_setup_hpet_msi(unsigned int irq, unsigned int id);
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index ee4fa1b..4d7b637 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -426,9 +426,9 @@ static int hpet_legacy_next_event(unsigned long delta,
+ static DEFINE_PER_CPU(struct hpet_dev *, cpu_hpet_dev);
+ static struct hpet_dev	*hpet_devs;
+ 
+-void hpet_msi_unmask(unsigned int irq)
++void hpet_msi_unmask_desc(struct irq_desc *desc)
  {
- 	return 0;
+-	struct hpet_dev *hdev = get_irq_data(irq);
++	struct hpet_dev *hdev = get_irq_desc_data(desc);
+ 	unsigned int cfg;
+ 
+ 	/* unmask it */
+@@ -436,34 +436,58 @@ void hpet_msi_unmask(unsigned int irq)
+ 	cfg |= HPET_TN_FSB;
+ 	hpet_writel(cfg, HPET_Tn_CFG(hdev->num));
  }
-+static inline int gsi_to_irq(unsigned int gsi)
++void hpet_msi_unmask(unsigned int irq)
 +{
-+	return gsi;
-+}
-+static inline unsigned int irq_to_gsi(int irq)
-+{
-+	return irq;
++	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-void hpet_msi_mask(unsigned int irq)
++	hpet_msi_unmask_desc(desc);
 +}
 +
- #endif /* CONFIG_ACPI */
- 
- #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_APICS)
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 37de00f..2450c95 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -311,7 +311,8 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
- /*
-  * Parse Interrupt Source Override for the ACPI SCI
-  */
--static void __init acpi_sci_ioapic_setup(u32 gsi, u16 polarity, u16 trigger)
-+static void __init
-+acpi_sci_ioapic_setup(u8 bus_irq, u32 gsi, u16 polarity, u16 trigger)
++void hpet_msi_mask_desc(struct irq_desc *desc)
  {
- 	if (trigger == 0)	/* compatible SCI trigger is level */
- 		trigger = 3;
-@@ -331,7 +332,7 @@ static void __init acpi_sci_ioapic_setup(u32 gsi, u16 polarity, u16 trigger)
- 	 * If GSI is < 16, this will update its flags,
- 	 * else it will create a new mp_irqs[] entry.
- 	 */
--	mp_override_legacy_irq(gsi, polarity, trigger, gsi);
-+	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
+ 	unsigned int cfg;
+-	struct hpet_dev *hdev = get_irq_data(irq);
++	struct hpet_dev *hdev = get_irq_desc_data(desc);
  
- 	/*
- 	 * stash over-ride to indicate we've been here
-@@ -355,7 +356,8 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
- 	acpi_table_print_madt_entry(header);
- 
- 	if (intsrc->source_irq == acpi_gbl_FADT.sci_interrupt) {
--		acpi_sci_ioapic_setup(intsrc->global_irq,
-+		acpi_sci_ioapic_setup(intsrc->source_irq,
-+				      intsrc->global_irq,
- 				      intsrc->inti_flags & ACPI_MADT_POLARITY_MASK,
- 				      (intsrc->inti_flags & ACPI_MADT_TRIGGER_MASK) >> 2);
- 		return 0;
-@@ -446,11 +448,11 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
- 
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
- {
--	*irq = gsi;
-+	*irq = gsi_to_irq(gsi);
- 
- #ifdef CONFIG_X86_IO_APIC
- 	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
--		setup_IO_APIC_irq_extra(gsi);
-+		setup_IO_APIC_irq_extra(gsi, irq);
- #endif
- 
- 	return 0;
-@@ -914,6 +916,40 @@ static void save_mp_irq(struct mpc_intsrc *m)
- 		panic("Max # of irq sources exceeded!!\n");
+ 	/* mask it */
+ 	cfg = hpet_readl(HPET_Tn_CFG(hdev->num));
+ 	cfg &= ~HPET_TN_FSB;
+ 	hpet_writel(cfg, HPET_Tn_CFG(hdev->num));
  }
++void hpet_msi_mask(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
  
-+/* By default isa irqs are identity mapped to gsis */
-+static unsigned int isa_irq_to_gsi[NR_IRQS_LEGACY] = {
-+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-+};
-+
-+int gsi_delta;
-+int gsi_to_irq(unsigned int gsi)
-+{
-+	unsigned int irq = gsi;
-+	unsigned int i;
-+
-+	irq += gsi_delta;
-+	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-+		if (isa_irq_to_gsi[i] == gsi) {
-+			irq = i;
-+			break;
-+		}
-+	}
-+
-+	return irq;
+-void hpet_msi_write(unsigned int irq, struct msi_msg *msg)
++	hpet_msi_mask_desc(desc);
 +}
 +
-+unsigned int irq_to_gsi(int irq)
-+{
-+	unsigned int gsi;
-+
-+	if (irq < NR_IRQS_LEGACY)
-+		gsi = isa_irq_to_gsi[irq];
-+	else
-+		gsi = irq - gsi_delta;
-+
-+	return gsi;
-+}
-+
- void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
++void hpet_msi_write_desc(struct irq_desc *desc, struct msi_msg *msg)
  {
- 	int ioapic;
-@@ -945,6 +981,8 @@ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
- 	mp_irq.dstirq = pin;	/* INTIN# */
+-	struct hpet_dev *hdev = get_irq_data(irq);
++	struct hpet_dev *hdev = get_irq_desc_data(desc);
  
- 	save_mp_irq(&mp_irq);
+ 	hpet_writel(msg->data, HPET_Tn_ROUTE(hdev->num));
+ 	hpet_writel(msg->address_lo, HPET_Tn_ROUTE(hdev->num) + 4);
+ }
++void hpet_msi_write(unsigned int irq, struct msi_msg *msg)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-void hpet_msi_read(unsigned int irq, struct msi_msg *msg)
++	hpet_msi_write_desc(desc, msg);
++}
 +
-+	isa_irq_to_gsi[bus_irq] = gsi;
++void hpet_msi_read_desc(struct irq_desc *desc, struct msi_msg *msg)
+ {
+-	struct hpet_dev *hdev = get_irq_data(irq);
++	struct hpet_dev *hdev = get_irq_desc_data(desc);
+ 
+ 	msg->data = hpet_readl(HPET_Tn_ROUTE(hdev->num));
+ 	msg->address_lo = hpet_readl(HPET_Tn_ROUTE(hdev->num) + 4);
+ 	msg->address_hi = 0;
+ }
++void hpet_msi_read(unsigned int irq, struct msi_msg *msg)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	hpet_msi_read_desc(desc, msg);
++}
+ 
+ static void hpet_msi_set_mode(enum clock_event_mode mode,
+ 				struct clock_event_device *evt)
+diff --git a/drivers/infiniband/hw/ipath/ipath_iba6110.c b/drivers/infiniband/hw/ipath/ipath_iba6110.c
+index 37d12e5..4cbae45 100644
+--- a/drivers/infiniband/hw/ipath/ipath_iba6110.c
++++ b/drivers/infiniband/hw/ipath/ipath_iba6110.c
+@@ -986,7 +986,7 @@ static int ipath_ht_intconfig(struct ipath_devdata *dd)
+ 	return ret;
  }
  
- void __init mp_config_acpi_legacy_irqs(void)
-@@ -974,7 +1012,7 @@ void __init mp_config_acpi_legacy_irqs(void)
- 	/*
- 	 * Locate the IOAPIC that manages the ISA IRQs (0-15).
- 	 */
--	ioapic = mp_find_ioapic(0);
-+	ioapic = mp_find_ioapic(irq_to_gsi(0));
- 	if (ioapic < 0)
- 		return;
- 	dstapic = mp_ioapics[ioapic].apicid;
-@@ -1057,6 +1095,7 @@ int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+-static void ipath_ht_irq_update(struct pci_dev *dev, int irq,
++static void ipath_ht_irq_update(struct pci_dev *dev, struct irq_desc *desc,
+ 				struct ht_irq_msg *msg)
  {
- 	int ioapic;
- 	int ioapic_pin;
-+	int irq;
- 	struct io_apic_irq_attr irq_attr;
- 
- 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
-@@ -1079,11 +1118,12 @@ int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
- 		gsi = ioapic_renumber_irq(ioapic, gsi);
- #endif
- 
-+	irq = gsi_to_irq(gsi);
- 	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
- 		printk(KERN_ERR "Invalid reference to IOAPIC pin "
- 		       "%d-%d\n", mp_ioapics[ioapic].apicid,
- 		       ioapic_pin);
--		return gsi;
-+		return irq;
+ 	struct ipath_devdata *dd = pci_get_drvdata(dev);
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 83aae47..3adc898 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -1230,9 +1230,9 @@ const char *dmar_get_fault_reason(u8 fault_reason, int *fault_type)
  	}
- 
- 	if (enable_update_mptable)
-@@ -1092,9 +1132,9 @@ int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
- 	set_io_apic_irq_attr(&irq_attr, ioapic, ioapic_pin,
- 			     trigger == ACPI_EDGE_SENSITIVE ? 0 : 1,
- 			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
--	io_apic_set_pci_routing(dev, gsi, &irq_attr);
-+	io_apic_set_pci_routing(dev, irq, &irq_attr);
- 
--	return gsi;
-+	return irq;
  }
  
- /*
-@@ -1151,8 +1191,10 @@ static int __init acpi_parse_madt_ioapic_entries(void)
- 	 * If BIOS did not supply an INT_SRC_OVR for the SCI
- 	 * pretend we got one so we can set the SCI flags.
- 	 */
--	if (!acpi_sci_override_gsi)
--		acpi_sci_ioapic_setup(acpi_gbl_FADT.sci_interrupt, 0, 0);
-+	if (!acpi_sci_override_gsi) {
-+		int irq = gsi_to_irq(acpi_gbl_FADT.sci_interrupt);
-+		acpi_sci_ioapic_setup(irq, acpi_gbl_FADT.sci_interrupt, 0, 0);
-+	}
- 
- 	/* Fill in identity legacy mappings where no override */
- 	mp_config_acpi_legacy_irqs();
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index e4e0ddc..a0fd171 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -97,6 +97,8 @@ int mp_irq_entries;
- /* GSI interrupts */
- static int nr_irqs_gsi = NR_IRQS_LEGACY;
- 
-+static int boot_ioapic_idx;
-+
- #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
- int mp_bus_id_to_type[MAX_MP_BUSSES];
- #endif
-@@ -1015,7 +1017,7 @@ static inline int irq_trigger(int idx)
- int (*ioapic_renumber_irq)(int ioapic, int irq);
- static int pin_2_irq(int idx, int apic, int pin)
+-void dmar_msi_unmask(unsigned int irq)
++void dmar_msi_unmask_desc(struct irq_desc *desc)
  {
--	int irq, i;
-+	int irq;
- 	int bus = mp_irqs[idx].srcbus;
+-	struct intel_iommu *iommu = get_irq_data(irq);
++	struct intel_iommu *iommu = get_irq_desc_data(desc);
+ 	unsigned long flag;
  
- 	/*
-@@ -1027,18 +1029,28 @@ static int pin_2_irq(int idx, int apic, int pin)
- 	if (test_bit(bus, mp_bus_not_pci)) {
- 		irq = mp_irqs[idx].srcbusirq;
- 	} else {
--		/*
--		 * PCI IRQs are mapped in order
--		 */
--		i = irq = 0;
--		while (i < apic)
--			irq += nr_ioapic_registers[i++];
--		irq += pin;
-+		unsigned int gsi;
-+		if (!acpi_ioapic) {
-+			int i;
-+			/*
-+			 * PCI IRQs are mapped in order
-+			 */
-+			i = gsi = 0;
-+			while (i < apic)
-+				gsi += nr_ioapic_registers[i++];
-+			gsi += pin;
-+		} else
-+			gsi = pin + mp_gsi_routing[apic].gsi_base;
+ 	/* unmask it */
+@@ -1242,11 +1242,15 @@ void dmar_msi_unmask(unsigned int irq)
+ 	readl(iommu->reg + DMAR_FECTL_REG);
+ 	spin_unlock_irqrestore(&iommu->register_lock, flag);
+ }
++void dmar_msi_unmask(unsigned int irq)
++{
++	dmar_msi_unmask_desc(irq_to_desc(irq));
++}
+ 
+-void dmar_msi_mask(unsigned int irq)
++void dmar_msi_mask_desc(struct irq_desc *desc)
+ {
+ 	unsigned long flag;
+-	struct intel_iommu *iommu = get_irq_data(irq);
++	struct intel_iommu *iommu = get_irq_desc_data(desc);
+ 
+ 	/* mask it */
+ 	spin_lock_irqsave(&iommu->register_lock, flag);
+@@ -1256,9 +1260,14 @@ void dmar_msi_mask(unsigned int irq)
+ 	spin_unlock_irqrestore(&iommu->register_lock, flag);
+ }
+ 
+-void dmar_msi_write(int irq, struct msi_msg *msg)
++void dmar_msi_mask(unsigned int irq)
+ {
+-	struct intel_iommu *iommu = get_irq_data(irq);
++	dmar_msi_mask_desc(irq_to_desc(irq));
++}
 +
-+#ifdef CONFIG_X86_32
- 		/*
-                  * For MPS mode, so far only needed by ES7000 platform
-                  */
- 		if (ioapic_renumber_irq)
--			irq = ioapic_renumber_irq(apic, irq);
-+			gsi = ioapic_renumber_irq(apic, gsi);
-+#endif
-+
-+		irq = gsi_to_irq(gsi);
- 	}
++void dmar_msi_write_desc(struct irq_desc *desc, struct msi_msg *msg)
++{
++	struct intel_iommu *iommu = get_irq_desc_data(desc);
+ 	unsigned long flag;
  
- #ifdef CONFIG_X86_32
-@@ -1480,9 +1492,10 @@ static void __init setup_IO_APIC_irqs(void)
- 	struct irq_cfg *cfg;
- 	int node = cpu_to_node(boot_cpu_id);
+ 	spin_lock_irqsave(&iommu->register_lock, flag);
+@@ -1267,10 +1276,14 @@ void dmar_msi_write(int irq, struct msi_msg *msg)
+ 	writel(msg->address_hi, iommu->reg + DMAR_FEUADDR_REG);
+ 	spin_unlock_irqrestore(&iommu->register_lock, flag);
+ }
++void dmar_msi_write(int irq, struct msi_msg *msg)
++{
++	dmar_msi_write_desc(irq_to_desc(irq), msg);
++}
  
-+	apic_id = boot_ioapic_idx;
-+
- 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
+-void dmar_msi_read(int irq, struct msi_msg *msg)
++void dmar_msi_read_desc(struct irq_desc *desc, struct msi_msg *msg)
+ {
+-	struct intel_iommu *iommu = get_irq_data(irq);
++	struct intel_iommu *iommu = get_irq_desc_data(desc);
+ 	unsigned long flag;
  
--	for (apic_id = 0; apic_id < nr_ioapics; apic_id++)
- 	for (pin = 0; pin < nr_ioapic_registers[apic_id]; pin++) {
- 		idx = find_irq_entry(apic_id, pin, mp_INT);
- 		if (idx == -1) {
-@@ -1504,9 +1517,6 @@ static void __init setup_IO_APIC_irqs(void)
+ 	spin_lock_irqsave(&iommu->register_lock, flag);
+@@ -1280,6 +1293,10 @@ void dmar_msi_read(int irq, struct msi_msg *msg)
+ 	spin_unlock_irqrestore(&iommu->register_lock, flag);
+ }
  
- 		irq = pin_2_irq(idx, apic_id, pin);
++void dmar_msi_read(int irq, struct msi_msg *msg)
++{
++	dmar_msi_read_desc(irq_to_desc(irq), msg);
++}
+ static int dmar_fault_do_one(struct intel_iommu *iommu, int type,
+ 		u8 fault_reason, u16 source_id, unsigned long long addr)
+ {
+diff --git a/drivers/pci/htirq.c b/drivers/pci/htirq.c
+index 737a1c4..ff36da7 100644
+--- a/drivers/pci/htirq.c
++++ b/drivers/pci/htirq.c
+@@ -32,10 +32,9 @@ struct ht_irq_cfg {
+ 	struct ht_irq_msg msg;
+ };
  
--		if ((apic_id > 0) && (irq > 16))
--			continue;
 -
- 		/*
- 		 * Skip the timer IRQ if there's a quirk handler
- 		 * installed and if it returns 1:
-@@ -1540,7 +1550,7 @@ static void __init setup_IO_APIC_irqs(void)
-  * but could not use acpi_register_gsi()
-  * like some special sci in IBM x3330
-  */
--void setup_IO_APIC_irq_extra(u32 gsi)
-+void setup_IO_APIC_irq_extra(u32 gsi, unsigned int *pirq)
+-void write_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg)
++void write_ht_irq_desc_msg(struct irq_desc *desc, struct ht_irq_msg *msg)
  {
- 	int apic_id = 0, pin, idx, irq;
- 	int node = cpu_to_node(boot_cpu_id);
-@@ -1560,6 +1570,7 @@ void setup_IO_APIC_irq_extra(u32 gsi)
- 		return;
- 
- 	irq = pin_2_irq(idx, apic_id, pin);
-+	*pirq = irq;
- #ifdef CONFIG_SPARSE_IRQ
- 	desc = irq_to_desc(irq);
- 	if (desc)
-@@ -2003,6 +2014,28 @@ void __init enable_IO_APIC(void)
- 	clear_IO_APIC();
+-	struct ht_irq_cfg *cfg = get_irq_data(irq);
++	struct ht_irq_cfg *cfg = get_irq_desc_data(desc);
+ 	unsigned long flags;
+ 	spin_lock_irqsave(&ht_irq_lock, flags);
+ 	if (cfg->msg.address_lo != msg->address_lo) {
+@@ -47,39 +46,63 @@ void write_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg)
+ 		pci_write_config_dword(cfg->dev, cfg->pos + 4, msg->address_hi);
+ 	}
+ 	if (cfg->update)
+-		cfg->update(cfg->dev, irq, msg);
++		cfg->update(cfg->dev, desc, msg);
+ 	spin_unlock_irqrestore(&ht_irq_lock, flags);
+ 	cfg->msg = *msg;
  }
- 
-+static void __init probe_ioapic_i8259(void)
++void write_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg)
 +{
-+	/* probe boot ioapic idx */
-+	boot_ioapic_idx = ioapic_i8259.apic;
-+	if (boot_ioapic_idx < 0)
-+		boot_ioapic_idx = find_isa_irq_apic(0, mp_INT);
-+#ifdef CONFIG_ACPI
-+	if (!acpi_disabled && acpi_ioapic && boot_ioapic_idx < 0)
-+		boot_ioapic_idx = mp_find_ioapic(irq_to_gsi(0));
-+#endif
-+	if (boot_ioapic_idx < 0)
-+		boot_ioapic_idx = 0;
-+
-+	if (mp_gsi_routing[boot_ioapic_idx].gsi_base) {
-+		gsi_delta = NR_IRQS_LEGACY;
-+		nr_irqs_gsi += NR_IRQS_LEGACY;
-+		printk(KERN_DEBUG "new nr_irqs_gsi: %d\n", nr_irqs_gsi);
-+	}
-+
-+	printk(KERN_INFO "boot_ioapic_idx: %d\n", boot_ioapic_idx);
++	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-void fetch_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg)
++	write_ht_irq_desc_msg(desc, msg);
 +}
 +
- /*
-  * Not an __init, needed by the reboot code
-  */
-@@ -3014,7 +3047,7 @@ static inline void __init check_timer(void)
- 				legacy_pic->chip->unmask(0);
- 			}
- 			if (disable_timer_pin_1 > 0)
--				clear_IO_APIC_pin(0, pin1);
-+				clear_IO_APIC_pin(apic1, pin1);
- 			goto out;
- 		}
- 		if (intr_remapping_enabled)
-@@ -3134,6 +3167,7 @@ void __init setup_IO_APIC(void)
- 	x86_init.mpparse.setup_ioapic_ids();
- 
- 	sync_Arb_IDs();
-+	probe_ioapic_i8259();
- 	setup_IO_APIC_irqs();
- 	init_IO_APIC_traps();
- 	if (legacy_pic->nr_legacy_irqs)
-@@ -4107,16 +4141,14 @@ void __init setup_ioapic_dest(void)
- 	if (skip_ioapic_setup == 1)
- 		return;
- 
--	for (ioapic = 0; ioapic < nr_ioapics; ioapic++)
-+	ioapic = boot_ioapic_idx;
++void fetch_ht_irq_desc_msg(struct irq_desc *desc, struct ht_irq_msg *msg)
+ {
+-	struct ht_irq_cfg *cfg = get_irq_data(irq);
++	struct ht_irq_cfg *cfg = get_irq_desc_data(desc);
+ 	*msg = cfg->msg;
+ }
++void fetch_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
 +
- 	for (pin = 0; pin < nr_ioapic_registers[ioapic]; pin++) {
- 		irq_entry = find_irq_entry(ioapic, pin, mp_INT);
- 		if (irq_entry == -1)
- 			continue;
- 		irq = pin_2_irq(irq_entry, ioapic, pin);
++	fetch_ht_irq_desc_msg(desc, msg);
++}
  
--		if ((ioapic > 0) && (irq > 16))
--			continue;
--
- 		desc = irq_to_desc(irq);
+-void mask_ht_irq(unsigned int irq)
++void mask_ht_irq_desc(struct irq_desc *desc)
+ {
+ 	struct ht_irq_cfg *cfg;
+ 	struct ht_irq_msg msg;
  
- 		/*
-diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index 5702b2c..ac26e7c 100644
---- a/drivers/pnp/pnpacpi/rsparser.c
-+++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -123,6 +123,10 @@ static void pnpacpi_parse_allocated_irqresource(struct pnp_dev *dev,
+-	cfg = get_irq_data(irq);
++	cfg = get_irq_desc_data(desc);
+ 
+ 	msg = cfg->msg;
+ 	msg.address_lo |= 1;
+-	write_ht_irq_msg(irq, &msg);
++	write_ht_irq_desc_msg(desc, &msg);
++}
++void mask_ht_irq(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	mask_ht_irq_desc(desc);
+ }
+ 
+-void unmask_ht_irq(unsigned int irq)
++void unmask_ht_irq_desc(struct irq_desc *desc)
+ {
+ 	struct ht_irq_cfg *cfg;
+ 	struct ht_irq_msg msg;
+ 
+-	cfg = get_irq_data(irq);
++	cfg = get_irq_desc_data(desc);
+ 
+ 	msg = cfg->msg;
+ 	msg.address_lo &= ~1;
+-	write_ht_irq_msg(irq, &msg);
++	write_ht_irq_desc_msg(desc, &msg);
++}
++void unmask_ht_irq(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	unmask_ht_irq_desc(desc);
+ }
+ 
+ /**
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index f9cf317..01f7197 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -169,9 +169,10 @@ static void msix_mask_irq(struct msi_desc *desc, u32 flag)
+ 	desc->masked = __msix_mask_irq(desc, flag);
+ }
+ 
+-static void msi_set_mask_bit(unsigned irq, u32 flag)
++static void msi_set_mask_bit(struct irq_desc *descx, u32 flag)
+ {
+-	struct msi_desc *desc = get_irq_msi(irq);
++	unsigned int irq = descx->irq;
++	struct msi_desc *desc = get_irq_desc_msi(descx);
+ 
+ 	if (desc->msi_attrib.is_msix) {
+ 		msix_mask_irq(desc, flag);
+@@ -182,14 +183,22 @@ static void msi_set_mask_bit(unsigned irq, u32 flag)
  	}
+ }
  
- 	flags = irq_flags(triggering, polarity, shareable);
-+#ifdef CONFIG_X86
-+	/* bus_irq or gsi ? */
-+	gsi = irq_to_gsi(gsi);
-+#endif
- 	irq = acpi_register_gsi(&dev->dev, gsi, triggering, polarity);
- 	if (irq >= 0)
- 		pcibios_penalize_isa_irq(irq, 1);
++void mask_msi_irq_desc(struct irq_desc *desc)
++{
++	msi_set_mask_bit(desc, 1);
++}
+ void mask_msi_irq(unsigned int irq)
+ {
+-	msi_set_mask_bit(irq, 1);
++	mask_msi_irq_desc(irq_to_desc(irq));
+ }
+ 
++void unmask_msi_irq_desc(struct irq_desc *desc)
++{
++	msi_set_mask_bit(desc, 0);
++}
+ void unmask_msi_irq(unsigned int irq)
+ {
+-	msi_set_mask_bit(irq, 0);
++	unmask_msi_irq_desc(irq_to_desc(irq));
+ }
+ 
+ void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
+diff --git a/include/linux/dmar.h b/include/linux/dmar.h
+index 659a765..678f64f 100644
+--- a/include/linux/dmar.h
++++ b/include/linux/dmar.h
+@@ -191,6 +191,10 @@ extern void dmar_msi_unmask(unsigned int irq);
+ extern void dmar_msi_mask(unsigned int irq);
+ extern void dmar_msi_read(int irq, struct msi_msg *msg);
+ extern void dmar_msi_write(int irq, struct msi_msg *msg);
++extern void dmar_msi_unmask_desc(struct irq_desc *);
++extern void dmar_msi_mask_desc(struct irq_desc *);
++extern void dmar_msi_read_desc(struct irq_desc *desc, struct msi_msg *msg);
++extern void dmar_msi_write_desc(struct irq_desc *desc, struct msi_msg *msg);
+ extern int dmar_set_interrupt(struct intel_iommu *iommu);
+ extern irqreturn_t dmar_fault(int irq, void *dev_id);
+ extern int arch_setup_dmar_msi(unsigned int irq);
+diff --git a/include/linux/htirq.h b/include/linux/htirq.h
+index c96ea46..2ef67cf 100644
+--- a/include/linux/htirq.h
++++ b/include/linux/htirq.h
+@@ -7,16 +7,21 @@ struct ht_irq_msg {
+ };
+ 
+ /* Helper functions.. */
++struct irq_desc;
+ void fetch_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg);
+ void write_ht_irq_msg(unsigned int irq, struct ht_irq_msg *msg);
+ void mask_ht_irq(unsigned int irq);
+ void unmask_ht_irq(unsigned int irq);
++void fetch_ht_irq_desc_msg(struct irq_desc *desc, struct ht_irq_msg *msg);
++void write_ht_irq_desc_msg(struct irq_desc *desc, struct ht_irq_msg *msg);
++void mask_ht_irq_desc(struct irq_desc *);
++void unmask_ht_irq_desc(struct irq_desc *);
+ 
+ /* The arch hook for getting things started */
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev);
+ 
+ /* For drivers of buggy hardware */
+-typedef void (ht_irq_update_t)(struct pci_dev *dev, int irq,
++typedef void (ht_irq_update_t)(struct pci_dev *dev, struct irq_desc *desc,
+ 			       struct ht_irq_msg *msg);
+ int __ht_create_irq(struct pci_dev *dev, int idx, ht_irq_update_t *update);
+ 
 -- 
 1.6.4.2
 
