@@ -1,52 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078Ab0CDX22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 18:28:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47966 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756794Ab0CDX20 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 18:28:26 -0500
-Date: Thu, 4 Mar 2010 15:28:11 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@gmail.com>
-cc: Stephane Marchesin <stephane.marchesin@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <alpine.LFD.2.00.1003041507070.3751@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1003041522570.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>  <20100304190450.GA23807@srcf.ucam.org>  <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>  <20100304192524.GA24253@srcf.ucam.org>
-  <alpine.LFD.2.00.1003041131490.3751@localhost.localdomain>  <20100304195302.GA24856@srcf.ucam.org>  <alpine.LFD.2.00.1003041202240.3751@localhost.localdomain>  <6a89f9d51003041257j39fde3b6y8bd3336d77f7cf7a@mail.gmail.com>  <alpine.LFD.2.00.1003041449380.3751@localhost.localdomain>
- <21d7e9971003041503p726ecbebi4b0b97854c5824de@mail.gmail.com> <alpine.LFD.2.00.1003041507070.3751@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1757165Ab0CDX2h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 18:28:37 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6860 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757156Ab0CDX2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 18:28:34 -0500
+Date: Thu, 4 Mar 2010 18:27:56 -0500
+From: Dave Jones <davej@redhat.com>
+To: venkatesh.pallipadi@intel.com
+Cc: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@gmail.com>
+Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
+ governor - v2
+Message-ID: <20100304232756.GA13895@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	venkatesh.pallipadi@intel.com, Ingo Molnar <mingo@elte.hu>,
+	H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@gmail.com>
+References: <20100304231454.247805000@intel.com>
+ <20100304231547.798303000@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100304231547.798303000@intel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 04, 2010 at 03:14:56PM -0800, Venki Pallipadi wrote:
+ 
+ > +	if (!strncmp(gov->name, "performance", strlen("performance")))
+ > +		epb_val = ENERGY_PERF_BIAS_PERF;
+ > +	else if (!strncmp(gov->name, "powersave", strlen("powersave")))
+ > +		epb_val = ENERGY_PERF_BIAS_POWER;
+ > +	else
+ > +		epb_val = ENERGY_PERF_BIAS_ONDEMAND;
+ > +
+ > +	set_epb_on_cpu(epb_val, cpu);
+ > +	return 0;
 
+hardcoding a list of cpufreq governors is kinda icky, but I don't have
+a better solution.  We'll just have to be mindful of it if we ever
+get around to finally making performance/powersave personalities
+of ondemand as was discussed years ago.
 
-On Thu, 4 Mar 2010, Linus Torvalds wrote:
-> 
-> Is it really just nouveau? I've not looked, but I bet the intel driver and 
-> the radeon driver have _exactly_ the same "oh, I'm the wrong version, I 
-> will now kill myself" behavior.
+What if the governor is set to 'userspace' ?
+powernowd/cpufreqd are sort of ondemand-done-in-userspace, but there
+may also be other userspace governors we don't know about.
+I suppose it's not catastrophic..
 
-Ok, I cloned the drm tree just to see, and it does seem like it's just 
-nouveau that does that whole thing. At least from a quick grep of 
-drmGetVersion() calls.
+	Dave
 
-> I certainly seem to remember some similar issues with the intel driver 
-> long long ago.
-
-.. but Jesse tells me that it's using feature masks etc, so maybe my 
-recollection is about unrelated issues.
-
-So yeah, nouveau seems to "special". Although somebody already said that 
-if I'd have had a radeon, I'd have seen similar issues. Maybe the radeon 
-driver just doesn't check the version number, and fails in different ways.
-
-		Linus
