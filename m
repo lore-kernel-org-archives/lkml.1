@@ -1,66 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233Ab0CDUWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:22:24 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35921 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753310Ab0CDUWX (ORCPT
+	id S1755051Ab0CDUXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 15:23:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60357 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341Ab0CDUX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:22:23 -0500
-Date: Thu, 4 Mar 2010 15:22:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Weirdness in patch
-Message-ID: <Pine.LNX.4.44L0.1003041511070.1305-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Mar 2010 15:23:29 -0500
+Subject: Re: [RFC][PATCH 08/11] perf, x86: Implement simple LBR support
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com
+In-Reply-To: <1267726733.25158.219.camel@laptop>
+References: <20100303163936.906011640@chello.nl>
+	 <20100303164306.451251096@chello.nl>
+	 <bd4cb8901003031357x9c13c96h3899ab0459a34b0e@mail.gmail.com>
+	 <1267693107.25158.149.camel@laptop>
+	 <bd4cb8901003040954n5b05e139wa24f8e50789421ac@mail.gmail.com>
+	 <1267726733.25158.219.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Mar 2010 21:23:25 +0100
+Message-ID: <1267734205.16716.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg:
-
-In my copy of gregkh-all-2.6.33.patch (which is dated 2010-03-01), 
-there are changes to drivers/base/power/main.c, coming from the 
-gregkh-05-driver-core/driver-core-create-lock-unlock-functions-for-struct-device 
-patch.
-
-The first weird thing is this.  That file as it currently exists on
-www.kernel.org (dated 2010-03-03) contains the following hunk (it's the
-last hunk for drivers/base/power/main.c):
-
-@@ -962,7 +962,7 @@ static int device_prepare(struct device
- 		suspend_report_result(dev->class->pm->prepare, error);
- 	}
-  End:
--	up(&dev->sem);
-+	device_unlock(dev);
- 
- 	return error;
- }
-
-But in my copy of gregkh-all-2.6.33.patch, the corresponding hunk is:
-
-@@ -852,7 +852,7 @@
- 		suspend_report_result(dev->class->pm->prepare, error);
- 	}
-  End:
--	up(&dev->sem);
-+	device_lock(dev);
- 
- 	return error;
- }
-
-The device_unlock() got changed to device_lock()!  That messed up my 
-suspend testing for a while...
-
-Secondly, none of these changes is present in the 
-gregkh-all-2.6.33.patch file at www.kernel.org.  Isn't that supposed to 
-contain all the patches from the subsystems merged into one?
-
-What's the story?
-
-Alan Stern
+On Thu, 2010-03-04 at 19:18 +0100, Peter Zijlstra wrote:
+> What is currently implemented is that we loose history at the point a
+> new task schedules in an LBR using event.
+> 
+This also matches CPU errata AX14, AJ52 and AAK109 which states that a
+task switch may produce faulty LBR state, so clearing history after a
+task switch seems the best thing to do.
 
