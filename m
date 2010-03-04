@@ -1,57 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715Ab0CDQeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:34:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45496 "EHLO mx2.suse.de"
+	id S1755963Ab0CDQe2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:34:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46469 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755432Ab0CDQeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:34:22 -0500
-Date: Fri, 5 Mar 2010 03:34:18 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Miao Xie <miaox@cn.fujitsu.com>, David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-MM <linux-mm@kvack.org>, tglx <tglx@linutronix.de>
-Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
- and mems_allowed
-Message-ID: <20100304163417.GS8653@laptop>
-References: <4B8E3F77.6070201@cn.fujitsu.com>
- <20100304033017.GN8653@laptop>
- <1267714704.25158.199.camel@laptop>
+	id S1755432Ab0CDQeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:34:25 -0500
+Date: Thu, 4 Mar 2010 16:33:55 GMT
+From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tzanussi@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tzanussi@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1267599873-8193-2-git-send-email-tzanussi@gmail.com>
+References: <1267599873-8193-2-git-send-email-tzanussi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/pebs] perf trace/scripting: Remove extraneous header read
+Message-ID: <tip-10c95f4f41889daaa8130e0bd12209825dbe8d39@git.kernel.org>
+Git-Commit-ID: 10c95f4f41889daaa8130e0bd12209825dbe8d39
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1267714704.25158.199.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:33:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 03:58:24PM +0100, Peter Zijlstra wrote:
-> On Thu, 2010-03-04 at 14:30 +1100, Nick Piggin wrote:
-> > 
-> > Thanks for working on this. However, rwlocks are pretty nasty to use
-> > when you have short critical sections and hot read-side (they're twice
-> > as heavy as even spinlocks in that case). 
-> 
-> Should we add a checkpatch.pl warning for them? 
+Commit-ID:  10c95f4f41889daaa8130e0bd12209825dbe8d39
+Gitweb:     http://git.kernel.org/tip/10c95f4f41889daaa8130e0bd12209825dbe8d39
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Wed, 3 Mar 2010 01:04:32 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 4 Mar 2010 12:19:54 +0100
 
-Yes I think it could be useful.
+perf trace/scripting: Remove extraneous header read
 
-Most people agree rwlock is *almost* always the wrong thing to do. Or at
-least, they can easily be used wrongly because they seem like a great
-idea for read-mostly data.
+perf_header__read() is already done in perf_session__open(), so
+remove it from the script gen case.
 
-> 
-> There really rarely is a good case for using rwlock_t, for as you say
-> they're a pain and often more expensive than a spinlock_t, and if
-> possible RCU has the best performance.
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: fweisbec@gmail.com
+Cc: rostedt@goodmis.org
+LKML-Reference: <1267599873-8193-2-git-send-email-tzanussi@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-trace.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Yep. Not to mention they starve writers (and don't FIFO like spinlocks).
-
-Between normal spinlocks, RCU, percpu, and seqlocks, there's not much
-room for rwlocks. Even tasklist lock should be RCUable if the effort is
-put into it.
-
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index 5db687f..b8153db 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -608,7 +608,6 @@ int cmd_trace(int argc, const char **argv, const char *prefix __used)
+ 			return -1;
+ 		}
+ 
+-		perf_header__read(&session->header, input);
+ 		err = scripting_ops->generate_script("perf-trace");
+ 		goto out;
+ 	}
