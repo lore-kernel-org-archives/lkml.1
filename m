@@ -1,60 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572Ab0CDAVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 19:21:06 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:52571 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754487Ab0CDAU6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 19:20:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FyFk4cxXSgnnilxflbFevxwcjH7c6do5RWq6gw4g8hu131j8hm887EAio4gZ679AcN
-         G4fhDYpXLIQ3vcOLmrktDeYUAlTkvrBrTIKk3/5nxCqophYMRpgOuv9vEdeU2OeSwSaV
-         QiPxTsxKit26mzX1KclaFzFJeaUko29ANeqE4=
+	id S1754546Ab0CDAWl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 19:22:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44898 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753529Ab0CDAWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 19:22:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI / PM: Move ACPI video resume to a PM notifier
+Date: Thu, 4 Mar 2010 01:25:30 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <9debc4411003030709r597d4f6dmeacadce5c3cf2ed7@mail.gmail.com>
-References: <1267506354.1618.4.camel@virtubuntu> <201003021451.59773.arnd@arndb.de> 
-	<9debc4411003030709r597d4f6dmeacadce5c3cf2ed7@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 3 Mar 2010 19:20:37 -0500
-Message-ID: <8bd0f97a1003031620s44cff658x81fc36fa2a8efd96@mail.gmail.com>
-Subject: Re: yaffs2 NAND fs
-To: Maxin John <maxin.john@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Peter Paul <abnominales@web.de>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003040125.30091.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 3, 2010 at 10:09, Maxin John wrote:
-> On Tue, Mar 2, 2010 at 7:21 PM, Arnd Bergmann wrote:
->> On Tuesday 02 March 2010, Peter Paul wrote:
->>> I was wondering why the yaffs2 file system has not gone for mainline
->>> yet. It's rather popular flash file system in the embedded world, while
->>> it is rather easy to patch a kernel to have yaffs2 support [1] it would
->>> be even nicer if it was just in mainline.
->>> The source of the GPLv2 file system can be found at [2]
->>>
->>> [1] http://www.yaffs.net/howto-incorporate-yaffs
->>> [2] http://www.aleph1.co.uk/cgi-bin/viewcvs.cgi/yaffs2/
->>
->> I would guess it's a combination of multiple reasons:
->>
->> 1. It has not been submitted for upstream inclusion, at least not
->>   during the last few years.
->> 2. We don't have a staging area like drivers/staging for file systems
->>   in the way that we have for drivers
->> 3. There is now ubifs and (soon) logfs upstream, both of which appear
->>   to be superior to yaffs in many ways.
->
-> This means there should be no reference to YAFFS2 in the upstream
-> kernel? Because, I have located some defconfigs in upstream kernel
-> where YAFFS2 support is enabled by default.
+There is a problem with the ACPI video resume routine that it's
+executed before the GPU that may be accessed by it.  To fix this
+issue, move the ACPI video resume to a power management notifier,
+so that it's executed after resuming all devices, including the GPU.
 
-irrelevant noise
--mike
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/video.c |   31 +++++++++++++++++++++++--------
+ 1 file changed, 23 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/drivers/acpi/video.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/video.c
++++ linux-2.6/drivers/acpi/video.c
+@@ -43,6 +43,7 @@
+ #include <linux/dmi.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
++#include <linux/suspend.h>
+ 
+ #define PREFIX "ACPI: "
+ 
+@@ -88,7 +89,6 @@ module_param(allow_duplicates, bool, 064
+ static int register_count = 0;
+ static int acpi_video_bus_add(struct acpi_device *device);
+ static int acpi_video_bus_remove(struct acpi_device *device, int type);
+-static int acpi_video_resume(struct acpi_device *device);
+ static void acpi_video_bus_notify(struct acpi_device *device, u32 event);
+ 
+ static const struct acpi_device_id video_device_ids[] = {
+@@ -104,7 +104,6 @@ static struct acpi_driver acpi_video_bus
+ 	.ops = {
+ 		.add = acpi_video_bus_add,
+ 		.remove = acpi_video_bus_remove,
+-		.resume = acpi_video_resume,
+ 		.notify = acpi_video_bus_notify,
+ 		},
+ };
+@@ -159,6 +158,7 @@ struct acpi_video_bus {
+ 	struct proc_dir_entry *dir;
+ 	struct input_dev *input;
+ 	char phys[32];	/* for input device */
++	struct notifier_block pm_nb;
+ };
+ 
+ struct acpi_video_device_flags {
+@@ -2226,24 +2226,31 @@ static void acpi_video_device_notify(acp
+ 	return;
+ }
+ 
+-static int instance;
+-static int acpi_video_resume(struct acpi_device *device)
++static int acpi_video_resume(struct notifier_block *nb,
++				unsigned long val, void *ign)
+ {
+ 	struct acpi_video_bus *video;
+ 	struct acpi_video_device *video_device;
+ 	int i;
+ 
+-	if (!device || !acpi_driver_data(device))
+-		return -EINVAL;
++	switch (val) {
++	case PM_HIBERNATION_PREPARE:
++	case PM_SUSPEND_PREPARE:
++	case PM_RESTORE_PREPARE:
++		return NOTIFY_DONE;
++	}
+ 
+-	video = acpi_driver_data(device);
++	video = container_of(nb, struct acpi_video_bus, pm_nb);
++
++	dev_info(&video->device->dev, "Restoring backlight state\n");
+ 
+ 	for (i = 0; i < video->attached_count; i++) {
+ 		video_device = video->attached_array[i].bind_info;
+ 		if (video_device && video_device->backlight)
+ 			acpi_video_set_brightness(video_device->backlight);
+ 	}
+-	return AE_OK;
++
++	return NOTIFY_OK;
+ }
+ 
+ static acpi_status
+@@ -2267,6 +2274,8 @@ acpi_video_bus_match(acpi_handle handle,
+ 	return AE_OK;
+ }
+ 
++static int instance;
++
+ static int acpi_video_bus_add(struct acpi_device *device)
+ {
+ 	struct acpi_video_bus *video;
+@@ -2360,6 +2369,10 @@ static int acpi_video_bus_add(struct acp
+ 	       video->flags.rom ? "yes" : "no",
+ 	       video->flags.post ? "yes" : "no");
+ 
++	video->pm_nb.notifier_call = acpi_video_resume;
++	video->pm_nb.priority = 0;
++	register_pm_notifier(&video->pm_nb);
++
+ 	return 0;
+ 
+  err_free_input_dev:
+@@ -2386,6 +2399,8 @@ static int acpi_video_bus_remove(struct 
+ 
+ 	video = acpi_driver_data(device);
+ 
++	unregister_pm_notifier(&video->pm_nb);
++
+ 	acpi_video_bus_stop_devices(video);
+ 	acpi_video_bus_put_devices(video);
+ 	acpi_video_bus_remove_fs(device);
