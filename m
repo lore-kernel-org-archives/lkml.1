@@ -1,228 +1,336 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338Ab0CDOCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:02:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39720 "EHLO
+	id S1753209Ab0CDOCp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:02:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39712 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204Ab0CDOCN (ORCPT
+	with ESMTP id S1754024Ab0CDOCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:02:13 -0500
-Message-Id: <20100304140100.315416040@chello.nl>
+	Thu, 4 Mar 2010 09:02:07 -0500
+Message-Id: <20100304140100.619375431@chello.nl>
 References: <20100304140046.596569763@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Mar 2010 15:00:51 +0100
+Date: Thu, 04 Mar 2010 15:00:55 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
        fweisbec@gmail.com, Arnaldo Carvalho de Melo <acme@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jamie Iles <jamie.iles@picochip.com>, Jean Pihet <jpihet@mvista.com>,
-       stable@kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 05/14] perf: Generic perf_sample_data initialization
-Content-Disposition: inline; filename=perf-fixup-data.patch
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Subject: [PATCH 09/14] perf, x86: use LBR for PEBS IP+1 fixup
+Content-Disposition: inline; filename=perf-pebs-lbr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes it easier to extend perf_sample_data and fixes a bug on
-arm and sparc, which failed to set ->raw to NULL, which can cause
-crashes when combined with PERF_SAMPLE_RAW.
+PEBS always reports the IP+1, that is the instruction after the one
+that got sampled, cure this by using the LBR to reliably rewind the
+instruction stream.
 
-It also optimizes PowerPC and tracepoint, because the struct
-initialization is forced to zero out the whole structure.
-
-CC: Jamie Iles <jamie.iles@picochip.com>
-CC: Jean Pihet <jpihet@mvista.com>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Stephane Eranian <eranian@google.com>
-CC: stable@kernel.org
+CC: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Yanmin Zhang <yanmin_zhang@linux.intel.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: David S. Miller <davem@davemloft.net>
 LKML-Reference: <new-submission>
 ---
- arch/arm/kernel/perf_event.c           |    4 ++--
- arch/powerpc/kernel/perf_event.c       |    8 ++++----
- arch/sparc/kernel/perf_event.c         |    2 +-
- arch/x86/kernel/cpu/perf_event.c       |    3 +--
- arch/x86/kernel/cpu/perf_event_intel.c |    6 ++----
- include/linux/perf_event.h             |    7 +++++++
- kernel/perf_event.c                    |   21 ++++++++-------------
- 7 files changed, 25 insertions(+), 26 deletions(-)
+ arch/x86/include/asm/perf_event.h         |   19 ++++++
+ arch/x86/kernel/cpu/perf_event.c          |   70 ++++++++++++-------------
+ arch/x86/kernel/cpu/perf_event_intel.c    |    4 -
+ arch/x86/kernel/cpu/perf_event_intel_ds.c |   84 +++++++++++++++++++++++++++++-
+ include/linux/perf_event.h                |    6 ++
+ 5 files changed, 144 insertions(+), 39 deletions(-)
 
-Index: linux-2.6/arch/arm/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/perf_event.c
-+++ linux-2.6/arch/arm/kernel/perf_event.c
-@@ -965,7 +965,7 @@ armv6pmu_handle_irq(int irq_num,
- 	 */
- 	armv6_pmcr_write(pmcr);
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
-@@ -1945,7 +1945,7 @@ static irqreturn_t armv7pmu_handle_irq(i
- 	 */
- 	regs = get_irq_regs();
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
-Index: linux-2.6/arch/powerpc/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/perf_event.c
-+++ linux-2.6/arch/powerpc/kernel/perf_event.c
-@@ -1164,10 +1164,10 @@ static void record_and_restart(struct pe
- 	 * Finally record data if requested.
- 	 */
- 	if (record) {
--		struct perf_sample_data data = {
--			.addr	= ~0ULL,
--			.period	= event->hw.last_period,
--		};
-+		struct perf_sample_data data;
-+
-+		perf_sample_data_init(&data, ~0ULL);
-+		data.period = event->hw.last_period;
- 
- 		if (event->attr.sample_type & PERF_SAMPLE_ADDR)
- 			perf_get_data_addr(regs, &data.addr);
-Index: linux-2.6/arch/sparc/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/perf_event.c
-+++ linux-2.6/arch/sparc/kernel/perf_event.c
-@@ -1189,7 +1189,7 @@ static int __kprobes perf_event_nmi_hand
- 
- 	regs = args->regs;
- 
--	data.addr = 0;
-+	perf_sample_data_init(&data, 0);
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -1096,8 +1096,7 @@ static int x86_pmu_handle_irq(struct pt_
- 	int idx, handled = 0;
- 	u64 val;
+@@ -29,6 +29,41 @@
+ #include <asm/stacktrace.h>
+ #include <asm/nmi.h>
  
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
++/*
++ * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
++ */
++static unsigned long
++copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
++{
++	unsigned long offset, addr = (unsigned long)from;
++	int type = in_nmi() ? KM_NMI : KM_IRQ0;
++	unsigned long size, len = 0;
++	struct page *page;
++	void *map;
++	int ret;
++
++	do {
++		ret = __get_user_pages_fast(addr, 1, 0, &page);
++		if (!ret)
++			break;
++
++		offset = addr & (PAGE_SIZE - 1);
++		size = min(PAGE_SIZE - offset, n - len);
++
++		map = kmap_atomic(page, type);
++		memcpy(to, map+offset, size);
++		kunmap_atomic(map, type);
++		put_page(page);
++
++		len  += size;
++		to   += size;
++		addr += size;
++
++	} while (len < n);
++
++	return len;
++}
++
+ static u64 perf_event_mask __read_mostly;
  
- 	cpuc = &__get_cpu_var(cpu_hw_events);
+ struct event_constraint {
+@@ -1516,41 +1551,6 @@ perf_callchain_kernel(struct pt_regs *re
+ 	dump_trace(NULL, regs, NULL, regs->bp, &backtrace_ops, entry);
+ }
  
+-/*
+- * best effort, GUP based copy_from_user() that assumes IRQ or NMI context
+- */
+-static unsigned long
+-copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
+-{
+-	unsigned long offset, addr = (unsigned long)from;
+-	int type = in_nmi() ? KM_NMI : KM_IRQ0;
+-	unsigned long size, len = 0;
+-	struct page *page;
+-	void *map;
+-	int ret;
+-
+-	do {
+-		ret = __get_user_pages_fast(addr, 1, 0, &page);
+-		if (!ret)
+-			break;
+-
+-		offset = addr & (PAGE_SIZE - 1);
+-		size = min(PAGE_SIZE - offset, n - len);
+-
+-		map = kmap_atomic(page, type);
+-		memcpy(to, map+offset, size);
+-		kunmap_atomic(map, type);
+-		put_page(page);
+-
+-		len  += size;
+-		to   += size;
+-		addr += size;
+-
+-	} while (len < n);
+-
+-	return len;
+-}
+-
+ static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
+ {
+ 	unsigned long bytes;
 Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -590,10 +590,9 @@ static void intel_pmu_drain_bts_buffer(v
+@@ -547,7 +547,7 @@ static void intel_pmu_disable_event(stru
+ 	x86_pmu_disable_event(event);
  
- 	ds->bts_index = ds->bts_buffer_base;
+ 	if (unlikely(event->attr.precise))
+-		intel_pmu_pebs_disable(hwc);
++		intel_pmu_pebs_disable(event);
+ }
  
-+	perf_sample_data_init(&data, 0);
+ static void intel_pmu_enable_fixed(struct hw_perf_event *hwc)
+@@ -600,7 +600,7 @@ static void intel_pmu_enable_event(struc
+ 	}
  
- 	data.period	= event->hw.last_period;
--	data.addr	= 0;
--	data.raw	= NULL;
- 	regs.ip		= 0;
+ 	if (unlikely(event->attr.precise))
+-		intel_pmu_pebs_enable(hwc);
++		intel_pmu_pebs_enable(event);
  
- 	/*
-@@ -740,8 +739,7 @@ static int intel_pmu_handle_irq(struct p
- 	int bit, loops;
- 	u64 ack, status;
+ 	__x86_pmu_enable_event(hwc);
+ }
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel_ds.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
+@@ -331,26 +331,32 @@ intel_pebs_constraints(struct perf_event
+ 	return &emptyconstraint;
+ }
  
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
+-static void intel_pmu_pebs_enable(struct hw_perf_event *hwc)
++static void intel_pmu_pebs_enable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val = cpuc->pebs_enabled;
  
- 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 	hwc->config &= ~ARCH_PERFMON_EVENTSEL_INT;
  
+ 	val |= 1ULL << hwc->idx;
+ 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
++
++	intel_pmu_lbr_enable(event);
+ }
+ 
+-static void intel_pmu_pebs_disable(struct hw_perf_event *hwc)
++static void intel_pmu_pebs_disable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct hw_perf_event *hwc = &event->hw;
+ 	u64 val = cpuc->pebs_enabled;
+ 
+ 	val &= ~(1ULL << hwc->idx);
+ 	wrmsrl(MSR_IA32_PEBS_ENABLE, val);
+ 
+ 	hwc->config |= ARCH_PERFMON_EVENTSEL_INT;
++
++	intel_pmu_lbr_disable(event);
+ }
+ 
+ static void intel_pmu_pebs_enable_all(void)
+@@ -369,6 +375,70 @@ static void intel_pmu_pebs_disable_all(v
+ 		wrmsrl(MSR_IA32_PEBS_ENABLE, 0);
+ }
+ 
++#include <asm/insn.h>
++
++#define MAX_INSN_SIZE	16
++
++static inline bool kernel_ip(unsigned long ip)
++{
++#ifdef CONFIG_X86_32
++	return ip > PAGE_OFFSET;
++#else
++	return (long)ip < 0;
++#endif
++}
++
++static int intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
++{
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	unsigned long from = cpuc->lbr_entries[0].from;
++	unsigned long old_to, to = cpuc->lbr_entries[0].to;
++	unsigned long ip = regs->ip;
++
++	if (!cpuc->lbr_stack.nr || !from || !to)
++		return 0;
++
++	if (ip < to)
++		return 0;
++
++	/*
++	 * We sampled a branch insn, rewind using the LBR stack
++	 */
++	if (ip == to) {
++		regs->ip = from;
++		return 1;
++	}
++
++	do {
++		struct insn insn;
++		u8 buf[MAX_INSN_SIZE];
++		void *kaddr;
++
++		old_to = to;
++		if (!kernel_ip(ip)) {
++			int bytes, size = min_t(int, MAX_INSN_SIZE, ip - to);
++
++			bytes = copy_from_user_nmi(buf, (void __user *)to, size);
++			if (bytes != size)
++				return 0;
++
++			kaddr = buf;
++		} else
++			kaddr = (void *)to;
++
++		kernel_insn_init(&insn, kaddr);
++		insn_get_length(&insn);
++		to += insn.length;
++	} while (to < ip);
++
++	if (to == ip) {
++		regs->ip = old_to;
++		return 1;
++	}
++
++	return 0;
++}
++
+ static int intel_pmu_save_and_restart(struct perf_event *event);
+ static void intel_pmu_disable_event(struct perf_event *event);
+ 
+@@ -427,6 +497,11 @@ static void intel_pmu_drain_pebs_core(st
+ 	regs.bp = at->bp;
+ 	regs.sp = at->sp;
+ 
++	if (intel_pmu_pebs_fixup_ip(&regs))
++		regs.flags |= PERF_EFLAGS_EXACT;
++	else
++		regs.flags &= ~PERF_EFLAGS_EXACT;
++
+ 	if (perf_event_overflow(event, 1, &data, &regs))
+ 		intel_pmu_disable_event(event);
+ 
+@@ -497,6 +572,11 @@ static void intel_pmu_drain_pebs_nhm(str
+ 		regs.bp = at->bp;
+ 		regs.sp = at->sp;
+ 
++		if (intel_pmu_pebs_fixup_ip(&regs))
++			regs.flags |= PERF_EFLAGS_EXACT;
++		else
++			regs.flags &= ~PERF_EFLAGS_EXACT;
++
+ 		if (perf_event_overflow(event, 1, &data, &regs))
+ 			intel_pmu_disable_event(event);
+ 	}
+Index: linux-2.6/arch/x86/include/asm/perf_event.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/perf_event.h
++++ linux-2.6/arch/x86/include/asm/perf_event.h
+@@ -136,6 +136,25 @@ extern void perf_events_lapic_init(void)
+ 
+ #define PERF_EVENT_INDEX_OFFSET			0
+ 
++/*
++ * Abuse bit 3 of the cpu eflags register to indicate proper PEBS IP fixups.
++ * This flag is otherwise unused and ABI specified to be 0, so nobody should
++ * care what we do with it.
++ */
++#define PERF_EFLAGS_EXACT	(1UL << 3)
++
++#define perf_misc_flags(regs)				\
++({	int misc = 0;					\
++	if (user_mode(regs))				\
++		misc |= PERF_RECORD_MISC_USER;		\
++	else						\
++		misc |= PERF_RECORD_MISC_KERNEL;	\
++	if (regs->flags & PERF_EFLAGS_EXACT)		\
++		misc |= PERF_RECORD_MISC_EXACT;		\
++	misc; })
++
++#define perf_instruction_pointer(regs)	((regs)->ip)
++
+ #else
+ static inline void init_hw_perf_events(void)		{ }
+ static inline void perf_events_lapic_init(void)	{ }
 Index: linux-2.6/include/linux/perf_event.h
 ===================================================================
 --- linux-2.6.orig/include/linux/perf_event.h
 +++ linux-2.6/include/linux/perf_event.h
-@@ -801,6 +801,13 @@ struct perf_sample_data {
- 	struct perf_raw_record		*raw;
- };
+@@ -294,6 +294,12 @@ struct perf_event_mmap_page {
+ #define PERF_RECORD_MISC_USER			(2 << 0)
+ #define PERF_RECORD_MISC_HYPERVISOR		(3 << 0)
  
-+static inline
-+void perf_sample_data_init(struct perf_sample_data *data, u64 addr)
-+{
-+	data->addr = addr;
-+	data->raw  = NULL;
-+}
++#define PERF_RECORD_MISC_EXACT			(1 << 14)
++/*
++ * Reserve the last bit to indicate some extended misc field
++ */
++#define PERF_RECORD_MISC_EXT_RESERVED		(1 << 15)
 +
- extern void perf_output_sample(struct perf_output_handle *handle,
- 			       struct perf_event_header *header,
- 			       struct perf_sample_data *data,
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -4108,8 +4108,7 @@ void __perf_sw_event(u32 event_id, u64 n
- 	if (rctx < 0)
- 		return;
- 
--	data.addr = addr;
--	data.raw  = NULL;
-+	perf_sample_data_init(&data, addr);
- 
- 	do_perf_sw_event(PERF_TYPE_SOFTWARE, event_id, nr, nmi, &data, regs);
- 
-@@ -4154,11 +4153,10 @@ static enum hrtimer_restart perf_swevent
- 	struct perf_event *event;
- 	u64 period;
- 
--	event	= container_of(hrtimer, struct perf_event, hw.hrtimer);
-+	event = container_of(hrtimer, struct perf_event, hw.hrtimer);
- 	event->pmu->read(event);
- 
--	data.addr = 0;
--	data.raw = NULL;
-+	perf_sample_data_init(&data, 0);
- 	data.period = event->hw.last_period;
- 	regs = get_irq_regs();
- 	/*
-@@ -4322,17 +4320,15 @@ static const struct pmu perf_ops_task_cl
- void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
- 			  int entry_size)
- {
-+	struct pt_regs *regs = get_irq_regs();
-+	struct perf_sample_data data;
- 	struct perf_raw_record raw = {
- 		.size = entry_size,
- 		.data = record,
- 	};
- 
--	struct perf_sample_data data = {
--		.addr = addr,
--		.raw = &raw,
--	};
--
--	struct pt_regs *regs = get_irq_regs();
-+	perf_sample_data_init(&data, addr);
-+	data.raw = &raw;
- 
- 	if (!regs)
- 		regs = task_pt_regs(current);
-@@ -4448,8 +4444,7 @@ void perf_bp_event(struct perf_event *bp
- 	struct perf_sample_data sample;
- 	struct pt_regs *regs = data;
- 
--	sample.raw = NULL;
--	sample.addr = bp->attr.bp_addr;
-+	perf_sample_data_init(&sample, bp->attr.bp_addr);
- 
- 	if (!perf_exclude_event(bp, regs))
- 		perf_swevent_add(bp, 1, 1, &sample, regs);
+ struct perf_event_header {
+ 	__u32	type;
+ 	__u16	misc;
 
 -- 
 
