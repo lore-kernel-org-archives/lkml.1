@@ -1,41 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755420Ab0CDSj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:39:27 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:44473 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752250Ab0CDSjZ (ORCPT
+	id S1755922Ab0CDSj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:39:29 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:53285 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755335Ab0CDSj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:39:25 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=inwComNxVjXMey/X5TMltxktQpYEDNef4MkHtHle65zqnpQEnmdEDcu4aesz6q1bR26uXp9H8gIebgwpNSR7jfLWeQ8KYQjDp+VMd8uiQTPpvR0uzyB1tPOHObuA+N0z;
-Date: Thu, 4 Mar 2010 10:39:29 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-Message-ID: <20100304103929.6eb81d45@jbarnes-piketon>
-In-Reply-To: <20100304103655.0b14343f@jbarnes-piketon>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	<alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-	<20100304103655.0b14343f@jbarnes-piketon>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Mar 2010 13:39:27 -0500
+Message-ID: <4B8FFE55.5070008@linux.vnet.ibm.com>
+Date: Thu, 04 Mar 2010 10:39:17 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC] [PATCH 1/1] perf: add support for arch-dependent symbolic
+ event names to "perf stat"
+References: <4B8F1B58.5000702@linux.vnet.ibm.com>
+In-Reply-To: <4B8F1B58.5000702@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 10:36:55 -0800
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> Yes Dave probably should have mentioned it in his pull request, but
-> that doesn't seem to be a good reason not to pull imo...
+On 3/3/2010 6:30 PM, Corey Ashford wrote:
+> For your review, this patch adds support for arch-dependent symbolic
+> event names to the "perf stat" tool, and could be expanded to other
+> "perf *" commands fairly easily, I suspect.
+>
+> To support arch-dependent event names without adding arch-dependent code
+> to perf, I added a callout mechanism whereby perf will look for the
+> environment variable: PERF_ARCH_DEP_LIB, and if it exists, it will try
+> to open it as a shared object. If that succeeds, it looks for the symbol
+> "parse_arch_dep_event". If that exists, that function will be called by
+> parse_events() before all of the other event parsing functions in
+> parse-events.c. It is passed the same arguments as the other
+> parse_*_event functions, namely the event string and a pointer to an
+> event attribute structure.
+>
+> As the code existed, "perf stat" would print out the count results, but
+> for raw events (which is how arch-dependent events are supported in
+> perf_events), it would just print out a raw code. This is not
+> acceptable, especially when a symbolic name was placed on the command
+> line. So I changed the code to save away the event name that was passed
+> on the command line, rather than doing a reverse translation to an event
+> string based on the event type and config fields of the attr structure.
+> In this way, there's no need for a reverse translation function in the
+> arch-dependent library; only a event string->attr struct function is
+> needed.
+>
+> I could well be missing something, but I don't understand why reverse
+> translation is ever needed in perf, as long as the tool keeps track of
+> the original event strings.
 
-And now I see Dave did mention this, so what gives.  Guidance please.
+A couple of follow-up comments on this patch:
+
+This functionality was designed to provide a generalized interface to an 
+external event name -> attr struct library, such as libpfm4.  libpfm4 has an 
+interface that nearly exactly matches parse_*_event() profiles, so it's quite 
+easy to write a small wrapper function to call libpfm4's function.
+
+Ingo Molnar discussed adding some visibility to the arch-dependent event names 
+through some other interface, such as through /sys/devices/pmus perhaps, but 
+that discussion is a long way (as far as I know) from having something usable 
+today.  So you could think of this external library approach to be a stop-gap 
+until something better is developed.  When/if that new event naming mechanism 
+becomes available, we can easily remove this external library support from perf.
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
+
+
