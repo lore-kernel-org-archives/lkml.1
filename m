@@ -1,117 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568Ab0CDJg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 04:36:26 -0500
-Received: from mga02.intel.com ([134.134.136.20]:55758 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755541Ab0CDJgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 04:36:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,580,1262592000"; 
-   d="scan'208";a="497682401"
-From: Sheng Yang <sheng@linux.intel.com>
-To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Keir Fraser <keir.fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>, linux-kernel@vger.kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir.fraser@citrix.com>,
-       Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 2/7] xen: Import cpuid.h from Xen
-Date: Thu,  4 Mar 2010 17:36:51 +0800
-Message-Id: <1267695416-14988-3-git-send-email-sheng@linux.intel.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
-References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com>
+	id S1755550Ab0CDJgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 04:36:45 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58580 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755204Ab0CDJgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 04:36:40 -0500
+Message-ID: <4B8F7F1A.6020000@cn.fujitsu.com>
+Date: Thu, 04 Mar 2010 17:36:26 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
+ and mems_allowed
+References: <4B8E3F77.6070201@cn.fujitsu.com> <20100304033017.GN8653@laptop>
+In-Reply-To: <20100304033017.GN8653@laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keir Fraser <keir.fraser@citrix.com>
+on 2010-3-4 11:30, Nick Piggin wrote:
+> On Wed, Mar 03, 2010 at 06:52:39PM +0800, Miao Xie wrote:
+>> if MAX_NUMNODES > BITS_PER_LONG, loading/storing task->mems_allowed or mems_allowed in
+>> task->mempolicy are not atomic operations, and the kernel page allocator gets an empty
+>> mems_allowed when updating task->mems_allowed or mems_allowed in task->mempolicy. So we
+>> use a rwlock to protect them to fix this probelm.
+> 
+> Thanks for working on this. However, rwlocks are pretty nasty to use
+> when you have short critical sections and hot read-side (they're twice
+> as heavy as even spinlocks in that case).
+> 
+> It's being used in the page allocator path, so I would say rwlocks are
+> almost a showstopper. Wouldn't it be possible to use a seqlock for this?
+> 
 
-Which would be used by CPUID detection later
+I will do my best to try to do it.
 
-Signed-off-by: Keir Fraser <keir.fraser@citrix.com>
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
----
- arch/x86/include/asm/xen/cpuid.h |   68 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 68 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/xen/cpuid.h
-
-diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
-new file mode 100644
-index 0000000..8787f03
---- /dev/null
-+++ b/arch/x86/include/asm/xen/cpuid.h
-@@ -0,0 +1,68 @@
-+/******************************************************************************
-+ * arch/include/asm/xen/cpuid.h
-+ *
-+ * CPUID interface to Xen.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2007 Citrix Systems, Inc.
-+ *
-+ * Authors:
-+ *    Keir Fraser <keir.fraser@citrix.com>
-+ */
-+
-+#ifndef __ASM_X86_XEN_CPUID_H__
-+#define __ASM_X86_XEN_CPUID_H__
-+
-+/* Xen identification leaves start at 0x40000000. */
-+#define XEN_CPUID_FIRST_LEAF 0x40000000
-+#define XEN_CPUID_LEAF(i)    (XEN_CPUID_FIRST_LEAF + (i))
-+
-+/*
-+ * Leaf 1 (0x40000000)
-+ * EAX: Largest Xen-information leaf. All leaves up to an including @EAX
-+ *      are supported by the Xen host.
-+ * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
-+ *      of a Xen host.
-+ */
-+#define XEN_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
-+#define XEN_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
-+#define XEN_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
-+
-+/*
-+ * Leaf 2 (0x40000001)
-+ * EAX[31:16]: Xen major version.
-+ * EAX[15: 0]: Xen minor version.
-+ * EBX-EDX: Reserved (currently all zeroes).
-+ */
-+
-+/*
-+ * Leaf 3 (0x40000002)
-+ * EAX: Number of hypercall transfer pages. This register is always guaranteed
-+ *      to specify one hypercall page.
-+ * EBX: Base address of Xen-specific MSRs.
-+ * ECX: Features 1. Unused bits are set to zero.
-+ * EDX: Features 2. Unused bits are set to zero.
-+ */
-+
-+/* Does the host support MMU_PT_UPDATE_PRESERVE_AD for this guest? */
-+#define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
-+#define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
-+
-+#endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
--- 
-1.5.4.5
+Thanks!
+Miao
 
