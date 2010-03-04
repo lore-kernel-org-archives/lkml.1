@@ -1,132 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327Ab0CDUIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:08:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49231 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932258Ab0CDUIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:08:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
-Date: Thu, 4 Mar 2010 21:11:32 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "colin.king@canonical.com" <colin.king@canonical.com>
-References: <1267665799-670-1-git-send-email-shaohua.li@intel.com> <20100304024141.GA29235@sli10-desk.sh.intel.com> <201003042049.46240.rjw@sisk.pl>
-In-Reply-To: <201003042049.46240.rjw@sisk.pl>
+	id S1755762Ab0CDUL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 15:11:27 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:23892 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753202Ab0CDUL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 15:11:26 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
+Date: Thu, 4 Mar 2010 22:11:23 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: Cong Wang <amwang@redhat.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nhorman@tuxdriver.com, eric.dumazet@gmail.com
+References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com> <4B8F6FF0.5000306@redhat.com> <m1vddbdhmo.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vddbdhmo.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201003042111.32481.rjw@sisk.pl>
+Message-Id: <201003042211.23460.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 04 Mar 2010 20:11:23.0783 (UTC) FILETIME=[DCF3A170:01CABBD6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 March 2010, Rafael J. Wysocki wrote:
-> On Thursday 04 March 2010, Shaohua Li wrote:
-> > On Thu, Mar 04, 2010 at 10:30:02AM +0800, H. Peter Anvin wrote:
-> > > On 03/03/2010 05:23 PM, Shaohua Li wrote:
-> > > > Colin reported a strange oops in S4 resume code path (see below). The test
-> > > > system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-> > > > The oops always happen a virtual address 0xc03ff000, which is mapped to the
-> > > > last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
-> > > > 
-> > > > EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-> > > > EIP is at copy_loop+0xe/0x15
-> > > > EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-> > > > ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
-> > > >  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> > > > ...
-> > > > ...
-> > > > CR2: 00000000c03ff000
-> > > > 
-> > > > Tested-by: Colin Ian King <colin.king@canonical.com>
-> > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > > ---
-> > > >  arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
-> > > >  1 files changed, 11 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-> > > > index b641388..9e4ef64 100644
-> > > > --- a/arch/x86/power/hibernate_asm_32.S
-> > > > +++ b/arch/x86/power/hibernate_asm_32.S
-> > > > @@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
-> > > >  	ret
-> > > >  
-> > > >  ENTRY(restore_image)
-> > > > +	movl	mmu_cr4_features, %ecx
-> > > >  	movl	resume_pg_dir, %eax
-> > > >  	subl	$__PAGE_OFFSET, %eax
-> > > >  	movl	%eax, %cr3
-> > > >  
-> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > > > +	movl	%ecx, %edx
-> > > > +	andl	$~(X86_CR4_PGE), %edx
-> > > > +	movl	%edx, %cr4;  # turn off PGE
-> > > > +1:
-> > > > +	movl	%cr3, %eax;  # flush TLB
-> > > > +	movl	%eax, %cr3
-> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > > > +	movl	%ecx, %cr4;  # turn PGE back on
-> > > > +1:
-> > > >  	movl	restore_pblist, %edx
-> > > >  	.p2align 4,,7
-> > > >  
-> > > 
-> > > Since we're about to do another global page flush a bit further down in
-> > > the same code, why not just leave PGE off until then?
-> > sure, updated patch.
-> > 
-> > 
-> > i386: do a global tlb flush in S4 resume
-> > 
-> >     Colin reported a strange oops in S4 resume code path (see below). The test
-> >     system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-> >     The oops always happen a virtual address 0xc03ff000, which is mapped to the
-> >     last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
-> > 
-> >     EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-> >     EIP is at copy_loop+0xe/0x15
-> >     EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-> >     ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
-> >      DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> >     ...
-> >     ...
-> >     CR2: 00000000c03ff000
-> > 
-> >     Tested-by: Colin Ian King <colin.king@canonical.com>
-> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > 
-> > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-> > index b641388..cd5e878 100644
-> > --- a/arch/x86/power/hibernate_asm_32.S
-> > +++ b/arch/x86/power/hibernate_asm_32.S
-> > @@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
-> >  	ret
-> >  
-> >  ENTRY(restore_image)
-> > +	movl	mmu_cr4_features, %ecx
-> >  	movl	resume_pg_dir, %eax
-> >  	subl	$__PAGE_OFFSET, %eax
-> >  	movl	%eax, %cr3
-> >  
-> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > +	andl	$~(X86_CR4_PGE), %ecx
-> > +	movl	%ecx, %cr4;  # turn off PGE
-> > +	movl	%cr3, %eax;  # flush TLB
-> > +	movl	%eax, %cr3
-> > +1:
-> >  	movl	restore_pblist, %edx
-> >  	.p2align 4,,7
+On Thursday 04 March 2010 21:14:07 you wrote:
+> Cong Wang <amwang@redhat.com> writes:
+> > David Miller wrote:
+> >> Eric B., could you look over the first two patches (which touch the
+> >> sysctl core) and give some review and ACK/NACK?
+> >
+> > ping Eric W. Biederman ... :)
 > 
-> In that case please also remove the turning GPE off down the road.
+> I have looked and it is not easy to tell by simple review if
+> correctness has been maintained in the proc cleanup patch.
+> Furthermore the code even after the cleanups still feels like code
+> that is trying too hard to do too much.
+> 
+> 
+> I think the example set by bitmap_parse_user in it's user interface is
+> a good example to follow when constructing bitmap helper functions.
+> Including having the actual parsing code should live in lib/bitmap.c
+> 
+> The users of bitmap_parse_user do something very nice.  They allocate
+> a temporary bitmap.  Parse the userspace value into the temporary
+> bitmap, and then move that new bitmap into the kernel data structures.
+> For your large bitmap this seems like the idea way to handle it.  That
+> guarantees no weird intermediate failure states, and really makes the
+> the bitmap feel like a single value.
+> 
+> I would add the restriction that the values in the list of ranges
+> always must be increasing, and in general restrict the set of accepted
+> values as much as possible.  If we don't accept it now we don't have
+> to worry about some userspace application relying on some unitended
+> side effect a few years into the future.
+> 
 
-s/GPE/PGE/
+Eric, thanks for taking the time to go over it again. I now do share you 
+opinion that we need to be more atomic. How about this simple approach:
 
-doh, too much ACPI programming lately.
+1. Allocate new kernel buffer for the text and copy the whole userspace buffer 
+into it.
+2. Allocate temporary buffer for bitmap.
+3. Parse the kernel text buffer into the temp bitmap.
+4. Copy the temp bitmap into the final bitmap.
 
-Rafael
+This is simple and clean but it has the disadvantage of potentially allocating 
+a large chunk of memory, although even in the case that all ports are going to 
+be set the temporary buffer will not go over 390K, which is now not an issue 
+anymore for kmalloc, right?
+
+> I think it is a serious bug that you clear the destination bitmap
+> in the middle of parsing it.  That will either open or close all
+> ports in the middle of parsing, and I can't see how that would
+> ever be a good thing.
+> 
+
+Even when doing the copy from the temp bitmap you still have some inconsistent 
+bitmap state while copying. 
+
+We could solve by replacing the old buffer with the new one + RCU.
+
+
+
