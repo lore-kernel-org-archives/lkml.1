@@ -1,100 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904Ab0CDV3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:29:55 -0500
-Received: from mail.perches.com ([173.55.12.10]:1390 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826Ab0CDV3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:29:54 -0500
-Subject: Re: [RFC PATCH] printk: Convert pr_<level> macros to functions
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20100304124943.ce7c1a63.akpm@linux-foundation.org>
-References: <1267629618.8926.73.camel@Joe-Laptop.home>
-	 <20100304124943.ce7c1a63.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Mar 2010 13:29:52 -0800
-Message-ID: <1267738192.12993.48.camel@Joe-Laptop.home>
+	id S1753756Ab0CDVan (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:30:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59601 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826Ab0CDVal (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:30:41 -0500
+X-Authority-Analysis: v=1.0 c=1 a=JmiDjSKT-SYA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=tK20XPZL8-7P23MAwC0A:9 a=xoeaE6sM9RG6h97i_WXa8B3qr3kA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
+ events
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, Greg KH <greg@kroah.com>
+In-Reply-To: <20100304211741.GB3643@elte.hu>
+References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
+	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
+	 <1267632387.10871.59.camel@gandalf.stny.rr.com>
+	 <1267634258.25158.88.camel@laptop>
+	 <1267636046.10871.74.camel@gandalf.stny.rr.com>
+	 <1267636595.25158.93.camel@laptop> <20100304112531.GF21977@elte.hu>
+	 <1267715801.10871.191.camel@gandalf.stny.rr.com>
+	 <20100304153606.GA32496@elte.hu>
+	 <1267718131.10871.240.camel@gandalf.stny.rr.com>
+	 <20100304211741.GB3643@elte.hu>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 04 Mar 2010 16:30:38 -0500
+Message-ID: <1267738238.10871.582.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 12:49 -0800, Andrew Morton wrote:
-> On Wed, 03 Mar 2010 07:20:18 -0800 Joe Perches <joe@perches.com> wrote:
-> > Maybe moving printed_len to file scope is racy somehow?
-> Yes, printed_len will get corrupted when multiple CPU's are running
-> printk/vprintk simultaneously.  That'll need to be fixed.
+On Thu, 2010-03-04 at 22:17 +0100, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
 
-I think it'll be easier to use the %pV construct that
-I posted today:
+> No, we want to decouple it from 'tracing'. It's events, not tracing. Events 
+> are more broader, they can be used for RAS, profiling, counting, etc. - not 
+> just tracing.
+> 
+> Furthermore, we only want /debug/tracing/events really, not the various 
+> dynamic ftrace controls - those could remain in /debug/tracing/.
 
-http://lkml.org/lkml/2010/3/4/19
+I was talking about the files in the events directory:
 
-> Is it possible to reduce the amount of
-> code movement in the patch, make it a bit easier to follow?
+events/sched/sched_switch/{id,format,enable,filter}
 
-I can do the move-around separately.
 
-I think it'll be better as:
+Seems only the format file should go in, and perhaps the id.
 
-asmlinkage int pr_emerg(const char *fmt, ...)
-{
-	struct va_format vaf;
-	va_list args;
+I can keep the debug/tracing/events/* as is too, where the format and id
+just call the same routines that the eventfs calls, but add the enable
+and filter to be specific to ftrace.
 
-	va_start(args, fmt);
-	vaf.fmt = fmt;
-	vaf.va = &args;
-	r = printk(KERN_EMERG "%pV", &vaf);
-	va_end(args);
-
-	return r;
-}
-EXPORT_SYMBOL(pr_emerg);
-
-I believe that avoids any racing.
-
-> I think it would be justifiable to cook up a freaky macro and expand it
-> eight times to avoid this duplication.  Ugly, but better than lots of
-> duplication.
-
-Maybe something like:
-
-#define define_pr_level(function, level)	\
-asmlinkage int function(const char *fmt, ...)	\
-{						\
-	struct va_format vaf;			\
-	va_list args;				\
-						\
-	va_start(args, fmt);			\
-	vaf.fmt = fmt;				\
-	vaf.va = &args;				\
-	r = printk(level "%pV", &vaf);		\
-	va_end(args);				\
-						\
-	return r;				\
-}						\
-EXPORT_SYMBOL(function)
-
-define_pr_level(pr_emerg,	KERN_EMERG);
-define_pr_level(pr_alert,	KERN_ALERT);
-define_pr_level(pr_crit,	KERN_CRIT);
-define_pr_level(pr_err,		KERN_ERR);
-define_pr_level(pr_warning,	KERN_WARNING);
-define_pr_level(pr_notice,	KERN_NOTICE);
-define_pr_level(pr_info,	KERN_INFO);
-
-I think that's a bit ugly though myself.
-
-> Or perhaps we can do it via a helper function which takes the
-> additional argument?
-> asmlinkage int pr_everything(char levelchar, const char *fmt, ...)
-
-I believe that could not work.
-The symbol names to link against wouldn't be found.
+-- Steve
 
 
