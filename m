@@ -1,92 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112Ab0CDVNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:13:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38436 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756437Ab0CDVNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:13:53 -0500
-Date: Thu, 4 Mar 2010 22:13:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, paulus@samba.org,
-       fweisbec@gmail.com, perfmon2-devel@lists.sf.net, robert.richter@amd.com,
-       eranian@gmail.com, davem@davemloft.net,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] perf_events: add sampling period randomization support
- (v2)
-Message-ID: <20100304211332.GA3643@elte.hu>
-References: <1267575705-10054-1-git-send-email-eranian@google.com>
- <20100304113212.GG21977@elte.hu>
- <bd4cb8901003040925t28ddcc5bmfce11dcfa8b9b0ba@mail.gmail.com>
+	id S1757126Ab0CDVOz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:14:55 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:49454 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756273Ab0CDVOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:14:53 -0500
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: Cong Wang <amwang@redhat.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nhorman@tuxdriver.com, eric.dumazet@gmail.com
+Subject: Re: [net-next PATCH v6 0/3] net: reserve ports for applications using fixed port numbers
+References: <1267233952-5856-1-git-send-email-opurdila@ixiacom.com>
+	<4B8F6FF0.5000306@redhat.com> <m1vddbdhmo.fsf@fess.ebiederm.org>
+	<201003042211.23460.opurdila@ixiacom.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 04 Mar 2010 13:14:48 -0800
+In-Reply-To: <201003042211.23460.opurdila@ixiacom.com> (Octavian Purdila's message of "Thu\, 4 Mar 2010 22\:11\:23 +0200")
+Message-ID: <m1d3zjaiwn.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd4cb8901003040925t28ddcc5bmfce11dcfa8b9b0ba@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Octavian Purdila <opurdila@ixiacom.com> writes:
 
-* Stephane Eranian <eranian@google.com> wrote:
-
-> On Thu, Mar 4, 2010 at 3:32 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * eranian@google.com <eranian@google.com> wrote:
-> >
-> >> This patch adds support for randomizing the sampling period. ??Randomization
-> >> is very useful to mitigate the bias that exists with sampling. The random
-> >> number generator does not need to be sophisticated. This patch uses the
-> >> builtin random32() generator.
-> >
-> >> + ?? ?? if (width > 63 || attr->freq)
-> >> + ?? ?? ?? ?? ?? ?? return -EINVAL;
-> >
-> > Why not for freq counters? Those are semi-randomized already, but it might
-> > make sense to make them 'more' randomized in special circumstances. That would
-> > also allow us to enable the randomization in perf top and perf record, by
-> > default.
-> >
+> On Thursday 04 March 2010 21:14:07 you wrote:
+>> Cong Wang <amwang@redhat.com> writes:
+>> > David Miller wrote:
+>> >> Eric B., could you look over the first two patches (which touch the
+>> >> sysctl core) and give some review and ACK/NACK?
+>> >
+>> > ping Eric W. Biederman ... :)
+>> 
+>> I have looked and it is not easy to tell by simple review if
+>> correctness has been maintained in the proc cleanup patch.
+>> Furthermore the code even after the cleanups still feels like code
+>> that is trying too hard to do too much.
+>> 
+>> 
+>> I think the example set by bitmap_parse_user in it's user interface is
+>> a good example to follow when constructing bitmap helper functions.
+>> Including having the actual parsing code should live in lib/bitmap.c
+>> 
+>> The users of bitmap_parse_user do something very nice.  They allocate
+>> a temporary bitmap.  Parse the userspace value into the temporary
+>> bitmap, and then move that new bitmap into the kernel data structures.
+>> For your large bitmap this seems like the idea way to handle it.  That
+>> guarantees no weird intermediate failure states, and really makes the
+>> the bitmap feel like a single value.
+>> 
+>> I would add the restriction that the values in the list of ranges
+>> always must be increasing, and in general restrict the set of accepted
+>> values as much as possible.  If we don't accept it now we don't have
+>> to worry about some userspace application relying on some unitended
+>> side effect a few years into the future.
+>> 
 >
-> What's the goal of freq?
-> Achieve and maintain the target interrupt/rate.
-> In doing so, it has to adjust the period (not randomly).
-
-No, the goal of auto-freq is to keep a steady average rate of sampling.
-
-There is no requirement to keep it 'steady' - each sample comes with a 
-specific weight.
-
-> Randomization may prevent achieving the rate, or it may slow
-> it down. What's the value add of that?
-
-Why do you assume that the two are incompatible? We can randomize auto-freq 
-and still have a perfectly stable average rate.
-
-We know how long each sample takes so the result is precise, via 
-PERF_SAMPLE_PERIOD.
-
-> > Without that we'd have no immediate usecase and no way to ensure that this 
-> > code works as intended.
+> Eric, thanks for taking the time to go over it again. I now do share you 
+> opinion that we need to be more atomic. How about this simple approach:
 >
-> Why?
+> 1. Allocate new kernel buffer for the text and copy the whole userspace buffer 
+> into it.
+> 2. Allocate temporary buffer for bitmap.
+> 3. Parse the kernel text buffer into the temp bitmap.
+> 4. Copy the temp bitmap into the final bitmap.
 >
-> With perf you also have fixed sampling period (-c option), you simply need 
-> to express the fact you want it randomized.
+> This is simple and clean but it has the disadvantage of potentially allocating 
+> a large chunk of memory, although even in the case that all ports are going to 
+> be set the temporary buffer will not go over 390K, which is now not an issue 
+> anymore for kmalloc, right?
 
--c is legacy in essence. The default is auto-freq and i doubt anyone uses -c 
-anymore.
+More than page size will always be an issue when memory is
+sufficiently fragmented.  I expect we can do just about as simply
+with a small sliding window. Perhaps 50 characters.
 
-Why would they use it? Auto-freq is so much more convenient - it adapts to the 
-workload and achieves a steady state of sampling, regardless of how frequent 
-the hardware events are and regardless of how dynamic the workload itself is.
+However that might not be worth worrying about.  Anything set by
+a human being and anything we expect in practice is going to be
+much shorter.
 
-	Ingo
+>> I think it is a serious bug that you clear the destination bitmap
+>> in the middle of parsing it.  That will either open or close all
+>> ports in the middle of parsing, and I can't see how that would
+>> ever be a good thing.
+>> 
+>
+> Even when doing the copy from the temp bitmap you still have some inconsistent 
+> bitmap state while copying. 
+>
+> We could solve by replacing the old buffer with the new one + RCU.
+
+True.
+
+I was thinking a simple pass through that updated it a bit at a time
+(if it was different), but rcu or some other form of locking would be
+even more consistent.  The joy with splitting the parser for the rest
+of the sysctl code is that this is a separate decision that can be made
+to accommodate the specific user.
+
+Eric
+
