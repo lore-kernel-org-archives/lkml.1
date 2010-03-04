@@ -1,95 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461Ab0CDKlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 05:41:24 -0500
-Received: from trinity.develer.com ([83.149.158.210]:55316 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274Ab0CDKkf (ORCPT
+	id S1755009Ab0CDKrI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 05:47:08 -0500
+Received: from hqemgate03.nvidia.com ([216.228.112.145]:16737 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755Ab0CDKrF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 05:40:35 -0500
-From: Andrea Righi <arighi@develer.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Righi <arighi@develer.com>
-Subject: [PATCH -mmotm 1/4] memcg: dirty memory documentation
-Date: Thu,  4 Mar 2010 11:40:12 +0100
-Message-Id: <1267699215-4101-2-git-send-email-arighi@develer.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1267699215-4101-1-git-send-email-arighi@develer.com>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
+	Thu, 4 Mar 2010 05:47:05 -0500
+X-PGP-Universal: processed;
+	by hqnvupgp03.nvidia.com on Thu, 04 Mar 2010 02:47:03 -0800
+From: Wei Ni <wni@nvidia.com>
+To: "'Takashi Iwai'" <tiwai@suse.de>
+CC: "'Pavel Hofman'" <pavel.hofman@insite.cz>,
+       "'alsa-devel'" <alsa-devel@alsa-project.org>,
+       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
+       "'akpm'" <akpm@linux-foundation.org>
+Date: Thu, 4 Mar 2010 18:46:59 +0800
+Subject: RE: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+Thread-Topic: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+Thread-Index: Acq7f6AgX3yUkXaAR/mD6JdNxQiwjQAB+ZWw
+Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16B1AD554@HKMAIL01.nvidia.com>
+References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
+	<s5hmxyrp311.wl%tiwai@suse.de>
+	<6B4D417B830BC44B8026029FD256F7F1C068B2BA8C@HKMAIL01.nvidia.com>
+	<s5heik3ujy0.wl%tiwai@suse.de>
+	<6B4D417B830BC44B8026029FD256F7F1C16A89A118@HKMAIL01.nvidia.com>
+	<6B4D417B830BC44B8026029FD256F7F1C16A89A11A@HKMAIL01.nvidia.com>
+	<s5haaupoqew.wl%tiwai@suse.de>
+	<6B4D417B830BC44B8026029FD256F7F1C16A89A11C@HKMAIL01.nvidia.com>
+	<s5htysxm5yo.wl%tiwai@suse.de>
+	<6B4D417B830BC44B8026029FD256F7F1C16B1AD54C@HKMAIL01.nvidia.com>
+ <s5hzl2ol8qu.wl%tiwai@suse.de>
+In-Reply-To: <s5hzl2ol8qu.wl%tiwai@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document cgroup dirty memory interfaces and statistics.
+Hi, Takashi
+I think we can submit my patch first, then generate another patch
+to add EXPORT_SYMBOL() in hda_eld.c, and change Makefile to remove
+hda_eld.o from snd-hda-codec-xxhdmi-objs.
 
-Signed-off-by: Andrea Righi <arighi@develer.com>
----
- Documentation/cgroups/memory.txt |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
+Thanks
+Wei.
+nvpublic
 
-diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-index 49f86f3..38ca499 100644
---- a/Documentation/cgroups/memory.txt
-+++ b/Documentation/cgroups/memory.txt
-@@ -310,6 +310,11 @@ cache		- # of bytes of page cache memory.
- rss		- # of bytes of anonymous and swap cache memory.
- pgpgin		- # of pages paged in (equivalent to # of charging events).
- pgpgout		- # of pages paged out (equivalent to # of uncharging events).
-+filedirty	- # of pages that are waiting to get written back to the disk.
-+writeback	- # of pages that are actively being written back to the disk.
-+writeback_tmp	- # of pages used by FUSE for temporary writeback buffers.
-+nfs		- # of NFS pages sent to the server, but not yet committed to
-+		  the actual storage.
- active_anon	- # of bytes of anonymous and  swap cache memory on active
- 		  lru list.
- inactive_anon	- # of bytes of anonymous memory and swap cache memory on
-@@ -345,6 +350,37 @@ Note:
-   - a cgroup which uses hierarchy and it has child cgroup.
-   - a cgroup which uses hierarchy and not the root of hierarchy.
- 
-+5.4 dirty memory
-+
-+  Control the maximum amount of dirty pages a cgroup can have at any given time.
-+
-+  Limiting dirty memory is like fixing the max amount of dirty (hard to
-+  reclaim) page cache used by any cgroup. So, in case of multiple cgroup writers,
-+  they will not be able to consume more than their designated share of dirty
-+  pages and will be forced to perform write-out if they cross that limit.
-+
-+  The interface is equivalent to the procfs interface: /proc/sys/vm/dirty_*.
-+  It is possible to configure a limit to trigger both a direct writeback or a
-+  background writeback performed by per-bdi flusher threads.
-+
-+  Per-cgroup dirty limits can be set using the following files in the cgroupfs:
-+
-+  - memory.dirty_ratio: contains, as a percentage of cgroup memory, the
-+    amount of dirty memory at which a process which is generating disk writes
-+    inside the cgroup will start itself writing out dirty data.
-+
-+  - memory.dirty_bytes: the amount of dirty memory of the cgroup (expressed in
-+    bytes) at which a process generating disk writes will start itself writing
-+    out dirty data.
-+
-+  - memory.dirty_background_ratio: contains, as a percentage of the cgroup
-+    memory, the amount of dirty memory at which background writeback kernel
-+    threads will start writing out dirty data.
-+
-+  - memory.dirty_background_bytes: the amount of dirty memory of the cgroup (in
-+    bytes) at which background writeback kernel threads will start writing out
-+    dirty data.
-+
- 
- 6. Hierarchy support
- 
--- 
-1.6.3.3
+-----Original Message-----
+From: Takashi Iwai [mailto:tiwai@suse.de] 
+Sent: Thursday, March 04, 2010 5:47 PM
+To: Wei Ni
+Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
+Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
 
+At Thu, 4 Mar 2010 10:21:39 +0800,
+Wei Ni wrote:
+> 
+> Hi, Takashi
+> 1. Yes, it can works for all Nvidia controller.
+
+OK.
+
+> 2. The hda_eld.o doesn't export any symbols.
+> I tried to put hda_eld.o to snd-had-codec-*, and remove had_eldo.o
+> from snd-had-codec-intelhdmi-objs, but it will build error. It need
+> to modify hda_eld.c to export symbols, it will add many changes.
+
+Yes, this is unavoidable.  Please add EXPORT_SYMBOL()'s
+appropriately.
+
+We can reduce them again once after all HDMI stuff is merged into
+one.
+
+
+thanks,
+
+Takashi
