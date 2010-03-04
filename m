@@ -1,109 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630Ab0CDPQq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:16:46 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54824 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752300Ab0CDPQp (ORCPT
+	id S1754666Ab0CDPSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:18:21 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:49761 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754269Ab0CDPSU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:16:45 -0500
-X-Authority-Analysis: v=1.0 c=1 a=JmiDjSKT-SYA:10 a=7U3hwN5JcxgA:10 a=JfrnYn6hAAAA:8 a=Vd9VrJLIPoWsV5AyStgA:9 a=KaHgWuyDGydkT9Lk8RkA:7 a=61F0Zd79HuoinRwxzZLVTYnL1jQA:4 a=3Rfx1nUSh_UA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
- events
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <20100304112531.GF21977@elte.hu>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
-	 <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
-	 <1267632387.10871.59.camel@gandalf.stny.rr.com>
-	 <1267634258.25158.88.camel@laptop>
-	 <1267636046.10871.74.camel@gandalf.stny.rr.com>
-	 <1267636595.25158.93.camel@laptop>  <20100304112531.GF21977@elte.hu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 04 Mar 2010 10:16:41 -0500
-Message-ID: <1267715801.10871.191.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Mar 2010 10:18:20 -0500
+Date: Thu, 4 Mar 2010 10:18:19 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Hugh Daschbach <hdasch@broadcom.com>
+cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, David Vrabel <david.vrabel@csr.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       james Bottomley <James.Bottomley@suse.de>,
+       James Smart <james.smart@emulex.com>
+Subject: RE: System reboot hangs due to race against devices_kset->list
+ triggered by SCSI FC workqueue
+In-Reply-To: <233671224A0FED4688218FFDBED26E1A517AC38CA5@IRVEXCHCCR01.corp.ad.broadcom.com>
+Message-ID: <Pine.LNX.4.44L0.1003041005530.1657-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 12:25 +0100, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 3 Mar 2010, Hugh Daschbach wrote:
+
+> Alan Stern [mailto:stern@rowland.harvard.edu] writes:
 > 
-> > On Wed, 2010-03-03 at 12:07 -0500, Steven Rostedt wrote:
-> > > oops, my bad :-), I thought this was in the x86 arch directory. For the
-> > > University, I was helping them with adding trace points for page faults
-> > > when I came across this in arch/x86/mm/fault.c:
-> > > 
-> > >         perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, 0, regs, address);
-> > > 
-> > > 
-> > > This is what I actually was wondering about. Why is it a "perf only" trace 
-> > > point instead of a TRACE_EVENT()?
-> > 
-> > Because I wanted to make perf usable without having to rely on funny 
-> > tracepoints. That is, I am less worried about committing software counters 
-> > to ABI than I am about TRACE_EVENT(), which still gives me a terribly 
-> > uncomfortable feeling.
+> > On Wed, 3 Mar 2010, Hugh Daschbach wrote:
+> >
+> >> > Can't we just protect the list?  What is wanting to write to the list
+> >> > while shutdown is happening?
+> >> 
+> >> Indeed, Alan suggested holding the kset spinlock while iterating the
+> >> list.  Unfortunately, the device shutdown routines may sleep.  At least
+> >> the SCSI sd_shutdown routine issues I/O to the device as part of
+> >> flushing device caches.  I would guess other subsystems sleep as well.
+> >
+> > What I meant was that you should hold the spinlock while finding and 
+> > unlinking the last device on the list.  Clearly you shouldn't hold it 
+> > while calling the device shutdown routine.
 > 
-> I'd still like a much less error-prone and work-intense way of doing it.
+> I misunderstood.  But I believe insertion and deletion is properly
+> serliaized.  It looks to me like the list structure is intact.  It's the
+> iterator that's been driven off into the weeds.
 > 
-> I'd suggest we simply add a TRACE_EVENT_ABI() for such cases, where we really 
-> want to expose a tracepoint to tooling, programmatically. Maybe even change 
-> the usage sites to trace_foo_ABI(), to make it really clear and to make people 
-> aware of the consequences.
-
-Would this still be available as a normal trace event?
-
+> >> I'll try klist.  That looks like a good mediator between traversal and
+> >> removal.
+> >
+> > Yes, it removes a lot of difficulties.
+> >
+> > Alan Stern
 > 
-> > Also, building with all CONFIG_TRACE_*=n will still yield a usable perf, 
-> > which is something the embedded people might fancy, all that TRACE stuff 
-> > adds lots of code.
+> Just to be clear, the list we're talking about is "list" in "struct
+> kset"  And the nodes of the list are chained by "entry" in "struct
+> kobject".  I just want to make sure that this is what's intended before
+> I get too far down the road.
 > 
-> Not a real issue i suspect when you do lock profiling ...
+> At a minimum the change looks something like the patch below.  This
+> doesn't work yet.  And I'll need extensive testing in device plug and
+> unplug.  So I'm not looking for a detailed review.  But if I'm obviously
+> way off base, I'd like to know earlier rather than later.
 > 
-> Or if it is, some debloating might be in order - and the detaching of event 
-> enumeration and ftrace TRACE_EVENT infrastructure from other ftrace bits. (i 
-> suggested an '/eventfs' special filesystem before, for nicely layed out 
-> hierarchy of ftrace/perf events.)
+> Thanks for the guidance.
 
-Actually, we already have a way to decouple it.
+If you really want to do this then you should remove the lock member 
+from struct kset.  However this seems like an awful lot of work 
+compared to my original suggestion -- something like this (untested, 
+and you'll want to add comments):
 
-include/trace/define_trace.h is the file that just adds the tracepoint
-that is needed.
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -1719,10 +1719,14 @@ EXPORT_SYMBOL_GPL(device_move);
+  */
+ void device_shutdown(void)
+ {
+-	struct device *dev, *devn;
++	struct device *dev;
++
++	spin_lock(&devices_kset->lock);
++	while (!list_empty(&devices_kset->list)) {
++		dev = list_entry(devices_kset->list.prev, struct device,
++				kobj.entry);
++		spin_unlock(&devices_kset->lock);
+ 
+-	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
+-				kobj.entry) {
+ 		if (dev->bus && dev->bus->shutdown) {
+ 			dev_dbg(dev, "shutdown\n");
+ 			dev->bus->shutdown(dev);
+@@ -1730,6 +1734,10 @@ void device_shutdown(void)
+ 			dev_dbg(dev, "shutdown\n");
+ 			dev->driver->shutdown(dev);
+ 		}
++
++		spin_lock(&devices_kset->lock);
++		list_del_init(&dev->kobj.entry);
+ 	}
++	spin_unlock(&devices_kset->lock);
+ 	async_synchronize_full();
+ }
 
-include/trace/ftrace.h is the file that does the magic and adds the code
-for callbacks and tracing.
-
-The perf hooks probably should not have gone in that file and been put
-into a include/trace/perf.h file, and then in define_trace.h we would
-add:
-
- #ifdef CONFIG_EVENT_TRACING
- #include <trace/ftrace.h>
- #endif
-
-+#ifdef CONFIG_PERF_EVENTS
-+#include <trace/perf.h>
-+#endif
-
-This should be done anyway. But it would also let you decouple ftrace
-trace events from perf trace events but still let the two use the same
-trace points.
-
--- Steve
-
-
+Alan Stern
 
