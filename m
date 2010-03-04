@@ -1,48 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619Ab0CDXUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 18:20:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35502 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756558Ab0CDXUC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 18:20:02 -0500
-Date: Thu, 4 Mar 2010 15:19:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@gmail.com>
-cc: Stephane Marchesin <stephane.marchesin@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm request 3
-In-Reply-To: <21d7e9971003041503p726ecbebi4b0b97854c5824de@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1003041507070.3751@localhost.localdomain>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>  <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>  <20100304190450.GA23807@srcf.ucam.org>  <alpine.LFD.2.00.1003041110070.3751@localhost.localdomain>  <20100304192524.GA24253@srcf.ucam.org>
-  <alpine.LFD.2.00.1003041131490.3751@localhost.localdomain>  <20100304195302.GA24856@srcf.ucam.org>  <alpine.LFD.2.00.1003041202240.3751@localhost.localdomain>  <6a89f9d51003041257j39fde3b6y8bd3336d77f7cf7a@mail.gmail.com>  <alpine.LFD.2.00.1003041449380.3751@localhost.localdomain>
- <21d7e9971003041503p726ecbebi4b0b97854c5824de@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756685Ab0CDXUL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 18:20:11 -0500
+Received: from mga11.intel.com ([192.55.52.93]:54014 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756558Ab0CDXUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 18:20:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,583,1262592000"; 
+   d="scan'208";a="778075476"
+Message-Id: <20100304231547.654246000@intel.com>
+References: <20100304231454.247805000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Mar 2010 15:14:55 -0800
+From: venkatesh.pallipadi@intel.com
+To: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Dave Jones <davej@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@gmail.com>
+Subject: [patch 1/2] x86: Look for IA32_ENERGY_PERF_BIAS support - v2
+Content-Disposition: inline; filename=0001-x86-Look-for-IA32_ENERGY_PERF_BIAS-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There is a new hardware feature, which lets system software to set
+Energy Performance Preference. This is a opaque knob in the form of
+IA32_ENERGY_PERF_BIAS MSR, which has a 4 bit Energy Performance
+Preference Hint. When supported, hardware can use this hint to resolve
+energy-performance tradeoffs. The support for this feature is indicated
+by CPUID.06H.ECX.bit3. Refer to Intel Architectures Software Developer's
+Manual for more info.
 
+This patch, looks up for the support of this feature. It shows up as
+"epb" in /proc/cpuinfo flags, when supported.
 
-On Fri, 5 Mar 2010, Dave Airlie wrote:
-> 
-> Its nouveau project not X not DRM, stop generalising the situation.
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/include/asm/cpufeature.h          |    1 +
+ arch/x86/include/asm/msr-index.h           |    2 ++
+ arch/x86/kernel/cpu/addon_cpuid_features.c |    1 +
+ 3 files changed, 4 insertions(+), 0 deletions(-)
 
-Is it really just nouveau? I've not looked, but I bet the intel driver and 
-the radeon driver have _exactly_ the same "oh, I'm the wrong version, I 
-will now kill myself" behavior.
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 0cd82d0..0e1d52c 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -161,6 +161,7 @@
+  */
+ #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
+ #define X86_FEATURE_ARAT	(7*32+ 1) /* Always Running APIC Timer */
++#define X86_FEATURE_EPB		(7*32+ 2) /* IA32_ENERGY_PERF_BIAS support */
+ 
+ /* Virtualization flags: Linux defined */
+ #define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 1cd58cd..feeb918 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -230,6 +230,8 @@
+ 
+ #define MSR_IA32_MISC_ENABLE		0x000001a0
+ 
++#define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
++
+ /* MISC_ENABLE bits: architectural */
+ #define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
+ #define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
+diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
+index 97ad79c..3bc5eda 100644
+--- a/arch/x86/kernel/cpu/addon_cpuid_features.c
++++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
+@@ -32,6 +32,7 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
+ 	static const struct cpuid_bit __cpuinitconst cpuid_bits[] = {
+ 		{ X86_FEATURE_IDA, CR_EAX, 1, 0x00000006 },
+ 		{ X86_FEATURE_ARAT, CR_EAX, 2, 0x00000006 },
++		{ X86_FEATURE_EPB, CR_ECX, 3, 0x00000006 },
+ 		{ X86_FEATURE_NPT,   CR_EDX, 0, 0x8000000a },
+ 		{ X86_FEATURE_LBRV,  CR_EDX, 1, 0x8000000a },
+ 		{ X86_FEATURE_SVML,  CR_EDX, 2, 0x8000000a },
+-- 
+1.6.0.6
 
-I certainly seem to remember some similar issues with the intel driver 
-long long ago.
+-- 
 
-What would happen if I changed DRIVER_PATCHLEVEL to 1 for the i915 driver? 
-Would it try to handle it gracefully? Or are we in the same situation that 
-the intel driver guys can never fix anything fundamental without doing a 
-whole flag day?
-
-			Linus
