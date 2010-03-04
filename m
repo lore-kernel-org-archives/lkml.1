@@ -1,81 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707Ab0CDRLx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:11:53 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:38086 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561Ab0CDRLv (ORCPT
+	id S932107Ab0CDRMR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:12:17 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54072 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932078Ab0CDRMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:11:51 -0500
-Date: Thu, 4 Mar 2010 22:41:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/4] memcg: per cgroup dirty limit (v4)
-Message-ID: <20100304171143.GG3073@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
+	Thu, 4 Mar 2010 12:12:14 -0500
+Date: Fri, 5 Mar 2010 02:11:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.34-rc1, part 2.
+Message-ID: <20100304171134.GB26618@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1267699215-4101-1-git-send-email-arighi@develer.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Righi <arighi@develer.com> [2010-03-04 11:40:11]:
+Please pull from:
 
-> Control the maximum amount of dirty pages a cgroup can have at any given time.
-> 
-> Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> will not be able to consume more than their designated share of dirty pages and
-> will be forced to perform write-out if they cross that limit.
-> 
-> The overall design is the following:
-> 
->  - account dirty pages per cgroup
->  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
->    and memory.dirty_background_ratio / memory.dirty_background_bytes in
->    cgroupfs
->  - start to write-out (background or actively) when the cgroup limits are
->    exceeded
-> 
-> This feature is supposed to be strictly connected to any underlying IO
-> controller implementation, so we can stop increasing dirty pages in VM layer
-> and enforce a write-out before any cgroup will consume the global amount of
-> dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
-> /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
-> 
-> Changelog (v3 -> v4)
-> ~~~~~~~~~~~~~~~~~~~~~~
->  * handle the migration of tasks across different cgroups
->    NOTE: at the moment we don't move charges of file cache pages, so this
->    functionality is not immediately necessary. However, since the migration of
->    file cache pages is in plan, it is better to start handling file pages
->    anyway.
->  * properly account dirty pages in nilfs2
->    (thanks to Kirill A. Shutemov <kirill@shutemov.name>)
->  * lockless access to dirty memory parameters
->  * fix: page_cgroup lock must not be acquired under mapping->tree_lock
->    (thanks to Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> and
->     KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>)
->  * code restyling
->
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-This seems to be converging, what sort of tests are you running on
-this patchset? 
+Which contains:
 
--- 
-	Three Cheers,
-	Balbir
+Andrea Gelmini (2):
+      arch/sh/lib/libgcc.h: Checkpatch cleanup
+      arch/sh/boot/compressed/cache.c: Checkpatch cleanup
+
+Guennadi Liakhovetski (10):
+      sh: add DMA slave definitions and SIU platform data to sh7722 setup
+      sh: audio support for the sh7722 Migo-R board
+      dmaengine: shdma: fix DMA error handling.
+      dmaengine: shdma: convert to platform device resources
+      dmaengine: shdma: separate DMA headers.
+      dmaengine: shdma: add runtime PM support.
+      sh: activate runtime PM for dmaengine on sh7722 and sh7724
+      sh: merge sh7722 and sh7724 DMA register definitions
+      dmaengine: shdma: extend .device_terminate_all() to record partial transfer
+      serial: sh-sci: Add DMA support.
+
+John Stultz (1):
+      sh: Convert sh to use read/update_persistent_clock
+
+Paul Mundt (11):
+      sh: hw-breakpoints: Accept breakpoints on NULL addresses.
+      sh: Fix up ctrl_read/write stragglers in migor setup.
+      serial: sh-sci: Tidy up build warnings.
+      sh: Fix up cpumask_of_pcibus() for the NUMA build.
+      sh: reworked dynamic PMB mapping.
+      sh: make pmb iomapping configurable.
+      sh: fixed virt/phys mapping helpers for PMB.
+      sh: check for existing mappings for bolted PMB entries.
+      sh: establish PMB mappings for NUMA nodes.
+      sh: fix up MMU reset with variable PMB mapping sizes.
+      sh: Fix up flush_cache_vmap() on SMP.
+
+Pawel Moll (1):
+      sh: Move PMB debugfs entry initialization to later stage
+
+Robert P. J. Day (1):
+      sh: No need to explicitly include <linux/rwlock.h>.
+
+ arch/sh/boards/mach-migor/setup.c          |   16 +
+ arch/sh/boot/compressed/cache.c            |    2 +-
+ arch/sh/include/asm/cacheflush.h           |    4 +-
+ arch/sh/include/asm/dma-register.h         |   51 +++
+ arch/sh/include/asm/dma-sh.h               |   88 +----
+ arch/sh/include/asm/dmaengine.h            |   93 +++++
+ arch/sh/include/asm/io.h                   |   23 +-
+ arch/sh/include/asm/mmu.h                  |   31 ++-
+ arch/sh/include/asm/siu.h                  |    2 +-
+ arch/sh/include/asm/topology.h             |    2 +-
+ arch/sh/include/cpu-sh3/cpu/dma-register.h |   41 ++
+ arch/sh/include/cpu-sh3/cpu/dma.h          |   27 --
+ arch/sh/include/cpu-sh4/cpu/dma-register.h |  112 +++++
+ arch/sh/include/cpu-sh4/cpu/dma-sh4a.h     |   62 ---
+ arch/sh/include/cpu-sh4/cpu/dma.h          |   36 +--
+ arch/sh/include/mach-migor/mach/migor.h    |    1 +
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c     |  190 ++++++++-
+ arch/sh/kernel/cpu/sh4a/setup-sh7724.c     |  186 ++++++++-
+ arch/sh/kernel/cpu/sh4a/setup-sh7780.c     |  134 ++++++-
+ arch/sh/kernel/cpu/sh4a/setup-sh7785.c     |  134 ++++++-
+ arch/sh/kernel/hw_breakpoint.c             |   30 +--
+ arch/sh/kernel/setup.c                     |    3 +-
+ arch/sh/kernel/time.c                      |    6 +-
+ arch/sh/lib/libgcc.h                       |    3 +-
+ arch/sh/mm/ioremap.c                       |   70 +---
+ arch/sh/mm/ioremap_fixed.c                 |   11 +-
+ arch/sh/mm/numa.c                          |    3 +
+ arch/sh/mm/pmb.c                           |  412 +++++++++++++------
+ drivers/dma/shdma.c                        |  500 ++++++++++++++---------
+ drivers/dma/shdma.h                        |   26 +-
+ drivers/serial/Kconfig                     |    4 +
+ drivers/serial/sh-sci.c                    |  616 +++++++++++++++++++++++++--
+ include/linux/serial_sci.h                 |    6 +
+ sound/soc/sh/siu.h                         |    2 +-
+ sound/soc/sh/siu_pcm.c                     |    2 +-
+ 35 files changed, 2201 insertions(+), 728 deletions(-)
+ create mode 100644 arch/sh/include/asm/dma-register.h
+ create mode 100644 arch/sh/include/asm/dmaengine.h
+ create mode 100644 arch/sh/include/cpu-sh3/cpu/dma-register.h
+ create mode 100644 arch/sh/include/cpu-sh4/cpu/dma-register.h
