@@ -1,127 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382Ab0CDVW5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:22:57 -0500
-Received: from mail-fx0-f219.google.com ([209.85.220.219]:62712 "EHLO
-	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932342Ab0CDVWz convert rfc822-to-8bit (ORCPT
+	id S932393Ab0CDVXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:23:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756515Ab0CDVXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:22:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y1mhik8PVtWd4jA8mItm/6shni8I4kbfNhXElm97jPRgDSQKLcg155CNmeoW+Abafu
-         3H2L692G2a/jGQkn1gSywe5E5uALyX/MJu74s4MIvEIk58ILqrw6/YfxYNOL7bF48Fhe
-         JcIS5wJqp2qQV5Fv+Qmx4foWDUvGBetmunAMA=
-MIME-Version: 1.0
-In-Reply-To: <6d4bc9fc1003041321g4190a4b4na665560a494877b0@mail.gmail.com>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
-	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
-	 <6d4bc9fc1003041321g4190a4b4na665560a494877b0@mail.gmail.com>
-Date: Thu, 4 Mar 2010 22:22:53 +0100
-Message-ID: <6d4bc9fc1003041322s3a3acfecs53dc08f553838efa@mail.gmail.com>
-Subject: Re: [git pull] drm request 3
-From: Maarten Maathuis <madman2003@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Mar 2010 16:23:34 -0500
+Date: Thu, 4 Mar 2010 13:23:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: <linux-kernel@vger.kernel.org>, <cpufreq@vger.kernel.org>,
+       <bhavna.sarathy@amd.com>, <joachim.deguara@amd.com>,
+       <borislav.petkov@amd.com>
+Subject: Re: [PATCH 2/3] [cpufreq] powernow-k8: add core performance boost
+ support
+Message-Id: <20100304132328.3391dba5.akpm@linux-foundation.org>
+In-Reply-To: <201003031458.27538.mark.langsdorf@amd.com>
+References: <201003031458.27538.mark.langsdorf@amd.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 10:21 PM, Maarten Maathuis <madman2003@gmail.com> wrote:
-> On Thu, Mar 4, 2010 at 7:18 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
->>
->>
->> Hmm. What the hell am I supposed to do about
->>
->>        (II) NOUVEAU(0): [drm] nouveau interface version: 0.0.16
->>        (EE) NOUVEAU(0): [drm] wrong version, expecting 0.0.15
->>        (EE) NOUVEAU(0): 879:
->>
->> now?
->>
->> What happened to the whole backwards compatibility thing? I wasn't even
->> warned that this breaks existing user space. That makes it impossible to
->> _test_ new kernels. Upgrading X and the kernel in lock-step is not a valid
->> model, lots of people are just using some random distribution (F12 in my
->> case), and you just broke it.
->>
->> I see the commit that does this was very aware of it:
->>
->>        commit a1606a9596e54da90ad6209071b357a4c1b0fa82
->>        Author: Ben Skeggs <bskeggs@redhat.com>
->>        Date:   Fri Feb 12 10:27:35 2010 +1000
->>
->>            drm/nouveau: new gem pushbuf interface, bump to 0.0.16
->>
->>            This commit breaks the userspace interface, and requires a new libdrm for
->>            nouveau to operate again.
->>
->>            The multiple GEM_PUSHBUF ioctls that were present in 0.0.15 for
->>            compatibility purposes are now gone, and replaced with the new ioctl which
->>            allows for multiple push buffers to be submitted (necessary for hw index
->>            buffers in the nv50 3d driver) and relocations to be applied on any buffer.
->>
->>            A number of other ioctls (CARD_INIT, GEM_PIN, GEM_UNPIN) that were needed
->>            for userspace modesetting have also been removed.
->>
->>            Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
->>            Signed-off-by: Francisco Jerez <currojerez@riseup.net>
->>
->> but why the hell wasn't I made aware of it before-hand? Quite frankly, I
->> probably wouldn't have pulled it.
->>
->> We can't just go around breaking peoples setups. This driver is, like it
->> or not, used by Fedora-12 (and probably other distros). It may say
->> "staging", but that doesn't change the fact that it's in production use by
->> huge distributions. Flag days aren't acceptable.
->>
->>                Linus
->>
->> ------------------------------------------------------------------------------
->> Download Intel&#174; Parallel Studio Eval
->> Try the new software tools for yourself. Speed compiling, find bugs
->> proactively, and fine-tune applications for parallel performance.
->> See why Intel Parallel Studio got high marks during beta.
->> http://p.sf.net/sfu/intel-sw-dev
->> --
->> _______________________________________________
->> Dri-devel mailing list
->> Dri-devel@lists.sourceforge.net
->> https://lists.sourceforge.net/lists/listinfo/dri-devel
->>
->
-> What i'm about to say is my personal opinion, not that of nouveau as a
-> whole (not even sure if such a thing exists).
->
-> 1. We are in staging because our abi isn't final yet.
-> 2. We (already) adjusted our way of working to ensure we have a usable
-> and proper codebase by the time we are ready for mainline.
-> 3. Redhat through Ben Skeggs contributes to nouveau (quite a bit i agree).
-> 4. You are forcing red hat to force something on the rest of us.
-> 5. I for one am happy we keep a clean api.
-> 6. We keep an internal kernel tree that is tested to some degree (in
-> this case the abi break was in there for a few weeks iirc) none of the
-> developers asked for a revert.
+On Wed, 3 Mar 2010 14:58:27 -0600
+Mark Langsdorf <mark.langsdorf@amd.com> wrote:
 
-Point 6 is iirc, someone can correct me if this is not the case.
+> >From 7b1c9670d8f04d67cde9f810ef462ec8a8d3adbf Mon Sep 17 00:00:00 2001
+> From: Mark Langsdorf <mark.langsdorf@amd.com>
+> Date: Wed, 3 Mar 2010 14:33:43 -0600
+> Subject: [PATCH 1/2] powernow-k8: add core performance boost support
+> 
+> Add CPUID check for hardware CPB support
+> 
+> Also, update copyright while at it.
+> 
+> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> ---
+>  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   41 ++++++++++++++++++++++++++---
+>  arch/x86/kernel/cpu/cpufreq/powernow-k8.h |    3 +-
+>  include/linux/cpufreq.h                   |    4 +++
+>  3 files changed, 42 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> index 07f18a4..0a6f1f8 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> @@ -1,6 +1,5 @@
+> -
+>  /*
+> - *   (c) 2003-2006 Advanced Micro Devices, Inc.
+> + *   (c) 2003-2009 Advanced Micro Devices, Inc.
+>   *  Your use of this code is subject to the terms and conditions of the
+>   *  GNU general public license version 2. See "COPYING" or
+>   *  http://www.gnu.org/licenses/gpl.html
+> @@ -57,6 +56,9 @@ static int cpu_family = CPU_OPTERON;
+>  
+>  static struct cpufreq_driver cpufreq_amd64_driver;
+>  
+> +/* core performance boost */
+> +static bool cpb_capable;
+> +
+>  #ifndef CONFIG_SMP
+>  static inline const struct cpumask *cpu_core_mask(int cpu)
+>  {
+> @@ -511,6 +513,24 @@ static int core_voltage_post_transition(struct powernow_k8_data *data,
+>  	return 0;
+>  }
+>  
+> +/* CPB 0=disable, 1=enable. */
+> +static void cpb_toggle(u32 t)
+> +{
+> +	if (cpb_capable) {
+> +		u32 lo, hi;
+> +		rdmsr(MSR_K7_HWCR, lo, hi);
+> +
 
-> 7. Everyone (users, distros) are (or should) be aware of the nature of
-> this driver, our userspace interface is experimental for that very
-> reason.
-> 8. Experience has tought me that in the case of nouveau, if a
-> developer isn't using a codepath it will bitrot.
->
-> So please, also take into consideration that this project isn't solely
-> made by red hat and it's usually the other people that get to keep the
-> pieces.
->
-> Sincerely,
->
-> Maarten Maathuis.
->
+The newline usually goes after end-of-locals, before start-of-code.
+
+> +		if (t)
+> +			lo &= ~(1 << 25);
+> +		else
+> +			lo |= (1 << 25);
+> +
+> +		wrmsr(MSR_K7_HWCR, lo, hi);
+> +
+> +		printk(KERN_ERR "CPB: %s.\n", (t ? "on" : "off"));
+
+Why KERN_ERR?  It's not an error?
+
+Do we want a printk here at all?  Under which circumstances will it come
+out?  Does it have sufficient context for people to be able to
+understand what it means, and which subsystem it's referring to?  If
+you phone your Aunt Tillie and tell her "CPB: on", will she understand
+what you mean?
+
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -104,6 +104,10 @@ struct cpufreq_policy {
+>  
+>  	struct kobject		kobj;
+>  	struct completion	kobj_unregister;
+> +
+> +	struct flags {
+> +		unsigned long cpb:1;	/* toggle CPB on this cpu */
+> +	} flags;
+>  };
+
+Bear in mind that the compiler provides no atomicity support for
+bitfields.  So if someone later comes along and adds a new field to
+`flags', they will need to provide external synchronisation (ie: a
+lock) to protect that field during modifications to `cpb'.
+
+IOW, this is a bit of a hand-grenade.
