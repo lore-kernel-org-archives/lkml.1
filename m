@@ -1,61 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048Ab0CDWit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 17:38:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53002 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751561Ab0CDWir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 17:38:47 -0500
-Date: Thu, 4 Mar 2010 14:38:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-Subject: Re: [RESEND PATCH 0/2] Make functions of dev_<level> macros,
- recursive vsnprintf
-Message-Id: <20100304143837.af39845d.akpm@linux-foundation.org>
-In-Reply-To: <cover.1267682641.git.joe@perches.com>
-References: <cover.1267682641.git.joe@perches.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1756178Ab0CDWuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 17:50:13 -0500
+Received: from tundra.namei.org ([65.99.196.166]:51300 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789Ab0CDWuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 17:50:11 -0500
+Date: Fri, 5 Mar 2010 09:49:53 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: wzt.wzt@gmail.com
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 1/2] Security: Fix some coding styles in
+ security/keys/keyring.c
+In-Reply-To: <20100304132623.GA3740@localhost.localdomain>
+Message-ID: <alpine.LRH.2.00.1003050949350.8114@tundra.namei.org>
+References: <20100304132623.GA3740@localhost.localdomain>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  3 Mar 2010 22:27:21 -0800
-Joe Perches <joe@perches.com> wrote:
+On Thu, 4 Mar 2010, wzt.wzt@gmail.com wrote:
 
-> (Typo'ed Linus' email address, added Greg KH and netdev)
-
-What is the networking significance here?
-
-> dev_<level> macros use a lot of repetitive string space.
+> Fix some coding styles in security/keys/keyring.c
 > 
-> Eliminate the string prefixes and function arguments from all the macro uses
-> and consolidate them in functions.
-> 
-> This patchset saves about 60K.
-> 
-> This implementation also adds the ability to use a struct va_format to
-> emit a format string along with va_list arguments.
-> 
-> This %pV implementation should not be used without a wrapper that
-> does printf argument verification like the dev_<level> functions.
-> 
-> Inspired a bit by Nick Andrew's patches and Linus' comments in December 2008
-> http://lkml.org/lkml/2008/12/6/15
-> http://lkml.org/lkml/2008/12/6/101
-> 
-
-Looks like a reasonable approach, although I didn't check how much
-additional stack the recursion will take.  Bear in mind that printk()
-can be called from super-deep contexts.
-
-What would I need to do to make it recur more than once?  Include a %pV
-in a string, like dev_printk("%s", %%pV")?
+> Signed-off-by: Zhitong Wang <zhitong.wangzt@alibaba-inc.com>
 
 
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next-queue
+
+Note, there seems to be no patch 2/2.
+
+
+> 
+> ---
+>  security/keys/keyring.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+> index 8ec0274..d77a7ef 100644
+> --- a/security/keys/keyring.c
+> +++ b/security/keys/keyring.c
+> @@ -168,12 +168,10 @@ static void keyring_describe(const struct key *keyring, struct seq_file *m)
+>  {
+>  	struct keyring_list *klist;
+>  
+> -	if (keyring->description) {
+> +	if (keyring->description)
+>  		seq_puts(m, keyring->description);
+> -	}
+> -	else {
+> +	else
+>  		seq_puts(m, "[anon]");
+> -	}
+>  
+>  	rcu_read_lock();
+>  	klist = rcu_dereference(keyring->payload.subscriptions);
+> -- 
+> 1.6.5.3
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
