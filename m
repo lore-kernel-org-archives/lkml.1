@@ -1,98 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229Ab0CDVvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:51:07 -0500
-Received: from trinity.develer.com ([83.149.158.210]:57986 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394Ab0CDVvF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:51:05 -0500
-Date: Thu, 4 Mar 2010 22:51:01 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
+	id S1755028Ab0CDVxp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:53:45 -0500
+Received: from www.tglx.de ([62.245.132.106]:54348 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752726Ab0CDVxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:53:44 -0500
+Date: Thu, 4 Mar 2010 22:52:36 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 4/4] memcg: dirty pages instrumentation
-Message-ID: <20100304215101.GB4787@linux>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
- <1267699215-4101-5-git-send-email-arighi@develer.com>
- <20100304194144.GE18786@redhat.com>
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, Greg KH <greg@kroah.com>
+Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
+ events
+In-Reply-To: <20100304213725.GA8169@nowhere>
+Message-ID: <alpine.LFD.2.00.1003042251510.2014@localhost.localdomain>
+References: <1267632387.10871.59.camel@gandalf.stny.rr.com> <1267634258.25158.88.camel@laptop> <1267636046.10871.74.camel@gandalf.stny.rr.com> <1267636595.25158.93.camel@laptop> <20100304112531.GF21977@elte.hu> <1267715801.10871.191.camel@gandalf.stny.rr.com>
+ <20100304153606.GA32496@elte.hu> <1267718131.10871.240.camel@gandalf.stny.rr.com> <20100304211741.GB3643@elte.hu> <1267738238.10871.582.camel@gandalf.stny.rr.com> <20100304213725.GA8169@nowhere>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100304194144.GE18786@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 02:41:44PM -0500, Vivek Goyal wrote:
-> On Thu, Mar 04, 2010 at 11:40:15AM +0100, Andrea Righi wrote:
-> 
-> [..]
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 5a0f8f3..c5d14ea 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -137,13 +137,16 @@ static struct prop_descriptor vm_dirties;
-> >   */
-> >  static int calc_period_shift(void)
-> >  {
-> > +	struct dirty_param dirty_param;
-> >  	unsigned long dirty_total;
-> >  
-> > -	if (vm_dirty_bytes)
-> > -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> > +	get_dirty_param(&dirty_param);
-> > +
-> > +	if (dirty_param.dirty_bytes)
-> > +		dirty_total = dirty_param.dirty_bytes / PAGE_SIZE;
-> >  	else
-> > -		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
-> > -				100;
-> > +		dirty_total = (dirty_param.dirty_ratio *
-> > +				determine_dirtyable_memory()) / 100;
-> >  	return 2 + ilog2(dirty_total - 1);
-> >  }
-> >  
-> 
-> Hmm.., I have been staring at this for some time and I think something is
-> wrong. I don't fully understand the way floating proportions are working
-> but this function seems to be calculating the period over which we need
-> to measuer the proportions. (vm_completion proportion and vm_dirties
-> proportions).
-> 
-> And we this period (shift), when admin updates dirty_ratio or dirty_bytes
-> etc. In that case we recalculate the global dirty limit and take log2 and
-> use that as period over which we monitor and calculate proportions.
-> 
-> If yes, then it should be global and not per cgroup (because all our 
-> accouting of bdi completion is global and not per cgroup).
-> 
-> PeterZ, can tell us more about it. I am just raising the flag here to be
-> sure.
-> 
-> Thanks
-> Vivek
+On Thu, 4 Mar 2010, Frederic Weisbecker wrote:
 
-Hi Vivek,
+> On Thu, Mar 04, 2010 at 04:30:38PM -0500, Steven Rostedt wrote:
+> > On Thu, 2010-03-04 at 22:17 +0100, Ingo Molnar wrote:
+> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > 
+> > > No, we want to decouple it from 'tracing'. It's events, not tracing. Events 
+> > > are more broader, they can be used for RAS, profiling, counting, etc. - not 
+> > > just tracing.
+> > > 
+> > > Furthermore, we only want /debug/tracing/events really, not the various 
+> > > dynamic ftrace controls - those could remain in /debug/tracing/.
+> > 
+> > I was talking about the files in the events directory:
+> > 
+> > events/sched/sched_switch/{id,format,enable,filter}
+> > 
+> > 
+> > Seems only the format file should go in, and perhaps the id.
+> > 
+> > I can keep the debug/tracing/events/* as is too, where the format and id
+> > just call the same routines that the eventfs calls, but add the enable
+> > and filter to be specific to ftrace.
+> 
+> 
+> The /debug/tracing/events could contain symlinks for the format
+> files so that the rest can stay there.
 
-I tend to agree, we must use global dirty values here.
-
-BTW, update_completion_period() is called from dirty_* handlers, so it's
-totally unrelated to use the current memcg. That's the memcg where the
-admin is running, so probably it's the root memcg almost all the time,
-but it's wrong in principle. In conclusion this patch shouldn't touch
-calc_period_shift().
+Are you proposing to create another sysfs symlink maze ?
 
 Thanks,
--Andrea
+
+	tglx
