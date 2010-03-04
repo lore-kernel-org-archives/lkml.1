@@ -1,111 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666Ab0CDPSV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:18:21 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:49761 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754269Ab0CDPSU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:18:20 -0500
-Date: Thu, 4 Mar 2010 10:18:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Hugh Daschbach <hdasch@broadcom.com>
-cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, David Vrabel <david.vrabel@csr.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       james Bottomley <James.Bottomley@suse.de>,
-       James Smart <james.smart@emulex.com>
-Subject: RE: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-In-Reply-To: <233671224A0FED4688218FFDBED26E1A517AC38CA5@IRVEXCHCCR01.corp.ad.broadcom.com>
-Message-ID: <Pine.LNX.4.44L0.1003041005530.1657-100000@iolanthe.rowland.org>
+	id S1754694Ab0CDPUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:20:00 -0500
+Received: from lucidpixels.com ([75.144.35.66]:42572 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754269Ab0CDPT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 10:19:59 -0500
+Date: Thu, 4 Mar 2010 10:19:57 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-ext4@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: dumpe2fs/dump/restore not working correctly for ext4?
+Message-ID: <alpine.DEB.2.00.1003041000140.18322@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Hugh Daschbach wrote:
+Hi,
 
-> Alan Stern [mailto:stern@rowland.harvard.edu] writes:
-> 
-> > On Wed, 3 Mar 2010, Hugh Daschbach wrote:
-> >
-> >> > Can't we just protect the list?  What is wanting to write to the list
-> >> > while shutdown is happening?
-> >> 
-> >> Indeed, Alan suggested holding the kset spinlock while iterating the
-> >> list.  Unfortunately, the device shutdown routines may sleep.  At least
-> >> the SCSI sd_shutdown routine issues I/O to the device as part of
-> >> flushing device caches.  I would guess other subsystems sleep as well.
-> >
-> > What I meant was that you should hold the spinlock while finding and 
-> > unlinking the last device on the list.  Clearly you shouldn't hold it 
-> > while calling the device shutdown routine.
-> 
-> I misunderstood.  But I believe insertion and deletion is properly
-> serliaized.  It looks to me like the list structure is intact.  It's the
-> iterator that's been driven off into the weeds.
-> 
-> >> I'll try klist.  That looks like a good mediator between traversal and
-> >> removal.
-> >
-> > Yes, it removes a lot of difficulties.
-> >
-> > Alan Stern
-> 
-> Just to be clear, the list we're talking about is "list" in "struct
-> kset"  And the nodes of the list are chained by "entry" in "struct
-> kobject".  I just want to make sure that this is what's intended before
-> I get too far down the road.
-> 
-> At a minimum the change looks something like the patch below.  This
-> doesn't work yet.  And I'll need extensive testing in device plug and
-> unplug.  So I'm not looking for a detailed review.  But if I'm obviously
-> way off base, I'd like to know earlier rather than later.
-> 
-> Thanks for the guidance.
+I need to look into this more obviously and try other dumps etc, but I 
+even tried extracting a single (smaller) directory and it also segfaulted, 
+has dump been tested properly with ext4?
 
-If you really want to do this then you should remove the lock member 
-from struct kset.  However this seems like an awful lot of work 
-compared to my original suggestion -- something like this (untested, 
-and you'll want to add comments):
+# restore -f ../p34-root-2010-03-02.ext4dump -r .
+Segmentation fault (core dumped)
 
-Index: usb-2.6/drivers/base/core.c
-===================================================================
---- usb-2.6.orig/drivers/base/core.c
-+++ usb-2.6/drivers/base/core.c
-@@ -1719,10 +1719,14 @@ EXPORT_SYMBOL_GPL(device_move);
-  */
- void device_shutdown(void)
- {
--	struct device *dev, *devn;
-+	struct device *dev;
-+
-+	spin_lock(&devices_kset->lock);
-+	while (!list_empty(&devices_kset->list)) {
-+		dev = list_entry(devices_kset->list.prev, struct device,
-+				kobj.entry);
-+		spin_unlock(&devices_kset->lock);
- 
--	list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
--				kobj.entry) {
- 		if (dev->bus && dev->bus->shutdown) {
- 			dev_dbg(dev, "shutdown\n");
- 			dev->bus->shutdown(dev);
-@@ -1730,6 +1734,10 @@ void device_shutdown(void)
- 			dev_dbg(dev, "shutdown\n");
- 			dev->driver->shutdown(dev);
- 		}
-+
-+		spin_lock(&devices_kset->lock);
-+		list_del_init(&dev->kobj.entry);
- 	}
-+	spin_unlock(&devices_kset->lock);
- 	async_synchronize_full();
- }
+(gdb) bt full
+#0  0x000000000040d03d in ?? ()
+No symbol table info available.
+#1  0x000000000040d336 in ?? ()
+No symbol table info available.
+#2  0x000000000040e1a4 in ?? ()
+No symbol table info available.
+#3  0x0000000000408d5b in ?? ()
+No symbol table info available.
+#4  0x0000000000407d92 in ?? ()
+No symbol table info available.
+#5  0x00007f8df3361abd in __libc_start_main () from /lib/libc.so.6
+No symbol table info available.
+#6  0x0000000000403019 in ?? ()
+No symbol table info available.
+#7  0x00007fffa98b8bb8 in ?? ()
+No symbol table info available.
+#8  0x000000000000001c in ?? ()
+No symbol table info available.
+#9  0x0000000000000005 in ?? ()
+No symbol table info available.
+#10 0x00007fffa98b8e18 in ?? ()
+No symbol table info available.
+#11 0x00007fffa98b8e20 in ?? ()
+No symbol table info available.
+#12 0x00007fffa98b8e23 in ?? ()
+No symbol table info available.
+#13 0x00007fffa98b8e43 in ?? ()
+No symbol table info available.
+#14 0x00007fffa98b8e46 in ?? ()
+No symbol table info available.
+#15 0x0000000000000000 in ?? ()
+No symbol table info available.
+(gdb)
 
-Alan Stern
-
+Justin.
