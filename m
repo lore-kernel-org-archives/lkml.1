@@ -1,63 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212Ab0CDTWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:22:37 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:55053 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755235Ab0CDTWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:22:35 -0500
-Date: Thu, 4 Mar 2010 14:22:34 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Hugh Daschbach <hdasch@broadcom.com>
-cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, David Vrabel <david.vrabel@csr.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       james Bottomley <James.Bottomley@suse.de>,
-       James Smart <james.smart@emulex.com>
-Subject: RE: System reboot hangs due to race against devices_kset->list
- triggered by SCSI FC workqueue
-In-Reply-To: <233671224A0FED4688218FFDBED26E1A5181BF12D1@IRVEXCHCCR01.corp.ad.broadcom.com>
-Message-ID: <Pine.LNX.4.44L0.1003041420510.1742-100000@iolanthe.rowland.org>
+	id S1756924Ab0CDTXw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:23:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49064 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755235Ab0CDTXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:23:50 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Is it supposed to be ok to call del_gendisk while userspace is frozen?
+Date: Thu, 4 Mar 2010 20:26:30 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003042026.30303.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010, Hugh Daschbach wrote:
+On Thursday 04 March 2010, Alan Stern wrote:
+> On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
+> 
+> > > Very well.  Then we still need a solution to the original problem:  
+> > > Devices sometimes need to be unregistered during resume, but
+> > > del_gendisk() blocks on the writeback thread, which is frozen until
+> > > after the resume finishes.  How do you suggest this be fixed?
+> > 
+> > I thought about thawing the writeback thread earlier in such cases.
+> > 
+> > Would that makes sense / is it doable at all?
+> 
+> My thought exactly.  This is the only approach that also solves the 
+> following race:
+> 
+> 	A driver is unloaded at the same time as a suspend starts.
+> 
+> 	The writeback thread gets frozen.
+> 
+> 	Then before the rmmod thread is frozen, it calls del_gendisk.
+> 
+> Delaying things by means of a workqueue (or the equivalent) might also 
+> work, but it doesn't seem as safe.  For example, some important 
+> writebacks might end up getting delayed until too late.
 
-> Apparently I still don't understand your original suggestion.  I'd
-> prefer to, especially if it leads to a simpler fix.  The loop in
-> device_shutdown() looks something like:
-> 
->        struct device *dev, *devn;
-> 
->         list_for_each_entry_safe_reverse(dev, devn, &devices_kset->list,
->                                 kobj.entry) {
->                 if (dev->bus && dev->bus->shutdown) {
->                         dev->bus->shutdown(dev);
->                 } else if (dev->driver && dev->driver->shutdown) {
->                         dev->driver->shutdown(dev);
->                 }
->         }
-> 
-> *dev gets delinked kobj_kset_leave() indirectly called from
-> dev->*->shutdown(dev).  This is protected by the spinlock.
-> 
-> The secondary thread similarly calls kobj_kset_leave().  But when the
-> secondary thread calls the shutdown routine for the device that devn
-> points to, the loop hangs.
-> 
-> Is there some way I can detect that devn no longer points to a valid
-> device upon return from dev->*->shutdown(dev)?  Or, where else can I
-> look to better understand your suggestion?
+OK, so what exactly should trigger the thawing of the writeback thread?
 
-Did you read the patch in my previous message?  You didn't quote it.  
-It removes the devn variable, so the problem you're worried about
-cannot occur.
+Should we do that unconditionally at one point or wait for a specific situation
+to happen, and how to recognize that situation in the latter case?
 
-Alan Stern
-
+Rafael
