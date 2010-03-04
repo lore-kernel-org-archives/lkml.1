@@ -1,235 +1,125 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318Ab0CDCbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:31:23 -0500
-Received: from mga11.intel.com ([192.55.52.93]:6229 "EHLO mga11.intel.com"
+	id S1753082Ab0CDClr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:41:47 -0500
+Received: from mga11.intel.com ([192.55.52.93]:5434 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194Ab0CDCas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:30:48 -0500
+	id S1750939Ab0CDCln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 21:41:43 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,577,1262592000"; 
-   d="scan'208,217";a="545890433"
-From: Huang Ying <ying.huang@intel.com>
-To: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
-       Huang Ying <ying.huang@intel.com>
-Subject: [PATCH -v2 1/2] ACPI, APEI, Make APEI core configurable built-in instead of module
-Date: Thu,  4 Mar 2010 10:30:33 +0800
-Message-Id: <1267669834-30630-2-git-send-email-ying.huang@intel.com>
-X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1267669834-30630-1-git-send-email-ying.huang@intel.com>
-References: <1267669834-30630-1-git-send-email-ying.huang@intel.com>
+   d="scan'208";a="545892652"
+Date: Thu, 4 Mar 2010 10:41:41 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "rjw@sisk.pl" <rjw@sisk.pl>, "mingo@elte.hu" <mingo@elte.hu>,
+       "colin.king@canonical.com" <colin.king@canonical.com>
+Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
+Message-ID: <20100304024141.GA29235@sli10-desk.sh.intel.com>
+References: <1267665799-670-1-git-send-email-shaohua.li@intel.com>
+ <4B8F1B2A.5070500@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8F1B2A.5070500@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCIE AER optionally depends on APEI HEST tabling parsing. If AER is
-built-in, HEST should be built-in or not configured at all instead of
-module. It is hard to express this elegantly in Kconfig. It is better
-to make APEI code part configurable built-in instead of module.
+On Thu, Mar 04, 2010 at 10:30:02AM +0800, H. Peter Anvin wrote:
+> On 03/03/2010 05:23 PM, Shaohua Li wrote:
+> > Colin reported a strange oops in S4 resume code path (see below). The test
+> > system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+> > The oops always happen a virtual address 0xc03ff000, which is mapped to the
+> > last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+> > 
+> > EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+> > EIP is at copy_loop+0xe/0x15
+> > EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+> > ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+> >  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> > ...
+> > ...
+> > CR2: 00000000c03ff000
+> > 
+> > Tested-by: Colin Ian King <colin.king@canonical.com>
+> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > ---
+> >  arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
+> >  1 files changed, 11 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+> > index b641388..9e4ef64 100644
+> > --- a/arch/x86/power/hibernate_asm_32.S
+> > +++ b/arch/x86/power/hibernate_asm_32.S
+> > @@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
+> >  	ret
+> >  
+> >  ENTRY(restore_image)
+> > +	movl	mmu_cr4_features, %ecx
+> >  	movl	resume_pg_dir, %eax
+> >  	subl	$__PAGE_OFFSET, %eax
+> >  	movl	%eax, %cr3
+> >  
+> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > +	movl	%ecx, %edx
+> > +	andl	$~(X86_CR4_PGE), %edx
+> > +	movl	%edx, %cr4;  # turn off PGE
+> > +1:
+> > +	movl	%cr3, %eax;  # flush TLB
+> > +	movl	%eax, %cr3
+> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> > +	movl	%ecx, %cr4;  # turn PGE back on
+> > +1:
+> >  	movl	restore_pblist, %edx
+> >  	.p2align 4,,7
+> >  
+> 
+> Since we're about to do another global page flush a bit further down in
+> the same code, why not just leave PGE off until then?
+sure, updated patch.
 
-On the other hand, APEI core code is used for hardware error
-processing. It may run in very bad condition. It is reasonable to keep
-it built-in if enabled.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- Documentation/kernel-parameters.txt |   10 ++++----
- drivers/acpi/apei/Kconfig           |    2 -
- drivers/acpi/apei/apei-base.c       |   42 +++++-------------------------------
- drivers/acpi/apei/apei-internal.h   |    4 ---
- drivers/acpi/apei/einj.c            |    2 -
- drivers/acpi/apei/hest.c            |   34 ++++++++++++++++++++++++-----
- 6 files changed, 42 insertions(+), 52 deletions(-)
+i386: do a global tlb flush in S4 resume
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -351,11 +351,6 @@ and is between 256 and 4096 characters.
- 			not play well with APC CPU idle - disable it if you have
- 			APC and your system crashes randomly.
+    Colin reported a strange oops in S4 resume code path (see below). The test
+    system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+    The oops always happen a virtual address 0xc03ff000, which is mapped to the
+    last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+
+    EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+    EIP is at copy_loop+0xe/0x15
+    EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+    ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+     DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+    ...
+    ...
+    CR2: 00000000c03ff000
+
+    Tested-by: Colin Ian King <colin.king@canonical.com>
+    Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+
+diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+index b641388..cd5e878 100644
+--- a/arch/x86/power/hibernate_asm_32.S
++++ b/arch/x86/power/hibernate_asm_32.S
+@@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
+ 	ret
  
--	apei.hest_disable= [ACPI]
--			Disable Hardware Error Source Table (HEST) support,
--			corresponding firmware-first mode error processing
--			logic will be disabled.
--
- 	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
- 			Change the output verbosity whilst booting
- 			Format: { quiet (default) | verbose | debug }
-@@ -857,6 +852,11 @@ and is between 256 and 4096 characters.
- 	hd=		[EIDE] (E)IDE hard drive subsystem geometry
- 			Format: <cyl>,<head>,<sect>
+ ENTRY(restore_image)
++	movl	mmu_cr4_features, %ecx
+ 	movl	resume_pg_dir, %eax
+ 	subl	$__PAGE_OFFSET, %eax
+ 	movl	%eax, %cr3
  
-+	hest_disable	[ACPI]
-+			Disable Hardware Error Source Table (HEST) support,
-+			corresponding firmware-first mode error processing
-+			logic will be disabled.
-+
- 	highmem=nn[KMG]	[KNL,BOOT] forces the highmem zone to have an exact
- 			size of <nn>. This works even on boxes that have no
- 			highmem otherwise. This also works to reduce highmem
---- a/drivers/acpi/apei/Kconfig
-+++ b/drivers/acpi/apei/Kconfig
-@@ -1,5 +1,5 @@
- config ACPI_APEI
--	tristate "ACPI Platform Error Interface (APEI)"
-+	bool "ACPI Platform Error Interface (APEI)"
- 	depends on X86
- 	help
- 	  APEI allows to report errors (for example from the chipset)
---- a/drivers/acpi/apei/apei-base.c
-+++ b/drivers/acpi/apei/apei-base.c
-@@ -45,12 +45,6 @@
++	jecxz	1f	# cr4 Pentium and higher, skip if zero
++	andl	$~(X86_CR4_PGE), %ecx
++	movl	%ecx, %cr4;  # turn off PGE
++	movl	%cr3, %eax;  # flush TLB
++	movl	%eax, %cr3
++1:
+ 	movl	restore_pblist, %edx
+ 	.p2align 4,,7
  
- #define APEI_PFX "APEI: "
- 
--struct dentry *apei_debug_dir;
--EXPORT_SYMBOL_GPL(apei_debug_dir);
--
--int hest_disable;
--EXPORT_SYMBOL(hest_disable);
--
- /*
-  * APEI ERST (Error Record Serialization Table) and EINJ (Error
-  * INJection) interpreter framework.
-@@ -553,37 +547,13 @@ int apei_exec_collect_resources(struct a
- }
- EXPORT_SYMBOL_GPL(apei_exec_collect_resources);
- 
--static int __init apei_init(void)
-+struct dentry *apei_get_debugfs_dir(void)
- {
--	int rc;
--
--	apei_debug_dir = debugfs_create_dir("apei", NULL);
--	if (!apei_debug_dir)
--		return -ENOMEM;
--	if (!hest_disable) {
--		rc = hest_init();
--		if (rc) {
--			hest_disable = 1;
--			if (rc != -ENODEV)
--				pr_err(
--				"ACPI: APEI: Failed to initialize Hardware "
--				"Error Source Table (HEST) subsystem\n");
--		}
--	}
-+	static struct dentry *dapei;
- 
--	return 0;
--}
-+	if (!dapei)
-+		dapei = debugfs_create_dir("apei", NULL);
- 
--static void __exit apei_exit(void)
--{
--	debugfs_remove_recursive(apei_debug_dir);
-+	return dapei;
- }
--
--module_init(apei_init);
--module_exit(apei_exit);
--
--module_param(hest_disable, int, 0444);
--
--MODULE_AUTHOR("Huang Ying");
--MODULE_DESCRIPTION("ACPI Platform Error Interface support");
--MODULE_LICENSE("GPL");
-+EXPORT_SYMBOL_GPL(apei_get_debugfs_dir);
---- a/drivers/acpi/apei/apei-internal.h
-+++ b/drivers/acpi/apei/apei-internal.h
-@@ -6,8 +6,6 @@
- #ifndef APEI_INTERNAL_H
- #define APEI_INTERNAL_H
- 
--int hest_init(void);
--
- struct apei_exec_context;
- 
- typedef int (*apei_exec_ins_func_t)(struct apei_exec_context *ctx,
-@@ -93,5 +91,5 @@ int apei_exec_collect_resources(struct a
- 				struct apei_resources *resources);
- 
- struct dentry;
--extern struct dentry *apei_debug_dir;
-+struct dentry *apei_get_debugfs_dir(void);
- #endif
---- a/drivers/acpi/apei/einj.c
-+++ b/drivers/acpi/apei/einj.c
-@@ -409,7 +409,7 @@ static int __init einj_init(void)
- 	}
- 
- 	rc = -ENOMEM;
--	einj_debug_dir = debugfs_create_dir("einj", apei_debug_dir);
-+	einj_debug_dir = debugfs_create_dir("einj", apei_get_debugfs_dir());
- 	if (!einj_debug_dir)
- 		goto err_cleanup;
- 	fentry = debugfs_create_file("available_error_type", S_IRUSR,
---- a/drivers/acpi/apei/hest.c
-+++ b/drivers/acpi/apei/hest.c
-@@ -40,6 +40,9 @@
- 
- #define HEST_PFX "HEST: "
- 
-+int hest_disable;
-+EXPORT_SYMBOL_GPL(hest_disable);
-+
- /* HEST table parsing */
- 
- static struct acpi_table_hest *hest_tab;
-@@ -118,30 +121,49 @@ int apei_hest_parse(apei_hest_func_t fun
- }
- EXPORT_SYMBOL_GPL(apei_hest_parse);
- 
--int __init hest_init(void)
-+static int __init setup_hest_disable(char *str)
-+{
-+	hest_disable = 1;
-+	return 0;
-+}
-+
-+__setup("hest_disable", setup_hest_disable);
-+
-+static int __init hest_init(void)
- {
- 	acpi_status status;
--	int rc;
-+	int rc = 0;
- 
- 	if (acpi_disabled)
--		return -ENODEV;
-+		goto err;
-+
-+	if (hest_disable) {
-+		pr_info(HEST_PFX "HEST tabling parsing is disabled.\n");
-+		goto err;
-+	}
- 
- 	status = acpi_get_table(ACPI_SIG_HEST, 0,
- 				(struct acpi_table_header **)&hest_tab);
- 	if (status == AE_NOT_FOUND) {
- 		pr_info(HEST_PFX "Table is not found!\n");
--		return -ENODEV;
-+		goto err;
- 	} else if (ACPI_FAILURE(status)) {
- 		const char *msg = acpi_format_exception(status);
- 		pr_info(HEST_PFX "Failed to get table, %s\n", msg);
--		return -EINVAL;
-+		rc = -EINVAL;
-+		goto err;
- 	}
- 
- 	rc = apei_hest_parse(hest_void_parse, NULL);
- 	if (rc)
--		return rc;
-+		goto err;
- 
- 	pr_info(HEST_PFX "HEST table parsing is initialized.\n");
- 
- 	return 0;
-+err:
-+	hest_disable = 1;
-+	return rc;
- }
-+
-+subsys_initcall(hest_init);
