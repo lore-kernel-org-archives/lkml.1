@@ -1,400 +1,235 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962Ab0CDCbO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:31:14 -0500
-Received: from mga11.intel.com ([192.55.52.93]:7027 "EHLO mga11.intel.com"
+	id S1752318Ab0CDCbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:31:23 -0500
+Received: from mga11.intel.com ([192.55.52.93]:6229 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238Ab0CDCat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:30:49 -0500
+	id S1752194Ab0CDCas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 21:30:48 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,577,1262592000"; 
-   d="scan'208";a="545890441"
+   d="scan'208,217";a="545890433"
 From: Huang Ying <ying.huang@intel.com>
 To: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>,
        Huang Ying <ying.huang@intel.com>
-Subject: [PATCH -v2 2/2] ACPI, APEI, PCIE AER, use general HEST table parsing in AER firmware_first setup
-Date: Thu,  4 Mar 2010 10:30:34 +0800
-Message-Id: <1267669834-30630-3-git-send-email-ying.huang@intel.com>
+Subject: [PATCH -v2 1/2] ACPI, APEI, Make APEI core configurable built-in instead of module
+Date: Thu,  4 Mar 2010 10:30:33 +0800
+Message-Id: <1267669834-30630-2-git-send-email-ying.huang@intel.com>
 X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1267669834-30630-2-git-send-email-ying.huang@intel.com>
+In-Reply-To: <1267669834-30630-1-git-send-email-ying.huang@intel.com>
 References: <1267669834-30630-1-git-send-email-ying.huang@intel.com>
- <1267669834-30630-2-git-send-email-ying.huang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, a dedicated HEST tabling parsing code is used for PCIE AER
-firmware_first setup. It is rebased on general HEST tabling parsing
-code of APEI. The firmware_first setup code is moved from PCI core to
-AER driver too, because it is only AER related.
+PCIE AER optionally depends on APEI HEST tabling parsing. If AER is
+built-in, HEST should be built-in or not configured at all instead of
+module. It is hard to express this elegantly in Kconfig. It is better
+to make APEI code part configurable built-in instead of module.
+
+On the other hand, APEI core code is used for hardware error
+processing. It may run in very bad condition. It is reasonable to keep
+it built-in if enabled.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 ---
- drivers/acpi/Makefile              |    1 
- drivers/acpi/hest.c                |  135 -------------------------------------
- drivers/pci/pcie/aer/aerdrv.h      |    9 ++
- drivers/pci/pcie/aer/aerdrv_acpi.c |   70 +++++++++++++++++++
- drivers/pci/pcie/aer/aerdrv_core.c |   15 +++-
- drivers/pci/probe.c                |    8 --
- include/acpi/acpi_hest.h           |   12 ---
- include/linux/pci.h                |    3 
- 8 files changed, 92 insertions(+), 161 deletions(-)
- delete mode 100644 drivers/acpi/hest.c
- delete mode 100644 include/acpi/acpi_hest.h
+ Documentation/kernel-parameters.txt |   10 ++++----
+ drivers/acpi/apei/Kconfig           |    2 -
+ drivers/acpi/apei/apei-base.c       |   42 +++++-------------------------------
+ drivers/acpi/apei/apei-internal.h   |    4 ---
+ drivers/acpi/apei/einj.c            |    2 -
+ drivers/acpi/apei/hest.c            |   34 ++++++++++++++++++++++++-----
+ 6 files changed, 42 insertions(+), 52 deletions(-)
 
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -20,7 +20,6 @@ obj-y				+= acpi.o \
- # All the builtin files are in the "acpi." module_param namespace.
- acpi-y				+= osl.o utils.o reboot.o
- acpi-y				+= atomicio.o
--acpi-y				+= hest.o
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -351,11 +351,6 @@ and is between 256 and 4096 characters.
+ 			not play well with APC CPU idle - disable it if you have
+ 			APC and your system crashes randomly.
  
- # sleep related files
- acpi-y				+= wakeup.o
---- a/drivers/acpi/hest.c
-+++ /dev/null
-@@ -1,135 +0,0 @@
--#include <linux/acpi.h>
--#include <linux/pci.h>
+-	apei.hest_disable= [ACPI]
+-			Disable Hardware Error Source Table (HEST) support,
+-			corresponding firmware-first mode error processing
+-			logic will be disabled.
 -
--#define PREFIX "ACPI: "
+ 	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
+ 			Change the output verbosity whilst booting
+ 			Format: { quiet (default) | verbose | debug }
+@@ -857,6 +852,11 @@ and is between 256 and 4096 characters.
+ 	hd=		[EIDE] (E)IDE hard drive subsystem geometry
+ 			Format: <cyl>,<head>,<sect>
+ 
++	hest_disable	[ACPI]
++			Disable Hardware Error Source Table (HEST) support,
++			corresponding firmware-first mode error processing
++			logic will be disabled.
++
+ 	highmem=nn[KMG]	[KNL,BOOT] forces the highmem zone to have an exact
+ 			size of <nn>. This works even on boxes that have no
+ 			highmem otherwise. This also works to reduce highmem
+--- a/drivers/acpi/apei/Kconfig
++++ b/drivers/acpi/apei/Kconfig
+@@ -1,5 +1,5 @@
+ config ACPI_APEI
+-	tristate "ACPI Platform Error Interface (APEI)"
++	bool "ACPI Platform Error Interface (APEI)"
+ 	depends on X86
+ 	help
+ 	  APEI allows to report errors (for example from the chipset)
+--- a/drivers/acpi/apei/apei-base.c
++++ b/drivers/acpi/apei/apei-base.c
+@@ -45,12 +45,6 @@
+ 
+ #define APEI_PFX "APEI: "
+ 
+-struct dentry *apei_debug_dir;
+-EXPORT_SYMBOL_GPL(apei_debug_dir);
 -
--static inline unsigned long parse_acpi_hest_ia_machine_check(struct acpi_hest_ia_machine_check *p)
--{
--	return sizeof(*p) +
--		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
--}
+-int hest_disable;
+-EXPORT_SYMBOL(hest_disable);
 -
--static inline unsigned long parse_acpi_hest_ia_corrected(struct acpi_hest_ia_corrected *p)
--{
--	return sizeof(*p) +
--		(sizeof(struct acpi_hest_ia_error_bank) * p->num_hardware_banks);
--}
+ /*
+  * APEI ERST (Error Record Serialization Table) and EINJ (Error
+  * INJection) interpreter framework.
+@@ -553,37 +547,13 @@ int apei_exec_collect_resources(struct a
+ }
+ EXPORT_SYMBOL_GPL(apei_exec_collect_resources);
+ 
+-static int __init apei_init(void)
++struct dentry *apei_get_debugfs_dir(void)
+ {
+-	int rc;
 -
--static inline unsigned long parse_acpi_hest_ia_nmi(struct acpi_hest_ia_nmi *p)
--{
--	return sizeof(*p);
--}
--
--static inline unsigned long parse_acpi_hest_generic(struct acpi_hest_generic *p)
--{
--	return sizeof(*p);
--}
--
--static inline unsigned int hest_match_pci(struct acpi_hest_aer_common *p, struct pci_dev *pci)
--{
--	return	(0           == pci_domain_nr(pci->bus) &&
--		 p->bus      == pci->bus->number &&
--		 p->device   == PCI_SLOT(pci->devfn) &&
--		 p->function == PCI_FUNC(pci->devfn));
--}
--
--static unsigned long parse_acpi_hest_aer(void *hdr, int type, struct pci_dev *pci, int *firmware_first)
--{
--	struct acpi_hest_aer_common *p = hdr + sizeof(struct acpi_hest_header);
--	unsigned long rc=0;
--	u8 pcie_type = 0;
--	u8 bridge = 0;
--	switch (type) {
--	case ACPI_HEST_TYPE_AER_ROOT_PORT:
--		rc = sizeof(struct acpi_hest_aer_root);
--		pcie_type = PCI_EXP_TYPE_ROOT_PORT;
--		break;
--	case ACPI_HEST_TYPE_AER_ENDPOINT:
--		rc = sizeof(struct acpi_hest_aer);
--		pcie_type = PCI_EXP_TYPE_ENDPOINT;
--		break;
--	case ACPI_HEST_TYPE_AER_BRIDGE:
--		rc = sizeof(struct acpi_hest_aer_bridge);
--		if ((pci->class >> 16) == PCI_BASE_CLASS_BRIDGE)
--			bridge = 1;
--		break;
--	}
--
--	if (p->flags & ACPI_HEST_GLOBAL) {
--		if ((pci->is_pcie && (pci->pcie_type == pcie_type)) || bridge)
--			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
--	}
--	else
--		if (hest_match_pci(p, pci))
--			*firmware_first = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
--	return rc;
--}
--
--static int acpi_hest_firmware_first(struct acpi_table_header *stdheader, struct pci_dev *pci)
--{
--	struct acpi_table_hest *hest = (struct acpi_table_hest *)stdheader;
--	void *p = (void *)hest + sizeof(*hest); /* defined by the ACPI 4.0 spec */
--	struct acpi_hest_header *hdr = p;
--
--	int i;
--	int firmware_first = 0;
--	static unsigned char printed_unused = 0;
--	static unsigned char printed_reserved = 0;
--
--	for (i=0, hdr=p; p < (((void *)hest) + hest->header.length) && i < hest->error_source_count; i++) {
--		switch (hdr->type) {
--		case ACPI_HEST_TYPE_IA32_CHECK:
--			p += parse_acpi_hest_ia_machine_check(p);
--			break;
--		case ACPI_HEST_TYPE_IA32_CORRECTED_CHECK:
--			p += parse_acpi_hest_ia_corrected(p);
--			break;
--		case ACPI_HEST_TYPE_IA32_NMI:
--			p += parse_acpi_hest_ia_nmi(p);
--			break;
--		/* These three should never appear */
--		case ACPI_HEST_TYPE_NOT_USED3:
--		case ACPI_HEST_TYPE_NOT_USED4:
--		case ACPI_HEST_TYPE_NOT_USED5:
--			if (!printed_unused) {
--				printk(KERN_DEBUG PREFIX
--				       "HEST Error Source list contains an obsolete type (%d).\n", hdr->type);
--				printed_unused = 1;
--			}
--			break;
--		case ACPI_HEST_TYPE_AER_ROOT_PORT:
--		case ACPI_HEST_TYPE_AER_ENDPOINT:
--		case ACPI_HEST_TYPE_AER_BRIDGE:
--			p += parse_acpi_hest_aer(p, hdr->type, pci, &firmware_first);
--			break;
--		case ACPI_HEST_TYPE_GENERIC_ERROR:
--			p += parse_acpi_hest_generic(p);
--			break;
--		/* These should never appear either */
--		case ACPI_HEST_TYPE_RESERVED:
--		default:
--			if (!printed_reserved) {
--				printk(KERN_DEBUG PREFIX
--				       "HEST Error Source list contains a reserved type (%d).\n", hdr->type);
--				printed_reserved = 1;
--			}
--			break;
+-	apei_debug_dir = debugfs_create_dir("apei", NULL);
+-	if (!apei_debug_dir)
+-		return -ENOMEM;
+-	if (!hest_disable) {
+-		rc = hest_init();
+-		if (rc) {
+-			hest_disable = 1;
+-			if (rc != -ENODEV)
+-				pr_err(
+-				"ACPI: APEI: Failed to initialize Hardware "
+-				"Error Source Table (HEST) subsystem\n");
 -		}
 -	}
--	return firmware_first;
--}
--
--int acpi_hest_firmware_first_pci(struct pci_dev *pci)
--{
--	acpi_status status = AE_NOT_FOUND;
--	struct acpi_table_header *hest = NULL;
--	status = acpi_get_table(ACPI_SIG_HEST, 1, &hest);
--
--	if (ACPI_SUCCESS(status)) {
--		if (acpi_hest_firmware_first(hest, pci)) {
--			return 1;
--		}
--	}
++	static struct dentry *dapei;
+ 
 -	return 0;
 -}
--EXPORT_SYMBOL_GPL(acpi_hest_firmware_first_pci);
---- a/drivers/pci/pcie/aer/aerdrv.h
-+++ b/drivers/pci/pcie/aer/aerdrv.h
-@@ -134,4 +134,13 @@ static inline int aer_osc_setup(struct p
++	if (!dapei)
++		dapei = debugfs_create_dir("apei", NULL);
+ 
+-static void __exit apei_exit(void)
+-{
+-	debugfs_remove_recursive(apei_debug_dir);
++	return dapei;
  }
+-
+-module_init(apei_init);
+-module_exit(apei_exit);
+-
+-module_param(hest_disable, int, 0444);
+-
+-MODULE_AUTHOR("Huang Ying");
+-MODULE_DESCRIPTION("ACPI Platform Error Interface support");
+-MODULE_LICENSE("GPL");
++EXPORT_SYMBOL_GPL(apei_get_debugfs_dir);
+--- a/drivers/acpi/apei/apei-internal.h
++++ b/drivers/acpi/apei/apei-internal.h
+@@ -6,8 +6,6 @@
+ #ifndef APEI_INTERNAL_H
+ #define APEI_INTERNAL_H
+ 
+-int hest_init(void);
+-
+ struct apei_exec_context;
+ 
+ typedef int (*apei_exec_ins_func_t)(struct apei_exec_context *ctx,
+@@ -93,5 +91,5 @@ int apei_exec_collect_resources(struct a
+ 				struct apei_resources *resources);
+ 
+ struct dentry;
+-extern struct dentry *apei_debug_dir;
++struct dentry *apei_get_debugfs_dir(void);
  #endif
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -409,7 +409,7 @@ static int __init einj_init(void)
+ 	}
  
-+#ifdef CONFIG_ACPI_APEI
-+extern void aer_set_firmware_first(struct pci_dev *pci_dev);
-+#else
-+static inline void aer_set_firmware_first(struct pci_dev *pci_dev)
-+{
-+	pci_dev->__aer_firmware_first_valid = 1;
-+}
-+#endif
+ 	rc = -ENOMEM;
+-	einj_debug_dir = debugfs_create_dir("einj", apei_debug_dir);
++	einj_debug_dir = debugfs_create_dir("einj", apei_get_debugfs_dir());
+ 	if (!einj_debug_dir)
+ 		goto err_cleanup;
+ 	fentry = debugfs_create_file("available_error_type", S_IRUSR,
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -40,6 +40,9 @@
+ 
+ #define HEST_PFX "HEST: "
+ 
++int hest_disable;
++EXPORT_SYMBOL_GPL(hest_disable);
 +
- #endif /* _AERDRV_H_ */
---- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-+++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-@@ -16,6 +16,7 @@
- #include <linux/acpi.h>
- #include <linux/pci-acpi.h>
- #include <linux/delay.h>
-+#include <acpi/apei.h>
- #include "aerdrv.h"
+ /* HEST table parsing */
  
- /**
-@@ -53,3 +54,72 @@ int aer_osc_setup(struct pcie_device *pc
- 
- 	return 0;
+ static struct acpi_table_hest *hest_tab;
+@@ -118,30 +121,49 @@ int apei_hest_parse(apei_hest_func_t fun
  }
-+
-+#ifdef CONFIG_ACPI_APEI
-+static inline int hest_match_pci(struct acpi_hest_aer_common *p, struct pci_dev *pci)
+ EXPORT_SYMBOL_GPL(apei_hest_parse);
+ 
+-int __init hest_init(void)
++static int __init setup_hest_disable(char *str)
 +{
-+	return	(0           == pci_domain_nr(pci->bus) &&
-+		 p->bus      == pci->bus->number &&
-+		 p->device   == PCI_SLOT(pci->devfn) &&
-+		 p->function == PCI_FUNC(pci->devfn));
-+}
-+
-+struct aer_hest_parse_info
-+{
-+	struct pci_dev *pci_dev;
-+	int firmware_first;
-+};
-+
-+static int aer_hest_parse(struct acpi_hest_header *hest_hdr, void *data)
-+{
-+	struct aer_hest_parse_info *info = data;
-+	struct acpi_hest_aer_common *p;
-+	u8 pcie_type = 0;
-+	u8 bridge = 0;
-+	int ff = 0;
-+
-+	switch (hest_hdr->type) {
-+	case ACPI_HEST_TYPE_AER_ROOT_PORT:
-+		pcie_type = PCI_EXP_TYPE_ROOT_PORT;
-+		break;
-+	case ACPI_HEST_TYPE_AER_ENDPOINT:
-+		pcie_type = PCI_EXP_TYPE_ENDPOINT;
-+		break;
-+	case ACPI_HEST_TYPE_AER_BRIDGE:
-+		if ((info->pci_dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
-+			bridge = 1;
-+		break;
-+	default:
-+		return 0;
-+	}
-+
-+	p = (struct acpi_hest_aer_common *)(hest_hdr + 1);
-+	if (p->flags & ACPI_HEST_GLOBAL) {
-+		if ((info->pci_dev->is_pcie &&
-+		     info->pci_dev->pcie_type == pcie_type) || bridge)
-+			ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
-+	} else
-+		if (hest_match_pci(p, info->pci_dev))
-+			ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
-+	info->firmware_first = ff;
-+
++	hest_disable = 1;
 +	return 0;
 +}
 +
-+void aer_set_firmware_first(struct pci_dev *pci_dev)
-+{
-+	int rc;
-+	struct aer_hest_parse_info info = {
-+		.pci_dev	= pci_dev,
-+		.firmware_first	= 0,
-+	};
++__setup("hest_disable", setup_hest_disable);
 +
-+	rc = apei_hest_parse(aer_hest_parse, &info);
-+
-+	if (rc)
-+		pci_dev->__aer_firmware_first = 0;
-+	else
-+		pci_dev->__aer_firmware_first = info.firmware_first;
-+	pci_dev->__aer_firmware_first_valid = 1;
-+}
-+#endif
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -30,12 +30,19 @@ static int nosourceid;
- module_param(forceload, bool, 0);
- module_param(nosourceid, bool, 0);
- 
-+static int pcie_aer_get_firmware_first(struct pci_dev *dev)
-+{
-+	if (!dev->__aer_firmware_first_valid)
-+		aer_set_firmware_first(dev);
-+	return dev->__aer_firmware_first;
-+}
-+
- int pci_enable_pcie_error_reporting(struct pci_dev *dev)
++static int __init hest_init(void)
  {
- 	u16 reg16 = 0;
- 	int pos;
+ 	acpi_status status;
+-	int rc;
++	int rc = 0;
  
--	if (dev->aer_firmware_first)
-+	if (pcie_aer_get_firmware_first(dev))
- 		return -EIO;
+ 	if (acpi_disabled)
+-		return -ENODEV;
++		goto err;
++
++	if (hest_disable) {
++		pr_info(HEST_PFX "HEST tabling parsing is disabled.\n");
++		goto err;
++	}
  
- 	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-@@ -63,7 +70,7 @@ int pci_disable_pcie_error_reporting(str
- 	u16 reg16 = 0;
- 	int pos;
- 
--	if (dev->aer_firmware_first)
-+	if (pcie_aer_get_firmware_first(dev))
- 		return -EIO;
- 
- 	pos = pci_pcie_cap(dev);
-@@ -858,7 +865,7 @@ void aer_delete_rootport(struct aer_rpc
-  */
- int aer_init(struct pcie_device *dev)
- {
--	if (dev->port->aer_firmware_first) {
-+	if (pcie_aer_get_firmware_first(dev->port)) {
- 		dev_printk(KERN_DEBUG, &dev->device,
- 			   "PCIe errors handled by platform firmware.\n");
- 		goto out;
-@@ -872,7 +879,7 @@ out:
- 	if (forceload) {
- 		dev_printk(KERN_DEBUG, &dev->device,
- 			   "aerdrv forceload requested.\n");
--		dev->port->aer_firmware_first = 0;
-+		dev->port->__aer_firmware_first = 0;
- 		return 0;
+ 	status = acpi_get_table(ACPI_SIG_HEST, 0,
+ 				(struct acpi_table_header **)&hest_tab);
+ 	if (status == AE_NOT_FOUND) {
+ 		pr_info(HEST_PFX "Table is not found!\n");
+-		return -ENODEV;
++		goto err;
+ 	} else if (ACPI_FAILURE(status)) {
+ 		const char *msg = acpi_format_exception(status);
+ 		pr_info(HEST_PFX "Failed to get table, %s\n", msg);
+-		return -EINVAL;
++		rc = -EINVAL;
++		goto err;
  	}
- 	return -ENXIO;
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -10,7 +10,6 @@
- #include <linux/module.h>
- #include <linux/cpumask.h>
- #include <linux/pci-aspm.h>
--#include <acpi/acpi_hest.h>
- #include "pci.h"
  
- #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-@@ -900,12 +899,6 @@ void set_pcie_hotplug_bridge(struct pci_
- 		pdev->is_hotplug_bridge = 1;
+ 	rc = apei_hest_parse(hest_void_parse, NULL);
+ 	if (rc)
+-		return rc;
++		goto err;
+ 
+ 	pr_info(HEST_PFX "HEST table parsing is initialized.\n");
+ 
+ 	return 0;
++err:
++	hest_disable = 1;
++	return rc;
  }
- 
--static void set_pci_aer_firmware_first(struct pci_dev *pdev)
--{
--	if (acpi_hest_firmware_first_pci(pdev))
--		pdev->aer_firmware_first = 1;
--}
--
- #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
- 
- /**
-@@ -935,7 +928,6 @@ int pci_setup_device(struct pci_dev *dev
- 	dev->multifunction = !!(hdr_type & 0x80);
- 	dev->error_state = pci_channel_io_normal;
- 	set_pcie_port_type(dev);
--	set_pci_aer_firmware_first(dev);
- 
- 	list_for_each_entry(slot, &dev->bus->slots, list)
- 		if (PCI_SLOT(dev->devfn) == slot->number)
---- a/include/acpi/acpi_hest.h
-+++ /dev/null
-@@ -1,12 +0,0 @@
--#ifndef __ACPI_HEST_H
--#define __ACPI_HEST_H
--
--#include <linux/pci.h>
--
--#ifdef CONFIG_ACPI
--extern int acpi_hest_firmware_first_pci(struct pci_dev *pci);
--#else
--static inline int acpi_hest_firmware_first_pci(struct pci_dev *pci) { return 0; }
--#endif
--
--#endif
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -311,7 +311,8 @@ struct pci_dev {
- 	unsigned int	is_virtfn:1;
- 	unsigned int	reset_fn:1;
- 	unsigned int    is_hotplug_bridge:1;
--	unsigned int    aer_firmware_first:1;
-+	unsigned int    __aer_firmware_first_valid:1;
-+	unsigned int	__aer_firmware_first:1;
- 	pci_dev_flags_t dev_flags;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
- 
++
++subsys_initcall(hest_init);
