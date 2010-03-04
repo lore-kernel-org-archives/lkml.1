@@ -1,63 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028Ab0CDVxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:53:45 -0500
-Received: from www.tglx.de ([62.245.132.106]:54348 "EHLO www.tglx.de"
+	id S1755252Ab0CDVzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:55:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9713 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726Ab0CDVxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:53:44 -0500
-Date: Thu, 4 Mar 2010 22:52:36 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, Greg KH <greg@kroah.com>
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace
- events
-In-Reply-To: <20100304213725.GA8169@nowhere>
-Message-ID: <alpine.LFD.2.00.1003042251510.2014@localhost.localdomain>
-References: <1267632387.10871.59.camel@gandalf.stny.rr.com> <1267634258.25158.88.camel@laptop> <1267636046.10871.74.camel@gandalf.stny.rr.com> <1267636595.25158.93.camel@laptop> <20100304112531.GF21977@elte.hu> <1267715801.10871.191.camel@gandalf.stny.rr.com>
- <20100304153606.GA32496@elte.hu> <1267718131.10871.240.camel@gandalf.stny.rr.com> <20100304211741.GB3643@elte.hu> <1267738238.10871.582.camel@gandalf.stny.rr.com> <20100304213725.GA8169@nowhere>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753000Ab0CDVzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:55:41 -0500
+Date: Thu, 4 Mar 2010 16:55:29 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+ checks
+In-Reply-To: <20100304121931.GB5768@kernel.dk>
+Message-ID: <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
+ <20100228184634.GI5768@kernel.dk> <874okyf4iw.fsf@openvz.org>
+ <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
+ <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com>
+ <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk>
+ <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
+ <20100304121931.GB5768@kernel.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010, Frederic Weisbecker wrote:
-
-> On Thu, Mar 04, 2010 at 04:30:38PM -0500, Steven Rostedt wrote:
-> > On Thu, 2010-03-04 at 22:17 +0100, Ingo Molnar wrote:
-> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > 
-> > 
-> > > No, we want to decouple it from 'tracing'. It's events, not tracing. Events 
-> > > are more broader, they can be used for RAS, profiling, counting, etc. - not 
-> > > just tracing.
-> > > 
-> > > Furthermore, we only want /debug/tracing/events really, not the various 
-> > > dynamic ftrace controls - those could remain in /debug/tracing/.
-> > 
-> > I was talking about the files in the events directory:
-> > 
-> > events/sched/sched_switch/{id,format,enable,filter}
-> > 
-> > 
-> > Seems only the format file should go in, and perhaps the id.
-> > 
-> > I can keep the debug/tracing/events/* as is too, where the format and id
-> > just call the same routines that the eventfs calls, but add the enable
-> > and filter to be specific to ftrace.
+> > I think it should be redesigned in this way:
+> > * the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
+> > * the code for splitting bios should be just at one place --- in the 
+> > generic block layer and it should work with all drivers. I.e.
+> > q->make_request_fn will return that the request is too big for the given 
+> > driver and the generic code will allocate few another bios from 
+> > per-request_queue mempool and split the bio.
+> > * then, we would fix the raid1 bug and we would also simplify md and dm 
+> > --- remove the splitting code.
 > 
-> 
-> The /debug/tracing/events could contain symlinks for the format
-> files so that the rest can stay there.
+> The design certainly isn't perfect, but neither is the one that you
+> suggest. For instance, what would the point of building bigger bios just
+> to split them _everytime_ be? That's not good design, and it's certainly
+> not helping performance much.
 
-Are you proposing to create another sysfs symlink maze ?
+The point for building a big bio and splitting it is code size reduction.
 
-Thanks,
+You must realize that you need to split the request anyway. If the caller 
+needs to read/write M sectors and the device can process at most N 
+sectors, where N<M, then the i/o must be split. You can't get rid of that 
+split.
 
-	tglx
+Now, the question is, where this splitting happens. Currently, the 
+splitting happens in the issuers of the bio (for example dm-io, which is a 
+big chunk of code written just to work around the uncertain bio size 
+limits) as well as in the consumers of the bio (md, dm and request-based 
+drivers, if their maximum transfer size < PAGE_SIZE).
+
+What I'm proposing is to put that bio splitting just in one place and 
+remove it from both the issuers and the consumers of the bio.
+
+There is just one case, where it is not desirable to create larger 
+requests than the physical transfer size because of performance --- that 
+is page cache readahead. That could use the current approach of querying 
+the queue for limits and not stuffing more data than the device can 
+handle.
+
+In all the other (non-readahead) cases, the caller is waiting for all the 
+data anyway, there is no performance problem with creating a larger 
+requests and splitting them.
+
+> Alasdair had an idea for doing a map/unmap like interface instead, which
+> I think is a lot better. I don't think he ever coded it up, though.
+> Perhaps talk to him, if you want to improve our situation in this area.
+
+It would increase code size, not reduce it.
+
+> -- 
+> Jens Axboe
+
+BTW. see fs/bio.c:bio_split --- it uses a shared mempool. It can deadlock 
+if the devices depend on each other. You need to use per-queue mempool.
+
+Mikulas
+
