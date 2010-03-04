@@ -1,64 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286Ab0CDEqg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:46:36 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35137 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752231Ab0CDEqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:46:33 -0500
-Date: Thu, 4 Mar 2010 15:46:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: linux-next: manual merge of the fsnotify tree with the vfs tree
-Message-Id: <20100304154625.f152123e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0 (GTK+ 2.18.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Mar_2010_15_46_25_+1100_sPX3l7Lbk8vOvRxE"
+	id S1753563Ab0CDEwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 23:52:22 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:48342 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752346Ab0CDEwU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 23:52:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=edNwjj+l4LMpHXAXjkr3EGAvBXj4eEinAwLNm4rsMuPPBBRKOihSsvp8wEit541njZ
+         ZBG/xp9bF+B4kxlcmOEOvb8CMrCrkuo44MGnx7EQOy7Q8oqdQjBrkEiw6q2bwRnPOFDf
+         9NBoUSLTR74+O7ogbadQyI8KSECcyXmKtWJKs=
+MIME-Version: 1.0
+Date: Wed, 3 Mar 2010 23:52:20 -0500
+Message-ID: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+Subject: Linux kernel - Libata bad block error handling to user mode program
+From: foo saa <foosaa@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Mar_2010_15_46_25_+1100_sPX3l7Lbk8vOvRxE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+hi everyone,
 
-Hi Eric,
+I am in the process of writing a disk erasure application in C. The
+program does zerofill the drive (Good or Bad) before someone destroys
+it. During the erasure process, I need to record the number of bad
+sectors during the zerofill operation.
 
-Today's linux-next merge of the fsnotify tree got a conflict in
-include/linux/fsnotify.h between commit
-cccc6bba3f771ef29b33e4f79e70ebc3dba245b0 ("Lose the first argument of
-audit_inode_child()") from the vfs tree and commits
-a65c9effb4c7b86d032b5188ddbd0e2e583cb81b ("inotify: remove inotify in
-kernel interface"), 76864b426a99a3d08aa53e554ddc748ac49ca633 ("Lose the
-first argument of audit_inode_child()") and
-7278f4df3bfbc7934fc590d8a5707d3a8ee3d866 ("fsnotify: use unsigned char *
-for dentry->d_name.name") from the fsnotify tree.
+The method used to write to the hdd involves opening the appropriate
+/dev block device using open() call with O_WRONLY flag, start issuing
+write() calls to fill the sectors. A 512 byte buffer filled with
+zero's is used. All calls are of 64bit enabled. (I am using
+_LARGEFILE64_SOURCE define).
 
-This has come about partly because, when you rebased and linearized your
-tree, you included inline the two patches from Al that he had put in a
-separate branch for you to merge.  You should have just remerged Al's
-for-fsnotify branch at the appropriate place in your tree.
+The problem is (mostly with the bad hdd's), when the write call
+encounters a bad sector, it takes a bit longer than usual and writes
+the sector without any errors. (dmesg shows a lot of error messages
+embedded in the LIBATA error handling code!). The call never fails for
+any reason.
 
-I fixed it up (again) and can carry this for a while.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
+have tried upto 2.6.30.10 and multiple distros with similar behavior.
 
---Signature=_Thu__4_Mar_2010_15_46_25_+1100_sPX3l7Lbk8vOvRxE
-Content-Type: application/pgp-signature
+Here is a summary of things I have attempted.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+I know about the bad sector and it's location on the hdd, since it has
+been verified by using Windows based hex editor utilities, DOS based
+erasure applications, MHDD and many other HDD utilities.
 
-iEYEARECAAYFAkuPOyEACgkQjjKRsyhoI8zuiACfUm4IbiN8PjeXKGwlTWKLc0t5
-GK8An1g9u9G2JzKMAQptXP8Lu/iQl9U7
-=lPVt
------END PGP SIGNATURE-----
+I have tried using O_DIRECT with aligned buffers, but still could not
+identify the bad sectors during the writing process.
 
---Signature=_Thu__4_Mar_2010_15_46_25_+1100_sPX3l7Lbk8vOvRxE--
+I have tried using fadvise, posix_fadvise functions to get of the
+caching, but still failed.
+
+I have tried using SG_IO and SAT translation (direct ATA commands with
+device addressing) and it fails too. Raw devices is out of question
+now.
+
+The libata is not letting / informing the user mode program (executing
+under root) about the media / write errors / bad blocks and failures,
+though it notifies the kernel and logs to syslog. It also tries to
+reallocate, softreset, hardreset the block device which is evident
+from the dmesg logs.
+
+What has to be done for my program to identify / receive the bad block
+/ sector information during the read / write process?
+
+How can I receive the bad sector / physical and media write errors in
+my program? This is my only requirement and question.
+
+I am currently out of options unless anyone from here can show some
+new direction!
+
+My only option is to recompile the kernel with libata customization
+and changes according to my requirement. (Can I instruct to libata to
+skip the error handling process and pass certain errors to my
+program?).
+
+Is this a good approach and recommended one? If not what should be
+done to achieve it? If yes, can somebody throw some light on it?
+
+Please let me know if you have any queries in my above explanation.
+
+Thank you for reading this rather long post!
+
+Regards
+sponnusa
