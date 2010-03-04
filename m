@@ -1,61 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933Ab0CDT0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:26:33 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37474 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756209Ab0CDT0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:26:31 -0500
-Date: Thu, 4 Mar 2010 20:26:23 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       linux-arm-kernel@lists.infradead.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Antonio Ospite <ospite@studenti.unina.it>,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] V4L/DVB: mx1-camera: compile fix
-Message-ID: <20100304192623.GA14587@pengutronix.de>
-References: <1267721687-19697-1-git-send-email-u.kleine-koenig@pengutronix.de> <Pine.LNX.4.64.1003041811160.4825@axis700.grange>
+	id S932229Ab0CDT3X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:29:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47127 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756188Ab0CDT3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:29:21 -0500
+Message-ID: <4B9009D4.8060404@kernel.org>
+Date: Thu, 04 Mar 2010 11:28:20 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.1003041811160.4825@axis700.grange>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: no boot with NO_BOOTMEM=y [was: mmotm 2010-03-02-18-38 uploaded]
+References: <201003030305.o2335F1F015917@imap1.linux-foundation.org> <4B8FC98E.3070203@gmail.com> <4B8FCC4D.6040202@gmail.com>
+In-Reply-To: <4B8FCC4D.6040202@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Guennadi,
-
-On Thu, Mar 04, 2010 at 06:13:38PM +0100, Guennadi Liakhovetski wrote:
-> > +#undef DMA_BASE 
-> > +#define DMA_BASE MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR)
+On 03/04/2010 07:05 AM, Jiri Slaby wrote:
+> Subject fixed.
 > 
-> I don't like this. Why the "undef"? Is DMA_BASE already defined? where and 
-> what is it? If it is - we better use a different name, if not - just 
-> remove the undef, please.
-yes, it's not pretty, but I wanted to make a minimal patch.
+> On 03/04/2010 03:54 PM, Jiri Slaby wrote:
+>> On 03/03/2010 03:39 AM, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2010-03-02-18-38 has been uploaded to
+>>
+>> Hi, the kernel does not boot in qemu-kvm with NO_BOOTMEM=y. The last
+>> message is 'Booting the kernel.'
+> 
 
-arch/arm/plat-mxc/include/mach/dma-mx1-mx2.h has:
+can you check current linus tree or tip/master?
 
-	#define DMA_BASE IO_ADDRESS(DMA_BASE_ADDR)
+also can you send out .config?
 
-so that was used before.  I don't really know the driver, just made it
-compile again.  If you have a nice suggestion, I will happily implement
-it.
- 
-Best regards
-Uwe
+Thanks
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Yinghai
