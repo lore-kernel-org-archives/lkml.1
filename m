@@ -1,107 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342Ab0CDGli (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 01:41:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53488
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751206Ab0CDGlh (ORCPT
+	id S1753272Ab0CDGn0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 01:43:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45966 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752910Ab0CDGnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 01:41:37 -0500
-Date: Wed, 03 Mar 2010 22:41:54 -0800 (PST)
-Message-Id: <20100303.224154.193731539.davem@davemloft.net>
-To: johnstul@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 12/14] sparc: Convert sparc to use
- read/update_persistent_clock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
-References: <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
-	<1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
-	<1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Thu, 4 Mar 2010 01:43:23 -0500
+Date: Wed, 3 Mar 2010 22:42:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: foo saa <foosaa@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
+Subject: Re: Linux kernel - Libata bad block error handling to user mode
+ program
+Message-Id: <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+In-Reply-To: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Stultz <johnstul@us.ibm.com>
-Date: Wed,  3 Mar 2010 19:57:27 -0800
+(lots of cc's added)
 
-> This patch converts the sparc architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
+On Wed, 3 Mar 2010 23:52:20 -0500 foo saa <foosaa@gmail.com> wrote:
+
+> hi everyone,
 > 
-> I have not built or tested this patch, so help from arch maintainers would be appreciated.
+> I am in the process of writing a disk erasure application in C. The
+> program does zerofill the drive (Good or Bad) before someone destroys
+> it. During the erasure process, I need to record the number of bad
+> sectors during the zerofill operation.
 > 
-> Cc: David S. Miller" <davem@davemloft.net>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
+> The method used to write to the hdd involves opening the appropriate
+> /dev block device using open() call with O_WRONLY flag, start issuing
+> write() calls to fill the sectors. A 512 byte buffer filled with
+> zero's is used. All calls are of 64bit enabled. (I am using
+> _LARGEFILE64_SOURCE define).
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> The problem is (mostly with the bad hdd's), when the write call
+> encounters a bad sector, it takes a bit longer than usual and writes
+> the sector without any errors. (dmesg shows a lot of error messages
+> embedded in the LIBATA error handling code!). The call never fails for
+> any reason.
+> 
+> I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
+> have tried upto 2.6.30.10 and multiple distros with similar behavior.
+> 
+> Here is a summary of things I have attempted.
+> 
+> I know about the bad sector and it's location on the hdd, since it has
+> been verified by using Windows based hex editor utilities, DOS based
+> erasure applications, MHDD and many other HDD utilities.
+> 
+> I have tried using O_DIRECT with aligned buffers, but still could not
+> identify the bad sectors during the writing process.
+> 
+> I have tried using fadvise, posix_fadvise functions to get of the
+> caching, but still failed.
+> 
+> I have tried using SG_IO and SAT translation (direct ATA commands with
+> device addressing) and it fails too. Raw devices is out of question
+> now.
+> 
+> The libata is not letting / informing the user mode program (executing
+> under root) about the media / write errors / bad blocks and failures,
+> though it notifies the kernel and logs to syslog. It also tries to
+> reallocate, softreset, hardreset the block device which is evident
+> from the dmesg logs.
+> 
+> What has to be done for my program to identify / receive the bad block
+> / sector information during the read / write process?
+> 
+> How can I receive the bad sector / physical and media write errors in
+> my program? This is my only requirement and question.
+> 
+> I am currently out of options unless anyone from here can show some
+> new direction!
+> 
+> My only option is to recompile the kernel with libata customization
+> and changes according to my requirement. (Can I instruct to libata to
+> skip the error handling process and pass certain errors to my
+> program?).
+> 
+> Is this a good approach and recommended one? If not what should be
+> done to achieve it? If yes, can somebody throw some light on it?
+> 
+> Please let me know if you have any queries in my above explanation.
+> 
 
-Here's a version that compiles, you have to get rid of the now unused
-variably last_rtc_update since we build with -Werror, and you can also
-add my:
+OK, this is bad.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Did you try running fsync() after a write(), check the return value?
 
-Also, you'll reach more sparc developers by CC:'ing sparclinux@vger.kernel.org
-on your patches :-)
+I doubt if this is a VFS bug.  As O_DIRECT writes are also failing to
+report errors, I'd suspect that the driver or block layers really are
+failing to propagate the error back.
 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 4097f6a..0e8ec2a 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -72,7 +72,7 @@ config ARCH_USES_GETTIMEOFFSET
- 
- config GENERIC_CMOS_UPDATE
- 	bool
--	default y if SPARC64
-+	default y
- 
- config GENERIC_CLOCKEVENTS
- 	bool
-diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
-index 0d4c09b..4453003 100644
---- a/arch/sparc/kernel/time_32.c
-+++ b/arch/sparc/kernel/time_32.c
-@@ -78,6 +78,11 @@ __volatile__ unsigned int *master_l10_counter;
- 
- u32 (*do_arch_gettimeoffset)(void);
- 
-+int update_persistent_clock(struct timespec now)
-+{
-+	return set_rtc_mmss(now.tv_sec);
-+}
-+
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick
-@@ -87,9 +92,6 @@ u32 (*do_arch_gettimeoffset)(void);
- 
- static irqreturn_t timer_interrupt(int dummy, void *dev_id)
- {
--	/* last time the cmos clock got updated */
--	static long last_rtc_update;
--
- #ifndef CONFIG_SMP
- 	profile_tick(CPU_PROFILING);
- #endif
-@@ -101,16 +103,6 @@ static irqreturn_t timer_interrupt(int dummy, void *dev_id)
- 
- 	do_timer(1);
- 
--	/* Determine when to update the Mostek clock. */
--	if (ntp_synced() &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / 1000) >= 500000 - ((unsigned) TICK_SIZE) / 2 &&
--	    (xtime.tv_nsec / 1000) <= 500000 + ((unsigned) TICK_SIZE) / 2) {
--	  if (set_rtc_mmss(xtime.tv_sec) == 0)
--	    last_rtc_update = xtime.tv_sec;
--	  else
--	    last_rtc_update = xtime.tv_sec - 600; /* do it again in 60 s */
--	}
- 	write_sequnlock(&xtime_lock);
- 
- #ifndef CONFIG_SMP
+Do the ata guys know of a way of deliberately injecting errors to test
+these codepaths?  If we don't have that, something using the
+fault-injection code would be nice.  As low-level as possible,
+preferably at interrupt time.
