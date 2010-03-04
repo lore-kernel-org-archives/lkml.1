@@ -1,139 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422Ab0CDM6N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 07:58:13 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:48771 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705Ab0CDM6K convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 07:58:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Dd6OsXFERd3QyZLUHQ4ll6iPmu2fCfdN1lkknbTEek1DF6hK7NvryI2R1AMZ39Zr7+
-         5P5R3sQW/1TR6TLPux/tXFy0uLBW1pPIC0n/QncSEaisxQlvTwXzAbqhAFlI8fLZ9/Ho
-         1MspMe+lWVddb3lBdBRyZlI781sMB7FB4R550=
+	id S1755476Ab0CDM6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 07:58:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11246 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754705Ab0CDM6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 07:58:43 -0500
+Date: Thu, 4 Mar 2010 09:58:06 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, eranian@google.com,
+       peterz@infradead.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com
+Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
+Message-ID: <20100304125806.GB16539@ghostprotocols.net>
+References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
+ <1267637995.25158.96.camel@laptop>
+ <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
+ <20100303.095553.105186917.davem@davemloft.net>
+ <20100304025908.GC23633@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-Date: Thu, 4 Mar 2010 07:58:07 -0500
-Message-ID: <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: foo saa <foosaa@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100304025908.GC23633@elte.hu>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Em Thu, Mar 04, 2010 at 03:59:08AM +0100, Ingo Molnar escreveu:
+> 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > And more generally aren't we supposed to be able to eventually analyze perf 
+> > dumps on any platform not just the one 'perf' was built under?
+> 
+> A aidenote: in this cycle Arnaldo improved this aspect of perf (and those 
+> changes are now upstream). In theory you should be able to do a 'perf record' 
+> + 'perf archive' on your Sparc box and then analyze it via 'perf report' on an 
+> x86 box - and vice versa.
+> 
+> ( Note, it was not tested in that specific combination - another combination
+>   was tested by Arnaldo: 32-bit PA-RISC profile interpreted on 64-bit x86. )
 
-Thanks for adding the mailing lists.
+It was the other way around, 64-bit x86 interpreted on 64-bit PARISC.
+Should work in any direction.
 
-I have tried fsync(), fdatasync() after the write calls, but still the
-write() passes without propagating any error. dmesg still shows
-multiples of thousands of bad i/o errors for logical sectors.
+Caveats:
 
-Also, one noted behavior is that if I use fsync / fdatasync, the write
-process becomes extremely slow when it encounters the bad sectors and
-grinds the hdd for longer durations.
+perf archive requires build-ids, the kernel has them in distros that
+have this support in their toolchain, enabled unconditionally since
+about 2.6.24.
 
-Is there any user specified timeout that can set on it too?
+If vmlinux is available, it will be used, if not a copy of
+/proc/kallsyms is made and as well is keyed by build-id.
 
-You are right about the error propagation failure. The errors are
-caught the driver level (atleast at the lidata driver) as it logs the
-messages from drivers/ata/libata-eh.c / libata-scsi.c to the syslog.
-
-I have spend much time in analysing the kernel source code because I
-have been trying multiple combinations for my program to work and each
-testing consumes about 3-4 hours. (Testing atleast one sample from a
-good and bad drives).
-
-On Thu, Mar 4, 2010 at 1:42 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> (lots of cc's added)
->
-> On Wed, 3 Mar 2010 23:52:20 -0500 foo saa <foosaa@gmail.com> wrote:
->
->> hi everyone,
->>
->> I am in the process of writing a disk erasure application in C. The
->> program does zerofill the drive (Good or Bad) before someone destroys
->> it. During the erasure process, I need to record the number of bad
->> sectors during the zerofill operation.
->>
->> The method used to write to the hdd involves opening the appropriate
->> /dev block device using open() call with O_WRONLY flag, start issuing
->> write() calls to fill the sectors. A 512 byte buffer filled with
->> zero's is used. All calls are of 64bit enabled. (I am using
->> _LARGEFILE64_SOURCE define).
->>
->> The problem is (mostly with the bad hdd's), when the write call
->> encounters a bad sector, it takes a bit longer than usual and writes
->> the sector without any errors. (dmesg shows a lot of error messages
->> embedded in the LIBATA error handling code!). The call never fails for
->> any reason.
->>
->> I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
->> have tried upto 2.6.30.10 and multiple distros with similar behavior.
->>
->> Here is a summary of things I have attempted.
->>
->> I know about the bad sector and it's location on the hdd, since it has
->> been verified by using Windows based hex editor utilities, DOS based
->> erasure applications, MHDD and many other HDD utilities.
->>
->> I have tried using O_DIRECT with aligned buffers, but still could not
->> identify the bad sectors during the writing process.
->>
->> I have tried using fadvise, posix_fadvise functions to get of the
->> caching, but still failed.
->>
->> I have tried using SG_IO and SAT translation (direct ATA commands with
->> device addressing) and it fails too. Raw devices is out of question
->> now.
->>
->> The libata is not letting / informing the user mode program (executing
->> under root) about the media / write errors / bad blocks and failures,
->> though it notifies the kernel and logs to syslog. It also tries to
->> reallocate, softreset, hardreset the block device which is evident
->> from the dmesg logs.
->>
->> What has to be done for my program to identify / receive the bad block
->> / sector information during the read / write process?
->>
->> How can I receive the bad sector / physical and media write errors in
->> my program? This is my only requirement and question.
->>
->> I am currently out of options unless anyone from here can show some
->> new direction!
->>
->> My only option is to recompile the kernel with libata customization
->> and changes according to my requirement. (Can I instruct to libata to
->> skip the error handling process and pass certain errors to my
->> program?).
->>
->> Is this a good approach and recommended one? If not what should be
->> done to achieve it? If yes, can somebody throw some light on it?
->>
->> Please let me know if you have any queries in my above explanation.
->>
->
-> OK, this is bad.
->
-> Did you try running fsync() after a write(), check the return value?
->
-> I doubt if this is a VFS bug.  As O_DIRECT writes are also failing to
-> report errors, I'd suspect that the driver or block layers really are
-> failing to propagate the error back.
->
-> Do the ata guys know of a way of deliberately injecting errors to test
-> these codepaths?  If we don't have that, something using the
-> fault-injection code would be nice.  As low-level as possible,
-> preferably at interrupt time.
->
+I have plans to cope with build-id-less systems, but no code yet.
+ 
+- Arnaldo
