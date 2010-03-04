@@ -1,70 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315Ab0CDRwN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:52:13 -0500
-Received: from mail-gy0-f174.google.com ([209.85.160.174]:51261 "EHLO
-	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953Ab0CDRwL convert rfc822-to-8bit (ORCPT
+	id S1753382Ab0CDRyK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:54:10 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:1846 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889Ab0CDRyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:52:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=i94zRczABPrgAreKV2KHvl+M9x/KjFFhVYaApqeeq6Hih2gKaik/VSTDeeX+1yx3iv
-         P68cyjVWTtSPtDB40J0qpvPFBc8I5n3SDGvF8O8na2xU0kQW8yVoi61pQ4tANr2w0PCu
-         Ui1Rm2FL900jsHl3YGl/ubYZ7z0SDWxqrvZLk=
+	Thu, 4 Mar 2010 12:54:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=wn8sV0vd+nwXULCkiQame9Lg/kOhw+/zVKEihzusouCn6aQnVMO7C0Dn4byGwAk1J
+	e3G93tRbE80xkZoWEAbMQ==
 MIME-Version: 1.0
-In-Reply-To: <b4198de60910190853k54267f9flcf6453d6e23f6da3@mail.gmail.com>
-References: <1255939868-5050-1-git-send-email-mcree@orcon.net.nz> 
-	<b4198de60910190853k54267f9flcf6453d6e23f6da3@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 4 Mar 2010 12:51:49 -0500
-Message-ID: <8bd0f97a1003040951x52b0a2e5m8b724245ab773436@mail.gmail.com>
-Subject: Re: Unimplemented syscalls on Alpha
-To: Matt Turner <mattst88@gmail.com>
-Cc: Michael Cree <mcree@orcon.net.nz>, linux-alpha@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <1267693107.25158.149.camel@laptop>
+References: <20100303163936.906011640@chello.nl>
+	 <20100303164306.451251096@chello.nl>
+	 <bd4cb8901003031357x9c13c96h3899ab0459a34b0e@mail.gmail.com>
+	 <1267693107.25158.149.camel@laptop>
+Date: Thu, 4 Mar 2010 09:54:04 -0800
+Message-ID: <bd4cb8901003040954n5b05e139wa24f8e50789421ac@mail.gmail.com>
+Subject: Re: [RFC][PATCH 08/11] perf, x86: Implement simple LBR support
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 19, 2009 at 10:53, Matt Turner wrote:
-> On Mon, Oct 19, 2009 at 4:11 AM, Michael Cree wrote:
->> I couldn't but help notice the increasing number of unimplemented syscalls
->> on the Alpha architecture.  I thought I might poke around to see what might
->> be required to get these implemented and got a pleasant surprise when it
->> seems some only need an entry in the syscall table.  Indeed, the patch in
->> reply to this message gets preadv and pwritev going -- tested with the
->> sample program at http://lkml.org/lkml/2009/4/6/535.
+On Thu, Mar 4, 2010 at 12:58 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2010-03-03 at 22:57 +0100, Stephane Eranian wrote:
+>> I don't understand how LBR state is migrated when a per-thread event is moved
+>> from one CPU to another. It seems LBR is managed per-cpu.
+>>
+>> Can you explain this to me?
 >
-> Cool. I was looking into doing this, but I didn't know how to test the syscalls.
+> It is not, its basically impossible to do given that the TOS doesn't
+> count more bits than is strictly needed.
 >
-> I tried to keep a list of missing syscalls here,
-> http://alphalinux.org/wiki/index.php/TODO_List but as you can see it's
-> already out of date.
->
->> I am happy to write patches to wire up more of the syscalls, but I am
->> wondering which ones are as straightforward as the preadv/pwritev case?
->> That is, do any require extra programming other than the syscall table?  Do
->> I need to get the entries in the syscall table in the same order as other
->> architectures?
->
-> I'm curious and unsure about this too. Patches would be great. I think
-> we should figure out who we need to CC to get patches into the kernel,
-> as neither of our maintainers have any sort of Alpha tree. I've
-> noticed a few patches submitted to this list have never made it into
-> the kernel, as well, maybe we should start an alpha tree?
+I don't get that about the TOS.
 
-typically if the sys_xxx entry is in common code, you dont need to
-implement arch-specific stuff.  just hook them up in the system call
-table.  afaik, preadv/pwritev fall into this category.
+So you are saying that one context switch out, you drop the current
+content of LBR. When you are scheduled back in on an another CPU,
+you grab whatever is there?
 
-> The entries do not need to be in the same order of have the same
-> number as other architectures, just once you set the number you cannot
-> change it (without breaking the ABI).
-
-correct ... and breaking the ABI is unacceptable
--mike
+> Or we should stop supporting cpu and task users at the same time.
+>
+Or you should consider LBR as an event which has a constraint that
+it can only run on one pseudo counter (similar to what you do with
+BTS). Scheduling would take care of the mutual exclusion. Multiplexing
+would provide the work-around.
