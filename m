@@ -1,146 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895Ab0CDLiG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:38:06 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:1887 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869Ab0CDLiE convert rfc822-to-8bit (ORCPT
+	id S1755889Ab0CDLkR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:40:17 -0500
+Received: from smtp.eu.citrix.com ([62.200.22.115]:50693 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860Ab0CDLkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:38:04 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Thu, 04 Mar 2010 03:38:02 -0800
-From: Wei Ni <wni@nvidia.com>
-To: "'Takashi Iwai'" <tiwai@suse.de>
-CC: "'Pavel Hofman'" <pavel.hofman@insite.cz>,
-       "'alsa-devel'" <alsa-devel@alsa-project.org>,
-       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
-       "'akpm'" <akpm@linux-foundation.org>
-Date: Thu, 4 Mar 2010 19:37:52 +0800
-Subject: RE: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Topic: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-Thread-Index: Acq7jkIUtyUJcBcwQA+k2FWh7W2kpAAAGoug
-Message-ID: <6B4D417B830BC44B8026029FD256F7F1C16B1AD556@HKMAIL01.nvidia.com>
-References: <6B4D417B830BC44B8026029FD256F7F1C068B2BA8B@HKMAIL01.nvidia.com>
-	<s5hmxyrp311.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C068B2BA8C@HKMAIL01.nvidia.com>
-	<s5heik3ujy0.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A118@HKMAIL01.nvidia.com>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11A@HKMAIL01.nvidia.com>
-	<s5haaupoqew.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16A89A11C@HKMAIL01.nvidia.com>
-	<s5htysxm5yo.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD54C@HKMAIL01.nvidia.com>
-	<s5hzl2ol8qu.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD554@HKMAIL01.nvidia.com>
-	<s5h1vg0qrrr.wl%tiwai@suse.de>
-	<6B4D417B830BC44B8026029FD256F7F1C16B1AD555@HKMAIL01.nvidia.com>
- <s5hwrxspblg.wl%tiwai@suse.de>
-In-Reply-To: <s5hwrxspblg.wl%tiwai@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Mar 2010 06:40:16 -0500
+X-IronPort-AV: E=Sophos;i="4.49,580,1262563200"; 
+   d="scan'208";a="9778008"
+Date: Thu, 4 Mar 2010 11:44:04 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+X-X-Sender: sstabellini@kaball-desktop
+To: =?ISO-8859-15?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
+CC: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 2 of 4] Linux pvops: early PV on HVM
+In-Reply-To: <20100304093237.GS2761@reaktio.net>
+Message-ID: <alpine.DEB.2.00.1003041142300.24752@kaball-desktop>
+References: <alpine.DEB.2.00.1003021734440.22259@kaball-desktop> <20100304093237.GS2761@reaktio.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="8323329-950488939-1267703044=:24752"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you mean you will check in my patch first, and then I give you the
-additional patch for adding EXPORT_SYMBOL() in hda_eld.c?
+--8323329-950488939-1267703044=:24752
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 
------Original Message-----
-From: Takashi Iwai [mailto:tiwai@suse.de] 
-Sent: Thursday, March 04, 2010 7:31 PM
-To: Wei Ni
-Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
+On Thu, 4 Mar 2010, Pasi Kärkkäinen wrote:
+> On Tue, Mar 02, 2010 at 06:30:18PM +0000, Stefano Stabellini wrote:
+> > Hi all,
+> > this patch is derived from an earler version of the patch named "Xen PV
+> > extension of HVM initialization" in Shen's patch series.
+> > This patch:
+> > 
+> > - initializes basic pv on hvm features in xen_guest_init; 
+> > 
+> 
+> Are you planning to make pv-on-hvm disk/net frontends also
+> work for HVM guests running 2.6.3x pvops kernels? 
+> 
 
-At Thu, 4 Mar 2010 19:09:29 +0800,
-Wei Ni wrote:
-> 
-> Hi, Takashi
-> I test my patch, it build successful when CONFIG_SND_HDA_*=y.
-> Could you give me your build error messages?
+Yes, that what I meant.
+Even though many things are still missing in the patch series, this
+feature works already in last version I sent.
 
-Sorry, it's CONFIG_SND_HDA*=m.  Then load two modules, so you'll have
-two identical objects in different modules.
-
-OTOH, if it's no exported symbol, it might coexist.  Hmm.
-
-If you get no errors with it, then it's fine as an intermediate state.
-Please give the additional patch on them for further fixes.
-
-
-thanks,
-
-Takashi
-
-> 
-> Thanks
-> Wei.
-> nvpublic
-> 
-> -----Original Message-----
-> From: Takashi Iwai [mailto:tiwai@suse.de] 
-> Sent: Thursday, March 04, 2010 6:57 PM
-> To: Wei Ni
-> Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-> Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-> 
-> At Thu, 4 Mar 2010 18:46:59 +0800,
-> Wei Ni wrote:
-> > 
-> > Hi, Takashi
-> > I think we can submit my patch first,
-> 
-> But your patch breaks the build when CONFIG_SND_HDA_*=y.
-> So, it should be fixed in your patch.
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
-> > then generate another patch
-> > to add EXPORT_SYMBOL() in hda_eld.c, and change Makefile to remove
-> > hda_eld.o from snd-hda-codec-xxhdmi-objs.
-> > 
-> > Thanks
-> > Wei.
-> > nvpublic
-> > 
-> > -----Original Message-----
-> > From: Takashi Iwai [mailto:tiwai@suse.de] 
-> > Sent: Thursday, March 04, 2010 5:47 PM
-> > To: Wei Ni
-> > Cc: 'Pavel Hofman'; 'alsa-devel'; 'linux-kernel'; 'akpm'
-> > Subject: Re: [alsa-devel] [PATCH]Support MCP89 and GT21x hdmi audio
-> > 
-> > At Thu, 4 Mar 2010 10:21:39 +0800,
-> > Wei Ni wrote:
-> > > 
-> > > Hi, Takashi
-> > > 1. Yes, it can works for all Nvidia controller.
-> > 
-> > OK.
-> > 
-> > > 2. The hda_eld.o doesn't export any symbols.
-> > > I tried to put hda_eld.o to snd-had-codec-*, and remove had_eldo.o
-> > > from snd-had-codec-intelhdmi-objs, but it will build error. It need
-> > > to modify hda_eld.c to export symbols, it will add many changes.
-> > 
-> > Yes, this is unavoidable.  Please add EXPORT_SYMBOL()'s
-> > appropriately.
-> > 
-> > We can reduce them again once after all HDMI stuff is merged into
-> > one.
-> > 
-> > 
-> > thanks,
-> > 
-> > Takashi
-> > 
-> 
+--8323329-950488939-1267703044=:24752--
