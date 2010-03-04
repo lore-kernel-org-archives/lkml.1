@@ -1,97 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751820Ab0CDCaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 21:30:17 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:63717 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982Ab0CDCaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 21:30:14 -0500
-Message-ID: <4B8F1B0E.7060002@oracle.com>
-Date: Wed, 03 Mar 2010 18:29:34 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1752117Ab0CDCam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 21:30:42 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51105 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982Ab0CDCag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 21:30:36 -0500
+Message-ID: <4B8F1B2A.5070500@zytor.com>
+Date: Wed, 03 Mar 2010 18:30:02 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: mmotm 2010-03-02-18-38 uploaded (dma unmapping)
-References: <4B8EB65F.9060800@oracle.com>	<20100304080822V.fujita.tomonori@lab.ntt.co.jp>	<4B8EEEBA.70001@oracle.com> <20100304102217B.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100304102217B.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Shaohua Li <shaohua.li@intel.com>
+CC: linux-kernel@vger.kernel.org, rjw@sisk.pl, mingo@elte.hu,
+       colin.king@canonical.com
+Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
+References: <1267665799-670-1-git-send-email-shaohua.li@intel.com>
+In-Reply-To: <1267665799-670-1-git-send-email-shaohua.li@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B8F1B2A.00B0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/10 17:22, FUJITA Tomonori wrote:
-> On Wed, 03 Mar 2010 15:20:26 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On 03/03/2010 05:23 PM, Shaohua Li wrote:
+> Colin reported a strange oops in S4 resume code path (see below). The test
+> system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
+> The oops always happen a virtual address 0xc03ff000, which is mapped to the
+> last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
 > 
->>>> drivers/net/chelsio/sge.c:164: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
->>>> drivers/net/chelsio/sge.c:170: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
->>>>
->>>> drivers/infiniband/hw/amso1100/c2_mq.h:74: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
->>>> drivers/infiniband/hw/amso1100/c2_provider.h:53: error: expected specifier-qualifier-list before 'DECLARE_DMA_U
->>>> NMAP_ADDR'
->>>>
->>>> drivers/net/cxgb3/sge.c:120: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
->>>> drivers/net/cxgb3/sge.c:210: error: expected specifier-qualifier-list before 'DECLARE_DMA_UNMAP_ADDR'
->>>
->>> Sorry. I can't reproduce this here. Can you send .config?
->>
->>
->> Sure (attached), but there is a different config file for each driver case above.
->>
->> chelsio == config-r8176
->>
->> amso1100 == config-r8179
->>
->> cxgb3 == config=r8186
->>
->> All are ARCH=i386 builds.
+> EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
+> EIP is at copy_loop+0xe/0x15
+> EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
+> ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
+>  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> ...
+> ...
+> CR2: 00000000c03ff000
 > 
-> Ah, somehow I put my silly typo... really sorry about that.
-> 
-> The following patch can be applied to mm after applying another
-> dma_unmap fix:
-> 
-> http://marc.info/?l=linux-kernel&m=126759183815898&w=2
-> 
-> 
-> Andrew, can you apply the following patch. This should be fold into
-> dma-mappingh-add-the-dma_unmap-state-api.patch after
-> dma-mappingh-add-the-dma_unmap-state-api-fix.patch.
-> 
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] fix DECLARE_DMA_UNMAP_ADD_ADDR typo with CONFIG_NEED_DMA_MAP_STATE disabled
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Tested-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 > ---
->  include/linux/dma-mapping.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
+>  1 files changed, 11 insertions(+), 0 deletions(-)
 > 
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index e00c5c9..ca32ed7 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -248,7 +248,7 @@ struct dma_attrs;
->  #define dma_unmap_len(PTR, LEN_NAME)             ((PTR)->LEN_NAME)
->  #define dma_unmap_len_set(PTR, LEN_NAME, VAL)    (((PTR)->LEN_NAME) = (VAL))
->  #else
-> -#define DEFINE_DMA_MAP_ADDR(ADDR_NAME)
-> +#define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
->  #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)
->  #define dma_unmap_addr(PTR, ADDR_NAME)           (0)
->  #define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  do { } while (0)
+> diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+> index b641388..9e4ef64 100644
+> --- a/arch/x86/power/hibernate_asm_32.S
+> +++ b/arch/x86/power/hibernate_asm_32.S
+> @@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
+>  	ret
+>  
+>  ENTRY(restore_image)
+> +	movl	mmu_cr4_features, %ecx
+>  	movl	resume_pg_dir, %eax
+>  	subl	$__PAGE_OFFSET, %eax
+>  	movl	%eax, %cr3
+>  
+> +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> +	movl	%ecx, %edx
+> +	andl	$~(X86_CR4_PGE), %edx
+> +	movl	%edx, %cr4;  # turn off PGE
+> +1:
+> +	movl	%cr3, %eax;  # flush TLB
+> +	movl	%eax, %cr3
+> +	jecxz	1f	# cr4 Pentium and higher, skip if zero
+> +	movl	%ecx, %cr4;  # turn PGE back on
+> +1:
+>  	movl	restore_pblist, %edx
+>  	.p2align 4,,7
+>  
 
-Thanks.
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Since we're about to do another global page flush a bit further down in
+the same code, why not just leave PGE off until then?
+
+	-hpa
 
 -- 
-~Randy
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
