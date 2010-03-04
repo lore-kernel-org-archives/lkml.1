@@ -1,67 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617Ab0CDGSZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 01:18:25 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55228 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051Ab0CDGSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 01:18:23 -0500
-Date: Thu, 4 Mar 2010 15:14:28 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       balbir@linux.vnet.ibm.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] memcg: update mainteiner list
-Message-Id: <20100304151428.d2c0f019.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100304145030.22a35a7e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100304145030.22a35a7e.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752622Ab0CDGVZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 01:21:25 -0500
+Received: from mail.perches.com ([173.55.12.10]:1351 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272Ab0CDGVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 01:21:21 -0500
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundations.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] vsprintf: Recursive vsnprintf: Add "%pV", struct va_format
+Date: Wed,  3 Mar 2010 22:21:18 -0800
+Message-Id: <c0a34cb271141b652d0a210163d7d95d6f810127.1267682641.git.joe@perches.com>
+X-Mailer: git-send-email 1.7.0.14.g7e948
+In-Reply-To: <cover.1267682641.git.joe@perches.com>
+References: <cover.1267682641.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 14:50:30 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Updates for maintainer list of memcg.
-> I'd like to add Nishimura-san to maintainer of memcg, he works really well.
-> And I'm sorry that I've not seen Pavel on memcg discussion for a year.
-> 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Nishimura-san have been working for memcg very good.
-> His review and tests give us much improvements and account migraiton
-> which he is now challenging is really important.
-> 
-> He is a stakeholder.
-> 
-Ack the part of adding my name.
+Add the ability to print a format and va_list from a structure pointer
 
-Thanks,
-Daisuke Nishimura.
+Allows __dev_printk to be implemented as a single printk while
+minimizing string space duplication.
 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  MAINTAINERS |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: mmotm-2.6.33-Mar2/MAINTAINERS
-> ===================================================================
-> --- mmotm-2.6.33-Mar2.orig/MAINTAINERS
-> +++ mmotm-2.6.33-Mar2/MAINTAINERS
-> @@ -3675,7 +3675,7 @@ F:	mm/
->  
->  MEMORY RESOURCE CONTROLLER
->  M:	Balbir Singh <balbir@linux.vnet.ibm.com>
-> -M:	Pavel Emelyanov <xemul@openvz.org>
-> +M:	Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
->  M:	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->  L:	linux-mm@kvack.org
->  S:	Maintained
-> 
+%pV should not be used without some mechanism to verify the
+format and argument use ala __attribute__(format (printf(...))).
+
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ include/linux/kernel.h |    5 +++++
+ lib/vsprintf.c         |    9 +++++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 7f07074..0eae8e9 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -169,6 +169,11 @@ static inline void might_fault(void)
+ }
+ #endif
+ 
++struct va_format {
++	const char *fmt;
++	va_list *va;
++};
++
+ extern struct atomic_notifier_head panic_notifier_list;
+ extern long (*panic_blink)(long time);
+ NORET_TYPE void panic(const char * fmt, ...)
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index af4aaa6..0fd7f8b 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -950,6 +950,11 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
+  *             [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15]
+  *           little endian output byte order is:
+  *             [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15]
++ * - 'V' For a struct va_format which contains a format string * and va_list *,
++ *       call vsnprintf(->format, *->va_list).
++ *       Implements a "recursive vsnprintf".
++ *       Do not use this feature without some mechanism to verify the
++ *       correctness of the format string and va_list arguments.
+  *
+  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+  * function pointers are really function descriptors, which contain a
+@@ -994,6 +999,10 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 		break;
+ 	case 'U':
+ 		return uuid_string(buf, end, ptr, spec, fmt);
++	case 'V':
++		return buf + vsnprintf(buf, end - buf,
++				       ((struct va_format *)ptr)->fmt,
++				       *(((struct va_format *)ptr)->va));
+ 	}
+ 	spec.flags |= SMALL;
+ 	if (spec.field_width == -1) {
+-- 
+1.7.0.14.g7e948
+
