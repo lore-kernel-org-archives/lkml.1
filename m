@@ -1,85 +1,228 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131Ab0CDOCI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:02:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54142 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328Ab0CDOB5 (ORCPT
+	id S1754338Ab0CDOCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:02:16 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39720 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204Ab0CDOCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:01:57 -0500
-Message-Id: <20100304140100.923774125@chello.nl>
+	Thu, 4 Mar 2010 09:02:13 -0500
+Message-Id: <20100304140100.315416040@chello.nl>
 References: <20100304140046.596569763@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Mar 2010 15:00:59 +0100
+Date: Thu, 04 Mar 2010 15:00:51 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
        fweisbec@gmail.com, Arnaldo Carvalho de Melo <acme@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH 13/14] x86: Move MAX_INSN_SIZE into asm/insn.h
-Content-Disposition: inline; filename=x86-collect-max_insn_size.patch
+       Jamie Iles <jamie.iles@picochip.com>, Jean Pihet <jpihet@mvista.com>,
+       stable@kernel.org, "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 05/14] perf: Generic perf_sample_data initialization
+Content-Disposition: inline; filename=perf-fixup-data.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since there's now two users for this, place it in a common header.
+This makes it easier to extend perf_sample_data and fixes a bug on
+arm and sparc, which failed to set ->raw to NULL, which can cause
+crashes when combined with PERF_SAMPLE_RAW.
 
-CC: Masami Hiramatsu <mhiramat@redhat.com>
+It also optimizes PowerPC and tracepoint, because the struct
+initialization is forced to zero out the whole structure.
+
+CC: Jamie Iles <jamie.iles@picochip.com>
+CC: Jean Pihet <jpihet@mvista.com>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Stephane Eranian <eranian@google.com>
+CC: stable@kernel.org
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: David S. Miller <davem@davemloft.net>
 LKML-Reference: <new-submission>
 ---
- arch/x86/include/asm/insn.h               |    2 ++
- arch/x86/include/asm/kprobes.h            |    2 +-
- arch/x86/kernel/cpu/perf_event_intel_ds.c |    2 --
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/kernel/perf_event.c           |    4 ++--
+ arch/powerpc/kernel/perf_event.c       |    8 ++++----
+ arch/sparc/kernel/perf_event.c         |    2 +-
+ arch/x86/kernel/cpu/perf_event.c       |    3 +--
+ arch/x86/kernel/cpu/perf_event_intel.c |    6 ++----
+ include/linux/perf_event.h             |    7 +++++++
+ kernel/perf_event.c                    |   21 ++++++++-------------
+ 7 files changed, 25 insertions(+), 26 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/insn.h
+Index: linux-2.6/arch/arm/kernel/perf_event.c
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/insn.h
-+++ linux-2.6/arch/x86/include/asm/insn.h
-@@ -68,6 +68,8 @@ struct insn {
- 	const insn_byte_t *next_byte;
+--- linux-2.6.orig/arch/arm/kernel/perf_event.c
++++ linux-2.6/arch/arm/kernel/perf_event.c
+@@ -965,7 +965,7 @@ armv6pmu_handle_irq(int irq_num,
+ 	 */
+ 	armv6_pmcr_write(pmcr);
+ 
+-	data.addr = 0;
++	perf_sample_data_init(&data, 0);
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
+@@ -1945,7 +1945,7 @@ static irqreturn_t armv7pmu_handle_irq(i
+ 	 */
+ 	regs = get_irq_regs();
+ 
+-	data.addr = 0;
++	perf_sample_data_init(&data, 0);
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 	for (idx = 0; idx <= armpmu->num_events; ++idx) {
+Index: linux-2.6/arch/powerpc/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/perf_event.c
++++ linux-2.6/arch/powerpc/kernel/perf_event.c
+@@ -1164,10 +1164,10 @@ static void record_and_restart(struct pe
+ 	 * Finally record data if requested.
+ 	 */
+ 	if (record) {
+-		struct perf_sample_data data = {
+-			.addr	= ~0ULL,
+-			.period	= event->hw.last_period,
+-		};
++		struct perf_sample_data data;
++
++		perf_sample_data_init(&data, ~0ULL);
++		data.period = event->hw.last_period;
+ 
+ 		if (event->attr.sample_type & PERF_SAMPLE_ADDR)
+ 			perf_get_data_addr(regs, &data.addr);
+Index: linux-2.6/arch/sparc/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/perf_event.c
++++ linux-2.6/arch/sparc/kernel/perf_event.c
+@@ -1189,7 +1189,7 @@ static int __kprobes perf_event_nmi_hand
+ 
+ 	regs = args->regs;
+ 
+-	data.addr = 0;
++	perf_sample_data_init(&data, 0);
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+@@ -1096,8 +1096,7 @@ static int x86_pmu_handle_irq(struct pt_
+ 	int idx, handled = 0;
+ 	u64 val;
+ 
+-	data.addr = 0;
+-	data.raw = NULL;
++	perf_sample_data_init(&data, 0);
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
+@@ -590,10 +590,9 @@ static void intel_pmu_drain_bts_buffer(v
+ 
+ 	ds->bts_index = ds->bts_buffer_base;
+ 
++	perf_sample_data_init(&data, 0);
+ 
+ 	data.period	= event->hw.last_period;
+-	data.addr	= 0;
+-	data.raw	= NULL;
+ 	regs.ip		= 0;
+ 
+ 	/*
+@@ -740,8 +739,7 @@ static int intel_pmu_handle_irq(struct p
+ 	int bit, loops;
+ 	u64 ack, status;
+ 
+-	data.addr = 0;
+-	data.raw = NULL;
++	perf_sample_data_init(&data, 0);
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+Index: linux-2.6/include/linux/perf_event.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_event.h
++++ linux-2.6/include/linux/perf_event.h
+@@ -801,6 +801,13 @@ struct perf_sample_data {
+ 	struct perf_raw_record		*raw;
  };
  
-+#define MAX_INSN_SIZE	16
++static inline
++void perf_sample_data_init(struct perf_sample_data *data, u64 addr)
++{
++	data->addr = addr;
++	data->raw  = NULL;
++}
 +
- #define X86_MODRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
- #define X86_MODRM_REG(modrm) (((modrm) & 0x38) >> 3)
- #define X86_MODRM_RM(modrm) ((modrm) & 0x07)
-Index: linux-2.6/arch/x86/include/asm/kprobes.h
+ extern void perf_output_sample(struct perf_output_handle *handle,
+ 			       struct perf_event_header *header,
+ 			       struct perf_sample_data *data,
+Index: linux-2.6/kernel/perf_event.c
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/kprobes.h
-+++ linux-2.6/arch/x86/include/asm/kprobes.h
-@@ -24,6 +24,7 @@
- #include <linux/types.h>
- #include <linux/ptrace.h>
- #include <linux/percpu.h>
-+#include <asm/insn.h>
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -4108,8 +4108,7 @@ void __perf_sw_event(u32 event_id, u64 n
+ 	if (rctx < 0)
+ 		return;
  
- #define  __ARCH_WANT_KPROBES_INSN_SLOT
+-	data.addr = addr;
+-	data.raw  = NULL;
++	perf_sample_data_init(&data, addr);
  
-@@ -36,7 +37,6 @@ typedef u8 kprobe_opcode_t;
- #define RELATIVEJUMP_SIZE 5
- #define RELATIVECALL_OPCODE 0xe8
- #define RELATIVE_ADDR_SIZE 4
--#define MAX_INSN_SIZE 16
- #define MAX_STACK_SIZE 64
- #define MIN_STACK_SIZE(ADDR)					       \
- 	(((MAX_STACK_SIZE) < (((unsigned long)current_thread_info()) + \
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel_ds.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel_ds.c
-@@ -379,8 +379,6 @@ static void intel_pmu_pebs_disable_all(v
+ 	do_perf_sw_event(PERF_TYPE_SOFTWARE, event_id, nr, nmi, &data, regs);
  
- #include <asm/insn.h>
+@@ -4154,11 +4153,10 @@ static enum hrtimer_restart perf_swevent
+ 	struct perf_event *event;
+ 	u64 period;
  
--#define MAX_INSN_SIZE	16
--
- static inline bool kernel_ip(unsigned long ip)
+-	event	= container_of(hrtimer, struct perf_event, hw.hrtimer);
++	event = container_of(hrtimer, struct perf_event, hw.hrtimer);
+ 	event->pmu->read(event);
+ 
+-	data.addr = 0;
+-	data.raw = NULL;
++	perf_sample_data_init(&data, 0);
+ 	data.period = event->hw.last_period;
+ 	regs = get_irq_regs();
+ 	/*
+@@ -4322,17 +4320,15 @@ static const struct pmu perf_ops_task_cl
+ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
+ 			  int entry_size)
  {
- #ifdef CONFIG_X86_32
++	struct pt_regs *regs = get_irq_regs();
++	struct perf_sample_data data;
+ 	struct perf_raw_record raw = {
+ 		.size = entry_size,
+ 		.data = record,
+ 	};
+ 
+-	struct perf_sample_data data = {
+-		.addr = addr,
+-		.raw = &raw,
+-	};
+-
+-	struct pt_regs *regs = get_irq_regs();
++	perf_sample_data_init(&data, addr);
++	data.raw = &raw;
+ 
+ 	if (!regs)
+ 		regs = task_pt_regs(current);
+@@ -4448,8 +4444,7 @@ void perf_bp_event(struct perf_event *bp
+ 	struct perf_sample_data sample;
+ 	struct pt_regs *regs = data;
+ 
+-	sample.raw = NULL;
+-	sample.addr = bp->attr.bp_addr;
++	perf_sample_data_init(&sample, bp->attr.bp_addr);
+ 
+ 	if (!perf_exclude_event(bp, regs))
+ 		perf_swevent_add(bp, 1, 1, &sample, regs);
 
 -- 
 
