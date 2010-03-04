@@ -1,42 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418Ab0CDSuH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 13:50:07 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:39426 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755235Ab0CDSuF (ORCPT
+	id S1756113Ab0CDSvd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 13:51:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755235Ab0CDSvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 13:50:05 -0500
-Date: Thu, 4 Mar 2010 18:50:02 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+	Thu, 4 Mar 2010 13:51:31 -0500
+Date: Thu, 4 Mar 2010 10:51:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
        dri-devel@lists.sf.net
 Subject: Re: [git pull] drm request 3
-Message-ID: <20100304185002.GA23532@srcf.ucam.org>
-References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain> <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+In-Reply-To: <20100304103929.6eb81d45@jbarnes-piketon>
+Message-ID: <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie> <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain> <20100304103655.0b14343f@jbarnes-piketon> <20100304103929.6eb81d45@jbarnes-piketon>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 10:43:30AM -0800, Linus Torvalds wrote:
 
-> Or is there a version of X that can handle _both_ the 0.0.15 and the 
-> 0.0.16 interfaces?
 
-When you asked that nouveau was merged, people explicitly told you that 
-the reason it hadn't been was because the interface was unstable and 
-userspace would break. You asked that it be merged anyway, and now 
-you're unhappy because the interface has changed and userspace has 
-broken?
+On Thu, 4 Mar 2010, Jesse Barnes wrote:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> On Thu, 4 Mar 2010 10:36:55 -0800
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > Yes Dave probably should have mentioned it in his pull request, but
+> > that doesn't seem to be a good reason not to pull imo...
+> 
+> And now I see Dave did mention this, so what gives.  Guidance please.
+
+Yeah, it's in the first one. My bad. I didn't notice, because that one got 
+cancelled for other reasons and never even tested.
+
+That doesn't change the simple basic issue: how are people with Fedora-12 
+going to test any kernel out now? And are there libdrm versions that can 
+handle _both_ cases, so that people can bisect things? IOW, even if you 
+have a new libdrm, will it then work with the _old_ kernel too?
+
+Backwards compatibility is really important.
+
+		Linus
