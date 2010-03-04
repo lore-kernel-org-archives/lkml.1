@@ -1,122 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247Ab0CDPmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:42:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33160 "EHLO mx2.mail.elte.hu"
+	id S1755097Ab0CDPv4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:51:56 -0500
+Received: from fn.samba.org ([216.83.154.106]:37124 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895Ab0CDPmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:42:43 -0500
-Date: Thu, 4 Mar 2010 16:36:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC][PATCH 2/3] perf: Take a hot regs snapshot for trace events
-Message-ID: <20100304153606.GA32496@elte.hu>
-References: <1267599302-2886-1-git-send-regression-fweisbec@gmail.com>
- <1267599302-2886-3-git-send-regression-fweisbec@gmail.com>
- <1267632387.10871.59.camel@gandalf.stny.rr.com>
- <1267634258.25158.88.camel@laptop>
- <1267636046.10871.74.camel@gandalf.stny.rr.com>
- <1267636595.25158.93.camel@laptop>
- <20100304112531.GF21977@elte.hu>
- <1267715801.10871.191.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267715801.10871.191.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1751475Ab0CDPvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 10:51:54 -0500
+Subject: Re: [linux-cifs-client] [RFC PATCH] CIFS posix acl permission
+ checking
+From: simo <idra@samba.org>
+To: Jon Severinsson <jon@severinsson.net>
+Cc: linux-cifs-client@lists.samba.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <201003041621.44577.jon@severinsson.net>
+References: <201003041150.08341.jon@severinsson.net>
+	 <1267710262.2375.280.camel@localhost>
+	 <201003041621.44577.jon@severinsson.net>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Samba Team
+Date: Thu, 04 Mar 2010 10:51:53 -0500
+Message-ID: <1267717913.2375.298.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Thu, 2010-03-04 at 12:25 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Wed, 2010-03-03 at 12:07 -0500, Steven Rostedt wrote:
-> > > > oops, my bad :-), I thought this was in the x86 arch directory. For the
-> > > > University, I was helping them with adding trace points for page faults
-> > > > when I came across this in arch/x86/mm/fault.c:
-> > > > 
-> > > >         perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, 0, regs, address);
-> > > > 
-> > > > 
-> > > > This is what I actually was wondering about. Why is it a "perf only" trace 
-> > > > point instead of a TRACE_EVENT()?
-> > > 
-> > > Because I wanted to make perf usable without having to rely on funny 
-> > > tracepoints. That is, I am less worried about committing software counters 
-> > > to ABI than I am about TRACE_EVENT(), which still gives me a terribly 
-> > > uncomfortable feeling.
-> > 
-> > I'd still like a much less error-prone and work-intense way of doing it.
-> > 
-> > I'd suggest we simply add a TRACE_EVENT_ABI() for such cases, where we 
-> > really want to expose a tracepoint to tooling, programmatically. Maybe 
-> > even change the usage sites to trace_foo_ABI(), to make it really clear 
-> > and to make people aware of the consequences.
+On Thu, 2010-03-04 at 16:21 +0100, Jon Severinsson wrote:
+> Den Thursday 04 March 2010 14:44:22 skrev du:
+> > although you did a good job with the code itself, I have to say that I
+> > think the approach is just wrong. Checking ACLs on the client is simply
+> > the wrong way to go. It is just racy and it is not authoritative anyway.
 > 
-> Would this still be available as a normal trace event?
+> The problem with this approach is that the server checks the permissions using 
+> the credentials of the user doing the mount, not the user trying to access the 
+> file. This leaves a big gaping security hole on any multiuser system, and even 
+> on single user systems you sill loose any benefits from privilege separation 
+> (such as running system daemons as an unprivileged user).
 
-Yeah, of course. It would not result in any usage or flexibility restriction.
+Letting a different user access the mount point *is* a security
+violation in itself. The CIFS security model lies in per user sessions.
+The right way to fix the problem is multi-session mounts. Allowing a
+different user to use a user session is a violation of the security
+model of CIFS.
 
-( In the future we might want to add some sort of automated signature thing to 
-  make sure that an event that has been declared an 'ABI' isnt changed - at 
-  least as far as the record format goes. )
+Trying to put a bandaid on a gross policy and security violation is not
+really useful :)
 
-> > 
-> > > Also, building with all CONFIG_TRACE_*=n will still yield a usable perf, 
-> > > which is something the embedded people might fancy, all that TRACE stuff 
-> > > adds lots of code.
-> > 
-> > Not a real issue i suspect when you do lock profiling ...
-> > 
-> > Or if it is, some debloating might be in order - and the detaching of event 
-> > enumeration and ftrace TRACE_EVENT infrastructure from other ftrace bits. (i 
-> > suggested an '/eventfs' special filesystem before, for nicely layed out 
-> > hierarchy of ftrace/perf events.)
+> So while it is possible to do it that way (by including the noperm mount 
+> option when mounting), it is generally a bad idea to do so.
 > 
-> Actually, we already have a way to decouple it.
-> 
-> include/trace/define_trace.h is the file that just adds the tracepoint
-> that is needed.
-> 
-> include/trace/ftrace.h is the file that does the magic and adds the code
-> for callbacks and tracing.
-> 
-> The perf hooks probably should not have gone in that file and been put
-> into a include/trace/perf.h file, and then in define_trace.h we would
-> add:
-> 
->  #ifdef CONFIG_EVENT_TRACING
->  #include <trace/ftrace.h>
->  #endif
-> 
-> +#ifdef CONFIG_PERF_EVENTS
-> +#include <trace/perf.h>
-> +#endif
-> 
-> This should be done anyway. But it would also let you decouple ftrace trace 
-> events from perf trace events but still let the two use the same trace 
-> points.
+> As you are going to do permission checking on the client side anyway,
 
-I think the main thing would be to have a decoupled /eventfs - basically 
-/debug/tracing/events/ moved to "/eventfs" or maybe to "/proc/events/". This 
-would make them available more widely, and in a standardized way.
+This is the problem, you shouldn't. CIFS is not NFS, you are abusing
+your access credentials simply because they are stored in the kernel.
 
-Thanks,
+>  I do not 
+> see the problem consulting the acl when doing so. As not consulting the acl 
+> only restricts access to files I'm supposed to have access to (and indeed has 
+> access to if using smbclient), it only results in me being forced to use the 
+> uid, gid, file_mode, and/or dir_mode mount options, at witch point I can't see 
+> whether I have access or not other than by trying to do the access, as it will 
+> always look as if I have access.
 
-	Ingo
+Sorry, but just piling up errors on top of other errors does not really
+make the situation better.
+
+> > And we are not counting the problem that with CIFS (and samba in
+> > particular) the client have no way to know what are the real credentials
+> > assigned to the session and that the client may have no idea what the
+> > users and groups in the ACL are (if client and server do not use exactly
+> > the same user database).
+> 
+> Of course this only works as intended if the client and server shares the same 
+> user database. In my case that is through ldap, but could as well be nis, 
+> winbind or some other similar nss module. However, that is the case already, 
+> without any acl, as UNIX permission bits have exactly the same problem. If you 
+> are mounting something from a server with a different user database, you'll 
+> need to use the uid, gid, file_mode, and/or dir_mode mount options, but that is 
+> no different from the situation without this patch.
+
+Yes, the current situation is not right either, and definitely need
+fixing.
+
+> > The right way is to let the server enforce ACLs, and use multisessions
+> > mounts if multiple users are involved. Time would be better spent
+> > working in that direction IMO.
+> 
+> If by multisession mounts you mean something like nfs, where the client tells 
+> the server what user is trying to do the access, that can only work if either 
+> the server blindly trusts the client (as in nfs3) or with some complex 
+> cryptographic token infrastructure (as in nfs4 with kerberos authentication). 
+
+No, you cannot "tell" the server who you are like in NFS, this is the
+main point. CIFS has a security model that is different from (old) NFS.
+In CIFS each session is authenticated, that's why you should have
+multi-session if you want to access the same mount point as different
+users. Like NFSv4 you should authenticate each user first, create it's
+own session and then let him in, or deny access completely (or degrade
+access to the guest user if the remote server allow you so).
+
+> The first case is simply not very secure,
+
+The first case is simply not possible with CIFS.
+
+>  and a cryptographic token infrastructure is needlessly complex.
+
+Yet there is no real alternative, short of changing the CIFS model to
+allow the server to trust the client machine.
+
+> If someone were to work on making 
+> setting up a cryptographic token infrastructure simpler I would love that, but 
+> I'm not even remotely qualified to do so, and in the meantime the current samba 
+> infrastructure fulfils all my need, except that the cifs module erroneously 
+> refuses me the rights I'm granted through an acl.
+
+We already have the cifs.upcall thing, which is the prerequisite to get
+multi-session work at least with kerberos. And it can be easily extended
+to allow also to use NTLM cached credentials.
+
+That is a goal that would be better pursuing.
+
+Simo.
+
+-- 
+Simo Sorce
+Samba Team GPL Compliance Officer <simo@samba.org>
+Principal Software Engineer at Red Hat, Inc. <simo@redhat.com>
+
