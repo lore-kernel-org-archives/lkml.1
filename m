@@ -1,80 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607Ab0CDNT6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 08:19:58 -0500
-Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:35344
-	"EHLO thaum.luto.us" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754064Ab0CDNT5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 08:19:57 -0500
-X-Greylist: delayed 465 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Mar 2010 08:19:57 EST
-Message-ID: <4B8FB1A9.8030407@mit.edu>
-Date: Thu, 04 Mar 2010 08:12:09 -0500
-From: Andy Lutomirski <luto@mit.edu>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: bert hubert <bert.hubert@netherlabs.nl>
-CC: linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: epoll clarification sought: multithreaded epoll_wait for UDP
- sockets?
-References: <20100303212942.GB24601@xs.powerdns.com>
-In-Reply-To: <20100303212942.GB24601@xs.powerdns.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755930Ab0CDN1B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 08:27:01 -0500
+Received: from lo.gmane.org ([80.91.229.12]:37514 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755873Ab0CDN06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 08:26:58 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Subject: Re: evdev keyboard driver stopped working after upgrading from Kernel  2.6.33-rc8 to 2.6.33 (official release)
+Date: Thu, 04 Mar 2010 13:25:57 +0000
+Message-ID: <yw1xlje8z09m.fsf@unicorn.mansr.com>
+References: <40a4ed591003031245g79cca873t89e90545337a9067@mail.gmail.com> <1267673633.6416.7.camel@marge.simson.net> <40a4ed591003032322l4ad2dc00sd3de718b5a76089b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@dough.gmane.org
+X-Gmane-NNTP-Posting-Host: unicorn.mansr.com
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (garbanzo, linux)
+Cancel-Lock: sha1:gibEDE39cbt9m8VZRM3s1oUnQXs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bert hubert wrote:
-> Dear kernel people, dear Davide,
-> 
-> I am currently debugging performance issues in the PowerDNS Recursor, and it
-> turns out I have been using epoll_wait() sub-optimally. And I need your help
-> to improve this. I'm more than happy to update the epoll_wait() manpage to
-> reflect your advice.
-> 
-> Essentially, what I would like to have is a way to distribute incoming UDP DNS
-> queries to various threads automatically.  Right now, there is one
-> fd that multiple threads wait on, using epoll() or select() and subsequently
-> recvfrom(). Crucially, each thread has its own epoll fd set (which is
-> wrong).
-> 
-> The hope is that each thread hogs a single CPU, and that UDP DNS queries
-> coming in arrive at a single thread that is currently in epoll_wait(), ie
-> not doing other things. 
-> 
-> As indicated by the manpage of epoll however, my setup means that threads
-> get woken up unnecessarily when a new packet comes in.  This results in lots
-> of recvfrom() calls returning EAGAIN (basically on most of the other
-> threads).
-> 
-> (this can be observed in
-> http://svn.powerdns.com/snapshots/rc2/pdns-recursor-3.2-rc2.tar.bz2 )
-> 
-> The alternative appears to be to create a single epoll set, and have all
-> threads call epoll_wait on that same set. 
-> 
-> The epoll() manpage however is silent on what this will do exactly, although
-> several LKML posts indicate that this might cause 'thundering herd'
-> problems.
-> 
-> My question is: what is your recommendation for achieving the scenario
-> outlined above? In other words, that is the 'best current practice' on
-> modern Linux kernels to get each packet to arrive at a single thread?
-> 
-> Epoll offers 'edge triggered' behaviour, would this make sense? Would it be
-> smart to cal epoll_wait with only a single event to be returned to prevent
-> starvation? Might it be useful to dup() the single fd, once for each thread? 
-> I also tried SO_REUSEADDR, so I could bind() multiple times to the same IP
-> address & port, but this does not distribute incoming queries.
+Zeno Davatz <zdavatz@gmail.com> writes:
 
-EPOLLET sounds like the right approach.  But if you don't want to drain 
-the entire buffer in one thread and you use EPOLLET, you'll have to 
-manually wake another thread.  You could use eventfd for that, or maybe 
-add a syscall to inject a new edge on a file descriptor.  Good luck.
+> On Thu, Mar 4, 2010 at 4:33 AM, Mike Galbraith <efault@gmx.de> wrote:
+>> On Wed, 2010-03-03 at 21:45 +0100, Zeno Davatz wrote:
+>
+>>> I am always updating to the latest rc Kernel Release, that Linus shares via Git.
+>>>
+>>> I also upgraded to the latest stable kernel version after rc-8, to
+>>> 2.6.33. But since I am on 2.6.33 my Xorg evdev-Driver stopped working.
+>>> I can hit any key on the keyboard, but nothing will happen. The mouse
+>>> and the graphics are just fine and work well.
+>>>
+>>> I have an Asus Eeepc 1101HA, with Gentoo and the psb-kmod driver compiled.
+>>>
+>>> Xorg starts just fine, does not crash but the keyboard does not react.
+>>>
+>>> Everything worked fine on 2.6.33-rc8.
+>>>
+>>> Any hints what changed from 2.6.33-rc8 to 2.6.33 stable that made my
+>>> keyboard stop reacting?
+>>>
+>>> Let me know and I will test.
+>>
+>> I don't see any obvious candidates rc8->final.  There's _very_ little
+>> for input.
+>>
+>> On the bright side, there are only 225 commits, so a bisection should be
+>> almost painless.  That's probably your best bet for rapid resolution.
+>
+> Is there a possibility that something changed between rc2 and final,
+> something that would concern the evdev driver or the keyboard input?
+> It seems that /dev/input/event5 where the keyboard is found does not
+> pass anything on to Xorg.
 
-(FWIW, a couple days ago I got one machine handling over 9 GBps of 
-incoming UDP packets on a single core without drops.  It's a hefty 
-machine, and I was using jumbo frames, but still.)
+The inputX numbers are not stable.  I've had better luck using lines
+like this in xorg.conf:
 
---Andy
+Section "InputDevice"
+   [...]
+   Option     "Device" "/dev/input/by-id/usb-_USB_Keyboard-event-kbd"
+EndSection
+
+This symlink will always point to whatever input device that keyboard
+gets assigned to.
+
+-- 
+Måns Rullgård
+mans@mansr.com
+
