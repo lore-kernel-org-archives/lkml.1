@@ -1,89 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737Ab0CDExO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:53:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60872 "EHLO mail.zytor.com"
+	id S1754301Ab0CDExY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 23:53:24 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53552 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752556Ab0CDExM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:53:12 -0500
-Message-ID: <4B8F3C94.9030805@zytor.com>
-Date: Wed, 03 Mar 2010 20:52:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
+	id S1754022Ab0CDExU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 23:53:20 -0500
+Date: Thu, 4 Mar 2010 15:53:15 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Miao Xie <miaox@cn.fujitsu.com>
+Cc: David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
+ and mems_allowed
+Message-ID: <20100304045315.GP8653@laptop>
+References: <4B8E3F77.6070201@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Alain Knaff <alain@knaff.lu>
-Subject: Re: [GIT PULL] Squashfs updates for 2.6.34
-References: <4B8C1873.1080700@lougher.demon.co.uk> <alpine.LFD.2.00.1003030904040.3627@localhost.localdomain> <4B8F0A42.5070405@lougher.demon.co.uk> <alpine.LFD.2.00.1003031925540.7046@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1003031925540.7046@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B8E3F77.6070201@cn.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2010 07:49 PM, Linus Torvalds wrote:
-> 
-> So rather than have those crazy header file tricks, can we just add a 
-> kmalloc() _library_ file for the crazy bootloader crud, so that the 
-> bootloader could just share header files with the regular kernel, and not 
-> do that crazy thing?
-> 
-> It's insane having that malloc() implementation, and those STATIC games, 
-> in a header file, and the games we play with "error()" sometimes being a 
-> function pointer and sometimes being a function. Crazy, crazy.
-> 
+On Wed, Mar 03, 2010 at 06:52:39PM +0800, Miao Xie wrote:
+> if MAX_NUMNODES > BITS_PER_LONG, loading/storing task->mems_allowed or mems_allowed in
+> task->mempolicy are not atomic operations, and the kernel page allocator gets an empty
+> mems_allowed when updating task->mems_allowed or mems_allowed in task->mempolicy. So we
+> use a rwlock to protect them to fix this probelm.
 
-If with library you mean a linking library, that won't work everywhere,
-because on some platforms the early-kernel decompressor needs to be
-compiled with differently than the kernel as a whole.  However, it would
-be easy enough to have a source-level library (I don't mean an include
-file, obviously) and a common include file to wrap this all up in.
+Oh, and something else I'm also concerned about:
 
-> So Phillip split up these things:
-> 
-> 	#ifdef STATIC
-> 	/* Code active when included from pre-boot environment: */
-> 	#define INIT
-> 	#else
-> 	/* Compile for initramfs/initrd code only */
-> 	#define INIT __init
-> 	static void(*error)(char *m);
-> 	#endif
-> 
-> and I refuse to see three new copies of that disgusting thing (bunzip, 
-> inflate, lzma). So I'd really _really_ want for the pre-boot environment 
-> to have that same __init declaration, and the _same_ indirect error() 
-> handler model, so that we don't have this kind of thing spreading.
+If  MAX_NUMNODES <= BITS_PER_LONG then these locks are a noop.
 
-Such a common header file for the preboot environment could simply do:
+> +#define read_mem_lock_irqsave(p, flags)		do { (void)(flags); } while (0)
+> +
+> +#define read_mem_unlock_irqrestore(p, flags)	do { (void)(flags); } while (0)
+> +
+> +/* Be used to protect task->mempolicy and mems_allowed when user reads them */
 
-#undef __init
+However you are appearing to use them for more than just atomically
+loading of the nodemasks.
 
-... and be done with it.  That way we don't have to worry about mucking
-with $DEITY knows how many linker scripts... it seems the easiest, and
-would certainly eliminate any uglies outside the common file.
+> @@ -2447,11 +2503,14 @@ void cpuset_unlock(void)
+>  int cpuset_mem_spread_node(void)
+>  {
+>  	int node;
+> +	unsigned long flags;
+>  
+> +	read_mem_lock_irqsave(current, flags);
+>  	node = next_node(current->cpuset_mem_spread_rotor, current->mems_allowed);
+>  	if (node == MAX_NUMNODES)
+>  		node = first_node(current->mems_allowed);
+>  	current->cpuset_mem_spread_rotor = node;
+> +	read_mem_unlock_irqrestore(current, flags);
+>  	return node;
+>  }
+>  EXPORT_SYMBOL_GPL(cpuset_mem_spread_node);
 
-> It was ugly enough in <compress/mm.h> (which really should be nuked from 
-> orbit - it's the only way to be sure), but when I see it spreading, I go 
-> into full zombie-attack mode, and want to start up the chainsaw and run 
-> around naked.
+If you are worried about doing this kind of atomic RMW on the mask, then
+you cannot make the lock a noop. So if you're nooping the lock in this
+way then you really need to cuddle it neatly around loading of the mask.
 
-OK, we really really don't want that... simply because there just aren't
-enough zombies to go around already.  Last I heard, the EPA was
-considering classifying them as an endangered species, only to get stuck
-in a bureaucratic mess if they can be classified as a "species" at all,
-or if they should be classified together with bread mold, toxic waste
-and Microsoft salesmen.
+Once you do that, it would be trivial to use a seqlock.
 
-The only problem with this is that it'll touch nearly every
-architecture, so it probably is going to have to be .35 material.
+...
 
-	-hpa
+> @@ -1381,8 +1434,16 @@ static struct mempolicy *get_vma_policy(struct task_struct *task,
+>  		} else if (vma->vm_policy)
+>  			pol = vma->vm_policy;
+>  	}
+> +	if (!pol) {
+> +		read_mem_lock_irqsave(task, irqflags);
+> +		pol = task->mempolicy;
+> +		mpol_get(pol);
+> +		read_mem_unlock_irqrestore(task, irqflags);
+> +	}
+> +
+>  	if (!pol)
+>  		pol = &default_policy;
+> +
+>  	return pol;
+>  }
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+And a couple of others. It looks like you're using it here to guarantee
+existence of the mempolicy.... Did you mean read_mempolicy_lock? Or do
+you have another problem (there seems to be several cases of this).
