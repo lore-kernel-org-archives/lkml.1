@@ -1,128 +1,222 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072Ab0CDQtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:49:35 -0500
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:11664 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755842Ab0CDQtb (ORCPT
+	id S1756119Ab0CDQtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:49:42 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:39835 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074Ab0CDQtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:49:31 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i6bh2a8h87h65h)
-X-Spam-TCS-SCL: 4:0
+	Thu, 4 Mar 2010 11:49:36 -0500
+X-SpamScore: 1
+X-BigFish: VPS1(zba6lz936eMab9bha84eizz1202hzzz32i6bh2a8h87h43h64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KYRO25-01-NBK-02
+X-WSS-ID: 0KYRO26-01-NBN-02
 X-M-MSG: 
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 6/9] oprofile/x86: rework error handler in nmi_setup()
-Date: Thu, 4 Mar 2010 16:22:08 +0100
-Message-ID: <1267716131-17908-7-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 9/9] oprofile/x86: implement perfctr reservation for IBS
+Date: Thu, 4 Mar 2010 16:22:11 +0100
+Message-ID: <1267716131-17908-10-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.7.0
 In-Reply-To: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
 References: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 04 Mar 2010 16:49:14.0254 (UTC) FILETIME=[9F3062E0:01CABBBA]
+X-OriginalArrivalTime: 04 Mar 2010 16:49:14.0395 (UTC) FILETIME=[9F45E6B0:01CABBBA]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This codes improves the error handler in nmi_setup(). Most parts of
-the code are moved to allocate_msrs(). In case of an error
-allocate_msrs() also frees already allocated memory. nmi_setup()
-becomes easier and better extendable.
+For sharing IBS with oprofile and perf a resource allocation is
+needed. This patch implements IBS allocation by extending the perfctr
+reservation code.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/nmi_int.c |   33 +++++++++++++++++++--------------
- 1 files changed, 19 insertions(+), 14 deletions(-)
+ arch/x86/include/asm/perf_event.h |    3 +
+ arch/x86/oprofile/op_model_amd.c  |  104 +++++++++++++++++++++++++------------
+ 2 files changed, 74 insertions(+), 33 deletions(-)
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 2c505ee..c0c21f2 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -295,6 +295,7 @@ static void free_msrs(void)
- 		kfree(per_cpu(cpu_msrs, i).controls);
- 		per_cpu(cpu_msrs, i).controls = NULL;
- 	}
-+	nmi_shutdown_mux();
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index 80e6936..2a95e01 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -117,6 +117,9 @@ union cpuid10_edx {
+  */
+ #define X86_PMC_IDX_FIXED_BTS				(X86_PMC_IDX_FIXED + 16)
+ 
++#define X86_PMC_IDX_SPECIAL_IBS_FETCH			(X86_PMC_IDX_FIXED + 17)
++#define X86_PMC_IDX_SPECIAL_IBS_OP			(X86_PMC_IDX_FIXED + 18)
++
+ /* IbsFetchCtl bits/masks */
+ #define IBS_FETCH_RAND_EN		(1ULL<<57)
+ #define IBS_FETCH_VAL			(1ULL<<49)
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index 9c0d978..9bd040d 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -61,6 +61,7 @@ struct op_ibs_config {
+ };
+ 
+ static struct op_ibs_config ibs_config;
++static u64 ibs_fetch_ctl;
+ static u64 ibs_op_ctl;
+ 
+ /*
+@@ -105,6 +106,63 @@ static u32 get_ibs_caps(void)
+ 	return ibs_caps;
  }
  
- static int allocate_msrs(void)
-@@ -307,14 +308,21 @@ static int allocate_msrs(void)
- 		per_cpu(cpu_msrs, i).counters = kzalloc(counters_size,
- 							GFP_KERNEL);
- 		if (!per_cpu(cpu_msrs, i).counters)
--			return 0;
-+			goto fail;
- 		per_cpu(cpu_msrs, i).controls = kzalloc(controls_size,
- 							GFP_KERNEL);
- 		if (!per_cpu(cpu_msrs, i).controls)
--			return 0;
-+			goto fail;
- 	}
- 
-+	if (!nmi_setup_mux())
-+		goto fail;
++static void shutdown_ibs(void)
++{
++	if (ibs_fetch_ctl) {
++		ibs_fetch_ctl = 0;
++		release_perfctr(X86_PMC_IDX_SPECIAL_IBS_FETCH);
++	}
 +
- 	return 1;
++	if (ibs_op_ctl) {
++		ibs_op_ctl = 0;
++		release_perfctr(X86_PMC_IDX_SPECIAL_IBS_OP);
++	}
++}
 +
-+fail:
-+	free_msrs();
++static int setup_ibs(void)
++{
++	ibs_fetch_ctl = 0;
++	if (ibs_caps && ibs_config.fetch_enabled) {
++		if (!reserve_perfctr(X86_PMC_IDX_SPECIAL_IBS_FETCH))
++			goto fail;
++		ibs_fetch_ctl =
++			((ibs_config.max_cnt_fetch >> 4) & IBS_FETCH_MAX_CNT)
++			| (ibs_config.rand_en ? IBS_FETCH_RAND_EN : 0)
++			| IBS_FETCH_ENABLE;
++	}
++
++	ibs_op_ctl = 0;
++	if (ibs_caps && ibs_config.op_enabled) {
++		if (!reserve_perfctr(X86_PMC_IDX_SPECIAL_IBS_OP))
++			goto fail;
++		ibs_op_ctl = ibs_config.max_cnt_op >> 4;
++		if (!(ibs_caps & IBS_CAPS_RDWROPCNT)) {
++			/*
++			 * IbsOpCurCnt not supported.  See
++			 * op_amd_randomize_ibs_op() for details.
++			 */
++			ibs_op_ctl = clamp(ibs_op_ctl, 0x0081ULL, 0xFF80ULL);
++		} else {
++			/*
++			 * The start value is randomized with a
++			 * positive offset, we need to compensate it
++			 * with the half of the randomized range. Also
++			 * avoid underflows.
++			 */
++			ibs_op_ctl = min(ibs_op_ctl + IBS_RANDOM_MAXCNT_OFFSET,
++					 IBS_OP_MAX_CNT);
++		}
++		if (ibs_caps & IBS_CAPS_OPCNT && ibs_config.dispatched_ops)
++			ibs_op_ctl |= IBS_OP_CNT_CTL;
++		ibs_op_ctl |= IBS_OP_ENABLE;
++	}
++
 +	return 0;
- }
++fail:
++	shutdown_ibs();
++	return -EBUSY;
++}
++
+ /*
+  * 16-bit Linear Feedback Shift Register (LFSR)
+  *
+@@ -170,7 +228,7 @@ op_amd_handle_ibs(struct pt_regs * const regs,
+ 	if (!ibs_caps)
+ 		return;
  
- static void nmi_cpu_setup(void *dummy)
-@@ -342,17 +350,7 @@ static int nmi_setup(void)
- 	int cpu;
+-	if (ibs_config.fetch_enabled) {
++	if (ibs_fetch_ctl) {
+ 		rdmsrl(MSR_AMD64_IBSFETCHCTL, ctl);
+ 		if (ctl & IBS_FETCH_VAL) {
+ 			rdmsrl(MSR_AMD64_IBSFETCHLINAD, val);
+@@ -183,13 +241,11 @@ op_amd_handle_ibs(struct pt_regs * const regs,
+ 			oprofile_write_commit(&entry);
  
- 	if (!allocate_msrs())
--		err = -ENOMEM;
--	else if (!nmi_setup_mux())
--		err = -ENOMEM;
--	else
--		err = register_die_notifier(&profile_exceptions_nb);
--
--	if (err) {
--		free_msrs();
--		nmi_shutdown_mux();
--		return err;
+ 			/* reenable the IRQ */
+-			ctl &= ~(IBS_FETCH_VAL | IBS_FETCH_CNT);
+-			ctl |= IBS_FETCH_ENABLE;
+-			wrmsrl(MSR_AMD64_IBSFETCHCTL, ctl);
++			wrmsrl(MSR_AMD64_IBSFETCHCTL, ibs_fetch_ctl);
+ 		}
+ 	}
+ 
+-	if (ibs_config.op_enabled) {
++	if (ibs_op_ctl) {
+ 		rdmsrl(MSR_AMD64_IBSOPCTL, ctl);
+ 		if (ctl & IBS_OP_VAL) {
+ 			rdmsrl(MSR_AMD64_IBSOPRIP, val);
+@@ -222,34 +278,10 @@ static inline void op_amd_start_ibs(void)
+ 	if (!ibs_caps)
+ 		return;
+ 
+-	if (ibs_config.fetch_enabled) {
+-		val = (ibs_config.max_cnt_fetch >> 4) & IBS_FETCH_MAX_CNT;
+-		val |= ibs_config.rand_en ? IBS_FETCH_RAND_EN : 0;
+-		val |= IBS_FETCH_ENABLE;
+-		wrmsrl(MSR_AMD64_IBSFETCHCTL, val);
 -	}
-+		return -ENOMEM;
++	if (ibs_fetch_ctl)
++		wrmsrl(MSR_AMD64_IBSFETCHCTL, ibs_fetch_ctl);
  
- 	/* We need to serialize save and setup for HT because the subset
- 	 * of msrs are distinct for save and setup operations
-@@ -374,9 +372,17 @@ static int nmi_setup(void)
+-	if (ibs_config.op_enabled) {
+-		ibs_op_ctl = ibs_config.max_cnt_op >> 4;
+-		if (!(ibs_caps & IBS_CAPS_RDWROPCNT)) {
+-			/*
+-			 * IbsOpCurCnt not supported.  See
+-			 * op_amd_randomize_ibs_op() for details.
+-			 */
+-			ibs_op_ctl = clamp(ibs_op_ctl, 0x0081ULL, 0xFF80ULL);
+-		} else {
+-			/*
+-			 * The start value is randomized with a
+-			 * positive offset, we need to compensate it
+-			 * with the half of the randomized range. Also
+-			 * avoid underflows.
+-			 */
+-			ibs_op_ctl = min(ibs_op_ctl + IBS_RANDOM_MAXCNT_OFFSET,
+-					 IBS_OP_MAX_CNT);
+-		}
+-		if (ibs_caps & IBS_CAPS_OPCNT && ibs_config.dispatched_ops)
+-			ibs_op_ctl |= IBS_OP_CNT_CTL;
+-		ibs_op_ctl |= IBS_OP_ENABLE;
++	if (ibs_op_ctl) {
+ 		val = op_amd_randomize_ibs_op(ibs_op_ctl);
+ 		wrmsrl(MSR_AMD64_IBSOPCTL, val);
+ 	}
+@@ -297,7 +329,11 @@ static void op_amd_shutdown(struct op_msrs const * const msrs);
  
- 		mux_clone(cpu);
+ static int op_amd_fill_in_addresses(struct op_msrs * const msrs)
+ {
+-	int i;
++	int err, i;
++
++	err = setup_ibs();
++	if (err)
++		return err;
+ 
+ 	for (i = 0; i < NUM_COUNTERS; i++) {
+ 		if (reserve_perfctr(i)) {
+@@ -438,6 +474,8 @@ static void op_amd_shutdown(struct op_msrs const * const msrs)
+ 		if (msrs->counters[i].addr)
+ 			release_perfctr(i);
  	}
 +
-+	err = register_die_notifier(&profile_exceptions_nb);
-+	if (err)
-+		goto fail;
-+
- 	on_each_cpu(nmi_cpu_setup, NULL, 1);
- 	nmi_enabled = 1;
- 	return 0;
-+fail:
-+	free_msrs();
-+	return err;
++	shutdown_ibs();
  }
  
- static void nmi_cpu_restore_registers(struct op_msrs *msrs)
-@@ -421,7 +427,6 @@ static void nmi_shutdown(void)
- 	nmi_enabled = 0;
- 	on_each_cpu(nmi_cpu_shutdown, NULL, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
--	nmi_shutdown_mux();
- 	msrs = &get_cpu_var(cpu_msrs);
- 	model->shutdown(msrs);
- 	free_msrs();
+ static u8 ibs_eilvt_off;
 -- 
 1.7.0
 
