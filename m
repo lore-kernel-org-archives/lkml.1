@@ -1,68 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318Ab0CDU7J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:59:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7282 "EHLO mx1.redhat.com"
+	id S932321Ab0CDVBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:01:24 -0500
+Received: from kroah.org ([198.145.64.141]:50261 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753919Ab0CDU7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:59:08 -0500
-Message-ID: <4B901F06.1010106@redhat.com>
-Date: Thu, 04 Mar 2010 15:58:46 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S1756447Ab0CDVBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:01:23 -0500
+Date: Thu, 4 Mar 2010 13:01:19 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Weirdness in patch
+Message-ID: <20100304210119.GA27873@kroah.com>
+References: <Pine.LNX.4.44L0.1003041511070.1305-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       eranian@google.com, robert.richter@amd.com, fweisbec@gmail.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 09/14] perf, x86: use LBR for PEBS IP+1 fixup
-References: <20100304140046.596569763@chello.nl>	 <20100304140100.619375431@chello.nl>  <4B8FDE16.3050403@redhat.com> <1267725262.25158.206.camel@laptop> <4B901E23.4080701@redhat.com>
-In-Reply-To: <4B901E23.4080701@redhat.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003041511070.1305-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Peter Zijlstra wrote:
->> On Thu, 2010-03-04 at 11:21 -0500, Masami Hiramatsu wrote:
->>> Peter Zijlstra wrote:
->>
->>>> +#define perf_misc_flags(regs)				\
->>>> +({	int misc = 0;					\
->>>> +	if (user_mode(regs))				\
->>>> +		misc |= PERF_RECORD_MISC_USER;		\
->>>> +	else						\
->>>> +		misc |= PERF_RECORD_MISC_KERNEL;	\
->>>> +	if (regs->flags & PERF_EFLAGS_EXACT)		\
->>>> +		misc |= PERF_RECORD_MISC_EXACT;		\
->>>> +	misc; })
->>>> +
->>>> +#define perf_instruction_pointer(regs)	((regs)->ip)
->>>
->>> Hmm, why don't you use instruction_pointer() defined in asm/ptrace.h?
->>> And I couldn't find any user of this macro in this patch...
->>
->> perf_instruction_pointer() is used in kernel/perf_event.c, and yeah I
->> could have used instruction_pointer() but that's yet another wrapper.
->>
->> Anyway, Yanmin is poking at doing kvm-guest profiling and will likely
->> rewrite all of the perf_misc() and perf_instruction_pointer() stuff
->> soon.
+On Thu, Mar 04, 2010 at 03:22:22PM -0500, Alan Stern wrote:
+> Greg:
 > 
-> Hmm, still I can't find where it is used (in your patches).
+> In my copy of gregkh-all-2.6.33.patch (which is dated 2010-03-01), 
+> there are changes to drivers/base/power/main.c, coming from the 
+> gregkh-05-driver-core/driver-core-create-lock-unlock-functions-for-struct-device 
+> patch.
+> 
+> The first weird thing is this.  That file as it currently exists on
+> www.kernel.org (dated 2010-03-03) contains the following hunk (it's the
+> last hunk for drivers/base/power/main.c):
+> 
+> @@ -962,7 +962,7 @@ static int device_prepare(struct device
+>  		suspend_report_result(dev->class->pm->prepare, error);
+>  	}
+>   End:
+> -	up(&dev->sem);
+> +	device_unlock(dev);
+>  
+>  	return error;
+>  }
+> 
+> But in my copy of gregkh-all-2.6.33.patch, the corresponding hunk is:
+> 
+> @@ -852,7 +852,7 @@
+>  		suspend_report_result(dev->class->pm->prepare, error);
+>  	}
+>   End:
+> -	up(&dev->sem);
+> +	device_lock(dev);
+>  
+>  	return error;
+>  }
+> 
+> The device_unlock() got changed to device_lock()!  That messed up my 
+> suspend testing for a while...
+> 
+> Secondly, none of these changes is present in the 
+> gregkh-all-2.6.33.patch file at www.kernel.org.  Isn't that supposed to 
+> contain all the patches from the subsystems merged into one?
+> 
+> What's the story?
 
-Ah, OK. that is already used in kernel/perf_event.c and
-the patch overwrites one defined in include/linux/perf_event.h.
+Odd, I don't know.  I changed my script to try to handle git ids instead
+of -rc only type base versions, and I probably messed something up.  Let
+me go verify that the above patch is still correct (I had to merge it by
+hand...)
 
-Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
+Yes, the original patch is correct, but somehow the -all patches are not
+getting generated correctly.  I'll go look into what broke in my
+scripts.  Sorry about that, and thanks for letting me know.
 
-Thank you,
-
-
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+greg k-h
