@@ -1,57 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959Ab0CDR7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:59:22 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51129 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284Ab0CDR7V (ORCPT
+	id S1754138Ab0CDR7Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:59:24 -0500
+Received: from mail09.linbit.com ([212.69.161.110]:53983 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773Ab0CDR7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:59:21 -0500
-Subject: Re: [PATCH 0/9] oprofile, perf, x86: introduce new functions to
- reserve perfctrs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-In-Reply-To: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
-References: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Mar 2010 18:59:19 +0100
-Message-ID: <1267725559.25158.208.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Mar 2010 12:59:23 -0500
+Date: Thu, 4 Mar 2010 18:59:21 +0100
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Dmitry Monakhov <dmonakhov@openvz.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+ checks
+Message-ID: <20100304175921.GD3670@soda.linbit>
+References: <1267292113-12900-1-git-send-email-dmonakhov@openvz.org>
+ <20100228184634.GI5768@kernel.dk>
+ <874okyf4iw.fsf@openvz.org>
+ <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
+ <87wrxtkzwu.fsf@openvz.org>
+ <20100303191613.GB18480@redhat.com>
+ <87lje9kx9i.fsf@openvz.org>
+ <20100303200734.GW5768@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303200734.GW5768@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 16:22 +0100, Robert Richter wrote:
-> This patch set improves the perfctr reservation code. New functions
-> are available to reserve a counter by its index only. It is no longer
-> necessary to allocate both msrs of a counter which also improves the
-> code and makes it easier.
+On Wed, Mar 03, 2010 at 09:07:34PM +0100, Jens Axboe wrote:
+> > 2) What statement "bio_add_page() must accept at least one page"
+> >    exactly means?
+> >    IMHO this means that bio_add_page() must accept at least
+> >    one page with len (PAGE_SIZE - offset). Or more restricted
+> >    statemnt that first bio_add_page() must be always successfull.
 > 
-> For oprofile a handler is implemented that returns an error now if a
-> counter is already reserved by a different subsystem such as perf or
-> watchdog. Before, oprofile silently ignored that counter. Finally the
-> new reservation functions can be used to allocate special parts of the
-> pmu such as IBS, which is necessary to use IBS with perf too.
-> 
-> The patches are available in the oprofile tree:
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git core
-> 
-> If there are no objections, I suggest to merge it into the
-> tip/perf/core too, maybe after pending patches went in. If there are
-> already conflicts, I will do the merge for this.
+> It's really 'first add must succeed', the restriction being that you
+> cannot rely on that first add being more than a single page. So the rule
+> is that you must accept at least a page at any offset if the bio is
+> currently empty, since we know that a page is typically our IO
+> granularity.
 
-Right, so cleaning up that reservation code is nice, but wouldn't it be
-much nicer to simply do away with all that and make everything use the
-(low level) perf code?
+Speaking of...
 
-You expressed interest in both making the oprofile kernel space user the
-perf apis as well as making oprofile user space use the perf abi, in
-which case the kernel entirely side goes away.
+dm_set_device_limits is still doing things wrong here, I think.
+
+I posted this about two years ago, but somehow it got lost
+and I lost it from my focus as well.
+Reading this post reminded me ... there was something:
+
+diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+index 4b22feb..bc34901 100644
+--- a/drivers/md/dm-table.c
++++ b/drivers/md/dm-table.c
+@@ -519,10 +519,22 @@ int dm_set_device_limits(struct dm_target *ti, struct dm_dev *dev,
+ 	 * smaller I/O, just to be safe.
+ 	 */
+ 
+-	if (q->merge_bvec_fn && !ti->type->merge)
++	if (q->merge_bvec_fn && !ti->type->merge) {
+ 		limits->max_sectors =
+ 			min_not_zero(limits->max_sectors,
+ 				     (unsigned int) (PAGE_SIZE >> 9));
++
++		/* Restricting max_sectors is not enough.
++		 * If someone uses bio_add_page to add 8 disjunct 512 byte
++		 * partial pages to a bio, it would succeed,
++		 * but could still cross a border of whatever restrictions
++		 * are below us (raid0 stripe boundary).  An attempted
++		 * bio_split would not succeed, because bi_vcnt is 8.
++		 * E.g. the xen io layer is known to trigger this.
++		 */
++		limits->max_segments = 1;
++	}
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(dm_set_device_limits);
 
 
-
+Thanks,
+	Lars
