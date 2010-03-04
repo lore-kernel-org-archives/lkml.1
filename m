@@ -1,88 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932218Ab0CDRed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:34:33 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:56441 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932169Ab0CDReb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:34:31 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       mdharm-kernel@one-eyed-alien.net, oliver@neukum.org, greg@kroah.com,
-       x0082077@ti.com, sshtylyov@ru.mvista.com, benh@kernel.crashing.org,
-       bigeasy@linutronix.de, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       santosh.shilimkar@ti.com, Pavel Machek <pavel@ucw.cz>,
-       tom.leiming@gmail.com, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20100304163023.GC13417@n2100.arm.linux.org.uk>
-References: <1267316072.23523.1842.camel@pasglop>
-	 <1267333263.2762.11.camel@mulgrave.site>
-	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
-	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
-	 <20100303215437.GF2579@ucw.cz>
-	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
-	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
-	 <1267712512.31654.176.camel@mulgrave.site>
-	 <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
-	 <20100304154103.GA9384@linux-sh.org>
-	 <20100304163023.GC13417@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Organization: ARM Limited
-Date: Thu, 04 Mar 2010 17:34:28 +0000
-Message-ID: <1267724068.6526.499.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1754541Ab0CDRky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:40:54 -0500
+Received: from claw.goop.org ([74.207.240.146]:40445 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752966Ab0CDRkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 12:40:53 -0500
+Message-ID: <4B8FF0A3.9060305@goop.org>
+Date: Thu, 04 Mar 2010 09:40:51 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.3
+MIME-Version: 1.0
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Keir Fraser <Keir.Fraser@eu.citrix.com>, Ingo Molnar <mingo@elte.hu>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 6/7] xen: Enable PV clocksource for HVM
+References: <1267695416-14988-1-git-send-email-sheng@linux.intel.com> <1267695416-14988-7-git-send-email-sheng@linux.intel.com>
+In-Reply-To: <1267695416-14988-7-git-send-email-sheng@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2010 17:34:29.0162 (UTC) FILETIME=[F16678A0:01CABBC0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-03-04 at 16:30 +0000, Russell King - ARM Linux wrote:
-> On Fri, Mar 05, 2010 at 12:41:03AM +0900, Paul Mundt wrote:
-> > On Thu, Mar 04, 2010 at 03:29:38PM +0000, Catalin Marinas wrote:
-> > > On Thu, 2010-03-04 at 14:21 +0000, James Bottomley wrote:
-> > > > The thing which was discovered in this thread is basically that ARM is
-> > > > handling deferred flushing (for D/I coherency) in a slightly different
-> > > > way from everyone else ...
-> > >
-> > > Doing a grep for PG_dcache_dirty defined in terms of PG_arch_1 reveals
-> > > that MIPS, Parisc, Score, SH and SPARC do similar things to ARM. PowerPC
-> > > and IA-64 use PG_arch_1 as a clean rather than dirty bit.
-> > 
-> > SH used to use it as a PG_mapped which was roughly similar to the
-> > PG_dcache_clean approach, at which point things like flushing for the PIO
-> > case in the HCD wasn't necessary. It did result in rather aggressive over
-> > flushing though, which is one of the reasons we elected to switch to
-> > PG_dcache_dirty.
-> >
-> > Note that the PG_dcache_dirty semantics are also outlined in
-> > Documentation/cachetlb.txt for PG_arch_1 usage, so it's hardly esoteric.
-> 
-> Indeed; the ARM approach was basically taken from Sparc64.
-[...]
-> The general critera (from memory) seems to be:
-> - a virtual indexed aliasing cache (whether it be VIVT or VIPT aliasing)
-> - write allocate caches show the problem better than read allocate only
-> - using a block device for the filesystem
-> - mmap'ing a page and immediately accessing the last few cache lines in
->   that page
+On 03/04/2010 01:36 AM, Sheng Yang wrote:
+> And enable it by default in PV extended HVM guest.
+>
+> Signed-off-by: Sheng Yang<sheng@linux.intel.com>
+> ---
+>   arch/x86/xen/hvmpv.c |   20 ++++++++++++++++++++
+>   arch/x86/xen/time.c  |    4 +++-
+>   2 files changed, 23 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
+> index 7a741ed..284e021 100644
+> --- a/arch/x86/xen/hvmpv.c
+> +++ b/arch/x86/xen/hvmpv.c
+> @@ -43,6 +43,7 @@ static void __init xen_hvm_pv_banner(void)
+>   		pv_info.name);
+>   	printk(KERN_INFO "Xen version: %d.%d%s\n",
+>   		version>>  16, version&  0xffff, extra.extraversion);
+> +	printk(KERN_INFO "PV feature: PV clocksource enabled\n");
+>   }
+>
+>   static int __init xen_para_available(void)
+> @@ -117,6 +118,22 @@ static void __init init_shared_info(void)
+>   	per_cpu(xen_vcpu, 0) =&HYPERVISOR_shared_info->vcpu_info[0];
+>   }
+>
+> +extern struct clocksource xen_clocksource;
+>    
 
-It actually triggers easily with a non-aliasing VIPT cache (can't even
-start /sbin/init). The main condition is for the caches to be in
-write-allocate mode (and the processor to support this, i.e. Cortex-A9).
+No externs in .c files.  But aside from that, I'd prefer you export a 
+function from xen/time.c to do the clocksource registration and call it 
+from both places (even if its a one-liner).
 
-A simple test is to use an ext2/3 filesystem (cramfs, jffs2 etc.
-wouldn't do since they call flush_dcache_page) on a compact flash card
-using the pata_platform driver (and without commit 2d68b7fe55d9e19).
+> +
+> +static void __init init_pv_clocksource(void)
+> +{
+> +	if (enable_hvm_pv(HVM_PV_CLOCK))
+> +		BUG();
+>    
 
-Other forms of triggering this is to use something like slram + ext2/3.
+BUG is a bit severe.  Will it really never, ever fail?  And if it does, 
+the consequence is hardly serious; we just fall back to emulated devices.
 
--- 
-Catalin
+> +
+> +	pv_time_ops.sched_clock = xen_sched_clock;
+> +
+> +	x86_platform.calibrate_tsc = xen_tsc_khz;
+> +	x86_platform.get_wallclock = xen_get_wallclock;
+> +	x86_platform.set_wallclock = xen_set_wallclock;
+> +
+> +	clocksource_register(&xen_clocksource);
+> +}
+> +
+>   void __init xen_guest_init(void)
+>   {
+>   	int r;
+> @@ -130,4 +147,7 @@ void __init xen_guest_init(void)
+>   		return;
+>
+>   	init_shared_info();
+> +
+> +	/* PV clocksource would be enabled by default */
+> +	init_pv_clocksource();
+>   }
+> diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+> index 0d3f07c..c80eacb 100644
+> --- a/arch/x86/xen/time.c
+> +++ b/arch/x86/xen/time.c
+> @@ -13,6 +13,7 @@
+>   #include<linux/clockchips.h>
+>   #include<linux/kernel_stat.h>
+>   #include<linux/math64.h>
+> +#include<linux/module.h>
+>
+>   #include<asm/pvclock.h>
+>   #include<asm/xen/hypervisor.h>
+> @@ -243,7 +244,7 @@ int xen_set_wallclock(unsigned long now)
+>   	return -1;
+>   }
+>
+> -static struct clocksource xen_clocksource __read_mostly = {
+> +struct clocksource xen_clocksource __read_mostly = {
+>   	.name = "xen",
+>   	.rating = 400,
+>   	.read = xen_clocksource_get_cycles,
+> @@ -252,6 +253,7 @@ static struct clocksource xen_clocksource __read_mostly = {
+>   	.shift = XEN_SHIFT,
+>   	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
+>   };
+> +EXPORT_SYMBOL_GPL(xen_clocksource);
+>
+>   /*
+>      Xen clockevent implementation
+>    
 
