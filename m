@@ -1,83 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313Ab0CDQWF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:22:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53239 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754256Ab0CDQWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:22:01 -0500
-Message-ID: <4B8FDE16.3050403@redhat.com>
-Date: Thu, 04 Mar 2010 11:21:42 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S1755215Ab0CDQXw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:23:52 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:3227 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753845Ab0CDQXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:23:51 -0500
+X-SpamScore: -24
+X-BigFish: VPS-24(zz1432R98dN936eM62a3Lzz1202hzzz32i2a8h6bh43h61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KYRMTW-02-KAH-02
+X-M-MSG: 
+Date: Thu, 4 Mar 2010 17:22:42 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/1] oprofile: Convert oprofilefs_lock to raw_spinlock
+Message-ID: <20100304162242.GP13205@erda.amd.com>
+References: <20100217144121.650660618@linutronix.de>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       eranian@google.com, robert.richter@amd.com, fweisbec@gmail.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH 09/14] perf, x86: use LBR for PEBS IP+1 fixup
-References: <20100304140046.596569763@chello.nl> <20100304140100.619375431@chello.nl>
-In-Reply-To: <20100304140100.619375431@chello.nl>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20100217144121.650660618@linutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 04 Mar 2010 16:22:43.0367 (UTC) FILETIME=[EAF24B70:01CABBB6]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> PEBS always reports the IP+1, that is the instruction after the one
-> that got sampled, cure this by using the LBR to reliably rewind the
-> instruction stream.
+On 17.02.10 14:41:59, Thomas Gleixner wrote:
+> oprofilefs_lock needs to be a real spinlock on preempt-rt. Convert it
+> to a raw_spinlock. No change for !RT kernels.
 > 
-> CC: Masami Hiramatsu <mhiramat@redhat.com>
-> CC: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <new-submission>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Robert Richter <robert.richter@amd.com>
 > ---
->  arch/x86/include/asm/perf_event.h         |   19 ++++++
->  arch/x86/kernel/cpu/perf_event.c          |   70 ++++++++++++-------------
->  arch/x86/kernel/cpu/perf_event_intel.c    |    4 -
->  arch/x86/kernel/cpu/perf_event_intel_ds.c |   84 +++++++++++++++++++++++++++++-
->  include/linux/perf_event.h                |    6 ++
->  5 files changed, 144 insertions(+), 39 deletions(-)
-> 
-[...]
-> Index: linux-2.6/arch/x86/include/asm/perf_event.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/perf_event.h
-> +++ linux-2.6/arch/x86/include/asm/perf_event.h
-> @@ -136,6 +136,25 @@ extern void perf_events_lapic_init(void)
->  
->  #define PERF_EVENT_INDEX_OFFSET			0
->  
-> +/*
-> + * Abuse bit 3 of the cpu eflags register to indicate proper PEBS IP fixups.
-> + * This flag is otherwise unused and ABI specified to be 0, so nobody should
-> + * care what we do with it.
-> + */
-> +#define PERF_EFLAGS_EXACT	(1UL << 3)
- > +
-> +#define perf_misc_flags(regs)				\
-> +({	int misc = 0;					\
-> +	if (user_mode(regs))				\
-> +		misc |= PERF_RECORD_MISC_USER;		\
-> +	else						\
-> +		misc |= PERF_RECORD_MISC_KERNEL;	\
-> +	if (regs->flags & PERF_EFLAGS_EXACT)		\
-> +		misc |= PERF_RECORD_MISC_EXACT;		\
-> +	misc; })
-> +
-> +#define perf_instruction_pointer(regs)	((regs)->ip)
+>  arch/arm/oprofile/common.c      |    4 ++--
+>  arch/x86/oprofile/nmi_int.c     |    4 ++--
+>  drivers/oprofile/event_buffer.c |    4 ++--
+>  drivers/oprofile/oprofilefs.c   |    6 +++---
+>  include/linux/oprofile.h        |    2 +-
+>  5 files changed, 10 insertions(+), 10 deletions(-)
 
-Hmm, why don't you use instruction_pointer() defined in asm/ptrace.h?
-And I couldn't find any user of this macro in this patch...
+Acked-by: Robert Richter <robert.richter@amd.com>
 
-Others looks good to me :)
+Thomas, do you want to send it upstream via RT updates?
 
-Thank you,
+-Robert
 
 -- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
