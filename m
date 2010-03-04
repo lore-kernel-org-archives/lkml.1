@@ -1,65 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831Ab0CDP0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:26:53 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:41659 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754500Ab0CDP0w (ORCPT
+	id S1754864Ab0CDP1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:27:49 -0500
+Received: from mail-ew0-f220.google.com ([209.85.219.220]:64952 "EHLO
+	mail-ew0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754708Ab0CDP1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:26:52 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Bastian Blank <waldi@debian.org>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100303161428.GB26656@wavehammer.waldi.eu.org>
-References: <alpine.DEB.2.00.1003021748250.22259@kaball-desktop>
-	 <20100303121726.GA26656@wavehammer.waldi.eu.org>
-	 <alpine.DEB.2.00.1003031520320.4648@kaball-desktop>
-	 <20100303161428.GB26656@wavehammer.waldi.eu.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Mar 2010 15:26:35 +0000
-Message-ID: <1267716395.11737.33485.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [Xen-devel] [PATCH 4 of 4] Linux pvops: xen pci platform
- device driver
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.1 cv=1ggfb5FlKZQUfF3vzm9UBYZ2uTfLsbs/8dSljwg5+mE= c=1 sm=0 a=eg4TgaQpvW0A:10 a=cKYKwiJ3QjskgAzcbucA:9 a=ACHGwvuM-d64-r4cTDhonaqCQSoA:4 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
+	Thu, 4 Mar 2010 10:27:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=k0mnN40GTgbXg4zeQj78g0TJxWZdsG5I8QJ9f7MerVY0dkt1VaAZCI1sz0GocgXfKs
+         G+97IGVqsE/e/ZOa7Z9NCO4XD+iGoGd/nt0GWpUKhAafzFye7i3yNWm/Sbp/2KRkLqHt
+         bLD9u0w6eMu3J9o4r5a+LCrz0Lw86l10vTDqA=
+Date: Thu, 4 Mar 2010 23:30:42 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: M G Berberich <berberic@fmi.uni-passau.de>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.33 dies on modprobe
+Message-ID: <20100304153042.GA4614@hack>
+References: <fa.S/rvLm1aQlDSqPwVJz5B+5vHjbM@ifi.uio.no> <fa.+Pg2gFpQSg5k/1mCpBdt8xMXeqY@ifi.uio.no> <fa.0/xGeZctWXDyX0DAp6opgP1HP7w@ifi.uio.no> <fa.kPSENj9DWu0Q8xolQMDkRvAwxQ0@ifi.uio.no> <fa.JUJQsT7bECqtd8JSoNY+SBdASCE@ifi.uio.no> <fa.Lya/54V1PJgwjc8uy1Yk4NyYUh4@ifi.uio.no> <20100303230438.GA3363@invalid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100303230438.GA3363@invalid>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 17:14 +0100, Bastian Blank wrote:
-> 
-> > During the initialization of the xen pci device driver, we write to
-> a
-> > magic ioport that causes qemu to unplug some emulated devices, disc
-> and
-> > network in particular.
-> > This parameter is meant to present the user a choice about what
-> emulated
-> > devices to unplug.
-> 
-> Somehow I don't think this belongs here. It looks like a workaround,
-> you can always ask qemu to not bind them at the beginning and the
-> guest system to not provide drivers. 
+On Thu, Mar 04, 2010 at 12:04:38AM +0100, M G Berberich wrote:
+>Hello,
+>
+>Am Mittwoch, den 03. März schrieb Américo Wang:
+>> On Wed, Mar 3, 2010 at 5:08 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> > On Wed, Mar 3, 2010 at 4:58 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> >> Ok, below is my patch, I am not sure it could fix the BUG for you,
+>> >> but it could fix the WARNING. But perhaps they are related.
+>> >>
+>> >> Please give it a try.
+>> >>
+>> >
+>> > Oops! Ignore the patch, it should not be correct, I will send a
+>> > correct version soon.
+>> > Sorry.
+>> >
+>> 
+>> Here we go:
+>
+>Seems to fix the warning, but not the modprobe-Oops.
+>
 
-Qemu needs to start off providing the devices so that the BIOS and
-bootloader can do their thing. It's only once the final OS is up and
-running that we want to swap to the paravirt drivers and this interface
-provides a safe mechanism to ensure only one set of devices is active at
-a time.
+Thanks much for your testing!
 
-Ian.
+Could you please try to turn on DEBUG_KOBJECT and boot your kernel
+with "initcall_debug"? And then show us your dmesg.
 
--- 
-Ian Campbell
-Current Noise: Spiritual Beggars - Euphoria
-
-Usage: fortune -P [-f] -a [xsz] Q: file [rKe9] -v6[+] file1 ...
-
+Regards.
