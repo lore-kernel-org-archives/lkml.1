@@ -1,98 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054Ab0CDPkt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:40:49 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:59500 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871Ab0CDPkr (ORCPT
+	id S1755173Ab0CDPlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:41:45 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52090 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754842Ab0CDPlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:40:47 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 4 Mar 2010 07:40:45 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: bert hubert <bert.hubert@netherlabs.nl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll clarification sought: multithreaded epoll_wait for UDP
- sockets?
-In-Reply-To: <20100303212942.GB24601@xs.powerdns.com>
-Message-ID: <alpine.DEB.2.00.1003040731170.10593@makko.or.mcafeemobile.com>
-References: <20100303212942.GB24601@xs.powerdns.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 4 Mar 2010 10:41:44 -0500
+Date: Fri, 5 Mar 2010 00:41:03 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       benh@kernel.crashing.org, linux@arm.linux.org.uk,
+       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
+       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100304154103.GA9384@linux-sh.org>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk> <1267316072.23523.1842.camel@pasglop> <1267333263.2762.11.camel@mulgrave.site> <20100302211049V.fujita.tomonori@lab.ntt.co.jp> <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com> <20100303215437.GF2579@ucw.cz> <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com> <20100304135128.GA12191@atrey.karlin.mff.cuni.cz> <1267712512.31654.176.camel@mulgrave.site> <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, bert hubert wrote:
+On Thu, Mar 04, 2010 at 03:29:38PM +0000, Catalin Marinas wrote:
+> On Thu, 2010-03-04 at 14:21 +0000, James Bottomley wrote:
+> > The thing which was discovered in this thread is basically that ARM is
+> > handling deferred flushing (for D/I coherency) in a slightly different
+> > way from everyone else ... 
+> 
+> Doing a grep for PG_dcache_dirty defined in terms of PG_arch_1 reveals
+> that MIPS, Parisc, Score, SH and SPARC do similar things to ARM. PowerPC
+> and IA-64 use PG_arch_1 as a clean rather than dirty bit.
+> 
+SH used to use it as a PG_mapped which was roughly similar to the
+PG_dcache_clean approach, at which point things like flushing for the PIO
+case in the HCD wasn't necessary. It did result in rather aggressive over
+flushing though, which is one of the reasons we elected to switch to
+PG_dcache_dirty.
 
-> Dear kernel people, dear Davide,
-> 
-> I am currently debugging performance issues in the PowerDNS Recursor, and it
-> turns out I have been using epoll_wait() sub-optimally. And I need your help
-> to improve this. I'm more than happy to update the epoll_wait() manpage to
-> reflect your advice.
-> 
-> Essentially, what I would like to have is a way to distribute incoming UDP DNS
-> queries to various threads automatically.  Right now, there is one
-> fd that multiple threads wait on, using epoll() or select() and subsequently
-> recvfrom(). Crucially, each thread has its own epoll fd set (which is
-> wrong).
-> 
-> The hope is that each thread hogs a single CPU, and that UDP DNS queries
-> coming in arrive at a single thread that is currently in epoll_wait(), ie
-> not doing other things. 
-> 
-> As indicated by the manpage of epoll however, my setup means that threads
-> get woken up unnecessarily when a new packet comes in.  This results in lots
-> of recvfrom() calls returning EAGAIN (basically on most of the other
-> threads).
-> 
-> (this can be observed in
-> http://svn.powerdns.com/snapshots/rc2/pdns-recursor-3.2-rc2.tar.bz2 )
-> 
-> The alternative appears to be to create a single epoll set, and have all
-> threads call epoll_wait on that same set. 
-> 
-> The epoll() manpage however is silent on what this will do exactly, although
-> several LKML posts indicate that this might cause 'thundering herd'
-> problems.
-> 
-> My question is: what is your recommendation for achieving the scenario
-> outlined above? In other words, that is the 'best current practice' on
-> modern Linux kernels to get each packet to arrive at a single thread?
-> 
-> Epoll offers 'edge triggered' behaviour, would this make sense? Would it be
-> smart to cal epoll_wait with only a single event to be returned to prevent
-> starvation? Might it be useful to dup() the single fd, once for each thread? 
-> I also tried SO_REUSEADDR, so I could bind() multiple times to the same IP
-> address & port, but this does not distribute incoming queries.
-> 
-> Many thanks for your time, and whatever advice you might have I will be sure
-> to contribute to the epoll manpage or perhaps a blog post that search
-> engines can find.
-
-Use a single epoll fd, and a UDP DNS server, I'd use EPOLLET and 
-EPOLLONESHOT.
-The most frequent mistake that people using epoll with threads do, is to 
-fetch an fd out of the ready set, handle it to a thread, and then at the 
-next epoll_wait+dispatch iteration, they refetch the same fd and handle it 
-to another thread (while the other one is still handling it).
-Using multiple threads, you have to mark the context of the fd as "in use" 
-(or you use EPOLLONESHOT), while another thread is handling that session.
-Another solution is to have a single epoll_wait() fetcher, with a queue 
-from where other threads feed. At that point it is fetcher responsibility 
-to mark the context associated with the fd as "in use" (and notice the 
-condition when fetching+dispatching following events), before feeding it 
-to the queue.  When the handling thread finished with an fd (because the 
-session is over, or because it got EAGAIN), the thread would give back the 
-fd to the feeder, which will clear the "in use" bit in the fd's context 
-(and resubmit to epoll, if necessary).
-
-
-- Davide
-
-
+Note that the PG_dcache_dirty semantics are also outlined in
+Documentation/cachetlb.txt for PG_arch_1 usage, so it's hardly esoteric.
