@@ -1,43 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083Ab0CDUsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:48:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64159 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756390Ab0CDUsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:48:22 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932205Ab0CDUts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 15:49:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37560 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932079Ab0CDUtq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 15:49:46 -0500
+Date: Thu, 4 Mar 2010 12:49:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] printk: Convert pr_<level> macros to functions
+Message-Id: <20100304124943.ce7c1a63.akpm@linux-foundation.org>
+In-Reply-To: <1267629618.8926.73.camel@Joe-Laptop.home>
+References: <1267629618.8926.73.camel@Joe-Laptop.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, wylda@volny.cz, gregkh@suse.de,
-       jkosina@suse.cz, Linus Torvalds <torvalds@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pid_ns: zap_pid_ns_processes: use SEND_SIG_NOINFO instead
-	of force_sig()
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 3 March 2010 21:26:50 +0100 <20100303202650.GA15521@redhat.com>
-References: <alpine.LFD.2.00.1003021136400.3616@localhost.localdomain>
-	<20100302201646.GA10734@redhat.com>
-	<alpine.LFD.2.00.1003021223060.3616@localhost.localdomain>
-	<20100303013227.4FFDE89EB@magilla.sf.frob.com>
-	<alpine.LFD.2.00.1003021740560.3616@localhost.localdomain>
-	<20100303112343.B89802F@magilla.sf.frob.com>
-	<alpine.LFD.2.00.1003030930100.3627@localhost.localdomain>
-	<20100303184412.GA7816@redhat.com>
-	<alpine.LFD.2.00.1003031053050.3599@localhost.localdomain>
-	<20100303193003.GA10734@redhat.com>
-	<20100303202650.GA15521@redhat.com>
-X-Shopping-List: (1) Cooking basket invasions
-   (2) Magnificent diagnostic compulsion holidays
-   (3) Lucky photogenic riot communions
-   (4) Enchained detection pianos
-Message-Id: <20100304204807.A5C86187@magilla.sf.frob.com>
-Date: Thu,  4 Mar 2010 12:48:07 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Roland McGrath <roland@redhat.com>
+On Wed, 03 Mar 2010 07:20:18 -0800
+Joe Perches <joe@perches.com> wrote:
+
+> printk is defined asmlinkage (extern "C")
+> For this RFC patch, pr_<level> calls are as well.
+> Is this declaration style really necessary?
+> Maybe moving printed_len to file scope is racy somehow?
+
+Yes, printed_len will get corrupted when multiple CPU's are running
+printk/vprintk simultaneously.  That'll need to be fixed.
+
+> Save 3 bytes per pr_<level> use after printk overhead
+> 
+> Does not store the KERN_<level> string as constant string
+> when using pr_<level> calls
+> 
+> printk.o increases ~200 bytes
+> defconfig decreases ~700 bytes
+> 
+> Minor printk neatening, moving comments above function declaration
+> Renamed vprint to __vprintk, added vprintk wrapper
+> Moved automatic printed_len to file static
+> Moved EXPORT_SYMBOL after functions
+> 
+
+Looks good at the first peek.  Is it possible to reduce the amount of
+code movement in the patch, make it a bit easier to follow?  Maybe do
+it as two patches, with the move-stuff-around patch being [1/2]?
+
+>
+> ...
+>
+> +asmlinkage int pr_emerg(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('0', fmt, args);
+> +	r = __vprintk(fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_emerg);
+> +
+> +asmlinkage int pr_alert(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('1', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_alert);
+> +
+> +asmlinkage int pr_crit(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('2', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_crit);
+> +
+> +asmlinkage int pr_err(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('3', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_err);
+> +
+> +asmlinkage int pr_warning(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('4', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_warning);
+> +
+> +asmlinkage int pr_notice(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('5', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_notice);
+> +
+> +asmlinkage int pr_info(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('6', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_info);
+> +
+> +asmlinkage int pr_cont(const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int r;
+> +
+> +	va_start(args, fmt);
+> +	r = pr_printk('c', fmt, args);
+> +	va_end(args);
+> +
+> +	return r;
+> +}
+> +EXPORT_SYMBOL(pr_cont);
+
+I think it would be justifiable to cook up a freaky macro and expand it
+eight times to avoid this duplication.  Ugly, but better than lots of
+duplication.
+
+Or perhaps we can do it via a helper function which takes the
+additional argument?
+
+asmlinkage int pr_everything(char levelchar, const char *fmt, ...)
+
+?
+
