@@ -1,102 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411Ab0CDQ3F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:29:05 -0500
-Received: from trinity.develer.com ([83.149.158.210]:55304 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755241Ab0CDQ3D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:29:03 -0500
-Date: Thu, 4 Mar 2010 17:28:58 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 4/4] memcg: dirty pages instrumentation
-Message-ID: <20100304162858.GE4566@linux>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
- <1267699215-4101-5-git-send-email-arighi@develer.com>
- <20100304161828.GC18786@redhat.com>
+	id S1755439Ab0CDQbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:31:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48384 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755241Ab0CDQbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 11:31:10 -0500
+Date: Thu, 4 Mar 2010 16:30:42 GMT
+From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
+In-Reply-To: <4B8CE06A.9090207@cn.fujitsu.com>
+References: <4B8CE06A.9090207@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing: Fix warning in s_next of trace file ops
+Message-ID: <tip-ac91d85456372a90af5b85eb6620fd2efb1e431b@git.kernel.org>
+Git-Commit-ID: ac91d85456372a90af5b85eb6620fd2efb1e431b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100304161828.GC18786@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Mar 2010 16:30:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 11:18:28AM -0500, Vivek Goyal wrote:
-> On Thu, Mar 04, 2010 at 11:40:15AM +0100, Andrea Righi wrote:
-> 
-> [..]
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 5a0f8f3..c5d14ea 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -137,13 +137,16 @@ static struct prop_descriptor vm_dirties;
-> >   */
-> >  static int calc_period_shift(void)
-> >  {
-> > +	struct dirty_param dirty_param;
-> >  	unsigned long dirty_total;
-> >  
-> > -	if (vm_dirty_bytes)
-> > -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> > +	get_dirty_param(&dirty_param);
-> > +
-> > +	if (dirty_param.dirty_bytes)
-> > +		dirty_total = dirty_param.dirty_bytes / PAGE_SIZE;
-> >  	else
-> > -		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
-> > -				100;
-> > +		dirty_total = (dirty_param.dirty_ratio *
-> > +				determine_dirtyable_memory()) / 100;
-> >  	return 2 + ilog2(dirty_total - 1);
-> >  }
-> >  
-> > @@ -408,41 +411,46 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
-> >   */
-> >  unsigned long determine_dirtyable_memory(void)
-> >  {
-> > -	unsigned long x;
-> > -
-> > -	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-> > +	unsigned long memory;
-> > +	s64 memcg_memory;
-> >  
-> > +	memory = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-> >  	if (!vm_highmem_is_dirtyable)
-> > -		x -= highmem_dirtyable_memory(x);
-> > -
-> > -	return x + 1;	/* Ensure that we never return 0 */
-> > +		memory -= highmem_dirtyable_memory(memory);
-> > +	if (mem_cgroup_has_dirty_limit())
-> > +		return memory + 1;
-> 
-> Should above be?
-> 	if (!mem_cgroup_has_dirty_limit())
-> 		return memory + 1;
+Commit-ID:  ac91d85456372a90af5b85eb6620fd2efb1e431b
+Gitweb:     http://git.kernel.org/tip/ac91d85456372a90af5b85eb6620fd2efb1e431b
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Tue, 2 Mar 2010 17:54:50 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Tue, 2 Mar 2010 21:11:47 -0500
 
-Very true.
+tracing: Fix warning in s_next of trace file ops
 
-I'll post another patch with this and Kirill's fixes.
+This warning in s_next() can be triggered by lseek():
+ [<c018b3f7>] ? s_next+0x77/0x80
+ [<c013e3c1>] warn_slowpath_common+0x81/0xa0
+ [<c018b3f7>] ? s_next+0x77/0x80
+ [<c013e3fa>] warn_slowpath_null+0x1a/0x20
+ [<c018b3f7>] s_next+0x77/0x80
+ [<c01efa77>] traverse+0x117/0x200
+ [<c01eff13>] seq_lseek+0xa3/0x120
+ [<c01efe70>] ? seq_lseek+0x0/0x120
+ [<c01d7081>] vfs_llseek+0x41/0x50
+ [<c01d8116>] sys_llseek+0x66/0xa0
+ [<c0102bd0>] sysenter_do_call+0x12/0x26
 
-Thanks,
--Andrea
+The iterator "leftover" variable is zeroed in the opening of the trace
+file. But lseek can call s_start() which will call s_next() without
+reseting the "leftover" variable back to zero, which might trigger
+the WARN_ON_ONCE(iter->leftover) that is in s_next().
 
-> 
-> Vivek
-> 
-> > +	memcg_memory = mem_cgroup_page_stat(MEMCG_NR_DIRTYABLE_PAGES);
-> > +	return min((unsigned long)memcg_memory, memory + 1);
-> >  }
+Cc: stable@kernel.org
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4B8CE06A.9090207@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 032c57c..5edf410 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1703,6 +1703,7 @@ static void *s_start(struct seq_file *m, loff_t *pos)
+ 
+ 		ftrace_enable_cpu();
+ 
++		iter->leftover = 0;
+ 		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
+ 			;
+ 
