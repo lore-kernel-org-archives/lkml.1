@@ -1,61 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476Ab0CDM6p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 07:58:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11246 "EHLO mx1.redhat.com"
+	id S1755553Ab0CDNPU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 08:15:20 -0500
+Received: from reaktio.net ([194.89.68.22]:44884 "EHLO ydin.reaktio.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754705Ab0CDM6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 07:58:43 -0500
-Date: Thu, 4 Mar 2010 09:58:06 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, eranian@google.com,
-       peterz@infradead.org, linux-kernel@vger.kernel.org, paulus@samba.org,
-       robert.richter@amd.com, fweisbec@gmail.com
-Subject: Re: [RFC][PATCH 07/11] perf: Provide PERF_SAMPLE_REGS
-Message-ID: <20100304125806.GB16539@ghostprotocols.net>
-References: <bd4cb8901003030930q4050d074k11a45c3583b96502@mail.gmail.com>
- <1267637995.25158.96.camel@laptop>
- <bd4cb8901003030949v3db2db41o9cc1a65d53c370@mail.gmail.com>
- <20100303.095553.105186917.davem@davemloft.net>
- <20100304025908.GC23633@elte.hu>
+	id S1754839Ab0CDNPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 08:15:19 -0500
+Date: Thu, 4 Mar 2010 15:15:20 +0200
+From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 2 of 4] Linux pvops: early PV on HVM
+Message-ID: <20100304131520.GT2761@reaktio.net>
+References: <alpine.DEB.2.00.1003021734440.22259@kaball-desktop> <20100304093237.GS2761@reaktio.net> <alpine.DEB.2.00.1003041142300.24752@kaball-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100304025908.GC23633@elte.hu>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.DEB.2.00.1003041142300.24752@kaball-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Mar 04, 2010 at 03:59:08AM +0100, Ingo Molnar escreveu:
+On Thu, Mar 04, 2010 at 11:44:04AM +0000, Stefano Stabellini wrote:
+> On Thu, 4 Mar 2010, Pasi Kärkkäinen wrote:
+> > On Tue, Mar 02, 2010 at 06:30:18PM +0000, Stefano Stabellini wrote:
+> > > Hi all,
+> > > this patch is derived from an earler version of the patch named "Xen PV
+> > > extension of HVM initialization" in Shen's patch series.
+> > > This patch:
+> > > 
+> > > - initializes basic pv on hvm features in xen_guest_init; 
+> > > 
+> > 
+> > Are you planning to make pv-on-hvm disk/net frontends also
+> > work for HVM guests running 2.6.3x pvops kernels? 
+> > 
 > 
-> * David Miller <davem@davemloft.net> wrote:
-> 
-> > And more generally aren't we supposed to be able to eventually analyze perf 
-> > dumps on any platform not just the one 'perf' was built under?
-> 
-> A aidenote: in this cycle Arnaldo improved this aspect of perf (and those 
-> changes are now upstream). In theory you should be able to do a 'perf record' 
-> + 'perf archive' on your Sparc box and then analyze it via 'perf report' on an 
-> x86 box - and vice versa.
-> 
-> ( Note, it was not tested in that specific combination - another combination
->   was tested by Arnaldo: 32-bit PA-RISC profile interpreted on 64-bit x86. )
+> Yes, that what I meant.
+> Even though many things are still missing in the patch series, this
+> feature works already in last version I sent.
+>
 
-It was the other way around, 64-bit x86 interpreted on 64-bit PARISC.
-Should work in any direction.
+Oh, nice. pv-on-hvm support has been missing for a long time
+from upstream kernel.org kernels.
 
-Caveats:
+Redhat guys will be interested of this aswell.. 
+they're planning to have Xen pv-on-hvm drivers for rhel6.
 
-perf archive requires build-ids, the kernel has them in distros that
-have this support in their toolchain, enabled unconditionally since
-about 2.6.24.
+-- Pasi
 
-If vmlinux is available, it will be used, if not a copy of
-/proc/kallsyms is made and as well is keyed by build-id.
-
-I have plans to cope with build-id-less systems, but no code yet.
- 
-- Arnaldo
