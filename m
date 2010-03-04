@@ -1,39 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884Ab0CDI6c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 03:58:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35699 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754817Ab0CDI63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 03:58:29 -0500
-Subject: Re: [RFC][PATCH 08/11] perf, x86: Implement simple LBR support
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       robert.richter@amd.com, fweisbec@gmail.com
-In-Reply-To: <bd4cb8901003031357x9c13c96h3899ab0459a34b0e@mail.gmail.com>
-References: <20100303163936.906011640@chello.nl>
-	 <20100303164306.451251096@chello.nl>
-	 <bd4cb8901003031357x9c13c96h3899ab0459a34b0e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Mar 2010 09:58:27 +0100
-Message-ID: <1267693107.25158.149.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1754894Ab0CDJCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 04:02:16 -0500
+Received: from nat.scz.novell.com ([213.151.88.252]:59135 "EHLO dhcp35"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754780Ab0CDJCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 04:02:09 -0500
+Date: Thu, 4 Mar 2010 10:02:07 +0100
+From: Michal Hocko <mstsxfx@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>, linux-mm@kvack.org
+Subject: Re: unable to handle kernel paging request on resume with
+ 2.6.33-00001-gbaac35c
+Message-ID: <20100304090207.GA4640@tiehlicka.suse.cz>
+References: <20100301175256.GA4034@tiehlicka.suse.cz>
+ <201003022101.21521.rjw@sisk.pl>
+ <20100303102621.GC4241@tiehlicka.suse.cz>
+ <201003032204.51167.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201003032204.51167.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-03-03 at 22:57 +0100, Stephane Eranian wrote:
-> I don't understand how LBR state is migrated when a per-thread event is moved
-> from one CPU to another. It seems LBR is managed per-cpu.
+On Wed, Mar 03, 2010 at 10:04:51PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday 03 March 2010, Michal Hocko wrote:
+> > On Tue, Mar 02, 2010 at 09:01:21PM +0100, Rafael J. Wysocki wrote:
+> > > On Tuesday 02 March 2010, Michal Hocko wrote:
+> ...
+> > > So this is just plain 2.6.33 plus one commit.
+> > > 
+> > > Hmm.  There are only a few changes directly related to hibernation in that
+> > > kernel and none of them can possibly introduce a problem like that.
+> > 
+> > My previous kernel was vmlinux-2.6.33-rc8-00164-gaea187c and it didn't
+> > show the problem.
 > 
-> Can you explain this to me?
+> Well, I have no idea which of the commits between -rc8 and .33 final might
+> introduce such a problem.
+> 
+> What graphics is there in the affected box?
 
-It is not, its basically impossible to do given that the TOS doesn't
-count more bits than is strictly needed.
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
+943/940GML Express Integrated Graphics Controller (rev 03))
 
-Or we should stop supporting cpu and task users at the same time.
+> 
+> Rafael
 
+-- 
+Michal Hocko
