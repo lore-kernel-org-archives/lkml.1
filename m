@@ -1,103 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979Ab0CDOCG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:02:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54144 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399Ab0CDOB5 (ORCPT
+	id S1753718Ab0CDOCA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:02:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39701 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300Ab0CDOB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:01:57 -0500
-Message-Id: <20100304140100.240023029@chello.nl>
+	Thu, 4 Mar 2010 09:01:56 -0500
+Message-Id: <20100304140100.468665803@chello.nl>
 References: <20100304140046.596569763@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Mar 2010 15:00:50 +0100
+Date: Thu, 04 Mar 2010 15:00:53 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: paulus@samba.org, eranian@google.com, robert.richter@amd.com,
        fweisbec@gmail.com, Arnaldo Carvalho de Melo <acme@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 04/14] perf, x86: Use unlocked bitops
-Content-Disposition: inline; filename=perf-x86-unlocked-bitops.patch
+Subject: [PATCH 07/14] perf: Add attr->precise support to raw event parsing
+Content-Disposition: inline; filename=perf-tools-precise.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no concurrency on these variables, so don't use LOCK'ed ops.
+Minimal userspace interface to the new 'precise' events flag.
+
+Can be used like: perf top -e r00c0p
+Which will use PEBS to sample retired instructions
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 ---
- arch/x86/kernel/cpu/perf_event.c       |    8 ++++----
- arch/x86/kernel/cpu/perf_event_amd.c   |    2 +-
- arch/x86/kernel/cpu/perf_event_intel.c |    2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ tools/perf/util/parse-events.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+Index: linux-2.6/tools/perf/util/parse-events.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -638,7 +638,7 @@ static int x86_schedule_events(struct cp
- 		if (test_bit(hwc->idx, used_mask))
- 			break;
- 
--		set_bit(hwc->idx, used_mask);
-+		__set_bit(hwc->idx, used_mask);
- 		if (assign)
- 			assign[i] = hwc->idx;
- 	}
-@@ -687,7 +687,7 @@ static int x86_schedule_events(struct cp
- 			if (j == X86_PMC_IDX_MAX)
- 				break;
- 
--			set_bit(j, used_mask);
-+			__set_bit(j, used_mask);
- 
- 			if (assign)
- 				assign[i] = j;
-@@ -837,7 +837,7 @@ void hw_perf_enable(void)
- 			 * clear active_mask and events[] yet it preserves
- 			 * idx
- 			 */
--			set_bit(hwc->idx, cpuc->active_mask);
-+			__set_bit(hwc->idx, cpuc->active_mask);
- 			cpuc->events[hwc->idx] = event;
- 
- 			x86_pmu.enable(event);
-@@ -1052,7 +1052,7 @@ static void x86_pmu_stop(struct perf_eve
- 	 * Must be done before we disable, otherwise the nmi handler
- 	 * could reenable again:
- 	 */
--	clear_bit(idx, cpuc->active_mask);
-+	__clear_bit(idx, cpuc->active_mask);
- 	x86_pmu.disable(event);
- 
- 	/*
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_amd.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_amd.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_amd.c
-@@ -309,7 +309,7 @@ static struct amd_nb *amd_alloc_nb(int c
- 	 * initialize all possible NB constraints
- 	 */
- 	for (i = 0; i < x86_pmu.num_events; i++) {
--		set_bit(i, nb->event_constraints[i].idxmsk);
-+		__set_bit(i, nb->event_constraints[i].idxmsk);
- 		nb->event_constraints[i].weight = 1;
- 	}
- 	return nb;
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event_intel.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event_intel.c
-@@ -768,7 +768,7 @@ again:
- 	for_each_bit(bit, (unsigned long *)&status, X86_PMC_IDX_MAX) {
- 		struct perf_event *event = cpuc->events[bit];
- 
--		clear_bit(bit, (unsigned long *) &status);
-+		__clear_bit(bit, (unsigned long *) &status);
- 		if (!test_bit(bit, cpuc->active_mask))
- 			continue;
- 
+--- linux-2.6.orig/tools/perf/util/parse-events.c
++++ linux-2.6/tools/perf/util/parse-events.c
+@@ -656,6 +656,10 @@ parse_raw_event(const char **strp, struc
+ 		return EVT_FAILED;
+ 	n = hex2u64(str + 1, &config);
+ 	if (n > 0) {
++		if (str[n+1] == 'p') {
++			attr->precise = 1;
++			n++;
++		}
+ 		*strp = str + n + 1;
+ 		attr->type = PERF_TYPE_RAW;
+ 		attr->config = config;
 
 -- 
 
