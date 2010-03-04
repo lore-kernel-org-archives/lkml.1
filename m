@@ -1,122 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350Ab0CDMze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 07:55:34 -0500
-Received: from stoneboat.aleph1.co.uk ([80.68.88.63]:57871 "EHLO
-	stoneboat.aleph1.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755095Ab0CDMzc (ORCPT
+	id S1755422Ab0CDM6N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 07:58:13 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:48771 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754705Ab0CDM6K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 07:55:32 -0500
-X-Greylist: delayed 1935 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Mar 2010 07:55:32 EST
-Date: Thu, 4 Mar 2010 12:34:22 +0000
-From: Wookey <wookey@wookware.org>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20100304123420.GW27571@dream.aleph1.co.uk>
+	Thu, 4 Mar 2010 07:58:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Dd6OsXFERd3QyZLUHQ4ll6iPmu2fCfdN1lkknbTEek1DF6hK7NvryI2R1AMZ39Zr7+
+         5P5R3sQW/1TR6TLPux/tXFy0uLBW1pPIC0n/QncSEaisxQlvTwXzAbqhAFlI8fLZ9/Ho
+         1MspMe+lWVddb3lBdBRyZlI781sMB7FB4R550=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003021451.59773.arnd@arndb.de>
-Organization: Aleph One Ltd
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 213.165.225.113
-X-SA-Exim-Mail-From: wookey@wookware.org
-Subject: Re: yaffs2 NAND fs
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on stoneboat.aleph1.co.uk)
+In-Reply-To: <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
+	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
+Date: Thu, 4 Mar 2010 07:58:07 -0500
+Message-ID: <f875e2fe1003040458o3e13de97v3d839482939b687b@mail.gmail.com>
+Subject: Re: Linux kernel - Libata bad block error handling to user mode 
+	program
+From: foo saa <foosaa@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Please keep me cc:ed - I'm not on this list]
+Hi Andrew,
 
-Arnd bergmann wrote:
-> On Tuesday 02 March 2010, Peter Paul wrote:
-> > I was wondering why the yaffs2 file system has not gone for mainline
-> > yet.  
+Thanks for adding the mailing lists.
+
+I have tried fsync(), fdatasync() after the write calls, but still the
+write() passes without propagating any error. dmesg still shows
+multiples of thousands of bad i/o errors for logical sectors.
+
+Also, one noted behavior is that if I use fsync / fdatasync, the write
+process becomes extremely slow when it encounters the bad sectors and
+grinds the hdd for longer durations.
+
+Is there any user specified timeout that can set on it too?
+
+You are right about the error propagation failure. The errors are
+caught the driver level (atleast at the lidata driver) as it logs the
+messages from drivers/ata/libata-eh.c / libata-scsi.c to the syslog.
+
+I have spend much time in analysing the kernel source code because I
+have been trying multiple combinations for my program to work and each
+testing consumes about 3-4 hours. (Testing atleast one sample from a
+good and bad drives).
+
+On Thu, Mar 4, 2010 at 1:42 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> (lots of cc's added)
 >
-> I would guess it's a combination of multiple reasons:
+> On Wed, 3 Mar 2010 23:52:20 -0500 foo saa <foosaa@gmail.com> wrote:
 >
-> 1. It has not been submitted for upstream inclusion, at least not
->    during the last few years.
-> 2. We don't have a staging area like drivers/staging for file systems
->    in the way that we have for drivers
-> 3. There is now ubifs and (soon) logfs upstream, both of which appear
->    to be superior to yaffs in many ways.
-
-As someone who has been involved with YAFFS from the beginning I can
-give you the reasons (not that they are particularly good ones).
-
-It's about 70%-80% simple inability to keep up with kernel
-development, combined with a certain amount of lack of enthusiasm by
-some developers and a certain amount of pushback from the MTD people.
-
-Every time we get it vaguely up to date, the kernel has moved on again
-before we get round to submitting it. This is of course a reason for
-getting it in, not keeping it out, as I am painfully aware, but you
-have to get over that effort hump at least once, and we haven't
-managed it yet (in nearly 7 years! - oh the embarassment). The closest
-we got was about a year ago when I was publically harrangued by Mr
-Woodhouse at CELF on exactly this point so I did actually take the
-sources and take out all the crap we keep for compatibility with old
-kernel versions and checked that the results worked, and removed miles
-of trainling whitespace. Then I started going through the list of
-things necessary before patches should be submitted but didn't manage
-to finish and actually post it for review before something else became
-more urgent for a bit. I got to the bit about not dropping single huge
-entire-filesystem patches if possible, and foolishly considered if it
-could be split up at all. I concluded that it couldn't (or at least I
-couldn't), but whilst I'd dithered there was a new kernel out so now I
-was too late again and it stalled till now.
-
-YAFFS is in the process of moving to git, which will make it easier to
-maintain a 'mainlinable' branch so we can have another go at this
-process.
-
-On more ancient history there was not much enthusiasm for mainline
-when YAFFS started. The author didn't feel it was ready and the fact
-that it is designed, and supported, for numerous OSes, not just Linux,
-and our deliberate support of old kernels, meant it contained a lot of
-non-current-linux cruft which of course is not appropriate in
-mainline. 
-
-Later we did want to put it in, but struggled to keep up and get it in
-a suitable state, and then things in MTD world changed (2006ish?) such
-that filesystems that actively used the OOB area were frowned upon and
-we got the strong impression it wouldn't be accepted anyway. So then
-there was a long pause until YAFFS gained the ability to run without
-using the OOB ('in-band tags'). That happened sometime in 2008, hence
-my failed effort in 2009 to try and get this sorted.
-
-So, I agree YAFFS should be in mainline (as someone who has to patch
-it into my kernels on a daily basis this would make my life much
-easier too). I don't know if it is really 'too late' in terms of the
-existence of UBIFS and LOGFS. I don't think so - YAFFS is a
-sufficicently different approach that I reckon it still makes sense
-for plenty of people, but I guess that's something to debate.
-
-I suppose the thing I stalled on before doing this last time was 'What
-is the best approach for getting a great big dollop of a filesystem
-like this reviewed'? I was relunctant to send in one 250K patch, but
-couldn't really see a better way, and if doing that, it probably
-needed quite a detailed supporting explanation. The other thing that
-kept me from doing it was that I knew there would be a pile of changes
-requested and there was no point kicking off the process unless I knew
-I'd be able to devote so time to it afterwards to deal with comments.
-Problem is, that never seems to occur.
-
-So, I guess this is another kick. I'll update the mainline patch I
-have (which is essentially just YAFFS2 with all the "#ifdef kernel
-nnn" code taken out, and the YAFFS-direct and ecos and WinCE code
-removed, to current kernel (which also means updating balloon3 to current
-kernel so I can actually test it). I'll put that in git and ask people
-to take a look. Detailed suggestions on what extra info is needed or
-changes made would be very helpful.
-
-Unless of course there is already concensus that this is a waste of
-time and Peter and I are the only people that want to see it in
-mainline?
-
-Wookey
--- 
-Principal hats:  iEndian - Balloonboard - Toby Churchill - Emdebian
-http://wookware.org/
+>> hi everyone,
+>>
+>> I am in the process of writing a disk erasure application in C. The
+>> program does zerofill the drive (Good or Bad) before someone destroys
+>> it. During the erasure process, I need to record the number of bad
+>> sectors during the zerofill operation.
+>>
+>> The method used to write to the hdd involves opening the appropriate
+>> /dev block device using open() call with O_WRONLY flag, start issuing
+>> write() calls to fill the sectors. A 512 byte buffer filled with
+>> zero's is used. All calls are of 64bit enabled. (I am using
+>> _LARGEFILE64_SOURCE define).
+>>
+>> The problem is (mostly with the bad hdd's), when the write call
+>> encounters a bad sector, it takes a bit longer than usual and writes
+>> the sector without any errors. (dmesg shows a lot of error messages
+>> embedded in the LIBATA error handling code!). The call never fails for
+>> any reason.
+>>
+>> I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
+>> have tried upto 2.6.30.10 and multiple distros with similar behavior.
+>>
+>> Here is a summary of things I have attempted.
+>>
+>> I know about the bad sector and it's location on the hdd, since it has
+>> been verified by using Windows based hex editor utilities, DOS based
+>> erasure applications, MHDD and many other HDD utilities.
+>>
+>> I have tried using O_DIRECT with aligned buffers, but still could not
+>> identify the bad sectors during the writing process.
+>>
+>> I have tried using fadvise, posix_fadvise functions to get of the
+>> caching, but still failed.
+>>
+>> I have tried using SG_IO and SAT translation (direct ATA commands with
+>> device addressing) and it fails too. Raw devices is out of question
+>> now.
+>>
+>> The libata is not letting / informing the user mode program (executing
+>> under root) about the media / write errors / bad blocks and failures,
+>> though it notifies the kernel and logs to syslog. It also tries to
+>> reallocate, softreset, hardreset the block device which is evident
+>> from the dmesg logs.
+>>
+>> What has to be done for my program to identify / receive the bad block
+>> / sector information during the read / write process?
+>>
+>> How can I receive the bad sector / physical and media write errors in
+>> my program? This is my only requirement and question.
+>>
+>> I am currently out of options unless anyone from here can show some
+>> new direction!
+>>
+>> My only option is to recompile the kernel with libata customization
+>> and changes according to my requirement. (Can I instruct to libata to
+>> skip the error handling process and pass certain errors to my
+>> program?).
+>>
+>> Is this a good approach and recommended one? If not what should be
+>> done to achieve it? If yes, can somebody throw some light on it?
+>>
+>> Please let me know if you have any queries in my above explanation.
+>>
+>
+> OK, this is bad.
+>
+> Did you try running fsync() after a write(), check the return value?
+>
+> I doubt if this is a VFS bug.  As O_DIRECT writes are also failing to
+> report errors, I'd suspect that the driver or block layers really are
+> failing to propagate the error back.
+>
+> Do the ata guys know of a way of deliberately injecting errors to test
+> these codepaths?  If we don't have that, something using the
+> fault-injection code would be nice.  As low-level as possible,
+> preferably at interrupt time.
+>
