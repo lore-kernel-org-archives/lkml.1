@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263Ab0CDD66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:58:58 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:47012 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755183Ab0CDD57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:57:59 -0500
+	id S1755359Ab0CDD7I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:59:08 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36189 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754991Ab0CDD55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 22:57:57 -0500
 From: John Stultz <johnstul@us.ibm.com>
 To: "	lkml" <linux-kernel@vger.kernel.org>
-Cc: John Stultz <johnstul@us.ibm.com>, Mikael Starvik <starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>,
+Cc: John Stultz <johnstul@us.ibm.com>,
+       "David S. Miller\"" <davem@davemloft.net>,
        Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 13/14] cris: Convert cris to use read/update_persistent_clock
-Date: Wed,  3 Mar 2010 19:57:28 -0800
-Message-Id: <1267675049-12337-14-git-send-email-johnstul@us.ibm.com>
+Subject: [PATCH 12/14] sparc: Convert sparc to use read/update_persistent_clock
+Date: Wed,  3 Mar 2010 19:57:27 -0800
+Message-Id: <1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
+In-Reply-To: <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
 References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-2-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-3-git-send-email-johnstul@us.ibm.com>
@@ -30,229 +29,70 @@ References: <1267675049-12337-1-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-10-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-11-git-send-email-johnstul@us.ibm.com>
  <1267675049-12337-12-git-send-email-johnstul@us.ibm.com>
- <1267675049-12337-13-git-send-email-johnstul@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts the cris architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
+This patch converts the sparc architecture to use the generic read_persistent_clock and update_persistent_clock interfaces, reducing the amount of arch specific code we have to maintain, and allowing for further cleanups in the future.
 
 I have not built or tested this patch, so help from arch maintainers would be appreciated.
 
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: David S. Miller" <davem@davemloft.net>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/cris/Kconfig                |    3 ++
- arch/cris/arch-v10/kernel/time.c |   37 +---------------------------------
- arch/cris/arch-v32/kernel/time.c |   40 +------------------------------------
- arch/cris/kernel/time.c          |   20 ++++++++++--------
- 4 files changed, 18 insertions(+), 82 deletions(-)
+ arch/sparc/Kconfig          |    2 +-
+ arch/sparc/kernel/time_32.c |   15 +++++----------
+ 2 files changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 7adac38..4d42d9d 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -20,6 +20,9 @@ config RWSEM_GENERIC_SPINLOCK
- config RWSEM_XCHGADD_ALGORITHM
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 4097f6a..0e8ec2a 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -72,7 +72,7 @@ config ARCH_USES_GETTIMEOFFSET
+ 
+ config GENERIC_CMOS_UPDATE
  	bool
+-	default y if SPARC64
++	default y
  
-+config GENERIC_CMOS_UPDATE
-+	def_bool y
-+
- config GENERIC_IOMAP
-        bool
-        default y
-diff --git a/arch/cris/arch-v10/kernel/time.c b/arch/cris/arch-v10/kernel/time.c
-index 31ca141..30adae5 100644
---- a/arch/cris/arch-v10/kernel/time.c
-+++ b/arch/cris/arch-v10/kernel/time.c
-@@ -26,7 +26,6 @@
- /* it will make jiffies at 96 hz instead of 100 hz though */
- #undef USE_CASCADE_TIMERS
+ config GENERIC_CLOCKEVENTS
+ 	bool
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index 0d4c09b..a3f1690 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -78,6 +78,11 @@ __volatile__ unsigned int *master_l10_counter;
  
--extern void update_xtime_from_cmos(void);
- extern int set_rtc_mmss(unsigned long nowtime);
- extern int have_rtc;
+ u32 (*do_arch_gettimeoffset)(void);
  
-@@ -188,8 +187,6 @@ stop_watchdog(void)
- #endif	
- }
- 
--/* last time the cmos clock got updated */
--static long last_rtc_update = 0;
- 
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-@@ -232,24 +229,6 @@ timer_interrupt(int irq, void *dev_id)
- 	do_timer(1);
- 	
-         cris_do_profile(regs); /* Save profiling information */
--
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 *
--	 * The division here is not time critical since it will run once in 
--	 * 11 minutes
--	 */
--	if (ntp_synced() &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / 1000) >= 500000 - (tick_nsec / 1000) / 2 &&
--	    (xtime.tv_nsec / 1000) <= 500000 + (tick_nsec / 1000) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			last_rtc_update = xtime.tv_sec - 600; /* do it again in 60 s */
--	}
-         return IRQ_HANDLED;
- }
- 
-@@ -274,22 +253,10 @@ time_init(void)
- 	 */
- 	loops_per_usec = 50;
- 
--	if(RTC_INIT() < 0) {
--		/* no RTC, start at 1980 */
--		xtime.tv_sec = 0;
--		xtime.tv_nsec = 0;
-+	if(RTC_INIT() < 0)
- 		have_rtc = 0;
--	} else {		
--		/* get the current time */
-+	else
- 		have_rtc = 1;
--		update_xtime_from_cmos();
--	}
--
--	/*
--	 * Initialize wall_to_monotonic such that adding it to xtime will yield zero, the
--	 * tv_nsec field must be normalized (i.e., 0 <= nsec < NSEC_PER_SEC).
--	 */
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	/* Setup the etrax timers
- 	 * Base frequency is 25000 hz, divider 250 -> 100 HZ
-diff --git a/arch/cris/arch-v32/kernel/time.c b/arch/cris/arch-v32/kernel/time.c
-index b1920d8..1ee0e10 100644
---- a/arch/cris/arch-v32/kernel/time.c
-+++ b/arch/cris/arch-v32/kernel/time.c
-@@ -44,7 +44,6 @@ unsigned long timer_regs[NR_CPUS] =
- #endif
- };
- 
--extern void update_xtime_from_cmos(void);
- extern int set_rtc_mmss(unsigned long nowtime);
- extern int have_rtc;
- 
-@@ -198,9 +197,6 @@ handle_watchdog_bite(struct pt_regs* regs)
- #endif
- }
- 
--/* Last time the cmos clock got updated. */
--static long last_rtc_update = 0;
--
- /*
-  * timer_interrupt() needs to keep up the real-time clock,
-  * as well as call the "do_timer()" routine every clocktick.
-@@ -238,25 +234,6 @@ timer_interrupt(int irq, void *dev_id)
- 
- 	/* Call the real timer interrupt handler */
- 	do_timer(1);
--
--	/*
--	 * If we have an externally synchronized Linux clock, then update
--	 * CMOS clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
--	 * called as close as possible to 500 ms before the new second starts.
--	 *
--	 * The division here is not time critical since it will run once in
--	 * 11 minutes
--	 */
--	if ((time_status & STA_UNSYNC) == 0 &&
--	    xtime.tv_sec > last_rtc_update + 660 &&
--	    (xtime.tv_nsec / 1000) >= 500000 - (tick_nsec / 1000) / 2 &&
--	    (xtime.tv_nsec / 1000) <= 500000 + (tick_nsec / 1000) / 2) {
--		if (set_rtc_mmss(xtime.tv_sec) == 0)
--			last_rtc_update = xtime.tv_sec;
--		else
--			/* Do it again in 60 s */
--			last_rtc_update = xtime.tv_sec - 600;
--	}
-         return IRQ_HANDLED;
- }
- 
-@@ -309,23 +286,10 @@ time_init(void)
- 	 */
- 	loops_per_usec = 50;
- 
--	if(RTC_INIT() < 0) {
--		/* No RTC, start at 1980 */
--		xtime.tv_sec = 0;
--		xtime.tv_nsec = 0;
-+	if(RTC_INIT() < 0)
- 		have_rtc = 0;
--	} else {
--		/* Get the current time */
-+	else
- 		have_rtc = 1;
--		update_xtime_from_cmos();
--	}
--
--	/*
--	 * Initialize wall_to_monotonic such that adding it to
--	 * xtime will yield zero, the tv_nsec field must be normalized
--	 * (i.e., 0 <= nsec < NSEC_PER_SEC).
--	 */
--	set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, -xtime.tv_nsec);
- 
- 	/* Start CPU local timer. */
- 	cris_timer_init();
-diff --git a/arch/cris/kernel/time.c b/arch/cris/kernel/time.c
-index 074fe7d..e169aea 100644
---- a/arch/cris/kernel/time.c
-+++ b/arch/cris/kernel/time.c
-@@ -162,6 +162,8 @@ unsigned long
- get_cmos_time(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
-+	if(!have_rtc)
-+		return 0;
- 
- 	sec = CMOS_READ(RTC_SECONDS);
- 	min = CMOS_READ(RTC_MINUTES);
-@@ -183,19 +185,19 @@ get_cmos_time(void)
- 	return mktime(year, mon, day, hour, min, sec);
- }
- 
--/* update xtime from the CMOS settings. used when /dev/rtc gets a SET_TIME.
-- * TODO: this doesn't reset the fancy NTP phase stuff as do_settimeofday does.
-- */
- 
--void
--update_xtime_from_cmos(void)
 +int update_persistent_clock(struct timespec now)
- {
--	if(have_rtc) {
--		xtime.tv_sec = get_cmos_time();
--		xtime.tv_nsec = 0;
--	}
-+	return set_rtc_mmss(now.tv_sec);
- }
- 
-+void read_persistent_clock(struct timespec *ts)
 +{
-+	ts->tv_sec = get_cmos_time();
-+	ts->tv_nsec = 0;
++	return set_rtc_mmss(now.tv_sec);
 +}
 +
-+
- extern void cris_profile_sample(struct pt_regs* regs);
+ /*
+  * timer_interrupt() needs to keep up the real-time clock,
+  * as well as call the "do_timer()" routine every clocktick
+@@ -101,16 +106,6 @@ static irqreturn_t timer_interrupt(int dummy, void *dev_id)
  
- void
+ 	do_timer(1);
+ 
+-	/* Determine when to update the Mostek clock. */
+-	if (ntp_synced() &&
+-	    xtime.tv_sec > last_rtc_update + 660 &&
+-	    (xtime.tv_nsec / 1000) >= 500000 - ((unsigned) TICK_SIZE) / 2 &&
+-	    (xtime.tv_nsec / 1000) <= 500000 + ((unsigned) TICK_SIZE) / 2) {
+-	  if (set_rtc_mmss(xtime.tv_sec) == 0)
+-	    last_rtc_update = xtime.tv_sec;
+-	  else
+-	    last_rtc_update = xtime.tv_sec - 600; /* do it again in 60 s */
+-	}
+ 	write_sequnlock(&xtime_lock);
+ 
+ #ifndef CONFIG_SMP
 -- 
 1.6.0.4
 
