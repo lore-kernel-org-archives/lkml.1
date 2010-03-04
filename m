@@ -1,54 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122Ab0CDOtM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 09:49:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43404 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901Ab0CDOtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 09:49:10 -0500
-Date: Thu, 4 Mar 2010 11:42:55 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/18][RFC] Nested Paging support for Nested SVM (aka
- NPT-Virtualization)
-Message-ID: <20100304144255.GA26657@amt.cnet>
-References: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
+	id S1752601Ab0CDOyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 09:54:15 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:46268 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031Ab0CDOyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 09:54:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=u5YBghhnuLHAyWyqNP5fxZZZ5E7o9ikeR0nRzRA80W/MIEb4aLUw6EV2kAGyrWLCGQ
+         S8cJRoMrwL39i1cuA+P5eYXWGddvzpi0dtthiWTuxNHqcmuTwyaEZq71Bb5rYwX1N9YO
+         cfkQNVZOzSQdTSKeDwQlqOp0CxZVuB/cA0kbc=
+Message-ID: <4B8FC98E.3070203@gmail.com>
+Date: Thu, 04 Mar 2010 15:54:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-11.2 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267643541-451-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: mmotm 2010-03-02-18-38 uploaded
+References: <201003030305.o2335F1F015917@imap1.linux-foundation.org>
+In-Reply-To: <201003030305.o2335F1F015917@imap1.linux-foundation.org>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 08:12:03PM +0100, Joerg Roedel wrote:
-> Hi,
-> 
-> here are the patches that implement nested paging support for nested
-> svm. They are somewhat intrusive to the soft-mmu so I post them as RFC
-> in the first round to get feedback about the general direction of the
-> changes.  Nevertheless I am proud to report that with these patches the
-> famous kernel-compile benchmark runs only 4% slower in the l2 guest as
-> in the l1 guest when l2 is single-processor. With SMP guests the
-> situation is very different. The more vcpus the guest has the more is
-> the performance drop from l1 to l2. 
-> Anyway, this post is to get feedback about the overall concept of these
-> patches.  Please review and give feedback :-)
+On 03/03/2010 03:39 AM, akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2010-03-02-18-38 has been uploaded to
 
-Joerg,
+Hi, the kernel does not boot in qemu-kvm with NO_BOOTMEM=y. The last
+message is 'Booting the kernel.'
 
-What perf gain does this bring ? (i'm not aware of the current
-overhead).
-
-Overall comments:
-
-Can't you translate l2_gpa -> l1_gpa walking the current l1 nested
-pagetable, and pass that to the kvm tdp fault path (with the correct
-context setup)?
-
-You probably need to include a flag in base_role to differentiate
-between l1 / l2 shadow tables (say if they use the same cr3 value).
-
+thanks,
+-- 
+js
