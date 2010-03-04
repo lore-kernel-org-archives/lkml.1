@@ -1,75 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028Ab0CDQhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:37:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47941 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755922Ab0CDQhg (ORCPT
+	id S1756017Ab0CDQob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:44:31 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53940 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755759Ab0CDQoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:37:36 -0500
-Date: Thu, 4 Mar 2010 08:34:16 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
- barrier (v9)
-In-Reply-To: <20100304122304.GA6864@elte.hu>
-Message-ID: <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
-References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Mar 2010 11:44:30 -0500
+Date: Thu, 4 Mar 2010 16:44:16 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
+Message-ID: <20100304164416.GD13417@n2100.arm.linux.org.uk>
+References: <20100302172947.27766.61539.stgit@e102109-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100302172947.27766.61539.stgit@e102109-lin.cambridge.arm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Mar 2010, Ingo Molnar wrote:
+On Tue, Mar 02, 2010 at 05:34:29PM +0000, Catalin Marinas wrote:
+> There are places in Linux where writes to newly allocated page cache
+> pages happen without a subsequent call to flush_dcache_page() (several
+> PIO drivers including USB HCD). This patch changes the meaning of
+> PG_arch_1 to be PG_dcache_clean and always flush the D-cache for a newly
+> mapped page in update_mmu_cache().
 > 
->  - SA_NOFPU: on x86 to skip the FPU/SSE save/restore, for such fast in/out special 
->    purpose signal handlers? (can whip up a quick patch for you if you want)
+> The patch also sets the PG_arch_1 bit in the DMA cache maintenance
+> function to avoid additional cache flushing in update_mmu_cache().
+...
+>  arch/arm/include/asm/cacheflush.h |    6 +++---
+>  arch/arm/mm/copypage-v6.c         |    2 +-
+>  arch/arm/mm/dma-mapping.c         |    5 +++++
+>  arch/arm/mm/fault-armv.c          |    2 +-
+>  arch/arm/mm/flush.c               |    2 +-
+>  5 files changed, 11 insertions(+), 6 deletions(-)
 
-I'd love to do this, but it's wrong.
+Could you please send for RFC a fuller patch which covers all places that
+PG_dcache_dirty is used and/or mentioned?
 
-It's too damn easy to use the FPU by mistake in user land, without ever 
-being aware of it. memset()/memcpy are obvious potential users SSE, but 
-they might be called in non-obvious ways implicitly by the compiler (ie 
-structure copy and setup).
-
-And modern glibc ends up using SSE4 even for things like strstr and 
-strlen, so it really is creeping into all kinds of trivial helper 
-functions that might not be obvious. So SA_NOFPU is a lovely idea, but 
-it's also an idea that sucks rotten eggs in practice, with quite possibly 
-the same _binary_ working or not working depending on what kind of CPU and 
-what shared library it happens to be using.
-
-Too damn fragile, in other words.
-
-(Now, if it's accompanied by the kernel actually _testing_ that there is 
-no FPU activity, by setting the TS flag and checking at fault time and 
-causing a SIGFPE, then that would be better. At least you'd get a nice 
-clear signal rather than random FPU state corruption. But you're still in 
-the situation that now the binary might work on some machines and setups, 
-and not on others.
-
->  - SA_RUNNING: a way to signal only running threads - as a way for user-space 
->    based concurrency control mechanisms to deschedule running threads (or, like
->    in your case, to implement barrier / garbage collection schemes).
-
-Hmm. This sounds less fundamentally broken, but at the same time also 
-_way_ more invasive in the signal handling layer. It's already one of our 
-more "exciting" layers out there.
-
-		Linus
+$ grep PG_dcache_dirty arch/arm -r
+arch/arm/mm/copypage-v6.c:      if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
+arch/arm/mm/fault-armv.c: *  1. If PG_dcache_dirty is set for the page, we need to ensure
+arch/arm/mm/fault-armv.c:       if (test_and_clear_bit(PG_dcache_dirty, &page->flags))
+arch/arm/mm/flush.c:            set_bit(PG_dcache_dirty, &page->flags);
+arch/arm/mm/copypage-v4mc.c:    if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
+arch/arm/mm/copypage-xscale.c:  if (test_and_clear_bit(PG_dcache_dirty, &from->flags))
+arch/arm/include/asm/tlbflush.h: * if PG_dcache_dirty is set for the page, we need to ensure that any
+arch/arm/include/asm/cacheflush.h:#define PG_dcache_dirty PG_arch_1
