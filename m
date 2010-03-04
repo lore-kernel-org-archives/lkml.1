@@ -1,75 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735Ab0CDDdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 22:33:22 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51405 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753953Ab0CDDdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 22:33:16 -0500
-Date: Thu, 4 Mar 2010 14:33:12 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
-       Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: Re: Nick's vfs-scalability patches ported to 2.6.33-rt
-Message-ID: <20100304033312.GO8653@laptop>
-References: <1267163608.2002.9.camel@work-vm>
- <20100226060109.GH9738@laptop>
- <1267659090.4317.67.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267659090.4317.67.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754818Ab0CDDsx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 22:48:53 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53508 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757Ab0CDDsr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 22:48:47 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 4 Mar 2010 12:45:05 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Greg@smtp1.linux-foundation.org,
+       Suleiman Souhlal <suleiman@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH -mmotm 3/3] memcg: dirty pages instrumentation
+Message-Id: <20100304124505.394a058e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100303220319.GA2706@linux>
+References: <1267478620-5276-1-git-send-email-arighi@develer.com>
+	<1267478620-5276-4-git-send-email-arighi@develer.com>
+	<20100303111238.7133f8af.nishimura@mxp.nes.nec.co.jp>
+	<20100303122906.9c613ab2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100303150137.f56d7084.nishimura@mxp.nes.nec.co.jp>
+	<20100303151549.5d3d686a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100303172132.fc6d9387.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100303220319.GA2706@linux>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 3.0.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 03:31:30PM -0800, john stultz wrote:
-> On Fri, 2010-02-26 at 17:01 +1100, Nick Piggin wrote:
-> > On Thu, Feb 25, 2010 at 09:53:28PM -0800, john stultz wrote:
-> > > Hey Thomas, Nick,
-> > > 	I just wanted to let you know I've just finished forward porting Nick's
-> > > patches to 2.6.33-rc8-rt2.  Luckily my forward port of Nick's patches to
-> > > 2.6.33 applies on top of the -rt tree without any collisions, and I've
-> > > added a handful of maybe sketchy fixups to get it working with -rt.
-> > > 
-> > > You can find the patchset here:
-> > > http://sr71.net/~jstultz/dbench-scalability/patches/2.6.33-rc8-rt2/vfs-scale.33-rt.tar.bz2
-> > > 
-> > > Here's a chart showing how much these patches help dbench numbers on
-> > > ramfs:
-> > > http://sr71.net/~jstultz/dbench-scalability/graphs/2.6.33/ramfs-dbench.png
-> > > 
-> > > I've not done any serious stress testing with the patchset yet, but
-> > > wanted to post it for your review.
-> > > 
-> > > Nick: I'd appreciate any feedback as to if any of my forward porting has
-> > > gone awry. I'm still very green with respect to the vfs, so I don't
-> > > doubt there are some issues hiding here.
-> > 
-> > BTW there are a few issues Al pointed out. We have to synchronize RCU
-> > after unregistering a filesystem so d_ops/i_ops doesn't go away, and
-> > mntput can sleep so we can't do it under RCU read lock.
-> 
-> Does the following address this issue properly?
+On Wed, 3 Mar 2010 23:03:19 +0100
+Andrea Righi <arighi@develer.com> wrote:
 
-As far as I could tell, yes that should solve the code reference
-problem. I don't see a problem with synchronizing RCU here.
+> On Wed, Mar 03, 2010 at 05:21:32PM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Wed, 3 Mar 2010 15:15:49 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+ 
+> > +	preempt_disable();
+> > +	lock_page_cgroup_migrate(pc);
+> >  	page = pc->page;
+> >  	if (page_mapped(page) && !PageAnon(page)) {
+> >  		/* Update mapped_file data for mem_cgroup */
+> > -		preempt_disable();
+> >  		__this_cpu_dec(from->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+> >  		__this_cpu_inc(to->stat->count[MEM_CGROUP_STAT_FILE_MAPPED]);
+> > -		preempt_enable();
+> >  	}
+> >  	mem_cgroup_charge_statistics(from, pc, false);
+> > +	move_acct_information(from, to, pc);
+> 
+> Kame-san, a question. According to is_target_pte_for_mc() it seems we
+> don't move file pages across cgroups for now. 
 
+yes. It's just in plan.
+
+> If !PageAnon(page) we just return 0 and the page won't be selected for migration in
+> mem_cgroup_move_charge_pte_range().
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> So, if I've understood well the code is correct in perspective, but
+> right now it's unnecessary. File pages are not moved on task migration
+> across cgroups and, at the moment, there's no way for file page
+> accounted statistics to go negative.
 > 
-> diff --git a/fs/filesystems.c b/fs/filesystems.c
-> index a24c58e..3448e7c 100644
-> --- a/fs/filesystems.c
-> +++ b/fs/filesystems.c
-> @@ -110,6 +110,7 @@ int unregister_filesystem(struct file_system_type * fs)
->  			*tmp = fs->next;
->  			fs->next = NULL;
->  			write_unlock(&file_systems_lock);
-> +			synchronize_rcu();
->  			return 0;
->  		}
->  		tmp = &(*tmp)->next;
+> Or am I missing something?
 > 
+
+At rmdir(), remainging file caches in a cgroup is moved to
+its parent. Then, all file caches are moved to its parent at rmdir().
+
+This behavior is for avoiding to lose too much file caches at removing cgroup.
+
+Thanks,
+-Kame
+
+
