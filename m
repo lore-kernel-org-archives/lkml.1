@@ -1,51 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709Ab0CDInh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 03:43:37 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45735 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754578Ab0CDIng (ORCPT
+	id S1754511Ab0CDIu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 03:50:28 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:13115
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754145Ab0CDIuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 03:43:36 -0500
-X-Sasl-enc: YtNxnuFU0aJgoSR26cnoQ11XMt6/N0xafpWu1ZbcK5C5 1267692215
-Message-ID: <4B8F72B5.3000408@ladisch.de>
-Date: Thu, 04 Mar 2010 09:43:33 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 4 Mar 2010 03:50:25 -0500
+X-SpamScore: -24
+X-BigFish: VPS-24(zz1432R98dN936eM62a3Lzz1202hzzz32i6bh2a8h43h61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KYR1VN-02-GN1-02
+X-M-MSG: 
+Date: Thu, 4 Mar 2010 09:50:07 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       eranian@google.com, fweisbec@gmail.com
+Subject: Re: [RFC][PATCH 06/11] perf, x86: PEBS infrastructure
+Message-ID: <20100304085007.GM13205@erda.amd.com>
+References: <20100303163936.906011640@chello.nl>
+ <20100303164306.299625712@chello.nl>
+ <20100303173802.GL13205@erda.amd.com>
+ <1267638168.25158.98.camel@laptop>
 MIME-Version: 1.0
-To: Magnus Lynch <maglyx@gmail.com>
-CC: venkatesh.pallipadi@intel.com, vojtech@suse.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hpet: factor timer allocate from open
-References: <be233a491002282130m3c637cfbw6648a77548241a64@mail.gmail.com>	 <4B8B901E.4050302@ladisch.de> <be233a491003031859s7d409e11k599a319ce04b7696@mail.gmail.com>
-In-Reply-To: <be233a491003031859s7d409e11k599a319ce04b7696@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1267638168.25158.98.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 04 Mar 2010 08:50:08.0342 (UTC) FILETIME=[B14A4F60:01CABB77]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Magnus Lynch wrote:
-> On Mon, Mar 1, 2010 at 1:59 AM, Clemens Ladisch <clemens@ladisch.de> wrote:
-> > Applications might want to use HPET_INFO to find out which timer they
-> > got, so I think the driver cannot avoid allocating a timer in this case.
+On 03.03.10 18:42:48, Peter Zijlstra wrote:
+> On Wed, 2010-03-03 at 18:38 +0100, Robert Richter wrote:
+> > > +     fake_cpuc = kmalloc(sizeof(*fake_cpuc), GFP_KERNEL | __GFP_ZERO);
+> > > +     if (!fake_cpuc)
+> > > +             return -ENOMEM;
+> > > +
+> > > +     c = x86_pmu.get_event_constraints(fake_cpuc, event);
+> > > +
+> > > +     if (!c || !c->weight)
+> > > +             ret = -ENOSPC;
+> > > +
+> > > +     if (x86_pmu.put_event_constraints)
+> > > +             x86_pmu.put_event_constraints(fake_cpuc, event);
+> > 
+> > A fake cpu with the struct filled with zeros will cause a null pointer
+> > exception in amd_get_event_constraints():
+> > 
+> >         struct amd_nb *nb = cpuc->amd_nb;
 > 
-> Oh, I missed commenting this in my first reply. I chose to make
-> HPET_INFO specify timer -1 in case a timer isn't currently allocated.
-> You think there are extant cases of programs depending on open then
-> immediate HPET_INFO having a timer allocated? Seems obscure to me.
+> That should result in nb == NULL, right? which is checked slightly
+> further in the function.
 
-Get information about the just allocated timer seems to be the main
-purpose of this ioctl to me.  None of the fields in struct hpet_info
-looks to be interesting to an application that only wants to read the
-main timer through mmap().
+Yes, right. The problem was in your earlier version of this code where
+fake_cpuc was a null pointer. The check in amd_get_event_constraints()
+for nb should work.
 
-> If so I can change that. I did add the explicit form of allocating
-> timers to accomodate such a case hypothetically (open, allocate timer,
-> get info).
+-Robert
 
-This wouldn't be backwards compatible.
+> 
+> > Shouldn't x86_schedule_events() sufficient to decide if a single
+> > counter is available? I did not yet look at group events, this might
+> > happen there too.
+> 
+> Sure, but we will only attempt scheduling them at enable time, this is a
+> creation time check, failing to create an unschedulable event seems
+> prudent.
+> 
+> 
 
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-Regards,
-Clemens
