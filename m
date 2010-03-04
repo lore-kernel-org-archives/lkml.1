@@ -1,82 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110Ab0CDQw1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 11:52:27 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:64747 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756040Ab0CDQwZ (ORCPT
+	id S1756080Ab0CDQzF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 11:55:05 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51998 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040Ab0CDQy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 11:52:25 -0500
-Date: Thu, 4 Mar 2010 08:50:21 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Josef Bacik <josef@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cleanup __generic_block_fiemap and fix a few minor
- issues
-Message-Id: <20100304085021.1b4e5c58.randy.dunlap@oracle.com>
-In-Reply-To: <20100304162039.GA5722@localhost.localdomain>
-References: <20100303163715.GB2215@localhost.localdomain>
-	<alpine.LFD.2.00.1003040754150.7046@localhost.localdomain>
-	<20100304162039.GA5722@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B8FE4F2.00BD:SCFMA4539814,ss=1,fgs=0
+	Thu, 4 Mar 2010 11:54:59 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-media@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH] V4L/DVB: mx1-camera: compile fix
+Date: Thu,  4 Mar 2010 17:54:46 +0100
+Message-Id: <1267721687-19697-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.7.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 11:20:40 -0500 Josef Bacik wrote:
+This is a regression of
 
-> Ahh yes thats much nicer, thank you.  Here is my updated patch with your
-> suggestions.  Thanks,
-> 
-> Signed-off-by: Josef Bacik <josef@redhat.com>
-> ---
->  fs/ioctl.c         |   81 +++++++++++++++++++++++++++++----------------------
->  include/linux/fs.h |    5 ++-
->  2 files changed, 49 insertions(+), 37 deletions(-)
-> 
-> diff --git a/fs/ioctl.c b/fs/ioctl.c
-> index 6c75110..64fed0b 100644
-> --- a/fs/ioctl.c
-> +++ b/fs/ioctl.c
-> @@ -228,13 +228,22 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
->  
->  #ifdef CONFIG_BLOCK
->  
-> -#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
-> -#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
-> +static inline sector_t logical_to_blk(struct inode *inode, loff_t offset)
-> +{
-> +	return (offset >> inode->i_blkbits);
-> +}
-> +
-> +static inline loff_t blk_to_logical(struct inode *inode, sector_t blk)
-> +{
-> +	return (blk << inode->i_blkbits);
-> +}
->  
->  /**
->   * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
->   * @inode - the inode to map
-> - * @arg - the pointer to userspace where we copy everything to
-> + * @fieinfo - the fiemap info struct that will be passed back to userspace
-> + * @start - where to start mapping in the inode
-> + * @len - how much space to map
->   * @get_block - the fs's get_block function
->   *
->   * This does FIEMAP for block based inodes.  Basically it will just loop
+	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
 
-Please fix the kernel-doc notation.  Function parameter notation is like:
-
- * @start: where to start mapping in the inode
-
-thanks,
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
-~Randy
+Hello,
+
+this went unnoticed up to now as mx1_defconfig doesn't include support
+for mx1-camera.
+I have a patch pending to change that though.
+
+Best regards
+Uwe
+
+ drivers/media/video/mx1_camera.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
+index 2ba14fb..38e5315 100644
+--- a/drivers/media/video/mx1_camera.c
++++ b/drivers/media/video/mx1_camera.c
+@@ -45,6 +45,9 @@
+ #include <mach/hardware.h>
+ #include <mach/mx1_camera.h>
+ 
++#undef DMA_BASE 
++#define DMA_BASE MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR)
++
+ /*
+  * CSI registers
+  */
+@@ -783,7 +786,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+ 			       pcdev);
+ 
+ 	imx_dma_config_channel(pcdev->dma_chan, IMX_DMA_TYPE_FIFO,
+-			       IMX_DMA_MEMSIZE_32, DMA_REQ_CSI_R, 0);
++			       IMX_DMA_MEMSIZE_32, MX1_DMA_REQ_CSI_R, 0);
+ 	/* burst length : 16 words = 64 bytes */
+ 	imx_dma_config_burstlen(pcdev->dma_chan, 0);
+ 
+-- 
+1.7.0
+
