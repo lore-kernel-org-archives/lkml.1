@@ -1,98 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862Ab0CDJDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 04:03:42 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49194 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752575Ab0CDJDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 04:03:39 -0500
-Message-ID: <4B8F7758.9020500@cn.fujitsu.com>
-Date: Thu, 04 Mar 2010 17:03:20 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.8) Gecko/20100227 Thunderbird/3.0.3
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux-MM <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/4] cpuset,mm: use rwlock to protect task->mempolicy
- and mems_allowed
-References: <4B8E3F77.6070201@cn.fujitsu.com> <20100303155004.5f9e793e.akpm@linux-foundation.org>
-In-Reply-To: <20100303155004.5f9e793e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755007Ab0CDJHf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 04:07:35 -0500
+Received: from mailhost14.gawab.com ([66.220.20.14]:35711 "HELO
+	info88.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754929Ab0CDJH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 04:07:28 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Mar 2010 04:07:28 EST
+Message-ID: <20100304090047.23689.qmail@info88.gawab.com>
+From: "Justin Madru" <jdm64@gawab.com>
+To: Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
+Subject: [BUG] NULL pointer dereference in i915_gem_object_save_bit_17_swizzle
+Date: Thu, 04 Mar 2010 09:00:47 GMT
+Content-Type: text/plain ; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [68.183.209.34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2010-3-4 7:50, Andrew Morton wrote:
-> On Wed, 03 Mar 2010 18:52:39 +0800
-> Miao Xie <miaox@cn.fujitsu.com> wrote:
-> 
->> if MAX_NUMNODES > BITS_PER_LONG, loading/storing task->mems_allowed or mems_allowed in
->> task->mempolicy are not atomic operations, and the kernel page allocator gets an empty
->> mems_allowed when updating task->mems_allowed or mems_allowed in task->mempolicy. So we
->> use a rwlock to protect them to fix this probelm.
-> 
-> Boy, that is one big ugly patch.  Is there no other way of doing this?
+Hi,
 
-Let me consider!
+I've had this same oops happen several times. Seems to happen when I'm
+playing a video.
+The function i915_gem_object_save_bit_17_swizzle (referenced in the oops)
+was last edited
+by the following commit. I'm running 2.6.33 with an i945 gpu.
 
-> 
->>
->> ...
->>
->> --- a/include/linux/mempolicy.h
->> +++ b/include/linux/mempolicy.h
->> @@ -51,6 +51,7 @@ enum {
->>   */
->>  #define MPOL_F_SHARED  (1 << 0)	/* identify shared policies */
->>  #define MPOL_F_LOCAL   (1 << 1)	/* preferred local allocation */
->> +#define MPOL_F_TASK    (1 << 2)	/* identify tasks' policies */
-> 
-> What's this?  It wasn't mentioned in the changelog - I suspect it
-> should have been?
+commit 280b713b5b0fd84cf2469098aee88acbb5de859c
+Author: Eric Anholt <eric@anholt.net>
+Date:   Thu Mar 12 16:56:27 2009 -0700
 
-I hope task->mempolicy has the same get/put operation just like shared mempolicy,
-this new feature is used when the kernel memory allocater accesses
-task->mempolicy.
+    drm/i915: Allow tiling of objects with bit 17 swizzling by the CPU.
+    
+    Save the bit 17 state of the pages when freeing the page list, and
+    reswizzle them if necessary when rebinding the pages (in case they were
+    swapped out).  Since we have userland with expectations that the
+swizzle
+    enums let it pread and pwrite contents accurately, we can't expose a
+new
+    swizzle enum for bit 17 (which it would have to GTT map to handle), so
+we
+    handle it down in pread and pwrite by swizzling the copy when bit 17 of
+the
+    page address is set.
+    
+    Signed-off-by: Eric Anholt <eric@anholt.net>
 
-I'll rewrite the changelog in the next version of the patch if I still
-use this flag.
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<f82b5d2b>] i915_gem_object_save_bit_17_swizzle+0x5b/0xc0 [i915]
+*pde = 00000000 
+Oops: 0000 [#1] PREEMPT SMP 
+last sysfs file:
+/sys/devices/pci0000:00/0000:00:1c.0/0000:0b:00.0/net/wlan0/statistics/collisions
+Modules linked in: binfmt_misc ipv6 nfs lockd fscache nfs_acl auth_rpcgss
+sunrpc ext4 mbcache jbd2 crc16 arc4 ecb cryptomgr crypto_hash aead
+pcompress snd_hda_codec_idt crypto_blkcipher crypto_algapi snd_hda_intel
+snd_hda_codec snd_hwdep snd_pcm_oss iwl3945 snd_mixer_oss snd_pcm iwlcore
+sdhci_pci snd_timer mac80211 snd sdhci soundcore mmc_core ac processor
+battery psmouse evdev snd_page_alloc cfg80211 rfkill rtc_cmos rtc_core
+rtc_lib reiserfs fan fuse usbhid hid fbcon font bitblit softcursor sr_mod
+cdrom sg i915 drm_kms_helper fb cfbcopyarea intel_agp button ata_piix
+thermal ehci_hcd video uhci_hcd backlight output usbcore cfbimgblt
+cfbfillrect nls_base
+Mar  4 00:16:56 justin-laptop kernel:
+Pid: 3279, comm: Xorg Not tainted 2.6.33-git-dirty #1 0KD882/MM061         
+                 
+EIP: 0060:[<f82b5d2b>] EFLAGS: 00013212 CPU: 1
+EIP is at i915_gem_object_save_bit_17_swizzle+0x5b/0xc0 [i915]
+EAX: f6590000 EBX: f6444700 ECX: f771c000 EDX: 00000092
+ESI: 00000100 EDI: 00000000 EBP: f666cdb4 ESP: f666cda0
+DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process Xorg (pid: 3279, ti=f666c000 task=f650d4e0 task.ti=f666c000)
+Stack:
+00000000 000213da 00100000 f6444700 00000001 f666cdcc f82aea55 00000400
+<0> fffffff4 f6444700 f76747f0 f666cdec f82aeb71 ef419360 00001200 00000100
+<0> ef419360 f6444700 00100000 f666ce20 f82b0de8 00000000 c02db74d 00003202
+Call Trace:
+[<f82aea55>] ? i915_gem_object_put_pages+0x125/0x150 [i915]
+[<f82aeb71>] ? i915_gem_object_get_pages+0xf1/0x110 [i915]
+[<f82b0de8>] ? i915_gem_object_bind_to_gtt+0xb8/0x2a0 [i915]
+[<c02db74d>] ? drm_mm_get_block_generic+0x4d/0x180
+[<f82b11cd>] ? i915_gem_mmap_gtt_ioctl+0x16d/0x240 [i915]
+[<f82ae786>] ? i915_gem_madvise_ioctl+0x86/0x120 [i915]
+[<c0106464>] ? alloc_ldt+0xc4/0x240
+[<c02d1cfc>] ? drm_ioctl+0x24c/0x3f0
+[<c0106464>] ? alloc_ldt+0xc4/0x240
+[<f82b1060>] ? i915_gem_mmap_gtt_ioctl+0x0/0x240 [i915]
+[<c01d1b19>] ? do_sync_read+0xb9/0x120
+[<c016248c>] ? T.500+0x27c/0x540
+[<c0106464>] ? alloc_ldt+0xc4/0x240
+[<c02d1ab0>] ? drm_ioctl+0x0/0x3f0
+[<c01e2851>] ? do_vfs_ioctl+0x81/0x640
+[<c016278a>] ? hrtimer_start+0x1a/0x20
+[<c0147fa5>] ? do_setitimer+0x175/0x200
+[<c0167f3b>] ? ktime_get_ts+0xdb/0x110
+[<c01e2e49>] ? sys_ioctl+0x39/0x60
+[<c0103310>] ? sysenter_do_call+0x12/0x26
+[<c0106464>] ? alloc_ldt+0xc4/0x240
+Code: 8b 43 54 c1 ee 0c 85 c0 74 46 31 d2 85 f6 7f 15 eb df 8d b6 00 00 00
+00 0f ab 10 83 c2 01 39 d6 74 cf 8b 43 54 8b 4b 2c 8b 3c 91 <8b> 0f c1 e9
+1a 8b 0c cd 80 ed 5a c0 83 e1 fc 29 cf 81 e7 00 04 
+EIP: [<f82b5d2b>] i915_gem_object_save_bit_17_swizzle+0x5b/0xc0 [i915]
+SS:ESP 0068:f666cda0
+CR2: 0000000000000000
+---[ end trace ee82e251ffaa363c ]---
 
->> +int cpuset_mems_allowed_intersects(struct task_struct *tsk1,
->> +				   struct task_struct *tsk2)
->>  {
->> -	return nodes_intersects(tsk1->mems_allowed, tsk2->mems_allowed);
->> +	unsigned long flags1, flags2;
->> +	int retval;
->> +
->> +	read_mem_lock_irqsave(tsk1, flags1);
->> +	read_mem_lock_irqsave(tsk2, flags2);
->> +	retval = nodes_intersects(tsk1->mems_allowed, tsk2->mems_allowed);
->> +	read_mem_unlock_irqrestore(tsk2, flags2);
->> +	read_mem_unlock_irqrestore(tsk1, flags1);
-> 
-> I suspect this is deadlockable in sufficiently arcane circumstances:
-> one task takes the locks in a,b order, another task takes them in b,a
-> order and a third task gets in at the right time and does a
-> write_lock().  Probably that's not possible for some reason, dunno.  The usual
-> way of solving this is to always take the locks in
-> sorted-by-ascending-virtual-address order.
+Justin Madru
 
-Don't worry about this problem, because rwlock is read_preference lock.
-
-But your advice is very good, I'll change it in the next version of the patch.
-
-Thanks!
-
-> 
-> 
-> 
-> 
-> 
-
-
+-----------------------------------------------------------------------------------------------------------------------
+Send big files for free. Simple steps. No registration.
+Visit now http://www.nawelny.com
