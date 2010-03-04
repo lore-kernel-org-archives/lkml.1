@@ -1,81 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287Ab0CDTmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 14:42:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932121Ab0CDTma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 14:42:30 -0500
-Date: Thu, 4 Mar 2010 14:41:44 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <arighi@develer.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 4/4] memcg: dirty pages instrumentation
-Message-ID: <20100304194144.GE18786@redhat.com>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com> <1267699215-4101-5-git-send-email-arighi@develer.com>
+	id S932296Ab0CDTnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 14:43:19 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:41739 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932121Ab0CDTnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 14:43:17 -0500
+Date: Thu, 4 Mar 2010 20:42:41 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] V4L/DVB: mx1-camera: compile fix
+Message-ID: <20100304194241.GG19843@pengutronix.de>
+References: <1267721687-19697-1-git-send-email-u.kleine-koenig@pengutronix.de> <Pine.LNX.4.64.1003041811160.4825@axis700.grange> <20100304192623.GA14587@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1267699215-4101-5-git-send-email-arighi@develer.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100304192623.GA14587@pengutronix.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Industrial Linux Solutions Handelsregister:
+	Amtsgericht Hildesheim, HRA 2686 Peiner Strasse 6-8, 31137
+	Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 20:38:24 up 143 days,  8:27, 65 users,  load average: 1.75, 0.87,
+	0.76
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 11:40:15AM +0100, Andrea Righi wrote:
+On Thu, Mar 04, 2010 at 08:26:23PM +0100, Uwe Kleine-König wrote:
+> Hi Guennadi,
+> 
+> On Thu, Mar 04, 2010 at 06:13:38PM +0100, Guennadi Liakhovetski wrote:
+> > > +#undef DMA_BASE 
+> > > +#define DMA_BASE MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR)
+> > 
+> > I don't like this. Why the "undef"? Is DMA_BASE already defined? where and 
+> > what is it? If it is - we better use a different name, if not - just 
+> > remove the undef, please.
+> yes, it's not pretty, but I wanted to make a minimal patch.
+> 
+> arch/arm/plat-mxc/include/mach/dma-mx1-mx2.h has:
+> 
+> 	#define DMA_BASE IO_ADDRESS(DMA_BASE_ADDR)
 
-[..]
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 5a0f8f3..c5d14ea 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -137,13 +137,16 @@ static struct prop_descriptor vm_dirties;
->   */
->  static int calc_period_shift(void)
->  {
-> +	struct dirty_param dirty_param;
->  	unsigned long dirty_total;
->  
-> -	if (vm_dirty_bytes)
-> -		dirty_total = vm_dirty_bytes / PAGE_SIZE;
-> +	get_dirty_param(&dirty_param);
-> +
-> +	if (dirty_param.dirty_bytes)
-> +		dirty_total = dirty_param.dirty_bytes / PAGE_SIZE;
->  	else
-> -		dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) /
-> -				100;
-> +		dirty_total = (dirty_param.dirty_ratio *
-> +				determine_dirtyable_memory()) / 100;
->  	return 2 + ilog2(dirty_total - 1);
->  }
->  
+This is only used in the mx1 camera driver, so you can just remove it
+from dma-mx1-mx2.h and use MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR) in the camera
+driver.
 
-Hmm.., I have been staring at this for some time and I think something is
-wrong. I don't fully understand the way floating proportions are working
-but this function seems to be calculating the period over which we need
-to measuer the proportions. (vm_completion proportion and vm_dirties
-proportions).
+Sascha
 
-And we this period (shift), when admin updates dirty_ratio or dirty_bytes
-etc. In that case we recalculate the global dirty limit and take log2 and
-use that as period over which we monitor and calculate proportions.
-
-If yes, then it should be global and not per cgroup (because all our 
-accouting of bdi completion is global and not per cgroup).
-
-PeterZ, can tell us more about it. I am just raising the flag here to be
-sure.
-
-Thanks
-Vivek
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
