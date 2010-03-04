@@ -1,466 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755751Ab0CDLNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:13:20 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:42794 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755410Ab0CDLNR (ORCPT
+	id S1755817Ab0CDLRG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:17:06 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:60090 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755534Ab0CDLRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:13:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=GtKERtOkh1h0REo3s7sxYhiE1LHF/NzFmy4RchXreeiVkj335IrntLJ6l3As5kUR2+
-         ybN+OHESkGJmREOFLrwRebEZUII5XxHRDZUKX5eyDMlRFyx1q5iBiHUSm8SWqy3mspby
-         dGWIUb/LqX0thGFF6R443mE3phncOqc94Qkhc=
-From: Johan Hovold <jhovold@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Feuerer <peter@piie.net>,
-       Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.org>
-Subject: [PATCH v2] USB: pl2303: switch to generic write implementation
-Date: Thu,  4 Mar 2010 12:12:52 +0100
-Message-Id: <1267701172-9549-1-git-send-email-jhovold@gmail.com>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <201003031608.20277.oliver@neukum.org>
-References: <201003031608.20277.oliver@neukum.org>
+	Thu, 4 Mar 2010 06:17:03 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B8F9727.6080907@cam.ac.uk>
+Date: Thu, 04 Mar 2010 11:19:03 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Dima Zavin <dmitriyz@google.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [GIT PULL] Ambient Light Sensors subsystem
+References: <4B8C1867.7040201@cam.ac.uk>  <404ea8001003022213v78be2c81r40504661835fff7e@mail.gmail.com>  <alpine.LFD.2.00.1003030859360.3627@localhost.localdomain>  <20100303184132.GA11471@core.coreip.homeip.net>  <alpine.LFD.2.00.1003031045390.3599@localhost.localdomain>  <20100303190753.GB11471@core.coreip.homeip.net> <404ea8001003031338j34847961jd8a7114bbc45603a@mail.gmail.com> <alpine.LFD.2.00.1003031348510.3599@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003031348510.3599@localhost.localdomain>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace custom fifo-based write implementation with the generic
-kfifo-based one.
+Hi Linus,
 
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
+> On Wed, 3 Mar 2010, Dima Zavin wrote:
+>>
+>> Actually, accelerometers fit into that model fine. They have some
+>> variable number of absolute axes (3, 6, etc.).
+> 
+> In fact, they obviouslya also do end up being used exactly like joysticks 
+> in real life, and joysticks are commonly starting to have accelerometers 
+> in them (ie any modern game console controller).
+> 
+> So treating an accelerometer like a joystick - regardless of whether it 
+> happens to be internal to the device or happens to be external in a 
+> separate controller - is not all that far-fetched anyway.
+True enough if you want relatively low rate data either polled or from an
+internally clocked accelerometer. So yes, if your application is input and
+you are using an accelerometer for such a job, then it makes sense to be in
+input.  That is exactly why Dmitry has taken some accelerometers in there.
+It isn't true if you are dealing with higher spec devices.  There are devices
+out there that will throw data at many KHz with lot of different channels,
+these are totally different from what input was designed for.  The deepest
+discussions of these points that I know of are those that IIO grew out of:
+http://lkml.org/lkml/2008/5/20/135 onwards.
 
-Removed redundant null check as suggested by Oliver Neukum.
+These in conjunction with ADC's etc were why we got into writing IIO in the first
+place + the entirely reasonable point that they fell out of the scope of input
+and hwmon.
+
+Anyhow, the way this conversation is going there appear to be several options
+and we need to make a decision before anyone wastes much more time.
+
+1) ALS as is. It's extremely light weight and can always be merged with a better
+  option at a later date. If people prefer we can always stick it in a subdirectory
+  called sensors or similar.  Perhaps move hwmon in there as well.
+
+2) Input.  I agree with Dmitry here.  These devices are not within the scope as it
+  currently exists.  It can be done and there have been numerous discussions about
+  doing so in the past (with various sensor types) and each time it has been decided
+  that it isn't the right option.  Perhaps opinion on this has changed?
+
+3) Leave as is. Perhaps move all such drivers to misc and introduce some documentation
+   in an attempt to standardize the interface they export.  To all intents and purposes
+   this is the core of als anyway.  What we loose is a consistent location and device
+   naming for userspace usage.
+
+4) Move them into IIO.   They are within the scope we are covering.  I agreed
+  with the ALS subsystem when it was proposed as it was clean small and ready now
+  not because I particularly wanted them out of IIO (there is still one there.)
+ 
+Two comments on option 4:
+a) If we do it now rather than taking one of the other options and moving them later,
+   then we are moving two perfectly good drivers out of the main tree into staging.
+   Doesn't matter to me, may to others.
+b) If anyone comes back later and says, 'IIO is a massively overweight subsystem for
+   such simple drivers', then I reserve the right to get rather somewhat annoyed.
+   We have always kept the core driver requirement (that needed for these drivers)
+   as slim as possible.  Of course suggestions on how to make it slimmer without
+   breaking other functionality are welcome.
+
+Please can anyone who feels like suggesting another general sensors subsystem
+at least taking a look at IIO (and keeping in mind we are in the middle of a big
+API cleanup).  If you disagree with how we have done things, then contribute
+to the discussions and they may change.
 
 Thanks,
-Johan
 
-
- drivers/usb/serial/pl2303.c |  333 +------------------------------------------
- 1 files changed, 4 insertions(+), 329 deletions(-)
-
-diff --git a/drivers/usb/serial/pl2303.c b/drivers/usb/serial/pl2303.c
-index 9ec1a49..0af33cd 100644
---- a/drivers/usb/serial/pl2303.c
-+++ b/drivers/usb/serial/pl2303.c
-@@ -40,16 +40,6 @@ static int debug;
- 
- #define PL2303_CLOSING_WAIT	(30*HZ)
- 
--#define PL2303_BUF_SIZE		1024
--#define PL2303_TMP_BUF_SIZE	1024
--
--struct pl2303_buf {
--	unsigned int	buf_size;
--	char		*buf_buf;
--	char		*buf_get;
--	char		*buf_put;
--};
--
- static struct usb_device_id id_table [] = {
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID) },
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_RSAQ2) },
-@@ -155,173 +145,12 @@ enum pl2303_type {
- 
- struct pl2303_private {
- 	spinlock_t lock;
--	struct pl2303_buf *buf;
--	int write_urb_in_use;
- 	wait_queue_head_t delta_msr_wait;
- 	u8 line_control;
- 	u8 line_status;
- 	enum pl2303_type type;
- };
- 
--/*
-- * pl2303_buf_alloc
-- *
-- * Allocate a circular buffer and all associated memory.
-- */
--static struct pl2303_buf *pl2303_buf_alloc(unsigned int size)
--{
--	struct pl2303_buf *pb;
--
--	if (size == 0)
--		return NULL;
--
--	pb = kmalloc(sizeof(struct pl2303_buf), GFP_KERNEL);
--	if (pb == NULL)
--		return NULL;
--
--	pb->buf_buf = kmalloc(size, GFP_KERNEL);
--	if (pb->buf_buf == NULL) {
--		kfree(pb);
--		return NULL;
--	}
--
--	pb->buf_size = size;
--	pb->buf_get = pb->buf_put = pb->buf_buf;
--
--	return pb;
--}
--
--/*
-- * pl2303_buf_free
-- *
-- * Free the buffer and all associated memory.
-- */
--static void pl2303_buf_free(struct pl2303_buf *pb)
--{
--	if (pb) {
--		kfree(pb->buf_buf);
--		kfree(pb);
--	}
--}
--
--/*
-- * pl2303_buf_clear
-- *
-- * Clear out all data in the circular buffer.
-- */
--static void pl2303_buf_clear(struct pl2303_buf *pb)
--{
--	if (pb != NULL)
--		pb->buf_get = pb->buf_put;
--		/* equivalent to a get of all data available */
--}
--
--/*
-- * pl2303_buf_data_avail
-- *
-- * Return the number of bytes of data available in the circular
-- * buffer.
-- */
--static unsigned int pl2303_buf_data_avail(struct pl2303_buf *pb)
--{
--	if (pb == NULL)
--		return 0;
--
--	return (pb->buf_size + pb->buf_put - pb->buf_get) % pb->buf_size;
--}
--
--/*
-- * pl2303_buf_space_avail
-- *
-- * Return the number of bytes of space available in the circular
-- * buffer.
-- */
--static unsigned int pl2303_buf_space_avail(struct pl2303_buf *pb)
--{
--	if (pb == NULL)
--		return 0;
--
--	return (pb->buf_size + pb->buf_get - pb->buf_put - 1) % pb->buf_size;
--}
--
--/*
-- * pl2303_buf_put
-- *
-- * Copy data data from a user buffer and put it into the circular buffer.
-- * Restrict to the amount of space available.
-- *
-- * Return the number of bytes copied.
-- */
--static unsigned int pl2303_buf_put(struct pl2303_buf *pb, const char *buf,
--				   unsigned int count)
--{
--	unsigned int len;
--
--	if (pb == NULL)
--		return 0;
--
--	len  = pl2303_buf_space_avail(pb);
--	if (count > len)
--		count = len;
--
--	if (count == 0)
--		return 0;
--
--	len = pb->buf_buf + pb->buf_size - pb->buf_put;
--	if (count > len) {
--		memcpy(pb->buf_put, buf, len);
--		memcpy(pb->buf_buf, buf+len, count - len);
--		pb->buf_put = pb->buf_buf + count - len;
--	} else {
--		memcpy(pb->buf_put, buf, count);
--		if (count < len)
--			pb->buf_put += count;
--		else /* count == len */
--			pb->buf_put = pb->buf_buf;
--	}
--
--	return count;
--}
--
--/*
-- * pl2303_buf_get
-- *
-- * Get data from the circular buffer and copy to the given buffer.
-- * Restrict to the amount of data available.
-- *
-- * Return the number of bytes copied.
-- */
--static unsigned int pl2303_buf_get(struct pl2303_buf *pb, char *buf,
--				   unsigned int count)
--{
--	unsigned int len;
--
--	if (pb == NULL)
--		return 0;
--
--	len = pl2303_buf_data_avail(pb);
--	if (count > len)
--		count = len;
--
--	if (count == 0)
--		return 0;
--
--	len = pb->buf_buf + pb->buf_size - pb->buf_get;
--	if (count > len) {
--		memcpy(buf, pb->buf_get, len);
--		memcpy(buf+len, pb->buf_buf, count - len);
--		pb->buf_get = pb->buf_buf + count - len;
--	} else {
--		memcpy(buf, pb->buf_get, count);
--		if (count < len)
--			pb->buf_get += count;
--		else /* count == len */
--			pb->buf_get = pb->buf_buf;
--	}
--
--	return count;
--}
--
- static int pl2303_vendor_read(__u16 value, __u16 index,
- 		struct usb_serial *serial, unsigned char *buf)
- {
-@@ -369,12 +198,6 @@ static int pl2303_startup(struct usb_serial *serial)
- 		priv = kzalloc(sizeof(struct pl2303_private), GFP_KERNEL);
- 		if (!priv)
- 			goto cleanup;
--		spin_lock_init(&priv->lock);
--		priv->buf = pl2303_buf_alloc(PL2303_BUF_SIZE);
--		if (priv->buf == NULL) {
--			kfree(priv);
--			goto cleanup;
--		}
- 		init_waitqueue_head(&priv->delta_msr_wait);
- 		priv->type = type;
- 		usb_set_serial_port_data(serial->port[i], priv);
-@@ -402,7 +225,6 @@ cleanup:
- 	kfree(buf);
- 	for (--i; i >= 0; --i) {
- 		priv = usb_get_serial_port_data(serial->port[i]);
--		pl2303_buf_free(priv->buf);
- 		kfree(priv);
- 		usb_set_serial_port_data(serial->port[i], NULL);
- 	}
-@@ -420,103 +242,6 @@ static int set_control_lines(struct usb_device *dev, u8 value)
- 	return retval;
- }
- 
--static void pl2303_send(struct usb_serial_port *port)
--{
--	int count, result;
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
--	unsigned long flags;
--
--	dbg("%s - port %d", __func__, port->number);
--
--	spin_lock_irqsave(&priv->lock, flags);
--
--	if (priv->write_urb_in_use) {
--		spin_unlock_irqrestore(&priv->lock, flags);
--		return;
--	}
--
--	count = pl2303_buf_get(priv->buf, port->write_urb->transfer_buffer,
--			       port->bulk_out_size);
--
--	if (count == 0) {
--		spin_unlock_irqrestore(&priv->lock, flags);
--		return;
--	}
--
--	priv->write_urb_in_use = 1;
--
--	spin_unlock_irqrestore(&priv->lock, flags);
--
--	usb_serial_debug_data(debug, &port->dev, __func__, count,
--			      port->write_urb->transfer_buffer);
--
--	port->write_urb->transfer_buffer_length = count;
--	port->write_urb->dev = port->serial->dev;
--	result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
--	if (result) {
--		dev_err(&port->dev, "%s - failed submitting write urb,"
--			" error %d\n", __func__, result);
--		priv->write_urb_in_use = 0;
--		/* TODO: reschedule pl2303_send */
--	}
--
--	usb_serial_port_softint(port);
--}
--
--static int pl2303_write(struct tty_struct *tty, struct usb_serial_port *port,
--				const unsigned char *buf, int count)
--{
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
--	unsigned long flags;
--
--	dbg("%s - port %d, %d bytes", __func__, port->number, count);
--
--	if (!count)
--		return count;
--
--	spin_lock_irqsave(&priv->lock, flags);
--	count = pl2303_buf_put(priv->buf, buf, count);
--	spin_unlock_irqrestore(&priv->lock, flags);
--
--	pl2303_send(port);
--
--	return count;
--}
--
--static int pl2303_write_room(struct tty_struct *tty)
--{
--	struct usb_serial_port *port = tty->driver_data;
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
--	int room = 0;
--	unsigned long flags;
--
--	dbg("%s - port %d", __func__, port->number);
--
--	spin_lock_irqsave(&priv->lock, flags);
--	room = pl2303_buf_space_avail(priv->buf);
--	spin_unlock_irqrestore(&priv->lock, flags);
--
--	dbg("%s - returns %d", __func__, room);
--	return room;
--}
--
--static int pl2303_chars_in_buffer(struct tty_struct *tty)
--{
--	struct usb_serial_port *port = tty->driver_data;
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
--	int chars = 0;
--	unsigned long flags;
--
--	dbg("%s - port %d", __func__, port->number);
--
--	spin_lock_irqsave(&priv->lock, flags);
--	chars = pl2303_buf_data_avail(priv->buf);
--	spin_unlock_irqrestore(&priv->lock, flags);
--
--	dbg("%s - returns %d", __func__, chars);
--	return chars;
--}
--
- static void pl2303_set_termios(struct tty_struct *tty,
- 		struct usb_serial_port *port, struct ktermios *old_termios)
- {
-@@ -728,15 +453,14 @@ static void pl2303_dtr_rts(struct usb_serial_port *port, int on)
- 
- static void pl2303_close(struct usb_serial_port *port)
- {
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
- 	unsigned long flags;
- 
- 	dbg("%s - port %d", __func__, port->number);
- 
--	spin_lock_irqsave(&priv->lock, flags);
-+	spin_lock_irqsave(&port->lock, flags);
- 	/* clear out any remaining data in the buffer */
--	pl2303_buf_clear(priv->buf);
--	spin_unlock_irqrestore(&priv->lock, flags);
-+	kfifo_reset_out(&port->write_fifo);
-+	spin_unlock_irqrestore(&port->lock, flags);
- 
- 	/* shutdown our urbs */
- 	dbg("%s - shutting down urbs", __func__);
-@@ -941,10 +665,7 @@ static void pl2303_release(struct usb_serial *serial)
- 
- 	for (i = 0; i < serial->num_ports; ++i) {
- 		priv = usb_get_serial_port_data(serial->port[i]);
--		if (priv) {
--			pl2303_buf_free(priv->buf);
--			kfree(priv);
--		}
-+		kfree(priv);
- 	}
- }
- 
-@@ -1119,48 +840,6 @@ static void pl2303_read_bulk_callback(struct urb *urb)
- 	return;
- }
- 
--static void pl2303_write_bulk_callback(struct urb *urb)
--{
--	struct usb_serial_port *port =  urb->context;
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
--	int result;
--	int status = urb->status;
--
--	dbg("%s - port %d", __func__, port->number);
--
--	switch (status) {
--	case 0:
--		/* success */
--		break;
--	case -ECONNRESET:
--	case -ENOENT:
--	case -ESHUTDOWN:
--		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __func__,
--		    status);
--		priv->write_urb_in_use = 0;
--		return;
--	default:
--		/* error in the urb, so we have to resubmit it */
--		dbg("%s - Overflow in write", __func__);
--		dbg("%s - nonzero write bulk status received: %d", __func__,
--		    status);
--		port->write_urb->transfer_buffer_length = 1;
--		port->write_urb->dev = port->serial->dev;
--		result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
--		if (result)
--			dev_err(&urb->dev->dev, "%s - failed resubmitting write"
--				" urb, error %d\n", __func__, result);
--		else
--			return;
--	}
--
--	priv->write_urb_in_use = 0;
--
--	/* send any buffered data */
--	pl2303_send(port);
--}
--
- /* All of the device info needed for the PL2303 SIO serial converter */
- static struct usb_serial_driver pl2303_device = {
- 	.driver = {
-@@ -1174,7 +853,6 @@ static struct usb_serial_driver pl2303_device = {
- 	.close =		pl2303_close,
- 	.dtr_rts = 		pl2303_dtr_rts,
- 	.carrier_raised =	pl2303_carrier_raised,
--	.write =		pl2303_write,
- 	.ioctl =		pl2303_ioctl,
- 	.break_ctl =		pl2303_break_ctl,
- 	.set_termios =		pl2303_set_termios,
-@@ -1182,9 +860,6 @@ static struct usb_serial_driver pl2303_device = {
- 	.tiocmset =		pl2303_tiocmset,
- 	.read_bulk_callback =	pl2303_read_bulk_callback,
- 	.read_int_callback =	pl2303_read_int_callback,
--	.write_bulk_callback =	pl2303_write_bulk_callback,
--	.write_room =		pl2303_write_room,
--	.chars_in_buffer =	pl2303_chars_in_buffer,
- 	.attach =		pl2303_startup,
- 	.release =		pl2303_release,
- };
--- 
-1.7.0
-
+Jonathan
