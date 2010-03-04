@@ -1,57 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924Ab0CDLvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 06:51:07 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55218 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850Ab0CDLvF (ORCPT
+	id S1755933Ab0CDLyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 06:54:52 -0500
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:53364 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755880Ab0CDLyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 06:51:05 -0500
-To: Sage Weil <sage@newdream.net>
-CC: hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net> (message
-	from Sage Weil on Wed, 3 Mar 2010 13:37:43 -0800 (PST))
-Subject: Re: [PATCH 23/26] ceph: nfs re-export support
-References: <1267577217-31923-1-git-send-email-sage@newdream.net>
- <1267577217-31923-24-git-send-email-sage@newdream.net> <20100303074814.GA1030@infradead.org> <Pine.LNX.4.64.1003031324310.20129@cobra.newdream.net>
-Message-Id: <E1Nn9Zu-0005dZ-LC@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Mar 2010 12:50:54 +0100
+	Thu, 4 Mar 2010 06:54:51 -0500
+X-IronPort-AV: E=Sophos;i="4.49,580,1262563200"; 
+   d="scan'208";a="9778560"
+Date: Thu, 4 Mar 2010 11:58:35 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+X-X-Sender: sstabellini@kaball-desktop
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
+Subject: Re: [Xen-devel] [PATCH 5/7] xen: Make event channel work with PV
+ extension of HVM
+In-Reply-To: <201003041337.26229.sheng@linux.intel.com>
+Message-ID: <alpine.DEB.2.00.1003041155590.24752@kaball-desktop>
+References: <1267436315-24486-1-git-send-email-sheng@linux.intel.com> <1267436315-24486-6-git-send-email-sheng@linux.intel.com> <4B8C6C0D.3070005@goop.org> <201003041337.26229.sheng@linux.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Mar 2010, Sage Weil wrote:
-> On Wed, 3 Mar 2010, Christoph Hellwig wrote:
-> > On Tue, Mar 02, 2010 at 04:46:54PM -0800, Sage Weil wrote:
-> > > Basic NFS re-export support is included.  This mostly works.  However,
-> > > Ceph's MDS design precludes the ability to generate a (small)
-> > > filehandle that will be valid forever, so this is of limited utility.
+On Thu, 4 Mar 2010, Sheng Yang wrote:
+> On Tuesday 02 March 2010 09:38:21 Jeremy Fitzhardinge wrote:
+> > On 03/01/2010 01:38 AM, Sheng Yang wrote:
+> > > +
+> > > +		x86_platform.calibrate_tsc = xen_tsc_khz;
+> > > +		x86_platform.get_wallclock = xen_get_wallclock;
+> > > +		x86_platform.set_wallclock = xen_set_wallclock;
+> > > +
+> > > +		pv_apic_ops = xen_apic_ops;
+> > > +#ifdef CONFIG_X86_LOCAL_APIC
+> > > +		/*
+> > > +		 * set up the basic apic ops.
+> > > +		 */
+> > > +		set_xen_basic_apic_ops();
+> > > +		apic->write = xen_hvm_pv_evtchn_apic_write;
 > > 
-> > So don't include it if it's broken by design.
+> > I'd just change the xen_apic_write to remove the WARN_ON, since you
+> > don't seem to care about it either.
 > 
-> Well, there are changes we can make to the MDS to make it work that are on 
-> the roadmap (they'll also help with disaster recovery).  They will require 
-> some change on the client side, though, so it's not like the current 
-> implementation will suddenly work perfectly with a server-side upgrade.
-> 
-> That said, I don't think Ceph is the only filesystem that has this problem 
-> (fat? fuse? cifs?), and it is still useful in its current state.  But I 
-> can leave it off by default (via Kconfig option), or include a kern.log 
-> warning, or leave it out entirely, if that's what people prefer.
+> So which code base I should make these patches against? We expect the patchset 
+> can be accepted in the Linux upstream soon after you pick it up.
 
-Fuse uses a fixed 64bit handle on the userspace/kernel API and on the
-"low level" userspace API, so that's NFS export compatible.
+I think that once we agree on which approach we take we should work
+together on this.
 
-On the "high level" API fuse uses path strings, which are not so
-suitable for NFS exporting.  Despite that, people have been exporting
-these fuse filesystems over NFS and dealing with the occasional ESTALE
-if the inode has been evicted from the cache on the server side but
-the client still holds a file handle.
+Jeremy, can we have our own temporary branch so that we can work
+together on a common code base to finish this patch series?
 
-CIFS doesn't seem to have any export capability.  FAT tries, but is
-also not guaranteed to work if the inodes are no longer in the cache.
-
-Thanks,
-Miklos
