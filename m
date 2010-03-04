@@ -1,113 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989Ab0CDVhl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 16:37:41 -0500
-Received: from trinity.develer.com ([83.149.158.210]:41772 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887Ab0CDVhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 16:37:39 -0500
-Date: Thu, 4 Mar 2010 22:37:34 +0100
-From: Andrea Righi <arighi@develer.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Suleiman Souhlal <suleiman@google.com>,
-       Greg Thelen <gthelen@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm 0/4] memcg: per cgroup dirty limit (v4)
-Message-ID: <20100304213734.GA4787@linux>
-References: <1267699215-4101-1-git-send-email-arighi@develer.com>
- <20100304171143.GG3073@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100304171143.GG3073@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755054Ab0CDVjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 16:39:45 -0500
+Received: from gate.crashing.org ([63.228.1.57]:36534 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754219Ab0CDVjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 16:39:43 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linux@arm.linux.org.uk,
+       mdharm-kernel@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       x0082077@ti.com, sshtylyov@ru.mvista.com, tom.leiming@gmail.com,
+       bigeasy@linutronix.de, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       santosh.shilimkar@ti.com, greg@kroah.com,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1267726049.6526.543.camel@e102109-lin.cambridge.arm.com>
+References: <20100226210030.GC23933@n2100.arm.linux.org.uk>
+	 <1267316072.23523.1842.camel@pasglop>
+	 <1267333263.2762.11.camel@mulgrave.site>
+	 <20100302211049V.fujita.tomonori@lab.ntt.co.jp>
+	 <1267549527.15401.78.camel@e102109-lin.cambridge.arm.com>
+	 <20100303215437.GF2579@ucw.cz>
+	 <1267709756.6526.380.camel@e102109-lin.cambridge.arm.com>
+	 <20100304135128.GA12191@atrey.karlin.mff.cuni.cz>
+	 <1267712512.31654.176.camel@mulgrave.site>
+	 <1267716578.6526.483.camel@e102109-lin.cambridge.arm.com>
+	 <20100304154103.GA9384@linux-sh.org>
+	 <1267726049.6526.543.camel@e102109-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 08:37:40 +1100
+Message-ID: <1267738660.22204.77.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 10:41:43PM +0530, Balbir Singh wrote:
-> * Andrea Righi <arighi@develer.com> [2010-03-04 11:40:11]:
+On Thu, 2010-03-04 at 18:07 +0000, Catalin Marinas wrote:
 > 
-> > Control the maximum amount of dirty pages a cgroup can have at any given time.
-> > 
-> > Per cgroup dirty limit is like fixing the max amount of dirty (hard to reclaim)
-> > page cache used by any cgroup. So, in case of multiple cgroup writers, they
-> > will not be able to consume more than their designated share of dirty pages and
-> > will be forced to perform write-out if they cross that limit.
-> > 
-> > The overall design is the following:
-> > 
-> >  - account dirty pages per cgroup
-> >  - limit the number of dirty pages via memory.dirty_ratio / memory.dirty_bytes
-> >    and memory.dirty_background_ratio / memory.dirty_background_bytes in
-> >    cgroupfs
-> >  - start to write-out (background or actively) when the cgroup limits are
-> >    exceeded
-> > 
-> > This feature is supposed to be strictly connected to any underlying IO
-> > controller implementation, so we can stop increasing dirty pages in VM layer
-> > and enforce a write-out before any cgroup will consume the global amount of
-> > dirty pages defined by the /proc/sys/vm/dirty_ratio|dirty_bytes and
-> > /proc/sys/vm/dirty_background_ratio|dirty_background_bytes limits.
-> > 
-> > Changelog (v3 -> v4)
-> > ~~~~~~~~~~~~~~~~~~~~~~
-> >  * handle the migration of tasks across different cgroups
-> >    NOTE: at the moment we don't move charges of file cache pages, so this
-> >    functionality is not immediately necessary. However, since the migration of
-> >    file cache pages is in plan, it is better to start handling file pages
-> >    anyway.
-> >  * properly account dirty pages in nilfs2
-> >    (thanks to Kirill A. Shutemov <kirill@shutemov.name>)
-> >  * lockless access to dirty memory parameters
-> >  * fix: page_cgroup lock must not be acquired under mapping->tree_lock
-> >    (thanks to Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> and
-> >     KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>)
-> >  * code restyling
-> >
+> Are you more in favour if a PIO kmap API than inverting the meaning of
+> PG_arch_1? 
+
+My main worry with this approach is the sheer amount of drivers that
+need fixing. I believe inverting PG_arch_1 is a better solution and I
+somewhat fail to see how we end up doing too much flushing if we have
+per-page execute permission (but maybe SH doesn't ?)
+
+> I'm not familiar with SH but for PIO devices the flushing shouldn't be
+> more aggressive. For the DMA devices, Russell suggested that we mark
+> the
+> page as clean (set PG_dcache_clean) in the DMA API to avoid the
+> default
+> flushing.
+
+I really like that idea, as I said earlier, but I'm worried about the I$
+side of things. IE. What I'm trying to say is that I can't see how to do
+that optimisation without ending up with missing I$ invalidations or
+doing way too many of them, unless we have a separate bit to track I$
+state.
+
+> > Note that the PG_dcache_dirty semantics are also outlined in
+> > Documentation/cachetlb.txt for PG_arch_1 usage, so it's hardly
+> esoteric.
 > 
-> This seems to be converging, what sort of tests are you running on
-> this patchset? 
+> Yes, but the flush_dcache_page() semantics outlined in the same file
+> aren't followed by all the PIO drivers in the kernel.
+> 
 
-A very simple test at the moment, just some parallel dd's running in
-different cgroups. For example:
+Cheers,
+Ben.
 
- - cgroup A: low dirty limits (writes are almost sync)
-   echo 1000 > /cgroups/A/memory.dirty_bytes
-   echo 1000 > /cgroups/A/memory.dirty_background_bytes
 
- - cgroup B: high dirty limits (writes are all buffered in page cache)
-   echo 100 > /cgroups/B/memory.dirty_ratio
-   echo 50  > /cgroups/B/memory.dirty_background_ratio
-
-Then run the dd's and look at memory.stat:
-  - cgroup A: # dd if=/dev/zero of=A bs=1M count=1000
-  - cgroup B: # dd if=/dev/zero of=B bs=1M count=1000
-
-A random snapshot during the writes:
-
-# grep "dirty\|writeback" /cgroups/[AB]/memory.stat
-/cgroups/A/memory.stat:filedirty 0
-/cgroups/A/memory.stat:writeback 0
-/cgroups/A/memory.stat:writeback_tmp 0
-/cgroups/A/memory.stat:dirty_pages 0
-/cgroups/A/memory.stat:writeback_pages 0
-/cgroups/A/memory.stat:writeback_temp_pages 0
-/cgroups/B/memory.stat:filedirty 67226
-/cgroups/B/memory.stat:writeback 136
-/cgroups/B/memory.stat:writeback_tmp 0
-/cgroups/B/memory.stat:dirty_pages 67226
-/cgroups/B/memory.stat:writeback_pages 136
-/cgroups/B/memory.stat:writeback_temp_pages 0
-
-I plan to run more detailed IO benchmark soon.
-
--Andrea
