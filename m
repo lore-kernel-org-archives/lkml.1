@@ -1,93 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563Ab0CDEwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Mar 2010 23:52:22 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:48342 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346Ab0CDEwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Mar 2010 23:52:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=edNwjj+l4LMpHXAXjkr3EGAvBXj4eEinAwLNm4rsMuPPBBRKOihSsvp8wEit541njZ
-         ZBG/xp9bF+B4kxlcmOEOvb8CMrCrkuo44MGnx7EQOy7Q8oqdQjBrkEiw6q2bwRnPOFDf
-         9NBoUSLTR74+O7ogbadQyI8KSECcyXmKtWJKs=
+	id S1753737Ab0CDExO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Mar 2010 23:53:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60872 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752556Ab0CDExM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Mar 2010 23:53:12 -0500
+Message-ID: <4B8F3C94.9030805@zytor.com>
+Date: Wed, 03 Mar 2010 20:52:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc12 Thunderbird/3.0.3
 MIME-Version: 1.0
-Date: Wed, 3 Mar 2010 23:52:20 -0500
-Message-ID: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-Subject: Linux kernel - Libata bad block error handling to user mode program
-From: foo saa <foosaa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Alain Knaff <alain@knaff.lu>
+Subject: Re: [GIT PULL] Squashfs updates for 2.6.34
+References: <4B8C1873.1080700@lougher.demon.co.uk> <alpine.LFD.2.00.1003030904040.3627@localhost.localdomain> <4B8F0A42.5070405@lougher.demon.co.uk> <alpine.LFD.2.00.1003031925540.7046@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1003031925540.7046@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi everyone,
+On 03/03/2010 07:49 PM, Linus Torvalds wrote:
+> 
+> So rather than have those crazy header file tricks, can we just add a 
+> kmalloc() _library_ file for the crazy bootloader crud, so that the 
+> bootloader could just share header files with the regular kernel, and not 
+> do that crazy thing?
+> 
+> It's insane having that malloc() implementation, and those STATIC games, 
+> in a header file, and the games we play with "error()" sometimes being a 
+> function pointer and sometimes being a function. Crazy, crazy.
+> 
 
-I am in the process of writing a disk erasure application in C. The
-program does zerofill the drive (Good or Bad) before someone destroys
-it. During the erasure process, I need to record the number of bad
-sectors during the zerofill operation.
+If with library you mean a linking library, that won't work everywhere,
+because on some platforms the early-kernel decompressor needs to be
+compiled with differently than the kernel as a whole.  However, it would
+be easy enough to have a source-level library (I don't mean an include
+file, obviously) and a common include file to wrap this all up in.
 
-The method used to write to the hdd involves opening the appropriate
-/dev block device using open() call with O_WRONLY flag, start issuing
-write() calls to fill the sectors. A 512 byte buffer filled with
-zero's is used. All calls are of 64bit enabled. (I am using
-_LARGEFILE64_SOURCE define).
+> So Phillip split up these things:
+> 
+> 	#ifdef STATIC
+> 	/* Code active when included from pre-boot environment: */
+> 	#define INIT
+> 	#else
+> 	/* Compile for initramfs/initrd code only */
+> 	#define INIT __init
+> 	static void(*error)(char *m);
+> 	#endif
+> 
+> and I refuse to see three new copies of that disgusting thing (bunzip, 
+> inflate, lzma). So I'd really _really_ want for the pre-boot environment 
+> to have that same __init declaration, and the _same_ indirect error() 
+> handler model, so that we don't have this kind of thing spreading.
 
-The problem is (mostly with the bad hdd's), when the write call
-encounters a bad sector, it takes a bit longer than usual and writes
-the sector without any errors. (dmesg shows a lot of error messages
-embedded in the LIBATA error handling code!). The call never fails for
-any reason.
+Such a common header file for the preboot environment could simply do:
 
-I am using 2.6.27-7-generic  and gcc version 4.3.2  on ubuntu 8.10. I
-have tried upto 2.6.30.10 and multiple distros with similar behavior.
+#undef __init
 
-Here is a summary of things I have attempted.
+... and be done with it.  That way we don't have to worry about mucking
+with $DEITY knows how many linker scripts... it seems the easiest, and
+would certainly eliminate any uglies outside the common file.
 
-I know about the bad sector and it's location on the hdd, since it has
-been verified by using Windows based hex editor utilities, DOS based
-erasure applications, MHDD and many other HDD utilities.
+> It was ugly enough in <compress/mm.h> (which really should be nuked from 
+> orbit - it's the only way to be sure), but when I see it spreading, I go 
+> into full zombie-attack mode, and want to start up the chainsaw and run 
+> around naked.
 
-I have tried using O_DIRECT with aligned buffers, but still could not
-identify the bad sectors during the writing process.
+OK, we really really don't want that... simply because there just aren't
+enough zombies to go around already.  Last I heard, the EPA was
+considering classifying them as an endangered species, only to get stuck
+in a bureaucratic mess if they can be classified as a "species" at all,
+or if they should be classified together with bread mold, toxic waste
+and Microsoft salesmen.
 
-I have tried using fadvise, posix_fadvise functions to get of the
-caching, but still failed.
+The only problem with this is that it'll touch nearly every
+architecture, so it probably is going to have to be .35 material.
 
-I have tried using SG_IO and SAT translation (direct ATA commands with
-device addressing) and it fails too. Raw devices is out of question
-now.
+	-hpa
 
-The libata is not letting / informing the user mode program (executing
-under root) about the media / write errors / bad blocks and failures,
-though it notifies the kernel and logs to syslog. It also tries to
-reallocate, softreset, hardreset the block device which is evident
-from the dmesg logs.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-What has to be done for my program to identify / receive the bad block
-/ sector information during the read / write process?
-
-How can I receive the bad sector / physical and media write errors in
-my program? This is my only requirement and question.
-
-I am currently out of options unless anyone from here can show some
-new direction!
-
-My only option is to recompile the kernel with libata customization
-and changes according to my requirement. (Can I instruct to libata to
-skip the error handling process and pass certain errors to my
-program?).
-
-Is this a good approach and recommended one? If not what should be
-done to achieve it? If yes, can somebody throw some light on it?
-
-Please let me know if you have any queries in my above explanation.
-
-Thank you for reading this rather long post!
-
-Regards
-sponnusa
