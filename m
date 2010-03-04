@@ -1,54 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395Ab0CDUgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 15:36:54 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:57220 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756315Ab0CDUgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 15:36:52 -0500
-Date: Thu, 4 Mar 2010 12:36:49 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/4] rcu: suppress RCU lockdep warnings
-	during early boot
-Message-ID: <20100304203649.GJ6768@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100303154638.GA8576@linux.vnet.ibm.com> <1267631219-8713-2-git-send-email-paulmck@linux.vnet.ibm.com> <20100304111245.GD21977@elte.hu>
+	id S1757031Ab0CDUiN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 15:38:13 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.31.27]:59556 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756312Ab0CDUiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 15:38:10 -0500
+Date: Thu, 4 Mar 2010 21:38:03 +0100
+From: M G Berberich <berberic@fmi.uni-passau.de>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.33 dies on modprobe
+Message-ID: <20100304203803.GA3267@invalid>
+References: <fa.S/rvLm1aQlDSqPwVJz5B+5vHjbM@ifi.uio.no>
+ <fa.+Pg2gFpQSg5k/1mCpBdt8xMXeqY@ifi.uio.no>
+ <fa.0/xGeZctWXDyX0DAp6opgP1HP7w@ifi.uio.no>
+ <fa.kPSENj9DWu0Q8xolQMDkRvAwxQ0@ifi.uio.no>
+ <fa.JUJQsT7bECqtd8JSoNY+SBdASCE@ifi.uio.no>
+ <fa.Lya/54V1PJgwjc8uy1Yk4NyYUh4@ifi.uio.no>
+ <20100303230438.GA3363@invalid>
+ <20100304153042.GA4614@hack>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20100304111245.GD21977@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100304153042.GA4614@hack>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Df-Sender: 311801
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 04, 2010 at 12:12:45PM +0100, Ingo Molnar wrote:
+Am Donnerstag, den 04. März schrieb Américo Wang:
+> On Thu, Mar 04, 2010 at 12:04:38AM +0100, M G Berberich wrote:
+> >Am Mittwoch, den 03. März schrieb Américo Wang:
+> >> On Wed, Mar 3, 2010 at 5:08 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> >> > On Wed, Mar 3, 2010 at 4:58 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> >> >> Ok, below is my patch, I am not sure it could fix the BUG for you,
+> >> >> but it could fix the WARNING. But perhaps they are related.
+> >> >>
+> >> >> Please give it a try.
+> >> >>
+> >> >
+> >> > Oops! Ignore the patch, it should not be correct, I will send a
+> >> > correct version soon.
+> >> > Sorry.
+> >> >
+> >> 
+> >> Here we go:
+> >
+> >Seems to fix the warning, but not the modprobe-Oops.
+> >
 > 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> Thanks much for your testing!
 > 
-> > @@ -154,6 +167,10 @@ static inline int rcu_read_lock_sched_held(void)
-> >  # define rcu_read_acquire_sched()	do { } while (0)
-> >  # define rcu_read_release_sched()	do { } while (0)
-> >  
-> > +static inline void debug_lockdep_rcu_update(void)
-> > +{
-> > +}
-> > +
-> 
-> Note, this method was only included for the !CONFIG_DEBUG_LOCK_ALLOC case, so 
-> i left it out for the time being.
-> 
-> Which may result in a somewhat incomplete debug state, but it would at least 
-> build with lockdep enabled ;-)
+> Could you please try to turn on DEBUG_KOBJECT and boot your kernel
+> with "initcall_debug"? And then show us your dmesg.
 
-Indeed, I clearly didn't test with the boot-time lock testing enabled.  :-/
+If I'm doing this (enabled CONFIG_DEBUG_KERNEL and
+CONFIG_DEBUG_KOBJECT), the kernel dies immediately - no output.
 
-Please accept my apologies for my mess-up, and thank you for fixing it!
+	MfG
+	bmg
 
-							Thanx, Paul
+-- 
+„Des is völlig wurscht, was heut beschlos- | M G Berberich
+ sen wird: I bin sowieso dagegn!“          | berberic@fmi.uni-passau.de
+(SPD-Stadtrat Kurt Schindler; Regensburg)  | www.fmi.uni-passau.de/~berberic
