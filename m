@@ -1,66 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694Ab0CDPUA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 10:20:00 -0500
-Received: from lucidpixels.com ([75.144.35.66]:42572 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269Ab0CDPT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 10:19:59 -0500
-Date: Thu, 4 Mar 2010 10:19:57 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: linux-ext4@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
-Subject: dumpe2fs/dump/restore not working correctly for ext4?
-Message-ID: <alpine.DEB.2.00.1003041000140.18322@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1754725Ab0CDPVz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 10:21:55 -0500
+Received: from smtprelay-h21.telenor.se ([195.54.99.196]:49047 "EHLO
+	smtprelay-h21.telenor.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754269Ab0CDPVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 10:21:54 -0500
+X-SMTPAUTH-B2: 
+X-SENDER-IP: 83.227.31.74
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: An46AOdej0tT4x9KPGdsb2JhbACHXpNgDAEBAQE3LbdhhHwE
+X-IronPort-AV: E=Sophos;i="4.49,581,1262559600"; 
+   d="scan'208";a="45772939"
+From: Jon Severinsson <jon@severinsson.net>
+To: linux-cifs-client@lists.samba.org
+Subject: Re: [RFC PATCH] CIFS posix acl permission checking
+Date: Thu, 4 Mar 2010 16:21:41 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-gentoo-r7; KDE/4.3.5; x86_64; ; )
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201003041150.08341.jon@severinsson.net> <1267710262.2375.280.camel@localhost>
+In-Reply-To: <1267710262.2375.280.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201003041621.44577.jon@severinsson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Den Thursday 04 March 2010 14:44:22 skrev du:
+> although you did a good job with the code itself, I have to say that I
+> think the approach is just wrong. Checking ACLs on the client is simply
+> the wrong way to go. It is just racy and it is not authoritative anyway.
 
-I need to look into this more obviously and try other dumps etc, but I 
-even tried extracting a single (smaller) directory and it also segfaulted, 
-has dump been tested properly with ext4?
+The problem with this approach is that the server checks the permissions using 
+the credentials of the user doing the mount, not the user trying to access the 
+file. This leaves a big gaping security hole on any multiuser system, and even 
+on single user systems you sill loose any benefits from privilege separation 
+(such as running system daemons as an unprivileged user).
 
-# restore -f ../p34-root-2010-03-02.ext4dump -r .
-Segmentation fault (core dumped)
+So while it is possible to do it that way (by including the noperm mount 
+option when mounting), it is generally a bad idea to do so.
 
-(gdb) bt full
-#0  0x000000000040d03d in ?? ()
-No symbol table info available.
-#1  0x000000000040d336 in ?? ()
-No symbol table info available.
-#2  0x000000000040e1a4 in ?? ()
-No symbol table info available.
-#3  0x0000000000408d5b in ?? ()
-No symbol table info available.
-#4  0x0000000000407d92 in ?? ()
-No symbol table info available.
-#5  0x00007f8df3361abd in __libc_start_main () from /lib/libc.so.6
-No symbol table info available.
-#6  0x0000000000403019 in ?? ()
-No symbol table info available.
-#7  0x00007fffa98b8bb8 in ?? ()
-No symbol table info available.
-#8  0x000000000000001c in ?? ()
-No symbol table info available.
-#9  0x0000000000000005 in ?? ()
-No symbol table info available.
-#10 0x00007fffa98b8e18 in ?? ()
-No symbol table info available.
-#11 0x00007fffa98b8e20 in ?? ()
-No symbol table info available.
-#12 0x00007fffa98b8e23 in ?? ()
-No symbol table info available.
-#13 0x00007fffa98b8e43 in ?? ()
-No symbol table info available.
-#14 0x00007fffa98b8e46 in ?? ()
-No symbol table info available.
-#15 0x0000000000000000 in ?? ()
-No symbol table info available.
-(gdb)
+As you are going to do permission checking on the client side anyway, I do not 
+see the problem consulting the acl when doing so. As not consulting the acl 
+only restricts access to files I'm supposed to have access to (and indeed has 
+access to if using smbclient), it only results in me being forced to use the 
+uid, gid, file_mode, and/or dir_mode mount options, at witch point I can't see 
+whether I have access or not other than by trying to do the access, as it will 
+always look as if I have access.
 
-Justin.
+> It is like trying to look up a path using a cached directory listing and
+> then try to open by inode. It simply doesn't work, by the time you do
+> that, things may have been completely changed on the server.
+
+I'm afraid I'm not sure exactly what you mean by this section, could you 
+please clarify.
+
+> And we are not counting the problem that with CIFS (and samba in
+> particular) the client have no way to know what are the real credentials
+> assigned to the session and that the client may have no idea what the
+> users and groups in the ACL are (if client and server do not use exactly
+> the same user database).
+
+Of course this only works as intended if the client and server shares the same 
+user database. In my case that is through ldap, but could as well be nis, 
+winbind or some other similar nss module. However, that is the case already, 
+without any acl, as UNIX permission bits have exactly the same problem. If you 
+are mounting something from a server with a different user database, you'll 
+need to use the uid, gid, file_mode, and/or dir_mode mount options, but that is 
+no different from the situation without this patch.
+
+> The right way is to let the server enforce ACLs, and use multisessions
+> mounts if multiple users are involved. Time would be better spent
+> working in that direction IMO.
+
+If by multisession mounts you mean something like nfs, where the client tells 
+the server what user is trying to do the access, that can only work if either 
+the server blindly trusts the client (as in nfs3) or with some complex 
+cryptographic token infrastructure (as in nfs4 with kerberos authentication). 
+The first case is simply not very secure, and a cryptographic token 
+infrastructure is needlessly complex. If someone were to work on making 
+setting up a cryptographic token infrastructure simpler I would love that, but 
+I'm not even remotely qualified to do so, and in the meantime the current samba 
+infrastructure fulfils all my need, except that the cifs module erroneously 
+refuses me the rights I'm granted through an acl.
+
+> Simo.
+
+Regards
+Jon Severinsson
