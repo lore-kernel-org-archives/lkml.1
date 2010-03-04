@@ -1,87 +1,196 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685Ab0CDXUL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 18:20:11 -0500
-Received: from mga11.intel.com ([192.55.52.93]:54014 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756558Ab0CDXUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 18:20:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,583,1262592000"; 
-   d="scan'208";a="778075476"
-Message-Id: <20100304231547.654246000@intel.com>
-References: <20100304231454.247805000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Mar 2010 15:14:55 -0800
-From: venkatesh.pallipadi@intel.com
-To: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@gmail.com>
-Subject: [patch 1/2] x86: Look for IA32_ENERGY_PERF_BIAS support - v2
-Content-Disposition: inline; filename=0001-x86-Look-for-IA32_ENERGY_PERF_BIAS-support.patch
+	id S1756646Ab0CDXUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 18:20:07 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:51163 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756558Ab0CDXUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 18:20:05 -0500
+Message-Id: <20100304232003.289317000@alcatraz.americas.sgi.com>
+User-Agent: quilt/0.47-1
+Date: Thu, 04 Mar 2010 17:19:55 -0600
+From: Robin Holt <holt@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 1/1] Replace the memtype_lock spinlock with an rwlock -V2.
+References: <20100304231954.511707000@alcatraz.americas.sgi.com>
+Content-Disposition: inline; filename=memtype_atomic_update_V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a new hardware feature, which lets system software to set
-Energy Performance Preference. This is a opaque knob in the form of
-IA32_ENERGY_PERF_BIAS MSR, which has a 4 bit Energy Performance
-Preference Hint. When supported, hardware can use this hint to resolve
-energy-performance tradeoffs. The support for this feature is indicated
-by CPUID.06H.ECX.bit3. Refer to Intel Architectures Software Developer's
-Manual for more info.
 
-This patch, looks up for the support of this feature. It shows up as
-"epb" in /proc/cpuinfo flags, when supported.
+While testing an application using the xpmem (out of kernel) driver, we
+noticed a significant page fault rate reduction of x86_64 with respect
+to ia64.  For one test running with 32 cpus, one thread per cpu, it
+took 01:08 for each of the threads to vm_insert_pfn 2GB worth of pages.
+For the same test running on 256 cpus, one thread per cpu, it took 14:48
+to vm_insert_pfn 2 GB worth of pages.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+The slowdown was tracked to lookup_memtype which acquires the
+spinlock memtype_lock.  This heavily contended lock was slowing down
+vm_insert_pfn().
+
+With the cmpxchg on page->flags method, both the 32 cpu and 256 cpu
+cases take approx 00:01.3 seconds to complete.
+
+
+To: H. Peter Anvin <hpa@zytor.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Signed-off-by: Robin Holt <holt@sgi.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+
 ---
- arch/x86/include/asm/cpufeature.h          |    1 +
- arch/x86/include/asm/msr-index.h           |    2 ++
- arch/x86/kernel/cpu/addon_cpuid_features.c |    1 +
- 3 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 0cd82d0..0e1d52c 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -161,6 +161,7 @@
+Changes since -V1:
+1) Introduce atomically setting and clearing the page flags and not
+using the global memtype_lock to protect page->flags.
+
+2) This allowed me the opportunity to convert the rwlock back into a
+spinlock and not affect _MY_ tests performance as all the pages my test
+was utilizing are tracked by struct pages.
+
+3) Corrected the commit log.  The timings were for 32 cpus and not 256.
+
+ arch/x86/include/asm/cacheflush.h |   43 +++++++++++++++++++++-----------------
+ arch/x86/mm/pat.c                 |   10 --------
+ 2 files changed, 25 insertions(+), 28 deletions(-)
+
+Index: memtype_lock_rwlock_V1/arch/x86/include/asm/cacheflush.h
+===================================================================
+--- memtype_lock_rwlock_V1.orig/arch/x86/include/asm/cacheflush.h	2010-02-27 08:01:36.753839923 -0600
++++ memtype_lock_rwlock_V1/arch/x86/include/asm/cacheflush.h	2010-02-27 08:01:43.646018100 -0600
+@@ -44,9 +44,6 @@ static inline void copy_from_user_page(s
+ 	memcpy(dst, src, len);
+ }
+ 
+-#define PG_WC				PG_arch_1
+-PAGEFLAG(WC, WC)
+-
+ #ifdef CONFIG_X86_PAT
+ /*
+  * X86 PAT uses page flags WC and Uncached together to keep track of
+@@ -55,16 +52,23 @@ PAGEFLAG(WC, WC)
+  * _PAGE_CACHE_UC_MINUS and fourth state where page's memory type has not
+  * been changed from its default (value of -1 used to denote this).
+  * Note we do not support _PAGE_CACHE_UC here.
+- *
+- * Caller must hold memtype_lock for atomicity.
   */
- #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
- #define X86_FEATURE_ARAT	(7*32+ 1) /* Always Running APIC Timer */
-+#define X86_FEATURE_EPB		(7*32+ 2) /* IA32_ENERGY_PERF_BIAS support */
- 
- /* Virtualization flags: Linux defined */
- #define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 1cd58cd..feeb918 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -230,6 +230,8 @@
- 
- #define MSR_IA32_MISC_ENABLE		0x000001a0
- 
-+#define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
 +
- /* MISC_ENABLE bits: architectural */
- #define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
- #define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
-diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
-index 97ad79c..3bc5eda 100644
---- a/arch/x86/kernel/cpu/addon_cpuid_features.c
-+++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
-@@ -32,6 +32,7 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
- 	static const struct cpuid_bit __cpuinitconst cpuid_bits[] = {
- 		{ X86_FEATURE_IDA, CR_EAX, 1, 0x00000006 },
- 		{ X86_FEATURE_ARAT, CR_EAX, 2, 0x00000006 },
-+		{ X86_FEATURE_EPB, CR_ECX, 3, 0x00000006 },
- 		{ X86_FEATURE_NPT,   CR_EDX, 0, 0x8000000a },
- 		{ X86_FEATURE_LBRV,  CR_EDX, 1, 0x8000000a },
- 		{ X86_FEATURE_SVML,  CR_EDX, 2, 0x8000000a },
--- 
-1.6.0.6
-
--- 
++#define _PGMT_DEFAULT		0
++#define _PGMT_WC		PG_arch_1
++#define _PGMT_UC_MINUS		PG_uncached
++#define _PGMT_WB		(PG_uncached | PG_arch_1)
++#define _PGMT_MASK		(~(PG_uncached | PG_arch_1))
++
+ static inline unsigned long get_page_memtype(struct page *pg)
+ {
+-	if (!PageUncached(pg) && !PageWC(pg))
++	unsigned long pg_flags = pg->flags & (PG_uncached | PG_arch_1);
++
++	if (pg_flags == _PGMT_DEFAULT)
+ 		return -1;
+-	else if (!PageUncached(pg) && PageWC(pg))
++	else if (pg_flags == _PGMT_WC)
+ 		return _PAGE_CACHE_WC;
+-	else if (PageUncached(pg) && !PageWC(pg))
++	else if (pg_flags == _PGMT_UC_MINUS)
+ 		return _PAGE_CACHE_UC_MINUS;
+ 	else
+ 		return _PAGE_CACHE_WB;
+@@ -72,25 +76,26 @@ static inline unsigned long get_page_mem
+ 
+ static inline void set_page_memtype(struct page *pg, unsigned long memtype)
+ {
++	unsigned long memtype_flags = _PGMT_DEFAULT;
++	unsigned long old_flags;
++	unsigned long new_flags;
++
+ 	switch (memtype) {
+ 	case _PAGE_CACHE_WC:
+-		ClearPageUncached(pg);
+-		SetPageWC(pg);
++		memtype_flags = _PGMT_WC;
+ 		break;
+ 	case _PAGE_CACHE_UC_MINUS:
+-		SetPageUncached(pg);
+-		ClearPageWC(pg);
++		memtype_flags = _PGMT_UC_MINUS;
+ 		break;
+ 	case _PAGE_CACHE_WB:
+-		SetPageUncached(pg);
+-		SetPageWC(pg);
+-		break;
+-	default:
+-	case -1:
+-		ClearPageUncached(pg);
+-		ClearPageWC(pg);
++		memtype_flags = _PGMT_WB;
+ 		break;
+ 	}
++
++	do {
++		old_flags = pg->flags;
++		new_flags = (old_flags & _PGMT_MASK) | memtype_flags;
++	} while (cmpxchg(&pg->flags, old_flags, new_flags) != old_flags);
+ }
+ #else
+ static inline unsigned long get_page_memtype(struct page *pg) { return -1; }
+Index: memtype_lock_rwlock_V1/arch/x86/mm/pat.c
+===================================================================
+--- memtype_lock_rwlock_V1.orig/arch/x86/mm/pat.c	2010-02-27 08:01:36.753839923 -0600
++++ memtype_lock_rwlock_V1/arch/x86/mm/pat.c	2010-02-27 08:01:43.646018100 -0600
+@@ -156,7 +156,7 @@ static char *cattr_name(unsigned long fl
+  * The data structure is a list that is also organized as an rbtree
+  * sorted on the start address of memtype range.
+  *
+- * memtype_lock protects both the linear list and rbtree.
++ * memtype_lock protects the rbtree.
+  */
+ 
+ struct memtype {
+@@ -296,8 +296,6 @@ static int pat_pagerange_is_ram(unsigned
+  * Here we do two pass:
+  * - Find the memtype of all the pages in the range, look for any conflicts
+  * - In case of no conflicts, set the new memtype for pages in the range
+- *
+- * Caller must hold memtype_lock for atomicity.
+  */
+ static int reserve_ram_pages_type(u64 start, u64 end, unsigned long req_type,
+ 				  unsigned long *new_type)
+@@ -404,9 +402,7 @@ int reserve_memtype(u64 start, u64 end, 
+ 	is_range_ram = pat_pagerange_is_ram(start, end);
+ 	if (is_range_ram == 1) {
+ 
+-		spin_lock(&memtype_lock);
+ 		err = reserve_ram_pages_type(start, end, req_type, new_type);
+-		spin_unlock(&memtype_lock);
+ 
+ 		return err;
+ 	} else if (is_range_ram < 0) {
+@@ -501,9 +497,7 @@ int free_memtype(u64 start, u64 end)
+ 	is_range_ram = pat_pagerange_is_ram(start, end);
+ 	if (is_range_ram == 1) {
+ 
+-		spin_lock(&memtype_lock);
+ 		err = free_ram_pages_type(start, end);
+-		spin_unlock(&memtype_lock);
+ 
+ 		return err;
+ 	} else if (is_range_ram < 0) {
+@@ -583,10 +577,8 @@ static unsigned long lookup_memtype(u64 
+ 
+ 	if (pat_pagerange_is_ram(paddr, paddr + PAGE_SIZE)) {
+ 		struct page *page;
+-		spin_lock(&memtype_lock);
+ 		page = pfn_to_page(paddr >> PAGE_SHIFT);
+ 		rettype = get_page_memtype(page);
+-		spin_unlock(&memtype_lock);
+ 		/*
+ 		 * -1 from get_page_memtype() implies RAM page is in its
+ 		 * default state and not reserved, and hence of type WB
 
