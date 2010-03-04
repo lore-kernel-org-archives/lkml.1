@@ -1,89 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175Ab0CDWVm (ORCPT <rfc822;w@1wt.eu>);
+	id S1755510Ab0CDWVx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 17:21:53 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:64422 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267Ab0CDWVm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Mar 2010 17:21:42 -0500
-Received: from lucidpixels.com ([75.144.35.66]:46833 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146Ab0CDWVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 17:21:41 -0500
-Date: Thu, 4 Mar 2010 17:21:40 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: tytso@mit.edu
-cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: dumpe2fs/dump/restore not working correctly for ext4?
-In-Reply-To: <20100304221728.GH15028@thunk.org>
-Message-ID: <alpine.DEB.2.00.1003041719180.17723@p34.internal.lan>
-References: <alpine.DEB.2.00.1003041000140.18322@p34.internal.lan> <20100304221728.GH15028@thunk.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AfabEo0JRX1IJcu9GASFVYYiSpya3vTsbcXfLyHg4oaDu6ljONjVLHRYHFfMP9XxIc
+         t2XZ7ySAwkmFc9S9tM+w6Ac29E5rOvq1mrb++tbLlY5Kxys5ndoxNTRWLEn3sdMrboBM
+         apa7oH266+2zFz5wOH2H32VGgWxHUyT/FHl7U=
+Message-ID: <4B903273.90305@garzik.org>
+Date: Thu, 04 Mar 2010 17:21:39 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Adam Jackson <ajax@redhat.com>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>	 <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>	 <20100304185002.GA23532@srcf.ucam.org>	 <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>	 <20100304190450.GA23807@srcf.ucam.org>  <4B900AB2.1020603@garzik.org> <1267741133.1316.9.camel@atropine.boston.devel.redhat.com>
+In-Reply-To: <1267741133.1316.9.camel@atropine.boston.devel.redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Mar 2010, tytso@mit.edu wrote:
-
-> On Thu, Mar 04, 2010 at 10:19:57AM -0500, Justin Piszcz wrote:
->> Hi,
+On 03/04/2010 05:18 PM, Adam Jackson wrote:
+> On Thu, 2010-03-04 at 14:32 -0500, Jeff Garzik wrote:
+>> On 03/04/2010 02:04 PM, Matthew Garrett wrote:
+>>> F-12 continues to ship the -nv driver, which will work fine with any
+>>> kernel version as long as nouveau is disabled.
 >>
->> I need to look into this more obviously and try other dumps etc, but
->> I even tried extracting a single (smaller) directory and it also
->> segfaulted, has dump been tested properly with ext4?
+>> FAIL.  I actually tried that.  Have you?  Do you think it is remotely
+>> easy for a technically component, non-Xorg-hacker type to accomplish?
 >
-> Was dump/restore statically or dynamically linked?  And with which
-> version of libext2fs from e2fsprogs?
->
-> 						- Ted
->
+> # cat<<  EOF>  /etc/X11/xorg.conf
+> Section "Device"
+>      Identifier "Card0"
+>      Driver "nv"
+> EndSection
+> EOF
 
-Hi,
+Already tried that, and other suggested variations thereof.
 
-I tried restoring from two different datasets on one machine <10GB and another
-one ~30GB, all files are corrupted, other users report the same problem:
+Did not work on F11 or F12 with
+05:00.0 VGA compatible controller: nVidia Corporation GeForce 9800 GX2 
+(rev a2)
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=511651
-https://lists.ubuntu.com/archives/universe-bugs/2009-June/098729.html
 
-Per your requests:
+> # sed -i 's/\<kernel\>.*/&  nouveau.modeset=0/g' /etc/grub.conf
 
-They are dynamically linked.
-This is standard Debian Testing x86_64, nothing custom (in the 
-distribution).
+Never tried this part.
 
-p34:~# ldd `which dump`
-         linux-vdso.so.1 =>  (0x00007fff93192000)
-         libext2fs.so.2 => /lib/libext2fs.so.2 (0x00007f0bdf559000)
-         libcom_err.so.2 => /lib/libcom_err.so.2 (0x00007f0bdf356000)
-         libblkid.so.1 => /lib/libblkid.so.1 (0x00007f0bdf141000)
-         libuuid.so.1 => /lib/libuuid.so.1 (0x00007f0bdef3d000)
-         libc.so.6 => /lib/libc.so.6 (0x00007f0bdebe9000)
-         libpthread.so.0 => /lib/libpthread.so.0 (0x00007f0bde9cc000)
-         /lib64/ld-linux-x86-64.so.2 (0x00007f0bdf79a000)
-p34:~# ldd `which restore`
-         linux-vdso.so.1 =>  (0x00007fff857ed000)
-         libext2fs.so.2 => /lib/libext2fs.so.2 (0x00007f5b5c3cd000)
-         libcom_err.so.2 => /lib/libcom_err.so.2 (0x00007f5b5c1ca000)
-         libe2p.so.2 => /lib/libe2p.so.2 (0x00007f5b5bfc3000)
-         libreadline.so.5 => /lib/libreadline.so.5 (0x00007f5b5bd83000)
-         libncurses.so.5 => /lib/libncurses.so.5 (0x00007f5b5bb3e000)
-         libc.so.6 => /lib/libc.so.6 (0x00007f5b5b7e9000)
-         libpthread.so.0 => /lib/libpthread.so.0 (0x00007f5b5b5cd000)
-         /lib64/ld-linux-x86-64.so.2 (0x00007f5b5c60e000)
-         libdl.so.2 => /lib/libdl.so.2 (0x00007f5b5b3c9000)
-p34:~# dpkg -l | grep libext2fs
-p34:~# dpkg -l | grep libe2fs
-p34:~# dpkg -l | grep e2fs
-ii  e2fslibs                             1.41.10-1                  ext2/ext3/ext4 file system libraries
-ii  e2fsprogs                            1.41.10-1                  ext2/ext3/ext4 file system utilities
-p34:~#
-
-p34:~# dpkg -S /lib/libext2fs.so.2
-e2fslibs: /lib/libext2fs.so.2
-p34:~#
-
-Justin.
+	Jeff
 
 
