@@ -1,81 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038Ab0CDR5G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:57:06 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:35579 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753117Ab0CDR5E (ORCPT
+	id S1753959Ab0CDR7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:59:22 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51129 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284Ab0CDR7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:57:04 -0500
-Date: Thu, 4 Mar 2010 12:56:59 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nicholas Miell <nmiell@comcast.net>, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH -tip] introduce sys_membarrier(): process-wide memory
-	barrier (v9)
-Message-ID: <20100304175659.GA3255@Krystal>
-References: <20100225232316.GA30196@Krystal> <20100304122304.GA6864@elte.hu> <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003040827100.7046@localhost.localdomain>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 12:40:55 up 40 days, 20:18,  5 users,  load average: 0.40, 0.35,
-	0.48
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Mar 2010 12:59:21 -0500
+Subject: Re: [PATCH 0/9] oprofile, perf, x86: introduce new functions to
+ reserve perfctrs
+From: Peter Zijlstra <peterz@infradead.org>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+In-Reply-To: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
+References: <1267716131-17908-1-git-send-email-robert.richter@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Mar 2010 18:59:19 +0100
+Message-ID: <1267725559.25158.208.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> >  - SA_RUNNING: a way to signal only running threads - as a way for user-space 
-> >    based concurrency control mechanisms to deschedule running threads (or, like
-> >    in your case, to implement barrier / garbage collection schemes).
+On Thu, 2010-03-04 at 16:22 +0100, Robert Richter wrote:
+> This patch set improves the perfctr reservation code. New functions
+> are available to reserve a counter by its index only. It is no longer
+> necessary to allocate both msrs of a counter which also improves the
+> code and makes it easier.
 > 
-> Hmm. This sounds less fundamentally broken, but at the same time also 
-> _way_ more invasive in the signal handling layer. It's already one of our 
-> more "exciting" layers out there.
+> For oprofile a handler is implemented that returns an error now if a
+> counter is already reserved by a different subsystem such as perf or
+> watchdog. Before, oprofile silently ignored that counter. Finally the
+> new reservation functions can be used to allocate special parts of the
+> pmu such as IBS, which is necessary to use IBS with perf too.
 > 
+> The patches are available in the oprofile tree:
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git core
+> 
+> If there are no objections, I suggest to merge it into the
+> tip/perf/core too, maybe after pending patches went in. If there are
+> already conflicts, I will do the merge for this.
 
-Hrm, thinking about it a bit further, the only way I see we could provide a
-usable SA_RUNNING flag would be to add hooks to the scheduler. These hooks would
-somehow have to call user-space code (!) when scheduling in/out a thread. Yes,
-this sounds utterly broken (since these hooks would have to be preemptable).
+Right, so cleaning up that reservation code is nice, but wouldn't it be
+much nicer to simply do away with all that and make everything use the
+(low level) perf code?
 
-The idea is this: if we look, for instance, at the kernel preemptable RCU
-implementations, they consist of two parts: one is iteration on all CPUs to
-consider all active CPUs, and the other is a modification of the scheduler to
-note all preempted tasks that were in a preemptable RCU C.S..
+You expressed interest in both making the oprofile kernel space user the
+perf apis as well as making oprofile user space use the perf abi, in
+which case the kernel entirely side goes away.
 
-Just for the memory barrier we consider for sys_membarrier(), I had to ensure
-that the scheduler issues memory barriers to order accesses to user-space memory
-and mm_cpumask modifications. In reality, what we are doing is to ensure that
-the operation required on the running thread is done by the scheduler too when
-scheduling in/out the task.
 
-As soon as we have signal handlers which perform more than a simple memory
-barrier (e.g. something that has side-effects outside of the processor), I doubt
-it would ever make sense to only run the handler on running threads unless we
-have hooks in the scheduler too.
 
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency Consultant
-EfficiOS Inc.
-http://www.efficios.com
