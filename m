@@ -1,48 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011Ab0CDRuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 12:50:00 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.183]:35035 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752254Ab0CDRt6 (ORCPT
+	id S1753315Ab0CDRwN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 12:52:13 -0500
+Received: from mail-gy0-f174.google.com ([209.85.160.174]:51261 "EHLO
+	mail-gy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953Ab0CDRwL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 12:49:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApIBAB+Bj0tLd/sX/2dsb2JhbAAHgwLBQZA8gTWCXWoEgxc
-X-IronPort-AV: E=Sophos;i="4.49,582,1262581200"; 
-   d="scan'208";a="57533035"
-Message-ID: <4B8FF2C3.1060808@teksavvy.com>
-Date: Thu, 04 Mar 2010 12:49:55 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-GB; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Thu, 4 Mar 2010 12:52:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=i94zRczABPrgAreKV2KHvl+M9x/KjFFhVYaApqeeq6Hih2gKaik/VSTDeeX+1yx3iv
+         P68cyjVWTtSPtDB40J0qpvPFBc8I5n3SDGvF8O8na2xU0kQW8yVoi61pQ4tANr2w0PCu
+         Ui1Rm2FL900jsHl3YGl/ubYZ7z0SDWxqrvZLk=
 MIME-Version: 1.0
-To: foo saa <foosaa@gmail.com>
-CC: Greg Freemyer <greg.freemyer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
- program
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>	 <4B8FC6AC.4060801@teksavvy.com> <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-In-Reply-To: <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <b4198de60910190853k54267f9flcf6453d6e23f6da3@mail.gmail.com>
+References: <1255939868-5050-1-git-send-email-mcree@orcon.net.nz> 
+	<b4198de60910190853k54267f9flcf6453d6e23f6da3@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 4 Mar 2010 12:51:49 -0500
+Message-ID: <8bd0f97a1003040951x52b0a2e5m8b724245ab773436@mail.gmail.com>
+Subject: Re: Unimplemented syscalls on Alpha
+To: Matt Turner <mattst88@gmail.com>
+Cc: Michael Cree <mcree@orcon.net.nz>, linux-alpha@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/10 10:33, foo saa wrote:
-..
-> hdparm is good, but I don't want to use the internal ATA SECURE ERASE
-> because I can never get the amount of bad sectors the drive had.
-..
+On Mon, Oct 19, 2009 at 10:53, Matt Turner wrote:
+> On Mon, Oct 19, 2009 at 4:11 AM, Michael Cree wrote:
+>> I couldn't but help notice the increasing number of unimplemented syscalls
+>> on the Alpha architecture.  I thought I might poke around to see what might
+>> be required to get these implemented and got a pleasant surprise when it
+>> seems some only need an entry in the syscall table.  Indeed, the patch in
+>> reply to this message gets preadv and pwritev going -- tested with the
+>> sample program at http://lkml.org/lkml/2009/4/6/535.
+>
+> Cool. I was looking into doing this, but I didn't know how to test the syscalls.
+>
+> I tried to keep a list of missing syscalls here,
+> http://alphalinux.org/wiki/index.php/TODO_List but as you can see it's
+> already out of date.
+>
+>> I am happy to write patches to wire up more of the syscalls, but I am
+>> wondering which ones are as straightforward as the preadv/pwritev case?
+>> That is, do any require extra programming other than the syscall table?  Do
+>> I need to get the entries in the syscall table in the same order as other
+>> architectures?
+>
+> I'm curious and unsure about this too. Patches would be great. I think
+> we should figure out who we need to CC to get patches into the kernel,
+> as neither of our maintainers have any sort of Alpha tree. I've
+> noticed a few patches submitted to this list have never made it into
+> the kernel, as well, maybe we should start an alpha tree?
 
-Oh.. but isn't that information in the S.M.A.R.T. data ??
+typically if the sys_xxx entry is in common code, you dont need to
+implement arch-specific stuff.  just hook them up in the system call
+table.  afaik, preadv/pwritev fall into this category.
 
-You'll not find the bad sectors by writing -- a true WRITE nearly never
-reports a media error.  Instead, the drive simply remaps to a good sector
-on the fly and returns success.
+> The entries do not need to be in the same order of have the same
+> number as other architectures, just once you set the number you cannot
+> change it (without breaking the ABI).
 
-Generally, only READs report media errors.
-
-Cheers
+correct ... and breaking the ABI is unacceptable
+-mike
