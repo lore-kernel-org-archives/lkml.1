@@ -1,69 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940Ab0CEQCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 11:02:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41887 "EHLO mx1.redhat.com"
+	id S1754489Ab0CEQDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 11:03:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455Ab0CEQCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 11:02:38 -0500
-Message-ID: <4B912AE9.90603@redhat.com>
-Date: Fri, 05 Mar 2010 11:01:45 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
+	id S1752455Ab0CEQDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 11:03:40 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: M vd S <mvds.00@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: O_NONBLOCK is NOOP on block devices
+References: <4B904D98.50602@gmail.com> <4B9060DE.4080104@gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 05 Mar 2010 11:03:37 -0500
+In-Reply-To: <4B9060DE.4080104@gmail.com> (M. vd S.'s message of "Fri, 05 Mar
+	2010 02:39:42 +0100")
+Message-ID: <x49sk8ezrfq.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/6] perf probe: Add missing variable initialization
-References: <1267804269-22660-1-git-send-email-acme@infradead.org>
-In-Reply-To: <1267804269-22660-1-git-send-email-acme@infradead.org>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> cc1: warnings being treated as errors
-> util/probe-finder.c: In function ‘find_line_range’:
-> util/probe-finder.c:172: warning: ‘src’ may be used uninitialized in this function
-> make: *** [util/probe-finder.o] Error 1
+M vd S <mvds.00@gmail.com> writes:
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> > > If O_NONBLOCK is meaningful whatsoever (see man page docs for
+>> > > semantics) against block devices, one would expect a nonblocking io
+>> >
+>> > It isn't...
+>>
+>> Thanks for the reply. It's good to get confirmation that I am not all
+>> alone in an alternate non blocking universe. The linux man pages
+>> actually had me convinced O_NONBLOCK would actually keep a process
+>> from blocking on device io :-)
+>>
+>
+> You're even less alone, I'm running into the same issue just now. But
+> I think I've found a way around it, see below.
 
-Thank you!
+I guess I should note that I've suggested nonblocking I/O for files
+before:
 
-> 
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/util/probe-finder.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-> index e77dc88..1e6c65e 100644
-> --- a/tools/perf/util/probe-finder.c
-> +++ b/tools/perf/util/probe-finder.c
-> @@ -169,7 +169,7 @@ static const char *cu_find_realpath(Dwarf_Die *cu_die, const char *fname)
->  {
->  	Dwarf_Files *files;
->  	size_t nfiles, i;
-> -	const char *src;
-> +	const char *src = NULL;
->  	int ret;
->  
->  	if (!fname)
+  http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-10/0290.html
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+I'll also note that enabling such a patch broke apps that accessed cd
+burners, for example, since O_NONBLOCK had some preexisting semantics
+there that I fail to recall.
+
+Cheers,
+Jeff
