@@ -1,107 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194Ab0CERkY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:40:24 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53667 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648Ab0CERkX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:40:23 -0500
-Date: Fri, 5 Mar 2010 17:40:18 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [git pull] vfs part 3 (write_inode mess)
-Message-ID: <20100305174017.GX30031@ZenIV.linux.org.uk>
-References: <1267802800.5174.6.camel@localhost.localdomain>
- <20100305154823.GV30031@ZenIV.linux.org.uk>
+	id S1755206Ab0CERmH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:42:07 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:41473 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754648Ab0CERmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 12:42:06 -0500
+Date: Fri, 5 Mar 2010 11:42:03 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: [PATCH] x86: Intel microcode loader performance improvement
+Message-ID: <20100305174203.GA19638@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100305154823.GV30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 03:48:23PM +0000, Al Viro wrote:
-> I'm going to push the next VFS pile in about half an hour and get to the
-> write_inode situation.  I'm not sure what's the best course here.  Note
-> that since you've pulled it, you also have conflicts with what's in the
-> mainline.  I can do *another* backmerge (already had one due to gfs2 trivial
-> conflicts) and push the result.  Which will suck, since XFS conflicts
-> are not entirely trivial and we'll get a really ugly merge node, with
-> conflict resolution both hidden and not quite obvious.
+We've noticed that on large SGI UV system configurations, running
+microcode.ctl can take very long periods of time.  This is due to
+the large number of vmalloc/vfree calls made by the Intel
+generic_load_microcode() logic.
 
-OK, a backmerge it is.  Linus, could you please pull
-git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ write_inode
-or suggest a saner way to do that?
+By reusing allocated space, the following patch reduces the time
+to run microcode.ctl on a 1024 cpu system from approximately 80
+seconds down to 1 or 2 seconds.
 
-I've done backmerges of two points in mainline (trees that got merged
-into mainline, actually) that created conflicts.  So at that point it's
-(a) descendent of what's been pulled into NFS tree and (b) merges clean
-with mainline.  All for two patches (at commit 716c28c..) ;-/
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-It's independent from the previous VFS pull; there's more stuff, hopefully
-for later today, but the worst of the mess should be gone with that one.
+---
 
-Shortlog:
-Al Viro (2):
-      Merge commit 'e402746a945ceb9d0486a8e3d5917c9228fa4404' into write_inode
-      Merge commit '07fec73625dc0db6f9aed68019918208a2ca53f5' into write_inode
+ arch/x86/kernel/microcode_intel.c |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-Christoph Hellwig (2):
-      make sure data is on disk before calling ->write_inode
-      pass writeback_control to ->write_inode
-
-Diffstat:
- fs/adfs/adfs.h               |    2 +-
- fs/adfs/inode.c              |    5 +++--
- fs/affs/affs.h               |    3 ++-
- fs/affs/inode.c              |    2 +-
- fs/afs/internal.h            |    1 -
- fs/afs/super.c               |    1 -
- fs/afs/write.c               |   21 ---------------------
- fs/bfs/inode.c               |    5 +++--
- fs/btrfs/ctree.h             |    2 +-
- fs/btrfs/inode.c             |    4 ++--
- fs/exofs/exofs.h             |    2 +-
- fs/exofs/inode.c             |    4 ++--
- fs/ext2/ext2.h               |    2 +-
- fs/ext2/inode.c              |   11 +++++++++--
- fs/ext3/inode.c              |    4 ++--
- fs/ext4/ext4.h               |    2 +-
- fs/ext4/inode.c              |    6 +++---
- fs/fat/inode.c               |    9 +++++++--
- fs/fs-writeback.c            |   22 +++++++++++++---------
- fs/gfs2/super.c              |    5 +++--
- fs/hfs/hfs_fs.h              |    2 +-
- fs/hfs/inode.c               |    2 +-
- fs/hfsplus/super.c           |    3 ++-
- fs/jfs/inode.c               |    5 ++++-
- fs/jfs/jfs_inode.h           |    2 +-
- fs/minix/inode.c             |    8 +++++---
- fs/nfs/inode.c               |   10 +++-------
- fs/nfs/internal.h            |    2 +-
- fs/ntfs/dir.c                |    2 +-
- fs/ntfs/file.c               |    2 +-
- fs/ntfs/inode.c              |    2 +-
- fs/ntfs/inode.h              |    4 ++--
- fs/ntfs/super.c              |    8 ++++++++
- fs/omfs/inode.c              |   10 ++++++++--
- fs/reiserfs/inode.c          |    4 ++--
- fs/sysv/inode.c              |   10 ++++++++--
- fs/sysv/sysv.h               |    2 +-
- fs/ubifs/dir.c               |    2 +-
- fs/ubifs/file.c              |    8 ++++----
- fs/ubifs/super.c             |    2 +-
- fs/udf/inode.c               |    4 ++--
- fs/udf/udfdecl.h             |    2 +-
- fs/ufs/inode.c               |    5 +++--
- fs/ufs/ufs.h                 |    2 +-
- fs/xfs/linux-2.6/xfs_super.c |    8 ++------
- include/linux/ext3_fs.h      |    2 +-
- include/linux/fs.h           |    2 +-
- include/linux/reiserfs_fs.h  |    2 +-
- 48 files changed, 123 insertions(+), 107 deletions(-)
+Index: linux/arch/x86/kernel/microcode_intel.c
+===================================================================
+--- linux.orig/arch/x86/kernel/microcode_intel.c
++++ linux/arch/x86/kernel/microcode_intel.c
+@@ -343,10 +343,11 @@ static enum ucode_state generic_load_mic
+ 				int (*get_ucode_data)(void *, const void *, size_t))
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+-	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
++	u8 *ucode_ptr = data, *new_mc = NULL, *mc = NULL;
+ 	int new_rev = uci->cpu_sig.rev;
+ 	unsigned int leftover = size;
+ 	enum ucode_state state = UCODE_OK;
++	unsigned int curr_mc_size = 0;
+ 
+ 	while (leftover) {
+ 		struct microcode_header_intel mc_header;
+@@ -361,9 +362,15 @@ static enum ucode_state generic_load_mic
+ 			break;
+ 		}
+ 
+-		mc = vmalloc(mc_size);
+-		if (!mc)
+-			break;
++		/* For performance reasons, reuse mc area when possible */
++		if (!mc || mc_size > curr_mc_size) {
++			if (mc)
++				vfree(mc);
++			mc = vmalloc(mc_size);
++			if (!mc)
++				break;
++			curr_mc_size = mc_size;
++		}
+ 
+ 		if (get_ucode_data(mc, ucode_ptr, mc_size) ||
+ 		    microcode_sanity_check(mc) < 0) {
+@@ -376,13 +383,16 @@ static enum ucode_state generic_load_mic
+ 				vfree(new_mc);
+ 			new_rev = mc_header.rev;
+ 			new_mc  = mc;
+-		} else
+-			vfree(mc);
++			mc = NULL;	/* trigger new vmalloc */
++		}
+ 
+ 		ucode_ptr += mc_size;
+ 		leftover  -= mc_size;
+ 	}
+ 
++	if (mc)
++		vfree(mc);
++
+ 	if (leftover) {
+ 		if (new_mc)
+ 			vfree(new_mc);
