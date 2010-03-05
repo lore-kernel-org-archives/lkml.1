@@ -1,75 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822Ab0CEWdX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 17:33:23 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:43116 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754740Ab0CEWdW (ORCPT
+	id S1755832Ab0CEWfZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 17:35:25 -0500
+Received: from trinity.develer.com ([83.149.158.210]:54761 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754740Ab0CEWfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 17:33:22 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=duQcPVr6eVUgdmzlgkm3v7aPjVfUUcdX4n84dDGLGIFZEcQYfGfoE1HELFGgiX7qg
-	gDVYhKRQF9sRIMUXe6xGg==
+	Fri, 5 Mar 2010 17:35:24 -0500
+Date: Fri, 5 Mar 2010 23:35:20 +0100
+From: Andrea Righi <arighi@develer.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Suleiman Souhlal <suleiman@google.com>,
+       Greg Thelen <gthelen@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm 2/4] page_cgroup: introduce file cache flags
+Message-ID: <20100305223519.GC1578@linux>
+References: <1267699215-4101-1-git-send-email-arighi@develer.com>
+ <1267699215-4101-3-git-send-email-arighi@develer.com>
+ <20100305063249.GH3073@balbir.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1267827943.4997.56.camel@laptop>
-References: <20100305153926.639506880@chello.nl>
-	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
-	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
-	 <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
-	 <1267824933.4997.9.camel@laptop>
-	 <bd4cb8901003051338p1c12ceacv994bad73e81093a2@mail.gmail.com>
-	 <1267825433.4997.14.camel@laptop>
-	 <bd4cb8901003051357o357ac7adt7cb56b5deb4089dd@mail.gmail.com>
-	 <1267827943.4997.56.camel@laptop>
-Date: Fri, 5 Mar 2010 14:33:19 -0800
-Message-ID: <bd4cb8901003051433l3ef94874r94efd5b50251766c@mail.gmail.com>
-Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       robert.richter@amd.com, fweisbec@gmail.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100305063249.GH3073@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 5, 2010 at 2:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, 2010-03-05 at 13:57 -0800, Stephane Eranian wrote:
->
->> When I read AJ68, my understanding is that it's not that you do not
->> get the interrupt. It will be delayed by one event. The buffer will become
->> full. You won't overrun the buffer, you will get the interrupt at the next
->> event. On interrupt, you have to reset the PEBS position pointer anyway.
->> There is already a disconnect between the sampling period and the actual
->> instruction sampled. That's not making the situation that much worse, unless
->> I am missing something.
->
-> The current code doesn't use the buffering at all, it uses single-shot
-> PEBS by keeping pebs_event_reset 0 and setting a threshold of a single
-> entry, so if due to AJ68 we miss a PMI it will never come.
->
-What stops PEBS is that it crosses the end of the buffer. The buffer
-is one-deep,
-threshold = buffer end, you get a single sample. reset has nothing to
-do with this.
+On Fri, Mar 05, 2010 at 12:02:49PM +0530, Balbir Singh wrote:
+> * Andrea Righi <arighi@develer.com> [2010-03-04 11:40:13]:
+> 
+> > Introduce page_cgroup flags to keep track of file cache pages.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > Signed-off-by: Andrea Righi <arighi@develer.com>
+> > ---
+> 
+> Looks good
+> 
+> 
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>  
+> 
+> >  include/linux/page_cgroup.h |   49 +++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 49 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+> > index 30b0813..1b79ded 100644
+> > --- a/include/linux/page_cgroup.h
+> > +++ b/include/linux/page_cgroup.h
+> > @@ -39,6 +39,12 @@ enum {
+> >  	PCG_CACHE, /* charged as cache */
+> >  	PCG_USED, /* this object is in use. */
+> >  	PCG_ACCT_LRU, /* page has been accounted for */
+> > +	PCG_MIGRATE_LOCK, /* used for mutual execution of account migration */
+> > +	PCG_ACCT_FILE_MAPPED, /* page is accounted as file rss*/
+> > +	PCG_ACCT_DIRTY, /* page is dirty */
+> > +	PCG_ACCT_WRITEBACK, /* page is being written back to disk */
+> > +	PCG_ACCT_WRITEBACK_TEMP, /* page is used as temporary buffer for FUSE */
+> > +	PCG_ACCT_UNSTABLE_NFS, /* NFS page not yet committed to the server */
+> >  };
+> > 
+> >  #define TESTPCGFLAG(uname, lname)			\
+> > @@ -73,6 +79,27 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
+> >  TESTPCGFLAG(AcctLRU, ACCT_LRU)
+> >  TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
+> > 
+> > +/* File cache and dirty memory flags */
+> > +TESTPCGFLAG(FileMapped, ACCT_FILE_MAPPED)
+> > +SETPCGFLAG(FileMapped, ACCT_FILE_MAPPED)
+> > +CLEARPCGFLAG(FileMapped, ACCT_FILE_MAPPED)
+> > +
+> > +TESTPCGFLAG(Dirty, ACCT_DIRTY)
+> > +SETPCGFLAG(Dirty, ACCT_DIRTY)
+> > +CLEARPCGFLAG(Dirty, ACCT_DIRTY)
+> > +
+> > +TESTPCGFLAG(Writeback, ACCT_WRITEBACK)
+> > +SETPCGFLAG(Writeback, ACCT_WRITEBACK)
+> > +CLEARPCGFLAG(Writeback, ACCT_WRITEBACK)
+> > +
+> > +TESTPCGFLAG(WritebackTemp, ACCT_WRITEBACK_TEMP)
+> > +SETPCGFLAG(WritebackTemp, ACCT_WRITEBACK_TEMP)
+> > +CLEARPCGFLAG(WritebackTemp, ACCT_WRITEBACK_TEMP)
+> > +
+> > +TESTPCGFLAG(UnstableNFS, ACCT_UNSTABLE_NFS)
+> > +SETPCGFLAG(UnstableNFS, ACCT_UNSTABLE_NFS)
+> > +CLEARPCGFLAG(UnstableNFS, ACCT_UNSTABLE_NFS)
+> > +
+> >  static inline int page_cgroup_nid(struct page_cgroup *pc)
+> >  {
+> >  	return page_to_nid(pc->page);
+> > @@ -83,6 +110,9 @@ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+> >  	return page_zonenum(pc->page);
+> >  }
+> > 
+> > +/*
+> > + * lock_page_cgroup() should not be held under mapping->tree_lock
+> > + */
+> 
+> May be a DEBUG WARN_ON would be appropriate here?
 
-AJ68 does not say you miss a PMI, it says the PMI comes at the next
-event. I suspect they mean the next observed event, and not necessarily
-the next recorded event. But I can check on that.
+Sounds good. WARN_ON_ONCE()?
 
-
-> I guess we can fudge something, but at what point does the whole thing
-> stop being useful?
-
-What matters is that you get a valid sample.
-
->
-> It would end up being something with fuzzy period and fuzzy location,
-> which is a loss-loss situation if you ask me.
->
-The period is already fuzzy to begin with. Recall our discussion a couple
-of weeks back.
+Thanks,
+-Andrea
