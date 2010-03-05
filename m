@@ -1,58 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295Ab0CEPsa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 10:48:30 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59763 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103Ab0CEPs1 (ORCPT
+	id S1754348Ab0CEPtP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 10:49:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55448
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753506Ab0CEPtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 10:48:27 -0500
-Date: Fri, 5 Mar 2010 15:48:23 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Merge of the 'write_inode' branch from the VFS tree
-Message-ID: <20100305154823.GV30031@ZenIV.linux.org.uk>
-References: <1267802800.5174.6.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267802800.5174.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Fri, 5 Mar 2010 10:49:14 -0500
+Date: Fri, 05 Mar 2010 07:49:32 -0800 (PST)
+Message-Id: <20100305.074932.225568964.davem@davemloft.net>
+To: daniel@fooishbar.org
+Cc: mattst88@gmail.com, crmafra2@gmail.com, skeggsb@gmail.com,
+       airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
+       dri-devel@lists.sf.net, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: Re: Making Xorg easier to test
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100305154143.GD2505@tempa>
+References: <20100305100030.GA4970@Pilar.aei.mpg.de>
+	<b4198de61003050722s54478b08q31c4eb7fd892fb90@mail.gmail.com>
+	<20100305154143.GD2505@tempa>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 10:26:40AM -0500, Trond Myklebust wrote:
-> Hi Al,
-> 
-> When you submitted the VFS changes for this merge window, I was hoping
-> you would include the 'write_inode' branch. I've been waiting for them
-> in order to push the NFS writeback improvements to Linus.
-> 
-> Would you be willing to either push the write_inode branch to Linus or
-> to Ack my doing so as part of the NFS push?
+From: Daniel Stone <daniel@fooishbar.org>
+Date: Fri, 5 Mar 2010 17:41:43 +0200
 
-Said branch has managed to grow conflicts with XFS commits already in
-the mainline ;-/  With commits postdating the write_inode ones by a week
-or so and having the same author.
+> I understand that you guys are upset about this, so maybe you'd like to
+> donate, say, 10% of your developer base to help out? That'd be pretty
+> ace.
 
-I'm going to push the next VFS pile in about half an hour and get to the
-write_inode situation.  I'm not sure what's the best course here.  Note
-that since you've pulled it, you also have conflicts with what's in the
-mainline.  I can do *another* backmerge (already had one due to gfs2 trivial
-conflicts) and push the result.  Which will suck, since XFS conflicts
-are not entirely trivial and we'll get a really ugly merge node, with
-conflict resolution both hidden and not quite obvious.
-
-Or I can do a new branch, put updated pair of patches there (hch has sent
-the updated variants my way) and ask you to rebuild NFS tree.  Which will
-also suck, since it adds PITA for you and you are completely innocent in
-that clusterfuck.
-
-Suggestions?  I'd love to get out of that mess with minimal PITA for
-everyone involved and minimally messed tree...
-
-One thing for sure - I'm not going to do that kind of "guaranteed to be
-unchanged" shared branches again, TYVM.
+You have to support less than %10 of the amount of hardware we have to
+support.
