@@ -1,52 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217Ab0CEKow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 05:44:52 -0500
-Received: from oceanic.CalvaEDI.COM ([89.202.194.168]:58321 "EHLO
-	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755028Ab0CEKou (ORCPT
+	id S1755252Ab0CEKpx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 05:45:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48028 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028Ab0CEKpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 05:44:50 -0500
-Message-ID: <4B90E071.1060903@Calva.COM>
-Date: Fri, 05 Mar 2010 11:44:01 +0100
-From: John Hughes <john@Calva.COM>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Fri, 5 Mar 2010 05:45:51 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-media@vger.kernel.org
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] V4L/DVB: mx1-camera: compile fix
+Date: Fri,  5 Mar 2010 11:45:24 +0100
+Message-Id: <1267785924-16167-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.7.0
+In-Reply-To: <20100304194241.GG19843@pengutronix.de>
+References: <20100304194241.GG19843@pengutronix.de>
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 15426] New: Running many copies of bonnie++
- on different filesystems seems to deadlock in sync
-References: <bug-15426-10286@http.bugzilla.kernel.org/> <20100302161627.bf02d0a2.akpm@linux-foundation.org> <4B8E517E.3010702@Calva.COM> <20100303115015.GN5768@kernel.dk> <4B8E5805.30505@Calva.COM> <20100303120317.GP5768@kernel.dk> <20100303144241.GF21495@skl-net.de> <4B8FC9F8.1050700@Calva.COM> <20100304174239.GO7517@skl-net.de>
-In-Reply-To: <20100304174239.GO7517@skl-net.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Noll wrote:
-> On 15:55, John Hughes wrote:
->   
->>> That's the same patch you posted two weeks ago and on which Linus
->>> commented he thinks it is broken. He also proposed another, simpler
->>> patch (included below) which I'm running for a few days and which
->>> fixes the sync problem for me.
->>>  
->>>       
->> I've tried the "simpler patch" on my system and it makes no difference 
->> for me.
->>     
->
-> Does it make no difference to Jens' patch, or no difference to an
-> unpatched kernel?
->   
-No difference to an unpatched kernel.  I didn't think of stacking the 
-patches.
-> BTW, switching from cfq to noop or deadline also improved things a
-> bit for me.
->   
-Will try that.
+This is a regression of
+
+	7d58289 (mx1: prefix SOC specific defines with MX1_ and deprecate old names)
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/media/video/mx1_camera.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
+index 2ba14fb..29c2833 100644
+--- a/drivers/media/video/mx1_camera.c
++++ b/drivers/media/video/mx1_camera.c
+@@ -45,11 +45,13 @@
+ #include <mach/hardware.h>
+ #include <mach/mx1_camera.h>
+ 
++#define __DMAREG(offset)	(MX1_IO_ADDRESS(MX1_DMA_BASE_ADDR) + offset)
++
+ /*
+  * CSI registers
+  */
+-#define DMA_CCR(x)	(0x8c + ((x) << 6))	/* Control Registers */
+-#define DMA_DIMR	0x08			/* Interrupt mask Register */
++#define DMA_CCR(x)	__DMAREG(0x8c + ((x) << 6))	/* Control Registers */
++#define DMA_DIMR	__DMAREG(0x08)		/* Interrupt mask Register */
+ #define CSICR1		0x00			/* CSI Control Register 1 */
+ #define CSISR		0x08			/* CSI Status Register */
+ #define CSIRXR		0x10			/* CSI RxFIFO Register */
+@@ -783,7 +785,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+ 			       pcdev);
+ 
+ 	imx_dma_config_channel(pcdev->dma_chan, IMX_DMA_TYPE_FIFO,
+-			       IMX_DMA_MEMSIZE_32, DMA_REQ_CSI_R, 0);
++			       IMX_DMA_MEMSIZE_32, MX1_DMA_REQ_CSI_R, 0);
+ 	/* burst length : 16 words = 64 bytes */
+ 	imx_dma_config_burstlen(pcdev->dma_chan, 0);
+ 
+@@ -797,8 +799,8 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+ 	set_fiq_handler(&mx1_camera_sof_fiq_start, &mx1_camera_sof_fiq_end -
+ 						   &mx1_camera_sof_fiq_start);
+ 
+-	regs.ARM_r8 = DMA_BASE + DMA_DIMR;
+-	regs.ARM_r9 = DMA_BASE + DMA_CCR(pcdev->dma_chan);
++	regs.ARM_r8 = (long)DMA_DIMR;
++	regs.ARM_r9 = (long)DMA_CCR(pcdev->dma_chan);
+ 	regs.ARM_r10 = (long)pcdev->base + CSICR1;
+ 	regs.ARM_fp = (long)pcdev->base + CSISR;
+ 	regs.ARM_sp = 1 << pcdev->dma_chan;
+-- 
+1.7.0
 
