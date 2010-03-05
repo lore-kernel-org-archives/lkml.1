@@ -1,56 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180Ab0CEVNi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:13:38 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:39551 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754170Ab0CEVNh (ORCPT
+	id S1755216Ab0CEVQo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:16:44 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36297 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753235Ab0CEVQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:13:37 -0500
-Date: Fri, 5 Mar 2010 22:13:30 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
- governor
-Message-ID: <20100305211329.GC20554@elf.ucw.cz>
-References: <20100303000649.757684000@intel.com>
- <20100303000849.278509000@intel.com>
- <4B8DADB9.1040302@xenotime.net>
- <20100303215453.GG2579@ucw.cz>
- <1267662469.16916.1020.camel@localhost.localdomain>
- <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
- <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
- <20100305204029.GB20554@elf.ucw.cz>
- <20100305205522.GA15489@srcf.ucam.org>
+	Fri, 5 Mar 2010 16:16:43 -0500
+Date: Fri, 5 Mar 2010 21:16:29 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH] ARM: Assume new page cache pages have dirty D-cache
+Message-ID: <20100305211629.GF4885@n2100.arm.linux.org.uk>
+References: <20100304214435.GJ13417@n2100.arm.linux.org.uk> <1267807960.2581.5.camel@e102109-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100305205522.GA15489@srcf.ucam.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1267807960.2581.5.camel@e102109-lin.cambridge.arm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2010-03-05 20:55:22, Matthew Garrett wrote:
-> On Fri, Mar 05, 2010 at 09:40:29PM +0100, Pavel Machek wrote:
-> 
-> > That can be only true if it does not give benefits period... AC and
-> > battery power are quite different scenarios.
-> 
-> No, they're not.
+On Fri, Mar 05, 2010 at 04:52:40PM +0000, Catalin Marinas wrote:
+> As Ben said, I think we can set PG_dcache_clean in the
+> clear/copy_user_page() functions. My doubt with these functions is the
+> highmem cases where kunmap_atomic() only flushes the D-cache in one
+> situation, the other just calling kunmap_high() which doesn't seem to do
+> anything to the caches.
 
-Yes, they are.
+In which case you're totally missing the point with these functions.
+The copy_user_page and clear_user_page functions specifically do tricks
+to ensure that they can avoid additional cache maintainence - or any
+cache maintainence at all.
 
-Would you care to elaborate? I may very well want top power on AC
-power, and max powersavings on battery; most people do.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+For instance, on aliasing VIPT, they will map the user page in using
+the same colour as the ultimate userspace address, ensuring that any
+cache lines created will be visible to the userspace application.
+
+So what kunmap_atomic() does with caches is not really relevant to the
+coherency issue.
