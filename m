@@ -1,63 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269Ab0CEOwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 09:52:41 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58610 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751771Ab0CEOwk (ORCPT
+	id S1753285Ab0CEOyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 09:54:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45031 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771Ab0CEOyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 09:52:40 -0500
-Date: Fri, 5 Mar 2010 14:55:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michael Tate <michael.tate@wanadoo.fr>
-Cc: gregkh@suse.de, alan@linux.intel.com, o.hartmann@telovital.com,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] staging:et131x:et131x_isr.c Fix coding style
- issues. This patch fixes line length and brace coding style issues raised
- by checkpatch.pl Signed-off-by: Michael Tate <michael.tate@wanadoo.fr>
-Message-ID: <20100305145523.746491f5@lxorguk.ukuu.org.uk>
-In-Reply-To: <1267799456-5949-1-git-send-email-michael.tate@wanadoo.fr>
-References: <1267799456-5949-1-git-send-email-michael.tate@wanadoo.fr>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Mar 2010 09:54:15 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/1] perf tools: Don't trow away old map slices not overlapped by new maps
+Date: Fri,  5 Mar 2010 11:54:02 -0300
+Message-Id: <1267800842-22324-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -	if (status & ET_INTR_TXDMA_ISR) {
-> +	if (status & ET_INTR_TXDMA_ISR)
->  		et131x_handle_send_interrupt(etdev);
-> -	}
->  
->  	/* Handle all the completed Receives interrupts */
-> -	if (status & ET_INTR_RXDMA_XFR_DONE) {
-> +	if (status & ET_INTR_RXDMA_XFR_DONE)
->  		et131x_handle_recv_interrupt(etdev);
-> -	}
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Plenty of those to kill I am sure. 
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/thread.c |   35 ++++++++++++++++++++++++++++++++---
+ 1 files changed, 32 insertions(+), 3 deletions(-)
 
+diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
+index 21b9216..9024fa1 100644
+--- a/tools/perf/util/thread.c
++++ b/tools/perf/util/thread.c
+@@ -183,8 +183,8 @@ struct thread *perf_session__findnew(struct perf_session *self, pid_t pid)
+ 	return th;
+ }
+ 
+-static void map_groups__remove_overlappings(struct map_groups *self,
+-					    struct map *map)
++static int map_groups__fixup_overlappings(struct map_groups *self,
++					  struct map *map)
+ {
+ 	struct rb_root *root = &self->maps[map->type];
+ 	struct rb_node *next = rb_first(root);
+@@ -209,7 +209,36 @@ static void map_groups__remove_overlappings(struct map_groups *self,
+ 		 * list.
+ 		 */
+ 		list_add_tail(&pos->node, &self->removed_maps[map->type]);
++		/*
++		 * Now check if we need to create new maps for areas not
++		 * overlapped by the new map:
++		 */
++		if (map->start > pos->start) {
++			struct map *before = map__clone(pos);
++
++			if (before == NULL)
++				return -ENOMEM;
++
++			before->end = map->start - 1;
++			map_groups__insert(self, before);
++			if (verbose >= 2)
++				map__fprintf(before, stderr);
++		}
++
++		if (map->end < pos->end) {
++			struct map *after = map__clone(pos);
++
++			if (after == NULL)
++				return -ENOMEM;
++
++			after->start = map->end + 1;
++			map_groups__insert(self, after);
++			if (verbose >= 2)
++				map__fprintf(after, stderr);
++		}
+ 	}
++
++	return 0;
+ }
+ 
+ void maps__insert(struct rb_root *maps, struct map *map)
+@@ -254,7 +283,7 @@ struct map *maps__find(struct rb_root *maps, u64 ip)
+ 
+ void thread__insert_map(struct thread *self, struct map *map)
+ {
+-	map_groups__remove_overlappings(&self->mg, map);
++	map_groups__fixup_overlappings(&self->mg, map);
+ 	map_groups__insert(&self->mg, map);
+ }
+ 
+-- 
+1.5.5.6
 
->  		/* Handle Free Buffer Ring 0 and 1 Low interrupt */
-> -		if (status & (ET_INTR_RXDMA_FB_R0_LOW | ET_INTR_RXDMA_FB_R1_LOW)) {
-> +		if (status &
-> +			(ET_INTR_RXDMA_FB_R0_LOW | ET_INTR_RXDMA_FB_R1_LOW)) {
-
-Bt gratuitious wrapping of stuff that's quite readable is not an
-improvement. (The 80 chars guide in the coding style is just that - and
-largely retired)
-
->  			/*
->  			 * This indicates the number of unused buffers in
->  			 * RXDMA free buffer ring 0 is <= the limit you
-
-You need a Signed-off-by: line for submitting it. See
-Documentation/SubmittingPatches for more details if you need to.
-
-Please do resubit the first parts of that patch (and others like it), the
-driver still needs a lot of attention and cleaning it up stylewise is
-part of that work.
-
-Alan
