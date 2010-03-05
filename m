@@ -1,48 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881Ab0CERCJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 12:02:09 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:61445 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754020Ab0CERCG (ORCPT
+	id S1754603Ab0CERDb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 12:03:31 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44324 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753880Ab0CERDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 12:02:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:cc:subject
-	:references:from:date:in-reply-to:message-id:mime-version
-	:content-type; q=dns; s=sasl; b=Bew7KHqrfYHxp5/5Aiv1FctjX8Hon559
-	XGfmCNnq+z5h8cYqFhSP9hlPo/NbDX1PTzXZN7VmtoeIsCdtp+3fib05ZGdq2VJl
-	O0Wt69B77PpUmJXHxdZFLUrw00E/fQeKdcqg4pFzcwvzr03umiF772ZUOzsz6rJx
-	3tX1lDbY/zw=
-To: Johannes Sixt <j.sixt@viscovery.net>
-Cc: Jiri Slaby <jirislaby@gmail.com>, git@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: gitignore broken in git 1.7.0.1: slash checks leading dirs
-References: <4B90C701.3070308@gmail.com> <4B90C974.2050405@viscovery.net>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Fri, 05 Mar 2010 09:01:16 -0800
-In-Reply-To: <4B90C974.2050405@viscovery.net> (Johannes Sixt's message of
- "Fri\, 05 Mar 2010 10\:05\:56 +0100")
-Message-ID: <7vhbou1z4z.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: BCBD651C-2878-11DF-B8E3-D033EE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+	Fri, 5 Mar 2010 12:03:30 -0500
+Date: Fri, 5 Mar 2010 17:04:14 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, daniel@fooishbar.org,
+       skeggsb@gmail.com, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, mingo@elte.hu
+Subject: Re: [git pull] drm request 3
+Message-ID: <20100305170414.46acfb8f@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.1003050832250.3788@localhost.localdomain>
+References: <20100305151754.GB2505@tempa>
+	<20100305.072612.186421758.davem@davemloft.net>
+	<20100305154009.GC2505@tempa>
+	<20100305.074835.159078083.davem@davemloft.net>
+	<20100305160217.663413eb@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003050810140.3788@localhost.localdomain>
+	<20100305162327.084d4038@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1003050832250.3788@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Sixt <j.sixt@viscovery.net> writes:
+> Look at who I screamed at. Dave Airlie. The guy who works for Red Hat. The 
+> guy who is, as far as I know, effectively in charge of that whole 
+> integration. Yeah, I realize that there are other people (Kyle?) involved, 
+> and maybe Dave isn't as central as I think he is, but I learnt from last 
+> time that the nouveau guys don't seem to care.
 
-> Jiri Slaby schrieb:
->> having 'linux' line in .gitignore makes 'include/linux/vga_switcheroo.h'
->> to be ignored
->
-> That's the behavior that I would expect.
+Ok "screamed about" is perhaps better wording. Why should the Nouveau
+guys care ? You've forced their hand, you've demanded stuff they
+said they didn't want to do and then you've bitched about things they
+said they would do. Actually I think they've been quite restrained. I'd
+probably have proposed a licence change to make it only work on FreeBSD
+and Solaris given that treatment ;)
 
-Also the initial report made it sound as if there were a regression, but
-it doesn't seem to be the case; I don't see it behaving any differently
-among 1.7.0, 1.7.0.1, 1.6.0, 1.6.6, or even 1.5.4.
+> Even if you need to change the interface, I've actually looked at the 
+> patch in question (have you, Alan?),
 
+Yes but I read it somewhat differently.
+
+Someone who never made a commitment to stability decided to do the
+logical thing. They deleted all the old broken interfaces, they cleaned
+up their ioctls numbering and they tided up afterwards. I read it as the
+action of someone who simply doesnt acknowledge that you have a right to
+control their development and is continuing to work in the way they
+intended.
+
+You can only see it as malicious if you assume they ever had some reason
+to keep compatibility or had promised it somewhere. Quite the reverse
+happened, and they never asked to be upstream in the first place.
+
+
+	"But the fact is, at least from my standpoint, I'd really
+	hope that anything I had written would be used in ways I asked
+	people to"
+				- Linus Torvalds, 2004
 
 
 
