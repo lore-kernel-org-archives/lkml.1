@@ -1,93 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752241Ab0CEJTx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 04:19:53 -0500
-Received: from ksp.mff.cuni.cz ([195.113.26.206]:47566 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751029Ab0CEJTu (ORCPT
+	id S1752567Ab0CEJUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 04:20:18 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39266 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267Ab0CEJUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 04:19:50 -0500
-Date: Fri, 5 Mar 2010 10:19:49 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
-	governor
-Message-ID: <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
-References: <20100303000649.757684000@intel.com> <20100303000849.278509000@intel.com> <4B8DADB9.1040302@xenotime.net> <20100303215453.GG2579@ucw.cz> <1267662469.16916.1020.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1267662469.16916.1020.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Mar 2010 04:20:14 -0500
+Subject: Re: [PATCH 06/14] perf, x86: PEBS infrastructure
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, eranian@google.com,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+In-Reply-To: <20100305061942.GF27606@brick.ozlabs.ibm.com>
+References: <20100304140046.596569763@chello.nl>
+	 <20100304140100.392111285@chello.nl>
+	 <20100305061942.GF27606@brick.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Mar 2010 10:20:10 +0100
+Message-ID: <1267780810.16716.51.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2010-03-03 at 13:57 -0800, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > index 8c666d8..4945add 100644
-> > > --- a/Documentation/kernel-parameters.txt
-> > > +++ b/Documentation/kernel-parameters.txt
-> > > @@ -749,6 +749,10 @@ and is between 256 and 4096 characters. It is defined in the file
-> > >  			Default value is 0.
-> > >  			Value can be changed at runtime via /selinux/enforce.
-> > >  
-> > > +	epb		[X86] Control IA32_ENERGY_PERF_BIAS setting
-> > > +			"disable" - Kernel will not modify this MSR
-> > > +			<0..15> - Kernel will set this MSR to i/p static value
-> > > +
-> > > 
-> > > 
-> > > Should be more like:
-> > > 
-> > > 	epb=		[X86] Control IA32_ENERGY_PERF_BIAS setting
-> > > 			Format: { disable | <0...15> }
-> > > 			"disable" - Kernel will not modify this MSR
-> > > 			<0..15> - Kernel will set this MSR to i/p static value
-> > > 
-> > > 
-> > > But what is "i/p"?  Use whatever word it should be, please.
-> > > What do the values mean?
-> > > And what does IA32 have to do with this?  does it not apply to x86_64?
-> > 
-> > Exactly. This is end user documentation, it should not even talk about
-> > MSRs. Tell us what the setting does...
+On Fri, 2010-03-05 at 17:19 +1100, Paul Mackerras wrote:
+> On Thu, Mar 04, 2010 at 03:00:52PM +0100, Peter Zijlstra wrote:
 > 
-> The not so good part of this feature is that the setting here is opaque.
-> Software can set this based on its preference, for example 0 for
-> performance 15 for power and 7 for balanced. Different CPUs can use this
-> information to do different optimizations or power-performance tradeoffs
-> in the hardware. The only thing that user knows here is that there is
-> this dial with 16 possible values. I can remove the MSR name here. But,
-> I think that will end up confusing the end user on what this thing is
-> and how it is related to all the other tunables we have in the kernel.
-> Having the MSR name gives a hint.
-
-You should say what the setting does; you can mention below what MSR
-it corresponds to, but "Control IA32_ENERGY_PERF_BIAS setting" is not
-suitable user documentation.
-
-> Also, the expectation here is that kernel will do the right thing by
-> default. The option here is to the user who_knows_what_he_is_doing to
-> override the kernel default.
-
-You did not give user enough information to do anything intelligent...
-
-> > Also... does it make change to tweak the setting during runtime? Maybe
-> > different settings for AC and battery power?
+> > Implement a simple PEBS model that always takes a single PEBS event at
+> > a time. This is done so that the interaction with the rest of the
+> > system is as expected (freq adjust, period randomization, lbr).
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > LKML-Reference: <new-submission>
+> > ---
 > 
-> Yes. Matthew mentioned in other response aboue setting this based on
-> freq. For the CPUs that support this feature currently, we don't see
-> advantage in setting this feature at run time.
+> ...
+> 
+> > @@ -203,8 +203,9 @@ struct perf_event_attr {
+> >  				enable_on_exec :  1, /* next exec enables     */
+> >  				task           :  1, /* trace fork/exit       */
+> >  				watermark      :  1, /* wakeup_watermark      */
+> > +				precise        :  1, /* OoO invariant counter */
+> 
+> Could you explain in a bit more detail what this means?  
+> 
+> Also, it would be good to mention the ABI addition in the patch
+> description, and explain it briefly there.
 
-If the feature is useless, then why set it at all?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Quite so, my bad.
+
+So on Intel regular PMIs can happen several instructions later than the
+actual event due to out-of-order processing of the instruction stream,
+that is, it doesn't keep the IP of the actual instruction that triggered
+the event, so all we have is the IP of where the interrupt happened (the
+difference between these IPs is called skid).
+
+Now Intel came up with something called Precise Event Based Sampling
+(PEBS) which stores a (partial) register set in some memory buffer at
+event time (trap like for some daft reason).
+
+So from that we can obtain the IP of the instruction _after_ the
+instruction that caused the event. This is reliably so (mostly [*]) and
+does not contain out-of-order artifacts (0-skid).
+
+So the ->precise flag tells us to use a more precise sampling method if
+available on the hardware (AMD could be using IBS to implement this for
+their instruction counter).
+
+If you look at patch 9/14 you'll see we use the Last Branch Recording
+(LBR) facility of the Intel cpus (patch 8/14) to find the last basic
+block in the instruction stream and use that to rewind the instruction
+stream to get the actual instruction that triggered the event. In case
+that works I also set PERF_RECORD_MISC_EXACT to indicate we got the IP
+dead on (mostly [*]).
+
+I suspect CPUs that are strictly in-order, like Atom, might always have
+it right, but I need to validate that.
+
+Does that clarify stuff?
+
+[*] there are CPU errata that may delay the PEBS recording, mostly with
+instructions like MOV SS, STI and things like SMM.
+
