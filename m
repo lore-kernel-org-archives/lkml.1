@@ -1,60 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714Ab0CEBAj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 20:00:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60421 "EHLO
+	id S932071Ab0CEBI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 20:08:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42225 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754505Ab0CEBAi (ORCPT
+	by vger.kernel.org with ESMTP id S1752399Ab0CEBIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 20:00:38 -0500
-Date: Thu, 4 Mar 2010 17:00:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] device.h drivers/base/core.c Convert dev_<level>
- macros to functions
-Message-Id: <20100304170030.f97c6630.akpm@linux-foundation.org>
-In-Reply-To: <20100304165609.20849b93.akpm@linux-foundation.org>
-References: <cover.1267682641.git.joe@perches.com>
-	<f2b24d484347c083fa87856a75c1d96102af9005.1267682641.git.joe@perches.com>
-	<20100304165609.20849b93.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Mar 2010 20:08:14 -0500
+Date: Thu, 4 Mar 2010 17:08:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Luc Verhaegen <libv@skynet.be>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm request 3
+In-Reply-To: <20100305005617.GA31883@skynet.be>
+Message-ID: <alpine.LFD.2.00.1003041702110.3659@localhost.localdomain>
+References: <20100304103929.6eb81d45@jbarnes-piketon> <alpine.LFD.2.00.1003041047400.3751@localhost.localdomain> <20100304105624.70fe845e@jbarnes-piketon> <alpine.LFD.2.00.1003041101390.3751@localhost.localdomain> <21d7e9971003041125x1aee3b3ew1e407ca6695e10fc@mail.gmail.com>
+ <alpine.LFD.2.00.1003041142250.3751@localhost.localdomain> <21d7e9971003041406n53d9cae0h53374abf3dca494e@mail.gmail.com> <alpine.LFD.2.00.1003041554490.3751@localhost.localdomain> <1267748927.3496.6.camel@nisroch> <alpine.LFD.2.00.1003041635280.3751@localhost.localdomain>
+ <20100305005617.GA31883@skynet.be>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Mar 2010 16:56:09 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed,  3 Mar 2010 22:27:23 -0800 Joe Perches <joe@perches.com> wrote:
+
+On Fri, 5 Mar 2010, Luc Verhaegen wrote:
 > 
-> > Save ~60k in a defconfig
-> > 
-> > Use %pV and struct va_format
-> > Format arguments are verified before printk
-> 
-> Well that doesn't work very well.
-> 
-> drivers/net/pcmcia/pcnet_cs.c:117: error: 'dev_info' redeclared as different kind of symbol
-> include/linux/device.h:645: error: previous declaration of 'dev_info' was here
-> 
-> there are lots of other dev_info's which will fail plus perhaps
-> dev_err's, etc.
-> 
+> libdrm is composed of the main libdrm, and several driver specific 
+> libdrms today (... and libkms, yes).
 
-btw, this may be kludgeable aroundable by doing
+It's actually not libdrm that is the primary issue, I'm sorry for saying 
+that.
 
-int _dev_info(const struct device *dev, const char *fmt, ...);
+It's the nouveau_drv.so thing - the actual X driver. 
 
-#define dev_info(...) _dev_info(...)
+Anyway, since I had looked at the libdrm sources, I had most of this on my 
+machine anyway, so I've compiled it all, and am going to reboot and see if 
+I can make a few symlinks work.
 
-which will use the preprocessor's separation of `foo' from `foo()' to
-fix things up.
+IOW, right now I have this:
 
-But it would be better to rename all those dev_info's to device_info or
-whatever, IMO.
+   [root@nehalem ~]# cd /usr/lib64/xorg/modules/drivers/
+   [root@nehalem drivers]# ll nouveau_drv.so*
+   lrwxrwxrwx 1 root root      21 2010-03-04 17:00 nouveau_drv.so -> nouveau_drv.so-0.0.16
+   -rwxr-xr-x 1 root root  343784 2010-03-04 16:59 nouveau_drv.so-0.0.15
+   -rwxr-xr-x 1 root root 1698805 2010-03-04 16:59 nouveau_drv.so-0.0.16
 
+and I'll see if that works (yeah, yeah, I didn't strip the thing, and 
+it's compiled with whatever defaults that probably include debugging too, 
+so it's huge).
+
+Quite frankly, I still think that I shouldn't have to play these kinds of 
+games. I think the versioning should be built in. And I still think that 
+"staging" is not an excuse for "it's bad crap, and we don't care"
+
+			Linus
