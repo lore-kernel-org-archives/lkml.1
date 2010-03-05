@@ -1,61 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904Ab0CEXB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 18:01:28 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56666 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755358Ab0CEXB1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 18:01:27 -0500
-Date: Fri, 5 Mar 2010 23:01:17 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, dushistov@mail.ru,
-       joel.becker@oracle.com, shaggy@linux.vnet.ibm.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PULL REQUEST] Quota cleanups & fixes and ext3 fixes for
- 2.6.34-rc1
-Message-ID: <20100305230117.GZ30031@ZenIV.linux.org.uk>
-References: <20100305003304.GE4887@quack.suse.cz>
- <alpine.LFD.2.00.1003051314330.3906@localhost.localdomain>
+	id S1755922Ab0CEXDB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 18:03:01 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49976 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755358Ab0CEXC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 18:02:59 -0500
+Date: Fri, 5 Mar 2010 15:02:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/3] rcu: ftrace&x86/mce RCU lockdep fixes,
+	extend RCU CPU stall
+Message-ID: <20100305230256.GA9410@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1003051314330.3906@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 01:24:35PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 5 Mar 2010, Jan Kara wrote:
-> > 
-> >   could you please pull from
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git for_linus
-> > 
-> >   You'll get lots of quota cleanups from Christoph which touch filesystems
-> > all over the place but it's just function renaming and moving quota calls
-> > from VFS into filesystems themselves.
-> 
-> Gaah. This interacted with the VFS stuff (the do_filp_open() cleanip in 
-> particular) I merged from Al earlier today. 
-> 
-> It really looked very trivial, so I fixed it up. Al had split up 
-> do_filp_open() into several helper functions, and one of your changes was 
-> to the old pre-split one. I felt confident enough about it that I just did 
-> the obvious merge resolution, but you guys should check it out to be sure.
+Hello!
 
-It's OK as merge resolution, but I really wonder if that patch (taking
-quota initialization to filesystems) is a good idea.  It adds boilerplate
-code that is easy to miss.  And looking at what's done in e.g. ext2,
-I'd say that places where it's added are lousy - if we want to do that
-on directory modifications, we ought to take it into places that actually
-create directory entries.  Not to mention that we never shrink directories
-there, so it should be just one call in ext2_add_link() instead of all
-that pile.
+This patch set gets rid of read_barrier_depends() in ftrace in favor of
+RCU APIs, increases the RCU CPU stall timeout if CONFIG_PROVE_RCU, and
+fixes an x86/mce lockdep splat.
 
-Looks like a good case for a followup series, if nothing else.
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+ arch/x86/kernel/cpu/mcheck/mce.c |   12 ++++++++----
+ kernel/rcutree.h                 |   22 +++++++++++++++-------
+ kernel/trace/ftrace.c            |   23 +++++++++++++----------
+ 3 files changed, 36 insertions(+), 21 deletions(-)
