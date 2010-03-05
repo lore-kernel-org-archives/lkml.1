@@ -1,87 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565Ab0CETnL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 14:43:11 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:33465 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755350Ab0CETnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 14:43:09 -0500
-Date: Fri, 5 Mar 2010 11:43:05 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: zippel@linux-m68k.org, mingo@elte.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, geert@linux-m68k.org, elendil@planet.nl,
-       cloos@jhcloos.com
-Subject: [PATCH 0/2] v4 kconfig: place git SHA1 in .config output if in SCM
-Message-ID: <20100305194305.GA23009@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	id S1755572Ab0CEToA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 14:44:00 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:51207 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350Ab0CETn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 14:43:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=GdPBMU0t4FYZlqxp2UReFVylbBwLcIJfrR49gw9vjkr3RWjZF4/TNXUnggjcgjLC6c
+         kKtkvB8Y2jfgxJtD5Pjj9nharBRDNofihV9+BiL3B5FxcciIZ1UBPHXlLuMZp44KdZkN
+         0HGrBICmz/nhhmZJFqMGi7uHHFNs+rXM6/8KA=
+Message-ID: <4B915EEF.1040307@garzik.org>
+Date: Fri, 05 Mar 2010 14:43:43 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100301 Fedora/3.0.3-1.fc11 Thunderbird/3.0.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: [git patches] libata updates for 2.6.34
+References: <20100301202330.GA14977@havoc.gtf.org> <201003051958.24987.bzolnier@gmail.com>
+In-Reply-To: <201003051958.24987.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch appends the localversion string to the Linux kernel version.
-For example, in a git tree with uncommitted changes, the .config file
-might start as follows (but with leading hash marks):
+On 03/05/2010 01:58 PM, Bartlomiej Zolnierkiewicz wrote:
+> On Monday 01 March 2010 09:23:30 pm Jeff Garzik wrote:
+>
+>>        libata: Pass host flags into the pci helper
+>
+> It introduces a subtle bug:
+>
+> struct ata_host {
+> ...
+> 	unsigned long		flags;
+>
+>> @@ -1642,8 +1643,8 @@ extern int ata_pci_sff_activate_host(struct ata_host *host,
+>>   				     irq_handler_t irq_handler,
+>>   				     struct scsi_host_template *sht);
+>>   extern int ata_pci_sff_init_one(struct pci_dev *pdev,
+>> -				const struct ata_port_info * const * ppi,
+>> -				struct scsi_host_template *sht, void *host_priv);
+>> +		const struct ata_port_info * const * ppi,
+>> +		struct scsi_host_template *sht, void *host_priv, int hflags);
+>
+> 'int' type is not equal 'unsigned long' one on 64-bit architectures.
 
-	Automatically generated make config: don't edit
-	Linux kernel version: 2.6.33-01836-g90a6501-dirty
-	Mon Mar  1 17:05:59 2010
+True but largely irrelevant as we will never use more than 32 bits worth 
+of host flags.
 
-The "-01836-g90a6501-dirty" string is added by this patch.
 
-The KBUILD_CONFIG_NO_CHECK_DIRTY environment variable controls the
-git "-dirty" check.  If this variable is either empty or undefined,
-then a "-dirty" check is performed (the default), otherwise, this
-check is omitted.
+> Besides doing it this way is clearly suboptimal as the same effect
+> could have been achieved by doing:
+>
+> extern int __ata_pci_sff_init_one(struct pci_dev *pdev,
+> 				const struct ata_port_info * const *ppi,
+> 				struct scsi_host_template *sht, void *host_priv,
+> 				int hflag);
+> static inline int ata_pci_sff_init_one(struct pci_dev *pdev,
+> 				const struct ata_port_info * const *ppi,
+> 				struct scsi_host_template *sht, void *host_priv)
+> {
+> 	return __ata_pci_sff_init_one(pdev, ppi, sht, host_priv, 0);
+> }
 
-Differences from v3 (http://lkml.org/lkml/2010/3/4/520):
+This is far uglier than simply changing the API.
 
-o	Print errors to stderr, using gcc error format so that scripts
-	that pull errors from build output will find them.
 
-o	Make error strings placed in .config file more comprehensible.
+> without the need to update all drivers and without breaking pending
+> out-of-tree driver patches (yeah, it breaks my pata_ep93xx patches)..
 
-o	Make parent warn of child error return (via wait() system call).
+Every post you include a disclaimer about "my patches are not intended 
+for upstream" yet you still complain?
 
-Differences from v2 (http://lkml.org/lkml/2010/3/2/570):
+Some people are never satisfied...
 
-o	Replace popen() with the equivalent fork-exec series
-	to prevent security vulnerabilities due to shell metacharacter
-	interpretation.
+	Jeff
 
-o	Added the KBUILD_CONFIG_NO_CHECK_DIRTY environment variable,
-	and modified scripts/setlocalversion to check it, as suggested
-	by James Cloos.
 
-Differences from v1 (http://lkml.org/lkml/2010/2/28/191):
-
-o	Incorporates feedback from Geert Uytterhoeven, Linus Torvalds,
-	Frans Pop, and James Cloos.
-
-o	Fixed to work correctly with the "O=" Makefile argument and
-	the KBUILD_OUTPUT environment variable, so that .config files
-	created in directories outside of the source tree are tagged
-	correctly.
-
-o	Uses scripts/setlocalversion, which handles not only git, but
-	also mercurial and svn.
-
-o	Make the new behavior default-off, as scripts/setlocalversion
-	has significant latency.  A new environment variable named
-	"KBUILD_CONFIG_LOCALVERSION" must be set to enable the
-	"-01836-g90a6501-dirty" style of string.
-
-	This is intended to address James Cloos's concern that this
-	feature will slow down casual kernel builds.
-
-It has been suggested that this string be output at boot and oops time.
-If there is general agreement, this will be the subject of a separate
-patch.
-
- kconfig/confdata.c |   69 ++++++++++++++++++++++++++++++++++++++++++++++++++---
- setlocalversion    |   18 +++++++------
- 2 files changed, 76 insertions(+), 11 deletions(-)
