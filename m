@@ -1,95 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584Ab0CEUk0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:40:26 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:48836 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751755Ab0CEUkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:40:25 -0500
-From: Alex Elder <aelder@sgi.com>
-Message-Id: <201003052040.o25KeH1g013314@stout.americas.sgi.com>
-Date: Fri, 05 Mar 2010 14:40:17 -0600
-To: torvalds@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.34-rc1
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+	id S1754842Ab0CEUkm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:40:42 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:50376 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754725Ab0CEUkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:40:37 -0500
+Date: Fri, 5 Mar 2010 21:40:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+       H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, Dave Jones <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [patch 2/2] x86: Manage ENERGY_PERF_BIAS based on cpufreq
+ governor
+Message-ID: <20100305204029.GB20554@elf.ucw.cz>
+References: <20100303000649.757684000@intel.com>
+ <20100303000849.278509000@intel.com>
+ <4B8DADB9.1040302@xenotime.net>
+ <20100303215453.GG2579@ucw.cz>
+ <1267662469.16916.1020.camel@localhost.localdomain>
+ <20100305091949.GA31554@atrey.karlin.mff.cuni.cz>
+ <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <7C53B33EE871F14797C999838AA8B5A914ACD58C@orsmsx505.amr.corp.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I mentioned in my first pull request, this is the second
-set of XFS commits for 2.6.34-rc1.  A little later than I'd
-hoped (sorry).
+Hi!
 
-					-Alex
+> >You should say what the setting does; you can mention below what MSR
+> >it corresponds to, but "Control IA32_ENERGY_PERF_BIAS setting" is not
+> >suitable user documentation.
+> >
+> >> Also, the expectation here is that kernel will do the right thing by
+> >> default. The option here is to the user who_knows_what_he_is_doing to
+> >> override the kernel default.
+> >
+> >You did not give user enough information to do anything intelligent...
+> 
+> I have rephrased it in the newer version sent yday with more info.
 
-The following changes since commit 9467c4fdd66f6810cecef0f1173330f3c6e67d45:
-  Linus Torvalds (1):
-        Merge branch 'write_inode2' of git://git.kernel.org/.../viro/vfs-2.6
+Good.
 
-are available in the git repository at:
+> >> > Also... does it make change to tweak the setting during 
+> >runtime? Maybe
+> >> > different settings for AC and battery power?
+> >> 
+> >> Yes. Matthew mentioned in other response aboue setting this based on
+> >> freq. For the CPUs that support this feature currently, we don't see
+> >> advantage in setting this feature at run time.
+> >
+> >If the feature is useless, then why set it at all?
+> 
+> I just said changing it at run time doesn't give us benefits. Not
+>that
 
-  git://oss.sgi.com/xfs/xfs for-linus
+That can be only true if it does not give benefits period... AC and
+battery power are quite different scenarios.
 
-Alex Elder (1):
-      Merge branch 'for-2.6.34-rc1-batch2' into for-linus
+> the feature is useless. Having the default value for the tunable in
+> mid-range does increase energy-efficiency than the tunable being
+> at performance level.
 
-Christoph Hellwig (14):
-      xfs: fix dquota trace format
-      xfs: merge xfs_lrw.c into xfs_file.c
-      xfs: remove wrappers for read/write file operations
-      xfs: remove wrapper for the fsync file operation
-      xfs: implement optimized fdatasync
-      xfs: fix inode pincount check in fsync
-      xfs: fix xfs_fsblock_t tracing
-      xfs: split xfs_bmap_btalloc
-      xfs: stop passing opaque handles to xfs_log.c routines
-      xfs: factor common xfs_trans_bjoin code
-      xfs: kill xfs_lrw.h
-      xfs: cleanup xfs_iunpin_wait/xfs_iunpin_nowait
-      xfs: remove xfs_ipin/xfs_iunpin
-      xfs: fix locking for inode cache radix tree tag updates
-
-Dave Chinner (6):
-      xfs: Non-blocking inode locking in IO completion
-      xfs: Fix a build warning in xfs_aops.c
-      xfs: check for more work before sleeping in xfssyncd
-      xfs: truncate delalloc extents when IO fails in writeback
-      xfs: Increase the default size of the reserved blocks pool
-      xfs: return inode fork offset in bulkstat for fsr
-
-Eric Sandeen (1):
-      xfs: increase readdir buffer size
-
- fs/xfs/Makefile              |    1 -
- fs/xfs/linux-2.6/xfs_aops.c  |  221 +++++++++---
- fs/xfs/linux-2.6/xfs_file.c  |  854 +++++++++++++++++++++++++++++++++++++++---
- fs/xfs/linux-2.6/xfs_iops.c  |   10 +
- fs/xfs/linux-2.6/xfs_linux.h |    1 -
- fs/xfs/linux-2.6/xfs_lrw.c   |  796 ---------------------------------------
- fs/xfs/linux-2.6/xfs_lrw.h   |   29 --
- fs/xfs/linux-2.6/xfs_sync.c  |   10 +-
- fs/xfs/linux-2.6/xfs_trace.c |   16 -
- fs/xfs/linux-2.6/xfs_trace.h |   22 +-
- fs/xfs/xfs_bmap.c            |  220 ++++++-----
- fs/xfs/xfs_fs.h              |    3 +-
- fs/xfs/xfs_iget.c            |   19 +-
- fs/xfs/xfs_inode.c           |   68 +---
- fs/xfs/xfs_inode.h           |    3 +-
- fs/xfs/xfs_inode_item.c      |   18 +-
- fs/xfs/xfs_itable.c          |    2 +
- fs/xfs/xfs_log.c             |  106 +++---
- fs/xfs/xfs_log.h             |   16 +-
- fs/xfs/xfs_mount.c           |   69 +++-
- fs/xfs/xfs_mount.h           |    2 +
- fs/xfs/xfs_trans.c           |    2 +-
- fs/xfs/xfs_trans.h           |    2 +-
- fs/xfs/xfs_trans_buf.c       |  216 ++++--------
- fs/xfs/xfs_vnodeops.c        |  107 ------
- fs/xfs/xfs_vnodeops.h        |   15 +-
- 26 files changed, 1344 insertions(+), 1484 deletions(-)
- delete mode 100644 fs/xfs/linux-2.6/xfs_lrw.c
- delete mode 100644 fs/xfs/linux-2.6/xfs_lrw.h
+So... what does it really do? What is the difference in power
+consumption, and what is the difference in performance?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
