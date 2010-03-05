@@ -1,75 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430Ab0CEGIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 01:08:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46099 "EHLO hera.kernel.org"
+	id S1753400Ab0CEGIk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 01:08:40 -0500
+Received: from mga11.intel.com ([192.55.52.93]:55701 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908Ab0CEGIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 01:08:13 -0500
-Message-ID: <4B909FC5.8020800@kernel.org>
-Date: Fri, 05 Mar 2010 15:08:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Sachin Sant <sachinp@in.ibm.com>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: -next March 3: Boot failure on x86 (Oops)
-References: <20100303174603.5be197ba.sfr@canb.auug.org.au> <4B8E83D4.6090507@in.ibm.com> <4B8F0CD0.1040507@kernel.org> <4B8F43DD.10002@in.ibm.com>
-In-Reply-To: <4B8F43DD.10002@in.ibm.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Mar 2010 06:08:08 +0000 (UTC)
+	id S1752552Ab0CEGGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 01:06:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,585,1262592000"; 
+   d="scan'208";a="778157727"
+From: Sheng Yang <sheng@linux.intel.com>
+To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 6/7] xen: Enable PV clocksource for HVM
+Date: Fri,  5 Mar 2010 14:07:56 +0800
+Message-Id: <1267769277-20522-7-git-send-email-sheng@linux.intel.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1267769277-20522-1-git-send-email-sheng@linux.intel.com>
+References: <1267769277-20522-1-git-send-email-sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+And enable it by default in PV extended HVM guest.
 
-On 03/04/2010 02:23 PM, Sachin Sant wrote:
->> Can you please feed the address to gdb and get the line number?  Also,
->> is it reproducible on mainline?
->>   
-> I can recreate this with latest git as well (2.6.33-git9 [eaa5eec7..])
-> 
-> Disassembly from 2.6.33-git9 code base follows :
-> 
-> /usr/local/autobench/var/tmp/build/linux/mm/percpu.c:1137
->                        if (off >= 0)
->     e91:       0f 89 fd 00 00 00       jns    f94 <pcpu_alloc+0x2bd>
-> /usr/local/autobench/var/tmp/build/linux/mm/percpu.c:1116
->        }
-> 
-> restart:
->        /* search through normal chunks */
->        for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
->                list_for_each_entry(chunk, &pcpu_slot[slot], list) {
->     e97:       8b 45 84                mov    -0x7c(%ebp),%eax
->     e9a:       8b 00                   mov    (%eax),%eax
->     e9c:       89 45 84                mov    %eax,-0x7c(%ebp)
-> prefetch():
-> /usr/local/autobench/var/tmp/build/linux/arch/x86/include/asm/processor.h:886
-> 
->     e9f:       8b 55 84                mov    -0x7c(%ebp),%edx
->     ea2:       8b 02                   mov    (%edx),%eax
-> 
-> ^^^^^^^^^^^^^^^^^^^ EIP corresponds to this line
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+---
+ arch/x86/xen/hvmpv.c   |   18 ++++++++++++++++++
+ arch/x86/xen/time.c    |   12 +++++++++++-
+ arch/x86/xen/xen-ops.h |    1 +
+ 3 files changed, 30 insertions(+), 1 deletions(-)
 
-Hmmm... this means that on one of the chunks, chunk->list.next was
-NULL (BTW, the disassembly is from unlinked object, right?).  The main
-allocation code hasn't seen much change lately.  The only changes are,
-
-22b737f4c75197372d64afc6ed1bccd58c00e549 : just refactoring
-833af8427be4b217b5bc522f61afdbd3f1d282c2 : possible but isn't very new
-
-Another possibility could be that the data structure before it was
-overrun and corrupted the list part.  pcpu_chunk is allocated with
-variable size array attached at the end, so maybe I screwed up
-calculation somewhere?  This could explain the difference between 64
-and 32bits.  If you add padding at the head of struct pcpu_chunk, say,
-unsigned long pad[16], does the problem go away?
-
-Thanks.
-
+diff --git a/arch/x86/xen/hvmpv.c b/arch/x86/xen/hvmpv.c
+index 540eef4..305dcca 100644
+--- a/arch/x86/xen/hvmpv.c
++++ b/arch/x86/xen/hvmpv.c
+@@ -43,6 +43,7 @@ static void __init xen_hvm_pv_banner(void)
+ 		pv_info.name);
+ 	printk(KERN_INFO "Xen version: %d.%d%s\n",
+ 		version >> 16, version & 0xffff, extra.extraversion);
++	printk(KERN_INFO "PV feature: PV clocksource enabled\n");
+ }
+ 
+ static int __init xen_para_available(void)
+@@ -112,6 +113,20 @@ static int __init init_shared_info(void)
+ 	return 0;
+ }
+ 
++static void __init init_pv_clocksource(void)
++{
++	if (enable_hvm_pv(HVM_PV_CLOCK))
++		BUG();
++
++	pv_time_ops.sched_clock = xen_sched_clock;
++
++	x86_platform.calibrate_tsc = xen_tsc_khz;
++	x86_platform.get_wallclock = xen_get_wallclock;
++	x86_platform.set_wallclock = xen_set_wallclock;
++
++	xen_register_clocksource();
++}
++
+ void __init xen_guest_init(void)
+ {
+ 	int r;
+@@ -133,5 +148,8 @@ void __init xen_guest_init(void)
+ 	x86_init.oem.banner = xen_hvm_pv_banner;
+ 	pv_info = xen_hvm_pv_info;
+ 
++	/* PV clocksource would be enabled by default */
++	init_pv_clocksource();
++
+ 	xen_domain_type = XEN_HVM_DOMAIN;
+ }
+diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+index 0d3f07c..06b3e72 100644
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -472,11 +472,21 @@ void xen_timer_resume(void)
+ 	}
+ }
+ 
++static bool xen_clocksource_enabled;
++
++void xen_register_clocksource(void)
++{
++	if (!xen_clocksource_enabled) {
++		clocksource_register(&xen_clocksource);
++		xen_clocksource_enabled = 1;
++	}
++}
++
+ __init void xen_time_init(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+-	clocksource_register(&xen_clocksource);
++	xen_register_clocksource();
+ 
+ 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
+ 		/* Successfully turned off 100Hz tick, so we have the
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index f9153a3..d56b660 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -48,6 +48,7 @@ cycle_t xen_clocksource_read(void);
+ void xen_setup_cpu_clockevents(void);
+ unsigned long xen_tsc_khz(void);
+ void __init xen_time_init(void);
++void xen_register_clocksource(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+ unsigned long long xen_sched_clock(void);
 -- 
-tejun
+1.5.4.5
+
