@@ -1,487 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648Ab0CEUh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:37:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53875 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753603Ab0CEUhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:37:22 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [PATCH] PM: add dpm_use_runtime_{suspend, resume} helper functions
-Date: Fri, 5 Mar 2010 21:40:16 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Mark Brown <broonie@sirena.org.uk>, LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.1003050954160.1677-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003050954160.1677-100000@iolanthe.rowland.org>
+	id S1753880Ab0CEUjH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:39:07 -0500
+Received: from mail-fx0-f219.google.com ([209.85.220.219]:55734 "EHLO
+	mail-fx0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723Ab0CEUjD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:39:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TXk8zHOx1uLvZXm0f7XvDo7Q/NoHJnxWw6eCt/sQXtNuETPVDXKsVcS9VoTT4qfcrw
+         p83UTtZw2Aa/rILJRI6k6Rx+eJos82It0mG62T6oMneuqr81/Gmy73d4MQA04hmCd7s6
+         eHHMBVBMaiQiXhhI1loyj6Xo+/+XOnK2OJq1A=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003052140.16948.rjw@sisk.pl>
+In-Reply-To: <877hpq36sj.fsf@pollan.anholt.net>
+References: <alpine.DEB.2.00.1003022345100.4099@skynet.skynet.ie>
+	 <alpine.LFD.2.00.1003041015080.3588@localhost.localdomain>
+	 <alpine.LFD.2.00.1003041035380.3751@localhost.localdomain>
+	 <20100304185002.GA23532@srcf.ucam.org>
+	 <alpine.LFD.2.00.1003041051470.3751@localhost.localdomain>
+	 <20100304190450.GA23807@srcf.ucam.org> <4B900AB2.1020603@garzik.org>
+	 <20100305122129.0c99adf3@lxorguk.ukuu.org.uk>
+	 <877hpq36sj.fsf@pollan.anholt.net>
+Date: Fri, 5 Mar 2010 21:39:01 +0100
+Message-ID: <ff13bc9a1003051239w6816e789m70bea7e34820d858@mail.gmail.com>
+Subject: Re: [git pull] drm request 3
+From: Luca Barbieri <luca.barbieri@gmail.com>
+To: Eric Anholt <eric@anholt.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 March 2010, Alan Stern wrote:
-> On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > I agree with all of the comments above, hopefully addessed them in the new
-> > patch below.
-> 
-> It looks good.  One small thing: You probably should change the
-> kerneldoc for pm_generic_runtime_idle to match the changes in
-> pm_generic_runtime_{suspend,resume}.  I must have missed that one.
+> So overall, I'd say that we spent about a month of developer time
+> at least between jbarnes, ickle, and myself, on extending the execbuf
+> interface to add a flag saying "dear kernel, please don't do this bit of
+> work on this buffer, because I don't need it and it makes things slow."
 
-Yeah, I missed that too.  Should be better now.
+Perhaps then, we should break ABI compatibility _more_ often to speed
+up development, but also have awesome mechanisms to make it painless
+for the user.
 
-Rafael
+Such as:
+1. Automatic side by side userspace installation, as Linus proposed
+2. Kernel "make install" refusing to proceed if it finds that
+userspace is not updated, and giving instructions on how to update
+userspace
+3. Distributions packaging the new ABI X/Mesa drivers and libdrm even
+for stable distributions
+4. Kernel "make install" offering to automatically install said
+distribution packages if it detects a supported distribution
+5. Ability to drop new versions of drivers/gpu/drm in an older kernel
+tree and have it compile (within reasonable limits)
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Provide generic subsystem-level callbacks
+In particular, for people with (slightly) old kernels, it should be
+much easier to make updated DRM trees still work with older kernels,
+than attempting to make updated userspace work with older kernel
+modules.
+This also actually gives them the benefits of the new code.
 
-There are subsystems whose power management callbacks only need to
-invoke the callbacks provided by device drivers.  Still, their system
-sleep PM callbacks should play well with the runtime PM callbacks,
-so that devices suspended at run time can be left in that state for
-a system sleep transition.
+And for people with really old kernels, it's not different from any
+other hardware device, which requires a kernel upgrade to have better
+support.
 
-Provide a set of generic PM callbacks for such subsystems and
-define convenience macros for populating dev_pm_ops structures.
+Then, for instance, Linus would just have seen the following upon
+running make install:
+This kernel requires the Nouveau userspace version 0.0.16, which you
+don't have installed.
+Fedora 12 has been detected.
+Invoke yum to install the <rpmnames> RPMs required for it? [y/n]
+_or_
+Ubuntu 9.10 has been detected
+Invoke apt-get to install the <debnames> packages required for it? [y/n]
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/runtime_pm.txt |   65 ++++++++++
- drivers/base/power/Makefile        |    1 
- drivers/base/power/generic_ops.c   |  233 +++++++++++++++++++++++++++++++++++++
- include/linux/pm.h                 |   51 +++++++-
- include/linux/pm_runtime.h         |    6 
- 5 files changed, 350 insertions(+), 6 deletions(-)
+If the user says no, or the distribution is unknown, instructions on
+how to download and compile the source would be presented.
 
-Index: linux-2.6/drivers/base/power/generic_ops.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/base/power/generic_ops.c
-@@ -0,0 +1,233 @@
-+/*
-+ * drivers/base/power/generic_ops.c - Generic PM callbacks for subsystems
-+ *
-+ * Copyright (c) 2010 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-+ *
-+ * This file is released under the GPLv2.
-+ */
-+
-+#include <linux/pm.h>
-+#include <linux/pm_runtime.h>
-+
-+#ifdef CONFIG_PM_RUNTIME
-+/**
-+ * pm_generic_runtime_idle - Generic runtime idle callback for subsystems.
-+ * @dev: Device to handle.
-+ *
-+ * If PM operations are defined for the @dev's driver and they include
-+ * ->runtime_idle(), execute it and return its error code, if nonzero.
-+ * Otherwise, execute pm_runtime_suspend() for the device and return 0.
-+ */
-+int pm_generic_runtime_idle(struct device *dev)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+
-+	if (pm && pm->runtime_idle) {
-+		int ret = pm->runtime_idle(dev);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	pm_runtime_suspend(dev);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
-+
-+/**
-+ * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
-+ * @dev: Device to suspend.
-+ *
-+ * If PM operations are defined for the @dev's driver and they include
-+ * ->runtime_suspend(), execute it and return its error code.  Otherwise,
-+ * return -EINVAL.
-+ */
-+int pm_generic_runtime_suspend(struct device *dev)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int ret;
-+
-+	ret = pm && pm->runtime_suspend ? pm->runtime_suspend(dev) : -EINVAL;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_runtime_suspend);
-+
-+/**
-+ * pm_generic_runtime_resume - Generic runtime resume callback for subsystems.
-+ * @dev: Device to resume.
-+ *
-+ * If PM operations are defined for the @dev's driver and they include
-+ * ->runtime_resume(), execute it and return its error code.  Otherwise,
-+ * return -EINVAL.
-+ */
-+int pm_generic_runtime_resume(struct device *dev)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int ret;
-+
-+	ret = pm && pm->runtime_resume ? pm->runtime_resume(dev) : -EINVAL;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_runtime_resume);
-+#endif /* CONFIG_PM_RUNTIME */
-+
-+#ifdef CONFIG_PM_SLEEP
-+/**
-+ * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
-+ * @dev: Device to handle.
-+ * @event: PM transition of the system under way.
-+ *
-+ * If the device has not been suspended at run time, execute the
-+ * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
-+ * return its error code.  Otherwise, return zero.
-+ */
-+static int __pm_generic_call(struct device *dev, int event)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int (*callback)(struct device *);
-+
-+	if (!pm || pm_runtime_suspended(dev))
-+		return 0;
-+
-+	switch (event) {
-+	case PM_EVENT_SUSPEND:
-+		callback = pm->suspend;
-+		break;
-+	case PM_EVENT_FREEZE:
-+		callback = pm->freeze;
-+		break;
-+	case PM_EVENT_HIBERNATE:
-+		callback = pm->poweroff;
-+		break;
-+	case PM_EVENT_THAW:
-+		callback = pm->thaw;
-+		break;
-+	default:
-+		callback = NULL;
-+		break;
-+	}
-+
-+	return callback ? callback(dev) : 0;
-+}
-+
-+/**
-+ * pm_generic_suspend - Generic suspend callback for subsystems.
-+ * @dev: Device to suspend.
-+ */
-+int pm_generic_suspend(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_SUSPEND);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_suspend);
-+
-+/**
-+ * pm_generic_freeze - Generic freeze callback for subsystems.
-+ * @dev: Device to freeze.
-+ */
-+int pm_generic_freeze(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_FREEZE);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_freeze);
-+
-+/**
-+ * pm_generic_poweroff - Generic poweroff callback for subsystems.
-+ * @dev: Device to handle.
-+ */
-+int pm_generic_poweroff(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_HIBERNATE);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_poweroff);
-+
-+/**
-+ * pm_generic_thaw - Generic thaw callback for subsystems.
-+ * @dev: Device to thaw.
-+ */
-+int pm_generic_thaw(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_THAW);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_thaw);
-+
-+/**
-+ * __pm_generic_resume - Generic resume/restore callback for subsystems.
-+ * @dev: Device to handle.
-+ * @event: PM transition of the system under way.
-+ *
-+ * Execute the resume/resotre callback provided by the @dev's driver, if
-+ * defined.  If it returns 0, change the device's runtime PM status to 'active'.
-+ * Return the callback's error code.
-+ */
-+static int __pm_generic_resume(struct device *dev, int event)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	int (*callback)(struct device *);
-+	int ret;
-+
-+	if (!pm)
-+		return 0;
-+
-+	switch (event) {
-+	case PM_EVENT_RESUME:
-+		callback = pm->resume;
-+		break;
-+	case PM_EVENT_RESTORE:
-+		callback = pm->restore;
-+		break;
-+	default:
-+		callback = NULL;
-+		break;
-+	}
-+
-+	if (!callback)
-+		return 0;
-+
-+	ret = callback(dev);
-+	if (!ret) {
-+		pm_runtime_disable(dev);
-+		pm_runtime_set_active(dev);
-+		pm_runtime_enable(dev);
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * pm_generic_resume - Generic resume callback for subsystems.
-+ * @dev: Device to resume.
-+ */
-+int pm_generic_resume(struct device *dev)
-+{
-+	return __pm_generic_resume(dev, PM_EVENT_RESUME);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_resume);
-+
-+/**
-+ * pm_generic_restore - Generic restore callback for subsystems.
-+ * @dev: Device to restore.
-+ */
-+int pm_generic_restore(struct device *dev)
-+{
-+	return __pm_generic_resume(dev, PM_EVENT_RESTORE);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_restore);
-+#endif /* CONFIG_PM_SLEEP */
-+
-+struct dev_pm_ops generic_subsys_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend = pm_generic_suspend,
-+	.resume = pm_generic_resume,
-+	.freeze = pm_generic_freeze,
-+	.thaw = pm_generic_thaw,
-+	.poweroff = pm_generic_poweroff,
-+	.restore = pm_generic_restore,
-+#endif
-+#ifdef CONFIG_PM_RUNTIME
-+	.runtime_suspend = pm_generic_runtime_suspend,
-+	.runtime_resume = pm_generic_runtime_resume,
-+	.runtime_idle = pm_generic_runtime_idle,
-+#endif
-+};
-+EXPORT_SYMBOL_GPL(generic_subsys_pm_ops);
-Index: linux-2.6/drivers/base/power/Makefile
-===================================================================
---- linux-2.6.orig/drivers/base/power/Makefile
-+++ linux-2.6/drivers/base/power/Makefile
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_PM)	+= sysfs.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o
- obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
-+obj-$(CONFIG_PM_OPS)	+= generic_ops.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- 
- ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -215,20 +215,59 @@ struct dev_pm_ops {
- 	int (*runtime_idle)(struct device *dev);
- };
- 
-+#ifdef CONFIG_PM_SLEEP
-+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+	.suspend = suspend_fn, \
-+	.resume = resume_fn, \
-+	.freeze = suspend_fn, \
-+	.thaw = resume_fn, \
-+	.poweroff = suspend_fn, \
-+	.restore = resume_fn,
-+#else
-+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-+#endif
-+
-+#ifdef CONFIG_PM_RUNTIME
-+#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-+	.runtime_suspend = suspend_fn, \
-+	.runtime_resume = resume_fn, \
-+	.runtime_idle = idle_fn,
-+#else
-+#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-+#endif
-+
- /*
-  * Use this if you want to use the same suspend and resume callbacks for suspend
-  * to RAM and hibernation.
-  */
- #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
- const struct dev_pm_ops name = { \
--	.suspend = suspend_fn, \
--	.resume = resume_fn, \
--	.freeze = suspend_fn, \
--	.thaw = resume_fn, \
--	.poweroff = suspend_fn, \
--	.restore = resume_fn, \
-+	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+}
-+
-+/*
-+ * Use this for defining a set of PM operations to be used in all situations
-+ * (sustem suspend, hibernation or runtime PM).
-+ */
-+#define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
-+const struct dev_pm_ops name = { \
-+	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
- }
- 
-+/*
-+ * Use this for subsystems (bus types, device types, device classes) that don't
-+ * need any special suspend/resume handling in addition to invoking the PM
-+ * callbacks provided by device drivers supporting both the system sleep PM and
-+ * runtime PM, make the pm member point to generic_subsys_pm_ops.
-+ */
-+#ifdef CONFIG_PM_OPS
-+extern struct dev_pm_ops generic_subsys_pm_ops;
-+#define GENERIC_SUBSYS_PM_OPS	(&generic_subsys_pm_ops)
-+#else
-+#define GENERIC_SUBSYS_PM_OPS	NULL
-+#endif
-+
- /**
-  * PM_EVENT_ messages
-  *
-Index: linux-2.6/include/linux/pm_runtime.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -62,6 +62,11 @@ static inline void device_set_run_wake(s
- 	dev->power.run_wake = enable;
- }
- 
-+static inline bool pm_runtime_suspended(struct device *dev)
-+{
-+	return dev->power.runtime_status == RPM_SUSPENDED;
-+}
-+
- #else /* !CONFIG_PM_RUNTIME */
- 
- static inline int pm_runtime_idle(struct device *dev) { return -ENOSYS; }
-@@ -89,6 +94,7 @@ static inline void pm_runtime_get_noresu
- static inline void pm_runtime_put_noidle(struct device *dev) {}
- static inline bool device_run_wake(struct device *dev) { return false; }
- static inline void device_set_run_wake(struct device *dev, bool enable) {}
-+static inline bool pm_runtime_suspended(struct device *dev) { return false; }
- 
- #endif /* !CONFIG_PM_RUNTIME */
- 
-Index: linux-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/runtime_pm.txt
-+++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -335,6 +335,10 @@ drivers/base/power/runtime.c and include
-       'power.runtime_error' is set or 'power.disable_depth' is greater than
-       zero)
- 
-+  bool pm_runtime_suspended(struct device *dev);
-+    - return true if the device's runtime PM status is 'suspended', or false
-+      otherwise
-+
-   void pm_runtime_allow(struct device *dev);
-     - set the power.runtime_auto flag for the device and decrease its usage
-       counter (used by the /sys/devices/.../power/control interface to
-@@ -459,3 +463,64 @@ The PM core always increments the run-ti
- ->prepare() callback and decrements it after calling the ->complete() callback.
- Hence disabling run-time PM temporarily like this will not cause any run-time
- suspend callbacks to be lost.
-+
-+7. Generic subsystem callbacks
-+
-+Subsystems may wish to conserve code space by using the set of generic power
-+management callbacks provided by the PM core, defined in
-+driver/base/power/generic_ops.c:
-+
-+  int pm_generic_runtime_idle(struct device *dev);
-+    - invoke the ->runtime_idle() callback provided by the driver of this
-+      device, if defined, and call pm_runtime_suspend() for this device if the
-+      return value is 0 or the callback is not defined
-+
-+  int pm_generic_runtime_suspend(struct device *dev);
-+    - invoke the ->runtime_suspend() callback provided by the driver of this
-+      device and return its result, or return -EINVAL if not defined
-+
-+  int pm_generic_runtime_resume(struct device *dev);
-+    - invoke the ->runtime_resume() callback provided by the driver of this
-+      device and return its result, or return -EINVAL if not defined
-+
-+  int pm_generic_suspend(struct device *dev);
-+    - if the device has not been suspended at run time, invoke the ->suspend()
-+      callback provided by its driver and return its result, or return 0 if not
-+      defined
-+
-+  int pm_generic_resume(struct device *dev);
-+    - invoke the ->resume() callback provided by the driver of this device and,
-+      if successful, change the device's runtime PM status to 'active'
-+
-+  int pm_generic_freeze(struct device *dev);
-+    - if the device has not been suspended at run time, invoke the ->freeze()
-+      callback provided by its driver and return its result, or return 0 if not
-+      defined
-+
-+  int pm_generic_thaw(struct device *dev);
-+    - if the device has not been suspended at run time, invoke the ->thaw()
-+      callback provided by its driver and return its result, or return 0 if not
-+      defined
-+
-+  int pm_generic_poweroff(struct device *dev);
-+    - if the device has not been suspended at run time, invoke the ->poweroff()
-+      callback provided by its driver and return its result, or return 0 if not
-+      defined
-+
-+  int pm_generic_restore(struct device *dev);
-+    - invoke the ->restore() callback provided by the driver of this device and,
-+      if successful, change the device's runtime PM status to 'active'
-+
-+These functions can be assigned to the ->runtime_idle(), ->runtime_suspend(),
-+->runtime_resume(), ->suspend(), ->resume(), ->freeze(), ->thaw(), ->poweroff(),
-+or ->restore() callback pointers in the subsystem-level dev_pm_ops structures.
-+
-+If a subsystem wishes to use all of them at the same time, it can simply assign
-+the GENERIC_SUBSYS_PM_OPS macro, defined in include/linux/pm.h, to its
-+dev_pm_ops structure pointer.
-+
-+Device drivers that wish to use the same function as a system suspend, freeze,
-+poweroff and run-time suspend callback, and similarly for system resume, thaw,
-+restore, and run-time resume, can achieve this with the help of the
-+UNIVERSAL_DEV_PM_OPS macro defined in include/linux/pm.h (possibly setting its
-+last argument to NULL).
+Once you setup this system, you can freely break the ABI with no
+significant user discomfort by just raising the version number.
+This also potentially applies to stuff other than DRM (e.g. perf, kvm,
+iptables, udev, filesystem-specific tools/APIs, various device
+configuration systems, and so on).
+
+The really stable APIs/ABIs should not be the (undocumented) kernel
+ones, but Xlib and OpenGL, which actually have formal specifications.
+Perhaps eventually Gallium could join them as a stable API closer to
+the hardware, but that's a long way off.
