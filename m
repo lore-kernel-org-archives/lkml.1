@@ -1,190 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823Ab0CEA7g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Mar 2010 19:59:36 -0500
-Received: from mga09.intel.com ([134.134.136.24]:38923 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754505Ab0CEA7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Mar 2010 19:59:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,584,1262592000"; 
-   d="scan'208";a="497917496"
-Date: Fri, 5 Mar 2010 08:59:32 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "colin.king@canonical.com" <colin.king@canonical.com>
-Subject: Re: [PATCH] i386: do a global tlb flush in S4 resume
-Message-ID: <20100305005932.GA22675@sli10-desk.sh.intel.com>
-References: <1267665799-670-1-git-send-email-shaohua.li@intel.com>
- <4B8F1B2A.5070500@zytor.com>
- <20100304024141.GA29235@sli10-desk.sh.intel.com>
- <201003042049.46240.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201003042049.46240.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756714Ab0CEBAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Mar 2010 20:00:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60421 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754505Ab0CEBAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Mar 2010 20:00:38 -0500
+Date: Thu, 4 Mar 2010 17:00:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] device.h drivers/base/core.c Convert dev_<level>
+ macros to functions
+Message-Id: <20100304170030.f97c6630.akpm@linux-foundation.org>
+In-Reply-To: <20100304165609.20849b93.akpm@linux-foundation.org>
+References: <cover.1267682641.git.joe@perches.com>
+	<f2b24d484347c083fa87856a75c1d96102af9005.1267682641.git.joe@perches.com>
+	<20100304165609.20849b93.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 05, 2010 at 03:49:46AM +0800, Rafael J. Wysocki wrote:
-> On Thursday 04 March 2010, Shaohua Li wrote:
-> > On Thu, Mar 04, 2010 at 10:30:02AM +0800, H. Peter Anvin wrote:
-> > > On 03/03/2010 05:23 PM, Shaohua Li wrote:
-> > > > Colin reported a strange oops in S4 resume code path (see below). The test
-> > > > system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-> > > > The oops always happen a virtual address 0xc03ff000, which is mapped to the
-> > > > last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
-> > > > 
-> > > > EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-> > > > EIP is at copy_loop+0xe/0x15
-> > > > EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-> > > > ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
-> > > >  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> > > > ...
-> > > > ...
-> > > > CR2: 00000000c03ff000
-> > > > 
-> > > > Tested-by: Colin Ian King <colin.king@canonical.com>
-> > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > > ---
-> > > >  arch/x86/power/hibernate_asm_32.S |   11 +++++++++++
-> > > >  1 files changed, 11 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-> > > > index b641388..9e4ef64 100644
-> > > > --- a/arch/x86/power/hibernate_asm_32.S
-> > > > +++ b/arch/x86/power/hibernate_asm_32.S
-> > > > @@ -27,10 +27,21 @@ ENTRY(swsusp_arch_suspend)
-> > > >  	ret
-> > > >  
-> > > >  ENTRY(restore_image)
-> > > > +	movl	mmu_cr4_features, %ecx
-> > > >  	movl	resume_pg_dir, %eax
-> > > >  	subl	$__PAGE_OFFSET, %eax
-> > > >  	movl	%eax, %cr3
-> > > >  
-> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > > > +	movl	%ecx, %edx
-> > > > +	andl	$~(X86_CR4_PGE), %edx
-> > > > +	movl	%edx, %cr4;  # turn off PGE
-> > > > +1:
-> > > > +	movl	%cr3, %eax;  # flush TLB
-> > > > +	movl	%eax, %cr3
-> > > > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > > > +	movl	%ecx, %cr4;  # turn PGE back on
-> > > > +1:
-> > > >  	movl	restore_pblist, %edx
-> > > >  	.p2align 4,,7
-> > > >  
-> > > 
-> > > Since we're about to do another global page flush a bit further down in
-> > > the same code, why not just leave PGE off until then?
-> > sure, updated patch.
-> > 
-> > 
-> > i386: do a global tlb flush in S4 resume
-> > 
-> >     Colin reported a strange oops in S4 resume code path (see below). The test
-> >     system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-> >     The oops always happen a virtual address 0xc03ff000, which is mapped to the
-> >     last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
-> > 
-> >     EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-> >     EIP is at copy_loop+0xe/0x15
-> >     EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-> >     ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
-> >      DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> >     ...
-> >     ...
-> >     CR2: 00000000c03ff000
-> > 
-> >     Tested-by: Colin Ian King <colin.king@canonical.com>
-> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > 
-> > diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-> > index b641388..cd5e878 100644
-> > --- a/arch/x86/power/hibernate_asm_32.S
-> > +++ b/arch/x86/power/hibernate_asm_32.S
-> > @@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
-> >  	ret
-> >  
-> >  ENTRY(restore_image)
-> > +	movl	mmu_cr4_features, %ecx
-> >  	movl	resume_pg_dir, %eax
-> >  	subl	$__PAGE_OFFSET, %eax
-> >  	movl	%eax, %cr3
-> >  
-> > +	jecxz	1f	# cr4 Pentium and higher, skip if zero
-> > +	andl	$~(X86_CR4_PGE), %ecx
-> > +	movl	%ecx, %cr4;  # turn off PGE
-> > +	movl	%cr3, %eax;  # flush TLB
-> > +	movl	%eax, %cr3
-> > +1:
-> >  	movl	restore_pblist, %edx
-> >  	.p2align 4,,7
+On Thu, 4 Mar 2010 16:56:09 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed,  3 Mar 2010 22:27:23 -0800 Joe Perches <joe@perches.com> wrote:
 > 
-> In that case please also remove the turning GPE off down the road.
+> > Save ~60k in a defconfig
+> > 
+> > Use %pV and struct va_format
+> > Format arguments are verified before printk
+> 
+> Well that doesn't work very well.
+> 
+> drivers/net/pcmcia/pcnet_cs.c:117: error: 'dev_info' redeclared as different kind of symbol
+> include/linux/device.h:645: error: previous declaration of 'dev_info' was here
+> 
+> there are lots of other dev_info's which will fail plus perhaps
+> dev_err's, etc.
+> 
 
-    i386: do a global tlb flush in S4 resume
+btw, this may be kludgeable aroundable by doing
 
-    Colin reported a strange oops in S4 resume code path (see below). The test
-    system has i5/i7 CPU. The kernel doesn't open PAE, so 4M page table is used.
-    The oops always happen a virtual address 0xc03ff000, which is mapped to the
-    last 4k of first 4M memory. Doing a global tlb flush fixes the issue.
+int _dev_info(const struct device *dev, const char *fmt, ...);
 
-    EIP: 0060:[<c0493a01>] EFLAGS: 00010086 CPU: 0
-    EIP is at copy_loop+0xe/0x15
-    EAX: 36aeb000 EBX: 00000000 ECX: 00000400 EDX: f55ad46c
-    ESI: 0f800000 EDI: c03ff000 EBP: f67fbec4 ESP: f67fbea8
-     DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-    ...
-    ...
-    CR2: 00000000c03ff000
+#define dev_info(...) _dev_info(...)
 
-    Tested-by: Colin Ian King <colin.king@canonical.com>
-    Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+which will use the preprocessor's separation of `foo' from `foo()' to
+fix things up.
 
-diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-index b641388..ad47dae 100644
---- a/arch/x86/power/hibernate_asm_32.S
-+++ b/arch/x86/power/hibernate_asm_32.S
-@@ -27,10 +27,17 @@ ENTRY(swsusp_arch_suspend)
- 	ret
- 
- ENTRY(restore_image)
-+	movl	mmu_cr4_features, %ecx
- 	movl	resume_pg_dir, %eax
- 	subl	$__PAGE_OFFSET, %eax
- 	movl	%eax, %cr3
- 
-+	jecxz	1f	# cr4 Pentium and higher, skip if zero
-+	andl	$~(X86_CR4_PGE), %ecx
-+	movl	%ecx, %cr4;  # turn off PGE
-+	movl	%cr3, %eax;  # flush TLB
-+	movl	%eax, %cr3
-+1:
- 	movl	restore_pblist, %edx
- 	.p2align 4,,7
- 
-@@ -54,16 +61,8 @@ done:
- 	movl	$swapper_pg_dir, %eax
- 	subl	$__PAGE_OFFSET, %eax
- 	movl	%eax, %cr3
--	/* Flush TLB, including "global" things (vmalloc) */
- 	movl	mmu_cr4_features, %ecx
- 	jecxz	1f	# cr4 Pentium and higher, skip if zero
--	movl	%ecx, %edx
--	andl	$~(X86_CR4_PGE), %edx
--	movl	%edx, %cr4;  # turn off PGE
--1:
--	movl	%cr3, %eax;  # flush TLB
--	movl	%eax, %cr3
--	jecxz	1f	# cr4 Pentium and higher, skip if zero
- 	movl	%ecx, %cr4;  # turn PGE back on
- 1:
- 
+But it would be better to rename all those dev_info's to device_info or
+whatever, IMO.
+
