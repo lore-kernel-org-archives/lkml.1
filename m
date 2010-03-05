@@ -1,47 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559Ab0CEIdz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 03:33:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:42630 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754456Ab0CEIdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 03:33:54 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/5GJN1j4b5FBGAEYFo5xzr404r7/awX4M8Gqiufd
-	i+YenmH3Fu20hV
-Subject: Re: sched_fair: the schedule check condition?
-From: Mike Galbraith <efault@gmx.de>
-To: figo zhang <figo1802@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <c6ed1ac51003042356y5ccb42f1va550747b9e72129e@mail.gmail.com>
-References: <c6ed1ac51003042356y5ccb42f1va550747b9e72129e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 05 Mar 2010 09:33:51 +0100
-Message-Id: <1267778031.9309.15.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67000000000000004
+	id S1754650Ab0CEIhJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 03:37:09 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:60179 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456Ab0CEIhG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 03:37:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RB2UdnQeeoCevWIo15cLyzV3cKLwC05X6717fDLRyRqOIPbu/iA2J+m7+DQaniuT+6
+         I8rvLMQc9CPi72i4DqiB0Kz/Hg2rWuZaUG6dJsXbzNYJmPrDiuZvvPGM2lmpKXFeZZa/
+         MV5QSVquY60tuvXeUJgB56ownuIxCmCKoFWBo=
+Date: Fri, 5 Mar 2010 00:36:59 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Dan Carpenter <error27@gmail.com>, Scott Moreau <oreaus@gmail.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [patch] gamecon: fix off by one range check
+Message-ID: <20100305083658.GB20245@core.coreip.homeip.net>
+References: <20100303070544.GB5086@bicker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100303070544.GB5086@bicker>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-03-05 at 15:56 +0800, figo zhang wrote:
-> hi,
+On Wed, Mar 03, 2010 at 10:05:44AM +0300, Dan Carpenter wrote:
+> It should be >= GC_MAX not > GC_MAX.
 > 
-> in check_preempt_tick() funtion, the check schedule condition the
-> reality increasing runtime "delta_exec"
-> and vruntime increasing "delta", and reality ideal time "ideal_runtime":
-> 
->             if (delta_exec > ideal_runtime)
-> and
->             if (delta > ideal_runtime)
-> 
-> if equal,  it should be need schedule?
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-Moving the border 1 ns just doesn't matter given the huge pile of ns on
-either side of that border.
+Applied, thank you Dan.
 
-	-Mike
-
+-- 
+Dmitry
