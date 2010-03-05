@@ -1,67 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827Ab0CET43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 14:56:29 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:38748 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755802Ab0CET40 (ORCPT
+	id S1755763Ab0CET7j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 14:59:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755440Ab0CET7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 14:56:26 -0500
-Message-ID: <4B916169.5040303@oracle.com>
-Date: Fri, 05 Mar 2010 11:54:17 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: [PATCH -mmotm] acpi/sbs: fix build for ACPI_SYSFS_POWER=n
-References: <201003050232.o252WD4K011798@imap1.linux-foundation.org>
-In-Reply-To: <201003050232.o252WD4K011798@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Mar 2010 14:59:37 -0500
+Date: Fri, 5 Mar 2010 11:59:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
+Message-Id: <20100305115918.f6c75b12.akpm@linux-foundation.org>
+In-Reply-To: <fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
+References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+	<20100205203232.GA1475@oksana.dev.rtsoft.ru>
+	<fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B9161B0.0182:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, 9 Feb 2010 10:16:44 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-When CONFIG_ACPI_SYSFS_POWER is not enabled:
+> On Fri, Feb 5, 2010 at 1:32 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Some platforms (e.g. OpenFirmware) want to know when a particular chip
+> > added or removed, so that the platforms could add their specifics for
+> > non-platform devices, like I2C or SPI GPIO chips.
+> >
+> > This patch implements the notifier for chip addition and removal events.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> > drivers/gpio/gpiolib.c   |  14 ++++++++++++++
+> > include/asm-generic/gpio.h |  8 ++++++++
+> > 2 files changed, 22 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> > index 350842a..375c03a 100644
+> > --- a/drivers/gpio/gpiolib.c
+> > +++ b/drivers/gpio/gpiolib.c
+> > @@ -9,6 +9,7 @@
+> > #include <linux/seq_file.h>
+> > #include <linux/gpio.h>
+> > #include <linux/idr.h>
+> > +#include <linux/notifier.h>
+> >
+> >
+> > /* Optional implementation infrastructure for GPIO interfaces.
+> > @@ -1029,6 +1030,9 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
+> >
+> > #endif /* CONFIG_GPIO_SYSFS */
+> >
+> > +BLOCKING_NOTIFIER_HEAD(gpio_notifier);
+> > +EXPORT_SYMBOL_GPL(gpio_notifier);
+> > +
+> > /**
+> > * gpiochip_add() - register a gpio_chip
+> > * @chip: the chip to register, with chip->base initialized
+> > @@ -1103,6 +1107,9 @@ fail:
+> >        pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+> >            chip->base, chip->base + chip->ngpio - 1,
+> >            chip->label ? : "generic");
+> > +    else
+> > +        blocking_notifier_call_chain(&gpio_notifier,
+> > +                      GPIO_NOTIFY_CHIP_ADDED, chip);
+> 
+> Rather than doing an else block which will need to be reworked if/when
+> any additional code is added to the bottom of this routine, please
+> rework the if() block to bail on failure instead of implicitly falling
+> through to the return statement.
 
-drivers/acpi/sbs.c:640: error: implicit declaration of function 'acpi_battery_get_alarm'
-drivers/acpi/sbs.c:679: error: implicit declaration of function 'acpi_battery_set_alarm'
+This still hasn't happened.
 
+> Otherwise, this patch looks okay to me, so you can go ahead and add my:
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
 
-so move those functions outside of the ifdef/endif block for that
-config option.
+I'll merge it anyway and will ask you guys to keep track of this issue,
+thanks.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/acpi/sbs.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- mmotm-2010-0304-1805.orig/drivers/acpi/sbs.c
-+++ mmotm-2010-0304-1805/drivers/acpi/sbs.c
-@@ -412,8 +412,6 @@ static int acpi_ac_get_present(struct ac
- 	return result;
- }
- 
--#ifdef CONFIG_ACPI_SYSFS_POWER
--
- static int acpi_battery_get_alarm(struct acpi_battery *battery)
- {
- 	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
-@@ -450,6 +448,8 @@ static int acpi_battery_set_alarm(struct
- 	return ret;
- }
- 
-+#ifdef CONFIG_ACPI_SYSFS_POWER
-+
- static ssize_t acpi_battery_alarm_show(struct device *dev,
- 					struct device_attribute *attr,
- 					char *buf)
