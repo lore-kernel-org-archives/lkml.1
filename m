@@ -1,163 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209Ab0CEUgQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 15:36:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53864 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730Ab0CEUgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 15:36:14 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Problems with remote-wakeup settings
-Date: Fri, 5 Mar 2010 21:38:53 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-git-rjw; KDE/4.3.5; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       linux-input@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.1003051020380.1677-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003051020380.1677-100000@iolanthe.rowland.org>
+	id S1753566Ab0CEUhQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 15:37:16 -0500
+Received: from nat.nue.novell.com ([195.135.221.3]:47747 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751430Ab0CEUhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 15:37:12 -0500
+Message-ID: <4B916B7F.4000204@suse.de>
+Date: Fri, 05 Mar 2010 23:37:19 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201003052138.53647.rjw@sisk.pl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH -mmotm] acpi/sbs: fix build for ACPI_SYSFS_POWER=n
+References: <201003050232.o252WD4K011798@imap1.linux-foundation.org> <4B916169.5040303@oracle.com>
+In-Reply-To: <4B916169.5040303@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 March 2010, Alan Stern wrote:
-> The way we implement remote wakeup has got some problems.
+
+Randy Dunlap пишет:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Here's a brief summary of the way it currently works.  Each dev->power
-> structure contains two bitflags: can_wakeup and should_wakeup.
+> When CONFIG_ACPI_SYSFS_POWER is not enabled:
 > 
-> 	The can_wakeup flag indicates whether the device is _capable_
-> 	of issuing wakeup requests; it is supposed to be set by the
-> 	driver.
-
-No, it is not.  Perhaps that was the original idea, but we don't use it this
-way, at least not for PCI devices.  It actually is set by the subsystem (the
-PCI bus type in this particular case) depending on whether or not the device
-is capable of waking up the system.
-
-The reason is that for PCI the information needed to decide belongs to the
-PCI core rather than to the driver.
-
-> 	The should_wakeup flag indicates whether the device should be
-> 	_allowed_ to issue wakeup requests.  This is a policy decision
-> 	which generally should be left up to userspace, through the
-> 	/sys/devices/.../power/wakeup sysfs attribute.
-
-That is supposed to work more-or-less this way, although there's the exception
-of some network adapters that enable WoL by default _if_ the device can wake up
-(ie. its can_wakeup flag is set by the PCI core).  For the network adapters
-there's an alternative way to set this via ethtool and it should be in
-agreement with the sysfs setting.
-
-> There are various routines defined in include/linux/pm_wakeup.h for
-> manipulating these flags.  In particular, device_may_wakeup() tells
-> whether or not the device's wakeup facility should be enabled by the
-> driver's suspend routine when a system sleep starts.  It returns true
-> only when both flags are set.
-
-Right.
-
-> (Wakeup settings during runtime suspend are a different matter; I'm not
-> going to discuss them here.)
-
-OK
-
-> The first problem is that device_initialize() calls 
-> device_init_wakeup(), setting both flags to 0.  This is simply a 
-> mistake.  For one thing, the bits should have been initialized to 0 
-> when the device structure was kzalloc'ed.  For another, it means that 
-> drivers can't usefully set the can_wakeup flag before doing either 
-> device_initialize() or device_register().
-
-For PCI devices can_wakeup is set by the PCI core and drivers shouldn't really
-modify it, because it is the source of information about the device's
-capability to wake up _for_ _them_.
-
-> The next problem has to do with the sysfs interface.  The power/wakeup 
-> attribute file is implemented to contain either "enabled" or "disabled" 
-> (according to the should_wakeup flag) if can_wakeup is set, and to be 
-> empty if can_wakeup is clear.  Userspace can write "enabled" or 
-> "disabled" to the file to set or clear the should_wakeup flag.
+> drivers/acpi/sbs.c:640: error: implicit declaration of function 'acpi_battery_get_alarm'
+> drivers/acpi/sbs.c:679: error: implicit declaration of function 'acpi_battery_set_alarm'
 > 
-> This is bad, because it means the should_wakeup setting is invisible 
-> when can_wakeup is off.  Userspace certainly will want to affect the 
-> should_wakeup flag at times when can_wakeup is off (for example, before 
-> the device has finished binding to its driver).
-
-Well, the network adapters mentioned above are a bit of a problem here,
-because they'd have to be reworked to look at should_wakeup before enabling
-WoL by default.
-
-Apart from that, changing the interface as proposed if fine by me.
-
-
-> The third problem concerns the initial or default should_wakeup
-> setting.  There isn't any coherent thought about what value the flag 
-> should have before userspace takes control of it.
 > 
-> In many cases setting a default value isn't feasible.  Only the driver
-> is in a position to know whether or not the device should be allowed to
-> issue wakeup requests, but by the time the driver binds to the device,
-> the power/wakeup attribute has already been exposed through sysfs.  
-> Any change the driver makes might therefore overwrite the user's
-> preference.  Hence drivers should not be allowed to change the
-> should_wakeup flag.  Unfortunately many drivers do exactly that, as
-> can be seen by searching for "device_set_wakeup_enable" or
-> "device_init_wakeup".
+> so move those functions outside of the ifdef/endif block for that
+> config option.
 > 
-> In principle, the decision about setting should_wakeup ought to be left
-> entirely up to userspace.
-
-I agree in general, but there's the question whether or not the sysfs setting
-should be tied to the WoL setting done via ethtool.  On the one hand it
-shouldn't, because we have no means to update the driver's settings (ie. WoL)
-if the sysfs attribute is set.  On the other hand it should, because the users
-expect that to happen (yes, they do).
-
-> In practice, userspace doesn't do a very good job of carrying out this
-> decision.  Programs like udev or hal ought to impose useful settings, but
-> as far as I know, they do not.
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> ---
+>  drivers/acpi/sbs.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> And then what about systems that don't have udev?  Presumably embedded
-> systems can be trusted to set up the wakeup flags appropriately for
-> their own needs.  Is there a significant number of other systems
-> without udev?  And even if there isn't, the necessary changes to udev
-> would take a while to percolate out.
-> 
-> So we have a situation where the kernel is defining policy which should
-> be set by userspace, and doing so in a way which would often override
-> the user's settings.  Clearly this isn't good.  The only sane approach
-> I can think of is for the kernel never to change should_wakeup --
-> always leave it set to 0 until userspace changes it.  (There could be a
-> few exceptions for devices which everyone always expects to be
-> wakeup-enabled, such as power buttons and keyboards.)  But then of
-> course we would have the problem that in today's distributions,
-> userspace never does change it.
-> 
-> The lack of a proper design for all this has already started to cause 
-> problems.  There are bug reports about systems failing to suspend 
-> because some device, enabled for remote wakeup when it shouldn't be,
-> sends a wakeup request as soon as it gets suspended.  One example of 
-> such a bug report is
-> 
-> 	https://bugs.launchpad.net/ubuntu/+source/linux/+bug/515109
-> 
-> What do people think?
+> --- mmotm-2010-0304-1805.orig/drivers/acpi/sbs.c
+> +++ mmotm-2010-0304-1805/drivers/acpi/sbs.c
+> @@ -412,8 +412,6 @@ static int acpi_ac_get_present(struct ac
+>  	return result;
+>  }
+>  
+> -#ifdef CONFIG_ACPI_SYSFS_POWER
+> -
+>  static int acpi_battery_get_alarm(struct acpi_battery *battery)
+>  {
+>  	return acpi_smbus_read(battery->sbs->hc, SMBUS_READ_WORD,
+> @@ -450,6 +448,8 @@ static int acpi_battery_set_alarm(struct
+>  	return ret;
+>  }
+>  
+> +#ifdef CONFIG_ACPI_SYSFS_POWER
+> +
+>  static ssize_t acpi_battery_alarm_show(struct device *dev,
+>  					struct device_attribute *attr,
+>  					char *buf)
 
-Hard to say what's the best approach here in general.
-
-If we unset should_wakeup by default for all devices, the users of some drivers
-(mostly network ones) expecting wakeup to be enabled by default will report
-regressions.  If we don't unset it for all devices, we'll need to do that
-individually for the drivers where there are known bad devices.
-
-I guess it's better if drivers don't set should_wakeup if unsure, but of course
-that's impossible to enforce.
-
-Rafael
