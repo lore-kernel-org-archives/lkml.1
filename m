@@ -1,101 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185Ab0CEW16 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 17:27:58 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:45887 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755288Ab0CEW14 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 17:27:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vJh5UPDONrgpmATfH2cH9f8QxUqLebMKKmn2Qi0bNyV6E115oRqSKX3GX++g3n6uX+
-         5PIb4dkPOKn8x/Y2rNQ9UzoFMxEML7fDmwRjez58eytrQb0ZQeqfWs4SO6VjFYtrFJrS
-         Z6Y+fFUTRbb0vzjVSaXq8Nbbj+kmhDh4I8q3U=
+	id S1756205Ab0CEW2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 17:28:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13784 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755288Ab0CEW2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 17:28:00 -0500
+Date: Fri, 5 Mar 2010 22:27:48 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: device-mapper development <dm-devel@redhat.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
+Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
+	checks
+Message-ID: <20100305222748.GT27852@agk-dp.fab.redhat.com>
+Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
+	Dmitry Monakhov <dmonakhov@openvz.org>,
+	Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+	Mike Snitzer <snitzer@redhat.com>, jens.axboe@oracle.com
+References: <170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com> <87wrxtkzwu.fsf@openvz.org> <20100303191613.GB18480@redhat.com> <87lje9kx9i.fsf@openvz.org> <20100303200734.GW5768@kernel.dk> <Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com> <20100304121931.GB5768@kernel.dk> <Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com> <20100305073059.GI5768@kernel.dk> <20100306085651.1a571571@notabene.brown>
 MIME-Version: 1.0
-In-Reply-To: <20100305120355.6b161572@lxorguk.ukuu.org.uk>
-References: <f875e2fe1003032052p944f32ayfe9fe8cfbed056d4@mail.gmail.com>
-	 <20100303224245.ae8d1f7a.akpm@linux-foundation.org>
-	 <87f94c371003040617t4a4fcd0dt1c9fc0f50e6002c4@mail.gmail.com>
-	 <4B8FC6AC.4060801@teksavvy.com>
-	 <f875e2fe1003040733h20d5523ex5d18b84f47fee8c7@mail.gmail.com>
-	 <4B8FF2C3.1060808@teksavvy.com>
-	 <f875e2fe1003041020t7cbab2c2x585df9b2dfc10dd2@mail.gmail.com>
-	 <4B90655B.4000005@gmail.com>
-	 <f875e2fe1003041811p5aa934ecob90836a8d0a6b605@mail.gmail.com>
-	 <20100305120355.6b161572@lxorguk.ukuu.org.uk>
-Date: Fri, 5 Mar 2010 17:27:50 -0500
-Message-ID: <f875e2fe1003051427u70aa1a4cl56c51c73cab4f1b0@mail.gmail.com>
-Subject: Re: Linux kernel - Libata bad block error handling to user mode 
-	program
-From: s ponnusa <foosaa@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Mark Lord <kernel@teksavvy.com>,
-       Greg Freemyer <greg.freemyer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100306085651.1a571571@notabene.brown>
+Organization: Red Hat UK Ltd. Registered in England and Wales, number
+	03798903. Registered Office: Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 1TE.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Having fsync / fdatasync results in the below mentioned behavior.
+On Sat, Mar 06, 2010 at 08:56:51AM +1100, Neil Brown wrote:
+> My preferred end-game would be to allow a bio of any size to be submitted to
+> any device.  The device would be responsible for cutting it up if necessary.
 
-> - sectors being corrupted/dying that were not written by near to it
-> - writes that the drive thinks were successful and reports that way but
->  turn out not to be readable
+>From the dm point of view, splitting is undesirable - memory allocations from
+separate mempools, submitting the split-off parts could reorder/delay but must
+still respect barrier constraints etc.  Splitting is the 'slow and complicated'
+path for us.  We support it, but it is simpler and more efficient if the bio is
+created a suitable size in the first place - and the merge_bvec_fn does this
+for us most of the time.
 
-Always the write passes after much delay, but it turns out that the
-sector is not readable.
-But for my scenario, I need to know when a sector timeouts / errors
-during the write process and move on to the next sector. Apparently I
-have changed my program to do the following steps:
+Alasdair
 
-Open the drive in O_RDWR mode.
-write a sector.
-reposition the file pointer.
-read the sector.
-verify the read buffer contents with write buffer contents.
-
-This scenario always passes and does not identify the bad sectors if
-the program does it sequentially (even on a hdd with bad sectors).
-
-But if I write using an independent program (prg A) and verify using
-another independent program (prg B), all the writes done using prg A
-passes (expected behavior) and the read operations from prg B fails on
-bad sectors (again expected behavior) and I am able to detect the bad
-sectors.
-
-Is there any issue, if I perform both the operations simultaneously?
-(Initially I tried using the O_DIRECT mode and as it was extremely
-slow reverted to opening the device in O_RDWR mode and used fadvise
-with don'tneed flag).
-
-Thanks.
-
-On Fri, Mar 5, 2010 at 7:03 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> cannot be read back by any other means. And the program which wrote
->> the data is unaware of the error that has happened at the lower level.
->> But the error log clearly has the issue caught but is trying to handle
->> differently.
->
-> This is standard behaviour on pretty much every OS. If each write was
-> back verified by the OS you wouldn't get any work done due fact it took
-> so long to do any I/O and all I/O was synchronoous.
->
-> Where it matters you can mount some file systems synchronous, you can do
-> synchronous I/O (O_SYNC) or you can use and check fsync/fdatasync results
-> which should give you pretty good coverage providing barriers are enabled.
->
-> It still won't catch a lot of cases because you sometimes see
->
-> - sectors being corrupted/dying that were not written by near to it
-> - writes that the drive thinks were successful and reports that way but
->  turn out not to be readable
->
-> Alan
->
