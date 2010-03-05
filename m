@@ -1,103 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659Ab0CEV5L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Mar 2010 16:57:11 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36757 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754887Ab0CEV5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Mar 2010 16:57:08 -0500
-Date: Sat, 6 Mar 2010 08:56:51 +1100
-From: Neil Brown <neilb@suse.de>
-To: device-mapper development <dm-devel@redhat.com>
-Cc: jens.axboe@oracle.com, Mikulas Patocka <mpatocka@redhat.com>,
-       Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [dm-devel] [PATCH 1/2] blkdev: fix merge_bvec_fn return value
- checks
-Message-ID: <20100306085651.1a571571@notabene.brown>
-In-Reply-To: <20100305073059.GI5768@kernel.dk>
-References: <20100228184634.GI5768@kernel.dk>
-	<874okyf4iw.fsf@openvz.org>
-	<170fa0d21003031020x5b71b492vd733cf0d7c9b83d4@mail.gmail.com>
-	<87wrxtkzwu.fsf@openvz.org>
-	<20100303191613.GB18480@redhat.com>
-	<87lje9kx9i.fsf@openvz.org>
-	<20100303200734.GW5768@kernel.dk>
-	<Pine.LNX.4.64.1003040629230.990@hs20-bc2-1.build.redhat.com>
-	<20100304121931.GB5768@kernel.dk>
-	<Pine.LNX.4.64.1003041615120.17032@hs20-bc2-1.build.redhat.com>
-	<20100305073059.GI5768@kernel.dk>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755736Ab0CEV54 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Mar 2010 16:57:56 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:33648 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755531Ab0CEV5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Mar 2010 16:57:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=Xq3o0UJo0KemK1tdxXbcPYC7+HOjh2I9sT0/HvG7CRAlKZnLU/J5IYtQ8eYcLmn5o
+	L86GErCRZ1LfriWXp0b5w==
+MIME-Version: 1.0
+In-Reply-To: <1267825433.4997.14.camel@laptop>
+References: <20100305153926.639506880@chello.nl>
+	 <20100305154128.890278662@chello.nl>
+	 <bd4cb8901003051058k5c3d88bewa787f88f03d2da80@mail.gmail.com>
+	 <1267816553.4942.6.camel@laptop> <1267823134.4997.5.camel@laptop>
+	 <bd4cb8901003051322l1722fcaaqacf0c913853d384f@mail.gmail.com>
+	 <1267824933.4997.9.camel@laptop>
+	 <bd4cb8901003051338p1c12ceacv994bad73e81093a2@mail.gmail.com>
+	 <1267825433.4997.14.camel@laptop>
+Date: Fri, 5 Mar 2010 13:57:49 -0800
+Message-ID: <bd4cb8901003051357o357ac7adt7cb56b5deb4089dd@mail.gmail.com>
+Subject: Re: [PATCH 3/5] perf, x86: Disable PEBS on clowertown chips
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
+       robert.richter@amd.com, fweisbec@gmail.com,
+       Arnaldo Carvalho de Melo <acme@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Mar 2010 08:30:59 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Fri, Mar 5, 2010 at 1:43 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2010-03-05 at 13:38 -0800, Stephane Eranian wrote:
+>> On Fri, Mar 5, 2010 at 1:35 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Fri, 2010-03-05 at 13:22 -0800, Stephane Eranian wrote:
+>> >> > The two serious ones, AJ106 and AJ68 are no fix and are listed as such
+>> >> > in all errata I can find, including the 7[23]00 series.
+>> >> >
+>> >> Not E74xx. I think it would be fine to drop LBR with PEBS as the work-around
+>> >> to AJ106.
+>> >>
+>> >> > I checked the 65nm Core2Duo, Xeon 5200 and Xeon 7[23]00 spec updates.
+>> >> > Going by that it seems the full model 15 family is broken and I'll leave
+>> >> > the patch as is.
+>> >>
+>> >> But the E74xx are okay and you are excluding them. Worst case you should
+>> >> provide an override.
+>> >
+>> > >From what I can tell E74xx is model 29, which would be just fine with
+>> > this patch, this patch only marks model 15 as broken.
+>> >
+>> True, my bad.
+>> So it would be a matter to provide some ways of disabling LBR with PEBS
+>> on model 15.
+>
+> And some way of dealing with the flaky PEBS PMI, which requires we
+> program the pebs_event_reset thing otherwise there won't be a next PEBS
+> record to re-trigger the PMI.
+>
+> If it would have stated it always did the threshold comparison first and
+> then the index increment, so that we'd always trigger on the second
+> record we could simply program half the period and always take two and
+> ignore the first, but it says _MAY_, so its a race and there's no
+> reliable solution.
+>
+> It might all be possible but I don't see it being worth the effort.
+>
+There are lots of model15 out there, like the Q6xxx series.
 
-> On Thu, Mar 04 2010, Mikulas Patocka wrote:
-> > > > I think it should be redesigned in this way:
-> > > > * the bio should be allowed to have arbitrary size, up to BIO_MAX_PAGES
-> > > > * the code for splitting bios should be just at one place --- in the 
-> > > > generic block layer and it should work with all drivers. I.e.
-> > > > q->make_request_fn will return that the request is too big for the given 
-> > > > driver and the generic code will allocate few another bios from 
-> > > > per-request_queue mempool and split the bio.
-> > > > * then, we would fix the raid1 bug and we would also simplify md and dm 
-> > > > --- remove the splitting code.
-> > > 
-> > > The design certainly isn't perfect, but neither is the one that you
-> > > suggest. For instance, what would the point of building bigger bios just
-> > > to split them _everytime_ be? That's not good design, and it's certainly
-> > > not helping performance much.
-> > 
-> > The point for building a big bio and splitting it is code size reduction.
-> > 
-> > You must realize that you need to split the request anyway. If the caller 
-> > needs to read/write M sectors and the device can process at most N 
-> > sectors, where N<M, then the i/o must be split. You can't get rid of that 
-> > split.
-> 
-> If we consider the basic (and mosted used) file system IO path, then
-> those 'M' sectors will usually be submitted in units that are smaller
-> than 'N' anyway. It would be silly to allocate a bio for 'N' sectors
-> (those get big), only to split it up again shortly.
-> 
-> The point is not to build it too big to begin with, and keep the
-> splitting as the slow path. That's how it was originally designed, and
-> it'll surely stay that way. Doing the split handling in generic code is
-> a good idea, it definitely should be. But I'm never going to make
-> splitting a normal part of IO operations just because we allow
-> arbitrarily large bios, sorry but that's insane.
-
-I think that where-ever we put the splitting there is a lot to be gained by
-make it easier to split things.
-
-It is a while since I looked closely at this (about 30 months) but last time
-I looked, low level devices were allowed to modify the bi_iovec.  This means
-that a split has to copy the iovec as well as the bio which significantly
-increased the complexity.  If we stored an index into the current bio in
-'struct request' rather than using bi_idx plus modifying bv_offset, then I
-think we could make bi_iovec read-only and simplify splitting significantly.
-
-I have some patches that did this, but they are very old.  I could probably
-refresh them if there was interest.
-
-
-My preferred end-game would be to allow a bio of any size to be submitted to
-any device.  The device would be responsible for cutting it up if necessary.
-For the elevator code, I wouldn't bother making new bios, but would teach
-'struct request' to be able to reference part of a bio.  So in the general
-case, a 'request' would point to a list of bios, but would exclude a prefix
-of the first and a suffix of the last. A single bio could then be referenced
-by multiple requests if necessary.
-
-It would probably make sense to include a 'max_sectors' concept to discourage
-large bios as doing that would probably allow things to run more smoothly
-in general.  But if this were a hint rather than a requirement then I think
-it would make life a lot easier for a lot of code.
-
-NeilBrown
+When I read AJ68, my understanding is that it's not that you do not
+get the interrupt. It will be delayed by one event. The buffer will become
+full. You won't overrun the buffer, you will get the interrupt at the next
+event. On interrupt, you have to reset the PEBS position pointer anyway.
+There is already a disconnect between the sampling period and the actual
+instruction sampled. That's not making the situation that much worse, unless
+I am missing something.
